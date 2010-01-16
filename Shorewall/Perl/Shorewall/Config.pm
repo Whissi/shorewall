@@ -128,7 +128,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_6';
+our $VERSION = '4.4_7';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -445,6 +445,9 @@ sub initialize( $ ) {
 	      WIDE_TC_MARKS => undef,
 	      TRACK_PROVIDERS => undef,
 	      ZONE2ZONE => undef,
+	      ACCOUNTING => undef,
+	      OPTIMIZE_ACCOUNTING => undef,
+	      DYNAMIC_BLACKLIST => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -561,6 +564,9 @@ sub initialize( $ ) {
 	      WIDE_TC_MARKS => undef,
 	      TRACK_PROVIDERS => undef,
 	      ZONE2ZONE => undef,
+	      ACCOUNTING => undef,
+	      OPTIMIZE_ACCOUNTING => undef,
+	      DYNAMIC_BLACKLIST => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -2517,6 +2523,9 @@ sub get_configuration( $ ) {
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
+    default_yes_no 'ACCOUNTING'                 , 'Yes';
+    default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
+    default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
 
     numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
@@ -2638,7 +2647,7 @@ sub get_configuration( $ ) {
 
     $val = numeric_value $config{OPTIMIZE};
 
-    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless defined( $val ) && $val >= 0 && $val <= 1;
+    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless defined( $val ) && $val >= 0 && $val <= 7;
 
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 

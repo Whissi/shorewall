@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_6';
+our $VERSION = '4.4.7';
 
 #
 # Called by the compiler to [re-]initialize this module's state
@@ -185,17 +185,17 @@ sub setup_accounting() {
     if ( have_bridges ) {
 	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD/ ) {
-		insert_rule1 $filter_table->{$chain}, 0, '-j accounting';
+		add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 	    }
 	}
 
 	if ( $filter_table->{accountout} ) {
-	    insert_rule1 $filter_table->{OUTPUT}, 0, '-j accountout';
+	    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
 	}
     } else {
 	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		insert_rule1 $filter_table->{$chain}, 0, '-j accounting';
+		add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 	    }
 	}
     }

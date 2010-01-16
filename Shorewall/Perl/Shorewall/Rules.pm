@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_6';
+our $VERSION = '4.4_7';
 
 #
 # Set to one if we find a SECTION
@@ -157,8 +157,8 @@ sub process_tos() {
 	}
 
 	unless ( $first_entry ) {
-	    add_rule $mangle_table->{$stdchain}, "-j $chain" if $pretosref->{referenced};
-	    add_rule $mangle_table->{OUTPUT},    "-j outtos" if $outtosref->{referenced};
+	    add_jump( $mangle_table->{$stdchain}, $chain,   0 ) if $pretosref->{referenced};
+	    add_jump( $mangle_table->{OUTPUT},    'outtos', 0 ) if $outtosref->{referenced};
 	}
     }
 }
@@ -214,7 +214,7 @@ sub add_rule_pair( $$$$ ) {
     my ($chainref , $predicate , $target , $level ) = @_;
 
     log_rule( $level, $chainref, "\U$target", $predicate )  if defined $level && $level ne '';
-    add_rule $chainref , "${predicate}-j $target";
+    add_jump( $chainref , $target, 0, $predicate );
 }
 
 sub setup_blacklist() {
@@ -232,7 +232,7 @@ sub setup_blacklist() {
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    add_rule $logchainref, "-j $target" ;
+	    add_jump $logchainref, $target, 1;
 
 	    $target = 'blacklog';
 	}
@@ -419,30 +419,27 @@ sub setup_mss();
 sub add_common_rules() {
     my $interface;
     my $chainref;
-    my $level;
     my $target;
     my $rule;
     my $list;
     my $chain;
 
-    new_standard_chain 'dynamic';
+    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
+    my $level     = $config{BLACKLIST_LOGLEVEL};
+    my $rejectref = dont_move new_standard_chain 'reject';
 
-    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
-
-    add_rule $filter_table->{$_}, "$state -j dynamic" for qw( INPUT FORWARD );
+    if ( $config{DYNAMIC_BLACKLIST} ) {
+	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
+	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), ' ' , 'reject' , $level ;
+	$chainref = dont_optimize( new_standard_chain( 'dynamic' ) );
+	add_jump $filter_table->{$_}, $chainref, 0, $state for qw( INPUT FORWARD );
+    }
 
     setup_mss;
 
     if ( $config{FASTACCEPT} ) {
 	add_rule( $filter_table->{$_} , "-m state --state ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
     }
-
-    my $rejectref = new_standard_chain 'reject';
-
-    $level = $config{BLACKLIST_LOGLEVEL};
-
-    add_rule_pair new_standard_chain( 'logdrop' ),   ' ' , 'DROP'   , $level ;
-    add_rule_pair new_standard_chain( 'logreject' ), ' ' , 'reject' , $level ;
 
     for $interface ( all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
@@ -591,11 +588,11 @@ sub add_common_rules() {
 	    $disposition = $config{TCP_FLAGS_DISPOSITION};
 	}
 
-	add_rule $chainref , "-p tcp --tcp-flags ALL FIN,URG,PSH -j $disposition";
-	add_rule $chainref , "-p tcp --tcp-flags ALL NONE        -j $disposition";
-	add_rule $chainref , "-p tcp --tcp-flags SYN,RST SYN,RST -j $disposition";
-	add_rule $chainref , "-p tcp --tcp-flags SYN,FIN SYN,FIN -j $disposition";
-	add_rule $chainref , "-p tcp --syn --sport 0 -j $disposition";
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags ALL FIN,URG,PSH ';
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags ALL NONE ';
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags SYN,RST SYN,RST ';
+	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags SYN,FIN SYN,FIN ';
+	add_jump $chainref , $disposition, 1, '-p tcp --syn --sport 0 ';
 
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
@@ -618,12 +615,12 @@ sub add_common_rules() {
 	if ( @$list ) {
 	    progress_message2 "$doing UPnP";
 
-	    new_nat_chain( 'UPnP' );
+	    dont_optimize new_nat_chain( 'UPnP' );
 
 	    $announced = 1;
 
 	    for $interface ( @$list ) {
-		add_rule $nat_table->{PREROUTING} , match_source_dev ( $interface ) . '-j UPnP';
+		add_jump $nat_table->{PREROUTING} , 'UPnP', 0, match_source_dev ( $interface );
 	    }
 	}
 
@@ -706,7 +703,7 @@ sub setup_mac_lists( $ ) {
 		my $chain = $chainref->{name};
 
 		add_rule $chainref, "-m recent --rcheck --seconds $ttl --name $chain -j RETURN";
-		add_rule $chainref, "-j $chain1ref->{name}";
+		add_jump $chainref, $chain1ref, 0;
 		add_rule $chainref, "-m recent --update --name $chain -j RETURN";
 		add_rule $chainref, "-m recent --set --name $chain";
 	    }
@@ -834,7 +831,7 @@ sub setup_mac_lists( $ ) {
 	    run_user_exit2( 'maclog', $chainref );
 
 	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
-	    add_rule $chainref, "-j $target";
+	    add_jump $chainref, $target, 0;
 	}
     }
 }
@@ -958,7 +955,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
     my $actionchainref;
-    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} ) : 0;
+    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
 
     $param = '' unless defined $param;
 
@@ -1128,7 +1125,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    }
 	}
 
-	$chain    = rules_chain( ${sourcezone}, ${destzone} );
+	$chain = rules_chain( ${sourcezone}, ${destzone} );
 	#
 	# Ensure that the chain exists but don't mark it as referenced until after optimization is checked
 	#
@@ -1154,12 +1151,22 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	# Mark the chain as referenced and add appropriate rules from earlier sections.
 	#
 	$chainref = ensure_filter_chain $chain, 1;
+	#
+	# Don't let the rules in this chain be moved elsewhere
+	#
+	dont_move $chainref;
     }
 
     #
     # Generate Fixed part of the rule
     #
-    $rule = join( '', do_proto($proto, $ports, $sports), do_ratelimit( $ratelimit, $basictarget ) , do_user( $user ) , do_test( $mark , $globals{TC_MASK} ) , do_connlimit( $connlimit ), do_time( $time ) );
+    $rule = join( '', 
+		  do_proto($proto, $ports, $sports),
+		  do_ratelimit( $ratelimit, $basictarget ) ,
+		  do_user( $user ) ,
+		  do_test( $mark , $globals{TC_MASK} ) ,
+		  do_connlimit( $connlimit ),
+		  do_time( $time ) );
 
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
@@ -1292,7 +1299,11 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#   - the target will be ACCEPT.
 	#
 	unless ( $actiontype & NATONLY ) {
-	    $rule = join( '', do_proto( $proto, $ports, $sports ), do_ratelimit( $ratelimit, 'ACCEPT' ), do_user $user , do_test( $mark , $globals{TC_MASK} ) );
+	    $rule = join( '',
+			  do_proto( $proto, $ports, $sports ),
+			  do_ratelimit( $ratelimit, 'ACCEPT' ),
+			  do_user $user ,
+			  do_test( $mark , $globals{TC_MASK} ) );
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';
@@ -1370,7 +1381,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     "-j $tgt",
 		     $loglevel ,
 		     $log_action ,
-		     ''
+		     '' ,
 		   );
 	#
 	# Possible optimization if the rule just generated was a simple jump to the nonat chain
@@ -1624,7 +1635,7 @@ sub add_interface_jumps {
     my $fw = firewall_zone;
     my $chainref = $filter_table->{rules_chain( ${fw}, ${fw} )};
 
-    add_rule $filter_table->{OUTPUT} , "-o lo -j " . ($chainref->{referenced} ? "$chainref->{name}" : 'ACCEPT' );
+    add_jump $filter_table->{OUTPUT} ,  ($chainref->{referenced} ? $chainref : 'ACCEPT' ), 0, '-o lo ';
     add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
 }
 
@@ -1657,7 +1668,8 @@ sub generate_matrix() {
 	if ( $chainref->{policy} ne 'CONTINUE' ) {
 	    my $policyref = $filter_table->{$chainref->{policychain}};
 	    assert( $policyref );
-	    return $policyref->{name};
+	    return $policyref->{name} if $policyref ne $chainref;
+	    return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
 	}
 
 	''; # CONTINUE policy
@@ -1739,7 +1751,7 @@ sub generate_matrix() {
     #
     # NOTRACK from firewall
     #
-    add_rule $raw_table->{OUTPUT}, "-j $notrackref->{name}" if $notrackref->{referenced};
+    add_jump $raw_table->{OUTPUT}, $notrackref, 0 if $notrackref->{referenced};
     #
     # Main source-zone matrix-generation loop
     #
@@ -1906,7 +1918,7 @@ sub generate_matrix() {
 	my @dest_zones;
 	my $last_chain = '';
 
-	if ( $config{OPTIMIZE} > 0 ) {
+	if ( $config{OPTIMIZE} & 1 ) {
 	    my @temp_zones;
 
 	    for my $zone1 ( @zones )  {
@@ -2007,7 +2019,7 @@ sub generate_matrix() {
 			my $match_source_dev = '';
 			my $forwardchainref = $filter_table->{forward_chain $interface};
 
-			if ( use_forward_chain( $interface ) || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
+			if ( use_forward_chain $interface || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
 			    #
 			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
 			    #
@@ -2122,7 +2134,7 @@ sub setup_mss( ) {
 	#
 	# Send all forwarded SYN packets to the 'settcpmss' chain
 	#
-	add_rule $filter_table->{FORWARD} ,  "-p tcp --tcp-flags SYN,RST SYN -j settcpmss";
+	add_jump $filter_table->{FORWARD} , $chainref, 0, '-p tcp --tcp-flags SYN,RST SYN ';
 
 	my $in_match  = '';
 	my $out_match = '';
@@ -2150,8 +2162,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall( $ ) {
-    my $test = shift;
+sub compile_stop_firewall( $$ ) {
+    my ( $test, $export ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};

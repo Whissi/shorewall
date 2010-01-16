@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -32,9 +32,9 @@ use Shorewall::Actions;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies );
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains);
 our @EXPORT_OK = qw(  );
-our $VERSION = '4.4_4';
+our $VERSION = '4.4_7';
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -362,7 +362,7 @@ sub policy_rules( $$$$$ ) {
 
     unless ( $target eq 'NONE' ) {
 	add_rule $chainref, "-d 224.0.0.0/4 -j RETURN" if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
-	add_rule $chainref, "-j $default" if $default && $default ne 'none';
+	add_jump $chainref, $default, 0 if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 
@@ -418,10 +418,21 @@ sub apply_policy_rules() {
 	my $provisional = $chainref->{provisional};
 	my $default     = $chainref->{default};
 	my $name        = $chainref->{name};
+	my $synparms    = $chainref->{synparms};
 
 	if ( $policy ne 'NONE' ) {
-	    if ( ! $chainref->{referenced} && ( ! $provisional && $policy ne 'CONTINUE' ) ) {
-		ensure_filter_chain $name, 1;
+	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) {
+		if ( $config{OPTIMIZE} & 2 ) {
+		    #
+		    # This policy chain is empty and the only thing that we would put in it is
+		    # the policy-related stuff. Don't create it if all we are going to put in it
+		    # is a single jump. Generate_matrix() will just use the policy target when
+		    # needed.
+		    #
+		    ensure_filter_chain $name, 1 if $default ne 'none' || $loglevel || $synparms || $config{MULTICAST} || ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} );
+		} else {
+		    ensure_filter_chain $name, 1;
+		}
 	    }
 
 	    if ( $name =~ /^all[-2]|[-2]all$/ ) {
@@ -485,6 +496,26 @@ sub setup_syn_flood_chains() {
 	    add_rule $synchainref, '-j DROP';
 	}
     }
+}
+
+#
+# Optimize Policy chains with ACCEPT policy
+#
+sub optimize_policy_chains() {
+    for my $chainref ( grep $_->{policy} eq 'ACCEPT', @policy_chains ) {
+	optimize_chain ( $chainref );
+    }
+    #
+    # Often, fw->all has an ACCEPT policy. This code allows optimization in that case
+    #
+    my $outputrules = $filter_table->{OUTPUT}{rules};
+
+    if ( @{$outputrules} && $outputrules->[-1] =~ /-j ACCEPT/ ) {
+	optimize_chain( $filter_table->{OUTPUT} );
+    }
+
+    progress_message '  Policy chains optimized';
+    progress_message '';
 }
 
 1;

@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -43,7 +43,7 @@ use Shorewall::Raw;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_6';
+our $VERSION = '4.4_7';
 
 our $export;
 
@@ -816,13 +816,25 @@ sub compiler {
     #
     # Accounting.
     #
-    setup_accounting;
+    setup_accounting if $config{ACCOUNTING};
 
     if ( $scriptfilename ) {
 	#
 	# Compiling a script - generate the zone by zone matrix
 	#
 	generate_matrix;
+
+	if ( $config{OPTIMIZE} & 6 ) {
+	    progress_message2 'Optimizing Ruleset...';
+	    #
+	    # Optimize Policy Chains
+	    #
+	    optimize_policy_chains if $config{OPTIMIZE} & 2;
+	    #
+	    # More Optimization
+	    #
+	    optimize_ruleset if $config{OPTIMIZE} & 4;
+	}
 
 	enable_script;
 	#
@@ -845,7 +857,7 @@ sub compiler {
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
 	#
-	compile_stop_firewall( $test );
+	compile_stop_firewall( $test, $export );
 	#
 	# Copy the footer to the script
 	#
@@ -868,10 +880,26 @@ sub compiler {
 	enable_script, generate_aux_config if $export;
     } else {
 	#
-	# Checking the configuration only
+	# Just checking the configuration
 	#
 	if ( $preview ) {
+	    #
+	    # User wishes to preview the ruleset -- generate the rule matrix
+	    #
 	    generate_matrix;
+
+	    if ( $config{OPTIMIZE} & 6 ) {
+		progress_message2 'Optimizing Ruleset...';
+		#
+		# Optimize Policy Chains
+		#
+		optimize_policy_chains if $config{OPTIMIZE} & 2;
+		#
+		# Ruleset Optimization
+		#
+		optimize_ruleset if $config{OPTIMIZE} & 4;
+	    }
+
 	    preview_netfilter_load;
 	}
 	#

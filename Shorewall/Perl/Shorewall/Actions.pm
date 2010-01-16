@@ -57,7 +57,7 @@ our @EXPORT = qw( merge_levels
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_6';
+our $VERSION = '4.4_7';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -305,10 +305,10 @@ sub map_old_actions( $ ) {
 # Create and record a log action chain -- Log action chains have names
 # that are formed from the action name by prepending a "%" and appending
 # a 1- or 2-digit sequence number. In the functions that follow,
-# the CHAIN, LEVEL and TAG variable serves as arguments to the user's
+# the $chain, $level and $tag variable serves as arguments to the user's
 # exit. We call the exit corresponding to the name of the action but we
-# set CHAIN to the name of the iptables chain where rules are to be added.
-# Similarly, LEVEL and TAG contain the log level and log tag respectively.
+# set $chain to the name of the iptables chain where rules are to be added.
+# Similarly, $level and $tag contain the log level and log tag respectively.
 #
 # The maximum length of a chain name is 30 characters -- since the log
 # action chain name is 2-3 characters longer than the base chain name,
@@ -341,6 +341,8 @@ sub createlogactionchain( $$ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
+	dont_optimize $chainref;
+
 	my $file = find_file $chain;
 
 	if ( -f $file ) {
@@ -367,6 +369,8 @@ sub createsimpleactionchain( $ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
+	dont_optimize $chainref;
+
 	my $file = find_file $action;
 
 	if ( -f $file ) {
@@ -384,7 +388,7 @@ sub createsimpleactionchain( $ ) {
 }
 
 #
-# Create an action chain and run it's associated user exit
+# Create an action chain and run its associated user exit
 #
 sub createactionchain( $ ) {
     my ( $action , $level ) = split_action $_[0];
@@ -574,7 +578,7 @@ sub process_actions2 () {
 	for my $target (keys %usedactions) {
 	    my ($action, $level) = split_action $target;
 	    my $actionref = $actions{$action};
-	    fatal_error "Null Action Reference in process_actions2" unless $actionref;
+	    assert( $actionref );
 	    for my $action1 ( keys %{$actionref->{requires}} ) {
 		my $action2 = merge_levels $target, $action1;
 		unless ( $usedactions{ $action2 } ) {
@@ -834,15 +838,15 @@ sub allowBcast( $$$ ) {
 sub dropNotSyn ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
-    add_rule $chainref , '-p tcp ! --syn -j DROP';
+    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
+    add_rule $chainref , '-p 6 ! --syn -j DROP';
 }
 
 sub rejNotSyn ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p tcp ! --syn ' if $level ne '';
-    add_rule $chainref , '-p tcp ! --syn -j REJECT --reject-with tcp-reset';
+    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
+    add_rule $chainref , '-p 6 ! --syn -j REJECT --reject-with tcp-reset';
 }
 
 sub dropInvalid ( $$$ ) {
@@ -860,18 +864,19 @@ sub allowInvalid ( $$$ ) {
 }
 
 sub forwardUPnP ( $$$ ) {
+    dont_optimize 'forwardUPnP';
 }
 
 sub allowinUPnP ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
     if ( $level ne '' ) {
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p udp --dport 1900 ';
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p tcp --dport 49152 ';
+	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 17 --dport 1900 ';
+	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 6 --dport 49152 ';
     }
 
-    add_rule $chainref, '-p udp --dport 1900 -j ACCEPT';
-    add_rule $chainref, '-p tcp --dport 49152 -j ACCEPT';
+    add_rule $chainref, '-p 17 --dport 1900 -j ACCEPT';
+    add_rule $chainref, '-p 6 --dport 49152 -j ACCEPT';
 }
 
 sub Limit( $$$ ) {
@@ -897,7 +902,7 @@ sub Limit( $$$ ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
 	add_rule $xchainref, '-j DROP';
-	add_rule $chainref,  "-m recent --name $set --update --seconds $tag[2] --hitcount $count -j $xchainref->{name}";
+	add_jump $chainref,  $xchainref, 0, "-m recent --name $set --update --seconds $tag[2] --hitcount $count ";
     } else {
 	add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
     }

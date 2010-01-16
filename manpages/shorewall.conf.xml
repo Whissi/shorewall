@@ -170,6 +170,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">ACCOUNTING=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.7. If set to Yes, Shorewall accounting
+          is enabled (see <ulink
+          url="shorewall-accounting.html">shorewall-accounting</ulink>(5)). If
+          not specified or set to the empty value, ACCOUNTING=Yes is
+          assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">ADD_IP_ALIASES=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -462,20 +475,21 @@
         role="bold">DONT_LOAD=</emphasis>[<emphasis>module</emphasis>[,<emphasis>module</emphasis>]...]</term>
 
         <listitem>
-          <para>Added in Shorewall-4.0.6. Causes Shorewall to not load the
-          listed modules.</para>
+          <para>Causes Shorewall to not load the listed kernel modules.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DYNAMIC_ZONES=</emphasis>{<emphasis
+        <term><emphasis role="bold">DYNAMIC_BLACKLIST=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
-          role="bold">yes</emphasis>, enables dynamic zones. DYNAMIC_ZONES=Yes
-          is not allowed in configurations that will run under Shorewall
-          Lite.</para>
+          <para>Added in Shorewall 4.4.7. When set to <emphasis
+          role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
+          dynamic blacklisting using the <command>shorewall drop</command>,
+          <command>shorewall reject</command>, <command>shorewall
+          logdrop</command> and <command>shorewall logreject</command> is
+          disabled. Default is <emphasis role="bold">Yes</emphasis>.</para>
         </listitem>
       </varlistentry>
 
@@ -1141,24 +1155,116 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OPTIMIZE=</emphasis>[<emphasis
-        role="bold">0</emphasis>|<emphasis role="bold">1</emphasis>]</term>
+        <term><emphasis
+        role="bold">OPTIMIZE=</emphasis>[<replaceable>value</replaceable>]</term>
 
         <listitem>
-          <para>Traditionally, Shorewall has created rules for <ulink
-          url="../ScalabilityAndPerformance.html">the complete matrix of host
-          groups defined by the zones, interfaces and hosts files</ulink>. Any
-          traffic that didn't correspond to an element of that matrix was
-          rejected in one of the built-in chains. When the matrix is sparse,
-          this results in lots of largely useless rules.</para>
+          <para>The specified <replaceable>value</replaceable> enables certain
+          optimizations. Each optimization category is associated with a power
+          of two. To enable multiple optimization categories, simply add their
+          corresponding numbers together.</para>
 
-          <para>These extra rules can be eliminated by setting
-          OPTIMIZE=1.</para>
+          <itemizedlist>
+            <listitem>
+              <para>Optimization category 1 - Traditionally, Shorewall has
+              created rules for <ulink
+              url="../ScalabilityAndPerformance.html">the complete matrix of
+              host groups defined by the zones, interfaces and hosts
+              files</ulink>. Any traffic that didn't correspond to an element
+              of that matrix was rejected in one of the built-in chains. When
+              the matrix is sparse, this results in lots of largely useless
+              rules.</para>
 
-          <para>The OPTIMIZE setting also controls the suppression of
-          redundant wildcard rules (those specifying "all" in the SOURCE or
-          DEST column). A wildcard rule is considered to be redundant when it
-          has the same ACTION and Log Level as the applicable policy.</para>
+              <para>These extra rules can be eliminated by setting the 1 bit
+              in OPTIMIZE.</para>
+
+              <para>The 1 bit setting also controls the suppression of
+              redundant wildcard rules (those specifying "all" in the SOURCE
+              or DEST column). A wildcard rule is considered to be redundant
+              when it has the same ACTION and Log Level as the applicable
+              policy.</para>
+            </listitem>
+
+            <listitem>
+              <para>Optimization category 2 - Added in Shorewall 4.4.7. When
+              set, suppresses superfluous ACCEPT rules in a policy chain that
+              implements an ACCEPT policy. Any ACCEPT rules that immediately
+              preceed the final blanket ACCEPT rule in the chain are now
+              omitted.</para>
+            </listitem>
+
+            <listitem>
+              <para>Optimization category 4 - Added in Shorewall 4.4.7. When
+              set, causes short chains (those with less than 2 rules) to be
+              optimized away. The following chains are excluded from
+              optimization:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>accounting chains (unless
+                  OPTIMIZE_ACCOUNTING=Yes)</para>
+                </listitem>
+
+                <listitem>
+                  <para>action chains (user-defined)</para>
+                </listitem>
+
+                <listitem>
+                  <para>dynamic</para>
+                </listitem>
+
+                <listitem>
+                  <para>forwardUPnP</para>
+                </listitem>
+
+                <listitem>
+                  <para>UPnP (nat table)</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>Additionally:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>If a built-in chain has a single rule that branches to
+                  a second chain, then the rules from the second chain are
+                  moved to the built-in chain and the target chain is
+                  omitted.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Chains with no references are deleted.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Accounting chains are subject to optimization if the
+                  OPTIMIZE_ACCOUNTING option is set to 'Yes'.</para>
+                </listitem>
+
+                <listitem>
+                  <para>If a chain ends with an unconditional branch to a
+                  second chain (other than to 'reject'), then the branch is
+                  deleted from the first chain and the rules from the second
+                  chain are appended to it.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </itemizedlist>
+
+          <para>The default value is zero which disables all
+          optimizations.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OPTIMIZE_ACCOUNTING=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.7. If set to Yes, Shorewall accounting
+          changes are subject to optimization (OPTIMIZE=4,5,6 or 7). If not
+          specified or set to the empty value, OPTIMIZE_ACCOUNTING=No is
+          assumed.</para>
         </listitem>
       </varlistentry>
 

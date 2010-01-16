@@ -172,7 +172,7 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.0. If set to Yes, Shorewall6 accounting
+          <para>Added in Shorewall 4.4.7. If set to Yes, Shorewall6 accounting
           is enabled (see <ulink
           url="shorewall6-accounting.html">shorewall6-accounting</ulink>(5)).
           If not specified or set to the empty value, ACCOUNTING=Yes is
@@ -393,6 +393,20 @@
         <listitem>
           <para>Causes Shorewall6 to not load the listed kernel
           modules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DYNAMIC_BLACKLIST=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.7. When set to <emphasis
+          role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
+          dynamic blacklisting using the <command>shorewall6 drop</command>,
+          <command>shorewall6 reject</command>, <command>shorewall6
+          logdrop</command> and <command>shorewall6 logreject</command> is
+          disabled. Default is <emphasis role="bold">Yes</emphasis>.</para>
         </listitem>
       </varlistentry>
 
@@ -883,24 +897,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis
-        role="bold">MASK_BITS</emphasis>=<emphasis>bits</emphasis></term>
-
-        <listitem>
-          <para>Added in Shorewall 4.5.0. This option specifies the number of
-          <emphasis>bits</emphasis> to use as a mask for traffic shaping marks
-          and must be greater than or equal to TC_BITS. The default value
-          depends on the setting of WIDE_TC_MARKS:</para>
-
-          <simplelist>
-            <member>WIDE_TC_MARKS=No - 8 bits.</member>
-
-            <member>WIDE_TC_MARKS=Yes - 16 bits.</member>
-          </simplelist>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
         role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
         role="bold">"</emphasis>]</term>
@@ -947,24 +943,108 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OPTIMIZE=</emphasis>[<emphasis
-        role="bold">0</emphasis>|<emphasis role="bold">1</emphasis>]</term>
+        <term><emphasis
+        role="bold">OPTIMIZE=</emphasis>[<replaceable>value</replaceable>]</term>
 
         <listitem>
-          <para>Traditionally, Shorewall6 has created rules for <ulink
-          url="../ScalabilityAndPerformance.html">the complete matrix of host
-          groups defined by the zones, interfaces and hosts files</ulink>. Any
-          traffic that didn't correspond to an element of that matrix was
-          rejected in one of the built-in chains. When the matrix is sparse,
-          this results in lots of largely useless rules.</para>
+          <para>The specified <replaceable>value</replaceable> enables certain
+          optimizations. Each optimization category is associated with a power
+          of two. To enable multiple optimization categories, simply add their
+          corresponding numbers together.</para>
 
-          <para>These extra rules can be eliminated by setting
-          OPTIMIZE=1.</para>
+          <itemizedlist>
+            <listitem>
+              <para>Optimization category 1 - Traditionally, Shorewall has
+              created rules for <ulink
+              url="../ScalabilityAndPerformance.html">the complete matrix of
+              host groups defined by the zones, interfaces and hosts
+              files</ulink>. Any traffic that didn't correspond to an element
+              of that matrix was rejected in one of the built-in chains. When
+              the matrix is sparse, this results in lots of largely useless
+              rules.</para>
 
-          <para>The OPTIMIZE setting also controls the suppression of
-          redundant wildcard rules (those specifying "all" in the SOURCE or
-          DEST column). A wildcard rule is considered to be redundant when it
-          has the same ACTION and Log Level as the applicable policy.</para>
+              <para>These extra rules can be eliminated by setting the 1 bit
+              in OPTIMIZE.</para>
+
+              <para>The 1 bit setting also controls the suppression of
+              redundant wildcard rules (those specifying "all" in the SOURCE
+              or DEST column). A wildcard rule is considered to be redundant
+              when it has the same ACTION and Log Level as the applicable
+              policy.</para>
+            </listitem>
+
+            <listitem>
+              <para>Optimization category 2 - Added in Shorewall 4.4.7. When
+              set, suppresses superfluous ACCEPT rules in a policy chain that
+              implements an ACCEPT policy. Any ACCEPT rules that immediately
+              preceed the final blanket ACCEPT rule in the chain are now
+              omitted.</para>
+            </listitem>
+
+            <listitem>
+              <para>Optimization category 4 - Added in Shorewall 4.4.7. When
+              set, causes short chains (those with less than 2 rules) to be
+              optimized away. The following chains are excluded from
+              optimization:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>accounting chains (unless
+                  OPTIMIZE_ACCOUNTING=Yes)</para>
+                </listitem>
+
+                <listitem>
+                  <para>action chains (user-defined)</para>
+                </listitem>
+
+                <listitem>
+                  <para>dynamic</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>Additionally:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>If a built-in chain has a single rule that branches to
+                  a second chain, then the rules from the second chain are
+                  moved to the built-in chain and the target chain is
+                  omitted.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Chains with no references are deleted.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Accounting chains are subject to optimization if the
+                  OPTIMIZE_ACCOUNTING option is set to 'Yes'.</para>
+                </listitem>
+
+                <listitem>
+                  <para>If a chain ends with an unconditional branch to a
+                  second chain (other than to 'reject'), then the branch is
+                  deleted from the first chain and the rules from the second
+                  chain are appended to it.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </itemizedlist>
+
+          <para>The default value is zero which disables all
+          optimizations.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">OPTIMIZE_ACCOUNTING=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.7. If set to Yes, Shorewall accounting
+          changes are subject to optimization (OPTIMIZE=4,5,6 or 7). If not
+          specified or set to the empty value, OPTIMIZE_ACCOUNTING=No is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -976,42 +1056,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         <listitem>
           <para>Determines the order in which Shorewall6 searches directories
           for executable files.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis
-        role="bold">PROVIDER_BITS</emphasis>=<emphasis>bits</emphasis></term>
-
-        <listitem>
-          <para>Added in Shorewall 4.5.0. Specifies the number of bits of the
-          packet/connection mark to use for the provider (routing) mark.
-          Provider mark values must be &gt;= 2**PROVIDER_OFFSET and less than
-          2**(PROVIDER_OFFSET + PROVIDER_BITS). The default value is 8
-          bits.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis
-        role="bold">PROVIDER_OFFSET</emphasis>=<emphasis>offset</emphasis></term>
-
-        <listitem>
-          <para>Added in Shorewall 4.5.0. Specifies the
-          <emphasis>offset</emphasis> in bits from the least significate bit
-          of the packet/connection mark where the Provider Mark value is
-          stored. The default is based on the settings of HIGH_ROUTE_MARKS and
-          WIDE_TC_MARKS:</para>
-
-          <simplelist>
-            <member>HIGH_ROUTE_MARKS=No - 0 bits.</member>
-
-            <member>HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=No - 8
-            bits.</member>
-
-            <member>HIGH_ROUTE_MARKS=Yes and WIDE_TC_MARKS=Yes - 16
-            bits.</member>
-          </simplelist>
         </listitem>
       </varlistentry>
 
@@ -1174,28 +1218,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis
-        role="bold">TC_BITS</emphasis>=<emphasis>bits</emphasis></term>
-
-        <listitem>
-          <para>Added in Shorewall 4.5.0. This option replaces WIDE_TC_MARKS
-          by allowing you to specify the number of <emphasis>bits</emphasis>
-          of the 32-bit packet/connection mark to be used for traffic shaping.
-          The default value is based on the settings of WIDE_TC_MARKS:</para>
-
-          <simplelist>
-            <member>WIDE_TC_MARKS=No - 8 bits.</member>
-
-            <member>WIDE_TC_MARKS=Yes - 14 bits.</member>
-          </simplelist>
-
-          <para>Mark values specified in <ulink
-          url="shorewall6-tcclasses.html">shorewall6-tcclasses (5)</ulink>
-          must be &lt; 2**TC_BITS.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis
@@ -1245,7 +1267,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">TC_PRIOMAP</emphasis>=<emphasis>map</emphasis></term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.0. Determines the mapping of a packet's
+          <para>Added in Shorewall 4.4.6. Determines the mapping of a packet's
           TOS field to priority bands. See <ulink
           url="shorewall6-tcpri.html">shorewall6-tcpri</ulink>(5). The
           <emphasis>map</emphasis> consists of 16 space-separated digits with

@@ -244,6 +244,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IPMARK_TARGET   => 'IPMARK Target',
 		 PERSISTENT_SNAT => 'Persistent SNAT',
 		 OLD_HL_MATCH    => 'Old Hash Limit Match',
+		 TPROXY_TARGET   => 'TPROXY Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -642,6 +643,7 @@ sub initialize( $ ) {
 	       GOTO_TARGET => undef,
 	       LOGMARK_TARGET => undef,
 	       IPMARK_TARGET => undef,
+	       TPROXY_TARGET => undef,
 	       LOG_TARGET => 1,         # Assume that we have it.
 	       PERSISTENT_SNAT => undef,
 	       OLD_HL_MATCH => undef,
@@ -2142,6 +2144,7 @@ sub determine_capabilities( $ ) {
 
 	$capabilities{CLASSIFY_TARGET} = qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
 	$capabilities{IPMARK_TARGET}   = qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
+	$capabilities{TPROXY_TARGET}   = qt1( "$iptables -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
 
 	qt1( "$iptables -t mangle -F $sillyname" );
 	qt1( "$iptables -t mangle -X $sillyname" );

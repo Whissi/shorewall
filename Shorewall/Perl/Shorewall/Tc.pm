@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_6';
+our $VERSION = '4.4_7';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -314,7 +314,39 @@ sub process_tc_rule( ) {
 			}
 
 			$target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
+		    } elsif ( $target eq 'TPROXY ' ) {
+			require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
+
+			fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
+			
+			$chain = 'tcpre';
+
+			$cmd =~ /TPROXY\((.+?)\)$/;
+
+			my $params = $1;
+
+			fatal_error "Invalid TPROXY specification( $cmd )" unless defined $params;
+
+			( $mark, my $port, my $ip, my $bad ) = split ',', $params;
+
+			fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
+
+			if ( $port ) {
+			    $port = validate_port( 'tcp', $port );
+			} else {
+			    $port = 0;
+			}
+
+			$target .= "--on-port $port";
+			
+			if ( defined $ip && $ip ne '' ) {
+			    validate_address $ip, 1;
+			    $target .= " --on-ip $ip";
+			}
+
+			$target .= ' --tproxy-mark';	
 		    }
+			
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($originalmark)" if $marktype == NOMARK;
@@ -1363,6 +1395,9 @@ sub setup_tc() {
 	    $mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) . ' ';
 
 	    unless ( $config{TRACK_PROVIDERS} ) {
+		#
+		# This is overloading TRACK_PROVIDERS a bit but sending tracked packets through PREROUTING is a PITA for users
+		#
 		for my $interface ( @routemarked_interfaces ) {
 		    add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
 		}
@@ -1428,7 +1463,12 @@ sub setup_tc() {
 			  mark      => HIGHMARK ,
 			  mask      => '' ,
 			  connmark  => 0
-			}
+			} ,
+			{ match     => sub ( $ ) { $_[0] =~ /^TPROXY/ },
+			  target    => 'TPROXY',
+			  mark      => HIGHMARK,
+			  mask      => '',
+			  connmark  => '' },
 		      );
 
 	if ( my $fn = open_file 'tcrules' ) {

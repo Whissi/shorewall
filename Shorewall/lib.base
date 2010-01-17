@@ -29,7 +29,7 @@
 #   and /usr/share/shorewall-lite/shorecap.
 #
 
-SHOREWALL_LIBVERSION=40406
+SHOREWALL_LIBVERSION=40407
 SHOREWALL_CAPVERSION=40407
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
@@ -814,6 +814,7 @@ determine_capabilities() {
     MARK=
     XMARK=
     EXMARK=
+    TPROXY_TARGET=
     MANGLE_FORWARD=
     COMMENTS=
     ADDRTYPE=
@@ -925,6 +926,7 @@ determine_capabilities() {
 
 	qt $IPTABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
 	qt $IPTABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
+	qt $IPTABLES -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
 	qt $IPTABLES -t mangle -F $chain
 	qt $IPTABLES -t mangle -X $chain
 	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
@@ -1030,6 +1032,7 @@ report_capabilities() {
 	report_capability "IPMARK Target" $IPMARK_TARGET
 	report_capability "LOG Target" $LOG_TARGET
 	report_capability "Persistent SNAT" $PERSISTENT_SNAT
+	report_capability "TPROXY Target" $TPROXY_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1090,6 +1093,7 @@ report_capabilities1() {
     report_capability1 IPMARK_TARGET
     report_capability1 LOG_TARGET
     report_capability1 PERSISTENT_SNAT
+    report_capability1 TPROXY_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_6';
+our $VERSION = '4.4_7';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -295,8 +295,8 @@ sub add_a_provider( ) {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu ) = 
-	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), '' );
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local ) = 
+	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0 );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -337,6 +337,10 @@ sub add_a_provider( ) {
 		} else {
 		    $default = -1;
 		}
+	    } elsif ( $option eq 'local' ) {
+		$local = 1;
+		$track = 0           if $config{TRACK_PROVIDERS};
+		$default_balance = 0 if$config{USE_DEFAULT_RT}; 
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -421,7 +425,13 @@ sub add_a_provider( ) {
 
 	$provider_interfaces{$interface} = $table;
 
-	emit "run_ip route add default dev $physical table $number" if $gatewaycase eq 'none';
+	if ( $gatewaycase eq 'none' ) {
+	    if ( $local ) {
+		emit "run_ip route add local 0.0.0.0/0 dev $physical table $number";
+	    } else {
+		emit "run_ip route add default dev $physical table $number";
+	    }
+	}
     }
 
     if ( $mark ne '-' ) {
@@ -471,7 +481,12 @@ sub add_a_provider( ) {
 	}
     }
 
-    if ( $loose ) {
+    if ( $local ) {
+	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
+	fatal_error "'track' not valid with 'local'"          if $track;
+	fatal_error "DUPLICATE not valid with 'local'"        if $duplicate ne '-';
+	fatal_error "MARK required with 'local'"              unless $mark;
+    } elsif ( $loose ) {
 	if ( $config{DELETE_THEN_ADD} ) {
 	    emit ( "\nfind_interface_addresses $physical | while read address; do",
 		   "    qt \$IP -$family rule del from \$address",

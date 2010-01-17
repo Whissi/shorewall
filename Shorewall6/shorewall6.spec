@@ -1,6 +1,6 @@
 %define name shorewall6
 %define version 4.4.7
-%define release 0base
+%define release 0Beta1
 
 Summary: Shoreline Firewall 6 is an ip6tables-based firewall for Linux systems.
 Name: %{name}
@@ -95,8 +95,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn ipv6 Samples6
 
 %changelog
-* Sat Jan 16 2010 Tom Eastep tom@shorewall.net
-- Updated to 4.4.7-0base
+* Sun Jan 17 2010 Tom Eastep tom@shorewall.net
+- Updated to 4.4.7-0Beta1
 * Wed Jan 13 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.6-0base
 * Tue Jan 12 2010 Tom Eastep tom@shorewall.net

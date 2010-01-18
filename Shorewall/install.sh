@@ -434,7 +434,7 @@ fi
 #
 # Install the TC Interfaces file
 #
-run_install $OWNERSHIP -m 0644 tcinterfaces ${PREFIX}/usr/share/shorewall/configfiles/tcinterfaces
+run_install $OWNERSHIP -m 0644 configfiles/tcinterfaces ${PREFIX}/usr/share/shorewall/configfiles/tcinterfaces
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcinterfaces ]; then
     run_install $OWNERSHIP -m 0600 tcinterfaces ${PREFIX}/etc/shorewall/tcinterfaces
@@ -444,7 +444,7 @@ fi
 #
 # Install the TC Priority file
 #
-run_install $OWNERSHIP -m 0644 tcpri ${PREFIX}/usr/share/shorewall/configfiles/tcpri
+run_install $OWNERSHIP -m 0644 configfiles/tcpri ${PREFIX}/usr/share/shorewall/configfiles/tcpri
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcpri ]; then
     run_install $OWNERSHIP -m 0600 tcpri ${PREFIX}/etc/shorewall/tcpri

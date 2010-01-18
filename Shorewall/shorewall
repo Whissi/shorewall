@@ -1396,7 +1396,7 @@ usage() # $1 = exit status
     echo "   show macros"
     echo "   show [ -x ] mangle|nat|raw|routing"
     echo "   show policies"
-    echo "   show tc [ <device> ]"
+    echo "   show tc [ device ]"
     echo "   show vardir"
     echo "   show zones"
     echo "   start [ -f ] [ -n ] [ -p ] [ <directory> ]"
@@ -1760,6 +1760,11 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
+	    if ! chain_exists dynamic; then
+		echo "Dynamic blacklisting is not supported in the current $PRODUCT configuration"
+		exit 2
+	    fi
+
 	    [ -n "$nolock" ] || mutex_on
 	    block DROP Dropped $*
 	    [ -n "$nolock" ] || mutex_off
@@ -1772,6 +1777,11 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
+	    if ! chain_exists dynamic; then
+		echo "Dynamic blacklisting is not supported in the current $PRODUCT configuration"
+		exit 2
+	    fi
+
 	    [ -n "$nolock" ] || mutex_on
 	    block logdrop Dropped $*
 	    [ -n "$nolock" ] || mutex_off

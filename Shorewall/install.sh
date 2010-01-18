@@ -437,7 +437,7 @@ fi
 run_install $OWNERSHIP -m 0644 configfiles/tcinterfaces ${PREFIX}/usr/share/shorewall/configfiles/tcinterfaces
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcinterfaces ]; then
-    run_install $OWNERSHIP -m 0600 tcinterfaces ${PREFIX}/etc/shorewall/tcinterfaces
+    run_install $OWNERSHIP -m 0600 configfiles/tcinterfaces ${PREFIX}/etc/shorewall/tcinterfaces
     echo "TC Interfaces file installed as ${PREFIX}/etc/shorewall/tcinterfaces"
 fi
 
@@ -447,7 +447,7 @@ fi
 run_install $OWNERSHIP -m 0644 configfiles/tcpri ${PREFIX}/usr/share/shorewall/configfiles/tcpri
 
 if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall/tcpri ]; then
-    run_install $OWNERSHIP -m 0600 tcpri ${PREFIX}/etc/shorewall/tcpri
+    run_install $OWNERSHIP -m 0600 configfiles/tcpri ${PREFIX}/etc/shorewall/tcpri
     echo "TC Priority file installed as ${PREFIX}/etc/shorewall/tcpri"
 fi
 

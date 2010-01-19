@@ -2029,6 +2029,22 @@ shorewall status &gt; /dev/null 2&gt;&amp;1 || shorewall start # Start Shorewall
         </listitem>
       </itemizedlist>
     </section>
+
+    <section id="faq87">
+      <title>(FAQ 87) My firewall starts and restarts fine but if I try
+      'shorewall restore', the script fails because none of my shell variables
+      from /etc/shorewall/params are set. Why?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: You probably need to set
+      EXPORTPARAMS=Yes. During <emphasis role="bold">start</emphasis> and
+      <emphasis role="bold">restart</emphasis>,
+      <filename>/etc/shorewall/params</filename> is processed by the shell
+      after <emphasis role="bold">set -a</emphasis>; as a result, all param
+      settings become part of the shell's environment and are inherited by the
+      running script. The shell does not process
+      <filename>/etc/shorewall/params</filename> when processing the <emphasis
+      role="bold">restore</emphasis> command.</para>
+    </section>
   </section>
 
   <section id="MultiISP">
@@ -2660,8 +2676,8 @@ loc                $FW                     ACCEPT           </programlisting>
       policies.</para>
     </section>
 
-    <section id="faq87">
-      <title>(FAQ 87) Can I run Snort with Shorewall?</title>
+    <section id="faq88">
+      <title>(FAQ 88) Can I run Snort with Shorewall?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Yes. In <emphasis>Network
       Intrusion Detection System (NIDS) mode</emphasis>, Snort is libpcap

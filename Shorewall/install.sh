@@ -196,7 +196,7 @@ fi
 #
 cd "$(dirname $0)"
 
-echo "Installing Shorewall-common Version $VERSION"
+echo "Installing Shorewall Version $VERSION"
 
 #
 # Check for /etc/shorewall
@@ -868,4 +868,4 @@ fi
 #
 #  Report Success
 #
-echo "shorewall-common Version $VERSION Installed"
+echo "shorewall Version $VERSION Installed"

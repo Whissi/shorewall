@@ -189,7 +189,7 @@ our %config;
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX SUBSYSLOCK /;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY SUBSYSLOCK /;
 #
 # From parsing the capabilities file or detecting capabilities
 #
@@ -1962,7 +1962,7 @@ sub load_kernel_modules( ) {
 
     my @moduledirectories = split /:/, $modulesdir;
 
-    if ( $moduleloader && open_file 'modules' ) {
+    if ( $moduleloader && open_file $config{LOAD_HELPERS_ONLY} ? 'helpers' : 'modules' ) {
 	my %loadedmodules;
 
 	$loadedmodules{$_}++ for split_list( $config{DONT_LOAD}, 'module' );

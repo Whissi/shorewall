@@ -422,6 +422,12 @@ run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/modules
 echo "Modules file installed as ${PREFIX}/usr/share/shorewall/modules"
 
 #
+# Install the Module Helpers file
+#
+run_install $OWNERSHIP -m 0600 helpers ${PREFIX}/usr/share/shorewall/helpers
+echo "Helper modules file installed as ${PREFIX}/usr/share/shorewall/helpers"
+
+#
 # Install the TC Rules file
 #
 run_install $OWNERSHIP -m 0644 configfiles/tcrules ${PREFIX}/usr/share/shorewall/configfiles/tcrules

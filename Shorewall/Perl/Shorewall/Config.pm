@@ -449,6 +449,7 @@ sub initialize( $ ) {
 	      ACCOUNTING => undef,
 	      OPTIMIZE_ACCOUNTING => undef,
 	      DYNAMIC_BLACKLIST => undef,
+	      LOAD_HELPERS_ONLY => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -568,6 +569,7 @@ sub initialize( $ ) {
 	      ACCOUNTING => undef,
 	      OPTIMIZE_ACCOUNTING => undef,
 	      DYNAMIC_BLACKLIST => undef,
+	      LOAD_HELPERS_ONLY => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -2529,6 +2531,7 @@ sub get_configuration( $ ) {
     default_yes_no 'ACCOUNTING'                 , 'Yes';
     default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
+    default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 
     numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};

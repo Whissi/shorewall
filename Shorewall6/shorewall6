@@ -220,6 +220,20 @@ get_config() {
 	    fi
 	    ;;
     esac
+
+    case $LOAD_HELPERS_ONLY in
+	Yes|yes)
+	    ;;
+	No|no)
+	    LOAD_HELPERS_ONLY=
+	    ;;
+	*)
+	    if [ -n "$LOAD_HELPERS_ONLY" ]; then
+		echo "   ERROR: Invalid LOAD_HELPERS_ONLY setting ($LOAD_HELPERS_ONLY)" >&2
+		exit 1
+	    fi
+	    ;;
+    esac
 }
 
 #

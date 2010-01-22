@@ -755,6 +755,37 @@ root@lists:~# </programlisting>
     </important>
   </section>
 
+  <section id="Modules">
+    <title>Kernel Module Loading</title>
+
+    <para>Beginning in Shorewall 4.4.7,
+    <filename>/etc/shorewall/shorewall.conf</filename> contains a
+    LOAD_HELPERS_ONLY option which is set to <option>Yes</option> in the
+    samples. This causes Shorewall to attempt to load the modules listed in
+    <filename>/usr/share/shorewall/helpers</filename>. In addition, it sets
+    <emphasis role="bold">sip_direct_media=0</emphasis> when loading the
+    nf_conntrack_sip module. That setting is somewhat less secure than
+    <emphasis role="bold">sip_direct_media=1</emphasis>, but it generally
+    makes VOIP through the firewall work much better.</para>
+
+    <para>The modules in <filename>/usr/share/shorewall/helpers</filename> are
+    those that are not autoloaded. If your kernel does not support module
+    autoloading and you want Shorewall to attempt to load all netfilter
+    modules that it might require, then set LOAD_HELPERS_ONLY=No. That will
+    cause Shorewall to try to load the modules listed in
+    <filename>/usr/share/shorewall/modules</filename>. That file does not set
+    <emphasis role="bold">sip_direct_media=0</emphasis>.</para>
+
+    <para>If you need to modify either
+    <filename>/usr/share/shorewall/helpers</filename> or
+    <filename>/usr/share/shorewall/modules</filename> then copy the file to
+    <filename>/etc/shorewall</filename> and modify the copy.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>Modify the setting of LOAD_HELPER_ONLY as necessary.</para>
+  </section>
+
   <section id="DNAT">
     <title>Port Forwarding (DNAT)</title>
 

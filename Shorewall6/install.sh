@@ -719,4 +719,4 @@ fi
 #
 #  Report Success
 #
-echo "shorewall6-common Version $VERSION Installed"
+echo "shorewall6 Version $VERSION Installed"

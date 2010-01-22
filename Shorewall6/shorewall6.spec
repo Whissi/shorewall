@@ -84,6 +84,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/lib.cli
 %attr(0644,root,root) /usr/share/shorewall6/macro.*
 %attr(0644,root,root) /usr/share/shorewall6/modules
+%attr(0644,root,root) /usr/share/shorewall6/helpers
 %attr(0644,root,root) /usr/share/shorewall6/configpath
 %attr(0755,root,root) /usr/share/shorewall6/wait4ifup
 
@@ -97,6 +98,7 @@ fi
 %changelog
 * Fri Jan 22 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.7-0Beta2
+- Added helpers file
 * Sun Jan 17 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.7-0Beta1
 * Wed Jan 13 2010 Tom Eastep tom@shorewall.net

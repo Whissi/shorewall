@@ -1962,7 +1962,7 @@ sub load_kernel_modules( ) {
 
     my @moduledirectories = split /:/, $modulesdir;
 
-    if ( $moduleloader && open_file $config{LOAD_HELPERS_ONLY} ? 'helpers' : 'modules' ) {
+    if ( $moduleloader && open_file( $config{LOAD_HELPERS_ONLY} ? 'helpers' : 'modules' ) ) {
 	my %loadedmodules;
 
 	$loadedmodules{$_}++ for split_list( $config{DONT_LOAD}, 'module' );

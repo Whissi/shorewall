@@ -62,8 +62,8 @@
 
       <listitem>
         <para>As a consequence of the first difference, routers can be
-        connected to more than one IP network while a bridge may be part of
-        only a single network.</para>
+        connected to more than one IP network while a bridge/firewall may be
+        part of only a single network (see below).</para>
       </listitem>
 
       <listitem>
@@ -650,7 +650,7 @@ br0             192.168.1.0/24  routeback
     port to have a unique name. The <option>physical</option> interface option
     was added in Shorewall 4.4.4 to work around this problem. The above
     configuration may be defined using the following in
-    <filename>/etc/shorewall/interfaces</filename>: </para>
+    <filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>       #ZONE            INTERFACE       BROADCAST       OPTIONS
        world            br0             -               bridge

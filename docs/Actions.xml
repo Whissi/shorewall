@@ -131,9 +131,9 @@ ACCEPT   -              -               tcp     135,139,445
 
     <para>Shorewall allows the association of a <firstterm>default
     action</firstterm> with policies. A separate default action may be
-    associated with ACCEPT, DROP and REJECT policies. Default actions provide
-    a way to invoke a set of common rules just before the policy is enforced.
-    Default actions accomplish two goals:</para>
+    associated with ACCEPT, DROP, REJECT, QUEUE and NFQUEUE policies. Default
+    actions provide a way to invoke a set of common rules just before the
+    policy is enforced. Default actions accomplish two goals:</para>
 
     <orderedlist>
       <listitem>
@@ -166,12 +166,12 @@ ACCEPT   -              -               tcp     135,139,445
     specifying a different action in the POLICY column of <filename><ulink
     url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink></filename>.</para>
 
-    <warning>
+    <important>
       <para>Entries in the DROP and REJECT default actions <emphasis
       role="bold">ARE NOT THE CAUSE OF CONNECTION PROBLEMS</emphasis>.
       Remember — default actions are only invoked immediately before the
       packet is going to be dropped or rejected anyway!!!</para>
-    </warning>
+    </important>
   </section>
 
   <section id="Defining">
@@ -219,7 +219,7 @@ ACCEPT   -              -               tcp     135,139,445
     <itemizedlist>
       <listitem>
         <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, CONTINUE, QUEUE or
-        &lt;<emphasis>action</emphasis>&gt; where
+        an &lt;<emphasis>action</emphasis>&gt; where
         &lt;<emphasis>action</emphasis>&gt; is a previously-defined action
         (that is, it must precede the action being defined in this file in
         your <filename>/etc/shorewall/actions</filename> file). These actions
@@ -257,10 +257,6 @@ ACCEPT   -              -               tcp     135,139,445
       <listitem>
         <para>DEST - Location of Server. Same as above with the exception that
         MAC addresses are not allowed.</para>
-
-        <para>Unlike in the SOURCE column, you may specify a range of up to
-        256 IP addresses using the syntax &lt;<emphasis>first
-        ip</emphasis>&gt;-&lt;<emphasis>last ip</emphasis>&gt;.</para>
       </listitem>
 
       <listitem>
@@ -281,23 +277,6 @@ ACCEPT   -              -               tcp     135,139,445
         <para>This column is ignored if PROTO = <quote>all</quote>, but must
         be entered if any of the following fields are supplied. In that case,
         it is suggested that this field contain <quote>-</quote>.</para>
-
-        <para>If your kernel contains multi-port match support, then only a
-        single Netfilter rule will be generated if in this list and in the
-        CLIENT PORT(S) list below:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>There are 15 or less ports listed.</para>
-          </listitem>
-
-          <listitem>
-            <para>No port ranges are included.</para>
-          </listitem>
-        </orderedlist>
-
-        <para>Otherwise, a separate rule will be generated for each
-        port.</para>
       </listitem>
 
       <listitem>
@@ -308,23 +287,6 @@ ACCEPT   -              -               tcp     135,139,445
         <para>If you don't want to restrict client ports but need to specify
         any of the subsequent fields, then place <quote>-</quote> in this
         column.</para>
-
-        <para>If your kernel contains multi-port match support, then only a
-        single Netfilter rule will be generated if in this list and in the
-        DEST PORT(S) list above:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>There are 15 or less ports listed.</para>
-          </listitem>
-
-          <listitem>
-            <para>No port ranges are included.</para>
-          </listitem>
-        </orderedlist>
-
-        <para>Otherwise, a separate rule will be generated for each
-        port.</para>
       </listitem>
 
       <listitem>
@@ -541,8 +503,13 @@ bar:debug</programlisting>
 
       <para>/etc/shorewall/action.DropBcasts<programlisting># This file is empty</programlisting>/etc/shorewall/DropBcasts<programlisting>use Shorewall::Chains;
 
-log_rule_limit( $level, $chainref, 'DropBcasts', 'DROP', '', $tag, 'add', '' ) if $level ne ''; 
-add_rule( $chainref, '-m pkttype --pkttype broadcast -j DROP' );
+if ( $level ne '' ) {
+    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
+    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
+}
+
+add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
+add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
 
 1;</programlisting></para>
     </example>

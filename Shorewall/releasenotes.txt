@@ -1,4 +1,4 @@
-Shorewall 4.4.7 - Beta 3.
+Shorewall 4.4.7 - Beta 4.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -278,7 +278,10 @@ None.
     For new users that employ the sample configurations,
     LOAD_HELPERS_ONLY=Yes will be the default. That setting causes only
     a small subset of modules to be loaded; it is assumed that the
-    remaining modules will be autoloaded.
+    remaining modules will be autoloaded. Additionally, capability
+    detection in the compiler is deferred until each capability is
+    actually used. As a consequence, no modules are autoloaded
+    unnecessarily.
 
     Modules loaded when LOAD_HELPERS_ONLY=Yes are:
 

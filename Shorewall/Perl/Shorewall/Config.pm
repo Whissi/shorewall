@@ -102,7 +102,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       get_configuration
 				       require_capability
 				       have_capability
-				       set_capability
 				       report_capabilities
 				       propagateconfig
 				       append_file
@@ -196,6 +195,10 @@ our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ON
 #
 our %capabilities;
 #
+# Detection functions
+#
+our %detect_capability;
+#
 # Capabilities
 #
 our %capdesc = ( NAT_ENABLED     => 'NAT',
@@ -281,6 +284,10 @@ our $toolNAME;                # Tool name in CAPS
 our $product;                 # Name of product that will run the generated script
 our $Product;                 # $product with initial cap.
 
+our $sillyname;               # Name of temporary filter chains for testing capabilities
+our $sillyname1;
+our $iptables;                # Path to iptables/ip6tables
+
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
 	       F_IPV4 => 4,
@@ -320,6 +327,7 @@ sub initialize( $ ) {
     $indent        = '';       # Current total indentation
     ( $dir, $file ) = ('',''); # Script's Directory and Filename
     $tempfile = '';            # Temporary File Name
+    $sillyname = '';           # Temporary ipchain
 
     #
     # Misc Globals
@@ -728,6 +736,17 @@ sub cleanup() {
     unlink ( $tempfile ), $tempfile = undef             if $tempfile;
     unlink ( $perlscriptname ), $perlscriptname = undef if $perlscriptname;
     unlink ( @tempfiles ), @tempfiles = ()              if @tempfiles;
+    #
+    # Delete termprary chains
+    #
+    if ( $sillyname ) {
+	qt1( "$iptables -F $sillyname" );
+	qt1( "$iptables -X $sillyname" );
+	qt1( "$iptables -F $sillyname1" );
+	qt1( "$iptables -X $sillyname1" );
+	qt1( "$iptables -t mangle -F $sillyname" );
+	qt1( "$iptables -t mangle -X $sillyname" );
+    }
 }
 
 #
@@ -2030,133 +2049,197 @@ sub determine_kernelversion() {
     }
 }
 
+sub detect_capability( $ ) {
+    my $capability = shift;
+    $detect_capability{ $capability }->();
+}
+
 #
-# Determine which optional facilities are supported by iptables/netfilter
+# Report the passed capability
 #
-sub determine_capabilities( $ ) {
+sub have_capability( $ ) {
+    my $capability = shift;
 
-    my $iptables   = $_[0];
-    my $pid        = $$;
-    my $sillyname  = "fooX$pid";
-    my $sillyname1 = "foo1X$pid";
+    $capabilities{ $capability } = detect_capability( $capability ) unless defined $capabilities{ $capability };
 
-    $capabilities{NAT_ENABLED}    = qt1( "$iptables -t nat -L -n" ) if $family == F_IPV4;
+    $capabilities{ $capability }; 
+}
 
-    if ( $capabilities{NAT_ENABLED} ) {
-	if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	    $capabilities{PERSISTENT_SNAT} = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
-	    qt1( "$iptables -t nat -F $sillyname" );
-	    qt1( "$iptables -t nat -X $sillyname" );
-	}
+sub Nat_Enabled() {
+    $family == F_IPV4 ? qt1( "$iptables -t nat -L -n" ) : '';
+}
+
+sub Persistent_Snat() {
+    have_capability 'NAT_ENABLED' || return '';
+
+    if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
+	$capabilities{PERSISTENT_SNAT} = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
+	qt1( "$iptables -t nat -F $sillyname" );
+	qt1( "$iptables -t nat -X $sillyname" );
     }
+}
 
-    $capabilities{MANGLE_ENABLED} = qt1( "$iptables -t mangle -L -n" );
+sub Mangle_Enabled() {
+    if ( qt1( "$iptables -t mangle -L -n" ) ) { 
+	system( "$iptables -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
+    }
+}
 
-    qt1( "$iptables -N $sillyname" );
-    qt1( "$iptables -N $sillyname1" );
-
-    fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
-	unless qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");
-
+sub Conntrack_Match() {
     if ( $family == F_IPV4 ) {
-	$capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+	qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
     } else {
-	$capabilities{CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack --ctorigdst ::1 -j ACCEPT" );
+	qt1( "$iptables -A $sillyname -m conntrack --ctorigdst ::1 -j ACCEPT" );
     }
+}
 
-    if ( $capabilities{CONNTRACK_MATCH} ) {
-	$capabilities{NEW_CONNTRACK_MATCH} = qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
-	$capabilities{OLD_CONNTRACK_MATCH} = ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdst 1.2.3.4" );
-    }
+sub New_Conntrack_Match() {
+    have_capability 'CONNTRACK_MATCH' && qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
+}
 
-    if ( qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" ) ) {
-	$capabilities{MULTIPORT}  = 1;
-	$capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
-    }
+sub Old_Conntrack_Match() {
+    ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdst 1.2.3.4" );
+}
 
-    $capabilities{XMULTIPORT}      = qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
-    $capabilities{POLICY_MATCH}    = qt1( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
+sub Multiport() {
+    qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" );
+}
 
-    if ( qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" ) ) {
-	$capabilities{PHYSDEV_MATCH}  = 1;
-	$capabilities{PHYSDEV_BRIDGE} = qt1( "$iptables -A $sillyname -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth1 -j ACCEPT" );
-	unless ( $capabilities{KLUDGEFREE} ) {
-	    $capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
-	}
-    }
+sub Kludgefree1() {
+    have_capability 'MULTIPORT' && qt1( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
+}
 
+sub Kludgefree2() {
+    have_capability 'PHYSDEV_MATCH' && qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
+}
+
+sub Kludgefree3() {
     if ( $family == F_IPV4 ) {
-	if ( qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" ) ) {
-	    $capabilities{IPRANGE_MATCH} = 1;
-	    unless ( $capabilities{KLUDGEFREE} ) {
-		$capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
-	    }
-	}
+	qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
     } else {
-	if ( qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -j ACCEPT" ) ) {
-	    $capabilities{IPRANGE_MATCH} = 1;
-	    unless ( $capabilities{KLUDGEFREE} ) {
-		$capabilities{KLUDGEFREE} = qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
-	    }
-	}
+	qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
     }
+}
 
-    $capabilities{RECENT_MATCH} = qt1( "$iptables -A $sillyname -m recent --update -j ACCEPT" );
-    $capabilities{OWNER_MATCH}  = qt1( "$iptables -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
+sub Kludgefree() {
+    Kludgefree1 || Kludgefree2 || Kludgefree3;
+}
 
-    if ( qt1( "$iptables -A $sillyname -m connmark --mark 2  -j ACCEPT" )) {
-	$capabilities{CONNMARK_MATCH}  = 1;
-	$capabilities{XCONNMARK_MATCH} = qt1( "$iptables -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
+sub Xmultiport() {
+    qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
+}
+
+sub Policy_Match() {
+    qt1( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
+}
+
+sub Physdev_Match() {
+    qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" );
+}
+
+sub Physdev_Bridge() {
+    qt1( "$iptables -A $sillyname -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth1 -j ACCEPT" );
+}
+
+sub IPRange_Match() {
+    if ( $family == F_IPV4 ) {
+	qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+    } else {
+	qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -j ACCEPT" );
     }
+}
 
-    $capabilities{IPP2P_MATCH}     = qt1( "$iptables -A $sillyname -p tcp -m ipp2p --edk -j ACCEPT" );
-    $capabilities{OLD_IPP2P_MATCH} = qt1( "$iptables -A $sillyname -p tcp -m ipp2p --ipp2p -j ACCEPT" ) if $capabilities{IPP2P_MATCH};
-    $capabilities{LENGTH_MATCH}    = qt1( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
-    
+sub Recent_Match() {
+    qt1( "$iptables -A $sillyname -m recent --update -j ACCEPT" );
+}
+
+sub Owner_Match() {
+    qt1( "$iptables -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
+}
+
+sub Connmark_Match() {
+    qt1( "$iptables -A $sillyname -m connmark --mark 2  -j ACCEPT" );
+}
+
+sub Xconnmark_Match() {
+    have_capability 'CONNMARK_MATCH' && qt1( "$iptables -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
+}
+
+sub Ipp2p_Match() {
+    qt1( "$iptables -A $sillyname -p tcp -m ipp2p --edk -j ACCEPT" );
+}
+
+sub Old_Ipp2p_Match() {
+    qt1( "$iptables -A $sillyname -p tcp -m ipp2p --ipp2p -j ACCEPT" ) if $capabilities{IPP2P_MATCH};
+}
+
+sub Length_Match() {
+    qt1( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
+}
+
+sub Enhanced_Reject() {
     if ( $family == F_IPV6 ) {
-	$capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-adm-prohibited" );
+	qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-adm-prohibited" );
     } else {
-	$capabilities{ENHANCED_REJECT} = qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp-host-prohibited" );
+	qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp-host-prohibited" );
     }
+}
 
-    $capabilities{COMMENTS}        = qt1( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );
+sub Comments() {
+    qt1( qq($iptables -A $sillyname -j ACCEPT -m comment --comment "This is a comment" ) );
+}
 
-    $capabilities{HASHLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+sub Hashlimit_Match() {
+    qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+}
 
-    if ( $capabilities{HASHLIMIT_MATCH} ) {
-	$capabilities{OLD_HL_MATCH} = '';
-    } else {
-	$capabilities{OLD_HL_MATCH} = qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
-	$capabilities{HASHLIMIT_MATCH} = $capabilities{OLD_HL_MATCH};
-    }
+sub Old_Hashlimit_Match() {
+    have_capability 'HASHLIMIT_MATCH' && qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+}
 
-    if  ( $capabilities{MANGLE_ENABLED} ) {
-	qt1( "$iptables -t mangle -N $sillyname" );
+sub Mark() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" );
+}
 
-	if ( qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" ) ) {
-	    $capabilities{MARK}  = 1;
-	    $capabilities{XMARK} = qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
-	    $capabilities{EXMARK} = qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
-	}
+sub Xmark() {
+    have_capability 'MARK' && qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
+}
 
-	if ( qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" ) ) {
-	    $capabilities{CONNMARK}  = 1;
-	    $capabilities{XCONNMARK} = qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
-	}
+sub Exmark() {
+    have_capability 'MARK' && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
+}
 
-	$capabilities{CLASSIFY_TARGET} = qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
-	$capabilities{IPMARK_TARGET}   = qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
-	$capabilities{TPROXY_TARGET}   = qt1( "$iptables -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
+sub Connmark() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" );
+}
 
-	qt1( "$iptables -t mangle -F $sillyname" );
-	qt1( "$iptables -t mangle -X $sillyname" );
+sub Xconnmark() {
+    have_capability 'XCONNMARK_MATCH' && have_capability 'XMARK' && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
+}
 
-	$capabilities{MANGLE_FORWARD} = qt1( "$iptables -t mangle -L FORWARD -n" );
-    }
+sub Classify_Target() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
+}
 
-    $capabilities{RAW_TABLE} = qt1( "$iptables -t raw -L -n" );
+sub IPMark_Target() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
+}
 
-    my $ipset = $config{IPSET} || 'ipset';
+sub Tproxy_Target() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
+}
+
+sub Mangle_Forward() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -L FORWARD -n" );
+}
+
+sub Raw_Table() {
+    qt1( "$iptables -t raw -L -n" );
+}
+
+sub IPSet_Match() {
+    my $ipset  = $config{IPSET} || 'ipset';
+    my $result = 0;
 
     $ipset = which $ipset unless $ipset =~ '//';
 
@@ -2166,47 +2249,208 @@ sub determine_capabilities( $ ) {
 	if ( qt( "$ipset -N $sillyname iphash" ) ) {
 	    if ( qt1( "$iptables -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
 		qt1( "$iptables -D $sillyname -m set --set $sillyname src -j ACCEPT" );
-		$capabilities{IPSET_MATCH} = 1;
+		$result = 1;
 	    }
 
 	    qt( "$ipset -X $sillyname" );
 	}
     }
 
-    $capabilities{USEPKTTYPE}      = qt1( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
-    $capabilities{ADDRTYPE}        = qt1( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
-    $capabilities{TCPMSS_MATCH}    = qt1( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
-    $capabilities{NFQUEUE_TARGET}  = qt1( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
-    $capabilities{REALM_MATCH}     = qt1( "$iptables -A $sillyname -m realm --realm 1" );
-    $capabilities{HELPER_MATCH}    = qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
-    $capabilities{CONNLIMIT_MATCH} = qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
-    $capabilities{TIME_MATCH}      = qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
-    $capabilities{GOTO_TARGET}     = qt1( "$iptables -A $sillyname -g $sillyname1" );
-    $capabilities{LOG_TARGET}      = qt1( "$iptables -A $sillyname -j LOG" );
-    $capabilities{LOGMARK_TARGET}  = qt1( "$iptables -A $sillyname -j LOGMARK" );
+    $result;
+}
 
-    qt1( "$iptables -F $sillyname" );
-    qt1( "$iptables -X $sillyname" );
-    qt1( "$iptables -F $sillyname1" );
-    qt1( "$iptables -X $sillyname1" );
+sub Usepkttype() {
+    qt1( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
+}
+
+sub Addrtype() {
+    qt1( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
+}
+
+sub Tcpmss_Match() {
+    qt1( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
+}
+
+sub Nfqueue_Target() {
+    qt1( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
+}
+
+sub Realm_Match() {
+    qt1( "$iptables -A $sillyname -m realm --realm 1" );
+}
+
+sub Helper_Match() {
+    qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
+}
+
+sub Connlimit_Match() {
+    qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
+}
+
+sub Time_Match() {
+    qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
+}
+
+sub Goto_Target() {
+    qt1( "$iptables -A $sillyname -g $sillyname1" );
+}
+
+sub Log_Target() {
+    qt1( "$iptables -A $sillyname -j LOG" );
+}
+
+sub Logmark_Target() {
+    qt1( "$iptables -A $sillyname -j LOGMARK" );
+}
+
+#
+# Determine which optional facilities are supported by iptables/netfilter
+#
+sub determine_capabilities( $ ) {
+
+    $iptables   = $_[0];
+    my $pid     = $$;
+    $sillyname  = "fooX$pid";
+    $sillyname1 = "foo1X$pid";
+
+    %detect_capability =
+	     ( NAT_ENABLED => \&Nat_Enabled,
+	       MANGLE_ENABLED => \&Mangle_Enabled,
+	       MULTIPORT => \&Multiport,
+	       XMULTIPORT => \&Xmultiport,
+	       CONNTRACK_MATCH => \&Conntrack_Match,
+	       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
+	       OLD_CONNTRACK_MATCH => \&Old_Conntrack_Match,
+	       USEPKTTYPE => \&Usepkttype,
+	       POLICY_MATCH => \&Policy_Match,
+	       PHYSDEV_MATCH => \&Physdev_Match,
+	       PHYSDEV_BRIDGE => \&Physdev_Bridge,
+	       LENGTH_MATCH => \&Length_Match,
+	       IPRANGE_MATCH => \&IPRange_Match,
+	       RECENT_MATCH => \&Recent_Match,
+	       OWNER_MATCH => \&Owner_Match,
+	       IPSET_MATCH => \&IPSet_Match,
+	       CONNMARK => \&Connmark,
+	       XCONNMARK => \&Xconnmark,
+	       CONNMARK_MATCH => \&Connmark_Match,
+	       XCONNMARK_MATCH => \&Xconnmark_Match,
+	       RAW_TABLE => \&Raw_Table,
+	       IPP2P_MATCH => \&Ipp2p_Match,
+	       OLD_IPP2P_MATCH => \&Old_Ipp2p_Match,
+	       CLASSIFY_TARGET => \&Classify_Target,
+	       ENHANCED_REJECT => \&Enhanced_Reject,
+	       KLUDGEFREE => \&Kludgefree,
+	       MARK => \&Mark,
+	       XMARK => \&Xmark,
+	       EXMARK => \&Exmark,
+	       MANGLE_FORWARD => \&Mangle_Forward,
+	       COMMENTS => \&Comments,
+	       ADDRTYPE => \&Addrtype,
+	       TCPMSS_MATCH => \&Tcpmss_Match,
+	       HASHLIMIT_MATCH => \&Hashlimit_Match,
+	       NFQUEUE_TARGET => \&Nfqueue_Target,
+	       REALM_MATCH => \&Realm_Match,
+	       HELPER_MATCH => \&Helper_Match,
+	       CONNLIMIT_MATCH => \&Connlimit_Match,
+	       TIME_MATCH => \&Time_Match,
+	       GOTO_TARGET => \&Goto_Target,
+	       LOGMARK_TARGET => \&Logmark_Target,
+	       IPMARK_TARGET => \&IPMark_Target,
+	       TPROXY_TARGET => \&Tproxy_Target,
+	       LOG_TARGET => \&Log_Target,
+	       PERSISTENT_SNAT => \&Persistent_Snat,
+	       OLD_HL_MATCH => \&Old_Hashlimit_Match,
+	       );
+
+    qt1( "$iptables -N $sillyname" );
+    qt1( "$iptables -N $sillyname1" );
+
+    fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
+	unless qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");
+  
+    unless ( $config{ LOAD_HELPERS_ONLY } ) {
+	$capabilities{NAT_ENABLED}     = Nat_Enabled;
+	$capabilities{PERSISTENT_SNAT} = Persistent_Snat;
+	$capabilities{MANGLE_ENABLED}  = Mangle_Enabled;
+	
+	if ( $capabilities{CONNTRACK_MATCH} = Conntrack_Match ) {
+	    $capabilities{NEW_CONNTRACK_MATCH} = New_Conntrack_Match;
+	    $capabilities{OLD_CONNTRACK_MATCH} = Old_Conntrack_Match;
+	} else {
+	    $capabilities{NEW_CONNTRACK_MATCH} = '';
+	    $capabilities{OLD_CONNTRACK_MATCH} = '';
+	}
+
+	if ( $capabilities{ MULTIPORT } = Multiport ) {
+	     $capabilities{KLUDGEFREE}  = Kludgefree1;
+	}
+
+	$capabilities{XMULTIPORT}   = Xmultiport; 
+	$capabilities{POLICY_MATCH} = Policy_Match();
+
+	if ( $capabilities{PHYSDEV_MATCH} = Physdev_Match ) {
+	    $capabilities{PHYSDEV_BRIDGE} = Physdev_Bridge;
+	    $capabilities{KLUDGEFREE}   ||= Kludgefree2;
+	} else {
+	    $capabilities{PHYSDEV_BRIDGE} = '';
+	}
+
+	if ( $capabilities{IPRANGE_MATCH} = IPRange_Match() ) {
+	    $capabilities{KLUDGEFREE}   ||= Kludgefree3;
+	}
+
+	$capabilities{RECENT_MATCH}    = Recent_Match;
+	$capabilities{OWNER_MATCH}     = Owner_Match;
+	$capabilities{CONNMARK_MATCH}  = Connmark_Match;
+	$capabilities{XCONNMARK_MATCH} = Xconnmark_Match;
+	$capabilities{IPP2P_MATCH}     = Ipp2p_Match;
+	$capabilities{OLD_IPP2P_MATCH} = Old_Ipp2p_Match;
+	$capabilities{LENGTH_MATCH}    = Length_Match;
+	$capabilities{ENHANCED_REJECT} = Enhanced_Reject;
+	$capabilities{COMMENTS}        = Comments;
+	$capabilities{HASHLIMIT_MATCH} = Hashlimit_Match;
+	$capabilities{OLD_HL_MATCH}    = Old_Hashlimit_Match;
+	$capabilities{MARK}            = Mark;
+	$capabilities{XMARK}           = Xmark;
+	$capabilities{EXMARK}          = Exmark;
+	$capabilities{CONNMARK}        = Connmark;
+	$capabilities{XCONNMARK}       = Xconnmark;
+	$capabilities{CLASSIFY_TARGET} = Classify_Target;
+	$capabilities{IPMARK_TARGET}   = IPMark_Target;
+	$capabilities{TPROXY_TARGET}   = Tproxy_Target;
+
+	if ( $capabilities{MANGLE_ENABLED} ) {
+	    qt1( "$iptables -t mangle -F $sillyname" );
+	    qt1( "$iptables -t mangle -X $sillyname" );
+	}
+
+	$capabilities{MANGLE_FORWARD}  = Mangle_Forward;
+	$capabilities{RAW_TABLE}       = Raw_Table;
+	$capabilities{IPSET_MATCH}     = IPSet_Match;
+	$capabilities{USEPKTTYPE}      = Usepkttype;
+	$capabilities{ADDRTYPE}        = Addrtype;
+	$capabilities{TCPMSS_MATCH}    = Tcpmss_Match;
+	$capabilities{NFQUEUE_TARGET}  = Nfqueue_Target;
+	$capabilities{REALM_MATCH}     = Realm_Match;
+	$capabilities{HELPER_MATCH}    = Helper_Match;
+	$capabilities{CONNLIMIT_MATCH} = Connlimit_Match;
+	$capabilities{TIME_MATCH}      = Time_Match;
+	$capabilities{GOTO_TARGET}     = Goto_Target;
+	$capabilities{LOG_TARGET}      = Log_Target;
+	$capabilities{LOGMARK_TARGET}  = Logmark_Target;
+
+
+	qt1( "$iptables -F $sillyname" );
+	qt1( "$iptables -X $sillyname" );
+	qt1( "$iptables -F $sillyname1" );
+	qt1( "$iptables -X $sillyname1" );
+
+	$sillyname = $sillyname1 = undef;
+    }
 
     $capabilities{CAPVERSION} = $globals{CAPVERSION};
 
     determine_kernelversion;
-}
-
-#
-# Report the passed capability
-#
-sub have_capability( $ ) {
-    $capabilities{$_[0]};
-}
-
-#
-# Set the passed capability
-#
-sub set_capability( $$ ) {
-    $capabilities{$_[0]} = $_[1];
 }
 
 #
@@ -2215,7 +2459,7 @@ sub set_capability( $$ ) {
 sub require_capability( $$$ ) {
     my ( $capability, $description, $singular ) = @_;
 
-    fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless $capabilities{$capability};
+    fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless have_capability $capability;
 }
 
 #
@@ -2327,6 +2571,10 @@ sub read_capabilities() {
 	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
 	$capabilities{KERNELVERSION} = 20630;
     }
+
+    for ( keys %capabilities ) {
+	$capabilities{$_} = '' unless defined $capabilities{$_};
+    }
 }
 
 #
@@ -2435,7 +2683,7 @@ sub get_configuration( $ ) {
     
     my $val;
 
-    if ( $capabilities{KERNELVERSION} < 20631 ) {
+    if ( have_capability( 'KERNELVERSION' ) < 20631 ) {
 	check_trivalue ( 'ROUTE_FILTER',  '' );
     } else {
 	$val = $config{ROUTE_FILTER};
@@ -2565,8 +2813,6 @@ sub get_configuration( $ ) {
     } else {
 	$config{ZONE2ZONE} = '2';
     }
-
-    $capabilities{XCONNMARK} = '' unless $capabilities{XCONNMARK_MATCH} and $capabilities{XMARK};
 
     default 'BLACKLIST_DISPOSITION'    , 'DROP';
 

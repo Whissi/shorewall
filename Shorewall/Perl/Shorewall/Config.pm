@@ -737,15 +737,19 @@ sub cleanup() {
     unlink ( $perlscriptname ), $perlscriptname = undef if $perlscriptname;
     unlink ( @tempfiles ), @tempfiles = ()              if @tempfiles;
     #
-    # Delete termprary chains
+    # Delete temporary chains
     #
     if ( $sillyname ) {
+	#
+	# We went through determine_capabilities()
+	#
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );
 	qt1( "$iptables -F $sillyname1" );
 	qt1( "$iptables -X $sillyname1" );
 	qt1( "$iptables -t mangle -F $sillyname" );
 	qt1( "$iptables -t mangle -X $sillyname" );
+	$sillyname = '';
     }
 }
 
@@ -2072,11 +2076,16 @@ sub Nat_Enabled() {
 sub Persistent_Snat() {
     have_capability 'NAT_ENABLED' || return '';
 
+    my $result = '';
+
     if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	$capabilities{PERSISTENT_SNAT} = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
+	$result = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
 	qt1( "$iptables -t nat -F $sillyname" );
 	qt1( "$iptables -t nat -X $sillyname" );
+	
     }
+
+    $result;
 }
 
 sub Mangle_Enabled() {

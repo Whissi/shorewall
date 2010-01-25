@@ -402,6 +402,7 @@ sub process_zone( \$ ) {
     }
 
     if ( $type eq IPSEC ) {
+	require_capability 'POLICY_MATCH' , 'IPSEC zones', '';
 	for ( @parents ) {
 	    unless ( $zones{$_}{type} == IPSEC ) {
 		set_super( $zones{$_} );
@@ -1215,6 +1216,7 @@ sub process_host( ) {
 
 	for my $option ( @options ) {
 	    if ( $option eq 'ipsec' ) {
+		require_capability 'POLICY_MATCH' , q(The 'ipsec' option), 's';
 		$type = IPSEC;
 		$zoneref->{options}{complex} = 1;
 		$ipsec = 1;
@@ -1273,8 +1275,6 @@ sub validate_hosts_file()
     first_entry "$doing $fn...";
 
     $ipsec |= process_host while read_a_line;
-
-    require_capability( 'POLICY_MATCH', 'ipsec zones or hosts', '' ) if $have_ipsec = $ipsec || haveipseczones;
 
 }
 

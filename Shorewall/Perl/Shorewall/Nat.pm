@@ -159,7 +159,7 @@ sub process_one_masq( )
 	} else {
 	    $baserule .= do_ipsec_options $ipsec;
 	}
-    } elsif ( $capabilities{POLICY_MATCH} ) {
+    } elsif ( have_capability( 'POLICY_MATCH' ) ) {
 	$baserule .= '-m policy --pol none --dir out ';
     }
 
@@ -372,7 +372,7 @@ sub do_one_nat( $$$$$ )
 	$interface = $interfaceref->{name};
     }
 
-    if ( $capabilities{POLICY_MATCH} ) {
+    if ( have_capability( 'POLICY_MATCH' ) ) {
 	$policyin = ' -m policy --pol none --dir in';
 	$policyout =  '-m policy --pol none --dir out';
     }

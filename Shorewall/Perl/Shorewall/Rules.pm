@@ -85,8 +85,8 @@ sub initialize( $ ) {
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
 sub process_tos() {
-    my $chain    = $capabilities{MANGLE_FORWARD} ? 'fortos'  : 'pretos';
-    my $stdchain = $capabilities{MANGLE_FORWARD} ? 'FORWARD' : 'PREROUTING';
+    my $chain    = have_capability( 'MANGLE_FORWARD' ) ? 'fortos'  : 'pretos';
+    my $stdchain = have_capability( 'MANGLE_FORWARD' ) ? 'FORWARD' : 'PREROUTING';
 
     my %tosoptions = ( 'minimize-delay'       => 0x10 ,
 		       'maximize-throughput'  => 0x08 ,
@@ -281,7 +281,7 @@ sub setup_blacklist() {
 	for my $hostref ( @$hosts ) {
 	    my $interface  = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network    = $hostref->[2];
 	    my $source     = match_source_net $network;
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
@@ -453,7 +453,7 @@ sub add_common_rules() {
 
     $chainref = new_standard_chain 'smurfs';
 
-    if ( $capabilities{ADDRTYPE} ) {
+    if ( have_capability( 'ADDRTYPE' ) ) {
 	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
     } else {
@@ -476,7 +476,7 @@ sub add_common_rules() {
 	add_rule_pair $chainref, '-s ff00::/10 ', 'DROP', $config{SMURF_LOG_LEVEL} if $family == F_IPV4;
     }
 
-    if ( $capabilities{ADDRTYPE} ) {
+    if ( have_capability( 'ADDRTYPE' ) ) {
 	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
     } else {
 	if ( $family == F_IPV4 ) {
@@ -505,7 +505,7 @@ sub add_common_rules() {
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $ipsec --dir in " : '';
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( first_chains $interface ) {
@@ -520,7 +520,7 @@ sub add_common_rules() {
     add_rule $rejectref , '-p 2 -j DROP';
     add_rule $rejectref , '-p 6 -j REJECT --reject-with tcp-reset';
 
-    if ( $capabilities{ENHANCED_REJECT} ) {
+    if ( have_capability( 'ENHANCED_REJECT' ) ) {
 	add_rule $rejectref , '-p 17 -j REJECT';
 
 	if ( $family == F_IPV4 ) {
@@ -597,7 +597,7 @@ sub add_common_rules() {
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
-	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $hostref->[1] --dir in " : '';
+	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $hostref->[1] --dir in " : '';
 
 	    for $chain ( first_chains $interface ) {
 		add_jump $filter_table->{$chain} , $target, 0, join( '', '-p tcp ', match_source_net( $hostref->[2] ), $policy );
@@ -763,7 +763,7 @@ sub setup_mac_lists( $ ) {
 	for my $hostref ( @$maclist_hosts ) {
 	    my $interface  = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $policy     = $capabilities{POLICY_MATCH} ? "-m policy --pol $ipsec --dir in " : '';
+	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $ipsec --dir in " : '';
 	    my $source     = match_source_net $hostref->[2];
 
 	    my $state = $globals{UNTRACKED} ? 'NEW,UNTRACKED' : 'NEW';
@@ -794,7 +794,7 @@ sub setup_mac_lists( $ ) {
 		if ( $level ne '' || $disposition ne 'ACCEPT' ) {
 		    my $variable = get_interface_addresses source_port_to_bridge( $interface );
 
-		    if ( $capabilities{ADDRTYPE} ) {
+		    if ( have_capability( 'ADDRTYPE' ) ) {
 			add_commands( $chainref,
 				      "for address in $variable; do",
 				      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
@@ -1416,7 +1416,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    }
 	}
 
-	$rule .= "-m conntrack --ctorigdstport $origdstports " if $capabilities{NEW_CONNTRACK_MATCH} && $origdstports;
+	$rule .= "-m conntrack --ctorigdstport $origdstports " if have_capability( 'NEW_CONNTRACK_MATCH' ) && $origdstports;
 
 	expand_rule( ensure_chain( 'filter', $chain ) ,
 		     $restriction ,
@@ -1709,7 +1709,7 @@ sub generate_matrix() {
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
-	if ( $capabilities{POLICY_MATCH} ) {
+	if ( have_capability( 'POLICY_MATCH' ) ) {
 	    #
 	    # Because policy match only matches an 'in' or an 'out' policy (but not both), we have to place the
 	    # '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
@@ -2117,11 +2117,11 @@ sub setup_mss( ) {
 	if ( "\L$clampmss" eq 'yes' ) {
 	    $option = '--clamp-mss-to-pmtu';
 	} else {
-	    $match  = "-m tcpmss --mss $clampmss: " if $capabilities{TCPMSS_MATCH};
+	    $match  = "-m tcpmss --mss $clampmss: " if have_capability( 'TCPMSS_MATCH' );
 	    $option = "--set-mss $clampmss";
 	}
 
-	$match .= '-m policy --pol none --dir out ' if $capabilities{POLICY_MATCH};
+	$match .= '-m policy --pol none --dir out ' if have_capability( 'POLICY_MATCH' );
     }
 
     my $interfaces = find_interfaces_by_option( 'mss' );
@@ -2139,14 +2139,14 @@ sub setup_mss( ) {
 	my $in_match  = '';
 	my $out_match = '';
 
-	if ( $capabilities{POLICY_MATCH} ) {
+	if ( have_capability( 'POLICY_MATCH' ) ) {
 	    $in_match  = '-m policy --pol none --dir in ';
 	    $out_match = '-m policy --pol none --dir out ';
 	}
 
 	for ( @$interfaces ) {
 	    my $mss      = get_interface_option( $_, 'mss' );
-	    my $mssmatch = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
+	    my $mssmatch = have_capability( 'TCPMSS_MATCH' ) ? "-m tcpmss --mss $mss: " : '';
 	    my $source   = match_source_dev $_;
 	    my $dest     = match_dest_dev $_;
 	    add_rule $chainref, "${dest}-p tcp --tcp-flags SYN,RST SYN ${mssmatch}${out_match}-j TCPMSS --set-mss $mss";
@@ -2249,7 +2249,7 @@ EOF
     run_stop_exit
 EOF
 
-    if ( $capabilities{NAT_ENABLED} ) {
+    if ( have_capability( 'NAT_ENABLED' ) ) {
 	emit<<'EOF';
     if [ -f ${VARDIR}/nat ]; then
         while read external interface; do

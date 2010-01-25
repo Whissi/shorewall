@@ -434,7 +434,7 @@ sub generate_script_3($) {
 	       ''
 	     );
 
-	if ( $capabilities{NAT_ENABLED} ) {
+	if ( have_capability( 'NAT_ENABLED' ) ) {
 	    emit(  'if [ -f ${VARDIR}/nat ]; then',
 		   '    while read external interface; do',
 		   '        del_ip_addr $external $interface',
@@ -773,7 +773,7 @@ sub compiler {
 	#
 	# ECN
 	#
-	setup_ecn if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+	setup_ecn if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
 	#
 	# Setup Masquerading/SNAT
 	#

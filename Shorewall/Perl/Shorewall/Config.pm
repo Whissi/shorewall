@@ -101,6 +101,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       ensure_config_path
 				       get_configuration
 				       require_capability
+				       have_capability
+				       set_capability
 				       report_capabilities
 				       propagateconfig
 				       append_file
@@ -117,7 +119,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $currentline
 				       %config
 				       %globals
-				       %capabilities
 
 		                       F_IPV4
 		                       F_IPV6
@@ -600,7 +601,7 @@ sub initialize( $ ) {
 		         LOGMARK => 'LOGMARK' );
     }
     #
-    # From parsing the capabilities file
+    # From parsing the capabilities file or capabilities detection
     #
     %capabilities =
 	     ( NAT_ENABLED => undef,
@@ -2193,6 +2194,20 @@ sub determine_capabilities( $ ) {
     $capabilities{CAPVERSION} = $globals{CAPVERSION};
 
     determine_kernelversion;
+}
+
+#
+# Report the passed capability
+#
+sub have_capability( $ ) {
+    $capabilities{$_[0]};
+}
+
+#
+# Set the passed capability
+#
+sub set_capability( $$ ) {
+    $capabilities{$_[0]} = $_[1];
 }
 
 #

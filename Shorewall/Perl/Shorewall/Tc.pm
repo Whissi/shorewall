@@ -1114,7 +1114,7 @@ sub process_tc_priority() {
 
     my $rule = do_helper( $helper ) . "-j MARK --set-mark $band";
 
-    $rule .= join('', '/', in_hex( $globals{TC_MASK} ) ) if $capabilities{EXMARK};
+    $rule .= join('', '/', in_hex( $globals{TC_MASK} ) ) if have_capability( 'EXMARK' );
 
     if ( $interface ne '-' ) {
 	fatal_error "Invalid combination of columns" unless $address eq '-' && $proto eq '-' && $ports eq '-';
@@ -1384,7 +1384,7 @@ sub setup_tc() {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
 
-	if ( $capabilities{MANGLE_FORWARD} ) {
+	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    ensure_mangle_chain 'tcfor';
 	    ensure_mangle_chain 'tcpost';
 	}
@@ -1407,7 +1407,7 @@ sub setup_tc() {
 	add_jump $mangle_table->{PREROUTING} , 'tcpre', 0, $mark_part;
 	add_jump $mangle_table->{OUTPUT} ,     'tcout', 0, $mark_part;
 
-	if ( $capabilities{MANGLE_FORWARD} ) {
+	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' );
 	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
 	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;

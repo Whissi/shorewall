@@ -86,7 +86,7 @@ sub setup_tunnels() {
 		$inchainref  = ensure_filter_chain rules_chain( ${zone}, ${fw} ), 1;
 		$outchainref = ensure_filter_chain rules_chain( ${fw}, ${zone} ), 1;
 
-		unless ( $capabilities{POLICY_MATCH} ) {
+		unless ( have_capability( 'POLICY_MATCH' ) ) {
 		    add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
 		    add_tunnel_rule $outchainref, "-p 50 $dest -j ACCEPT";
 

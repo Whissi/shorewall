@@ -130,7 +130,7 @@ sub setup_route_filtering() {
 	    emit   "fi\n";
 	}
 
-	if ( $capabilities{KERNELVERSION} < 20631 ) {
+	if ( have_capability( 'KERNELVERSION' ) < 20631 ) {
 	    emit 'echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter';
 	} elsif ( $val ne '' ) {
 	    emit "echo $val > /proc/sys/net/ipv4/conf/all/rp_filter";

@@ -770,7 +770,7 @@ sub process_action3( $$$$$ ) {
 sub dropBcast( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    if ( $capabilities{ADDRTYPE} ) {
+    if ( have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
 	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
 	    if ( $family == F_IPV4 ) {
@@ -808,7 +808,7 @@ sub dropBcast( $$$ ) {
 sub allowBcast( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    if ( $family == F_IPV4 && $capabilities{ADDRTYPE} ) {
+    if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';

@@ -381,7 +381,7 @@ sub initialize( $ ) {
 # Process a COMMENT line (in $currentline)
 #
 sub process_comment() {
-    if ( $capabilities{COMMENTS} ) {
+    if ( have_capability( 'COMMENTS' ) ) {
 	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
 	$comment =~ s/\s*$//;
     } else {
@@ -393,7 +393,7 @@ sub process_comment() {
 # Returns True if there is a current COMMENT or if COMMENTS are not available.
 #
 sub no_comment() {
-    $comment ? 1 : $capabilities{COMMENTS} ? 0 : 1;
+    $comment ? 1 : have_capability( 'COMMENTS' ) ? 0 : 1;
 }
 
 #
@@ -409,7 +409,7 @@ sub clear_comment() {
 sub macro_comment( $ ) {
     my $macro = $_[0];
 
-    $comment = $macro unless $comment || ! ( $capabilities{COMMENTS} && $config{AUTO_COMMENT} );
+    $comment = $macro unless $comment || ! ( have_capability( 'COMMENTS' ) && $config{AUTO_COMMENT} );
 }
 
 #
@@ -640,7 +640,7 @@ sub add_jump( $$$;$$$ ) {
     #
     $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
 
-    my $param = $goto_ok && $toref && $capabilities{GOTO_TARGET} ? 'g' : 'j';
+    my $param = $goto_ok && $toref && have_capability( 'GOTO_TARGET' ) ? 'g' : 'j';
 
     if ( defined $index ) {
 	assert( ! $expandports );
@@ -1206,7 +1206,7 @@ sub initialize_chain_table()
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
 
-	if ( $capabilities{MANGLE_FORWARD} ) {
+	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    for my $chain qw( FORWARD POSTROUTING ) {
 		new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	    }
@@ -1640,7 +1640,7 @@ sub set_mss1( $$ ) {
     my $chainref = ensure_chain 'filter', $chain;
 
     if ( $chainref->{policy} ne 'NONE' ) {
-	my $match = $capabilities{TCPMSS_MATCH} ? "-m tcpmss --mss $mss: " : '';
+	my $match = have_capability( 'TCPMSS_MATCH' ) ? "-m tcpmss --mss $mss: " : '';
 	insert_rule1 $chainref, 0, "-p tcp --tcp-flags SYN,RST SYN ${match}-j TCPMSS --set-mss $mss"
     }
 }
@@ -1830,7 +1830,7 @@ sub do_proto( $$$;$ )
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless $capabilities{MULTIPORT};
+			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $ports ) > 15;
 			    $ports = validate_port_list $pname , $ports;
@@ -1903,7 +1903,7 @@ sub do_proto( $$$;$ )
 		    $options .= " --$_" for split /,/, $ports;
 		}
 
-		$options = $capabilities{OLD_IPP2P_MATCH} ? ' --ipp2p' : ' --edk --kazaa --gnu --dc' unless $options;
+		$options = have_capability( 'OLD_IPP2P_MATCH' ) ? ' --ipp2p' : ' --edk --kazaa --gnu --dc' unless $options;
 
 		$output .= "${proto}-m ipp2p${options} ";
 	    } else {
@@ -2007,7 +2007,7 @@ sub do_ratelimit( $$ ) {
 	require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
 
 	my $limit = "-m hashlimit ";
-	my $match = $capabilities{OLD_HL_MATCH} ? 'hashlimit' : 'hashlimit-upto';
+	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
 
 	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
@@ -2218,7 +2218,7 @@ sub match_dest_dev( $ ) {
     my $interfaceref =  known_interface( $interface );
     $interface = $interfaceref->{physical} if $interfaceref;
     if ( $interfaceref && $interfaceref->{options}{port} ) {
-	if ( $capabilities{PHYSDEV_BRIDGE} ) {
+	if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
 	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";
 	} else {
 	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
@@ -2237,7 +2237,7 @@ sub iprange_match() {
     require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
     unless ( $iprangematch ) {
 	$match = '-m iprange ';
-	$iprangematch = 1 unless $capabilities{KLUDGEFREE};
+	$iprangematch = 1 unless have_capability( 'KLUDGEFREE' );
     }
 
     $match;
@@ -2329,11 +2329,11 @@ sub match_orig_dest ( $ ) {
     my $net = $_[0];
 
     return '' if $net eq ALLIP;
-    return '' unless $capabilities{CONNTRACK_MATCH};
+    return '' unless have_capability( 'CONNTRACK_MATCH' );
 
     if ( $net =~ s/^!// ) {
 	validate_net $net, 1;
-	$capabilities{OLD_CONNTRACK_MATCH} ? "-m conntrack --ctorigdst ! $net " : "-m conntrack ! --ctorigdst $net ";
+	have_capability( 'OLD_CONNTRACK_MATCH' ) ? "-m conntrack --ctorigdst ! $net " : "-m conntrack ! --ctorigdst $net ";
     } else {
 	validate_net $net, 1;
 	$net eq ALLIP ? '' : "-m conntrack --ctorigdst $net ";
@@ -2354,7 +2354,7 @@ sub match_ipsec_in( $$ ) {
 
 	if ( $zoneref->{type} eq 'ipsec' ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
-	} elsif ( $capabilities{POLICY_MATCH} ) {
+	} elsif ( have_capability( 'POLICY_MATCH' ) ) {
 	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
 	} else {
 	    return '';
@@ -2378,7 +2378,7 @@ sub match_ipsec_out( $$ ) {
 
 	if ( $zoneref->{type} eq 'ipsec' ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
-	} elsif ( $capabilities{POLICY_MATCH} ) {
+	} elsif ( have_capability( 'POLICY_MATCH' ) ) {
 	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
 	} else {
 	    return '';
@@ -2799,7 +2799,7 @@ sub get_interface_mac( $$$ ) {
 }
 
 sub have_global_variables() {
-    $capabilities{ADDRTYPE} ? $global_variables : $global_variables | NOT_RESTORE;
+    have_capability( 'ADDRTYPE' ) ? $global_variables : $global_variables | NOT_RESTORE;
 }
 
 #
@@ -2818,7 +2818,7 @@ sub set_global_variables( $ ) {
 	emit $_ for values %interfaceaddrs;
 	emit $_ for values %interfacenets;
 
-	unless ( $capabilities{ADDRTYPE} ) {
+	unless ( have_capability( 'ADDRTYPE' ) ) {
 
 	    if ( $family == F_IPV4 ) {
 		emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
@@ -3062,7 +3062,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     }
 
     if ( $origdest ) {
-	if ( $origdest eq '-' || ! $capabilities{CONNTRACK_MATCH} ) {
+	if ( $origdest eq '-' || ! have_capability( 'CONNTRACK_MATCH' ) ) {
 	    $origdest = '';
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #
@@ -3229,10 +3229,10 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    for my $inet ( mysplit $inets ) {
 		my $source_match;
 
-		$source_match = match_source_net( $inet, $restriction ) if $capabilities{KLUDGEFREE};
+		$source_match = match_source_net( $inet, $restriction ) if have_capability( 'KLUDGEFREE' );
 
 		for my $dnet ( mysplit $dnets ) {
-		    $source_match  = match_source_net( $inet, $restriction ) unless $capabilities{KLUDGEFREE};
+		    $source_match  = match_source_net( $inet, $restriction ) unless have_capability( 'KLUDGEFREE' );
 		    my $dest_match = match_dest_net( $dnet );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 
@@ -3383,9 +3383,9 @@ sub create_netfilter_load( $ ) {
 
     my @table_list;
 
-    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
+    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -3485,9 +3485,9 @@ sub preview_netfilter_load() {
 
     my @table_list;
 
-    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
+    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -3557,7 +3557,7 @@ sub create_chainlist_reload($) {
 
     unless ( @chains ) {
 	@chains = qw( blacklst ) if $filter_table->{blacklst};
-	push @chains, 'mangle:' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+	push @chains, 'mangle:' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
 	$chains = join( ',', @chains ) if @chains;
     }
 
@@ -3677,9 +3677,9 @@ sub create_stop_load( $ ) {
 
     my @table_list;
 
-    push @table_list, 'raw'    if $capabilities{RAW_TABLE};
-    push @table_list, 'nat'    if $capabilities{NAT_ENABLED};
-    push @table_list, 'mangle' if $capabilities{MANGLE_ENABLED} && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
+    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';

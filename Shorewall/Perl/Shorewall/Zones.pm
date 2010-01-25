@@ -752,7 +752,7 @@ sub process_interface( $ ) {
     if ( defined $port && $port ne '' ) {
 	fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
-	fatal_error "Your iptables is not recent enough to support bridge ports" unless $capabilities{KLUDGEFREE};
+	fatal_error "Your iptables is not recent enough to support bridge ports" unless have_capability( 'KLUDGEFREE' );
 
 	fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
@@ -796,7 +796,7 @@ sub process_interface( $ ) {
 	    fatal_error 'Invalid BROADCAST address' unless $address =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
 	}
 
-	if ( $capabilities{ADDRTYPE} ) {
+	if ( have_capability( 'ADDRTYPE' ) ) {
 	    warning_message 'Shorewall no longer uses broadcast addresses in rule generation when Address Type Match is available';
 	} else {
 	    $broadcasts = \@broadcasts;
@@ -1271,7 +1271,7 @@ sub validate_hosts_file()
 
     $ipsec |= process_host while read_a_line;
 
-    $capabilities{POLICY_MATCH} = '' unless $ipsec || haveipseczones;
+    set_capability( 'POLICY_MATCH' , '' ) unless $ipsec || haveipseczones;
 }
 
 #

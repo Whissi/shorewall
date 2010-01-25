@@ -281,7 +281,7 @@ sub setup_blacklist() {
 	for my $hostref ( @$hosts ) {
 	    my $interface  = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $ipsec --dir in " : '';
+	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
 	    my $network    = $hostref->[2];
 	    my $source     = match_source_net $network;
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
@@ -505,7 +505,7 @@ sub add_common_rules() {
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $ipsec --dir in " : '';
+	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( first_chains $interface ) {
@@ -597,7 +597,7 @@ sub add_common_rules() {
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
-	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $hostref->[1] --dir in " : '';
+	    my $policy     = have_ipsec ? "-m policy --pol $hostref->[1] --dir in " : '';
 
 	    for $chain ( first_chains $interface ) {
 		add_jump $filter_table->{$chain} , $target, 0, join( '', '-p tcp ', match_source_net( $hostref->[2] ), $policy );
@@ -763,7 +763,7 @@ sub setup_mac_lists( $ ) {
 	for my $hostref ( @$maclist_hosts ) {
 	    my $interface  = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my $policy     = have_capability( 'POLICY_MATCH' ) ? "-m policy --pol $ipsec --dir in " : '';
+	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
 	    my $source     = match_source_net $hostref->[2];
 
 	    my $state = $globals{UNTRACKED} ? 'NEW,UNTRACKED' : 'NEW';
@@ -1709,7 +1709,7 @@ sub generate_matrix() {
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
-	if ( have_capability( 'POLICY_MATCH' ) ) {
+	if ( have_ipsec ) {
 	    #
 	    # Because policy match only matches an 'in' or an 'out' policy (but not both), we have to place the
 	    # '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
@@ -2121,7 +2121,7 @@ sub setup_mss( ) {
 	    $option = "--set-mss $clampmss";
 	}
 
-	$match .= '-m policy --pol none --dir out ' if have_capability( 'POLICY_MATCH' );
+	$match .= '-m policy --pol none --dir out ' if have_ipsec;
     }
 
     my $interfaces = find_interfaces_by_option( 'mss' );
@@ -2139,7 +2139,7 @@ sub setup_mss( ) {
 	my $in_match  = '';
 	my $out_match = '';
 
-	if ( have_capability( 'POLICY_MATCH' ) ) {
+	if ( have_ipsec ) {
 	    $in_match  = '-m policy --pol none --dir in ';
 	    $out_match = '-m policy --pol none --dir out ';
 	}

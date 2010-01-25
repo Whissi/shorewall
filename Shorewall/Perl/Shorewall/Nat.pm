@@ -150,7 +150,7 @@ sub process_one_masq( )
     # Handle IPSEC options, if any
     #
     if ( $ipsec ne '-' ) {
-	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless $globals{ORIGINAL_POLICY_MATCH};
+	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
 
 	if ( $ipsec =~ /^yes$/i ) {
 	    $baserule .= '-m policy --pol ipsec --dir out ';
@@ -159,7 +159,7 @@ sub process_one_masq( )
 	} else {
 	    $baserule .= do_ipsec_options $ipsec;
 	}
-    } elsif ( have_capability( 'POLICY_MATCH' ) ) {
+    } elsif ( have_ipsec ) {
 	$baserule .= '-m policy --pol none --dir out ';
     }
 
@@ -372,7 +372,7 @@ sub do_one_nat( $$$$$ )
 	$interface = $interfaceref->{name};
     }
 
-    if ( have_capability( 'POLICY_MATCH' ) ) {
+    if ( have_ipsec ) {
 	$policyin = ' -m policy --pol none --dir in';
 	$policyout =  '-m policy --pol none --dir out';
     }

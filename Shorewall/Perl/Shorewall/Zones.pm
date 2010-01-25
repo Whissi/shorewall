@@ -72,6 +72,7 @@ our @EXPORT = qw( NOTHING
 		  validate_hosts_file
 		  find_hosts_by_option
 		  all_ipsets
+		  have_ipsec
 		 );
 
 our @EXPORT_OK = qw( initialize );
@@ -156,6 +157,7 @@ our @bport_zones;
 our %ipsets;
 our %physical;
 our $family;
+our $have_ipsec;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -199,6 +201,7 @@ sub initialize( $ ) {
     @zones = ();
     %zones = ();
     $firewall_zone = '';
+    $have_ipsec = undef;
 
     @interfaces = ();
     %interfaces = ();
@@ -1271,7 +1274,15 @@ sub validate_hosts_file()
 
     $ipsec |= process_host while read_a_line;
 
-    set_capability( 'POLICY_MATCH' , '' ) unless $ipsec || haveipseczones;
+    require_capability( 'POLICY_MATCH', 'ipsec zones or hosts', '' ) if $have_ipsec = $ipsec || haveipseczones;
+
+}
+
+#
+# Return an indication of whether IPSEC is present
+#
+sub have_ipsec() {
+    return defined $have_ipsec ? $have_ipsec : have_capability 'POLICY_MATCH';
 }
 
 #

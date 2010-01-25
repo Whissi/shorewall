@@ -327,7 +327,6 @@ sub initialize( $ ) {
     %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    SHAREDIRPL => '/usr/share/shorewall/' ,
 		    CONFDIR =>  '/etc/shorewall',
-		    ORIGINAL_POLICY_MATCH => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
@@ -2415,8 +2414,6 @@ sub get_configuration( $ ) {
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
 
     get_capabilities( $export );
-
-    $globals{ORIGINAL_POLICY_MATCH} = $capabilities{POLICY_MATCH};
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
 	if ( defined $config{LOGRATE} ) {

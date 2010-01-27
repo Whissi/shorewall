@@ -2199,11 +2199,11 @@ sub Comments() {
 }
 
 sub Hashlimit_Match() {
-    qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+    have_capability 'OLD_HL_MATCH' || qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
 }
 
 sub Old_Hashlimit_Match() {
-    have_capability 'HASHLIMIT_MATCH' && qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+    have_capability qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
 }
 
 sub Mark() {
@@ -2417,8 +2417,8 @@ sub determine_capabilities( $ ) {
 	$capabilities{LENGTH_MATCH}    = Length_Match;
 	$capabilities{ENHANCED_REJECT} = Enhanced_Reject;
 	$capabilities{COMMENTS}        = Comments;
-	$capabilities{HASHLIMIT_MATCH} = Hashlimit_Match;
 	$capabilities{OLD_HL_MATCH}    = Old_Hashlimit_Match;
+	$capabilities{HASHLIMIT_MATCH} = Hashlimit_Match;
 	$capabilities{MARK}            = Mark;
 	$capabilities{XMARK}           = Xmark;
 	$capabilities{EXMARK}          = Exmark;

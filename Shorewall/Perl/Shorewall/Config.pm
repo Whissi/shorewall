@@ -2203,7 +2203,7 @@ sub Hashlimit_Match() {
 }
 
 sub Old_Hashlimit_Match() {
-    have_capability qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+    qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
 }
 
 sub Mark() {

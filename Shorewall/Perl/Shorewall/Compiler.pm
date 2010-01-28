@@ -629,7 +629,7 @@ sub compiler {
     #
     get_configuration( $export );
 
-    report_capabilities;
+    report_capabilities unless $config{LOAD_HELPERS_ONLY};
 
     require_capability( 'MULTIPORT'       , "Shorewall $globals{VERSION}" , 's' );
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};

@@ -2669,6 +2669,7 @@ sub get_configuration( $ ) {
     default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
 
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
+    default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 
     get_capabilities( $export );
 
@@ -2800,7 +2801,6 @@ sub get_configuration( $ ) {
     default_yes_no 'ACCOUNTING'                 , 'Yes';
     default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
-    default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 
     numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};

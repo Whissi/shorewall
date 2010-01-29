@@ -195,10 +195,6 @@ our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ON
 #
 our %capabilities;
 #
-# Detection functions
-#
-our %detect_capability;
-#
 # Capabilities
 #
 our %capdesc = ( NAT_ENABLED     => 'NAT',
@@ -2053,16 +2049,14 @@ sub determine_kernelversion() {
     }
 }
 
-sub detect_capability( $ ) {
-    my $capability = shift;
-    $detect_capability{ $capability }->();
-}
-
 #
 # Report the passed capability
 #
+sub detect_capability( $ );
+
 sub have_capability( $ ) {
     my $capability = shift;
+    our %detect_capability;
 
     $capabilities{ $capability } = detect_capability( $capability ) unless defined $capabilities{ $capability };
 
@@ -2312,6 +2306,60 @@ sub Logmark_Target() {
     qt1( "$iptables -A $sillyname -j LOGMARK" );
 }
 
+our %detect_capability =
+    ( NAT_ENABLED => \&Nat_Enabled,
+      MANGLE_ENABLED => \&Mangle_Enabled,
+      MULTIPORT => \&Multiport,
+      XMULTIPORT => \&Xmultiport,
+      CONNTRACK_MATCH => \&Conntrack_Match,
+      NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
+      OLD_CONNTRACK_MATCH => \&Old_Conntrack_Match,
+      USEPKTTYPE => \&Usepkttype,
+      POLICY_MATCH => \&Policy_Match,
+      PHYSDEV_MATCH => \&Physdev_Match,
+      PHYSDEV_BRIDGE => \&Physdev_Bridge,
+      LENGTH_MATCH => \&Length_Match,
+      IPRANGE_MATCH => \&IPRange_Match,
+      RECENT_MATCH => \&Recent_Match,
+      OWNER_MATCH => \&Owner_Match,
+      IPSET_MATCH => \&IPSet_Match,
+      CONNMARK => \&Connmark,
+      XCONNMARK => \&Xconnmark,
+      CONNMARK_MATCH => \&Connmark_Match,
+      XCONNMARK_MATCH => \&Xconnmark_Match,
+      RAW_TABLE => \&Raw_Table,
+      IPP2P_MATCH => \&Ipp2p_Match,
+      OLD_IPP2P_MATCH => \&Old_Ipp2p_Match,
+      CLASSIFY_TARGET => \&Classify_Target,
+      ENHANCED_REJECT => \&Enhanced_Reject,
+      KLUDGEFREE => \&Kludgefree,
+      MARK => \&Mark,
+      XMARK => \&Xmark,
+      EXMARK => \&Exmark,
+      MANGLE_FORWARD => \&Mangle_Forward,
+      COMMENTS => \&Comments,
+      ADDRTYPE => \&Addrtype,
+      TCPMSS_MATCH => \&Tcpmss_Match,
+      HASHLIMIT_MATCH => \&Hashlimit_Match,
+      NFQUEUE_TARGET => \&Nfqueue_Target,
+      REALM_MATCH => \&Realm_Match,
+      HELPER_MATCH => \&Helper_Match,
+      CONNLIMIT_MATCH => \&Connlimit_Match,
+      TIME_MATCH => \&Time_Match,
+      GOTO_TARGET => \&Goto_Target,
+      LOGMARK_TARGET => \&Logmark_Target,
+      IPMARK_TARGET => \&IPMark_Target,
+      TPROXY_TARGET => \&Tproxy_Target,
+      LOG_TARGET => \&Log_Target,
+      PERSISTENT_SNAT => \&Persistent_Snat,
+      OLD_HL_MATCH => \&Old_Hashlimit_Match,
+    );
+
+sub detect_capability( $ ) {
+    my $capability = shift;
+    $detect_capability{ $capability }->();
+}
+
 #
 # Determine which optional facilities are supported by iptables/netfilter
 #
@@ -2321,55 +2369,6 @@ sub determine_capabilities( $ ) {
     my $pid     = $$;
     $sillyname  = "fooX$pid";
     $sillyname1 = "foo1X$pid";
-
-    %detect_capability =
-	     ( NAT_ENABLED => \&Nat_Enabled,
-	       MANGLE_ENABLED => \&Mangle_Enabled,
-	       MULTIPORT => \&Multiport,
-	       XMULTIPORT => \&Xmultiport,
-	       CONNTRACK_MATCH => \&Conntrack_Match,
-	       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
-	       OLD_CONNTRACK_MATCH => \&Old_Conntrack_Match,
-	       USEPKTTYPE => \&Usepkttype,
-	       POLICY_MATCH => \&Policy_Match,
-	       PHYSDEV_MATCH => \&Physdev_Match,
-	       PHYSDEV_BRIDGE => \&Physdev_Bridge,
-	       LENGTH_MATCH => \&Length_Match,
-	       IPRANGE_MATCH => \&IPRange_Match,
-	       RECENT_MATCH => \&Recent_Match,
-	       OWNER_MATCH => \&Owner_Match,
-	       IPSET_MATCH => \&IPSet_Match,
-	       CONNMARK => \&Connmark,
-	       XCONNMARK => \&Xconnmark,
-	       CONNMARK_MATCH => \&Connmark_Match,
-	       XCONNMARK_MATCH => \&Xconnmark_Match,
-	       RAW_TABLE => \&Raw_Table,
-	       IPP2P_MATCH => \&Ipp2p_Match,
-	       OLD_IPP2P_MATCH => \&Old_Ipp2p_Match,
-	       CLASSIFY_TARGET => \&Classify_Target,
-	       ENHANCED_REJECT => \&Enhanced_Reject,
-	       KLUDGEFREE => \&Kludgefree,
-	       MARK => \&Mark,
-	       XMARK => \&Xmark,
-	       EXMARK => \&Exmark,
-	       MANGLE_FORWARD => \&Mangle_Forward,
-	       COMMENTS => \&Comments,
-	       ADDRTYPE => \&Addrtype,
-	       TCPMSS_MATCH => \&Tcpmss_Match,
-	       HASHLIMIT_MATCH => \&Hashlimit_Match,
-	       NFQUEUE_TARGET => \&Nfqueue_Target,
-	       REALM_MATCH => \&Realm_Match,
-	       HELPER_MATCH => \&Helper_Match,
-	       CONNLIMIT_MATCH => \&Connlimit_Match,
-	       TIME_MATCH => \&Time_Match,
-	       GOTO_TARGET => \&Goto_Target,
-	       LOGMARK_TARGET => \&Logmark_Target,
-	       IPMARK_TARGET => \&IPMark_Target,
-	       TPROXY_TARGET => \&Tproxy_Target,
-	       LOG_TARGET => \&Log_Target,
-	       PERSISTENT_SNAT => \&Persistent_Snat,
-	       OLD_HL_MATCH => \&Old_Hashlimit_Match,
-	       );
 
     qt1( "$iptables -N $sillyname" );
     qt1( "$iptables -N $sillyname1" );
@@ -2667,7 +2666,9 @@ sub get_configuration( $ ) {
     unshift @INC, @config_path;
 
     default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
-
+    #
+    # get_capabilities requires that the true settings of these options be established
+    #
     default 'MODULE_PREFIX', 'o gz ko o.gz ko.gz';
     default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 

@@ -2050,18 +2050,9 @@ sub determine_kernelversion() {
 }
 
 #
-# Report the passed capability
+# Capability Reporting and detection.
 #
-sub detect_capability( $ );
-
-sub have_capability( $ ) {
-    my $capability = shift;
-    our %detect_capability;
-
-    $capabilities{ $capability } = detect_capability( $capability ) unless defined $capabilities{ $capability };
-
-    $capabilities{ $capability }; 
-}
+sub have_capability( $ );
 
 sub Nat_Enabled() {
     $family == F_IPV4 ? qt1( "$iptables -t nat -L -n" ) : '';
@@ -2357,7 +2348,22 @@ our %detect_capability =
 
 sub detect_capability( $ ) {
     my $capability = shift;
-    $detect_capability{ $capability }->();
+    my $function = $detect_capability{ $capability };
+
+    assert( ( reftype( $function ) || '' ) eq 'CODE' );
+    $function->();
+}
+
+#
+# Report the passed capability
+#
+sub have_capability( $ ) {
+    my $capability = shift;
+    our %detect_capability;
+
+    $capabilities{ $capability } = detect_capability( $capability ) unless defined $capabilities{ $capability };
+
+    $capabilities{ $capability }; 
 }
 
 #
@@ -2367,6 +2373,11 @@ sub determine_capabilities( $ ) {
 
     $iptables   = $_[0];
     my $pid     = $$;
+
+    $capabilities{CAPVERSION} = $globals{CAPVERSION};
+
+    determine_kernelversion;
+
     $sillyname  = "fooX$pid";
     $sillyname1 = "foo1X$pid";
 
@@ -2377,75 +2388,79 @@ sub determine_capabilities( $ ) {
 	unless qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");
   
     unless ( $config{ LOAD_HELPERS_ONLY } ) {
-	$capabilities{NAT_ENABLED}     = Nat_Enabled;
-	$capabilities{PERSISTENT_SNAT} = Persistent_Snat;
-	$capabilities{MANGLE_ENABLED}  = Mangle_Enabled;
+	#
+	# Using 'detect_capability()' is a bit less efficient than calling the individual detection
+	# functions but it ensures that %detect_capability is initialized properly.
+	#
+	$capabilities{NAT_ENABLED}     = detect_capability( 'NAT_ENABLED' );
+	$capabilities{PERSISTENT_SNAT} = detect_capability( 'PERSISTENT_SNAT' );
+	$capabilities{MANGLE_ENABLED}  = detect_capability( 'MANGLE_ENABLED' );
 	
-	if ( $capabilities{CONNTRACK_MATCH} = Conntrack_Match ) {
-	    $capabilities{NEW_CONNTRACK_MATCH} = New_Conntrack_Match;
-	    $capabilities{OLD_CONNTRACK_MATCH} = Old_Conntrack_Match;
+	if ( $capabilities{CONNTRACK_MATCH} = detect_capability( 'CONNTRACK_MATCH' ) ) {
+	    $capabilities{NEW_CONNTRACK_MATCH} = detect_capability( 'NEW_CONNTRACK_MATCH' );
+	    $capabilities{OLD_CONNTRACK_MATCH} = detect_capability( 'OLD_CONNTRACK_MATCH' );
 	} else {
 	    $capabilities{NEW_CONNTRACK_MATCH} = '';
 	    $capabilities{OLD_CONNTRACK_MATCH} = '';
 	}
 
-	if ( $capabilities{ MULTIPORT } = Multiport ) {
+	if ( $capabilities{ MULTIPORT } = detect_capability( 'MULTIPORT' ) ) {
 	     $capabilities{KLUDGEFREE}  = Kludgefree1;
 	}
 
-	$capabilities{XMULTIPORT}   = Xmultiport; 
-	$capabilities{POLICY_MATCH} = Policy_Match();
+	$capabilities{XMULTIPORT}   = detect_capability( 'XMULTIPORT' ); 
+	$capabilities{POLICY_MATCH} = detect_capability( 'POLICY_MATCH' );
 
-	if ( $capabilities{PHYSDEV_MATCH} = Physdev_Match ) {
-	    $capabilities{PHYSDEV_BRIDGE} = Physdev_Bridge;
+	if ( $capabilities{PHYSDEV_MATCH} = detect_capability( 'PHYSDEV_MATCH' ) ) {
+	    $capabilities{PHYSDEV_BRIDGE} = detect_capability( 'PHYSDEV_BRIDGE' );
 	    $capabilities{KLUDGEFREE}   ||= Kludgefree2;
 	} else {
 	    $capabilities{PHYSDEV_BRIDGE} = '';
 	}
 
-	if ( $capabilities{IPRANGE_MATCH} = IPRange_Match() ) {
+	if ( $capabilities{IPRANGE_MATCH} = detect_capability( 'IPRANGE_MATCH' ) ) {
 	    $capabilities{KLUDGEFREE}   ||= Kludgefree3;
 	}
 
-	$capabilities{RECENT_MATCH}    = Recent_Match;
-	$capabilities{OWNER_MATCH}     = Owner_Match;
-	$capabilities{CONNMARK_MATCH}  = Connmark_Match;
-	$capabilities{XCONNMARK_MATCH} = Xconnmark_Match;
-	$capabilities{IPP2P_MATCH}     = Ipp2p_Match;
-	$capabilities{OLD_IPP2P_MATCH} = Old_Ipp2p_Match;
-	$capabilities{LENGTH_MATCH}    = Length_Match;
-	$capabilities{ENHANCED_REJECT} = Enhanced_Reject;
-	$capabilities{COMMENTS}        = Comments;
-	$capabilities{OLD_HL_MATCH}    = Old_Hashlimit_Match;
-	$capabilities{HASHLIMIT_MATCH} = Hashlimit_Match;
-	$capabilities{MARK}            = Mark;
-	$capabilities{XMARK}           = Xmark;
-	$capabilities{EXMARK}          = Exmark;
-	$capabilities{CONNMARK}        = Connmark;
-	$capabilities{XCONNMARK}       = Xconnmark;
-	$capabilities{CLASSIFY_TARGET} = Classify_Target;
-	$capabilities{IPMARK_TARGET}   = IPMark_Target;
-	$capabilities{TPROXY_TARGET}   = Tproxy_Target;
+	$capabilities{RECENT_MATCH}    = detect_capability( 'RECENT_MATCH' );
+	$capabilities{OWNER_MATCH}     = detect_capability( 'OWNER_MATCH' );
+	$capabilities{CONNMARK_MATCH}  = detect_capability( 'CONNMARK_MATCH' );
+	$capabilities{XCONNMARK_MATCH} = detect_capability( 'XCONNMARK_MATCH' );
+	$capabilities{IPP2P_MATCH}     = detect_capability( 'IPP2P_MATCH' );
+	$capabilities{OLD_IPP2P_MATCH} = detect_capability( 'OLD_IPP2P_MATCH' );
+	$capabilities{LENGTH_MATCH}    = detect_capability( 'LENGTH_MATCH' );
+	$capabilities{ENHANCED_REJECT} = detect_capability( 'ENHANCED_REJECT' );
+	$capabilities{COMMENTS}        = detect_capability( 'COMMENTS' );
+	$capabilities{OLD_HL_MATCH}    = detect_capability( 'OLD_HL_MATCH' );
+	$capabilities{HASHLIMIT_MATCH} = detect_capability( 'HASHLIMIT_MATCH' );
+	$capabilities{MARK}            = detect_capability( 'MARK' );
+	$capabilities{XMARK}           = detect_capability( 'XMARK' );
+	$capabilities{EXMARK}          = detect_capability( 'EXMARK' );
+	$capabilities{CONNMARK}        = detect_capability( 'CONNMARK' );
+	$capabilities{XCONNMARK}       = detect_capability( 'XCONNMARK' );
+	$capabilities{CLASSIFY_TARGET} = detect_capability( 'CLASSIFY_TARGET' );
+	$capabilities{IPMARK_TARGET}   = detect_capability( 'IPMARK_TARGET' );
+	$capabilities{TPROXY_TARGET}   = detect_capability( 'TPROXY_TARGET' );
 
 	if ( $capabilities{MANGLE_ENABLED} ) {
 	    qt1( "$iptables -t mangle -F $sillyname" );
 	    qt1( "$iptables -t mangle -X $sillyname" );
 	}
 
-	$capabilities{MANGLE_FORWARD}  = Mangle_Forward;
-	$capabilities{RAW_TABLE}       = Raw_Table;
-	$capabilities{IPSET_MATCH}     = IPSet_Match;
-	$capabilities{USEPKTTYPE}      = Usepkttype;
-	$capabilities{ADDRTYPE}        = Addrtype;
-	$capabilities{TCPMSS_MATCH}    = Tcpmss_Match;
-	$capabilities{NFQUEUE_TARGET}  = Nfqueue_Target;
-	$capabilities{REALM_MATCH}     = Realm_Match;
-	$capabilities{HELPER_MATCH}    = Helper_Match;
-	$capabilities{CONNLIMIT_MATCH} = Connlimit_Match;
-	$capabilities{TIME_MATCH}      = Time_Match;
-	$capabilities{GOTO_TARGET}     = Goto_Target;
-	$capabilities{LOG_TARGET}      = Log_Target;
-	$capabilities{LOGMARK_TARGET}  = Logmark_Target;
+	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
+	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
+	$capabilities{IPSET_MATCH}     = detect_capability( 'IPSET_MATCH' );
+	$capabilities{USEPKTTYPE}      = detect_capability( 'USEPKTTYPE' );
+	$capabilities{ADDRTYPE}        = detect_capability( 'ADDRTYPE' );
+	$capabilities{TCPMSS_MATCH}    = detect_capability( 'TCPMSS_MATCH' );
+	$capabilities{NFQUEUE_TARGET}  = detect_capability( 'NFQUEUE_TARGET' );
+	$capabilities{REALM_MATCH}     = detect_capability( 'REALM_MATCH' );
+	$capabilities{HELPER_MATCH}    = detect_capability( 'HELPER_MATCH' );
+	$capabilities{CONNLIMIT_MATCH} = detect_capability( 'CONNLIMIT_MATCH' );
+	$capabilities{TIME_MATCH}      = detect_capability( 'TIME_MATCH' );
+	$capabilities{GOTO_TARGET}     = detect_capability( 'GOTO_TARGET' );
+	$capabilities{LOG_TARGET}      = detect_capability( 'LOG_TARGET' );
+	$capabilities{LOGMARK_TARGET}  = detect_capability( 'LOGMARK_TARGET' );
 
 
 	qt1( "$iptables -F $sillyname" );
@@ -2455,10 +2470,6 @@ sub determine_capabilities( $ ) {
 
 	$sillyname = $sillyname1 = undef;
     }
-
-    $capabilities{CAPVERSION} = $globals{CAPVERSION};
-
-    determine_kernelversion;
 }
 
 #

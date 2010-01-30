@@ -1276,6 +1276,8 @@ sub validate_hosts_file()
 
     $ipsec |= process_host while read_a_line;
 
+    $have_ipsec = $ipsec || haveipseczones;
+
 }
 
 #

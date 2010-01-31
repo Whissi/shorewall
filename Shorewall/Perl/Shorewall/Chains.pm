@@ -1315,7 +1315,7 @@ sub optimize_chain( $ ) {
     
 	pop @$rules;
 
-	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT/;
+	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT\b/;
 
 	if ( @${rules} ) {
 	    add_rule $chainref, '-j ACCEPT';
@@ -1599,7 +1599,7 @@ sub optimize_ruleset() {
 	
 	#
 	# In this loop, we look for chains that end in an unconditional jump. If the target of the jump
-	# is subject to optimization (dont_optimize = false), the jump is replaced by target's rules.
+	# is subject to deletion (dont_delete = false), the jump is replaced by target's rules.
 	#
 	$progress = 1;
 

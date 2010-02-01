@@ -1480,7 +1480,7 @@ sub conditionally_move_rules( $$ ) {
 # The passed chain is branched to with a rule containing '-s'. If the chain has any rule that also contains '-s' then
 # mark the chain as "don't optimize".
 #
-sub check_dnat_optimization( $ ) {
+sub check_optimization( $ ) {
 
     if ( $config{OPTIMIZE} & 4 ) {
 	my $chainref = shift;

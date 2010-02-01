@@ -1862,6 +1862,7 @@ sub generate_matrix() {
 			    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
 			    #
 			    add_jump $preroutingref, source_exclusion( $exclusions, $dnatref), 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
+			    check_optimization( $dnatref ) if $source;
 			}
 
 			if ( $notrackref->{referenced} ) {
@@ -1871,6 +1872,7 @@ sub generate_matrix() {
 			    #
 			    add_jump $raw_table->{PREROUTING}, source_exclusion( $exclusions, $notrackref), 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
 			}
+
 			#
 			# If this zone has parents with DNAT/REDIRECT or notrack rules and there are no CONTINUE polcies with this zone as the source
 			# then add a RETURN jump for this source network.

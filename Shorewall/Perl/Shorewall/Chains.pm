@@ -117,6 +117,7 @@ our %EXPORT_TAGS = (
 				       ensure_filter_chain
 				       finish_section
 				       optimize_chain
+				       check_optimization
 				       optimize_ruleset
 				       setup_zone_mss
 				       newexclusionchain
@@ -1473,6 +1474,23 @@ sub conditionally_move_rules( $$ ) {
 	    1;
 	}
     }
+}
+
+#
+# The passed chain is branched to with a rule containing '-s'. If the chain has any rule that also contains '-s' then
+# mark the chain as "don't optimize".
+#
+sub check_dnat_optimization( $ ) {
+
+    if ( $config{OPTIMIZE} & 4 ) {
+	my $chainref = shift;
+
+	for ( @{$chainref->{rules}} ) {
+	    dont_optimize $chainref, return 0 if / -s /;
+	}
+    }
+
+    1;
 }
 
 #

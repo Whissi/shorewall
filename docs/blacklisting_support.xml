@@ -156,8 +156,13 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
   <section id="Dynamic">
     <title>Dynamic Blacklisting</title>
 
-    <para>Dynamic blacklisting doesn't use any configuration parameters but is
-    rather controlled using /sbin/shorewall[-lite] commands:</para>
+    <para>Beginning with Shorewall 4.4.7, dynamic blacklisting is enabled by
+    setting DYNAMIC_BLACKLIST=Yes in <filename>shorewall.conf</filename>.
+    Prior to that release, the feature is always enabled.</para>
+
+    <para>Once enabled, dynamic blacklisting doesn't use any configuration
+    parameters but is rather controlled using /sbin/shorewall[-lite]
+    commands:</para>
 
     <itemizedlist>
       <listitem>

@@ -1408,7 +1408,7 @@ sub setup_tc() {
 	add_jump $mangle_table->{OUTPUT} ,     'tcout', 0, $mark_part;
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' );
+	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' ) if have_capability 'MARK';
 	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
 	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;
 	}

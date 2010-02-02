@@ -402,7 +402,6 @@ sub do_one_nat( $$$$$ )
 	    push @addresses_to_add, ( $external , $fullinterface );
 	}
     }
-
 }
 
 #

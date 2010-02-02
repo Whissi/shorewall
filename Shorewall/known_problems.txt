@@ -1,1 +1,11 @@
-There are no known problems in Shorewall 4.4.7
+1.  When optimization 4 is enabled (OPTIMIZE = 4, 5, 6 or 7), then
+    iptables-restore fails under the following circumstances.:
+
+    a) There is a zone defined in /etc/shorewall/hosts with a network
+       address other than 0.0.0.0/0.
+
+    b) There is a DNAT or REDIRECT rule that specifies an IP address
+       (host or network) in the SOURCE column.
+
+    Fix is included in commits f0d101605bc80b7151c974a14520449088db89f6
+    and d35456086320b9fffaa262dbb9c4b8c120eba85c

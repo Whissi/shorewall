@@ -1833,10 +1833,12 @@ sub generate_matrix() {
 			    my $nextchain = dest_exclusion( $exclusions, $chain1 );
 			    my $outputref;
 			    my $interfacematch = '';
+			    my $use_output = 0;
 
-			    if ( use_output_chain $interface ) {
+			    if ( use_output_chain $interface || ( @{$filter_table->{output_chain $interface}->{rules}} && ! $filter_table->{$chain1} ) ) {
 				$outputref = $filter_table->{output_chain $interface};
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
+				$use_output = 1;
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;
@@ -1847,7 +1849,7 @@ sub generate_matrix() {
 			    add_jump( $outputref , $nextchain, 0, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
 				if $hostref->{options}{broadcast};
 
-			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$chain1} ) unless use_output_chain $interface;
+			    move_rules( $filter_table->{output_chain $interface} , $filter_table->{$chain1} ) unless $use_output;
 			}
 
 			clearrule;
@@ -1884,10 +1886,12 @@ sub generate_matrix() {
 
 			my $inputchainref;
 			my $interfacematch = '';
+			my $use_input;
 
-			if ( use_input_chain $interface ) {
+			if ( use_input_chain $interface || ! $chain2 || ( @{$filter_table->{input_chain $interface}->{rules}} && ! $filter_table->{$chain2} ) ) {
 			    $inputchainref = $filter_table->{input_chain $interface};
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
+			    $use_input = 1;
 			} else {
 			    $inputchainref = $filter_table->{INPUT};
 			    $interfacematch = match_source_dev $interface;
@@ -1895,7 +1899,7 @@ sub generate_matrix() {
 
 			if ( $chain2 ) {
 			    add_jump $inputchainref, source_exclusion( $exclusions, $chain2 ), 0, join( '', $interfacematch, $source, $ipsec_in_match );
-			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$chain2} ) unless use_input_chain $interface;
+			    move_rules( $filter_table->{input_chain $interface} , $filter_table->{$chain2} ) unless $use_input;
 			}
 
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {

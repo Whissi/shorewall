@@ -451,29 +451,66 @@ sub add_common_rules() {
 
     $list = find_hosts_by_option 'nosmurfs';
 
-    $chainref = new_standard_chain 'smurfs';
+    if ( @$list ) {
+	progress_message2 'Adding Anti-smurf Rules';
 
-    if ( have_capability( 'ADDRTYPE' ) ) {
-	add_rule $chainref , '-s 0.0.0.0 -j RETURN';
-	add_rule_pair $chainref, '-m addrtype --src-type BROADCAST ', 'DROP', $config{SMURF_LOG_LEVEL} ;
-    } else {
-	if ( $family == F_IPV4 ) {
-	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
+	$chainref = new_standard_chain 'smurfs';
+    
+	my $smurfdest;
+
+	if ( defined $config{SMURF_LOG_LEVEL} && $config{SMURF_LOG_LEVEL} ne '' ) {
+	    my $smurfref = new_chain( 'filter', $smurfdest = newlogchain );
+	    
+	    log_rule_limit( $config{SMURF_LOG_LEVEL},
+			    $smurfref,
+			    'smurfs' ,
+			    'DROP',
+			    $globals{LOGLIMIT},
+			    '', 
+			    'add',
+			    '' );
+	    add_rule( $smurfref, '-j DROP' );
 	} else {
-	    add_commands $chainref, 'for address in $ALL_ACASTS; do';
+	    $smurfdest = 'DROP';
 	}
 
-	incr_cmd_level $chainref;
-	log_rule( $config{SMURF_LOG_LEVEL} , $chainref, 'DROP', '-s $address ' );
-	add_rule $chainref, '-s $address -j DROP';
-	decr_cmd_level $chainref;
-	add_commands $chainref, 'done';
-    }
+	if ( have_capability( 'ADDRTYPE' ) ) {
+	    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+	    add_jump( $chainref, $smurfdest, 1, '-m addrtype --src-type BROADCAST ' ) ;
+	} else {
+	    if ( $family == F_IPV4 ) {
+		add_commands $chainref, 'for address in $ALL_BCASTS; do';
+	    } else {
+		add_commands $chainref, 'for address in $ALL_ACASTS; do';
+	    }
+	    
+	    incr_cmd_level $chainref;
+	    add_jump( $chainref, $smurfdest, 1, '-s $address ' );
+	    decr_cmd_level $chainref;
+	    add_commands $chainref, 'done';
+	}
 
-    if ( $family == F_IPV4 ) {
-	add_rule_pair $chainref, '-s 224.0.0.0/4 ', 'DROP', $config{SMURF_LOG_LEVEL};
-    } else {
-	add_rule_pair $chainref, '-s ff00::/10 ', 'DROP', $config{SMURF_LOG_LEVEL} if $family == F_IPV4;
+	if ( $family == F_IPV4 ) {
+	    add_jump( $chainref, $smurfdest, 1, '-s 224.0.0.0/4 ' );
+	} else {
+	    add_jump( $chainref, $smurfdest, 1, '-s ff00::/10 ' );
+	}
+
+	my $state = $globals{UNTRACKED} ? 'NEW,INVALID,UNTRACKED' : 'NEW,INVALID';
+
+	for my $hostref  ( @$list ) {
+	    $interface     = $hostref->[0];
+	    my $ipsec      = $hostref->[1];
+	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
+	    my $target     = source_exclusion( $hostref->[3], $chainref );
+
+	    for $chain ( first_chains $interface ) {
+		add_jump $filter_table->{$chain} , $target, 0, join( '', "-m state --state $state ", match_source_net( $hostref->[2] ),  $policy );
+	    }
+
+	    set_interface_option $interface, 'use_input_chain', 1;
+	    set_interface_option $interface, 'use_forward_chain', 1;
+	}
     }
 
     if ( have_capability( 'ADDRTYPE' ) ) {
@@ -495,26 +532,6 @@ sub add_common_rules() {
 	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
     } else {
 	add_rule $rejectref , '-s ff00::/10 -j DROP';
-    }
-
-    if ( @$list ) {
-	progress_message2 'Adding Anti-smurf Rules';
-
-	my $state = $globals{UNTRACKED} ? 'NEW,INVALID,UNTRACKED' : 'NEW,INVALID';
-
-	for my $hostref  ( @$list ) {
-	    $interface     = $hostref->[0];
-	    my $ipsec      = $hostref->[1];
-	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
-	    my $target     = source_exclusion( $hostref->[3], $chainref );
-
-	    for $chain ( first_chains $interface ) {
-		add_jump $filter_table->{$chain} , $target, 0, join( '', "-m state --state $state ", match_source_net( $hostref->[2] ),  $policy );
-	    }
-
-	    set_interface_option $interface, 'use_input_chain', 1;
-	    set_interface_option $interface, 'use_forward_chain', 1;
-	}
     }
 
     add_rule $rejectref , '-p 2 -j DROP';

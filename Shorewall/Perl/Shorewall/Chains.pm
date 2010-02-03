@@ -41,6 +41,7 @@ our @EXPORT = qw(
 		  new_chain
 		  new_manual_chain
 		  ensure_manual_chain
+		  newlogchain
 		  log_rule_limit
 		  dont_optimize
 		  dont_delete

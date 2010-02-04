@@ -459,7 +459,7 @@ sub add_common_rules() {
 	my $smurfdest;
 
 	if ( defined $config{SMURF_LOG_LEVEL} && $config{SMURF_LOG_LEVEL} ne '' ) {
-	    my $smurfref = new_chain( 'filter', $smurfdest = newlogchain );
+	    my $smurfref = new_chain( 'filter', $smurfdest = 'smurflog' );
 	    
 	    log_rule_limit( $config{SMURF_LOG_LEVEL},
 			    $smurfref,

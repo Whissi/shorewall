@@ -475,7 +475,12 @@ sub add_common_rules() {
 	}
 
 	if ( have_capability( 'ADDRTYPE' ) ) {
-	    add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+	    if ( $family == F_IPV4 ) {
+		add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+	    } else {
+		add_rule $chainref , '-s ::' -j RETURN';
+	    }
+
 	    add_jump( $chainref, $smurfdest, 1, '-m addrtype --src-type BROADCAST ' ) ;
 	} else {
 	    if ( $family == F_IPV4 ) {

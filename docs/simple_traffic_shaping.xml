@@ -65,6 +65,21 @@
     <programlisting>#INTERFACE             TYPE          IN-BANDWIDTH
 eth0                   External</programlisting>
 
+    <note>
+      <para>If you experience an error such as the following during
+      <command>shorewall start</command> or <command>shorewall
+      restart</command>, your kernel and iproute do not support the <emphasis
+      role="bold">flow</emphasis> classifier. In that case, you must leave the
+      TYPE column empty (or specify '-').</para>
+
+      <programlisting>Unknown filter "flow", hence option "hash" is unparsable
+   ERROR: Command "tc filter add dev eth0 protocol all prio 1 parent 11: handle 11 flow hash keys nfct-src divisor 1024" Failed</programlisting>
+
+      <para>RHEL5-based systems such as <trademark>CentOS</trademark> 5 and
+      <trademark>Foobar</trademark> 5 are known to experience this
+      error.</para>
+    </note>
+
     <para>With this simple configuration, packets to be sent through interface
     eth0 will be assigned to a priority band based on the value of their TOS
     field:</para>

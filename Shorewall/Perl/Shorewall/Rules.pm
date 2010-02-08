@@ -478,7 +478,7 @@ sub add_common_rules() {
 	    if ( $family == F_IPV4 ) {
 		add_rule $chainref , '-s 0.0.0.0 -j RETURN';
 	    } else {
-		add_rule $chainref , '-s ::' -j RETURN';
+		add_rule $chainref , '-s :: -j RETURN';
 	    }
 
 	    add_jump( $chainref, $smurfdest, 1, '-m addrtype --src-type BROADCAST ' ) ;

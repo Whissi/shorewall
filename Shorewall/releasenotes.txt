@@ -209,6 +209,15 @@ Shorewall 4.4.7
     SMURF_LOG_LEVEL is specified has been improved for both IPv4 and
     IPv6.
 
+5)  Previously, specifying a TYPE in /etc/shorewall/tcinterfaces would
+    cause start/restart to fail on systems lacking 'flow' classifier
+    support. While we currently know of no safe way to test for that
+    support, in Shorewall 4.4.7 we use other hints to surmise that the
+    installed toolset is likely to be too old to support 'flow' and
+    simply ignore the TYPE setting. In particular, RHEL5 and
+    derivatives no lonter experience a startup failure when TYPE is
+    specified.
+
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

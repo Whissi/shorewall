@@ -27,6 +27,67 @@
     shaping. Simple traffic shaping is enabled by setting TC_ENABLED=Simple in
     <ulink url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
 
+    <para>A note on the <emphasis>bandwidth</emphasis> definition used in this
+    file:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>don't use a space between the integer value and the unit: 30kbit
+        is valid while 30 kbit is not.</para>
+      </listitem>
+
+      <listitem>
+        <para>you can use one of the following units:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term><emphasis role="bold">kpbs</emphasis></term>
+
+            <listitem>
+              <para>Kilobytes per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">mbps</emphasis></term>
+
+            <listitem>
+              <para>Megabytes per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">kbit</emphasis></term>
+
+            <listitem>
+              <para>Kilobits per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">mbit</emphasis></term>
+
+            <listitem>
+              <para>Megabits per second.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><emphasis role="bold">bps</emphasis> or <emphasis
+            role="bold">number</emphasis></term>
+
+            <listitem>
+              <para>Bytes per second.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </listitem>
+
+      <listitem>
+        <para>Only whole integers are allowed.</para>
+      </listitem>
+    </itemizedlist>
+
     <para>The columns in the file are as follows.</para>
 
     <variablelist>

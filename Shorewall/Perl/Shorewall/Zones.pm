@@ -923,15 +923,15 @@ sub process_interface( $ ) {
 	    $ipsets{$ipset} = 1;
 	}
 
-	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
-
 	if ( $options{bridge} ) {
 	    require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 	    fatal_error "Bridges may not have wildcard names" if $wildcard;
+	    $options{routeback} = 1;
 	}
 
-	$hostoptionsref = \%hostoptions;
+	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
 
+	$hostoptionsref = \%hostoptions;
     }
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,

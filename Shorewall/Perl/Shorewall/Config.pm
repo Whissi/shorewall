@@ -245,6 +245,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 PERSISTENT_SNAT => 'Persistent SNAT',
 		 OLD_HL_MATCH    => 'Old Hash Limit Match',
 		 TPROXY_TARGET   => 'TPROXY Target',
+		 FLOW_FILTER     => 'Flow Classifier',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -283,6 +284,7 @@ our $Product;                 # $product with initial cap.
 our $sillyname;               # Name of temporary filter chains for testing capabilities
 our $sillyname1;
 our $iptables;                # Path to iptables/ip6tables
+our $tc;                      # Path to tc
 
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
@@ -336,7 +338,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.7",
-		    CAPVERSION => 40407 ,
+		    CAPVERSION => 40408 ,
 		  );
 
     #
@@ -2297,6 +2299,10 @@ sub Logmark_Target() {
     qt1( "$iptables -A $sillyname -j LOGMARK" );
 }
 
+sub Flow_Filter() {
+    $tc && system( "$tc filter add flow add help 2>&1 | grep -q ^Usage" ) == 0;
+}
+
 our %detect_capability =
     ( ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
@@ -2307,6 +2313,7 @@ our %detect_capability =
       CONNTRACK_MATCH => \&Conntrack_Match,
       ENHANCED_REJECT => \&Enhanced_Reject,
       EXMARK => \&Exmark,
+      FLOW_FILTER => \&Flow_Filter,
       GOTO_TARGET => \&Goto_Target,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HELPER_MATCH => \&Helper_Match,
@@ -2369,9 +2376,8 @@ sub have_capability( $ ) {
 #
 # Determine which optional facilities are supported by iptables/netfilter
 #
-sub determine_capabilities( $ ) {
+sub determine_capabilities() {
 
-    $iptables   = $_[0];
     my $pid     = $$;
 
     $capabilities{CAPVERSION} = $globals{CAPVERSION};
@@ -2603,7 +2609,7 @@ sub get_capabilities( $ ) {
     my $export = $_[0];
 
     if ( ! $export && $> == 0 ) { # $> == $EUID
-	my $iptables = $config{$toolNAME};
+	$iptables = $config{$toolNAME};
 
 	if ( $iptables ) {
 	    fatal_error "$toolNAME=$iptables does not exist or is not executable" unless -x $iptables;
@@ -2615,12 +2621,18 @@ sub get_capabilities( $ ) {
 
 	fatal_error "$iptables_restore does not exist or is not executable" unless -x $iptables_restore;
 
+	$tc = $config{TC};
+
+	if ( $tc ) {
+	    fatal_error "TC=$tc does not exist or is not executable" unless -x $tc;
+	}
+
 	load_kernel_modules;
 
 	if ( open_file 'capabilities' ) {
 	    read_capabilities;
 	} else {
-	    determine_capabilities $iptables;
+	    determine_capabilities;
 	}
     } else {
 	unless ( open_file 'capabilities' ) {

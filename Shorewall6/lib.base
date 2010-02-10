@@ -33,7 +33,7 @@
 #
 
 SHOREWALL_LIBVERSION=40407
-SHOREWALL_CAPVERSION=40407
+SHOREWALL_CAPVERSION=40408
 
 [ -n "${VARDIR:=/var/lib/shorewall6}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
@@ -737,6 +737,7 @@ determine_capabilities() {
     GOTO_TARGET=
     IPMARK_TARGET=
     LOG_TARGET=Yes
+    FLOW_FILTER=
 
     chain=fooX$$
 
@@ -746,6 +747,10 @@ determine_capabilities() {
 	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
 	exit 1
     fi
+
+    [ -n "$IP" ] || IP=$(which ip)
+
+    [ -n "$IP" -a -x "$IP" ] || IP=
 
     qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
@@ -875,6 +880,8 @@ determine_capabilities() {
     qt $IP6TABLES -F $chain1
     qt $IP6TABLES -X $chain1
 
+    [ -n "$IP" ] && $IP filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+
     CAPVERSION=$SHOREWALL_CAPVERSION
     KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
 }
@@ -937,6 +944,7 @@ report_capabilities() {
 	report_capability "IPMARK Target" $IPMARK_TARGET
 	report_capability "LOG Target" $LOG_TARGET
 	report_capability "TPROXY Target" $TPROXY_TARGET
+	report_capability "FLOW Classifier" $FLOW_FILTER
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -995,6 +1003,7 @@ report_capabilities1() {
     report_capability1 IPMARK_TARGET
     report_capability1 LOG_TARGET
     report_capability1 TPROXY_TARGET
+    report_capability1 FLOW_FILTER
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION    

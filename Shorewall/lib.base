@@ -30,7 +30,7 @@
 #
 
 SHOREWALL_LIBVERSION=40407
-SHOREWALL_CAPVERSION=40407
+SHOREWALL_CAPVERSION=40408
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -784,6 +784,10 @@ determine_capabilities() {
 	exit 1
     fi
 
+    [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
+
+    [ -n "$TC" -a -x "$TC" ] || TC=
+
     qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
     qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
@@ -830,6 +834,7 @@ determine_capabilities() {
     IPMARK_TARGET=
     LOG_TARGET=Yes
     PERSISTENT_SNAT=
+    FLOW_FILTER=
 
     chain=fooX$$
 
@@ -968,6 +973,8 @@ determine_capabilities() {
     qt $IPTABLES -F $chain1
     qt $IPTABLES -X $chain1
 
+    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+
     CAPVERSION=$SHOREWALL_CAPVERSION
     KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
 }
@@ -1033,6 +1040,7 @@ report_capabilities() {
 	report_capability "LOG Target" $LOG_TARGET
 	report_capability "Persistent SNAT" $PERSISTENT_SNAT
 	report_capability "TPROXY Target" $TPROXY_TARGET
+	report_capability "FLOW Classifier" $FLOW_FILTER
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1094,6 +1102,7 @@ report_capabilities1() {
     report_capability1 LOG_TARGET
     report_capability1 PERSISTENT_SNAT
     report_capability1 TPROXY_TARGET
+    report_capability1 FLOW_FILTER
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

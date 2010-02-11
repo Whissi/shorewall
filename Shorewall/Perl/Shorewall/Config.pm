@@ -338,7 +338,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    UNTRACKED => 0,
 		    VERSION => "4.4.7",
-		    CAPVERSION => 40408 ,
+		    CAPVERSION => 40407 ,
 		  );
 
     #
@@ -655,6 +655,7 @@ sub initialize( $ ) {
 	       LOG_TARGET => 1,         # Assume that we have it.
 	       PERSISTENT_SNAT => undef,
 	       OLD_HL_MATCH => undef,
+	       FLOW_FILTER => 'default',
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2600,6 +2601,11 @@ sub read_capabilities() {
     for ( keys %capabilities ) {
 	$capabilities{$_} = '' unless defined $capabilities{$_};
     }
+
+    if ( $capabilities{FLOW_FILTER} eq 'default' ) {
+	$capabilities{FLOW_FILTER} = $capabilities{OLD_HL_MATCH} ? '' : 'Yes';
+    }
+    
 }
 
 #

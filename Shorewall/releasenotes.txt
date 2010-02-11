@@ -211,12 +211,19 @@ Shorewall 4.4.7
 
 5)  Previously, specifying a TYPE in /etc/shorewall/tcinterfaces would
     cause start/restart to fail on systems lacking 'flow' classifier
-    support. While we currently know of no safe way to test for that
-    support, in Shorewall 4.4.7 we use other hints to surmise that the
-    installed toolset is likely to be too old to support 'flow' and
-    simply ignore the TYPE setting. In particular, RHEL5 and
-    derivatives no lonter experience a startup failure when TYPE is
-    specified.
+    support. In Shorewall 4.4.7, we detect the ability of the 'tc'
+    utility to support that classifier.
+
+    There are two caveats:
+
+    - 'tc' may support 'flow' but the kernel does not. In that case,
+      start/restart will still fail.
+
+    - If you use a capabilities file, you will need to regenerate the
+      file using shorewall-lite 4.4.7 in order for 'flow' to be
+      accurately detected. If you do not regenerate the file, the
+      compiler will use other hints to try to determine if 'flow' is
+      available.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

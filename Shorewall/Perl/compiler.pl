@@ -45,7 +45,6 @@ use Shorewall::Compiler;
 use Getopt::Long;
 
 sub usage( $ ) {
-    my $returnval = shift @_;
 
     print STDERR 'usage: compiler.pl [ <option> ... ] [ <filename> ]
 
@@ -63,7 +62,7 @@ sub usage( $ ) {
     [ --family={4|6} ]
 ';
 
-    exit $returnval;
+    exit shift @_;
 }
 
 #
@@ -109,7 +108,7 @@ my $result = GetOptions('h'               => \$help,
 usage(1) unless $result && @ARGV < 2;
 usage(0) if $help;
 
-compiler( script          => defined $ARGV[0] ? $ARGV[0] : '',
+compiler( script          => $ARGV[0] || '',
 	  directory       => $shorewall_dir,
 	  verbosity       => $verbose,
 	  timestamp       => $timestamp,

@@ -95,8 +95,6 @@ fi
 - Updated to 4.4.7-1
 * Thu Feb 11 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.7-0base
-* Fri Feb 05 2010 Tom Eastep tom@shorewall.net
-- Updated to 4.4.7-0base
 * Tue Feb 02 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.7-0RC2
 * Wed Jan 27 2010 Tom Eastep tom@shorewall.net

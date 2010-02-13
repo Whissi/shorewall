@@ -1182,13 +1182,25 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # Generate Fixed part of the rule
     #
-    $rule = join( '', 
-		  do_proto($proto, $ports, $sports),
-		  do_ratelimit( $ratelimit, $basictarget ) ,
-		  do_user( $user ) ,
-		  do_test( $mark , $globals{TC_MASK} ) ,
-		  do_connlimit( $connlimit ),
-		  do_time( $time ) );
+    if ( ( $actiontype & ( NATRULE | NATONLY ) ) == NATRULE ) {
+	#
+	# Don't apply rate limiting twice
+	#
+	$rule = join( '', 
+		      do_proto($proto, $ports, $sports),
+		      do_user( $user ) ,
+		      do_test( $mark , $globals{TC_MASK} ) ,
+		      do_connlimit( $connlimit ),
+		      do_time( $time ) );
+    } else {
+	$rule = join( '', 
+		      do_proto($proto, $ports, $sports),
+		      do_ratelimit( $ratelimit, $basictarget ) ,
+		      do_user( $user ) ,
+		      do_test( $mark , $globals{TC_MASK} ) ,
+		      do_connlimit( $connlimit ),
+		      do_time( $time ) );
+    }
 
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};

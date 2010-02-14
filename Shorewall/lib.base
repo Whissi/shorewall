@@ -956,7 +956,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
     qt $IPTABLES -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
     if [ -z "$HASHLIMIT_MATCH" ]; then
-	qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && NEW_HL_MATCH=Yes
+	qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
 	HASHLIMIT_MATCH=$OLD_HL_MATCH
     fi	
     qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes

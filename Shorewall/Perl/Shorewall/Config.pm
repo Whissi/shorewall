@@ -2394,7 +2394,9 @@ sub determine_capabilities() {
     fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
 	unless qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");
   
-    unless ( $config{ LOAD_HELPERS_ONLY } ) {
+    if ( $config{ LOAD_HELPERS_ONLY } ) {
+	$capabilities{FLOW_FILTER} = undef;
+    } else {
 	#
 	# Using 'detect_capability()' is a bit less efficient than calling the individual detection
 	# functions but it ensures that %detect_capability is initialized properly.

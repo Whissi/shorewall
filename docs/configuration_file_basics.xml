@@ -1140,9 +1140,9 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     '!' to specify "All ports except these" (e.g., "!80,443").</para>
 
     <para>Prior to Shorewall 4.4.4, port lists appearing in the <ulink
-    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>
-    file may specify no more than 15 ports; port ranges appearing in a list
-    count as two ports each.</para>
+    url="manpages/shorewall-routestopped.html">shorewall-routestopped</ulink>
+    (5) file may specify no more than 15 ports; port ranges appearing in a
+    list count as two ports each.</para>
   </section>
 
   <section id="MAC">
@@ -1184,6 +1184,32 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       url="MAC_Validation.html">/etc/shorewall/maclist</ulink></filename>
       file.</para>
     </note>
+  </section>
+
+  <section id="RateLimit">
+    <title>Rate Limiting (Rate and Burst)</title>
+
+    <para>Shorewall supports rate limiting in a number of ways. When
+    specifying a rate limit, both a <firstterm>rate</firstterm> and a
+    <firstterm>burst</firstterm> value are given.</para>
+
+    <para>Example from <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5): </para>
+
+    <simplelist>
+      <member>LOGRATE=10/minute</member>
+
+      <member>LOGBURST=5</member>
+    </simplelist>
+
+    <para> For each logging rule, the first time the rule is reached, the
+    packet will be logged; in fact, since the burst is 5, the first five
+    packets will be logged. After this, it will be 6 seconds (1 minute divided
+    by the rate of 10) before a message will be logged from the rule,
+    regardless of how many packets reach it. Also, every 6 seconds which
+    passes without matching a packet, one of the bursts will be regained; if
+    no packets hit the rule for 30 seconds, the burst will be fully recharged;
+    back where we started.</para>
   </section>
 
   <section id="Logical">

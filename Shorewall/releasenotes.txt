@@ -1,4 +1,4 @@
-Shorewall 4.4.7 Patch Release 4.
+Shorewall 4.4.7 Patch Release 5.
 
 ----------------------------------------------------------------------------
                R E L E A S E  4 . 4  H I G H L I G H T S
@@ -184,8 +184,17 @@ Shorewall 4.4.7 Patch Release 4.
     one from the release (not recommended).
 
 ----------------------------------------------------------------------------
+       P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7 . 5
+----------------------------------------------------------------------------
+
+1)  A CONTINUE rule specifying a log level would cause the compiler to 
+    generate an incorrect rule sequence. The packet would be logged
+    but the CONTINUE action would not occur.
+
+----------------------------------------------------------------------------
        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7 . 4
 ----------------------------------------------------------------------------
+
 1)  The Debian init scripts are modified to include $remote_fs in the 
     Required-start and Required-stop specifications.
 

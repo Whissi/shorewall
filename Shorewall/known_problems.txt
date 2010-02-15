@@ -22,3 +22,13 @@
     specified in /etc/shorewall/tcinterfaces.
 
     Corrected in 4.4.7.3
+
+5)  A CONTINUE rule specifying a log level will cause the compiler to
+    generate an incorrect rule sequence. The packet will be logged but
+    the CONTINUE action will not occur.
+
+    To work around the problem break the rule into two rules; a logging
+    rule and a CONTINUE rule.
+
+    Corrected in 4.4.7.5.
+

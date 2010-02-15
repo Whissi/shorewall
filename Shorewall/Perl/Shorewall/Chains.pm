@@ -3256,7 +3256,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
-			    unless ( $logname ) {
+			    unless ( $logname || $disposition eq 'RETURN' ) {
 				#
 				# Find/Create a chain that both logs and applies the target action
 				# and jump to the log chain if all of the rule's conditions are met
@@ -3270,7 +3270,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 				log_rule_limit(
 					       $loglevel ,
 					       $chainref ,
-					       $logname ,
+					       $logname || $chain,
 					       $disposition ,
 					       '',
 					       $logtag,

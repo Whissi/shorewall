@@ -1,8 +1,8 @@
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          shorewall
-# Required-Start:    $network
-# Required-Stop:     $network
+# Required-Start:    $network $remote_fs
+# Required-Stop:     $network $remote_fs
 # Default-Start:     S
 # Default-Stop:      0 6
 # Short-Description: Configure the firewall at boot time

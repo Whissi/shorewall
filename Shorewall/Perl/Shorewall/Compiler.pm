@@ -75,6 +75,9 @@ sub initialize_package_globals() {
 #    Copy prog.header to the generated script.
 #    Generate the various user-exit jacket functions.
 #
+#    Note: This function is not called when $command eq 'check'. So it must have no side effects other
+#          than those related to writing to the output script file.
+#
 sub generate_script_1() {
 
     if ( $test ) {
@@ -503,6 +506,7 @@ EOF
     pop_indent;
     setup_forwarding( $family , 1 );
     push_indent;
+
     emit<<'EOF';
     set_state "Started"
     run_restored_exit
@@ -511,6 +515,7 @@ else
         chainlist_reload
 EOF
     setup_forwarding( $family , 0 );
+
     emit<<'EOF';
         run_refreshed_exit
         do_iptables -N shorewall
@@ -521,6 +526,7 @@ EOF
         conditionally_flush_conntrack
 EOF
     setup_forwarding( $family , 0 );
+
     emit<<'EOF';
         run_start_exit
         do_iptables -N shorewall
@@ -704,11 +710,11 @@ sub compiler {
 	push_indent;
     }
     #
-    # Do all of the zone-independent stuff
+    # Do all of the zone-independent stuff (mostly /proc)
     #
     add_common_rules;
     #
-    # /proc stuff
+    # More /proc
     #
     if ( $family == F_IPV4 ) {
 	setup_arp_filtering;

@@ -3256,7 +3256,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
-			    unless ( $logname || $disposition eq 'RETURN' ) {
+			    unless ( $logname || $target =~ /-j RETURN\b/ ) {
 				#
 				# Find/Create a chain that both logs and applies the target action
 				# and jump to the log chain if all of the rule's conditions are met

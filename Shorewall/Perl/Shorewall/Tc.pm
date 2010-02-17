@@ -1334,7 +1334,11 @@ sub setup_traffic_shaping() {
 	    }
 	}
 
-	emit( "run_tc qdisc add dev $device parent $classid handle ${classnum}: sfq quantum \$quantum limit $tcref->{limit} perturb 10" ) if $tcref->{leaf} && ! $tcref->{pfifo};
+	my $sfq = in_hex4( ( $devref->{number} << 8 ) | $classnum );
+	
+	if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
+	    emit( "run_tc qdisc add dev $device parent $classid handle $sfq: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+	}
 	#
 	# add filters
 	#
@@ -1344,7 +1348,7 @@ sub setup_traffic_shaping() {
 	    }
 	}
 
-	emit "run_tc filter add dev $device protocol all prio 1 parent $classnum: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	emit "run_tc filter add dev $device protocol all prio 1 parent $sfq: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	# options
 	#

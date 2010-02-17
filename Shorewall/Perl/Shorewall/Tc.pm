@@ -1334,7 +1334,7 @@ sub setup_traffic_shaping() {
 	    }
 	}
 
-	my $sfq = in_hexp( ( ( hex_value $devref->{number} ) << 8 ) | ( hex_value( $classnum ) & 0xff ) );
+	my $sfq = in_hexp( ( $devref->{number} << 8 ) | ( $decimalclassnum & 0xff ) );
 	
 	if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
 	    emit( "run_tc qdisc add dev $device parent $classid handle $sfq: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );

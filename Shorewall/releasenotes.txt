@@ -202,6 +202,15 @@ Shorewall 4.4.7 Patch Release 5.
              1500 limit 127 perturb 10" Failed
     Processing /etc/shorewall/stop ...
 
+3)  Previously, when per-IP rate limiting was specified with a low rate
+    (such as 1/hour), the effective rate was much higher (once every 10
+    seconds). The Shorewall compiler now configures the hashlimit table
+    based on the rate such that the rate is more accurately enforced.
+
+    As part of this change, a unique hash table name is assigned to
+    each rule that does not specify a table name in the rule. The
+    assigned names are of the form 'shorewallN' where N is an integer.
+
 ----------------------------------------------------------------------------
        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7 . 4
 ----------------------------------------------------------------------------

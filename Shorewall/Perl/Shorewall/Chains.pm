@@ -262,6 +262,7 @@ our $chainseq;
 our $idiotcount;
 our $idiotcount1;
 our $warningcount;
+our $hashlimitset;
 
 our $global_variables;
 
@@ -373,6 +374,7 @@ sub initialize( $ ) {
     $idiotcount         = 0;
     $idiotcount1        = 0;
     $warningcount       = 0;
+    $hashlimitset       = 0;
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -2030,12 +2032,12 @@ sub do_ratelimit( $$ ) {
 
 	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
-	    $limit .= $2 ? $2 : 'shorewall';
+	    $limit .= $2 ? $2 : 'shorewall' . $hashlimitset++;
 	    $limit .= ' --hashlimit-mode ';
 	    $units = $5;
 	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {
 	    $limit .= "--$match $3 --hashlimit-name ";
-	    $limit .= $2 ? $2 : 'shorewall';
+	    $limit .= $2 ? $2 :  'shorewall' . $hashlimitset++;
 	    $limit .= ' --hashlimit-mode ';
 	    $units = $5;
 	} else {

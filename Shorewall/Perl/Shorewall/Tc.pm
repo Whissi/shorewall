@@ -132,7 +132,6 @@ our $devnum;
 our $sticky;
 our $ipp2p;
 
-
 #
 # TCClasses Table
 #
@@ -514,7 +513,7 @@ sub process_simple_device() {
 
     while ( ++$i <= 3 ) {
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";
-	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $devnum:$i";
+	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $devnumber:$i";
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
 	emit '';
     }
@@ -1198,6 +1197,9 @@ sub setup_traffic_shaping() {
 	validate_tc_device while read_a_line;
     }
 
+    my $sfq = $devnum;
+    my $sfqinhex;
+
     $devnum = $devnum > 10 ? 10 : 1;
 
     $fn = open_file 'tcclasses';
@@ -1334,10 +1336,9 @@ sub setup_traffic_shaping() {
 	    }
 	}
 
-	my $sfq = in_hexp( ( $devref->{number} << 8 ) | ( $decimalclassnum & 0xff ) );
-	
 	if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
-	    emit( "run_tc qdisc add dev $device parent $classid handle $sfq: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+	    $sfqinhex = in_hexp( ++$sfq);
+	    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
 	}
 	#
 	# add filters
@@ -1348,7 +1349,7 @@ sub setup_traffic_shaping() {
 	    }
 	}
 
-	emit "run_tc filter add dev $device protocol all prio 1 parent $sfq: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 	#
 	# options
 	#

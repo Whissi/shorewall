@@ -191,6 +191,17 @@ Shorewall 4.4.7 Patch Release 5.
     generate an incorrect rule sequence. The packet would be logged
     but the CONTINUE action would not occur.
 
+2)  If multiple entries were present in /etc/shorewall/tcdevices and
+    unique class numbers were not explicitly specified in
+    /etc/shorewall/tc, then 'shorewall start' would fail with a
+    diagnostic such as:
+
+    Setting up Traffic Control...
+    RTNETLINK answers: File exists
+      ERROR: Command "tc qdisc add dev eth1 parent 2:2 handle 2: sfq quantum
+             1500 limit 127 perturb 10" Failed
+    Processing /etc/shorewall/stop ...
+
 ----------------------------------------------------------------------------
        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7 . 4
 ----------------------------------------------------------------------------

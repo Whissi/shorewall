@@ -2045,7 +2045,7 @@ sub do_ratelimit( $$ ) {
 	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
 
 	if ( $units && $units ne 'sec' ) {
-	    my $expire = 60000; # I minute in milliseconds
+	    my $expire = 60000; # 1 minute in milliseconds
 
 	    if ( $units ne 'min' ) {
 		$expire *= 60; #At least an hour

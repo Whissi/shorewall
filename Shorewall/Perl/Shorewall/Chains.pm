@@ -2026,20 +2026,36 @@ sub do_ratelimit( $$ ) {
 
 	my $limit = "-m hashlimit ";
 	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
+	my $units;
 
 	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
+	    $units = $5;
 	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {
 	    $limit .= "--$match $3 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall';
 	    $limit .= ' --hashlimit-mode ';
+	    $units = $5;
 	} else {
 	    fatal_error "Invalid rate ($rate)";
 	}
 
 	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
+
+	if ( $units && $units ne 'sec' ) {
+	    my $expire = 60000; # I minute in milliseconds
+
+	    if ( $units ne 'min' ) {
+		$expire *= 60; #At least an hour
+		$expire *= 24 if $units eq 'day';
+	    }
+
+	    $limit .= "--hashlimit-htable-expire $expire ";
+	} 
+
+	$limit;
     } elsif ( $rate =~ /^(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	"-m limit --limit $1 --limit-burst $4 ";
     } elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {

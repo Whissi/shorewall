@@ -32,3 +32,35 @@
 
     Corrected in 4.4.7.5.
 
+6)  If multiple entries are present in /etc/shorewall/tcdevices and
+    globally unique class numbers are not explicitly specified in
+    /etc/shorewall/tcclasses, then 'shorewall start' will fail with a
+    diagnostic such as:
+
+    Setting up Traffic Control...
+    RTNETLINK answers: File exists
+      ERROR: Command "tc qdisc add dev eth1 parent 2:2 handle 2: sfq quantum
+             1500 limit 127 perturb 10" Failed
+    Processing /etc/shorewall/stop ...
+
+    Corrected in 4.4.7.5.
+
+7)  If a low per-IP rate limit (such as 1/hour) is specified, the
+    effective enforced rate is much higher (approximately 6/min). The
+    Shorewall compiler now configures the hashlimit table idle timeout
+    based on the rate units (min, hour, ...) so that the rate is more
+    accurately enforced.
+
+    Corrected in 4.4.7.5.
+
+    As part of this change, a unique hash table name is assigned to
+    each per-IP rate limiting rule that does not specify a table name
+    in the rule. The assigned names are of the form 'shorewallN' where
+    N is an integer. Previously, all such rules shared a single
+    'shorewall' table which lead to unexpected results.
+
+8)  All prior versions of Shorewall-perl mishandle per-IP rate limiting
+    in REDIRECT and DNAT rules. The effective rate and burst are 1/2 of
+    the values given in the rule.
+
+    Corrected in 4.4.7.5.

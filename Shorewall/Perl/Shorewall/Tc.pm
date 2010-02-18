@@ -484,13 +484,7 @@ sub process_simple_device() {
 	}
     }
 
-    $tcdevices{$device} = { number   => $devnumber ,
-			    physical => physical_name $device ,
-			    type     => $type ,
-			    in_bandwidth => $bandwidth = rate_to_kbit( $bandwidth ) ,
-			  };
-
-    push @tcdevices, $device;
+    $bandwidth = rate_to_kbit( $bandwidth );
 
     emit "if interface_is_up $physical; then";
 
@@ -501,17 +495,13 @@ sub process_simple_device() {
 	   "qt \$TC qdisc del dev $physical ingress\n"	   
 	 );
 
-    if ( $bandwidth ) {
-	emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
-	       "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${bandwidth}kbit burst 10k drop flowid :1\n"
-	     );
-    }
+    emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${bandwidth}kbit burst 10k drop flowid :1\n"
+	 ) if $bandwidth;
 	  
     emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
-    
-    my $i = 0;
 
-    while ( ++$i <= 3 ) {
+    for ( my $i = 1; $i <= 3; $i++ ) {
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";
 	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $number:$i";
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
@@ -590,13 +580,13 @@ sub validate_tc_device( ) {
     if ( @redirected ) {
 	fatal_error "IFB devices may not have IN-BANDWIDTH" if $inband ne '-' && $inband;
 	$classify = 1;
-    }
 
-    for my $rdevice ( @redirected ) {
-	fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
-	my $rdevref = $tcdevices{$rdevice};
-	fatal_error "REDIRECTED device ($rdevice) has not been defined in this file" unless $rdevref;
-	fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} ne '0kbit';
+	for my $rdevice ( @redirected ) {
+	    fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
+	    my $rdevref = $tcdevices{$rdevice};
+	    fatal_error "REDIRECTED device ($rdevice) has not been defined in this file" unless $rdevref;
+	    fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} ne '0kbit';
+	}
     }
 
     $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit',
@@ -1344,9 +1334,7 @@ sub setup_traffic_shaping() {
 	# add filters
 	#
 	unless ( $devref->{classify} ) {
-	    if ( $tcref->{occurs} == 1 ) {
-		emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid";
-	    }
+	    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
 	}
 
 	emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};

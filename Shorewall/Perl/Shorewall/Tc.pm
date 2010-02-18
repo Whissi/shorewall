@@ -513,7 +513,7 @@ sub process_simple_device() {
 
     while ( ++$i <= 3 ) {
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";
-	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $devnumber:$i";
+	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $number:$i";
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
 	emit '';
     }

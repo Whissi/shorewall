@@ -187,17 +187,13 @@ Shorewall 4.4.8
         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 8
 ----------------------------------------------------------------------------
 
-1)  All versions of Shorewall-perl mishandled per-IP rate limiting in
-    REDIRECT and DNAT rules. The effective rate and burst were 1/2 of
-    the values given in the rule.
-
-2)  A CONTINUE rule specifying a log level would cause the compiler to 
+1)  A CONTINUE rule specifying a log level would cause the compiler to 
     generate an incorrect rule sequence. The packet would be logged
     but the CONTINUE action would not occur.
 
-3)  If multiple entries were present in /etc/shorewall/tcdevices and
-    unique class numbers were not explicitly specified in
-    /etc/shorewall/tc, then 'shorewall start' would fail with a
+2)  If multiple entries were present in /etc/shorewall/tcdevices and
+    globally unique class numbers were not explicitly specified in
+    /etc/shorewall/tcclasses, then 'shorewall start' would fail with a
     diagnostic such as:
 
     Setting up Traffic Control...
@@ -206,14 +202,22 @@ Shorewall 4.4.8
              1500 limit 127 perturb 10" Failed
     Processing /etc/shorewall/stop ...
 
-4)  Previously, when per-IP rate limiting was specified with a low rate
-    (such as 1/hour), the effective rate was much higher (once every 10
-    seconds). The Shorewall compiler now configures the hashlimit table
-    based on the rate such that the rate is more accurately enforced.
+3)  Previously, when a low per-IP rate limit (such as 1/hour) was
+    specified, the effective enforced rate was much higher
+    (approximately 6/min). The Shorewall compiler now configures the
+    hashlimit table idle timeout based on the rate units (min, hour,
+    ...) so that the rate is more accurately enforced.
 
     As part of this change, a unique hash table name is assigned to
-    each rule that does not specify a table name in the rule. The
-    assigned names are of the form 'shorewallN' where N is an integer.
+    each per-IP rate limiting rule that does not specify a table name
+    in the rule. The assigned names are of the form 'shorewallN' where
+    N is an integer. Previously, all such rules shared a single
+    'shorewall' table which lead to unexpected results.
+
+4)  All prior versions of Shorewall-perl mishandle per-IP rate limiting
+    in REDIRECT and DNAT rules. The effective rate and burst are 1/2 of
+    the values given in the rule. This problem has been corrected so
+    that the specified rate is now the effective rate.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G

@@ -445,31 +445,10 @@ sub process_flow($) {
 sub process_simple_device() {
     my ( $device , $type , $bandwidth ) = split_line 1, 3, 'tcinterfaces';
 
-    my $devnumber;
-
-    if ( $device =~ /:/ ) {
-	( my $number, $device, my $rest )  = split /:/, $device, 3;
-
-	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
-
-	if ( defined $number ) {
-	    $devnumber = hex_value( $number );
-	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
-	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
-	    $devnum = $devnumber if $devnumber > $devnum;
-	} else {
-	    fatal_error "Missing interface NUMBER";
-	}
-    } else {
-	$devnumber = ++$devnum;
-    }
-
-    $devnums[ $devnumber ] = $device;
-
-    my $number = in_hexp $devnumber;
-
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
     fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
+
+    my $number = in_hexp( $tcdevices{$device} = ++$devnum );
 
     my $physical = physical_name $device;
     my $dev      = chain_base( $physical );
@@ -1160,9 +1139,12 @@ sub setup_simple_traffic_shaping() {
     my $fn1 = open_file 'tcpri';
 
     if ( $fn1 ) {
-	first_entry sub { progress_message2 "$doing $fn1...";
-			  warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
-		      };
+	first_entry 
+	    sub { 
+		progress_message2 "$doing $fn1...";
+		warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
+	    };
+
 	process_tc_priority while read_a_line;
 
 	clear_comment;

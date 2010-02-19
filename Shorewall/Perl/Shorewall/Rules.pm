@@ -1182,9 +1182,9 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     # Generate Fixed part of the rule
     #
-    if ( ( $actiontype & ( NATRULE | NATONLY ) ) == NATRULE ) {
+    if ( $actiontype & ( NATRULE | NONAT ) && ! ( $actiontype & NATONLY ) ) {
 	#
-	# Don't apply rate limiting twice
+	# Either a DNAT, REDIRECT or ACCEPT+ rule; don't apply rate limiting twice
 	#
 	$rule = join( '', 
 		      do_proto($proto, $ports, $sports),

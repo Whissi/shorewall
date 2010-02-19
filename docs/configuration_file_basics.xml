@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Configuration Files Tips and Tricks</title>
+    <title>Configuration Files Tips and Hints</title>
 
     <authorgroup>
       <author>
@@ -611,6 +611,39 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
     to distinguish them from variables used internally within the Shorewall
     programs</para>
 
+    <para>The following variable names must be avoided:</para>
+
+    <simplelist>
+      <member>Any option from <ulink
+      url="shorewall.conf.html">shorewall.conf</ulink> (5)</member>
+
+      <member>DEBUG</member>
+
+      <member>EXPORT</member>
+
+      <member>FAST</member>
+
+      <member>IPT_OPTIONS</member>
+
+      <member>NOROUTES</member>
+
+      <member>PROFILE</member>
+
+      <member>PURGE</member>
+
+      <member>RESTOREPATH</member>
+
+      <member>SHOREWALL_DIR</member>
+
+      <member>TEST</member>
+
+      <member>USE_VERBOSITY</member>
+
+      <member>VERBOSE</member>
+
+      <member>VERBOSE_OFFSET</member>
+    </simplelist>
+
     <para>Example:</para>
 
     <blockquote>
@@ -1194,7 +1227,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     <firstterm>burst</firstterm> value are given.</para>
 
     <para>Example from <ulink
-    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5): </para>
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5):</para>
 
     <simplelist>
       <member>LOGRATE=10/minute</member>
@@ -1202,7 +1235,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       <member>LOGBURST=5</member>
     </simplelist>
 
-    <para> For each logging rule, the first time the rule is reached, the
+    <para>For each logging rule, the first time the rule is reached, the
     packet will be logged; in fact, since the burst is 5, the first five
     packets will be logged. After this, it will be 6 seconds (1 minute divided
     by the rate of 10) before a message will be logged from the rule,

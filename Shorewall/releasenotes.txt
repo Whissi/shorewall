@@ -214,10 +214,25 @@ Shorewall 4.4.8
     N is an integer. Previously, all such rules shared a single
     'shorewall' table which lead to unexpected results.
 
-4)  All prior versions of Shorewall-perl mishandle per-IP rate limiting
-    in REDIRECT and DNAT rules. The effective rate and burst are 1/2 of
-    the values given in the rule. This problem has been corrected so
-    that the specified rate is now the effective rate.
+4)  All versions of Shorewall-perl mishandle per-IP rate limiting in
+    REDIRECT, DNAT and ACCEPT+ rules. The effective rate and burst are
+    1/2 of the values given in the rule.
+
+5)  Detection of the 'Old hashlimit match' capability was broken in
+    /sbin/shorewall, /sbin/shorewall-lite and in the IPv4 version of 
+    shorecap.
+
+6)  On older distributions such as RHEL5 and derivatives, Shorewall
+    would fail to start if a TYPE was specified in
+    /etc/shorewall/tcinterfaces and LOAD_HELPERS_ONLY had been
+    specified in /etc/shorewall/shorewall.conf.
+
+7)  The Debian init scripts are modified to include $remote_fs in the 
+    Required-start and Required-stop specifications.
+
+8)  Previously, when a supported command failed, the Debian Shorewall
+    init script would still return a success (zero) exit status. It now
+    returns a failure status (1) when the command fails.
 
 ----------------------------------------------------------------------------
              K N O W N   P R O B L E M S   R E M A I N I N G
@@ -226,7 +241,7 @@ Shorewall 4.4.8
 None.
 
 ----------------------------------------------------------------------------
-        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 8
+                N E W   F E A T U R E S   I N   4 . 4 . 8
 ----------------------------------------------------------------------------
 
 None.

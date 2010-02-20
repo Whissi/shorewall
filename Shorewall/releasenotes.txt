@@ -208,16 +208,16 @@ Shorewall 4.4.7 Patch Release 5.
     hashlimit table idle timeout based on the rate units (min, hour,
     ...) so that the rate is more accurately enforced.
 
-    As part of this change, a unique hash table name is assigned to
-    each per-IP rate limiting rule that does not specify a table name
+    As part of this change, a unique hashlimit table name is assigned
+    to each per-IP rate limiting rule that does not specify a table name
     in the rule. The assigned names are of the form 'shorewallN' where
     N is an integer. Previously, all such rules shared a single
     'shorewall' table which lead to unexpected results.
 
 4)  All prior versions of Shorewall-perl mishandle per-IP rate limiting
-    in REDIRECT, DNAT and ACCEPT+ rules. The effective rate and burst
-    are 1/2 of the values given in the rule. This problem has been
-    corrected so that the specified rate is now the effective rate.
+    ACCEPT+ rules. The effective rate and burst are 1/2 of the values
+    given in the rule. This problem has been corrected so that the
+    specified rate is now the effective rate.
 
 ----------------------------------------------------------------------------
        P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7 . 4

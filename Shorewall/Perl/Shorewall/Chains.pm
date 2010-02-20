@@ -174,7 +174,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_7';
+our $VERSION = '4.4_8';
 
 #
 # Chain Table
@@ -2047,7 +2047,7 @@ sub do_ratelimit( $$ ) {
 	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
 
 	if ( $units && $units ne 'sec' ) {
-	    my $expire = 60000; # I minute in milliseconds
+	    my $expire = 60000; # 1 minute in milliseconds
 
 	    if ( $units ne 'min' ) {
 		$expire *= 60; #At least an hour
@@ -3274,7 +3274,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
-			    unless ( $logname || $disposition eq 'RETURN' ) {
+			    unless ( $logname || $target =~ /-j RETURN\b/ ) {
 				#
 				# Find/Create a chain that both logs and applies the target action
 				# and jump to the log chain if all of the rule's conditions are met

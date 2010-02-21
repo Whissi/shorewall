@@ -710,6 +710,8 @@ show_command() {
 
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IPTABLES -t $table -L $chain $IPT_OPTIONS; then
+			echo "ERROR: Chain '$chain' is not recognized by $IPTABLES."
+			echo ""
 			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|dynamic <zone>|filters|ip|log|macros|mangle|nat|routing|tc|zones} ] " >&2
 			exit 1
 		    fi

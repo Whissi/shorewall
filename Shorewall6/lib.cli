@@ -587,9 +587,7 @@ show_command() {
 	    if [ $# -gt 0 ]; then
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IP6TABLES -t $table -L $chain $IPT_OPTIONS; then
-			echo "ERROR: Chain '$chain' is not recognized by $IP6TABLES."
-			echo ""
-			echo "usage $(basename $0) show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log|macros|mangle|routing|tc|zones} ] " >&2
+			error_message "ERROR: Chain '$chain' is not recognized by $IP6TABLES."
 			exit 1
 		    fi
 		done

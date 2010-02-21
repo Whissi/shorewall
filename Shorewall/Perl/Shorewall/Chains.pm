@@ -1316,7 +1316,7 @@ sub optimize_chain( $ ) {
 	my $rules    = $chainref->{rules};
 	my $count    = 0;
     
-	pop @$rules;
+	pop @$rules; # Pop the plain -j ACCEPT rule at the end of the chain 
 
 	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT\b/;
 

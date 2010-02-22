@@ -416,7 +416,7 @@ sub add_a_provider( ) {
 	start_provider( $table, $number, qq(if interface_is_usable $physical && [ -n "$variable" ]; then) );
     } else {
 	if ( $optional ) {
-	    start_provider( $table, $number, qq(if [ -n "\$${base}_IS_USABLE" ]; then) );
+	    start_provider( $table, $number, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
 	} elsif ( $gatewaycase eq 'detect' ) {
 	    start_provider( $table, $number, qq(if interface_is_usable $physical && [ -n "$gateway" ]; then) );
 	} else {
@@ -543,7 +543,7 @@ sub add_a_provider( ) {
 sub start_new_if( $ ) {
     our $current_if = shift;
 
-    emit ( '', qq(if [ -n "\$${current_if}_IS_USABLE" ]; then) );
+    emit ( '', qq(if [ -n "\$SW_${current_if}_IS_USABLE" ]; then) );
     push_indent;
 }
   
@@ -871,9 +871,9 @@ sub handle_optional_interfaces() {
 		emit qq(if interface_is_usable $physical; then);
 	    }
 
-	    emit( "    ${base}_IS_USABLE=Yes" ,
+	    emit( "    SW_${base}_IS_USABLE=Yes" ,
 		  'else' ,
-		  "    ${base}_IS_USABLE=" ,
+		  "    SW_${base}_IS_USABLE=" ,
 		  'fi' );
 	}
 

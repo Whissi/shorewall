@@ -2644,7 +2644,7 @@ sub mark_firewall_not_started() {
 # Returns the name of the shell variable holding the first address of the passed interface
 #
 sub interface_address( $ ) {
-    my $variable = chain_base( $_[0] ) . '_address';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_address';
     uc $variable;
 }
 
@@ -2669,7 +2669,7 @@ sub get_interface_address ( $ ) {
 # Returns the name of the shell variable holding the broadcast addresses of the passed interface
 #
 sub interface_bcasts( $ ) {
-    my $variable = chain_base( $_[0] ) . '_bcasts';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_bcasts';
     uc $variable;
 }
 
@@ -2692,7 +2692,7 @@ sub get_interface_bcasts ( $ ) {
 # Returns the name of the shell variable holding the anycast addresses of the passed interface
 #
 sub interface_acasts( $ ) {
-    my $variable = chain_base( $_[0] ) . '_acasts';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_acasts';
     uc $variable;
 }
 
@@ -2715,7 +2715,7 @@ sub get_interface_acasts ( $ ) {
 # Returns the name of the shell variable holding the gateway through the passed interface
 #
 sub interface_gateway( $ ) {
-    my $variable = chain_base( $_[0] ) . '_gateway';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_gateway';
     uc $variable;
 }
 
@@ -2747,7 +2747,7 @@ sub get_interface_gateway ( $ ) {
 # Returns the name of the shell variable holding the addresses of the passed interface
 #
 sub interface_addresses( $ ) {
-    my $variable = chain_base( $_[0] ) . '_addresses';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_addresses';
     uc $variable;
 }
 
@@ -2777,7 +2777,7 @@ sub get_interface_addresses ( $ ) {
 # Returns the name of the shell variable holding the networks routed out of the passed interface
 #
 sub interface_nets( $ ) {
-    my $variable = chain_base( $_[0] ) . '_networks';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_networks';
     uc $variable;
 }
 
@@ -2808,7 +2808,7 @@ sub get_interface_nets ( $ ) {
 # Returns the name of the shell variable holding the MAC address of the gateway for the passed provider out of the passed interface
 #
 sub interface_mac( $$ ) {
-    my $variable = join( '_' , chain_base( $_[0] ) , chain_base( $_[1] ) , 'mac' );
+    my $variable = join( '_' , 'sw' , chain_base( $_[0] ) , chain_base( $_[1] ) , 'mac' );
     uc $variable;
 }
 

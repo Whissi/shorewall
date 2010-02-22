@@ -151,7 +151,7 @@ syslog_circular_buffer() {
 #
 packet_log() # $1 = number of messages
 {
-    if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
+    if [ -n "$g_showmacs" -o $VERBOSE -gt 2 ]; then
 	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
     else
 	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
@@ -466,11 +466,11 @@ show_command() {
 			    option=${option#x}
 			    ;;
 			m*)
-			    SHOWMACS=Yes
+			    g_showmacs=Yes
 			    option=${option#m}
 			    ;;
 			f*)
-			    FILEMODE=Yes
+			    g_filemode=Yes
 			    option=${option#f}
 			    ;;
 			t)
@@ -588,7 +588,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    determine_capabilities
 	    VERBOSE=2
-	    if [ -n "$FILEMODE" ]; then
+	    if [ -n "$g_filemode" ]; then
 		report_capabilities1
 	    else
 		report_capabilities
@@ -756,7 +756,7 @@ dump_command() {
 			    option=${option#x}
 			    ;;
 			m*)
-			    SHOWMACS=Yes
+			    g_showmacs=Yes
 			    option=${option#m}
 			    ;;
 			l*)
@@ -1404,7 +1404,7 @@ logwatch_command() {
 			    option=${option#q}
 			    ;;
 			m*)
-			    SHOWMACS=Yes
+			    g_showmacs=Yes
 			    option=${option#m}
 			    ;;
 			-)

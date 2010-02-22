@@ -462,7 +462,7 @@ show_command() {
 			    option=${option#v}
 			    ;;
 			x*)
-			    IPT_OPTIONS="-xnv"
+			    g_ipt_options="-xnv"
 			    option=${option#x}
 			    ;;
 			m*)
@@ -490,7 +490,7 @@ show_command() {
 			    shift
 			    ;;
 			l*)
-			    IPT_OPTIONS1="--line-numbers"
+			    g_ipt_options1="--line-numbers"
 			    option=${option#l}
 			    ;;
 			*)
@@ -506,7 +506,7 @@ show_command() {
 	esac
     done
 
-    IPT_OPTIONS="$IPT_OPTIONS $IPT_OPTIONS1"
+    g_ipt_options="$g_ipt_options $g_ipt_options1"
 
     [ -n "$debugging" ] && set -x
     case "$1" in
@@ -523,21 +523,21 @@ show_command() {
 	    echo "$PRODUCT $version NAT Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t nat -L $IPT_OPTIONS
+	    $IPTABLES -t nat -L $g_ipt_options
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version RAW Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t raw -L $IPT_OPTIONS
+	    $IPTABLES -t raw -L $g_ipt_options
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version Mangle Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t mangle -L $IPT_OPTIONS
+	    $IPTABLES -t mangle -L $g_ipt_options
 	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
@@ -618,11 +618,11 @@ show_command() {
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
+		    $IPTABLES -t $table -L $chain $g_ipt_options
 		    echo
 		done
 	    else
-		$IPTABLES -t $table -L $IPT_OPTIONS
+		$IPTABLES -t $table -L $g_ipt_options
 	    fi
 	    ;;
 	vardir)
@@ -709,7 +709,7 @@ show_command() {
                 fi
 
 		[ -n "$table_given" ] || for chain in $*; do
-		    if ! qt $IPTABLES -t $table -L $chain $IPT_OPTIONS; then
+		    if ! qt $IPTABLES -t $table -L $chain $g_ipt_options; then
 			error_message "ERROR: Chain '$chain' is not recognized by $IPTABLES."
 			exit 1
 		    fi
@@ -719,14 +719,14 @@ show_command() {
 		echo
 		show_reset
 		for chain in $*; do
-		    $IPTABLES -t $table -L $chain $IPT_OPTIONS
+		    $IPTABLES -t $table -L $chain $g_ipt_options
 		    echo
 		done
 	    else
 		echo "$PRODUCT $version $table Table at $HOSTNAME - $(date)"
 		echo
 		show_reset
-		$IPTABLES -t $table -L $IPT_OPTIONS
+		$IPTABLES -t $table -L $g_ipt_options
 	    fi
 	    ;;
     esac
@@ -752,7 +752,7 @@ dump_command() {
 			    option=
 			    ;;
 			x*)
-			    IPT_OPTIONS="-xnv"
+			    g_ipt_options="-xnv"
 			    option=${option#x}
 			    ;;
 			m*)
@@ -760,7 +760,7 @@ dump_command() {
 			    option=${option#m}
 			    ;;
 			l*)
-			    IPT_OPTIONS1="--line-numbers"
+			    g_ipt_options1="--line-numbers"
 			    option=${option#l}
 			    ;;
 			*)
@@ -776,7 +776,7 @@ dump_command() {
 	esac
     done
 
-    IPT_OPTIONS="$IPT_OPTIONS $IPT_OPTIONS1"
+    g_ipt_options="$g_ipt_options $g_ipt_options1"
 
     [ $VERBOSE -lt 2 ] && VERBOSE=2
 
@@ -788,19 +788,19 @@ dump_command() {
     
     show_reset
     host=$(echo $HOSTNAME | sed 's/\..*$//')
-    $IPTABLES -L $IPT_OPTIONS
+    $IPTABLES -L $g_ipt_options
 
     heading "Log ($LOGFILE)"
     packet_log 20
 
     heading "NAT Table"
-    $IPTABLES -t nat -L $IPT_OPTIONS
+    $IPTABLES -t nat -L $g_ipt_options
 
     heading "Mangle Table"
-    $IPTABLES -t mangle -L $IPT_OPTIONS
+    $IPTABLES -t mangle -L $g_ipt_options
 
     heading "Raw Table"
-    $IPTABLES -t raw -L $IPT_OPTIONS
+    $IPTABLES -t raw -L $g_ipt_options
 
     local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
     local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
@@ -986,20 +986,20 @@ heading() {
 #
 make_verbose() {
     local v
-    v=$VERBOSE_OFFSET
+    v=$g_verbose_offset
     local option
     option=-
 
-    if [ -n "$USE_VERBOSITY" ]; then
-	echo "-v$USE_VERBOSITY"
-    elif [ $VERBOSE_OFFSET -gt 0 ]; then
+    if [ -n "$g_use_verbosity" ]; then
+	echo "-v$g_use_verbosity"
+    elif [ $g_verbose_offset -gt 0 ]; then
 	while [ $v -gt 0 ]; do
 	    option="${option}v"
 	    v=$(($v - 1))
 	done
 
 	echo $option
-    elif [ $VERBOSE_OFFSET -lt 0 ]; then
+    elif [ $g_verbose_offset -lt 0 ]; then
 	while [ $v -lt 0 ]; do
 	    option="${option}q"
 	    v=$(($v + 1))

@@ -132,7 +132,7 @@ syslog_circular_buffer() {
 #
 packet_log() # $1 = number of messages
 {
-    if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
+    if [ -n "$g_showmacs" -o $VERBOSE -gt 2 ]; then
 	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
     else
 	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*:.*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
@@ -375,15 +375,15 @@ show_command() {
 			    option=${option#v}
 			    ;;
 			x*)
-			    IPT_OPTIONS="-xnv"
+			    g_ipt_options="-xnv"
 			    option=${option#x}
 			    ;;
 			m*)
-			    SHOWMACS=Yes
+			    g_showmacs=Yes
 			    option=${option#m}
 			    ;;
 			f*)
-			    FILEMODE=Yes
+			    g_filemode=Yes
 			    option=${option#f}
 			    ;;
 			t)
@@ -403,7 +403,7 @@ show_command() {
 			    shift
 			    ;;
 			l*)
-			    IPT_OPTIONS1="--line-numbers"
+			    g_ipt_options1="--line-numbers"
 			    option=${option#l}
 			    ;;
 			*)
@@ -419,7 +419,7 @@ show_command() {
 	esac
     done
 
-    IPT_OPTIONS="$IPT_OPTIONS $IPT_OPTIONS1"
+    g_ipt_options="$g_ipt_options $g_ipt_options1"
 
     [ -n "$debugging" ] && set -x
     case "$1" in
@@ -436,14 +436,14 @@ show_command() {
 	    echo "$PRODUCT $version Mangle Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    $IP6TABLES -t mangle -L $IPT_OPTIONS
+	    $IP6TABLES -t mangle -L $g_ipt_options
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$PRODUCT $version raw Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    $IP6TABLES -t raw -L $IPT_OPTIONS
+	    $IP6TABLES -t raw -L $g_ipt_options
 	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
@@ -493,7 +493,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    determine_capabilities
 	    VERBOSE=2
-	    if [ -n "$FILEMODE" ]; then
+	    if [ -n "$g_filemode" ]; then
 		report_capabilities1
 	    else
 		report_capabilities
@@ -523,10 +523,10 @@ show_command() {
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    $IP6TABLES -t $table -L $chain $IPT_OPTIONS
+		    $IP6TABLES -t $table -L $chain $g_ipt_options
 		done
 	    else
-		$IP6TABLES -t $table -L $IPT_OPTIONS
+		$IP6TABLES -t $table -L $g_ipt_options
 	    fi
 	    ;;
 	vardir)
@@ -586,7 +586,7 @@ show_command() {
 
 	    if [ $# -gt 0 ]; then
 		[ -n "$table_given" ] || for chain in $*; do
-		    if ! qt $IP6TABLES -t $table -L $chain $IPT_OPTIONS; then
+		    if ! qt $IP6TABLES -t $table -L $chain $g_ipt_options; then
 			error_message "ERROR: Chain '$chain' is not recognized by $IP6TABLES."
 			exit 1
 		    fi
@@ -596,13 +596,13 @@ show_command() {
 		echo
 		show_reset
 		for chain in $*; do
-		    $IP6TABLES -t $table -L $chain $IPT_OPTIONS
+		    $IP6TABLES -t $table -L $chain $g_ipt_options
 		done
 	    else
 		echo "$PRODUCT $version $table Table at $HOSTNAME - $(date)"
 		echo
 		show_reset
-		$IP6TABLES -t $table -L $IPT_OPTIONS
+		$IP6TABLES -t $table -L $g_ipt_options
 	    fi
 	    ;;
     esac
@@ -628,15 +628,15 @@ dump_command() {
 			    option=
 			    ;;
 			x*)
-			    IPT_OPTIONS="-xnv"
+			    g_ipt_options="-xnv"
 			    option=${option#x}
 			    ;;
 			m*)
-			    SHOWMACS=Yes
+			    g_showmacs=Yes
 			    option=${option#m}
 			    ;;
 			l*)
-			    IPT_OPTIONS1="--line-numbers"
+			    g_ipt_options1="--line-numbers"
 			    option=${option#l}
 			    ;;
 			*)
@@ -652,7 +652,7 @@ dump_command() {
 	esac
     done
 
-    IPT_OPTIONS="$IPT_OPTIONS $IPT_OPTIONS1"
+    g_ipt_options="$g_ipt_options $g_ipt_options1"
 
     [ $VERBOSE -lt 2 ] && VERBOSE=2
 
@@ -669,16 +669,16 @@ dump_command() {
     
     show_reset
     host=$(echo $HOSTNAME | sed 's/\..*$//')
-    $IP6TABLES -L $IPT_OPTIONS
+    $IP6TABLES -L $g_ipt_options
 
     heading "Log ($LOGFILE)"
     packet_log 20
 
     heading "Mangle Table"
-    $IP6TABLES -t mangle -L $IPT_OPTIONS
+    $IP6TABLES -t mangle -L $g_ipt_options
 
     heading "Raw Table"
-    $IP6TABLES -t raw -L $IPT_OPTIONS
+    $IP6TABLES -t raw -L $g_ipt_options
 
     local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
     local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
@@ -869,20 +869,20 @@ heading() {
 #
 make_verbose() {
     local v
-    v=$VERBOSE_OFFSET
+    v=$g_verbose_offset
     local option
     option=-
 
-    if [ -n "$USE_VERBOSITY" ]; then
-	echo "-v$USE_VERBOSITY"
-    elif [ $VERBOSE_OFFSET -gt 0 ]; then
+    if [ -n "$g_use_verbosity" ]; then
+	echo "-v$g_use_verbosity"
+    elif [ $g_verbose_offset -gt 0 ]; then
 	while [ $v -gt 0 ]; do
 	    option="${option}v"
 	    v=$(($v - 1))
 	done
 
 	echo $option
-    elif [ $VERBOSE_OFFSET -lt 0 ]; then
+    elif [ $g_verbose_offset -lt 0 ]; then
 	while [ $v -lt 0 ]; do
 	    option="${option}q"
 	    v=$(($v + 1))
@@ -1096,7 +1096,7 @@ logwatch_command() {
 			    option=${option#q}
 			    ;;
 			m*)
-			    SHOWMACS=Yes
+			    g_showmacs=Yes
 			    option=${option#m}
 			    ;;
 			-)

@@ -62,7 +62,7 @@ get_config() {
 
     ensure_config_path
     
-    if [ -z "$EXPORT" -a "$(id -u)" = 0 ]; then
+    if [ -z "$g_export" -a "$(id -u)" = 0 ]; then
 	#
 	# This block is avoided for compile for export and when the user isn't root
 	#
@@ -178,7 +178,7 @@ get_config() {
 	    ;;
     esac
 
-    [ -n "$USE_VERBOSITY" ] && VERBOSE=$USE_VERBOSITY || VERBOSE=$(($VERBOSE_OFFSET + $VERBOSITY))
+    [ -n "$g_use_verbosity" ] && VERBOSE=$g_use_verbosity || VERBOSE=$(($g_verbose_offset + $VERBOSITY))
 
     if [ $VERBOSE -lt -1 ]; then
 	VERBOSE=-1
@@ -262,7 +262,6 @@ compiler() {
     #
     ensure_config_path
 
-    compiler=perl
     haveparams=
 
     case $COMMAND in
@@ -277,8 +276,8 @@ compiler() {
     [ $command = exec ] || command=
     
     debugflags="-w"
-    [ -n "$DEBUG" ]   && debugflags='-wd'
-    [ -n "$PROFILE" ] && debugflags='-wd:DProf'
+    [ -n "$g_debug" ]   && debugflags='-wd'
+    [ -n "$g_profile" ] && debugflags='-wd:DProf'
 
     # Perl compiler only takes the output file as a argument
 	    
@@ -289,13 +288,13 @@ compiler() {
     options="--verbose=$VERBOSE --family=6"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
-    [ -n "$EXPORT" ] && options="$options --export"
+    [ -n "$g_export" ] && options="$options --export"
     [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
     [ -n "$TIMESTAMP" ] && options="$options --timestamp"
-    [ -n "$TEST" ] && options="$options --test"
-    [ -n "$PREVIEW" ] && options="$options --preview"
+    [ -n "$g_test" ] && options="$options --test"
+    [ -n "$g_preview" ] && options="$options --preview"
     [ "$debugging" = trace ] && options="$options --debug"
-    [ -n "$REFRESHCHAINS" ] && options="$options --refresh=$REFRESHCHAINS"
+    [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     [ -x $pc ] || startup_error "Shorewall6 requires the shorewall package which is not installed"
     #
     # Run the appropriate params file
@@ -363,11 +362,11 @@ start_command() {
 			    option=
 			    ;;
 			d*)
-			    DEBUG=Yes
+			    g_debug=Yes
 			    option=${option#d}
 			    ;;
 			f*)
-			    FAST=Yes
+			    g_fast=Yes
 			    option=${option#f}
 			    ;;
 			*)
@@ -387,7 +386,7 @@ start_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
+	    [ -n "$SHOREWALL_DIR" -o -n "$g_fast" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -409,13 +408,13 @@ start_command() {
     export NOROUTES
     export PURGE
 
-    if [ -n "${FAST}${AUTOMAKE}" ]; then
+    if [ -n "${g_fast}${AUTOMAKE}" ]; then
 	if qt mywhich make; then
 	    restorefile=$RESTOREFILE
 	    #
 	    # RESTOREFILE is exported by get_config()
 	    #
-	    if [ -z "$FAST" ]; then
+	    if [ -z "$g_fast" ]; then
 		#
 		# Autofast -- use the last compiled script
 		#
@@ -423,17 +422,17 @@ start_command() {
 	    fi
 
 	    if ! make -qf ${CONFDIR}/Makefile; then
-		FAST= 
+		g_fast= 
 		AUTOMAKE=
 	    fi
 
 	    RESTOREFILE=$restorefile
 	else
-	    FAST=
+	    g_fast=
 	    AUTOMAKE=
 	fi
 
-	if [ -n "$FAST" ]; then
+	if [ -n "$g_fast" ]; then
 	    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then
@@ -472,19 +471,19 @@ compile_command() {
 		while [ -n "$option" ]; do
 		    case $option in
 			e*)
-			    EXPORT=Yes
+			    g_export=Yes
 			    option=${option#e}
 			    ;;
 			p*)
-			    PROFILE=Yes
+			    g_profile=Yes
 			    option=${option#p}
 			    ;;
 			t*)
-			    TEST=Yes
+			    g_test=Yes
 			    option=${option#t}
 			    ;;			    
 			d*)
-			    DEBUG=Yes;
+			    g_debug=Yes;
 			    option=${option#d}
 			    ;;
 			-)
@@ -533,8 +532,6 @@ compile_command() {
 	    ;;
     esac
 
-    export EXPORT
-
     [ "x$file" = x- ] || progress_message3 "Compiling..."
 
     compiler exec $debugging compile $file
@@ -560,19 +557,19 @@ check_command() {
 			    option=
 			    ;;
 			e*)
-			    EXPORT=Yes
+			    g_export=Yes
 			    option=${option#e}
 			    ;;
 			p*)
-			    PROFILE=Yes
+			    g_profile=Yes
 			    option=${option#p}
 			    ;;
 			r*)
-			    PREVIEW=Yes;
+			    g_preview=Yes;
 			    option=${option#r}
 			    ;;
 			d*)
-			    DEBUG=Yes;
+			    g_debug=Yes;
 			    option=${option#d}
 			    ;;
 			*)
@@ -610,8 +607,6 @@ check_command() {
 	    ;;
     esac
 
-    export EXPORT
-
     progress_message3 "Checking..."
 
     compiler exec $debugging $nolock check
@@ -640,11 +635,11 @@ restart_command() {
 			    option=
 			    ;;
 			d*)
-			    DEBUG=Yes
+			    g_debug=Yes
 			    option=${option#d}
 			    ;;
 			f*)
-			    FAST=Yes
+			    g_fast=Yes
 			    option=${option#f}
 			    ;;
 			n*)
@@ -684,7 +679,7 @@ restart_command() {
 	    fi
 
 	    SHOREWALL_DIR=$(resolve_file $1)
-	    [ -n "$FAST" ] && fatal_error "Directory may not be specified with the -f option"
+	    [ -n "$g_fast" ] && fatal_error "Directory may not be specified with the -f option"
 	    export SHOREWALL_DIR
 	    AUTOMAKE=
 	    ;;
@@ -698,19 +693,19 @@ restart_command() {
     export NOROUTES
     export PURGE
 
-    if [ -z "$FAST" -a -n "$AUTOMAKE" ]; then
+    if [ -z "$g_fast" -a -n "$AUTOMAKE" ]; then
 	if qt mywhich make; then
 	    #
 	    # RESTOREFILE is exported by get_config()
 	    #
 	    restorefile=$RESTOREFILE
 	    RESTOREFILE=firewall
-	    make -qf ${CONFDIR}/Makefile && FAST=Yes
+	    make -qf ${CONFDIR}/Makefile && g_fast=Yes
 	    RESTOREFILE=$restorefile
 	fi
     fi
 
-    if [ -z "$FAST" ]; then  
+    if [ -z "$g_fast" ]; then  
 	progress_message3 "Compiling..."
 
 	if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
@@ -766,11 +761,11 @@ refresh_command() {
     done
 
     if [ $# -gt 0 ]; then
-	REFRESHCHAINS=$1
+	g_refreshchains=$1
 	shift
 
 	while [ $# -gt 0 ]; do
-	    REFRESHCHAINS="$REFRESHCHAINS,$1"
+	    g_refreshchains="$g_refreshchains,$1"
 	    shift
 	done
     fi
@@ -1338,16 +1333,16 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
 fi
 
 SHOREWALL_DIR=
-IPT_OPTIONS="-nv"
-FAST=
-VERBOSE_OFFSET=0
-USE_VERBOSITY=
+g_ipt_options="-nv"
+g_fast=
+g_verbose_offset=0
+g_use_verbosity=
+g_debug=
+g_export=
+
 NOROUTES=
 PURGE=
-DEBUG=
-EXPORT=
 export TIMESTAMP=
-noroutes=
 
 finished=0
 
@@ -1379,43 +1374,43 @@ while [ $finished -eq 0 ]; do
 			shift
 			;;
 		    e*)
-			EXPORT=Yes
+			g_export=Yes
 			option=${option#e}
 			;;
 		    x*)
-			IPT_OPTIONS="-xnv"
+			g_ipt_options="-xnv"
 			option=${option#x}
 			;;
 		    q*)
-			VERBOSE_OFFSET=$(($VERBOSE_OFFSET - 1 ))
+			g_verbose_offset=$(($g_verbose_offset - 1 ))
 			option=${option#q}
 			;;
 		    f*)
-			FAST=Yes
+			g_fast=Yes
 			option=${option#f}
 			;;
 		    v*)
 			option=${option#v}
 			case $option in 
 			    -1*)
-				USE_VERBOSITY=-1
+				g_use_verbosity=-1
 				option=${option#-1}
 				;;
 			    0*)
-				USE_VERBOSITY=0
+				g_use_verbosity=0
 				option=${option#0}
 				;;
 			    1*)
-				USE_VERBOSITY=1
+				g_use_verbosity=1
 				option=${option#1}
 				;;
 			    2*)
-				USE_VERBOSITY=2
+				g_use_verbosity=2
 				option=${option#2}
 				;;
 			    *)
-				VERBOSE_OFFSET=$(($VERBOSE_OFFSET + 1 ))
-				USE_VERBOSITY=
+				g_verbose_offset=$(($g_verbose_offset + 1 ))
+				g_use_verbosity=
 				;;
 			esac
 			;;

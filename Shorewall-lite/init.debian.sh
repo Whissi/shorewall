@@ -42,6 +42,7 @@ echo_notdone () {
 	  echo "not done (check $INITLOG)."
   fi
 
+  exit 1
 }
 
 not_configured () {

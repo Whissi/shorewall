@@ -226,13 +226,13 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 
-	    $RING_BELL
+	    $g_ring_bell
 
 	    packet_log 40
 
 	    if [ "$pause" = "Yes" ]; then
 		echo
-		echo $ECHO_N 'Enter any character to continue: '
+		echo $g_echo_n 'Enter any character to continue: '
 		read foo
 	    else
 		timed_read
@@ -353,7 +353,7 @@ show_command() {
 	    if [ ${#macro} -gt 10 ]; then
 		echo "   $macro  ${foo#\#}"
 	    else
-		$ECHO_E "   $macro  \t${foo#\#}"
+		$g_echo_e "   $macro  \t${foo#\#}"
 	    fi
 	fi
     }

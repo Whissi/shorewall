@@ -1497,6 +1497,7 @@ MUTEX_TIMEOUT=
 SHAREDIR=/usr/share/shorewall6
 CONFDIR=/etc/shorewall6
 export PRODUCT="Shorewall6"
+export RECOVERING=
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
@@ -1506,13 +1507,10 @@ if [ ! -f ${VARDIR}/firewall ]; then
     [ -f ${VARDIR}/.restore ] && cp -f ${VARDIR}/.restore ${VARDIR}/firewall 
 fi
 
-FIREWALL=${VARDIR}/firewall
-LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
-VERSION_FILE=$SHAREDIR/version
-RECOVERING=
-export RECOVERING
+g_firewall=${VARDIR}/firewall
 
-for library in $LIBRARIES; do
+libraries="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
+for library in $libraries; do
     if [ -f $library ]; then
 	. $library
     else
@@ -1521,11 +1519,12 @@ for library in $LIBRARIES; do
     fi
 done
 
-if [ -f $VERSION_FILE ]; then
-    version=$(cat $VERSION_FILE)
+version_file=$SHAREDIR/version
+if [ -f $version_file ]; then
+    version=$(cat $version_file)
 else
     echo "   ERROR: Shorewall6 is not properly installed" >&2
-    echo "	 The file $VERSION_FILE does not exist"  >&2
+    echo "	 The file $version_file does not exist"  >&2
     exit 1
 fi
 
@@ -1533,21 +1532,21 @@ banner="Shorewall6-$version Status at $HOSTNAME -"
 
 case $(echo -e) in
     -e*)
-	RING_BELL="echo \a"
-	ECHO_E="echo"
+	g_ring_bell="echo \a"
+	g_echo_e="echo"
 	;;
     *)
-	RING_BELL="echo -e \a"
-	ECHO_E="echo -e"
+	g_ring_bell="echo -e \a"
+	g_echo_e="echo -e"
 	;;
 esac
 
 case $(echo -n "Testing") in
     -n*)
-	ECHO_N=
+	g_echo_n=
 	;;
     *)
-	ECHO_N=-n
+	g_echo_n=-n
 	;;
 esac
 
@@ -1562,10 +1561,10 @@ case "$COMMAND" in
     stop|clear)
 	[ $# -ne 1 ] && usage 1
 	get_config
-	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
+	[ -x $g_firewall ] || fatal_error "Shorewall6 has never been started"
 	export NOROUTES
 	mutex_on
-	$SHOREWALL_SHELL $FIREWALL $g_debugging $nolock $COMMAND
+	$SHOREWALL_SHELL $g_firewall $g_debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
@@ -1573,8 +1572,8 @@ case "$COMMAND" in
 	export NOROUTES
 	shift
 	mutex_on
-	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
-	$SHOREWALL_SHELL $FIREWALL $g_debugging $nolock reset $@
+	[ -x $g_firewall ] || fatal_error "Shorewall6 has never been started"
+	$SHOREWALL_SHELL $g_firewall $g_debugging $nolock reset $@
 	mutex_off
 	;;
     compile)

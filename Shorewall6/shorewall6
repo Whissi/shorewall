@@ -293,7 +293,7 @@ compiler() {
     [ -n "$TIMESTAMP" ] && options="$options --timestamp"
     [ -n "$g_test" ] && options="$options --test"
     [ -n "$g_preview" ] && options="$options --preview"
-    [ "$debugging" = trace ] && options="$options --debug"
+    [ "$g_debugging" = trace ] && options="$options --debug"
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     [ -x $pc ] || startup_error "Shorewall6 requires the shorewall package which is not installed"
     #
@@ -322,15 +322,15 @@ start_command() {
 
 	if [ -n "$AUTOMAKE" ]; then
 	    [ -n "$nolock" ] || mutex_on
-	    ${VARDIR}/firewall $debugging start
+	    ${VARDIR}/firewall $g_debugging start
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
 	    progress_message3 "Compiling..."
 
-	    if compiler run $debugging $nolock compile ${VARDIR}/.start; then
+	    if compiler run $g_debugging $nolock compile ${VARDIR}/.start; then
 		[ -n "$nolock" ] || mutex_on
-		${VARDIR}/.start $debugging start
+		${VARDIR}/.start $g_debugging start
 		rc=$?
 		[ -n "$nolock" ] || mutex_off
 	    else
@@ -534,7 +534,7 @@ compile_command() {
 
     [ "x$file" = x- ] || progress_message3 "Compiling..."
 
-    compiler exec $debugging compile $file
+    compiler exec $g_debugging compile $file
 }
 
 #
@@ -609,7 +609,7 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    compiler exec $debugging $nolock check
+    compiler exec $g_debugging $nolock check
 }
 
 #
@@ -708,9 +708,9 @@ restart_command() {
     if [ -z "$g_fast" ]; then  
 	progress_message3 "Compiling..."
 
-	if compiler run $debugging $nolock compile ${VARDIR}/.restart; then
+	if compiler run $g_debugging $nolock compile ${VARDIR}/.restart; then
 	    [ -n "$nolock" ] || mutex_on
-	    $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+	    $SHOREWALL_SHELL ${VARDIR}/.restart $g_debugging restart
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
@@ -720,7 +720,7 @@ restart_command() {
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
 	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
+	$SHOREWALL_SHELL ${VARDIR}/firewall $g_debugging restart
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     fi
@@ -778,9 +778,9 @@ refresh_command() {
 
     progress_message3 "Compiling..."
 
-    if compiler run $debugging $nolock compile ${VARDIR}/.refresh; then
+    if compiler run $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
+	$SHOREWALL_SHELL ${VARDIR}/.refresh $g_debugging refresh
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     else
@@ -879,7 +879,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler run $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler run $g_debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	exit $status
     fi
@@ -1016,7 +1016,7 @@ try_command() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler run $debugging $nolock compile ${VARDIR}/.$command; then
+    if ! compiler run $g_debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?
 	exit $status
     fi
@@ -1171,7 +1171,7 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$TIMESTAMP" ] && timestamp='-t' || timestamp=
 
-    if shorewall6 $debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
+    if shorewall6 $g_debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${LITEDIR}
     then
@@ -1181,15 +1181,15 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall6-lite $debugging $verbose $timestamp restart" && \
+	    rsh_command "/sbin/shorewall6-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall6-lite $debugging $verbose $timestamp start" && \
+	    rsh_command "/sbin/shorewall6-lite $g_debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall6-lite $debugging $verbose $timestamp save" && \
+	    rsh_command "/sbin/shorewall6-lite $g_debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
@@ -1260,7 +1260,7 @@ export_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall6 $debugging $verbose compile -e $compiler $directory $directory/firewall && \
+    if shorewall6 $g_debugging $verbose compile -e $compiler $directory $directory/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $directory/firewall $directory/firewall.conf $target
     then
@@ -1318,10 +1318,10 @@ usage() # $1 = exit status
 #
 # Execution begins here
 #
-debugging=
+g_debugging=
 
 if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
-    debugging=$1
+    g_debugging=$1
     shift
 fi
 
@@ -1565,7 +1565,7 @@ case "$COMMAND" in
 	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
 	export NOROUTES
 	mutex_on
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	$SHOREWALL_SHELL $FIREWALL $g_debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
@@ -1574,7 +1574,7 @@ case "$COMMAND" in
 	shift
 	mutex_on
 	[ -x $FIREWALL ] || fatal_error "Shorewall6 has never been started"
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@
+	$SHOREWALL_SHELL $FIREWALL $g_debugging $nolock reset $@
 	mutex_off
 	;;
     compile)
@@ -1661,7 +1661,7 @@ case "$COMMAND" in
 	;;
     drop)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
@@ -1673,7 +1673,7 @@ case "$COMMAND" in
 	;;
     logdrop)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
@@ -1685,7 +1685,7 @@ case "$COMMAND" in
 	;;
     reject|logreject)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall6_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
@@ -1701,7 +1701,7 @@ case "$COMMAND" in
 	;;
     save)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 
 	case $# in
 	1)
@@ -1766,7 +1766,7 @@ case "$COMMAND" in
         ;;
     call)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	#
 	# Undocumented way to call functions in ${SHAREDIR}/functions directly
 	#

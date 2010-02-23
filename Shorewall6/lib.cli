@@ -421,7 +421,7 @@ show_command() {
 
     g_ipt_options="$g_ipt_options $g_ipt_options1"
 
-    [ -n "$debugging" ] && set -x
+    [ -n "$g_debugging" ] && set -x
     case "$1" in
 	connections)
 	    [ $# -gt 1 ] && usage 1
@@ -656,7 +656,7 @@ dump_command() {
 
     [ $VERBOSE -lt 2 ] && VERBOSE=2
 
-    [ -n "$debugging" ] && set -x
+    [ -n "$g_debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
     clear_term
     echo "$PRODUCT $version Dump at $HOSTNAME - $(date)"
@@ -1026,7 +1026,7 @@ hits_command() {
 # 'allow' command executor
 #
 allow_command() {
-    [ -n "$debugging" ] && set -x
+    [ -n "$g_debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
     if shorewall6_is_started ; then
 	if ! chain_exists dynamic; then
@@ -1116,7 +1116,7 @@ logwatch_command() {
 	esac
     done
     
-    [ -n "$debugging" ] && set -x
+    [ -n "$g_debugging" ] && set -x
 
     if [ $# -eq 1 ]; then
 	logwatch $1

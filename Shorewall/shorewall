@@ -363,7 +363,7 @@ compiler() {
     [ -n "$TIMESTAMP" ] && options="$options --timestamp"
     [ -n "$g_test" ] && options="$options --test"
     [ -n "$PREVIEW" ] && options="$options --preview"
-    [ "$debugging" = trace ] && options="$options --debug"
+    [ "$g_debugging" = trace ] && options="$options --debug"
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     #
     # Run the appropriate params file
@@ -389,15 +389,15 @@ start_command() {
 
 	if [ -n "$AUTOMAKE" ]; then
 	    [ -n "$nolock" ] || mutex_on
-	    ${VARDIR}/firewall $debugging start
+	    ${VARDIR}/firewall $g_debugging start
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
 	    progress_message3 "Compiling..."
 
-	    if compiler $debugging $nolock compile ${VARDIR}/.start; then
+	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
 		[ -n "$nolock" ] || mutex_on
-		${VARDIR}/.start $debugging start
+		${VARDIR}/.start $g_debugging start
 		rc=$?
 		[ -n "$nolock" ] || mutex_off
 	    else
@@ -607,7 +607,7 @@ compile_command() {
 
     [ "x$file" = x- ] || progress_message3 "Compiling..."
 
-    compiler $debugging compile $file
+    compiler $g_debugging compile $file
 }
 
 #
@@ -682,7 +682,7 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    compiler $debugging $nolock check
+    compiler $g_debugging $nolock check
 }
 
 #
@@ -781,9 +781,9 @@ restart_command() {
     if [ -z "$g_fast" ]; then  
 	progress_message3 "Compiling..."
 
-	if compiler $debugging $nolock compile ${VARDIR}/.restart; then
+	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
 	    [ -n "$nolock" ] || mutex_on
-	    $SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+	    $SHOREWALL_SHELL ${VARDIR}/.restart $g_debugging restart
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
@@ -793,7 +793,7 @@ restart_command() {
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
 	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
+	$SHOREWALL_SHELL ${VARDIR}/firewall $g_debugging restart
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     fi
@@ -851,9 +851,9 @@ refresh_command() {
 
     progress_message3 "Compiling..."
 
-    if compiler $debugging $nolock compile ${VARDIR}/.refresh; then
+    if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
+	$SHOREWALL_SHELL ${VARDIR}/.refresh $g_debugging refresh
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     else
@@ -952,7 +952,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler $debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler $g_debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	exit $status
     fi
@@ -972,7 +972,7 @@ safe_commands() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if ${VARDIR}/.$command $debugging $command; then
+    if ${VARDIR}/.$command $g_debugging $command; then
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 
@@ -1089,7 +1089,7 @@ try_command() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler $debugging $nolock compile ${VARDIR}/.$command; then
+    if ! compiler $g_debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?
 	exit $status
     fi
@@ -1244,7 +1244,7 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$TIMESTAMP" ] && timestamp='-t' || timestamp=
 
-    if shorewall $debugging $verbose $timestamp compile -e $directory $directory/firewall && \
+    if shorewall $g_debugging $verbose $timestamp compile -e $directory $directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${LITEDIR}
     then
@@ -1254,15 +1254,15 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp restart" && \
+	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp start" && \
+	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall-lite $debugging $verbose $timestamp save" && \
+	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
@@ -1331,7 +1331,7 @@ export_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
+    if shorewall $g_debugging $verbose compile -e $directory $directory/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $directory/firewall $directory/firewall.conf $target
     then
@@ -1409,10 +1409,10 @@ usage() # $1 = exit status
 #
 # Execution begins here
 #
-debugging=
+g_debugging=
 
 if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
-    debugging=$1
+    g_debugging=$1
     shift
 fi
 
@@ -1652,7 +1652,7 @@ case "$COMMAND" in
 	[ -x $FIREWALL ] || fatal_error "Shorewall has never been started"
 	export NOROUTES
 	mutex_on
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	$SHOREWALL_SHELL $FIREWALL $g_debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
@@ -1661,7 +1661,7 @@ case "$COMMAND" in
 	shift
 	mutex_on
 	[ -x $FIREWALL ] || fatal_error "Shorewall has never been started"
-	$SHOREWALL_SHELL $FIREWALL $debugging $nolock reset $@
+	$SHOREWALL_SHELL $FIREWALL $g_debugging $nolock reset $@
 	mutex_off
 	;;
     compile)
@@ -1734,7 +1734,7 @@ case "$COMMAND" in
 	;;
     hits)
 	get_config Yes No Yes
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	shift
 	hits_command $@
 	;;
@@ -1754,7 +1754,7 @@ case "$COMMAND" in
 	;;
     drop)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    if ! chain_exists dynamic; then
@@ -1771,7 +1771,7 @@ case "$COMMAND" in
 	;;
     logdrop)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    if ! chain_exists dynamic; then
@@ -1788,7 +1788,7 @@ case "$COMMAND" in
 	;;
     reject|logreject)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
@@ -1814,7 +1814,7 @@ case "$COMMAND" in
 	;;
     save)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 
 	case $# in
 	1)
@@ -1867,7 +1867,7 @@ case "$COMMAND" in
 	rm -f ${VARDIR}/save
 	;;
     ipcalc)
-    	[ -n "$debugging" ] && set -x
+    	[ -n "$g_debugging" ] && set -x
 	if [ $# -eq 2 ]; then
 	    address=${2%/*}
 	    vlsm=${2#*/}
@@ -1892,7 +1892,7 @@ case "$COMMAND" in
 	;;
 
     iprange)
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	case $2 in
 	    *.*.*.*-*.*.*.*)
 		for address in ${2%-*} ${2#*-}; do
@@ -1907,7 +1907,7 @@ case "$COMMAND" in
 	esac
 	;;
     ipdecimal)
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 2 ] || usage 1
 	case $2 in
 	    *.*.*.*)
@@ -1926,7 +1926,7 @@ case "$COMMAND" in
         ;;
     call)
 	get_config
-	[ -n "$debugging" ] && set -x
+	[ -n "$g_debugging" ] && set -x
 	#
 	# Undocumented way to call functions in ${SHAREDIR}/functions directly
 	#

@@ -152,9 +152,9 @@ syslog_circular_buffer() {
 packet_log() # $1 = number of messages
 {
     if [ -n "$g_showmacs" -o $VERBOSE -gt 2 ]; then
-	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
     else
-	$LOGREAD | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
+	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
     fi
 }
 
@@ -1287,10 +1287,10 @@ hits_command() {
 
     timeout=30
 
-    if $LOGREAD | grep -q "${today}IN=.* OUT=" ; then
+    if $g_logread | grep -q "${today}IN=.* OUT=" ; then
 	echo "   HITS IP	        DATE"
 	echo "   ---- --------------- ------"
-	$LOGREAD | grep "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | while read count address month day; do
+	$g_logread | grep "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | while read count address month day; do
 	    printf '%7d %-15s %3s %2d\n' $count $address $month $day
 	done
 
@@ -1298,7 +1298,7 @@ hits_command() {
 
 	echo "   HITS IP	        PORT"
 	echo "   ---- --------------- -----"
-	$LOGREAD | grep  "${today}IN=.* OUT=" | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
+	$g_logread | grep  "${today}IN=.* OUT=" | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
 						t
 						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn | while read count address port; do
 	    printf '%7d %-15s %d\n' $count $address $port
@@ -1308,7 +1308,7 @@ hits_command() {
 
 	echo "   HITS DATE"
 	echo "   ---- ------"
-	$LOGREAD | grep  "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn | while read count month day; do
+	$g_logread | grep  "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn | while read count month day; do
 	    printf '%7d %3s %2d\n' $count $month $day
 	done
 
@@ -1316,7 +1316,7 @@ hits_command() {
 
 	echo "   HITS  PORT SERVICE(S)"
 	echo "   ---- ----- ----------"
-	$LOGREAD | grep "${today}IN=.* OUT=.*DPT" | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | while read count port ; do
+	$g_logread | grep "${today}IN=.* OUT=.*DPT" | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | while read count port ; do
 	    # List all services defined for the given port
 	    srv=$(grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | cut -f 1 -d' ' | sort -u)
 	    srv=$(echo $srv | sed 's/ /,/g')

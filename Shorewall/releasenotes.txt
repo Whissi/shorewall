@@ -192,6 +192,28 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     unless you choose to replace your current shorewall.conf with the
     one from the release (not recommended).
 
+14) The names of interface configuration variables in generated scripts
+    have been changed to insure uniqueness. These names now begin with
+    SW_.
+
+    This change will only affect you if your extension scripts are
+    using one or more of these variables.
+
+          Old Variable Name                   New Variable Name
+          -----------------------------------------------------
+	  iface_ADDRESS                        SW_iface_ADDRESS
+	  iface_BCASTS                         SW_iface_BCASTS
+	  iface_ACASTS                         SW_iface_ACASTS
+	  iface_GATEWAY                        SW_iface_GATEWAY
+	  iface_ADDRESSES                      SW_iface_ADDRESSES
+	  iface_NETWORKS                       SW_iface_NETWORKS
+	  iface_MAC                            SW_iface_MAC
+	  
+	  provider_IS_USABLE                  SW_provider_IS_USABLE
+
+    Where 'iface' is a capitalized interface name (e.g., ETH0) and
+    'provider' is the capitalized name of a provider.
+	  
 ----------------------------------------------------------------------------
 I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
@@ -257,7 +279,25 @@ None.
          V.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-None.
+1)  To avoid variable name collisions, a number of shell variable names
+    that Shorewall uses and that are in all capital letters have been
+    changed. The following variables are now safe to use in your
+    /etc/shorewall/params file and in your extension scripts:
+
+        DEBUG
+	ECHO_E
+	ECHO_N
+	EXPORT
+	FAST
+	IPT_OPTIONS
+	PROFILE
+	PURGE
+	RING_BELL
+	TEST
+	USE_VERBOSITY
+	VERBOSE_OFFSET
+	
+    See Migration Issue 14 above for additional information.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

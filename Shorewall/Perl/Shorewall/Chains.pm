@@ -635,7 +635,11 @@ sub add_jump( $$$;$$$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{ $to };
+	my $target = $to;
+
+	$target =~ s/\s.*//; # $to might hold something like 'NFQUEUE --queue-num 0'
+	
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{ $target };
     }
 
     #

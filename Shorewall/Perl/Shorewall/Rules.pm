@@ -2260,16 +2260,16 @@ EOF
 	        kill $$
 	        exit 2
             else
-	        RESTOREPATH=${VARDIR}/$RESTOREFILE
+	        g_restorepath=${VARDIR}/$RESTOREFILE
 
-	        if [ -x $RESTOREPATH ]; then
+	        if [ -x $g_restorepath ]; then
 		    echo Restoring ${PRODUCT:=Shorewall}...
                     
                     RECOVERING=Yes
                     export RECOVERING
 
-		    if $RESTOREPATH restore; then
-		        echo "$PRODUCT restored from $RESTOREPATH"
+		    if $g_restorepath restore; then
+		        echo "$PRODUCT restored from $g_restorepath"
 		        set_state "Started"
 		    else
 		        set_state "Unknown"

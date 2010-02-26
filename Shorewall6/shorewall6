@@ -433,13 +433,13 @@ start_command() {
 	fi
 
 	if [ -n "$g_fast" ]; then
-	    RESTOREPATH=${VARDIR}/$RESTOREFILE
+	    g_restorepath=${VARDIR}/$RESTOREFILE
 
-	    if [ -x $RESTOREPATH ]; then
+	    if [ -x $g_restorepath ]; then
 		echo Restoring Shorewall6...
-		$SHOREWALL_SHELL $RESTOREPATH restore
+		$SHOREWALL_SHELL $g_restorepath restore
 		date > ${VARDIR}/restarted
-		progress_message3 Shorewall6 restored from $RESTOREPATH
+		progress_message3 Shorewall6 restored from $g_restorepath
 	    else
 		do_it
 	    fi
@@ -891,7 +891,7 @@ safe_commands() {
 	    ;;
 	restart)
 	    export RESTOREFILE=.safe
-	    RESTOREPATH=${VARDIR}/.safe
+	    g_restorepath=${VARDIR}/.safe
 	    save_config
 	    progress_message3 "Restarting..."
 	    ;;
@@ -1028,7 +1028,7 @@ try_command() {
 	    ;;
 	restart)
 	    export RESTOREFILE=.try
-	    RESTOREPATH=${VARDIR}/.try
+	    g_restorepath=${VARDIR}/.try
 	    save_config
 	    progress_message3 "Restarting..."
 	    ;;
@@ -1714,7 +1714,7 @@ case "$COMMAND" in
 	    ;;
 	esac
 
-	RESTOREPATH=${VARDIR}/$RESTOREFILE
+	g_restorepath=${VARDIR}/$RESTOREFILE
 
 	[ -n "$nolock" ] || mutex_on
 
@@ -1740,21 +1740,20 @@ case "$COMMAND" in
 	    ;;
 	esac
 
+	g_restorepath=${VARDIR}/$RESTOREFILE
 
-	RESTOREPATH=${VARDIR}/$RESTOREFILE
+	if [ -x $g_restorepath ]; then
 
-	if [ -x $RESTOREPATH ]; then
-
-	    if [ -x ${RESTOREPATH}-ipsets ]; then
-		rm -f ${RESTOREPATH}-ipsets
-		echo "    ${RESTOREPATH}-ipsets removed"
+	    if [ -x ${g_restorepath}-ipsets ]; then
+		rm -f ${g_restorepath}-ipsets
+		echo "    ${g_restorepath}-ipsets removed"
 	    fi
 
-	    rm -f $RESTOREPATH
-	    rm -f ${RESTOREPATH}-iptables
-	    echo "    $RESTOREPATH removed"
-	elif [ -f $RESTOREPATH ]; then
-	    echo "   $RESTOREPATH exists and is not a saved Shorewall6 configuration"
+	    rm -f $g_restorepath
+	    rm -f ${g_restorepath}-iptables
+	    echo "    $g_restorepath removed"
+	elif [ -f $g_restorepath ]; then
+	    echo "   $g_restorepath exists and is not a saved Shorewall6 configuration"
 	fi
 	rm -f ${VARDIR}/save
 	;;

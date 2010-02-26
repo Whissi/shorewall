@@ -254,10 +254,10 @@ do_save() {
 
     if [ -f ${VARDIR}/firewall ]; then
 	if $iptables_save > ${VARDIR}/restore-$$; then
-	    cp -f ${VARDIR}/firewall $RESTOREPATH
-	    mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
-	    chmod +x $RESTOREPATH
-	    echo "   Currently-running Configuration Saved to $RESTOREPATH"
+	    cp -f ${VARDIR}/firewall $g_restorepath
+	    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
+	    chmod +x $g_restorepath
+	    echo "   Currently-running Configuration Saved to $g_restorepath"
 	    run_user_exit save
 	else
 	    rm -f ${VARDIR}/restore-$$
@@ -284,8 +284,8 @@ save_config() {
     if shorewall6_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
-	if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
-	    echo "   ERROR: $RESTOREPATH exists and is not a saved $PRODUCT configuration" >&2
+	if [ -f $g_restorepath -a ! -x $g_restorepath ]; then
+	    echo "   ERROR: $g_restorepath exists and is not a saved $PRODUCT configuration" >&2
 	else
 	    case $RESTOREFILE in
 		capabilities|chains|default_route|firewall|firewall.conf|nat|proxyarp|restarted|rt_tables|save|state|undo_routing|zones)
@@ -791,27 +791,27 @@ restore_command() {
 	exit 2
     fi
 
-    RESTOREPATH=${VARDIR}/$RESTOREFILE
+    g_restorepath=${VARDIR}/$RESTOREFILE
 
     export NOROUTES
 
     [ -n "$nolock" ] || mutex_on
 
-    if [ -x $RESTOREPATH ]; then
-	if [ -x ${RESTOREPATH}-ipsets ] ; then
+    if [ -x $g_restorepath ]; then
+	if [ -x ${g_restorepath}-ipsets ] ; then
 	    echo Restoring Ipsets...
 	    $IP6TABLES -F
 	    $IP6TABLES -X
-	    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
+	    $SHOREWALL_SHELL ${g_restorepath}-ipsets
 	fi
 
 	progress_message3 "Restoring Shorewall6..."
 
-	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
+	$SHOREWALL_SHELL $g_restorepath restore && progress_message3 "$PRODUCT restored from ${VARDIR}/$RESTOREFILE"
 
 	[ -n "$nolock" ] || mutex_off
     else
-	echo "File $RESTOREPATH: file not found"
+	echo "File $g_restorepath: file not found"
 	[ -n "$nolock" ] || mutex_off
 	exit 2
     fi

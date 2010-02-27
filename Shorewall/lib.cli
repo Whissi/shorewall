@@ -1068,12 +1068,6 @@ separate_list() {
 	    # There's been whining about us not catching embedded white space in
 	    # comma-separated lists. This is an attempt to snag some of the cases.
 	    #
-	    # The 'TERMINATOR' function will be set by the 'firewall' script to
-	    # either 'startup_error' or 'fatal_error' depending on the command and
-	    # command phase
-	    #
-            [ -n "$TERMINATOR" ] && \
-		$TERMINATOR "Invalid comma-separated list \"$@\""
             echo "WARNING -- invalid comma-separated list \"$@\"" >&2
 	    ;;
 	*\[*\]*)

@@ -110,6 +110,7 @@ fi
 DEBIAN=
 CYGWIN=
 MANDIR=${MANDIR:-"/usr/share/man"}
+SPARSE=
 
 case $(uname) in
     CYGWIN*)
@@ -121,6 +122,7 @@ case $(uname) in
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	CYGWIN=Yes
+	SPARSE=Yes
 	;;
     *)
 	[ -z "$OWNER" ] && OWNER=root
@@ -138,6 +140,9 @@ while [ $# -gt 0 ] ; do
         -v)
 	    echo "Shorewall6 Firewall Installer Version $VERSION"
 	    exit 0
+	    ;;
+	-s)
+	    SPARSE=Yes
 	    ;;
 	*)
 	    usage 1
@@ -261,7 +266,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 zones ${PREFIX}/usr/share/shorewall6/configfiles/zones
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/zones ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/zones ]; then
     run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall6/zones
     echo "Zones file installed as ${PREFIX}/etc/shorewall6/zones"
 fi
@@ -294,7 +299,7 @@ echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall6/wait4ifup"
 #
 run_install $OWNERSHIP -m 0644 policy ${PREFIX}/usr/share/shorewall6/configfiles/policy
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/policy ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/policy ]; then
     run_install $OWNERSHIP -m 0600 policy ${PREFIX}/etc/shorewall6/policy
     echo "Policy file installed as ${PREFIX}/etc/shorewall6/policy"
 fi
@@ -303,7 +308,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 interfaces ${PREFIX}/usr/share/shorewall6/configfiles/interfaces
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/interfaces ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/interfaces ]; then
     run_install $OWNERSHIP -m 0600 interfaces ${PREFIX}/etc/shorewall6/interfaces
     echo "Interfaces file installed as ${PREFIX}/etc/shorewall6/interfaces"
 fi
@@ -313,7 +318,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 hosts ${PREFIX}/usr/share/shorewall6/configfiles/hosts
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/hosts ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/hosts ]; then
     run_install $OWNERSHIP -m 0600 hosts ${PREFIX}/etc/shorewall6/hosts
     echo "Hosts file installed as ${PREFIX}/etc/shorewall6/hosts"
 fi
@@ -322,7 +327,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 rules ${PREFIX}/usr/share/shorewall6/configfiles/rules
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/rules ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/rules ]; then
     run_install $OWNERSHIP -m 0600 rules ${PREFIX}/etc/shorewall6/rules
     echo "Rules file installed as ${PREFIX}/etc/shorewall6/rules"
 fi
@@ -342,7 +347,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 routestopped ${PREFIX}/usr/share/shorewall6/configfiles/routestopped
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/routestopped ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/routestopped ]; then
     run_install $OWNERSHIP -m 0600 routestopped ${PREFIX}/etc/shorewall6/routestopped
     echo "Stopped Routing file installed as ${PREFIX}/etc/shorewall6/routestopped"
 fi
@@ -351,7 +356,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 maclist ${PREFIX}/usr/share/shorewall6/configfiles/maclist
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/maclist ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/maclist ]; then
     run_install $OWNERSHIP -m 0600 maclist ${PREFIX}/etc/shorewall6/maclist
     echo "MAC list file installed as ${PREFIX}/etc/shorewall6/maclist"
 fi
@@ -372,7 +377,7 @@ echo "Helper modules file installed as ${PREFIX}/usr/share/shorewall6/helpers"
 #
 run_install $OWNERSHIP -m 0644 tcrules ${PREFIX}/usr/share/shorewall6/configfiles/tcrules
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcrules ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tcrules ]; then
     run_install $OWNERSHIP -m 0600 tcrules ${PREFIX}/etc/shorewall6/tcrules
     echo "TC Rules file installed as ${PREFIX}/etc/shorewall6/tcrules"
 fi
@@ -382,7 +387,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tcinterfaces ${PREFIX}/usr/share/shorewall6/configfiles/tcinterfaces
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcinterfaces ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tcinterfaces ]; then
     run_install $OWNERSHIP -m 0600 tcinterfaces ${PREFIX}/etc/shorewall6/tcinterfaces
     echo "TC Interfaces file installed as ${PREFIX}/etc/shorewall6/tcinterfaces"
 fi
@@ -392,7 +397,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tcpri ${PREFIX}/usr/share/shorewall6/configfiles/tcpri
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcpri ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tcpri ]; then
     run_install $OWNERSHIP -m 0600 tcpri ${PREFIX}/etc/shorewall6/tcpri
     echo "TC Priority file installed as ${PREFIX}/etc/shorewall6/tcpri"
 fi
@@ -402,7 +407,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tos ${PREFIX}/usr/share/shorewall6/configfiles/tos
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tos ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tos ]; then
     run_install $OWNERSHIP -m 0600 tos ${PREFIX}/etc/shorewall6/tos
     echo "TOS file installed as ${PREFIX}/etc/shorewall6/tos"
 fi
@@ -411,7 +416,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tunnels ${PREFIX}/usr/share/shorewall6/configfiles/tunnels
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tunnels ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tunnels ]; then
     run_install $OWNERSHIP -m 0600 tunnels ${PREFIX}/etc/shorewall6/tunnels
     echo "Tunnels file installed as ${PREFIX}/etc/shorewall6/tunnels"
 fi
@@ -420,7 +425,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 blacklist ${PREFIX}/usr/share/shorewall6/configfiles/blacklist
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/blacklist ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/blacklist ]; then
     run_install $OWNERSHIP -m 0600 blacklist ${PREFIX}/etc/shorewall6/blacklist
     echo "Blacklist file installed as ${PREFIX}/etc/shorewall6/blacklist"
 fi
@@ -429,7 +434,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 providers ${PREFIX}/usr/share/shorewall6/configfiles/providers
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/providers ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/providers ]; then
     run_install $OWNERSHIP -m 0600 providers ${PREFIX}/etc/shorewall6/providers
     echo "Providers file installed as ${PREFIX}/etc/shorewall6/providers"
 fi
@@ -439,7 +444,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 route_rules ${PREFIX}/usr/share/shorewall6/configfiles/route_rules
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/route_rules ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/route_rules ]; then
     run_install $OWNERSHIP -m 0600 route_rules ${PREFIX}/etc/shorewall6/route_rules
     echo "Routing rules file installed as ${PREFIX}/etc/shorewall6/route_rules"
 fi
@@ -449,7 +454,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tcclasses ${PREFIX}/usr/share/shorewall6/configfiles/tcclasses
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcclasses ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tcclasses ]; then
     run_install $OWNERSHIP -m 0600 tcclasses ${PREFIX}/etc/shorewall6/tcclasses
     echo "TC Classes file installed as ${PREFIX}/etc/shorewall6/tcclasses"
 fi
@@ -459,7 +464,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tcdevices ${PREFIX}/usr/share/shorewall6/configfiles/tcdevices
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcdevices ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tcdevices ]; then
     run_install $OWNERSHIP -m 0600 tcdevices ${PREFIX}/etc/shorewall6/tcdevices
     echo "TC Devices file installed as ${PREFIX}/etc/shorewall6/tcdevices"
 fi
@@ -469,7 +474,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 notrack ${PREFIX}/usr/share/shorewall6/configfiles/notrack
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/notrack ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/notrack ]; then
     run_install $OWNERSHIP -m 0600 notrack ${PREFIX}/etc/shorewall6/notrack
     echo "Notrack file installed as ${PREFIX}/etc/shorewall6/notrack"
 fi
@@ -483,7 +488,7 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall6/confi
 #
 run_install $OWNERSHIP -m 0644 init ${PREFIX}/usr/share/shorewall6/configfiles/init
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/init ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/init ]; then
     run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall6/init
     echo "Init file installed as ${PREFIX}/etc/shorewall6/init"
 fi
@@ -492,7 +497,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 start ${PREFIX}/usr/share/shorewall6/configfiles/start
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/start ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/start ]; then
     run_install $OWNERSHIP -m 0600 start ${PREFIX}/etc/shorewall6/start
     echo "Start file installed as ${PREFIX}/etc/shorewall6/start"
 fi
@@ -501,7 +506,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 stop ${PREFIX}/usr/share/shorewall6/configfiles/stop
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/stop ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/stop ]; then
     run_install $OWNERSHIP -m 0600 stop ${PREFIX}/etc/shorewall6/stop
     echo "Stop file installed as ${PREFIX}/etc/shorewall6/stop"
 fi
@@ -510,7 +515,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 stopped ${PREFIX}/usr/share/shorewall6/configfiles/stopped
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/stopped ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/stopped ]; then
     run_install $OWNERSHIP -m 0600 stopped ${PREFIX}/etc/shorewall6/stopped
     echo "Stopped file installed as ${PREFIX}/etc/shorewall6/stopped"
 fi
@@ -519,7 +524,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 accounting ${PREFIX}/usr/share/shorewall6/configfiles/accounting
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/accounting ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/accounting ]; then
     run_install $OWNERSHIP -m 0600 accounting ${PREFIX}/etc/shorewall6/accounting
     echo "Accounting file installed as ${PREFIX}/etc/shorewall6/accounting"
 fi
@@ -528,7 +533,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 started ${PREFIX}/usr/share/shorewall6/configfiles/started
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/started ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/started ]; then
     run_install $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall6/started
     echo "Started file installed as ${PREFIX}/etc/shorewall6/started"
 fi
@@ -537,7 +542,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 restored ${PREFIX}/usr/share/shorewall6/configfiles/restored
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/restored ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/restored ]; then
     run_install $OWNERSHIP -m 0600 restored ${PREFIX}/etc/shorewall6/restored
     echo "Restored file installed as ${PREFIX}/etc/shorewall6/restored"
 fi
@@ -546,7 +551,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 clear ${PREFIX}/usr/share/shorewall6/configfiles/clear
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/clear ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/clear ]; then
     run_install $OWNERSHIP -m 0600 clear ${PREFIX}/etc/shorewall6/clear
     echo "Clear file installed as ${PREFIX}/etc/shorewall6/clear"
 fi
@@ -555,7 +560,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 isusable ${PREFIX}/usr/share/shorewall6/configfiles/isusable
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/isusable ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/isusable ]; then
     run_install $OWNERSHIP -m 0600 isusable ${PREFIX}/etc/shorewall6/isusable
     echo "Isusable file installed as ${PREFIX}/etc/shorewall/isusable"
 fi
@@ -564,7 +569,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 refresh ${PREFIX}/usr/share/shorewall6/configfiles/refresh
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/refresh ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/refresh ]; then
     run_install $OWNERSHIP -m 0600 refresh ${PREFIX}/etc/shorewall6/refresh
     echo "Refresh file installed as ${PREFIX}/etc/shorewall6/refresh"
 fi
@@ -573,7 +578,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 refreshed ${PREFIX}/usr/share/shorewall6/configfiles/refreshed
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/refreshed ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/refreshed ]; then
     run_install $OWNERSHIP -m 0600 refreshed ${PREFIX}/etc/shorewall6/refreshed
     echo "Refreshed file installed as ${PREFIX}/etc/shorewall6/refreshed"
 fi
@@ -582,7 +587,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 tcclear ${PREFIX}/usr/share/shorewall6/configfiles/tcclear
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/tcclear ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/tcclear ]; then
     run_install $OWNERSHIP -m 0600 tcclear ${PREFIX}/etc/shorewall6/tcclear
     echo "Tcclear file installed as ${PREFIX}/etc/shorewall6/tcclear"
 fi
@@ -597,7 +602,7 @@ echo "Standard actions file installed as ${PREFIX}/usr/shared/shorewall6/actions
 #
 run_install $OWNERSHIP -m 0644 actions ${PREFIX}/usr/share/shorewall6/configfiles/actions
 
-if [ -z "$CYGWIN" -a ! -f ${PREFIX}/etc/shorewall6/actions ]; then
+if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall6/actions ]; then
     run_install $OWNERSHIP -m 0644 actions ${PREFIX}/etc/shorewall6/actions
     echo "Actions file installed as ${PREFIX}/etc/shorewall6/actions"
 fi
@@ -607,7 +612,7 @@ fi
 #
 run_install $OWNERSHIP -m 0644 Makefile-lite ${PREFIX}/usr/share/shorewall6/configfiles/Makefile
 
-if [ -z "$CYGWIN" ]; then
+if [ -z "$SPARSE" ]; then
     run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall6/Makefile
     echo "Makefile installed as ${PREFIX}/etc/shorewall6/Makefile"
 fi
@@ -686,7 +691,7 @@ if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
 	echo "shorewall6 will start automatically at boot"
 	echo "Set startup=1 in /etc/default/shorewall6 to enable"
 	touch /var/log/shorewall6-init.log
-	qt mywhich perl && perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/shorewall6/shorewall6.conf
+	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/shorewall6/shorewall6.conf
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewall6 ; then

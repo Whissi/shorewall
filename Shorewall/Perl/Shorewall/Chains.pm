@@ -635,7 +635,7 @@ sub add_jump( $$$;$$$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ /--/; #If the target has options, it must be a builtin. 
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin. 
     }
 
     #

@@ -62,7 +62,71 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			NOROUTES=Yes
 			option=${option#n}
 			;;
-		    *)
+		    t*)
+			TIMESTAMP=Yes
+			option=${option#t}
+			;;			
+		    r*)
+			RECOVERING=Yes
+			option=${option#r}
+			;;
+		    V*)
+			option=${option#V}
+			if [ -n "$option" ]; then
+			    case $option in
+				-1|0|1|2)
+				    VERBOSE=$option
+				    option=
+				    ;;
+				*)
+				    startup_error "Invalid -V option ($option)"
+				    ;;
+			    esac
+			else
+			    startup_error "Missing -V option"
+			fi
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    finished=1
+            ;;
+    esac
+done
+
+COMMAND="$1"
+
+[ -n "${PRODUCT:=Shorewall6}" ]
+
+kernel=$(printf "%2d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+if [ $kernel -lt 20624 ]; then
+    error_message "ERROR: $PRODUCT requires Linux kernel 2.6.24 or later"
+    status=2
+else
+    case "$COMMAND" in
+	start)
+	    [ $# -ne 1 ] && usage 2
+	    if shorewall6_is_started; then
+		error_message "$PRODUCT is already Running"
+		status=0
+	    else
+		progress_message3 "Starting $PRODUCT...."
+		detect_configuration
+		define_firewall
+		status=$?
+		[ -n "$SUBSYSLOCK" -a $status -eq 0 ] && touch $SUBSYSLOCK
+		progress_message3 "done."
+	    fi
+	    ;;
+	stop)
+	    [ $# -ne 1 ] && usage 2
+	    progress_message3 "Stopping $PRODUCT...."
+	    detect_configuration
+	    stop_firewall
+	    status=0
+	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK		    *)
 			usage 1
 			;;
 		esac

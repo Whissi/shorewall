@@ -62,6 +62,30 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			NOROUTES=Yes
 			option=${option#n}
 			;;
+		    t*)
+			TIMESTAMP=Yes
+			option=${option#t}
+			;;			
+		    r*)
+			RECOVERING=Yes
+			option=${option#r}
+			;;
+		    V*)
+			option=${option#V}
+			if [ -n "$option" ]; then
+			    case $option in
+				-1|0|1|2)
+				    VERBOSE=$option
+				    option=
+				    ;;
+				*)
+				    startup_error "Invalid -V option ($option)"
+				    ;;
+			    esac
+			else
+			    startup_error "Missing -V option"
+			fi
+			;;
 		    *)
 			usage 1
 			;;

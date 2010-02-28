@@ -173,14 +173,20 @@ if [ -n "$PREFIX" ]; then
 else
     [ -x /usr/share/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
-    if [ -z "$CYGWIN" ]; then
+    if [ -n "$CYGWIN" ]; then
+	echo "Installing Cygwin-specific configuration..."
+    else
 	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
+	    echo "Installing Debian-specific configuration..."
 	    DEBIAN=yes
+	    SPARSE=yes
 	elif [ -f /etc/slackware-version ] ; then
+	    echo "Installing Slackware-specific configuration..."
 	    DEST="/etc/rc.d"
 		SLACKWARE=yes
 	    INIT="rc.firewall"
 	elif [ -f /etc/arch-release ] ; then
+	    echo "Installing ArchLinux-specific configuration..."
 	    DEST="/etc/rc.d"
 	    INIT="shorewall6"
 	    ARCHLINUX=yes

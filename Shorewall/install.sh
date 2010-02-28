@@ -180,15 +180,20 @@ else
 	exit 1
     fi
 
-    if [ -z "$CYGWIN" ]; then
+    if [ -n "$CYGWIN" ]; then
+	echo "Installing Cygwin-specific configuration..."
+    else
 	if [ -f /etc/debian_version ]; then
+	    echo "Installing Debian-specific configuration..."
 	    DEBIAN=yes
+	    SPARSE=yes
 	elif [ -f /etc/slackware-version ] ; then
-	    echo "installing Slackware specific configuration..."
+	    echo "Installing Slackware-specific configuration..."
 	    DEST="/etc/rc.d"
 	    MANDIR="/usr/man"
 	    SLACKWARE=yes
 	elif [ -f /etc/arch-release ] ; then
+	    echo "Installing ArchLinux-specific configuration..."
 	    DEST="/etc/rc.d"
 	    INIT="shorewall"
 	    ARCHLINUX=yes

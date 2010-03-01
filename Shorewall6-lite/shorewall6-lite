@@ -149,7 +149,7 @@ get_config() {
 
     [ -n "${VERBOSITY:=2}" ]
 
-    [ -n "$USE_VERBOSITY" ] && VERBOSE=$USE_VERBOSITY || VERBOSE=$(($VERBOSE_OFFSET + $VERBOSITY))
+    [ -n "$g_use_verbosity" ] && VERBOSE=$g_use_verbosity || VERBOSE=$(($g_verbose_offset + $VERBOSITY))
 
     export VERBOSE
 
@@ -410,8 +410,8 @@ fi
 
 IPT_OPTIONS="-nv"
 FAST=
-VERBOSE_OFFSET=0
-USE_VERBOSITY=
+g_verbose_offset=0
+g_use_verbosity=
 NOROUTES=
 EXPORT=
 export TIMESTAMP=
@@ -440,7 +440,7 @@ while [ $finished -eq 0 ]; do
 			option=${option#x}
 			;;
 		    q*)
-			VERBOSE_OFFSET=$(($VERBOSE_OFFSET - 1 ))
+			g_verbose_offset=$(($g_verbose_offset - 1 ))
 			option=${option#q}
 			;;
 		    f*)
@@ -451,24 +451,24 @@ while [ $finished -eq 0 ]; do
 			option=${option#v}
 			case $option in 
 			    -1*)
-				USE_VERBOSITY=-1
+				g_use_verbosity=-1
 				option=${option#-1}
 				;;
 			    0*)
-				USE_VERBOSITY=0
+				g_use_verbosity=0
 				option=${option#0}
 				;;
 			    1*)
-				USE_VERBOSITY=1
+				g_use_verbosity=1
 				option=${option#1}
 				;;
 			    2*)
-				USE_VERBOSITY=2
+				g_use_verbosity=2
 				option=${option#2}
 				;;
 			    *)
-				VERBOSE_OFFSET=$(($VERBOSE_OFFSET + 1 ))
-				USE_VERBOSITY=
+				g_verbose_offset=$(($g_verbose_offset + 1 ))
+				g_use_verbosity=
 				;;
 			esac
 			;;

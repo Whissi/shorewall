@@ -14,8 +14,6 @@ usage() {
 #
 # Start trace if first arg is "debug" or "trace"
 #
-[ -n "${PRODUCT:=Shorewall}" ]
-
 if [ $# -gt 1 ]; then
     if [ "x$1" = "xtrace" ]; then
 	set -x
@@ -25,7 +23,9 @@ if [ $# -gt 1 ]; then
 	shift
     fi
 fi
-
+#
+# Map VERBOSE to VERBOSITY for compatibility with old Shorewall-lite installations
+#
 [ -z "$VERBOSITY" ] && [ -n "$VERBOSE" ] && VERBOSITY=$VERBOSE
 
 initialize

@@ -24,6 +24,8 @@ if [ $# -gt 1 ]; then
     fi
 fi
 
+[ -z "$VERBOSITY" ] && [ -n "$VERBOSE" ] & VERBOSITY=$VERBOSE
+
 initialize
 
 if [ -n "$STARTUP_LOG" ]; then
@@ -51,11 +53,11 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 	    while [ -n "$option" ]; do
 		case $option in
 		    v*)
-			VERBOSE=$(($VERBOSE + 1 ))
+			VERBOSITY=$(($VERBOSITY + 1 ))
 			option=${option#v}
 			;;
 		    q*)
-			VERBOSE=$(($VERBOSE - 1 ))
+			VERBOSITY=$(($VERBOSITY - 1 ))
 			option=${option#q}
 			;;
 		    n*)
@@ -81,7 +83,7 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			if [ -n "$option" ]; then
 			    case $option in
 				-1|0|1|2)
-				    VERBOSE=$option
+				    VERBOSITY=$option
 				    option=
 				    ;;
 				*)

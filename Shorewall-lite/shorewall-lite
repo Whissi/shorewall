@@ -149,9 +149,9 @@ get_config() {
 
     [ -n "${VERBOSITY:=2}" ]
 
-    [ -n "$g_use_verbosity" ] && VERBOSE=$g_use_verbosity || VERBOSE=$(($g_verbose_offset + $VERBOSITY))
+    [ -n "$g_use_verbosity" ] && VERBOSITY=$g_use_verbosity || VERBOSITY=$(($g_verbose_offset + $VERBOSITY))
 
-    export VERBOSE
+    export VERBOSITY
 
     [ -n "${HOSTNAME:=$(hostname)}" ]
 

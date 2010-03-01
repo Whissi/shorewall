@@ -52,7 +52,7 @@ progress_message() # $* = Message
     local timestamp
     timestamp=
 
-    if [ $VERBOSE -gt 1 ]; then
+    if [ $VERBOSITY -gt 1 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
@@ -63,7 +63,7 @@ progress_message2() # $* = Message
     local timestamp
     timestamp=
 
-    if [ $VERBOSE -gt 0 ]; then
+    if [ $VERBOSITY -gt 0 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
@@ -74,7 +74,7 @@ progress_message3() # $* = Message
     local timestamp
     timestamp=
 
-    if [ $VERBOSE -ge 0 ]; then
+    if [ $VERBOSITY -ge 0 ]; then
 	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
@@ -990,7 +990,7 @@ report_capabilities() {
 	echo "  " $1: $setting
     }
 
-    if [ $VERBOSE -gt 1 ]; then
+    if [ $VERBOSITY -gt 1 ]; then
 	echo "Shorewall has detected the following iptables/netfilter capabilities:"
 	report_capability "NAT" $NAT_ENABLED
 	report_capability "Packet Mangling" $MANGLE_ENABLED

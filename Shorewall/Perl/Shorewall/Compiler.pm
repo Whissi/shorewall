@@ -216,7 +216,7 @@ sub generate_script_2() {
     my @dont_load = split_list $config{DONT_LOAD}, 'module';
 
     emit ( '[ -n "${COMMAND:=restart}" ]',
-	   '[ -n "${VERBOSE:=0}" ]',
+	   '[ -n "${VERBOSITY:=0}" ]',
 	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]) );
 
     emit ( qq(VERSION="$globals{VERSION}") ) unless $test;

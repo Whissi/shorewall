@@ -151,7 +151,7 @@ syslog_circular_buffer() {
 #
 packet_log() # $1 = number of messages
 {
-    if [ -n "$g_showmacs" -o $VERBOSE -gt 2 ]; then
+    if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
     else
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
@@ -458,7 +458,7 @@ show_command() {
 			    option=
 			    ;;
 			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
+			    VERBOSITY=$(($VERBOSITY + 1 ))
 			    option=${option#v}
 			    ;;
 			x*)
@@ -587,7 +587,7 @@ show_command() {
 	capabilities)
 	    [ $# -gt 1 ] && usage 1
 	    determine_capabilities
-	    VERBOSE=2
+	    VERBOSITY=2
 	    if [ -n "$g_filemode" ]; then
 		report_capabilities1
 	    else
@@ -778,7 +778,7 @@ dump_command() {
 
     g_ipt_options="$g_ipt_options $g_ipt_options1"
 
-    [ $VERBOSE -lt 2 ] && VERBOSE=2
+    [ $VERBOSITY -lt 2 ] && VERBOSITY=2
 
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
@@ -1390,11 +1390,11 @@ logwatch_command() {
 		while [ -n "$option" ]; do
 		    case $option in
 			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
+			    VERBOSITY=$(($VERBOSITY + 1 ))
 			    option=${option#v}
 			    ;;
 			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
+			    VERBOSITY=$(($VERBOSITY - 1 ))
 			    option=${option#q}
 			    ;;
 			m*)

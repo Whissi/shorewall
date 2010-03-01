@@ -1203,33 +1203,34 @@ LOGBURST=""</programlisting>
         </literallayout>
 
         <para>I personally use <ulink
-        url="http://www.logwatch.org">Logwatch</ulink>. It emails me a report
-        each day from my various systems with each report summarizing the
-        logged activity on the corresponding system. I use the brief report
-        format; here's a sample:</para>
+        url="http://www.cert.uni-stuttgart.de.projects/fwlogwatch">fwlogwatch</ulink>.
+        It emails me a report each day from my various systems with each
+        report summarizing the logged activity on the corresponding system;
+        here's a sample:</para>
 
         <blockquote>
-          <programlisting> --------------------- iptables firewall Begin ------------------------ 
+          <programlisting>fwlogwatch summary
+Generated Monday March 01 12:05:04 PST 2010 by root.
+840 (and 166 older than 86400 seconds) of 1006 entries in 2 input files are packet logs, 178 have unique characteristics.
+First packet log entry: Feb 28 12:56:49, last: Mar 01 12:00:38.
+All entries were logged by the same host: "gateway".
+All entries have the same target: "-".
 
- Dropped 111 packets on interface eth0
-   From 58.20.162.142 - 5 packets to tcp(1080) 
-   From 62.163.19.50 - 1 packet to udp(6348) 
-   From 66.111.45.60 - 9 packets to tcp(192) 
-   From 69.31.82.50 - 18 packets to tcp(3128) 
-   From 72.232.183.102 - 2 packets to tcp(3128) 
-   From 82.96.96.3 - 6 packets to tcp(808,1080,1978,7600,65506) 
-   From 128.48.51.209 - 5 packets to tcp(143) 
-   From 164.77.223.150 - 12 packets to tcp(873) 
-   From 165.233.109.23 - 8 packets to tcp(22) 
-   From 202.99.172.175 - 4 packets to udp(2,4081) 
-   From 206.59.41.101 - 2 packets to tcp(5900) 
-   From 217.91.30.224 - 24 packets to tcp(873) 
-   From 218.87.47.114 - 6 packets to tcp(3128) 
-   From 220.110.219.234 - 4 packets to tcp(22) 
-   From 220.133.116.173 - 5 packets to tcp(3128) 
- 
- ---------------------- iptables firewall End -------------------------</programlisting>
+net-fw DROP  eth0 72 packets from 174.37.159.222 to 76.104.233.98
+net-fw DROP  eth2 30 packets from 66.249.65.20 to 206.124.146.176
+net-fw DROP  eth0 22 packets from 85.247.221.191 to 76.104.233.98
+net-dmz DROP  eth2 18 packets from 60.217.65.115 to 206.124.146.178
+net-fw DROP  eth2 18 packets from 60.217.65.115 to 206.124.146.180
+net-fw DROP  eth2 18 packets from 60.217.65.115 to 206.124.146.176
+net-fw DROP  eth2 18 packets from 60.217.65.115 to 206.124.146.179
+net-fw DROP  eth0 18 packets from 221.195.73.86 to 76.104.233.98
+net-dmz DROP  eth2 16 packets from 60.217.65.115 to 206.124.146.177
+net-fw DROP  eth0 16 packets from 24.30.147.199 to 76.104.233.98
+...</programlisting>
         </blockquote>
+
+        <para>Fwlogwatch contains a built-in web server that allows monitoring
+        recent activity in summary fashion.</para>
       </section>
 
       <section id="faq6b">

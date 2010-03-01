@@ -225,7 +225,6 @@ sub generate_script_2() {
 	   'TERMINATOR=fatal_error' ,
 	   qq(DONT_LOAD="@dont_load") ,
 	   qq(STARTUP_LOG="$config{STARTUP_LOG}") ,
-	   "LOG_VERBOSE=$config{LOG_VERBOSITY}" ,
 	   ''
 	   );
 

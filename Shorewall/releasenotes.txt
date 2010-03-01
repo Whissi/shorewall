@@ -270,6 +270,18 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     (e.g., NFQUEUE(0)), invalid iptables-restore input would be
     generated.
 
+10) Previously, with optimization 4, users of ipsec on older releases
+    such as RHEL5 and CentOS, could encounter an error similar to this
+    one:
+
+    Running /sbin/iptables-restore...
+    iptables-restore v1.3.5: Unknown arg `out'
+    Error occurred at line: 93
+    Try `iptables-restore -h' or 'iptables-restore --help' for more
+        information.
+    	ERROR: iptables-restore Failed. Input is in
+               /var/lib/shorewall/.iptables-restore-input
+
 ----------------------------------------------------------------------------
            I V. K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

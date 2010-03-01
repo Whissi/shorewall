@@ -72,6 +72,12 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			;;
 		    V*)
 			option=${option#V}
+
+			if [ -z "$option" -a $# -gt 0 ]; then
+			    shift
+			    option=$1
+			fi
+
 			if [ -n "$option" ]; then
 			    case $option in
 				-1|0|1|2)
@@ -79,11 +85,11 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 				    option=
 				    ;;
 				*)
-				    startup_error "Invalid -V option ($option)"
+				    startup_error "Invalid -V option value ($option)"
 				    ;;
 			    esac
 			else
-			    startup_error "Missing -V option"
+			    startup_error "Missing -V option value"
 			fi
 			;;
 		esac

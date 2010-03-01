@@ -1598,7 +1598,7 @@ sub optimize_ruleset() {
 			    #
 			    # Not so easy -- the rule contains matches
 			    #
-			    if ( $chainref->{builtin} ) {
+			    if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
 				#
 				# This case requires a new rule merging algorithm. Ignore this chain for
 				# now.

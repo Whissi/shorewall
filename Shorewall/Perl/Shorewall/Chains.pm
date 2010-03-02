@@ -1509,7 +1509,7 @@ sub optimize_ruleset() {
     # The search continues until no short chains remain
     # Chains with 'dont_optimize = 1' are exempted from optimization
     #
-    for my $table ( qw/ raw mangle nat filter/ ) {
+    for my $table ( qw/raw mangle nat filter/ ) {
 
 	next if $family == F_IPV6 && $table eq 'nat';
 
@@ -1594,7 +1594,7 @@ sub optimize_ruleset() {
 				replace_references $chainref, $1;
 				$progress = 1;
 			    }
-			} elsif ( $firstrule =~ /-A $chainref->{name}( .*) -[jg] (.*)$/ ) {
+			} elsif ( $firstrule =~ /-A $chainref->{name}( +.+) -[jg] (.*)$/ ) {
 			    #
 			    # Not so easy -- the rule contains matches
 			    #

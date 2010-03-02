@@ -233,7 +233,7 @@ sub generate_script_2() {
     append_file 'params' if $config{EXPORTPARAMS};
 
     emit ( '',
-	   "STOPPING=",
+	   "g_stopping=",
 	   '',
 	   '#',
 	   '# The library requires that ${VARDIR} exist',

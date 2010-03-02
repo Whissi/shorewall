@@ -2282,11 +2282,14 @@ EOF
 	    ;;
     esac
 
+    if [ -n "$g_stopping" ]; then
+        kill $$
+        exit 1
+    fi
+
     set_state "Stopping"
 
-    STOPPING="Yes"
-
-    TERMINATOR=
+    g_stopping="Yes"
 
     deletechain shorewall
 

@@ -965,7 +965,7 @@ clear_firewall() {
 
     set_state "Cleared"
 
-    logger -p kern.info "$PRODUCT Cleared"
+    logger -p kern.info "$g_product Cleared"
 }
 
 #
@@ -993,13 +993,13 @@ startup_error() # $* = Error Message
     echo "   ERROR: $@: Firewall state not changed" >&2
     case $COMMAND in
         start)
-	    logger -p kern.err "ERROR:$PRODUCT start failed:Firewall state not changed"
+	    logger -p kern.err "ERROR:$g_product start failed:Firewall state not changed"
 	    ;;
 	restart)
-	    logger -p kern.err "ERROR:$PRODUCT restart failed:Firewall state not changed"
+	    logger -p kern.err "ERROR:$g_product restart failed:Firewall state not changed"
 	    ;;
 	restore)
-	    logger -p kern.err "ERROR:$PRODUCT restore failed:Firewall state not changed"
+	    logger -p kern.err "ERROR:$g_product restore failed:Firewall state not changed"
 	    ;;
     esac
 
@@ -1008,13 +1008,13 @@ startup_error() # $* = Error Message
 
 	case $COMMAND in
 	    start)
-		echo "${timestamp}  ERROR:$PRODUCT start failed:Firewall state not changed" >> $STARTUP_LOG
+		echo "${timestamp}  ERROR:$g_product start failed:Firewall state not changed" >> $STARTUP_LOG
 		;;
 	    restart)
-		echo "${timestamp}  ERROR:$PRODUCT restart failed:Firewall state not changed" >> $STARTUP_LOG
+		echo "${timestamp}  ERROR:$g_product restart failed:Firewall state not changed" >> $STARTUP_LOG
 		;;
 	    restore)
-		echo "${timestamp}  ERROR:$PRODUCT restore failed:Firewall state not changed" >> $STARTUP_LOG
+		echo "${timestamp}  ERROR:$g_product restore failed:Firewall state not changed" >> $STARTUP_LOG
 		;;
 	esac
     fi

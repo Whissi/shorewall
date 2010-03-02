@@ -1583,7 +1583,7 @@ MUTEX_TIMEOUT=
 
 SHAREDIR=/usr/share/shorewall
 CONFDIR=/etc/shorewall
-export PRODUCT="Shorewall"
+g_product="Shorewall"
 export RECOVERING=
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
@@ -1757,7 +1757,7 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    if ! chain_exists dynamic; then
-		echo "Dynamic blacklisting is not supported in the current $PRODUCT configuration"
+		echo "Dynamic blacklisting is not supported in the current $g_product configuration"
 		exit 2
 	    fi
 
@@ -1774,7 +1774,7 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
 	    if ! chain_exists dynamic; then
-		echo "Dynamic blacklisting is not supported in the current $PRODUCT configuration"
+		echo "Dynamic blacklisting is not supported in the current $g_product configuration"
 		exit 2
 	    fi
 

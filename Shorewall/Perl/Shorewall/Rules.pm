@@ -2242,20 +2242,20 @@ EOF
 
             case $COMMAND in
 	        start)
-	            logger -p kern.err "ERROR:$PRODUCT start failed"
+	            logger -p kern.err "ERROR:$g_product start failed"
 	            ;;
 	        restart)
-	            logger -p kern.err "ERROR:$PRODUCT restart failed"
+	            logger -p kern.err "ERROR:$g_product restart failed"
 	            ;;
 	        refresh)
-	            logger -p kern.err "ERROR:$PRODUCT refresh failed"
+	            logger -p kern.err "ERROR:$g_product refresh failed"
 	            ;;
             esac
 
             if [ "$RESTOREFILE" = NONE ]; then
                 COMMAND=clear
                 clear_firewall
-                echo "$PRODUCT Cleared"
+                echo "$g_product Cleared"
 
 	        kill $$
 	        exit 2
@@ -2263,13 +2263,13 @@ EOF
 	        g_restorepath=${VARDIR}/$RESTOREFILE
 
 	        if [ -x $g_restorepath ]; then
-		    echo Restoring ${PRODUCT:=Shorewall}...
+		    echo Restoring ${g_product:=Shorewall}...
                     
                     RECOVERING=Yes
                     export RECOVERING
 
 		    if $g_restorepath restore; then
-		        echo "$PRODUCT restored from $g_restorepath"
+		        echo "$g_product restored from $g_restorepath"
 		        set_state "Started"
 		    else
 		        set_state "Unknown"
@@ -2443,7 +2443,7 @@ EOF
     emit '
     set_state "Stopped"
 
-    logger -p kern.info "$PRODUCT Stopped"
+    logger -p kern.info "$g_product Stopped"
 
     case $COMMAND in
     stop|clear)

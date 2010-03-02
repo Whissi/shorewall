@@ -115,10 +115,10 @@ case "$COMMAND" in
     start)
 	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
-	    error_message "$PRODUCT is already Running"
+	    error_message "$g_product is already Running"
 	    status=0
 	else
-	    progress_message3 "Starting $PRODUCT...."
+	    progress_message3 "Starting $g_product...."
 	    detect_configuration
 	    define_firewall
 	    status=$?
@@ -128,7 +128,7 @@ case "$COMMAND" in
 	;;
     stop)
 	[ $# -ne 1 ] && usage 2
-	progress_message3 "Stopping $PRODUCT...."
+	progress_message3 "Stopping $g_product...."
 	detect_configuration
 	stop_firewall
 	status=0
@@ -137,7 +137,7 @@ case "$COMMAND" in
 	;;
     reset)
 	if ! shorewall_is_started ; then
-	    error_message "$PRODUCT is not running"
+	    error_message "$g_product is not running"
 	    status=2
 	elif [ $# -eq 1 ]; then
 	    $IPTABLES -Z
@@ -145,7 +145,7 @@ case "$COMMAND" in
 	    $IPTABLES -t mangle -Z
 	    date > ${VARDIR}/restarted
 	    status=0
-	    progress_message3 "$PRODUCT Counters Reset"
+	    progress_message3 "$g_product Counters Reset"
 	else
 	    shift
 	    status=0
@@ -167,10 +167,10 @@ case "$COMMAND" in
     restart)
 	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
-	    progress_message3 "Restarting $PRODUCT...."
+	    progress_message3 "Restarting $g_product...."
 	else
-	    error_message "$PRODUCT is not running"
-	    progress_message3 "Starting $PRODUCT...."
+	    error_message "$g_product is not running"
+	    progress_message3 "Starting $g_product...."
 	fi
 
 	detect_configuration
@@ -184,13 +184,13 @@ case "$COMMAND" in
     refresh)
 	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
-	    progress_message3 "Refreshing $PRODUCT...."
+	    progress_message3 "Refreshing $g_product...."
 	    detect_configuration
 	    define_firewall
 	    status=$?
 	    progress_message3 "done."
 	else
-	    echo "$PRODUCT is not running" >&2
+	    echo "$g_product is not running" >&2
 	    status=2
 	fi
 	;;
@@ -205,7 +205,7 @@ case "$COMMAND" in
 	;;
     clear)
 	[ $# -ne 1 ] && usage 2
-	progress_message3 "Clearing $PRODUCT...."
+	progress_message3 "Clearing $g_product...."
 	clear_firewall
 	status=0
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
@@ -213,13 +213,13 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -ne 1 ] && usage 2
-	echo "$PRODUCT-$SHORWEALL_VERSION Status at $(hostname) - $(date)"
+	echo "$g_product-$SHORWEALL_VERSION Status at $(hostname) - $(date)"
 	echo
 	if shorewall_is_started; then
-	    echo "$PRODUCT is running"
+	    echo "$g_product is running"
 	    status=0
 	else
-	    echo "$PRODUCT is stopped"
+	    echo "$g_product is stopped"
 	    status=4
 	fi
 

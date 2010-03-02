@@ -167,24 +167,24 @@ sub generate_script_2() {
 	if ( $export ) {
 	    emit ( 'SHAREDIR=/usr/share/shorewall-lite',
 		   'CONFDIR=/etc/shorewall-lite',
-		   'PRODUCT="Shorewall Lite"'
+		   'g_product="Shorewall Lite"'
 		 );
 	} else {
 	    emit ( 'SHAREDIR=/usr/share/shorewall',
 		   'CONFDIR=/etc/shorewall',
-		   'PRODUCT=\'Shorewall\'',
+		   'g_product=\'Shorewall\'',
 		 );
 	}
     } else {
 	if ( $export ) {
 	    emit ( 'SHAREDIR=/usr/share/shorewall6-lite',
 		   'CONFDIR=/etc/shorewall6-lite',
-		   'PRODUCT="Shorewall6 Lite"'
+		   'g_product="Shorewall6 Lite"'
 		 );
 	} else {
 	    emit ( 'SHAREDIR=/usr/share/shorewall6',
 		   'CONFDIR=/etc/shorewall6',
-		   'PRODUCT=\'Shorewall6\'',
+		   'g_product=\'Shorewall6\'',
 		 );
 	}
     }
@@ -540,16 +540,16 @@ date > ${VARDIR}/restarted
 
 case $COMMAND in
     start)
-        logger -p kern.info "$PRODUCT started"
+        logger -p kern.info "$g_product started"
         ;;
     restart)
-        logger -p kern.info "$PRODUCT restarted"
+        logger -p kern.info "$g_product restarted"
         ;;
     refresh)
-        logger -p kern.info "$PRODUCT refreshed"
+        logger -p kern.info "$g_product refreshed"
         ;;
     restore)
-        logger -p kern.info "$PRODUCT restored"
+        logger -p kern.info "$g_product restored"
         ;;
 esac
 EOF

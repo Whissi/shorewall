@@ -188,7 +188,7 @@ get_config() {
 
     export VERBOSITY
 
-    [ -n "${HOSTNAME:=$(hostname)}" ]
+    g_hostname=$(hostname 2> /dev/null)
 
     [ -n "$RSH_COMMAND" ] || RSH_COMMAND='ssh ${root}@${system} ${command}'
     [ -n "$RCP_COMMAND" ] || RCP_COMMAND='scp ${files} ${root}@${system}:${destination}'
@@ -1528,7 +1528,7 @@ else
     exit 1
 fi
 
-banner="Shorewall6-$SHOREWALL_VERSION Status at $HOSTNAME -"
+banner="Shorewall6-$SHOREWALL_VERSION Status at $g_hostname -"
 
 case $(echo -e) in
     -e*)
@@ -1615,7 +1615,7 @@ case "$COMMAND" in
 	[ $# -eq 1 ] || usage 1
 	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
 	get_config
-	echo "Shorewall6-$SHOREWALL_VERSION Status at $HOSTNAME - $(date)"
+	echo "Shorewall6-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
 	echo
 	if shorewall6_is_started ; then
 	    echo "Shorewall6 is running"
@@ -1655,7 +1655,7 @@ case "$COMMAND" in
 	;;
     logwatch)
 	get_config Yes Yes Yes
-	banner="Shorewall6-$SHOREWALL_VERSION Logwatch at $HOSTNAME -"
+	banner="Shorewall6-$SHOREWALL_VERSION Logwatch at $g_hostname -"
 	logwatch_command $@
 	;;
     drop)

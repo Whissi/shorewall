@@ -153,7 +153,7 @@ get_config() {
 
     export VERBOSITY
 
-    [ -n "${HOSTNAME:=$(hostname)}" ]
+    g_hostname=$(hostname 2> /dev/null)
 
 }
 
@@ -563,7 +563,7 @@ else
     exit 1
 fi
 
-banner="Shorewall6 Lite $SHOREWALL_VERSION Status at $HOSTNAME -"
+banner="Shorewall6 Lite $SHOREWALL_VERSION Status at $g_hostname -"
 
 case $(echo -e) in
     -e*)
@@ -609,7 +609,7 @@ case "$COMMAND" in
     status)
 	[ $# -eq 1 ] || usage 1
 	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
-	echo "Shorewall6 Lite $SHOREWALL_VERSION Status at $HOSTNAME - $(date)"
+	echo "Shorewall6 Lite $SHOREWALL_VERSION Status at $g_hostname - $(date)"
 	echo
 	if shorewall6_is_started ; then
 	    echo "Shorewall6 Lite is running"

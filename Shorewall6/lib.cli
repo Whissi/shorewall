@@ -198,7 +198,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	   #		     an 'interesting' packet count changes
 {
 
-    host=$(echo $HOSTNAME | sed 's/\..*$//')
+    host=$(echo $g_hostname | sed 's/\..*$//')
     oldrejects=$($IP6TABLES -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
@@ -427,48 +427,48 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
 	    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-	    echo "$PRODUCT $SHOREWALL_VERSION Connections ($count of $max) at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
 	    echo
 	    grep '^ipv6' /proc/net/nf_conntrack
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION Mangle Table at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Mangle Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
 	    $IP6TABLES -t mangle -L $g_ipt_options
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION raw Table at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION raw Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
 	    $IP6TABLES -t raw -L $g_ipt_options
 	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION Log ($LOGFILE) at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Log ($LOGFILE) at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    host=$(echo $HOSTNAME | sed 's/\..*$//')
+	    host=$(echo $g_hostname | sed 's/\..*$//')
 	    packet_log 20
 	    ;;
 	tc)
 	    [ $# -gt 2 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION Traffic Control at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Traffic Control at $g_hostname - $(date)"
 	    echo
 	    show_tc
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION Classifiers at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Classifiers at $g_hostname - $(date)"
 	    echo
 	    show_classifiers
 	    ;;
 	zones)
 	    [ $# -gt 1 ] && usage 1
 	    if [ -f ${VARDIR}/zones ]; then
-		echo "$PRODUCT $SHOREWALL_VERSION Zones at $HOSTNAME - $(date)"
+		echo "$PRODUCT $SHOREWALL_VERSION Zones at $g_hostname - $(date)"
 		echo
 		while read zone type hosts; do
 		    echo "$zone ($type)"
@@ -501,13 +501,13 @@ show_command() {
 	    ;;
 	ip)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION IP at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION IP at $g_hostname - $(date)"
 	    echo
 	    ip -6 addr list
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION Routing at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Routing at $g_hostname - $(date)"
 	    echo
 	    show_routing
 	    ;;
@@ -518,7 +518,7 @@ show_command() {
 	    ;;
 	chain)
 	    shift
-	    echo "$PRODUCT $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || [ $# -gt 0 ] && echo "Chain " || echo $table Table)$* at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || [ $# -gt 0 ] && echo "Chain " || echo $table Table)$* at $g_hostname - $(date)"
 	    echo
 	    show_reset
 	    if [ $# -gt 0 ]; then
@@ -534,7 +534,7 @@ show_command() {
 	    ;;
 	policies)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $SHOREWALL_VERSION Policies at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Policies at $g_hostname - $(date)"
 	    echo
 	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
 	    ;;
@@ -592,14 +592,14 @@ show_command() {
 		    fi
 		done
 		
-		echo "$PRODUCT $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $HOSTNAME - $(date)"
+		echo "$PRODUCT $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $g_hostname - $(date)"
 		echo
 		show_reset
 		for chain in $*; do
 		    $IP6TABLES -t $table -L $chain $g_ipt_options
 		done
 	    else
-		echo "$PRODUCT $SHOREWALL_VERSION $table Table at $HOSTNAME - $(date)"
+		echo "$PRODUCT $SHOREWALL_VERSION $table Table at $g_hostname - $(date)"
 		echo
 		show_reset
 		$IP6TABLES -t $table -L $g_ipt_options
@@ -659,7 +659,7 @@ dump_command() {
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
     clear_term
-    echo "$PRODUCT $SHOREWALL_VERSION Dump at $HOSTNAME - $(date)"
+    echo "$PRODUCT $SHOREWALL_VERSION Dump at $g_hostname - $(date)"
     echo
 
     if [ -f /usr/share/shorewall/version ]; then
@@ -668,7 +668,7 @@ dump_command() {
     fi
     
     show_reset
-    host=$(echo $HOSTNAME | sed 's/\..*$//')
+    host=$(echo $g_hostname | sed 's/\..*$//')
     $IP6TABLES -L $g_ipt_options
 
     heading "Log ($LOGFILE)"
@@ -974,7 +974,7 @@ hits_command() {
     [ $# -eq 0 ] || usage 1
 
     clear_term
-    echo "$PRODUCT $SHOREWALL_VERSION Hits at $HOSTNAME - $(date)"
+    echo "$PRODUCT $SHOREWALL_VERSION Hits at $g_hostname - $(date)"
     echo
 
     timeout=30

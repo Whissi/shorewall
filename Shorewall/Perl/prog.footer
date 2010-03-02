@@ -70,6 +70,10 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			TIMESTAMP=Yes
 			option=${option#t}
 			;;			
+		    p*)
+			PURGE=Yes
+			option=${option#p}
+			;;
 		    r*)
 			RECOVERING=Yes
 			option=${option#r}
@@ -95,6 +99,33 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			else
 			    startup_error "Missing -V option value"
 			fi
+			;;
+		    R*)
+			option=${option#R}
+
+			if [ -z "$option" -a $# -gt 0 ]; then
+			    shift
+			    option=$1
+			fi
+
+			if [ -n "$option" ]; then
+			    case $option in
+				*/*)		    
+	    			    startup_error "-R must specify a simple file name: $option"
+				    ;;
+				.safe|.try|NONE)
+				    ;;
+				.*)
+				    error_message "ERROR: Reserved File Name: $RESTOREFILE"
+				    exit 2
+				    ;;
+			    esac
+			else
+			    startup_error "Missing -R option value"
+			fi
+
+			RESTOREFILE=$option
+			option=
 			;;
 		    *)
 			usage 1

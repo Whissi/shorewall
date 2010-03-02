@@ -161,13 +161,13 @@ get_config() {
 # Verify that we have a compiled firewall script
 #
 verify_firewall_script() {
-    if [ ! -f $FIREWALL ]; then
+    if [ ! -f $g_firewall ]; then
 	echo "   ERROR: Shorewall Lite is not properly installed" >&2
-	if [ -L $FIREWALL ]; then
-	    echo "          $FIREWALL is a symbolic link to a" >&2
+	if [ -L $g_firewall ]; then
+	    echo "          $g_firewall is a symbolic link to a" >&2
 	    echo "          non-existant file" >&2
 	else
-	    echo "          The file $FIREWALL does not exist" >&2
+	    echo "          The file $g_firewall does not exist" >&2
 	fi
 	
 	exit 2
@@ -249,6 +249,7 @@ start_command() {
     esac
 
     export NOROUTES
+    export PURGE
 
     if [ -n "$FAST" ]; then
 	if qt mywhich make; then
@@ -343,6 +344,7 @@ restart_command() {
     esac
 
     export NOROUTES
+    export PURGE
 
     [ -n "$nolock" ] || mutex_on
 
@@ -559,7 +561,6 @@ else
 fi
 
 ensure_config_path
-export CONFIG_PATH
 
 LITEDIR=${VARDIR}
 
@@ -567,7 +568,7 @@ LITEDIR=${VARDIR}
 
 get_config
 
-FIREWALL=$LITEDIR/firewall
+g_firewall=$LITEDIR/firewall
 
 if [ -f $version_file ]; then
     SHOREWALL_VERSION=$(cat $SHOREWALL_VERSION_FILE)
@@ -610,11 +611,11 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
 	export NOROUTES
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
+	exec $SHOREWALL_SHELL $g_firewall $debugging $nolock $COMMAND
 	;;
     reset)
 	verify_firewall_script
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
+	exec $SHOREWALL_SHELL $g_firewall $debugging $nolock $@
 	;;
     restart)
 	shift

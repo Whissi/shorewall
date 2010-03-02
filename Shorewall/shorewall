@@ -66,8 +66,6 @@ get_config() {
 	#
 	# This block is avoided for compile for export and when the user isn't root
 	#
-	export CONFIG_PATH
-
 	if [ "$3" = Yes ]; then
 	    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
@@ -94,8 +92,6 @@ get_config() {
 	    fi
 	fi
 
-	export IPTABLES
-
 	if [ -n "$IP" ]; then
 	    case "$IP" in
 		*/*)
@@ -116,8 +112,6 @@ get_config() {
 	else 
 	    IP='ip'
 	fi
-
-	export IP
 
 	if [ -n "$IPSET" ]; then
 	    case "$IPSET" in
@@ -140,8 +134,6 @@ get_config() {
 	    IPSET='ipset'
 	fi
 
-	export IPSET
-
 	if [ -n "$TC" ]; then
 	    case "$TC" in
 		*/*)
@@ -162,9 +154,6 @@ get_config() {
 	else 
 	    TC='tc'
 	fi
-
-	export TC
-
 	#
 	# Compile by non-root needs no restore file
 	#
@@ -212,8 +201,6 @@ get_config() {
 	[ -z "$LOGFORMAT" ] && LOGFORMAT='Shorewall:%s.%s' 
 
 	[ -n "$LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
-
-	export LOGFORMAT
 
 	if [ -n "$STARTUP_LOG" ]; then
 	    if [ -n "$LOG_VERBOSITY" ]; then
@@ -469,7 +456,6 @@ start_command() {
 	    fi
 
 	    SHOREWALL_DIR=$(resolve_file $1)
-	    export SHOREWALL_DIR
 	    AUTOMAKE=
 	    ;;
 	*)
@@ -597,7 +583,6 @@ compile_command() {
 	    fi
 
 	    SHOREWALL_DIR=$(resolve_file $1)
-	    export SHOREWALL_DIR
 	    file=$2
 	    ;;
 	*)
@@ -673,7 +658,6 @@ check_command() {
 	    fi
 
 	    SHOREWALL_DIR=$(resolve_file $1)
-	    export SHOREWALL_DIR
 	    ;;
 	*)
 	    usage 1
@@ -753,7 +737,6 @@ restart_command() {
 
 	    SHOREWALL_DIR=$(resolve_file $1)
 	    [ -n "$g_fast" ] && fatal_error "Directory may not be specified with the -f option"
-	    export SHOREWALL_DIR
 	    AUTOMAKE=
 	    ;;
 	*)
@@ -921,7 +904,6 @@ safe_commands() {
 	    fi
 
 	    SHOREWALL_DIR=$(resolve_file $1)
-	    export SHOREWALL_DIR
 	    ;;
 	*)
 	    usage 1
@@ -1017,7 +999,6 @@ try_command() {
 	fi
 	
 	SHOREWALL_DIR=$(resolve_file $1)
-	export SHOREWALL_DIR
     }
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
@@ -1576,7 +1557,6 @@ if [ $# -eq 0 ]; then
     usage 1
 fi
 
-[ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 export PATH
 MUTEX_TIMEOUT=

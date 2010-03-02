@@ -1476,7 +1476,7 @@ version_command() {
 
     [ $# -gt 0 ] && usage 1
 
-    echo $version
+    echo $SHOREWALL_VERSION
 
     if [ -n "$all" ]; then
 	if [ -f /usr/share/shorewall/version ]; then
@@ -1521,14 +1521,14 @@ done
 
 version_file=$SHAREDIR/version
 if [ -f $version_file ]; then
-    version=$(cat $version_file)
+    SHOREWALL_VERSION=$(cat $version_file)
 else
     echo "   ERROR: Shorewall6 is not properly installed" >&2
     echo "	 The file $version_file does not exist"  >&2
     exit 1
 fi
 
-banner="Shorewall6-$version Status at $HOSTNAME -"
+banner="Shorewall6-$SHOREWALL_VERSION Status at $HOSTNAME -"
 
 case $(echo -e) in
     -e*)
@@ -1615,7 +1615,7 @@ case "$COMMAND" in
 	[ $# -eq 1 ] || usage 1
 	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
 	get_config
-	echo "Shorewall6-$version Status at $HOSTNAME - $(date)"
+	echo "Shorewall6-$SHOREWALL_VERSION Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall6_is_started ; then
 	    echo "Shorewall6 is running"
@@ -1655,7 +1655,7 @@ case "$COMMAND" in
 	;;
     logwatch)
 	get_config Yes Yes Yes
-	banner="Shorewall6-$version Logwatch at $HOSTNAME -"
+	banner="Shorewall6-$SHOREWALL_VERSION Logwatch at $HOSTNAME -"
 	logwatch_command $@
 	;;
     drop)

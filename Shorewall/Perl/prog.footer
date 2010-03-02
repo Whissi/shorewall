@@ -213,7 +213,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -ne 1 ] && usage 2
-	echo "$PRODUCT-$VERSION Status at $HOSTNAME - $(date)"
+	echo "$PRODUCT-$SHORWEALL_VERSION Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started; then
 	    echo "$PRODUCT is running"
@@ -238,7 +238,7 @@ case "$COMMAND" in
 	;;
     version)
 	[ $# -ne 1 ] && usage 2
-	echo $VERSION
+	echo $SHOREWALL_VERSION
 	status=0
 	;;
     help)

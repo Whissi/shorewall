@@ -516,7 +516,7 @@ export PRODUCT="Shorewall6 Lite"
 [ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
 
 LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
-VERSION_FILE=$SHAREDIR/version
+version_file=$SHAREDIR/version
 HELP=$SHAREDIR/help
 
 for library in $LIBRARIES; do
@@ -555,15 +555,15 @@ get_config
 
 FIREWALL=$LITEDIR/firewall
 
-if [ -f $VERSION_FILE ]; then
-    version=$(cat $VERSION_FILE)
+if [ -f $version_file ]; then
+    SHOREWALL_VERSION=$(cat $version_file)
 else
     echo "   ERROR: Shorewall6 Lite is not properly installed" >&2
-    echo "          The file $VERSION_FILE does not exist" >&2
+    echo "          The file $SHOREWALL_VERSION_FILE does not exist" >&2
     exit 1
 fi
 
-banner="Shorewall6 Lite $version Status at $HOSTNAME -"
+banner="Shorewall6 Lite $SHOREWALL_VERSION Status at $HOSTNAME -"
 
 case $(echo -e) in
     -e*)
@@ -609,7 +609,7 @@ case "$COMMAND" in
     status)
 	[ $# -eq 1 ] || usage 1
 	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
-	echo "Shorewall6 Lite $version Status at $HOSTNAME - $(date)"
+	echo "Shorewall6 Lite $SHOREWALL_VERSION Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall6_is_started ; then
 	    echo "Shorewall6 Lite is running"
@@ -643,7 +643,7 @@ case "$COMMAND" in
 	hits_command $@
 	;;
     version)
-	echo $version Lite
+	echo $SHOREWALL_VERSION Lite
 	;;
     logwatch)
 	logwatch_command $@

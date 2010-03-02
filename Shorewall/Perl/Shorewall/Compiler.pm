@@ -219,7 +219,7 @@ sub generate_script_2() {
 	   '[ -n "${VERBOSITY:=0}" ]',
 	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]) );
 
-    emit ( qq(VERSION="$globals{VERSION}") ) unless $test;
+    emit ( qq(SHOREWALL_VERSION="$globals{VERSION}") ) unless $test;
 
     emit ( qq(PATH="$config{PATH}") ,
 	   'TERMINATOR=fatal_error' ,

@@ -427,27 +427,27 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
 	    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-	    echo "$PRODUCT $version Connections ($count of $max) at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Connections ($count of $max) at $HOSTNAME - $(date)"
 	    echo
 	    grep '^ipv6' /proc/net/nf_conntrack
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version Mangle Table at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Mangle Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    $IP6TABLES -t mangle -L $g_ipt_options
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version raw Table at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION raw Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    $IP6TABLES -t raw -L $g_ipt_options
 	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version Log ($LOGFILE) at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Log ($LOGFILE) at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    host=$(echo $HOSTNAME | sed 's/\..*$//')
@@ -455,20 +455,20 @@ show_command() {
 	    ;;
 	tc)
 	    [ $# -gt 2 ] && usage 1
-	    echo "$PRODUCT $version Traffic Control at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Traffic Control at $HOSTNAME - $(date)"
 	    echo
 	    show_tc
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version Classifiers at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Classifiers at $HOSTNAME - $(date)"
 	    echo
 	    show_classifiers
 	    ;;
 	zones)
 	    [ $# -gt 1 ] && usage 1
 	    if [ -f ${VARDIR}/zones ]; then
-		echo "$PRODUCT $version Zones at $HOSTNAME - $(date)"
+		echo "$PRODUCT $SHOREWALL_VERSION Zones at $HOSTNAME - $(date)"
 		echo
 		while read zone type hosts; do
 		    echo "$zone ($type)"
@@ -501,13 +501,13 @@ show_command() {
 	    ;;
 	ip)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version IP at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION IP at $HOSTNAME - $(date)"
 	    echo
 	    ip -6 addr list
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version Routing at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Routing at $HOSTNAME - $(date)"
 	    echo
 	    show_routing
 	    ;;
@@ -518,7 +518,7 @@ show_command() {
 	    ;;
 	chain)
 	    shift
-	    echo "$PRODUCT $version $([ $# -gt 1 ] && echo "Chains " || [ $# -gt 0 ] && echo "Chain " || echo $table Table)$* at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || [ $# -gt 0 ] && echo "Chain " || echo $table Table)$* at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    if [ $# -gt 0 ]; then
@@ -534,7 +534,7 @@ show_command() {
 	    ;;
 	policies)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$PRODUCT $version Policies at $HOSTNAME - $(date)"
+	    echo "$PRODUCT $SHOREWALL_VERSION Policies at $HOSTNAME - $(date)"
 	    echo
 	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
 	    ;;
@@ -592,14 +592,14 @@ show_command() {
 		    fi
 		done
 		
-		echo "$PRODUCT $version $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $HOSTNAME - $(date)"
+		echo "$PRODUCT $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $HOSTNAME - $(date)"
 		echo
 		show_reset
 		for chain in $*; do
 		    $IP6TABLES -t $table -L $chain $g_ipt_options
 		done
 	    else
-		echo "$PRODUCT $version $table Table at $HOSTNAME - $(date)"
+		echo "$PRODUCT $SHOREWALL_VERSION $table Table at $HOSTNAME - $(date)"
 		echo
 		show_reset
 		$IP6TABLES -t $table -L $g_ipt_options
@@ -659,7 +659,7 @@ dump_command() {
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
     clear_term
-    echo "$PRODUCT $version Dump at $HOSTNAME - $(date)"
+    echo "$PRODUCT $SHOREWALL_VERSION Dump at $HOSTNAME - $(date)"
     echo
 
     if [ -f /usr/share/shorewall/version ]; then
@@ -974,7 +974,7 @@ hits_command() {
     [ $# -eq 0 ] || usage 1
 
     clear_term
-    echo "$PRODUCT $version Hits at $HOSTNAME - $(date)"
+    echo "$PRODUCT $SHOREWALL_VERSION Hits at $HOSTNAME - $(date)"
     echo
 
     timeout=30

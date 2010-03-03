@@ -765,7 +765,6 @@ restart_command() {
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
 	[ -n "$nolock" ] || mutex_on
-	do_export
 	run_it ${VARDIR}/firewall $g_debugging restart
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
@@ -1625,7 +1624,6 @@ case "$COMMAND" in
 	shift
 	mutex_on
 	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
-	do_exports
 	run_it $g_firewall $g_debugging $nolock reset $@
 	mutex_off
 	;;

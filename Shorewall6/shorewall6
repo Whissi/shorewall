@@ -1079,7 +1079,7 @@ reload_command() # $* = original arguments less the command.
     local compiler
     compiler=
 
-    LITEDIR=/var/lib/shorewall6-lite
+    litedir=/var/lib/shorewall6-lite
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1134,9 +1134,9 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    litedir=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+    temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
-    [ -n "$litedir" ] && LITEDIR=$litedir
+    [ -n "$temp" ] && litedir=$temp
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
@@ -1162,8 +1162,8 @@ reload_command() # $* = original arguments less the command.
     [ -n "$TIMESTAMP" ] && timestamp='-t' || timestamp=
 
     if shorewall6 $g_debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
-	progress_message3 "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
-	rcp_command "$directory/firewall $directory/firewall.conf" ${LITEDIR}
+	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
+	rcp_command "$directory/firewall $directory/firewall.conf" ${litedir}
     then
 	save=$(find_file save);
 

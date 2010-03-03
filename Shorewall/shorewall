@@ -1199,9 +1199,9 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    litedir=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^litedir | sed 's/litedir is //')
+    temp=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
-    [ -n "$litedir" ] && litedir=$litedir
+    [ -n "$temp" ] && litedir="$temp"
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)

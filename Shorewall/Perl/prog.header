@@ -39,7 +39,7 @@ progress_message() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -gt 1 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 
@@ -55,7 +55,7 @@ progress_message2() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -gt 0 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 
@@ -71,7 +71,7 @@ progress_message3() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -ge 0 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 
@@ -951,7 +951,7 @@ get_device_mtu1() # $1 = device
 #
 undo_routing() {
 
-    if [ -z "$NOROUTES"  ]; then
+    if [ -z "$g_noroutes"  ]; then
 	#
 	# Restore rt_tables database
 	#
@@ -975,7 +975,7 @@ undo_routing() {
 # Restore the default route that was in place before the initial 'shorewall start'
 #
 restore_default_route() {
-    if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
+    if [ -z "$g_noroutes" -a -f ${VARDIR}/default_route ]; then
 	local default_route
 	default_route=
 	local route
@@ -1059,11 +1059,11 @@ find_mac() # $1 = IP address, $2 = interface
 }
 
 #
-# Flush the conntrack table if $PURGE is non-empty
+# Flush the conntrack table if $g_purge is non-empty
 #
 conditionally_flush_conntrack() {
 
-    if [ -n "$PURGE" ]; then
+    if [ -n "$g_purge" ]; then
 	if [ -n $(mywhich conntrack) ]; then
             conntrack -F
 	else
@@ -1079,7 +1079,7 @@ delete_proxyarp() {
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt $IP -4 route del $address dev $interface
+	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -1219,10 +1219,10 @@ run_it() {
 	#
 	export RESTOREFILE
 	export VERBOSITY
-	export NOROUTES
-	export PURGE
-	export TIMESTAMP
-	export RECOVERING
+	export NOROUTES=$g_noroutes
+	export PURGE=$g_purge
+	export TIMESTAMP=$g_timestamp
+	export RECOVERING=$g_recovering
  
 	if [ "$g_product" != Shorewall ]; then
 	    #
@@ -1237,10 +1237,10 @@ run_it() {
 	#
 	options='-'
 
-	[ -n "$NOROUTES" ]  && options=${options}n
-	[ -n "$TIMESTAMP" ] && options=${options}t
-	[ -n "$PURGE" ]     && options=${options}p
-	[ -n "$RECOVERING" ] && options=${options}r
+	[ -n "$g_noroutes" ]   && options=${options}n
+	[ -n "$g_timestamp" ]  && options=${options}t
+	[ -n "$g_purge" ]      && options=${options}p
+	[ -n "$g_recovering" ] && options=${options}r
 
 	options="${options}V $VERBOSITY"
 

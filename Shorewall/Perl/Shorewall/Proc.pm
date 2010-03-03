@@ -138,7 +138,7 @@ sub setup_route_filtering() {
 
 	emit "echo $val > /proc/sys/net/ipv4/conf/default/rp_filter" if $val ne '';
 
-	emit "[ -n \"\$NOROUTES\" ] || \$IP -4 route flush cache";
+	emit "[ -n \"\$g_noroutes\" ] || \$IP -4 route flush cache";
     }
 }
 

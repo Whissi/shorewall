@@ -41,7 +41,7 @@ use Shorewall::IPAddrs;
 use Shorewall::Raw;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( compiler EXPORT TIMESTAMP DEBUG );
+our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
 our $VERSION = '4.4_8';
 
@@ -377,7 +377,7 @@ sub generate_script_3($) {
 		   '        $IPSET -X' ,
 		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
 		   '    fi' ,
-		   'elif [ "$COMMAND" = restore -a -z "$RECOVERING" ]; then' ,
+		   'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ,
 		   '    if [ -f $(my_pathname)-ipsets ]; then' ,
 		   '        if chain_exists shorewall; then' ,
 		   '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,

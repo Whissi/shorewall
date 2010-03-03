@@ -80,10 +80,10 @@ run_it() {
 	#
 	export RESTOREFILE
 	export VERBOSITY
-	export NOROUTES
-	export PURGE
-	export TIMESTAMP
-	export RECOVERING
+	export NOROUTES=$g_noroutes
+	export PURGE=$g_purge
+	export TIMESTAMP=$g_timestamp
+	export RECOVERING=$g_recovering
  
 	if [ "$g_product" != Shorewall ]; then
 	    #
@@ -98,10 +98,10 @@ run_it() {
 	#
 	options='-'
 
-	[ -n "$NOROUTES" ]  && options=${options}n
-	[ -n "$TIMESTAMP" ] && options=${options}t
-	[ -n "$PURGE" ]     && options=${options}p
-	[ -n "$RECOVERING" ] && options=${options}r
+	[ -n "$g_noroutes" ]   && options=${options}n
+	[ -n "$g_timestamp" ]  && options=${options}t
+	[ -n "$g_purge" ]      && options=${options}p
+	[ -n "$g_recovering" ] && options=${options}r
 
 	options="${options}V $VERBOSITY"
 
@@ -959,7 +959,7 @@ restore_command() {
 			    option=
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    g_noroutes=Yes
 			    option=${option#n}
 			    ;;
 			*)
@@ -994,14 +994,12 @@ restore_command() {
 
     g_restorepath=${VARDIR}/$RESTOREFILE
 
-    export NOROUTES
-
     [ -n "$nolock" ] || mutex_on
 
     if [ -x $g_restorepath ]; then
 	progress_message3 "Restoring Shorewall..."
 
-	$SHOREWALL_SHELL $g_restorepath restore && progress_message3 "$g_product restored from ${VARDIR}/$RESTOREFILE"
+	run_it $g_restorepath restore && progress_message3 "$g_product restored from ${VARDIR}/$RESTOREFILE"
 
 	[ -n "$nolock" ] || mutex_off
     else

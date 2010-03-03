@@ -759,7 +759,7 @@ sub setup_providers() {
 
     first_entry sub() {
 	progress_message2 "$doing $fn...";
-	emit "\nif [ -z \"\$NOROUTES\" ]; then";
+	emit "\nif [ -z \"\$g_noroutes\" ]; then";
 	push_indent;
 	start_providers; };
 
@@ -792,7 +792,7 @@ sub setup_providers() {
 
 	setup_route_marking if @routemarked_interfaces;
     } else {
-	emit "\nif [ -z \"\$NOROUTES\" ]; then";
+	emit "\nif [ -z \"\$g_noroutes\" ]; then";
 
 	push_indent;
 

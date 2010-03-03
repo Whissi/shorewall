@@ -57,7 +57,7 @@ progress_message() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -gt 1 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 }
@@ -68,7 +68,7 @@ progress_message2() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -gt 0 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 }
@@ -79,7 +79,7 @@ progress_message3() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -ge 0 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 }
@@ -1102,7 +1102,7 @@ get_device_mtu1() # $1 = device
 #
 undo_routing() {
 
-    if [ -z "$NOROUTES"  ]; then
+    if [ -z "$g_noroutes"  ]; then
 	#
 	# Restore rt_tables database
 	#
@@ -1123,7 +1123,7 @@ undo_routing() {
 }
 
 restore_default_route() {
-    if [ -z "$NOROUTES" -a -f ${VARDIR}/default_route ]; then
+    if [ -z "$g_noroutes" -a -f ${VARDIR}/default_route ]; then
 	local default_route
 	default_route=
 	local route

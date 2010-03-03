@@ -76,7 +76,7 @@ sub setup_one_proxy_arp( $$$$$ ) {
     }
 
     unless ( $haveroute ) {
-	emit "[ -n \"\$NOROUTES\" ] || run_ip route replace $address dev $interface";
+	emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address dev $interface";
 	$haveroute = 1 if $persistent;
     }
 

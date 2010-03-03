@@ -27,6 +27,13 @@ fi
 # Map VERBOSE to VERBOSITY for compatibility with old Shorewall6-lite installations
 #
 [ -z "$VERBOSITY" ] && [ -n "$VERBOSE" ] && VERBOSITY=$VERBOSE
+#
+# Map other old exported variables
+#
+g_purge=$PURGE
+g_noroutes=$NOROUTES
+g_timestamp=$TIMESTAMP
+g_recovering=$RECOVERING
 
 initialize
 
@@ -63,19 +70,19 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			option=${option#q}
 			;;
 		    n*)
-			NOROUTES=Yes
+			g_noroutes=Yes
 			option=${option#n}
 			;;
 		    t*)
-			TIMESTAMP=Yes
+			g_timestamp=Yes
 			option=${option#t}
 			;;			
 		    p*)
-			PURGE=Yes
+			g_purge=Yes
 			option=${option#p}
 			;;
 		    r*)
-			RECOVERING=Yes
+			g_recovering=Yes
 			option=${option#r}
 			;;
 		    V*)

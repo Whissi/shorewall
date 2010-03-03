@@ -216,7 +216,7 @@ start_command() {
 			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
-			    PURGE=Yes
+			    g_purge=Yes
 			    option=${option%p}
 			    ;;
 			*)
@@ -289,12 +289,12 @@ restart_command() {
 			    option=
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    g_noroutes=Yes
 			    option=${option#n}
 			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
-			    PURGE=Yes
+			    g_purge=Yes
 			    option=${option%p}
 			    ;;
 			*)
@@ -386,10 +386,10 @@ g_ipt_options="-nv"
 g_fast=
 g_verbose_offset=0
 g_use_verbosity=
-NOROUTES=
-TIMESTAMP=
-RECOVERING=
-PURGE=
+g_noroutes=
+g_timestamp=
+g_recovering=
+g_purge=
 
 finished=0
 
@@ -445,11 +445,11 @@ while [ $finished -eq 0 ]; do
 			esac
 			;;
 		    n*)
-			NOROUTES=Yes
+			g_noroutes=Yes
 			option=${option#n}
 			;;
 		    t*)
-			TIMESTAMP=Yes
+			g_timestamp=Yes
 			option=${option#t}
 			;;
 		    -)

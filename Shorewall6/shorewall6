@@ -280,7 +280,7 @@ compiler() {
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"
     [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
-    [ -n "$TIMESTAMP" ] && options="$options --timestamp"
+    [ -n "$g_timestamp" ] && options="$options --timestamp"
     [ -n "$g_test" ] && options="$options --test"
     [ -n "$g_preview" ] && options="$options --preview"
     [ "$g_debugging" = trace ] && options="$options --debug"
@@ -626,12 +626,12 @@ restart_command() {
 			    option=${option#f}
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    g_noroutes=Yes
 			    option=${option#n}
 			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
-			    PURGE=Yes
+			    g_purge=Yes
 			    option=${option%p}
 			    ;;
 			*)
@@ -794,7 +794,7 @@ safe_commands() {
 			    option=
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    g_noroutes=Yes
 			    option=${option#n}
 			    ;;
 			*)
@@ -935,7 +935,7 @@ try_command() {
 			    option=
 			    ;;
 			n*)
-			    NOROUTES=Yes
+			    g_noroutes=Yes
 			    option=${option#n}
 			    ;;
 			*)
@@ -1144,7 +1144,7 @@ reload_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    [ -n "$TIMESTAMP" ] && timestamp='-t' || timestamp=
+    [ -n "$g_timestamp" ] && timestamp='-t' || timestamp=
 
     if shorewall6 $g_debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
@@ -1315,9 +1315,9 @@ g_use_verbosity=
 g_debug=
 g_export=
 
-NOROUTES=
-PURGE=
-TIMESTAMP=
+g_noroutes=
+g_purge=
+g_timestamp=
 
 finished=0
 
@@ -1390,11 +1390,11 @@ while [ $finished -eq 0 ]; do
 			esac
 			;;
 		    n*)
-			NOROUTES=Yes
+			g_noroutes=Yes
 			option=${option#n}
 			;;
 		    t*)
-			TIMESTAMP=Yes
+			g_timestamp=Yes
 			option=${option#t}
 			;;
 		    -)
@@ -1470,7 +1470,7 @@ MUTEX_TIMEOUT=
 SHAREDIR=/usr/share/shorewall6
 CONFDIR=/etc/shorewall6
 g_product="Shorewall6"
-RECOVERING=
+g_recovering=
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 

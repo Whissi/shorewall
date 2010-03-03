@@ -53,7 +53,7 @@ progress_message() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -gt 1 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 }
@@ -64,7 +64,7 @@ progress_message2() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -gt 0 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 }
@@ -75,7 +75,7 @@ progress_message3() # $* = Message
     timestamp=
 
     if [ $VERBOSITY -ge 0 ]; then
-	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
 	echo "${timestamp}$@"
     fi
 }

@@ -2265,7 +2265,7 @@ EOF
 	        if [ -x $g_restorepath ]; then
 		    echo Restoring ${g_product:=Shorewall}...
                     
-                    RECOVERING=Yes
+                    g_recovering=Yes
 
 		    if run_it $g_restorepath restore; then
 		        echo "$g_product restored from $g_restorepath"
@@ -2312,7 +2312,7 @@ EOF
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt $IP -4 route del $address dev $interface
+	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp

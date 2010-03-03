@@ -2266,9 +2266,8 @@ EOF
 		    echo Restoring ${g_product:=Shorewall}...
                     
                     RECOVERING=Yes
-                    export RECOVERING
 
-		    if $g_restorepath restore; then
+		    if run_it $g_restorepath restore; then
 		        echo "$g_product restored from $g_restorepath"
 		        set_state "Started"
 		    else

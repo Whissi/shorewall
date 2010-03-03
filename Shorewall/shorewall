@@ -161,8 +161,6 @@ get_config() {
 
 	validate_restorefile RESTOREFILE
 
-	export RESTOREFILE
-
 	if [ "$2" = Yes ]; then
 	    case $STARTUP_ENABLED in
 		No|no|NO)
@@ -253,8 +251,6 @@ get_config() {
     elif [ $VERBOSITY -gt 2 ]; then
 	VERBOSITY=2
     fi
-
-    export VERBOSITY
 
     g_hostname=$(hostname 2> /dev/null)
 
@@ -360,7 +356,22 @@ compiler() {
     set +a
 
     perl $debugflags /usr/share/shorewall/compiler.pl $options $@
-}    
+}
+
+#
+# Do required exports and run $SHOREWALL_SHELL
+#
+run_it() {
+    export RESTOREFILE
+    export VERBOSITY
+    export NOROUTES
+    export PURGE
+    export TIMESTAMP
+    export PATH
+    export RECOVERING
+
+    $SHOREWALL_SHELL $@
+}
 
 #
 # Start Command Executor
@@ -376,7 +387,7 @@ start_command() {
 
 	if [ -n "$AUTOMAKE" ]; then
 	    [ -n "$nolock" ] || mutex_on
-	    ${VARDIR}/firewall $g_debugging start
+	    run_it ${VARDIR}/firewall $g_debugging start
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
@@ -384,7 +395,7 @@ start_command() {
 
 	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
 		[ -n "$nolock" ] || mutex_on
-		${VARDIR}/.start $g_debugging start
+		run_it ${VARDIR}/.start $g_debugging start
 		rc=$?
 		[ -n "$nolock" ] || mutex_off
 	    else
@@ -463,14 +474,8 @@ start_command() {
 	    ;;
     esac
 
-    export NOROUTES
-    export PURGE
-
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
 	if qt mywhich make; then
-	    #
-	    # RESTOREFILE is exported by get_config()
-	    #
 	    restorefile=$RESTOREFILE
 
 	    if [ -z "$g_fast" ]; then
@@ -480,8 +485,10 @@ start_command() {
 		RESTOREFILE=firewall
 	    fi
 
-	    if ! make -qf ${CONFDIR}/Makefile; then
-		g_fast= 
+	    export RESTOREFILE
+
+	    if make -qf ${CONFDIR}/Makefile; then
+		g_fast=
 		AUTOMAKE=
 	    fi
 
@@ -496,7 +503,7 @@ start_command() {
 
 	    if [ -x $g_restorepath ]; then
 		echo Restoring Shorewall...
-		$SHOREWALL_SHELL $g_restorepath restore
+		run_it $g_restorepath restore
 		date > ${VARDIR}/restarted
 		progress_message3 Shorewall restored from $g_restorepath
 	    else
@@ -746,9 +753,6 @@ restart_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NOROUTES
-    export PURGE
-
     if [ -z "$g_fast" -a -n "$AUTOMAKE" ]; then
 	if qt mywhich make; then
 	    #
@@ -766,7 +770,7 @@ restart_command() {
 
 	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
 	    [ -n "$nolock" ] || mutex_on
-	    $SHOREWALL_SHELL ${VARDIR}/.restart $g_debugging restart
+	    run_it ${VARDIR}/.restart $g_debugging restart
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
@@ -776,7 +780,8 @@ restart_command() {
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
 	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/firewall $g_debugging restart
+	do_export
+	run_it ${VARDIR}/firewall $g_debugging restart
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     fi
@@ -830,13 +835,11 @@ refresh_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    export NOROUTES
-
     progress_message3 "Compiling..."
 
     if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	[ -n "$nolock" ] || mutex_on
-	$SHOREWALL_SHELL ${VARDIR}/.refresh $g_debugging refresh
+	run_it ${VARDIR}/.refresh $g_debugging refresh
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     else
@@ -941,11 +944,11 @@ safe_commands() {
 
     case $command in
 	start)
-	    export RESTOREFILE=NONE
+	    RESTOREFILE=NONE
 	    progress_message3 "Starting..."
 	    ;;
 	restart)
-	    export RESTOREFILE=.safe
+	    RESTOREFILE=.safe
 	    g_restorepath=${VARDIR}/.safe
 	    save_config
 	    progress_message3 "Restarting..."
@@ -1077,11 +1080,11 @@ try_command() {
 
     case $command in
 	start)
-	    export RESTOREFILE=NONE
+	    RESTOREFILE=NONE
 	    progress_message3 "Starting..."
 	    ;;
 	restart)
-	    export RESTOREFILE=.try
+	    RESTOREFILE=.try
 	    g_restorepath=${VARDIR}/.try
 	    save_config
 	    progress_message3 "Restarting..."
@@ -1407,7 +1410,6 @@ fi
 SHOREWALL_DIR=
 NOROUTES=
 PURGE=
-export TIMESTAMP=
 
 g_ipt_options="-nv"
 g_fast=
@@ -1558,13 +1560,13 @@ if [ $# -eq 0 ]; then
 fi
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-export PATH
 MUTEX_TIMEOUT=
 
 SHAREDIR=/usr/share/shorewall
 CONFDIR=/etc/shorewall
 g_product="Shorewall"
-export RECOVERING=
+RECOVERING=
+TIMESTAMP=
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
@@ -1629,18 +1631,17 @@ case "$COMMAND" in
 	get_config
 	[ $# -ne 1 ] && usage 1
 	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
-	export NOROUTES
 	mutex_on
-	$SHOREWALL_SHELL $g_firewall $g_debugging $nolock $COMMAND
+	run_it $g_firewall $g_debugging $nolock $COMMAND
 	mutex_off
 	;;
     reset)
 	get_config
-	export NOROUTES
 	shift
 	mutex_on
 	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
-	$SHOREWALL_SHELL $g_firewall $g_debugging $nolock reset $@
+	do_exports
+	run_it $g_firewall $g_debugging $nolock reset $@
 	mutex_off
 	;;
     compile)

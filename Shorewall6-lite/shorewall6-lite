@@ -117,8 +117,6 @@ get_config() {
 
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
-    export LOGFORMAT
-
     if [ -n "$IP6TABLES" ]; then
 	if [ ! -x "$IP6TABLES" ]; then
 	    echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
@@ -132,8 +130,6 @@ get_config() {
 	fi
     fi
 
-    export IP6TABLES
-
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -x "$SHOREWALL_SHELL" ]; then
 	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
@@ -145,13 +141,9 @@ get_config() {
 
     validate_restorefile RESTOREFILE
 
-    export RESTOREFILE
-
     [ -n "${VERBOSITY:=2}" ]
 
     [ -n "$g_use_verbosity" ] && VERBOSITY=$g_use_verbosity || VERBOSITY=$(($g_verbose_offset + $VERBOSITY))
-
-    export VERBOSITY
 
     g_hostname=$(hostname 2> /dev/null)
 
@@ -175,6 +167,35 @@ verify_firewall_script() {
 }
 
 #
+# Do required exports and run $SHOREWALL_SHELL
+#
+do_exports() {
+    export RESTOREFILE
+    export VERBOSITY
+    export NOROUTES
+    export PURGE
+    export TIMESTAMP
+    export PATH
+    export RECOVERING
+
+    export LOGFORMAT
+    export IP6TABLES
+}
+
+#
+# Do required exports and run or exec $SHOREWALL_SHELL
+#
+run_it() {
+    do_exports
+    $SHOREWALL_SHELL $@
+}
+
+exec_it() {
+    do_exports
+    exec $SHOREWALL_SHELL $@
+}
+
+#
 # Start Command Executor
 #
 start_command() {
@@ -187,7 +208,7 @@ start_command() {
 	[ -n "$nolock" ] || mutex_on
 
 	if [ -x ${LITEDIR}/firewall ]; then
-	    ${LITEDIR}/firewall $debugging start
+	    run_it ${LITEDIR}/firewall $debugging start
 	    rc=$?
 	else
 	    error_message "${LITEDIR}/firewall is missing or is not executable"
@@ -219,7 +240,7 @@ start_command() {
 			    option=
 			    ;;
 			f*)
-			    FAST=Yes
+			    g_fast=Yes
 			    option=${option#f}
 			    ;;
 			p*)
@@ -244,41 +265,24 @@ start_command() {
 	0)
 	    ;;
 	*)
-	    usage 1
-	    ;;
+	    usage 1	    ;;
     esac
 
-    export NOROUTES
-    export PURGE
-
-    if [ -n "$FAST" ]; then
+    if [ -n "$g_fast" ]; then
 	if qt mywhich make; then
-	    #
-	    # RESTOREFILE is exported by get_config()
-	    #
-	    make -qf ${CONFDIR}/Makefile || FAST=
+	    export RESTOREFILE
+	    make -qf ${CONFDIR}/Makefile || g_fast=
 	fi
 
-	if [ -n "$FAST" ]; then
+	if [ -n "$g_fast" ]; then
 
-	    RESTOREPATH=${VARDIR}/$RESTOREFILE
+	    g_restorepath=${VARDIR}/$RESTOREFILE
 
-	    if [ -x $RESTOREPATH ]; then
-		if [ -x ${RESTOREPATH}-ipsets ]; then
-		    echo Restoring Ipsets...
-		    #
-		    # We must purge iptables to be sure that there are no
-		    # references to ipsets
-		    #
-		    iptables -F
-		    iptables -X
-		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
-		fi
-
+	    if [ -x $g_restorepath ]; then
 		echo Restoring Shorewall6 Lite...
-		$SHOREWALL_SHELL $RESTOREPATH restore
+		run_it $g_restorepath restore
 		date > ${VARDIR}/restarted
-		progress_message3 Shorewall6 Lite restored from $RESTOREPATH
+		progress_message3 Shorewall6 Lite restored from $g_restorepath
 	    else
 		do_it
 	    fi
@@ -343,13 +347,10 @@ restart_command() {
 	    ;;
     esac
 
-    export NOROUTES
-    export PURGE
-
     [ -n "$nolock" ] || mutex_on
 
     if [ -x ${LITEDIR}/firewall ]; then
-	$SHOREWALL_SHELL ${LITEDIR}/firewall $debugging restart
+	run_it ${LITEDIR}/firewall $debugging restart
 	rc=$?
     else
 	error_message "${LITEDIR}/firewall is missing or is not executable"
@@ -410,16 +411,14 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
     shift
 fi
 
-IPT_OPTIONS="-nv"
-FAST=
+g_ipt_options="-nv"
+g_fast=
 g_verbose_offset=0
 g_use_verbosity=
 NOROUTES=
-EXPORT=
-export TIMESTAMP=
+TIMESTAMP=
 RECOVERING=
-export RECOVERING
-noroutes=
+PURGE=
 
 finished=0
 
@@ -438,7 +437,7 @@ while [ $finished -eq 0 ]; do
 	    while [ -n "$option" ]; do
 		case $option in
 		    x*)
-			IPT_OPTIONS="-xnv"
+			g_ipt_options="-xnv"
 			option=${option#x}
 			;;
 		    q*)
@@ -446,7 +445,7 @@ while [ $finished -eq 0 ]; do
 			option=${option#q}
 			;;
 		    f*)
-			FAST=Yes
+			g_fast=Yes
 			option=${option#f}
 			;;
 		    v*)
@@ -504,7 +503,6 @@ if [ $# -eq 0 ]; then
 fi
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-export PATH
 MUTEX_TIMEOUT=
 
 SHAREDIR=/usr/share/shorewall6-lite
@@ -517,11 +515,10 @@ g_product="Shorewall6 Lite"
 
 [ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
 
-LIBRARIES="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
+libraries="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 version_file=$SHAREDIR/version
-HELP=$SHAREDIR/help
 
-for library in $LIBRARIES; do
+for library in $libraries; do
     if [ -f $library ]; then
 	. $library
     else
@@ -547,7 +544,6 @@ else
 fi
 
 ensure_config_path
-export CONFIG_PATH
 
 LITEDIR=${VARDIR}
 
@@ -597,8 +593,7 @@ case "$COMMAND" in
     stop|reset|clear)
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
-	export NOROUTES
-	exec $SHOREWALL_SHELL $g_firewall $debugging $nolock $COMMAND
+	exec_it $g_firewall $debugging $nolock $COMMAND
 	;;
     restart)
 	shift
@@ -704,7 +699,7 @@ case "$COMMAND" in
 	    ;;
 	esac
 
-	RESTOREPATH=${VARDIR}/$RESTOREFILE
+	g_restorepath=${VARDIR}/$RESTOREFILE
 
 	[ "$nolock" ] || mutex_on
 
@@ -726,20 +721,20 @@ case "$COMMAND" in
 	esac
 
 
-	RESTOREPATH=${VARDIR}/$RESTOREFILE
+	g_restorepath=${VARDIR}/$RESTOREFILE
 
-	if [ -x $RESTOREPATH ]; then
+	if [ -x $g_restorepath ]; then
 
-	    if [ -x ${RESTOREPATH}-ipsets ]; then
-		rm -f ${RESTOREPATH}-ipsets
-		echo "    ${RESTOREPATH}-ipsets removed"
+	    if [ -x ${g_restorepath}-ipsets ]; then
+		rm -f ${g_restorepath}-ipsets
+		echo "    ${g_restorepath}-ipsets removed"
 	    fi
 
-	    rm -f $RESTOREPATH
-	    rm -f ${RESTOREPATH}-iptables
-	    echo "    $RESTOREPATH removed"
-	elif [ -f $RESTOREPATH ]; then
-	    echo "   $RESTOREPATH exists and is not a saved Shorewall6 configuration"
+	    rm -f $g_restorepath
+	    rm -f ${g_restorepath}-iptables
+	    echo "    $g_restorepath removed"
+	elif [ -f $g_restorepath ]; then
+	    echo "   $g_restorepath exists and is not a saved Shorewall6 configuration"
 	fi
 	rm -f ${VARDIR}/save
 	;;

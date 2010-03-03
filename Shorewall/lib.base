@@ -999,7 +999,7 @@ report_capabilities() {
 	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
 	if [ -n "$CONNTRACK_MATCH" ]; then
 	    report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
-	    report_capability "Old Connection Tracking Match Syntax" $OLD_CONNTRACK_MATCH
+	    [ -n "$OLD_CONNTRACK_MATCH" ] && report_capability "Old Connection Tracking Match Syntax" $OLD_CONNTRACK_MATCH
 	fi
 	report_capability "Packet Type Match" $USEPKTTYPE
 	report_capability "Policy Match" $POLICY_MATCH
@@ -1016,7 +1016,7 @@ report_capabilities() {
 	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
-	[ -n "$IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
+	[ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 	report_capability "Extended REJECT" $ENHANCED_REJECT
 	report_capability "Repeat match" $KLUDGEFREE
@@ -1028,7 +1028,7 @@ report_capabilities() {
 	report_capability "Address Type Match" $ADDRTYPE
 	report_capability "TCPMSS Match" $TCPMSS_MATCH
 	report_capability "Hashlimit Match" $HASHLIMIT_MATCH
-	report_capability "Old Hashlimit Match" $OLD_HL_MATCH
+	[ -n "$OLD_HL_MATCH" ] && report_capability "Old Hashlimit Match" $OLD_HL_MATCH
 	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
 	report_capability "Realm Match" $REALM_MATCH
 	report_capability "Helper Match" $HELPER_MATCH

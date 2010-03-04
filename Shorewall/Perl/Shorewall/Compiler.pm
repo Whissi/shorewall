@@ -91,7 +91,7 @@ sub generate_script_1() {
 	} else {
 	    copy $globals{SHAREDIRPL} . 'prog.header6';
 	}
-	copy $globals{SHAREDIR} . 'lib.run';
+	copy $globals{SHAREDIR} . '/lib.run';
     }
 
     my $lib = find_file 'lib.private';

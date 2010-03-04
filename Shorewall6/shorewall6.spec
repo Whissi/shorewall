@@ -82,7 +82,7 @@ fi
 %attr(-   ,root,root) /usr/share/shorewall6/functions
 %attr(0644,root,root) /usr/share/shorewall6/lib.base
 %attr(0644,root,root) /usr/share/shorewall6/lib.cli
-%attr(0644,root,root) /usr/share/shorewall6/lib.run
+%attr(0644,root,root) /usr/share/shorewall6/lib.common
 %attr(0644,root,root) /usr/share/shorewall6/macro.*
 %attr(0644,root,root) /usr/share/shorewall6/modules
 %attr(0644,root,root) /usr/share/shorewall6/helpers

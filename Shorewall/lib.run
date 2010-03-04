@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Shorewall 4.4 -- /usr/share/shorewall/lib.run.
+# Shorewall 4.4 -- /usr/share/shorewall/lib.common.
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -21,7 +21,9 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# This library contains the wrapper code for running a generated script.
+# This library will gradually replace lib.base. It's purpose is to hold those functions
+# used by both the CLI and by the generated firewall scripts. To avoid versioning issues,
+# it is copied into generated scripts rather than loaded at run-time.
 #
 
 #
@@ -107,5 +109,5 @@ run_it() {
     $SHOREWALL_SHELL $script $options $@
 }
 #################################################################################
-# End of lib.run
+# End of lib.common
 #################################################################################

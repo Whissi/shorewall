@@ -72,7 +72,7 @@ sub initialize_package_globals() {
 #
 # First stage of script generation.
 #
-#    Copy prog.header to the generated script.
+#    Copy prog.header and lib.common to the generated script.
 #    Generate the various user-exit jacket functions.
 #
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
@@ -91,7 +91,7 @@ sub generate_script_1() {
 	} else {
 	    copy $globals{SHAREDIRPL} . 'prog.header6';
 	}
-	copy $globals{SHAREDIR} . '/lib.run';
+	copy $globals{SHAREDIR} . '/lib.common';
     }
 
     my $lib = find_file 'lib.private';

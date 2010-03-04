@@ -1482,14 +1482,8 @@ fi
 
 g_firewall=${VARDIR}/firewall
 
-libraries="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
-for library in $libraries; do
-    if [ -f $library ]; then
-	. $library
-    else
-	echo "$library does not exist!" >&2
-	exit 2
-    fi
+for library in ${SHAREDIR}/lib.*; do
+    . $library
 done
 
 version_file=$SHAREDIR/version

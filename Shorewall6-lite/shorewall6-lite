@@ -486,16 +486,10 @@ g_product="Shorewall6 Lite"
 
 [ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
 
-libraries="$SHAREDIR/lib.base $SHAREDIR/lib.cli"
 version_file=$SHAREDIR/version
 
-for library in $libraries; do
-    if [ -f $library ]; then
-	. $library
-    else
-	echo "Installation error: $library does not exist!" >&2
-	exit 2
-    fi
+for library in ${SHAREDIR}/lib.*; do
+    . $library
 done
 
 ensure_config_path

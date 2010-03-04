@@ -1125,3 +1125,320 @@ logwatch_command() {
 	usage 1
     fi
 }
+
+#
+# Determine which optional facilities are supported by iptables/netfilter
+#
+determine_capabilities() {
+    CONNTRACK_MATCH=
+    NEW_CONNTRACK_MATCH=
+    OLD_CONNTRACK_MATCH=
+    MULTIPORT=
+    XMULTIPORT=
+    POLICY_MATCH=
+    PHYSDEV_MATCH=
+    PHYSDEV_BRIDGE=
+    IPRANGE_MATCH=
+    RECENT_MATCH=
+    OWNER_MATCH=
+    IPSET_MATCH=
+    CONNMARK=
+    XCONNMARK=
+    CONNMARK_MATCH=
+    XCONNMARK_MATCH=
+    RAW_TABLE=
+    IPP2P_MATCH=
+    OLD_IPP2P_MATCH=
+    LENGTH_MATCH=
+    CLASSIFY_TARGET=
+    ENHANCED_REJECT=
+    USEPKTTYPE=
+    KLUDGEFREE=
+    MARK=
+    XMARK=
+    EXMARK=
+    TPROXY_TARGET=
+    MANGLE_FORWARD=
+    COMMENTS=
+    ADDRTYPE=
+    TCPMSS_MATCH=
+    HASHLIMIT_MATCH=
+    NFQUEUE_TARGET=
+    REALM_MATCH=
+    HELPER_MATCH=
+    CONNLIMIT_MATCH=
+    TIME_MATCH=
+    GOTO_TARGET=
+    IPMARK_TARGET=
+    LOG_TARGET=Yes
+    FLOW_FILTER=
+
+    chain=fooX$$
+
+    [ -n "$IP6TABLES" ] || IP6TABLES=$(mywhich ip6tables)
+
+    if [ -z "$IP6TABLES" ]; then
+	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
+	exit 1
+    fi
+
+    [ -n "$IP" ] || IP=$(which ip)
+
+    [ -n "$IP" -a -x "$IP" ] || IP=
+
+    qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
+
+    qt $IP6TABLES -F $chain
+    qt $IP6TABLES -X $chain
+    if ! $IP6TABLES -N $chain; then
+	echo "   ERROR: The command \"$IP6TABLES -N $chain\" failed" >&2
+	exit 1
+    fi
+
+    chain1=${chain}1
+
+    qt $IP6TABLES -F $chain1
+    qt $IP6TABLES -X $chain1
+    if ! $IP6TABLES -N $chain1; then
+	echo "   ERROR: The command \"$IP6TABLES -N $chain1\" failed" >&2
+	exit 1
+    fi
+
+    if ! qt $IP6TABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT; then
+	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- Shorewall will not run on this system" >&2
+	exit 1
+    fi
+
+    qt $IP6TABLES -A $chain -m conntrack --ctorigdst ::1 -j ACCEPT && CONNTRACK_MATCH=Yes
+
+    if [ -n "$CONNTRACK_MATCH" ]; then
+	qt $IP6TABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m conntrack ! --ctorigdst ::1 || OLD_CONNTRACK_MATCH=Yes
+    fi
+
+    if qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
+	MULTIPORT=Yes
+	qt $IP6TABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
+    fi
+
+    qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $IP6TABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
+
+    if qt $IP6TABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
+	PHYSDEV_MATCH=Yes
+	qt $IP6TABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
+	if [ -z "${KLUDGEFREE}" ]; then
+	    qt $IP6TABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    if qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -j ACCEPT; then
+	IPRANGE_MATCH=Yes
+	if [ -z "${KLUDGEFREE}" ]; then
+	    qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -m iprange --dst-range ::1-::2 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    qt $IP6TABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $IP6TABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+
+    if qt $IP6TABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
+	CONNMARK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+    fi
+
+    qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
+    if [ -n "$IPP2P_MATCH" ]; then
+	qt $IP6TABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
+    fi
+
+   qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IP6TABLES -A $chain -j REJECT --reject-with icmp6-adm-prohibited && ENHANCED_REJECT=Yes
+
+    qt $IP6TABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
+
+    if [ -n "$MANGLE_ENABLED" ]; then
+	qt $IP6TABLES -t mangle -N $chain
+
+	if qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1; then
+	    MARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
+	fi
+
+	if qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark; then
+	    CONNMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	fi
+
+	qt $IP6TABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IP6TABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
+	qt $IP6TABLES -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
+	qt $IP6TABLES -t mangle -F $chain
+	qt $IP6TABLES -t mangle -X $chain
+	qt $IP6TABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
+    fi
+
+    qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
+
+    if qt mywhich ipset; then
+	qt ipset -X $chain # Just in case something went wrong the last time
+
+	if qt ipset -N $chain iphash ; then
+	    if qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
+		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
+		IPSET_MATCH=Yes
+	    fi
+	    qt ipset -X $chain
+	fi
+    fi
+
+    qt $IP6TABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+    qt $IP6TABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
+    qt $IP6TABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
+    qt $IP6TABLES -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    if [ -z "$HASHLIMIT_MATCH" ]; then
+	qt $IP6TABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
+	HASHLIMIT_MATCH=$OLD_HL_MATCH
+    fi	
+    qt $IP6TABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+    qt $IP6TABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
+    qt $IP6TABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
+    qt $IP6TABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
+    qt $IP6TABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
+    qt $IP6TABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
+    qt $IP6TABLES -A $chain -j LOG || LOG_TARGET=
+
+    qt $IP6TABLES -F $chain
+    qt $IP6TABLES -X $chain
+    qt $IP6TABLES -F $chain1
+    qt $IP6TABLES -X $chain1
+
+    [ -n "$IP" ] && $IP filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+
+    CAPVERSION=$SHOREWALL_CAPVERSION
+    KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+}
+
+report_capabilities() {
+    report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
+    {
+	local setting
+	setting=
+
+	[ "x$2" = "xYes" ] && setting="Available" || setting="Not available"
+
+	echo "  " $1: $setting
+    }
+
+    if [ $VERBOSITY -gt 1 ]; then
+	echo "Shorewall6 has detected the following ip6tables/netfilter capabilities:"
+	report_capability "Packet Mangling" $MANGLE_ENABLED
+	report_capability "Multi-port Match" $MULTIPORT
+	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
+	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+	if [ -n "$CONNTRACK_MATCH" ]; then
+	    report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
+	    [ -n "$OLD_CONNTRACK_MATCH" ] && report_capability "Old Connection Tracking Match Syntax" $OLD_CONNTRACK_MATCH
+	fi
+	report_capability "Packet Type Match" $USEPKTTYPE
+	report_capability "Policy Match" $POLICY_MATCH
+	report_capability "Physdev Match" $PHYSDEV_MATCH
+	report_capability "Physdev-is-bridged Support" $PHYSDEV_BRIDGE
+	report_capability "Packet length Match" $LENGTH_MATCH
+	report_capability "IP range Match" $IPRANGE_MATCH
+	report_capability "Recent Match" $RECENT_MATCH
+	report_capability "Owner Match" $OWNER_MATCH
+	report_capability "Ipset Match" $IPSET_MATCH
+	report_capability "CONNMARK Target" $CONNMARK
+	[ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target" $XCONNMARK
+	report_capability "Connmark Match" $CONNMARK_MATCH
+	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
+	report_capability "Raw Table" $RAW_TABLE
+	report_capability "IPP2P Match" $IPP2P_MATCH
+	[ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
+	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
+	report_capability "Extended REJECT" $ENHANCED_REJECT
+	report_capability "Repeat match" $KLUDGEFREE
+	report_capability "MARK Target" $MARK
+	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
+	[ -n "$XMARK" ] && report_capability "Extended MARK Target 2" $EXMARK
+	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
+	report_capability "Comments" $COMMENTS
+	report_capability "Address Type Match" $ADDRTYPE
+	report_capability "TCPMSS Match" $TCPMSS_MATCH
+	report_capability "Hashlimit Match" $HASHLIMIT_MATCH
+	[ -n "$OLD_HL_MATCH" ] && report_capability "Old Hashlimit Match" $OLD_HL_MATCH
+	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
+	report_capability "Realm Match" $REALM_MATCH
+	report_capability "Helper Match" $HELPER_MATCH
+	report_capability "Connlimit Match" $CONNLIMIT_MATCH
+	report_capability "Time Match" $TIME_MATCH
+	report_capability "Goto Support" $GOTO_TARGET
+	report_capability "IPMARK Target" $IPMARK_TARGET
+	report_capability "LOG Target" $LOG_TARGET
+	report_capability "TPROXY Target" $TPROXY_TARGET
+	report_capability "FLOW Classifier" $FLOW_FILTER
+    fi
+
+    [ -n "$PKTTYPE" ] || USEPKTTYPE=
+
+}
+
+report_capabilities1() {
+    report_capability1() # $1 = Capability
+    {
+	eval echo $1=\$$1
+    }
+
+    echo "#"
+    echo "# Shorewall6 $SHOREWALL_VERSION detected the following ip6tables/netfilter capabilities - $(date)"
+    echo "#"
+    report_capability1 MANGLE_ENABLED
+    report_capability1 MULTIPORT
+    report_capability1 XMULTIPORT
+    report_capability1 CONNTRACK_MATCH
+    report_capability1 NEW_CONNTRACK_MATCH
+    report_capability1 OLD_CONNTRACK_MATCH
+    report_capability1 USEPKTTYPE
+    report_capability1 POLICY_MATCH
+    report_capability1 PHYSDEV_MATCH
+    report_capability1 PHYSDEV_BRIDGE
+    report_capability1 LENGTH_MATCH
+    report_capability1 IPRANGE_MATCH
+    report_capability1 RECENT_MATCH
+    report_capability1 OWNER_MATCH
+    report_capability1 IPSET_MATCH
+    report_capability1 CONNMARK
+    report_capability1 XCONNMARK
+    report_capability1 CONNMARK_MATCH
+    report_capability1 XCONNMARK_MATCH
+    report_capability1 RAW_TABLE
+    report_capability1 IPP2P_MATCH
+    report_capability1 OLD_IPP2P_MATCH
+    report_capability1 CLASSIFY_TARGET
+    report_capability1 ENHANCED_REJECT
+    report_capability1 KLUDGEFREE
+    report_capability1 MARK
+    report_capability1 XMARK
+    report_capability1 EXMARK
+    report_capability1 MANGLE_FORWARD
+    report_capability1 COMMENTS
+    report_capability1 ADDRTYPE
+    report_capability1 TCPMSS_MATCH
+    report_capability1 HASHLIMIT_MATCH
+    report_capability1 OLD_HL_MATCH
+    report_capability1 NFQUEUE_TARGET
+    report_capability1 REALM_MATCH
+    report_capability1 HELPER_MATCH
+    report_capability1 CONNLIMIT_MATCH
+    report_capability1 TIME_MATCH
+    report_capability1 GOTO_TARGET
+    report_capability1 IPMARK_TARGET
+    report_capability1 LOG_TARGET
+    report_capability1 TPROXY_TARGET
+    report_capability1 FLOW_FILTER
+    
+    echo CAPVERSION=$SHOREWALL_CAPVERSION
+    echo KERNELVERSION=$KERNELVERSION    
+}

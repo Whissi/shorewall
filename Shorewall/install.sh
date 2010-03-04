@@ -650,15 +650,6 @@ if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall/lib.private ]; then
     echo "Private library file installed as ${PREFIX}/etc/shorewall/lib.private"
 fi
 #
-# Install the run library file
-#
-run_install $OWNERSHIP -m 0644 configfiles/lib.run ${PREFIX}/usr/share/shorewall/configfiles/lib.run
-
-if [ -z "$SPARSE" -a ! -f ${PREFIX}/etc/shorewall/lib.run ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/lib.run ${PREFIX}/etc/shorewall/lib.run
-    echo "Run library file installed as ${PREFIX}/etc/shorewall/lib.run"
-fi
-#
 # Install the Started file
 #
 run_install $OWNERSHIP -m 0644 configfiles/started ${PREFIX}/usr/share/shorewall/configfiles/started

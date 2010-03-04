@@ -30,6 +30,7 @@ get_script_version() { # $1 = script
     local temp
     local version
     local ifs
+    local digits
 
     temp=$( $SHOREWALL_SHELL $1 version | sed 's/-.*//' )
 
@@ -40,9 +41,12 @@ get_script_version() { # $1 = script
 	IFS=.
 	temp=$(echo $temp)
 	IFS=$ifs
+	digits=0
 	
 	for temp in $temp; do
 	    version=${version}$(printf '%02d' $temp)
+	    digits=$(($digits + 1))
+	    [ $digits -eq 3 ] && break
 	done
     fi
     

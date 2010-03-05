@@ -135,6 +135,32 @@ mutex_off()
     rm -f ${LOCKFILE:=${VARDIR}/lock}
 }
 
+#
+# Find the interface with the passed MAC address
+#
+
+find_interface_by_mac() {
+    local mac
+    mac=$1
+    local first
+    local second
+    local rest
+    local dev
+
+    $IP link list | while read first second rest; do
+	case $first in
+	    *:)
+                dev=$second
+		;;
+	    *)
+	        if [ "$second" = $mac ]; then
+		    echo ${dev%:}
+		    return
+		fi
+	esac
+    done
+}
+
 [ -z "$LEFTSHIFT" ] && . ${SHAREDIR}/lib.common
 
 #

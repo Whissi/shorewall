@@ -412,32 +412,6 @@ in_network() # $1 = IP address, $2 = CIDR network
 }
 
 #
-# Find the interface with the passed MAC address
-#
-
-find_interface_by_mac() {
-    local mac
-    mac=$1
-    local first
-    local second
-    local rest
-    local dev
-
-    $IP link list | while read first second rest; do
-	case $first in
-	    *:)
-                dev=$second
-		;;
-	    *)
-	        if [ "$second" = $mac ]; then
-		    echo ${dev%:}
-		    return
-		fi
-	esac
-    done
-}
-
-#
 # Find interface address--returns the first IP address assigned to the passed
 # device
 #

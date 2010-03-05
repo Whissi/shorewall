@@ -338,14 +338,6 @@ resolve_file() # $1 = file name
     esac
 }
 
-#
-# Set the Shorewall state
-#
-set_state () # $1 = state
-{
-    echo "$1 ($(date))" > ${VARDIR}/state
-}
-
 # Function to truncate a string -- It uses 'cut -b -<n>'
 # rather than ${v:first:last} because light-weight shells like ash and
 # dash do not support that form of expansion.
@@ -428,5 +420,3 @@ mktempfile() {
 	esac
     fi
 }
-
-. ${SHAREDIR}/lib.common

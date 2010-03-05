@@ -576,25 +576,6 @@ restore_default_route() {
 }
 
 #
-# Determine how to do "echo -e"
-#
-
-find_echo() {
-    local result
-
-    result=$(echo "a\tb")
-    [ ${#result} -eq 3 ] && { echo echo; return; }
-
-    result=$(echo -e "a\tb")
-    [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
-
-    result=$(mywhich echo)
-    [ -n "$result" ] && { echo "$result -e"; return; }
-
-    echo echo
-}
-
-#
 # Determine the MAC address of the passed IP through the passed interface
 #
 find_mac() # $1 = IP address, $2 = interface

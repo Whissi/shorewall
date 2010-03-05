@@ -329,32 +329,6 @@ chain_exists() # $1 = chain name
 }
 
 #
-# Find a File -- For relative file name, look in each ${CONFIG_PATH} then ${CONFDIR}
-#
-find_file()
-{
-    local saveifs
-    saveifs=
-    local directory
-
-    case $1 in
-	/*)
-	    echo $1
-	    ;;
-	*)
-	    for directory in $(split $CONFIG_PATH); do
-		if [ -f $directory/$1 ]; then
-		    echo $directory/$1
-		    return
-		fi
-	    done
-
-	    echo ${CONFDIR}/$1
-	    ;;
-    esac
-}
-
-#
 # Find the interface with the passed MAC address
 #
 

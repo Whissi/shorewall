@@ -496,8 +496,8 @@ g_product="Shorewall6 Lite"
 
 version_file=$SHAREDIR/version
 
-for library in ${SHAREDIR}/lib.*; do
-    . $library
+for library in base cli; do
+    . ${SHAREDIR}/lib.$library
 done
 
 ensure_config_path

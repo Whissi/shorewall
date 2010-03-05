@@ -141,14 +141,6 @@ mutex_off()
 }
 
 #
-# Query NetFilter about the existence of a filter chain
-#
-chain_exists() # $1 = chain name
-{
-    qt $IP6TABLES -L $1 -n
-}
-
-#
 # Find the interface with the passed MAC address
 #
 
@@ -222,28 +214,6 @@ resolve_file() # $1 = file name
 	    echo $pwd/$1
 	    ;;
     esac
-}
-
-detect_gateway() # $1 = interface
-{
-    local interface
-    interface=$1
-    #
-    # First assume that this is some sort of point-to-point interface
-    #
-    gateway=$( find_peer $(ip -6 addr list $interface ) )
-    #
-    # Maybe there's a default route through this gateway already
-    #
-    [ -n "$gateway" ] || gateway=$(find_gateway $(ip -6 route list dev $interface))
-    #
-    # Last hope -- is there a load-balancing route through the interface?
-    #
-    [ -n "$gateway" ] || gateway=$(find_nexthop $interface)
-    #
-    # Be sure we found one
-    #
-    [ -n "$gateway" ] && echo $gateway
 }
 
 #
@@ -327,3 +297,5 @@ mktempfile() {
 	esac
     fi
 }
+
+. ${SHAREDIR}/lib.common

@@ -94,6 +94,7 @@ rm -rf /var/lib/shorewall6-lite
 rm -rf /var/lib/shorewall6-lite-*.bkout
 rm -rf /usr/share/shorewall6-lite
 rm -rf /usr/share/shorewall6-lite-*.bkout
+rm -f  /etc/logrotate.d/shorewall6-lite
 
 echo "Shorewall6 Lite Uninstalled"
 

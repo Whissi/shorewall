@@ -106,6 +106,7 @@ rm -rf /var/lib/shorewall-lite
 rm -rf /var/lib/shorewall-lite-*.bkout
 rm -rf /usr/share/shorewall-lite
 rm -rf /usr/share/shorewall-lite-*.bkout
+rm -f  /etc/logrotate.d/shorewall-lite
 
 echo "Shorewall Uninstalled"
 

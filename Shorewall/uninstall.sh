@@ -108,6 +108,7 @@ rm -rf /usr/share/shorewall
 rm -rf /usr/share/shorewall-*.bkout
 rm -rf /usr/share/man/man5/shorewall*
 rm -rf /usr/share/man/man8/shorewall*
+rm -f  /etc/logrotate.d/shorewall
 
 echo "Shorewall Uninstalled"
 

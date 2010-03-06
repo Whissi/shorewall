@@ -1208,13 +1208,11 @@ sub copy2( $ ) {
 
     if ( $script ) {
 	my $file = $_[0];
-	my $first = 1;
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
 	    last unless /^#/;
-	    $first = 0;
 	}
 
 	print $script <<EOF;
@@ -1223,7 +1221,7 @@ sub copy2( $ ) {
 ################################################################################
 
 EOF
-	print $script $_ if $first;
+	print $script $_ unless /^\s*$/;
 
 	while ( <IF> ) {
 	    chomp;

@@ -93,21 +93,12 @@ sub generate_script_1() {
 	    copy $globals{SHAREDIRPL} . 'prog.header6';
 	}
 
-	copy $globals{SHAREDIR} . '/lib.common';
+	copy2 $globals{SHAREDIR} . '/lib.common';
     }
 
     my $lib = find_file 'lib.private';
 
-    if ( -f $lib ) {
-	emit <<'EOF';
-################################################################################
-# Functions imported from lib.private
-################################################################################
-EOF
-
-	copy1 $lib;
-	emit "\n";
-    }
+    copy2 $lib if -f $lib;
 
     emit <<'EOF';
 ################################################################################

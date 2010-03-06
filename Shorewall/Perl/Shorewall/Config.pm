@@ -81,6 +81,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       pop_indent
 				       copy
 				       copy1
+				       copy2
 				       create_temp_aux_config
 				       finalize_aux_config
 				       set_shorewall_dir
@@ -1197,6 +1198,62 @@ sub copy1( $ ) {
     $lastlineblank = 0;
 
     $result;
+}
+
+#
+# This one drops header comments and replaces them with a three-line banner
+#
+sub copy2( $ ) {
+    assert( $script_enabled );
+
+    if ( $script ) {
+	my $file = $_[0];
+	my $first = 1;
+
+	open IF , $file or fatal_error "Unable to open $file: $!";
+
+	while ( <IF> ) {
+	    last unless /^#/;
+	    $first = 0;
+	}
+
+	print $script <<EOF;
+################################################################################
+#   Functions imported from $file
+################################################################################
+
+EOF
+	print $script $_ if $first;
+
+	while ( <IF> ) {
+	    chomp;
+	    if ( /^\s*$/ ) {
+		print $script "\n" unless $lastlineblank;
+		$lastlineblank = 1;
+	    } else {
+		if  ( $indent ) {
+		    s/^(\s*)/$indent1$1$indent2/;
+		    s/        /\t/ if $indent2;
+		}
+
+		print $script $_;
+		print $script "\n";
+		$lastlineblank = 0;
+	    }
+	}
+
+	close IF;
+
+	print $script "\n" unless $lastlineblank;
+
+	print $script <<EOF;
+################################################################################
+#   End of imports from $file
+################################################################################
+EOF
+	$lastlineblank = 0;
+    }
+
 }
 
 #

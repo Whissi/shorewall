@@ -5,7 +5,16 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    echo "Usage: $0 [ options ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    echo 
+    echo "Options are:"
+    echo
+    echo "   -v and -q        Standard Shorewall verbosity controls"
+    echo "   -n               Don't unpdate routing configuration"
+    echo "   -p               Purge Conntrack Table"
+    echo "   -t               Timestamp progress Messages"
+    echo "   -V <verbosity>   Set verbosity explicitly"
+    echo "   -R <file>        Override RESTOREFILE setting"
     exit $1
 }
 ################################################################################

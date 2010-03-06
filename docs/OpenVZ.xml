@@ -699,7 +699,7 @@ NAME="server"
       the bridge when the VE starts. That is accomplished using mount
       file.</para>
 
-      <para>/etc/vz/conf/101.mount:</para>
+      <para><filename>/etc/vz/conf/101.mount:</filename></para>
 
       <programlisting>#!/bin/bash
 # This script source VPS configuration files in the same order as vzctl does
@@ -725,7 +725,7 @@ NAME="server"
   done
 } &amp;</programlisting>
 
-      <para>/etc/vz/conf/102.mount:</para>
+      <para><filename>/etc/vz/conf/102.mount:</filename></para>
 
       <programlisting>#!/bin/bash
 # This script source VPS configuration files in the same order as vzctl does
@@ -758,7 +758,7 @@ NAME="server"
       <para>Below are exerpts from the configuration files as they pertain to
       the OpenVZ environment.</para>
 
-      <para><filename>/etc/shorewall/zones</filename>:</para>
+      <para><filename><filename>/etc/shorewall/zones</filename>:</filename></para>
 
       <programlisting>#ZONE           TYPE            OPTIONS         IN                      OUT
 #                                               OPTIONS                 OPTIONS
@@ -768,7 +768,7 @@ loc             ipv4            #Local wired Zone
 <emphasis role="bold">dmz             ipv4            #DMZ</emphasis>
 ...</programlisting>
 
-      <para><filename>/etc/shorewall/params</filename>:</para>
+      <para><filename><filename>/etc/shorewall/params</filename>:</filename></para>
 
       <programlisting>NET_IF=eth3
 INT_IF=eth1
@@ -781,7 +781,7 @@ loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1
 <emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
 ...</programlisting></para>
 
-      <para>/etc/shorewall/proxyarp:</para>
+      <para><filename>/etc/shorewall/proxyarp:</filename></para>
 
       <programlisting>#ADDRESS        INTERFACE     EXTERNAL   HAVEROUTE   PERSISTENT
 206.124.146.177 DMZ_IF        eth2       no          yes
@@ -803,14 +803,14 @@ loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1
       an environment to test with. It is a quite vanilla one-interface
       configuration.</para>
 
-      <para>/etc/shorewall/zones:</para>
+      <para><filename>/etc/shorewall/zones:</filename></para>
 
       <programlisting>#ZONE       TYPE         OPTIONS           IN                OUT
 #                                          OPTIONS           OPTIONS
 fw          firewall
 net         ipv4</programlisting>
 
-      <para>/etc/shorewall/interfaces:</para>
+      <para><filename>/etc/shorewall/interfaces:</filename></para>
 
       <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 net     <emphasis role="bold">eth0  </emphasis>         detect          dhcp,tcpflags,logmartians,nosmurfs</programlisting>

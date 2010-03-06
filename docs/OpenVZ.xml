@@ -506,4 +506,314 @@ net         ipv4</programlisting>
 net     <emphasis role="bold">venet0 </emphasis>         detect          dhcp,tcpflags,logmartians,nosmurfs</programlisting>
     </section>
   </section>
+
+  <section>
+    <title>Working Example Using a Bridge</title>
+
+    <para>This is the configuration at shorewall.net during the spring of
+    2010. Rather than using the venet0 configuration shown above, this
+    configuration uses a bridge. The eth0 interface in each of the containers
+    is statically configured using the distributions' configuration tools
+    (<filename>/etc/network/interfaces</filename> on Debian and Yast on
+    OpenSuSE).</para>
+
+    <para>The network diagram is shown below.</para>
+
+    <graphic fileref="images/Network2010.png" />
+
+    <para>The two systems shown in the green box are OpenVZ Virtual
+    Environments (containers).</para>
+
+    <section>
+      <title>Bridge Configuration</title>
+
+      <para>The following stanza in /etc/network/interfaces on the host
+      configures the bridge.</para>
+
+      <programlisting>auto vzbr0
+iface vzbr0 inet static
+      pre-up /usr/sbin/brctl addbr vzbr0
+      address 206.124.146.176
+      network 206.124.146.176
+      broadcast 206.124.146.176
+      netmask 255.255.255.255
+      post-down /usr/sbin/brctl delbr br0
+</programlisting>
+    </section>
+
+    <section>
+      <title>OpenVZ Configuration</title>
+
+      <para>In the files below, items in <emphasis role="bold">bold
+      font</emphasis> show the changes from the preceeding example.</para>
+
+      <para><filename>/etc/vz/conf</filename> (long lines folded for
+      clarity).</para>
+
+      <programlisting>## Global parameters
+VIRTUOZZO=yes
+LOCKDIR=/var/lib/vz/lock
+DUMPDIR=/var/lib/vz/dump
+VE0CPUUNITS=1000
+
+## Logging parameters
+LOGGING=yes
+LOGFILE=/var/log/vzctl.log
+LOG_LEVEL=0
+VERBOSE=0
+
+## Disk quota parameters
+DISK_QUOTA=no
+VZFASTBOOT=no
+
+# The name of the device whose ip address will be used as source ip for VE.
+# By default automatically assigned.
+VE_ROUTE_SRC_DEV="eth3"
+
+# Controls which interfaces to send ARP requests and modify APR tables on.
+NEIGHBOUR_DEVS=detect
+
+## Template parameters
+TEMPLATE=/var/lib/vz/template
+
+## Defaults for VEs
+VE_ROOT=/home/vz/root/$VEID
+VE_PRIVATE=/home/vz/private/$VEID
+CONFIGFILE="vps.basic"
+#DEF_OSTEMPLATE="fedora-core-4"
+DEF_OSTEMPLATE="debian"
+
+## Load vzwdog module
+VZWDOG="no"
+
+## IPv4 iptables kernel modules
+IPTABLES="iptable_filter iptable_mangle ipt_limit ipt_multiport ipt_tos
+          ipt_TOS ipt_REJECT ipt_TCPMSS ipt_tcpmss ipt_ttl ipt_LOG ipt_length
+          ip_conntrack ip_conntrack_ftp ip_conntrack_irc ipt_conntrack
+          ipt_state ipt_helper iptable_nat  ip_nat_ftp  ip_nat_irc ipt_REDIRECT
+          xt_mac ipt_owner"
+
+## Enable IPv6
+IPV6="no"</programlisting>
+
+      <para><filename>/etc/vz/conf/101.conf</filename>:</para>
+
+      <programlisting>ONBOOT="yes"
+
+# UBC parameters (in form of barrier:limit)
+KMEMSIZE="574890800:589781600"
+LOCKEDPAGES="256:256"
+PRIVVMPAGES="1073741824:2137483648"
+SHMPAGES="21504:21504"
+NUMPROC="240:240"
+PHYSPAGES="0:9223372036854775807"
+VMGUARPAGES="262144:9223372036854775807"
+OOMGUARPAGES="26112:9223372036854775807"
+NUMTCPSOCK="360:360"
+NUMFLOCK="188:206"
+NUMPTY="16:16"
+NUMSIGINFO="256:256"
+TCPSNDBUF="1720320:2703360"
+TCPRCVBUF="1720320:2703360"
+OTHERSOCKBUF="1126080:2097152"
+DGRAMRCVBUF="262144:262144"
+NUMOTHERSOCK="360:360"
+DCACHESIZE="3409920:3624960"
+NUMFILE="9312:9312"
+AVNUMPROC="180:180"
+NUMIPTENT="200:200"
+
+# Disk quota parameters (in form of softlimit:hardlimit)
+DISKSPACE="1048576:1153024"
+DISKINODES="200000:220000"
+QUOTATIME="0"
+
+# CPU fair sheduler parameter
+CPUUNITS="1000"
+
+VE_ROOT="/home/vz/root/$VEID"
+VE_PRIVATE="/home/vz/private/$VEID"
+OSTEMPLATE="suse-11.1-x86_64"
+ORIGIN_SAMPLE="vps.basic"
+HOSTNAME="lists.shorewall.net"
+NAMESERVER="127.0.0.1"
+NAME="lists"
+SEARCHDOMAIN="shorewall.net"
+
+<emphasis role="bold">NETIF="ifname=eth0,mac=00:18:51:22:24:81,host_ifname=veth101.0,host_mac=00:18:51:B6:1A:F1"</emphasis></programlisting>
+
+      <para>This VE is the mail server at shorewall.net (MX and IMAP). Note
+      that some of the memory parameters are set ridiculously large -- I got
+      tired of out-of-memory issues.</para>
+
+      <para><filename>/etc/vz/conf/102.conf</filename> (nearly default
+      configuration on Debian):</para>
+
+      <programlisting>ONBOOT="yes"
+
+# UBC parameters (in form of barrier:limit)
+KMEMSIZE="14372700:14790164"
+LOCKEDPAGES="256:256"
+PRIVVMPAGES="65536:69632"
+SHMPAGES="21504:21504"
+NUMPROC="240:240"
+PHYSPAGES="0:9223372036854775807"
+VMGUARPAGES="33792:9223372036854775807"
+OOMGUARPAGES="26112:9223372036854775807"
+NUMTCPSOCK="360:360"
+NUMFLOCK="188:206"
+NUMPTY="16:16"
+NUMSIGINFO="256:256"
+TCPSNDBUF="1720320:2703360"
+TCPRCVBUF="1720320:2703360"
+OTHERSOCKBUF="1126080:2097152"
+DGRAMRCVBUF="262144:262144"
+NUMOTHERSOCK="360:360"
+DCACHESIZE="3409920:3624960"
+NUMFILE="9312:9312"
+AVNUMPROC="180:180"
+NUMIPTENT="200:200"
+
+# Disk quota parameters (in form of softlimit:hardlimit)
+DISKSPACE="1048576:1153024"
+DISKINODES="200000:220000"
+QUOTATIME="0"
+
+# CPU fair sheduler parameter
+CPUUNITS="1000"
+
+VE_ROOT="/home/vz/root/$VEID"
+VE_PRIVATE="/home/vz/private/$VEID"
+OSTEMPLATE="debian-5.0-amd64-minimal"
+ORIGIN_SAMPLE="vps.basic"
+HOSTNAME="server.shorewall.net"
+NAMESERVER="206.124.146.177"
+NAME="server"
+
+<emphasis role="bold">NETIF="ifname=eth0,mac=00:18:51:22:24:80,host_ifname=veth102.0,host_mac=00:18:51:B6:1A:F0"</emphasis></programlisting>
+
+      <para>This server runs the rest of the services for shorewall.net (web
+      server, ftp server, rsyncd, etc.).</para>
+
+      <para>With a bridged configuration, the VIF for a VE must be added to
+      the bridge when the VE starts. That is accomplished using mount
+      file.</para>
+
+      <para>/etc/vz/conf/101.mount:</para>
+
+      <programlisting>#!/bin/bash
+# This script source VPS configuration files in the same order as vzctl does
+
+# if one of these files does not exist then something is really broken
+[ -f /etc/vz/vz.conf ] || exit 1
+[ -f $VE_CONFFILE ] || exit 1
+
+# source both files. Note the order, it is important
+. /etc/vz/vz.conf
+. $VE_CONFFILE
+
+# Add the VIF to the bridge after VPS has started
+{
+  BRIDGE=vzbr0
+  DEV=veth101.0
+  while sleep 1; do
+    /sbin/ifconfig $DEV 0 &gt;/dev/null 2&gt;&amp;1
+    if [ $? -eq 0 ]; then
+      /usr/sbin/brctl addif $BRIDGE $DEV
+      break
+    fi
+  done
+} &amp;</programlisting>
+
+      <para>/etc/vz/conf/102.mount:</para>
+
+      <programlisting>#!/bin/bash
+# This script source VPS configuration files in the same order as vzctl does
+
+# if one of these files does not exist then something is really broken
+[ -f /etc/vz/vz.conf ] || exit 1
+[ -f $VE_CONFFILE ] || exit 1
+
+# source both files. Note the order, it is important
+. /etc/vz/vz.conf
+. $VE_CONFFILE
+
+# Add VIF to bridge after VPS has started
+{
+  BRIDGE=vzbr0
+  DEV=veth102.0
+  while sleep 1; do
+    /sbin/ifconfig $DEV 0 &gt;/dev/null 2&gt;&amp;1
+    if [ $? -eq 0 ]; then
+      /usr/sbin/brctl addif $BRIDGE $DEV
+      break
+    fi
+  done
+} &amp;</programlisting>
+    </section>
+
+    <section>
+      <title>Shorewall Configuration on the Host</title>
+
+      <para>Below are exerpts from the configuration files as they pertain to
+      the OpenVZ environment.</para>
+
+      <para><filename>/etc/shorewall/zones</filename>:</para>
+
+      <programlisting>#ZONE           TYPE            OPTIONS         IN                      OUT
+#                                               OPTIONS                 OPTIONS
+fw              firewall
+net             ipv4            #Internet
+loc             ipv4            #Local wired Zone
+<emphasis role="bold">dmz             ipv4            #DMZ</emphasis>
+...</programlisting>
+
+      <para><filename>/etc/shorewall/params</filename>:</para>
+
+      <programlisting>NET_IF=eth3
+INT_IF=eth1
+<emphasis role="bold">VPS_IF=vzbr0</emphasis>
+...</programlisting>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
+net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0
+loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
+<emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
+...</programlisting></para>
+
+      <para>/etc/shorewall/proxyarp:</para>
+
+      <programlisting>#ADDRESS        INTERFACE     EXTERNAL   HAVEROUTE   PERSISTENT
+206.124.146.177 DMZ_IF        eth2       no          yes
+206.124.146.178 DMZ_IF        eth2       no          yes</programlisting>
+
+      <para>This is a multi-ISP configuration so entries are required in
+      <filename>/etc/shorewall/route_rules</filename>:</para>
+
+      <programlisting>#SOURCE   DEST                 PROVIDER  PRIORITY
+-         172.20.0.0/24        main      1000
+<emphasis role="bold">-         206.124.146.177      main      1001
+-         206.124.146.178      main      1001</emphasis></programlisting>
+    </section>
+
+    <section>
+      <title>Shorewall Configuration on Server</title>
+
+      <para>I have set up Shorewall on VE 101 (206.124.146.178) just to have
+      an environment to test with. It is a quite vanilla one-interface
+      configuration.</para>
+
+      <para>/etc/shorewall/zones:</para>
+
+      <programlisting>#ZONE       TYPE         OPTIONS           IN                OUT
+#                                          OPTIONS           OPTIONS
+fw          firewall
+net         ipv4</programlisting>
+
+      <para>/etc/shorewall/interfaces:</para>
+
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     <emphasis role="bold">eth0  </emphasis>         detect          dhcp,tcpflags,logmartians,nosmurfs</programlisting>
+    </section>
+  </section>
 </article>

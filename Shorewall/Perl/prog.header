@@ -80,17 +80,6 @@ progress_message3() # $* = Message
     fi
 }
 
-qt1()
-{
-    local status
-
-    while [ 1 ]; do
-	"$@" >/dev/null 2>&1
-	status=$?
-	[ $status -ne 4 ] && return $status
-    done
-}
-
 #
 # Set a standard chain's policy
 #

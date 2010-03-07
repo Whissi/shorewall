@@ -512,8 +512,9 @@ net     <emphasis role="bold">venet0 </emphasis>         detect          dhcp,tc
 
     <para>This is the configuration at shorewall.net during the spring of
     2010. Rather than using the venet0 configuration shown above, this
-    configuration uses a bridge. The eth0 interface in each of the containers
-    is statically configured using the distributions' configuration tools
+    configuration uses a bridge in preparation for adding IPv6 support in the
+    DMZ. The eth0 interface in each of the containers is statically configured
+    using the distributions' configuration tools
     (<filename>/etc/network/interfaces</filename> on Debian and Yast on
     OpenSuSE).</para>
 
@@ -696,12 +697,12 @@ NAME="server"
       server, ftp server, rsyncd, etc.).</para>
 
       <para>With a bridged configuration, the VIF for a VE must be added to
-      the bridge when the VE starts. That is accomplished using mount
-      file.</para>
+      the bridge when the VE starts. That is accomplished using
+      <firstterm>mount</firstterm> files.</para>
 
       <para><filename>/etc/vz/conf/101.mount:</filename></para>
 
-      <programlisting>#!/bin/bash
+      <programlisting><emphasis role="bold">#!/bin/bash
 # This script source VPS configuration files in the same order as vzctl does
 
 # if one of these files does not exist then something is really broken
@@ -712,7 +713,7 @@ NAME="server"
 . /etc/vz/vz.conf
 . $VE_CONFFILE
 
-# Add the VIF to the bridge after VPS has started
+# Add the VIF to the bridge after VE has started
 {
   BRIDGE=vzbr0
   DEV=veth101.0
@@ -723,11 +724,11 @@ NAME="server"
       break
     fi
   done
-} &amp;</programlisting>
+} &amp;</emphasis></programlisting>
 
       <para><filename>/etc/vz/conf/102.mount:</filename></para>
 
-      <programlisting>#!/bin/bash
+      <programlisting><emphasis role="bold">#!/bin/bash
 # This script source VPS configuration files in the same order as vzctl does
 
 # if one of these files does not exist then something is really broken
@@ -738,7 +739,7 @@ NAME="server"
 . /etc/vz/vz.conf
 . $VE_CONFFILE
 
-# Add VIF to bridge after VPS has started
+# Add VIF to bridge after VE has started
 {
   BRIDGE=vzbr0
   DEV=veth102.0
@@ -749,14 +750,15 @@ NAME="server"
       break
     fi
   done
-} &amp;</programlisting>
+} &amp;</emphasis></programlisting>
     </section>
 
     <section>
       <title>Shorewall Configuration on the Host</title>
 
       <para>Below are exerpts from the configuration files as they pertain to
-      the OpenVZ environment.</para>
+      the OpenVZ environment. Again, bold font indicates change from the prior
+      configuration.</para>
 
       <para><filename><filename>/etc/shorewall/zones</filename>:</filename></para>
 
@@ -765,7 +767,7 @@ NAME="server"
 fw              firewall
 net             ipv4            #Internet
 loc             ipv4            #Local wired Zone
-<emphasis role="bold">dmz             ipv4            #DMZ</emphasis>
+dmz             ipv4            #DMZ
 ...</programlisting>
 
       <para><filename><filename>/etc/shorewall/params</filename>:</filename></para>
@@ -778,22 +780,22 @@ INT_IF=eth1
       <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
 net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0
 loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
-<emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
+dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback
 ...</programlisting></para>
 
       <para><filename>/etc/shorewall/proxyarp:</filename></para>
 
       <programlisting>#ADDRESS        INTERFACE     EXTERNAL   HAVEROUTE   PERSISTENT
-206.124.146.177 DMZ_IF        eth2       no          yes
-206.124.146.178 DMZ_IF        eth2       no          yes</programlisting>
+<emphasis role="bold">206.124.146.177 DMZ_IF        eth2       no          yes
+206.124.146.178 DMZ_IF        eth2       no          yes</emphasis></programlisting>
 
       <para>This is a multi-ISP configuration so entries are required in
       <filename>/etc/shorewall/route_rules</filename>:</para>
 
       <programlisting>#SOURCE   DEST                 PROVIDER  PRIORITY
 -         172.20.0.0/24        main      1000
-<emphasis role="bold">-         206.124.146.177      main      1001
--         206.124.146.178      main      1001</emphasis></programlisting>
+-         206.124.146.177      main      1001
+-         206.124.146.178      main      1001</programlisting>
     </section>
 
     <section>

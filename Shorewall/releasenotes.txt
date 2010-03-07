@@ -328,6 +328,23 @@ None.
 
 3)  An OpenPGP HTTP Keyserver Protocol (HKP) macro (macro.HKP) has been
     contributed.
+
+4)  In an attempt to help those who don't read the documentation, the
+    compiler now flags apparent use of '-' as a port range separator
+    with an error message.
+
+    Example:
+
+    /etc/shorewall/rules
+
+       #ACTION    SOURCE     DEST      PROTO    DEST
+       #                                        PORT(S)
+       ACCEPT	  net        fw        tcp      20-22
+
+    Resulting error message
+
+       ERROR: The separator for a port range is ':', not '-' (20-22) : 
+              /etc/shorewall/rules (line 3)
  
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

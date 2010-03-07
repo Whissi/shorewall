@@ -314,9 +314,11 @@ sub validate_port( $$ ) {
 	$value = getservbyname( $port, $proto );
     }
 
-    fatal_error "Invalid/Unknown $proto port/service ($_[1])" unless defined $value;
+    return $value if defined $value;
 
-    $value;
+    fatal_error "The separator for a port range is ':', not '-' ($port)" if $port =~ /^\d+-\d+$/;
+
+    fatal_error "Invalid/Unknown $proto port/service ($_[1])" unless defined $value;
 }
 
 sub validate_portpair( $$ ) {

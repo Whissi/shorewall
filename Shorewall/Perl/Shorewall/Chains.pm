@@ -352,7 +352,7 @@ sub initialize( $ ) {
     #
     $comment = '';
     #
-    # Used to sequence chains names.
+    # Used to sequence chain names.
     #
     $chainseq = 0;
     #

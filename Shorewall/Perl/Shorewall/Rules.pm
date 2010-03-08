@@ -1630,6 +1630,32 @@ sub process_rules() {
 }
 
 #
+# Helper functions for generate_matrix()
+#-----------------------------------------
+#
+# Return the target for rules from $zone to $zone1.
+#
+sub rules_target( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+    my $chain = rules_chain( ${zone}, ${zone1} );
+    my $chainref = $filter_table->{$chain};
+    
+    return $chain   if $chainref && $chainref->{referenced};
+    return 'ACCEPT' if $zone eq $zone1;
+    
+    assert( $chainref );
+    
+    if ( $chainref->{policy} ne 'CONTINUE' ) {
+	my $policyref = $filter_table->{$chainref->{policychain}};
+	assert( $policyref );
+	return $policyref->{name} if $policyref ne $chainref;
+	return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
+    }
+    
+    ''; # CONTINUE policy
+}
+
+#
 # Add jumps from the builtin chains to the interface-chains that are used by this configuration
 #
 sub add_interface_jumps {
@@ -1683,44 +1709,6 @@ sub add_interface_jumps {
 # The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
 #
 sub generate_matrix() {
-    #
-    # Helper functions for generate_matrix()
-    #-----------------------------------------
-    #
-    # Return the target for rules from $zone to $zone1.
-    #
-    sub rules_target( $$ ) {
-	my ( $zone, $zone1 ) = @_;
-	my $chain = rules_chain( ${zone}, ${zone1} );
-	my $chainref = $filter_table->{$chain};
-
-	return $chain   if $chainref && $chainref->{referenced};
-	return 'ACCEPT' if $zone eq $zone1;
-
-	assert( $chainref );
-
-	if ( $chainref->{policy} ne 'CONTINUE' ) {
-	    my $policyref = $filter_table->{$chainref->{policychain}};
-	    assert( $policyref );
-	    return $policyref->{name} if $policyref ne $chainref;
-	    return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
-	}
-
-	''; # CONTINUE policy
-    }
-
-    #
-    # Set a breakpoint in this function if you want to step through generate_matrix().
-    #
-    sub start_matrix() {
-	progress_message2 'Generating Rule Matrix...';
-    }
-
-    #
-    #                               G e n e r a t e _ M a t r i x ( )   S t a r t s  H e r e
-    #
-    start_matrix;
-
     my @interfaces = ( all_interfaces );
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
@@ -1731,6 +1719,7 @@ sub generate_matrix() {
     our %output_jump_added  = ();
     our %forward_jump_added = ();
 
+    progress_message2 'Generating Rule Matrix...';
     #
     # Special processing for complex configurations
     #

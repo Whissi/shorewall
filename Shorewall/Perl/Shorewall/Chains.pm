@@ -770,9 +770,11 @@ sub zone_forward_chain($) {
 #
 # Returns true if we're to use the interface's forward chain
 #
-sub use_forward_chain($) {
-    my $interface = $_[0];
+sub use_forward_chain($$) {
+    my ( $interface, $chainref ) = @_;
     my $interfaceref = find_interface($interface);
+
+    return 1 if $globals{UNOPTIMIZED} && @{$chainref->{rules}};
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #
@@ -806,10 +808,12 @@ sub zone_input_chain($) {
 #
 # Returns true if we're to use the interface's input chain
 #
-sub use_input_chain($) {
-    my $interface = $_[0];
+sub use_input_chain($$) {
+    my ( $interface, $chainref ) = @_;
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
+
+    return 1 if $globals{UNOPTIMIZED} && @{$chainref->{rules}};
     #
     # We must use the interfaces's chain if:
     #
@@ -835,8 +839,6 @@ sub use_input_chain($) {
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one
     #
-    my $chainref = $filter_table->{zone_input_chain $zone};
-
     return 0 if $chainref;
     #
     # Use the '<zone>2fw' chain if it is referenced.
@@ -864,14 +866,14 @@ sub zone_output_chain($) {
 #
 # Returns true if we're to use the interface's output chain
 #
-sub use_output_chain($) {
-    my $interface = $_[0];
+sub use_output_chain($$) {
+    my ( $interface, $chainref)  = @_;
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #
-    return 1 if $nets > 1;
+    return 1 if $nets > 1 || ( $globals{UNOPTIMIZED} && @{$chainref->{rules}} );
     #
     # Don't need it if it isn't associated with any zone
     #
@@ -879,8 +881,6 @@ sub use_output_chain($) {
     #
     # Interface associated with a single zone -- use the zone's output chain if it has one
     #
-    my $chainref = $filter_table->{zone_output_chain $interfaceref->{zone}};
-
     return 0 if $chainref;
     #
     # Use the 'fw2<zone>' chain if it is referenced.

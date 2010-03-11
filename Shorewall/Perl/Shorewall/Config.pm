@@ -338,6 +338,7 @@ sub initialize( $ ) {
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
 		    UNTRACKED => 0,
+		    UNOPTIMIZED => 0,
 		    VERSION => "4.4.8-RC1",
 		    CAPVERSION => 40408 ,
 		  );
@@ -3002,7 +3003,12 @@ sub get_configuration( $ ) {
 
     $val = numeric_value $config{OPTIMIZE};
 
-    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless defined( $val ) && $val >= 0 && $val <= 7;
+    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless defined( $val ) && $val >= -1 && $val <= 7;
+
+    if ( $val == -1 ) {
+	$config{OPTIMIZE} = 0;
+	$globals{UNOPTIMIZED} = 1;
+    }
 
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 

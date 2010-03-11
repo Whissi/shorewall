@@ -823,7 +823,7 @@ sub compiler {
 	#
 	generate_matrix;
 
-	if ( $config{OPTIMIZE} & 6 ) {
+	if ( $config{OPTIMIZE} > 0 && $config{OPTIMIZE} & 6 ) {
 	    progress_message2 'Optimizing Ruleset...';
 	    #
 	    # Optimize Policy Chains

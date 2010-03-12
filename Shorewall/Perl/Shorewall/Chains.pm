@@ -774,7 +774,7 @@ sub use_forward_chain($$) {
     my ( $interface, $chainref ) = @_;
     my $interfaceref = find_interface($interface);
 
-    return 1 if $globals{UNOPTIMIZED} && @{$chainref->{rules}};
+    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #
@@ -813,7 +813,7 @@ sub use_input_chain($$) {
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
 
-    return 1 if $globals{UNOPTIMIZED} && @{$chainref->{rules}};
+    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
     # We must use the interfaces's chain if:
     #
@@ -870,10 +870,12 @@ sub use_output_chain($$) {
     my ( $interface, $chainref)  = @_;
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
+
+    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
     # We must use the interfaces's chain if the interface is associated with multiple zone nets
     #
-    return 1 if $nets > 1 || ( $globals{UNOPTIMIZED} && @{$chainref->{rules}} );
+    return 1 if $nets > 1;
     #
     # Don't need it if it isn't associated with any zone
     #

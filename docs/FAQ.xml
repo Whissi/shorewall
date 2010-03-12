@@ -1186,7 +1186,8 @@ to debug/develop the newnat interface.</programlisting></para>
 LOGBURST=""</programlisting>
 
       <para>It is also possible to <ulink url="shorewall_logging.html">set up
-      Shorewall to log all of its messages to a separate file</ulink>.</para>
+      Shorewall to log all of Netfilter's messages to a separate
+      file</ulink>.</para>
 
       <section id="faq6a">
         <title>(FAQ 6a) Are there any log parsers that work with
@@ -1252,6 +1253,17 @@ DROP      net       fw      udp      10619</programlisting>
 
         <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
 -                       udp             10619</programlisting>
+      </section>
+
+      <section id="faq6c">
+        <title>(FAQ 6c) cat /proc/sys/kernel/prink returns '4 4 1 7' and still
+        I get dmesg filled up</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: While we would argue
+        that 'dmesg filled up' is not necessarily a problem, the only way to
+        eliminate that is to <ulink url="shorewall_logging.html">set up
+        Shorewall to log all of Netfilter's messages to a separate
+        file</ulink>.</para>
       </section>
 
       <section id="faq6d">

@@ -1221,7 +1221,7 @@ sub copy2( $ ) {
 ################################################################################
 
 EOF
-	print $script $_ unless /^\s*$/;
+	print $script $_ if defined && ! /^\s*$/;
 
 	while ( <IF> ) {
 	    chomp;

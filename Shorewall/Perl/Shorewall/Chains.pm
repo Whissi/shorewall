@@ -1863,7 +1863,7 @@ sub do_proto( $$$;$ )
 			    $output .= "${invert}--dport ${ports} ";
 			}
 		    } else {
-			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 );
+			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
 		    }
 
 		    if ( $sports ne '' ) {

@@ -1205,6 +1205,7 @@ sub copy1( $ ) {
 #
 sub copy2( $ ) {
     assert( $script_enabled );
+    my $empty = 1;
 
     if ( $script ) {
 	my $file = $_[0];
@@ -1212,46 +1213,47 @@ sub copy2( $ ) {
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
-	    last unless /^#/;
+	    $empty = 0, last unless /^#/;
 	}
 
-	print $script <<EOF;
+	unless ( $empty ) {
+	    print $script <<EOF;
 ################################################################################
 #   Functions imported from $file
 ################################################################################
 
 EOF
-	print $script $_ if defined && ! /^\s*$/;
+	    print $script $_ unless /^\s*$/;
 
-	while ( <IF> ) {
-	    chomp;
-	    if ( /^\s*$/ ) {
-		print $script "\n" unless $lastlineblank;
-		$lastlineblank = 1;
-	    } else {
-		if  ( $indent ) {
-		    s/^(\s*)/$indent1$1$indent2/;
-		    s/        /\t/ if $indent2;
+	    while ( <IF> ) {
+		chomp;
+		if ( /^\s*$/ ) {
+		    print $script "\n" unless $lastlineblank;
+		    $lastlineblank = 1;
+		} else {
+		    if  ( $indent ) {
+			s/^(\s*)/$indent1$1$indent2/;
+			s/        /\t/ if $indent2;
+		    }
+		    
+		    print $script $_;
+		    print $script "\n";
+		    $lastlineblank = 0;
 		}
-
-		print $script $_;
-		print $script "\n";
-		$lastlineblank = 0;
 	    }
-	}
+	    
+	    close IF;
+	
+	    print $script "\n" unless $lastlineblank;
 
-	close IF;
-
-	print $script "\n" unless $lastlineblank;
-
-	print $script <<EOF;
+	    print $script <<EOF;
 ################################################################################
 #   End of imports from $file
 ################################################################################
 EOF
-	$lastlineblank = 0;
+	    $lastlineblank = 0;
+	}
     }
-
 }
 
 #

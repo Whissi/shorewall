@@ -1846,12 +1846,12 @@ sub do_proto( $$$;$ )
 
 	  PROTO:
 	    {
-		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP ) {
+		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
 		    my $multiport = 0;
 
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
-			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
+			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $ports ) > 15;

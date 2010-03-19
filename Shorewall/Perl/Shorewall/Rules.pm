@@ -274,6 +274,14 @@ sub setup_blacklist() {
 
 		progress_message "  \"$currentline\" added to blacklist";
 	    }
+
+	    if ( $first_entry && @$hosts ) {
+		warning_message q(There are interfaces or hosts with the 'blacklist' option but the 'blacklist' file is empty);
+		last BLACKLIST;
+	    } 
+	} elsif ( @$hosts ) {
+	    warning_message q(There are interfaces or hosts with the 'blacklist' option, but the 'blacklist' file is either missing or has zero size);
+	    last BLACKLIST;
 	}
 
 	my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';

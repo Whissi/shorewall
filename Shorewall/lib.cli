@@ -794,14 +794,20 @@ dump_command() {
     heading "Log ($LOGFILE)"
     packet_log 20
 
-    heading "NAT Table"
-    $IPTABLES -t nat -L $g_ipt_options
+    if qt $IPTABLES -t nat -L -n; then
+	heading "NAT Table"
+	$IPTABLES -t nat -L $g_ipt_options
+    fi
 
-    heading "Mangle Table"
-    $IPTABLES -t mangle -L $g_ipt_options
+    if qt $IPTABLES -t mangle -L -n; then
+	heading "Mangle Table"
+	$IPTABLES -t mangle -L $g_ipt_options
+    fi
 
-    heading "Raw Table"
-    $IPTABLES -t raw -L $g_ipt_options
+    if qt $IPTABLES -t raw -L -n; then
+	heading "Raw Table"
+	$IPTABLES -t raw -L $g_ipt_options
+    fi
 
     local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
     local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)

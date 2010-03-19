@@ -675,11 +675,15 @@ dump_command() {
     heading "Log ($LOGFILE)"
     packet_log 20
 
-    heading "Mangle Table"
-    $IP6TABLES -t mangle -L $g_ipt_options
+    if qt $IP6TABLES -t mangle -L -n; then
+	heading "Mangle Table"
+	$IP6TABLES -t mangle -L $g_ipt_options
+    fi
 
-    heading "Raw Table"
-    $IP6TABLES -t raw -L $g_ipt_options
+    if qt $IP6TABLES -t raw -L -n; then
+	heading "Raw Table"
+	$IP6TABLES -t raw -L $g_ipt_options
+    fi
 
     local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
     local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)

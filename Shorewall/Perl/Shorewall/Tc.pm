@@ -487,7 +487,7 @@ sub process_simple_device() {
 	emit '';
     }
 
-    save_progress_message_short "   TC Device $physical defined.";
+    save_progress_message_short qq("   TC Device $physical defined.");
     
     pop_indent;
     emit 'else';
@@ -1062,7 +1062,7 @@ sub process_tc_filter( ) {
 
     $currentline =~ s/\s+/ /g;
 
-    save_progress_message_short qq("   TC Filter \"$currentline\" defined.");
+    save_progress_message_short qq('   TC Filter \"$currentline\" defined.');
 
     emit '';
 
@@ -1125,7 +1125,7 @@ sub process_tc_priority() {
 sub setup_simple_traffic_shaping() {
     my $interfaces;
 
-    save_progress_message "Setting up Traffic Control...";
+    save_progress_message q("Setting up Traffic Control...");
 
     my $fn = open_file 'tcinterfaces';
 
@@ -1159,7 +1159,7 @@ sub setup_simple_traffic_shaping() {
 sub setup_traffic_shaping() {
     our $lastrule = '';
 
-    save_progress_message "Setting up Traffic Control...";
+    save_progress_message q("Setting up Traffic Control...");
 
     my $fn = open_file 'tcdevices';
 
@@ -1241,7 +1241,7 @@ sub setup_traffic_shaping() {
 	    emit( "run_tc filter add dev $rdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
 	}
 
-	save_progress_message_short "   TC Device $device defined.";
+	save_progress_message_short qq("   TC Device $device defined.");
 
 	pop_indent;
 	emit 'else';
@@ -1343,7 +1343,7 @@ sub setup_traffic_shaping() {
 	$fn = open_file 'tcfilters';
 
 	if ( $fn ) {
-	    first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message "Adding TC Filters"; } );
+	    first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message q("Adding TC Filters"); } );
 
 	    process_tc_filter while read_a_line;
 	}
@@ -1390,7 +1390,7 @@ sub setup_tc() {
     }
 
     if ( $globals{TC_SCRIPT} ) {
-	save_progress_message 'Setting up Traffic Control...';
+	save_progress_message q('Setting up Traffic Control...');
 	append_file $globals{TC_SCRIPT};
     } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
 	setup_traffic_shaping;

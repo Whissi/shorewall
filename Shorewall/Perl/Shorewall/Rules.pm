@@ -223,7 +223,10 @@ sub setup_blacklist() {
     my $chainref;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
-
+    #
+    # We go ahead and generate the blacklist chain and jump to it, even if it turns out to be empty. That is necessary
+    # for 'refresh' to work properly.
+    #
     if ( @$hosts ) {
 	$chainref = new_standard_chain 'blacklst';
 

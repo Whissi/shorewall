@@ -228,7 +228,7 @@ sub setup_blacklist() {
     # for 'refresh' to work properly.
     #
     if ( @$hosts ) {
-	$chainref = new_standard_chain 'blacklst';
+	$chainref = dont_delete new_standard_chain 'blacklst';
 
 	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';

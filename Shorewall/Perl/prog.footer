@@ -71,11 +71,11 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 	    while [ -n "$option" ]; do
 		case $option in
 		    v*)
-			VERBOSITY=$(($VERBOSITY + 1 ))
+			[ $VERBOSITY -lt 2 ] && VERBOSITY=$(($VERBOSITY + 1 ))
 			option=${option#v}
 			;;
 		    q*)
-			VERBOSITY=$(($VERBOSITY - 1 ))
+			[ $VERBOSITY -gt -1 ] && VERBOSITY=$(($VERBOSITY - 1 ))
 			option=${option#q}
 			;;
 		    n*)

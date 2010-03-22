@@ -303,6 +303,11 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     	ERROR: iptables-restore Failed. Input is in
                /var/lib/shorewall/.iptables-restore-input
 
+11) Previously, with optimization 4, the 'blacklst' chain could be
+    optimized away. If the blacklist file was then changed and a
+    'shorewall refresh' executed, those new changes would not be included
+    in the active ruleset.
+
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 8
 ----------------------------------------------------------------------------

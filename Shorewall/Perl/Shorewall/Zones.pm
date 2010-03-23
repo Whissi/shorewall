@@ -76,7 +76,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_7';
+our $VERSION = '4.4_9';
 
 #
 # IPSEC Option types
@@ -728,10 +728,17 @@ sub firewall_zone() {
 }
 
 #
+# Determine if the passed physical device is a bridge
+#
+sub is_a_bridge( $ ) {
+    qt( "brctl show | tail -n+2 | grep -q '^$_[0]\[\[:space:\]\]'" );
+} 
+
+#
 # Process a record in the interfaces file
 #
-sub process_interface( $ ) {
-    my $nextinum = $_[0];
+sub process_interface( $$ ) {
+    my ( $nextinum, $export ) = @_;
     my $netsref = '';
     my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file';
     my $zoneref;
@@ -926,8 +933,10 @@ sub process_interface( $ ) {
 	if ( $options{bridge} ) {
 	    require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 	    fatal_error "Bridges may not have wildcard names" if $wildcard;
-	    $options{routeback} = 1;
+	    $hostoptions{routeback} = $options{routeback} = 1;
 	}
+
+	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback};
 
 	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
 
@@ -974,7 +983,7 @@ sub validate_interfaces_file( $ ) {
 
     first_entry "$doing $fn...";
 
-    push @ifaces, process_interface( $nextinum++) while read_a_line;
+    push @ifaces, process_interface( $nextinum++, $export ) while read_a_line;
 
     #
     # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge

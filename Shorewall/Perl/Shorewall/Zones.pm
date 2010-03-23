@@ -935,8 +935,6 @@ sub process_interface( $$ ) {
 
 	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback};
 
-	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
-
 	$hostoptionsref = \%hostoptions;
     } else {
 	#

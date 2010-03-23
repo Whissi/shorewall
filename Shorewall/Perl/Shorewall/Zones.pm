@@ -753,9 +753,6 @@ sub process_interface( $$ ) {
 	fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == FIREWALL;
     }
 
-    $bcasts = '' if $bcasts eq '-';
-    $options  = '' if $options  eq '-';
-
     my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
 
     fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
@@ -800,7 +797,7 @@ sub process_interface( $$ ) {
     my $physical = $interface;
     my $broadcasts;
 
-    unless ( $bcasts eq '' || $bcasts eq 'detect' ) {
+    unless ( $bcasts eq '-' || $bcasts eq 'detect' ) {
 	my @broadcasts = split_list $bcasts, 'address';
 
 	for my $address ( @broadcasts ) {
@@ -820,7 +817,7 @@ sub process_interface( $$ ) {
 
     my $hostoptionsref = {};
 
-    if ( $options ) {
+    if ( $options ne '-' ) {
 
 	my %hostoptions = ( dynamic => 0 );
 
@@ -941,7 +938,12 @@ sub process_interface( $$ ) {
 	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};
 
 	$hostoptionsref = \%hostoptions;
-    }
+    } else {
+	#
+	# No options specified -- auto-detect bridge
+	#
+	$hostoptionsref->{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export;
+    }	
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
 						       bridge     => $bridge ,

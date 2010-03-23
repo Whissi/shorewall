@@ -76,7 +76,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_7';
+our $VERSION = '4.4_8';
 
 #
 # IPSEC Option types
@@ -926,7 +926,7 @@ sub process_interface( $ ) {
 	if ( $options{bridge} ) {
 	    require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 	    fatal_error "Bridges may not have wildcard names" if $wildcard;
-	    $options{routeback} = 1;
+	    $hostoptions{routeback} = $options{routeback} = 1;
 	}
 
 	$zoneref->{options}{in_out}{routeback} = 1 if $zoneref && $options{routeback};

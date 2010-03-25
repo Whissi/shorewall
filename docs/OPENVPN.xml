@@ -432,6 +432,39 @@ verb 3</programlisting>
   </section>
 
   <section>
+    <title>Bridged Roadwarrior</title>
+
+    <para>If you want to use a bridged OpenVPN configuration rather than a
+    routed configuration, then follow any of the available HOWTOs to set up
+    the bridged configuration. Then:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>In your current Shorewall two-interface configuration, replace
+        references to your internal interface with the name of the bridge;
+        and</para>
+      </listitem>
+
+      <listitem>
+        <para>Set the <emphasis role="bold">routeback</emphasis> option in the
+        bridge's entry in <ulink
+        url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>;
+        end</para>
+      </listitem>
+
+      <listitem>
+        <para>Add this entry to <ulink
+        url="manpages/shorewall-tunnels.html">/etc/shorewall/tunnels</ulink>:</para>
+
+        <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY ZONE
+openvpnserver:1194  net            0.0.0.0/0</programlisting>
+      </listitem>
+    </orderedlist>
+
+    <para>This will make the roadwarrior part of your local zone.</para>
+  </section>
+
+  <section>
     <title>Bridging Two Networks</title>
 
     <para>Occasionally, the need arises to have a single LAN span two

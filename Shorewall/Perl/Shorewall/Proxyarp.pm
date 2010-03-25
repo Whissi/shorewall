@@ -118,6 +118,7 @@ sub setup_proxy_arp() {
 		}
 
 		$interface = get_physical $interface;
+		$external  = get_physical $external;
 
 		$set{$interface}  = 1;
 		$reset{$external} = 1 unless $set{$external};

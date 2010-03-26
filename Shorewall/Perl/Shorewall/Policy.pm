@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains);
 our @EXPORT_OK = qw(  );
-our $VERSION = '4.4_7';
+our $VERSION = '4.4_9';
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -66,11 +66,11 @@ sub convert_to_policy_chain($$$$$)
 #
 sub new_policy_chain($$$$)
 {
-    my ($source, $dest, $policy, $optional) = @_;
+    my ($source, $dest, $policy, $provisional) = @_;
 
     my $chainref = new_chain( 'filter', rules_chain( ${source}, ${dest} ) );
 
-    convert_to_policy_chain( $chainref, $source, $dest, $policy, $optional );
+    convert_to_policy_chain( $chainref, $source, $dest, $policy, $provisional );
 
     $chainref;
 }
@@ -115,7 +115,7 @@ sub set_policy_chain($$$$$)
 #
 # Process the policy file
 #
-use constant { OPTIONAL => 1 };
+use constant { PROVISIONAL => 1 };
 
 sub add_or_modify_policy_chain( $$ ) {
     my ( $zone, $zone1 ) = @_;
@@ -124,11 +124,11 @@ sub add_or_modify_policy_chain( $$ ) {
 
     if ( $chainref ) {
 	unless( $chainref->{is_policy} ) {
-	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', OPTIONAL );
+	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', PROVISIONAL );
 	    push @policy_chains, $chainref;
 	}
     } else {
-	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', OPTIONAL );
+	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', PROVISIONAL );
     }
 }
 
@@ -329,7 +329,7 @@ sub validate_policy()
     }
 
     for $zone ( all_zones ) {
-	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', OPTIONAL );
+	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', PROVISIONAL );
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{find_zone( $zone )->{parents}} ) ) {
 	    for my $zone1 ( all_zones ) {

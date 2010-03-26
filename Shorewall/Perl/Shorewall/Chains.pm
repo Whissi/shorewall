@@ -212,7 +212,8 @@ our $VERSION = '4.4_8';
 #                 }
 #
 #       'provisional' only applies to policy chains; when true, indicates that this is a provisional policy chain which might be
-#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with provisional == 1.
+#       replaced. Policy chains created under the IMPLICIT_CONTINUE=Yes option are marked with provisional == 1 as are intra-zone 
+#       ACCEPT policies.
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
@@ -257,6 +258,7 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
 	       ALL_RESTRICT       => 12   # fw->fw rule            - neither -i nor -o allowed
 	       };
+
 our $iprangematch;
 our $chainseq;
 our $idiotcount;

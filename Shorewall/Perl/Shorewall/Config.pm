@@ -98,6 +98,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       pop_open
 				       read_a_line
 				       validate_level
+				       which
 				       qt
 				       ensure_config_path
 				       get_configuration
@@ -129,7 +130,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_8';
+our $VERSION = '4.4_9';
 
 #
 # describe the current command, it's present progressive, and it's completion.

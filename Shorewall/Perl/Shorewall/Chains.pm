@@ -174,7 +174,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_8';
+our $VERSION = '4.4_9';
 
 #
 # Chain Table
@@ -398,7 +398,7 @@ sub process_comment() {
 # Returns True if there is a current COMMENT or if COMMENTS are not available.
 #
 sub no_comment() {
-    $comment ? 1 : have_capability( 'COMMENTS' ) ? 0 : 1;
+    $comment ? 1 : ! have_capability( 'COMMENTS' );
 }
 
 #
@@ -470,6 +470,8 @@ sub push_rule( $$ ) {
 # When expanding a Destination port list, each resulting rule is checked for the presence
 # of a Source port list; if one is present, the function calls itself recursively with
 # $dport == 0.
+#
+# The function calls itself recursively so we need a prototype.
 #
 sub handle_port_list( $$$$$$ );
 
@@ -748,7 +750,7 @@ sub chain_base($) {
 }
 
 #
-# Name of canonical chain
+# Name of canonical chain between an ordered pair of zones
 #
 sub rules_chain ($$) {
     join "$config{ZONE2ZONE}", @_;
@@ -778,7 +780,7 @@ sub use_forward_chain($$) {
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
-    # We must use the interfaces's chain if the interface is associated with multiple zone nets
+    # We must use the interfaces's chain if the interface is associated with multiple nets
     #
     return 1 if $interfaceref->{nets} > 1;
 
@@ -817,14 +819,9 @@ sub use_input_chain($$) {
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
-    # We must use the interfaces's chain if:
+    # We must use the interfaces's chain if the interface is associated with multiple nets
     #
-    # - the interface is associated with multiple zone nets; or
-    # - the interface has the 'upnpclient' option.
-    #
-    # In the latter case, the chain's rules will contain run-time code which cannot currently be transferred to a zone-oriented chain by move_rules().
-    #
-    return 1 if $nets > 1 || $interfaceref->{options}{upnpclient};
+    return 1 if $nets > 1;
     #
     # Don't need it if it isn't associated with any zone
     #
@@ -843,7 +840,7 @@ sub use_input_chain($$) {
     #
     return 0 if $chainref;
     #
-    # Use the '<zone>2fw' chain if it is referenced.
+    # Use the <zone>->fw rules chain if it is referenced.
     #
     $chainref = $filter_table->{rules_chain( $zone, firewall_zone )};
 
@@ -875,7 +872,7 @@ sub use_output_chain($$) {
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
-    # We must use the interfaces's chain if the interface is associated with multiple zone nets
+    # We must use the interfaces's chain if the interface is associated with multiple nets
     #
     return 1 if $nets > 1;
     #
@@ -887,7 +884,7 @@ sub use_output_chain($$) {
     #
     return 0 if $chainref;
     #
-    # Use the 'fw2<zone>' chain if it is referenced.
+    # Use the fw-><zone> rules chain if it is referenced.
     #
     $chainref = $filter_table->{rules_chain( firewall_zone , $interfaceref->{zone} )};
 
@@ -993,7 +990,7 @@ sub ensure_chain($$)
 
     my $ref =  $chain_table{$table}{$chain};
 
-    $ref ? $ref : new_chain $table, $chain;
+    $ref || new_chain( $table, $chain );
 }
 
 #
@@ -1040,6 +1037,8 @@ sub finish_chain_section( $$ );
 #
 # Create a filter chain if necessary. Optionally populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
 #
+# Return a reference to the chain's table entry.
+#
 sub ensure_filter_chain( $$ )
 {
     my ($chain, $populate) = @_;
@@ -1062,7 +1061,7 @@ sub ensure_filter_chain( $$ )
 }
 
 #
-# Create an accounting chain if necessary.
+# Create an accounting chain if necessary and return a reference to its table entry.
 #
 sub ensure_accounting_chain( $  )
 {
@@ -1071,12 +1070,12 @@ sub ensure_accounting_chain( $  )
     my $chainref = $filter_table->{$chain};
 
     if ( $chainref ) {
-	fatal_error "Non-accounting chain ($chain) used in accounting rule" unless $chainref->{accounting};
+	fatal_error "Non-accounting chain ($chain) used in an accounting rule" unless $chainref->{accounting};
     } else {
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
-	$chainref->{dont_optimize}    = 1 unless $config{OPTIMIZE_ACCOUNTING};
+	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
 
 	if ( $chain ne 'accounting' ) {
 	    my $file = find_file $chain;
@@ -1503,23 +1502,22 @@ sub check_optimization( $ ) {
 # Perform Optimization
 #
 sub optimize_ruleset() {
-    #
-    # Make repeated passes through each table looking for short chains (those with less than 2 entries)
-    #
-    # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
-    # When an empty chain is found, delete the references to it.
-    # When a chain with a single entry is found, replace it's references by its contents
-    #
-    # The search continues until no short chains remain
-    # Chains with 'dont_optimize = 1' are exempted from optimization
-    #
     for my $table ( qw/raw mangle nat filter/ ) {
 
 	next if $family == F_IPV6 && $table eq 'nat';
 
 	my $progress = 1;
 	my $passes   = 0;
-
+	#
+	# Make repeated passes through each table looking for short chains (those with less than 2 entries)
+	#
+	# When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
+	# When an empty chain is found, delete the references to it.
+	# When a chain with a single entry is found, replace it's references by its contents
+	#
+	# The search continues until no short chains remain
+	# Chains with 'dont_optimize = 1' are exempted from optimization
+	#
 	while ( $progress ) {
 	    $progress = 0;
 	    $passes++;

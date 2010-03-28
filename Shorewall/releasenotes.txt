@@ -239,6 +239,20 @@ None.
     for export (-e option); note that -e is implicit in the 'load' and
     'reload' commands.
 
+2)  When 'trace' is specified on a command that involves the compiler, 
+    the compiler now creates a trace to standard output.
+
+    Trace entries are of three types:
+
+    Input  --- begin with IN===>.     Input read from configuration
+                                      files.
+
+    Output --- begin with CS----->.   Text written to the generated
+                                      script.
+
+    Netfilter -- begin with NF----->. Updates to the compiler's chain
+                                      table.
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

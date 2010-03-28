@@ -605,7 +605,7 @@ sub purge_jump ( $$ ) {
     for ( @{$fromref->{rules}} ) {
 	$rule++;
 	if ( defined && / -[gj] ${to}\b/ ) {
-	    trace( $fromref, 'X', undef, qq("$_" Deleted) ) if $debug;
+	    trace( $fromref, 'D', undef, qq("$_" Deleted) ) if $debug;
 	    $_ = undef;
 	}
     }
@@ -719,6 +719,11 @@ sub move_rules( $$ ) {
 
 	( s/\-([AI]) $name /-$1 $chain2->{name} / ) for @{$chain1->{rules}};
 
+	if ( $debug ) {
+	    my $rule = @{$chain1->{rules}};
+	    trace( $chain2, 'A', ++$rule, $_ ) for @{$chain1->{rules}};
+	}
+
 	splice @{$rules}, 0, 0, @{$chain1->{rules}};
 	#
 	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
@@ -729,7 +734,7 @@ sub move_rules( $$ ) {
 	$chain2->{referenced} = 1;
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
-	trace( $chain2, 'M', undef, "Moved $count rules from chain $chain1->{name}" ), trace( $chain1, 'X', undef, 'Deleted' ) if $debug;
+	trace( $chain1, 'X', undef, 'Deleted' ) if $debug;
 	$count;
     }
 }
@@ -741,11 +746,12 @@ sub move_rules( $$ ) {
 sub copy_rules( $$ ) {
     my ($chain1, $chain2 ) = @_;
 
-    my $name1 = $chain1->{name};
-    my $name2 = $chain2->{name};
-    my @rules = @{$chain1->{rules}};
-    my $rules = $chain2->{rules};
-    my $count = @{$chain1->{rules}};
+    my $name1     = $chain1->{name};
+    my $name      = $name1;
+    my $name2     = $chain2->{name};
+    my @rules     = @{$chain1->{rules}};
+    my $rules     = $chain2->{rules};
+    my $count     = @{$chain1->{rules}};
     #
     # We allow '+' in chain names and '+' is an RE meta-character. Escape it.
     #
@@ -755,7 +761,10 @@ sub copy_rules( $$ ) {
 
     my $last = pop @$rules; # Delete the jump to chain1
 
-    trace( $chain2, 'C', undef, "$count rules appended from chain $chain1->{name}" ) if $debug;
+    if ( $debug ) {
+	my $rule = @$rules;
+	trace( $chain2, 'A', ++$rule, $_ ) for @rules;
+    }
 
     push @$rules, @rules;
     #
@@ -770,7 +779,7 @@ sub copy_rules( $$ ) {
 	unless ( keys %{$chain1->{references}} ) {
 	    $chain1->{referenced} = 0;
 	    progress_message "  Unreferenced chain $name1 deleted";
-	    trace( $chain1, 'X', undef, 'Invalidated' ) if $debug;
+	    trace( $chain1, 'X', undef, 'Deleted' ) if $debug;
 	}    
     }
 }
@@ -1407,7 +1416,7 @@ sub delete_references( $ ) {
 	    $rule++;
 
 	    if ( defined && / -[jg] $chainref->{name}$/ ) {
-		trace( $fromref, 'D', $rule, qq("$_" Invalidated) ) if $debug;
+		trace( $fromref, 'D', $rule, qq("$_" Deleted) ) if $debug;
 		$_ = undef;
 		$count++;
 	    }

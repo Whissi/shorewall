@@ -431,10 +431,10 @@ sub decr_cmd_level( $ ) {
 #
 # Trace a change to the chain table
 #
-sub trace( $$$ ) {
-    my ($chainref, $rulenum, $message) = @_;
+sub trace( $$$$ ) {
+    my ($chainref, $action, $rulenum, $message) = @_;
 
-    my $heading = $rulenum ? sprintf "NF-----> $chainref->{table}:$chainref->{name}:$rulenum" : sprintf "NF-----> $chainref->{table}:$chainref->{name}";
+    my $heading = $rulenum ? sprintf "NF-(%s)-> %s:%s:%s", $action, $chainref->{table}, $chainref->{name}, $rulenum : sprintf "NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
 
     my $length = length $heading;
 
@@ -458,7 +458,7 @@ sub add_commands ( $$;@ ) {
     push @{$chainref->{rules}}, join ('', $indentation , $_ ) for @_;
 
     if ( $debug ) {
-	print "CS-----> $chainref->{table}:$chainref->{name}\t${indentation}, $_\n" for @_;
+	trace( $chainref, 'T', undef, "${indentation}$_\n" ) for @_;
     }
 
     $chainref->{referenced} = 1;
@@ -477,7 +477,7 @@ sub push_rule( $$ ) {
 	push @{$chainref->{rules}}, $rule;
 	$chainref->{referenced} = 1;
 	my $rulenum;
-	$rulenum=@{$chainref->{rules}}, trace( $chainref, $rulenum, $rule ) if $debug;
+	$rulenum=@{$chainref->{rules}}, trace( $chainref, 'A', $rulenum, $rule ) if $debug;
     }
 }
 
@@ -605,7 +605,7 @@ sub purge_jump ( $$ ) {
     for ( @{$fromref->{rules}} ) {
 	$rule++;
 	if ( defined && / -[gj] ${to}\b/ ) {
-	    trace( $fromref, undef, qq("$_" deleted) ) if $debug;
+	    trace( $fromref, 'X', undef, qq("$_" Deleted) ) if $debug;
 	    $_ = undef;
 	}
     }
@@ -632,7 +632,7 @@ sub insert_rule1($$$)
 
     splice( @{$chainref->{rules}}, $number, 0, $rule );
 
-    trace( $chainref, ++$number, $rule ) if $debug;
+    trace( $chainref, 'I', ++$number, $rule ) if $debug;
 
     $iprangematch = 0;
 
@@ -729,7 +729,7 @@ sub move_rules( $$ ) {
 	$chain2->{referenced} = 1;
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
-	trace( $chain2, undef, "Moved $count rules from chain $chain1->{name}" ), trace( $chain1, undef, 'Invalidated' ) if $debug;
+	trace( $chain2, 'M', undef, "Moved $count rules from chain $chain1->{name}" ), trace( $chain1, 'X', undef, 'Deleted' ) if $debug;
 	$count;
     }
 }
@@ -755,7 +755,7 @@ sub copy_rules( $$ ) {
 
     my $last = pop @$rules; # Delete the jump to chain1
 
-    trace( $chain2, undef, "$count rules appended from chain $chain1->{name}" ) if $debug;
+    trace( $chain2, 'C', undef, "$count rules appended from chain $chain1->{name}" ) if $debug;
 
     push @$rules, @rules;
     #
@@ -770,7 +770,7 @@ sub copy_rules( $$ ) {
 	unless ( keys %{$chain1->{references}} ) {
 	    $chain1->{referenced} = 0;
 	    progress_message "  Unreferenced chain $name1 deleted";
-	    trace( $chain1, undef, 'Invalidated' ) if $debug;
+	    trace( $chain1, 'X', undef, 'Invalidated' ) if $debug;
 	}    
     }
 }
@@ -1380,7 +1380,7 @@ sub optimize_chain( $ ) {
 			$before = $_ if $debug;
 			if ( s/ -[jg] $chainref->{name}$/ -j ACCEPT/ ) {
 			    $count++;
-			    trace( $chainref, $rule, qq("$before" changed to "$_") ) if $debug;
+			    trace( $chainref, 'R', $rule, qq("$before" replaced by "$_") ) if $debug;
 			}
 		    }
 		} 
@@ -1407,7 +1407,7 @@ sub delete_references( $ ) {
 	    $rule++;
 
 	    if ( defined && / -[jg] $chainref->{name}$/ ) {
-		trace( $fromref, $rule, qq("$_" deleted) ) if $debug;
+		trace( $fromref, 'D', $rule, qq("$_" Invalidated) ) if $debug;
 		$_ = undef;
 		$count++;
 	    }
@@ -1447,7 +1447,7 @@ sub replace_references( $$ ) {
 			$before = $_ if $debug;
 			if ( s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
 			    $count++;
-			    trace( $fromref, $rule, qq("$before" changed to "$_") ) if $debug;
+			    trace( $fromref, 'R', $rule, qq("$before" replaced by "$_") ) if $debug;
 			}
 		    }
 		}    
@@ -1467,7 +1467,7 @@ sub replace_references( $$ ) {
 			$before = $_ if $debug;
 			if ( s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ ) {
 			    $count++ ;
-			    trace( $fromref, $rule, qq( "$before" changed to "$_") ) if $debug;
+			    trace( $fromref, 'R', $rule, qq( "$before" replaced by "$_") ) if $debug;
 			}
 		    }
 		}
@@ -1510,7 +1510,7 @@ sub replace_references1( $$$ ) {
 			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
 			    s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
 			    $count++;
-			    trace( $fromref, $rule, qq( "$before" changed to "$_") ) if $debug;
+			    trace( $fromref, 'R', $rule, qq( "$before" replaced by "$_") ) if $debug;
 			}
 		    }
 		}
@@ -1535,7 +1535,7 @@ sub replace_references1( $$$ ) {
 			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
 			    s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
 			    $count++;
-			    trace( $fromref, $rule, qq( "$before" changed to "$_") ) if $debug;
+			    trace( $fromref, 'R', $rule, qq( "$before" replaced by "$_") ) if $debug;
 			}
 		    }
 		}

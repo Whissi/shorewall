@@ -118,6 +118,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $doing
 				       $done
 				       $currentline
+				       $debug
 				       %config
 				       %globals
 
@@ -880,7 +881,7 @@ sub in_hexp( $ ) {
 sub emit {
     assert( $script_enabled );
 
-    if ( $script ) {
+    if ( $script || $debug ) {
 	#
 	# 'compile' as opposed to 'check'
 	#
@@ -890,10 +891,20 @@ sub emit {
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/gm;
-		print $script "$line\n";
+		print $script "$line\n" if $script;
 		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
+
+		if ( $debug ) {
+		    $line =~ s/^\n//;
+		    $line =~ s/\n/\nCS-----> /g;
+		    print "CS-----> $line\n";
+		}
 	    } else {
-		print $script "\n" unless $lastlineblank;
+		unless ( $lastlineblank ) {
+		    print $script "\n"  if $script;
+		    print "CS-----> \n" if $debug;
+		}
+
 		$lastlineblank = 1;
 	    }
 	}
@@ -998,7 +1009,7 @@ sub timestamp() {
 }
 
 #
-# Write a message if $verbosity >= 2
+# Write a message if $verbosity >= 2.
 #
 sub progress_message {
     my $havelocaltime = 0;
@@ -1801,6 +1812,7 @@ sub read_a_line() {
 
 		    $currentline = '';
 		} else {
+		    print "IN===> $currentline\n" if $debug;
 		    return 1;
 		}
 	    }
@@ -1822,6 +1834,7 @@ sub read_a_line1() {
 	    $currentline =~ s/#.*$//;       # Remove Trailing Comments
 	    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 	    $currentlinenumber = $.;
+	    print "IN===> $currentline\n" if $debug;
 	    return 1;
 	}
 
@@ -2047,7 +2060,7 @@ sub load_kernel_modules( ) {
 
 	$loadedmodules{$_}++ for split_list( $config{DONT_LOAD}, 'module' );
 
-	progress_message "Loading Modules...";
+	progress_message2 "Loading Modules...";
 
 	open LSMOD , '-|', 'lsmod' or fatal_error "Can't run lsmod";
 
@@ -2607,6 +2620,8 @@ sub process_shorewall_conf() {
 	if ( -r _ ) {
 	    open_file $file;
 
+	    first_entry "Processing $file...";
+
 	    while ( read_a_line ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
@@ -3093,7 +3108,7 @@ sub run_user_exit( $ ) {
     my $file = find_file $chainref->{name};
 
     if ( -f $file ) {
-	progress_message "Processing $file...";
+	progress_message2 "Processing $file...";
 
 	my $command = qq(package Shorewall::User;\nno strict;\n# line 1 "$file"\n) . `cat $file`;
 
@@ -3114,7 +3129,7 @@ sub run_user_exit1( $ ) {
     my $file = find_file $_[0];
 
     if ( -f $file ) {
-	progress_message "Processing $file...";
+	progress_message2 "Processing $file...";
 	#
 	# File may be empty -- in which case eval would fail
 	#
@@ -3145,7 +3160,7 @@ sub run_user_exit2( $$ ) {
     my ($file, $chainref) = ( find_file $_[0], $_[1] );
 
     if ( -f $file ) {
-	progress_message "Processing $file...";
+	progress_message2 "Processing $file...";
 	#
 	# File may be empty -- in which case eval would fail
 	#

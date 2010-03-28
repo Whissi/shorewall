@@ -43,7 +43,7 @@ use Shorewall::Raw;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_8';
+our $VERSION = '4.4_9';
 
 our $export;
 
@@ -881,9 +881,9 @@ sub compiler {
 	#
 	# Just checking the configuration
 	#
-	if ( $preview ) {
+	if ( $preview || $debug ) {
 	    #
-	    # User wishes to preview the ruleset -- generate the rule matrix
+	    # User wishes to preview the ruleset or we are tracing -- generate the rule matrix
 	    #
 	    generate_matrix;
 
@@ -899,7 +899,7 @@ sub compiler {
 		optimize_ruleset if $config{OPTIMIZE} & 4;
 	    }
 
-	    preview_netfilter_load;
+	    preview_netfilter_load if $preview;
 	}
 	#
 	# Re-initialize the chain table so that process_routestopped() has the same

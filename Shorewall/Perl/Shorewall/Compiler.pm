@@ -96,13 +96,14 @@ sub generate_script_1( $ ) {
 		copy $globals{SHAREDIRPL} . 'prog.header6';
 	    }
 	    
-	    copy2 $globals{SHAREDIR} . '/lib.common';
+	    copy2 $globals{SHAREDIR} . '/lib.common', 0;
 	}
 	
-	my $lib = find_file 'lib.private';
-	
-	copy2 $lib if -f $lib;
     }
+
+    my $lib = find_file 'lib.private';
+	
+    copy2( $lib, $debug ) if -f $lib;
 
     emit <<'EOF';
 ################################################################################

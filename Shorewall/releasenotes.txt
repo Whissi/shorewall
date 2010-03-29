@@ -225,7 +225,7 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     'restart' to fail.
 
 ----------------------------------------------------------------------------
-           I V. K N O W N   P R O B L E M S   R E M A I N I N G
+           I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
 
 None.
@@ -246,13 +246,22 @@ None.
     Trace entries are of three types:
 
     Input  --- begin with IN===>.     Input read from configuration
-                                      files.
+                                      files. Comments have been
+                                      stripped and continuation lines
+                                      combined.
 
     Output --- begin with CS----->.   Text written to the generated
                                       script.
 
-    Netfilter -- begin with NF----->. Updates to the compiler's chain
-                                      table.
+    Netfilter -- begin with NF-(x)->. Updates to the compiler's chain
+                                      table, where 'x' is one of the
+                                      following:
+
+	A - Append
+	R - Replaced
+	I - Inserted
+	D - Deleted Rule
+	X - Deleted Chain
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

@@ -896,13 +896,13 @@ sub emit {
 
 		if ( $debug ) {
 		    $line =~ s/^\n//;
-		    $line =~ s/\n/\nCS-----> /g;
-		    print "CS-----> $line\n";
+		    $line =~ s/\n/\nGS-----> /g;
+		    print "GS-----> $line\n";
 		}
 	    } else {
 		unless ( $lastlineblank ) {
 		    print $script "\n"  if $script;
-		    print "CS-----> \n" if $debug;
+		    print "GS-----> \n" if $debug;
 		}
 
 		$lastlineblank = 1;
@@ -1163,7 +1163,7 @@ sub copy1( $ ) {
 
     my $result = 0;
 
-    if ( $script ) {
+    if ( $script || $debug ) {
 	my $file = $_[0];
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
@@ -1174,8 +1174,16 @@ sub copy1( $ ) {
 	    chomp;
 
 	    if ( /^${here_documents}\s*$/ ) {
-		print $script $here_documents if $here_documents;
-		print $script "\n";
+		if ( $script ) {
+		    print $script $here_documents if $here_documents;
+		    print $script "\n";
+		}
+		
+		if ( $debug ) {
+		    print "GS-----> $here_documents" if $here_documents;
+		    print "GS----->\n";
+		}
+
 		$do_indent = 1;
 		$here_documents = '';
 		next;
@@ -1186,8 +1194,17 @@ sub copy1( $ ) {
 		s/^(\s*)/$indent1$1$indent2/;
 		s/        /\t/ if $indent2;
 		$do_indent = 0;
-		print $script $_;
-		print $script "\n";
+
+		if ( $script ) {
+		    print $script $_;
+		    print $script "\n";
+		}
+
+		if ( $debug ) {
+		    s/\n/\nGS-----> /g;
+		    print "GS-----> $_\n";
+		}
+
 		$result = 1;
 		next;
 	    }
@@ -1197,11 +1214,19 @@ sub copy1( $ ) {
 		s/        /\t/ if $indent2;
 	    }
 
-	    print $script $_;
-	    print $script "\n";
+	    if ( $script ) {
+		print $script $_;
+		print $script "\n";
+	    }
+
 	    $do_indent = ! ( $here_documents || /\\$/ );
 
 	    $result = 1 unless $result || /^\s*$/ || /^\s*#/;
+
+	    if ( $debug ) {
+		s/\n/\nGS-----> /g;
+		print "GS-----> $_\n";
+	    }
 	}
 
 	close IF;

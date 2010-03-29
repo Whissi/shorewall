@@ -1240,11 +1240,13 @@ sub copy1( $ ) {
 #
 # This one drops header comments and replaces them with a three-line banner
 #
-sub copy2( $ ) {
+sub copy2( $$ ) {
+    my ( $file, $trace ) = @_;
+
     assert( $script_enabled );
     my $empty = 1;
 
-    if ( $script ) {
+    if ( $script || $trace ) {
 	my $file = $_[0];
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
@@ -1254,18 +1256,22 @@ sub copy2( $ ) {
 	}
 
 	unless ( $empty ) {
-	    print $script <<EOF;
+	    emit <<EOF;
 ################################################################################
 #   Functions imported from $file
 ################################################################################
-
 EOF
-	    print $script $_ unless /^\s*$/;
+	    chomp;
+	    emit( $_ ) unless /^\s*$/;
 
 	    while ( <IF> ) {
 		chomp;
 		if ( /^\s*$/ ) {
-		    print $script "\n" unless $lastlineblank;
+		    unless ( $lastlineblank ) {
+			print $script "\n" if $script;
+			print "GS----->\n" if $trace;
+		    }
+
 		    $lastlineblank = 1;
 		} else {
 		    if  ( $indent ) {
@@ -1273,22 +1279,30 @@ EOF
 			s/        /\t/ if $indent2;
 		    }
 		    
-		    print $script $_;
-		    print $script "\n";
+		    if ( $script ) {
+			print $script $_;
+			print $script "\n";
+		    }
+
+		    if ( $trace ) {
+			s/\n/GS-----> \n/g;
+			print "GS-----> $_\n";
+		    }
+
 		    $lastlineblank = 0;
 		}
 	    }
 	    
 	    close IF;
 	
-	    print $script "\n" unless $lastlineblank;
+	    unless ( $lastlineblank ) {
+		print $script "\n" if $script;
+		print "GS----->\n" if $trace;
+	    }
 
-	    print $script <<EOF;
-################################################################################
-#   End of imports from $file
-################################################################################
-EOF
-	    $lastlineblank = 0;
+	    emit( '################################################################################',
+		  "#   End of imports from $file",
+		  '################################################################################' );
 	}
     }
 }

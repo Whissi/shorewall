@@ -1017,13 +1017,17 @@ sub new_chain($$)
 
     assert( $chain_table{$table} && ! ( $chain_table{$table}{$chain} || $builtin_target{ $chain } ) );
 
-    $chain_table{$table}{$chain} = { name       => $chain,
-				     rules      => [],
-				     table      => $table,
-				     loglevel   => '',
-				     log        => 1,
-				     cmdlevel   => 0,
-				     references => {} };
+    my $chainref = { name       => $chain,
+		     rules      => [],
+		     table      => $table,
+		     loglevel   => '',
+		     log        => 1,
+		     cmdlevel   => 0,
+		     references => {} };
+
+    trace( $chainref, 'N', undef, '' ) if $debug;
+
+    $chain_table{$table}{$chain} = $chainref;
 }
 
 #

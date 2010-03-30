@@ -455,11 +455,12 @@ sub add_commands ( $$;@ ) {
     my $chainref    = shift @_;
     my $indentation = '    ' x $chainref->{cmdlevel};
 
-    push @{$chainref->{rules}}, join ('', $indentation , $_ ) for @_;
-
     if ( $debug ) {
-	trace( $chainref, 'T', undef, "${indentation}$_\n" ) for @_;
+	my $rulenum = @{$chainref->{rules}};
+	trace( $chainref, 'T', ++$rulenum, "${indentation}$_\n" ) for @_;
     }
+
+    push @{$chainref->{rules}}, join ('', $indentation , $_ ) for @_;
 
     $chainref->{referenced} = 1;
 }
@@ -476,8 +477,7 @@ sub push_rule( $$ ) {
     } else {
 	push @{$chainref->{rules}}, $rule;
 	$chainref->{referenced} = 1;
-	my $rulenum;
-	$rulenum=@{$chainref->{rules}}, trace( $chainref, 'A', $rulenum, $rule ) if $debug;
+	trace( $chainref, 'A', @{$chainref->{rules}}, $rule ) if $debug;
     }
 }
 
@@ -605,7 +605,7 @@ sub purge_jump ( $$ ) {
     for ( @{$fromref->{rules}} ) {
 	$rule++;
 	if ( defined && / -[gj] ${to}\b/ ) {
-	    trace( $fromref, 'D', undef, qq("$_" Deleted) ) if $debug;
+	    trace( $fromref, 'D', $rule, $_ ) if $debug;
 	    $_ = undef;
 	}
     }
@@ -734,7 +734,7 @@ sub move_rules( $$ ) {
 	$chain2->{referenced} = 1;
 	$chain1->{referenced} = 0;
 	$chain1->{rules}      = [];
-	trace( $chain1, 'X', undef, 'Deleted' ) if $debug;
+	trace( $chain1, 'X', undef, '' ) if $debug;
 	$count;
     }
 }
@@ -779,7 +779,7 @@ sub copy_rules( $$ ) {
 	unless ( keys %{$chain1->{references}} ) {
 	    $chain1->{referenced} = 0;
 	    progress_message "  Unreferenced chain $name1 deleted";
-	    trace( $chain1, 'X', undef, 'Deleted' ) if $debug;
+	    trace( $chain1, 'X', undef, '' ) if $debug;
 	}    
     }
 }
@@ -1383,14 +1383,9 @@ sub optimize_chain( $ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-
-		    if ( defined ) {
-			my $before;
-			$before = $_ if $debug;
-			if ( s/ -[jg] $chainref->{name}$/ -j ACCEPT/ ) {
-			    $count++;
-			    trace( $chainref, 'R', $rule, qq("$before" replaced by "$_") ) if $debug;
-			}
+		    if ( defined && s/ -[jg] $chainref->{name}$/ -j ACCEPT/ ) {
+			$count++;
+			trace( $chainref, 'R', $rule, $_ ) if $debug;
 		    }
 		} 
 	    }
@@ -1416,7 +1411,7 @@ sub delete_references( $ ) {
 	    $rule++;
 
 	    if ( defined && / -[jg] $chainref->{name}$/ ) {
-		trace( $fromref, 'D', $rule, qq("$_" Deleted) ) if $debug;
+		trace( $fromref, 'D', $rule, $_ ) if $debug;
 		$_ = undef;
 		$count++;
 	    }
@@ -1451,13 +1446,9 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined ) {
-			my $before;
-			$before = $_ if $debug;
-			if ( s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
-			    $count++;
-			    trace( $fromref, 'R', $rule, qq("$before" replaced by "$_") ) if $debug;
-			}
+		    if ( defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
+			$count++;
+			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
 		}    
 	    }
@@ -1471,13 +1462,9 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined ) {
-			my $before;
-			$before = $_ if $debug;
-			if ( s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ ) {
-			    $count++ ;
-			    trace( $fromref, 'R', $rule, qq( "$before" replaced by "$_") ) if $debug;
-			}
+		    if ( defined && s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ ) {
+			$count++ ;
+			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
 		}
 	    }
@@ -1511,15 +1498,13 @@ sub replace_references1( $$$ ) {
 		    $rule++;
 		    if ( defined ) {
 			if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
-			    my $before;
-			    $before = $_ if $debug;
 			    #
 			    # Prevent multiple '-p' matches
 			    #
 			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
 			    s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
 			    $count++;
-			    trace( $fromref, 'R', $rule, qq( "$before" replaced by "$_") ) if $debug;
+			    trace( $fromref, 'R', $rule, $_ ) if $debug;
 			}
 		    }
 		}
@@ -1536,15 +1521,13 @@ sub replace_references1( $$$ ) {
 		    $rule++;
 		    if ( defined ) {
 			if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
-			    my $before;
-			    $before = $_ if $debug;
 			    #
 			    # Prevent multiple '-p' matches
 			    #
 			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
 			    s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
 			    $count++;
-			    trace( $fromref, 'R', $rule, qq( "$before" replaced by "$_") ) if $debug;
+			    trace( $fromref, 'R', $rule, $_ ) if $debug;
 			}
 		    }
 		}

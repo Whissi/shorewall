@@ -623,8 +623,8 @@ DNAT       net           net:192.168.4.22       tcp      80,443      -         <
           clients or use <ulink url="shorewall_setup_guide.htm#DNS">Bind
           Version 9 <quote>views</quote></ulink> on your main name server)
           such that www.mydomain.com resolves to 130.141.100.69 externally and
-          192.168.1.5 internally. That's what I do here at shorewall.net for
-          my local systems that use one-to-one NAT.</para>
+          192.168.1.5 internally. I use a separate DNS server (dnsmasq) here
+          at shorewall.net.</para>
         </listitem>
       </itemizedlist>
 
@@ -641,8 +641,8 @@ DNAT       net           net:192.168.4.22       tcp      80,443      -         <
       url="SplitDNS.html"><emphasis role="bold">check
       here</emphasis></ulink>.</para>
 
-      <para>But if you are the type of person who prefers quick and dirty
-      hacks to "doing it right", then proceed as described below.<warning>
+      <para>If you really want to route traffic between two internal systems
+      through your firewall, then proceed as described below.<warning>
           <para>All traffic redirected through use of this hack will look to
           the server as if it originated on the firewall rather than on the
           original client! So the server's access logs will be useless for
@@ -666,6 +666,15 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
 
           <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
 <emphasis role="bold">eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</emphasis></programlisting>
+
+          <para>Note: The technique described here is known as
+          <firstterm>hairpinning NAT</firstterm> and is described in section 6
+          of <ulink url="http://www.faqs.org/rfcs/rfc4787.html">RFC
+          4787</ulink>. There it is recommended that the <emphasis>external IP
+          address</emphasis> be used as the source:</para>
+
+          <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
+eth1:192.168.1.5        eth1            <emphasis role="bold">130.151.100.69</emphasis>  tcp     www</programlisting>
         </listitem>
 
         <listitem>
@@ -675,8 +684,9 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
 #                                                               PORT      DEST.
 <emphasis role="bold">DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</emphasis></programlisting>
 
-          <para>That rule only works of course if you have a static external
-          IP address. If you have a dynamic IP address then include this in
+          <para>That rule (and the second one in the previous bullet) only
+          works of course if you have a static external IP address. If you
+          have a dynamic IP address then include this in
           <filename>/etc/shorewall/params</filename> (or your
           <filename>&lt;export directory&gt;/init</filename> file if you are
           using Shorewall Lite on the firewall system):</para>

@@ -2017,7 +2017,15 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
       <para><filename>/etc/shorewall/init</filename>:<programlisting>qt modprobe ifb numifbs=1
 qt ip link set dev ifb0 up</programlisting></para>
 
-      <para><filename>/etc/shorewall/tcdevices</filename>:<programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH   OPTIONS         REDIRECTED
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE          INTERFACE         BROADCAST
+-              ifb0</programlisting>
+
+      <para><filename>/etc/shorewall/tcdevices</filename>:</para>
+
+      <para><programlisting>
+#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH   OPTIONS         REDIRECTED
 #                                                               INTERFACES
 1:eth0          -               384kbit         classify
 2:ifb0          -               1300kbit        -               eth0</programlisting>

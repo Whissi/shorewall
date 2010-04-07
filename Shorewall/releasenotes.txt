@@ -225,6 +225,13 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     corresponding physical interface names. This could cause 'start' or
     'restart' to fail.
 
+2)  If find_first_interface_address() cannot determine the address of
+    the passed interface, the following message is issued and the
+    process continues:
+
+    	    /usr/share/shorewall/lib.common: line 438:
+                startup_error: command not found
+
 4.4.8
 
 1)  A CONTINUE rule specifying a log level would cause the compiler to 

@@ -5,3 +5,19 @@
 
     Corrected in Shorewall 4.4.8.1
 
+2)  If find_first_interface_address() cannot determine the address of
+    the passed interface, the following message is issued and the
+    process continues:
+
+    	    /usr/share/shorewall/lib.common: line 438:
+                startup_error: command not found
+
+    Corrected in Shorewall 4.4.8.1
+
+3)  If LOG_VERBOSITY=0 in shorewall.conf, then when the compiled script
+    is executed, messages such as the following will be issued:
+
+       /var/lib/shorewall6/.restart: line 65: [: -gt: unary operator
+                                              expected
+
+    Corrected in Shorewall 4.4.8.1

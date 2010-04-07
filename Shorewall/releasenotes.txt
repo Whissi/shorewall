@@ -232,6 +232,11 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     	    /usr/share/shorewall/lib.common: line 438:
                 startup_error: command not found
 
+3)  If LOG_VERBOSITY=0 in shorewall.conf, then when the compiled script
+    was executed, messages such as the following would be issued:
+
+       /var/lib/shorewall6/.restart: line 65: [: -gt: unary operator
+                                              expected
 4.4.8
 
 1)  A CONTINUE rule specifying a log level would cause the compiler to 

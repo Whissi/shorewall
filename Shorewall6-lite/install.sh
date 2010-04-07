@@ -179,14 +179,18 @@ echo "Installing Shorewall6 Lite Version $VERSION"
 # Check for /etc/shorewall6-lite
 #
 if [ -z "$PREFIX" -a -d /etc/shorewall6-lite ]; then
-    first_install=""
     [ -f /etc/shorewall6-lite/shorewall.conf ] && \
 	mv -f /etc/shorewall6-lite/shorewall.conf /etc/shorewall6-lite/shorewall6-lite.conf
 else
-    first_install="Yes"
     rm -rf ${PREFIX}/etc/shorewall6-lite
     rm -rf ${PREFIX}/usr/share/shorewall6-lite
     rm -rf ${PREFIX}/var/lib/shorewall6-lite
+fi
+
+if [ -f ${PREFIX}/sbin/shorewall6-lite ]; then
+    first_install=""
+else
+    first_install="Yes"
 fi
 
 delete_file ${PREFIX}/usr/share/shorewall6-lite/xmodules

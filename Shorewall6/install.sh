@@ -202,9 +202,9 @@ cd "$(dirname $0)"
 echo "Installing Shorewall6 Version $VERSION"
 
 #
-# Check for /etc/shorewall6
+# Check for /sbin/shorewall6
 #
-if [ -d ${PREFIX}/etc/shorewall6 ]; then
+if [ -f ${PREFIX}/sbin/shorewall6 ]; then
     first_install=""
 else
     first_install="Yes"

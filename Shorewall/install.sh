@@ -209,9 +209,9 @@ cd "$(dirname $0)"
 echo "Installing Shorewall Version $VERSION"
 
 #
-# Check for /etc/shorewall
+# Check for /sbin/shorewall
 #
-if [ -d ${PREFIX}/etc/shorewall ]; then
+if [ -f ${PREFIX}/sbin/shorewall ]; then
     first_install=""
 else
     first_install="Yes"

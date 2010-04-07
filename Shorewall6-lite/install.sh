@@ -187,6 +187,9 @@ else
     rm -rf ${PREFIX}/var/lib/shorewall6-lite
 fi
 
+#
+# Check for /sbin/shorewall6-lite
+#
 if [ -f ${PREFIX}/sbin/shorewall6-lite ]; then
     first_install=""
 else

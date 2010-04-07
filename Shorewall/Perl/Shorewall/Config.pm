@@ -3106,7 +3106,8 @@ sub get_configuration( $ ) {
 #
 sub propagateconfig() {
     for my $option ( @propagateconfig ) {
-	my $value = $config{$option} || '';
+	my $value = $config{$option};
+	$value = '' unless defined $value;
 	emit "$option=\"$value\"";
     }
 }

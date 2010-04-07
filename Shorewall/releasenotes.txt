@@ -224,6 +224,19 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     corresponding physical interface names. This could cause 'start' or
     'restart' to fail.
 
+2)  If find_first_interface_address() was unable to detect an address,
+    then Shorewall 4.4.8 would issue an obscure message
+    (startup_error: command not found) and continue.
+
+    Now, a meaningful error message is produced and the calling process
+    stops.
+
+3)  If LOG_VERBOSITY=0 in shorewall.conf, then when the compiled script
+    was executed, messages such as the following would be issued:
+
+       /var/lib/shorewall6/.restart: line 65: [: -gt: unary operator
+                                              expected
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

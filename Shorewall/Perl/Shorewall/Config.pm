@@ -2869,6 +2869,7 @@ sub get_configuration( $ ) {
 		my $val = numeric_value( $config{LOG_VERBOSITY} );
 		fatal_error "Invalid LOG_VERBOSITY ($config{LOG_VERBOSITY} )" unless defined( $val ) && ( $val >= -1 ) && ( $val <= 2 );
 		$config{STARTUP_LOG} = '' if $config{LOG_VERBOSITY} < 0;
+		$config{LOG_VERBOSITY} = $val;
 	    }
 	} else {
 	    $config{LOG_VERBOSITY} = 2;

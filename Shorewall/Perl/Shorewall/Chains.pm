@@ -1424,6 +1424,7 @@ sub replace_references1( $$$ ) {
 			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
 			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
+			add_reference( $fromref, $chain_table{$table}{$target} );
 			$count++;
 		    }
 		}

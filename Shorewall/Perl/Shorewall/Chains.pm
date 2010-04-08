@@ -1381,7 +1381,11 @@ sub replace_references( $$ ) {
 	#
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ && $count++ for @{$fromref->{rules}};
+		for ( @{$fromref->{rules}} ) {
+		    if ( defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
+			add_reference( $fromref, $chain_table{$table}{$target} );
+			$count++;
+		    }
 	    }
 	}
     } else {

@@ -1455,6 +1455,7 @@ sub replace_references( $$ ) {
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
 		    if ( defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
+			add_reference ( $fromref, $chain_table{$table}{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }

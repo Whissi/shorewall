@@ -610,7 +610,10 @@ sub purge_jump ( $$ ) {
 	}
     }
 
-    $toref->{referenced} = 0 unless @{$toref->{rules}};
+    unless ( @{$toref->{rules}} ) {
+	$toref->{referenced} = 0;
+	trace ( $toref, 'X', undef, '' ) if $debug;
+    }
 }
 
 #
@@ -1396,6 +1399,7 @@ sub optimize_chain( $ ) {
 
 	    progress_message "  $count references to ACCEPT policy chain $chainref->{name} replaced";
 	    $chainref->{referenced} = 0;
+	    trace ( $chainref, 'X', undef, '' ) if $debug;
 	}
     }
 }
@@ -1429,7 +1433,7 @@ sub delete_references( $ ) {
     }
 
     $chainref->{referenced} = 0;
-
+    trace ( $chainref, 'X', undef, '' ) if $debug;
     $count;
 }
 
@@ -1478,6 +1482,8 @@ sub replace_references( $$ ) {
     progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
     $chainref->{referenced} = 0;
+    trace ( $chainref, 'X', undef, '' ) if $debug;
+
 }
 
 #
@@ -1486,8 +1492,8 @@ sub replace_references( $$ ) {
 #
 sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
-    my $table    = $chainref->{table};
-    my $count    = 0;
+    my $table     = $chainref->{table};
+    my $count     = 0;
     #
     # Note: If $matches is non-empty, then it begins with white space
     #
@@ -1507,6 +1513,7 @@ sub replace_references1( $$$ ) {
 			    #
 			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
 			    s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
+			    add_reference ( $fromref, $chain_table{$table}{$target} );
 			    $count++;
 			    trace( $fromref, 'R', $rule, $_ ) if $debug;
 			}
@@ -1542,6 +1549,8 @@ sub replace_references1( $$$ ) {
     progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
     $chainref->{referenced} = 0;
+    trace ( $chainref, 'X', undef, '' ) if $debug;
+
 }
 
 #
@@ -1617,6 +1626,7 @@ sub optimize_ruleset() {
 		#
 		unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
 		    $chainref->{referenced} = 0;
+		    trace ( $chainref, 'X', undef, '' ) if $debug;
 		    progress_message "  Unreferenced chain $chainref->{name} deleted";
 		    next;
 		}

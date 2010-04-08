@@ -781,6 +781,7 @@ sub copy_rules( $$ ) {
 	delete $chain1->{references}{$name2};
 	unless ( keys %{$chain1->{references}} ) {
 	    $chain1->{referenced} = 0;
+	    $chain1->{rules}      = [];
 	    progress_message "  Unreferenced chain $name1 deleted";
 	    trace( $chain1, 'X', undef, '' ) if $debug;
 	}    
@@ -1399,6 +1400,7 @@ sub optimize_chain( $ ) {
 
 	    progress_message "  $count references to ACCEPT policy chain $chainref->{name} replaced";
 	    $chainref->{referenced} = 0;
+	    $chainref->{rules}      = [];
 	    trace ( $chainref, 'X', undef, '' ) if $debug;
 	}
     }
@@ -1433,6 +1435,7 @@ sub delete_references( $ ) {
     }
 
     $chainref->{referenced} = 0;
+    $chainref->{rules}      = [];
     trace ( $chainref, 'X', undef, '' ) if $debug;
     $count;
 }
@@ -1483,6 +1486,7 @@ sub replace_references( $$ ) {
     progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
     $chainref->{referenced} = 0;
+    $chainref->{rules}      = [];
     trace ( $chainref, 'X', undef, '' ) if $debug;
 
 }
@@ -1550,6 +1554,7 @@ sub replace_references1( $$$ ) {
     progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
     $chainref->{referenced} = 0;
+    $chainref->{rules}      = [];
     trace ( $chainref, 'X', undef, '' ) if $debug;
 
 }
@@ -1627,6 +1632,7 @@ sub optimize_ruleset() {
 		#
 		unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
 		    $chainref->{referenced} = 0;
+		    $chainref->{rules}      = [];
 		    trace ( $chainref, 'X', undef, '' ) if $debug;
 		    progress_message "  Unreferenced chain $chainref->{name} deleted";
 		    next;

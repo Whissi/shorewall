@@ -237,6 +237,10 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
        /var/lib/shorewall6/.restart: line 65: [: -gt: unary operator
                                               expected
 
+4)  With optimize 4, if an unnecessary NONAT rule is included in
+    /etc/shorewall/rules, 'shorewall start' and/or 'shorewall restart'
+    can fail with invalid iptables-restore input.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

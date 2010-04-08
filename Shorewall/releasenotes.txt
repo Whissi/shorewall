@@ -282,6 +282,8 @@ None.
 	T - Shell source text appended/inserted into a chain --
             converted into rules at run-time.
 	D - Deleted Rule from a chain
+	C - Compressed the rules array for a chain to remove deleted
+   	    rules. This renumbers the remaining rules.
 	X - Deleted a chain
 
     Netfilter trace records indicate the table and chain being
@@ -298,13 +300,6 @@ None.
     Example (Delete the mangle tcpost chain):
 
 	NF-(X)-> mangle:tcpost
-
-    The compiler keeps the rules for each chain in a Perl array. When
-    deleting a rule, the corresponding array entry is set to
-    'undef'. So when a rule is deleted, the rule numbers of the
-    remaining rules do not change. If the last rule in an array is
-    deleted, then the array itself is truncated back to the last valid
-    rule and subsequent append operations grow the array from there.
 
 3)  Thanks to Vincent Smeets, there is now an IPv6 mDNS macro. 
 

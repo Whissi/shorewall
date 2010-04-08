@@ -833,10 +833,6 @@ sub compiler {
 	if ( $config{OPTIMIZE} & 6 ) {
 	    progress_message2 'Optimizing Ruleset...';
 	    #
-	    # Prepare table for optimization
-	    #
-	    prepare_for_optimization;
-	    #
 	    # Optimize Policy Chains
 	    #
 	    optimize_policy_chains if $config{OPTIMIZE} & 2;

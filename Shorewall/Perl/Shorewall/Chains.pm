@@ -116,7 +116,6 @@ our %EXPORT_TAGS = (
 				       new_nat_chain
 				       ensure_filter_chain
 				       finish_section
-				       prepare_for_optimization
 				       optimize_chain
 				       check_optimization
 				       optimize_ruleset
@@ -595,6 +594,22 @@ sub add_reference ( $$ ) {
 }
 
 #
+# Compress out undefined elements in rules
+#
+sub compress_rules( $ ) {
+    my $chainref = shift;
+    my @rules;
+
+    for ( @{$chainref->{rules}} ) {
+	push @rules, $_ if defined;
+    }
+
+    $chainref->{rules} = \@rules;
+
+    trace( $chainref, 'C', undef, '' ) if $debug;
+}  
+
+#
 # Purge jumps previously added via add_jump. If the target chain is empty, reset its
 # referenced flag
 #
@@ -602,14 +617,19 @@ sub purge_jump ( $$ ) {
     my ( $fromref, $toref ) = @_;
     my $to = $toref->{name};
     my $rule = 0;
+    my $rules = @{$fromref->{rules}};
+    my $deleted = 0;
 
     for ( @{$fromref->{rules}} ) {
 	$rule++;
 	if ( defined && / -[gj] ${to}\b/ ) {
 	    trace( $fromref, 'D', $rule, $_ ) if $debug;
 	    $_ = undef;
+	    $deleted = 1 unless $rule == $rules;
 	}
     }
+
+    compress_rules( $fromref ) if $deleted;
 
     unless ( @{$toref->{rules}} ) {
 	$toref->{referenced} = 0;
@@ -1366,36 +1386,6 @@ sub finish_section ( $ ) {
 }
 
 #
-# Compress out undefined elements in rules
-#
-sub compress_rules( $ ) {
-    my $chainref = shift;
-    my @rules;
-
-    for ( @{$chainref->{rules}} ) {
-	push @rules, $_ if defined;
-    }
-
-    $chainref->{rules} = \@rules;
-}  
-
-#
-# Prepare chain table for optimization by squeezing out undefined rules array entries
-#
-sub prepare_for_optimization() {
-    for my $table ( qw/raw mangle nat filter/ ) {
-
-	next if $family == F_IPV6 && $table eq 'nat';
-    
-	for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-	    for ( @{$chainref->{rules}} ) {
-		compress_rules( $chainref ), last unless defined;
-	    }
-	}
-    }
-}
-	
-#
 # Delete redundant ACCEPT rules from the end of a policy chain whose policy is ACCEPT
 #
 sub optimize_chain( $ ) {
@@ -1449,6 +1439,7 @@ sub delete_references( $ ) {
     for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	my $rule = 0;
 	my $deleted = 0;
+	my $rules = @{$fromref->{rules}};
 
 	for ( @{$fromref->{rules}} ) {
 	    $rule++;
@@ -1457,7 +1448,7 @@ sub delete_references( $ ) {
 		trace( $fromref, 'D', $rule, $_ ) if $debug;
 		$_ = undef;
 		$count++;
-		$deleted = 1;
+		$deleted = 1 unless $rule == $rules;
 	    }
 	}
 	    

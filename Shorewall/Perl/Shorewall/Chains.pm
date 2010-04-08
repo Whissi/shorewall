@@ -116,6 +116,7 @@ our %EXPORT_TAGS = (
 				       new_nat_chain
 				       ensure_filter_chain
 				       finish_section
+				       prepare_for_optimization
 				       optimize_chain
 				       check_optimization
 				       optimize_ruleset
@@ -1365,6 +1366,36 @@ sub finish_section ( $ ) {
 }
 
 #
+# Compress out undefined elements in rules
+#
+sub compress_rules( $ ) {
+    my $chainref = shift;
+    my @rules;
+
+    for ( @{$chainref->{rules}} ) {
+	push @rules, $_ if defined;
+    }
+
+    $chainref->{rules} = \@rules;
+}  
+
+#
+# Prepare chain table for optimization by squeezing out undefined rules array entries
+#
+sub prepare_for_optimization() {
+    for my $table ( qw/raw mangle nat filter/ ) {
+
+	next if $family == F_IPV6 && $table eq 'nat';
+    
+	for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+	    for ( @{$chainref->{rules}} ) {
+		compress_rules( $chainref ), last unless defined;
+	    }
+	}
+    }
+}
+	
+#
 # Delete redundant ACCEPT rules from the end of a policy chain whose policy is ACCEPT
 #
 sub optimize_chain( $ ) {
@@ -1391,7 +1422,7 @@ sub optimize_chain( $ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined && s/ -[jg] $chainref->{name}$/ -j ACCEPT/ ) {
+		    if ( s/ -[jg] $chainref->{name}$/ -j ACCEPT/ ) {
 			$count++;
 			trace( $chainref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1417,15 +1448,20 @@ sub delete_references( $ ) {
     
     for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	my $rule = 0;
+	my $deleted = 0;
+
 	for ( @{$fromref->{rules}} ) {
 	    $rule++;
 
-	    if ( defined && / -[jg] $chainref->{name}$/ ) {
+	    if ( / -[jg] $chainref->{name}$/ ) {
 		trace( $fromref, 'D', $rule, $_ ) if $debug;
 		$_ = undef;
 		$count++;
+		$deleted = 1;
 	    }
 	}
+	    
+	compress_rules( $fromref ) if $deleted;
     }
 
     if ( $count ) {
@@ -1457,7 +1493,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
+		    if ( s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
 			add_reference ( $fromref, $chain_table{$table}{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1474,7 +1510,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined && s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ ) {
+		    if ( s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ ) {
 			$count++ ;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1511,17 +1547,15 @@ sub replace_references1( $$$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined ) {
-			if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
-			    #
-			    # Prevent multiple '-p' matches
-			    #
-			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
-			    s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
-			    add_reference ( $fromref, $chain_table{$table}{$target} );
-			    $count++;
-			    trace( $fromref, 'R', $rule, $_ ) if $debug;
-			}
+		    if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+			#
+			# Prevent multiple '-p' matches
+			#
+			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
+			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
+			add_reference ( $fromref, $chain_table{$table}{$target} );
+			$count++;
+			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
 		}
 	    }
@@ -1535,16 +1569,14 @@ sub replace_references1( $$$ ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( defined ) {
-			if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
-			    #
-			    # Prevent multiple '-p' matches
-			    #
-			    s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
-			    s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
-			    $count++;
-			    trace( $fromref, 'R', $rule, $_ ) if $debug;
-			}
+		    if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+			#
+			# Prevent multiple '-p' matches
+			#
+			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
+			s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
+			$count++;
+			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
 		}
 	    }
@@ -1639,21 +1671,7 @@ sub optimize_ruleset() {
 		}
 
 		unless ( $chainref->{dont_optimize} ) {
-		    #
-		    # Next count the rules -- we must do that because 
-		    #                          we delete rules by setting them
-		    #                          to nil.
-		    my $numrules = 0;
-		    my $firstrule;
-		    my $lastrule;
-
-		    for ( @{$chainref->{rules}} ) {
-			if ( defined ) {
-			    $numrules++;
-			    $lastrule  = $_;
-			    $firstrule = $_ unless defined $firstrule;
-			}
-		    }
+		    my $numrules = @{$chainref->{rules}};
 
 		    if ( $numrules == 0 ) {
 			#
@@ -1672,8 +1690,9 @@ sub optimize_ruleset() {
 			    $progress = 1;
 			}
 		    } elsif ( $numrules == 1 ) {
+			my $firstrule = $chainref->{rules}[0];
 			#
-			# Chain has a single non-nil rule which is in $firstrule
+			# Chain has a single rule
 			#
 			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
 			    #
@@ -1736,11 +1755,7 @@ sub optimize_ruleset() {
 	    $passes++;
 
 	    for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-		my $lastrule;
-
-		for ( @{$chainref->{rules}} ) {
-		    $lastrule  = $_ if defined;
-		}
+		my $lastrule = $chainref->{rules}[-1];
 
 		if ( defined $lastrule && $lastrule  =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
 		    #

@@ -594,7 +594,8 @@ sub add_reference ( $$ ) {
 }
 
 #
-# Compress out undefined elements in rules
+# Compress out undefined elements in rules - beginning with 4.4.9, this gets called any time that
+# a rule other than the last one in the chain is deleted (set to 'undef').
 #
 sub compress_rules( $ ) {
     my $chainref = shift;
@@ -622,7 +623,7 @@ sub purge_jump ( $$ ) {
 
     for ( @{$fromref->{rules}} ) {
 	$rule++;
-	if ( defined && / -[gj] ${to}\b/ ) {
+	if ( / -[gj] ${to}\b/ ) {
 	    trace( $fromref, 'D', $rule, $_ ) if $debug;
 	    $_ = undef;
 	    $deleted = 1 unless $rule == $rules;

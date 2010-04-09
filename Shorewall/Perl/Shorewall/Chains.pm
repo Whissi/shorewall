@@ -601,29 +601,13 @@ sub purge_jump ( $$ ) {
     my ( $fromref, $toref ) = @_;
     my $to = $toref->{name};
     my $last = 0;
-    #
-    # splice() of an array being iterated over causes elements to be skipped so
-    # we need to restart the scan after each deletion.
-    #
-    my $progress = 1;
-
-    while ( $progress ) {
-	my $rule = 0;
+    my $rule;
 	
-	$progress = 0;
-
-	for ( @{$fromref->{rules}} ) {
-	    $rule++, next if $last-- > 0;
-
-	    if ( / -[gj] ${to}\b/ ) {
-		trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
-		splice(  @{$fromref->{rules}}, $rule, 1 );
-		$progress = 1;
-		$last = $rule;
-		last;
-	    }
-		
-	    $rule++;
+    for ( $rule = 0; $rule < $#{$fromref->{rules}}; $rule++ ) {
+	if (  $fromref->{rules}[$rule] =~ / -[gj] ${to}\b/ ) {
+	    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
+	    splice(  @{$fromref->{rules}}, $rule, 1 );
+	    $rule--;
 	}
     }
 
@@ -1433,33 +1417,15 @@ sub delete_references( $ ) {
     my $chainref = shift;
     my $table    = $chainref->{table};
     my $count    = 0;
-    my $last     = 0;
+    my $rule;
     
     for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
-	#
-	# splice() of an array being iterated over causes elements to be skipped so
-	# we need to restart the scan after each deletion.
-	#
-	my $progress = 1;
-	
-	while ( $progress ) {
-	    my $rule = 0;
-
-	    $progress = 0;
-
-	    for ( @{$fromref->{rules}} ) {
-		$rule++, next if $last-- > 0;
-
-		if ( / -[jg] $chainref->{name}$/ ) {
-		    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
-		    splice( @{$fromref->{rules}}, $rule, 1 );
-		    $count++;
-		    $progress = 1;
-		    $last = $rule;
-		    last;
-		}
-		
-		$rule++;
+	for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
+	    if ( $fromref->{rules}[$rule] =~ / -[jg] $chainref->{name}$/ ) {
+		trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
+		splice( @{$fromref->{rules}}, $rule, 1 );
+		$count++;
+		$rule--;
 	    }
 	}
 

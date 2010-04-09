@@ -600,6 +600,7 @@ sub add_reference ( $$ ) {
 sub purge_jump ( $$ ) {
     my ( $fromref, $toref ) = @_;
     my $to = $toref->{name};
+    my $last = 0;
     #
     # splice() of an array being iterated over causes elements to be skipped so
     # we need to restart the scan after each deletion.
@@ -612,10 +613,13 @@ sub purge_jump ( $$ ) {
 	$progress = 0;
 
 	for ( @{$fromref->{rules}} ) {
+	    $rule++, next if $last-- > 0;
+
 	    if ( / -[gj] ${to}\b/ ) {
 		trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
 		splice(  @{$fromref->{rules}}, $rule, 1 );
 		$progress = 1;
+		$last = $rule;
 		last;
 	    }
 		
@@ -1429,6 +1433,7 @@ sub delete_references( $ ) {
     my $chainref = shift;
     my $table    = $chainref->{table};
     my $count    = 0;
+    my $last     = 0;
     
     for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	#
@@ -1443,11 +1448,14 @@ sub delete_references( $ ) {
 	    $progress = 0;
 
 	    for ( @{$fromref->{rules}} ) {
+		$rule++, next if $last-- > 0;
+
 		if ( / -[jg] $chainref->{name}$/ ) {
 		    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
 		    splice( @{$fromref->{rules}}, $rule, 1 );
 		    $count++;
 		    $progress = 1;
+		    $last = $rule;
 		    last;
 		}
 		

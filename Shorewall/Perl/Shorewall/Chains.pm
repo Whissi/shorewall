@@ -626,7 +626,7 @@ sub purge_jump ( $$ ) {
 	if ( / -[gj] ${to}\b/ ) {
 	    trace( $fromref, 'D', $rule, $_ ) if $debug;
 	    $_ = undef;
-	    $deleted = 1 unless $rule == $rules;
+	    $deleted = 1 unless $rule == $rules && $rules > 1;
 	}
     }
 
@@ -1449,7 +1449,7 @@ sub delete_references( $ ) {
 		trace( $fromref, 'D', $rule, $_ ) if $debug;
 		$_ = undef;
 		$count++;
-		$deleted = 1 unless $rule == $rules;
+		$deleted = 1 unless $rule == $rules && $rules > 1;
 	    }
 	}
 	    
@@ -1686,6 +1686,8 @@ sub optimize_ruleset() {
 			#
 			# Chain has a single rule
 			#
+			assert( $firstrule );
+
 			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
 			    #
 			    # Easy case -- the rule is a simple jump
@@ -3599,7 +3601,7 @@ sub create_netfilter_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr $_ for ( grep defined $_, @{$chainref->{rules}} );
+	    emitr $_ for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
@@ -3681,7 +3683,7 @@ sub preview_netfilter_load() {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr1 $_ for ( grep defined $_, @{$chainref->{rules}} );
+	    emitr1 $_ for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
@@ -3776,7 +3778,7 @@ sub create_chainlist_reload($) {
 		#
 		# Emit the chain rules
 		#
-		emitr $_ for ( grep defined $_, @rules );
+		emitr $_ for @rules;
 	    }
 	    #
 	    # Commit the changes to the table

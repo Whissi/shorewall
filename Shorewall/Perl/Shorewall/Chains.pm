@@ -1428,11 +1428,7 @@ sub delete_references( $ ) {
 	progress_message "  Empty chain $chainref->{name} deleted";
     }
 
-    if ( $chainref->{referenced} ) {
-	$chainref->{referenced} = 0;
-	$chainref->{rules}      = [];
-	trace ( $chainref, 'X', undef, '' ) if $debug;
-    }
+    assert ( ! $chainref->{referenced} );
 
     $count;
 }

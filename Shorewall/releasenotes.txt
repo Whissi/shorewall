@@ -293,9 +293,8 @@ None.
 	I - Inserted a rule into a chain.
 	T - Shell source text appended/inserted into a chain --
             converted into rules at run-time.
-	D - Deleted Rule from a chain
-	C - Compressed the rules array for a chain to remove deleted
-   	    rules. This renumbers the remaining rules.
+	D - Deleted Rule from a chain; note that this causes the 
+	    following rules to be renumbered.
 	X - Deleted a chain
 
     Netfilter trace records indicate the table and chain being
@@ -304,7 +303,7 @@ None.
 
     Example (append the first rule to the filter FORWARD chain):
 
-	NF-(A)-> filter:FORWARD:1 
+	NF-(A)-> filter:FORWARD:1 ...
 
     If the trace record involves the chain itself, then no rule number
     is present.

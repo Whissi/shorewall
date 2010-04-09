@@ -594,44 +594,37 @@ sub add_reference ( $$ ) {
 }
 
 #
-# Compress out undefined elements in rules - beginning with 4.4.9, this gets called any time that
-# a rule other than the last one in the chain is deleted (set to 'undef').
-#
-sub compress_rules( $ ) {
-    my $chainref = shift;
-    my @rules;
-
-    for ( @{$chainref->{rules}} ) {
-	push @rules, $_ if defined;
-    }
-
-    $chainref->{rules} = \@rules;
-
-    trace( $chainref, 'C', undef, '' ) if $debug;
-}  
-
-#
 # Purge jumps previously added via add_jump. If the target chain is empty, reset its
 # referenced flag
 #
 sub purge_jump ( $$ ) {
     my ( $fromref, $toref ) = @_;
     my $to = $toref->{name};
-    my $rule = 0;
-    my $rules = @{$fromref->{rules}};
-    my $deleted = 0;
+    #
+    # splice() of an array being iterated over causes elements to be skipped so
+    # we need to restart the scan after each deletion.
+    #
+    my $progress = 1;
 
-    for ( @{$fromref->{rules}} ) {
-	$rule++;
-	if ( / -[gj] ${to}\b/ ) {
-	    trace( $fromref, 'D', $rule, $_ ) if $debug;
-	    $_ = undef;
-	    $deleted = 1 unless $rule == $rules && $rules > 1;
+    while ( $progress ) {
+	my $rule = 0;
+	
+	$progress = 0;
+
+	for ( @{$fromref->{rules}} ) {
+	    if ( / -[gj] ${to}\b/ ) {
+		trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
+		splice(  @{$fromref->{rules}}, $rule, 1 );
+		$progress = 1;
+		last;
+	    }
+		
+	    $rule++;
 	}
     }
 
-    compress_rules( $fromref ) if $deleted;
-
+    delete $toref->{references}{$fromref->{name}};
+    
     unless ( @{$toref->{rules}} ) {
 	$toref->{referenced} = 0;
 	trace ( $toref, 'X', undef, '' ) if $debug;
@@ -1438,22 +1431,31 @@ sub delete_references( $ ) {
     my $count    = 0;
     
     for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
-	my $rule = 0;
-	my $deleted = 0;
-	my $rules = @{$fromref->{rules}};
+	#
+	# splice() of an array being iterated over causes elements to be skipped so
+	# we need to restart the scan after each deletion.
+	#
+	my $progress = 1;
+	
+	while ( $progress ) {
+	    my $rule = 0;
 
-	for ( @{$fromref->{rules}} ) {
-	    $rule++;
+	    $progress = 0;
 
-	    if ( / -[jg] $chainref->{name}$/ ) {
-		trace( $fromref, 'D', $rule, $_ ) if $debug;
-		$_ = undef;
-		$count++;
-		$deleted = 1 unless $rule == $rules && $rules > 1;
+	    for ( @{$fromref->{rules}} ) {
+		if ( / -[jg] $chainref->{name}$/ ) {
+		    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
+		    splice( @{$fromref->{rules}}, $rule, 1 );
+		    $count++;
+		    $progress = 1;
+		    last;
+		}
+		
+		$rule++;
 	    }
 	}
-	    
-	compress_rules( $fromref ) if $deleted;
+
+	delete $chainref->{references}{$fromref->{name}};
     }
 
     if ( $count ) {

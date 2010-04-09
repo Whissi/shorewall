@@ -594,32 +594,6 @@ sub add_reference ( $$ ) {
 }
 
 #
-# Purge jumps previously added via add_jump. If the target chain is empty, reset its
-# referenced flag
-#
-sub purge_jumps ( $$ ) {
-    my ( $fromref, $toref ) = @_;
-    my $to = $toref->{name};
-    my $last = 0;
-    my $rule;
-
-    for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
-	if (  $fromref->{rules}[$rule] =~ / -[gj] ${to}\b/ ) {
-	    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
-	    splice(  @{$fromref->{rules}}, $rule, 1 );
-	    $rule--;
-	}
-    }
-
-    delete $toref->{references}{$fromref->{name}};
-
-    unless ( @{$toref->{rules}} ) {
-	$toref->{referenced} = 0;
-	trace ( $toref, 'X', undef, '' ) if $debug;
-    }
-}
-
-#
 # Insert a rule into a chain. Arguments are:
 #
 #    Chain reference , Rule Number, Rule
@@ -659,7 +633,6 @@ sub insert_rule($$$) {
 # optional 5th argument causes long port lists to be split. The optional 6th 
 # argument, if passed, gives the 0-relative index where the jump is to be inserted.
 #
-
 sub add_jump( $$$;$$$ ) {
     my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
 
@@ -691,6 +664,36 @@ sub add_jump( $$$;$$$ ) {
 	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ));
     } else {
 	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+    }
+}
+
+#
+# Purge jumps previously added via add_jump. If the target chain is empty, reset its
+# referenced flag
+#
+sub purge_jumps ( $$ ) {
+    my ( $fromref, $toref ) = @_;
+    my $to = $toref->{name};
+    my $last = 0;
+    my $rule;
+    #
+    # A C-style for loop seems to work best here, given that we are
+    # deleting elements from the array over which we are iterating.
+    #
+    for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
+	if (  $fromref->{rules}[$rule] =~ / -[gj] ${to}\b/ ) {
+	    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
+	    splice(  @{$fromref->{rules}}, $rule, 1 );
+	    last unless --$toref->{references}{$fromref->{name}} > 0;
+	    $rule--;
+	}
+    }
+
+    delete $toref->{references}{$fromref->{name}};
+
+    unless ( @{$toref->{rules}} ) {
+	$toref->{referenced} = 0;
+	trace ( $toref, 'X', undef, '' ) if $debug;
     }
 }
 

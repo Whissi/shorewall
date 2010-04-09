@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_8';
+our $VERSION = '4.4_9';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -960,8 +960,8 @@ sub handle_stickiness( $ ) {
     }
 
     if ( @routemarked_providers ) {
-	purge_jump $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
-	purge_jump $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
+	purge_jumps $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
+	purge_jumps $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
     }
 }
 1;

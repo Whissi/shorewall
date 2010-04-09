@@ -78,7 +78,7 @@ our %EXPORT_TAGS = (
 				       add_commands
 				       move_rules
 				       insert_rule1
-				       purge_jump
+				       purge_jumps
 				       add_tunnel_rule
 				       process_comment
 				       no_comment
@@ -597,13 +597,13 @@ sub add_reference ( $$ ) {
 # Purge jumps previously added via add_jump. If the target chain is empty, reset its
 # referenced flag
 #
-sub purge_jump ( $$ ) {
+sub purge_jumps ( $$ ) {
     my ( $fromref, $toref ) = @_;
     my $to = $toref->{name};
     my $last = 0;
     my $rule;
-	
-    for ( $rule = 0; $rule < $#{$fromref->{rules}}; $rule++ ) {
+
+    for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
 	if (  $fromref->{rules}[$rule] =~ / -[gj] ${to}\b/ ) {
 	    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
 	    splice(  @{$fromref->{rules}}, $rule, 1 );
@@ -612,7 +612,7 @@ sub purge_jump ( $$ ) {
     }
 
     delete $toref->{references}{$fromref->{name}};
-    
+
     unless ( @{$toref->{rules}} ) {
 	$toref->{referenced} = 0;
 	trace ( $toref, 'X', undef, '' ) if $debug;
@@ -1412,24 +1412,14 @@ sub optimize_chain( $ ) {
 #
 # Delete the references to the passed chain
 #
-
 sub delete_references( $ ) {
     my $chainref = shift;
     my $table    = $chainref->{table};
     my $count    = 0;
     my $rule;
-    
-    for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
-	for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
-	    if ( $fromref->{rules}[$rule] =~ / -[jg] $chainref->{name}$/ ) {
-		trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
-		splice( @{$fromref->{rules}}, $rule, 1 );
-		$count++;
-		$rule--;
-	    }
-	}
 
-	delete $chainref->{references}{$fromref->{name}};
+    for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
+	purge_jumps ($fromref, $chainref );
     }
 
     if ( $count ) {
@@ -1438,9 +1428,12 @@ sub delete_references( $ ) {
 	progress_message "  Empty chain $chainref->{name} deleted";
     }
 
-    $chainref->{referenced} = 0;
-    $chainref->{rules}      = [];
-    trace ( $chainref, 'X', undef, '' ) if $debug;
+    if ( $chainref->{referenced} ) {
+	$chainref->{referenced} = 0;
+	$chainref->{rules}      = [];
+	trace ( $chainref, 'X', undef, '' ) if $debug;
+    }
+
     $count;
 }
 

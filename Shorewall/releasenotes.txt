@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
                        S H O R E W A L L  4 . 4 . 9
-                               B E T A  2
+                               B E T A  3
 ----------------------------------------------------------------------------
 
 I.    RELEASE 4.4 HIGHLIGHTS
@@ -237,10 +237,17 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
        /var/lib/shorewall6/.restart: line 65: [: -gt: unary operator
                                               expected
 
-4)  With optimize 4, if an unnecessary NONAT rule is included in
-    /etc/shorewall/rules (there is no DNAT or REDIRECT rule with the
+4)  With optimize 4, if an unnecessary NONAT rule was included in
+    /etc/shorewall/rules (there was no DNAT or REDIRECT rule with the
     same source zone), then 'shorewall start' and/or 'shorewall restart'
-    can fail with invalid iptables-restore input.
+    could fail with invalid iptables-restore input.
+
+5)  The tarball installers now check for the presence of the CLI
+    program (/sbin/shorewall, /sbin/shorewall6, etc) to determine if a
+    fresh install or an upgrade should be performed. Previously, the
+    installers used the presense of the configuration directory
+    (/etc/shorewall, /etc/shorewall6, etc.) which led to incomplete
+    installations where there was an existing configuration directory.
 
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G

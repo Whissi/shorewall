@@ -960,8 +960,9 @@ sub handle_stickiness( $ ) {
     }
 
     if ( @routemarked_providers ) {
-	purge_jumps $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
-	purge_jumps $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
+	delete_jumps $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
+	delete_jumps $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
     }
 }
+
 1;

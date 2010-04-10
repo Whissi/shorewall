@@ -78,7 +78,7 @@ our %EXPORT_TAGS = (
 				       add_commands
 				       move_rules
 				       insert_rule1
-				       purge_jumps
+				       delete_jumps
 				       add_tunnel_rule
 				       process_comment
 				       no_comment
@@ -668,16 +668,16 @@ sub add_jump( $$$;$$$ ) {
 }
 
 #
-# Purge jumps previously added via add_jump. If the target chain is empty, reset its
+# Delete jumps previously added via add_jump. If the target chain is empty, reset its
 # referenced flag
 #
-sub purge_jumps ( $$ ) {
+sub delete_jumps ( $$ ) {
     my ( $fromref, $toref ) = @_;
     my $to = $toref->{name};
     my $last = 0;
     my $rule;
     #
-    # A C-style for loop seems to work best here, given that we are
+    # A C-style for-loop with indexing seems to work best here, given that we are
     # deleting elements from the array over which we are iterating.
     #
     for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
@@ -695,6 +695,19 @@ sub purge_jumps ( $$ ) {
 	$toref->{referenced} = 0;
 	trace ( $toref, 'X', undef, '' ) if $debug;
     }
+}
+
+#
+# Do final work to 'delete' a chain. We leave it in the chain table but clear
+# the 'referenced', 'rules' and 'references' members.
+#
+sub delete_chain( $ ) {
+    my $chainref = shift;
+
+    $chainref->{referenced} = 0;
+    $chainref->{rules}      = [];
+    $chainref->{references} = {};
+    trace( $chainref, 'X', undef, '' ) if $debug;
 }
 
 #
@@ -741,9 +754,8 @@ sub move_rules( $$ ) {
 	shift @{$rules} if @{$rules} > 1 && $rules->[0] eq $rules->[1];
 
 	$chain2->{referenced} = 1;
-	$chain1->{referenced} = 0;
-	$chain1->{rules}      = [];
-	trace( $chain1, 'X', undef, '' ) if $debug;
+	delete_chain $chain1;
+
 	$count;
     }
 }
@@ -786,10 +798,8 @@ sub copy_rules( $$ ) {
     unless ( --$chain1->{references}{$name2} ) {
 	delete $chain1->{references}{$name2};
 	unless ( keys %{$chain1->{references}} ) {
-	    $chain1->{referenced} = 0;
-	    $chain1->{rules}      = [];
+	    delete_chain $chain1;
 	    progress_message "  Unreferenced chain $name1 deleted";
-	    trace( $chain1, 'X', undef, '' ) if $debug;
 	}    
     }
 }
@@ -1405,9 +1415,7 @@ sub optimize_chain( $ ) {
 	    }
 
 	    progress_message "  $count references to ACCEPT policy chain $chainref->{name} replaced";
-	    $chainref->{referenced} = 0;
-	    $chainref->{rules}      = [];
-	    trace ( $chainref, 'X', undef, '' ) if $debug;
+	    delete_chain $chainref;
 	}
     }
 }
@@ -1416,22 +1424,24 @@ sub optimize_chain( $ ) {
 # Delete the references to the passed chain
 #
 sub delete_references( $ ) {
-    my $chainref = shift;
-    my $table    = $chainref->{table};
+    my $toref = shift;
+    my $table    = $toref->{table};
     my $count    = 0;
     my $rule;
 
-    for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
-	purge_jumps ($fromref, $chainref );
+    for my $fromref ( map $chain_table{$table}{$_} , keys %{$toref->{references}} ) {
+	delete_jumps ($fromref, $toref );
     }
 
     if ( $count ) {
-	progress_message "  $count references to empty chain $chainref->{name} deleted";
+	progress_message "  $count references to empty chain $toref->{name} deleted";
     } else {
-	progress_message "  Empty chain $chainref->{name} deleted";
+	progress_message "  Empty chain $toref->{name} deleted";
     }
-
-    assert ( ! $chainref->{referenced} );
+    #
+    # Make sure the above loop found all references
+    #
+    assert ( ! $toref->{referenced} );
 
     $count;
 }
@@ -1481,10 +1491,7 @@ sub replace_references( $$ ) {
 
     progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
-    $chainref->{referenced} = 0;
-    $chainref->{rules}      = [];
-    trace ( $chainref, 'X', undef, '' ) if $debug;
-
+    delete_chain $chainref;
 }
 
 #
@@ -1545,10 +1552,7 @@ sub replace_references1( $$$ ) {
 
     progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
 
-    $chainref->{referenced} = 0;
-    $chainref->{rules}      = [];
-    trace ( $chainref, 'X', undef, '' ) if $debug;
-
+    delete_chain $chainref;
 }
 
 #
@@ -1623,9 +1627,7 @@ sub optimize_ruleset() {
 		# If the chain isn't branched to, then delete it
 		#
 		unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
-		    $chainref->{referenced} = 0;
-		    $chainref->{rules}      = [];
-		    trace ( $chainref, 'X', undef, '' ) if $debug;
+		    delete_chain $chainref;
 		    progress_message "  Unreferenced chain $chainref->{name} deleted";
 		    next;
 		}
@@ -1654,8 +1656,6 @@ sub optimize_ruleset() {
 			#
 			# Chain has a single rule
 			#
-			assert( $firstrule );
-
 			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
 			    #
 			    # Easy case -- the rule is a simple jump

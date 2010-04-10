@@ -731,15 +731,27 @@ sub move_rules( $$ ) {
     my ($chain1, $chain2 ) = @_;
 
     if ( $chain1->{referenced} ) {
-	my $name  = $chain1->{name};
-	my $rules = $chain2->{rules};
-	my $count = @{$chain1->{rules}};
+	my $name1    = $chain1->{name};
+	my $name2    = $chain2->{name};
+	my $rules    = $chain2->{rules};
+	my $count    = @{$chain1->{rules}};
+	my $tableref = $chain_table{$chain1->{table}}; 
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
-	$name =~ s/\+/\\+/;
+	$name1 =~ s/\+/\\+/;
 
-	( s/\-([AI]) $name /-$1 $chain2->{name} / ) for @{$chain1->{rules}};
+	for ( @{$chain1->{rules}} ) {
+	    if ( s/\-([AI]) $name1 /-$1 $name2 / ) {
+		if ( / -[jg] ([^\s]+)\b/ ) {
+		    my $toref =  $tableref->{$1};
+		    if ( $toref && ! $toref->{builtin} ) {
+			delete $toref->{references}{$name1} unless --$toref->{references}{$name1} > 0;
+			$toref->{references}{$name2}++;
+		    }
+		}
+	    }
+	}	    
 
 	if ( $debug ) {
 	    my $rule = @{$chain1->{rules}};

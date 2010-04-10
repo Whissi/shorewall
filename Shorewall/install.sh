@@ -264,6 +264,7 @@ fi
 run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
 perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
+perl -p -w -i -e 's|^STARTUP_LOG=.*|STARTUP_LOG=/var/log/shorewall-lite-init.log' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf

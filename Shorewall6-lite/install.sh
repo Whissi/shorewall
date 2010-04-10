@@ -327,34 +327,37 @@ if [ -z "$PREFIX" ]; then
     ln -s ${DEST}/${INIT} /usr/share/shorewall6-lite/init
 fi
 
-if [ -z "$PREFIX" -a -n "$first_install" ]; then
-    if [ -n "$DEBIAN" ]; then
-	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall6-lite
-	ln -s ../init.d/shorewall6-lite /etc/rcS.d/S40shorewall6-lite
-	echo "Shorewall6 Lite will start automatically at boot"
-	touch /var/log/shorewall-init.log
-    else
-	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-	    if insserv /etc/init.d/shorewall6-lite ; then
-		echo "Shorewall6 Lite will start automatically at boot"
-	    else
+if [ -z "$PREFIX" ]; then
+    touch /var/log/shorewall6-lite-init.log
+
+    if [ -n "$first_install" ]; then
+	if [ -n "$DEBIAN" ]; then
+	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall6-lite
+	    ln -s ../init.d/shorewall6-lite /etc/rcS.d/S40shorewall6-lite
+	    echo "Shorewall6 Lite will start automatically at boot"
+	else
+	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+		if insserv /etc/init.d/shorewall6-lite ; then
+		    echo "Shorewall6 Lite will start automatically at boot"
+		else
+		    cant_autostart
+		fi
+	    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
+		if chkconfig --add shorewall6-lite ; then
+		    echo "Shorewall6 Lite will start automatically in run levels as follows:"
+		    chkconfig --list shorewall6-lite
+		else
+		    cant_autostart
+		fi
+	    elif [ -x /sbin/rc-update ]; then
+		if rc-update add shorewall6-lite default; then
+		    echo "Shorewall6 Lite will start automatically at boot"
+		else
+		    cant_autostart
+		fi
+	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 		cant_autostart
 	    fi
-	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	    if chkconfig --add shorewall6-lite ; then
-		echo "Shorewall6 Lite will start automatically in run levels as follows:"
-		chkconfig --list shorewall6-lite
-	    else
-		cant_autostart
-	    fi
-	elif [ -x /sbin/rc-update ]; then
-	    if rc-update add shorewall6-lite default; then
-		echo "Shorewall6 Lite will start automatically at boot"
-	    else
-		cant_autostart
-	    fi
-	elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
-	    cant_autostart
 	fi
     fi
 fi

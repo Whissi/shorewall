@@ -21,3 +21,19 @@
                                               expected
 
     Corrected in Shorewall 4.4.8.1
+
+4)  With optimize 4, if an unnecessary NONAT rule is included in
+    /etc/shorewall/rules, 'shorewall start' and/or 'shorewall restart'
+    can fail with invalid iptables-restore input.
+
+    Corrected in Shorewall 4.4.8.2
+
+5)  The -lite products are inconsistent in how they referred to their
+    startup log. Some references included '-lite' where some did
+    not. This was particularly bad in the case of the Shorewall-lite
+    logrotate file which duplicated the name used by the Shorewall
+    package. This inconsistency could cause logrotate to fail if both
+    packages were installed.
+
+    Corrected in Shorewall 4.4.8.2
+

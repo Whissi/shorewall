@@ -758,12 +758,12 @@ sub move_rules( $$ ) {
 	    trace( $chain2, 'A', ++$rule, $_ ) for @{$chain1->{rules}};
 	}
 
-	splice @{$rules}, 0, 0, @{$chain1->{rules}};
+	unshift @{$rules}, @{$chain1->{rules}};
 	#
 	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
 	# This hack avoids that.
 	#
-	shift @{$rules} if @{$rules} > 1 && $rules->[0] eq $rules->[1];
+	shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
 
 	$chain2->{referenced} = 1;
 	delete_chain $chain1;

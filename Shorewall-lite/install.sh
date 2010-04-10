@@ -336,34 +336,37 @@ if [ -z "$PREFIX" ]; then
     ln -s ${DEST}/${INIT} /usr/share/shorewall-lite/init
 fi
 
-if [ -z "$PREFIX" -a -n "$first_install" ]; then
-    if [ -n "$DEBIAN" ]; then
-	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall-lite
-	ln -s ../init.d/shorewall-lite /etc/rcS.d/S40shorewall-lite
-	echo "Shorewall Lite will start automatically at boot"
-	touch /var/log/shorewall-init.log
-    else
-	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-	    if insserv /etc/init.d/shorewall-lite ; then
-		echo "Shorewall Lite will start automatically at boot"
-	    else
+if [ -z "$PREFIX" ]; then
+    touch /var/log/shorewall-lite-init.log
+
+    if [ -n "$first_install" ]; then
+	if [ -n "$DEBIAN" ]; then
+	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall-lite
+	    ln -s ../init.d/shorewall-lite /etc/rcS.d/S40shorewall-lite
+	    echo "Shorewall Lite will start automatically at boot"
+	else
+	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+		if insserv /etc/init.d/shorewall-lite ; then
+		    echo "Shorewall Lite will start automatically at boot"
+		else
+		    cant_autostart
+		fi
+	    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
+		if chkconfig --add shorewall-lite ; then
+		    echo "Shorewall Lite will start automatically in run levels as follows:"
+		    chkconfig --list shorewall-lite
+		else
+		    cant_autostart
+		fi
+	    elif [ -x /sbin/rc-update ]; then
+		if rc-update add shorewall-lite default; then
+		    echo "Shorewall Lite will start automatically at boot"
+		else
+		    cant_autostart
+		fi
+	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 		cant_autostart
 	    fi
-	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	    if chkconfig --add shorewall-lite ; then
-		echo "Shorewall Lite will start automatically in run levels as follows:"
-		chkconfig --list shorewall-lite
-	    else
-		cant_autostart
-	    fi
-	elif [ -x /sbin/rc-update ]; then
-	    if rc-update add shorewall-lite default; then
-		echo "Shorewall Lite will start automatically at boot"
-	    else
-		cant_autostart
-	    fi
-	elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
-	    cant_autostart
 	fi
     fi
 fi

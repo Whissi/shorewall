@@ -253,6 +253,13 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     Shorewall6, and Shorewall6-lite. These scripts no longer work and
     should have been removed in 4.4.0.
 
+7)  The -lite products previously were inconsistent in how they
+    referred to their startup log. Some references included '-lite'
+    where some did not. This was particularly bad in the case of the
+    Shorewall-lite logrotate file which duplicated the name used by the
+    Shorewall package. This inconsistency could cause logrotate to
+    fail if both packages were installed.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

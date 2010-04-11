@@ -1464,20 +1464,20 @@ sub delete_references( $ ) {
 #
 sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
-    my $table    = $chainref->{table};
+    my $tableref = $chain_table{$chainref->{table}};
     my $count    = 0;
 
-    if ( defined $chain_table{$table}{$target}  && ! $chain_table{$table}{$target}{builtin} ) {
+    if ( defined $tableref->{$target}  && ! $tableref->{$target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#
-	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
 		    if ( s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
-			add_reference ( $fromref, $chain_table{$table}{$target} );
+			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1488,7 +1488,7 @@ sub replace_references( $$ ) {
 	#
 	# The target is a builtin -- we must use '-j'
 	#
-	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
@@ -1513,16 +1513,16 @@ sub replace_references( $$ ) {
 #
 sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
-    my $table     = $chainref->{table};
+    my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     #
     # Note: If $matches is non-empty, then it begins with white space
     #
-    if ( defined $chain_table{$table}{$target} && ! $chain_table{$table}{$target}{builtin} ) {
+    if ( defined $tableref->{$target} && ! $tableref->{$target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#
-	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
@@ -1533,7 +1533,7 @@ sub replace_references1( $$$ ) {
 			#
 			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
 			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
-			add_reference ( $fromref, $chain_table{$table}{$target} );
+			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1544,7 +1544,7 @@ sub replace_references1( $$$ ) {
 	#
 	# The target is a builtin -- we must use '-j'
 	#
-	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
+	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
 	    my $rule = 0;
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {

@@ -673,23 +673,24 @@ sub add_jump( $$$;$$$ ) {
 #
 sub delete_jumps ( $$ ) {
     my ( $fromref, $toref ) = @_;
-    my $to = $toref->{name};
-    my $last = 0;
-    my $rule;
+    my $to    = $toref->{name};
+    my $from  = $fromref->{name};
+    my $rules = $fromref->{rules};
+    my $refs  = $toref->{references}{$from};
     #
     # A C-style for-loop with indexing seems to work best here, given that we are
     # deleting elements from the array over which we are iterating.
     #
-    for ( $rule = 0; $rule <= $#{$fromref->{rules}}; $rule++ ) {
-	if (  $fromref->{rules}[$rule] =~ / -[gj] ${to}\b/ ) {
+    for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
+	if (  $rules->[$rule] =~ / -[gj] ${to}\b/ ) {
 	    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
-	    splice(  @{$fromref->{rules}}, $rule, 1 );
-	    last unless --$toref->{references}{$fromref->{name}} > 0;
+	    splice(  @$rules, $rule, 1 );
+	    last unless --$refs > 0;
 	    $rule--;
 	}
     }
 
-    delete $toref->{references}{$fromref->{name}};
+    delete $toref->{references}{$from};
 
     unless ( @{$toref->{rules}} ) {
 	$toref->{referenced} = 0;

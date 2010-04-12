@@ -1386,6 +1386,7 @@ sub replace_references( $$ ) {
 			add_reference( $fromref, $chain_table{$table}{$target} );
 			$count++;
 		    }
+		}
 	    }
 	}
     } else {

@@ -1621,125 +1621,160 @@ sub optimize_ruleset() {
 
 	my $progress = 1;
 	my $passes   = 0;
-	#
-	# Make repeated passes through each table looking for short chains (those with less than 2 entries)
-	#
-	# When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
-	# When an empty chain is found, delete the references to it.
-	# When a chain with a single entry is found, replace it's references by its contents
-	#
-	# The search continues until no short chains remain
-	# Chains with 'dont_optimize = 1' are exempted from optimization
-	#
-	while ( $progress ) {
-	    $progress = 0;
-	    $passes++;
 
-	    for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-		#
-		# If the chain isn't branched to, then delete it
-		#
-		unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
-		    delete_chain $chainref;
-		    progress_message "  Unreferenced chain $chainref->{name} deleted";
-		    next;
-		}
+	if ( $config{OPTIMIZE} & 4 ) {
+	    #
+	    # Make repeated passes through each table looking for short chains (those with less than 2 entries)
+	    #
+	    # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
+	    # When an empty chain is found, delete the references to it.
+	    # When a chain with a single entry is found, replace it's references by its contents
+	    #
+	    # The search continues until no short chains remain
+	    # Chains with 'dont_optimize = 1' are exempted from optimization
+	    #
+	    while ( $progress ) {
+		$progress = 0;
+		$passes++;
 
-		unless ( $chainref->{dont_optimize} ) {
-		    my $numrules = @{$chainref->{rules}};
-
-		    if ( $numrules == 0 ) {
-			#
-			# No rules in this chain
-			#
-			if ( $chainref->{builtin} ) {
+		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+		    #
+		    # If the chain isn't branched to, then delete it
+		    #
+		    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
+			delete_chain $chainref;
+			progress_message "  Unreferenced chain $chainref->{name} deleted";
+			next;
+		    }
+		    
+		    unless ( $chainref->{dont_optimize} ) {
+			my $numrules = @{$chainref->{rules}};
+			
+			if ( $numrules == 0 ) {
 			    #
-			    # Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
-			    #
-			    $chainref->{dont_optimize} = 1;
-			} else {
-			    #
-			    # Not a built-in -- we can delete it and it's references
-			    #
-			    delete_references $chainref;
-			    $progress = 1;
-			}
-		    } elsif ( $numrules == 1 ) {
-			my $firstrule = $chainref->{rules}[0];
-			#
-			# Chain has a single rule
-			#
-			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
-			    #
-			    # Easy case -- the rule is a simple jump
+			    # No rules in this chain
 			    #
 			    if ( $chainref->{builtin} ) {
 				#
-				# A built-in chain. If the target is a user chain without 'dont_move',
-				# we can move its rules to the built-in
-				#
-				if ( conditionally_move_rules $chainref, $1 ) {
-				    #
-				    # Target was a user chain -- rules moved
-				    #
-				    $progress = 1;
-				} else {
-				    #
-				    # Target was a built-in. Ignore this chain in follow-on passes
-				    #
-				    $chainref->{dont_optimize} = 1;
-				}
-			    } else {
-				#
-				# Replace all references to this chain with references to the target
-				#
-				replace_references $chainref, $1;
-				$progress = 1;
-			    }
-			} elsif ( $firstrule =~ /-A $chainref->{name}( +.+) -[jg] (.*)$/ ) {
-			    #
-			    # Not so easy -- the rule contains matches
-			    #
-			    if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
-				#
-				# This case requires a new rule merging algorithm. Ignore this chain for
-				# now.
+				# Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
 				#
 				$chainref->{dont_optimize} = 1;
 			    } else {
 				#
-				# Replace references to this chain with the target and add the predicates
+				# Not a built-in -- we can delete it and it's references
 				#
-				replace_references1 $chainref, $2, $1;
+				delete_references $chainref;
 				$progress = 1;
+			    }
+			} elsif ( $numrules == 1 ) {
+			    my $firstrule = $chainref->{rules}[0];
+			    #
+			    # Chain has a single rule
+			    #
+			    if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+				#
+				# Easy case -- the rule is a simple jump
+				#
+				if ( $chainref->{builtin} ) {
+				    #
+				    # A built-in chain. If the target is a user chain without 'dont_move',
+				    # we can move its rules to the built-in
+				    #
+				    if ( conditionally_move_rules $chainref, $1 ) {
+					#
+					# Target was a user chain -- rules moved
+					#
+					$progress = 1;
+				    } else {
+					#
+					# Target was a built-in. Ignore this chain in follow-on passes
+					#
+					$chainref->{dont_optimize} = 1;
+				    }
+				} else {
+				    #
+				    # Replace all references to this chain with references to the target
+				    #
+				    replace_references $chainref, $1;
+				    $progress = 1;
+				}
+			    } elsif ( $firstrule =~ /-A $chainref->{name}( +.+) -[jg] (.*)$/ ) {
+				#
+				# Not so easy -- the rule contains matches
+				#
+				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
+				    #
+				    # This case requires a new rule merging algorithm. Ignore this chain for
+				    # now.
+				    #
+				    $chainref->{dont_optimize} = 1;
+				} else {
+				    #
+				    # Replace references to this chain with the target and add the predicates
+				    #
+				    replace_references1 $chainref, $2, $1;
+				    $progress = 1;
+				}
 			    }
 			}
 		    }
 		}
 	    }
-	}
-	
-	#
-	# In this loop, we look for chains that end in an unconditional jump. If the target of the jump
-	# is subject to deletion (dont_delete = false), the jump is replaced by target's rules.
-	#
-	$progress = 1;
-
-	while ( $progress ) {
-	    $progress = 0;
-	    $passes++;
-
-	    for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-		my $lastrule = $chainref->{rules}[-1];
-
-		if ( defined $lastrule && $lastrule  =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
-		    #
-		    # Last rule is a simple branch
-		    my $targetref = $chain_table{$table}{$1};
+	    
+	    #
+	    # In this loop, we look for chains that end in an unconditional jump. If the target of the jump
+	    # is subject to deletion (dont_delete = false), the jump is replaced by target's rules.
+	    #
+	    $progress = 1;
+	    
+	    while ( $progress ) {
+		$progress = 0;
+		$passes++;
+		
+		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+		    my $lastrule = $chainref->{rules}[-1];
 		    
-		    if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
-			copy_rules( $targetref, $chainref );
-			$progress = 1;
+		    if ( defined $lastrule && $lastrule  =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+			#
+			# Last rule is a simple branch
+			my $targetref = $chain_table{$table}{$1};
+			
+			if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
+			    copy_rules( $targetref, $chainref );
+			    $progress = 1;
+			}
+		    }
+		}
+	    }
+	}
+
+	if ( $config{OPTIMIZE} & 8 ) {
+	    #
+	    # Now delete duplicate chains
+	    #
+	    $progress = 1;
+
+	    while ( $progress ) {
+		$progress = 0;
+		$passes++;
+		
+		for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
+		    my $rules = $chainref->{rules};
+		  CHAIN:
+		    for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+			next if $chainref->{name} eq $chainref1->{name};
+			my $rules1 = $chainref1->{rules};
+			next if @$rules != @$rules1;
+			next if $chainref1->{dont_delete};
+			next if $chainref1->{builtin};
+			
+			for ( my $i = 0; $i <= $#$rules; $i++ ) {
+			    my $rule  = $rules->[$i];
+			    $rule =~ s/^-A $chainref->{name} /-A $chainref1->{name} /;
+			    next CHAIN unless $rule eq $rules1->[$i];
+			}
+			
+			replace_references $chainref1, $chainref->{name};
 		    }
 		}
 	    }

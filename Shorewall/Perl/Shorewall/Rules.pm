@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_8';
+our $VERSION = '4.4_9';
 
 #
 # Set to one if we find a SECTION
@@ -666,10 +666,10 @@ sub add_common_rules() {
 		if ( interface_is_optional $interface ) {
 		    add_commands( $chainref,
 				  qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
-				  qq(    echo -A $chainref->{name} ) . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) ,
+				  '    echo -A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) ,
 				  qq(fi) );
 		} else {
-		    add_commands( $chainref, qq(echo -A $chainref->{name} ) . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) );
+		    add_commands( $chainref, 'echo -A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) );
 		}
 	    }
 	}
@@ -826,8 +826,8 @@ sub setup_mac_lists( $ ) {
 		    if ( have_capability( 'ADDRTYPE' ) ) {
 			add_commands( $chainref,
 				      "for address in $variable; do",
-				      "    echo \"-A $chainref->{name} -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
-				      "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
+				      "    echo \"-A -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
+				      "    echo \"-A -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
 				      'done' );
 		    } else {
 			my $bridge    = source_port_to_bridge( $interface );
@@ -839,19 +839,19 @@ sub setup_mac_lists( $ ) {
 			if ( $bridgeref->{broadcasts} ) {
 			    for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
 				add_commands( $chainref ,
-					      "    echo \"-A $chainref->{name} -s \$address -d $address -j RETURN\" >&3" );
+					      "    echo \"-A -s \$address -d $address -j RETURN\" >&3" );
 			    }
 			} else {
 			    my $variable1 = get_interface_bcasts $bridge;
 
 			    add_commands( $chainref,
 					  "    for address1 in $variable1; do" ,
-					  "        echo \"-A $chainref->{name} -s \$address -d \$address1 -j RETURN\" >&3",
+					  "        echo \"-A -s \$address -d \$address1 -j RETURN\" >&3",
 					  "    done" );
 			}
 
 			add_commands( $chainref
-				      , "    echo \"-A $chainref->{name} -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" ,
+				      , "    echo \"-A -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" ,
 				      , 'done' );
 		    }
 		}

@@ -467,7 +467,7 @@ sub add_commands ( $$;@ ) {
 
 sub push_rule( $$ ) {
     my $chainref = $_[0];
-    my $rule     = join( ' ',  '-A',  $chainref->{name} , $_[1]);
+    my $rule     = join( ' ',  '-A' , $_[1]);
 
     $rule .= qq( -m comment --comment "$comment") if $comment;
 
@@ -608,7 +608,7 @@ sub insert_rule1($$$)
     assert( ! $chainref->{cmdlevel});
 
     $rule .= "-m comment --comment \"$comment\"" if $comment;
-    $rule  = join( ' ', '-A', $chainref->{name}, $rule );
+    $rule  = join( ' ', '-A', $rule );
 
     splice( @{$chainref->{rules}}, $number, 0, $rule );
 
@@ -683,7 +683,7 @@ sub delete_jumps ( $$ ) {
     #
     for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
 	if (  $rules->[$rule] =~ / -[gj] ${to}\b/ ) {
-	    trace( $fromref, 'D', $rule + 1, $_ ) if $debug;
+	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
 	    splice(  @$rules, $rule, 1 );
 	    last unless --$refs > 0;
 	    $rule--;
@@ -1466,6 +1466,9 @@ sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
     my $tableref = $chain_table{$chainref->{table}};
     my $count    = 0;
+    my $name     = $chainref->{name};
+
+    $name =~ s/\+/\\+/;
 
     if ( defined $tableref->{$target}  && ! $tableref->{$target}{builtin} ) {
 	#
@@ -1476,7 +1479,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
+		    if ( s/ -([jg]) $name(\b)/ -$1 ${target}$2/ ) {
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1493,7 +1496,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ ) {
+		    if ( s/ -[jg] $name(\b)/ -j ${target}$1/ ) {
 			$count++ ;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1515,6 +1518,9 @@ sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
+    my $name     = $chainref->{name};
+
+    $name =~ s/\+/\\+/;
     #
     # Note: If $matches is non-empty, then it begins with white space
     #
@@ -1527,12 +1533,12 @@ sub replace_references1( $$$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+		    if ( /^-A .*-[jg] $name\b/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
 			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
-			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
+			s/\s+-([jg]) $name(\b)/$matches -$1 ${target}$2/;
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1549,12 +1555,12 @@ sub replace_references1( $$$ ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
+		    if ( /^-A .*-[jg] $name\b/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
 			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
-			s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
+			s/\s+-[jg] $name(\b)/$matches -j ${target}$1/;
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1671,7 +1677,7 @@ sub optimize_ruleset() {
 			    #
 			    # Chain has a single rule
 			    #
-			    if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+			    if ( $firstrule =~ /^-A -[jg] (.*)$/ ) {
 				#
 				# Easy case -- the rule is a simple jump
 				#
@@ -1698,7 +1704,7 @@ sub optimize_ruleset() {
 				    replace_references $chainref, $1;
 				    $progress = 1;
 				}
-			    } elsif ( $firstrule =~ /-A $chainref->{name}( +.+) -[jg] (.*)$/ ) {
+			    } elsif ( $firstrule =~ /-A(.+) -[jg] (.*)$/ ) {
 				#
 				# Not so easy -- the rule contains matches
 				#
@@ -1734,7 +1740,7 @@ sub optimize_ruleset() {
 		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
 		    my $lastrule = $chainref->{rules}[-1];
 		    
-		    if ( defined $lastrule && $lastrule  =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+		    if ( defined $lastrule && $lastrule  =~ /^-A -[jg] (.*)$/ ) {
 			#
 			# Last rule is a simple branch
 			my $targetref = $chain_table{$table}{$1};
@@ -1764,14 +1770,13 @@ sub optimize_ruleset() {
 		    for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
 			next if $chainref->{name} eq $chainref1->{name};
 			my $rules1 = $chainref1->{rules};
-			next if @$rules != @$rules1;
+			next if @$rules != @$rules1 || ! @$rules;
 			next if $chainref1->{dont_delete};
 			next if $chainref1->{builtin};
 			
 			for ( my $i = 0; $i <= $#$rules; $i++ ) {
 			    my $rule  = $rules->[$i];
-			    $rule =~ s/^-A $chainref->{name} /-A $chainref1->{name} /;
-			    next CHAIN unless $rule eq $rules1->[$i];
+			    next CHAIN unless $rules->[$i] eq $rules1->[$i];
 			}
 			
 			replace_references $chainref1, $chainref->{name};
@@ -3493,12 +3498,19 @@ sub enter_cmd_mode() {
 #
 # Emits the passed rule (input to iptables-restore) or command
 #
-sub emitr( $ ) {
-    if ( my $rule = $_[0] ) {
+sub emitr( $$ ) {
+    my ( $chain, $rule ) = @_;
+
+    assert( $chain );
+
+    if ( $rule ) {
+	my $replaced = ($rule =~ s/( ?)-A /$1-A $chain /);
+
 	if ( substr( $rule, 0, 2 ) eq '-A' ) {
 	    #
 	    # A rule
 	    #
+	    assert( $replaced);
 	    enter_cat_mode unless $mode == CAT_MODE;
 	    emit_unindented $rule;
 	} else {
@@ -3525,8 +3537,12 @@ sub enter_cmd_mode1() {
     $mode = CMD_MODE;
 }
 
-sub emitr1( $ ) {
-    if ( my $rule = $_[0] ) {
+sub emitr1( $$ ) {
+    my ( $chain, $rule ) = @_;
+
+    if ( $rule ) {
+	$rule =~ s/( ?)-A /$1-A $chain /;
+
 	if ( substr( $rule, 0, 2 ) eq '-A' ) {
 	    #
 	    # A rule
@@ -3617,7 +3633,8 @@ sub create_netfilter_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr $_ for @{$chainref->{rules}};
+	    my $name = $chainref->{name};
+	    emitr( $name, $_ ) for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
@@ -3699,7 +3716,8 @@ sub preview_netfilter_load() {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emitr1 $_ for @{$chainref->{rules}};
+	    my $name = $chainref->{name};
+	    emitr1($name, $_ ) for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
@@ -3789,12 +3807,13 @@ sub create_chainlist_reload($) {
 	    for my $chain ( @chains ) {
 		my $chainref = $tableref->{$chain};
 		my @rules = @{$chainref->{rules}};
+		my $name = $chainref->{name};
 
 		@rules = () unless @rules;
 		#
 		# Emit the chain rules
 		#
-		emitr $_ for @rules;
+		emitr($name, $_) for @rules;
 	    }
 	    #
 	    # Commit the changes to the table
@@ -3862,6 +3881,8 @@ sub create_stop_load( $ ) {
 	   '',
 	   '$command <<__EOF__' );
 
+    $mode = CAT_MODE;
+
     unless ( $test ) {
 	my $date = localtime;
 	emit_unindented '#';
@@ -3899,7 +3920,8 @@ sub create_stop_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    emit_unindented $_ for @{$chainref->{rules}};
+	    my $name = $chainref->{name};
+	    emitr( $name, $_ ) for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table

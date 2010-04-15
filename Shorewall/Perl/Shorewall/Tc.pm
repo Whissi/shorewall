@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_8';
+our $VERSION = '4.4_9';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -1374,7 +1374,7 @@ sub setup_tc() {
 		# This is overloading TRACK_PROVIDERS a bit but sending tracked packets through PREROUTING is a PITA for users
 		#
 		for my $interface ( @routemarked_interfaces ) {
-		    add_rule $mangle_table->{PREROUTING} , match_source_dev( $interface ) . "-j tcpre";
+		    add_jump $mangle_table->{PREROUTING} , 'tcpre', 1, match_source_dev( $interface );
 		}
 	    }
 	}

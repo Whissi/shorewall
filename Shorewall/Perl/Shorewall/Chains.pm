@@ -744,13 +744,11 @@ sub move_rules( $$ ) {
 	$name1 =~ s/\+/\\+/;
 
 	for ( @{$chain1->{rules}} ) {
-	    if ( s/\-([AI]) $name1 /-$1 $name2 / ) {
-		if ( / -[jg] ([^\s]+)\b/ ) {
-		    my $toref =  $tableref->{$1};
-		    if ( $toref && ! $toref->{builtin} ) {
-			delete $toref->{references}{$name1} unless --$toref->{references}{$name1} > 0;
-			$toref->{references}{$name2}++;
-		    }
+	    if ( / -[jg] ([^\s]+)\b/ ) {
+		my $toref =  $tableref->{$1};
+		if ( $toref ) {
+		    delete $toref->{references}{$name1} unless --$toref->{references}{$name1} > 0;
+		    $toref->{references}{$name2}++;
 		}
 	    }
 	}	    
@@ -787,6 +785,7 @@ sub copy_rules( $$ ) {
     my @rules     = @{$chain1->{rules}};
     my $rules     = $chain2->{rules};
     my $count     = @{$chain1->{rules}};
+    my $tableref  = $chain_table{$chain1->{table}};
     #
     # We allow '+' in chain names and '+' is an RE meta-character. Escape it.
     #
@@ -800,6 +799,16 @@ sub copy_rules( $$ ) {
 	my $rule = @$rules;
 	trace( $chain2, 'A', ++$rule, $_ ) for @rules;
     }
+
+    for ( @rules ) {
+	if ( / -[jg] ([^\s]+)\b/ ) {
+	    my $toref =  $tableref->{$1};
+	    if ( $toref ) {
+		delete $toref->{references}{$name1} unless --$toref->{references}{$name1} > 0;
+		$toref->{references}{$name2}++;
+	    }
+	}
+    }	    	
 
     push @$rules, @rules;
     #
@@ -1487,6 +1496,8 @@ sub replace_references( $$ ) {
 		}    
 	    }
 	}
+
+	delete $tableref->{target}{references}{$chainref->{name}};
     } else {
 	#
 	# The target is a builtin -- we must use '-j'
@@ -1546,6 +1557,8 @@ sub replace_references1( $$$ ) {
 		}
 	    }
 	}
+
+	delete $tableref->{target}{references}{$chainref->{name}};
     } else {
 	#
 	# The target is a builtin -- we must use '-j'
@@ -1568,6 +1581,8 @@ sub replace_references1( $$$ ) {
 	    }
 	}
     }
+
+    
 
     progress_message "  $count references to chain $chainref->{name} replaced" if $count;
 
@@ -1777,7 +1792,7 @@ sub optimize_ruleset() {
 			    next CHAIN unless $rules->[$i] eq $rules1->[$i];
 			}
 			
-			replace_references $chainref1, $chainref->{name};
+			replace_references1 $chainref1, $chainref->{name}, '';
 		    }
 		}
 	    }

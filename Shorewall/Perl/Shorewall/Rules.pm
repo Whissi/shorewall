@@ -773,12 +773,12 @@ sub setup_mac_lists( $ ) {
 			my $source = match_source_net $address;
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 			    if defined $level && $level ne '';
-			add_rule $chainref , "${mac}${source}-j $targetref->{target}";
+			add_jump $chainref , $targetref->{target}, 0, "${mac}${source} ";
 		    }
 		} else {
 		    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			if defined $level && $level ne '';
-		    add_rule $chainref , "$mac-j $targetref->{target}";
+		    add_jump $chainref , $targetref->{target}, 0, "$mac ";
 		}
 
 		progress_message "      Maclist entry \"$currentline\" $done";

@@ -1386,9 +1386,6 @@ sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
     my $table    = $chainref->{table};
     my $count    = 0;
-    my $name     = $chainref->{name};
-
-    $name =~ s/\+/\\+/;
 
     if ( defined $chain_table{$table}{$target}  && ! $chain_table{$table}{$target}{builtin} ) {
 	#
@@ -1397,7 +1394,7 @@ sub replace_references( $$ ) {
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
-		    if ( defined && s/ -([jg]) $name(\b)/ -$1 ${target}$2/ ) {
+		    if ( defined && s/ -([jg]) $chainref->{name}(\b)/ -$1 ${target}$2/ ) {
 			add_reference( $fromref, $chain_table{$table}{$target} );
 			$count++;
 		    }
@@ -1410,7 +1407,7 @@ sub replace_references( $$ ) {
 	#
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
-		defined && s/ -[jg] $name(\b)/ -j ${target}$1/ && $count++ for @{$fromref->{rules}};
+		defined && s/ -[jg] $chainref->{name}(\b)/ -j ${target}$1/ && $count++ for @{$fromref->{rules}};
 	    }
 	}
     }
@@ -1428,9 +1425,6 @@ sub replace_references1( $$$ ) {
     my ( $chainref, $target, $matches ) = @_;
     my $table    = $chainref->{table};
     my $count    = 0;
-    my $name     = $chainref->{name};
-
-    $name =~ s/\+/\\+/;
     #
     # Note: If $matches is non-empty, then it begins with white space
     #
@@ -1441,12 +1435,12 @@ sub replace_references1( $$$ ) {
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
-		    if ( defined && /^-A $name .*-[jg] $chainref->{name}\b/ ) {
+		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
-			s/\s+-([jg]) $name(\b)/$matches -$1 ${target}$2/;
+			s/\s+-([jg]) $chainref->{name}(\b)/$matches -$1 ${target}$2/;
 			add_reference( $fromref, $chain_table{$table}{$target} );
 			$count++;
 		    }
@@ -1460,12 +1454,12 @@ sub replace_references1( $$$ ) {
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
-		    if ( defined && /^-A $name .*-[jg] $chainref->{name}\b/ ) {
+		    if ( defined && /^-A $fromref->{name} .*-[jg] $chainref->{name}\b/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
 			s/ -p [^ ]+ / /	if / -p / && $matches =~ / -p /;
-			s/\s+-[jg] $name(\b)/$matches -j ${target}$1/;
+			s/\s+-[jg] $chainref->{name}(\b)/$matches -j ${target}$1/;
 			$count++;
 		    }
 		}

@@ -709,6 +709,7 @@ sub delete_chain( $ ) {
     $chainref->{rules}      = [];
     $chainref->{references} = {};
     trace( $chainref, 'X', undef, '' ) if $debug;
+    progress_message "  Chain $chainref->{name} deleted";
 }
 
 #
@@ -812,7 +813,6 @@ sub copy_rules( $$ ) {
 	delete $chain1->{references}{$name2};
 	unless ( keys %{$chain1->{references}} ) {
 	    delete_chain $chain1;
-	    progress_message "  Unreferenced chain $name1 deleted";
 	}    
     }
 }
@@ -1505,7 +1505,7 @@ sub replace_references( $$ ) {
 	}
     }
 
-    progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
+    progress_message "  $count references to chain $chainref->{name} replaced" if $count;
 
     delete_chain $chainref;
 }
@@ -1569,7 +1569,7 @@ sub replace_references1( $$$ ) {
 	}
     }
 
-    progress_message "  $count references to 1-rule chain $chainref->{name} replaced" if $count;
+    progress_message "  $count references to chain $chainref->{name} replaced" if $count;
 
     delete_chain $chainref;
 }
@@ -1649,7 +1649,6 @@ sub optimize_ruleset() {
 		    #
 		    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
 			delete_chain $chainref;
-			progress_message "  Unreferenced chain $chainref->{name} deleted";
 			next;
 		    }
 		    
@@ -1766,16 +1765,15 @@ sub optimize_ruleset() {
 		
 		for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
 		    my $rules = $chainref->{rules};
+		    next if not @$rules;
 		  CHAIN:
 		    for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
 			next if $chainref->{name} eq $chainref1->{name};
 			my $rules1 = $chainref1->{rules};
-			next if @$rules != @$rules1 || ! @$rules;
+			next if @$rules != @$rules1;
 			next if $chainref1->{dont_delete};
-			next if $chainref1->{builtin};
 			
 			for ( my $i = 0; $i <= $#$rules; $i++ ) {
-			    my $rule  = $rules->[$i];
 			    next CHAIN unless $rules->[$i] eq $rules1->[$i];
 			}
 			

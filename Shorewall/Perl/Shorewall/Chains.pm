@@ -1440,8 +1440,12 @@ sub replace_references1( $$$ ) {
 	#
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
+		my $fromname = $fromref->{name};
+		
+		$fromname =~ s/\+/\\+/;
+		
 		for ( @{$fromref->{rules}} ) {
-		    if ( defined && /^-A $name .*-[jg] $chainref->{name}\b/ ) {
+		    if ( defined && /^-A $fromname .*-[jg] $name\b/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
@@ -1459,8 +1463,12 @@ sub replace_references1( $$$ ) {
 	#
 	for my $fromref ( map $chain_table{$table}{$_} , keys %{$chainref->{references}} ) {
 	    if ( $fromref->{referenced} ) {
+		my $fromname = $fromref->{name};
+		
+		$fromname =~ s/\+/\\+/;
+		
 		for ( @{$fromref->{rules}} ) {
-		    if ( defined && /^-A $name .*-[jg] $chainref->{name}\b/ ) {
+		    if ( defined && /^-A $fromname .*-[jg] $name\b/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
@@ -1593,7 +1601,11 @@ sub optimize_ruleset() {
 			#
 			# Chain has a single non-nil rule which is in $firstrule
 			#
-			if ( $firstrule =~ /^-A $chainref->{name} -[jg] (.*)$/ ) {
+			my $name = $chainref->{name};
+
+			$name =~ s/\+/\\+/;
+
+			if ( $firstrule =~ /^-A $name -[jg] (.*)$/ ) {
 			    #
 			    # Easy case -- the rule is a simple jump
 			    #
@@ -1620,7 +1632,7 @@ sub optimize_ruleset() {
 				replace_references $chainref, $1;
 				$progress = 1;
 			    }
-			} elsif ( $firstrule =~ /-A $chainref->{name}( +.+) -[jg] (.*)$/ ) {
+			} elsif ( $firstrule =~ /-A $name( +.+) -[jg] (.*)$/ ) {
 			    #
 			    # Not so easy -- the rule contains matches
 			    #

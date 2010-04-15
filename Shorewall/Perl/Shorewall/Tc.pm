@@ -1374,7 +1374,7 @@ sub setup_tc() {
 		# This is overloading TRACK_PROVIDERS a bit but sending tracked packets through PREROUTING is a PITA for users
 		#
 		for my $interface ( @routemarked_interfaces ) {
-		    add_jump $mangle_table->{PREROUTING} , 'tcpre', 1, match_source_dev( $interface );
+		    add_jump $mangle_table->{PREROUTING} , 'tcpre', 0, match_source_dev( $interface );
 		}
 	    }
 	}

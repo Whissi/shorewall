@@ -266,6 +266,11 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     ending in '+') and would likely also result in invalid
     iptables-restore input.
 
+9)  Previously, Shorewall would set up infrastructure to handle traffic
+    from the firewall to bport zones. Such infrastructure could never
+    be used. Now, Shorewall avoids setting up these unneeded chains
+    and/or rules.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

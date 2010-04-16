@@ -1783,7 +1783,7 @@ sub optimize_ruleset() {
 		    next if not @$rules;
 		  CHAIN:
 		    for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-			next if $chainref->{name} eq $chainref1->{name};
+			next if $chainref eq $chainref1;
 			my $rules1 = $chainref1->{rules};
 			next if @$rules != @$rules1;
 			next if $chainref1->{dont_delete};

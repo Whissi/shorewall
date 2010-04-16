@@ -1777,7 +1777,7 @@ sub optimize_ruleset() {
 	    while ( $progress ) {
 		$progress = 0;
 		$passes++;
-		
+
 		for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
 		    my $rules = $chainref->{rules};
 		    next if not @$rules;
@@ -1791,7 +1791,7 @@ sub optimize_ruleset() {
 			for ( my $i = 0; $i <= $#$rules; $i++ ) {
 			    next CHAIN unless $rules->[$i] eq $rules1->[$i];
 			}
-			
+
 			replace_references1 $chainref1, $chainref->{name}, '';
 			$progress = 1;
 		    }

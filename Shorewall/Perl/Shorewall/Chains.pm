@@ -1793,6 +1793,7 @@ sub optimize_ruleset() {
 			}
 			
 			replace_references1 $chainref1, $chainref->{name}, '';
+			$progress = 1;
 		    }
 		}
 	    }

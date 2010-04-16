@@ -682,7 +682,7 @@ sub delete_jumps ( $$ ) {
     # deleting elements from the array over which we are iterating.
     #
     for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
-	if (  $rules->[$rule] =~ / -[gj] ${to}\b/ ) {
+	if (  $rules->[$rule] =~ / -[gj] ${to}\s*$/ ) {
 	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
 	    splice(  @$rules, $rule, 1 );
 	    last unless --$refs > 0;
@@ -756,7 +756,7 @@ sub move_rules( $$ ) {
 	$name1 =~ s/\+/\\+/;
 
 	for ( @{$chain1->{rules}} ) {
-	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)\b/;
+	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
 	}	    
 
 	if ( $debug ) {
@@ -807,7 +807,7 @@ sub copy_rules( $$ ) {
     }
 
     for ( @rules ) {
-	adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)\b/;
+	adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
     }
 
     push @$rules, @rules;
@@ -3088,7 +3088,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Mark Target as referenced, if it's a chain
     #
-    if ( $target =~ /-[jg]\s+([^\s]+)\b/ ) {
+    if ( $target =~ /-[jg]\s+([^\s]+)/ ) {
 	my $targetref = $chain_table{$chainref->{table}}{$1};
 	if ( $targetref ) {
 	    $targetref->{referenced} = 1; 

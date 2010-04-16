@@ -1649,16 +1649,16 @@ sub rules_target( $$ ) {
     
     return $chain   if $chainref && $chainref->{referenced};
     return 'ACCEPT' if $zone eq $zone1;
-    
+
     assert( $chainref );
-    
+
     if ( $chainref->{policy} ne 'CONTINUE' ) {
 	my $policyref = $filter_table->{$chainref->{policychain}};
 	assert( $policyref );
 	return $policyref->{name} if $policyref ne $chainref;
 	return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
     }
-    
+
     ''; # CONTINUE policy
 }
 
@@ -1862,7 +1862,7 @@ sub generate_matrix() {
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $dest   = match_dest_net $net;
 
-			if ( $chain1 ) {
+			if ( $chain1 && zone_type ( $zone) != BPORT ) {
 			    my $chain1ref = $filter_table->{$chain1};
 			    my $nextchain = dest_exclusion( $exclusions, $chain1 );
 			    my $outputref;

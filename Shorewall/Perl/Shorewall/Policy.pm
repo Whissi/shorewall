@@ -329,7 +329,8 @@ sub validate_policy()
     }
 
     for $zone ( all_zones ) {
-	push @policy_chains, ( new_policy_chain $zone, $zone, 'ACCEPT', PROVISIONAL );
+	push @policy_chains, ( new_policy_chain $zone,         $zone, 'ACCEPT', PROVISIONAL );
+	push @policy_chains, ( new_policy_chain firewall_zone, $zone, 'NONE',   PROVISIONAL ) if zone_type( $zone ) == BPORT;
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{find_zone( $zone )->{parents}} ) ) {
 	    for my $zone1 ( all_zones ) {

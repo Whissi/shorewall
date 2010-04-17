@@ -64,16 +64,6 @@
       UPnP<emphasis> </emphasis> <emphasis role="bold">AT YOUR OWN
       RISK.</emphasis></para>
     </warning>
-
-    <warning>
-      <para>The linux-igd project was inactive for a long time and has just
-      been resurrected. I haven't tried to build using the current code (as of
-      2006-07-22) but the last time I did, I found that building and
-      installing linux-igd was not for the faint of heart. You must download
-      the source from CVS and I had to do quite a bit of fiddling with the
-      include files from libupnp (which is required to build and/or run
-      linux-igd).</para>
-    </warning>
   </section>
 
   <section id="linux-igd">
@@ -97,25 +87,6 @@ forward_chain_name = forwardUPnP</programlisting>
     <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 net     eth1            detect          dhcp,routefilter,tcpflags,<emphasis
         role="bold">upnp</emphasis></programlisting>
-
-    <para>If your fw-&gt;loc policy is not ACCEPT then you need this
-    rule:</para>
-
-    <programlisting>#ACTION            SOURCE  DEST
-allowoutUPnP       $FW     loc</programlisting>
-
-    <note>
-      <para>To use 'allowoutUPnP', your iptables and kernel must support the
-      'owner match' feature (see the output of "shorewall show capabilities")
-      and you may not be running kernel version 2.6.14 or later. If you are
-      running 2.6.14 or later, then replace the above rule with:</para>
-    </note>
-
-    <blockquote>
-      <programlisting>#ACTION            SOURCE  DEST   PROTO     DEST PORT(S)     SOURCE     ORIGINAL     RATE     USER/
-#                                                            PORT(S)    DESTINATION  LIMIT    GROUP
-ACCEPT             $FW     loc    all       -                -          -            -        root</programlisting>
-    </blockquote>
 
     <para>If your loc-&gt;fw policy is not ACCEPT then you need this
     rule:</para>
@@ -143,15 +114,19 @@ forwardUPnP        net     loc</programlisting>
     <title>Shorewall on a UPnP Client</title>
 
     <para>It is sometimes desirable to run UPnP-enabled client programs like
-    Transmission (BitTorrent client) on a Shorewall-protected system.
-    Shorewall provides support for UPnP client access in the form of the
-    <emphasis role="bold">upnpclient</emphasis> option in <ulink
+    <ulink url="http://www.transmissionbt.com/">Transmission</ulink>
+    (BitTorrent client) on a Shorewall-protected system. Shorewall provides
+    support for UPnP client access in the form of the <emphasis
+    role="bold">upnpclient</emphasis> option in <ulink
     url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
     (5).</para>
 
     <para>The <emphasis role="bold">upnpclient</emphasis> option causes
     Shorewall to detect the default gateway through the interface and to
     accept UDP packets from that gateway. Note that, like all aspects of UPnP,
-    this is a security hole so use this option at your own risk. </para>
+    this is a security hole so use this option at your own risk.</para>
+
+    <para>Note that when multiple clients behind the firewall use UPnP, they
+    must configure their applications to use unique ports.</para>
   </section>
 </article>

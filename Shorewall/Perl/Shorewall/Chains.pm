@@ -1772,29 +1772,23 @@ sub optimize_ruleset() {
 	    #
 	    # Now delete duplicate chains
 	    #
-	    $progress = 1;
+	    $passes++;
 
-	    while ( $progress ) {
-		$progress = 0;
-		$passes++;
-
-		for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
-		    my $rules = $chainref->{rules};
-		    next if not @$rules;
-		  CHAIN:
-		    for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-			next if $chainref eq $chainref1;
-			my $rules1 = $chainref1->{rules};
-			next if @$rules != @$rules1;
-			next if $chainref1->{dont_delete};
-			
-			for ( my $i = 0; $i <= $#$rules; $i++ ) {
-			    next CHAIN unless $rules->[$i] eq $rules1->[$i];
-			}
-
-			replace_references1 $chainref1, $chainref->{name}, '';
-			$progress = 1;
+	    for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
+		my $rules = $chainref->{rules};
+		next if not @$rules;
+	      CHAIN:
+		for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
+		    next if $chainref eq $chainref1;
+		    my $rules1 = $chainref1->{rules};
+		    next if @$rules != @$rules1;
+		    next if $chainref1->{dont_delete};
+		    
+		    for ( my $i = 0; $i <= $#$rules; $i++ ) {
+			next CHAIN unless $rules->[$i] eq $rules1->[$i];
 		    }
+		    
+		    replace_references1 $chainref1, $chainref->{name}, '';
 		}
 	    }
 	}

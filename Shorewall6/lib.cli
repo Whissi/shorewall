@@ -140,6 +140,15 @@ packet_log() # $1 = number of messages
     fi
 }
 
+search_log() # $1 = IP address to search for
+{
+    if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
+	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+    else
+	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
+    fi
+}    
+
 #
 # Show traffic control information
 #
@@ -447,12 +456,17 @@ show_command() {
 	    $IP6TABLES -t raw -L $g_ipt_options
 	    ;;
 	log)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 2 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION Log ($LOGFILE) at $g_hostname - $(date)"
 	    echo
 	    show_reset
 	    host=$(echo $g_hostname | sed 's/\..*$//')
-	    packet_log 20
+
+	    if [ $# -eq 2 ]; then
+		search_log $2
+	    else
+		packet_log 20
+	    fi
 	    ;;
 	tc)
 	    [ $# -gt 2 ] && usage 1

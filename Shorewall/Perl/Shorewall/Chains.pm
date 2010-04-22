@@ -1416,9 +1416,15 @@ sub optimize_chain( $ ) {
 
 	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT\b/;
 
-	if ( @${rules} || $chainref->{dont_delete} ) {
+	if ( @${rules} ) {
 	    add_rule $chainref, '-j ACCEPT';
-	    progress_message "  $count ACCEPT rules deleted from policy chain $chainref->{name}" if $count;
+	    my $type = $chainref->{builtin} ? 'builtin' : 'policy';
+	    progress_message "  $count ACCEPT rules deleted from $type chain $chainref->{name}" if $count;
+	} elsif ( $chainref->{builtin} ) {
+	    $chainref->{policy} = 'ACCEPT';
+	    trace( $chainref, 'P', undef, 'ACCEPT' );
+	    $count++;
+	    progress_message "  $count ACCEPT rules deleted from builtin chain $chainref->{name}";
 	} else {
 	    #
 	    # The chain is now empty -- change all references to ACCEPT

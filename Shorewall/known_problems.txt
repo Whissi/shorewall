@@ -1,3 +1,5 @@
+Known problems in Shorewall 4.4.8
+
 1)  Logical interface names in the EXTERNAL column of
     /etc/shorewall/proxyarp were previously not mapped to their
     corresponding physical interface names. This could cause 'start' or
@@ -37,3 +39,24 @@
 
     Corrected in Shorewall 4.4.8.2
 
+6)  Wildcard interface names (those ending in '+') can result in
+    iptables-restore failure with optimize 4.
+
+    Corrected in Shorewall 4.4.8.3
+
+7)  Invalid iptables-restore input involving the 'tcpre'
+    mangle chain is possible with optimize 4.
+
+    Corrected in Shorewall 4.4.8.3
+
+8)  A couple of fixes to the 4.4.8.2 change for startup log naming are
+    included. The main symptom occurred on Debian systems where perl
+    reported that /etc/shorewall.conf did not exist.
+
+    Corrected in Shorewall 4.4.8.3
+
+9)  If OPTIMIZE 2 and there are no OUTPUT rules and the only effective
+    output policy is $FW->all ACCEPT, then the OUTPUT chain is empty
+    and no packets can be sent.
+
+    Corrected in Shorewall 4.4.8.4

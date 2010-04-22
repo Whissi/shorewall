@@ -1414,7 +1414,7 @@ sub optimize_chain( $ ) {
     
 	pop @$rules; # Pop the plain -j ACCEPT rule at the end of the chain 
 
-	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT\b/;
+	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT(?:$|\s)/;
 
 	if ( @${rules} ) {
 	    add_rule $chainref, '-j ACCEPT';
@@ -1435,7 +1435,7 @@ sub optimize_chain( $ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -[jg] $chainref->{name}$/ -j ACCEPT/ ) {
+		    if ( s/ -[jg] $chainref->{name}(\s|$)/ -j ACCEPT$1/ ) {
 			$count++;
 			trace( $chainref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1494,7 +1494,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -([jg]) $name(\b)/ -$1 ${target}$2/ ) {
+		    if ( s/ -([jg]) $name($|\s)/ -$1 ${target}$2/ ) {
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1513,7 +1513,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -[jg] $name(\b)/ -j ${target}$1/ ) {
+		    if ( s/ -[jg] $name($|\s)/ -j ${target}$1/ ) {
 			$count++ ;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1550,12 +1550,12 @@ sub replace_references1( $$$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( /^-A .*-[jg] $name\b/ ) {
+		    if ( /^-A .*-[jg] $name(?:$|\s)/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
 			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
-			s/\s+-([jg]) $name(\b)/$matches -$1 ${target}$2/;
+			s/\s+-([jg]) $name($|\s)/$matches -$1 ${target}$2/;
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1574,12 +1574,12 @@ sub replace_references1( $$$ ) {
 	    if ( $fromref->{referenced} ) {
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( /^-A .*-[jg] $name\b/ ) {
+		    if ( /^-A .*-[jg] $name(?:$|\s)/ ) {
 			#
 			# Prevent multiple '-p' matches
 			#
 			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
-			s/\s+-[jg] $name(\b)/$matches -j ${target}$1/;
+			s/\s+-[jg] $name($|\s)/$matches -j ${target}$1/;
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }

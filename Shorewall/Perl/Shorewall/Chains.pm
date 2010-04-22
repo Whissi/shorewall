@@ -1416,7 +1416,7 @@ sub optimize_chain( $ ) {
 
 	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT\b/;
 
-	if ( @${rules} ) {
+	if ( @${rules} || $chainref->{dont_delete} ) {
 	    add_rule $chainref, '-j ACCEPT';
 	    progress_message "  $count ACCEPT rules deleted from policy chain $chainref->{name}" if $count;
 	} else {

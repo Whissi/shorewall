@@ -271,6 +271,10 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     be used. Now, Shorewall avoids setting up these unneeded chains
     and/or rules.
 
+10) If optimization level 2 and there were no OUTPUT rules and the only
+    effective output policy was $FW->all ACCEPT, then the OUTPUT chain
+    was empty and no packets could be sent.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

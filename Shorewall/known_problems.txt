@@ -60,3 +60,25 @@ Known problems in Shorewall 4.4.8
     and no packets can be sent.
 
     Corrected in Shorewall 4.4.8.4
+
+10) If find_first_interface_address() is called in the params file, a
+    startup error occurs.
+
+    Workaround 1:
+
+    Surround the code that calls find_first_interface_address() with:
+
+    if [ -n "$IP" ]; then
+    
+	<code that calls find_first_interface_address()>
+
+    fi
+
+    Workaround 2:
+
+    At the top of /etc/shorewall/params, place this line:
+
+    [ -n "${IP:=$(which ip)" ]
+
+    Corrected in Shorewall 4.4.8.4
+

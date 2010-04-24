@@ -39,8 +39,6 @@ get_config() {
     ensure_config_path
 
     if [ "$1" = Yes ]; then
-	[ -n "${IP:=ip}" ]
-
 	params=$(find_file params)
 
 	if [ -f $params ]; then

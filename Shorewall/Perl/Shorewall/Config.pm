@@ -340,7 +340,7 @@ sub initialize( $ ) {
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
 		    UNTRACKED => 0,
-		    VERSION => "4.4.9-Beta4",
+		    VERSION => "4.4.9-Beta5",
 		    CAPVERSION => 40408 ,
 		  );
 

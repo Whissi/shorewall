@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>6to4 Tunnels</title>
+    <title>6to4 and 6in4 Tunnels</title>
 
     <authorgroup>
       <author>
@@ -505,6 +505,141 @@ Ping(ACCEPT)     all             all
 </programlisting></para>
       </blockquote>
     </section>
+  </section>
+
+  <section id="SixInFour">
+    <title>6in4 Tunnel</title>
+
+    <para>6in4 is very similar to 6to4:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Both Tunnel IPv6 traffic over IPv4 using Protocol 41</para>
+      </listitem>
+
+      <listitem>
+        <para>Both allow you access to the IPv6 network even though your ISP
+        doesn't offer native IPv6 connectivity.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The differences are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>6in4 gives you a /64 prefix outside of the 2002::0/16
+        network</para>
+      </listitem>
+
+      <listitem>
+        <para>You have a dedicated fixed endpoint for the tunnel rather than
+        the nebulous anycast endpoint 192.88.99.1. This is:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Much more reliable</para>
+          </listitem>
+
+          <listitem>
+            <para>Much easier to troubleshoot (there is ONE host and one
+            company to call on the other end of the tunnel rather than an
+            indefinite cloud with noone in charge)</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <para>I converted to a 6in4 Tunnel from <ulink
+    url="http://tunnelbroker.net/">Hurricane Electric</ulink> in April of
+    2010. Converting from the 6to4 tunnel configuration above to a 6in4 tunnel
+    from HE took less than an hour.</para>
+
+    <para>When I signed up for a tunnel with HE, I received these
+    assignments:</para>
+
+    <blockquote>
+      <para>Server IPv4 address: 216.218.226.238</para>
+
+      <para>Server IPv6 address: 2001:470:a:227::1/64</para>
+
+      <para>Client IPv4 address: 206.124.146.180 (Same as the 6to4
+      tunnel)</para>
+
+      <para>Client IPv6 address: 2001:470:a:227::2/64 </para>
+    </blockquote>
+
+    <para>I also took advantage of their offer for a /48 prefix routed via
+    2001:470:a:227::2. The prefix I was assigned is</para>
+
+    <blockquote>
+      <para>2001:470:e857::/48</para>
+    </blockquote>
+
+    <para>Here are the key changes:</para>
+
+    <para><filename>/etc/network/interfaces:</filename></para>
+
+    <programlisting>iface eth1 inet6 static
+        address <emphasis role="bold">2001:470:e857:1::1</emphasis>
+        netmask 64 
+
+auto eth2
+...
+iface eth2 inet6 static
+      address 2<emphasis role="bold">001:470:e857:2::1</emphasis>
+      netmask 64
+
+auto sit1
+iface sit1 inet6 v4tunnel
+      address <emphasis role="bold">2001:470:a:227::2</emphasis>
+      netmask 64
+      endpoint <emphasis role="bold">216.218.226.238 </emphasis>
+      local 206.124.146.180
+      gateway <emphasis role="bold">2001:470:a:227::1</emphasis>
+      post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding
+
+</programlisting>
+
+    <para><filename>/etc/radvd.conf (I'm currently not using RDNSS so I've
+    simply commented out the existing entries)</filename>:</para>
+
+    <programlisting>interface eth1 { 
+        AdvSendAdvert on;
+        MinRtrAdvInterval 60; 
+        MaxRtrAdvInterval 600;
+        AdvDefaultLifetime 9000;
+        prefix <emphasis role="bold">2001:470:e857:1</emphasis>::/64 {
+                AdvOnLink on; 
+                AdvAutonomous on; 
+                AdvRouterAddr off; 
+        };
+        
+        route ::/0 {
+                AdvRouteLifetime infinity;
+        };
+        
+<emphasis role="bold">#       RDNSS 2002:ce7c:92b4:2:221:5aff:fe22:ace0 {
+#                AdvRDNSSOpen on;
+#                AdvRDNSSPreference 2;
+#        };</emphasis>
+};
+
+interface eth2 { 
+        AdvSendAdvert on;
+        MinRtrAdvInterval 60; 
+        MaxRtrAdvInterval 600;
+        prefix <emphasis role="bold">2001:470:e857:2</emphasis>::/64 {
+                AdvOnLink on; 
+                AdvAutonomous on; 
+                AdvRouterAddr off; 
+        };
+
+<emphasis role="bold">#       RDNSS 2002:ce7c:92b4:2:221:5aff:fe22:ace0 {
+#              AdvRDNSSOpen on;
+#               AdvRDNSSPreference 2;
+#        };         </emphasis>  
+};
+</programlisting>
   </section>
 
   <section id="Tunnel6to4">

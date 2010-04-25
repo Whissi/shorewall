@@ -1537,7 +1537,8 @@ determine_capabilities() {
 	exit 1
     fi
 
-    if ! qt $IPTABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT; then
+    if ! qt $IPTABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
+       ! qt $IPTABLES -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
 	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- Shorewall will not run on this system" >&2
 	exit 1
     fi

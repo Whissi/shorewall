@@ -283,7 +283,7 @@ sub setup_blacklist() {
 	    warning_message q(There are interfaces or hosts with the 'blacklist' option, but the 'blacklist' file is either missing or has zero size);
 	}
 
-	my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
+	my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
 
 	for my $hostref ( @$hosts ) {
 	    my $interface  = $hostref->[0];
@@ -431,7 +431,7 @@ sub add_common_rules() {
     my $list;
     my $chain;
 
-    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : '-m state --state NEW,INVALID ' : '';
+    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
     my $level     = $config{BLACKLIST_LOGLEVEL};
     my $rejectref = dont_move new_standard_chain 'reject';
 
@@ -445,7 +445,7 @@ sub add_common_rules() {
     setup_mss;
 
     if ( $config{FASTACCEPT} ) {
-	add_rule( $filter_table->{$_} , "-m state --state ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
+	add_rule( $filter_table->{$_} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
     }
 
     for $interface ( all_interfaces ) {
@@ -517,7 +517,7 @@ sub add_common_rules() {
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( first_chains $interface ) {
-		add_jump $filter_table->{$chain} , $target, 0, join( '', "-m state --state $state ", match_source_net( $hostref->[2] ),  $policy );
+		add_jump $filter_table->{$chain} , $target, 0, join( '', "$globals{STATEMATCH} $state ", match_source_net( $hostref->[2] ),  $policy );
 	    }
 
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -801,14 +801,14 @@ sub setup_mac_lists( $ ) {
 		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );
 
 		for my $chain ( first_chains $interface ) {
-		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}-m state --state ${state} ${policy}";
+		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}$globals{STATEMATCH} ${state} ${policy}";
 		}
 
 		set_interface_option $interface, 'use_input_chain', 1;
 		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
 		my $chainref = source_exclusion( $hostref->[3], $mangle_table->{mac_chain $interface} );
-		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}-m state --state ${state} ${policy}";
+		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}$globals{STATEMATCH} ${state} ${policy}";
 	    }
 	}
     } else {
@@ -1212,7 +1212,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     unless ( $section eq 'NEW' ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
-	$rule .= "-m state --state $section "
+	$rule .= "$globals{STATEMATCH} $section "
     }
 
     #
@@ -2144,7 +2144,7 @@ sub generate_matrix() {
 		    '' ,
 		    '' ,
 		    'insert' ,
-		    '-m state --state NEW ';
+		    "$globals{STATEMATCH} NEW ";
 	    }
 	}
     }
@@ -2332,7 +2332,7 @@ EOF
 
     my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;
 
-    add_rule $filter_table->{$_}, '-m state --state ESTABLISHED,RELATED -j ACCEPT' for @chains;
+    add_rule $filter_table->{$_}, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" for @chains;
 
     if ( $family == F_IPV6 ) {
 	add_rule $input, '-s ff80::/10 -j ACCEPT';

@@ -339,6 +339,7 @@ sub initialize( $ ) {
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
+		    STATEMATCH => '-m state --state',
 		    UNTRACKED => 0,
 		    VERSION => "4.4.9-RC1",
 		    CAPVERSION => 40408 ,
@@ -2502,7 +2503,10 @@ sub determine_capabilities() {
     qt1( "$iptables -N $sillyname1" );
 
     fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
-	unless qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");
+	unless 
+	    qt1( "$iptables -A $sillyname -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT") ||
+	    qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");;
+	    
   
     unless ( $config{ LOAD_HELPERS_ONLY } ) {
 	#
@@ -2811,6 +2815,8 @@ sub get_configuration( $ ) {
     default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 
     get_capabilities( $export );
+
+    $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 
     if ( $config{LOGRATE} || $config{LOGBURST} ) {
 	if ( defined $config{LOGRATE} ) {

@@ -1358,7 +1358,7 @@ sub finish_chain_section ($$) {
 
     $comment = '';
 
-    add_rule $chainref, "-m state --state $state -j ACCEPT" unless $config{FASTACCEPT};
+    add_rule $chainref, "$globals{STATEMATCH} $state -j ACCEPT" unless $config{FASTACCEPT};
 
     if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {

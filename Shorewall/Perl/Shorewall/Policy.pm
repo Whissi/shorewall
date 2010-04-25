@@ -467,7 +467,7 @@ sub apply_policy_rules() {
 sub complete_standard_chain ( $$$$ ) {
     my ( $stdchainref, $zone, $zone2, $default ) = @_;
 
-    add_rule $stdchainref, '-m state --state ESTABLISHED,RELATED -j ACCEPT' unless $config{FASTACCEPT};
+    add_rule $stdchainref, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" unless $config{FASTACCEPT};
 
     run_user_exit $stdchainref;
 

@@ -201,6 +201,8 @@ sub process_one_masq( )
 
 	my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
 
+	dont_optimize $chainref unless $interfaceref->{name};
+
 	my $detectaddress = 0;
 	my $exceptionrule = '';
 	my $randomize     = '';
@@ -390,8 +392,12 @@ sub do_one_nat( $$$$$ )
 	add_nat_rule 'nat_in' ,  "-d $external $policyin  -j DNAT --to-destination $internal";
 	add_nat_rule 'nat_out' , "-s $internal $policyout -j SNAT --to-source $external";
     } else {
-	add_nat_rule input_chain( $interface ) ,  $rulein  . "-d $external $policyin -j DNAT --to-destination $internal";
-	add_nat_rule output_chain( $interface ) , $ruleout . "-s $internal $policyout -j SNAT --to-source $external";
+	my $chainref = input_chain( $interface );
+	dont_optimize $chainref if $rulein;
+	add_nat_rule $chainref ,  $rulein  . "-d $external $policyin -j DNAT --to-destination $internal";
+	$chainref = output_chain( $interface );
+	dont_optimize $chainref if $ruleout;
+	add_nat_rule $chainref , $ruleout . "-s $internal $policyout -j SNAT --to-source $external";
     }
 
     add_nat_rule 'OUTPUT' , "-d $external $policyout -j DNAT --to-destination $internal " if $localnat;
@@ -466,11 +472,11 @@ sub setup_netmap() {
 
 	    if ( $type eq 'DNAT' ) {
 		my $chainref =  ensure_chain( 'nat' , input_chain $interface );
-		dont_optimize $chainref unless $interfaceref->{root};
+		dont_optimize $chainref if $rulein;
 		add_rule $chainref , $rulein  . "-d $net1 -j NETMAP --to $net2";
 	    } elsif ( $type eq 'SNAT' ) {
 		my $chainref =  ensure_chain( 'nat' , output_chain $interface );
-		dont_optimize $chainref unless $interfaceref->{root};
+		dont_optimize $chainref if $ruleout;
 		add_rule $chainref , $ruleout . "-s $net1 -j NETMAP --to $net2";
 	    } else {
 		fatal_error "Invalid type ($type)";

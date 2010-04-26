@@ -456,7 +456,7 @@ sub setup_netmap() {
 	    my $ruleout = '';
 	    my $iface = $interface;
 
-	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = find_interface( $interface );
+	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 	    unless ( $interfaceref->{root} ) {
 		$rulein  = match_source_dev $interface;
@@ -465,9 +465,13 @@ sub setup_netmap() {
 	    }
 
 	    if ( $type eq 'DNAT' ) {
-		add_rule ensure_chain( 'nat' , input_chain $interface )  , $rulein  . "-d $net1 -j NETMAP --to $net2";
+		my $chainref =  ensure_chain( 'nat' , input_chain $interface );
+		dont_optimize $chainref unless $interfaceref->{root};
+		add_rule $chainref , $rulein  . "-d $net1 -j NETMAP --to $net2";
 	    } elsif ( $type eq 'SNAT' ) {
-		add_rule ensure_chain( 'nat' , output_chain $interface ) , $ruleout . "-s $net1 -j NETMAP --to $net2";
+		my $chainref =  ensure_chain( 'nat' , output_chain $interface );
+		dont_optimize $chainref unless $interfaceref->{root};
+		add_rule $chainref , $ruleout . "-s $net1 -j NETMAP --to $net2";
 	    } else {
 		fatal_error "Invalid type ($type)";
 	    }

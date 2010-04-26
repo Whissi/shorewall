@@ -278,6 +278,22 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 11) If find_first_interface_address() was called in the params file, a
     fatal error occured on start/restart.
 
+12) The following valid configuration produced invalid
+    iptables-restore input:
+
+    /etc/shorewall/shorewall.conf: OPTIMIZE=8
+
+    /etc/shorewall/interfaces:
+
+    #ZONE      INTERFACE       BROADCAST      OPTIONS
+    vpn	       TUN+	       -	      tun+
+
+    /etc/shorewall/netmap:
+
+    #TYPE	NET1		INTEFACE	NET2
+    SNAT	1.2.3.0/24	TUN0		3.4.5.0/24
+    DNAT	3.4.5.0/24	TUN0		1.2.3.0/24
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

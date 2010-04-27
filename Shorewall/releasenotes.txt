@@ -367,6 +367,25 @@ None.
     searches the current LOGFILE for Netfilter messages matching the
     supplied regex.
 
+6)  There are some instances where a bridge with no IP address is
+    configured. Prior to Shorewall 4.4.9, this required the following:
+
+    /etc/shorewall/interfaces:
+    #ZONE	INTERFACE	BROADCAST	OPTIONS
+    dummy	br0		-		routeback
+    
+    /etc/shorewall/policy:
+    #SOURCE	DEST		POLICY
+    dummy	all		NONE
+    all		dummy		NONE
+
+    Beginning in this release, a single entry will suffice:
+
+    /etc/shorewall/interfaces:
+    #ZONE	INTERFACE	BROADCAST	OPTIONS
+    -		br0		-		routeback
+
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

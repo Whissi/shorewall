@@ -332,6 +332,8 @@ ping-timer-rem
 persist-tun
 persist-key
 
+push "route 192.168.1.0 255.255.255.0"
+
 verb 3</programlisting>
     </blockquote>
 
@@ -429,6 +431,71 @@ verb 3</programlisting>
         url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>.</para>
       </listitem>
     </orderedlist>
+  </section>
+
+  <section id="Dupnet">
+    <title>Roadwarrior with Duplicate Network Issue</title>
+
+    <para>The information in this section was contributed by Nicola
+    Moretti.</para>
+
+    <para>If your local lan uses a popular RFC 1918 network like
+    192.168.1.0/24, there will be times when your roadwarriors need to access
+    your lan from a remote location that uses that same network.</para>
+
+    <graphic align="center" fileref="images/Mobile1.png" />
+
+    <para>This may be accomplished by configuring a second server on your
+    firewall that uses a different port and by using <ulink
+    url="netmap.html">NETMAP</ulink> in your Shorewall configuration. The
+    server configuration in the above diagram is modified as shown
+    here:</para>
+
+    <blockquote>
+      <programlisting>dev tun
+
+<emphasis role="bold">server 192.168.3.0 255.255.255.0</emphasis>
+
+dh dh1024.pem
+
+ca /etc/certs/cacert.pem
+
+crl-verify /etc/certs/crl.pem
+
+cert /etc/certs/SystemA.pem
+key /etc/certs/SystemA_key.pem
+
+<emphasis role="bold">port 1195</emphasis>
+
+comp-lzo
+
+user nobody
+
+group nogroup
+
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+
+<emphasis role="bold">push "route 172.20.1.0 255.255.255.0"</emphasis>
+
+verb 3</programlisting>
+    </blockquote>
+
+    <para>In <filename>/etc/shorewall/netmap</filename>, put these
+    entries:</para>
+
+    <blockquote>
+      <programlisting>#TYPE	NET1			INTERFACE	NET2
+SNAT	192.168.1.0/24		tun1		172.20.1.0/24
+DNAT	172.20.1.0/24		tun1		192.168.1.0/24	
+</programlisting>
+    </blockquote>
+
+    <para>The roadwarrior can now connect to port 1195 and access the lan on
+    the right as 172.20.1.0/24.</para>
   </section>
 
   <section>

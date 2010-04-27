@@ -223,7 +223,7 @@ sub initialize( $ ) {
 				  nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  optional    => SIMPLE_IF_OPTION,
 				  proxyarp    => BINARY_IF_OPTION,
-				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
 				  routefilter => NUMERIC_IF_OPTION ,
 				  sourceroute => BINARY_IF_OPTION,
 				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -251,7 +251,7 @@ sub initialize( $ ) {
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    optional    => SIMPLE_IF_OPTION,
 				    proxyndp    => BINARY_IF_OPTION,
-				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
 				    sourceroute => BINARY_IF_OPTION,
 				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    mss         => NUMERIC_IF_OPTION,
@@ -663,7 +663,7 @@ sub add_group_to_zone($$$$$)
 	push @$new, $host;
     }
 
-    $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback} || $interfaces{$interface}{options}{routeback};
+    $zoneref->{options}{in_out}{routeback} = 1 if $options->{routeback};
 
     my $gtype = $type == IPSEC ? 'ipsec' : 'ip';
 

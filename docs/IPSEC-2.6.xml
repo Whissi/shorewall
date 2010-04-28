@@ -796,7 +796,7 @@ all             all             REJECT          info
     on the firewall that must be accessible to road warriors. The reason for
     the second step is that the policy does not by default allow unrestricted
     access to the firewall itself. Finally, you should protect an exploit
-    where an attacker can exploit your LT2P server do to a hole in the way
+    where an attacker can exploit your LT2P server due to a hole in the way
     that L2TP interacts with UDP connection tracking.</para>
 
     <blockquote>
@@ -806,7 +806,7 @@ all             all             REJECT          info
 #                                       PORT(S) PORT(S)
 SECTION ESTABLISHED
 # Prevent IPSEC bypass by hosts behind a NAT gateway
-L2TP/(REJECT)   net     $FW
+L2TP(REJECT)    net     $FW
 REJECT          $FW     net     udp     -       1701
 # l2tp over the IPsec VPN
 ACCEPT          vpn     $FW     udp     1701

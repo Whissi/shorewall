@@ -404,9 +404,7 @@ sub process_zone( \$ ) {
     if ( $type eq IPSEC ) {
 	require_capability 'POLICY_MATCH' , 'IPSEC zones', '';
 	for ( @parents ) {
-	    unless ( $zones{$_}{type} == IPSEC ) {
-		set_super( $zones{$_} );
-	    }
+	    set_super( $zones{$_} ) unless $zones{$_}{type} == IPSEC;
 	}
     }
 
@@ -420,7 +418,7 @@ sub process_zone( \$ ) {
 		      options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 				      in      => parse_zone_option_list( $in_options || '', $type ) ,
 				      out     => parse_zone_option_list( $out_options || '', $type ) ,
-				      complex => ($type == IPSEC || $options || $in_options || $out_options ? 1 : 0) ,
+				      complex => ( $type == IPSEC || $options || $in_options || $out_options ) ,
 				      nested  => @parents > 0 ,
 				      super   => 0 ,
 				    } ,

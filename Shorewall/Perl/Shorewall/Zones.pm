@@ -408,17 +408,13 @@ sub process_zone( \$ ) {
 	}
     }
 
-    for ( $options, $in_options, $out_options ) {
-	$_ = '' if $_ eq '-';
-    }
-
     $zones{$zone} = { type       => $type,
 		      parents    => \@parents,
 		      bridge     => '',
 		      options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
 				      in      => parse_zone_option_list( $in_options || '', $type ) ,
 				      out     => parse_zone_option_list( $out_options || '', $type ) ,
-				      complex => ( $type == IPSEC || $options || $in_options || $out_options ) ,
+				      complex => ( $type == IPSEC || $options ne '-' || $in_options ne '-' || $out_options ne '-' ) ,
 				      nested  => @parents > 0 ,
 				      super   => 0 ,
 				    } ,
@@ -1024,7 +1020,7 @@ sub map_physical( $$ ) {
 #
 # Returns true if passed interface matches an entry in /etc/shorewall/interfaces
 #
-# If the passed name matches a wildcard, a entry for the name is added in %interfaces to speed up validation of other references to that name.
+# If the passed name matches a wildcard, an entry for the name is added in %interfaces to speed up validation of other references to that name.
 #
 sub known_interface($)
 {

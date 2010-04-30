@@ -1096,6 +1096,8 @@ sub dont_optimize( $ ) {
 
     $chainref->{dont_optimize} = 1;
 
+    trace( $chainref, '!O', undef, '' );
+
     $chainref;
 }
 
@@ -1109,6 +1111,8 @@ sub dont_delete( $ ) {
 
     $chainref->{dont_optimize} = $chainref->{dont_delete} = 1;
 
+    trace( $chainref, '!OD', undef, '' );
+
     $chainref;
 }
 
@@ -1121,6 +1125,8 @@ sub dont_move( $ ) {
     my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
 
     $chainref->{dont_move} = 1;
+
+    trace( $chainref, '!M', undef, '' );
 
     $chainref;
 }

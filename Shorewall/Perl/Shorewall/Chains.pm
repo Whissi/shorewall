@@ -1096,7 +1096,7 @@ sub dont_optimize( $ ) {
 
     $chainref->{dont_optimize} = 1;
 
-    trace( $chainref, '!O', undef, '' );
+    trace( $chainref, '!O', undef, '' ) if $debug;
 
     $chainref;
 }
@@ -1111,7 +1111,7 @@ sub dont_delete( $ ) {
 
     $chainref->{dont_optimize} = $chainref->{dont_delete} = 1;
 
-    trace( $chainref, '!OD', undef, '' );
+    trace( $chainref, '!OD', undef, '' ) if $debug;
 
     $chainref;
 }
@@ -1126,7 +1126,7 @@ sub dont_move( $ ) {
 
     $chainref->{dont_move} = 1;
 
-    trace( $chainref, '!M', undef, '' );
+    trace( $chainref, '!M', undef, '' ) if $debug;
 
     $chainref;
 }
@@ -1542,6 +1542,11 @@ sub replace_references1( $$$ ) {
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     my $name     = $chainref->{name};
+    my $hasp     = $matches =~ / -p /;
+    my $hasi     = $matches =~ / -i /;
+    my $haso     = $matches =~ / -o /;
+    my $hass     = $matches =~ / -s /;
+    my $hasd     = $matches =~ / -d /;
 
     $name =~ s/\+/\\+/;
     #
@@ -1558,9 +1563,13 @@ sub replace_references1( $$$ ) {
 		    $rule++;
 		    if ( /^-A .*-[jg] $name(?:$|\s)/ ) {
 			#
-			# Prevent multiple '-p' matches
+			# Prevent multiple '-p', '-i', '-o', '-s' and '-d' matches
 			#
-			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
+			s/ -p [^ ]+ / / if $hasp;
+			s/ -i [^ ]+ / / if $hasi;
+			s/ -o [^ ]+ / / if $haso;
+			s/ -s [^ ]+ / / if $hass;
+			s/ -d [^ ]+ / / if $hasd;
 			s/\s+-([jg]) $name($|\s)/$matches -$1 ${target}$2/;
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
@@ -1582,9 +1591,13 @@ sub replace_references1( $$$ ) {
 		    $rule++;
 		    if ( /^-A .*-[jg] $name(?:$|\s)/ ) {
 			#
-			# Prevent multiple '-p' matches
+			# Prevent multiple '-p', '-i', '-o', '-s' and '-d' matches
 			#
-			s/ -p [^ ]+ / / if / -p / && $matches =~ / -p /;
+			s/ -p [^ ]+ / / if $hasp;
+			s/ -i [^ ]+ / / if $hasi;
+			s/ -o [^ ]+ / / if $haso;
+			s/ -s [^ ]+ / / if $hass;
+			s/ -d [^ ]+ / / if $hasd;
 			s/\s+-[jg] $name($|\s)/$matches -j ${target}$1/;
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1734,7 +1747,9 @@ sub optimize_ruleset() {
 				#
 				# Not so easy -- the rule contains matches
 				#
-				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
+				my ($target, $matches ) = ( $1, $2 );
+
+				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' || $matches =~ /! -[piosd] / ) {
 				    #
 				    # This case requires a new rule merging algorithm. Ignore this chain for
 				    # now.
@@ -1744,7 +1759,7 @@ sub optimize_ruleset() {
 				    #
 				    # Replace references to this chain with the target and add the predicates
 				    #
-				    replace_references1 $chainref, $2, $1;
+				    replace_references1 $chainref, $matches, $target;
 				    $progress = 1;
 				}
 			    }

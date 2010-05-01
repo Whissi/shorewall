@@ -197,6 +197,29 @@ ACCEPT    loc        net      tcp      www</programlisting>
 
       <para>The last rule may be omitted if your loc-&gt;net policy is
       ACCEPT.</para>
+
+      <para>In some cases (when running an LTSP server on the Shorewall
+      system), you might want to transparently proxy web connections that
+      originate on the firewall itself. This requires care to ensure that
+      Squid's own web connections are not proxied.</para>
+
+      <para>First, determine the user id that Squid is running under:</para>
+
+      <programlisting>gateway:/etc/shorewall# <emphasis role="bold">ps aux | fgrep -i squid | fgrep -v fgrep</emphasis>
+root     10085  0.0  0.0  23864   700 ?        Ss   Apr22   0:00 /usr/sbin/squid -D -YC
+<emphasis role="bold">proxy</emphasis>    10088  0.0  0.9  40512 19192 ?        S    Apr22  10:58 <emphasis
+          role="bold">(squid)</emphasis> -D -YC
+gateway:/etc/shorewall# </programlisting>
+
+      <para>In this case, the proxy process <emphasis
+      role="bold">(squid)</emphasis> is running under the <emphasis
+      role="bold">proxy</emphasis> user Id. We add these rules:</para>
+
+      <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL          RATE       USER/
+#                                                       PORT(S)    DEST              LIMIT      GROUP
+ACCEPT    $FW        net      tcp      www
+REDIRECT  $FW        3128     tcp      www              -          -                 -         <emphasis
+          role="bold"> !proxy</emphasis></programlisting>
     </section>
 
     <section id="Local">

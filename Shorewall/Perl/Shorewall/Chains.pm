@@ -1752,9 +1752,9 @@ sub optimize_ruleset() {
 				#
 				# Not so easy -- the rule contains matches
 				#
-				my ($target, $matches ) = ( $1, $2 );
+				my ($matches, $target ) = ( $1, $2 );
 
-				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' || $matches =~ /! -[piosd] / ) {
+				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' || ( defined( $chain_table{$chainref->{table}}{$target} ) && $matches =~ /! -[piosd] / ) ) {
 				    #
 				    # This case requires a new rule merging algorithm. Ignore this chain for
 				    # now.
@@ -1762,9 +1762,9 @@ sub optimize_ruleset() {
 				    $chainref->{dont_optimize} = 1;
 				} else {
 				    #
-				    # Replace references to this chain with the target and add the predicates
+				    # Replace references to this chain with the target and add the matches
 				    #
-				    replace_references1 $chainref, $matches, $target;
+				    replace_references1 $chainref, $target, $matches;
 				    $progress = 1;
 				}
 			    }

@@ -1565,11 +1565,11 @@ sub replace_references1( $$$ ) {
 			#
 			# Prevent multiple '-p', '-i', '-o', '-s' and '-d' matches
 			#
-			s/ -p [^ ]+ / / if $hasp;
-			s/ -i [^ ]+ / / if $hasi;
-			s/ -o [^ ]+ / / if $haso;
-			s/ -s [^ ]+ / / if $hass;
-			s/ -d [^ ]+ / / if $hasd;
+			s/( !)? -p [^ ]+ / / if $hasp;
+			s/( !)? -i [^ ]+ / / if $hasi;
+			s/( !)? -o [^ ]+ / / if $haso;
+			s/( !)? -s [^ ]+ / / if $hass;
+			s/( !)? -d [^ ]+ / / if $hasd;
 			s/\s+-([jg]) $name($|\s)/$matches -$1 ${target}$2/;
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
@@ -1593,11 +1593,11 @@ sub replace_references1( $$$ ) {
 			#
 			# Prevent multiple '-p', '-i', '-o', '-s' and '-d' matches
 			#
-			s/ -p [^ ]+ / / if $hasp;
-			s/ -i [^ ]+ / / if $hasi;
-			s/ -o [^ ]+ / / if $haso;
-			s/ -s [^ ]+ / / if $hass;
-			s/ -d [^ ]+ / / if $hasd;
+			s/( !)? -p [^ ]+ / / if $hasp;
+			s/( !)? -i [^ ]+ / / if $hasi;
+			s/( !)? -o [^ ]+ / / if $haso;
+			s/( !)? -s [^ ]+ / / if $hass;
+			s/( !)? -d [^ ]+ / / if $hasd;
 			s/\s+-[jg] $name($|\s)/$matches -j ${target}$1/;
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;

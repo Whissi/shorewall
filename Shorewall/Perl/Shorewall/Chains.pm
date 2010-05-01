@@ -659,6 +659,8 @@ sub add_jump( $$$;$$$ ) {
 
     my $param = $goto_ok && $toref && have_capability( 'GOTO_TARGET' ) ? 'g' : 'j';
 
+    $fromref->{dont_optimize} = 1 if $predicate =~ /! -[piosd] /;
+
     if ( defined $index ) {
 	assert( ! $expandports );
 	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ));
@@ -1752,9 +1754,7 @@ sub optimize_ruleset() {
 				#
 				# Not so easy -- the rule contains matches
 				#
-				my ($matches, $target ) = ( $1, $2 );
-
-				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' || ( defined( $chain_table{$chainref->{table}}{$target} ) && $matches =~ /! -[piosd] / ) ) {
+				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
 				    #
 				    # This case requires a new rule merging algorithm. Ignore this chain for
 				    # now.
@@ -1764,7 +1764,7 @@ sub optimize_ruleset() {
 				    #
 				    # Replace references to this chain with the target and add the matches
 				    #
-				    replace_references1 $chainref, $target, $matches;
+				    replace_references1 $chainref, $2, $1;
 				    $progress = 1;
 				}
 			    }

@@ -1542,7 +1542,10 @@ sub replace_references1( $$$ ) {
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     my $name     = $chainref->{name};
-    my $hasp     = $matches =~ / -p /;
+    #
+    # The caller has ensured that $matches does not contain /! -[piosd] /
+    #
+    my $hasp     = $matches =~ / -p /; 
     my $hasi     = $matches =~ / -i /;
     my $haso     = $matches =~ / -o /;
     my $hass     = $matches =~ / -s /;
@@ -1570,6 +1573,7 @@ sub replace_references1( $$$ ) {
 			s/( !)? -o [^ ]+ / / if $haso;
 			s/( !)? -s [^ ]+ / / if $hass;
 			s/( !)? -d [^ ]+ / / if $hasd;
+
 			s/\s+-([jg]) $name($|\s)/$matches -$1 ${target}$2/;
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
@@ -1598,6 +1602,7 @@ sub replace_references1( $$$ ) {
 			s/( !)? -o [^ ]+ / / if $haso;
 			s/( !)? -s [^ ]+ / / if $hass;
 			s/( !)? -d [^ ]+ / / if $hasd;
+
 			s/\s+-[jg] $name($|\s)/$matches -j ${target}$1/;
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;

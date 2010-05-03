@@ -317,12 +317,14 @@ sub process_routestopped() {
 
     while ( read_a_line ) {
 
-	my $routeback = 0;
-
 	my ($interface, $hosts, $options , $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
 
-	fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+	my $interfaceref;
+
+	fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface $interface;
 	$hosts = ALLIP unless $hosts && $hosts ne '-';
+
+	my $routeback = 0;
 
 	my @hosts;
 
@@ -338,24 +340,12 @@ sub process_routestopped() {
 	}
 
 	unless ( $options eq '-' ) {
-
 	    for my $option (split /,/, $options ) {
 		if ( $option eq 'routeback' ) {
 		    if ( $routeback ) {
 			warning_message "Duplicate 'routeback' option ignored";
 		    } else {
-			my $chainref = $filter_table->{FORWARD};
-
 			$routeback = 1;
-
-			for my $host ( split /,/, $hosts ) {
-			    add_rule( $chainref , 
-				      match_source_dev( $interface ) . 
-				      match_dest_dev( $interface ) .
-				      match_source_net( $host ) .
-				      match_dest_net( $host ) );
-			    clearrule;
-			}
 		    }
 		} elsif ( $option eq 'source' ) {
 		    for my $host ( split /,/, $hosts ) {
@@ -373,6 +363,19 @@ sub process_routestopped() {
 		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
 		    warning_message "The 'critical' option is no longer supported (or needed)";
 		}
+	    }
+	}
+
+	if ( $routeback || $interfaceref->{options}{routeback} ) {
+	    my $chainref = $filter_table->{FORWARD};
+
+	    for my $host ( split /,/, $hosts ) {
+		add_rule( $chainref , 
+			  match_source_dev( $interface ) . 
+			  match_dest_dev( $interface ) .
+			  match_source_net( $host ) .
+			  match_dest_net( $host ) );
+		clearrule;
 	    }
 	}
 

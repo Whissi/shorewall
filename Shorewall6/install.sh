@@ -109,6 +109,7 @@ fi
 
 DEBIAN=
 CYGWIN=
+MAC=
 MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 
@@ -124,6 +125,17 @@ case $(uname) in
 	CYGWIN=Yes
 	SPARSE=Yes
 	;;
+    Darwin)
+	if [ -z "$PREFIX" ]; then
+	    DEST=
+	    INIT=
+	fi
+
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=wheel
+	MAC=Yes
+	SPARSE=Yes
+	;;	
     *)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=root
@@ -170,11 +182,14 @@ if [ -n "$PREFIX" ]; then
     install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
    
     CYGWIN=
+    MAC=
 else
     [ -x /usr/share/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
     if [ -n "$CYGWIN" ]; then
 	echo "Installing Cygwin-specific configuration..."
+    elif [ -n "$MAC" ]; then
+	echo "Installing Mac-specific configuration..."	
     else
 	if [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
 	    echo "Installing Debian-specific configuration..."
@@ -232,7 +247,7 @@ elif [ -n "$INIT" ]; then
     install_file init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-${VERSION}.bkout
 fi
 
-[ -n "$CYGWIN" ] || echo  "Shorewall6 script installed in ${PREFIX}${DEST}/$INIT"
+[ -n "$INIT" ] && echo  "Shorewall6 script installed in ${PREFIX}${DEST}/$INIT"
 
 #
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
@@ -699,7 +714,7 @@ if [ -d ${PREFIX}/etc/logrotate.d ]; then
     echo "Logrotate file installed as ${PREFIX}/etc/logrotate.d/shorewall6"
 fi
 
-if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
+if [ -z "$PREFIX" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
     if [ -n "$DEBIAN" ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall6
 	ln -s ../init.d/shorewall6 /etc/rcS.d/S40shorewall6

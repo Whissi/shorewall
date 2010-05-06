@@ -109,6 +109,7 @@ fi
 
 DEBIAN=
 CYGWIN=
+MAC=
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 
@@ -124,6 +125,17 @@ case $(uname) in
 	CYGWIN=Yes
 	SPARSE=Yes
 	;;
+    Darwin)
+	if [ -z "$PREFIX" ]; then
+	    DEST=
+	    INIT=
+	fi
+
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=wheel
+	MAC=Yes
+	SPARSE=Yes
+	;;	
     *)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=root
@@ -170,6 +182,7 @@ if [ -n "$PREFIX" ]; then
     install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
     
     CYGWIN=
+    MAC=
 else
     #
     # Verify that Perl is installed
@@ -182,6 +195,8 @@ else
 
     if [ -n "$CYGWIN" ]; then
 	echo "Installing Cygwin-specific configuration..."
+    elif [ -n "$MAC" ]; then
+	echo "Installing Mac-specific configuration..."	
     else
 	if [ -f /etc/debian_version ]; then
 	    echo "Installing Debian-specific configuration..."
@@ -239,7 +254,7 @@ elif [ -n "$INIT" ]; then
     install_file init.sh ${PREFIX}${DEST}/$INIT 0544
 fi
 
-[ -n "$CYGWIN" ] || echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
+[ -n "$INIT" ] && echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 
 #
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
@@ -845,7 +860,7 @@ if [ -z "$PREFIX" ]; then
     rm -rf /usr/share/shorewall-shell
 fi
 
-if [ -z "$PREFIX" -a -n "$first_install" -a -z "$CYGWIN" ]; then
+if [ -z "$PREFIX" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
     if [ -n "$DEBIAN" ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall
 	ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall

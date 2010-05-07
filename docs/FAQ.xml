@@ -506,6 +506,11 @@ net        eth0          detect               <emphasis role="bold">routeback</e
         <para>And in <filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE          SOURCE      ADDRESS          PROTO        PORT
 eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlisting></para>
 
+        <para>And finally, in
+        <filename>/etc/shorewall/shorewall.conf</filename> you need:</para>
+
+        <programlisting>IP_FORWARDING=On</programlisting>
+
         <para>Like the hack in FAQ 2, this one results in all forwarded
         connections looking to the server (66.249.93.11) as if they originated
         on your firewall (206.124.146.176).</para>

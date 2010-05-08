@@ -112,6 +112,7 @@ CYGWIN=
 MAC=
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
+INSTALLD='-D'
 
 case $(uname) in
     CYGWIN*)
@@ -129,12 +130,13 @@ case $(uname) in
 	if [ -z "$PREFIX" ]; then
 	    DEST=
 	    INIT=
+	    SPARSE=Yes
 	fi
 
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
-	SPARSE=Yes
+	INSTALLD=
 	;;	
     *)
 	[ -z "$OWNER" ] && OWNER=root
@@ -834,15 +836,17 @@ fi
 
 cd manpages
 
+[ -n "$INSTALLD" ] || mkdir -p ${PREFIX}${MANDIR}/man5/ ${PREFIX}${MANDIR}/man8/
+
 for f in *.5; do
     gzip -c $f > $f.gz
-    run_install -D  -m 0644 $f.gz ${PREFIX}${MANDIR}/man5/$f.gz
+    run_install $INSTALLD  -m 0644 $f.gz ${PREFIX}${MANDIR}/man5/$f.gz
     echo "Man page $f.gz installed to ${PREFIX}${MANDIR}/man5/$f.gz"
 done
 
 for f in *.8; do
     gzip -c $f > $f.gz
-    run_install -D  -m 0644 $f.gz ${PREFIX}${MANDIR}/man8/$f.gz
+    run_install $INSTALLD  -m 0644 $f.gz ${PREFIX}${MANDIR}/man8/$f.gz
     echo "Man page $f.gz installed to ${PREFIX}${MANDIR}/man8/$f.gz"
 done
 

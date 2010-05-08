@@ -130,12 +130,12 @@ case $(uname) in
 	if [ -z "$PREFIX" ]; then
 	    DEST=
 	    INIT=
+	    SPARSE=Yes
 	fi
 
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
-	[ -z "${PREFIX}" && SPARSE=Yes
 	INSTALLD=
 	;;	
     *)

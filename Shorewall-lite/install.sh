@@ -304,7 +304,7 @@ echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
 
 cd manpages
 
-[ -n "$INSTALLD" ] || mkdir -p ${PREFIX}$/usr/share/man/man5/ ${PREFIX}${MANDIR}/man8/
+[ -n "$INSTALLD" ] || mkdir -p ${PREFIX}/usr/share/man/man5/ ${PREFIX}${MANDIR}/man8/
 
 for f in *.5; do
     gzip -c $f > $f.gz

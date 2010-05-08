@@ -135,7 +135,7 @@ case $(uname) in
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
-	SPARSE=Yes
+	[ -z "${PREFIX}" && SPARSE=Yes
 	INSTALLD=
 	;;	
     *)

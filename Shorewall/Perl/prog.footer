@@ -5,7 +5,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ options ] [ start|stop|clear|reset|refresh|restart|status|version ]"
+    echo "Usage: $0 [ options ] [ start|stop|close|clear|reset|refresh|restart|status|version ]"
     echo 
     echo "Options are:"
     echo
@@ -182,6 +182,15 @@ case "$COMMAND" in
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
+    close)
+	[ $# -ne 1 ] && usage 2
+	progress_message3 "Closing $g_product...."
+	detect_configuration
+	stop_firewall
+	status=0
+	[ -n "$SUBSYSLOCK" ] && touch ${SUBSYSLOCK}-prenet
+	progress_message3 "done."
+	;;
     reset)
 	if ! shorewall_is_started ; then
 	    error_message "$g_product is not running"
@@ -255,7 +264,10 @@ case "$COMMAND" in
 	progress_message3 "Clearing $g_product...."
 	clear_firewall
 	status=0
-	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	if [ -n "$SUBSYSLOCK" ]; then
+	    rm -f ${SUBSYSLOCK}-prenet
+	    rm -f $SUBSYSLOCK
+	fi
 	progress_message3 "done."
 	;;
     status)

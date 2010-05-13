@@ -349,7 +349,8 @@ usage() # $1 = exit status
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v[-1|{0-2}] ] [ -t ] <command>"
     echo "where <command> is one of:"
     echo "   allow <address> ..."
-    echo "   clear [ -f ]"
+    echo "   clear"
+    echo "   close"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   forget [ <file name> ]"
@@ -366,7 +367,7 @@ usage() # $1 = exit status
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]capabilities|classifiers|config|connections|filters|ip|log [<regex>]|macros|mangle|nat|policies|raw|routing|tc|vardir|zones} ]"
     echo "   start [ -f ] [ <directory> ]"
-    echo "   stop [ -f ]"
+    echo "   stop"
     echo "   status"
     echo "   version [ -a ]"
     echo
@@ -563,7 +564,7 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|reset|clear)
+    stop|close|reset|clear)
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
 	run_it $g_firewall $debugging $nolock $COMMAND

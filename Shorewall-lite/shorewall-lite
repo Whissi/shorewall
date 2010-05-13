@@ -352,7 +352,8 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   clear [ -f ]"
+    echo "   clear"
+    echo "   close"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
@@ -383,7 +384,7 @@ usage() # $1 = exit status
     echo "   show vardir"
     echo "   show zones"
     echo "   start [ -f ] [ -p ] [ <directory> ]"
-    echo "   stop [ -f ]"
+    echo "   stop"
     echo "   status"
     echo "   version [ -a ]"
     echo
@@ -579,7 +580,7 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|clear)
+    stop|close|clear)
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
 	run_it $g_firewall $debugging $nolock $COMMAND

@@ -2457,6 +2457,7 @@ EOF
     close)
         set_state "Closed"
         logger -p kern.info "$g_product Closed"
+        ;;
     *)
 	#
 	# The firewall is being stopped when we were trying to do something

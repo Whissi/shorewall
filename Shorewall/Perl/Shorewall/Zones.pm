@@ -181,9 +181,9 @@ use constant { SIMPLE_IF_OPTION   => 1,
 
 our %validinterfaceoptions;
 
-our %defaultinterfaceoptions = ( routefilter => 1 );
+our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
 
-our %maxoptionvalue = ( routefilter => 2, mss => 100000 );
+our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 );
 
 our %validhostoptions;
 
@@ -233,6 +233,7 @@ sub initialize( $ ) {
 				  upnpclient  => SIMPLE_IF_OPTION,
 				  mss         => NUMERIC_IF_OPTION,
 				  physical    => STRING_IF_OPTION + IF_OPTION_HOST,
+				  wait        => NUMERIC_IF_OPTION,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -260,6 +261,7 @@ sub initialize( $ ) {
 				    mss         => NUMERIC_IF_OPTION,
 				    forward     => BINARY_IF_OPTION,
 				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
+				    wait        => NUMERIC_IF_OPTION,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -1175,11 +1177,38 @@ sub set_interface_option( $$$ ) {
 }
 
 #
-# Verify that all required interfaces are available
+# Verify that all required interfaces are available after waiting for any that specify the 'wait' option.
 #
 sub verify_required_interfaces() {
     
-    my $interfaces = find_interfaces_by_option 'required';
+    my $returnvalue = 0;
+   
+    my $interfaces = find_interfaces_by_option 'wait';
+
+    if ( @$interfaces ) {
+	for my $interface (@$interfaces ) {
+	    my $wait = $interfaces{$interface}{options}{wait};
+
+	    if ( $wait ) {
+		my $physical = get_physical $interface;
+	    
+		emit qq(if ! interface_is_usable $physical; then);
+		emit  q(    local waittime);
+		emit qq(    waittime=$wait);
+		emit  '';
+		emit  q(    while [ $waittime -gt 0 ]; do);
+		emit qq(        interface_is_usable $physical && break);
+		emit  q(        sleep 1);
+		emit   '        $waittime=$(($waittime - 1))';
+		emit  q(    done);
+		emit qq(fi\n);
+
+		$returnvalue = 1;
+	    }
+	}
+    }
+
+     $interfaces = find_interfaces_by_option 'required';
 
     if ( @$interfaces ) {
 	for my $interface (@$interfaces ) {
@@ -1190,8 +1219,10 @@ sub verify_required_interfaces() {
 	    emit qq(fi\n);
 	}
 
-	1;
+	$returnvalue = 1;
     }
+
+    $returnvalue;
 }
 
 #

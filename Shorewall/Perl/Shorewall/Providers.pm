@@ -836,12 +836,14 @@ sub lookup_provider( $ ) {
 
 #
 # This function is called by the compiler when it is generating the detect_configuration() function.
-# The function emits code to set the ..._IS_USABLE interface variables appropriately for the
-# optional interfaces
+# The function calls Shorewall::Zones::verify_required_interfaces then emits code to set the
+# ..._IS_USABLE interface variables appropriately for the  optional interfaces
 #
-# Returns true if there were optional interfaces
+# Returns true if there were required or optional interfaces
 #
 sub handle_optional_interfaces() {
+
+    my $returnvalue = verify_required_interfaces;
 
     my $interfaces = find_interfaces_by_option 'optional';
 
@@ -877,8 +879,10 @@ sub handle_optional_interfaces() {
 		  'fi' );
 	}
 
-	1;
+	$returnvalue = 1;
     }
+
+    $returnvalue;
 }
 
 #

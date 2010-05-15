@@ -69,6 +69,7 @@ our @EXPORT = qw( NOTHING
 		  find_interfaces_by_option
 		  get_interface_option
 		  set_interface_option
+		  verify_required_interfaces
 		  validate_hosts_file
 		  find_hosts_by_option
 		  all_ipsets
@@ -223,6 +224,7 @@ sub initialize( $ ) {
 				  nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  optional    => SIMPLE_IF_OPTION,
 				  proxyarp    => BINARY_IF_OPTION,
+				  required    => SIMPLE_IF_OPTION,
 				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
 				  routefilter => NUMERIC_IF_OPTION ,
 				  sourceroute => BINARY_IF_OPTION,
@@ -251,6 +253,7 @@ sub initialize( $ ) {
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    optional    => SIMPLE_IF_OPTION,
 				    proxyndp    => BINARY_IF_OPTION,
+				    required    => SIMPLE_IF_OPTION,
 				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
 				    sourceroute => BINARY_IF_OPTION,
 				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -915,6 +918,8 @@ sub process_interface( $$ ) {
 	    }
 	}
 
+	fatal_error "Invalid combination of interface options" if $options{required} && $options{optional};
+
 	if ( $netsref eq 'dynamic' ) {
 	    my $ipset = "${zone}_" . chain_base $physical;
 	    $netsref = [ "+$ipset" ];
@@ -1167,6 +1172,26 @@ sub set_interface_option( $$$ ) {
     my ( $interface, $option, $value ) = @_;
 
     $interfaces{$interface}{options}{$option} = $value;
+}
+
+#
+# Verify that all required interfaces are available
+#
+sub verify_required_interfaces() {
+    
+    my $interfaces = find_interfaces_by_option 'required';
+
+    if ( @$interfaces ) {
+	for my $interface (@$interfaces ) {
+	    my $physical = get_physical $interface;
+	    
+	    emit qq(if ! interface_is_usable $physical; then);
+	    emit qq(    startup_error "Required interface $physical not available");
+	    emit qq(fi\n);
+	}
+
+	1;
+    }
 }
 
 #

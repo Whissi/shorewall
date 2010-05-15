@@ -186,6 +186,9 @@ loc     eth2            -</programlisting>
                     cannot be obtained.</para>
                   </listitem>
                 </itemizedlist>
+
+                <para>This option may not be specified together with <emphasis
+                role="bold">required</emphasis>.</para>
               </listitem>
             </varlistentry>
 
@@ -208,6 +211,17 @@ loc     eth2            -</programlisting>
                 <para>If <option>physical</option> is not specified, then it's
                 value defaults to the <emphasis>interface</emphasis>
                 name.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">required</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.10. When specified, the firewall
+                will fail to start if the interface named in the INTERFACE
+                column is not usable. May not be specified together with
+                <emphasis role="bold">optional</emphasis>.</para>
               </listitem>
             </varlistentry>
 

@@ -5,7 +5,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ options ] [ start|stop|close|clear|reset|refresh|restart|status|version ]"
+    echo "Usage: $0 [ options ] [ start|stop|close|clear|down|reset|refresh|restart|status|up|version ]"
     echo 
     echo "Options are:"
     echo
@@ -286,7 +286,7 @@ else
 	    if [ -f ${VARDIR}/state ]; then
 		state="$(cat ${VARDIR}/state)"
 		case $state in
-		    Stopped*|Clear*)
+		    Stopped*|Closed*|Clear*)
 			status=3
 			;;
 		esac
@@ -295,6 +295,13 @@ else
 	    fi
 	    echo "State:$state"
 	    echo
+	    ;;
+	up|down)
+	    [ $# -eq 1 ] && exit 0
+	    shift
+	    [ $# -ne 1 ] && usage 2
+	    updown $1
+	    status=0
 	    ;;
 	version)
 	    [ $# -ne 1 ] && usage 2

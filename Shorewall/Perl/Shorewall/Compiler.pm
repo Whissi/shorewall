@@ -865,6 +865,11 @@ sub compiler {
 	#
 	compile_stop_firewall( $test, $export );
 	#
+	#                               U P D O W N
+	#               (Writes the updown() function to the compiled script)
+	#
+	compile_updown;
+	#
 	# Copy the footer to the script
 	#
 	unless ( $test ) {

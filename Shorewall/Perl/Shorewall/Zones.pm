@@ -70,6 +70,7 @@ our @EXPORT = qw( NOTHING
 		  get_interface_option
 		  set_interface_option
 		  verify_required_interfaces
+		  compile_updown
 		  validate_hosts_file
 		  find_hosts_by_option
 		  all_ipsets
@@ -816,6 +817,8 @@ sub process_interface( $$ ) {
 
     my $hostoptionsref = {};
 
+    $options{ignore} = 1, $options = '-' if $options eq 'ignore';
+
     if ( $options ne '-' ) {
 
 	my %hostoptions = ( dynamic => 0 );
@@ -1224,6 +1227,91 @@ sub verify_required_interfaces() {
 
     $returnvalue;
 }
+
+#
+# Emit the updown() function
+#
+sub compile_updown() {
+    emit( '',
+	  '#',
+	  '# Handle the "up" and "down" commands',
+	  '#',
+	  'updown() # $1 = interface',
+	  '{',
+	);
+
+    push_indent;
+
+    emit( 'case $1 in' );
+
+    push_indent;
+
+    my $ignore   = find_interfaces_by_option 'ignore';
+    my $required = find_interfaces_by_option 'required';
+
+    if ( @$ignore ) {
+	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$ignore;
+
+	$interfaces =~ s/\+/*/;
+
+	emit( "$interfaces)",
+	      '    exit 0',
+	      '    ;;'
+	    );
+    }
+
+    if ( @$required ) {
+	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$required;
+
+	$interfaces =~ s/\+/*/;
+
+	emit( "$interfaces)",
+	      '    if [ "$COMMAND" = up ]; then',
+	      '        if shorewall_is_started; then',
+	      '            COMMAND=restart',
+	      '        else',
+	      '            COMMAND=start',
+	      '        fi',
+	      '',
+	      '        detect_configuration',
+	      '        define_firewall',
+	      '    else',
+	      '        COMMAND=close',
+	      '        detect_configuration',
+	      '        stop_firewall',
+	      '    fi',
+	      '    ;;'
+	    );
+    }
+
+    emit( "*)",
+	  '    if [ "$COMMAND" = up ]; then',
+	  '        if shorewall_is_started; then',
+	  '            COMMAND=restart',
+	  '        else',
+	  '            COMMAND=start',
+	  '        fi',
+	  '',
+	  '        detect_configuration',
+	  '        define_firewall',
+	  '    elif shorewall_is_started; then',        
+	  '        COMMAND=restart',
+	  '        detect_configuration',
+	  '        define_firewall',
+	  '    fi',
+	  '    ;;'
+	);
+
+    pop_indent;
+    
+    emit( 'esac' );
+
+    pop_indent;
+
+    emit( '}',
+	  '',
+	);
+}  
 
 #
 # Process a record in the hosts file

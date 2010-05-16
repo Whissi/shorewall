@@ -2240,7 +2240,7 @@ EOF
     }
 
     case $COMMAND in
-	stop|close|clear|restore)
+	stop|clear|restore)
 	    ;;
 	*)
 	    set +x
@@ -2446,18 +2446,12 @@ EOF
 
     emit '
 
-    if [ "$COMMAND" != close ]; then
-        set_state "Stopped"
-        logger -p kern.info "$g_product Stopped"
-    fi
+    set_state "Stopped"
+    logger -p kern.info "$g_product Stopped"
 
     case $COMMAND in
     stop|clear)
 	;;
-    close)
-        set_state "Closed"
-        logger -p kern.info "$g_product Closed"
-        ;;
     *)
 	#
 	# The firewall is being stopped when we were trying to do something

@@ -1242,12 +1242,35 @@ sub compile_updown() {
 
     push_indent;
 
+    emit( 'local state',
+	  'state=cleared',
+	  '',
+	  'if shorewall_is_up; then',
+	  '    state=started',
+	  'elif [ -f ${VARDIR}/state ]; then',
+	  '    case "$(cat ${VARDIR}/state)" in',
+	  '        Stopped*|Closed*)',
+	  '            state=stopped',
+	  '            ;;',
+	  '        Cleared*)',
+	  '            ;;',
+	  '        *)',
+	  '            state=unknown',
+	  '            ;;',
+	  '    esac',
+	  'else',
+	  '    state=unknown',
+	  'fi',
+	  ''
+	);
+
     emit( 'case $1 in' );
 
     push_indent;
 
     my $ignore   = find_interfaces_by_option 'ignore';
     my $required = find_interfaces_by_option 'required';
+    my $optional = find_interfaces_by_option 'optional';
 
     if ( @$ignore ) {
 	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$ignore;
@@ -1267,12 +1290,7 @@ sub compile_updown() {
 
 	emit( "$interfaces)",
 	      '    if [ "$COMMAND" = up ]; then',
-	      '        if shorewall_is_started; then',
-	      '            COMMAND=restart',
-	      '        else',
-	      '            COMMAND=start',
-	      '        fi',
-	      '',
+	      '        COMMAND=start',
 	      '        detect_configuration',
 	      '        define_firewall',
 	      '    else',
@@ -1284,22 +1302,40 @@ sub compile_updown() {
 	    );
     }
 
+    if ( @$optional ) {
+	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$optional;
+
+	$interfaces =~ s/\+/*/;
+
+	emit( "$interfaces)",
+	      '    if [ "$COMMAND" = up ]; then',
+	      '        echo 0 > ${VARDIR}/${1}.state',
+	      '    else',
+	      '        echo 1 > ${VARDIR}/${1}.state',
+	      '    fi',
+	      '',
+	      '    if [ "$state" = started ]; then',
+	      '        COMMAND=restart',
+	      '        detect_configuration',
+	      '        define_firewall',
+	      '    fi',
+	      '    ;;',
+	    );
+    }
+
     emit( "*)",
-	  '    if [ "$COMMAND" = up ]; then',
-	  '        if shorewall_is_started; then',
+	  '    case $state in',
+	  '        started)',
 	  '            COMMAND=restart',
-	  '        else',
-	  '            COMMAND=start',
-	  '        fi',
-	  '',
-	  '        detect_configuration',
-	  '        define_firewall',
-	  '    elif shorewall_is_started; then',        
-	  '        COMMAND=restart',
-	  '        detect_configuration',
-	  '        define_firewall',
-	  '    fi',
-	  '    ;;'
+	  '            detect_configuration',
+	  '            define_firewall',
+	  '            ;;',
+	  '        cleared|unknown)',
+	  '            COMMAND=close',
+	  '            detect_configuration',
+	  '            stop_firewall',
+	  '            ;;',
+	  '    esac',  
 	);
 
     pop_indent;

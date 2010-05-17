@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ifup script for Shorewall-based products
+# ifupdown script for Shorewall-based products
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -50,16 +50,33 @@ if [ -f /etc/debian_version ]; then
 	    exit 0
 	    ;;
     esac
+elif [ -f /etc/SuSE-release ]; then
+    #
+    # SuSE ifupdown system
+    #
+    $IFACE = "$2"
 
-    for PRODUCT in $PRODUCTS; do
-	VARDIR=/var/lib/$PRODUCT
-	[ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
-	if [ -x $VARDIR/firewall ]; then
-	    $VARDIR/firewall -V0 $COMMAND $IFACE
-	fi
-    done
-
+    case $0 in
+	*if-up.d*)
+	    COMMAND=up
+	    ;;
+	*if-down.d*)
+	    COMMAND=down
+	    ;;
+	*)
+	    exit 0
+	    ;;
+    esac
+else
     exit 0
 fi
+
+for PRODUCT in $PRODUCTS; do
+    VARDIR=/var/lib/$PRODUCT
+    [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
+    if [ -x $VARDIR/firewall ]; then
+	$VARDIR/firewall -V0 $COMMAND $IFACE
+    fi
+done
 
 exit 0

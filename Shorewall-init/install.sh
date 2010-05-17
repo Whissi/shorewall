@@ -130,6 +130,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 DEBIAN=
+SUSE=
 
 case $(uname) in
     *)
@@ -149,6 +150,8 @@ if [ -n "$PREFIX" ]; then
     install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
 elif [ -f /etc/debian_version ]; then
     DEBIAN=yes
+elif [ -f /etc/SuSE-release ]; then
+    SUSE=Yes
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
@@ -231,6 +234,11 @@ if [ -z "$PREFIX" ]; then
 	    ln -sf /usr/share/shorewall-init/ifupdown /etc/network/if-post-down.d/shorewall
 	    echo "Shorewall Init will start automatically at boot"
 	else
+	    if [ -n "$SUSE" ]; THEN
+		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
+		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
+	    fi
+
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-init ; then
 		    echo "Shorewall Init will start automatically at boot"

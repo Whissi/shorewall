@@ -210,14 +210,14 @@ fi
 #
 # Install the ifupdown script
 #
-if [ -n "$DEBIAN" ]; then
-    run_install $OWNERSHIP -m 744 ifupdown.debian.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
-else
+run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
+
+if [ -z "$DEBIAN" ]; then
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
     fi
 
-    if [ -d ${PREFIX}/etc/sysconfig ]; then
+    if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etcsysconfig/shorewall-init ]; then
 	run_install $OWNERSHIP -m 0644 sysconfig /etc/default/shorewall-init
     fi 
 fi

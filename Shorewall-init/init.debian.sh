@@ -73,16 +73,18 @@ fi
 # Initialize the firewall
 shorewall_start () {
   local product
-  local vardir
+  local VARDIR
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
-      vardir=/var/lib/$product
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
-      if [ -x ${vardir}/firewall ]; then
-	  ${vardir}/firewall close || notdone
+      VARDIR=/var/lib/$product
+      [ -f /etc/$product/vardir ] && . /etc/$product/vardir
+      if [ -x ${VARDIR}/firewall ]; then
+	  ${VARDIR}/firewall stop || echo_notdone
       fi
   done
+
+  echo "done."
 
   return 0
 }
@@ -90,16 +92,18 @@ shorewall_start () {
 # Clear the firewall
 shorewall_stop () {
   local product
-  local vardir
+  local VARDIR
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
-      vardir=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
-      if [ -x ${vardir}/firewall ]; then
-	  ${vardir}/firewall clear || notdone
+      VARDIR=/var/lib/$product
+      [ -f /etc/$product/vardir ] && . /etc/$product/vardir
+      if [ -x ${VARDIR}/firewall ]; then
+	  ${VARDIR}/firewall clear || echo_notdone
       fi
   done
+
+  echo "done."
 
   return 0
 }

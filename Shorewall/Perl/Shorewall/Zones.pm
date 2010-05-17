@@ -11,7 +11,7 @@
 #       it under the terms of Version 2 of the GNU General Public License
 #       as published by the Free Software Foundation.
 #
-#       This program is distributed in the hope that it will be useful,
+#       This program is distributed in the shope that it will be useful,
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 #       GNU General Public License for more details.
@@ -1244,9 +1244,15 @@ sub compile_updown() {
 
     emit( 'local state',
 	  'state=cleared',
-	  '',
-	  'if shorewall_is_up; then',
-	  '    state=started',
+	  '' );
+
+    if ( $family == F_IPV4 ) {
+	emit 'if shorewall_is_started; then';
+    } else {
+	emit 'if shorewall6_is_started; then';
+    }
+
+    emit( '    state=started',
 	  'elif [ -f ${VARDIR}/state ]; then',
 	  '    case "$(cat ${VARDIR}/state)" in',
 	  '        Stopped*)',

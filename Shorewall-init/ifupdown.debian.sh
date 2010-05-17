@@ -31,7 +31,7 @@ elif [ -f /etc/sysconfig/shorewall-init ]; then
     . /etc/sysconfig/shorewall-init
 fi
 
-[ "$IFUPDOWN" = 1 && -n "$PRODUCTS" ] || exit 0
+[ "$IFUPDOWN" = 1 -a -n "$PRODUCTS" ] || exit 0
 
 if [ -f /etc/debian_version ]; then
     #
@@ -55,7 +55,7 @@ if [ -f /etc/debian_version ]; then
 	VARDIR=/var/lib/$PRODUCT
 	[ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
 	if [ -x $VARDIR/firewall ]; then
-	    $VARDIR/firewall -v0 $COMMAND $IFACE
+	    $VARDIR/firewall -V0 $COMMAND $IFACE
 	fi
     done
 

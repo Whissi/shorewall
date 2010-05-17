@@ -656,7 +656,7 @@ fatal_error()
 {
     echo "   ERROR: $@" >&2
 
-    if [ $LOG_VERBOSITY -gt 1 ]; then
+    if [ $LOG_VERBOSITY -ge 0 ]; then
         timestamp="$(date +'%_b %d %T') "
         echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
     fi
@@ -672,6 +672,12 @@ fatal_error()
 startup_error() # $* = Error Message
 {
     echo "   ERROR: $@: Firewall state not changed" >&2
+
+    if [ $LOG_VERBOSITY -ge 0 ]; then
+        timestamp="$(date +'%_b %d %T') "
+        echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
+    fi
+
     case $COMMAND in
         start)
 	    logger -p kern.err "ERROR:$g_product start failed:Firewall state not changed"

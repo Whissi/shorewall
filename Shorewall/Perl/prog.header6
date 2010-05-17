@@ -178,7 +178,7 @@ find_default_interface() {
 # Determine if Interface is up
 #
 interface_is_up() {
-    [ -n "$($IP link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
+    [ -n "$($IP -6 link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
 }
 
 #

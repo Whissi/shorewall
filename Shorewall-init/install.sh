@@ -250,6 +250,13 @@ if [ -z "$PREFIX" ]; then
 		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
 		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
 		fi
+
+		if [ -d /etc/NetworkManager/dispatch.d ]; then
+		    #
+		    # RedHat doesn't integrate ifup/ifdown-local with NetworkManager
+		    #
+		    ln -s /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatch.d/shorewall
+		fi
 	    fi
 
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

@@ -80,6 +80,9 @@ else
 	*ifdown*)
 	    COMMAND=down
 	    ;;
+	*dispatch.d*)
+	    COMMAND="$2"
+	    ;;
 	*)
 	    exit 0
 	    ;;

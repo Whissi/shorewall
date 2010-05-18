@@ -80,7 +80,7 @@ else
 	*ifdown*)
 	    COMMAND=down
 	    ;;
-	*dispatch.d*)
+	*dispatcher.d*)
 	    COMMAND="$2"
 	    ;;
 	*)

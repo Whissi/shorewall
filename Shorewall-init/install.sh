@@ -131,6 +131,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 #
 DEBIAN=
 SUSE=
+REDHAT=
 
 case $(uname) in
     *)
@@ -156,9 +157,14 @@ elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
 elif [ -f /etc/arch-release ] ; then
-      DEST="/etc/rc.d"
-      INIT="shorewall-init"
-      ARCHLINUX=yes
+    DEST="/etc/rc.d"
+    INIT="shorewall-init"
+    ARCHLINUX=yes
+else
+    #
+    # Assume RedHat
+    #
+    REDHAT=Yes
 fi
 
 #
@@ -237,6 +243,13 @@ if [ -z "$PREFIX" ]; then
 	    if [ -n "$SUSE" ]; then
 		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
 		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
+	    elif [ -n "$REDHAT" ]; then
+		if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
+		    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
+		else
+		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
+		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
+		fi
 	    fi
 
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

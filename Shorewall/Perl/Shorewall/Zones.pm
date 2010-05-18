@@ -1211,9 +1211,13 @@ sub verify_required_interfaces() {
 	}
     }
 
-     $interfaces = find_interfaces_by_option 'required';
+    $interfaces = find_interfaces_by_option 'required';
 
     if ( @$interfaces ) {
+	emit( 'case "$COMMAND" in' );
+	push_indent;
+	emit( 'start|restart|restore|refresh)' );
+	push_indent;
 	for my $interface (@$interfaces ) {
 	    my $physical = get_physical $interface;
 	    
@@ -1221,6 +1225,11 @@ sub verify_required_interfaces() {
 	    emit qq(    startup_error "Required interface $physical not available");
 	    emit qq(fi\n);
 	}
+
+	emit( ';;' );
+	pop_indent;
+	pop_indent;
+	emit( 'esac' );
 
 	$returnvalue = 1;
     }

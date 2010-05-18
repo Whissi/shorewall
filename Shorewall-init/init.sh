@@ -63,7 +63,7 @@ shorewall_start () {
       vardir=/var/lib/$product
       [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
       if [ -x ${vardir}/firewall ]; then
-	  ${vardir}/firewall close || notdone
+	  ${vardir}/firewall stop || notdone
       fi
   done
 

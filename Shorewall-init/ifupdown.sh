@@ -68,7 +68,22 @@ elif [ -f /etc/SuSE-release ]; then
 	    ;;
     esac
 else
-    exit 0
+    #
+    # Assume RedHat/Fedora/CentOS/Foobar/...
+    #
+    IFACE="$1"
+    
+    case $0 in 
+	*ifup*)
+	    COMMAND=up
+	    ;;
+	*ifdown*)
+	    COMMAND=down
+	    ;;
+	*)
+	    exit 0
+	    ;;
+    esac
 fi
 
 for PRODUCT in $PRODUCTS; do

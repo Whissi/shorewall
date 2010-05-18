@@ -54,7 +54,7 @@ elif [ -f /etc/SuSE-release ]; then
     #
     # SuSE ifupdown system
     #
-    $IFACE = "$2"
+    IFACE="$2"
 
     case $0 in
 	*if-up.d*)

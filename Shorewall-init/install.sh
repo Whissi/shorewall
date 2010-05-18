@@ -221,7 +221,7 @@ if [ -z "$DEBIAN" ]; then
     fi
 
     if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etcsysconfig/shorewall-init ]; then
-	run_install $OWNERSHIP -m 0644 sysconfig /etc/default/shorewall-init
+	run_install $OWNERSHIP -m 0644 sysconfig /etc/sysconfig/shorewall-init
     fi 
 fi
 
@@ -234,7 +234,7 @@ if [ -z "$PREFIX" ]; then
 	    ln -sf /usr/share/shorewall-init/ifupdown /etc/network/if-post-down.d/shorewall
 	    echo "Shorewall Init will start automatically at boot"
 	else
-	    if [ -n "$SUSE" ]; THEN
+	    if [ -n "$SUSE" ]; then
 		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
 		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
 	    fi

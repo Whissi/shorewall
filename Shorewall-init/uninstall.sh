@@ -40,18 +40,6 @@ qt()
     "$@" >/dev/null 2>&1
 }
 
-restore_file() # $1 = file to restore
-{
-    if [ -f ${1}-shorewall.bkout ]; then
-	if (mv -f ${1}-shorewall-lite.bkout $1); then
-	    echo
-	    echo "$1 restored"
-        else
-	    exit 1
-        fi
-    fi
-}
-
 remove_file() # $1 = file to restore
 {
     if [ -f $1 -o -L $1 ] ; then
@@ -60,54 +48,50 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall-lite/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall-lite/version)"
+if [ -f /usr/share/shorewall-init/version ]; then
+    INSTALLED_VERSION="$(cat /usr/share/shorewall-init/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Lite Version $INSTALLED_VERSION is installed"
+	echo "WARNING: Shorewall Init Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Lite Version $VERSION is not installed"
+    echo "WARNING: Shorewall Init Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall Lite $VERSION"
+echo "Uninstalling Shorewall Init $VERSION"
 
-if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall ]; then
-   /sbin/shorewall-lite clear
-fi
+INITSCRIPT=/etc/init.d/shorewall-init
 
-if [ -L /usr/share/shorewall-lite/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall-lite/init | sed 's/^.*> //')
-else
-    FIREWALL=/etc/init.d/shorewall-lite
-fi
-
-if [ -n "$FIREWALL" ]; then
+if [ -n "$INITSCRIPT" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-        insserv -r $FIREWALL
+        insserv -r $INITSCRIPT
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	chkconfig --del $(basename $FIREWALL)
+	chkconfig --del $(basename $INITSCRIPT)
     else
-	rm -f /etc/rc*.d/*$(basename $FIREWALL)
+	rm -f /etc/rc*.d/*$(basename $INITSCRIPT)
     fi
 
-    remove_file $FIREWALL
-    rm -f ${FIREWALL}-*.bkout
+    remove_file $INITSCRIPT
 fi
 
-rm -f /sbin/shorewall-lite
-rm -f /sbin/shorewall-lite-*.bkout
+$(ls -l /sbin/ifup-local)   | grep -q /usr/share/shorewall-init && removefile /sbin/ifup-local
+$(ls -l /sbin/ifdown-local) | grep -q /usr/share/shorewall-init && removefile /sbin/ifdown-local
 
-rm -rf /etc/shorewall-lite
-rm -rf /etc/shorewall-lite-*.bkout
-rm -rf /var/lib/shorewall-lite
-rm -rf /var/lib/shorewall-lite-*.bkout
-rm -rf /usr/share/shorewall-lite
-rm -rf /usr/share/shorewall-lite-*.bkout
-rm -f  /etc/logrotate.d/shorewall-lite
+remove_file /etc/default/shorewall-init
+remove_file /etc/sysconfig/shorewall-init
 
-echo "Shorewall Uninstalled"
+remove_file /etc/NetworkManager/dispatcher.d/01-shorewall
+
+remove_file /etc/network/if-up.d/shorewall
+remove_file /etc/network/if-down.d/shorewall
+
+remove_file /etc/sysconfig/network/if-up.d/shorewall
+remove_file /etc/sysconfig/network/if-down.d/shorewall
+
+rm -rf /usr/share/shorewall-init
+
+echo "Shorewall Init Uninstalled"
 
 

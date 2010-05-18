@@ -238,7 +238,7 @@ else
     fi
 
     if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etc/sysconfig/shorewall-init ]; then
-	run_install $OWNERSHIP -m 0644 sysconfig /etc/sysconfig/shorewall-init
+	run_install $OWNERSHIP -m 0644 sysconfig ${PREFIX}/etc/sysconfig/shorewall-init
     fi 
 fi
 

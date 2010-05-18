@@ -1345,11 +1345,6 @@ sub compile_updown() {
 	  '            detect_configuration',
 	  '            define_firewall',
 	  '            ;;',
-	  '        cleared|unknown)',
-	  '            COMMAND=stop',
-	  '            detect_configuration',
-	  '            stop_firewall',
-	  '            ;;',
 	  '    esac',  
 	);
 

@@ -296,7 +296,8 @@ None.
     That's all that is required.
 
     To integrate with NetworkManager and ifup/ifdown, additional steps
-    are required.
+    are required. You probably don't want to enable this feature if you
+    run a link status monitor like swping or LSM.
 
     a)  In the Shorewall-init configuration file, set IFUPDOWN=1.
 
@@ -317,11 +318,10 @@ None.
     The following actions occur when an interface comes up:
 
     	FIREWALL      INTERFACE     ACTION
-	STATE
+	STATE         REQUIRED?
 	----------------------------------
-	Any           required      start
-        started	      optional      restart
-        started          -          restart
+	Any              Yes        start
+        started	         No         restart
 
     The following actions occur when an interface goes down:
 
@@ -329,11 +329,10 @@ None.
     optional
 
     	FIREWALL      INTERFACE     ACTION
-	STATE
+	STATE         REQUIRED?
 	----------------------------------
-	Any           required      stop
-	started	      optional      restart
-	started          -          restart
+	Any              Yes        stop
+	started	         No         restart
 
     For optional interfaces, the /var/lib/<product>/<interface>.state
     files are maintained to reflect the state of the interface.

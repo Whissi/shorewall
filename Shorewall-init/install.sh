@@ -154,17 +154,24 @@ elif [ -f /etc/debian_version ]; then
 elif [ -f /etc/SuSE-release ]; then
     SUSE=Yes
 elif [ -f /etc/slackware-version ] ; then
-    DEST="/etc/rc.d"
-    INIT="rc.firewall"
+    echo "Shorewall-init is currently not supported on Slackware" >&2
+    exit 1
+#   DEST="/etc/rc.d"
+#   INIT="rc.firewall"
 elif [ -f /etc/arch-release ] ; then
-    DEST="/etc/rc.d"
-    INIT="shorewall-init"
-    ARCHLINUX=yes
-else
+    echo "Shorewall-init is currently not supported on Arch Linux" >&2
+    exit 1
+#   DEST="/etc/rc.d"
+#   INIT="shorewall-init"
+#   ARCHLINUX=yes
+elif [ -d /etc/sysconfig/network-scripts/ ]; then
     #
-    # Assume RedHat
+    # Assume RedHat-based
     #
     REDHAT=Yes
+else
+    echo "Unknown distribution: Shorewall-init support is not available" >&2
+    exit 1
 fi
 
 #
@@ -188,8 +195,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh /etc/init.d/shorewall-init 0544
-elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
+#elif [ -n "$ARCHLINUX" ]; then
+#    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
 else
     install_file init.sh ${PREFIX}${DEST}/$INIT 0544
 fi
@@ -221,12 +228,16 @@ fi
 #
 run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
 
-if [ -z "$DEBIAN" ]; then
+if [ -n "$DEBIAN" ]; then
+    if [ ! -f /etc/default/shorewall-init ]; then
+	run_install $OWNERSHIP -m 0644 sysconfig /etc/default/shorewall-init
+    fi
+else
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
     fi
 
-    if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etcsysconfig/shorewall-init ]; then
+    if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etc/sysconfig/shorewall-init ]; then
 	run_install $OWNERSHIP -m 0644 sysconfig /etc/sysconfig/shorewall-init
     fi 
 fi
@@ -234,7 +245,6 @@ fi
 if [ -z "$PREFIX" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
-	    run_install $OWNERSHIP -m 0644 sysconfig /etc/default/shorewall-init
 	    ln -sf ../init.d/shorewall-init /etc/rcS.d/S09shorewall-init
 	    ln -sf /usr/share/shorewall-init/ifupdown /etc/network/if-up.d/shorewall
 	    ln -sf /usr/share/shorewall-init/ifupdown /etc/network/if-post-down.d/shorewall
@@ -253,7 +263,7 @@ if [ -z "$PREFIX" ]; then
 
 		if [ -d /etc/NetworkManager/dispatcher.d ]; then
 		    #
-		    # RedHat doesn't integrate ifup/ifdown-local with NetworkManager
+		    # RedHat doesn't integrate ifup-local/ifdown-local with NetworkManager
 		    #
 		    ln -s /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
 		fi

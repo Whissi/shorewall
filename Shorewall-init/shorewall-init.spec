@@ -102,7 +102,7 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall-init
 
 %attr(0644,root,root) /usr/share/shorewall-init/version
-%attr(0644,root,root) /usr/share/shorewall-init/ifupdown
+%attr(0544,root,root) /usr/share/shorewall-init/ifupdown
 
 %doc COPYING changelog.txt releasenotes.txt
 

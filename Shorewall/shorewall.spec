@@ -103,7 +103,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configfiles/*
 
 %attr(0644,root,root) %{_mandir}/man5/*
-%attr(0644,root,root) %{_mandir}/man8/shorewall.8.gz
+%attr(0644,root,root) %{_mandir}/man8/*
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples 
 

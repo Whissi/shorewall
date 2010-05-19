@@ -853,7 +853,12 @@ sub handle_optional_interfaces() {
 	    my $physical = get_physical $interface;
 	    my $base     = uc chain_base( $physical );
 
-	    emit '';
+	    emit( '' );
+
+	    if ( $config{REQUIRE_INTERFACE} ) {
+		emit( 'HAVE_INTERFACE=' );
+		emit( '' );
+	    }
 
 	    if ( $provider ) {
 		#
@@ -873,10 +878,35 @@ sub handle_optional_interfaces() {
 		emit qq(if interface_is_usable $physical; then);
 	    }
 
+	    emit( '    HAVE_INTERFACE=Yes' ) if $config{REQUIRE_INTERFACE};
+
 	    emit( "    SW_${base}_IS_USABLE=Yes" ,
 		  'else' ,
 		  "    SW_${base}_IS_USABLE=" ,
 		  'fi' );
+	}
+
+	if ( $config{REQUIRE_INTERFACE} ) {
+	    emit( '', 
+		  'if [ -z "$HAVE_INTERFACE" ]; then' ,
+		  '    case "$COMMAND" in',
+		  '        start|restart|restore|refresh)'
+		);
+
+	    if ( $family == F_IPV4 ) {
+		emit( '            if shorewall_is_started; then' );
+	    } else {
+		emit( '            if shorewall6_is_started; then' );
+	    }
+	
+	    emit( '                fatal_error "No network interface available"',
+		  '            else',
+		  '                startup_error "No network interface available',
+		  '            fi',
+		  '            ;;',
+		  '    esac',
+		  'fi'
+		);
 	}
 
 	$returnvalue = 1;

@@ -342,6 +342,19 @@ None.
     Please note that the action is carried out using the current
     compiled script; the configuration is not recompiled.
 
+    A new option has been added to shorewall.conf and
+    shorewall6.conf. The REQUIRE_INTERFACE option determines the
+    outcome when an attempt to start/restart/restore/refresh the
+    firewall is made and none of the optional interfaces are available.
+    With REQUIRE_INTERFACE=No (the default), the operation is
+    performed. If REQUIRE_INTERFACE=Yes, then the operation fails and
+    the firewall is placed in the stopped state. This option is
+    suitable for a laptop with both ethernet and wireless
+    interfaces. If either come up, the firewall starts. If neither
+    comes up, the firewall remains in the stopped state. Similarly, if
+    an optional interface goes down and there are no optional
+    interfaces remaining in the up state, then the firewall is stopped.
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

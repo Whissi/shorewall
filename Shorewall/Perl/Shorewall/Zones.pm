@@ -1333,6 +1333,10 @@ sub compile_updown() {
 	      '        COMMAND=restart',
 	      '        detect_configuration',
 	      '        define_firewall',
+	      '    elif [ "$state" = stopped ]; then',
+	      '        COMMAND=start',
+	      '        detect_configuration',
+	      '        define_firewall',
 	      '    fi',
 	      '    ;;',
 	    );

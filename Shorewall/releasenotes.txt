@@ -318,10 +318,11 @@ None.
     The following actions occur when an interface comes up:
 
     	FIREWALL      INTERFACE     ACTION
-	STATE         REQUIRED?
+	STATE
 	----------------------------------
-	Any              Yes        start
-        started	         No         restart
+	Any           Required      start
+        stopped       Optional      start
+        started	         -          restart
 
     The following actions occur when an interface goes down:
 
@@ -329,10 +330,11 @@ None.
     optional
 
     	FIREWALL      INTERFACE     ACTION
-	STATE         REQUIRED?
+	STATE
 	----------------------------------
-	Any              Yes        stop
-	started	         No         restart
+	Any           Required      stop
+        stopped       Optional      start
+	started	         -          restart
 
     For optional interfaces, the /var/lib/<product>/<interface>.state
     files are maintained to reflect the state of the interface.

@@ -1327,7 +1327,6 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   check [ -e ] [ -r ] [ <directory> ]"
     echo "   clear"
-    echo "   close"
     echo "   compile [ -e ] [ -d ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
@@ -1611,7 +1610,7 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|close|clear)
+    stop|clear)
 	get_config
 	[ $# -ne 1 ] && usage 1
 	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"

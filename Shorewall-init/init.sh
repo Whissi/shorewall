@@ -26,8 +26,8 @@
 #
 ### BEGIN INIT INFO
 # Provides: shorewall-init
-# Default-Start:  3 4 5
-# Default-Stop:   0 1 2 6
+# Default-Start:  2 4 5
+# Default-Stop:
 # Short-Description: Initialize the firewall at boot time
 # Description:       Place the firewall in a safe state at boot time
 #                    prior to bringing up the network.  

@@ -13,7 +13,7 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: shorewall_firewall >= 4.4.10
+Requires: shoreline_firewall >= 4.4.10
 
 %description
 

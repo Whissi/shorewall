@@ -13,7 +13,7 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: iptables iproute
+Requires: shorewall_firewall >= 4.4.10
 
 %description
 
@@ -60,7 +60,7 @@ if [ $1 -eq 1 ]; then
 	ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
     else
 	if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
-	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled" >&2
+	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; ifup/ifdown events will not be handled" >&2
 	else
 	    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
 	    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local

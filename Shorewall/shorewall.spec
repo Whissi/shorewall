@@ -14,6 +14,7 @@ URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: iptables iproute perl
+Provides: shoreline_firewall = %{version}-%{release}
 Obsoletes: shorewall-common shorewall-perl shorewall-shell
 
 %description

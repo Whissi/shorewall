@@ -2,7 +2,7 @@
 %define version 4.4.10
 %define release 0Beta2
 
-Summary: Shoreline Firewall Lite is an iptables-based firewall for Linux systems.
+Summary: Shorewall-init adds functionality to Shoreline Firewall (Shorewall).
 Name: %{name}
 Version: %{version}
 Release: %{release}
@@ -22,8 +22,8 @@ The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
 Shorewall Init is a companion product to Shorewall that allows for tigher
-control of connections during boot and to integrate Shorewall with ifup/ifdown
-and NetworkManager.
+control of connections during boot and that integrates Shorewall with
+ifup/ifdown and NetworkManager.
 
 %prep
 

@@ -1214,6 +1214,13 @@ net      eth1         detect          <emphasis role="bold">optional</emphasis><
           they offer you a place to start.</para>
         </important>
 
+        <important>
+          <para>If you have installed Shorewall-init, you should disable its
+          ifup/ifdown/NetworkManager integration (set IFUPDOWN=0 in the <ulink
+          url="Manpages/shorewall-init.html">Shorewall-init configuration
+          file</ulink>).</para>
+        </important>
+
         <para>The script should be copied to a directory on root's PATH such
         as <filename>/usr/local/sbin/</filename>.</para>
 
@@ -1375,6 +1382,13 @@ fi</programlisting></para>
         was written by Mika Ilmaranta &lt;ilmis at nullnet.fi&gt; and performs
         more sophisticated monitoring than the simple swping script described
         in the preceding section.</para>
+
+        <important>
+          <para>If you have installed Shorewall-init, you should disable its
+          ifup/ifdown/NetworkManager integration (set IFUPDOWN=0 in the <ulink
+          url="Manpages/shorewall-init.html">Shorewall-init configuration
+          file</ulink>) before installing LSM.</para>
+        </important>
 
         <para>Like many Open Source products, LSM is poorly documented. It's
         main configuration file is normally kept in

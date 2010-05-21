@@ -26,8 +26,8 @@
 #
 ### BEGIN INIT INFO
 # Provides: shorewall-init
-# Required-start: 
-# Required-stop:  $network
+# Required-start: $local_fs
+# Required-stop:  $local_fs
 # Default-Start:  2 3 5
 # Default-Stop:
 # Short-Description: Initialize the firewall at boot time

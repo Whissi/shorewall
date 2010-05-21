@@ -61,7 +61,7 @@ shorewall_start () {
       vardir=/var/lib/$product
       [ -f /etc/$product/vardir ] && . /etc/$product/vardir 
       if [ -x ${vardir}/firewall ]; then
-	  ${vardir}/firewall stop || notdone
+	  ${vardir}/firewall stop || exit 1
       fi
   done
 
@@ -78,7 +78,7 @@ shorewall_stop () {
       vardir=/var/lib/$PRODUCT
       [ -f /etc/$product/vardir ] && . /etc/$product/vardir 
       if [ -x ${vardir}/firewall ]; then
-	  ${vardir}/firewall clear || notdone
+	  ${vardir}/firewall clear || exit 1
       fi
   done
 

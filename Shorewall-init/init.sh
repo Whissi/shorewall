@@ -26,8 +26,6 @@
 #
 ### BEGIN INIT INFO
 # Provides: shorewall-init
-# Required-Start: $local_fs
-# Required-Stop:  $local_fs
 # Default-Start:  3 4 5
 # Default-Stop:   0 1 2 6
 # Short-Description: Initialize the firewall at boot time
@@ -61,7 +59,7 @@ shorewall_start () {
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
       vardir=/var/lib/$product
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
+      [ -f /etc/$product/vardir ] && . /etc/$product/vardir 
       if [ -x ${vardir}/firewall ]; then
 	  ${vardir}/firewall stop || notdone
       fi
@@ -78,7 +76,7 @@ shorewall_stop () {
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
       vardir=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
+      [ -f /etc/$product/vardir ] && . /etc/$product/vardir 
       if [ -x ${vardir}/firewall ]; then
 	  ${vardir}/firewall clear || notdone
       fi

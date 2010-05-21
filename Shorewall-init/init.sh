@@ -28,7 +28,7 @@
 # Provides: shorewall-init
 # Required-start: 
 # Required-stop:  $network
-# Default-Start:  2 4 5
+# Default-Start:  2 3 5
 # Default-Stop:
 # Short-Description: Initialize the firewall at boot time
 # Description:       Place the firewall in a safe state at boot time

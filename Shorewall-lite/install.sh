@@ -82,7 +82,7 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $OWNERSHIP -m $3 $1 ${2}
+    run_install -T $OWNERSHIP -m $3 $1 ${2}
 }
 
 #
@@ -203,7 +203,7 @@ fi
 
 delete_file ${PREFIX}/usr/share/shorewall-lite/xmodules
 
-install_file shorewall-lite ${PREFIX}/sbin/shorewall-lite 0544 ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
+install_file shorewall-lite ${PREFIX}/sbin/shorewall-lite 0544
 
 echo "Shorewall Lite control program installed in ${PREFIX}/sbin/shorewall-lite"
 
@@ -211,12 +211,12 @@ echo "Shorewall Lite control program installed in ${PREFIX}/sbin/shorewall-lite"
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh /etc/init.d/shorewall-lite 0544 ${PREFIX}/usr/share/shorewall-lite-${VERSION}.bkout
+    install_file init.debian.sh /etc/init.d/shorewall-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-lite-${VERSION}.bkout
+    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
 
 else
-    install_file init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-lite-${VERSION}.bkout
+    install_file init.sh ${PREFIX}${DEST}/$INIT 0544
 fi
 
 echo  "Shorewall Lite script installed in ${PREFIX}${DEST}/$INIT"
@@ -240,7 +240,7 @@ fi
 # Install the config file
 #
 if [ ! -f ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf ]; then
-   run_install $OWNERSHIP -m 0744 shorewall-lite.conf ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf
+   run_install $OWNERSHIP -m 0744 shorewall-lite.conf ${PREFIX}/etc/shorewall-lite
    echo "Config file installed as ${PREFIX}/etc/shorewall-lite/shorewall-lite.conf"
 fi
 
@@ -251,7 +251,7 @@ fi
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall-lite/Makefile
+run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall-lite
 echo "Makefile installed as ${PREFIX}/etc/shorewall-lite/Makefile"
 
 #
@@ -287,40 +287,47 @@ echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall-lite/sh
 # Install wait4ifup
 #
 
-install_file wait4ifup ${PREFIX}/usr/share/shorewall-lite/wait4ifup 0755
+if [ -f wait4ifup ]; then
+    install_file wait4ifup ${PREFIX}/usr/share/shorewall-lite/wait4ifup 0755
 
-echo
-echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall-lite/wait4ifup"
+    echo
+    echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall-lite/wait4ifup"
+fi
 
 #
 # Install the Modules file
 #
-run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/modules
-echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
+
+if [ -f modules ]; then
+    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite
+    echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
+fi
 
 #
 # Install the Man Pages
 #
 
-cd manpages
+if [ -d manpages ]; then
+    cd manpages
 
-[ -n "$INSTALLD" ] || mkdir -p ${PREFIX}/usr/share/man/man5/ ${PREFIX}/usr/share/man/man8/
+    [ -n "$INSTALLD" ] || mkdir -p ${PREFIX}/usr/share/man/man5/ ${PREFIX}/usr/share/man/man8/
 
-for f in *.5; do
-    gzip -c $f > $f.gz
-    run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
-    echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
-done
+    for f in *.5; do
+	gzip -c $f > $f.gz
+	install_file $INSTALLD $f.gz ${PREFIX}/usr/share/man/man5/$f.gz 0644
+	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
+    done
 
-for f in *.8; do
-    gzip -c $f > $f.gz
-    run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
-    echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man8/$f.gz"
-done
+    for f in *.8; do
+	gzip -c $f > $f.gz
+	install $INSTALLD $f.gz ${PREFIX}/usr/share/man/man8/$f.gz 0644
+	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man8/$f.gz"
+    done
 
-cd ..
+    cd ..
 
-echo "Man Pages Installed"
+    echo "Man Pages Installed"
+fi
 
 if [ -d ${PREFIX}/etc/logrotate.d ]; then
     run_install $OWNERSHIP -m 0644 logrotate ${PREFIX}/etc/logrotate.d/shorewall-lite

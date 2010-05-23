@@ -130,9 +130,6 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 #
 # Determine where to install the firewall script
 #
-DEBIAN=
-SUSE=
-REDHAT=
 
 case $(uname) in
     *)
@@ -150,9 +147,7 @@ if [ -n "$PREFIX" ]; then
     fi
     
     install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
-fi
-
-if [ -f /etc/debian_version ]; then
+elif [ -f /etc/debian_version ]; then
     DEBIAN=yes
 elif [ -f /etc/SuSE-release ]; then
     SUSE=Yes

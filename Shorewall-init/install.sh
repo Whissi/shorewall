@@ -63,7 +63,7 @@ mywhich() {
 
 run_install()
 {
-    if ! install -d $*; then
+    if ! install $*; then
 	echo
 	echo "ERROR: Failed to install $*" >&2
 	exit 1
@@ -83,7 +83,7 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $OWNERSHIP -m $3 $1 ${2}
+    run_install -T $OWNERSHIP -m $3 $1 ${2}
 }
 
 #
@@ -146,7 +146,7 @@ if [ -n "$PREFIX" ]; then
 	OWNERSHIP=""
     fi
     
-    run_install $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
 elif [ -f /etc/debian_version ]; then
     DEBIAN=yes
 elif [ -f /etc/SuSE-release ]; then
@@ -222,35 +222,54 @@ if [ -z "$PREFIX" ]; then
 fi
 
 if [ -n "$DEBIAN" ]; then
+    if [ -n "${PREFIX}" ]; then
+	mkdir -p ${PREFIX}/etc/network/if-up.d/
+	mkdir -p ${PREFIX}/etc/network/if-down.d/
+	mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
+    fi
+
     if [ ! -f ${PREFIX}/etc/default/shorewall-init ]; then
-	run_install $OWNERSHIP -m 0644 sysconfig ${PREFIX}/etc/default/shorewall-init
+	if [ -n ${PREFIX} ]; then
+	    mkdir ${PREFIX}/etc/default
+	fi
+
+	install_file $OWNERSHIP sysconfig ${PREFIX}/etc/default/shorewall-init 0655
     fi
 else
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
 	mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
+
+	if [ -n "$SUSE" ]; then
+	    mkdir -p ${PREFIX}/sysconfig/network/if-up.d
+	    mkdir -p ${PREFIX}/sysconfig/network/if-down.d
+	fi
     fi
 
     if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etc/sysconfig/shorewall-init ]; then
-	run_install $OWNERSHIP -m 0644 sysconfig ${PREFIX}/etc/sysconfig/shorewall-init
+	install_file $OWNERSHIP sysconfig ${PREFIX}/etc/sysconfig/shorewall-init 0644
     fi 
 fi
 
 #
 # Install the ifupdown script
 #
-run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/sbin/shorewall-ifupdown
+if [ -n "${PREFIX}" ]; then
+    mkdir -p ${PREFIX}/sbin
+fi
+
+install_file $OWNERSHIP ifupdown.sh ${PREFIX}/sbin/shorewall-ifupdown 744
 
 if [ -d ${PREFIX}/etc/NetworkManager ]; then
-    run_install ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall
+    install_file ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall 0744
 fi
 
 if [ -n "$DEBIAN" ]; then
     ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-up.d/shorewall
     ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-down.d/shorewall
 elif [ -n "$SUSE" ]; then
-    ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-up.d/shorewall
-    ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-down.d/shorewall
+    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/sysconfig/network/if-up.d/shorewall
+    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/sysconfig/network/if-down.d/shorewall
 elif [ -n "$REDHAT" ]; then
     if [ -f ${PREFIX}/sbin/ifup-local -o -f ${PREFIX}/sbin/ifdown-local ]; then
 	echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
@@ -293,6 +312,10 @@ if [ -z "$PREFIX" ]; then
 else
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
+	    if [ -n "${PREFIX}" ]; then
+		mkdir -p ${PREFIX}/etc/rcS.d/S09
+	    fi
+
 	    ln -sf ../init.d/shorewall-init ${PREFIX}/etc/rcS.d/S09shorewall-init
 	    echo "Shorewall Init will start automatically at boot"
 	fi

@@ -63,7 +63,7 @@ mywhich() {
 
 run_install()
 {
-    if ! install $*; then
+    if ! install -d $*; then
 	echo
 	echo "ERROR: Failed to install $*" >&2
 	exit 1
@@ -146,7 +146,7 @@ if [ -n "$PREFIX" ]; then
 	OWNERSHIP=""
     fi
     
-    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    run_install $OWNERSHIP -m 755 ${PREFIX}${DEST}
 elif [ -f /etc/debian_version ]; then
     DEBIAN=yes
 elif [ -f /etc/SuSE-release ]; then
@@ -239,32 +239,33 @@ fi
 #
 # Install the ifupdown script
 #
-run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
+run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/sbin/shorewall-ifupdown
 
 if [ -d ${PREFIX}/etc/NetworkManager ]; then
     run_install ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall
+fi
+
+if [ -n "$DEBIAN" ]; then
+    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-up.d/shorewall
+    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-down.d/shorewall
+elif [ -n "$SUSE" ]; then
+    ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-up.d/shorewall
+    ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-down.d/shorewall
+elif [ -n "$REDHAT" ]; then
+    if [ -f ${PREFIX}/sbin/ifup-local -o -f ${PREFIX}/sbin/ifdown-local ]; then
+	echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
+    else
+	ln -s /sbin/shorewall-ifupdown ${PREFIX}/sbin/ifup-local
+	ln -s /sbin/shorewall-ifupdown ${PREFIX}/sbin/ifdown-local
+    fi
 fi
 
 if [ -z "$PREFIX" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    ln -sf ../init.d/shorewall-init /etc/rcS.d/S09shorewall-init
-	    ln -sf /usr/share/shorewall-init/ifupdown /etc/network/if-up.d/shorewall
-	    ln -sf /usr/share/shorewall-init/ifupdown /etc/network/if-post-down.d/shorewall
 	    echo "Shorewall Init will start automatically at boot"
 	else
-	    if [ -n "$SUSE" ]; then
-		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
-		ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
-	    elif [ -n "$REDHAT" ]; then
-		if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
-		    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
-		else
-		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
-		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
-		fi
-	    fi
-
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-init ; then
 		    echo "Shorewall Init will start automatically at boot"
@@ -293,8 +294,6 @@ else
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    ln -sf ../init.d/shorewall-init ${PREFIX}/etc/rcS.d/S09shorewall-init
-	    ln -sf /usr/share/shorewall-init/ifupdown ${PREFIX}/etc/network/if-up.d/shorewall
-	    ln -sf /usr/share/shorewall-init/ifupdown ${PREFIX}/etc/network/if-post-down.d/shorewall
 	    echo "Shorewall Init will start automatically at boot"
 	fi
     fi

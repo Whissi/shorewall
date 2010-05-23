@@ -65,13 +65,6 @@ if [ $1 -eq 1 ]; then
 	    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
 	    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
 	fi
-
-	if [ -d /etc/NetworkManager/dispatcher.d ]; then
-	    #
-      	    # RedHat doesn't integrate ifup-local/ifdown-local with NetworkManager
-	    #
-	    ln -s /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
-	fi
     fi	    
 fi
 
@@ -87,10 +80,6 @@ if [ $1 -eq 0 ]; then
     [ -f /sbin/ifup-local ]   && $(ls -l /sbin/ifup-local)   | grep -q /usr/share/shorewall-init && rm -f /sbin/ifup-local
     [ -f /sbin/ifdown-local ] && $(ls -l /sbin/ifdown-local) | grep -q /usr/share/shorewall-init && rm -f /sbin/ifdown-local
 
-    rm -f /etc/sysconfig/shorewall-init
-
-    rm -f /etc/NetworkManager/dispatcher.d/01-shorewall
-
     rm -f /etc/sysconfig/network/if-up.d/shorewall
     rm -f /etc/sysconfig/network/if-down.d/shorewall
 fi
@@ -98,6 +87,8 @@ fi
 %files
 %defattr(0644,root,root,0755)
 %attr(0644,root,root) %config(noreplace) /etc/sysconfig/shorewall-init
+%attr(0544,root,root) /etc/NetworkManager/dispatcher.d/01-shorewall
+
 %attr(0544,root,root) /etc/init.d/shorewall-init
 %attr(0755,root,root) %dir /usr/share/shorewall-init
 

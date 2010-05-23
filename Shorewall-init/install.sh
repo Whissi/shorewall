@@ -223,11 +223,6 @@ if [ -z "$PREFIX" ]; then
     ln -s ${DEST}/${INIT} /usr/share/shorewall-init/init
 fi
 
-#
-# Install the ifupdown script
-#
-run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
-
 if [ -n "$DEBIAN" ]; then
     if [ ! -f /etc/default/shorewall-init ]; then
 	run_install $OWNERSHIP -m 0644 sysconfig /etc/default/shorewall-init
@@ -235,11 +230,21 @@ if [ -n "$DEBIAN" ]; then
 else
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
+	mkdir -p ${PREFIX}/NetworkManager/dispatcher.d
     fi
 
     if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etc/sysconfig/shorewall-init ]; then
 	run_install $OWNERSHIP -m 0644 sysconfig ${PREFIX}/etc/sysconfig/shorewall-init
     fi 
+fi
+
+#
+# Install the ifupdown script
+#
+run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
+
+if [ -d ${PREFIX}/etc/NetworkManager ]; then
+    run_install ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall
 fi
 
 if [ -z "$PREFIX" ]; then
@@ -259,13 +264,6 @@ if [ -z "$PREFIX" ]; then
 		else
 		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
 		    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
-		fi
-
-		if [ -d /etc/NetworkManager/dispatcher.d ]; then
-		    #
-		    # RedHat doesn't integrate ifup-local/ifdown-local with NetworkManager
-		    #
-		    ln -s /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
 		fi
 	    fi
 

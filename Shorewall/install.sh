@@ -107,9 +107,6 @@ if [ -z "$RUNLEVELS" ] ; then
 	RUNLEVELS=""
 fi
 
-DEBIAN=
-CYGWIN=
-MAC=
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 INSTALLD='-D'
@@ -246,7 +243,7 @@ fi
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh /etc/init.d/shorewall 0544
+    install_file init.debian.sh ${PREFIX}/etc/init.d/shorewall 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
 elif [ -n "$SLACKWARE" ]; then
@@ -286,7 +283,7 @@ perl -p -w -i -e 's|^STARTUP_LOG=.*|STARTUP_LOG=/var/log/shorewall-lite-init.log
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf ${PREFIX}/etc/shorewall
 
-   if [ -n "$DEBIAN" ] && mywhich perl; then
+   if [ -n "$DEBIAN" ]; then
        #
        # Make a Debian-like shorewall.conf
        #

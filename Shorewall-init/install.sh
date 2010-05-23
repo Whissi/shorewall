@@ -5,6 +5,7 @@
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
 #     (c) 2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2010 - Roberto C. Sanchez (roberto@connexer.com)
 #
 #       Shorewall documentation is available at http://shorewall.net
 #
@@ -149,7 +150,9 @@ if [ -n "$PREFIX" ]; then
     fi
     
     install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
-elif [ -f /etc/debian_version ]; then
+fi
+
+if [ -f /etc/debian_version ]; then
     DEBIAN=yes
 elif [ -f /etc/SuSE-release ]; then
     SUSE=Yes
@@ -194,7 +197,7 @@ fi
 # Install the Init Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh /etc/init.d/shorewall-init 0544
+    install_file init.debian.sh ${PREFIX}/etc/init.d/shorewall-init 0544
 #elif [ -n "$ARCHLINUX" ]; then
 #    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
 else
@@ -229,8 +232,8 @@ fi
 run_install $OWNERSHIP -m 744 ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown
 
 if [ -n "$DEBIAN" ]; then
-    if [ ! -f /etc/default/shorewall-init ]; then
-	run_install $OWNERSHIP -m 0644 sysconfig /etc/default/shorewall-init
+    if [ ! -f ${PREFIX}/etc/default/shorewall-init ]; then
+	run_install $OWNERSHIP -m 0644 sysconfig ${PREFIX}/etc/default/shorewall-init
     fi
 else
     if [ -n "$PREFIX" ]; then
@@ -291,6 +294,15 @@ if [ -z "$PREFIX" ]; then
 	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 		cant_autostart
 	    fi
+	fi
+    fi
+else
+    if [ -n "$first_install" ]; then
+	if [ -n "$DEBIAN" ]; then
+	    ln -sf ../init.d/shorewall-init ${PREFIX}/etc/rcS.d/S09shorewall-init
+	    ln -sf /usr/share/shorewall-init/ifupdown ${PREFIX}/etc/network/if-up.d/shorewall
+	    ln -sf /usr/share/shorewall-init/ifupdown ${PREFIX}/etc/network/if-post-down.d/shorewall
+	    echo "Shorewall Init will start automatically at boot"
 	fi
     fi
 fi

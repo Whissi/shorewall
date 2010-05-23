@@ -115,8 +115,12 @@ case "$1" in
   stop)
      shorewall_stop
      ;;
+  reload|force-reload)
+     shorewall_start
+     shorewall_stop
+     ;;
   *)
-     echo "Usage: /etc/init.d/shorewall-init {start|stop}"
+     echo "Usage: /etc/init.d/shorewall-init {start|stop|reload|force-reload}"
      exit 1
 esac
 

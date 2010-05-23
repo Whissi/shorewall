@@ -79,7 +79,7 @@ if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
 fi
 
 if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
+    FIREWALL=$(readlink /usr/share/shorewall/init)
 else
     FIREWALL=/etc/init.d/shorewall
 fi

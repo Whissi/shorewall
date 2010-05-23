@@ -77,8 +77,8 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del shorewall-init
     fi
 
-    [ -f /sbin/ifup-local ]   && $(ls -l /sbin/ifup-local)   | grep -q /usr/share/shorewall-init && rm -f /sbin/ifup-local
-    [ -f /sbin/ifdown-local ] && $(ls -l /sbin/ifdown-local) | grep -q /usr/share/shorewall-init && rm -f /sbin/ifdown-local
+    [ "$(readdir /sbin/ifup-local)"   = /usr/share/shorewall-init ] && rm -f /sbin/ifup-local
+    [ "$(readdir /sbin/ifdown-local)" = /usr/share/shorewall-init ] && rm -f /sbin/ifdown-local
 
     rm -f /etc/sysconfig/network/if-up.d/shorewall
     rm -f /etc/sysconfig/network/if-down.d/shorewall

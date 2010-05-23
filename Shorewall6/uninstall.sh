@@ -79,7 +79,7 @@ if qt ip6tables -L shorewall6 -n && [ ! -f /sbin/shorewall6-lite ]; then
 fi
 
 if [ -L /usr/share/shorewall6/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall6/init | sed 's/^.*> //')
+    FIREWALL=$(readlink /usr/share/shorewall6/init)
 else
     FIREWALL=/etc/init.d/shorewall6
 fi

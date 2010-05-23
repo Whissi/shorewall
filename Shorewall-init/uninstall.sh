@@ -76,8 +76,8 @@ if [ -n "$INITSCRIPT" ]; then
     remove_file $INITSCRIPT
 fi
 
-[ -f /sbin/ifup-local ]   && $(ls -l /sbin/ifup-local)   | grep -q /usr/share/shorewall-init && remove_file /sbin/ifup-local
-[ -f /sbin/ifdown-local ] && $(ls -l /sbin/ifdown-local) | grep -q /usr/share/shorewall-init && remove_file /sbin/ifdown-local
+[ "$(readlink /sbin/ifup-local)"   = /usr/share/shorewall-init ] && remove_file /sbin/ifup-local
+[ "$(readlink /sbin/ifdown-local)" = /usr/share/shorewall-init ] && remove_file /sbin/ifdown-local
 
 remove_file /etc/default/shorewall-init
 remove_file /etc/sysconfig/shorewall-init

@@ -230,7 +230,7 @@ if [ -n "$DEBIAN" ]; then
 else
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
-	mkdir -p ${PREFIX}/NetworkManager/dispatcher.d
+	mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
     fi
 
     if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etc/sysconfig/shorewall-init ]; then

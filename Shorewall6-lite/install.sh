@@ -82,7 +82,7 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $OWNERSHIP -m $3 $1 ${2}
+    run_install -T $OWNERSHIP -m $3 $1 ${2}
 }
 
 #
@@ -129,7 +129,6 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 #
 # Determine where to install the firewall script
 #
-DEBIAN=
 INSTALLD='-D'
 
 case $(uname) in
@@ -202,7 +201,7 @@ fi
 
 delete_file ${PREFIX}/usr/share/shorewall6-lite/xmodules
 
-install_file shorewall6-lite ${PREFIX}/sbin/shorewall6-lite 0544 ${PREFIX}/var/lib/shorewall6-lite-${VERSION}.bkout
+install_file shorewall6-lite ${PREFIX}/sbin/shorewall6-lite 0544
 
 echo "Shorewall6 Lite control program installed in ${PREFIX}/sbin/shorewall6-lite"
 
@@ -210,12 +209,12 @@ echo "Shorewall6 Lite control program installed in ${PREFIX}/sbin/shorewall6-lit
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh /etc/init.d/shorewall6-lite 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
+    install_file init.debian.sh ${PREFIX}/etc/init.d/shorewall6-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
+    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
 
 else
-    install_file init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall6-lite-${VERSION}.bkout
+    install_file init.sh ${PREFIX}${DEST}/$INIT 0544
 fi
 
 echo  "Shorewall6 Lite script installed in ${PREFIX}${DEST}/$INIT"
@@ -239,7 +238,7 @@ fi
 # Install the config file
 #
 if [ ! -f ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf ]; then
-   run_install $OWNERSHIP -m 0744 shorewall6-lite.conf ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf
+   install_file shorewall6-lite.conf ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf 0744
    echo "Config file installed as ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf"
 fi
 
@@ -250,7 +249,7 @@ fi
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall6-lite/Makefile
+run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall6-lite
 echo "Makefile installed as ${PREFIX}/etc/shorewall6-lite/Makefile"
 
 #
@@ -286,40 +285,46 @@ echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall6-lite/s
 # Install wait4ifup
 #
 
-install_file wait4ifup ${PREFIX}/usr/share/shorewall6-lite/wait4ifup 0755
+if [ -f wait4fup ]; then
+    install_file wait4ifup ${PREFIX}/usr/share/shorewall6-lite/wait4ifup 0755
 
-echo
-echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall6-lite/wait4ifup"
+    echo
+    echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall6-lite/wait4ifup"
+fi
 
-#
-# Install the Modules file
-#
-run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall6-lite/modules
-echo "Modules file installed as ${PREFIX}/usr/share/shorewall6-lite/modules"
+if [ -f modules ]; then
+    #
+    # Install the Modules file
+    #
+    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall6-lite
+    echo "Modules file installed as ${PREFIX}/usr/share/shorewall6-lite/modules"
+fi
 
-#
-# Install the Man Pages
-#
+if [ -d manpages ]; then
+    #
+    # Install the Man Pages
+    #
 
-cd manpages
+    cd manpages
 
-[ -n "$INSTALLD" ] || mkdir -p ${PREFIX}/usr/share/man/man5/ ${PREFIX}/usr/share/man/man8/
+    [ -n "$INSTALLD" ] || mkdir -p ${PREFIX}/usr/share/man/man5/ ${PREFIX}/usr/share/man/man8/
 
-for f in *.5; do
-    gzip -c $f > $f.gz
-    run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
-    echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
-done
+    for f in *.5; do
+	gzip -c $f > $f.gz
+	run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
+	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
+    done
 
-for f in *.8; do
-    gzip -c $f > $f.gz
-    run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
-    echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man8/$f.gz"
-done
+    for f in *.8; do
+	gzip -c $f > $f.gz
+	run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
+	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man8/$f.gz"
+    done
+    
+    cd ..
 
-cd ..
-
-echo "Man Pages Installed"
+    echo "Man Pages Installed"
+fi
 
 if [ -d ${PREFIX}/etc/logrotate.d ]; then
     run_install $OWNERSHIP -m 0644 logrotate ${PREFIX}/etc/logrotate.d/shorewall6-lite

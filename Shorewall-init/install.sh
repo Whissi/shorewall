@@ -229,7 +229,7 @@ if [ -n "$DEBIAN" ]; then
     fi
 
     if [ ! -f ${PREFIX}/etc/default/shorewall-init ]; then
-	if [ -n ${PREFIX} ]; then
+	if [ -n "${PREFIX}" ]; then
 	    mkdir ${PREFIX}/etc/default
 	fi
 

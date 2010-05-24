@@ -76,7 +76,6 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall/configfiles
 %attr(0700,root,root) %dir /var/lib/shorewall
 %attr(0644,root,root) %config(noreplace) /etc/shorewall/*
-%attr(0600,root,root) /etc/shorewall/Makefile
 
 %attr(0644,root,root) /etc/logrotate.d/shorewall
 

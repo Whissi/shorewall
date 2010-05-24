@@ -285,7 +285,7 @@ echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall6-lite/s
 # Install wait4ifup
 #
 
-if [ -f wait4fup ]; then
+if [ -f wait4ifup ]; then
     install_file wait4ifup ${PREFIX}/usr/share/shorewall6-lite/wait4ifup 0755
 
     echo

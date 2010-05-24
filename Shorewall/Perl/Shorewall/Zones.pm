@@ -1202,7 +1202,7 @@ sub verify_required_interfaces() {
 		emit  q(    while [ $waittime -gt 0 ]; do);
 		emit qq(        interface_is_usable $physical && break);
 		emit  q(        sleep 1);
-		emit   '        $waittime=$(($waittime - 1))';
+		emit   '        waittime=$(($waittime - 1))';
 		emit  q(    done);
 		emit qq(fi\n);
 

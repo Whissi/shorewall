@@ -311,7 +311,7 @@ if [ -d manpages ]; then
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man5/
+	run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
 	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
     done
 

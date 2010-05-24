@@ -233,7 +233,7 @@ if [ -n "$DEBIAN" ]; then
 	    mkdir ${PREFIX}/etc/default
 	fi
 
-	install_file $OWNERSHIP sysconfig ${PREFIX}/etc/default/shorewall-init 0655
+	install_file sysconfig ${PREFIX}/etc/default/shorewall-init 0655
     fi
 else
     if [ -n "$PREFIX" ]; then
@@ -247,7 +247,7 @@ else
     fi
 
     if [ -d ${PREFIX}/etc/sysconfig -a ! -f ${PREFIX}/etc/sysconfig/shorewall-init ]; then
-	install_file $OWNERSHIP sysconfig ${PREFIX}/etc/sysconfig/shorewall-init 0644
+	install_file sysconfig ${PREFIX}/etc/sysconfig/shorewall-init 0644
     fi 
 fi
 
@@ -258,7 +258,7 @@ if [ -n "${PREFIX}" ]; then
     mkdir -p ${PREFIX}/sbin
 fi
 
-install_file $OWNERSHIP ifupdown.sh ${PREFIX}/sbin/shorewall-ifupdown 744
+install_file ifupdown.sh ${PREFIX}/sbin/shorewall-ifupdown 744
 
 if [ -d ${PREFIX}/etc/NetworkManager ]; then
     install_file ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall 0744

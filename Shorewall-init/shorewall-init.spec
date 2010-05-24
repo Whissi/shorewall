@@ -40,12 +40,6 @@ export GROUP=`id -n -g` ;\
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%pre
-
-if [ -f /etc/sysconfig/shorewall-init ]; then
-    cp -fa /etc/sysconfig/shorewall-init /etc/sysconfig/shorewall-init.rpmsave
-fi
-
 %post
 
 if [ $1 -eq 1 ]; then
@@ -56,14 +50,14 @@ if [ $1 -eq 1 ]; then
     fi
 
     if [ -f /etc/SuSE-release ]; then
-	ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
-	ln -sf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
+	ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-up.d/shorewall
+	ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-down.d/shorewall
     else
 	if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
 	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; ifup/ifdown events will not be handled" >&2
 	else
-	    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifup-local
-	    ln -s /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
+	    ln -s shorewall-ifupdown /sbin/ifup-local
+	    ln -s shorewall-ifupdown /sbin/ifdown-local
 	fi
     fi	    
 fi
@@ -77,8 +71,8 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del shorewall-init
     fi
 
-    [ "$(readdir /sbin/ifup-local)"   = /usr/share/shorewall-init ] && rm -f /sbin/ifup-local
-    [ "$(readdir /sbin/ifdown-local)" = /usr/share/shorewall-init ] && rm -f /sbin/ifdown-local
+    [ "$(readlink -m -q /sbin/ifup-local)"   = /sbin/shorewall-ifupdown ] && rm -f /sbin/ifup-local
+    [ "$(readlink -m -q /sbin/ifdown-local)" = /sbin/shorewall-ifupdown ] && rm -f /sbin/ifdown-local
 
     rm -f /etc/sysconfig/network/if-up.d/shorewall
     rm -f /etc/sysconfig/network/if-down.d/shorewall

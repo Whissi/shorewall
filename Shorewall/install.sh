@@ -856,7 +856,7 @@ if [ -d manpages ]; then
 fi
 
 if [ -d ${PREFIX}/etc/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${PREFIX}/etc/logrotate.d
+    install_file logrotate ${PREFIX}/etc/logrotate.d/shorewall 0644
     echo "Logrotate file installed as ${PREFIX}/etc/logrotate.d/shorewall"
 fi
 

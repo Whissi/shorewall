@@ -59,6 +59,8 @@ if [ $1 -eq 1 ]; then
 	    ln -s shorewall-ifupdown /sbin/ifup-local
 	    ln -s shorewall-ifupdown /sbin/ifdown-local
 	fi
+	
+	ln -sf /sbin/shorewall-ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
     fi	    
 fi
 
@@ -73,6 +75,8 @@ if [ $1 -eq 0 ]; then
 
     [ "$(readlink -m -q /sbin/ifup-local)"   = /sbin/shorewall-ifupdown ] && rm -f /sbin/ifup-local
     [ "$(readlink -m -q /sbin/ifdown-local)" = /sbin/shorewall-ifupdown ] && rm -f /sbin/ifdown-local
+
+    rm -f /etc/NetworkManager/dispatcher.d/01-shorewall
 
     rm -f /etc/sysconfig/network/if-up.d/shorewall
     rm -f /etc/sysconfig/network/if-down.d/shorewall

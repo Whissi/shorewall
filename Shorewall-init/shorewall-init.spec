@@ -81,7 +81,6 @@ fi
 %files
 %defattr(0644,root,root,0755)
 %attr(0644,root,root) %config(noreplace) /etc/sysconfig/shorewall-init
-%attr(0544,root,root) /etc/NetworkManager/dispatcher.d/01-shorewall
 
 %attr(0544,root,root) /etc/init.d/shorewall-init
 %attr(0755,root,root) %dir /usr/share/shorewall-init

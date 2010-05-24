@@ -314,13 +314,13 @@ if [ -d manpages ]; then
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	install_file $INSTALLD $f.gz ${PREFIX}/usr/share/man/man5/$f.gz 0644
+	run_install -T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
 	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
     done
 
     for f in *.8; do
 	gzip -c $f > $f.gz
-	install $INSTALLD $f.gz ${PREFIX}/usr/share/man/man8/$f.gz 0644
+	run_install -T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
 	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man8/$f.gz"
     done
 

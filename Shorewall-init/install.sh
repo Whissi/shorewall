@@ -225,7 +225,6 @@ if [ -n "$DEBIAN" ]; then
     if [ -n "${PREFIX}" ]; then
 	mkdir -p ${PREFIX}/etc/network/if-up.d/
 	mkdir -p ${PREFIX}/etc/network/if-down.d/
-	mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
     fi
 
     if [ ! -f ${PREFIX}/etc/default/shorewall-init ]; then
@@ -238,11 +237,12 @@ if [ -n "$DEBIAN" ]; then
 else
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
-	mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
 
 	if [ -n "$SUSE" ]; then
 	    mkdir -p ${PREFIX}/sysconfig/network/if-up.d
 	    mkdir -p ${PREFIX}/sysconfig/network/if-down.d
+	else
+	    mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
 	fi
     fi
 

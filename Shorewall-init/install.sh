@@ -224,7 +224,7 @@ fi
 if [ -n "$DEBIAN" ]; then
     if [ -n "${PREFIX}" ]; then
 	mkdir -p ${PREFIX}/etc/network/if-up.d/
-	mkdir -p ${PREFIX}/etc/network/if-down.d/
+	mkdir -p ${PREFIX}/etc/network/if-post-down.d/
     fi
 
     if [ ! -f ${PREFIX}/etc/default/shorewall-init ]; then
@@ -266,7 +266,7 @@ fi
 
 if [ -n "$DEBIAN" ]; then
     ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-up.d/shorewall
-    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-down.d/shorewall
+    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-post-down.d/shorewall
 elif [ -n "$SUSE" ]; then
     ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/sysconfig/network/if-up.d/shorewall
     ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/sysconfig/network/if-down.d/shorewall
@@ -282,7 +282,7 @@ fi
 if [ -z "$PREFIX" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
-	    ln -sf ../init.d/shorewall-init /etc/rcS.d/S09shorewall-init
+	    ln -sf ../init.d/shorewall-init /etc/rcS.d/S38shorewall-init
 	    echo "Shorewall Init will start automatically at boot"
 	else
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

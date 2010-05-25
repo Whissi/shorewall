@@ -25,7 +25,7 @@
 #
 ### BEGIN INIT INFO
 # Provides:          shorewall-init
-# Required-Start:
+# Required-Start:    $local_fs
 # Required-Stop:     $network
 # Default-Start:     S
 # Default-Stop:      0 6
@@ -33,6 +33,8 @@
 # Description:       Place the firewall in a safe state at boot time prior to
 #                    bringing up the network
 ### END INIT INFO
+
+export VERBOSITY=0
 
 if [ "$(id -u)" != "0" ]
 then

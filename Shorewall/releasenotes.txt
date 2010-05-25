@@ -358,6 +358,13 @@ None.
     Shorewall-init may be installed on Debian-based systems, SuSE-based
     systems and RedHat-based systems.
 
+    On Debian-based systems, during system shutdown the firewall is
+    opened prior to network shutdown (/etc/init.d/shorewall stop
+    performs a 'clear' operation rather than a 'stop'). This is
+    required by Debian standards. You can change this default behavior
+    by setting SAFESTOP=1 in /etc/default/shorewall
+    (/etc/default/shorewall6, ...).
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

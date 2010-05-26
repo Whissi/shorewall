@@ -232,7 +232,7 @@ if [ -n "$DEBIAN" ]; then
 	    mkdir ${PREFIX}/etc/default
 	fi
 
-	install_file sysconfig ${PREFIX}/etc/default/shorewall-init 0655
+	install_file sysconfig ${PREFIX}/etc/default/shorewall-init 0644
     fi
 else
     if [ -n "$PREFIX" ]; then

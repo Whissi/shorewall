@@ -313,10 +313,10 @@ else
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    if [ -n "${PREFIX}" ]; then
-		mkdir -p ${PREFIX}/etc/rcS.d/S09
+		mkdir -p ${PREFIX}/etc/rcS.d
 	    fi
 
-	    ln -sf ../init.d/shorewall-init ${PREFIX}/etc/rcS.d/S09shorewall-init
+	    ln -sf ../init.d/shorewall-init ${PREFIX}/etc/rcS.d/S38shorewall-init
 	    echo "Shorewall Init will start automatically at boot"
 	fi
     fi

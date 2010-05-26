@@ -50,17 +50,19 @@ if [ $1 -eq 1 ]; then
     fi
 
     if [ -f /etc/SuSE-release ]; then
-	ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-up.d/shorewall
-	ln -sf /sbin/shorewall-ifupdown /etc/sysconfig/network/if-down.d/shorewall
+	cp -af /usr/share/shorewall-init/ifupdown.sh /etc/sysconfig/network/if-up.d/shorewall
+	cp -af /usr/share/shorewall-init/ifupdown.sh /etc/sysconfig/network/if-down.d/shorewall
     else
 	if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
 	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; ifup/ifdown events will not be handled" >&2
 	else
-	    ln -s shorewall-ifupdown /sbin/ifup-local
-	    ln -s shorewall-ifupdown /sbin/ifdown-local
+	    cp -a /usr/share/shorewall-init/ifupdown.sh /sbin/ifup-local
+	    cp -a /usr/share/shorewall-init/ifupdown.sh /sbin/ifdown-local
 	fi
-	
-	ln -sf /sbin/shorewall-ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
+
+	if [ -d /etc/NetworkManager/dispatcher.d/ ]; then
+	    cp -af /usr/share/shorewall-init/ifupdown.sh /etc/NetworkManager/dispatcher.d/01-shorewall
+	fi
     fi	    
 fi
 
@@ -73,8 +75,8 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del shorewall-init
     fi
 
-    [ "$(readlink -m -q /sbin/ifup-local)"   = /sbin/shorewall-ifupdown ] && rm -f /sbin/ifup-local
-    [ "$(readlink -m -q /sbin/ifdown-local)" = /sbin/shorewall-ifupdown ] && rm -f /sbin/ifdown-local
+    grep -q Shorewall /sbin/ifup-local   && rm -f /sbin/ifup-local
+    grep -q Shorewall /sbin/ifdown-local && rm -f /sbin/ifdown-local
 
     rm -f /etc/NetworkManager/dispatcher.d/01-shorewall
 
@@ -90,7 +92,7 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall-init
 
 %attr(0644,root,root) /usr/share/shorewall-init/version
-%attr(0544,root,root) /sbin/shorewall-ifupdown
+%attr(0544,root,root) /usr/share/shorewall-init/ifupdown.sh
 
 %doc COPYING changelog.txt releasenotes.txt
 

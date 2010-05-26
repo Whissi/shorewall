@@ -254,28 +254,27 @@ fi
 #
 # Install the ifupdown script
 #
-if [ -n "${PREFIX}" ]; then
-    mkdir -p ${PREFIX}/sbin
-fi
 
-install_file ifupdown.sh ${PREFIX}/sbin/shorewall-ifupdown 744
+mkdir -p ${PREFIX}/usr/share/shorewall-init
+
+install_file ifupdown.sh ${PREFIX}/usr/share/shorewall-init/ifupdown 0544
 
 if [ -d ${PREFIX}/etc/NetworkManager ]; then
-    install_file ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall 0744
+    install_file ifupdown.sh ${PREFIX}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
 if [ -n "$DEBIAN" ]; then
-    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-up.d/shorewall
-    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/network/if-post-down.d/shorewall
+    install_file ifupdown.sh ${PREFIX}/etc/network/if-up.d/shorewall 0544
+    install_file ifupdown.sh ${PREFIX}/etc/network/if-post-down.d/shorewall 0544
 elif [ -n "$SUSE" ]; then
-    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/sysconfig/network/if-up.d/shorewall
-    ln -sf /sbin/shorewall-ifupdown ${PREFIX}/etc/sysconfig/network/if-down.d/shorewall
+    install_file ifupdown.sh ${PREFIX}/etc/sysconfig/network/if-up.d/shorewall 0744
+    install_file ifupdown.sh ${PREFIX}/etc/sysconfig/network/if-down.d/shorewall 0744
 elif [ -n "$REDHAT" ]; then
     if [ -f ${PREFIX}/sbin/ifup-local -o -f ${PREFIX}/sbin/ifdown-local ]; then
 	echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
     else
-	ln -s /sbin/shorewall-ifupdown ${PREFIX}/sbin/ifup-local
-	ln -s /sbin/shorewall-ifupdown ${PREFIX}/sbin/ifdown-local
+	install_file ifupdown.sh ${PREFIX}/sbin/ifup-local 0544
+	install_file ifupdown.sh ${PREFIX}/sbin/ifdown-local 0544
     fi
 fi
 

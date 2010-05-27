@@ -238,11 +238,13 @@ else
     if [ -n "$PREFIX" ]; then
 	mkdir -p ${PREFIX}/etc/sysconfig
 
-	if [ -n "$SUSE" ]; then
-	    mkdir -p ${PREFIX}/etc/sysconfig/network/if-up.d
-	    mkdir -p ${PREFIX}/etc/sysconfig/network/if-down.d
-	else
-	    mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
+	if [ -z "$RPM" ]; then
+	    if [ -n "$SUSE" ]; then
+		mkdir -p ${PREFIX}/etc/sysconfig/network/if-up.d
+		mkdir -p ${PREFIX}/etc/sysconfig/network/if-down.d
+	    else
+		mkdir -p ${PREFIX}/etc/NetworkManager/dispatcher.d
+	    fi
 	fi
     fi
 

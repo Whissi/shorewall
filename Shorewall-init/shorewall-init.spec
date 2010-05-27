@@ -48,19 +48,27 @@ if [ $1 -eq 1 ]; then
     elif [ -x /sbin/chkconfig ]; then
 	/sbin/chkconfig --add shorewall-init;
     fi
+fi
 
-    if [ ! -f /etc/SuSE-release ]; then
-	if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
+if [ -f /etc/SuSE-release ]; then
+    cp -af /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
+    cp -af /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
+else
+    if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
+	if ! grep -q Shorewall /sbin/ifup-local || ! grep -q Shorewall /sbin/ifdown-local; then
 	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; ifup/ifdown events will not be handled" >&2
 	else
-	    cp -a /usr/share/shorewall-init/ifupdown /sbin/ifup-local
-	    cp -a /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
+	    cp -af /usr/share/shorewall-init/ifupdown /sbin/ifup-local
+	    cp -af /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
 	fi
+    else
+	cp -af /usr/share/shorewall-init/ifupdown /sbin/ifup-local
+	cp -af /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
+    fi
 
-	if [ -d /etc/NetworkManager/dispatcher.d/ ]; then
-	    cp -af /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
-	fi
-    fi	    
+    if [ -d /etc/NetworkManager/dispatcher.d/ ]; then
+	cp -af /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
+    fi
 fi
 
 %preun
@@ -72,8 +80,8 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del shorewall-init
     fi
 
-    grep -q Shorewall /sbin/ifup-local   && rm -f /sbin/ifup-local
-    grep -q Shorewall /sbin/ifdown-local && rm -f /sbin/ifdown-local
+    [ -f /sbin/ifup-local ]   && grep -q Shorewall /sbin/ifup-local   && rm -f /sbin/ifup-local
+    [ -f /sbin/ifdown-local ] && grep -q Shorewall /sbin/ifdown-local && rm -f /sbin/ifdown-local
 
     rm -f /etc/NetworkManager/dispatcher.d/01-shorewall
 fi
@@ -81,8 +89,6 @@ fi
 %files
 %defattr(0644,root,root,0755)
 %attr(0644,root,root) %config(noreplace) /etc/sysconfig/shorewall-init
-%attr(0544,root,root) /etc/sysconfig/network/if-up.d/shorewall
-%attr(0544,root,root) /etc/sysconfig/network/if-down.d/shorewall
 
 %attr(0544,root,root) /etc/init.d/shorewall-init
 %attr(0755,root,root) %dir /usr/share/shorewall-init

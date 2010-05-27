@@ -270,7 +270,7 @@ if [ -n "$DEBIAN" ]; then
     install_file ifupdown.sh ${PREFIX}/etc/network/if-post-down.d/shorewall 0544
 elif [ -n "$SUSE" ]; then
     install_file ifupdown.sh ${PREFIX}/etc/sysconfig/network/if-up.d/shorewall 0544
-    install_file ifupdown.sh ${PREFIX}/etc/sysconfig/network/if-down.d/shorewall 5744
+    install_file ifupdown.sh ${PREFIX}/etc/sysconfig/network/if-down.d/shorewall 0544
 elif [ -n "$REDHAT" ]; then
     if [ -f ${PREFIX}/sbin/ifup-local -o -f ${PREFIX}/sbin/ifdown-local ]; then
 	echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"

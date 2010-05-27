@@ -49,10 +49,7 @@ if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add shorewall-init;
     fi
 
-    if [ -f /etc/SuSE-release ]; then
-	cp -af /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
-	cp -af /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
-    else
+    if [ ! -f /etc/SuSE-release ]; then
 	if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
 	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; ifup/ifdown events will not be handled" >&2
 	else
@@ -79,14 +76,13 @@ if [ $1 -eq 0 ]; then
     grep -q Shorewall /sbin/ifdown-local && rm -f /sbin/ifdown-local
 
     rm -f /etc/NetworkManager/dispatcher.d/01-shorewall
-
-    rm -f /etc/sysconfig/network/if-up.d/shorewall
-    rm -f /etc/sysconfig/network/if-down.d/shorewall
 fi
 
 %files
 %defattr(0644,root,root,0755)
 %attr(0644,root,root) %config(noreplace) /etc/sysconfig/shorewall-init
+%attr(0544,root,root) /etc/sysconfig/network/if-up.d/shorewall
+%attr(0544,root,root) /etc/sysconfig/network/if-down.d/shorewall
 
 %attr(0544,root,root) /etc/init.d/shorewall-init
 %attr(0755,root,root) %dir /usr/share/shorewall-init

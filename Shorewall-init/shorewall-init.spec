@@ -51,23 +51,23 @@ if [ $1 -eq 1 ]; then
 fi
 
 if [ -f /etc/SuSE-release ]; then
-    cp -af /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
-    cp -af /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
+    cp -pf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-up.d/shorewall
+    cp -pf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
 else
     if [ -f /sbin/ifup-local -o -f /sbin/ifdown-local ]; then
 	if ! grep -q Shorewall /sbin/ifup-local || ! grep -q Shorewall /sbin/ifdown-local; then
 	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; ifup/ifdown events will not be handled" >&2
 	else
-	    cp -af /usr/share/shorewall-init/ifupdown /sbin/ifup-local
-	    cp -af /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
+	    cp -pf /usr/share/shorewall-init/ifupdown /sbin/ifup-local
+	    cp -pf /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
 	fi
     else
-	cp -af /usr/share/shorewall-init/ifupdown /sbin/ifup-local
-	cp -af /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
+	cp -pf /usr/share/shorewall-init/ifupdown /sbin/ifup-local
+	cp -pf /usr/share/shorewall-init/ifupdown /sbin/ifdown-local
     fi
 
     if [ -d /etc/NetworkManager/dispatcher.d/ ]; then
-	cp -af /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
+	cp -pf /usr/share/shorewall-init/ifupdown /etc/NetworkManager/dispatcher.d/01-shorewall
     fi
 fi
 

@@ -134,7 +134,7 @@ case $(uname) in
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
-	INSTALLD=-d
+	INSTALLD=
 	T=
 	;;	
     *)

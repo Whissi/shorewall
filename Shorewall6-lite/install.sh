@@ -143,7 +143,7 @@ case $(uname) in
 	GROUP=$(id -gn)
 	;;
      Darwin)
-	INSTALLD='-d'
+	INSTALLD=
 	T=
 	;;	   
     *)

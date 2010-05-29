@@ -1508,6 +1508,7 @@ version_command() {
     finished=0
     local all
     all=
+    local product
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1540,7 +1541,22 @@ version_command() {
 
     [ $# -gt 0 ] && usage 1
 
-    echo $SHOREWALL_VERSION
+    if [ -n "$all" ]; then
+	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
+	    if [ -f /usr/share/$product/version ]; then
+		case $product in
+		    shorewall)
+			echo $SHOREWALL_VERSION
+			;;
+		    *)
+			echo "$product: $(cat /usr/share/$product/version)"
+			;;
+		esac
+	    fi
+	done
+    else
+	echo $SHOREWALL_VERSION
+    fi
 
 }
 

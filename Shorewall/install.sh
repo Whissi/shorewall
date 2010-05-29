@@ -82,7 +82,7 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install -T $OWNERSHIP -m $3 $1 ${2}
+    run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
 #
@@ -94,6 +94,7 @@ install_file() # $1 = source $2 = target $3 = mode
 # ARGS is "yes" if we've already parsed an argument
 #
 ARGS=""
+T="-T"
 
 if [ -z "$DEST" ] ; then
 	DEST="/etc/init.d"
@@ -133,7 +134,8 @@ case $(uname) in
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
-	INSTALLD=
+	INSTALLD=-d
+	T=
 	;;	
     *)
 	[ -z "$OWNER" ] && OWNER=root

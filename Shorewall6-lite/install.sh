@@ -82,7 +82,7 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install -T $OWNERSHIP -m $3 $1 ${2}
+    run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
 #
@@ -130,6 +130,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 INSTALLD='-D'
+T='-T'
 
 case $(uname) in
     CYGWIN*)
@@ -142,7 +143,8 @@ case $(uname) in
 	GROUP=$(id -gn)
 	;;
      Darwin)
-	INSTALLD=
+	INSTALLD='-d'
+	T=
 	;;	   
     *)
 	[ -z "$OWNER" ] && OWNER=root

@@ -232,7 +232,17 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     end their Perl extension scripts with the following line to insure
     that the script returns a 'true' value:
 
-    	 1; 
+    	 1;
+
+3)  Under rare circumstances involving a complex configuration,
+    OPTIMIZE=13 and OPTIMIZE=15 could cause invalid iptables-restore
+    input to be generated. 
+
+    Sample error message:
+
+        iptables-restore v1.4.8: Couldn't load target
+        `sys2sys':/usr/local/libexec/xtables/libipt_sys2sys.so:
+	cannot open shared object file: No such file or directory
 
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G

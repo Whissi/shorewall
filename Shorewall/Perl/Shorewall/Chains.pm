@@ -737,12 +737,12 @@ sub adjust_reference_counts( $$$ ) {
 }
 
 #
-# Adjust reference counts after copying a rule from $name1 to $name2
+# Adjust reference counts after copying a jump with target $toref to chain $chain
 #
-sub adjust_reference_counts1( $$$ ) {
-    my ($toref, $name1, $name2) = @_;
+sub increment_reference_count( $$ ) {
+    my ($toref, $chain) = @_;
 
-    $toref->{references}{$name2}++ if $toref;
+    $toref->{references}{$chain}++ if $toref;
 }
 
 #
@@ -814,16 +814,14 @@ sub copy_rules( $$ ) {
 	my $rule = @$rules;
 	trace( $chain2, 'A', ++$rule, $_ ) for @rules;
     }
-
+    #
+    # Chain2 is now a referent of all of Chain1's targets
+    #
     for ( @rules ) {
-	adjust_reference_counts1( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
+	increment_reference_count( $tableref->{$1}, $name2 ) if / -[jg] ([^\s]+)/;
     }
 
     push @$rules, @rules;
-    #
-    # Add chain1's references to $chain2
-    #
-    $chain2->{references}{$_} += $chain1->{references}{$_} for keys %{$chain1->{references}}; 
 
     progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
 
@@ -1629,10 +1627,10 @@ sub replace_references1( $$$ ) {
 }
 
 #
-# The passed builtin chain has a single rule. If the target is a user chain without 'dont"move', move the rules from the 
+# The passed builtin chain has a single rule. If the target is a user chain without 'dont"move', copy the rules from the 
 # chain to the builtin and return true; otherwise, do nothing and return false.
 #
-sub conditionally_move_rules( $$ ) {
+sub conditionally_copy_rules( $$ ) {
     my ( $chainref, $target ) = @_;
 
     if ( $target =~ /^\s*([^\s]+)/ ) {
@@ -1736,9 +1734,9 @@ sub optimize_ruleset() {
 				if ( $chainref->{builtin} ) {
 				    #
 				    # A built-in chain. If the target is a user chain without 'dont_move',
-				    # we can move its rules to the built-in
+				    # we can copy its rules to the built-in
 				    #
-				    if ( conditionally_move_rules $chainref, $1 ) {
+				    if ( conditionally_copy_rules $chainref, $1 ) {
 					#
 					# Target was a user chain -- rules moved
 					#

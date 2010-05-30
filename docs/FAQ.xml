@@ -20,7 +20,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2009</year>
+      <year>2001-2010</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -2738,6 +2738,41 @@ loc                $FW                     ACCEPT           </programlisting>
       reports that users have also been successful in using Snort in
       <emphasis>inline</emphasis> more with Shorewall, but no HOWTO exists at
       this time.</para>
+    </section>
+
+    <section id="faq89">
+      <title>(FAQ 89) How do I connect to the web server in my aDSL modem from
+      my local LAN?</title>
+
+      <para>Answer: Here's what I did:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>My local network is 172.20.1.0/24 so I set the IP address in
+          the modem to 172.20.1.2.</para>
+        </listitem>
+
+        <listitem>
+          <para>The IP address of my firewall's interface to the LAN is
+          172.20.1.254. I added the following two configuration
+          entries:</para>
+
+          <para><filename>/etc/shorewall/masq:</filename></para>
+
+          <programlisting>#INTERFACE			SOURCE			ADDRESS
+
+COMMENT DSL Modem
+
+EXT_IF:172.20.1.2	     	0.0.0.0/0		172.20.1.254
+</programlisting>
+
+          <para><filename>/etc/shorewall/proxyarp</filename>:</para>
+
+          <programlisting>#ADDRESS	INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
+172.20.1.2	EXT_IF		INT_IF		no		yes
+</programlisting>
+        </listitem>
+      </itemizedlist>
     </section>
   </section>
 </article>

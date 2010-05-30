@@ -2798,15 +2798,6 @@ EXT_IF:172.20.1.2	     	0.0.0.0/0		172.20.1.254
         </listitem>
 
         <listitem>
-          <para>Add a host route to 192.168.1.1 out of your external interface
-          using your configuration's network management tools. On Debian-based
-          systems, that means adding this to the interfaces's stanza in
-          <filename>/etc/network/interfaces</filename>:</para>
-
-          <programlisting>    post-up /sbin/ip route add 192.168.1.1/32 dev <replaceable>external-interface</replaceable> src 192.168.1.254</programlisting>
-        </listitem>
-
-        <listitem>
           <para>Your entry in <filename>/etc/shorewall/masq</filename> would
           then be:</para>
 

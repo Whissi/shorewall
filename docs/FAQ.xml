@@ -2710,6 +2710,8 @@ Shorewall has detected the following iptables/netfilter capabilities:
    LOG Target: Available
    Persistent SNAT: Available
 gateway:~# </programlisting>
+
+      <para></para>
     </section>
 
     <section id="faq19">
@@ -2748,14 +2750,16 @@ loc                $FW                     ACCEPT           </programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>My local network is 172.20.1.0/24 so I set the IP address in
+          <para>My local network is 172.20.1.0/24, so I set the IP address in
           the modem to 172.20.1.2.</para>
         </listitem>
 
         <listitem>
           <para>The IP address of my firewall's interface to the LAN is
-          172.20.1.254. I added the following two configuration
-          entries:</para>
+          172.20.1.254. The logical name of the DSL interface is EXT_IF and my
+          LAN interface is INT_IF.</para>
+
+          <para>I added the following two configuration entries:</para>
 
           <para><filename>/etc/shorewall/masq:</filename></para>
 
@@ -2770,6 +2774,47 @@ EXT_IF:172.20.1.2	     	0.0.0.0/0		172.20.1.254
 
           <programlisting>#ADDRESS	INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
 172.20.1.2	EXT_IF		INT_IF		no		yes
+</programlisting>
+        </listitem>
+      </itemizedlist>
+
+      <para>If you can't change the IP address of your modem and its current
+      address isn't in your local network, then you need to change this
+      slightly; assuming that the modem IP address is 192.168.1.1:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Do not include an entry in
+          <filename>/etc/shorewall/proxyarp</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Add an IP address in 192.168.1.0/24 to your external interface
+          using your configuration's network management tools. For
+          Debian-based systems, that means adding this to the interface's
+          stanza in <filename>/etc/network/interfaces</filename>:</para>
+
+          <programlisting>    post-up /sbin/ip addr add 192.168.1.254/24 dev <replaceable>external-interface</replaceable></programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Add a host route to 192.168.1.1 out of your external interface
+          using your configuration's network management tools. On Debian-based
+          systems, that means adding this to the interfaces's stanza in
+          <filename>/etc/network/interfaces</filename>:</para>
+
+          <programlisting>    post-up /sbin/ip route add 192.168.1.1/32 dev <replaceable>external-interface</replaceable> src 192.168.1.254</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Your entry in <filename>/etc/shorewall/masq</filename> would
+          then be:</para>
+
+          <programlisting>#INTERFACE			SOURCE			ADDRESS
+
+COMMENT DSL Modem
+
+EXT_IF:192.168.1.1	     	0.0.0.0/0		192.168.1.254
 </programlisting>
         </listitem>
       </itemizedlist>

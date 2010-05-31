@@ -225,7 +225,7 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 
 2)  A regression of sorts occurred in Shorewall 4.4.9. Previously, a
     Perl extension script could end with a call to add_rule(). Such a
-    script would fail in Shorewall 4.4.9 unless the 'trace' option was
+    script fails under Shorewall 4.4.9 unless the 'trace' option is
     specified on the run line.
 
     While this issue has been corrected, users are advised to always
@@ -374,6 +374,18 @@ None.
     required by Debian standards. You can change this default behavior
     by setting SAFESTOP=1 in /etc/default/shorewall
     (/etc/default/shorewall6, ...).
+
+2)  All of the CLIs now support the -a option of the 'version' command.
+
+    Example:
+
+	gateway:~# shorewall6 version -a
+	4.4.10-RC1
+	shorewall: 4.4.10-RC1
+	shorewall-lite: 4.4.10-RC1
+	shorewall6-lite: 4.4.10-RC1
+	shorewall-init: 4.4.10-RC1
+	gateway:~# 
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

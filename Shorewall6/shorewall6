@@ -1458,9 +1458,11 @@ version_command() {
     echo $SHOREWALL_VERSION
 
     if [ -n "$all" ]; then
-	if [ -f /usr/share/shorewall/version ]; then
-	    echo "Shorewall $(cat /usr/share/shorewall/version)"
-	fi
+	for product in shorewall shorewall-lite shorewall6-lite shorewall-init; do
+	    if [ -f /usr/share/$product/version ]; then
+		echo "$product: $(cat /usr/share/$product/version)"
+	    fi
+	done
     fi
 }
 

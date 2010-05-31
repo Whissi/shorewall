@@ -1145,6 +1145,13 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
         url="starting_and_stopping_shorewall.htm"><command>shorewall
         try</command> command</ulink>.</para>
       </warning></para>
+
+    <para>The firewall will start after your network interfaces have been
+    brought up. This leaves a small window between the time that the network
+    interface are working and when the firewall is controlling connections
+    through those interfaces. If this is a concern, you can close that window
+    by installing the <ulink url="Shorewall-init.html">Shorewall Init
+    Package</ulink>.</para>
   </section>
 
   <section id="Trouble">

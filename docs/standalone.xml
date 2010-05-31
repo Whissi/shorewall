@@ -593,7 +593,7 @@ SSH(ACCEPT) net       $FW           </programlisting>
     <important>
       <para>Users of the .deb package must edit
       <filename>/etc/default/shorewall</filename> and set
-      <varname>STARTUP=1.</varname></para>
+      <varname>startup=1.</varname></para>
     </important>
 
     <important>
@@ -631,6 +631,13 @@ SSH(ACCEPT) net       $FW           </programlisting>
       url="starting_and_stopping_shorewall.htm"><quote><command>shorewall
       try</command></quote></ulink> command.</para>
     </warning>
+
+    <para>The firewall will start after your network interface has been
+    brought up. This leaves a small window between the time that the network
+    interface is working and when the firewall is controlling connections
+    through that interface. If this is a concern, you can close that window by
+    installing the <ulink url="Shorewall-init.html">Shorewall Init
+    Package</ulink>.</para>
   </section>
 
   <section id="Problems">

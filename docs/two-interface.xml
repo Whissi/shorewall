@@ -1062,6 +1062,13 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
         configuration and test it using the <quote><command>shorewall
         try</command></quote> command.</para>
       </warning></para>
+
+    <para>The firewall will start after your network interfaces have been
+    brought up. This leaves a small window between the time that the network
+    interfaces are working and when the firewall is controlling connections
+    through those interfaces. If this is a concern, you can close that window
+    by installing the <ulink url="Shorewall-init.html">Shorewall Init
+    Package</ulink>.</para>
   </section>
 
   <section id="Trouble">

@@ -85,6 +85,8 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
+[ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
+
 #
 # Parse the run line
 #
@@ -134,7 +136,7 @@ T='-T'
 
 case $(uname) in
     CYGWIN*)
-	if [ -z "$PREFIX" ]; then
+	if [ -z "$DESTDIR" ]; then
 	    DEST=
 	    INIT=
 	fi
@@ -154,14 +156,14 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-if [ -n "$PREFIX" ]; then
+if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then
 	echo "Not setting file owner/group permissions, not running as root."
 	OWNERSHIP=""
     fi
     
-    install -d $OWNERSHIP -m 755 ${PREFIX}/sbin
-    install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
+    install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
 elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
 elif [ -f /etc/slackware-version ] ; then
@@ -183,123 +185,123 @@ echo "Installing Shorewall6 Lite Version $VERSION"
 #
 # Check for /etc/shorewall6-lite
 #
-if [ -z "$PREFIX" -a -d /etc/shorewall6-lite ]; then
+if [ -z "$DESTDIR" -a -d /etc/shorewall6-lite ]; then
     [ -f /etc/shorewall6-lite/shorewall.conf ] && \
 	mv -f /etc/shorewall6-lite/shorewall.conf /etc/shorewall6-lite/shorewall6-lite.conf
 else
-    rm -rf ${PREFIX}/etc/shorewall6-lite
-    rm -rf ${PREFIX}/usr/share/shorewall6-lite
-    rm -rf ${PREFIX}/var/lib/shorewall6-lite
+    rm -rf ${DESTDIR}/etc/shorewall6-lite
+    rm -rf ${DESTDIR}/usr/share/shorewall6-lite
+    rm -rf ${DESTDIR}/var/lib/shorewall6-lite
 fi
 
 #
 # Check for /sbin/shorewall6-lite
 #
-if [ -f ${PREFIX}/sbin/shorewall6-lite ]; then
+if [ -f ${DESTDIR}/sbin/shorewall6-lite ]; then
     first_install=""
 else
     first_install="Yes"
 fi
 
-delete_file ${PREFIX}/usr/share/shorewall6-lite/xmodules
+delete_file ${DESTDIR}/usr/share/shorewall6-lite/xmodules
 
-install_file shorewall6-lite ${PREFIX}/sbin/shorewall6-lite 0544
+install_file shorewall6-lite ${DESTDIR}/sbin/shorewall6-lite 0544
 
-echo "Shorewall6 Lite control program installed in ${PREFIX}/sbin/shorewall6-lite"
+echo "Shorewall6 Lite control program installed in ${DESTDIR}/sbin/shorewall6-lite"
 
 #
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${PREFIX}/etc/init.d/shorewall6-lite 0544
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall6-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544
+    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
 
 else
-    install_file init.sh ${PREFIX}${DEST}/$INIT 0544
+    install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
 fi
 
-echo  "Shorewall6 Lite script installed in ${PREFIX}${DEST}/$INIT"
+echo  "Shorewall6 Lite script installed in ${DESTDIR}${DEST}/$INIT"
 
 #
 # Create /etc/shorewall6-lite, /usr/share/shorewall6-lite and /var/lib/shorewall6-lite if needed
 #
-mkdir -p ${PREFIX}/etc/shorewall6-lite
-mkdir -p ${PREFIX}/usr/share/shorewall6-lite
-mkdir -p ${PREFIX}/var/lib/shorewall6-lite
+mkdir -p ${DESTDIR}/etc/shorewall6-lite
+mkdir -p ${DESTDIR}/usr/share/shorewall6-lite
+mkdir -p ${DESTDIR}/var/lib/shorewall6-lite
 
-chmod 755 ${PREFIX}/etc/shorewall6-lite
-chmod 755 ${PREFIX}/usr/share/shorewall6-lite
+chmod 755 ${DESTDIR}/etc/shorewall6-lite
+chmod 755 ${DESTDIR}/usr/share/shorewall6-lite
 
-if [ -n "$PREFIX" ]; then
-    mkdir -p ${PREFIX}/etc/logrotate.d
-    chmod 755 ${PREFIX}/etc/logrotate.d
+if [ -n "$DESTDIR" ]; then
+    mkdir -p ${DESTDIR}/etc/logrotate.d
+    chmod 755 ${DESTDIR}/etc/logrotate.d
 fi
 
 #
 # Install the config file
 #
-if [ ! -f ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf ]; then
-   install_file shorewall6-lite.conf ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf 0744
-   echo "Config file installed as ${PREFIX}/etc/shorewall6-lite/shorewall6-lite.conf"
+if [ ! -f ${DESTDIR}/etc/shorewall6-lite/shorewall6-lite.conf ]; then
+   install_file shorewall6-lite.conf ${DESTDIR}/etc/shorewall6-lite/shorewall6-lite.conf 0744
+   echo "Config file installed as ${DESTDIR}/etc/shorewall6-lite/shorewall6-lite.conf"
 fi
 
 if [ -n "$ARCHLINUX" ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall6-lite/shorewall.conf
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall6-lite/shorewall.conf
 fi
 
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall6-lite
-echo "Makefile installed as ${PREFIX}/etc/shorewall6-lite/Makefile"
+run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/shorewall6-lite
+echo "Makefile installed as ${DESTDIR}/etc/shorewall6-lite/Makefile"
 
 #
 # Install the default config path file
 #
-install_file configpath ${PREFIX}/usr/share/shorewall6-lite/configpath 0644
-echo "Default config path file installed as ${PREFIX}/usr/share/shorewall6-lite/configpath"
+install_file configpath ${DESTDIR}/usr/share/shorewall6-lite/configpath 0644
+echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall6-lite/configpath"
 
 #
 # Install the libraries
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${PREFIX}/usr/share/shorewall6-lite/$f 0644
-	echo "Library ${f#*.} file installed as ${PREFIX}/usr/share/shorewall6-lite/$f"
+	install_file $f ${DESTDIR}/usr/share/shorewall6-lite/$f 0644
+	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall6-lite/$f"
     fi
 done
 
-ln -sf lib.base ${PREFIX}/usr/share/shorewall6-lite/functions
+ln -sf lib.base ${DESTDIR}/usr/share/shorewall6-lite/functions
 
-echo "Common functions linked through ${PREFIX}/usr/share/shorewall6-lite/functions"
+echo "Common functions linked through ${DESTDIR}/usr/share/shorewall6-lite/functions"
 
 #
 # Install Shorecap
 #
 
-install_file shorecap ${PREFIX}/usr/share/shorewall6-lite/shorecap 0755
+install_file shorecap ${DESTDIR}/usr/share/shorewall6-lite/shorecap 0755
 
 echo
-echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall6-lite/shorecap"
+echo "Capability file builder installed in ${DESTDIR}/usr/share/shorewall6-lite/shorecap"
 
 #
 # Install wait4ifup
 #
 
 if [ -f wait4ifup ]; then
-    install_file wait4ifup ${PREFIX}/usr/share/shorewall6-lite/wait4ifup 0755
+    install_file wait4ifup ${DESTDIR}/usr/share/shorewall6-lite/wait4ifup 0755
 
     echo
-    echo "wait4ifup installed in ${PREFIX}/usr/share/shorewall6-lite/wait4ifup"
+    echo "wait4ifup installed in ${DESTDIR}/usr/share/shorewall6-lite/wait4ifup"
 fi
 
 if [ -f modules ]; then
     #
     # Install the Modules file
     #
-    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall6-lite
-    echo "Modules file installed as ${PREFIX}/usr/share/shorewall6-lite/modules"
+    run_install $OWNERSHIP -m 0600 modules ${DESTDIR}/usr/share/shorewall6-lite
+    echo "Modules file installed as ${DESTDIR}/usr/share/shorewall6-lite/modules"
 fi
 
 if [ -d manpages ]; then
@@ -309,18 +311,18 @@ if [ -d manpages ]; then
 
     cd manpages
 
-    [ -n "$INSTALLD" ] || mkdir -p ${PREFIX}/usr/share/man/man5/ ${PREFIX}/usr/share/man/man8/
+    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}/usr/share/man/man5/ ${DESTDIR}/usr/share/man/man8/
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man5/$f.gz
-	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man5/$f.gz"
+	run_install $INSTALLD -m 644 $f.gz ${DESTDIR}/usr/share/man/man5/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}/usr/share/man/man5/$f.gz"
     done
 
     for f in *.8; do
 	gzip -c $f > $f.gz
-	run_install $INSTALLD -m 644 $f.gz ${PREFIX}/usr/share/man/man8/$f.gz
-	echo "Man page $f.gz installed to ${PREFIX}/usr/share/man/man8/$f.gz"
+	run_install $INSTALLD -m 644 $f.gz ${DESTDIR}/usr/share/man/man8/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}/usr/share/man/man8/$f.gz"
     done
     
     cd ..
@@ -328,26 +330,26 @@ if [ -d manpages ]; then
     echo "Man Pages Installed"
 fi
 
-if [ -d ${PREFIX}/etc/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${PREFIX}/etc/logrotate.d/shorewall6-lite
-    echo "Logrotate file installed as ${PREFIX}/etc/logrotate.d/shorewall6-lite"
+if [ -d ${DESTDIR}/etc/logrotate.d ]; then
+    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}/etc/logrotate.d/shorewall6-lite
+    echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/shorewall6-lite"
 fi
 
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/usr/share/shorewall6-lite/version
-chmod 644 ${PREFIX}/usr/share/shorewall6-lite/version
+echo "$VERSION" > ${DESTDIR}/usr/share/shorewall6-lite/version
+chmod 644 ${DESTDIR}/usr/share/shorewall6-lite/version
 #
 # Remove and create the symbolic link to the init script
 #
 
-if [ -z "$PREFIX" ]; then
+if [ -z "$DESTDIR" ]; then
     rm -f /usr/share/shorewall6-lite/init
     ln -s ${DEST}/${INIT} /usr/share/shorewall6-lite/init
 fi
 
-if [ -z "$PREFIX" ]; then
+if [ -z "$DESTDIR" ]; then
     touch /var/log/shorewall6-lite-init.log
 
     if [ -n "$first_install" ]; then

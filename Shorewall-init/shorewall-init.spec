@@ -32,7 +32,7 @@ ifup/ifdown and NetworkManager.
 %build
 
 %install
-export PREFIX=$RPM_BUILD_ROOT ; \
+export DESTDIR=$RPM_BUILD_ROOT ; \
 export OWNER=`id -n -u` ; \
 export GROUP=`id -n -g` ;\
 ./install.sh

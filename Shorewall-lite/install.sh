@@ -92,7 +92,6 @@ install_file() # $1 = source $2 = target $3 = mode
 #
 # DEST is the SysVInit script directory
 # INIT is the name of the script in the $DEST directory
-# RUNLEVELS is the chkconfig parmeters for firewall
 # ARGS is "yes" if we've already parsed an argument
 #
 ARGS=""
@@ -103,10 +102,6 @@ fi
 
 if [ -z "$INIT" ] ; then
 	INIT="shorewall-lite"
-fi
-
-if [ -z "$RUNLEVELS" ] ; then
-	RUNLEVELS=""
 fi
 
 while [ $# -gt 0 ] ; do

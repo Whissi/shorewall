@@ -165,7 +165,7 @@
 
       <variablelist>
         <varlistentry>
-          <term>rpmbuild (I use rpm version 4.4.2.3-20.3)</term>
+          <term>rpmbuild</term>
 
           <listitem>
             <para>Required to build the RPM packages.</para>
@@ -173,7 +173,7 @@
         </varlistentry>
 
         <varlistentry>
-          <term>xsltproc (libxslt -- I use version 1.1.24-19.1)</term>
+          <term>xsltproc (libxslt)</term>
 
           <listitem>
             <para>Required to convert the XML documents to other
@@ -182,8 +182,7 @@
         </varlistentry>
 
         <varlistentry>
-          <term>Docbook XSL Stylesheets (I use docbook-xsl-stylesheets version
-          1.74.0-1.35)</term>
+          <term>Docbook XSL Stylesheets</term>
 
           <listitem>
             <para>Required to convert the XML documents to other
@@ -192,7 +191,7 @@
         </varlistentry>
 
         <varlistentry>
-          <term>Perl (I use Perl 5.10.0-62.17.1)</term>
+          <term>Perl</term>
 
           <listitem>
             <para>Required to massage some of the config files.</para>
@@ -200,15 +199,11 @@
         </varlistentry>
 
         <varlistentry>
-          <term>xmlto (I use version 0.0.18-182.27)</term>
+          <term>xmlto</term>
 
           <listitem>
-            <para>Required to convert the XML manpages to manpages. Note that
-            not all versions of xmlto will work (those released by Debian and
-            Ubuntu, for example, do <emphasis>not</emphasis> work). If you
-            find that xmlto fails, install
-            tools<filename>/build/xmlto</filename> in <filename
-            class="directory">/usr/local/bin</filename>.</para>
+            <para>Required to convert the XML manpages to manpages. Be sure
+            that you have a recent version; I use 0.0.23.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -260,7 +255,7 @@
           <term>GIT</term>
 
           <listitem>
-            <para>Shorewall GIT repository</para>
+            <para>Shorewall GIT repository.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -309,6 +304,14 @@
 
                 <listitem>
                   <para>Build the shorewall package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>i</term>
+
+                <listitem>
+                  <para>Build the shorewall-init package.</para>
                 </listitem>
               </varlistentry>
 
@@ -384,7 +387,7 @@
       against 4.2.7:</para>
 
       <blockquote>
-        <para><command>build44 -trSc 4.3.7.1 4.3.7</command></para>
+        <para><command>build44 -trc 4.3.7.1 4.3.7</command></para>
       </blockquote>
     </section>
 
@@ -430,6 +433,14 @@
               </varlistentry>
 
               <varlistentry>
+                <term>i</term>
+
+                <listitem>
+                  <para>Upload the shorewall-init package.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
                 <term>6</term>
 
                 <listitem>
@@ -468,6 +479,56 @@
       <blockquote>
         <para><command>upload44 -c 4.3.7.3</command></para>
       </blockquote>
+    </section>
+
+    <section>
+      <title>install.sh files</title>
+
+      <para>Each product includes an install script
+      (<filename>install.sh</filename>) that may be used to install the
+      product on a machine or into a directory. </para>
+
+      <para>By default, the scripts install the corresponding product into
+      "/'; you can direct them to install into an empty existing directory by
+      setting an environmental variable:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>DESTDIR (release 4.4.10 and later)</para>
+        </listitem>
+
+        <listitem>
+          <para>PREFIX (all releases)</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>There are a number of other environmental variables that you can
+      set to cause the directory to be populated for a particular target
+      environment:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>DEBIAN - Debian-based systems (Debian, Ubuntu, etc.)</para>
+        </listitem>
+
+        <listitem>
+          <para>SUSE - SEL and OpenSuSE</para>
+        </listitem>
+
+        <listitem>
+          <para>REDHAT - RHEL, CentOS, Foobar, etc.</para>
+        </listitem>
+
+        <listitem>
+          <para>MAC - Apple MacIntosh (Shorewall and Shorewall6 packages
+          only)</para>
+        </listitem>
+
+        <listitem>
+          <para>CYGWIN - Cygwin under Windows (Shorewall and Shorewall6
+          packages only)</para>
+        </listitem>
+      </itemizedlist>
     </section>
   </section>
 </article>

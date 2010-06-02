@@ -72,6 +72,10 @@
         <listitem>
           <para>Shorewall6-lite</para>
         </listitem>
+
+        <listitem>
+          <para>Shorewall-init</para>
+        </listitem>
       </itemizedlist>
 
       <para>There are also several other directories which are described in
@@ -80,20 +84,18 @@
       <section>
         <title>trunk/docs</title>
 
-        <para>The development release XML documents. Depending on the point in
-        the release cycle, these documents may also apply to the current
-        stable version. In that case, there is no docs directory in that
-        release's directory in <emphasis
-        role="bold">branches</emphasis>.</para>
+        <para>The stable release XML documents. Depending on the point in the
+        release cycle, these documents may also apply to the current
+        development version.</para>
       </section>
 
       <section>
         <title>trunk/manpages, trunk/manpages6, trunk/manpages-lite and
         trunk/manpages6-lite</title>
 
-        <para>The development release XML manpages. Depending on the point in
-        the release cycle, these documents may also apply to the current
-        stable version.</para>
+        <para>The stable release XML manpages. Depending on the point in the
+        release cycle, these documents may also apply to the current
+        development version.</para>
       </section>
     </section>
 
@@ -156,7 +158,8 @@
     <section>
       <title>build44</title>
 
-      <para>This is the script that builds Shorewall packages from Git.</para>
+      <para>This is the script that builds Shorewall 4.4 packages from
+      Git.</para>
 
       <para>The script copies content from Git using the <command>git
       archive</command> command. It then uses that content to build the
@@ -208,12 +211,12 @@
         </varlistentry>
       </variablelist>
 
-      <para>You should ensure that you have the latest script. The scripts
+      <para>You should ensure that you have the latest scripts. The scripts
       change periodically as we move through the release cycles.</para>
 
-      <para>The scripts may need to be modified to fit your particular
-      environment. There are a number of variables that are set near the front
-      of the script:</para>
+      <para>The build44 script may need to be modified to fit your particular
+      environment. There are a number of variables that are set near the top
+      of the file:</para>
 
       <variablelist>
         <varlistentry>
@@ -279,8 +282,8 @@
           <term>opt<emphasis>i</emphasis>ons</term>
 
           <listitem>
-            <para>are one of the following. If no options are given then all
-            options are assumed</para>
+            <para>are one or more of the following. If no options are given
+            then all options are assumed</para>
 
             <variablelist>
               <varlistentry>
@@ -486,7 +489,7 @@
 
       <para>Each product includes an install script
       (<filename>install.sh</filename>) that may be used to install the
-      product on a machine or into a directory. </para>
+      product on a machine or into a directory.</para>
 
       <para>By default, the scripts install the corresponding product into
       "/'; you can direct them to install into an empty existing directory by

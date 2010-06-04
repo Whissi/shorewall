@@ -67,6 +67,7 @@ our @EXPORT = qw( NOTHING
 		  source_port_to_bridge
 		  interface_is_optional
 		  find_interfaces_by_option
+		  find_interfaces_by_option1
 		  get_interface_option
 		  set_interface_option
 		  verify_required_interfaces
@@ -937,9 +938,9 @@ sub process_interface( $$ ) {
 	    $hostoptions{routeback} = $options{routeback} = 1;
 	}
 
-	fatal_error "Optional and Required interfaces may not have wildcard names" if ( $wildcard || $physical =~ /\+/ ) && ( $options{optional} || $options{required} );
-
 	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback};
+
+	fatal_error "Required Interfaces may not have wildcard names ($physical)" if $options{required} && $physical =~ /\+/;
 
 	$hostoptionsref = \%hostoptions;
     } else {
@@ -1164,6 +1165,27 @@ sub find_interfaces_by_option( $ ) {
 }
 
 #
+# Returns reference to array of interfaces with the passed option
+#
+sub find_interfaces_by_option1( $ ) {
+    my $option = $_[0];
+    my @ints = ();
+
+    for my $interface ( keys %interfaces ) {
+	my $interfaceref = $interfaces{$interface};
+
+	next if $interfaceref->{physical} =~ /\+/;
+
+	my $optionsref = $interfaceref->{options};
+	if ( $optionsref && defined $optionsref->{$option} ) {
+	    push @ints , $interface
+	}
+    }
+
+    \@ints;
+}
+
+#
 # Return the value of an option for an interface
 #
 sub get_interface_option( $$ ) {
@@ -1302,8 +1324,6 @@ sub compile_updown() {
 
     if ( @$required ) {
 	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$required;
-
-	$interfaces =~ s/\+/*/;
 
 	emit( "$interfaces)",
 	      '    if [ "$COMMAND" = up ]; then',

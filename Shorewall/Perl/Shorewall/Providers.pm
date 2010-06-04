@@ -845,7 +845,7 @@ sub handle_optional_interfaces() {
 
     my $returnvalue = verify_required_interfaces;
 
-    my $interfaces = find_interfaces_by_option 'optional';
+    my $interfaces = find_interfaces_by_option1 'optional';
 
     if ( @$interfaces ) {
 	for my $interface ( @$interfaces ) {

@@ -243,6 +243,26 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
         `sys2sys':/usr/local/libexec/xtables/libipt_sys2sys.so:
 	cannot open shared object file: No such file or directory
 
+4)  Previously, if the 'optional' option was given to an interface with
+    a wildcard physical name, specific instances of the interface were
+    never considered usable.
+
+    Example:
+
+    /etc/shorewall/interfaces:
+
+    #ZONE	INTERFACE	BROADCAST	OPTIONS
+    net		ppp+		-		optional
+
+    /etc/shorewall/providers:
+
+    #PROVIDER	NUMBER	MARK	DUPLICATE	INTERFACE	...
+    XYZTEL	1	-	main		ppp0
+
+    The XYZTEL provider was never usable.
+
+    This configuration now generates a compile-time error.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

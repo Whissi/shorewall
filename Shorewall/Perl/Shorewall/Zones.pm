@@ -937,6 +937,8 @@ sub process_interface( $$ ) {
 	    $hostoptions{routeback} = $options{routeback} = 1;
 	}
 
+	fatal_error "Optional and Required interfaces may not have wildcard names" if ( $wildcard || $physical =~ /\+/ ) && ( $options{optional} || $options{required} );
+
 	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback};
 
 	$hostoptionsref = \%hostoptions;

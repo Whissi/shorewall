@@ -1385,18 +1385,37 @@ sub compile_updown() {
     if ( @$required ) {
 	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$required;
 
-	$interfaces =~ s/\+/*/;
+	my $wildcard = ( $interfaces =~ s/\+/*/ );
 
 	emit( "$interfaces)",
-	      '    if [ "$COMMAND" = up ]; then',
-	      '        COMMAND=start',
-	      '        detect_configuration',
-	      '        define_firewall',
-	      '    else',
-	      '        COMMAND=stop',
-	      '        detect_configuration',
-	      '        stop_firewall',
-	      '    fi',
+	      '    if [ "$COMMAND" = up ]; then' );
+
+	if ( $wildcard ) {
+	    emit( '        if [ "$state" = started ]; then',
+		  '            COMMAND=restart',
+		  '        else',
+		  '            COMMAND=start',
+		  '        fi' );
+	} else {
+	    emit( '        COMMAND=start' );
+	}
+
+	emit( '        detect_configuration',
+	      '        define_firewall' );
+	
+	if ( $wildcard ) {
+	    emit( '    elif [ "$state" = started ]; then',
+		  '        COMMAND=restart',
+		  '        detect_configuration',
+		  '        define_firewall' );
+	} else {
+	    emit( '    else', 
+		  '        COMMAND=stop',
+		  '        detect_configuration',
+		  '        stop_firewall' );
+	}
+	
+	emit( '    fi',
 	      '    ;;'
 	    );
     }

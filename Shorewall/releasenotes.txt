@@ -333,7 +333,11 @@ None.
     b)  In your Shorewall interfaces file(s), set the 'required' option
         on any interfaces that must be up in order for the firewall to
         start. At least one interface must have the 'required' or
-        'optional' option if you perform the next optional step.
+        'optional' option if you perform the next optional step. If
+	'required' is specified on an interface with a wildcard name
+        (the physical name ends with '+'), then at least one interface
+        that matches the name must be in a usable state for the
+        firewall to start successfully.
 
     c)  (Optional) -- If you have specified at least one 'required'
         or 'optional interface, you can then disable automatic firewall

@@ -113,6 +113,13 @@ deleteallchains() {
 }
 
 #
+# Generate a list of all network interfaces on the system
+#
+find_all_interfaces() {
+    ${IP:-ip} link list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed 's/:$//'    
+}
+
+#
 # Find the value 'dev' in the passed arguments then echo the next value
 #
 

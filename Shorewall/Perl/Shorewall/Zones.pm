@@ -79,7 +79,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_9';
+our $VERSION = '4.4_10';
 
 #
 # IPSEC Option types
@@ -736,6 +736,18 @@ sub is_a_bridge( $ ) {
 } 
 
 #
+# Transform the passed interface name into a legal shell variable name.
+#
+sub chain_base($) {
+    my $chain = $_[0];
+
+    $chain =~ s/^@/at_/;
+    $chain =~ tr/[.\-%@]/_/;
+    $chain =~ s/\+$//;
+    $chain;
+}
+
+#
 # Process a record in the interfaces file
 #
 sub process_interface( $$ ) {
@@ -940,7 +952,6 @@ sub process_interface( $$ ) {
 
 	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback};
 
-	fatal_error "Required Interfaces may not have wildcard names ($physical)" if $options{required} && $physical =~ /\+/;
 
 	$hostoptionsref = \%hostoptions;
     } else {
@@ -1206,29 +1217,52 @@ sub set_interface_option( $$$ ) {
 #
 # Verify that all required interfaces are available after waiting for any that specify the 'wait' option.
 #
-sub verify_required_interfaces() {
+sub verify_required_interfaces( $ ) {
+
+    my $generate_case = shift;
     
     my $returnvalue = 0;
    
     my $interfaces = find_interfaces_by_option 'wait';
 
     if ( @$interfaces ) {
+	emit "local waittime\n";
+
 	for my $interface (@$interfaces ) {
 	    my $wait = $interfaces{$interface}{options}{wait};
 
 	    if ( $wait ) {
 		my $physical = get_physical $interface;
 	    
-		emit qq(if ! interface_is_usable $physical; then);
-		emit  q(    local waittime);
-		emit qq(    waittime=$wait);
-		emit  '';
-		emit  q(    while [ $waittime -gt 0 ]; do);
-		emit qq(        interface_is_usable $physical && break);
-		emit  q(        sleep 1);
-		emit   '        waittime=$(($waittime - 1))';
-		emit  q(    done);
-		emit qq(fi\n);
+		if ( $physical =~ /\+$/ ) {
+		    my $base = uc chain_base $physical;
+
+		    $physical =~ s/\+$/*/;
+
+		    emit( 'for interface in $(find_all_interfaces); do',
+			  '    case $interface in',
+			  "        $physical)",
+			  "            waittime=$wait",
+			  '            while [ $waittime -gt 0 ]; do',
+			  '                interface_is_usable $interface && break',
+			  '                waittime=$(($waittime - 1))',
+			  '            done',
+			  '            ;;',
+			  '    esac',
+			  'done',
+			  '',
+			);
+		} else {
+		    emit qq(if ! interface_is_usable $physical; then);
+		    emit qq(    waittime=$wait);
+		    emit  '';
+		    emit  q(    while [ $waittime -gt 0 ]; do);
+		    emit qq(        interface_is_usable $physical && break);
+		    emit  q(        sleep 1);
+		    emit   '        waittime=$(($waittime - 1))';
+		    emit  q(    done);
+		    emit qq(fi\n);
+		}
 
 		$returnvalue = 1;
 	    }
@@ -1238,22 +1272,48 @@ sub verify_required_interfaces() {
     $interfaces = find_interfaces_by_option 'required';
 
     if ( @$interfaces ) {
-	emit( 'case "$COMMAND" in' );
-	push_indent;
-	emit( 'start|restart|restore|refresh)' );
-	push_indent;
-	for my $interface (@$interfaces ) {
-	    my $physical = get_physical $interface;
-	    
-	    emit qq(if ! interface_is_usable $physical; then);
-	    emit qq(    startup_error "Required interface $physical not available");
-	    emit qq(fi\n);
+
+	if ( $generate_case ) {
+	    emit( 'case "$COMMAND" in' );
+	    push_indent;
+	    emit( 'start|restart|restore|refresh)' );
+	    push_indent;
 	}
 
-	emit( ';;' );
-	pop_indent;
-	pop_indent;
-	emit( 'esac' );
+	for my $interface (@$interfaces ) {
+	    my $physical = get_physical $interface;
+
+	    if ( $physical =~ /\+$/ ) {
+		my $base = uc chain_base $physical;
+
+		$physical =~ s/\+$/*/;
+
+		emit( "${base}_IS_UP=\n",
+		      'for interface in $(find_all_interfaces); do',
+		      '    case $interface in',
+		      "        $physical)",
+		      "            interface_is_usable \$interface && ${base}_IS_UP=Yes && break",
+		      '            ;;',
+		      '    esac',
+		      'done',
+		      '',
+		      "if [ -z \"\$${base}_IS_UP\" ]; then",
+		      "    startup_error \"None of the required interfaces $physical are available\"",
+		      "fi\n"
+		    );
+	    } else {
+		emit qq(if ! interface_is_usable $physical; then);
+		emit qq(    startup_error "Required interface $physical not available");
+		emit qq(fi\n);
+	    }
+	}
+	
+	if ( $generate_case ) {
+	    emit( ';;' );
+	    pop_indent;
+	    pop_indent;
+	    emit( 'esac' );
+	}
 
 	$returnvalue = 1;
     }
@@ -1324,6 +1384,8 @@ sub compile_updown() {
 
     if ( @$required ) {
 	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$required;
+
+	$interfaces =~ s/\+/*/;
 
 	emit( "$interfaces)",
 	      '    if [ "$COMMAND" = up ]; then',

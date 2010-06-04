@@ -43,7 +43,7 @@ use Shorewall::Raw;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_9';
+our $VERSION = '4.4_10';
 
 our $export;
 
@@ -271,7 +271,7 @@ sub generate_script_2() {
 
 	set_global_variables(1);
 
-	handle_optional_interfaces;
+	handle_optional_interfaces(0);
 
 	emit ';;';
 
@@ -284,7 +284,7 @@ sub generate_script_2() {
 
 	    set_global_variables(0);
 
-	    handle_optional_interfaces;
+	    handle_optional_interfaces(0);
 
 	    emit ';;';
 	}
@@ -294,7 +294,7 @@ sub generate_script_2() {
 
 	emit ( 'esac' ) ,
     } else {
-	emit( 'true' ) unless handle_optional_interfaces;
+	emit( 'true' ) unless handle_optional_interfaces(1);
     }
 
     pop_indent;

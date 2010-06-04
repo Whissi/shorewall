@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_9';
+our $VERSION = '4.4_10';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -841,9 +841,9 @@ sub lookup_provider( $ ) {
 #
 # Returns true if there were required or optional interfaces
 #
-sub handle_optional_interfaces() {
+sub handle_optional_interfaces( $ ) {
 
-    my $returnvalue = verify_required_interfaces;
+    my $returnvalue = verify_required_interfaces( shift );
 
     my $interfaces = find_interfaces_by_option1 'optional';
 

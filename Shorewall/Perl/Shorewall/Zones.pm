@@ -54,6 +54,7 @@ our @EXPORT = qw( NOTHING
 		  complex_zones
 		  non_firewall_zones
 		  single_interface
+		  chain_base
 		  validate_interfaces_file
 		  all_interfaces
 		  all_bridges

@@ -844,7 +844,11 @@ sub lookup_provider( $ ) {
 sub handle_optional_interfaces( $ ) {
 
     my $returnvalue = verify_required_interfaces( shift );
-
+    #
+    # find_interfaces_by_option1() does not return wildcard interfaces. If an interface is defined
+    # as a wildcard in /etc/shorewall/interfaces, then only specific interfaces matching that 
+    # wildcard are returned.
+    #
     my $interfaces = find_interfaces_by_option1 'optional';
 
     if ( @$interfaces ) {

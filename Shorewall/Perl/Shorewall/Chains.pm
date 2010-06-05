@@ -86,7 +86,6 @@ our %EXPORT_TAGS = (
 				       clear_comment
 				       incr_cmd_level
 				       decr_cmd_level
-				       chain_base
 				       forward_chain
 				       rules_chain
 				       zone_forward_chain
@@ -831,18 +830,6 @@ sub copy_rules( $$ ) {
 	    delete_chain $chain1;
 	}    
     }
-}
-
-#
-# Transform the passed interface name into a legal shell variable name.
-#
-sub chain_base($) {
-    my $chain = $_[0];
-
-    $chain =~ s/^@/at_/;
-    $chain =~ tr/[.\-%@]/_/;
-    $chain =~ s/\+$//;
-    $chain;
 }
 
 #

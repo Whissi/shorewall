@@ -464,6 +464,7 @@ sub generate_script_3($) {
 	
 	emit (  'rm -f ${VARDIR}/UPnP' );
 	emit (  'rm -f ${VARDIR}/forwardUPnP' );
+	emit (  'rm -f ${VARDIR}/dynamic' );
 
 	pop_indent;
 

@@ -3535,7 +3535,7 @@ sub emitr( $$ ) {
     assert( $chain );
 
     if ( $rule ) {
-	my $replaced = ($rule =~ s/( ?)-A /$1-A $chain /);
+	my $replaced = ($rule =~ s/((^|[ "])?)-A /$1-A $chain /);
 
 	if ( substr( $rule, 0, 2 ) eq '-A' ) {
 	    #

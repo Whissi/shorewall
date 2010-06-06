@@ -1186,6 +1186,7 @@ sub find_interfaces_by_option1( $ ) {
     for my $interface ( keys %interfaces ) {
 	my $interfaceref = $interfaces{$interface};
 
+	next unless defined $interfaceref->{physical};
 	next if $interfaceref->{physical} =~ /\+/;
 
 	my $optionsref = $interfaceref->{options};

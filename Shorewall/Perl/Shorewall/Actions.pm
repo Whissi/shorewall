@@ -868,7 +868,8 @@ sub allowInvalid ( $$$ ) {
 }
 
 sub forwardUPnP ( $$$ ) {
-    dont_optimize 'forwardUPnP';
+    my $chainref = dont_optimize 'forwardUPnP';
+    add_commands( $chainref , '[ -f ${VARDIR}/forwardUPnP ] && cat ${VARDIR}/forwardUPnP >&3' );
 }
 
 sub allowinUPnP ( $$$ ) {

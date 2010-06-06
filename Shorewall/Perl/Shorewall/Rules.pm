@@ -669,10 +669,10 @@ sub add_common_rules() {
 		if ( interface_is_optional $interface ) {
 		    add_commands( $chainref,
 				  qq(if [ -n "\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
-				  '    echo -A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) ,
+				  '    echo "-A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT" >&3) ,
 				  qq(fi) );
 		} else {
-		    add_commands( $chainref, 'echo -A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT >&3) );
+		    add_rule( $chainref, match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT) );
 		}
 	    }
 	}

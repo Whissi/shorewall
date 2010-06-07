@@ -309,44 +309,40 @@ sub generate_script_2() {
 
 sub save_dynamic_chains() {
 
+    my $tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
+
     emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = restore ]; then' );
     push_indent;
 
-    if ( $family == F_IPV4 ) {
-	emit( 'local iptables_save' ,
-	      'iptables_save=${IPTABLES}-save' );
-    } else {
-	emit( 'local iptables_save' ,
-	      'iptables_save=${IP6TABLES}-save' );
-    }
+emit <<"EOF";
+if chain_exists 'UPnP -t nat'; then
+    $tool -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
+else
+    rm -f \${VARDIR}/.UPnP
+fi
 
-    emit ( q(if chain_exists "UPnP -t nat"; then) ,
-	   q(    $iptables_save -t nat | grep '^-A UPnP ' > ${VARDIR}/.UPnP) ,
-	   q(else) ,
-	   q(    rm -f ${VARDIR}/UPnP) ,
-	   q(fi) ,
-	   '' ,
-	   q(if chain_exists forwardUPnP; then) ,
-	   q(    $iptables_save -t filter | grep '^-A forwardUPnP ' > ${VARDIR}/.forwardUPnP) ,
-	   q(else) ,
-	   q(    rm -f ${VARDIR}/forwardUPnP) ,
-	   q(fi) ,
-	   '' ,
-	   q(if chain_exists dynamic; then) ,
-	   q(    $iptables_save -t filter | grep '^-A dynamic ' > ${VARDIR}/.dynamic) ,
-	   q(else) ,
-	   q(    rm -f ${VARDIR}/dynamic) ,
-	   q(fi)
-	 );
+if chain_exists forwardUPnP; then
+    $tool -t filter | grep '^-A forwardUPnP ' > \${VARDIR}/.forwardUPnP
+else
+    rm -f \${VARDIR}/.forwardUPnP
+fi
+
+if chain_exists dynamic; then
+    $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
+else
+    rm -f \${VARDIR}/.dynamic
+fi
+EOF
 
     pop_indent;
     emit ( 'else' );
     push_indent;
 
-    emit (  'rm -f ${VARDIR}/UPnP' );
-    emit (  'rm -f ${VARDIR}/forwardUPnP' );
-    emit (  'rm -f ${VARDIR}/dynamic' );
-
+emit <<'EOF';
+rm -f ${VARDIR}/.UPnP
+rm -f ${VARDIR}/.forwardUPnP
+rm -f ${VARDIR}/.dynamic
+EOF
     pop_indent;
 
     emit ( 'fi' ,

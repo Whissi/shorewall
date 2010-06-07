@@ -311,7 +311,7 @@ sub save_dynamic_chains() {
 
     my $tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
 
-    emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = restore ]; then' );
+    emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = refresh ]; then' );
     push_indent;
 
 emit <<"EOF";
@@ -327,7 +327,7 @@ else
     rm -f \${VARDIR}/.forwardUPnP
 fi
 
-if [ "\$COMMAND" = restart ] && chain_exists dynamic; then
+if chain_exists dynamic; then
     $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
 else
     rm -f \${VARDIR}/.dynamic
@@ -345,8 +345,6 @@ rm -f \${VARDIR}/.forwardUPnP
 if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then
     if chain_exists dynamic; then
         $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
-    else
-        rm -f \${VARDIR}/.dynamic
     fi
 fi
 EOF

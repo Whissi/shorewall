@@ -58,7 +58,7 @@ sub setup_arp_filtering() {
 	for my $interface ( @$interfaces ) {
 	    my $value = get_interface_option $interface, 'arp_filter';
 	    my $optional = interface_is_optional $interface;
-                           
+
 	    $interface = get_physical $interface;
 
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/arp_filter";
@@ -74,7 +74,7 @@ sub setup_arp_filtering() {
 	for my $interface ( @$interfaces1 ) {
 	    my $value = get_interface_option $interface, 'arp_ignore';
 	    my $optional = interface_is_optional $interface;
-                           
+
 	    $interface = get_physical $interface;
 
 	    my $file  = "/proc/sys/net/ipv4/conf/$interface/arp_ignore";
@@ -118,7 +118,7 @@ sub setup_route_filtering() {
 	for my $interface ( @$interfaces ) {
 	    my $value = get_interface_option $interface, 'routefilter';
 	    my $optional = interface_is_optional $interface;
-                           
+
 	    $interface = get_physical $interface;
 
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/rp_filter";
@@ -169,7 +169,7 @@ sub setup_martian_logging() {
 	for my $interface ( @$interfaces ) {
 	    my $value = get_interface_option $interface, 'logmartians';
 	    my $optional = interface_is_optional $interface;
-                           
+
 	    $interface = get_physical $interface;
 
 	    my $file = "/proc/sys/net/ipv4/conf/$interface/log_martians";

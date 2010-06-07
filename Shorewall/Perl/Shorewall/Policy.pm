@@ -286,7 +286,7 @@ sub save_policies() {
 	    }
 	}
     }
-}	    
+}
 
 sub validate_policy()
 {

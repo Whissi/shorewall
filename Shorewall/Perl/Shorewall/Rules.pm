@@ -370,8 +370,8 @@ sub process_routestopped() {
 	    my $chainref = $filter_table->{FORWARD};
 
 	    for my $host ( split /,/, $hosts ) {
-		add_rule( $chainref , 
-			  match_source_dev( $interface ) . 
+		add_rule( $chainref ,
+			  match_source_dev( $interface ) .
 			  match_dest_dev( $interface ) .
 			  match_source_net( $host ) .
 			  match_dest_net( $host ) );
@@ -466,18 +466,18 @@ sub add_common_rules() {
 	progress_message2 'Adding Anti-smurf Rules';
 
 	$chainref = new_standard_chain 'smurfs';
-    
+
 	my $smurfdest;
 
 	if ( defined $config{SMURF_LOG_LEVEL} && $config{SMURF_LOG_LEVEL} ne '' ) {
 	    my $smurfref = new_chain( 'filter', $smurfdest = 'smurflog' );
-	    
+
 	    log_rule_limit( $config{SMURF_LOG_LEVEL},
 			    $smurfref,
 			    'smurfs' ,
 			    'DROP',
 			    $globals{LOGLIMIT},
-			    '', 
+			    '',
 			    'add',
 			    '' );
 	    add_rule( $smurfref, '-j DROP' );
@@ -499,7 +499,7 @@ sub add_common_rules() {
 	    } else {
 		add_commands $chainref, 'for address in $ALL_ACASTS; do';
 	    }
-	    
+
 	    incr_cmd_level $chainref;
 	    add_jump( $chainref, $smurfdest, 1, '-s $address ' );
 	    decr_cmd_level $chainref;
@@ -582,7 +582,7 @@ sub add_common_rules() {
 		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
 	    }
 
-	    add_rule( $filter_table->{forward_chain $interface} , 
+	    add_rule( $filter_table->{forward_chain $interface} ,
 		      "-p udp " .
 		      match_dest_dev( $interface ) .
 		      "--dport $ports -j ACCEPT" )
@@ -1199,14 +1199,14 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	# Either a DNAT, REDIRECT or ACCEPT+ rule; don't apply rate limiting twice
 	#
-	$rule = join( '', 
+	$rule = join( '',
 		      do_proto($proto, $ports, $sports),
 		      do_user( $user ) ,
 		      do_test( $mark , $globals{TC_MASK} ) ,
 		      do_connlimit( $connlimit ),
 		      do_time( $time ) );
     } else {
-	$rule = join( '', 
+	$rule = join( '',
 		      do_proto($proto, $ports, $sports),
 		      do_ratelimit( $ratelimit, $basictarget ) ,
 		      do_user( $user ) ,
@@ -1290,7 +1290,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		    $origdest = ALLIP;
 		}
 	    }
-	} else {            
+	} else {
 	    if ( $server eq '' ) {
 		fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
 	    } elsif ( $server =~ /^(.+)-(.+)$/ ) {
@@ -1652,7 +1652,7 @@ sub rules_target( $$ ) {
     my ( $zone, $zone1 ) = @_;
     my $chain = rules_chain( ${zone}, ${zone1} );
     my $chainref = $filter_table->{$chain};
-    
+
     return $chain   if $chainref && $chainref->{referenced};
     return 'ACCEPT' if $zone eq $zone1;
 
@@ -2272,7 +2272,7 @@ EOF
 
 	        if [ -x $g_restorepath ]; then
 		    echo Restoring ${g_product:=Shorewall}...
-                    
+
                     g_recovering=Yes
 
 		    if run_it $g_restorepath restore; then

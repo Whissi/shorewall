@@ -501,7 +501,7 @@ sub valid_6address( $ ) {
     unless ( $address =~ /::$/  ) {
 	return 0 if $address =~ /:$/;
     }
-		 
+
     for my $a ( @address ) {
 	return 0 unless $a eq '' || ( $a =~ /^[a-fA-f\d]+$/ && length $a < 5 );
     }
@@ -570,7 +570,7 @@ sub normalize_6addr( $ ) {
 	1 while $addr =~ s/::/:0:/;
 
 	$addr =~ s/^0+:/0:/;
-	
+
 	$addr;
     }
 }

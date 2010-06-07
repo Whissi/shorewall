@@ -158,7 +158,7 @@ sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
     #
     # Hack to work around problem in iproute
-    #    
+    #
     my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
     #
     # Map physical names in $copy to logical names
@@ -295,7 +295,7 @@ sub add_a_provider( ) {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local ) = 
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local ) =
 	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0 );
 
     unless ( $options eq '-' ) {
@@ -340,7 +340,7 @@ sub add_a_provider( ) {
 	    } elsif ( $option eq 'local' ) {
 		$local = 1;
 		$track = 0           if $config{TRACK_PROVIDERS};
-		$default_balance = 0 if$config{USE_DEFAULT_RT}; 
+		$default_balance = 0 if$config{USE_DEFAULT_RT};
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -546,7 +546,7 @@ sub start_new_if( $ ) {
     emit ( '', qq(if [ -n "\$SW_${current_if}_IS_USABLE" ]; then) );
     push_indent;
 }
-  
+
 #
 # Complete any current 'if' statement in the output script
 #
@@ -846,7 +846,7 @@ sub handle_optional_interfaces( $ ) {
     my $returnvalue = verify_required_interfaces( shift );
     #
     # find_interfaces_by_option1() does not return wildcard interfaces. If an interface is defined
-    # as a wildcard in /etc/shorewall/interfaces, then only specific interfaces matching that 
+    # as a wildcard in /etc/shorewall/interfaces, then only specific interfaces matching that
     # wildcard are returned.
     #
     my $interfaces = find_interfaces_by_option1 'optional';
@@ -891,7 +891,7 @@ sub handle_optional_interfaces( $ ) {
 	}
 
 	if ( $config{REQUIRE_INTERFACE} ) {
-	    emit( '', 
+	    emit( '',
 		  'if [ -z "$HAVE_INTERFACE" ]; then' ,
 		  '    case "$COMMAND" in',
 		  '        start|restart|restore|refresh)'
@@ -902,7 +902,7 @@ sub handle_optional_interfaces( $ ) {
 	    } else {
 		emit( '            if shorewall6_is_started; then' );
 	    }
-	
+
 	    emit( '                fatal_error "No network interface available"',
 		  '            else',
 		  '                startup_error "No network interface available',

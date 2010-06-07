@@ -524,7 +524,7 @@ sub zone_report()
 			    my $grouplist  = join ',', ( @$hosts );
 			    my $exclusions = join ',', @{$groupref->{exclusions}};
 			    $grouplist = join '!', ( $grouplist, $exclusions) if $exclusions;
-		
+
 			    if ( $family == F_IPV4 ) {
 				progress_message_nocompress "      $iref->{physical}:$grouplist";
 			    } else {
@@ -734,7 +734,7 @@ sub firewall_zone() {
 #
 sub is_a_bridge( $ ) {
     which 'brctl' && qt( "brctl show | tail -n+2 | grep -q '^$_[0]\[\[:space:\]\]'" );
-} 
+}
 
 #
 # Transform the passed interface name into a legal shell variable name.
@@ -960,7 +960,7 @@ sub process_interface( $$ ) {
 	# No options specified -- auto-detect bridge
 	#
 	$hostoptionsref->{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export;
-    }	
+    }
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
 						       bridge     => $bridge ,
@@ -976,12 +976,12 @@ sub process_interface( $$ ) {
     if ( $zone ) {
 	$netsref ||= [ allip ];
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, $netsref, $hostoptionsref );
-	add_group_to_zone( $zone, 
-			   $zoneref->{type}, 
-			   $interface, 
-			   [ IPv4_MULTICAST ], 
+	add_group_to_zone( $zone,
+			   $zoneref->{type},
+			   $interface,
+			   [ IPv4_MULTICAST ],
 			   { destonly => 1 } ) if $hostoptionsref->{multicast} && $interfaces{$interface}{zone} ne $zone;
-    } 
+    }
 
     progress_message "  Interface \"$currentline\" Validated";
 
@@ -1034,13 +1034,13 @@ sub validate_interfaces_file( $ ) {
 sub map_physical( $$ ) {
     my ( $name, $interfaceref ) = @_;
     my $physical = $interfaceref->{physical};
-    
+
     return $physical if $name eq $interfaceref->{name};
 
     $physical =~ s/\+$//;
 
     $physical . substr( $name, length  $interfaceref->{root} );
-}  
+}
 
 #
 # Returns true if passed interface matches an entry in /etc/shorewall/interfaces
@@ -1061,9 +1061,9 @@ sub known_interface($)
 	    #
 	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces and we do not set the root;
 	    #
-	    return $interfaces{$interface} = { options  => $interfaceref->{options}, 
-					       bridge   => $interfaceref->{bridge} , 
-					       name     => $i , 
+	    return $interfaces{$interface} = { options  => $interfaceref->{options},
+					       bridge   => $interfaceref->{bridge} ,
+					       name     => $i ,
 					       number   => $interfaceref->{number} ,
 					       physical => map_physical( $interface, $interfaceref )
 					     };
@@ -1164,7 +1164,7 @@ sub find_interfaces_by_option( $ ) {
 
     for my $interface ( @interfaces ) {
 	my $interfaceref = $interfaces{$interface};
-	
+
 	next unless $interfaceref->{root};
 
 	my $optionsref = $interfaceref->{options};
@@ -1222,9 +1222,9 @@ sub set_interface_option( $$$ ) {
 sub verify_required_interfaces( $ ) {
 
     my $generate_case = shift;
-    
+
     my $returnvalue = 0;
-   
+
     my $interfaces = find_interfaces_by_option 'wait';
 
     if ( @$interfaces ) {
@@ -1235,7 +1235,7 @@ sub verify_required_interfaces( $ ) {
 
 	    if ( $wait ) {
 		my $physical = get_physical $interface;
-	    
+
 		if ( $physical =~ /\+$/ ) {
 		    my $base = uc chain_base $physical;
 
@@ -1309,7 +1309,7 @@ sub verify_required_interfaces( $ ) {
 		emit qq(fi\n);
 	    }
 	}
-	
+
 	if ( $generate_case ) {
 	    emit( ';;' );
 	    pop_indent;
@@ -1404,19 +1404,19 @@ sub compile_updown() {
 
 	emit( '        detect_configuration',
 	      '        define_firewall' );
-	
+
 	if ( $wildcard ) {
 	    emit( '    elif [ "$state" = started ]; then',
 		  '        COMMAND=restart',
 		  '        detect_configuration',
 		  '        define_firewall' );
 	} else {
-	    emit( '    else', 
+	    emit( '    else',
 		  '        COMMAND=stop',
 		  '        detect_configuration',
 		  '        stop_firewall' );
 	}
-	
+
 	emit( '    fi',
 	      '    ;;'
 	    );
@@ -1454,11 +1454,11 @@ sub compile_updown() {
 	  '            detect_configuration',
 	  '            define_firewall',
 	  '            ;;',
-	  '    esac',  
+	  '    esac',
 	);
 
     pop_indent;
-    
+
     emit( 'esac' );
 
     pop_indent;
@@ -1466,7 +1466,7 @@ sub compile_updown() {
     emit( '}',
 	  '',
 	);
-}  
+}
 
 #
 # Process a record in the hosts file

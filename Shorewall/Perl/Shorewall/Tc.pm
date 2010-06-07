@@ -317,7 +317,7 @@ sub process_tc_rule( ) {
 			require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
 
 			fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
-			
+
 			$chain = 'tcpre';
 
 			$cmd =~ /TPROXY\((.+?)\)$/;
@@ -337,15 +337,15 @@ sub process_tc_rule( ) {
 			}
 
 			$target .= "--on-port $port";
-			
+
 			if ( defined $ip && $ip ne '' ) {
 			    validate_address $ip, 1;
 			    $target .= " --on-ip $ip";
 			}
 
-			$target .= ' --tproxy-mark';	
+			$target .= ' --tproxy-mark';
 		    }
-			
+
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($originalmark)" if $marktype == NOMARK;
@@ -471,13 +471,13 @@ sub process_simple_device() {
 
     emit ( "${dev}_exists=Yes",
 	   "qt \$TC qdisc del dev $physical root",
-	   "qt \$TC qdisc del dev $physical ingress\n"	   
+	   "qt \$TC qdisc del dev $physical ingress\n"
 	 );
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
 	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${bandwidth}kbit burst 10k drop flowid :1\n"
 	 ) if $bandwidth;
-	  
+
     emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
 
     for ( my $i = 1; $i <= 3; $i++ ) {
@@ -488,7 +488,7 @@ sub process_simple_device() {
     }
 
     save_progress_message_short qq("   TC Device $physical defined.");
-    
+
     pop_indent;
     emit 'else';
     push_indent;
@@ -497,9 +497,9 @@ sub process_simple_device() {
     emit "${dev}_exists=";
     pop_indent;
     emit "fi\n";
- 
+
     progress_message "  Simple tcdevice \"$currentline\" $done.";
-}    
+}
 
 sub validate_tc_device( ) {
     my ( $device, $inband, $outband , $options , $redirected ) = split_line 3, 5, 'tcdevices';
@@ -1094,14 +1094,14 @@ sub process_tc_priority() {
 		  1 );
     } else {
 	my $postref = $mangle_table->{tcpost};
-	
+
 	if ( $address ne '-' ) {
 	    fatal_error "Invalid combination of columns" unless $proto eq '-' && $ports eq '-';
 	    add_rule( $postref ,
 		      join( '', match_source_net( $address) , $rule ) ,
 		      1 );
 	} else {
-	    add_rule( $postref , 
+	    add_rule( $postref ,
 		      join( '', do_proto( $proto, $ports, '-' , 0 ) , $rule ) ,
 		      1 );
 
@@ -1113,7 +1113,7 @@ sub process_tc_priority() {
 		    $ipp2p = 1;
 		}
 
-		add_rule( $postref , 
+		add_rule( $postref ,
 			  join( '' , do_proto( $proto, '-', $ports, 0 ) , $rule ) ,
 			  1 )
 		    unless $proto =~ /^ipp2p/ || $protocol == ICMP || $protocol == IPv6_ICMP;
@@ -1139,8 +1139,8 @@ sub setup_simple_traffic_shaping() {
     my $fn1 = open_file 'tcpri';
 
     if ( $fn1 ) {
-	first_entry 
-	    sub { 
+	first_entry
+	    sub {
 		progress_message2 "$doing $fn1...";
 		warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
 	    };

@@ -1181,7 +1181,7 @@ sub copy1( $ ) {
 		    print $script $here_documents if $here_documents;
 		    print $script "\n";
 		}
-		
+
 		if ( $debug ) {
 		    print "GS-----> $here_documents" if $here_documents;
 		    print "GS----->\n";
@@ -1281,7 +1281,7 @@ EOF
 			s/^(\s*)/$indent1$1$indent2/;
 			s/        /\t/ if $indent2;
 		    }
-		    
+
 		    if ( $script ) {
 			print $script $_;
 			print $script "\n";
@@ -1295,9 +1295,9 @@ EOF
 		    $lastlineblank = 0;
 		}
 	    }
-	    
+
 	    close IF;
-	
+
 	    unless ( $lastlineblank ) {
 		print $script "\n" if $script;
 		print "GS----->\n" if $trace;
@@ -1924,7 +1924,7 @@ sub numeric_option( $$$ ) {
     my $value = $config{$option};
 
     my $val = $default;
-    
+
     if ( defined $value && $value ne '' ) {
 	$val = numeric_value $value;
 	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val <= 32;
@@ -1937,7 +1937,7 @@ sub numeric_option( $$$ ) {
 
 sub make_mask( $ ) {
     0xffffffff >> ( 32 - $_[0] );
-}   
+}
 
 my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
 
@@ -2183,14 +2183,14 @@ sub Persistent_Snat() {
 	$result = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
 	qt1( "$iptables -t nat -F $sillyname" );
 	qt1( "$iptables -t nat -X $sillyname" );
-	
+
     }
 
     $result;
 }
 
 sub Mangle_Enabled() {
-    if ( qt1( "$iptables -t mangle -L -n" ) ) { 
+    if ( qt1( "$iptables -t mangle -L -n" ) ) {
 	system( "$iptables -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
     }
 }
@@ -2484,7 +2484,7 @@ sub have_capability( $ ) {
 
     $capabilities{ $capability } = detect_capability( $capability ) unless defined $capabilities{ $capability };
 
-    $capabilities{ $capability }; 
+    $capabilities{ $capability };
 }
 
 #
@@ -2505,11 +2505,11 @@ sub determine_capabilities() {
     qt1( "$iptables -N $sillyname1" );
 
     fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
-	unless 
+	unless
 	    qt1( "$iptables -A $sillyname -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT") ||
 	    qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");;
-	    
-  
+
+
     unless ( $config{ LOAD_HELPERS_ONLY } ) {
 	#
 	# Using 'detect_capability()' is a bit less efficient than calling the individual detection
@@ -2518,7 +2518,7 @@ sub determine_capabilities() {
 	$capabilities{NAT_ENABLED}     = detect_capability( 'NAT_ENABLED' );
 	$capabilities{PERSISTENT_SNAT} = detect_capability( 'PERSISTENT_SNAT' );
 	$capabilities{MANGLE_ENABLED}  = detect_capability( 'MANGLE_ENABLED' );
-	
+
 	if ( $capabilities{CONNTRACK_MATCH} = detect_capability( 'CONNTRACK_MATCH' ) ) {
 	    $capabilities{NEW_CONNTRACK_MATCH} = detect_capability( 'NEW_CONNTRACK_MATCH' );
 	    $capabilities{OLD_CONNTRACK_MATCH} = detect_capability( 'OLD_CONNTRACK_MATCH' );
@@ -2531,7 +2531,7 @@ sub determine_capabilities() {
 	     $capabilities{KLUDGEFREE}  = Kludgefree1;
 	}
 
-	$capabilities{XMULTIPORT}   = detect_capability( 'XMULTIPORT' ); 
+	$capabilities{XMULTIPORT}   = detect_capability( 'XMULTIPORT' );
 	$capabilities{POLICY_MATCH} = detect_capability( 'POLICY_MATCH' );
 
 	if ( $capabilities{PHYSDEV_MATCH} = detect_capability( 'PHYSDEV_MATCH' ) ) {
@@ -2837,7 +2837,7 @@ sub get_configuration( $ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
-    
+
     my $val;
 
     if ( have_capability( 'KERNELVERSION' ) < 20631 ) {
@@ -2856,7 +2856,7 @@ sub get_configuration( $ ) {
     }
 
     if ( $family == F_IPV6 ) {
-	$val = $config{ROUTE_FILTER};	
+	$val = $config{ROUTE_FILTER};
 	fatal_error "ROUTE_FILTER=$val is not supported in IPv6" if $val && $val ne 'off';
     }
 
@@ -2955,7 +2955,7 @@ sub get_configuration( $ ) {
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
     numeric_option 'PROVIDER_BITS' ,   8, 0;
     numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
-    
+
     if ( $config{PROVIDER_OFFSET} ) {
 	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
 	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 32' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 32;

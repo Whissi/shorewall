@@ -777,7 +777,7 @@ sub dropBcast( $$$ ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	    } else {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d ff00::/10 -j DROP ';
-	    }		
+	    }
 	}
 
 	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';

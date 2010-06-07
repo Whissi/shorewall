@@ -133,7 +133,7 @@ case $(uname) in
 	MAC=Yes
 	INSTALLD=
 	T=
-	;;	
+	;;
     *)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=root
@@ -178,7 +178,7 @@ if [ -n "$DESTDIR" ]; then
 
     install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
-    
+
     CYGWIN=
     MAC=
 else
@@ -194,7 +194,7 @@ else
     if [ -n "$CYGWIN" ]; then
 	echo "Installing Cygwin-specific configuration..."
     elif [ -n "$MAC" ]; then
-	echo "Installing Mac-specific configuration..."	
+	echo "Installing Mac-specific configuration..."
     else
 	if [ -f /etc/debian_version ]; then
 	    echo "Installing Debian-specific configuration..."
@@ -270,7 +270,7 @@ if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
 fi
-    
+
 #
 # Install the config file
 #

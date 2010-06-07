@@ -6,7 +6,7 @@
 #
 usage() {
     echo "Usage: $0 [ options ] [ start|stop|clear|down|reset|refresh|restart|status|up|version ]"
-    echo 
+    echo
     echo "Options are:"
     echo
     echo "   -v and -q        Standard Shorewall verbosity controls"
@@ -85,7 +85,7 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 		    t*)
 			g_timestamp=Yes
 			option=${option#t}
-			;;			
+			;;
 		    p*)
 			g_purge=Yes
 			option=${option#p}
@@ -126,7 +126,7 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 
 			if [ -n "$option" ]; then
 			    case $option in
-				*/*)		    
+				*/*)
 	    			    startup_error "-R must specify a simple file name: $option"
 				    ;;
 				.safe|.try|NONE)

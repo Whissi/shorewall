@@ -105,7 +105,7 @@ fi
 %attr(0644,root,root) %{_mandir}/man5/*
 %attr(0644,root,root) %{_mandir}/man8/*
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples 
+%doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples
 
 %changelog
 * Sun Jun 06 2010 Tom Eastep tom@shorewall.net

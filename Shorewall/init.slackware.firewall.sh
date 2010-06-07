@@ -45,7 +45,7 @@ status() {
 
 export SHOREWALL_INIT_SCRIPT=1
 
-case $1 in 
+case $1 in
 	'start')
 	start
 	;;

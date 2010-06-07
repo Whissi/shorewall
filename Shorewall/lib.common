@@ -45,17 +45,17 @@ get_script_version() { # $1 = script
 	temp=$(echo $temp)
 	IFS=$ifs
 	digits=0
-	
+
 	for temp in $temp; do
 	    version=${version}$(printf '%02d' $temp)
 	    digits=$(($digits + 1))
 	    [ $digits -eq 3 ] && break
 	done
     fi
-    
+
     echo $version
 }
- 
+
 #
 # Do required exports or create the required option string and run the passed script using
 # $SHOREWALL_SHELL
@@ -66,7 +66,7 @@ run_it() {
     local version
 
     export VARDIR
-	
+
     script=$1
     shift
 
@@ -82,7 +82,7 @@ run_it() {
 	export PURGE=$g_purge
 	export TIMESTAMP=$g_timestamp
 	export RECOVERING=$g_recovering
- 
+
 	if [ "$g_product" != Shorewall ]; then
 	    #
 	    # Shorewall Lite
@@ -105,7 +105,7 @@ run_it() {
 
 	[ -n "$RESTOREFILE" ] && options="${options} -R $RESTOREFILE"
     fi
-	
+
     $SHOREWALL_SHELL $script $options $@
 }
 

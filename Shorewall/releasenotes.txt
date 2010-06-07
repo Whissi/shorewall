@@ -7,7 +7,7 @@ II.   MIGRATION ISSUES
 III.  PROBLEMS CORRECTED IN THIS RELEASE
 IV.   KNOWN PROBLEMS REMAINING
 V.    NEW FEATURES IN THIS RELEASE
-VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES 
+VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 ----------------------------------------------------------------------------
              I.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -56,7 +56,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 11) Support for netfilter's TRACE facility has been added. TRACE allows
     you to trace selected packets through Netfilter, including marking
-    by tcrules. 
+    by tcrules.
 
 12) You may now preview the generated ruleset by using the '-r' option
     to the 'check' command (e.g., "shorewall check -r").
@@ -155,7 +155,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 8)  The install.sh scripts in the Shorewall and Shorewall6 packages no
     longer create a backup copy of the existing configuration. If you
     want your configuration backed up prior to upgrading, you will
-    need to do that yourself. 
+    need to do that yourself.
 
     As part of this change, the fallback.sh scripts are no longer
     released.
@@ -182,7 +182,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     explicitly call the module's 'initialize' function after the module
     has been loaded.
 
-12) Checking for zone membership has been tighened up. Previously, 
+12) Checking for zone membership has been tighened up. Previously,
     a zone could contain <interface>:0.0.0.0/0 along with other hosts;
     now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
     then it may have no additional members in /etc/shorewall/hosts.
@@ -208,12 +208,12 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	  iface_ADDRESSES                      SW_iface_ADDRESSES
 	  iface_NETWORKS                       SW_iface_NETWORKS
 	  iface_MAC                            SW_iface_MAC
-	  
+
 	  provider_IS_USABLE                   SW_provider_IS_USABLE
 
     where 'iface' is a capitalized interface name (e.g., ETH0) and
     'provider' is the capitalized name of a provider.
-	  
+
 ----------------------------------------------------------------------------
 I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
@@ -231,7 +231,7 @@ None.
 ----------------------------------------------------------------------------
 
 1)  Beginning with this release, UPnP state and the dynamic blacklist
-    are preserved across 'restart'. 
+    are preserved across 'restart'.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
@@ -256,7 +256,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
 3)  Under rare circumstances involving a complex configuration,
     OPTIMIZE=13 and OPTIMIZE=15 could cause invalid iptables-restore
-    input to be generated. 
+    input to be generated.
 
     Sample error message:
 
@@ -324,7 +324,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     b)  be sure that your current firewall script(s) (normally in
         /var/lib/<product>/firewall) is(are) compiled with the 4.4.10
-        compiler. 
+        compiler.
 
 	Shorewall and Shorewall6 users can execute these commands:
 
@@ -361,8 +361,8 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	On Debian-based systems, set startup=0 in /etc/default/<product>.
 
 	On other systems, use your service startup configuration tool
-	(chkconfig, insserv, ...) to disable startup. 
- 
+	(chkconfig, insserv, ...) to disable startup.
+
     The following actions occur when an interface comes up:
 
     	FIREWALL      INTERFACE     ACTION
@@ -423,7 +423,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	shorewall-lite: 4.4.10-RC1
 	shorewall6-lite: 4.4.10-RC1
 	shorewall-init: 4.4.10-RC1
-	gateway:~# 
+	gateway:~#
 
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 9
@@ -498,7 +498,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     /etc/shorewall/masq:
 
     #INTERFACE	SOURCE		ADDRESS		PROTO	PORT
-    tun0	192.168.1.0/24	
+    tun0	192.168.1.0/24
 
     Use of tunN in the nat and netmap files also produced invalid
     iptables-restore input.
@@ -540,7 +540,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	I - Inserted a rule into a chain.
 	T - Shell source text appended/inserted into a chain --
             converted into rules at run-time.
-	D - Deleted Rule from a chain; note that this causes the 
+	D - Deleted Rule from a chain; note that this causes the
 	    following rules to be renumbered.
 	X - Deleted a chain
 	P - Change a built-in chains policy. Chains in the filter table
@@ -555,7 +555,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     Netfilter trace records indicate the table and chain being
     changed. If the change involves a particular rule, then the rule
-    number is also included. 
+    number is also included.
 
     Example (append the first rule to the filter FORWARD chain):
 
@@ -585,7 +585,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     /etc/shorewall/interfaces:
     #ZONE	INTERFACE	BROADCAST	OPTIONS
     dummy	br0		-		routeback
-    
+
     /etc/shorewall/policy:
     #SOURCE	DEST		POLICY
     dummy	all		DROP
@@ -611,7 +611,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 9
 ----------------------------------------------------------------------------
 
-1)  A CONTINUE rule specifying a log level would cause the compiler to 
+1)  A CONTINUE rule specifying a log level would cause the compiler to
     generate an incorrect rule sequence. The packet would be logged
     but the CONTINUE action would not occur.
 
@@ -643,7 +643,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     1/2 of the values given in the rule.
 
 5)  Detection of the 'Old hashlimit match' capability was broken in
-    /sbin/shorewall, /sbin/shorewall-lite and in the IPv4 version of 
+    /sbin/shorewall, /sbin/shorewall-lite and in the IPv4 version of
     shorecap.
 
 6)  On older distributions such as RHEL5 and derivatives, Shorewall
@@ -651,7 +651,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     /etc/shorewall/tcinterfaces and LOAD_HELPERS_ONLY had been
     specified in /etc/shorewall/shorewall.conf.
 
-7)  The Debian init scripts are modified to include $remote_fs in the 
+7)  The Debian init scripts are modified to include $remote_fs in the
     Required-start and Required-stop specifications.
 
 8)  Previously, when a supported command failed, the Debian Shorewall
@@ -715,7 +715,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	VERBOSE
 	VERBOSE_OFFSET
 	VERSION
-	
+
     See Migration Issue 14 above for additional information.
 
 2)  The Shorewall and Shorewall6 installers now accept a '-s' (sparse)
@@ -739,7 +739,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     Resulting error message
 
-       ERROR: The separator for a port range is ':', not '-' (21-22) : 
+       ERROR: The separator for a port range is ':', not '-' (21-22) :
               /etc/shorewall/rules (line 3)
 
 5)  Support has been added for UDPLITE (proto 136) in that DEST PORT(S)
@@ -750,7 +750,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     'status' command now gives the detailed status as 'Restored from
     <filename>' rather than 'Started'; <filename> is the saved script
     used to restore the configuration.
- 
+
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 7
 ----------------------------------------------------------------------------
@@ -759,7 +759,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     installer and are included in the rpm.
 
 2)  An invalid octal number (e.g., 080) appearing in a port list
-    resulted in a perl error message. 
+    resulted in a perl error message.
 
     As part of this fix, both hex and octal numbers are now accepted
     for protocol and port numbers.
@@ -824,7 +824,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       f) If a chain ends with an unconditional branch to a second chain
          (other than to 'reject'), then the branch is deleted from the
          first chain and the rules from the second chain are appended
-         to it. 
+         to it.
 
       The following chains are exempted from optimization 4:
 
@@ -881,7 +881,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     Modules loaded when LOAD_HELPERS_ONLY=Yes are the protocol
     helpers. These cannot be autoloaded.
-    
+
     In addition, the nf_conntrack_sip module is loaded with
     sip_direct_media=0. This setting is slightly less secure than
     sip_direct_media=1, but it solves many VOIP problems that users
@@ -914,7 +914,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     the setting of net.ipv4.config.all.rp_filter.
 
     Beginning with kernel 2.6.31, the value is the arithmetic MAX of
-    those two values. 
+    those two values.
 
     Given that Shorewall sets net.ipv4.config.all.rp_filter to 1 if
     there are any interfaces specifying 'routefilter', specifying
@@ -946,7 +946,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	Keep	 - Shorewall does not change the setting of
 	           net.ipv4.config.all.rp_filter if the kernel version
 		   is 2.6.31 or later.
-        
+
 	The default remains Keep.
 
     e)  The 'routefilter' interface option can have values 0,1 or 2. If
@@ -1021,7 +1021,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 2)  If any interfaces had the 'bridge' option specified, compilation
     failed with the error:
 
-    Undefined subroutine &Shorewall::Rules::match_source_interface called 
+    Undefined subroutine &Shorewall::Rules::match_source_interface called
     at /usr/share/shorewall/Shorewall/Rules.pm line 2319.
 
 3)  The compiler now flags port number 0 as an error in all
@@ -1049,7 +1049,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
 9)  The 'reload -c' command would ignore the setting of DONT_LOAD in
     shorewall.conf. The 'reload' command without '-c' worked as
-    expected. 
+    expected.
 
 ----------------------------------------------------------------------------
                 N E W   F E A T U R E S   I N   4 . 4 . 5
@@ -1135,7 +1135,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     /etc/shorewall/zones:
 
-       #ZONE		TYPE	
+       #ZONE		TYPE
        fw		firewall
        world		ipv4
        z1:world		bport4
@@ -1268,7 +1268,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     	STARTUP_LOG=/var/log/shorewall-init.log
 	LOG_VERBOSITY=2
 
-    The effect is much the same as the old defaults, with the exception 
+    The effect is much the same as the old defaults, with the exception
     that:
 
 	a) Start, stop, etc. commands issued through /sbin/shorewall
@@ -1276,7 +1276,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	b) Logging will occur at maximum verbosity.
 	c) Log entries will be date/time stamped.
 
-    On non-Debian systems, new installs will now log all Shorewall 
+    On non-Debian systems, new installs will now log all Shorewall
     commands to /var/log/shorewall-init.log.
 
 2)  A new TRACK_PROVIDERS option has been added in shorewall.conf.
@@ -1294,9 +1294,9 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
           P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2
 ----------------------------------------------------------------------------
 
-1)  Detection of Persistent SNAT was broken in the rules compiler. 
+1)  Detection of Persistent SNAT was broken in the rules compiler.
 
-2)  Initialization of the compiler's chain table was occurring before 
+2)  Initialization of the compiler's chain table was occurring before
     shorewall.conf had been read and before the capabilities had been
     determined. This could lead to incorrect rules and Perl runtime
     errors.
@@ -1348,14 +1348,14 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
                 N E W   F E A T U R E S   I N   4 . 4 . 2
 ----------------------------------------------------------------------------
 
-1)  Prior to this release, line continuation has taken precedence over 
+1)  Prior to this release, line continuation has taken precedence over
     #-style comments. This prevented us from doing the following:
 
     	    ACCEPT    net:206.124.146.176,\   #Gateway
 	    	          206.124.146.177,\   #Mail
 			  206.124.146.178\    #Server
 			  		      ...
-    
+
     Now, unless a line ends with '\', any trailing comment is stripped
     off (including any white-space preceding the '#'). Then if the line
     ends with '\', it is treated as a continuation line as normal.
@@ -1407,7 +1407,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 7)  MULTICAST=Yes generates an incorrect rule that limits its
     effectiveness to a small part of the multicast address space.
 
-8)  Checking for zone membership has been tighened up. Previously, 
+8)  Checking for zone membership has been tighened up. Previously,
     a zone could contain <interface>:0.0.0.0/0 along with other hosts;
     now, if the zone has <interface>:0.0.0.0/0 (even with exclusions),
     then it may have no additional members in /etc/shorewall/hosts.
@@ -1431,7 +1431,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     eth0	0.0.0.0/0  206.124.146.177-206.124.146.179:persistent
 
     This feature requires Persistent SNAT support in your kernel and
-    iptables. 
+    iptables.
 
     If you use a capabilities file, you will need to create a new one
     as a result of this feature.
@@ -1444,7 +1444,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     iptables when asked.
 
 2)  A 'clean' target has been added to the Makefiles. It removes backup
-    files (*~ and .*~). 
+    files (*~ and .*~).
 
 3)  The meaning of 'full' has been redefined when used in the context
     of a traffic shaping sub-class. Previously, 'full' always meant the
@@ -1580,7 +1580,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     As always, /var/lib/shorewall[6] is the default directory which may
     be overridden using the /etc/shorewall[6]/vardir file.
 
-5)  Dynamic zone support is once again available for IPv4. This support 
+5)  Dynamic zone support is once again available for IPv4. This support
     is built on top of ipsets so you must have the xtables-addons
     installed on the firewall system.
 
@@ -1598,7 +1598,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     - By specifying <interface>:dynamic in the HOST(S) column of an
       entry for the zone in /etc/shorewall/hosts.
 
-    When there are any dynamic zones present in your configuration, 
+    When there are any dynamic zones present in your configuration,
     Shorewall (Shorewall-lite) will:
 
     a) Execute the following commands during 'shorewall start' or
@@ -1607,7 +1607,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
            ipset -U :all: :all:
 	   ipset -U :all: :default:
 	   ipset -F
-	   ipset -X   
+	   ipset -X
 	   ipset -R < ${VARDIR}/ipsets.save
 
        where $VARDIR normally contains /var/lib/shorewall
@@ -1700,7 +1700,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     	 gateway:~ # shorewall restart
     	 Restarting Shorewall....
     	 done.
-    	 gateway:~ # 
+    	 gateway:~ #
 
     In other words, you can compile the current configuration then
     install it at a later time.
@@ -1750,8 +1750,8 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     This previously generated these two rules (long rules folded):
 
 	 -A loc2net -p 6 --dport 25 -j LOG --log-level 6
-	    --log-prefix "Shorewall:loc2net:reject:" 
-	 -A loc2net -p 6 --dport 25 -j reject 
+	    --log-prefix "Shorewall:loc2net:reject:"
+	 -A loc2net -p 6 --dport 25 -j reject
 
     It now generates these rules:
 
@@ -1760,8 +1760,8 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	 -A loc2net -p 6 --dport 25 -g log0
 	 ...
 	 -A log0 -j LOG --log-level 6
-	    --log-prefix "Shorewall:loc2net:REJECT:" 
-	 -A log0 -j reject 
+	    --log-prefix "Shorewall:loc2net:REJECT:"
+	 -A log0 -j reject
 
     Notice that now there is only a single rule generated in the
     'loc2net' chain where before there were two. Packets for other than
@@ -1861,7 +1861,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     It is important to realize that, while class IDs are composed of a
     <major> and a <minor> value, the set of <minor> values must be
     unique. You must keep this in mind when deciding how to map IP
-    addresses to class IDs. 
+    addresses to class IDs.
 
     For example, suppose that your internal network is 192.168.1.0/29
     (host IP addresses 192.168.1.1 - 192.168.1.6). Your first notion
@@ -1974,7 +1974,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     1:100	-	16mbit		20mbit		2
     1:100:101	-	 8mbit		20mbit		3	default
     1:100:102	-	 8mbit		20mbit		3
-     
+
     /etc/shorewall/tcrules
 
     #MARK	SOURCE		DEST
@@ -1990,7 +1990,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     Local traffic (that coming from the firewall and from the DMZ
     server) is placed in the effectively unrestricted class 1:10. The
     default class is guaranteed half of the download capacity and my
-    work system (172.20.1.107) is guarandeed the other half.	
+    work system (172.20.1.107) is guarandeed the other half.
 
 19) Support for the "Hierarchical Fair Service Curve" (HFSC) queuing
     discipline has been added. HFSC is claimed to be superior to the
@@ -2018,7 +2018,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	         in the class should experience. The delay is expressed
 	         in milliseconds and may be followed by 'ms' (e.g.,
 	      	 10ms. Note that there may be no white space between the
-	      	 number and 'ms'). 
+	      	 number and 'ms').
               3. The maximum transmission unit (UMAX) for this class of
 	         traffic. If not specified, the MTU of the interface is
 		 used. The length is specified in bytes and may be
@@ -2101,7 +2101,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
 25) A new extension script, 'lib.private' has been added. This file is
     intended to include declarations of shell functions that will be
-    called by the other run-time extension scripts. 
+    called by the other run-time extension scripts.
 
 26) Paul Gear has contributed the following macros:
 
@@ -2178,7 +2178,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     If flow is not supported, you will see:
 
        Unknown filter "flow", hence option "help" is unparsable
-    
+
     If your kernel supports module autoloading, just type (as root):
 
        modprobe cls_flow
@@ -2187,7 +2187,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     see:
 
        FATAL: Module cls_flow not found.
-    
+
     If your kernel is not modularized or does not support module
      autoloading, look at your kernel configuration (either
     /proc/config.gz or the .config file in
@@ -2195,7 +2195,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     If 'flow' is supported, you will see:
 
-       NET_CLS_FLOW=m 
+       NET_CLS_FLOW=m
 
     or
 
@@ -2203,4 +2203,4 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
     For modularized kernels, Shorewall will attempt to load
     /lib/modules/<kernel-version>/net/sched/cls_flow.ko by default.
-       
+

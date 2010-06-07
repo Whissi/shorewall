@@ -166,7 +166,7 @@ search_log() # $1 = IP address to search for
     else
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
     fi
-}    
+}
 
 #
 # Show traffic control information
@@ -298,7 +298,7 @@ do_save() {
 	status=1
     fi
 
-    case ${SAVE_IPSETS:=No} in 
+    case ${SAVE_IPSETS:=No} in
 	[Yy]es)
 	    case ${IPSET:=ipset} in
 		*/*)
@@ -345,7 +345,7 @@ save_config() {
 
     local result
     result=1
-    
+
     iptables_save=${IPTABLES}-save
 
     [ -x $iptables_save ] || echo "$iptables-save does not exist or is not executable" >&2
@@ -495,7 +495,7 @@ show_command() {
 				    fatal_error "Invalid table name ($s)"
 				    ;;
 			    esac
-			    
+
 			    option=
 			    shift
 			    ;;
@@ -713,7 +713,7 @@ show_command() {
 			;;
 		esac
 	    fi
-	    
+
 
 	    if [ $# -gt 0 ]; then
 		if [ $1 = dynamic -a $# -gt 1 ]; then
@@ -729,7 +729,7 @@ show_command() {
 			exit 1
 		    fi
 		done
-		
+
 		echo "$g_product $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $g_hostname - $(date)"
 		echo
 		show_reset
@@ -800,7 +800,7 @@ dump_command() {
     clear_term
     echo "$g_product $SHOREWALL_VERSION Dump at $g_hostname - $(date)"
     echo
-    
+
     show_reset
     host=$(echo $g_hostname | sed 's/\..*$//')
     $IPTABLES -L $g_ipt_options
@@ -844,7 +844,7 @@ dump_command() {
 	heading "PFKEY SPD"
 	setkey -DP
 	heading "PFKEY SAD"
-	setkey -D | grep -Ev '^[[:space:]](A:|E:)'  # Don't divulge the keys 
+	setkey -D | grep -Ev '^[[:space:]](A:|E:)'  # Don't divulge the keys
     fi
 
     heading "/proc"
@@ -1183,7 +1183,7 @@ add_command() {
 	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
 	fi
-	
+
 	host=${host#*:}
 
 	if $IPSET -A $ipset $host; then
@@ -1192,7 +1192,7 @@ add_command() {
 	    fatal_error "Unable to add $interface:$host to zone $zone"
 	fi
     done
-	
+
 }
 
 #
@@ -1242,7 +1242,7 @@ delete_command() {
 	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
 	fi
-	
+
 	host=${hostent#*:}
 
 	if $IPSET -D $ipset $host; then
@@ -1251,7 +1251,7 @@ delete_command() {
 	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
 	fi
     done
-	
+
 }
 
 #
@@ -1403,9 +1403,9 @@ logwatch_command() {
 	case $option in
 	    -*)
 		option=${option#-}
-		
+
 		[ -z "$option" ] && usage 1
-		
+
 		while [ -n "$option" ]; do
 		    case $option in
 			v*)
@@ -1436,7 +1436,7 @@ logwatch_command() {
 		;;
 	esac
     done
-    
+
     [ -n "$g_debugging" ] && set -x
 
     if [ $# -eq 1 ]; then
@@ -1634,7 +1634,7 @@ determine_capabilities() {
     if [ -z "$HASHLIMIT_MATCH" ]; then
 	qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
 	HASHLIMIT_MATCH=$OLD_HL_MATCH
-    fi	
+    fi
     qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
     qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
     qt $IPTABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
@@ -1779,7 +1779,7 @@ report_capabilities1() {
     report_capability1 PERSISTENT_SNAT
     report_capability1 TPROXY_TARGET
     report_capability1 FLOW_FILTER
-    
+
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION
 }

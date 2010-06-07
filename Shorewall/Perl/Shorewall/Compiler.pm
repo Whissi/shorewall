@@ -327,7 +327,7 @@ else
     rm -f \${VARDIR}/.forwardUPnP
 fi
 
-if chain_exists dynamic; then
+if [ "\$COMMAND" = restart ] && chain_exists dynamic; then
     $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
 else
     rm -f \${VARDIR}/.dynamic
@@ -338,10 +338,17 @@ EOF
     emit ( 'else' );
     push_indent;
 
-emit <<'EOF';
-rm -f ${VARDIR}/.UPnP
-rm -f ${VARDIR}/.forwardUPnP
-rm -f ${VARDIR}/.dynamic
+emit <<"EOF";
+rm -f \${VARDIR}/.UPnP
+rm -f \${VARDIR}/.forwardUPnP
+
+if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then
+    if chain_exists dynamic; then
+        $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
+    else
+        rm -f \${VARDIR}/.dynamic
+    fi
+fi
 EOF
     pop_indent;
 
@@ -569,7 +576,6 @@ EOF
         set_state "Started"
     else
         setup_netfilter
-        restore_dynamic_rules
         conditionally_flush_conntrack
 EOF
     setup_forwarding( $family , 0 );

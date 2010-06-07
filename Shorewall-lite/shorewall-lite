@@ -777,14 +777,9 @@ case "$COMMAND" in
 	g_restorepath=${VARDIR}/$RESTOREFILE
 
 	if [ -x $g_restorepath ]; then
-
-	    if [ -x ${g_restorepath}-ipsets ]; then
-		rm -f ${g_restorepath}-ipsets
-		echo "    ${g_restorepath}-ipsets removed"
-	    fi
-
 	    rm -f $g_restorepath
 	    rm -f ${g_restorepath}-iptables
+	    rm -f ${g_restorepath}-ipsets
 	    echo "    $g_restorepath removed"
 	elif [ -f $g_restorepath ]; then
 	    echo "   $g_restorepath exists and is not a saved Shorewall configuration"

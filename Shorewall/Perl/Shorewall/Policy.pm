@@ -246,7 +246,7 @@ sub process_a_policy() {
 	$chainref->{synchain}  = $chain
     }
 
-    $chainref->{default}   = $default if $default;
+    $chainref->{default} = $default if $default;
 
     if ( $clientwild ) {
 	if ( $serverwild ) {
@@ -415,13 +415,14 @@ sub apply_policy_rules() {
 
     for my $chainref ( @policy_chains ) {
 	my $policy      = $chainref->{policy};
-	my $loglevel    = $chainref->{loglevel};
-	my $provisional = $chainref->{provisional};
-	my $default     = $chainref->{default};
-	my $name        = $chainref->{name};
-	my $synparms    = $chainref->{synparms};
 
 	unless ( $policy eq 'NONE' ) {
+	    my $loglevel    = $chainref->{loglevel};
+	    my $provisional = $chainref->{provisional};
+	    my $default     = $chainref->{default};
+	    my $name        = $chainref->{name};
+	    my $synparms    = $chainref->{synparms};
+
 	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) {
 		if ( $config{OPTIMIZE} & 2 ) {
 		    #

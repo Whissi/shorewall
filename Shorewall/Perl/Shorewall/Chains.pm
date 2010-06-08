@@ -3703,11 +3703,9 @@ sub load_ipsets() {
 		   '',
 		   '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
 		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
-		   '    fi' );
-	}
+		   '    fi',
+		   'elif [ "$COMMAND" = refresh ]; then' );
 
-	if ( @ipsets ) {
-	    emit ( 'elif [ "$COMMAND" = refresh ]; then' );
 	    emit ( "   qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
 	}
 

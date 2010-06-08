@@ -162,6 +162,7 @@ our %EXPORT_TAGS = (
 				       have_global_variables
 				       set_global_variables
 				       save_dynamic_chains
+				       load_ipsets
 				       create_netfilter_load
 				       preview_netfilter_load
 				       create_chainlist_reload
@@ -3641,6 +3642,78 @@ EOF
 
     emit ( 'fi' ,
 	   '' );
+}
+
+sub load_ipsets() {
+
+    my @ipsets = all_ipsets;
+
+    if ( @ipsets || $config{SAVE_IPSETS} ) {
+	emit ( '',
+	       'local hack',
+	       '',
+	       'case $IPSET in',
+	       '    */*)',
+	       '        [ -x "$IPSET" ] || startup_error "IPSET=$IPSET does not exist or is not executable"',
+	       '        ;;',
+	       '    *)',
+	       '        IPSET="$(mywhich $IPSET)"',
+	       '        [ -n "$IPSET" ] || startup_error "The ipset utility cannot be located"' ,
+	       '        ;;',
+	       'esac',
+	       '',
+	       'if [ "$COMMAND" = start ]; then' ,
+	       '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
+	       '        $IPSET -F' ,
+	       '        $IPSET -X' ,
+	       '        $IPSET -R < ${VARDIR}/ipsets.save' ,
+	       '    fi' ,
+	       'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ,
+	       '    if [ -f $(my_pathname)-ipsets ]; then' ,
+	       '        if chain_exists shorewall; then' ,
+	       '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,
+	       '        else' ,
+	       '            $IPSET -F' ,
+	       '            $IPSET -X' ,
+	       '            $IPSET -R < $(my_pathname)-ipsets' ,
+	       '        fi' ,
+	       '    fi' ,
+	     );
+	
+	if ( @ipsets ) {
+	    emit '';
+
+	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+
+	    emit ( '' ,
+		   'elif [ "$COMMAND" = restart ]; then' ,
+		   '' );
+
+	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+
+	    emit ( '' ,
+		   '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
+		   '        #',
+		   '        # The \'grep -v\' is a hack for a bug in ipset\'s nethash implementation when xtables-addons is applied to Lenny' ,
+		   '        #',
+		   '        hack=\'| grep -v /31\'' ,
+		   '    else' ,
+		   '        hack=' ,
+		   '    fi' ,
+		   '',
+		   '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
+		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
+		   '    fi' );
+	}
+
+	if ( @ipsets ) {
+	    emit ( 'elif [ "$COMMAND" = refresh ]; then' );
+	    emit ( "   qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	}
+
+	emit ( 'fi' ,
+	       '' );
+    }
 }
 
 #

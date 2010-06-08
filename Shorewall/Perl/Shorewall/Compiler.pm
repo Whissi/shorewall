@@ -303,58 +303,6 @@ sub generate_script_2() {
 
 }
 
-#
-# Emit code to save the dynamic chains to hidden files in ${VARDIR}
-#
-
-sub save_dynamic_chains() {
-
-    my $tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
-
-    emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = refresh ]; then' );
-    push_indent;
-
-emit <<"EOF";
-if chain_exists 'UPnP -t nat'; then
-    $tool -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
-else
-    rm -f \${VARDIR}/.UPnP
-fi
-
-if chain_exists forwardUPnP; then
-    $tool -t filter | grep '^-A forwardUPnP ' > \${VARDIR}/.forwardUPnP
-else
-    rm -f \${VARDIR}/.forwardUPnP
-fi
-
-if chain_exists dynamic; then
-    $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
-else
-    rm -f \${VARDIR}/.dynamic
-fi
-EOF
-
-    pop_indent;
-    emit ( 'else' );
-    push_indent;
-
-emit <<"EOF";
-rm -f \${VARDIR}/.UPnP
-rm -f \${VARDIR}/.forwardUPnP
-
-if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then
-    if chain_exists dynamic; then
-        $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
-    fi
-fi
-EOF
-    pop_indent;
-
-    emit ( 'fi' ,
-	   '' );
-}
-
-#
 # Final stage of script generation.
 #
 #    Generate code for loading the various files in /var/lib/shorewall[6][-lite]

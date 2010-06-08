@@ -421,7 +421,7 @@ sub apply_policy_rules() {
 	my $name        = $chainref->{name};
 	my $synparms    = $chainref->{synparms};
 
-	if ( $policy ne 'NONE' ) {
+	unless ( $policy eq 'NONE' ) {
 	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) {
 		if ( $config{OPTIMIZE} & 2 ) {
 		    #

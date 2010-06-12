@@ -448,7 +448,9 @@ sub setup_netmap() {
 
     while ( read_a_line ) {
 
-	my ( $type, $net1, $interfacelist, $net2 ) = split_line 4, 4, 'netmap file';
+	my ( $type, $net1, $interfacelist, $net2, $net3 ) = split_line 4, 5, 'netmap file';
+
+	$net3 = ALLIP if $net3 eq '-';
 
 	for my $interface ( split_list $interfacelist, 'interface' ) {
 
@@ -459,8 +461,8 @@ sub setup_netmap() {
 	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 	    unless ( $interfaceref->{root} ) {
-		$rulein  = match_source_dev $interface;
-		$ruleout = match_dest_dev $interface;
+		$rulein  = match_source_dev( $interface ) . match_source_net ( $net3 );
+		$ruleout = match_dest_dev( $interface )   . match_dest_net ( $net3 );
 		$interface = $interfaceref->{name};
 	    }
 

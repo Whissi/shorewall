@@ -834,7 +834,7 @@ sub allowBcast( $$$ ) {
 	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
 	} else {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/10 ' if $level ne '';
-	    add_rule $chainref, '-d ff00:/10 -j ACCEPT';
+	    add_rule $chainref, '-d ff00::/10 -j ACCEPT';
 	}
     }
 }

@@ -2351,7 +2351,7 @@ sub IPSet_Match() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
 
-    $ipset = which $ipset unless $ipset =~ '//';
+    $ipset = which $ipset unless $ipset =~ '^/';
 
     if ( $ipset && -x $ipset ) {
 	qt( "$ipset -X $sillyname" );

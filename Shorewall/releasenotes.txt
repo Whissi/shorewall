@@ -222,6 +222,17 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 
 1)  The IPv6 allowBcast action generated an invalid rule.
 
+2)  If IPSET=<pathname> was specified in shorewall.conf, then when an
+    ipset was used in a configuration file entry, the following
+    fatal compilation error occurred:
+
+    ERROR: ipset names in Shorewall configuration files require Ipset
+    Match in your kernel and iptables : /etc/shorewall/rules (line nn)
+
+    If you applied the workaround given in the "Known Problems", then
+    you should remove /etc/shorewall/capabilities after installing
+    this fix.
+
 4.4.10
 
 1)  Startup Errors (those that are detected before the state of the

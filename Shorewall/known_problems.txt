@@ -19,3 +19,10 @@
     Fixed in Shorewall 4.4.10.1. After installing this fix, if you 
     executed the above command to work around the problem, we recommend
     that you remove /etc/shorewall/capabilities.
+
+3)  On Debian and derivatives, shorewall-init is starting too late.
+
+    To work around this issue, at a root prompt:
+
+       cd /etc/rcS.d
+       mv S38shorewall-init S08shorewall-init

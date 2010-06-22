@@ -232,6 +232,16 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     you should remove /etc/shorewall/capabilities after installing
     this fix.
 
+3)  The start priority of shorewall-init on Debian and Debian-based
+    distributions was previously too low, making it start too late.
+
+4)  The log output from IPv6 logs was almost unreadable due to display
+    of IPv6 addresses in uncompressed format. A similar problem
+    occurred with 'shorewall6 show connections'. This update makes the
+    displays much clearer at the expense of opening the slight
+    possibility of two '::' sequences being incorrectly shown in the
+    same address.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

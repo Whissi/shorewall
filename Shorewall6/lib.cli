@@ -439,7 +439,7 @@ show_command() {
 	    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
 	    echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
 	    echo
-	    grep '^ipv6' /proc/net/nf_conntrack
+	    grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g'
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1

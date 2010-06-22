@@ -166,7 +166,8 @@ our $have_ipsec;
 use constant { FIREWALL => 1,
 	       IP       => 2,
 	       BPORT    => 3,
-	       IPSEC    => 4 };
+	       IPSEC    => 4,
+	       VSERVER  => 8 };
 
 use constant { SIMPLE_IF_OPTION   => 1,
 	       BINARY_IF_OPTION   => 2,
@@ -180,6 +181,7 @@ use constant { SIMPLE_IF_OPTION   => 1,
 
 	       IF_OPTION_ZONEONLY => 8,
 	       IF_OPTION_HOST     => 16,
+	       IF_OPTION_VSERVER  => 32,
 	   };
 
 our %validinterfaceoptions;
@@ -222,13 +224,13 @@ sub initialize( $ ) {
 				  dhcp        => SIMPLE_IF_OPTION,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
-				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
+				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				  norfc1918   => OBSOLETE_IF_OPTION,
 				  nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  optional    => SIMPLE_IF_OPTION,
 				  proxyarp    => BINARY_IF_OPTION,
 				  required    => SIMPLE_IF_OPTION,
-				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
+				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				  routefilter => NUMERIC_IF_OPTION ,
 				  sourceroute => BINARY_IF_OPTION,
 				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -253,12 +255,12 @@ sub initialize( $ ) {
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY,
+				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    optional    => SIMPLE_IF_OPTION,
 				    proxyndp    => BINARY_IF_OPTION,
 				    required    => SIMPLE_IF_OPTION,
-				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST,
+				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				    sourceroute => BINARY_IF_OPTION,
 				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    mss         => NUMERIC_IF_OPTION,
@@ -402,6 +404,9 @@ sub process_zone( \$ ) {
 	$firewall_zone = $zone;
 	$ENV{FW} = $zone;
 	$type = FIREWALL;
+    } elsif ( $type eq 'vserver' ) {
+	fatal_error 'Vserver zones may not be nested' if @parents;
+	$type = VSERVER;
     } elsif ( $type eq '-' ) {
 	$type = IP;
 	$$ip = 1;
@@ -788,6 +793,8 @@ sub process_interface( $$ ) {
 	    } else {
 		$zoneref->{bridge} = $interface;
 	    }
+	    
+	    fatal_error "Vserver zones may not be associated with bridge ports" if $zoneref->{type} == VSERVER;
 	}
 
 	$bridge = $interface;
@@ -831,7 +838,11 @@ sub process_interface( $$ ) {
 
     my $hostoptionsref = {};
 
-    $options{ignore} = 1, $options = '-' if $options eq 'ignore';
+    if ( $options eq 'ignore' ) {
+	fatal_error "Ignored interfaces may not be associated with a zone" if $zone;
+	$options{ignore} = 1;
+	$options = '-';
+    }
 
     if ( $options ne '-' ) {
 
@@ -844,7 +855,11 @@ sub process_interface( $$ ) {
 
 	    fatal_error "Invalid Interface option ($option)" unless my $type = $validinterfaceoptions{$option};
 
-	    fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY && ! $zone;
+	    if ( $zone ) {
+		fatal_error qq(The "$option" option may not be specified for a Vserver zone") if $zoneref->{type} == VSERVER && ! ( $type & IF_OPTION_VSERVER );
+	    } else { 
+		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY;
+	    }
 
 	    my $hostopt = $type & IF_OPTION_HOST;
 
@@ -1525,6 +1540,7 @@ sub process_host( ) {
 	    } elsif ( $option eq 'norfc1918' ) {
 		warning_message "The 'norfc1918' option is no longer supported"
 	    } elsif ( $validhostoptions{$option}) {
+		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type == VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
 		$options{$option} = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";

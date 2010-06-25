@@ -220,8 +220,10 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 
 4.4.10.2
 
-1)  The start priority of shorewall-init on Debian and Debian-based
-    distributions was previously too low, making it start too late.
+1)  The start priorities of the Shorewall products were incorrect on
+    Debian when the insserv package is installed. This is corrected for
+    new installs, but existing users who have both insserv and a
+    Shorewall product are urged to run insserv just be be sure.
 
 2)  The log output from IPv6 logs was almost unreadable due to display
     of IPv6 addresses in uncompressed format. A similar problem

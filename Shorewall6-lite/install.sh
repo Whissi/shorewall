@@ -350,7 +350,13 @@ if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall6-lite
-	    ln -s ../init.d/shorewall6-lite /etc/rcS.d/S40shorewall6-lite
+
+	    if [ -x /sbin/insserv ]; then
+		insserv /etc/init.d/shorewall6-lite
+	    else
+		ln -s ../init.d/shorewall6-lite /etc/rcS.d/S40shorewall6-lite
+	    fi
+
 	    echo "Shorewall6 Lite will start automatically at boot"
 	else
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

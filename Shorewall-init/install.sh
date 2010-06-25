@@ -285,7 +285,12 @@ fi
 if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
-	    ln -sf ../init.d/shorewall-init /etc/rcS.d/S08shorewall-init
+	    if [ -x /sbin/insserv ]; then
+		insserv /etc/init.d/shorewall-init
+	    else
+		ln -sf ../init.d/shorewall-init /etc/rcS.d/S38shorewall-init
+	    fi
+
 	    echo "Shorewall Init will start automatically at boot"
 	else
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
@@ -319,7 +324,7 @@ else
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi
 
-	    ln -sf ../init.d/shorewall-init ${DESTDIR}/etc/rcS.d/S08shorewall-init
+	    ln -sf ../init.d/shorewall-init ${DESTDIR}/etc/rcS.d/S38shorewall-init
 	    echo "Shorewall Init will start automatically at boot"
 	fi
     fi

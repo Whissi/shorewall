@@ -495,7 +495,7 @@ sub process_simple_device() {
 	}
 
 	if ( defined $latency && $latency ne '' ) {
-	    fatal_error "Invalid latency ($latency)" unless $latency =~ /\d+(s|sec|secs|ms|msec|msecs|us|usec|usecs)$?/;
+	    fatal_error "Invalid latency ($latency)" unless $latency =~ /^\d+(s|sec|secs|ms|msec|msecs|us|usec|usecs)?$/;
 	    $command .= " latency $latency" 
 	} else {
 	    fatal_error "Missing OUT-BANDWIDTH Latency ($out_part)";

@@ -499,6 +499,202 @@ DNAT	172.20.1.0/24		tun1		192.168.1.0/24
   </section>
 
   <section>
+    <title>Roadwarrior with IPv6</title>
+
+    <para>While OpenVPN supports tunneling of IPv6 packets, the version of the
+    code that I run under OS X on my Macbook Pro does not support that option.
+    Nevertheless, I am able to take IPv6 on the road with me by creating a
+    6to4 tunnel through the OpenVPN IPv6 tunnel. In this configuration, the
+    IPv4 address pair (172.20.0.10,172.20.0.11) is used for the OpenVPN tunnel
+    and (2001:470:e857:2::1,2001:470:e857:2::2) is used for the 6to4
+    tunnel.</para>
+
+    <para>Here are my config files:</para>
+
+    <para>Server (conventional routed server config):</para>
+
+    <blockquote>
+      <programlisting>dev tun
+
+local 70.90.191.121
+
+server 172.20.0.0 255.255.255.128
+
+dh dh1024.pem
+
+ca /etc/certs/cacert.pem
+
+crl-verify /etc/certs/crl.pem
+
+cert /etc/certs/gateway.pem
+key /etc/certs/gateway_key.pem
+
+port 1194
+
+comp-lzo
+
+user nobody
+group nogroup
+
+keepalive 15 45
+ping-timer-rem
+persist-tun
+persist-key
+
+client-config-dir /etc/openvpn/clients
+ccd-exclusive
+client-to-client
+
+push "route 172.20.1.0 255.255.255.0"
+
+verb 3</programlisting>
+
+      <para>In the CCD file for the Macbook Pro:</para>
+
+      <programlisting>ifconfig-push <emphasis role="bold">172.20.0.11 172.20.0.10</emphasis></programlisting>
+
+      <para>From <filename>/etc/network/interfaces</filename> (very standard
+      <ulink url="6to4.htm#SixInFour">6to4 tunnel
+      configuration</ulink>):</para>
+
+      <programlisting>auto mac
+iface mac inet6 v4tunnel
+      address <emphasis role="bold">2001:470:e857:2::1</emphasis>
+      netmask 64
+      endpoint <emphasis role="bold">172.20.0.11</emphasis>
+      local <emphasis role="bold">172.20.1.254</emphasis></programlisting>
+
+      <para>Note that while the remote endpoint (172.20.0.11) is also the
+      remote endpoint of the OpenVPN tunnel, the local endpoint (172.20.1.254)
+      of the 6to4 tunnel is not the local endpoint of the OpenVPN tunnel
+      (that;s 172.20.0.10). 172.20.1.254 is the IPv4 address of the Shorewall
+      firewall's LAN interface.</para>
+
+      <para>The following excerpts from the Shorewall configuration show the
+      parts of that configuration that are relevant to these two tunnels (bold
+      font). <emphasis role="bold">This is not a complete
+      configuration.</emphasis></para>
+
+      <para>/etc/shorewall/zones:</para>
+
+      <programlisting>#ZONE           TYPE
+fw              firewall
+loc             ip              #Local Zone
+drct:loc        ipv4            #Direct internet access
+net             ipv4            #Internet
+<emphasis role="bold">vpn             ipv4 </emphasis>           #OpenVPN clients</programlisting>
+
+      <para>/etc/shorewall/interfaces:</para>
+
+      <programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
+loc    INT_IF     detect    dhcp,logmartians=1,routefilter=1,physical=$INT_IF,required,wait=5
+net    COM_IF     detect    dhcp,blacklist,optional,routefilter=0,logmartians,proxyarp=0,physical=$COM_IF,nosmurfs
+<emphasis role="bold">vpn    TUN_IF+    detect    physical=tun+,routeback</emphasis>
+-      sit1       -         ignore
+<emphasis role="bold">-      mac        -         ignore</emphasis>
+-      EXT_IF     -         ignore
+-      lo         -         ignore</programlisting>
+
+      <para>/etc/shorewall/tunnels:</para>
+
+      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+<emphasis role="bold">openvpnserver:udp       net</emphasis>
+6to4                    net
+<emphasis role="bold">6to4                    vpn</emphasis></programlisting>
+
+      <para>Similarly, here are exerpts from the Shorewall6
+      configuration.</para>
+
+      <para>/etc/shorewall6/zones:</para>
+
+      <programlisting>#ZONE     TYPE     OPTIONS        IN            OUT
+#                                 OPTIONS       OPTIONS
+fw        firewall
+net       ipv6
+<emphasis role="bold">loc       ipv6</emphasis>
+rest      ipv6</programlisting>
+
+      <para>/etc/shorewall6/interfaces:</para>
+
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     sit1            detect          tcpflags,forward=1,nosmurfs,routeback
+loc     eth4            detect          tcpflags,forward=1
+<emphasis role="bold">loc     mac             detect          tcpflags,forward=1</emphasis>
+rest    eth+</programlisting>
+
+      <para>Note that in the IPv6 firewall configuration, the remove Macbook
+      Pro is considered to be part of the local zone (loc).</para>
+    </blockquote>
+
+    <para>Client (conventional routed client config):</para>
+
+    <blockquote>
+      <programlisting>client
+
+dev tun
+
+proto udp
+
+remote gateway.shorewall.net 1194
+
+resolv-retry infinite
+
+nobind
+
+persist-key
+persist-tun
+
+mute-replay-warnings
+
+ca ca.crt
+cert mac.crt
+key mac.key
+
+ns-cert-type server
+
+comp-lzo
+
+verb 3
+
+up /Users/teastep/bin/up
+down /Users/teastep/bin/down
+</programlisting>
+
+      <para><filename>/Users/teastep/bin/up</filename>:</para>
+
+      <programlisting>#!/bin/bash
+LOCAL_IP=<emphasis role="bold">172.20.0.11</emphasis>
+LOCAL_IPV6=<emphasis role="bold">2001:470:e857:2::2</emphasis>
+REMOTE_IP=<emphasis role="bold">172.20.1.254</emphasis>
+REMOTE_IPV6=<emphasis role="bold">2001:470:e857:2::1</emphasis>
+TUNNEL_IF=gif0
+
+if [ $(ifconfig gif0 | wc -l ) -eq 1 ]; then
+    #
+    # Tunnel interface is not configured yet
+    #
+    /sbin/ifconfig $TUNNEL_IF tunnel $LOCAL_IP $REMOTE_IP
+    /sbin/ifconfig $TUNNEL_IF inet6 $LOCAL_IPV6 $REMOTE_IPV6 prefixlen 128
+else
+    /sbin/ifconfig $TUNNEL_IF up
+fi
+
+/sbin/route -n add -inet6 default $REMOTE_IPV6 &gt; /dev/null 2&gt;&amp;1</programlisting>
+
+      <para><filename>/Users/teastep/bin/down</filename>:</para>
+
+      <programlisting>#!/bin/bash
+
+TUNNEL_IF=gif0
+
+/sbin/ifconfig $TUNNEL_IF down
+/sbin/route -n delete -inet6 default &gt; /dev/null 2&gt;&amp;1
+</programlisting>
+    </blockquote>
+  </section>
+
+  <section>
     <title>Bridged Roadwarrior</title>
 
     <para>If you want to use a bridged OpenVPN configuration rather than a

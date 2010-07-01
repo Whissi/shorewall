@@ -50,9 +50,9 @@ sub process_notrack_rule( $$$$$$ ) {
     ( my $zone, $source) = split /:/, $source, 2;
     my $zoneref  = find_zone $zone;
     my $chainref = ensure_raw_chain( notrack_chain $zone );
-    my $restriction = $zone eq firewall_zone ? OUTPUT_RESTRICT : PREROUTE_RESTRICT;
+    my $restriction = $zoneref->{type} == FIREWALL || $zoneref->{type} == VSERVER ? OUTPUT_RESTRICT : PREROUTE_RESTRICT;
 
-    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
+    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
     require_capability 'RAW_TABLE', 'Notrack rules', '';
 
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );

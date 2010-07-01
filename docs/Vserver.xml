@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and Linux-vserver</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2010</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Formal support for Linux-vserver was added in Shorewall 4.4.11
+    Beta2. The centerpiece of that support is the
+    <firstterm>vserver</firstterm> zone type. Vserver zones have the following
+    characteristics:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>They are defined on the Linux-vserver host.</para>
+      </listitem>
+
+      <listitem>
+        <para>The $FW zone is their implicit parent.</para>
+      </listitem>
+
+      <listitem>
+        <para>Their contents must be defined use the <ulink
+        url="manpages/shorewall-hosts.html">shorewall-hosts </ulink>(5)
+        file.</para>
+      </listitem>
+
+      <listitem>
+        <para>They may not appear in the ZONE column of the <ulink
+        url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
+        (5) file.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you use these zones, keep in mind that Linux-vserver implements a
+    very weak form of network virtualization:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>From a networking point of view, vservers live on the host
+        system. So if you don't use care, Vserver traffic to/from zone z will
+        be controlled by the fw-&gt;z and z-&gt;fw rules and policies rather
+        than by vserver-&gt;z and z-&gt;vserver rules and policies.</para>
+      </listitem>
+
+      <listitem>
+        <para>Outgoing connections from a vserver will not use the Vserver's
+        address as the SOURCE IP address unless you configure applications
+        running in the Vserver properly. This is especially true for IPv6
+        applications. Such connections will appear to come from the $FW zone
+        rather than the intended Vserver zone.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Vserver Zones</title>
+
+    <para>You create a zone that includes one or more Linux-vserver instances
+    as follow.</para>
+
+    <para><filename>/etc/shorewall/zones</filename>:</para>
+
+    <programlisting>#ZONE           TYPE            OPTIONS            ...
+fw              firewall
+loc             ip              #Local Zone
+drct:loc        ipv4            #Direct internet access
+net             ipv4            #Internet
+vpn             ipv4            #OpenVPN clients
+<emphasis role="bold">dmz             vserver         #Vservers</emphasis></programlisting>
+
+    <para><filename>/etc/shorewall/hosts</filename>:</para>
+
+    <programlisting>#ZONE   HOST(S)                                 OPTIONS
+drct    eth3:dynamic
+<emphasis role="bold">dmz     eth1:70.90.191.124/31</emphasis></programlisting>
+
+    <para>While the IP addresses 70.90.191.124 and 70.90.191.125 are
+    configured on eth1, the actual interface name is irrelevate so long as the
+    interface is defined in <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink> (5).
+    Shorewall will consider all vserver zones to be associated with the
+    loopback interface (usually <emphasis role="bold">lo</emphasis>).</para>
+
+    <para>Once a vserver zone is defined, it can be used as any other zone
+    type.</para>
+  </section>
+</article>

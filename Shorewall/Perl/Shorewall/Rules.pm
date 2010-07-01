@@ -452,7 +452,7 @@ sub add_common_rules() {
 	add_rule( $filter_table->{$_} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
     }
 
-    for $interface ( all_interfaces ) {
+    for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
     }
 
@@ -1133,10 +1133,10 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
     my $restriction = NO_RESTRICT;
 
-    if ( $sourcezone eq firewall_zone ) {
-	$restriction = $destzone eq firewall_zone ? ALL_RESTRICT : OUTPUT_RESTRICT;
+    if ( $sourceref && ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ) ) {
+	$restriction = $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
     } else {
-	$restriction = INPUT_RESTRICT if $destzone eq firewall_zone;
+	$restriction = INPUT_RESTRICT if $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER );
     }
 
     my ( $chain, $chainref, $policy );
@@ -1589,7 +1589,7 @@ sub process_rule ( ) {
 	if ( $anydest ) {
 	    @dest = ( all_parent_zones );
 	} else {
-	    @dest = ( non_firewall_zones )
+	    @dest = ( non_firewall_zones, vserver_zones )
 	}
 
 	unshift @dest, firewall_zone if $includedstfw;
@@ -1669,6 +1669,121 @@ sub rules_target( $$ ) {
 }
 
 #
+# Generate loopback rules for one destination zone
+#
+sub generate_loopback_rules1( $$$$ ) {
+    my ( $chainref, $chain, $z2, $match ) = @_;
+
+    my $z2ref            = find_zone( $z2 );
+    my $type2            = $z2ref->{type};
+
+    if ( $type2 == VSERVER ) {
+	my $dest_hosts_ref = $z2ref->{hosts};
+	    
+	for my $typeref ( values %{$dest_hosts_ref} ) {
+	    for my $hostref ( @{$typeref->{'%vserver%'}} ) {
+		my $ipsec_match = match_ipsec_out $z2 , $hostref;
+		my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain); 
+
+		for my $net ( @{$hostref->{hosts}} ) {
+		    add_jump( $chainref, 
+			      $exclusion ,
+			      0,
+			      join('', $match, $ipsec_match,, match_dest_net( $net ) ) ) 
+		}
+	    }
+	}
+    } else {
+	add_jump( $chainref, $chain, 0, $match );
+    }
+}
+
+#
+# Generate loopback rules for one on-firewall source zone
+#
+sub generate_loopback_rules2( $$$$ ) {
+    my ( $outchainref, $z1, $z2, $match ) = @_;
+    my $chain = rules_target ( $z1, $z2 );
+	    
+    if ( $chain ) {
+	#
+	# Not a CONTINUE policy with no rules
+	#
+	my $source_hosts_ref = defined_zone( $z1 )->{hosts};
+
+	for my $typeref ( values %{$source_hosts_ref} ) {
+	    for my $hostref ( @{$typeref->{'%vserver%'}} ) {
+		my $ipsec_match = match_ipsec_in $z1 , $hostref;
+		my $exclusion   = source_exclusion( $hostref->{exclusions}, $chain);
+		
+		for my $net ( @{$hostref->{hosts}} ) {
+		    generate_loopback_rules1( $outchainref,
+					      $exclusion,
+					      $z2,  
+					      join('', match_source_net( $net ), $match , $ipsec_match )
+					    );
+		}
+	    }	
+	}
+    } 
+}
+
+#
+# Loopback traffic -- this is where we assemble the intra-firewall traffic routing
+#
+sub handle_loopback_traffic() {
+    my @zones   = ( vserver_zones, firewall_zone );
+    my $natout  = $nat_table->{OUTPUT};
+    my $rulenum = 0;
+
+    my $outchainref;
+    my $rule = '';
+
+    if ( @zones > 1 ) {
+	$outchainref = new_standard_chain 'loopback';
+	add_jump $filter_table->{OUTPUT}, $outchainref, 0;
+    } else {
+	$outchainref = $filter_table->{OUTPUT};
+	$rule = '-o lo ';
+    }
+
+    for my $z1 ( @zones ) {
+	my $z1ref            = find_zone( $z1 );
+	my $type1            = $z1ref->{type};
+	my $natref           = $nat_table->{dnat_chain $z1};
+
+	if ( $type1 == FIREWALL ) {
+	    for my $z2 ( @zones ) {
+		my $chain = rules_target( $z1, $z2 );
+
+		generate_loopback_rules1( $outchainref, $chain, $z2, $rule ) if $chain;
+	    }
+	} else {
+	    for my $z2 ( @zones ) {
+		generate_loopback_rules2( $outchainref, $z1, $z2, $rule );
+	    }
+	}
+
+	if ( $natref && $natref->{referenced} ) {
+	    my $source_hosts_ref = defined_zone( $z1 )->{hosts};
+
+	    for my $typeref ( values %{$source_hosts_ref} ) {
+		for my $hostref ( @{$typeref->{'%vserver%'}} ) {
+		    my $ipsec_match = match_ipsec_in $z1 , $hostref;
+		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $natref);
+		
+		    for my $net ( @{$hostref->{hosts}} ) {
+			add_jump( $natout, $exclusion, 0, match_source_net( $net ), 0, $rulenum++ );
+		    }
+		}	
+	    }
+	}
+    }
+
+    add_rule $filter_table->{INPUT}  , '-i lo -j ACCEPT';
+}
+
+#
 # Add jumps from the builtin chains to the interface-chains that are used by this configuration
 #
 sub add_interface_jumps {
@@ -1686,7 +1801,7 @@ sub add_interface_jumps {
     addnatjump 'POSTROUTING' , 'nat_out' , '';
     addnatjump 'PREROUTING', 'dnat', '';
 
-    for my $interface ( @_ ) {
+    for my $interface ( grep $_ ne '%vserver%', @_ ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
@@ -1694,7 +1809,7 @@ sub add_interface_jumps {
     #
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
     #
-    for my $interface ( @_ ) {
+    for my $interface ( grep $_ ne '%vserver%', @_ ) {
 	my $forwardref   = $filter_table->{forward_chain $interface};
 	my $inputref     = $filter_table->{input_chain $interface};
 	my $outputref    = $filter_table->{output_chain $interface};
@@ -1709,14 +1824,8 @@ sub add_interface_jumps {
 	    add_jump $filter_table->{OUTPUT} , $outputref , 0, match_dest_dev( $interface ) unless get_interface_option( $interface, 'port' );
 	}
     }
-    #
-    # Loopback
-    #
-    my $fw = firewall_zone;
-    my $chainref = $filter_table->{rules_chain( ${fw}, ${fw} )};
 
-    add_jump $filter_table->{OUTPUT} ,  ($chainref->{referenced} ? $chainref : 'ACCEPT' ), 0, '-o lo ';
-    add_rule $filter_table->{INPUT} , '-i lo -j ACCEPT';
+    handle_loopback_traffic;
 }
 
 # Generate the rules matrix.
@@ -1734,6 +1843,7 @@ sub generate_matrix() {
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
     my @zones = non_firewall_zones;
+    my @vservers = vserver_zones;
     my $interface_jumps_added = 0;
     our %input_jump_added   = ();
     our %output_jump_added  = ();
@@ -1802,7 +1912,6 @@ sub generate_matrix() {
 	my $source_hosts_ref = $zoneref->{hosts};
 	my $chain1           = rules_target firewall_zone , $zone;
 	my $chain2           = rules_target $zone, firewall_zone;
-	my $chain3           = rules_target $zone, $zone;
 	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $frwd_ref         = $filter_table->{zone_forward_chain $zone};
@@ -1879,10 +1988,14 @@ sub generate_matrix() {
 			    my $interfacematch = '';
 			    my $use_output = 0;
 
-			    if ( use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
+			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
 				$outputref = $interfacechainref;
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;
+
+				for my $vzone ( vserver_zones ) {
+				    generate_loopback_rules2 ( $outputref, $vzone, $zone, $dest );
+				}    
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;
@@ -1934,10 +2047,15 @@ sub generate_matrix() {
 			my $interfacematch = '';
 			my $use_input;
 
-			if ( use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
+			if ( @vservers || use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
 			    $inputchainref = $interfacechainref;
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			    $use_input = 1;
+
+			    for my $vzone ( @vservers ) {
+				my $target = rules_target( $zone, $vzone );
+				generate_loopback_rules1( $inputchainref, $target, $vzone, $source . $ipsec_in_match ) if $target;
+			    }
 			} else {
 			    $inputchainref = $filter_table->{INPUT};
 			    $interfacematch = match_source_dev $interface;

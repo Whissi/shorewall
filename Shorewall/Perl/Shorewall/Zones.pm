@@ -37,6 +37,7 @@ our @EXPORT = qw( NOTHING
 		  IPSECPROTO
 		  IPSECMODE
 		  FIREWALL
+		  VSERVER
 		  IP
 		  BPORT
 		  IPSEC
@@ -52,6 +53,7 @@ our @EXPORT = qw( NOTHING
 		  all_zones
 		  all_parent_zones
 		  complex_zones
+		  vserver_zones
 		  non_firewall_zones
 		  single_interface
 		  chain_base
@@ -80,7 +82,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_10';
+our $VERSION = '4.4_11';
 
 #
 # IPSEC Option types
@@ -167,7 +169,7 @@ use constant { FIREWALL => 1,
 	       IP       => 2,
 	       BPORT    => 3,
 	       IPSEC    => 4,
-	       VSERVER  => 8 };
+	       VSERVER  => 5 };
 
 use constant { SIMPLE_IF_OPTION   => 1,
 	       BINARY_IF_OPTION   => 2,
@@ -378,6 +380,7 @@ sub process_zone( \$ ) {
 	    fatal_error "Invalid Parent List ($2)" unless $p;
 	    fatal_error "Unknown parent zone ($p)" unless $zones{$p};
 	    fatal_error 'Subzones of firewall zone not allowed' if $zones{$p}{type} == FIREWALL;
+	    fatal_error 'Subzones of a Vserver zone not allowed' if $zones{$p}{type} == VSERVER;
 	    push @{$zones{$p}{children}}, $zone;
 	}
     }
@@ -411,7 +414,7 @@ sub process_zone( \$ ) {
 	$type = IP;
 	$$ip = 1;
     } else {
-	fatal_error "Invalid zone type ($type)" ;
+	fatal_error "Invalid zone type ($type)";
     }
 
     if ( $type eq IPSEC ) {
@@ -500,9 +503,9 @@ sub zone_report()
     my @translate;
 
     if ( $family == F_IPV4 ) {
-	@translate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4' );
+	@translate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4', 'vserver' );
     } else {
-	@translate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6' );
+	@translate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6', 'vserver' );
     }
 
     for my $zone ( @zones )
@@ -559,9 +562,9 @@ sub dump_zone_contents()
     my @xlate;
 
     if ( $family == F_IPV4 ) {
-	@xlate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4' );
+	@xlate = ( undef, 'firewall', 'ipv4', 'bport4', 'ipsec4', 'vserver' );
     } else {
-	@xlate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6' );
+	@xlate = ( undef, 'firewall', 'ipv6', 'bport6', 'ipsec6', 'vserver' );
     }
 
     for my $zone ( @zones )
@@ -719,7 +722,7 @@ sub all_zones() {
 }
 
 sub non_firewall_zones() {
-   grep ( $zones{$_}{type} != FIREWALL ,  @zones );
+   grep ( ! ( $zones{$_}{type} == FIREWALL || $zones{$_}{type} == VSERVER )  ,  @zones );
 }
 
 sub all_parent_zones() {
@@ -728,6 +731,10 @@ sub all_parent_zones() {
 
 sub complex_zones() {
     grep( $zones{$_}{options}{complex} , @zones );
+}
+
+sub vserver_zones() {
+    grep ( $zones{$_}{type} == VSERVER, @zones );
 }
 
 sub firewall_zone() {
@@ -802,6 +809,8 @@ sub process_interface( $$ ) {
     } else {
 	fatal_error "Duplicate Interface ($interface)" if $interfaces{$interface};
 	fatal_error "Zones of type 'bport' may only be associated with bridge ports" if $zone && $zoneref->{type} == BPORT;
+	fatal_error "Vserver zones may not be associated with interfaces" if $zone && $zoneref->{type} == VSERVER;
+
 	$bridge = $interface;
     }
 
@@ -1041,6 +1050,27 @@ sub validate_interfaces_file( $ ) {
     # Be sure that we have at least one interface
     #
     fatal_error "No network interfaces defined" unless @interfaces;
+
+    if ( vserver_zones ) {
+	#
+	# While the user thinks that vservers are associated with a particular interface, they really are not.
+	# We create an interface to associated them with.
+	#
+	my $interface = '%vserver%';
+
+	$interfaces{$interface} = { name       => $interface ,
+				    bridge     => $interface ,
+				    nets       => 0 ,
+				    number     => $nextinum ,
+				    root       => $interface ,
+				    broadcasts => undef ,
+				    options    => {} ,
+				    zone       => '',
+				    physical   => 'lo',
+				  };
+
+	push @interfaces, $interface;
+    }
 }
 
 #
@@ -1523,7 +1553,7 @@ sub process_host( ) {
 	} elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
 	    fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
 	}
-    }
+    } 
 
     my $optionsref = { dynamic => 0 };
 
@@ -1566,6 +1596,7 @@ sub process_host( ) {
     $hosts = join( '', ALLIP , $hosts ) if substr($hosts, 0, 2 ) eq ',!';
 
     if ( $hosts eq 'dynamic' ) {
+	fatal_error "Vserver zones may not be dynamic" if $type == VSERVER;
 	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
 	my $physical = physical_name $interface;
 	$hosts = "+${zone}_${physical}";
@@ -1573,6 +1604,10 @@ sub process_host( ) {
 	$ipsets{"${zone}_${physical}"} = 1;
 
     }
+    #
+    # We ignore the user's notion of what interface vserver addresses are on and simply invent one for all of the vservers.
+    #
+    $interface = '%vserver%' if $type == VSERVER;
 
     add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 

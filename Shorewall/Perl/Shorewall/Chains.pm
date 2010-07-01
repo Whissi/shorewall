@@ -1858,7 +1858,7 @@ sub set_mss( $$$ ) {
 # Interate over non-firewall zones and interfaces with 'mss=' setting adding TCPMSS rules as appropriate.
 #
 sub setup_zone_mss() {
-    for my $zone ( all_zones ) {
+    for my $zone ( non_firewall_zones ) {
 	my $zoneref = find_zone( $zone );
 
 	set_mss( $zone, $zoneref->{options}{in_out}{mss}, ''     ) if $zoneref->{options}{in_out}{mss};

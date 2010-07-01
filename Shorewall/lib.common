@@ -94,7 +94,12 @@ run_it() {
 	#
 	# 4.4.8 or later -- no additional exports required
 	#
-	options='-'
+	if [ x$1 = xtrace -o x$1 = xdebug ]; then
+	    options="$1 -"
+	    shift;
+	else
+	    options='-'
+	fi
 
 	[ -n "$g_noroutes" ]   && options=${options}n
 	[ -n "$g_timestamp" ]  && options=${options}t

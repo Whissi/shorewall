@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                     S H O R E W A L L  4 . 4 . 1 0 . 2
+                     S H O R E W A L L  4 . 4 . 1 0 . 3
 ----------------------------------------------------------------------------
 
 I.    RELEASE 4.4 HIGHLIGHTS
@@ -217,6 +217,25 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
 I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+4.4.10.3
+
+1)  If 'trace' or 'debug' was specified on a command that ran the
+    compiled script, an invalid command line was passed to that script
+    resulting in a failure:
+
+    Shorewall configuration compiled to /var/lib/shorewall/.start
+    Usage: /var/lib/shorewall/.start [ options ] [ start|stop|clear|down|reset|
+     refresh|restart|status|up|version ]
+ 
+    Options are:
+ 
+    -v and -q        Standard Shorewall verbosity controls
+    -n               Don't unpdate routing configuration
+    -p               Purge Conntrack Table
+    -t               Timestamp progress Messages
+    -V <verbosity>   Set verbosity explicitly
+    -R <file>        Override RESTOREFILE setting
 
 4.4.10.2
 

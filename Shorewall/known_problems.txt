@@ -47,6 +47,28 @@
 
     Fixed in Shorewall 4.4.10.2.
 
+6)  If 'trace' or 'debug' is specified on a command that runs the
+    compiled script, an invalid command line is passed to that script
+    resulting in a failure:
 
+    Shorewall configuration compiled to /var/lib/shorewall/.start
+    Usage: /var/lib/shorewall/.start [ options ] [ start|stop|clear|down|reset|
+     refresh|restart|status|up|version ]
+ 
+    Options are:
+ 
+    -v and -q        Standard Shorewall verbosity controls
+    -n               Don't unpdate routing configuration
+    -p               Purge Conntrack Table
+    -t               Timestamp progress Messages
+    -V <verbosity>   Set verbosity explicitly
+    -R <file>        Override RESTOREFILE setting
+
+   This issue affects Shorewall and Shorewall6 4.4.8 and later.
+
+   To work around the problem (IPv4 'debug restart' command):
+
+      shorewall compile /var/lib/shorewall/.restart
+      /var/lib/shorewall/.restart debug restart
 
 

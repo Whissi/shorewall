@@ -88,8 +88,12 @@
   <section>
     <title>Vserver Zones</title>
 
-    <para>You create a zone that includes one or more Linux-vserver instances
-    as follow.</para>
+    <para>Here is a diagram of the network configuration here at Shorewall.net
+    during the summer of 2010:</para>
+
+    <graphic align="center" fileref="images/Network2010a.png" />
+
+    <para>I created a zone for the vservers as follows:</para>
 
     <para><filename>/etc/shorewall/zones</filename>:</para>
 
@@ -116,5 +120,27 @@ drct    eth3:dynamic
 
     <para>Once a vserver zone is defined, it can be used like any other zone
     type.</para>
+
+    <para>Here is the corresponding IPv6 configuration.</para>
+
+    <para><filename>/etc/shorewall6/zones</filename></para>
+
+    <programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
+#					OPTIONS			OPTIONS
+fw	firewall
+net	ipv6
+loc	ipv6
+vpn	ipv6
+<emphasis role="bold">dmz	ipv6</emphasis>
+</programlisting>
+
+    <para><filename>/etc/shorewall6/hosts</filename>:</para>
+
+    <programlisting>#ZONE   HOST(S)                                 OPTIONS
+dmz	sit1:[2001:470:e857:1::/64]</programlisting>
+
+    <para>Note that I choose to place the Vservers on sit1 (the IPv6 net
+    interface) rather than on eth1. Again, it really doesn't matter
+    much.</para>
   </section>
 </article>

@@ -2559,7 +2559,7 @@ sub match_ipsec_in( $$ ) {
     unless ( $optionsref->{super} || $zoneref->{type} == VSERVER ) {
 	$match = '-m policy --dir in --pol ';
 
-	if ( $zoneref->{type} eq 'ipsec' ) {
+	if ( $zoneref->{type} == IPSEC ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
 	} elsif ( have_ipsec ) {
 	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
@@ -2583,7 +2583,7 @@ sub match_ipsec_out( $$ ) {
     unless ( $optionsref->{super} || $zoneref->{type} == VSERVER ) {
 	$match = '-m policy --dir out --pol ';
 
-	if ( $zoneref->{type} eq 'ipsec' ) {
+	if ( $zoneref->{type} == IPSEC ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
 	} elsif ( have_ipsec ) {
 	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"

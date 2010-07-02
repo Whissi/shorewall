@@ -53,8 +53,9 @@
 
       <listitem>
         <para>Their contents must be defined using the <ulink
-        url="manpages/shorewall-hosts.html">shorewall-hosts </ulink>(5)
-        file.</para>
+        url="manpages/shorewall-hosts.html">shorewall-hosts </ulink>(5) file.
+        The <emphasis role="bold">ipsec</emphasis> option may not be
+        specified.</para>
       </listitem>
 
       <listitem>
@@ -81,6 +82,31 @@
         running in the Vserver properly. This is especially true for IPv6
         applications. Such connections will appear to come from the $FW zone
         rather than the intended Vserver zone.</para>
+      </listitem>
+
+      <listitem>
+        <para>While you can define the vservers to be associated with the
+        network interface where their IP addresses are added at vserver
+        startup time, Shorewall internally associates all vservers with the
+        loopback interface (<emphasis role="bold">lo</emphasis>). Here's an
+        example of how that association can show up:</para>
+
+        <programlisting>gateway:~# shorewall show zones
+Shorewall 4.4.11-Beta2 Zones at gateway - Fri Jul  2 12:26:30 PDT 2010
+
+fw (firewall)
+drct (ipv4)
+   eth4:+drct_eth4
+loc (ipv4)
+   eth4:0.0.0.0/0
+net (ipv4)
+   eth1:0.0.0.0/0
+vpn (ipv4)
+   tun+:0.0.0.0/0
+dmz (<emphasis role="bold">vserver</emphasis>)
+   <emphasis role="bold">lo</emphasis>:70.90.191.124/31
+
+gateway:~#</programlisting>
       </listitem>
     </itemizedlist>
   </section>

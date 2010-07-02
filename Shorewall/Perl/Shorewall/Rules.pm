@@ -1682,14 +1682,13 @@ sub generate_loopback_rules1( $$$$ ) {
 	    
 	for my $typeref ( values %{$dest_hosts_ref} ) {
 	    for my $hostref ( @{$typeref->{'%vserver%'}} ) {
-		my $ipsec_match = match_ipsec_out $z2 , $hostref;
 		my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain); 
 
 		for my $net ( @{$hostref->{hosts}} ) {
 		    add_jump( $chainref, 
 			      $exclusion ,
 			      0,
-			      join('', $match, $ipsec_match,, match_dest_net( $net ) ) ) 
+			      join('', $match, match_dest_net( $net ) ) ) 
 		}
 	    }
 	}

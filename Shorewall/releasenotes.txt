@@ -248,6 +248,19 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 6)  Under some versions of Perl, a Perl run-time diagnostic was produced
     when options were omitted from shorewall.conf or shorewall6.conf. 
 
+7) If the following options were specified in /etc/shorewall/interfaces
+   for an interface with '-' in the ZONE column, then these options
+   would be ignored if there was an entry in the hosts file for the
+   interface with an explicit or implicit 0.0.0.0/0 (0.0.0.0/0 is
+   implied when the host list begins with '!').
+
+   	blacklist
+	maclist
+	nosmurfs
+	tcpflags
+
+   Note: for IPv6, the network is ::/0 rather than 0.0.0.0/0.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

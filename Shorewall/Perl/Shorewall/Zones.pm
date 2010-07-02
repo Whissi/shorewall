@@ -641,7 +641,9 @@ sub add_group_to_zone($$$$$)
     my $allip    = 0;
 
     for my $host ( @$networks ) {
-	$interfaces{$interface}{nets}++;
+	$interfaceref = $interfaces{$interface};
+
+	$interfaceref->{nets}++;
 
 	fatal_error "Invalid Host List" unless defined $host and $host ne '';
 
@@ -658,6 +660,13 @@ sub add_group_to_zone($$$$$)
 		if ( $host eq ALLIP ) {
 		    fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if @newnetworks;
 		    $interfaces{$interface}{zone} = $zone;
+		    #
+		    # Make 'find_hosts_by_option()' work correctly for this zone
+		    #
+		    for ( qw/blacklist maclist nosmurfs tcpflags/ ) {
+			$options->{$_} = 1 if $interfaceref->{options}{$_};
+		    }
+
 		    $allip = 1;
 		}
 	    }
@@ -1663,7 +1672,7 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
+	if ( ( ! $interfaces{$interface}{zone} ) && $interfaces{$interface}{options}{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIP , [] ];
 	}
     }

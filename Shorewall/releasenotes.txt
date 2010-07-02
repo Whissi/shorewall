@@ -237,6 +237,19 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     -V <verbosity>   Set verbosity explicitly
     -R <file>        Override RESTOREFILE setting
 
+2) If the following options were specified in /etc/shorewall/interfaces
+   for an interface with '-' in the ZONE column, then these options
+   would be ignored if there was an entry in the hosts file for the
+   interface with an explicit or implicit 0.0.0.0/0 (0.0.0.0/0 is
+   implied when the host list begins with '!').
+
+   	blacklist
+	maclist
+	nosmurfs
+	tcpflags
+
+   Note: for IPv6, the network is ::/0 rather than 0.0.0.0/0.
+
 4.4.10.2
 
 1)  The start priorities of the Shorewall products were incorrect on

@@ -1586,6 +1586,8 @@ sub process_host( ) {
 	    }
 	}
 
+	fatal_error q(A host entry for a Vserver zone may not specify the 'ipsec' option) if $ipsec && $zoneref->{type} == VSERVER; 
+
 	$optionsref = \%options;
     }
 

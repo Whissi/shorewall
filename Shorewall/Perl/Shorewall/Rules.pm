@@ -1589,7 +1589,7 @@ sub process_rule ( ) {
 	if ( $anydest ) {
 	    @dest = ( all_parent_zones );
 	} else {
-	    @dest = ( non_firewall_zones, vserver_zones )
+	    @dest = ( non_firewall_zones )
 	}
 
 	unshift @dest, firewall_zone if $includedstfw;
@@ -1841,7 +1841,7 @@ sub generate_matrix() {
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
-    my @zones = non_firewall_zones;
+    my @zones = off_firewall_zones;
     my @vservers = vserver_zones;
     my $interface_jumps_added = 0;
     our %input_jump_added   = ();

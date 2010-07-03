@@ -54,6 +54,7 @@ our @EXPORT = qw( NOTHING
 		  all_parent_zones
 		  complex_zones
 		  vserver_zones
+		  off_firewall_zones
 		  non_firewall_zones
 		  single_interface
 		  chain_base
@@ -730,8 +731,12 @@ sub all_zones() {
     @zones;
 }
 
-sub non_firewall_zones() {
+sub off_firewall_zones() {
    grep ( ! ( $zones{$_}{type} == FIREWALL || $zones{$_}{type} == VSERVER )  ,  @zones );
+}
+
+sub non_firewall_zones() {
+   grep (  $zones{$_}{type} != FIREWALL  ,  @zones );
 }
 
 sub all_parent_zones() {

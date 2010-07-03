@@ -1740,7 +1740,7 @@ sub handle_loopback_traffic() {
 
     if ( @zones > 1 ) {
 	$outchainref = new_standard_chain 'loopback';
-	add_jump $filter_table->{OUTPUT}, $outchainref, 0;
+	add_jump $filter_table->{OUTPUT}, $outchainref, 0, '-o lo ';
     } else {
 	$outchainref = $filter_table->{OUTPUT};
 	$rule = '-o lo ';
@@ -1768,7 +1768,6 @@ sub handle_loopback_traffic() {
 
 	    for my $typeref ( values %{$source_hosts_ref} ) {
 		for my $hostref ( @{$typeref->{'%vserver%'}} ) {
-		    my $ipsec_match = match_ipsec_in $z1 , $hostref;
 		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $natref);
 		
 		    for my $net ( @{$hostref->{hosts}} ) {

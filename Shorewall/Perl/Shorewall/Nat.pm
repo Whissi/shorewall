@@ -461,15 +461,15 @@ sub setup_netmap() {
 	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 	    unless ( $interfaceref->{root} ) {
-		$rulein  = match_source_dev( $interface ) . match_source_net ( $net3 );
-		$ruleout = match_dest_dev( $interface )   . match_dest_net ( $net3 );
+		$rulein  = match_source_dev( $interface );
+		$ruleout = match_dest_dev( $interface );
 		$interface = $interfaceref->{name};
 	    }
 
 	    if ( $type eq 'DNAT' ) {
-		add_rule ensure_chain( 'nat' , input_chain $interface ) , $rulein  . "-d $net1 -j NETMAP --to $net2";
+		add_rule ensure_chain( 'nat' , input_chain $interface ) , $rulein   . match_source_net( $net3 ) . "-d $net1 -j NETMAP --to $net2";
 	    } elsif ( $type eq 'SNAT' ) {
-		add_rule ensure_chain( 'nat' , output_chain $interface ) , $ruleout . "-s $net1 -j NETMAP --to $net2";
+		add_rule ensure_chain( 'nat' , output_chain $interface ) , $ruleout . match_dest_net( $net3 )   . "-s $net1 -j NETMAP --to $net2";
 	    } else {
 		fatal_error "Invalid type ($type)";
 	    }

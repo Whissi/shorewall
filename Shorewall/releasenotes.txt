@@ -278,6 +278,15 @@ None.
 
     See http://www.shorewall.net/Vserver.html for details.
 
+2)  A new CLEAR_FORWARD_MARK option has been added to shorewall.conf
+    and shorewall6.conf. 
+
+    Traditionally, Shorewall has cleared the packet mark in the first
+    rule in the mangle FORWARD chain. This behavior is maintained with
+    the default setting (CLEAR_FORWARD_MARK=Yes). If the new option is
+    set to No, packet marks set in the PREROUTING chain are retained in
+    the FORWARD chains.
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

@@ -287,6 +287,20 @@ None.
     set to No, packet marks set in the PREROUTING chain are retained in
     the FORWARD chains.
 
+    As part of this change, a new "fwmark route mask" capability has
+    been added. If your version of iproute2 supports this capability,
+    fwmark routing rules may specify a mask to be applied to the mark
+    prior to comparison with the mark value in the rule. The presence
+    of this capability allows Shorewall to relax the restriction that
+    small route marks may not be set in the PREROUTING chain when
+    HIGH_ROUTE_MARKS is in effect. If you take advantage of this
+    capability, be sure that you logically OR mark values rather then
+    simply setting them unless you are able to set both the high and
+    low bits in the mark in a single rule.
+
+    As always when a new capability has been introduced, be sure to
+    regenerate your capabilities file(s) after installing this release.
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_9';
+our $VERSION = '4.4_11';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -371,8 +371,10 @@ sub process_tc_rule( ) {
 		my $val = numeric_value( $cmd );
 		fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
 		my $limit = $globals{TC_MASK};
-		fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
-		    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
+		unless ( have_capability 'FWMARK_RT_MASK' ) {
+		    fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
+			if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
+		}
 	    }
 	}
     }

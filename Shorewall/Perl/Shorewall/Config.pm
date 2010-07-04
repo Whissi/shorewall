@@ -131,7 +131,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_9';
+our $VERSION = '4.4_11';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -249,6 +249,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 OLD_HL_MATCH    => 'Old Hash Limit Match',
 		 TPROXY_TARGET   => 'TPROXY Target',
 		 FLOW_FILTER     => 'Flow Classifier',
+		 FWMARK_RT_MASK  => 'fwmark route mask',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -342,7 +343,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED => 0,
 		    VERSION => "4.4.11-Beta3",
-		    CAPVERSION => 40408 ,
+		    CAPVERSION => 40411 ,
 		  );
 
     #
@@ -664,6 +665,7 @@ sub initialize( $ ) {
 	       PERSISTENT_SNAT => undef,
 	       OLD_HL_MATCH => undef,
 	       FLOW_FILTER => undef,
+	       FWMARK_RT_MASK => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2421,6 +2423,10 @@ sub Flow_Filter() {
     $tc && system( "$tc filter add flow add help 2>&1 | grep -q ^Usage" ) == 0;
 }
 
+sub Fwmark_Rt_Mask() {
+    $tc && system( "$tc rule add help 2>&1 | grep -q /MARK" ) == 0;
+}
+
 our %detect_capability =
     ( ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
@@ -2432,6 +2438,7 @@ our %detect_capability =
       ENHANCED_REJECT => \&Enhanced_Reject,
       EXMARK => \&Exmark,
       FLOW_FILTER => \&Flow_Filter,
+      FWMARK_RT_MASK => \&Fwmark_Rt_Mask,
       GOTO_TARGET => \&Goto_Target,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HELPER_MATCH => \&Helper_Match,

@@ -1190,6 +1190,7 @@ determine_capabilities() {
     IPMARK_TARGET=
     LOG_TARGET=Yes
     FLOW_FILTER=
+    FWMARK_RT_MASK=
 
     chain=fooX$$
 
@@ -1203,6 +1204,10 @@ determine_capabilities() {
     [ -n "$IP" ] || IP=$(which ip)
 
     [ -n "$IP" -a -x "$IP" ] || IP=
+
+    [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
+
+    [ -n "$TC" -a -x "$TC" ] || TC=
 
     qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
@@ -1333,7 +1338,8 @@ determine_capabilities() {
     qt $IP6TABLES -F $chain1
     qt $IP6TABLES -X $chain1
 
-    [ -n "$IP" ] && $IP filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+    [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
 
     CAPVERSION=$SHOREWALL_CAPVERSION
     KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
@@ -1398,6 +1404,7 @@ report_capabilities() {
 	report_capability "LOG Target" $LOG_TARGET
 	report_capability "TPROXY Target" $TPROXY_TARGET
 	report_capability "FLOW Classifier" $FLOW_FILTER
+	report_capability "fwmark route mask" $FWMARK_RT_MASK
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1457,6 +1464,7 @@ report_capabilities1() {
     report_capability1 LOG_TARGET
     report_capability1 TPROXY_TARGET
     report_capability1 FLOW_FILTER
+    report_capability1 FWMARK_RT_MASK
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION    

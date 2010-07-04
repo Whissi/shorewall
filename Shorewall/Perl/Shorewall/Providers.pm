@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_10';
+our $VERSION = '4.4_11';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -435,10 +435,12 @@ sub add_a_provider( ) {
     }
 
     if ( $mark ne '-' ) {
-	emit ( "qt \$IP -$family rule del fwmark $mark" ) if $config{DELETE_THEN_ADD};
+	my $mask = have_capability 'FWMARK_RT_MASK' ? "/$globals{PROVIDER_MASK}" : '';
 
-	emit ( "run_ip rule add fwmark $mark pref $pref table $number",
-	       "echo \"qt \$IP -$family rule del fwmark $mark\" >> \${VARDIR}/undo_routing"
+	emit ( "qt \$IP -$family rule del fwmark ${mark}${mask}" ) if $config{DELETE_THEN_ADD};
+
+	emit ( "run_ip rule add fwmark ${mark}${mask} pref $pref table $number",
+	       "echo \"qt \$IP -$family rule del fwmark ${mark}${mask}\" >> \${VARDIR}/undo_routing"
 	     );
     }
 

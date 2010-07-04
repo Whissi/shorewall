@@ -1449,6 +1449,10 @@ determine_capabilities() {
 	exit 1
     fi
 
+    [ "$IP" = ip -o -z "$IP" ] && IP=$(which ip)
+
+    [ -n "$IP" -a -x "$IP" ] || IP=
+
     [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
 
     [ -n "$TC" -a -x "$TC" ] || TC=
@@ -1500,6 +1504,7 @@ determine_capabilities() {
     LOG_TARGET=Yes
     PERSISTENT_SNAT=
     FLOW_FILTER=
+    FWMARK_RT_MASK=
 
     chain=fooX$$
 
@@ -1640,6 +1645,7 @@ determine_capabilities() {
     qt $IPTABLES -X $chain1
 
     [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+    [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
 
     CAPVERSION=$SHOREWALL_CAPVERSION
     KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
@@ -1707,6 +1713,7 @@ report_capabilities() {
 	report_capability "Persistent SNAT" $PERSISTENT_SNAT
 	report_capability "TPROXY Target" $TPROXY_TARGET
 	report_capability "FLOW Classifier" $FLOW_FILTER
+	report_capability "fwmark route mask" $FWMARK_RT_MASK
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1769,6 +1776,7 @@ report_capabilities1() {
     report_capability1 PERSISTENT_SNAT
     report_capability1 TPROXY_TARGET
     report_capability1 FLOW_FILTER
+    report_capability1 FWMARK_RT_MASK
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

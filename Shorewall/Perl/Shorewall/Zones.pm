@@ -1621,7 +1621,7 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	if ( ( ! $interfaces{$interface}{zone} ) && $interfaces{$interface}{options}{$option} ) {
+	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIP , [] ];
 	}
     }

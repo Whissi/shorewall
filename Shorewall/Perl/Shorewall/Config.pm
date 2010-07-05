@@ -2425,7 +2425,7 @@ sub Flow_Filter() {
 }
 
 sub Fwmark_Rt_Mask() {
-    $ip && system( "$ip rule add help 2>&1 | grep -q MARK" ) == 0;
+    $ip && system( "$ip rule add help 2>&1 | grep -q /MASK" ) == 0;
 }
 
 our %detect_capability =

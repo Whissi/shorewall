@@ -289,6 +289,7 @@ our $sillyname;               # Name of temporary filter chains for testing capa
 our $sillyname1;
 our $iptables;                # Path to iptables/ip6tables
 our $tc;                      # Path to tc
+our $ip;                      # Path to ip
 
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
@@ -2424,7 +2425,7 @@ sub Flow_Filter() {
 }
 
 sub Fwmark_Rt_Mask() {
-    $tc && system( "$tc rule add help 2>&1 | grep -q /MARK" ) == 0;
+    $ip && system( "$ip rule add help 2>&1 | grep -q MARK" ) == 0;
 }
 
 our %detect_capability =
@@ -2753,10 +2754,16 @@ sub get_capabilities( $ ) {
 
 	fatal_error "$iptables_restore does not exist or is not executable" unless -x $iptables_restore;
 
-	$tc = $config{TC};
+	$tc = $config{TC} || which 'tc';
 
 	if ( $tc ) {
 	    fatal_error "TC=$tc does not exist or is not executable" unless -x $tc;
+	}
+
+	$ip = $config{IP} || which 'ip';
+
+	if ( $ip ) {
+	    fatal_error "IP=$ip does not exist or is not executable" unless -x $ip;
 	}
 
 	load_kernel_modules;

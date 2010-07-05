@@ -907,7 +907,7 @@ sub handle_optional_interfaces( $ ) {
 
 	    emit( '                fatal_error "No network interface available"',
 		  '            else',
-		  '                startup_error "No network interface available',
+		  '                startup_error "No network interface available"',
 		  '            fi',
 		  '            ;;',
 		  '    esac',

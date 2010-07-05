@@ -435,7 +435,7 @@ sub add_a_provider( ) {
     }
 
     if ( $mark ne '-' ) {
-	my $mask = have_capability 'FWMARK_RT_MASK' ? "/$globals{PROVIDER_MASK}" : '';
+	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '';
 
 	emit ( "qt \$IP -$family rule del fwmark ${mark}${mask}" ) if $config{DELETE_THEN_ADD};
 

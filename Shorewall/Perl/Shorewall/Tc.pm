@@ -1385,7 +1385,9 @@ sub setup_tc() {
 	add_jump $mangle_table->{OUTPUT} ,     'tcout', 0, $mark_part;
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    add_rule( $mangle_table->{FORWARD},     '-j MARK --set-mark 0' ) if $config{FORWARD_CLEAR_MARK};
+	    my $mask = have_capability 'EXMARK' ? have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '' : '';
+
+	    add_rule( $mangle_table->{FORWARD},     "-j MARK --set-mark 0${mask}" ) if $config{FORWARD_CLEAR_MARK};
 	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
 	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;
 	}

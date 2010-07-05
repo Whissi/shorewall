@@ -380,6 +380,7 @@ sub initialize( $ ) {
 	      IP => undef,
 	      TC => undef,
 	      IPSET => undef,
+	      PERL => undef,
 	      #
 	      #PATH is inherited
 	      #
@@ -1769,7 +1770,9 @@ sub embedded_perl( $ ) {
 #   - Handle INCLUDE <filename>
 #
 
-sub read_a_line() {
+sub read_a_line(;$) {
+    my $embedded_enabled = defined $_[0] ? shift : 1;
+
     while ( $currentfile ) {
 
 	$currentline = '';
@@ -1815,53 +1818,59 @@ sub read_a_line() {
 	    #
 	    # Must check for shell/perl before doing variable expansion
 	    #
-	    if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
-		embedded_shell( $1 );
-	    } elsif ( $currentline =~ s/^\s*(BEGIN\s+)?PERL\s*\;?// ) {
-		embedded_perl( $1 );
-	    } else {
-		my $count = 0;
-		#
-		# Expand Shell Variables using %ENV
-		#
-		#                            $1      $2      $3           -     $4
-		while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
-		    my $val = $ENV{$3};
-
-		    unless ( defined $val ) {
-			fatal_error "Undefined shell variable (\$$3)" unless exists $ENV{$3};
-			$val = '';
-		    }
-
-		    $currentline = join( '', $1 , $val , $4 );
-		    fatal_error "Variable Expansion Loop" if ++$count > 100;
+	    if ( $embedded_enabled ) {
+		if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
+		    embedded_shell( $1 );
+		    next;
 		}
 
-		if ( $currentline =~ /^\s*INCLUDE\s/ ) {
+		if ( $currentline =~ s/^\s*(BEGIN\s+)?PERL\s*\;?// ) {
+		    embedded_perl( $1 );
+		    next;
+		}
+	    } 
 
-		    my @line = split ' ', $currentline;
+	    my $count = 0;
+	    #
+	    # Expand Shell Variables using %ENV
+	    #
+	    #                            $1      $2      $3           -     $4
+	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
+		my $val = $ENV{$3};
 
-		    fatal_error "Invalid INCLUDE command"    if @line != 2;
-		    fatal_error "INCLUDEs/Scripts nested too deeply" if @includestack >= 4;
+		unless ( defined $val ) {
+		    fatal_error "Undefined shell variable (\$$3)" unless exists $ENV{$3};
+		    $val = '';
+		}
 
-		    my $filename = find_file $line[1];
+		$currentline = join( '', $1 , $val , $4 );
+		fatal_error "Variable Expansion Loop" if ++$count > 100;
+	    }
 
-		    fatal_error "INCLUDE file $filename not found" unless -f $filename;
-		    fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
+	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
 
-		    if ( -s _ ) {
-			push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
-			$currentfile = undef;
-			do_open_file $filename;
-		    } else {
-			$currentlinenumber = 0;
-		    }
+		my @line = split ' ', $currentline;
 
-		    $currentline = '';
+		fatal_error "Invalid INCLUDE command"    if @line != 2;
+		fatal_error "INCLUDEs/Scripts nested too deeply" if @includestack >= 4;
+
+		my $filename = find_file $line[1];
+
+		fatal_error "INCLUDE file $filename not found" unless -f $filename;
+		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
+
+		if ( -s _ ) {
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+		    $currentfile = undef;
+		    do_open_file $filename;
 		} else {
-		    print "IN===> $currentline\n" if $debug;
-		    return 1;
+		    $currentlinenumber = 0;
 		}
+
+		$currentline = '';
+	    } else {
+		print "IN===> $currentline\n" if $debug;
+		return 1;
 	    }
 	}
 
@@ -2679,7 +2688,7 @@ sub process_shorewall_conf() {
 
 	    first_entry "Processing $file...";
 
-	    while ( read_a_line ) {
+	    while ( read_a_line(0) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {

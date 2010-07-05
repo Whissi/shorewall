@@ -299,7 +299,16 @@ compiler() {
 	set +a
     fi
 
-    $command perl $debugflags $pc $options $@
+    if [ -n "$PERL" ]; then
+	if [ ! -x "$PERL" ]; then
+	    echo "   WARNING: The program specified in PERL does not exist or is not executable; falling back to /usr/bin/perl" >&2
+	    PERL=/usr/bin/perl
+	fi
+    else
+	PERL=/usr/bin/perl
+    fi
+
+    $command $PERL $debugflags $pc $options $@
 }    
 
 #

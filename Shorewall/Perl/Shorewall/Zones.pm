@@ -736,7 +736,7 @@ sub off_firewall_zones() {
 }
 
 sub non_firewall_zones() {
-   grep (  $zones{$_}{type} != FIREWALL  ,  @zones );
+   grep ( $zones{$_}{type} != FIREWALL  ,  @zones );
 }
 
 sub all_parent_zones() {
@@ -1679,7 +1679,7 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $interface ( @interfaces ) {
-	if ( ( ! $interfaces{$interface}{zone} ) && $interfaces{$interface}{options}{$option} ) {
+	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIP , [] ];
 	}
     }

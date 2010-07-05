@@ -292,11 +292,11 @@ None.
     fwmark routing rules may specify a mask to be applied to the mark
     prior to comparison with the mark value in the rule. The presence
     of this capability allows Shorewall to relax the restriction that
-    small route marks may not be set in the PREROUTING chain when
+    small mark values may not be set in the PREROUTING chain when
     HIGH_ROUTE_MARKS is in effect. If you take advantage of this
-    capability, be sure that you logically OR mark values rather then
-    simply setting them unless you are able to set both the high and
-    low bits in the mark in a single rule.
+    capability, be sure that you logically OR mark values in PREROUTING
+    makring rules rather then simply setting them unless you are able
+    to set both the high and low bits in the mark in a single rule.
 
     As always when a new capability has been introduced, be sure to
     regenerate your capabilities file(s) after installing this release.

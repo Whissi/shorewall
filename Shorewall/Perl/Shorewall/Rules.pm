@@ -1669,9 +1669,9 @@ sub rules_target( $$ ) {
 }
 
 #
-# Generate loopback rules for one destination zone
+# Generate rules for one destination zone
 #
-sub generate_loopback_rules1( $$$$ ) {
+sub generate_dest_rules( $$$$ ) {
     my ( $chainref, $chain, $z2, $match ) = @_;
 
     my $z2ref            = find_zone( $z2 );
@@ -1698,9 +1698,9 @@ sub generate_loopback_rules1( $$$$ ) {
 }
 
 #
-# Generate loopback rules for one on-firewall source zone
+# Generate rules for one on-firewall source zone
 #
-sub generate_loopback_rules2( $$$$ ) {
+sub generate_source_rules( $$$$ ) {
     my ( $outchainref, $z1, $z2, $match ) = @_;
     my $chain = rules_target ( $z1, $z2 );
 	    
@@ -1716,7 +1716,7 @@ sub generate_loopback_rules2( $$$$ ) {
 		my $exclusion   = source_exclusion( $hostref->{exclusions}, $chain);
 		
 		for my $net ( @{$hostref->{hosts}} ) {
-		    generate_loopback_rules1( $outchainref,
+		    generate_dest_rules( $outchainref,
 					      $exclusion,
 					      $z2,  
 					      join('', match_source_net( $net ), $match , $ipsec_match )
@@ -1755,11 +1755,11 @@ sub handle_loopback_traffic() {
 	    for my $z2 ( @zones ) {
 		my $chain = rules_target( $z1, $z2 );
 
-		generate_loopback_rules1( $outchainref, $chain, $z2, $rule ) if $chain;
+		generate_dest_rules( $outchainref, $chain, $z2, $rule ) if $chain;
 	    }
 	} else {
 	    for my $z2 ( @zones ) {
-		generate_loopback_rules2( $outchainref, $z1, $z2, $rule );
+		generate_source_rules( $outchainref, $z1, $z2, $rule );
 	    }
 	}
 
@@ -1992,7 +1992,7 @@ sub generate_matrix() {
 				$use_output = 1;
 
 				for my $vzone ( vserver_zones ) {
-				    generate_loopback_rules2 ( $outputref, $vzone, $zone, $dest );
+				    generate_source_rules ( $outputref, $vzone, $zone, $dest );
 				}    
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
@@ -2052,7 +2052,7 @@ sub generate_matrix() {
 
 			    for my $vzone ( @vservers ) {
 				my $target = rules_target( $zone, $vzone );
-				generate_loopback_rules1( $inputchainref, $target, $vzone, $source . $ipsec_in_match ) if $target;
+				generate_dest_rules( $inputchainref, $target, $vzone, $source . $ipsec_in_match ) if $target;
 			    }
 			} else {
 			    $inputchainref = $filter_table->{INPUT};

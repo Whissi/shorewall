@@ -1635,9 +1635,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           TOS field to priority bands. See <ulink
           url="shorewall-tcpri.html">shorewall-tcpri</ulink>(5). The
           <emphasis>map</emphasis> consists of 16 space-separated digits with
-          values 1, 2 or 3. The first entry corresponds to Linux priority 9,
-          the second to Linux priority 1, the third to Linux Priority 2, and
-          so on. See tc-prio(8) for additional information.</para>
+          values 1, 2 or 3. A value of 1 corresponds to Linux priority 0, 2 to
+          Linux priority 1, and 3 to Linux Priority 2. The first entry gives
+          the priority of TOS value 0, the second of TOS value 1, and so on.
+          See tc-prio(8) for additional information.</para>
 
           <para>The default setting is TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2
           2 2".</para>

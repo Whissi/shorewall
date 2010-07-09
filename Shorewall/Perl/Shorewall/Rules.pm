@@ -1694,7 +1694,7 @@ sub generate_dest_rules( $$$$ ) {
 }
 
 #
-# Generate rules for one on-firewall source zone
+# Generate rules for one vserver source zone
 #
 sub generate_source_rules( $$$$ ) {
     my ( $outchainref, $z1, $z2, $match ) = @_;

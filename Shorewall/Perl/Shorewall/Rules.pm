@@ -1678,18 +1678,14 @@ sub generate_dest_rules( $$$$ ) {
     my $type2            = $z2ref->{type};
 
     if ( $type2 == VSERVER ) {
-	my $dest_hosts_ref = $z2ref->{hosts};
-	    
-	for my $typeref ( values %{$dest_hosts_ref} ) {
-	    for my $hostref ( @{$typeref->{'%vserver%'}} ) {
-		my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain); 
+	for my $hostref ( @{$z2ref->{hosts}{ip}{'%vserver%'}} ) {
+	    my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain); 
 
-		for my $net ( @{$hostref->{hosts}} ) {
-		    add_jump( $chainref, 
-			      $exclusion ,
-			      0,
-			      join('', $match, match_dest_net( $net ) ) ) 
-		}
+	    for my $net ( @{$hostref->{hosts}} ) {
+		add_jump( $chainref, 
+			  $exclusion ,
+			  0,
+			  join('', $match, match_dest_net( $net ) ) ) 
 	    }
 	}
     } else {
@@ -1708,20 +1704,16 @@ sub generate_source_rules( $$$$ ) {
 	#
 	# Not a CONTINUE policy with no rules
 	#
-	my $source_hosts_ref = defined_zone( $z1 )->{hosts};
-
-	for my $typeref ( values %{$source_hosts_ref} ) {
-	    for my $hostref ( @{$typeref->{'%vserver%'}} ) {
-		my $ipsec_match = match_ipsec_in $z1 , $hostref;
-		my $exclusion   = source_exclusion( $hostref->{exclusions}, $chain);
+	for my $hostref ( @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
+	    my $ipsec_match = match_ipsec_in $z1 , $hostref;
+	    my $exclusion   = source_exclusion( $hostref->{exclusions}, $chain);
 		
-		for my $net ( @{$hostref->{hosts}} ) {
-		    generate_dest_rules( $outchainref,
-					      $exclusion,
-					      $z2,  
-					      join('', match_source_net( $net ), $match , $ipsec_match )
-					    );
-		}
+	    for my $net ( @{$hostref->{hosts}} ) {
+		generate_dest_rules( $outchainref,
+				     $exclusion,
+				     $z2,  
+				     join('', match_source_net( $net ), $match , $ipsec_match )
+				   );
 	    }	
 	}
     } 

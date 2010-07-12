@@ -2044,7 +2044,7 @@ sub generate_matrix() {
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			    $use_input = 1;
 
-			    if ( uc $net ne IPv6_LINKLOCAL ) {
+			    unless ( uc $net eq IPv6_LINKLOCAL ) {
 				for my $vzone ( @vservers ) {
 				    my $target = rules_target( $zone, $vzone );
 				    generate_dest_rules( $inputchainref, $target, $vzone, $source . $ipsec_in_match ) if $target;

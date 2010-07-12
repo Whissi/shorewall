@@ -1017,7 +1017,7 @@ sub process_interface( $$ ) {
 	add_group_to_zone( $zone,
 			   $zoneref->{type},
 			   $interface,
-			   [ IPv4_MULTICAST ],
+			   $family == F_IPV4 ? [ IPv4_MULTICAST ] : [ IPv6_MULTICAST ] ,
 			   { destonly => 1 } ) if $hostoptionsref->{multicast} && $interfaces{$interface}{zone} ne $zone;
     }
 

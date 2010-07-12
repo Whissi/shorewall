@@ -1994,7 +1994,7 @@ sub generate_matrix() {
 			    add_jump $outputref , $nextchain, 0, join( '', $interfacematch, $dest, $ipsec_out_match );
 
 			    add_jump( $outputref , $nextchain, 0, join('', $interfacematch, '-d 255.255.255.255 ' , $ipsec_out_match ) )
-				if $hostref->{options}{broadcast};
+				if $family == F_IPV4 && $hostref->{options}{broadcast};
 
 			    move_rules( $interfacechainref , $chain1ref ) unless $use_output;
 			}

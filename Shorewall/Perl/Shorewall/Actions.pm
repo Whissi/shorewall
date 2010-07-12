@@ -776,7 +776,7 @@ sub dropBcast( $$$ ) {
 	    if ( $family == F_IPV4 ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	    } else {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d ff00::/10 -j DROP ';
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d ff00::/8 -j DROP ';
 	    }
 	}
 

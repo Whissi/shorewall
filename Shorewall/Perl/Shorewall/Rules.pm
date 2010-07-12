@@ -1983,9 +1983,11 @@ sub generate_matrix() {
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;
 
-				for my $vzone ( vserver_zones ) {
-				    generate_source_rules ( $outputref, $vzone, $zone, $dest );
-				}    
+				unless ( uc $net eq IPv6_LINKLOCAL ) {
+				    for my $vzone ( vserver_zones ) {
+					generate_source_rules ( $outputref, $vzone, $zone, $dest );
+				    }
+				}
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;

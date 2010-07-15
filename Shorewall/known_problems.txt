@@ -1,1 +1,18 @@
-There are no known problems in Shorewall 4.4.11
+1)  In all versions of Shorewall6 lite, the 'shorecap' program is
+    using the 'iptables' program rather than the 'ip6tables' program.
+    This causes many capabilities that are not available in IPv6 to
+    be incorrectly reported as available.
+
+    This results in errors such as:
+
+    	 ip6tables-restore v1.4.2: Couldn't load match `addrtype':
+	   /lib/xtables/libip6t_addrtype.so: cannot open shared
+	   object file: No such file or directory
+
+    To work around this problem, on the administrative system:
+
+    a)  Remove the incorrect capabilties file.
+    b)  In shorewall6.conf, set the IP6TABLES option to the
+        path name of ip6tables on the firewall (example:
+	IP6TABLES=/sbin/ip6tables).
+    c)  'shorewall6 load <firewall>'.

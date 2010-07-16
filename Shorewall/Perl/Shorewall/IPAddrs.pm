@@ -73,7 +73,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_7';
+our $VERSION = '4.4_12';
 
 #
 # Some IPv4/6 useful stuff
@@ -91,14 +91,14 @@ our $validate_host;
 use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       ALLIPv6             => '::/0' ,
 	       IPv4_MULTICAST      => '224.0.0.0/4' ,
-	       IPv6_MULTICAST      => 'FF00::/8' ,
-	       IPv6_LINKLOCAL      => 'FE80::/10' ,
-	       IPv6_SITELOCAL      => 'FEC0::/10' ,
+	       IPv6_MULTICAST      => 'ff00::/8' ,
+	       IPv6_LINKLOCAL      => 'fe80::/10' ,
+	       IPv6_SITELOCAL      => 'feC0::/10' ,
 	       IPv6_LOOPBACK       => '::1' ,
-	       IPv6_LINK_ALLNODES  => 'FF01::1' ,
-	       IPv6_LINK_ALLRTRS   => 'FF01::2' ,
-	       IPv6_SITE_ALLNODES  => 'FF02::1' ,
-	       IPv6_SITE_ALLRTRS   => 'FF02::2' ,
+	       IPv6_LINK_ALLNODES  => 'ff01::1' ,
+	       IPv6_LINK_ALLRTRS   => 'ff01::2' ,
+	       IPv6_SITE_ALLNODES  => 'ff02::1' ,
+	       IPv6_SITE_ALLRTRS   => 'ff02::2' ,
 	       ICMP                => 1,
 	       TCP                 => 6,
 	       UDP                 => 17,

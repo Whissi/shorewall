@@ -801,7 +801,7 @@ sub dropBcast( $$$ ) {
     if ( $family == F_IPV4 ) {
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
     } else {
-	add_rule $chainref, '-d ff00::/10 -j DROP';
+	add_rule $chainref, '-d ff00::/8 -j DROP';
     }
 }
 
@@ -833,8 +833,8 @@ sub allowBcast( $$$ ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
 	} else {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/10 ' if $level ne '';
-	    add_rule $chainref, '-d ff00::/10 -j ACCEPT';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/8 ' if $level ne '';
+	    add_rule $chainref, '-d ff00::/8 -j ACCEPT';
 	}
     }
 }

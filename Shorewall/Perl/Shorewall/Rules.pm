@@ -509,7 +509,7 @@ sub add_common_rules() {
 	if ( $family == F_IPV4 ) {
 	    add_jump( $chainref, $smurfdest, 1, '-s 224.0.0.0/4 ' );
 	} else {
-	    add_jump( $chainref, $smurfdest, 1, '-s ff00::/10 ' );
+	    add_jump( $chainref, $smurfdest, 1, '-s ff00::/8 ' );
 	}
 
 	my $state = $globals{UNTRACKED} ? 'NEW,INVALID,UNTRACKED' : 'NEW,INVALID';
@@ -547,7 +547,7 @@ sub add_common_rules() {
     if ( $family == F_IPV4 ) {
 	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
     } else {
-	add_rule $rejectref , '-s ff00::/10 -j DROP';
+	add_rule $rejectref , '-s ff00::/8 -j DROP';
     }
 
     add_rule $rejectref , '-p 2 -j DROP';
@@ -729,7 +729,7 @@ sub setup_mac_lists( $ ) {
 		#
 		# Accept Multicast
 		#
-		add_rule $chainref , '-d ff00::/10 -j RETURN';
+		add_rule $chainref , '-d ff00::/8 -j RETURN';
 	    }
 
 	    if ( $ttl ) {
@@ -2458,11 +2458,11 @@ EOF
     if ( $family == F_IPV6 ) {
 	add_rule $input, '-s ff80::/10 -j ACCEPT';
 	add_rule $input, '-d ff80::/10 -j ACCEPT';
-	add_rule $input, '-d ff00::/10 -j ACCEPT';
+	add_rule $input, '-d ff00::/8 -j ACCEPT';
 
 	unless ( $config{ADMINISABSENTMINDED} ) {
 	    add_rule $output, '-d ff80::/10 -j ACCEPT';
-	    add_rule $output, '-d ff00::/10 -j ACCEPT';
+	    add_rule $output, '-d ff00::/8 -j ACCEPT';
 	}
     }
 

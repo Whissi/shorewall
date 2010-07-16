@@ -2877,7 +2877,7 @@ sub get_interface_acasts ( $ ) {
 
     my $variable = interface_acasts( $interface );
 
-    $interfaceacasts{$interface} = qq($variable="\$(get_interface_acasts $interface) ff00::/10");
+    $interfaceacasts{$interface} = qq($variable="\$(get_interface_acasts $interface) ff00::/8");
 
     "\$$variable";
 }

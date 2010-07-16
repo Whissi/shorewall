@@ -222,6 +222,10 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     iptables rather than ip6tables, with the result that many capabilities
     that are only available in IPv4 were being reported as available.
 
+2)  In a number of cases, Shorewall6 generated incorrect rules
+    involving the IPv6 multicast network. The rules specified
+    ff00::/10 where they should have specified ff00::/8.
+
 ----------------------------------------------------------------------------
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

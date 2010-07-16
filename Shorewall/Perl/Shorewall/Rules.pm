@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_12';
 
 #
 # Set to one if we find a SECTION
@@ -509,7 +509,7 @@ sub add_common_rules() {
 	if ( $family == F_IPV4 ) {
 	    add_jump( $chainref, $smurfdest, 1, '-s 224.0.0.0/4 ' );
 	} else {
-	    add_jump( $chainref, $smurfdest, 1, '-s ff00::/8 ' );
+	    add_jump( $chainref, $smurfdest, 1, '-s ' . IPv6_MULTICAST . ' ' );
 	}
 
 	my $state = $globals{UNTRACKED} ? 'NEW,INVALID,UNTRACKED' : 'NEW,INVALID';
@@ -547,7 +547,7 @@ sub add_common_rules() {
     if ( $family == F_IPV4 ) {
 	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
     } else {
-	add_rule $rejectref , '-s ff00::/8 -j DROP';
+	add_rule $rejectref , '-s ' . IPv6_MULTICAST . ' -j DROP';
     }
 
     add_rule $rejectref , '-p 2 -j DROP';
@@ -729,7 +729,7 @@ sub setup_mac_lists( $ ) {
 		#
 		# Accept Multicast
 		#
-		add_rule $chainref , '-d ff00::/8 -j RETURN';
+		add_rule $chainref , '-d ' . IPv6_MULTICAST . ' -j RETURN';
 	    }
 
 	    if ( $ttl ) {
@@ -1983,7 +1983,7 @@ sub generate_matrix() {
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;
 
-				unless ( uc $net eq IPv6_LINKLOCAL ) {
+				unless ( lc $net eq IPv6_LINKLOCAL ) {
 				    for my $vzone ( vserver_zones ) {
 					generate_source_rules ( $outputref, $vzone, $zone, $dest );
 				    }
@@ -2044,7 +2044,7 @@ sub generate_matrix() {
 			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
 			    $use_input = 1;
 
-			    unless ( uc $net eq IPv6_LINKLOCAL ) {
+			    unless ( lc $net eq IPv6_LINKLOCAL ) {
 				for my $vzone ( @vservers ) {
 				    my $target = rules_target( $zone, $vzone );
 				    generate_dest_rules( $inputchainref, $target, $vzone, $source . $ipsec_in_match ) if $target;
@@ -2456,13 +2456,13 @@ EOF
     add_rule $filter_table->{$_}, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" for @chains;
 
     if ( $family == F_IPV6 ) {
-	add_rule $input, '-s ff80::/10 -j ACCEPT';
-	add_rule $input, '-d ff80::/10 -j ACCEPT';
-	add_rule $input, '-d ff00::/8 -j ACCEPT';
+	add_rule $input, '-s ' . IPv6_LINKLOCAL . ' -j ACCEPT';
+	add_rule $input, '-d ' . IPv6_LINKLOCAL . ' -j ACCEPT';
+	add_rule $input, '-d ' . IPv6_MULTICAST . ' -j ACCEPT';
 
 	unless ( $config{ADMINISABSENTMINDED} ) {
-	    add_rule $output, '-d ff80::/10 -j ACCEPT';
-	    add_rule $output, '-d ff00::/8 -j ACCEPT';
+	    add_rule $output, '-d ' . IPv6_LINKLOCAL . ' -j ACCEPT';
+	    add_rule $output, '-d ' . IPv6_MULTICAST . ' -j ACCEPT';
 	}
     }
 

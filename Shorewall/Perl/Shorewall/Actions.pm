@@ -28,6 +28,7 @@ require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
+use Shorewall::IPAddrs;
 
 use strict;
 
@@ -57,7 +58,7 @@ our @EXPORT = qw( merge_levels
 		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_10';
+our $VERSION = '4.4_12';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -776,7 +777,7 @@ sub dropBcast( $$$ ) {
 	    if ( $family == F_IPV4 ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	    } else {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d ff00::/8 -j DROP ';
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST , '-j DROP ' );
 	    }
 	}
 
@@ -801,7 +802,7 @@ sub dropBcast( $$$ ) {
     if ( $family == F_IPV4 ) {
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
     } else {
-	add_rule $chainref, '-d ff00::/8 -j DROP';
+	add_rule $chainref, join( ' ', '-d', IPv6_MULTICAST, '-j DROP' );
     }
 }
 
@@ -833,8 +834,8 @@ sub allowBcast( $$$ ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
 	} else {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ff00::/8 ' if $level ne '';
-	    add_rule $chainref, '-d ff00::/8 -j ACCEPT';
+	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ' . IPv6_MULTICAST . ' ' if $level ne '';
+	    add_rule $chainref, join ( ' ', '-d', IPv6_MULTICAST, '-j ACCEPT' );
 	}
     }
 }

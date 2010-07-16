@@ -175,7 +175,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_12';
 
 #
 # Chain Table
@@ -2877,7 +2877,7 @@ sub get_interface_acasts ( $ ) {
 
     my $variable = interface_acasts( $interface );
 
-    $interfaceacasts{$interface} = qq($variable="\$(get_interface_acasts $interface) ff00::/8");
+    $interfaceacasts{$interface} = qq($variable="\$(get_interface_acasts $interface) ) . IPv6_MULTICAST;
 
     "\$$variable";
 }

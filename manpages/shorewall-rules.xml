@@ -130,33 +130,16 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
-        role="bold">ACCEPT</emphasis>[<emphasis
-        role="bold"><option>+</option>|<option>!</option></emphasis>]|<emphasis
-        role="bold">NONAT</emphasis>|<emphasis
-        role="bold">DROP[<option>!</option>]</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>[<option>!</option>]|<emphasis
-        role="bold">DNAT</emphasis>[<emphasis
-        role="bold">-</emphasis>]|<emphasis
-        role="bold">REDIRECT</emphasis>[<emphasis
-        role="bold">-</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">LOG</emphasis>|<emphasis
-        role="bold">QUEUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">NFQUEUE[!]</emphasis>|COUNT[<emphasis
-        role="bold">(</emphasis><emphasis>queuenumber</emphasis><emphasis
-        role="bold">)</emphasis>]<emphasis
-        role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
-        role="bold">(</emphasis><emphasis>target</emphasis><emphasis
-        role="bold">)</emphasis>]}<emphasis
-        role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
+        <term><emphasis role="bold">ACTION</emphasis> - <emphasis
+        role="bold"><replaceable>target</replaceable>[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
         role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
         role="bold">!</emphasis></emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>tag</emphasis>]]</term>
 
         <listitem>
           <para>Specifies the action to be taken if the connection request
-          matches the rule. Must be one of the following.</para>
+          matches the rule. <replaceable>target</replaceable> must be one of
+          the following.</para>
 
           <variablelist>
             <varlistentry>
@@ -340,7 +323,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>NFQUEUE</term>
+              <term>NFQUEUE[(<replaceable>queuenumber</replaceable>)]</term>
 
               <listitem>
                 <para>Queues the packet to a user-space application using the
@@ -351,7 +334,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">NFQUEUE!</emphasis></term>
+              <term><emphasis
+              role="bold">NFQUEUE![(<replaceable>queuenumber</replaceable>)]</emphasis></term>
 
               <listitem>
                 <para>like NFQUEUE but exempts the rule from being suppressed
@@ -394,7 +378,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis>macro</emphasis></term>
+              <term><emphasis>macro</emphasis><emphasis
+              role="bold">[(<replaceable>macrotarget</replaceable>)]</emphasis></term>
 
               <listitem>
                 <para>The name of a macro defined in a file named
@@ -402,7 +387,7 @@
                 action parameter (Look at the macro source to see if it has
                 PARAM in the TARGET column) then the
                 <emphasis>macro</emphasis> name is followed by the
-                parenthesized <emphasis>target</emphasis> (<emphasis
+                parenthesized <emphasis>macrotarget</emphasis> (<emphasis
                 role="bold">ACCEPT</emphasis>, <emphasis
                 role="bold">DROP</emphasis>, <emphasis
                 role="bold">REJECT</emphasis>, ...) to be substituted for the
@@ -415,9 +400,30 @@
                 deprecated.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">TRIGGER(<replaceable>trigger</replaceable>[:<replaceable>direction</replaceable>])</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.12. Causes either the SOURCE or
+                DESTINATION address of the connection to be added to the named
+                <replaceable>trigger</replaceable>. By default, the SOURCE
+                address is added to the trigger but if
+                <replaceable>direction</replaceable> is <option>d</option>
+                (e.g., trig:d) then the DESTINATION address is added. See the
+                TRIGGER column below.</para>
+
+                <para>When a TRIGGER rule is placed in the NEW section, the
+                SOURCE is added to the trigger at the time of the connection.
+                If it is placed in the ESTABLISHED section, each packet that
+                matches the rule causes the trigger time of the address
+                (SOURCE or DEST) to be set to the current time.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
-          <para>The <emphasis role="bold">ACTION</emphasis> may optionally be
+          <para>The <replaceable>target</replaceable> may optionally be
           followed by ":" and a syslog log level (e.g, REJECT:info or
           Web(ACCEPT):debug). This causes the packet to be logged at the
           specified level. Note that if the <emphasis
@@ -1117,6 +1123,22 @@
           </variablelist>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">TRIGGER -
+        <replaceable>trigger</replaceable>[:[<replaceable>seconds</replaceable>][:[<replaceable>direction</replaceable>]]]</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.12. An entry in this column restrict
+          the rule to matching an address that has been previously triggered
+          by a TRIGGER rule. Normally the SOURCE address is checked but you
+          can cause the DESTINATION address to be used instead by supplying a
+          <replaceable>direction</replaceable> of <option>d</option> (e.g.,
+          foo::d). By default, the address must have been triggered within the
+          last 60 seconds but you can specify a different time using the
+          <replaceable>seconds</replaceable> option (e.g., foo:30).</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -1224,7 +1246,7 @@
           to the port range 81-90.</para>
 
           <programlisting>        #ACTION  SOURCE DEST                PROTO DEST    SOURCE  ORIGINAL
-        #                                   PORT  PORT(S) DEST
+        #                                         PORT    PORT(S) DEST
         REDIRECT net    $FW::81-90:random   tcp   www</programlisting>
         </listitem>
       </varlistentry>
@@ -1279,6 +1301,31 @@
           entering ppp+ interfaces would have been redirected to port 3128 on
           the firewall and there would have been no net-&gt;fw ACCEPT rule for
           that traffic.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 10:</term>
+
+        <listitem>
+          <para>Allow a connection from internet host to the firewall's TCP
+          port 1088 within 30 seconds after the firewall establishes an SSH
+          connection to that host.</para>
+
+          <programlisting>        #ACTION           SOURCE       DEST      PROTO DEST    SOURCE  ORIGINAL RATE   USER/ MARK CONNLIMIT TIME  TRIGGER
+        #                                              PORT(S) PORT(S) DEST     LIMIT  GROUP
+        #
+        # Trigger the incoming connection
+        #
+        TRIGGER(port1088:d) fw           net       tcp   22
+        #
+        # Note that the TRIGGER rule must precede the ACCEPT rule; the ACCEPT rule can be omitted if the fw-&gt;net policy is ACCEPT
+        #
+        ACCEPT            fw           net       tcp   22
+        #
+        # Now accept the return connection on port 1088
+        #
+        ACCEPT            net          fw        tcp   1088    -       -        -       -     -     -      -      port1088:30  </programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

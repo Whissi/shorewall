@@ -65,6 +65,7 @@ our %EXPORT_TAGS = (
 				       LOGRULE
 				       NFQ
 				       CHAIN
+				       SET
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
 				       INPUT_RESTRICT
@@ -246,6 +247,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       LOGRULE  => 256,            #'LOG','NFLOG'
 	       NFQ      => 512,            #'NFQUEUE'
 	       CHAIN    => 1024,           #Manual Chain
+	       SET      => 2048.           #SET
 	   };
 
 our %targets;
@@ -1289,6 +1291,8 @@ sub initialize_chain_table()
 		    'QUEUE!'          => STANDARD,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'ADD'             => STANDARD + SET,
+		    'DEL'             => STANDARD + SET,
 		   );
 
 	for my $chain qw(OUTPUT PREROUTING) {
@@ -1330,6 +1334,8 @@ sub initialize_chain_table()
 		    'QUEUE!'          => STANDARD,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'ADD'             => STANDARD + SET,
+		    'DEL'             => STANDARD + SET,
 		   );
 
 	for my $chain qw(OUTPUT PREROUTING) {

@@ -403,22 +403,31 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">TRIGGER(<replaceable>trigger</replaceable>[:<replaceable>direction</replaceable>])</emphasis></term>
+              role="bold">ADD(<replaceable>ipset</replaceable>,<replaceable>direction</replaceable>)</emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.4.12. Causes either the SOURCE or
                 DESTINATION address of the connection to be added to the named
-                <replaceable>trigger</replaceable>. By default, the SOURCE
-                address is added to the trigger but if
+                <replaceable>ipset</replaceable>. If
                 <replaceable>direction</replaceable> is <option>d</option>
-                (e.g., trig:d) then the DESTINATION address is added. See the
-                TRIGGER column below.</para>
+                (e.g., ipset,d) then the DESTINATION address is added; if it
+                is <emphasis role="bold">s</emphasis>, then the SOURCE address
+                is added.</para>
+              </listitem>
+            </varlistentry>
 
-                <para>When a TRIGGER rule is placed in the NEW section, the
-                SOURCE is added to the trigger at the time of the connection.
-                If it is placed in the ESTABLISHED section, each packet that
-                matches the rule causes the trigger time of the address
-                (SOURCE or DEST) to be set to the current time.</para>
+            <varlistentry>
+              <term><emphasis
+              role="bold">DEL(<replaceable>ipset</replaceable>,<replaceable>direction</replaceable>)</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.12. Causes either the SOURCE or
+                DESTINATION address of the connection to be deleted from the
+                named <replaceable>ipset</replaceable>. If
+                <replaceable>direction</replaceable> is <option>d</option>
+                (e.g., ipset,d) then the DESTINATION address is added; if it
+                is <emphasis role="bold">s</emphasis>, then the SOURCE address
+                is deleteded.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1123,22 +1132,6 @@
           </variablelist>
         </listitem>
       </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">TRIGGER -
-        <replaceable>trigger</replaceable>[:[<replaceable>seconds</replaceable>][:[<replaceable>direction</replaceable>]]]</emphasis></term>
-
-        <listitem>
-          <para>Added in Shorewall 4.4.12. An entry in this column restrict
-          the rule to matching an address that has been previously triggered
-          by a TRIGGER rule. Normally the SOURCE address is checked but you
-          can cause the DESTINATION address to be used instead by supplying a
-          <replaceable>direction</replaceable> of <option>d</option> (e.g.,
-          foo::d). By default, the address must have been triggered within the
-          last 60 seconds but you can specify a different time using the
-          <replaceable>seconds</replaceable> option (e.g., foo:30).</para>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -1301,31 +1294,6 @@
           entering ppp+ interfaces would have been redirected to port 3128 on
           the firewall and there would have been no net-&gt;fw ACCEPT rule for
           that traffic.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 10:</term>
-
-        <listitem>
-          <para>Allow a connection from internet host to the firewall's TCP
-          port 1088 within 30 seconds after the firewall establishes an SSH
-          connection to that host.</para>
-
-          <programlisting>        #ACTION           SOURCE       DEST      PROTO DEST    SOURCE  ORIGINAL RATE   USER/ MARK CONNLIMIT TIME  TRIGGER
-        #                                              PORT(S) PORT(S) DEST     LIMIT  GROUP
-        #
-        # Trigger the incoming connection
-        #
-        TRIGGER(port1088:d) fw           net       tcp   22
-        #
-        # Note that the TRIGGER rule must precede the ACCEPT rule; the ACCEPT rule can be omitted if the fw-&gt;net policy is ACCEPT
-        #
-        ACCEPT            fw           net       tcp   22
-        #
-        # Now accept the return connection on port 1088
-        #
-        ACCEPT            net          fw        tcp   1088    -       -        -       -     -     -      -      port1088:30  </programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

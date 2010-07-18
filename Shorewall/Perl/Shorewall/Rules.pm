@@ -1043,6 +1043,9 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	my $paramval = $param eq '' ? 0 : numeric_value( $param );
 	fatal_error "Invalid value ($param) for NFQUEUE queue number" unless defined($paramval) && $paramval <= 65535;
 	$action = "NFQUEUE --queue-num $paramval";
+    } elsif ( $actiontype & SET ) {
+	require_capability( 'IPSET_MATCH', 'SET and UNSET rules', '' );
+	fatal_error "$action rules require a set name parameter" unless $param;  
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -1079,6 +1082,15 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$action = '';
     } elsif ( $actiontype & LOGRULE ) {
 	fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne '';
+    } elsif ( $actiontype & SET ) {
+	my %xlate1 = ( ADD => 'add-set' , DEL => 'del-set' );
+	my %xlate2 = ( d => 'dst' , s => 'src' );
+
+	my ( $setname, $direction, $rest ) = split ',', $param;
+	fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
+	fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^[a-zA-Z]\w*$/;
+	fatal_error "Invalid address designator ($direction)" unless defined $direction && $direction =~ /^[ds]$/;
+	$action = join( ' ', 'SET --' . $xlate1{$basictarget} , $setname , $xlate2{$direction} );
     }
     #
     # Isolate and validate source and destination zones

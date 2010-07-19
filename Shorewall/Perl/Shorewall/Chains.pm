@@ -2498,7 +2498,7 @@ sub match_source_net( $;$ ) {
     } elsif ( $net =~ /^!?~/ ) {
 	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
 	mac_match $net;
-    } elsif ( $net =~ /^(!?)\+/ ) {
+    } elsif ( $net =~ /^(!?)\+[a-zA-Z]\w*$/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     } elsif ( $net =~ s/^!// ) {
@@ -2522,7 +2522,7 @@ sub match_dest_net( $ ) {
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--dst-range $net ";
-    } elsif ( $net =~ /^(!?)\+/ ) {
+    } elsif ( $net =~ /^(!?)\+[a-zA-Z]\w*$/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
 	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     } elsif ( $net =~ /^!/ ) {

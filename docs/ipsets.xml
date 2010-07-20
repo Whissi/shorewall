@@ -120,6 +120,21 @@
     <para><filename>/etc/shorewall/rules</filename><programlisting>#ACTION      SOURCE      DEST     PROTO    DEST PORT(S)
 ACCEPT       net:+sshok  $FW      tcp      22</programlisting></para>
 
+    <para>The name of the ipset can be optionally followed by a
+    comma-separated list of flags enclosed in square brackets ([...]). Each
+    flag is either <emphasis role="bold">src</emphasis> or <emphasis
+    role="bold">dst</emphasis> and specifies whether it is the SOURCE address
+    or port number or the DESTINATION address or port number that should be
+    matched. The number of flags must be appropriate for the type of ipset. If
+    no flags are given, Shorewall assumes that the set takes a single flag and
+    will select the flag based on the context. For example, in the blacklist
+    file and when the ipset appears in the SOURCE column of the rules file,
+    <emphasis role="bold">src</emphasis> is assumed. If the ipset appears in
+    the DEST column of the rules file, <emphasis role="bold">dst</emphasis> is
+    assumed. Note that by using <emphasis role="bold">[dst]</emphasis> in the
+    blacklist file, you can coerce the rule into matching the destination IP
+    address rather than the source.</para>
+
     <para>Shorewall can save/restore your ipset contents with certain
     restrictions:</para>
 

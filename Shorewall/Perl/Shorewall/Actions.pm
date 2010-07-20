@@ -179,9 +179,27 @@ sub find_macro( $ )
 #
 sub split_action ( $ ) {
     my $action = $_[0];
+
+    my $target = '';
+    my $max    = 3;
+    #
+    # The following rather grim RE, when matched, breaks the action into two parts:
+    #
+    #    basicaction(param)
+    #    logging part (may be empty)
+    #
+    # The param may contain one or more ':' characters
+    #
+    if ( $action =~ /^([^(:]+\(.*?\))(:(.*))$/ ) {
+	$target = $1;
+	$action = $2 ? $3 : '';
+	$max    = 2;
+    }
+	
     my @a = split( /:/ , $action, 4 );
-    fatal_error "Invalid ACTION ($action)" if ( $action =~ /::/ ) || ( @a > 3 );
-    ( shift @a, join ":", @a );
+    fatal_error "Invalid ACTION ($action)" if ( $action =~ /::/ ) || ( @a > $max );
+    $target = shift @a unless $target;
+    ( $target, join ":", @a );
 }
 
 #

@@ -403,31 +403,44 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">ADD(<replaceable>ipset</replaceable>,<replaceable>direction</replaceable>)</emphasis></term>
+              role="bold">ADD(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall 4.4.12. Causes either the SOURCE or
-                DESTINATION address of the connection to be added to the named
-                <replaceable>ipset</replaceable>. If
-                <replaceable>direction</replaceable> is <option>d</option>
-                (e.g., ipset,d) then the DESTINATION address is added; if it
-                is <emphasis role="bold">s</emphasis>, then the SOURCE address
-                is added.</para>
+                <para>Added in Shorewall 4.4.12. Causes addresses and/or port
+                numbers to be added to the named
+                <replaceable>ipset</replaceable>. The
+                <replaceable>flags</replaceable> specify the address or tupple
+                to be added to the set and must match the type of ipset
+                involved. For example, for an iphash ipset, either the SOURCE
+                or DESTINATION address can be added using
+                <replaceable>flags</replaceable> <emphasis
+                role="bold">src</emphasis> or <emphasis
+                role="bold">dst</emphasis> respectively (see the -A command in
+                ipset (8)).</para>
+
+                <para>ADD is non-terminating. Even if a packet matches the
+                rule, it is passed on to the next rule.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
               <term><emphasis
-              role="bold">DEL(<replaceable>ipset</replaceable>,<replaceable>direction</replaceable>)</emphasis></term>
+              role="bold">DEL(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall 4.4.12. Causes either the SOURCE or
-                DESTINATION address of the connection to be deleted from the
-                named <replaceable>ipset</replaceable>. If
-                <replaceable>direction</replaceable> is <option>d</option>
-                (e.g., ipset,d) then the DESTINATION address is added; if it
-                is <emphasis role="bold">s</emphasis>, then the SOURCE address
-                is deleteded.</para>
+                <para>Added in Shorewall 4.4.12. Causes an entry to be deleted
+                from the named <replaceable>ipset</replaceable>. The
+                <replaceable>flags</replaceable> specify the address or tupple
+                to be deleted from the set and must match the type of ipset
+                involved. For example, for an iphash ipset, either the SOURCE
+                or DESTINATION address can be deletec using
+                <replaceable>flags</replaceable> <emphasis
+                role="bold">src</emphasis> or <emphasis
+                role="bold">dst</emphasis> respectively (see the -D command in
+                ipset (8)).</para>
+
+                <para>DEL is non-terminating. Even if a packet matches the
+                rule, it is passed on to the next rule.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1296,6 +1309,17 @@
           that traffic.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Example 10:</term>
+
+        <listitem>
+          <para>Add the tupple (source IP, dest port, dest IP) of an incoming
+          SSH connection to the ipset S:</para>
+
+          <programlisting>        ADD(S:dst,src,dst)           net              fw             tcp         22</programlisting>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -1307,6 +1331,9 @@
 
   <refsect1>
     <title>See ALSO</title>
+
+    <para><ulink
+    url="http://www.shorewall.net/ipsets.html">http://www.shorewall.net/ipsets.html</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),

@@ -1083,14 +1083,13 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     } elsif ( $actiontype & LOGRULE ) {
 	fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne '';
     } elsif ( $actiontype & SET ) {
-	my %xlate1 = ( ADD => 'add-set' , DEL => 'del-set' );
-	my %xlate2 = ( d => 'dst' , s => 'src' );
+	my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
 
-	my ( $setname, $direction, $rest ) = split ',', $param;
+	my ( $setname, $flags, $rest ) = split ':', $param, 3;
 	fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
 	fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^[a-zA-Z]\w*$/;
-	fatal_error "Invalid address designator ($direction)" unless defined $direction && $direction =~ /^[ds]$/;
-	$action = join( ' ', 'SET --' . $xlate1{$basictarget} , $setname , $xlate2{$direction} );
+	fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
+	$action = join( ' ', 'SET --' . $xlate{$basictarget} , $setname , $flags );
     }
     #
     # Isolate and validate source and destination zones

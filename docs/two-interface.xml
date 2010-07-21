@@ -1012,6 +1012,23 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     </itemizedlist>
   </section>
 
+  <section>
+    <title>Disabling your existing Firewall</title>
+
+    <para>Before starting Shorewall for the first time, it's a good idea to
+    stop your existing firewall. On Redhat/CentOS/Fedora:</para>
+
+    <programlisting><command>service iptables stop</command></programlisting>
+
+    <para>If you are running SuSE, use Yast or Yast2 to stop
+    SuSEFirewall.</para>
+
+    <para>Once you have Shorewall running to your satisfaction, you should
+    totally disable your existing firewall. On /Redhat/CentOS/Fedora:</para>
+
+    <programlisting><command>chkconfig --del iptables</command></programlisting>
+  </section>
+
   <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 

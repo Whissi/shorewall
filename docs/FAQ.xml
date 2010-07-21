@@ -2090,6 +2090,57 @@ shorewall status &gt; /dev/null 2&gt;&amp;1 || shorewall start # Start Shorewall
       <filename>/etc/shorewall/params</filename> when processing the <emphasis
       role="bold">restore</emphasis> command.</para>
     </section>
+
+    <section id="faq90">
+      <title>(FAQ 90) Shorewall starts fine but after several minutes, it
+      stops. Why is it doing that?</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> Shorewall uses the
+      presence of a chain named <emphasis>shorewall</emphasis> to indicate
+      whether is started or stopped. That chain is created during execution of
+      a successful <emphasis role="bold">start</emphasis>, <emphasis
+      role="bold">restart</emphasis> or <emphasis
+      role="bold">restore</emphasis> command and is removed during <emphasis
+      role="bold">stop</emphasis> and <emphasis role="bold">clear</emphasis>.
+      If <emphasis role="bold">shorewall status</emphasis> indicates that
+      Shorewall is stopped, then something has deleted that chain. Look at the
+      output of <emphasis role="bold">shorewall status</emphasis>; if it looks
+      like this:</para>
+
+      <blockquote>
+        <programlisting>gateway:~# shorewall status
+Shorewall-4.4.11 Status at gateway - Wed Jul 21 13:21:41 PDT 2010
+
+Shorewall is <emphasis role="bold">stopped</emphasis>
+State:<emphasis role="bold">Started</emphasis> (Tue Jul 20 16:01:49 PDT 2010)
+
+gateway:~# 
+</programlisting>
+      </blockquote>
+
+      <para>then it means that somehing outside of Shorewall has deleted the
+      chain. This usually means that you were running another firewall package
+      before you installed Shorewall and that other package has replaced
+      Shorewall's Netfilter configuration with its own. You must remove (or at
+      least disable) the other firewall package and restart Shorewall.</para>
+
+      <blockquote>
+        <programlisting>gateway:~# shorewall status
+Shorewall-4.4.11 Status at gateway - Wed Jul 21 13:26:29 PDT 2010
+
+Shorewall is <emphasis role="bold">stopped</emphasis>
+State:<emphasis role="bold">Stopped</emphasis> (Wed Jul 21 13:26:26 PDT 2010)
+
+gateway:~# </programlisting>
+      </blockquote>
+
+      <para>then a <emphasis role="bold">shorewall stop</emphasis> command has
+      been executed (if the State shown in the output is <emphasis
+      role="bold">Cleared</emphasis>, then a <emphasis role="bold">shorewall
+      clear</emphasis> command was executed). Most likely, you have installed
+      and configured the <emphasis>shorewall-init</emphasis> package and a
+      required interface has gone down. </para>
+    </section>
   </section>
 
   <section id="MultiISP">
@@ -2326,7 +2377,7 @@ We have an error talking to the kernel
 
       <para><emphasis role="bold">Answer</emphasis>: Beginning with Shorewall
       4.4.11 Beta 2, you can <ulink url="Vserver.html">create vserver
-      zones</ulink> that are nested within the firewall zone. </para>
+      zones</ulink> that are nested within the firewall zone.</para>
 
       <para>Prior to 4.4.11 Beta 2, there is no way to create sub-zones of the
       firewall zone. But you can use shell variables to make vservers easier

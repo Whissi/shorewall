@@ -1302,7 +1302,7 @@ sub verify_required_interfaces( $ ) {
 	for my $interface (@$interfaces ) {
 	    my $wait = $interfaces{$interface}{options}{wait};
 
-	    emit  q() unless $first-- > 0;
+	    emit q() unless $first-- > 0;
 	    
 	    if ( $wait ) {
 		my $physical = get_physical $interface;

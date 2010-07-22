@@ -1072,7 +1072,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	if ( $dest eq '-' ) {
 	    $dest = join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
 	} else {
-	    $dest = join( '', $z, '::', $dest ) unless $dest =~ /:/;
+	    $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
 	}
     } elsif ( $action eq 'REJECT' ) {
 	$action = 'reject';

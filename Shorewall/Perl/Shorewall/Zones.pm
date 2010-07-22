@@ -1461,6 +1461,7 @@ sub compile_updown() {
 	$interfaces =~ s/\+/*/;
 
 	emit( "$interfaces)",
+	      '    progress_message3 "$COMMAND on interface $1 ignored"',
 	      '    exit 0',
 	      '    ;;'
 	    );
@@ -1529,6 +1530,8 @@ sub compile_updown() {
 	      '        progress_message3 "$g_product attempting start"',
 	      '        detect_configuration',
 	      '        define_firewall',
+	      '    else',
+	      '        progress_message3 "$COMMAND on interface $1 ignored"',
 	      '    fi',
 	      '    ;;',
 	    );
@@ -1541,6 +1544,9 @@ sub compile_updown() {
 	  '            progress_message3 "$g_product attempting restart"',
 	  '            detect_configuration',
 	  '            define_firewall',
+	  '            ;;',
+	  '        *)',
+	  '            progress_message3 "$COMMAND on interface $1 ignored"',
 	  '            ;;',
 	  '    esac',
 	);

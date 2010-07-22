@@ -1287,7 +1287,15 @@ sub verify_required_interfaces( $ ) {
     my $interfaces = find_interfaces_by_option 'wait';
 
     if ( @$interfaces ) {
-	emit "local waittime\n";
+	emit( "local waittime\n" );
+
+	emit( 'case "$COMMAND" in' );
+
+	push_indent;
+
+	emit( 'start|restart|restore)' );
+
+	push_indent;
 
 	for my $interface (@$interfaces ) {
 	    my $wait = $interfaces{$interface}{options}{wait};
@@ -1328,6 +1336,14 @@ sub verify_required_interfaces( $ ) {
 		$returnvalue = 1;
 	    }
 	}
+
+	emit( ";;\n" );
+	
+	pop_indent;
+	pop_indent;
+
+	emit( 'esac' );
+
     }
 
     $interfaces = find_interfaces_by_option 'required';

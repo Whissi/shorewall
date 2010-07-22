@@ -1400,6 +1400,9 @@ sub compile_updown() {
 	  'state=cleared',
 	  '' );
 
+    emit 'progress_message3 "$g_product $COMMAND triggered by $1"';
+    emit '';
+
     if ( $family == F_IPV4 ) {
 	emit 'if shorewall_is_started; then';
     } else {
@@ -1461,17 +1464,20 @@ sub compile_updown() {
 	    emit( '        COMMAND=start' );
 	}
 
-	emit( '        detect_configuration',
+	emit( '        progress_message3 "$g_product attempting $COMMAND"',
+	      '        detect_configuration',
 	      '        define_firewall' );
 
 	if ( $wildcard ) {
 	    emit( '    elif [ "$state" = started ]; then',
+		  '        progress_message3 "$g_product attempting restart"',
 		  '        COMMAND=restart',
 		  '        detect_configuration',
 		  '        define_firewall' );
 	} else {
 	    emit( '    else',
 		  '        COMMAND=stop',
+		  '        progress_message3 "$g_product attempting stop"',
 		  '        detect_configuration',
 		  '        stop_firewall' );
 	}
@@ -1495,10 +1501,12 @@ sub compile_updown() {
 	      '',
 	      '    if [ "$state" = started ]; then',
 	      '        COMMAND=restart',
+	      '        progress_message3 "$g_product attempting restart"',
 	      '        detect_configuration',
 	      '        define_firewall',
 	      '    elif [ "$state" = stopped ]; then',
 	      '        COMMAND=start',
+	      '        progress_message3 "$g_product attempting start"',
 	      '        detect_configuration',
 	      '        define_firewall',
 	      '    fi',
@@ -1510,6 +1518,7 @@ sub compile_updown() {
 	  '    case $state in',
 	  '        started)',
 	  '            COMMAND=restart',
+	  '            progress_message3 "$g_product attempting restart"',
 	  '            detect_configuration',
 	  '            define_firewall',
 	  '            ;;',

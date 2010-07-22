@@ -23,4 +23,13 @@
     instantiated when the IPv6 firewall is stopped use ff80::/10 rather
     than fe80::/10 (IPv6 link local network).
 
- 
+3)  Using a destination port-range with :random produces a fatal
+    compilation error in REDIRECT rules.
+
+4)  Shorewall-init is not reliable in bringing up interfaces during
+    boot on Ubuntu systems that use upstart.
+
+    Suggested workaround is to set startup=1 in your
+    /etc/default/shorewall* files.
+
+

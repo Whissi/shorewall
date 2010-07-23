@@ -396,7 +396,7 @@ gateway:~ #
 COMMENT SSH
 PARAM   -      -     tcp   22 </programlisting>
     <filename>/etc/shorewall/rules</filename>:<programlisting>COMMENT Allow SSH from home
-SSH/ALLOW    net:$MYIP      $FW
+SSH(ACCEPT)    net:$MYIP      $FW
 COMMENT</programlisting>The comment line in macro.SSH will not override the
     COMMENT line in the rules file and the generated rule will show <emphasis
     role="bold">/* Allow SSH from home */</emphasis> when displayed through

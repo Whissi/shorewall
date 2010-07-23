@@ -615,7 +615,9 @@ case "$COMMAND" in
     stop|reset|clear)
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
-	run_it $g_firewall $debugging $nolock $COMMAND
+	[ -n "$nolock" ] || mutex_on
+	run_it $g_firewall $debugging $COMMAND
+	[ -n "$nolock" ] || mutex_on
 	;;
     restart)
 	shift

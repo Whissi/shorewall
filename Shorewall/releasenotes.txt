@@ -233,6 +233,11 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 3)  Previously, using a destination port-range with :random produced a
     fatal compilation error in REDIRECT rules.
 
+4)  /sbin/shorewall and /sbin/shorewall6 sometimes failed to honor the
+    'nolock' option. In other cases, this option was incorrectly passed
+    on to the compiled script, causing the script to issue a usage
+    synopsis and to terminate.
+ 
 4.4.11
 
 1)  The IPv6 allowBcast action generated an invalid rule.

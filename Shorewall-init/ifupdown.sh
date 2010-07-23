@@ -93,7 +93,7 @@ for PRODUCT in $PRODUCTS; do
     VARDIR=/var/lib/$PRODUCT
     [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
     if [ -x $VARDIR/firewall ]; then
-	$VARDIR/firewall -V0 $COMMAND $IFACE
+	/sbin/$PRODUCT -v0 $COMMAND $IFACE
     fi
 done
 

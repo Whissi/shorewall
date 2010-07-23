@@ -619,6 +619,11 @@ case "$COMMAND" in
 	run_it $g_firewall $debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off
 	;;
+    up|down)
+	[ -n "$nolock" ] || mutex_on
+	run_it $g_firewall $debugging $@
+	[ -n "$nolock" ] || mutex_off
+	;;
     restart)
 	shift
 	restart_command $@

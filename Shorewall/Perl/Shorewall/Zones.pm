@@ -1334,7 +1334,7 @@ sub verify_required_interfaces( $ ) {
 		    emit  q(        sleep 1);
 		    emit   '        waittime=$(($waittime - 1))';
 		    emit  q(    done);
-		    emit  q();
+		    emit qq(fi\n);
 		}
 
 		$returnvalue = 1;

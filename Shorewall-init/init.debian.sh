@@ -84,7 +84,20 @@ shorewall_start () {
       VARDIR=/var/lib/$product
       [ -f /etc/$product/vardir ] && . /etc/$product/vardir
       if [ -x ${VARDIR}/firewall ]; then
-	  ${VARDIR}/firewall stop || echo_notdone
+	  #
+	  # Run in a sub-shell to avoid name collisions
+	  #
+	  ( 
+	      . /usr/share/$product/lib.base
+	      #
+	      # Get mutex so the firewall state is stable
+	      #
+	      mutex_on
+	      if ! ${VARDIR}/firewall status > /dev/null 2>&1; then
+		  ${VARDIR}/firewall stop || echo_notdone
+	      fi
+	      mutex_off
+	  )
       fi
   done
 
@@ -103,7 +116,11 @@ shorewall_stop () {
       VARDIR=/var/lib/$product
       [ -f /etc/$product/vardir ] && . /etc/$product/vardir
       if [ -x ${VARDIR}/firewall ]; then
-	  ${VARDIR}/firewall clear || echo_notdone
+	  ( . /usr/share/$product/lib.base
+	    mutex_on
+	    ${VARDIR}/firewall clear || echo_notdone
+	    mutex_off
+	  )
       fi
   done
 

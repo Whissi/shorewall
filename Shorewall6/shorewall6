@@ -1544,22 +1544,17 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 1
 	get_config
 	[ -x $g_firewall ] || fatal_error "Shorewall6 has never been started"
-	mutex_on
-	run_it $g_firewall $g_debugging $nolock $COMMAND
-	mutex_off
-	;;
-    up|down)
-	mutex_on
-	run_it $g_firewall $g_debugging $nolock $@
-	mutex_off
+	[ -n "$nolock" ] || mutex_on
+	run_it $g_firewall $g_debugging $COMMAND
+	[ -n "$nolock" ] || mutex_off
 	;;
     reset)
 	get_config
 	shift
-	mutex_on
+	[ -n "$nolock" ] || mutex_on
 	[ -x $g_firewall ] || fatal_error "Shorewall6 has never been started"
-	run_it $g_firewall $g_debugging $nolock reset $@
-	mutex_off
+	run_it $g_firewall $g_debugging reset $@
+	[ -n "$nolock" ] || mutex_off
 	;;
     compile)
 	get_config Yes

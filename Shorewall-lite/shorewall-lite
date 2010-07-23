@@ -628,16 +628,12 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|clear)
+    stop|reset|clear)
 	[ $# -ne 1 ] && usage 1
 	verify_firewall_script
 	[ -n "$nolock" ] || mutex_on
-	run_it $g_firewall $debugging $nolock $COMMAND
+	run_it $g_firewall $debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off
-	;;
-    reset)
-	verify_firewall_script
-	run_it $SHOREWALL_SHELL $g_firewall $debugging $nolock $@
 	;;
     restart)
 	shift

@@ -74,13 +74,13 @@
     <title>Closing the Firewall before the Network Interfaces are brought
     up</title>
 
-    <para> When Shorewall-init is first installed, it does nothing until you
+    <para>When Shorewall-init is first installed, it does nothing until you
     configure it.</para>
 
     <para>The configuration file is <filename>/etc/default/shorewall-init
     </filename>on Debian-based systems and
     <filename>/etc/sysconfig/shorewall-init</filename> otherwise. There are
-    two settings in the file: </para>
+    two settings in the file:</para>
 
     <variablelist>
       <varlistentry>
@@ -115,7 +115,7 @@
       <listitem>
         <para>Be sure that your current firewall script(s) (normally in
         <filename>/var/lib/&lt;product&gt;/firewall</filename>) is(are)
-        compiled with the 4.4.10 compiler. </para>
+        compiled with the 4.4.10 compiler.</para>
 
         <para>Shorewall and Shorewall6 users can execute these
         commands:</para>
@@ -139,7 +139,7 @@
       </listitem>
     </orderedlist>
 
-    <para>That's all that is required. </para>
+    <para>That's all that is required.</para>
   </section>
 
   <section id="NM">
@@ -147,7 +147,7 @@
 
     <para>To integrate with NetworkManager and ifup/ifdown, additional steps
     are required. You probably don't want to enable this feature if you run a
-    link status monitor like swping or LSM. </para>
+    link status monitor like swping or LSM.</para>
 
     <orderedlist numeration="loweralpha">
       <listitem>
@@ -165,15 +165,21 @@
       <listitem>
         <para>Optional) -- If you have specified at least one
         <option>required</option> or <option>optional</option> interface, you
-        can then disable automatic firewall startup at boot time. On
-        Debian-based systems, set startup=0 in
+        can then disable automatic firewall startup at boot time. On Debian
+        systems, set startup=0 in
         <filename>/etc/default/<replaceable>product</replaceable></filename>.
         On other systems, use your service startup configuration tool
-        (chkconfig, insserv, ...) to disable startup. </para>
+        (chkconfig, insserv, ...) to disable startup.</para>
+
+        <warning>
+          <para>If your system uses Upstart as it's system initialization
+          daemon, you should not disable startup. Upstart is standard on
+          recent Ubuntu and Fedora releases and is optional on Debian.</para>
+        </warning>
       </listitem>
     </orderedlist>
 
-    <para>The following actions occur when an interface comes up: </para>
+    <para>The following actions occur when an interface comes up:</para>
 
     <informaltable>
       <tgroup cols="3">
@@ -253,7 +259,7 @@
       </tgroup>
     </informaltable>
 
-    <para> For optional interfaces, the
+    <para>For optional interfaces, the
     <filename>/var/lib/<replaceable>product</replaceable>/<replaceable>interface</replaceable>.state</filename>
     files are maintained to reflect the state of the interface so that they
     may be used by the standard <firstterm>isusable</firstterm> script. Please
@@ -272,13 +278,13 @@
 
     <para>Similarly, if an optional interface goes down and there are no
     optional interfaces remaining in the up state, then the firewall is
-    stopped. </para>
+    stopped.</para>
 
     <para>On Debian-based systems, during system shutdown the firewall is
     opened prior to network shutdown (<command>/etc/init.d/shorewall
     stop</command> performs a 'clear' operation rather than a 'stop'). This is
     required by Debian standards. You can change this default behavior by
     setting SAFESTOP=1 in <filename>/etc/default/shorewall</filename>
-    (<filename>/etc/default/shorewall6</filename>, ...). </para>
+    (<filename>/etc/default/shorewall6</filename>, ...).</para>
   </section>
 </article>

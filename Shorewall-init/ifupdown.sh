@@ -93,7 +93,7 @@ for PRODUCT in $PRODUCTS; do
     VARDIR=/var/lib/$PRODUCT
     [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
     if [ -x $VARDIR/firewall ]; then
-	  ( . /usr/share/$product/lib.base
+	  ( . /usr/share/$PRODUCT/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall -V0 $COMMAND $IFACE || echo_notdone
 	    mutex_off

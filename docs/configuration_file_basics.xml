@@ -290,6 +290,30 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     </example>
   </section>
 
+  <section id="Names">
+    <title>Names</title>
+
+    <para>When you define an object in Shorewall (<ulink
+    url="manpages/shorewall-zones.html">Zone</ulink>, <link
+    linkend="Logical">Logical Interface</link>, <ulink
+    url="ipsets.html">ipsets</ulink>, <ulink
+    url="Actions.html">Actions</ulink>, etc., you give it a name. Shorewall
+    names start with a letter and consist of letters, digits or underscores
+    ("_"). Except for Zone names, Shorewall does not impose a limit on name
+    length.</para>
+
+    <para>When an ipset is referenced, the name must be preceded by a plus
+    sign ("+").</para>
+
+    <para>The last character of an interface may also be a plus sign to
+    indicate a wildcard name.</para>
+
+    <para>Physical interface names match names shown by 'ip link ls'; if the
+    name includes an at sign ("@"), do not include that character or any
+    character that follows. For example, "sit1@NONE" is referred to as simply
+    'sit1".</para>
+  </section>
+
   <section id="COMMENT">
     <title>Attach Comment to Netfilter Rules</title>
 

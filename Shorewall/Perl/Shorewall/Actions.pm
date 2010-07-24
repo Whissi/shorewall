@@ -190,7 +190,7 @@ sub split_action ( $ ) {
     #
     # The param may contain one or more ':' characters
     #
-    if ( $action =~ /^([^(:]+\(.*?\))(:(.*))$/ ) {
+    if ( $action =~ /^([^(:]+\(.*?\))(:(.*))?$/ ) {
 	$target = $1;
 	$action = $2 ? $3 : '';
 	$max    = 2;

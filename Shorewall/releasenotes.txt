@@ -295,7 +295,14 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
 
-None.
+1)  On systems that use the Upstart init system (such as Ubuntu and
+    Fedora), Shorewall-init is not reliable at starting the firewall
+    during boot when normal firewall startup is disabled and UPDOWN=1
+    is specified in /etc/default/shorewall-init.
+
+    Suggested workaround is to not disable normal startup (e.g., do not
+    set startup=0 on Debian-based systems and do not 'checkconfig
+    --del...' on Fedora).
 
 ----------------------------------------------------------------------------
          V.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E

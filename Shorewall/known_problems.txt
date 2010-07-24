@@ -17,25 +17,34 @@
 	IP6TABLES=/sbin/ip6tables).
     c)  'shorewall6 load <firewall>'.
 
+    Corrected in Shorewall 4.4.11.1
+
 2)  In a number of cases, Shorewall6 generates incorrect rules
     involving the IPv6 multicast network. The rules specify
     ff00::/10 where they should specify ff00::/8.  Also, rules
     instantiated when the IPv6 firewall is stopped use ff80::/10 rather
     than fe80::/10 (IPv6 link local network).
 
+    Corrected in Shorewall 4.4.11.1
+
 3)  Using a destination port-range with :random produces a fatal
-    compilation error in REDIRECT rules.
+    compilation error in REDIRECT rules unless the firewall zone is
+    explicitly specified (e.g., $FW::2000-2010:random).
 
-4)  Shorewall-init is not reliable in bringing up interfaces during
-    boot on Ubuntu systems that use upstart.
+    Corrected in Shorewall 4.4.11.1
 
-    Suggested workaround is to set startup=1 in your
-    /etc/default/shorewall* files.
-
-5)  /sbin/shorewall and /sbin/shorewall6 sometimes fail to honor the
+4)  /sbin/shorewall and /sbin/shorewall6 sometimes fail to honor the
     'nolock' option. In other cases, this option is incorrectly passed
     on to the compiled script, causing the script to issue a usage
     synopsis and to terminate.
  
+    Corrected in Shorewall 4.4.11.1
 
+5)  On systems that use the Upstart init system (such as Ubuntu and
+    Fedora), Shorewall-init is not reliable at starting the firewall
+    during boot when normal firewall startup is disabled and UPDOWN=1
+    is specified in /etc/default/shorewall-init.
 
+    Suggested workaround is to not disable normal startup (e.g., do not
+    set startup=0 on Debian-based systems and do not 'checkconfig
+    --del...' on Fedora).

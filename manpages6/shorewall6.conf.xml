@@ -811,6 +811,30 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
       <varlistentry>
         <term><emphasis
+        role="bold">LOGLIMIT=[</emphasis>[{<emphasis>s</emphasis>|<emphasis
+        role="bold">d</emphasis>}:]<emphasis>rate</emphasis><emphasis
+        role="bold">/</emphasis>{<emphasis
+        role="bold">sec</emphasis>|<emphasis
+        role="bold">min</emphasis>|<emphasis
+        role="bold">hour</emphasis>|<emphasis
+        role="bold">day</emphasis>}[:<emphasis>burst</emphasis>]]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.12. Limits the logging rate, either
+          overall, or by source or destination IP address.</para>
+
+          <para>If the value starts with 's:' then logging is limited per
+          source IP. If the value starts with 'd:', then logging is limited
+          per destination IP. Otherwise, the overall logging rate is
+          limited.</para>
+
+          <para>If <replaceable>burst</replaceable> is not specified, then a
+          value of 5 is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
         role="bold">LOGBURST=</emphasis>[<emphasis>burst</emphasis>]</term>
 
         <listitem>
@@ -825,6 +849,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">second</emphasis>}]</term>
 
         <listitem>
+          <para>As of Shorewall 4.4.12, these parameters are
+          deprecated.</para>
+
           <para>These parameters set the match rate and initial burst size for
           logged packets. Please see ip6tables(8) for a description of the
           behavior of these parameters (the ip6tables option --limit is set by

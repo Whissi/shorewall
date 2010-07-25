@@ -362,6 +362,7 @@ sub initialize( $ ) {
 	      LOGFILE => undef,
 	      LOGFORMAT => undef,
 	      LOGTAGONLY => undef,
+	      LOGLIMIT => undef,
 	      LOGRATE => undef,
 	      LOGBURST => undef,
 	      LOGALLNEW => undef,
@@ -509,6 +510,7 @@ sub initialize( $ ) {
 	      LOGFILE => undef,
 	      LOGFORMAT => undef,
 	      LOGTAGONLY => undef,
+	      LOGLIMIT => undef,
 	      LOGRATE => undef,
 	      LOGBURST => undef,
 	      LOGALLNEW => undef,
@@ -2847,7 +2849,42 @@ sub get_configuration( $ ) {
 
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 
-    if ( $config{LOGRATE} || $config{LOGBURST} ) {
+    if ( my $rate = $config{LOGLIMIT} ) {
+	require_capability 'HASHLIMIT_MATCH', 'Per-ip log rate limiting' , 's';
+
+	my $limit = "-m hashlimit ";
+	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
+	my $units;
+
+	if ( $rate =~ /^[sd]:(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
+	    $limit .= "--hashlimit $1 --hashlimit-burst $4 --hashlimit-name lograte --hashlimit-mode ";
+	    $units = $3;
+	} elsif ( $rate =~ /^[sd]:(\d+(\/(sec|min|hour|day))?)$/ ) {
+	    $limit .= "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
+	    $units = $3;
+	} else {
+	    fatal_error "Invalid rate ($rate)";
+	}
+
+	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
+
+	if ( $units && $units ne 'sec' ) {
+	    my $expire = 60000; # 1 minute in milliseconds
+
+	    if ( $units ne 'min' ) {
+		$expire *= 60; #At least an hour
+		$expire *= 24 if $units eq 'day';
+	    }
+
+	    $limit .= "--hashlimit-htable-expire $expire ";
+	}
+
+	$globals{LOGLIMIT} = $limit;
+
+	warning_message "LOGRATE Ignored when LOGLIMIT is specified"  if $config{LOGRATE};
+	warning_message "LOGBURST Ignored when LOGLIMIT is specified" if $config{LOGBURST};
+
+    } elsif ( $config{LOGRATE} || $config{LOGBURST} ) {
 	if ( defined $config{LOGRATE} ) {
 	    fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
 	}

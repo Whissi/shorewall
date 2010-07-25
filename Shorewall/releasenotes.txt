@@ -252,8 +252,24 @@ None.
 1)  Support has been added for ADD and DEL rules in
     /etc/shorewall/rules. ADD allows either the SOURCE or DESTINATION
     IP address to be added to an ipset; DEL deletes an address
-    previously added. 
+    previously added.
 
+2)  Per-ip log rate limiting has been added in the form of the LOGLIMIT
+    option in shorewall.conf. When LOGLIMIT is specified, LOGRATE and
+    LOGBURST are ignored. 
+
+    LOGRATE and LOGBURST are now deprecated.
+
+    LOGLIMIT value format is [sd:]<rate>[/<unit>][:<burst>]
+
+    If the value starts with 's:' then logging is limited per source
+    IP. If the value starts with 'd:', then logging is limited per
+    destination IP. Otherwise, the overall logging rate is limited.
+
+    <unit> is one of sec, min, hour, day.
+
+    If <burst> is not specified, then a value of 5 is assumed.
+    
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

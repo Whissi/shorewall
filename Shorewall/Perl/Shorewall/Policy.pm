@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains);
 our @EXPORT_OK = qw(  );
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_12';
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -496,7 +496,14 @@ sub setup_syn_flood_chains() {
 	    my $level = $chainref->{loglevel};
 	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
 	    add_rule $synchainref , "${limit}-j RETURN";
-	    log_rule_limit $level , $synchainref , $chainref->{name} , 'DROP', '-m limit --limit 5/min --limit-burst 5 ' , '' , 'add' , ''
+	    log_rule_limit( $level , 
+			    $synchainref , 
+			    $chainref->{name} , 
+			    'DROP', 
+			    $globals{LOGLIMIT} || '-m limit --limit 5/min --limit-burst 5 ' , 
+			    '' , 
+			    'add' , 
+			    '' )
 		if $level ne '';
 	    add_rule $synchainref, '-j DROP';
 	}

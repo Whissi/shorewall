@@ -2143,9 +2143,9 @@ sub verify_mark( $ ) {
 
     if ( $value > $mask ) {
 	#
-	# Not a valid TC mark -- must be a provider mark
+	# Not a valid TC mark -- must be a provider mark or a user mark
 	#
-	fatal_error "Invalid Mark or Mask value ($mark)" unless ( $value & $globals{PROVIDER_MASK} ) == $value;
+	fatal_error "Invalid Mark or Mask value ($mark)" unless ( $value & $globals{PROVIDER_MASK} ) == $value || ( $value & $globals{USER_MASK} ) == $value;
     }
 }
 

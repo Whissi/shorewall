@@ -313,7 +313,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
       </varlistentry>
     </variablelist>
 
-    <para> The relationship between these options is shown in this
+    <para>The relationship between these options is shown in this
     diagram.</para>
 
     <graphic align="left" fileref="images/MarkGeometry.png" valign="top" />
@@ -358,6 +358,13 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
         </tbody>
       </tgroup>
     </table>
+
+    <para>The existence of both TC_BITS and MASK_BITS is owed to the way that
+    WIDE_TC_MARKS was originally implemented. Note that TC_BITS is 14 rather
+    than 16 when WIDE_TC_MARKS=Yes.</para>
+
+    <para>Beginning with Shorewall 4.4.12, the field between MASK_BITS and
+    PROVIDER_OFFSET can be used for any purpose you want. </para>
   </section>
 
   <section id="Shorewall">

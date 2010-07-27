@@ -3033,6 +3033,12 @@ sub get_configuration( $ ) {
     $globals{PROVIDER_MIN}           = 1 << $config{PROVIDER_OFFSET};
     $globals{PROVIDER_MASK}          = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
 
+    if ( ( my $userbits = $config{PROVIDER_OFFSET} - $config{TC_BITS} ) > 0 ) {
+	$globals{USER_MASK} = make_mask( $userbits ) << $config{TC_BITS};
+    } else {
+	$globals{USER_MASK} = 0;
+    }
+
     if ( defined ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;
     } else {

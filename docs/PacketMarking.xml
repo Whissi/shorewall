@@ -267,6 +267,97 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
         <para>Connection marking rules use a mask value of 0xff.</para>
       </listitem>
     </itemizedlist>
+
+    <para>Shorewall actually allows you to have complete control over the
+    layout of the 32-bit mark using the following options in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5):</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>TC_BITS</term>
+
+        <listitem>
+          <para>The number of bits at the low end of the mark to be used for
+          traffic shaping marking. May be zero.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROVIDER_BITS</term>
+
+        <listitem>
+          <para>The number of bits in the mark to be used for provider
+          numbers. May be zero.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROVIDER_OFFSET</term>
+
+        <listitem>
+          <para>The offset from the right (low-order end) of the provider
+          number field. If non-zero, must be &gt;= TC_BITS (Shorewall
+          automatically adjusts PROVIDER_OFFSET's value). PROVIDER_OFFSET +
+          PROVIDER_BITS must be &lt;= 32.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>MASK_BITS</term>
+
+        <listitem>
+          <para>Number of bits on the right of the mark to be masked when
+          clearing the traffic shaping mark. Must be &gt;= TC_BITS and &lt;=
+          PROVIDER_OFFSET (if PROVIDER_OFFSET &gt; 0)</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para> The relationship between these options is shown in this
+    diagram.</para>
+
+    <graphic align="left" fileref="images/MarkGeometry.png" valign="top" />
+
+    <para></para>
+
+    <para>The default values of these options are determined by the settings
+    of other options as follows:</para>
+
+    <table>
+      <title>Default Values</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>WIDE_TC_MARKS=No, HIGH_ROUTE_MARKS=No</entry>
+
+            <entry>TC_BITS=8, PROVIDER_BITS=0, PROVIDER_OFFSET=0,
+            MASK_BITS=8</entry>
+          </row>
+
+          <row>
+            <entry>WIDE_TC_MARKS=No, HIGH_ROUTE_MARKS=Yes</entry>
+
+            <entry>TC_BITS=8, PROVIDER_BITS=8, PROVIDER_OFFSET=8,
+            MASK_BITS=8</entry>
+          </row>
+
+          <row>
+            <entry>WIDE_TC_MARKS=Yes, HIGH_ROUTE_MARKS=No</entry>
+
+            <entry>TC_BITS=14, PROVIDER_BITS=8, PROVIDER_OFFSET=0,
+            MASK_BITS=16</entry>
+          </row>
+
+          <row>
+            <entry>WIDE_TC_MARKS=Yes, HIGH_ROUTE_MARKS=Yes</entry>
+
+            <entry>TC_BITS=14, PROVIDER_BITS=8, PROVIDER_OFFSET=16,
+            MASK_BITS=16</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
   </section>
 
   <section id="Shorewall">

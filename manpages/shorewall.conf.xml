@@ -589,11 +589,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>You may set HIGH_ROUTE_MARKS=Yes in to effectively divide the
           packet mark and connection mark into two mark fields.</para>
 
-          <note>
-            <para>From Shorewall 2.5.0 onward, this option is deprecated in
-            favor of the PROVIDER_OFFSET option.</para>
-          </note>
-
           <para>The width of the fields are determined by the setting of
           WIDE_TC_MARKS. If WIDE_TC_MARKS=No (the default):</para>
 
@@ -948,11 +943,11 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>If the value starts with 's:' then logging is limited per
           source IP. If the value starts with 'd:', then logging is limited
-          per destination IP. Otherwise, the overall logging rate is limited.
-          </para>
+          per destination IP. Otherwise, the overall logging rate is
+          limited.</para>
 
           <para>If <replaceable>burst</replaceable> is not specified, then a
-          value of 5 is assumed. </para>
+          value of 5 is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -1834,11 +1829,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           traffic shaping marks are 14 bytes wide (values 1-16383). The
           setting of WIDE_TC_MARKS also has an effect on the HIGH_ROUTE_MARKS
           option (see above).</para>
-
-          <note>
-            <para>From Shorewall 2.5.0 onware, this option is deprecated in
-            favor of the TC_BITS option.</para>
-          </note>
         </listitem>
       </varlistentry>
 

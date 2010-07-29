@@ -2850,33 +2850,51 @@ sub get_configuration( $ ) {
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 
     if ( my $rate = $config{LOGLIMIT} ) {
-	require_capability 'HASHLIMIT_MATCH', 'Per-ip log rate limiting' , 's';
+	my $limit;
 
-	my $limit = "-m hashlimit ";
-	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
-	my $units;
+	if ( $rate =~ /^[sd]:/ ) {
+	    require_capability 'HASHLIMIT_MATCH', 'Per-ip log rate limiting' , 's';
 
-	if ( $rate =~ /^[sd]:(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	    $limit .= "--hashlimit $1 --hashlimit-burst $4 --hashlimit-name lograte --hashlimit-mode ";
-	    $units = $3;
-	} elsif ( $rate =~ /^[sd]:(\d+(\/(sec|min|hour|day))?)$/ ) {
-	    $limit .= "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
-	    $units = $3;
-	} else {
-	    fatal_error "Invalid rate ($rate)";
-	}
+	    $limit = "-m hashlimit ";
 
-	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
+	    my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
+	    my $units;
 
-	if ( $units && $units ne 'sec' ) {
-	    my $expire = 60000; # 1 minute in milliseconds
+	    if ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+		fatal_error "Invalid rate ($1)" unless $2;
+		fatal_error "Invalid burst value ($5)" unless $5;
 
-	    if ( $units ne 'min' ) {
-		$expire *= 60; #At least an hour
-		$expire *= 24 if $units eq 'day';
+		$limit .= "--hashlimit $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
+		$units = $4;
+	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))?)$/ ) {
+		fatal_error "Invalid rate ($1)" unless $2;
+		$limit .= "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
+		$units = $4;
+	    } else {
+		fatal_error "Invalid rate ($rate)";
 	    }
 
-	    $limit .= "--hashlimit-htable-expire $expire ";
+	    $limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
+
+	    if ( $units && $units ne 'sec' ) {
+		my $expire = 60000; # 1 minute in milliseconds
+		
+		if ( $units ne 'min' ) {
+		    $expire *= 60; #At least an hour
+		    $expire *= 24 if $units eq 'day';
+		}
+		
+		$limit .= "--hashlimit-htable-expire $expire ";
+	    }
+	} elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+	    fatal_error "Invalid rate ($1)" unless $2;
+	    fatal_error "Invalid burst value ($5)" unless $5;
+	    $limit = "-m limit --limit $1 --limit-burst $5 ";
+	} elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
+	    fatal_error "Invalid rate (${1}${2})" unless $1;
+	    $limit = "-m limit --limit $rate ";
+	} else {
+	    fatal_error "Invalid rate ($rate)";
 	}
 
 	$globals{LOGLIMIT} = $limit;

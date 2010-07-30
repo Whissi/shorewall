@@ -2864,7 +2864,7 @@ sub get_configuration( $ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
 		fatal_error "Invalid burst value ($5)" unless $5;
 
-		$limit .= "--hashlimit $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
+		$limit .= "--$match $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
 	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))?)$/ ) {
 		fatal_error "Invalid rate ($1)" unless $2;

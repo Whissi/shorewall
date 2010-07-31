@@ -526,6 +526,7 @@ sub initialize( $ ) {
 	      IP => undef,
 	      TC => undef,
 	      IPSET => undef,
+	      PERL => undef,
 	      #
 	      #PATH is inherited
 	      #

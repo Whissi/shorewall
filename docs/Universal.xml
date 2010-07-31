@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Universal Configuration</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2010</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>What it does</title>
+
+    <para>This document describes a way to install Shorewall on a GNU/Linux
+    system and protect that system. The resulting firewall will:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Allow all outgoing traffic.</para>
+      </listitem>
+
+      <listitem>
+        <para>Block all incoming connections except:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Secure Shell</para>
+          </listitem>
+
+          <listitem>
+            <para>Ping</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>Allow forwarding of traffic, provided that the system has more
+        than one interface or is set up to route between networks on a single
+        interface.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>How to Install it</title>
+
+    <para>The location of the configuration files is dependent on your
+    distribution and <ulink url="Install.htm">how you installed
+    Shorewall</ulink>.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>If you installed using an <acronym>RPM</acronym>, the samples
+        will be in the <filename
+        class="directory">Samples/Universal</filename> subdirectory of the
+        Shorewall documentation directory. If you don't know where the
+        Shorewall documentation directory is, you can find the samples using
+        this command:</para>
+
+        <programlisting>~# rpm -ql shorewall-common | fgrep Universal
+/usr/share/doc/packages/shorewall/Samples/Universal
+/usr/share/doc/packages/shorewall/Samples/Universal/interfaces
+/usr/share/doc/packages/shorewall/Samples/Universal/policy
+/usr/share/doc/packages/shorewall/Samples/Universal/rules
+/usr/share/doc/packages/shorewall/Samples/Universal/zones
+~#</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If you installed using the tarball, the samples are in the
+        <filename class="directory">Samples/Universal</filename> directory in
+        the tarball.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you installed using a Shorewall 4.x .deb, the samples are in
+        <filename
+        class="directory">/usr/share/doc/shorewall-common/examples/Universal</filename>..
+        You do not need the shorewall-doc package to have access to the
+        samples.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Simple copy the files from the Universal directory to
+    /etc/shorewall.</para>
+  </section>
+
+  <section>
+    <title>How to Start the firewall</title>
+
+    <para>Before starting Shorewall for the first time, it's a good idea to
+    stop your existing firewall. On Redhat/CentOS/Fedora, at a root prompt
+    type:</para>
+
+    <blockquote>
+      <para><command>service iptables stop</command></para>
+    </blockquote>
+
+    <para>If you are running SuSE, use Yast or Yast2 to stop
+    SuSEFirewall.</para>
+
+    <para>Once you have Shorewall running to your satisfaction, you should
+    totally disable your existing firewall. On /Redhat/CentOS/Fedora:</para>
+
+    <blockquote>
+      <para><command>chkconfig --del iptables</command></para>
+    </blockquote>
+
+    <para>At a root prompt, type:</para>
+
+    <blockquote>
+      <para><command>/sbin/shorewall start</command></para>
+    </blockquote>
+
+    <para>That's it. Shorewall will automatically start again when you
+    reboot.</para>
+  </section>
+
+  <section>
+    <title>Now that it is running, ...</title>
+
+    <section>
+      <title>How do I stop the firewall?</title>
+
+      <para>At a root prompt, type:</para>
+
+      <blockquote>
+        <para><command>/sbin/shorewall clear</command></para>
+      </blockquote>
+
+      <para>The system is now 'wide open'.</para>
+    </section>
+
+    <section>
+      <title>How do I prevent it from responding to ping?</title>
+
+      <para>Edit <filename>/etc/shorewall/rules</filename> and remove the line
+      that reads:</para>
+
+      <blockquote>
+        <para>Ping(ACCEPT) net $FW</para>
+      </blockquote>
+
+      <para>and at a root prompt, type:</para>
+
+      <blockquote>
+        <para><command>/sbin/shorewall restart</command></para>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>How do I allow other kinds of incoming connections?</title>
+
+      <para>Shorewall includes a collection of <firstterm>macros</firstterm>
+      that can be used to quickly allow or deny services. You can find a list
+      of the macros included in your version of Shorewall using the command
+      <command>ls <filename>/usr/share/shorewall/macro.*</filename></command>
+      or at a shell prompt type:</para>
+
+      <blockquote>
+        <para><command>/sbin/shorewall show macros</command></para>
+      </blockquote>
+
+      <para>If you wish to enable connections from the Internet to your
+      firewall and you find an appropriate macro in
+      <filename>/etc/shorewall/macro.*</filename>, the general format of a
+      rule in <filename>/etc/shorewall/rules</filename> is:</para>
+
+      <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
+&lt;<emphasis>macro</emphasis>&gt;(ACCEPT) net       $FW</programlisting>
+
+      <important>
+        <para>Be sure to add your rules after the line that reads <emphasis
+        role="bold">SECTION NEW.</emphasis></para>
+      </important>
+
+      <example id="Example1">
+        <title>You want to run a Web Server and a IMAP Server on your firewall
+        system:</title>
+
+        <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
+Web(ACCEPT) net       $FW
+IMAP(ACCEPT)net       $FW</programlisting>
+      </example>
+
+      <para>You may also choose to code your rules directly without using the
+      pre-defined macros. This will be necessary in the event that there is
+      not a pre-defined macro that meets your requirements. In that case the
+      general format of a rule in <filename>/etc/shorewall/rules</filename>
+      is:</para>
+
+      <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
+ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
+
+      <example id="Example2">
+        <title>You want to run a Web Server and a IMAP Server on your firewall
+        system:</title>
+
+        <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
+ACCEPT    net       $FW             tcp          80
+ACCEPT    net       $FW             tcp          143</programlisting></para>
+      </example>
+
+      <para>If you don't know what port and protocol a particular application
+      uses, see <ulink url="ports.htm">here</ulink>.</para>
+    </section>
+
+    <section>
+      <title>How do I make the firewall log a message when it disallows an
+      incoming connection?</title>
+
+      <para>Shorewall does not maintain a log itself but rather relies on your
+      <ulink url="shorewall_logging.html">system's logging
+      configuration</ulink>. The following <ulink
+      url="manpages/shorewall.html">commands</ulink> rely on knowing where
+      Netfilter messages are logged:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><command>shorewall show log</command> (Displays the last 20
+          Netfilter log messages)</para>
+        </listitem>
+
+        <listitem>
+          <para><command>shorewall logwatch</command> (Polls the log at a
+          settable interval</para>
+        </listitem>
+
+        <listitem>
+          <para><command>shorewall dump</command> (Produces an extensive
+          report for inclusion in Shorewall problem reports)</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>It is important that these commands work properly because when you
+      encounter connection problems when Shorewall is running, the first thing
+      that you should do is to look at the Netfilter log; with the help of
+      <ulink url="FAQ.htm#faq17">Shorewall FAQ 17</ulink>, you can usually
+      resolve the problem quickly.</para>
+
+      <para>The Netfilter log location is distribution-dependent:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Debian and its derivatives log Netfilter messages to
+          <filename>/var/log/kern.log</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Recent <trademark>SuSE/OpenSuSE</trademark> releases come
+          preconfigured with syslog-ng and log netfilter messages to
+          <filename>/var/log/firewall</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>For other distributions, Netfilter messages are most commonly
+          logged to <filename>/var/log/messages</filename>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Modify the LOGFILE setting in
+      <filename>/etc/shorewall/shorewall.conf</filename> to specify the name
+      of your log.</para>
+
+      <important>
+        <para>The LOGFILE setting does not control where the Netfilter log is
+        maintained -- it simply tells the /sbin/<filename>shorewall</filename>
+        utility where to find the log.</para>
+      </important>
+
+      <para>Now, edit <filename>/etc/shorewall/policy</filename> and modify
+      the line that reads:</para>
+
+      <blockquote>
+        <para>net all DROP </para>
+      </blockquote>
+
+      <para>to</para>
+
+      <blockquote>
+        <para>net all DROP info</para>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>How do I stop the firewall from forwarding packets?</title>
+
+      <para>Edit /etc/shorewall/interfaces, and change the line that
+      read:</para>
+
+      <blockquote>
+        <para>net all - dhcp,physical=+,routeback</para>
+      </blockquote>
+
+      <para>to</para>
+
+      <blockquote>
+        <para>net all - dhcp,physical=+</para>
+      </blockquote>
+
+      <para>Then at a root prompt, type:</para>
+
+      <blockquote>
+        <para><command>/sbin/shorewall restart</command></para>
+      </blockquote>
+    </section>
+  </section>
+</article>

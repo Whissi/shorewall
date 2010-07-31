@@ -304,18 +304,26 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       <para>to</para>
 
       <blockquote>
-        <para>net all DROP info</para>
+        <para>net all DROP <emphasis role="bold">info</emphasis></para>
+      </blockquote>
+
+      <para>Then at a root prompt, type:</para>
+
+      <blockquote>
+        <para><command>/sbin/shorewall restart</command></para>
       </blockquote>
     </section>
 
     <section>
-      <title>How do I stop the firewall from forwarding packets?</title>
+      <title>How do I prevent the firewall from forwarding connection
+      requests?</title>
 
       <para>Edit /etc/shorewall/interfaces, and change the line that
       read:</para>
 
       <blockquote>
-        <para>net all - dhcp,physical=+,routeback</para>
+        <para>net all - dhcp,physical=+<emphasis
+        role="bold">,routeback</emphasis></para>
       </blockquote>
 
       <para>to</para>

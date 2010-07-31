@@ -1966,7 +1966,7 @@ sub generate_matrix() {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		my $arrayref = $typeref->{$interface};
 
-		if ( $interface eq '+' ) {
+		if ( get_physical( $interface ) eq '+' ) {
 		    #
 		    # Insert the interface-specific jumps before this one which is not interface-specific
 		    #

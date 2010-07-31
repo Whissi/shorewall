@@ -2418,9 +2418,9 @@ sub do_length( $ ) {
 #
 sub match_source_dev( $ ) {
     my $interface = shift;
-    return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
     $interface = $interfaceref->{physical} if $interfaceref;
+    return '' if $interface eq '+';
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
     } else {
@@ -2433,9 +2433,9 @@ sub match_source_dev( $ ) {
 #
 sub match_dest_dev( $ ) {
     my $interface = shift;
-    return '' if $interface eq '+';
     my $interfaceref =  known_interface( $interface );
     $interface = $interfaceref->{physical} if $interfaceref;
+    return '' if $interface eq '+';
     if ( $interfaceref && $interfaceref->{options}{port} ) {
 	if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
 	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";

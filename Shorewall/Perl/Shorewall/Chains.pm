@@ -2207,16 +2207,19 @@ sub do_ratelimit( $$ ) {
 	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
 	my $units;
 
-	if ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	    $limit .= "--hashlimit $3 --hashlimit-burst $6 --hashlimit-name ";
+	if ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
+	    fatal_error "Invalid Rate ($3)" unless $4;
+	    fatal_error "Invalid Burst ($7)" unless $7;
+	    $limit .= "--hashlimit $3 --hashlimit-burst $7 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall' . $hashlimitset++;
 	    $limit .= ' --hashlimit-mode ';
-	    $units = $5;
-	} elsif ( $rate =~ /^[sd]:((\w*):)?(\d+(\/(sec|min|hour|day))?)$/ ) {
+	    $units = $6;
+	} elsif ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?)$/ ) {
+	    fatal_error "Invalid Rate ($3)" unless $4;
 	    $limit .= "--$match $3 --hashlimit-name ";
 	    $limit .= $2 ? $2 :  'shorewall' . $hashlimitset++;
 	    $limit .= ' --hashlimit-mode ';
-	    $units = $5;
+	    $units = $6;
 	} else {
 	    fatal_error "Invalid rate ($rate)";
 	}
@@ -2235,9 +2238,12 @@ sub do_ratelimit( $$ ) {
 	}
 
 	$limit;
-    } elsif ( $rate =~ /^(\d+(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	"-m limit --limit $1 --limit-burst $4 ";
+    } elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
+	fatal_error "Invalid Rate ($1)" unless $2;
+	fatal_error "Invalid Burst ($5)" unless $5;
+	"-m limit --limit $1 --limit-burst $5 ";
     } elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
+	fatal_error "Invalid Rate (${1}${2})" unless $1;
 	"-m limit --limit $rate ";
     } else {
 	fatal_error "Invalid rate ($rate)";

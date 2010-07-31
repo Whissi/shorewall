@@ -2318,7 +2318,11 @@ sub Comments() {
 }
 
 sub Hashlimit_Match() {
-    have_capability 'OLD_HL_MATCH' || qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+    if ( qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" ) ) {
+	! ( $capabilities{OLD_HL_MATCH} = 0 );
+    } else {
+	have_capability 'OLD_HL_MATCH';
+    }
 }
 
 sub Old_Hashlimit_Match() {

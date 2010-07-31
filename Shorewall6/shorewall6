@@ -67,15 +67,15 @@ get_config() {
 	# This block is avoided for compile for export and when the user isn't root
 	#
 	if [ "$3" = Yes ]; then
-	    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
-
-	    if [ -n "$(syslog_circular_buffer)" ]; then
-		g_logread="logread | tac"
-	    elif [ -r $LOGFILE ]; then
-		g_logread="tac $LOGFILE"
-	    else
-		echo "LOGFILE ($LOGFILE) does not exist!" >&2
-		exit 2
+	    if [ -n "$LOGFILE" ]; then
+		if [ -n "$(syslog_circular_buffer)" ]; then
+		    g_logread="logread | tac"
+		elif [ -r $LOGFILE ]; then
+		    g_logread="tac $LOGFILE"
+		else
+		    echo "LOGFILE ($LOGFILE) does not exist!" >&2
+		    exit 2
+		fi
 	    fi
 	fi
 

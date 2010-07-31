@@ -208,6 +208,19 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	   #		     an 'interesting' packet count changes
 {
 
+    if [ -z "$LOGFILE" ]; then
+	LOGFILE=/var/log/messages
+
+	if [ -n "$(syslog_circular_buffer)" ]; then
+	    g_logread="logread | tac"
+	elif [ -r $LOGFILE ]; then
+	    g_logread="tac $LOGFILE"
+	else
+	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	    exit 2
+	fi
+    fi
+
     host=$(echo $g_hostname | sed 's/\..*$//')
     oldrejects=$($IP6TABLES -L -v -n | grep 'LOG')
 
@@ -457,6 +470,20 @@ show_command() {
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
+
+	    if [ -z "$LOGFILE" ]; then
+		LOGFILE=/var/log/messages
+		
+		if [ -n "$(syslog_circular_buffer)" ]; then
+		    g_logread="logread | tac"
+		elif [ -r $LOGFILE ]; then
+		    g_logread="tac $LOGFILE"
+		else
+		    echo "LOGFILE ($LOGFILE) does not exist!" >&2
+		    exit 2
+		fi
+	    fi
+
 	    echo "$g_product $SHOREWALL_VERSION Log ($LOGFILE) at $g_hostname - $(date)"
 	    echo
 	    show_reset
@@ -666,6 +693,17 @@ dump_command() {
 		;;
 	esac
     done
+
+    if [ -z "$LOGFILE" ]; then
+	if [ -n "$(syslog_circular_buffer)" ]; then
+	    g_logread="logread | tac"
+	elif [ -r $LOGFILE ]; then
+	    g_logread="tac $LOGFILE"
+	else
+	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	    exit 2
+	fi
+    fi
 
     g_ipt_options="$g_ipt_options $g_ipt_options1"
 

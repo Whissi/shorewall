@@ -466,6 +466,7 @@ sub initialize( $ ) {
 	      LOAD_HELPERS_ONLY => undef,
 	      REQUIRE_INTERFACE => undef,
 	      FORWARD_CLEAR_MARK => undef,
+	      COMPLETE => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -590,6 +591,7 @@ sub initialize( $ ) {
 	      LOAD_HELPERS_ONLY => undef,
 	      REQUIRE_INTERFACE => undef,
 	      FORWARD_CLEAR_MARK => undef,
+	      COMPLETE => undef,
 	      #
 	      # Packet Disposition
 	      #
@@ -3038,6 +3040,7 @@ sub get_configuration( $ ) {
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
     default_yes_no 'REQUIRE_INTERFACE'          , '';
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability 'MARK' ? 'Yes' : '';
+    default_yes_no 'COMPLETE'                   , '';
 
     require_capability 'MARK' , 'FOREWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

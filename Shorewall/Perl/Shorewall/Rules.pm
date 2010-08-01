@@ -2261,9 +2261,11 @@ sub generate_matrix() {
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
 
-    complete_standard_chain $filter_table->{INPUT}   , 'all' , firewall_zone , 'DROP';
-    complete_standard_chain $filter_table->{OUTPUT}  , firewall_zone , 'all', 'REJECT';
-    complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all', 'REJECT';
+    unless ( $config{COMPLETE} ) {
+	complete_standard_chain $filter_table->{INPUT}   , 'all' , firewall_zone , 'DROP';
+	complete_standard_chain $filter_table->{OUTPUT}  , firewall_zone , 'all', 'REJECT';
+	complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all', 'REJECT';
+    }
 
     if ( $config{LOGALLNEW} ) {
 	for my $table qw/mangle nat filter/ {

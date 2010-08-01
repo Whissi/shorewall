@@ -337,6 +337,36 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">COMPLETE=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall6 4.4.12. When you set this option to Yes,
+          you are asserting that the configuration is complete so that your
+          set of zones encompasses any hosts that can send or receive traffic
+          to/from/through the firewall. This causes Shorewall6 to omit the
+          rules that catch packets in which the source or destination IP
+          address is outside of any of your zones. Default is No. It is
+          recommended that this option only be set to Yes if:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>You have defined an interface whose effective physical
+              setting is '+'.</para>
+            </listitem>
+
+            <listitem>
+              <para>That interface is assigned to a zone.</para>
+            </listitem>
+
+            <listitem>
+              <para>You have no CONTINUE policies or rules.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">CONFIG_PATH</emphasis>=[<emphasis>directory</emphasis>[:<emphasis>directory</emphasis>]...]</term>
 

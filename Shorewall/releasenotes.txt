@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 2
-                              B E T A  3
+                              R C  1
 ----------------------------------------------------------------------------
 
 I.    RELEASE 4.4 HIGHLIGHTS
@@ -279,6 +279,23 @@ None.
 3)  The sample configurations now include a 'Universal' configuration
     that will start on any system and protect that system while
     allowing the system to forward traffic.
+
+    As part of this change, several additional features were added:
+
+    - You may now specify "physical=+" in the interfaces file.
+    - A 'COMPLETE' option is added to shorewall.conf and
+      shorewall6.conf. When you set this option to Yes, you are
+      asserting that the configuration is complete so that your set of
+      zones encompasses any hosts that can send or receive traffic
+      to/from/through the firewall. This causes Shorewall to omit the
+      rules that catch packets in which the source or destination IP
+      address is outside of any of your zones. Default is No.  It is
+      recommended that this option only be set to Yes if:
+
+      o You have defined an interface whose effective physical setting
+        is '+'
+      o That interface is assigned to a zone.
+      o You have no CONTINUE policies or rules.
     
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

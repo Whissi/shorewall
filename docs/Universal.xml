@@ -308,7 +308,7 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       the line that reads:</para>
 
       <blockquote>
-        <para>net all DROP </para>
+        <para>net all DROP</para>
       </blockquote>
 
       <para>to</para>
@@ -328,18 +328,18 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       <title>How do I prevent the firewall from forwarding connection
       requests?</title>
 
-      <para>Edit /etc/shorewall/interfaces, and change the line that
-      read:</para>
+      <para>Edit /etc/shorewall/interfaces, and remove the routeback option
+      from the interface. e.g., change the line that reads:</para>
 
       <blockquote>
         <para>net all - dhcp,physical=+<emphasis
-        role="bold">,routeback</emphasis></para>
+        role="bold">,routeback</emphasis>,optional</para>
       </blockquote>
 
       <para>to</para>
 
       <blockquote>
-        <para>net all - dhcp,physical=+</para>
+        <para>net all - dhcp,physical=+,optional</para>
       </blockquote>
 
       <para>Then at a root prompt, type:</para>

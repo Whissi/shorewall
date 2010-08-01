@@ -1110,6 +1110,28 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
       <command>ip route ls table <replaceable>provider</replaceable></command>
       where <replaceable>provider</replaceable> can be either the provider
       name or number.</para>
+
+      <para>Example:</para>
+
+      <programlisting>lillycat:- #<command>ip route ls</command>
+144.77.167.142 dev ppp0  proto kernel  scope link  src 144.177.121.199
+71.190.227.208 dev ppp1  proto kernel  scope link  src 71.24.88.151
+192.168.7.254 dev eth1  scope link  src 192.168.7.1
+192.168.7.253 dev eth1  scope link  src 192.168.7.1
+192.168.7.0/24 dev eth1  proto kernel  scope link  src 192.168.7.1
+192.168.5.0/24 via 192.168.4.2 dev eth0
+192.168.4.0/24 dev eth0  proto kernel  scope link  src 192.168.4.223
+192.168.1.0/24 via 192.168.4.222 dev eth0
+default
+        nexthop dev ppp1 weight 2
+        nexthop dev ppp0 weight 1
+lillycat: #ip <command>route ls provider 1</command>
+144.77.167.142 dev ppp0  proto kernel  scope link  src 144.177.121.199 
+192.168.5.0/24 via 192.168.4.2 dev eth0 
+192.168.4.0/24 dev eth0  proto kernel  scope link  src 192.168.4.223 
+192.168.1.0/24 via 192.168.4.222 dev eth0 
+default dev ppp0  scope link 
+lillycat: #</programlisting>
     </section>
 
     <section id="USE_DEFAULT_RT">

@@ -961,7 +961,7 @@ sub process_interface( $$ ) {
 		fatal_error "The '$option' option requires a value" unless defined $value;
 
 		if ( $option eq 'physical' ) {
-		    fatal_error "Invalid Physical interface name ($value)" unless $value =~ /^[\w.@%-]*\+?$/;
+		    fatal_error "Invalid Physical interface name ($value)" unless $value && $value =~ /^[\w.@%-]*\+?$/;
 
 		    fatal_error "Duplicate physical interface name ($value)" if ( $physical{$value} && ! $port );
 

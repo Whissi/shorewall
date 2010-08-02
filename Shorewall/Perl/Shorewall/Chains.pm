@@ -2056,7 +2056,7 @@ sub do_proto( $$$;$ )
 		    last PROTO;	}
 
 		if ( $proto == ICMP ) {
-		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6;
+		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;

@@ -73,7 +73,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_12';
 
 #
 # Some IPv4/6 useful stuff
@@ -87,6 +87,7 @@ our $validate_address;
 our $validate_net;
 our $validate_range;
 our $validate_host;
+our $family;
 
 use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       ALLIPv6             => '::/0' ,
@@ -292,6 +293,11 @@ sub resolve_proto( $ ) {
 	$number = numeric_value ( $proto );
 	defined $number && $number <= 65535 ? $number : undef;
     } else {
+	#
+	# Allow 'icmp' as a synonym for 'ipv6-icmp' in IPv6 compilations
+	#
+	$proto= 'ipv6-icmp' if $proto eq 'icmp' && $family == F_IPV6;
+	
 	defined( $number = $nametoproto{$proto} ) ? $number : scalar getprotobyname $proto;
     }
 }
@@ -682,7 +688,7 @@ sub validate_host ($$ ) {
 #      able to re-initialize its dependent modules' state.
 #
 sub initialize( $ ) {
-    my $family = shift;
+    $family = shift;
 
     if ( $family == F_IPV4 ) {
 	$allip            = ALLIPv4;

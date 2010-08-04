@@ -218,6 +218,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 RECENT_MATCH    => 'Recent Match',
 		 OWNER_MATCH     => 'Owner Match',
 		 IPSET_MATCH     => 'Ipset Match',
+		 OLD_IPSET_MATCH => 'Old Ipset Match',
 		 CONNMARK        => 'CONNMARK Target',
 		 XCONNMARK       => 'Extended CONNMARK Target',
 		 CONNMARK_MATCH  => 'Connmark Match',
@@ -641,6 +642,7 @@ sub initialize( $ ) {
 	       RECENT_MATCH => undef,
 	       OWNER_MATCH => undef,
 	       IPSET_MATCH => undef,
+	       OLD_IPSET_MATCH => undef,
 	       CONNMARK => undef,
 	       XCONNMARK => undef,
 	       CONNMARK_MATCH => undef,
@@ -2372,7 +2374,7 @@ sub Raw_Table() {
     qt1( "$iptables -t raw -L -n" );
 }
 
-sub IPSet_Match() {
+sub Old_IPSet_Match() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
 
@@ -2384,7 +2386,31 @@ sub IPSet_Match() {
 	if ( qt( "$ipset -N $sillyname iphash" ) ) {
 	    if ( qt1( "$iptables -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
 		qt1( "$iptables -D $sillyname -m set --set $sillyname src -j ACCEPT" );
-		$result = 1;
+		$result = $capabilities{IPSET_MATCH} = 1;
+	    }
+
+	    qt( "$ipset -X $sillyname" );
+	}
+    }
+
+    $result;
+}
+
+sub IPSet_Match() {
+    my $ipset  = $config{IPSET} || 'ipset';
+    my $result = 0;
+
+    $ipset = which $ipset unless $ipset =~ '/';
+
+    if ( $ipset && -x $ipset ) {
+	qt( "$ipset -X $sillyname" );
+
+	if ( qt( "$ipset -N $sillyname iphash" ) ) {
+	    if ( qt1( "$iptables -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
+		qt1( "$iptables -D $sillyname -m set --match-set $sillyname src -j ACCEPT" );
+		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
+	    } else {
+		have_capability 'OLD_IPSET_MATCH';
 	    }
 
 	    qt( "$ipset -X $sillyname" );
@@ -2465,6 +2491,7 @@ our %detect_capability =
       IPP2P_MATCH => \&Ipp2p_Match,
       IPRANGE_MATCH => \&IPRange_Match,
       IPSET_MATCH => \&IPSet_Match,
+      OLD_IPSET_MATCH => \&Old_IPSet_Match,
       KLUDGEFREE => \&Kludgefree,
       LENGTH_MATCH => \&Length_Match,
       LOGMARK_TARGET => \&Logmark_Target,

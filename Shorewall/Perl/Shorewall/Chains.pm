@@ -2484,7 +2484,7 @@ sub get_set_flags( $$ ) {
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
 
-    have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options";
+    have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
 }
 
 #

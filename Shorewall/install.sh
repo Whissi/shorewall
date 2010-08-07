@@ -745,7 +745,7 @@ fi
 #
 # Install the  Makefiles
 #
-install-file Makefile-lite ${DESTDIR}/usr/share/shorewall/configfiles/Makefile 0644
+install_file Makefile-lite ${DESTDIR}/usr/share/shorewall/configfiles/Makefile 0644
 
 if [ -z "$SPARSE" ]; then
     run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/shorewall

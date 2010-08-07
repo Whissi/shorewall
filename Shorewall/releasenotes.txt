@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 2
-                              B E T A  4
+                                 R C  1
 ----------------------------------------------------------------------------
 
 I.    RELEASE 4.4 HIGHLIGHTS
@@ -305,6 +305,20 @@ None.
     1.4.9. This change involves a new capabilities file version so if
     you use a capabilities file, be sure to regenerate it with 4.4.12
     shorewall-lite or shorewall6-lite.
+
+6)  A new COMPLETE option has been added to shorewall.conf and to
+    shorewall6.conf. When set to Yes, it signifies that the
+    configuration is complete so that your set of zones encompasses any
+    hosts that can send or receive traffic to/from/through the
+    firewall. This causes Shorewall to omit the rules that catch
+    packets in which the source or destination IP address is outside of
+    any of your zones. Default is No. It is recommended that this
+    option only be set to Yes if:
+
+    - You have defined an interface whose effective physical setting is
+      '+'.
+    - That interface is assigned to a zone.
+    - You have no CONTINUE policies or rules.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

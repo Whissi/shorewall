@@ -49,6 +49,8 @@
     set startup=0 on Debian-based systems and do not 'checkconfig
     --del...' on Fedora).
 
+    Corrected in Shorewall 4.4.11.2
+
 6)  A typo in /sbin/shorewall6-lite version 4.4.11.1 causes the
     stop, reset and clear commands to hang for one minute after the
     command had been executed and causes the next shorewall6-lite
@@ -60,3 +62,7 @@
     being installed in /usr/share/shorewall/configfiles/Makefile.
 
     Corrected in Shorewall 4.4.11.2.
+
+8)  On systems running Upstart, Shorewall-init cannot reliably close
+    the firewall before interfaces come up.
+

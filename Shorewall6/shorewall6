@@ -1549,9 +1549,9 @@ case "$COMMAND" in
 	[ -n "$nolock" ] || mutex_off
 	;;
     up|down)
-	mutex_on
+	[ -n "$nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging $nolock $@
-	mutex_off
+	[ -n "$nolock" ] || mutex_off
 	;;
     reset)
 	get_config

@@ -1548,11 +1548,6 @@ case "$COMMAND" in
 	run_it $g_firewall $g_debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off
 	;;
-    up|down)
-	[ -n "$nolock" ] || mutex_on
-	run_it $g_firewall $g_debugging $nolock $@
-	[ -n "$nolock" ] || mutex_off
-	;;
     reset)
 	get_config
 	shift

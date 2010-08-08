@@ -1635,12 +1635,6 @@ case "$COMMAND" in
 	run_it $g_firewall $g_debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off
 	;;
-    up|down)
-	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
-	[ -n "$nolock" ] || mutex_on
-	run_it $g_firewall $g_debugging $@
-	[ -n "$nolock" ] || mutex_off
-	;;	
     reset)
 	get_config
 	shift

@@ -228,6 +228,13 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 2)  A typo in the Shorewall install.sh script prevented the Makefile from
     being installed in /usr/share/shorewall/configfiles/Makefile.
 
+3)  A number of problems associated with Shorewall-init and Upstart
+    have been corrected. 
+
+    If you use Shorewall-init, then when upgrading to this version, be
+    sure to recompile all firewall scripts before you take interfaces
+    down or reboot.
+
 4.4.11.1
 
 1)  Previously, the Shoreall6-lite version of shorecap was using
@@ -305,14 +312,8 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
            I V.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
 
-1)  On systems that use the Upstart init system (such as Ubuntu and
-    Fedora), Shorewall-init is not reliable at starting the firewall
-    during boot when normal firewall startup is disabled and UPDOWN=1
-    is specified in /etc/default/shorewall-init.
-
-    Suggested workaround is to not disable normal startup (e.g., do not
-    set startup=0 on Debian-based systems and do not 'checkconfig
-    --del...' on Fedora).
+1)  On systems running Upstart, Shorewall-init cannot reliably close
+    the firewall before interfaces come up.
 
 ----------------------------------------------------------------------------
          V.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E

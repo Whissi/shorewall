@@ -180,11 +180,11 @@
         disable startup of Shorewall in your init scripts. For ease of
         reference, we call this system the 'administrative system'.</para>
 
-        <para>The administrative system may be a Windows system running <ulink
-        url="http://www.cygwin.com/">Cygwin</ulink> or an <ulink
-        url="http://www.apple.com/mac/">Apple MacIntosh</ulink> running OS X.
-        Install from a shell prompt <ulink url="Install.htm">using the
-        install.sh script</ulink>.</para>
+        <para>The administrative system may be a GNU/Linux system, a Windows
+        system running <ulink url="http://www.cygwin.com/">Cygwin</ulink> or
+        an <ulink url="http://www.apple.com/mac/">Apple MacIntosh</ulink>
+        running OS X. Install from a shell prompt <ulink
+        url="Install.htm">using the install.sh script</ulink>.</para>
       </listitem>
 
       <listitem>
@@ -241,8 +241,10 @@
         <orderedlist>
           <listitem>
             <para>modify the files in the corresponding export directory
-            appropriately. It's a good idea to include the IP address of the
-            administrative system in the <ulink
+            appropriately (i.e., <emphasis>just as you would if you were
+            configuring Shorewall on the firewall system itself</emphasis>).
+            It's a good idea to include the IP address of the administrative
+            system in the <ulink
             url="manpages/shorewall-routestopped.html"><filename>routestopped</filename>
             file</ulink>.</para>
 
@@ -283,26 +285,29 @@
 
           <listitem>
             <programlisting><command>cd &lt;export directory&gt;</command>
-<command>/sbin/shorewall load -c firewall</command></programlisting>
+<command>/sbin/shorewall load firewall</command></programlisting>
 
             <para>The <ulink
             url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
             command compiles a firewall script from the configuration files in
             the current working directory (using <command>shorewall compile
             -e</command>), copies that file to the remote system via scp and
-            starts Shorewall Lite on the remote system via ssh. The -c option
-            causes the capabilities of the remote system to be generated and
-            copied to a file named <filename>capabilities</filename> in the
-            export directory. See <link
-            linkend="Shorecap">below</link>.</para>
+            starts Shorewall Lite on the remote system via ssh.</para>
 
             <para>Example (firewall's DNS name is 'gateway'):</para>
 
-            <para><command>/sbin/shorewall load -c gateway</command><note>
+            <para><command>/sbin/shorewall load gateway</command><note>
                 <para>Although scp and ssh are used by default, you can use
                 other utilities by setting RSH_COMMAND and RCP_COMMAND in
                 <filename>/etc/shorewall/shorewall.conf</filename>.</para>
               </note></para>
+
+            <para>The first time that you issue a <command>load</command>
+            command, Shorewall will use ssh to run
+            <filename>/usr/share/shorewall-lite/shorecap</filename> on the
+            remote firewall to create a capabilities file in the firewall's
+            administrative direction. See <link
+            linkend="Shorecap">below</link>.</para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -456,7 +461,7 @@ clean:
       </simplelist>
     </blockquote>
 
-    <para>You will normally not need to touch
+    <para>You will normally never touch
     <filename>/etc/shorewall-lite/shorewall-lite.conf</filename> unless you
     run Debian or one of its derivatives (see <link
     linkend="Debian">above</link>).</para>
@@ -559,11 +564,11 @@ clean:
           <blockquote>
             <para>Before editing:</para>
 
-            <programlisting>CONFIG_PATH=/etc/shorewall:/usr/share/shorewall</programlisting>
+            <programlisting>CONFIG_PATH=<emphasis role="bold">/etc/shorewall</emphasis>:/usr/share/shorewall</programlisting>
 
             <para>After editing:</para>
 
-            <programlisting>CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall</programlisting>
+            <programlisting>CONFIG_PATH=<emphasis role="bold">/usr/share/shorewall/configfiles</emphasis>:/usr/share/shorewall</programlisting>
           </blockquote>
 
           <para>Changing CONFIG_PATH will ensure that subsequent compilations
@@ -596,13 +601,20 @@ clean:
 
           <blockquote>
             <programlisting><command>cd &lt;export directory&gt;</command>
-<command>/sbin/shorewall load -c &lt;firewall system&gt;</command>
+<command>/sbin/shorewall load &lt;firewall system&gt;</command>
 </programlisting>
 
             <para>Example (firewall's DNS name is 'gateway'):</para>
 
-            <para><command>/sbin/shorewall load -c gateway</command></para>
+            <para><command>/sbin/shorewall load gateway</command></para>
           </blockquote>
+
+          <para>The first time that you issue a <command>load</command>
+          command, Shorewall will use ssh to run
+          <filename>/usr/share/shorewall-lite/shorecap</filename> on the
+          remote firewall to create a capabilities file in the firewall's
+          administrative direction. See <link
+          linkend="Shorecap">below</link>.</para>
 
           <para>The <ulink
           url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
@@ -640,7 +652,8 @@ clean:
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
 
           <para>Or simply use the -c option the next time that you use the
-          <command>reload</command> command.</para>
+          <command>reload</command> command (e.g., <command>shorewall reload
+          -c gateway</command>).</para>
         </listitem>
       </orderedlist>
     </section>

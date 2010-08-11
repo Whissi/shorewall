@@ -124,8 +124,8 @@ sub valid_4address( $ ) {
 
     my @address = split /\./, $address;
     return 0 unless @address == 4;
-    for my $a ( @address ) {
-	return 0 unless $a =~ /^\d+$/ && $a < 256;
+    for ( @address ) {
+	return 0 unless /^\d+$/ && $_ < 256;
     }
 
     1;
@@ -158,8 +158,8 @@ sub decodeaddr( $ ) {
 
     my $result = shift @address;
 
-    for my $a ( @address ) {
-	$result = ( $result << 8 ) | $a;
+    for ( @address ) {
+	$result = ( $result << 8 ) | $_;
     }
 
     $result;

@@ -314,6 +314,33 @@ None.
     you use a capabilities file, be sure to regenerate it with 4.4.12
     shorewall-lite or shorewall6-lite.
 
+6)  Blacklisting can now be done by destination IP address as well as
+    by source address.
+
+    The /etc/shorewall/blacklist and /etc/shorewall6/blacklist files
+    now have an optional OPTIONS column. Initially, this column can
+    contain either 'from' (the default) or 'to'; the latter causes the
+    address(es) in the ADDRESS/SUBNET column to be interpreted as a
+    DESTINATION address rather than a source address.
+
+    Note that static blacklisting is still restricted to traffic
+    ARRIVING on an interface that has the 'blacklist' option set. So to
+    block traffic from your local network to an internet host, you must
+    specify 'blacklist' on your internal interface.
+
+    Similarly, dynamic blacklisting has been enhanced to recognize the
+    'from' and 'to' keywords.
+
+    Example:
+
+	shorewall drop to 1.2.3.4
+
+    This command will silently drop connection requests from 1.2.3.4.
+
+    The reciprocal of that command would be:
+
+    	shorewall allow to 1.2.3.4
+
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S

@@ -72,6 +72,28 @@
           from services(5).</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>OPTIONS (Optional - Added in 4.4.12) - {-|to|from|}</term>
+
+        <listitem>
+          <para>If specified, indicates whether traffic <emphasis
+          role="bold">to</emphasis> or <emphasis role="bold">from</emphasis>
+          the ADDRESS/SUBNET should be blacklisted. The default is <emphasis
+          role="bold">from</emphasis>. If the ADDRESS/SUBNET column is empty,
+          then this column has no effect on the generated rule.</para>
+
+          <note>
+            <para>Blacklisting is still restricted to traffic
+            <emphasis>arriving</emphasis> on an interface that has the
+            'blacklist' option set. So to block traffic from your local
+            network to an internet host, you must specify
+            <option>blacklist</option> on your internal interface in <ulink
+            url="shorewall-interfaces.html">shorewall-interfaces</ulink>
+            (5).</para>
+          </note>
+        </listitem>
+      </varlistentry>
     </variablelist>
 
     <para>When a packet arrives on an interface that has the <emphasis

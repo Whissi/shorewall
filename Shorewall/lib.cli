@@ -1066,6 +1066,10 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
     chain=$1
     local finished
     finished=$2
+    local which
+    which='-s'
+    local range
+    range='--src-range'
 
     if ! chain_exists dynamic; then
 	echo "Dynamic blacklisting is not enabled in the current $g_product configuration" >&2
@@ -1077,19 +1081,31 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 
     while [ $# -gt 0 ]; do
 	case $1 in
+	    from)
+		which='-s'
+		range='--src-range'
+		shift
+		continue
+		;;
+	    to)
+		which='-d'
+		range='--dst-range'
+		shift
+		continue
+		;;
 	    *-*)
-		qt $IPTABLES -D dynamic -m iprange --src-range $1 -j reject
-		qt $IPTABLES -D dynamic -m iprange --src-range  $1 -j DROP
-		qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logreject
-		qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logdrop
-		$IPTABLES -A dynamic -m iprange --src-range $1 -j $chain || break 1
+		qt $IPTABLES -D dynamic -m iprange $range $1 -j reject
+		qt $IPTABLES -D dynamic -m iprange $range  $1 -j DROP
+		qt $IPTABLES -D dynamic -m iprange $range $1 -j logreject
+		qt $IPTABLES -D dynamic -m iprange $range $1 -j logdrop
+		$IPTABLES -A dynamic -m iprange $range $1 -j $chain || break 1
 		;;
 	    *)
-		qt $IPTABLES -D dynamic -s $1 -j reject
-		qt $IPTABLES -D dynamic -s $1 -j DROP
-		qt $IPTABLES -D dynamic -s $1 -j logreject
-		qt $IPTABLES -D dynamic -s $1 -j logdrop
-		$IPTABLES -A dynamic -s $1 -j $chain || break 1
+		qt $IPTABLES -D dynamic $which $1 -j reject
+		qt $IPTABLES -D dynamic $which $1 -j DROP
+		qt $IPTABLES -D dynamic $which $1 -j logreject
+		qt $IPTABLES -D dynamic $which $1 -j logdrop
+		$IPTABLES -A dynamic $which $1 -j $chain || break 1
 		;;
 	esac
 
@@ -1379,6 +1395,11 @@ allow_command() {
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
     if shorewall_is_started ; then
+	local which
+	which='-s'
+	local range
+	range='--src-range'
+
 	if ! chain_exists dynamic; then
 	    echo "Dynamic blacklisting is not enabled in the current $g_product configuration" >&2
 	    exit 2
@@ -1388,11 +1409,21 @@ allow_command() {
 	while [ $# -gt 1 ]; do
 	    shift
 	    case $1 in
+		from)
+		    which='-s'
+		    range='--src-range'
+		    continue
+		    ;;
+		to)
+		    which='-d'
+		    range='--dst-range'
+		    continue
+		    ;;
 		*-*)
-		    if  qt $IPTABLES -D dynamic -m iprange --src-range $1 -j reject    ||\
-			qt $IPTABLES -D dynamic -m iprange --src-range $1 -j DROP      ||\
-			qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logdrop   ||\
-			qt $IPTABLES -D dynamic -m iprange --src-range $1 -j logreject
+		    if  qt $IPTABLES -D dynamic -m iprange $range $1 -j reject    ||\
+			qt $IPTABLES -D dynamic -m iprange $range $1 -j DROP      ||\
+			qt $IPTABLES -D dynamic -m iprange $range $1 -j logdrop   ||\
+			qt $IPTABLES -D dynamic -m iprange $range $1 -j logreject
 			then
 			echo "$1 Allowed"
 		    else
@@ -1400,10 +1431,10 @@ allow_command() {
 		    fi
 		    ;;
 		*)
-		    if  qt $IPTABLES -D dynamic -s $1 -j reject    ||\
-			qt $IPTABLES -D dynamic -s $1 -j DROP      ||\
-			qt $IPTABLES -D dynamic -s $1 -j logdrop   ||\
-			qt $IPTABLES -D dynamic -s $1 -j logreject
+		    if  qt $IPTABLES -D dynamic $which $1 -j reject    ||\
+			qt $IPTABLES -D dynamic $which $1 -j DROP      ||\
+			qt $IPTABLES -D dynamic $which $1 -j logdrop   ||\
+			qt $IPTABLES -D dynamic $which $1 -j logreject
 			then
 			echo "$1 Allowed"
 		    else

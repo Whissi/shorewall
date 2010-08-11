@@ -20,6 +20,8 @@
     <copyright>
       <year>2002-2006</year>
 
+      <year>2010</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -61,6 +63,20 @@
       the blacklists</emphasis>. Blacklists only stop blacklisted hosts from
       connecting to you — they do not stop you or your users from connecting
       to blacklisted hosts .</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>UPDATE</term>
+
+          <listitem>
+            <para>Beginning with Shorewall 4.4.12, you can also blacklist by
+            destination address. See <ulink
+            url="manpages/shorewall-blacklist.html">shorewall-blacklist</ulink>
+            (5) and <ulink url="manpages/shorewall.html">shorewall</ulink> (8)
+            for details.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
     </important>
 
     <important>
@@ -161,25 +177,28 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
     Prior to that release, the feature is always enabled.</para>
 
     <para>Once enabled, dynamic blacklisting doesn't use any configuration
-    parameters but is rather controlled using /sbin/shorewall[-lite]
-    commands:</para>
+    parameters but is rather controlled using /sbin/shorewall[-lite] commands.
+    <emphasis role="bold">Note</emphasis> that <emphasis
+    role="bold">to</emphasis> and <emphasis role="bold">from</emphasis> may
+    only be specified when running <emphasis role="bold">Shorewall 4.4.12 or
+    later</emphasis>.</para>
 
     <itemizedlist>
       <listitem>
-        <para>drop <emphasis>&lt;ip address list&gt;</emphasis> - causes
-        packets from the listed IP addresses to be silently dropped by the
+        <para>drop [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
+        causes packets from the listed IP addresses to be silently dropped by
+        the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>reject [to|from]<emphasis>&lt;ip address list&gt;</emphasis> -
+        causes packets from the listed IP addresses to be rejected by the
         firewall.</para>
       </listitem>
 
       <listitem>
-        <para>reject <emphasis>&lt;ip address list&gt;</emphasis> - causes
-        packets from the listed IP addresses to be rejected by the
-        firewall.</para>
-      </listitem>
-
-      <listitem>
-        <para>allow <emphasis>&lt;ip address list&gt;</emphasis> - re-enables
-        receipt of packets from hosts previously blacklisted by a
+        <para>allow [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
+        re-enables receipt of packets from hosts previously blacklisted by a
         <emphasis>drop</emphasis> or <emphasis>reject</emphasis>
         command.</para>
       </listitem>
@@ -201,19 +220,19 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
       </listitem>
 
       <listitem>
-        <para>logdrop <emphasis>&lt;ip address list&gt;</emphasis> - causes
-        packets from the listed IP addresses to be dropped and logged by the
-        firewall. Logging will occur at the level specified by the
+        <para>logdrop [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
+        causes packets from the listed IP addresses to be dropped and logged
+        by the firewall. Logging will occur at the level specified by the
         BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be at
         the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
       </listitem>
 
       <listitem>
-        <para>logreject <emphasis>&lt;ip address list&gt;</emphasis> - causes
-        packets from the listed IP addresses to be rejected and logged by the
-        firewall. Logging will occur at the level specified by the
-        BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be at
-        the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
+        <para>logreject [to|from}<emphasis>&lt;ip address list&gt;</emphasis>
+        - causes packets from the listed IP addresses to be rejected and
+        logged by the firewall. Logging will occur at the level specified by
+        the BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be
+        at the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
       </listitem>
     </itemizedlist>
 

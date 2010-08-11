@@ -261,14 +261,23 @@ sub setup_blacklist() {
 		    $first_entry = 0;
 		}
 
-		my ( $networks, $protocol, $ports ) = split_line 1, 3, 'blacklist file';
+		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file';
+
+		my $direction = 'from';
+
+		$options = 'from' if $options eq '-';
+
+		for ( split /,/, $options ) {
+		    fatal_error "Invalid OPTION ($_)" unless /^(from|to)$/;
+		    $direction = $_;
+		}
 
 		expand_rule(
 			    $chainref ,
 			    NO_RESTRICT ,
 			    do_proto( $protocol , $ports, '' ) ,
-			    $networks ,
-			    '' ,
+			    $direction eq 'from' ? $networks : '',
+			    $direction eq 'to'   ? $networks : '',
 			    '' ,
 			    "-j $target" ,
 			    '' ,

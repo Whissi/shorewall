@@ -26,7 +26,10 @@
 
     <para>In <ulink url="shorewall-zones.html">shorewall-zones</ulink>(5), a
     zone may be declared to be a sub-zone of one or more other zones using the
-    above syntax.</para>
+    above syntax. The <replaceable>child-zone</replaceable> may be neither the
+    firewall zone nor a vserver zone. The firewall zone may not appear as a
+    parent zone, although all vserver zones are handled as sub-zones of the
+    firewall zone.</para>
 
     <para>Where zones are nested, the CONTINUE policy in <ulink
     url="shorewall-policy.html">shorewall-policy</ulink>(5) allows hosts that

@@ -740,7 +740,13 @@ sub non_firewall_zones() {
 }
 
 sub all_parent_zones() {
-   grep ( ! @{$zones{$_}{parents}} ,  @zones );
+    #
+    # Although the firewall zone is a parent zone, we let the caller decide
+    # if it is to be included or not.
+    #
+    grep ( ! ( $zones{$_}->{type} == FIREWALL ||
+	       $zones{$_}->{type} == VSERVER  ||
+	       @{$zones{$_}{parents}} ) ,  @zones );
 }
 
 sub complex_zones() {

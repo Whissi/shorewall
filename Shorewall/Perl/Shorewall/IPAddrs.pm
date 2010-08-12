@@ -332,7 +332,7 @@ sub validate_portpair( $$ ) {
 
     my @ports = split /:/, $portpair, 2;
 
-    $_ = validate_port( $proto, $_) for ( @ports );
+    $_ = validate_port( $proto, $_) for ( grep $_, @ports );
 
     if ( @ports == 2 ) {
 	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];

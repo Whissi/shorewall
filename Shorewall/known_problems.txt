@@ -66,3 +66,7 @@
 8)  On systems running Upstart, Shorewall-init cannot reliably close
     the firewall before interfaces come up.
 
+9)  When 'any' is used in the SOURCE column of /etc/shorewall[6]/rules,
+    a duplicate rule is generated in all "fw2*" ("fw-* if
+    ZONE2ZONE="-"). If 'any' is used in the DEST column, then a
+    duplicate rule appears in all "*2fw" (*-fw) chains.

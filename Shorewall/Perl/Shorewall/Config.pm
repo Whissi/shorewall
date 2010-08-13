@@ -339,6 +339,7 @@ sub initialize( $ ) {
     %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    SHAREDIRPL => '/usr/share/shorewall/' ,
 		    CONFDIR =>  '/etc/shorewall',
+		    CONFIGDIR => '',
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,
@@ -2719,6 +2720,9 @@ sub process_shorewall_conf() {
     my $file = find_file "$product.conf";
 
     if ( -f $file ) {
+	$globals{CONFIGDIR} =  $file;
+	$globals{CONFIGDIR} =~ s/$product.conf//;
+
 	if ( -r _ ) {
 	    open_file $file;
 

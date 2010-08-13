@@ -442,32 +442,37 @@ EOF
     setup_forwarding( $family , 1 );
     push_indent;
 
-    emit<<'EOF';
-    set_state "Started"
+    my $config_dir = $globals{CONFIGDIR};
+
+    emit<<"EOF";
+    set_state Started $config_dir 
     run_restored_exit
 else
-    if [ $COMMAND = refresh ]; then
+    if [ \$COMMAND = refresh ]; then
         chainlist_reload
 EOF
     setup_forwarding( $family , 0 );
 
-    emit<<'EOF';
+    emit<<"EOF";
         run_refreshed_exit
         do_iptables -N shorewall
-        set_state "Started"
+        set_state Started $config_dir
     else
         setup_netfilter
         conditionally_flush_conntrack
 EOF
     setup_forwarding( $family , 0 );
 
-    emit<<'EOF';
+    emit<<"EOF";
         run_start_exit
         do_iptables -N shorewall
-        set_state "Started"
+        set_state Started $config_dir
         run_started_exit
     fi
 
+EOF
+
+    emit<<'EOF';
     [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall
 fi
 

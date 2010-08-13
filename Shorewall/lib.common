@@ -514,9 +514,13 @@ find_file()
 #
 # Set the Shorewall state
 #
-set_state () # $1 = state
+set_state () # $1 = state $2 
 {
-    echo "$1 ($(date))" > ${VARDIR}/state
+    if [ $# -gt 1 ]; then
+	echo "$1 ($(date)) from $2" > ${VARDIR}/state
+    else
+	echo "$1 ($(date))" > ${VARDIR}/state
+    fi
 }
 
 #

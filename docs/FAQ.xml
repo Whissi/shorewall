@@ -687,11 +687,9 @@ eth1:192.168.1.5        eth1            <emphasis role="bold">130.151.100.69</em
           <para>That rule (and the second one in the previous bullet) only
           works of course if you have a static external IP address. If you
           have a dynamic IP address then include this in
-          <filename>/etc/shorewall/params</filename> (or your
-          <filename>&lt;export directory&gt;/init</filename> file if you are
-          using Shorewall Lite on the firewall system):</para>
+          <filename>/etc/shorewall/params</filename>.</para>
 
-          <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>        </programlisting>
+          <programlisting><command>ETH0_IP=$(find_first_interface_address eth0)</command>        </programlisting>
 
           <para>and make your DNAT rule:</para>
 
@@ -711,6 +709,14 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
             role="bold">find_first_interface_address()</emphasis>. The former
             will return 0.0.0.0 if the interface has no configured IP address;
             the latter terminates the calling program.</para>
+          </note>
+
+          <note>
+            <para>If you run Shorewall-lite on your firewall, you must use the
+            following in the firewall's configuration directory
+            <filename>params</filename> file:</para>
+
+            <programlisting><command>ETH0_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</command></programlisting>
           </note>
         </listitem>
       </itemizedlist>
@@ -2139,7 +2145,7 @@ gateway:~# </programlisting>
       role="bold">Cleared</emphasis>, then a <emphasis role="bold">shorewall
       clear</emphasis> command was executed). Most likely, you have installed
       and configured the <emphasis>shorewall-init</emphasis> package and a
-      required interface has gone down. </para>
+      required interface has gone down.</para>
     </section>
   </section>
 

@@ -338,8 +338,8 @@ sub initialize( $ ) {
     #
     %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
 		    SHAREDIRPL => '/usr/share/shorewall/' ,
-		    CONFDIR =>  '/etc/shorewall',
-		    CONFIGDIR => '',
+		    CONFDIR =>  '/etc/shorewall',     # Run-time configuration directory
+		    CONFIGDIR => '',                  # Compile-time configuration directory (location of $product.conf)
 		    LOGPARMS => '',
 		    TC_SCRIPT => '',
 		    EXPORT => 0,

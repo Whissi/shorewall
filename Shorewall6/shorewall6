@@ -419,7 +419,7 @@ start_command() {
 
 	    export RESTOREFILE
 
-	    if make -qf ${CONFDIR}/Makefile; then
+	    if ! make -qf ${CONFDIR}/Makefile; then
 		g_fast=
 		AUTOMAKE=
 	    fi

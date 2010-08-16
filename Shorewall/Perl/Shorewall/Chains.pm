@@ -630,81 +630,6 @@ sub insert_rule($$$) {
 }
 
 #
-# Add a jump from the chain represented by the reference in the first argument to
-# the target in the second argument. The third argument determines if a GOTO may be
-# used rather than a jump. The optional fourth argument specifies any matches to be
-# included in the rule and must end with a space character if it is non-null. The
-# optional 5th argument causes long port lists to be split. The optional 6th
-# argument, if passed, gives the 0-relative index where the jump is to be inserted.
-#
-sub add_jump( $$$;$$$ ) {
-    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
-
-    $predicate |= '';
-
-    my $toref;
-    #
-    # The second argument may be a scalar (chain name or builtin target) or a chain reference
-    #
-    if ( reftype $to ) {
-	$toref = $to;
-	$to    = $toref->{name};
-    } else {
-	#
-	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
-	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
-    }
-
-    #
-    # If the destination is a chain, mark it referenced
-    #
-    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
-
-    my $param = $goto_ok && $toref && have_capability( 'GOTO_TARGET' ) ? 'g' : 'j';
-
-    $fromref->{dont_optimize} = 1 if $predicate =~ /! -[piosd] /;
-
-    if ( defined $index ) {
-	assert( ! $expandports );
-	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ));
-    } else {
-	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
-    }
-}
-
-#
-# Delete jumps previously added via add_jump. If the target chain is empty, reset its
-# referenced flag
-#
-sub delete_jumps ( $$ ) {
-    my ( $fromref, $toref ) = @_;
-    my $to    = $toref->{name};
-    my $from  = $fromref->{name};
-    my $rules = $fromref->{rules};
-    my $refs  = $toref->{references}{$from};
-    #
-    # A C-style for-loop with indexing seems to work best here, given that we are
-    # deleting elements from the array over which we are iterating.
-    #
-    for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
-	if (  $rules->[$rule] =~ / -[gj] ${to}\s*$/ ) {
-	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
-	    splice(  @$rules, $rule, 1 );
-	    last unless --$refs > 0;
-	    $rule--;
-	}
-    }
-
-    delete $toref->{references}{$from};
-
-    unless ( @{$toref->{rules}} ) {
-	$toref->{referenced} = 0;
-	trace ( $toref, 'X', undef, '' ) if $debug;
-    }
-}
-
-#
 # Do final work to 'delete' a chain. We leave it in the chain table but clear
 # the 'referenced', 'rules' and 'references' members.
 #
@@ -1090,6 +1015,81 @@ sub ensure_chain($$)
     my ($table, $chain) = @_;
 
     find_chain( $table, $chain ) || new_chain( $table, $chain );
+}
+
+#
+# Add a jump from the chain represented by the reference in the first argument to
+# the target in the second argument. The third argument determines if a GOTO may be
+# used rather than a jump. The optional fourth argument specifies any matches to be
+# included in the rule and must end with a space character if it is non-null. The
+# optional 5th argument causes long port lists to be split. The optional 6th
+# argument, if passed, gives the 0-relative index where the jump is to be inserted.
+#
+sub add_jump( $$$;$$$ ) {
+    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
+
+    $predicate |= '';
+
+    my $toref;
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
+    }
+
+    #
+    # If the destination is a chain, mark it referenced
+    #
+    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
+
+    my $param = $goto_ok && $toref && have_capability( 'GOTO_TARGET' ) ? 'g' : 'j';
+
+    $fromref->{dont_optimize} = 1 if $predicate =~ /! -[piosd] /;
+
+    if ( defined $index ) {
+	assert( ! $expandports );
+	insert_rule1( $fromref, $index, join( '', $predicate, "-$param $to" ));
+    } else {
+	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
+    }
+}
+
+#
+# Delete jumps previously added via add_jump. If the target chain is empty, reset its
+# referenced flag
+#
+sub delete_jumps ( $$ ) {
+    my ( $fromref, $toref ) = @_;
+    my $to    = $toref->{name};
+    my $from  = $fromref->{name};
+    my $rules = $fromref->{rules};
+    my $refs  = $toref->{references}{$from};
+    #
+    # A C-style for-loop with indexing seems to work best here, given that we are
+    # deleting elements from the array over which we are iterating.
+    #
+    for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
+	if (  $rules->[$rule] =~ / -[gj] ${to}\s*$/ ) {
+	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
+	    splice(  @$rules, $rule, 1 );
+	    last unless --$refs > 0;
+	    $rule--;
+	}
+    }
+
+    delete $toref->{references}{$from};
+
+    unless ( @{$toref->{rules}} ) {
+	$toref->{referenced} = 0;
+	trace ( $toref, 'X', undef, '' ) if $debug;
+    }
 }
 
 #

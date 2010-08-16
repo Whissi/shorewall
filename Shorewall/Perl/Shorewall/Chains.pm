@@ -106,6 +106,7 @@ our %EXPORT_TAGS = (
 				       ecn_chain
 				       notrack_chain
 				       first_chains
+				       find_chain
 				       ensure_chain
 				       ensure_accounting_chain
 				       ensure_mangle_chain
@@ -176,7 +177,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_12';
+our $VERSION = '4.4_13';
 
 #
 # Chain Table
@@ -1071,17 +1072,24 @@ sub new_chain($$)
 }
 
 #
+# Find a chain
+#
+sub find_chain($$) {
+    my ($table, $chain) = @_;
+
+    assert( $table && $chain && $chain_table{$table} );
+    
+    $chain_table{$table}{$chain};
+}
+    
+#
 # Create a chain if it doesn't exist already
 #
 sub ensure_chain($$)
 {
     my ($table, $chain) = @_;
 
-    assert( $table && $chain && $chain_table{$table} );
-
-    my $ref =  $chain_table{$table}{$chain};
-
-    $ref || new_chain( $table, $chain );
+    find_chain( $table, $chain ) || new_chain( $table, $chain );
 }
 
 #

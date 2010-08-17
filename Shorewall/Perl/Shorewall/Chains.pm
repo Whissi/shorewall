@@ -1012,9 +1012,7 @@ sub find_chain($$) {
 #
 sub ensure_chain($$)
 {
-    my ($table, $chain) = @_;
-
-    find_chain( $table, $chain ) || new_chain( $table, $chain );
+    &find_chain( @_ ) || &new_chain( @_ );
 }
 
 #

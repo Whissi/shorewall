@@ -1084,6 +1084,8 @@ sub delete_jumps ( $$ ) {
 	}
     }
 
+    assert( ! $refs );
+
     delete $toref->{references}{$from};
 
     unless ( @{$toref->{rules}} ) {

@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_12';
+our $VERSION = '4.4_13';
 
 #
 # Set to one if we find a SECTION
@@ -1603,6 +1603,10 @@ sub process_rule ( ) {
 	}
 
 	unshift @source, firewall_zone if $includesrcfw;
+
+	$source = '';
+    } elsif ( $source !~ /:/ && $source =~ /,/ ) { 
+	@source = split ',', $source;
     }
 
     if ( $dest eq 'all' ) {
@@ -1613,13 +1617,15 @@ sub process_rule ( ) {
 	}
 
 	unshift @dest, firewall_zone if $includedstfw;
+    } elsif ( $dest !~ /:/ && $dest =~ /,/ ) {
+	@dest = split /,/, $dest;
     }
 
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
-    if ( $source eq 'all' ) {
+    if ( @source ) {
 	for my $zone ( @source ) {
-	    if ( $dest eq 'all' ) {
+	    if ( @dest ) {
 		for my $zone1 ( @dest ) {
 		    if ( $intrazone || ( $zone ne $zone1 ) ) {
 			process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
@@ -1633,7 +1639,7 @@ sub process_rule ( ) {
 		}
 	    }
 	}
-    } elsif ( $dest eq 'all' ) {
+    } elsif ( @dest ) {
 	for my $zone ( @dest ) {
 	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
 	    if ( ( $sourcezone ne $zone ) || $intrazone ) {

@@ -24,12 +24,26 @@ None.
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  Entries in the rules file (both Shorewall and Shoreall6) may now
-    contain zone lists in the SOURCE and DEST column. These are
-    comma-separated lists of zones declared in the zones file and may
-    optionally be followed by a plus sign ("+") to indicate that the
-    rule should apply to intra-zone traffic as well as to inter-zone
-    traffic.
+1)  Entries in the rules file (both Shorewall and Shorewall6) may now
+    contain zone lists in the SOURCE and DEST column. A zone list is a
+    comma-separated list of zone names where each name appears in the
+    zones file. A zone list may be optionally followed by a plus sign
+    ("+") to indicate that the rule should apply to intra-zone traffic
+    as well as to inter-zone traffic.
+
+    Zone lists behave like 'all' and 'any' with respect to Optimization
+    1. If the rule matches the applicable policy for a given (source
+    zone, dest zone), then the rule will be suppessed for that pair of
+    zones unless overridden by the '!' suffix on the target in the
+    ACTION column (e.g., ACCEPT!, DROP!:info, etc.).
+
+    Additionally, 'any', 'all' and zone lists may be qualified in the
+    same way as a single zone.
+
+    Examples:
+
+	fw,dmz:90.90.191.120/29
+	all:+blacklist
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

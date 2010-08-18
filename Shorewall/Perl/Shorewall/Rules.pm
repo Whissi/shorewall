@@ -1537,13 +1537,15 @@ sub process_rule ( ) {
 	return 1;
     }
 
-    my $intrazone = 0;
-    my $wild      = 0;
-    my $includesrcfw = 1;
-    my $includedstfw = 1;
-    my $thisline = $currentline;
-    my $anysource = ( $source =~ s/^any/all/ );
-    my $anydest   = ( $dest   =~ s/^any/all/ );
+    my $intrazone    = 0;
+    my $wild         = 0;
+    my $thisline     = $currentline;
+    my $action       = isolate_basic_target $target;
+    my $any;
+    my $rest;
+    my @source;
+    my @dest;
+
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
@@ -1554,104 +1556,99 @@ sub process_rule ( ) {
 	$sectioned = 1;
     }
 
+    fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
+
     #
     # Handle Wildcards
     #
+   
+    $any = ( $source =~ s/^any/all/ );
 
-    if ( $source =~ /^all[-+]/ ) {
-	if ( $source eq 'all+' ) {
-	    $source = 'all';
-	    $intrazone = 1;
-	} elsif ( ( $source eq 'all+-' ) || ( $source eq 'all-+' ) ) {
-	    $source = 'all';
-	    $intrazone = 1;
-	    $includesrcfw = 0;
-	} elsif ( $source eq 'all-' ) {
-	    $source = 'all';
-	    $includesrcfw = 0;
-	} else {
-	    fatal_error "Invalid SOURCE ($source)";
-	}
-    }
+    if ( $source =~ /^(all[-+]*)(:.*)?/ ) {
+	$source  = $1;
+	$rest    = $2;
 
-    if ( $dest =~ /^all[-+]/ ) {
-	if ( $dest eq 'all+' ) {
-	    $dest = 'all';
-	    $intrazone = 1;
-	} elsif ( ( $dest eq 'all+-' ) || ( $dest eq 'all-+' ) ) {
-	    $dest = 'all';
-	    $intrazone = 1;
-	    $includedstfw = 0;
-	} elsif ( $dest eq 'all-' ) {
-	    $dest = 'all';
-	    $includedstfw = 0;
-	} else {
-	    fatal_error "Invalid DEST ($dest)";
+	my $includefw = 1;
+
+	unless ( $source eq 'all' ) {
+	    if ( $source eq 'all+' ) {
+		$intrazone = 1;
+	    } elsif ( ( $source eq 'all+-' ) || ( $source eq 'all-+' ) ) {
+		$intrazone = 1;
+		$includefw = 0;
+	    } elsif ( $source eq 'all-' ) {
+		$includefw = 0;
+	    } else {
+		fatal_error "Invalid SOURCE ($source)";
+	    }
 	}
 
-    }
+	@source = $any ? all_parent_zones : non_firewall_zones;
 
-    my $action = isolate_basic_target $target;
-
-    my @source;
-    my @dest;
-
-    if ( $source eq 'all' ) {
-	if ( $anysource ) {
-	    @source = ( all_parent_zones );
-	} else {
-	    @source = ( non_firewall_zones )
-	}
-
-	unshift @source, firewall_zone if $includesrcfw;
+	unshift @source, firewall_zone if $includefw;
 
 	$wild   = 1;
     } elsif ( $source =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
-	my $zonelist = $1;
-	my $rest     = $2;
+	$source = $1;
+	$rest   = $2;
 
-	fatal_error "Invalid zone list ($zonelist)" if $zonelist =~ /,,/;
+	fatal_error "Invalid zone list ($source)" if $source =~ /,,/;
 	
-	$intrazone = ( $zonelist =~ s/\+$// );
+	$intrazone = ( $source =~ s/\+$// );
 	$wild = 1;
 
-	if ( defined $rest ) {
-	    push( @source , $_ . $rest ) for split /,/, $zonelist;
-	} else {
-	    @source = split /,/, $zonelist;
-	}
+	@source = split /,/, $source;
     } else {
 	@source = ( $source );
     }
 
-    if ( $dest eq 'all' ) {
-	if ( $anydest ) {
-	    @dest = ( all_parent_zones );
-	} else {
-	    @dest = ( non_firewall_zones )
+    if ( defined $rest ) {
+	$_ .= $rest for @source;
+	$rest = undef;
+    }
+
+    $any = ( $dest   =~ s/^any/all/ );
+
+    if ( $dest =~ /^(all[-+]*)(:.*)?/ ) {
+	$dest = $1;
+	$rest = $2;
+
+	my $includefw = 1;
+
+	unless ( $dest eq 'all' ) {
+	    if ( $dest eq 'all+' ) {
+		$intrazone = 1;
+	    } elsif ( ( $dest eq 'all+-' ) || ( $dest eq 'all-+' ) ) {
+		$intrazone = 1;
+		$includefw = 0;
+	    } elsif ( $dest eq 'all-' ) {
+		$includefw = 0;
+	    } else {
+		fatal_error "Invalid DEST ($dest)";
+	    }
 	}
 
-	unshift @dest, firewall_zone if $includedstfw;
+	@dest = $any ? all_parent_zones : non_firewall_zones;
+
+	unshift @dest, firewall_zone if $includefw;
 	$wild = 1;
     } elsif ( $dest =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
-	my $zonelist = $1;
-	my $rest     = $2;
+	$dest = $1;
+	$rest = $2;
 
-	fatal_error "Invalid zone list ($zonelist)" if $zonelist =~ /,,/;
+	fatal_error "Invalid zone list ($source)" if $dest =~ /,,/;
 
-	$intrazone ||= ( $zonelist =~ s/\+$// );
+	$intrazone ||= ( $dest =~ s/\+$// );
 	$wild = 1;
 	
-	if ( defined $rest ) {
-	    push( @dest , $_ . $rest ) for split /,/, $zonelist;
-	} else {
-	    @dest = split /,/, $zonelist;
-	}
+	@dest = split /,/, $dest;
     } else {
 	@dest = ( $dest );
     }
 
-    fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
+    if ( defined $rest ) {
+	$_ .= $rest for @source;
+    }
 
     for $source ( @source ) {
 	for $dest ( @dest ) {

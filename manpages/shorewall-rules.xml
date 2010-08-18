@@ -533,8 +533,10 @@
           used either in the <emphasis role="bold">SOURCE</emphasis> or
           <emphasis role="bold">DEST</emphasis> column intra-zone traffic is
           not affected. When <emphasis role="bold">all+</emphasis>[<emphasis
-          role="bold">-</emphasis>] is "used, intra-zone traffic is
-          affected.</para>
+          role="bold">-</emphasis>] is "used, intra-zone traffic is affected.
+          Beginning with Shorewall 4.4.13, exclusion is supported -- see see
+          <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
 
           <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
           role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] or
@@ -545,6 +547,13 @@
           and/or host addresses. Hosts may be specified by IP or MAC address;
           mac addresses must begin with "~" and must use "-" as a
           separator.</para>
+
+          <para>The above restriction on <emphasis
+          role="bold">all</emphasis>[<emphasis
+          role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] and
+          <emphasis role="bold">any</emphasis>[<emphasis
+          role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] is
+          removed in Shorewall-4.4.13. </para>
 
           <para><emphasis role="bold">any</emphasis> is equivalent to
           <emphasis role="bold">all</emphasis> when there are no nested zones.
@@ -667,7 +676,9 @@
           the <emphasis role="bold">SOURCE</emphasis> or <emphasis
           role="bold">DEST</emphasis> column intra-zone traffic is not
           affected. When <emphasis role="bold">all+</emphasis> is used,
-          intra-zone traffic is affected.</para>
+          intra-zone traffic is affected. Beginning with Shorewall 4.4.13,
+          exclusion is supported -- see see <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
 
           <para><emphasis role="bold">any</emphasis> is equivalent to
           <emphasis role="bold">all</emphasis> when there are no nested zones.

@@ -1541,11 +1541,14 @@ sub process_rule ( ) {
     my $wild         = 0;
     my $thisline     = $currentline;
     my $action       = isolate_basic_target $target;
+    my $fw           = firewall_zone;
     my $any;
     my $rest;
     my @source;
     my @dest;
-
+    my $exclude;
+    my %exclude;
+    
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
@@ -1564,30 +1567,41 @@ sub process_rule ( ) {
    
     $any = ( $source =~ s/^any/all/ );
 
-    if ( $source =~ /^(all[-+]*)(:.*)?/ ) {
+    if ( $source =~ /^(all[-+]*)(![^:]+)?(:.*)?/ ) {
 	$source  = $1;
-	$rest    = $2;
+	$exclude = $2;
+	$rest    = $3;
 
-	my $includefw = 1;
+	if ( defined $exclude ) {
+	    $exclude =~ s/!//;
+	    fatal_error "Invalid exclusion list (!$exclude)" if $exclude =~ /^,|!|,,|,$/;
+	    for ( split /,/, $exclude ) {
+		fatal_error "Unknown zone ($_)" unless defined_zone $_;
+		$exclude{$_} = 1;
+	    }
+	}
 
 	unless ( $source eq 'all' ) {
 	    if ( $source eq 'all+' ) {
 		$intrazone = 1;
 	    } elsif ( ( $source eq 'all+-' ) || ( $source eq 'all-+' ) ) {
 		$intrazone = 1;
-		$includefw = 0;
+		$exclude{$fw} = 1;
 	    } elsif ( $source eq 'all-' ) {
-		$includefw = 0;
+		$exclude{$fw} = 1;
 	    } else {
 		fatal_error "Invalid SOURCE ($source)";
 	    }
 	}
 
-	@source = $any ? all_parent_zones : non_firewall_zones;
+	@source = grep ! $exclude{$_}, $any ? all_parent_zones : non_firewall_zones;
 
-	unshift @source, firewall_zone if $includefw;
+	unshift @source, $fw unless $exclude{$fw};
 
 	$wild   = 1;
+
+	%exclude = ();
+
     } elsif ( $source =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
 	$source = $1;
 	$rest   = $2;
@@ -1609,28 +1623,36 @@ sub process_rule ( ) {
 
     $any = ( $dest   =~ s/^any/all/ );
 
-    if ( $dest =~ /^(all[-+]*)(:.*)?/ ) {
-	$dest = $1;
-	$rest = $2;
+    if ( $dest =~ /^(all[-+]*)(![^:]+)?(:.*)?/ ) {
+	$dest    = $1;
+	$exclude = $2;
+	$rest    = $3;
 
-	my $includefw = 1;
+	if ( defined $exclude ) {
+	    $exclude =~ s/!//;
+	    fatal_error "Invalid exclusion list (!$exclude)" if $exclude =~ /^,|!|,,|,$/;
+	    for ( split /,/, $exclude ) {
+		fatal_error "Unknown zone ($_)" unless defined_zone $_;
+		$exclude{$_} = 1;
+	    }
+	}
 
 	unless ( $dest eq 'all' ) {
 	    if ( $dest eq 'all+' ) {
 		$intrazone = 1;
 	    } elsif ( ( $dest eq 'all+-' ) || ( $dest eq 'all-+' ) ) {
 		$intrazone = 1;
-		$includefw = 0;
+		$exclude{$fw} = 1;
 	    } elsif ( $dest eq 'all-' ) {
-		$includefw = 0;
+		$exclude{$fw} = 1;
 	    } else {
 		fatal_error "Invalid DEST ($dest)";
 	    }
 	}
 
-	@dest = $any ? all_parent_zones : non_firewall_zones;
+	@dest = grep ! $exclude{$_}, $any ? all_parent_zones : non_firewall_zones;
 
-	unshift @dest, firewall_zone if $includefw;
+	unshift @dest, $fw unless $exclude{$fw};
 	$wild = 1;
     } elsif ( $dest =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
 	$dest = $1;
@@ -1654,7 +1676,7 @@ sub process_rule ( ) {
 	for $dest ( @dest ) {
 	    my $sourcezone = (split( /:/, $source, 2 ) )[0];
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
-	    $destzone = $action =~ /^REDIRECT/ ? firewall_zone : '' unless defined_zone $destzone;
+	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
 		process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wild;
 	    }

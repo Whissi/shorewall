@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                      S H O R E W A L L  4 . 4 . 1 2
+                      S H O R E W A L L  4 . 4 . 1 3
 ----------------------------------------------------------------------------
 
 I.    RELEASE 4.4 HIGHLIGHTS
@@ -224,6 +224,31 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
+None.
+----------------------------------------------------------------------------
+           I V.  K N O W N   P R O B L E M S   R E M A I N I N G
+----------------------------------------------------------------------------
+
+None.
+
+----------------------------------------------------------------------------
+         V.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
+----------------------------------------------------------------------------
+
+1)  Entries in the rules file (both Shorewall and Shoreall6) may now
+    contain zone lists in the SOURCE and DEST column. These are
+    comma-separated lists of zones declared in the zones file and may
+    optionally be followed by a plus sign ("+") to indicate that the
+    rule should apply to intra-zone traffic as well as to inter-zone
+    traffic.
+
+----------------------------------------------------------------------------
+V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
+      I N   P R I O R  R E L E A S E S
+----------------------------------------------------------------------------
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
+----------------------------------------------------------------------------
+
 1)  Previously, the Shorewall6-lite version of shorecap was using
     iptables rather than ip6tables, with the result that many capabilities
     that are only available in IPv4 were being reported as available.
@@ -266,13 +291,62 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
     correctly.
 
 ----------------------------------------------------------------------------
-           I V.  K N O W N   P R O B L E M S   R E M A I N I N G
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
 ----------------------------------------------------------------------------
 
-None.
+1)  The IPv6 allowBcast action generated an invalid rule.
+
+2)  If IPSET=<pathname> was specified in shorewall.conf, then when an
+    ipset was used in a configuration file entry, the following
+    fatal compilation error occurred:
+
+    ERROR: ipset names in Shorewall configuration files require Ipset
+    Match in your kernel and iptables : /etc/shorewall/rules (line nn)
+
+    If you applied the workaround given in the "Known Problems", then
+    you should remove /etc/shorewall/capabilities after installing
+    this fix.
+
+3)  The start priority of shorewall-init on Debian and Debian-based
+    distributions was previously too low, making it start too late.
+
+4)  The log output from IPv6 logs was almost unreadable due to display
+    of IPv6 addresses in uncompressed format. A similar problem
+    occurred with 'shorewall6 show connections'. This update makes the
+    displays much clearer at the expense of opening the slight
+    possibility of two '::' sequences being incorrectly shown in the
+    same address.
+
+5)  The new REQUIRE_INTERFACE was inadvertently omitted from
+    shorewall.conf and shorewall6.conf. It has been added.
+
+6)  Under some versions of Perl, a Perl run-time diagnostic was produced
+    when options were omitted from shorewall.conf or shorewall6.conf. 
+
+7) If the following options were specified in /etc/shorewall/interfaces
+   for an interface with '-' in the ZONE column, then these options
+   would be ignored if there was an entry in the hosts file for the
+   interface with an explicit or implicit 0.0.0.0/0 (0.0.0.0/0 is
+   implied when the host list begins with '!').
+
+   	blacklist
+	maclist
+	nosmurfs
+	tcpflags
+
+   Note: for IPv6, the network is ::/0 rather than 0.0.0.0/0.
+
+8) The generated script was missing a closing quote when
+   REQUIRE_INTERFACE=Yes.
+
+9) Previously, if nets= was specified under Shorewall6, this error
+   would result:
+
+   	 ERROR: Invalid IPv6 address (224.0.0.0) : 
+                /etc/shorewall6/interfaces (line 16)
 
 ----------------------------------------------------------------------------
-         V.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
+               N E W   F E A T U R E S   I N   4 . 4 . 1 1
 ----------------------------------------------------------------------------
 
 1)  Support has been added for ADD and DEL rules in
@@ -366,64 +440,6 @@ None.
 	State:Started (Thu Aug 12 19:41:48 PDT 2010) from /etc/shorewall/
 
 	gateway:/etc/shorewall# 
-
-----------------------------------------------------------------------------
-V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
-      I N   P R I O R  R E L E A S E S
-----------------------------------------------------------------------------
-         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
-----------------------------------------------------------------------------
-
-1)  The IPv6 allowBcast action generated an invalid rule.
-
-2)  If IPSET=<pathname> was specified in shorewall.conf, then when an
-    ipset was used in a configuration file entry, the following
-    fatal compilation error occurred:
-
-    ERROR: ipset names in Shorewall configuration files require Ipset
-    Match in your kernel and iptables : /etc/shorewall/rules (line nn)
-
-    If you applied the workaround given in the "Known Problems", then
-    you should remove /etc/shorewall/capabilities after installing
-    this fix.
-
-3)  The start priority of shorewall-init on Debian and Debian-based
-    distributions was previously too low, making it start too late.
-
-4)  The log output from IPv6 logs was almost unreadable due to display
-    of IPv6 addresses in uncompressed format. A similar problem
-    occurred with 'shorewall6 show connections'. This update makes the
-    displays much clearer at the expense of opening the slight
-    possibility of two '::' sequences being incorrectly shown in the
-    same address.
-
-5)  The new REQUIRE_INTERFACE was inadvertently omitted from
-    shorewall.conf and shorewall6.conf. It has been added.
-
-6)  Under some versions of Perl, a Perl run-time diagnostic was produced
-    when options were omitted from shorewall.conf or shorewall6.conf. 
-
-7) If the following options were specified in /etc/shorewall/interfaces
-   for an interface with '-' in the ZONE column, then these options
-   would be ignored if there was an entry in the hosts file for the
-   interface with an explicit or implicit 0.0.0.0/0 (0.0.0.0/0 is
-   implied when the host list begins with '!').
-
-   	blacklist
-	maclist
-	nosmurfs
-	tcpflags
-
-   Note: for IPv6, the network is ::/0 rather than 0.0.0.0/0.
-
-8) The generated script was missing a closing quote when
-   REQUIRE_INTERFACE=Yes.
-
-9) Previously, if nets= was specified under Shorewall6, this error
-   would result:
-
-   	 ERROR: Invalid IPv6 address (224.0.0.0) : 
-                /etc/shorewall6/interfaces (line 16)
 
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 0

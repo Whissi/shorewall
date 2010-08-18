@@ -1538,6 +1538,7 @@ sub process_rule ( ) {
     }
 
     my $intrazone = 0;
+    my $wild      = 0;
     my $includesrcfw = 1;
     my $includedstfw = 1;
     my $thisline = $currentline;
@@ -1604,9 +1605,23 @@ sub process_rule ( ) {
 
 	unshift @source, firewall_zone if $includesrcfw;
 
-	$source = '';
-    } elsif ( $source !~ /:/ && $source =~ /,/ ) { 
-	@source = split ',', $source;
+	$wild   = 1;
+    } elsif ( $source =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
+	my $zonelist = $1;
+	my $rest     = $2;
+
+	fatal_error "Invalid zone list ($zonelist)" if $zonelist =~ /,,/;
+	
+	$intrazone = ( $zonelist =~ s/\+$// );
+	$wild = 1;
+
+	if ( defined $rest ) {
+	    push( @source , $_ . $rest ) for split /,/, $zonelist;
+	} else {
+	    @source = split /,/, $zonelist;
+	}
+    } else {
+	@source = ( $source );
     }
 
     if ( $dest eq 'all' ) {
@@ -1617,37 +1632,36 @@ sub process_rule ( ) {
 	}
 
 	unshift @dest, firewall_zone if $includedstfw;
-    } elsif ( $dest !~ /:/ && $dest =~ /,/ ) {
-	@dest = split /,/, $dest;
+	$wild = 1;
+    } elsif ( $dest =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
+	my $zonelist = $1;
+	my $rest     = $2;
+
+	fatal_error "Invalid zone list ($zonelist)" if $zonelist =~ /,,/;
+
+	$intrazone ||= ( $zonelist =~ s/\+$// );
+	$wild = 1;
+	
+	if ( defined $rest ) {
+	    push( @dest , $_ . $rest ) for split /,/, $zonelist;
+	} else {
+	    @dest = split /,/, $zonelist;
+	}
+    } else {
+	@dest = ( $dest );
     }
 
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
-    if ( @source ) {
-	for my $zone ( @source ) {
-	    if ( @dest ) {
-		for my $zone1 ( @dest ) {
-		    if ( $intrazone || ( $zone ne $zone1 ) ) {
-			process_rule1 $target, $zone, $zone1 , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
-		    }
-		}
-	    } else {
-		my $destzone = (split( /:/, $dest, 2 ) )[0];
-		$destzone = $action =~ /^REDIRECT/ ? firewall_zone : '' unless defined_zone $destzone;
-		if ( $intrazone || ( $zone ne $destzone ) ) {
-		    process_rule1 $target, $zone, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
-		}
+    for $source ( @source ) {
+	for $dest ( @dest ) {
+	    my $sourcezone = (split( /:/, $source, 2 ) )[0];
+	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
+	    $destzone = $action =~ /^REDIRECT/ ? firewall_zone : '' unless defined_zone $destzone;
+	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
+		process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wild;
 	    }
 	}
-    } elsif ( @dest ) {
-	for my $zone ( @dest ) {
-	    my $sourcezone = ( split( /:/, $source, 2 ) )[0];
-	    if ( ( $sourcezone ne $zone ) || $intrazone ) {
-		process_rule1 $target, $source, $zone , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 1;
-	    }
-	}
-    } else {
-	process_rule1  $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, 0;
     }
 
     progress_message "   Rule \"$thisline\" $done";

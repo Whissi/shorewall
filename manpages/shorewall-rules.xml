@@ -496,7 +496,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> -
-        {<emphasis>zone</emphasis>|{<emphasis
+        {<emphasis>zone</emphasis>|<emphasis>zone-list</emphasis>[+]|{<emphasis
         role="bold">all</emphasis>|<emphasis
         role="bold">any</emphasis>}[<emphasis
         role="bold">+</emphasis>][<emphasis
@@ -506,12 +506,21 @@
         role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
 
         <listitem>
-          <para>Source hosts to which the rule applies. May be a zone declared
-          in /etc/shorewall/zones, <emphasis role="bold">$FW</emphasis> to
-          indicate the firewall itself, <emphasis role="bold">all</emphasis>,
-          <emphasis role="bold">all+</emphasis>, <emphasis
-          role="bold">all-</emphasis>, <emphasis role="bold">all+-</emphasis>
-          or <emphasis role="bold">none</emphasis>.</para>
+          <para>Source hosts to which the rule applies. May be a
+          <replaceable>zone</replaceable> declared in /etc/shorewall/zones,
+          <emphasis role="bold">$FW</emphasis> to indicate the firewall
+          itself, <emphasis role="bold">all</emphasis>, <emphasis
+          role="bold">all+</emphasis>, <emphasis role="bold">all-</emphasis>,
+          <emphasis role="bold">all+-</emphasis> or <emphasis
+          role="bold">none</emphasis>.</para>
+
+          <para>Beginning with Shorewall 4.4.13, you may use a
+          <replaceable>zone-list </replaceable>which consists of a
+          comma-separated list of zones declared in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink> (5). Ths
+          <replaceable>zone-list</replaceable> may be optionally followed by
+          "+" to indicate that the rule is to apply to intra-zone traffic as
+          well as inter-zone traffic.</para>
 
           <para>When <emphasis role="bold">none</emphasis> is used either in
           the <emphasis role="bold">SOURCE</emphasis> or <emphasis
@@ -528,6 +537,8 @@
           affected.</para>
 
           <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
+          role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] or
+          <emphasis role="bold">any</emphasis>[<emphasis
           role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] is
           specified, clients may be further restricted to a list of networks
           and/or hosts by appending ":" and a comma-separated list of network
@@ -624,7 +635,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> -
-        {<emphasis>zone</emphasis>|{<emphasis
+        {<emphasis>zone</emphasis>|<emphasis>zone-list</emphasis>[+]|{<emphasis
         role="bold">all</emphasis>|<emphasis
         role="bold">any</emphasis>}[<emphasis
         role="bold">+</emphasis>][<emphasis
@@ -639,6 +650,14 @@
           role="bold">FW</emphasis> to indicate the firewall itself, <emphasis
           role="bold">all</emphasis>. <emphasis role="bold">all+</emphasis> or
           <emphasis role="bold">none</emphasis>.</para>
+
+          <para>Beginning with Shorewall 4.4.13, you may use a
+          <replaceable>zone-list </replaceable>which consists of a
+          comma-separated list of zones declared in <ulink
+          url="shorewall-zones.html">shorewall-zones</ulink> (5). Ths
+          <replaceable>zone-list</replaceable> may be optionally followed by
+          "+" to indicate that the rule is to apply to intra-zone traffic as
+          well as inter-zone traffic.</para>
 
           <para>When <emphasis role="bold">none</emphasis> is used either in
           the <emphasis role="bold">SOURCE</emphasis> or <emphasis

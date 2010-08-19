@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_13';
 
 our @addresses_to_add;
 our %addresses_to_add;
@@ -47,56 +47,6 @@ our %addresses_to_add;
 sub initialize() {
     @addresses_to_add = ();
     %addresses_to_add = ();
-}
-
-#
-# Handle IPSEC Options in a masq record
-#
-sub do_ipsec_options($)
-{
-    my %validoptions = ( strict       => NOTHING,
-			 next         => NOTHING,
-			 reqid        => NUMERIC,
-			 spi          => NUMERIC,
-			 proto        => IPSECPROTO,
-			 mode         => IPSECMODE,
-			 "tunnel-src" => NETWORK,
-			 "tunnel-dst" => NETWORK,
-		       );
-    my $list=$_[0];
-    my $options = '-m policy --pol ipsec --dir out ';
-    my $fmt;
-
-    for my $e ( split_list $list, 'option' ) {
-	my $val    = undef;
-	my $invert = '';
-
-	if ( $e =~ /([\w-]+)!=(.+)/ ) {
-	    $val    = $2;
-	    $e      = $1;
-	    $invert = '! ';
-	} elsif ( $e =~ /([\w-]+)=(.+)/ ) {
-	    $val = $2;
-	    $e   = $1;
-	}
-
-	$fmt = $validoptions{$e};
-
-	fatal_error "Invalid Option ($e)" unless $fmt;
-
-	if ( $fmt eq NOTHING ) {
-	    fatal_error "Option \"$e\" does not take a value" if defined $val;
-	} else {
-	    fatal_error "Missing value for option \"$e\""        unless defined $val;
-	    fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
-	}
-
-	$options .= $invert;
-	$options .= "--$e ";
-	$options .= "$val " if defined $val;
-    }
-
-    $options;
 }
 
 #
@@ -153,11 +103,11 @@ sub process_one_masq( )
 	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
 
 	if ( $ipsec =~ /^yes$/i ) {
-	    $baserule .= '-m policy --pol ipsec --dir out ';
+	    $baserule .= do_ipsec_options 'out', 'ipsec', '';
 	} elsif ( $ipsec =~ /^no$/i ) {
-	    $baserule .= '-m policy --pol none --dir out ';
+	    $baserule .= do_ipsec_options 'out', 'none', '';
 	} else {
-	    $baserule .= do_ipsec_options $ipsec;
+	    $baserule .= do_ipsec_options 'out', 'ipsec', $ipsec;
 	}
     } elsif ( have_ipsec ) {
 	$baserule .= '-m policy --pol none --dir out ';

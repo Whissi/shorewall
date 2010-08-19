@@ -149,6 +149,8 @@ our %EXPORT_TAGS = (
 				       match_orig_dest
 				       match_ipsec_in
 				       match_ipsec_out
+				       do_ipsec_options
+				       do_ipsec
 				       log_rule
 				       expand_rule
 				       addnatjump
@@ -2613,6 +2615,92 @@ sub match_ipsec_out( $$ ) {
     }
 
     $match;
+}
+
+#
+# Handle a unidirectional IPSEC Options
+#
+sub do_ipsec_options($$$)
+{
+    my %validoptions = ( strict       => NOTHING,
+			 next         => NOTHING,
+			 reqid        => NUMERIC,
+			 spi          => NUMERIC,
+			 proto        => IPSECPROTO,
+			 mode         => IPSECMODE,
+			 "tunnel-src" => NETWORK,
+			 "tunnel-dst" => NETWORK,
+		       );
+    my ( $dir, $policy, $list ) = @_;
+    my $options = "-m policy --pol $policy --dir $dir ";
+    my $fmt;
+
+    for my $e ( split_list $list, 'IPSEC option' ) {
+	my $val    = undef;
+	my $invert = '';
+
+	if ( $e =~ /([\w-]+)!=(.+)/ ) {
+	    $val    = $2;
+	    $e      = $1;
+	    $invert = '! ';
+	} elsif ( $e =~ /([\w-]+)=(.+)/ ) {
+	    $val = $2;
+	    $e   = $1;
+	}
+
+	$fmt = $validoptions{$e};
+
+	fatal_error "Invalid IPSEC Option ($e)" unless $fmt;
+
+	if ( $fmt eq NOTHING ) {
+	    fatal_error "Option \"$e\" does not take a value" if defined $val;
+	} else {
+	    fatal_error "Missing value for option \"$e\""        unless defined $val;
+	    fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
+	}
+
+	$options .= $invert;
+	$options .= "--$e ";
+	$options .= "$val " if defined $val;
+    }
+
+    $options;
+}
+
+#
+# Handle a bi-directional IPSEC column
+#
+sub do_ipsec($) {
+    my $ipsec = $_[0];
+
+    if ( $ipsec eq '-' ) {
+	return '';
+    }
+
+    fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
+
+    if ( $ipsec eq 'in' ) {
+	do_ipsec_options 'in', 'ipsec', '';
+    } elsif ( $ipsec eq 'out' ) {
+	do_ipsec_options 'out', 'ipsec', '';
+    } else {
+	my @options = split_list $ipsec, 'IPSEC options';
+	my $dir     = shift @options;
+	
+	fatal_error q(First IPSEC option must be 'in' or 'out') unless $dir =~ /^(?:in|out)$/;
+	
+	if ( @options == 1 ) {
+	    if ( lc( $options[0] ) =~ /^(yes|ipsec)$/ ) {
+		return do_ipsec_option $dir, 'ipsec', '';
+	    } 
+
+	    if ( lc( $options[0] ) =~ /^(no|none)$/ ) {
+		return do_ipsec_option $dir, 'ipsec', '';
+	    }
+	}
+
+	do_ipsec_options $dir, 'ipsec', join( ',', @options );
+    }
 }
 
 #

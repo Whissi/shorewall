@@ -51,7 +51,6 @@ our $VERSION = '4.4_13';
 #
 # Set to one if we find a SECTION
 #
-our $sectioned;
 our $macro_nest_level;
 our $current_param;
 our @param_stack;
@@ -76,7 +75,6 @@ my %rules_commands = ( COMMENT => 0,
 #
 sub initialize( $ ) {
     $family = shift;
-    $sectioned = 0;
     $macro_nest_level = 0;
     $current_param = '';
     @param_stack = ();
@@ -1510,7 +1508,6 @@ sub process_section ($) {
     #
     fatal_error "Invalid SECTION ($sect)" unless defined $sections{$sect};
     fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};
-    $sectioned = 1;
     $sections{$sect} = 1;
 
     if ( $sect eq 'RELATED' ) {
@@ -1592,18 +1589,13 @@ sub build_zone_list( $$$\$ ) {
 sub process_rule ( ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time ) = split_line1 1, 12, 'rules file', \%rules_commands;
 
-    process_comment, return 1 if $target eq 'COMMENT';
-
+    process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
     #
-    unless ( $sectioned ) {
-	finish_section 'ESTABLISHED,RELATED';
-	$sections{$section = 'NEW'} = 1;
-	$sectioned = 1;
-    }
+    process_section( 'NEW' ) unless $section;
 
     if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
 	progress_message "Rule \"$currentline\" ignored.";

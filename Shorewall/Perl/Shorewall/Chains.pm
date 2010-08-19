@@ -354,7 +354,7 @@ sub initialize( $ ) {
     #
     # Current rules file section.
     #
-    $section  = 'ESTABLISHED';
+    $section  = '';
     #
     # Contents of last COMMENT line.
     #
@@ -2691,11 +2691,11 @@ sub do_ipsec($) {
 	
 	if ( @options == 1 ) {
 	    if ( lc( $options[0] ) =~ /^(yes|ipsec)$/ ) {
-		return do_ipsec_option $dir, 'ipsec', '';
+		return do_ipsec_options $dir, 'ipsec', '';
 	    } 
 
 	    if ( lc( $options[0] ) =~ /^(no|none)$/ ) {
-		return do_ipsec_option $dir, 'ipsec', '';
+		return do_ipsec_options $dir, 'none', '';
 	    }
 	}
 

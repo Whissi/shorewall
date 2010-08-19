@@ -1527,15 +1527,13 @@ sub process_section ($) {
 #
 # Build a source or destination zone list
 #
-sub build_zone_list( $$$ ) {
-    my ($fw, $input, $which ) = @_;
+sub build_zone_list( $$$\$ ) {
+    my ($fw, $input, $which, $intrazoneref ) = @_;
     my $any = ( $input =~ s/^any/all/ );
     my $exclude;
     my $rest;
     my %exclude;
     my @result;
-    
-    our $intrazone;
     #
     # Handle Wildcards
     #
@@ -1555,9 +1553,9 @@ sub build_zone_list( $$$ ) {
 
 	unless ( $input eq 'all' ) {
 	    if ( $input eq 'all+' ) {
-		$intrazone = 1;
+		$$intrazoneref = 1;
 	    } elsif ( ( $input eq 'all+-' ) || ( $input eq 'all-+' ) ) {
-		$intrazone = 1;
+		$$intrazoneref = 1;
 		$exclude{$fw} = 1;
 	    } elsif ( $input eq 'all-' ) {
 		$exclude{$fw} = 1;
@@ -1574,7 +1572,7 @@ sub build_zone_list( $$$ ) {
 	$input = $1;
 	$rest  = $2;
 
-	$intrazone = ( $input =~ s/\+$// );
+	$$intrazoneref = ( $input =~ s/\+$// );
 
 	@result = split_list $input, 'zone';
     } else {
@@ -1612,8 +1610,7 @@ sub process_rule ( ) {
 	return 1;
     }
 
-    our $intrazone   = 0;
-
+    my $intrazone    = 0;
     my $wild         = 0;
     my $thisline     = $currentline; #We must save $currentline because it is overwritten by macro expansion
     my $action       = isolate_basic_target $target;
@@ -1623,8 +1620,8 @@ sub process_rule ( ) {
     
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
-    @source = build_zone_list ( $fw, $source, 'SOURCE' );
-    @dest   = build_zone_list ( $fw, $dest,   'DEST' );
+    @source = build_zone_list ( $fw, $source, 'SOURCE', $intrazone );
+    @dest   = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone );
 
     $wild = ( @source > 1 ) || ( @dest > 1 );
 

@@ -52,7 +52,7 @@ sub process_accounting_rule( ) {
 
     our $jumpchainref;
 
-    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec ) = split_line1 1, 10, 'Accounting File';
+    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark) = split_line1 1, 9, 'Accounting File';
 
     if ( $action eq 'COMMENT' ) {
 	process_comment;
@@ -84,7 +84,7 @@ sub process_accounting_rule( ) {
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} ) . do_ipsec( $ipsec );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} );
     my $rule2 = 0;
 
     unless ( $action eq 'COUNT' ) {

@@ -1499,56 +1499,104 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 }
 
 #
-# Process a Record in the rules file
+# Helper functions for process_rule(). That function deals with the ugliness of wildcard zones ('all' and 'any') and zone lists.
 #
-#     Deals with the ugliness of wildcard zones ('all' in SOURCE and/or DEST column).
+# Process a SECTION header
+#
+sub process_section ($) {
+    my $sect = shift;
+    #
+    # read_a_line has already verified that there are exactly two tokens on the line
+    #
+    fatal_error "Invalid SECTION ($sect)" unless defined $sections{$sect};
+    fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};
+    $sectioned = 1;
+    $sections{$sect} = 1;
+
+    if ( $sect eq 'RELATED' ) {
+	$sections{ESTABLISHED} = 1;
+	finish_section 'ESTABLISHED';
+    } elsif ( $sect eq 'NEW' ) {
+	@sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
+	finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
+    }
+    
+    $section = $sect;
+}
+
+#
+# Build a source or destination zone list
+#
+sub build_zone_list( $$$ ) {
+    my ($fw, $input, $which ) = @_;
+    my $any = ( $input =~ s/^any/all/ );
+    my $exclude;
+    my $rest;
+    my %exclude;
+    my @result;
+    
+    our $intrazone;
+    #
+    # Handle Wildcards
+    #
+    if ( $input =~ /^(all[-+]*)(![^:]+)?(:.*)?/ ) {
+	$input   = $1;
+	$exclude = $2;
+	$rest    = $3;
+
+	if ( defined $exclude ) {
+	    $exclude =~ s/!//;
+	    fatal_error "Invalid exclusion list (!$exclude)" if $exclude =~ /^,|!|,,|,$/;
+	    for ( split /,/, $exclude ) {
+		fatal_error "Unknown zone ($_)" unless defined_zone $_;
+		$exclude{$_} = 1;
+	    }
+	}
+
+	unless ( $input eq 'all' ) {
+	    if ( $input eq 'all+' ) {
+		$intrazone = 1;
+	    } elsif ( ( $input eq 'all+-' ) || ( $input eq 'all-+' ) ) {
+		$intrazone = 1;
+		$exclude{$fw} = 1;
+	    } elsif ( $input eq 'all-' ) {
+		$exclude{$fw} = 1;
+	    } else {
+		fatal_error "Invalid $which ($input)";
+	    }
+	}
+
+	@result = grep ! $exclude{$_}, $any ? all_parent_zones : non_firewall_zones;
+
+	unshift @result, $fw unless $exclude{$fw};
+
+    } elsif ( $input =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
+	$input = $1;
+	$rest  = $2;
+
+	$intrazone = ( $input =~ s/\+$// );
+
+	@result = split_list $input, 'zone';
+    } else {
+	@result = ( $input );
+    }
+
+    if ( defined $rest ) {
+	$_ .= $rest for @result;
+    }
+
+    @result;
+}
+
+#
+# Process a Record in the rules file
 #
 sub process_rule ( ) {
     my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time ) = split_line1 1, 12, 'rules file', \%rules_commands;
 
-    if ( $target eq 'COMMENT' ) {
-	process_comment;
-	return 1;
-    }
+    process_comment, return 1 if $target eq 'COMMENT';
 
-    if ( $target eq 'SECTION' ) {
-	#
-	# read_a_line has already verified that there are exactly two tokens on the line
-	#
-	fatal_error "Invalid SECTION ($source)" unless defined $sections{$source};
-	fatal_error "Duplicate or out of order SECTION $source" if $sections{$source};
-	$sectioned = 1;
-	$sections{$source} = 1;
-
-	if ( $source eq 'RELATED' ) {
-	    $sections{ESTABLISHED} = 1;
-	    finish_section 'ESTABLISHED';
-	} elsif ( $source eq 'NEW' ) {
-	    @sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
-	    finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
-	}
-
-	$section = $source;
-	return 1;
-    }
-
-    if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
-	progress_message "Rule \"$currentline\" ignored.";
-	return 1;
-    }
-
-    my $intrazone    = 0;
-    my $wild         = 0;
-    my $thisline     = $currentline;
-    my $action       = isolate_basic_target $target;
-    my $fw           = firewall_zone;
-    my $any;
-    my $rest;
-    my @source;
-    my @dest;
-    my $exclude;
-    my %exclude;
-    
+    process_section( $source ), return 1 if $target eq 'SECTION';
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
@@ -1559,118 +1607,26 @@ sub process_rule ( ) {
 	$sectioned = 1;
     }
 
+    if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
+	progress_message "Rule \"$currentline\" ignored.";
+	return 1;
+    }
+
+    our $intrazone   = 0;
+
+    my $wild         = 0;
+    my $thisline     = $currentline; #We must save $currentline because it is overwritten by macro expansion
+    my $action       = isolate_basic_target $target;
+    my $fw           = firewall_zone;
+    my @source;
+    my @dest;
+    
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
-    #
-    # Handle Wildcards
-    #
-   
-    $any = ( $source =~ s/^any/all/ );
+    @source = build_zone_list ( $fw, $source, 'SOURCE' );
+    @dest   = build_zone_list ( $fw, $dest,   'DEST' );
 
-    if ( $source =~ /^(all[-+]*)(![^:]+)?(:.*)?/ ) {
-	$source  = $1;
-	$exclude = $2;
-	$rest    = $3;
-
-	if ( defined $exclude ) {
-	    $exclude =~ s/!//;
-	    fatal_error "Invalid exclusion list (!$exclude)" if $exclude =~ /^,|!|,,|,$/;
-	    for ( split /,/, $exclude ) {
-		fatal_error "Unknown zone ($_)" unless defined_zone $_;
-		$exclude{$_} = 1;
-	    }
-	}
-
-	unless ( $source eq 'all' ) {
-	    if ( $source eq 'all+' ) {
-		$intrazone = 1;
-	    } elsif ( ( $source eq 'all+-' ) || ( $source eq 'all-+' ) ) {
-		$intrazone = 1;
-		$exclude{$fw} = 1;
-	    } elsif ( $source eq 'all-' ) {
-		$exclude{$fw} = 1;
-	    } else {
-		fatal_error "Invalid SOURCE ($source)";
-	    }
-	}
-
-	@source = grep ! $exclude{$_}, $any ? all_parent_zones : non_firewall_zones;
-
-	unshift @source, $fw unless $exclude{$fw};
-
-	$wild   = 1;
-
-	%exclude = ();
-
-    } elsif ( $source =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
-	$source = $1;
-	$rest   = $2;
-
-	fatal_error "Invalid zone list ($source)" if $source =~ /,,/;
-	
-	$intrazone = ( $source =~ s/\+$// );
-	$wild = 1;
-
-	@source = split /,/, $source;
-    } else {
-	@source = ( $source );
-    }
-
-    if ( defined $rest ) {
-	$_ .= $rest for @source;
-	$rest = undef;
-    }
-
-    $any = ( $dest   =~ s/^any/all/ );
-
-    if ( $dest =~ /^(all[-+]*)(![^:]+)?(:.*)?/ ) {
-	$dest    = $1;
-	$exclude = $2;
-	$rest    = $3;
-
-	if ( defined $exclude ) {
-	    $exclude =~ s/!//;
-	    fatal_error "Invalid exclusion list (!$exclude)" if $exclude =~ /^,|!|,,|,$/;
-	    for ( split /,/, $exclude ) {
-		fatal_error "Unknown zone ($_)" unless defined_zone $_;
-		$exclude{$_} = 1;
-	    }
-	}
-
-	unless ( $dest eq 'all' ) {
-	    if ( $dest eq 'all+' ) {
-		$intrazone = 1;
-	    } elsif ( ( $dest eq 'all+-' ) || ( $dest eq 'all-+' ) ) {
-		$intrazone = 1;
-		$exclude{$fw} = 1;
-	    } elsif ( $dest eq 'all-' ) {
-		$exclude{$fw} = 1;
-	    } else {
-		fatal_error "Invalid DEST ($dest)";
-	    }
-	}
-
-	@dest = grep ! $exclude{$_}, $any ? all_parent_zones : non_firewall_zones;
-
-	unshift @dest, $fw unless $exclude{$fw};
-	$wild = 1;
-    } elsif ( $dest =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
-	$dest = $1;
-	$rest = $2;
-
-	fatal_error "Invalid zone list ($source)" if $dest =~ /,,/;
-
-	$intrazone ||= ( $dest =~ s/\+$// );
-	$wild = 1;
-	
-	@dest = split /,/, $dest;
-    } else {
-	@dest = ( $dest );
-    }
-
-    if ( defined $rest ) {
-	$_ .= $rest for @source;
-    }
+    $wild = ( @source > 1 ) || ( @dest > 1 );
 
     for $source ( @source ) {
 	for $dest ( @dest ) {

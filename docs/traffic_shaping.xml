@@ -428,11 +428,12 @@
         <listitem>
           <para>REDIRECTED INTERFACES — Entries are appropriate in this column
           only if the device in the INTERFACE column names a <link
-          linkend="IFB">Intermediate Functional Block (IFB)</link>. It lists the
-          physical interfaces that will have their input shaped using classes
-          defined on the IFB. Neither the IFB nor any of the interfaces listed
-          in this column may have an IN-BANDWIDTH specified. You may specify
-          zero (0) or a dash ("-:) in the IN-BANDWIDTH column.</para>
+          linkend="IFB">Intermediate Functional Block (IFB)</link>. It lists
+          the physical interfaces that will have their input shaped using
+          classes defined on the IFB. Neither the IFB nor any of the
+          interfaces listed in this column may have an IN-BANDWIDTH specified.
+          You may specify zero (0) or a dash ("-:) in the IN-BANDWIDTH
+          column.</para>
 
           <para>IFB devices automatically get the <emphasis
           role="bold">classify</emphasis> option.</para>
@@ -816,12 +817,9 @@ ppp0           6000kbit         500kbit</programlisting>
       in-depth look at the packet marking facility in Netfilter/Shorewall,
       please see <ulink url="PacketMarking.html">this article</ulink>.</para>
 
-      <para>Normally, packet marking occurs in the PREROUTING chain before any
-      address rewriting takes place. This makes it impossible to mark inbound
-      packets based on their destination address when SNAT or Masquerading are
-      being used. You can cause packet marking to occur in the FORWARD chain
-      by using the MARK_IN_FORWARD_CHAIN option in shorewall.conf or by using
-      the :F qualifier (see below).</para>
+      <para><emphasis role="bold">For marking forwarded traffic, you must
+      either set MARK_IN_FORWARD_CHAIN=Yes shorewall.conf or by using the :F
+      qualifier (see below).</emphasis></para>
 
       <para>Columns in the file are as follows:</para>
 

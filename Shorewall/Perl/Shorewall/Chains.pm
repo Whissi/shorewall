@@ -1171,9 +1171,9 @@ sub ensure_filter_chain( $$ )
 #
 # Create an accounting chain if necessary and return a reference to its table entry.
 #
-sub ensure_accounting_chain( $  )
+sub ensure_accounting_chain( $$ )
 {
-    my ($chain) = @_;
+    my ($chain, $ipsec) = @_;
 
     my $chainref = $filter_table->{$chain};
 
@@ -1183,6 +1183,7 @@ sub ensure_accounting_chain( $  )
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
+	$chainref->{ipsec}      = $ipsec;
 	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
 
 	if ( $chain ne 'accounting' ) {

@@ -65,6 +65,12 @@ sub process_accounting_rule( ) {
 	$_[0] =~ /^acc(?:ount(?:ing|out)|ipsecin|ipsecout)$/;
     }
 
+    sub ipsec_chain_name($) {
+	if ( $_[0] =~ /^accipsec(in|out)$/ ) {
+	    $1;
+	}
+    }
+
     sub check_chain( $ ) {
 	my $chainref = shift;
 	fatal_error "A non-accounting chain ($chainref->{name}) may not appear in the accounting file" if $chainref->{policy};
@@ -77,7 +83,7 @@ sub process_accounting_rule( ) {
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
 	fatal_error "Jumps to the $jumpchain chain are not allowed" if reserved_chain_name( $jumpchain );
-	$jumpchainref = ensure_accounting_chain( $jumpchain );
+	$jumpchainref = ensure_accounting_chain( $jumpchain, 0 );
 	check_chain( $jumpchainref );
 	$disposition = $jumpchain;
 	"-j $jumpchain";
@@ -91,23 +97,19 @@ sub process_accounting_rule( ) {
 
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} );
     my $rule2 = 0;
+    my $jump  = 0;
     
-    if ( $ipsec ne '-' ) {
-	fatal_error "A rule with non-empty IPSEC column can only appear in the 'accipsecin' and 'accipsecout' chains" unless $chain =~ /^accipsec(in|out)$/;
-	$rule .= do_ipsec( $1, $ipsec);
-    }
-
     unless ( $action eq 'COUNT' ) {
 	if ( $action eq 'DONE' ) {
 	    $target = '-j RETURN';
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 	    if ( $cmd ) {
-		fatal_error "No chain name may appear in the ACTION column when the IPSEC column is non-empty" if $ipsec ne '-';
-
 		if ( $cmd eq 'COUNT' ) {
-		    $rule2=1;
-		} elsif ( $cmd ne 'JUMP' ) {
+		    $rule2 = 1;
+		} elsif ( $cmd eq 'JUMP' ) {
+		    $jump = 1;
+		} else {
 		    accounting_error;
 		}
 	    }
@@ -150,11 +152,30 @@ sub process_accounting_rule( ) {
     }
 
     my $chainref = $filter_table->{$chain};
+    my $dir;
 
     if ( ! $chainref ) {
-	warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );
-	$chainref = ensure_accounting_chain $chain;
+	$chainref = ensure_accounting_chain $chain, 0;
+	$dir      = ipsec_chain_name( $chain );
+
+	if ( $ipsec ne '-' ) {
+	    if ( $dir ) {
+		$rule .= do_ipsec( $dir, $ipsec );
+		$chainref->{ipsec} = $dir;
+	    } else {
+		fatal_error "Adding an IPSEC rule to an unreferenced accounting chain is not allowed";
+	    }
+	} else {
+	    warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );	    
+	    $chainref->{ipsec} = $dir;
+	}
+    } elsif ( $ipsec ne '-' ) {
+	$dir = $chainref->{ipsec};
+	fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
+	$rule .= do_ipsec( $dir , $ipsec );
     }
+
+    $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir;
 
     expand_rule
 	$chainref ,
@@ -167,6 +188,22 @@ sub process_accounting_rule( ) {
 	'' ,
 	$disposition ,
 	'' ;
+
+    if ( $rule2 || $jump ) {
+	if ( $chainref->{ipsec} ) {
+	    if ( $jumpchainref->{ipsec} ) {
+		fatal_error "IPSEC in/out mismatch on chains $chain and $jumpchainref->{name}";
+	    } else {
+		fatal_error "$jumpchainref->{name} is not an IPSEC chain" if keys %{$jumpchainref->{references}} > 1;
+		$jumpchainref->{ipsec} = $chainref->{ipsec};
+	    }
+	} elsif ( $jumpchainref->{ipsec} ) {
+	    fatal_error "Jump from a non-IPSEC chain to an IPSEC chain not allowed";
+	} else {
+	    $jumpchainref->{ipsec} = $chainref->{ipsec};
+	}
+
+    }
 
     if ( $rule2 ) {
 	expand_rule

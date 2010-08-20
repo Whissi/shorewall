@@ -109,6 +109,7 @@ our %EXPORT_TAGS = (
 				       find_chain
 				       ensure_chain
 				       ensure_accounting_chain
+				       accounting_chainrefs
 				       ensure_mangle_chain
 				       ensure_nat_chain
 				       ensure_raw_chain
@@ -1202,6 +1203,13 @@ sub ensure_accounting_chain( $  )
     }
 
     $chainref;
+}
+
+#
+# Return a list of references to accounting chains
+#
+sub accounting_chainrefs() {
+    grep $_->{accounting} , values %$filter_table;
 }
 
 sub ensure_mangle_chain($) {

@@ -61,6 +61,10 @@ sub process_accounting_rule( ) {
 
     our $disposition = '';
 
+    sub reserved_chain_name($) {
+	$_[0] =~ /^acc(?:ount(?:ing|out)|ipsecin|ipsecout)$/;
+    }
+
     sub check_chain( $ ) {
 	my $chainref = shift;
 	fatal_error "A non-accounting chain ($chainref->{name}) may not appear in the accounting file" if $chainref->{policy};
@@ -72,6 +76,7 @@ sub process_accounting_rule( ) {
 
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
+	fatal_error "Jumps to the $jumpchain chain are not allowed" if reserved_chain_name( $jumpchain );
 	$jumpchainref = ensure_accounting_chain( $jumpchain );
 	check_chain( $jumpchainref );
 	$disposition = $jumpchain;
@@ -88,7 +93,7 @@ sub process_accounting_rule( ) {
     my $rule2 = 0;
     
     if ( $ipsec ne '-' ) {
-	fatal_error "A rule with non-empty IPSEC column can only appear in the 'accountin' and 'accountout' chains" unless $chain =~ /^account(in|out)$/;
+	fatal_error "A rule with non-empty IPSEC column can only appear in the 'accipsecin' and 'accipsecout' chains" unless $chain =~ /^accipsec(in|out)$/;
 	$rule .= do_ipsec( $1, $ipsec);
     }
 
@@ -144,7 +149,12 @@ sub process_accounting_rule( ) {
 	$dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
     }
 
-    my $chainref = ensure_accounting_chain $chain;
+    my $chainref = $filter_table->{$chain};
+
+    if ( ! $chainref ) {
+	warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );
+	$chainref = ensure_accounting_chain $chain;
+    }
 
     expand_rule
 	$chainref ,
@@ -185,8 +195,6 @@ sub setup_accounting() {
 
     $nonEmpty |= process_accounting_rule while read_a_line;
 
-    fatal_error "Accounring rules are isolated" if $nonEmpty && ! $filter_table->{accounting};
-
     clear_comment;
 
     if ( have_bridges ) {
@@ -199,25 +207,28 @@ sub setup_accounting() {
 	if ( $filter_table->{accountout} ) {
 	    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
 	}
-    } else {
-	if ( $filter_table->{accountin} ) {
-	    for my $chain ( qw/INPUT FORWARD/ ) {
-		add_jump( $filter_table->{$chain}, 'accountin', 0,  '', 0, 0 );
-	    }
-	}
-
-	if ( $filter_table->{accountout} ) {
-	    for my $chain ( qw/FORWARD OUTPUT/ ) {
-		add_jump( $filter_table->{$chain}, 'accountout', 0, '', 0, 0 );
-	    }
-	}
-
-	if ( $filter_table->{accounting} ) {
-	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
-	    }
+    } elsif ( $filter_table->{accounting} ) {
+	for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
+	    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 	}
     }
+
+    if ( $filter_table->{accipsecin} ) {
+	for my $chain ( qw/INPUT FORWARD/ ) {
+	    add_jump( $filter_table->{$chain}, 'accipsecin', 0,  '', 0, 0 );
+	}
+    }
+
+    if ( $filter_table->{accipsecout} ) {
+	for my $chain ( qw/FORWARD OUTPUT/ ) {
+	    add_jump( $filter_table->{$chain}, 'accipsecout', 0, '', 0, 0 );
+	}
+    }
+
+    for ( accounting_chainrefs ) {
+	warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
+    }
+
 }
 
 1;

@@ -54,6 +54,16 @@ None.
 	     any+!dmz,loc   (All zones except 'dmz' and 'loc' and
 	     		     include intra-zone rules).
 
+2)  An IPSEC column has been added to the accounting file, allowing you
+    to segregate IPSEC traffic from non-IPSEC traffic. See 'man
+    shorewall-accounting' (man shorewall6-accounting) for details.
+
+    Note that accounting rules that have a non-empty IPSEC column
+    may only appear in the 'accipsecin' and 'accipsecout' chains. The
+    former contains rules that select de-capsulated/decrypted traffic
+    while the latter contains rules that select traffic that will be
+    encapsulated/encrypted.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

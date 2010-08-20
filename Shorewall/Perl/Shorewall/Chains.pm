@@ -2670,8 +2670,8 @@ sub do_ipsec_options($$$)
 #
 # Handle a bi-directional IPSEC column
 #
-sub do_ipsec($) {
-    my $ipsec = $_[0];
+sub do_ipsec($$) {
+    my ( $dir, $ipsec ) = @_;
 
     if ( $ipsec eq '-' ) {
 	return '';
@@ -2679,28 +2679,19 @@ sub do_ipsec($) {
 
     fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
 
-    if ( $ipsec eq 'in' ) {
-	do_ipsec_options 'in', 'ipsec', '';
-    } elsif ( $ipsec eq 'out' ) {
-	do_ipsec_options 'out', 'ipsec', '';
-    } else {
-	my @options = split_list $ipsec, 'IPSEC options';
-	my $dir     = shift @options;
+    my @options = split_list $ipsec, 'IPSEC options';
 	
-	fatal_error q(First IPSEC option must be 'in' or 'out') unless $dir =~ /^(?:in|out)$/;
-	
-	if ( @options == 1 ) {
-	    if ( lc( $options[0] ) =~ /^(yes|ipsec)$/ ) {
-		return do_ipsec_options $dir, 'ipsec', '';
-	    } 
+    if ( @options == 1 ) {
+	if ( lc( $options[0] ) =~ /^(yes|ipsec)$/ ) {
+	    return do_ipsec_options $dir, 'ipsec', '';
+	} 
 
-	    if ( lc( $options[0] ) =~ /^(no|none)$/ ) {
-		return do_ipsec_options $dir, 'none', '';
-	    }
+	if ( lc( $options[0] ) =~ /^(no|none)$/ ) {
+	    return do_ipsec_options $dir, 'none', '';
 	}
-
-	do_ipsec_options $dir, 'ipsec', join( ',', @options );
     }
+
+    do_ipsec_options $dir, 'ipsec', join( ',', @options );
 }
 
 #

@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4.7';
+our $VERSION = '4.4.13';
 
 #
 # Called by the compiler to [re-]initialize this module's state
@@ -52,7 +52,7 @@ sub process_accounting_rule( ) {
 
     our $jumpchainref;
 
-    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark) = split_line1 1, 9, 'Accounting File';
+    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec ) = split_line1 1, 10, 'Accounting File';
 
     if ( $action eq 'COMMENT' ) {
 	process_comment;
@@ -86,6 +86,11 @@ sub process_accounting_rule( ) {
 
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} );
     my $rule2 = 0;
+    
+    if ( $ipsec ne '-' ) {
+	fatal_error "A rule with non-empty IPSEC column can only appear in the 'accountin' and 'accountout' chains" unless $chain =~ /^account(in|out)$/;
+	$rule .= do_ipsec( $1, $ipsec);
+    }
 
     unless ( $action eq 'COUNT' ) {
 	if ( $action eq 'DONE' ) {
@@ -93,6 +98,8 @@ sub process_accounting_rule( ) {
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 	    if ( $cmd ) {
+		fatal_error "No chain name may appear in the ACTION column when the IPSEC column is non-empty" if $ipsec ne '-';
+
 		if ( $cmd eq 'COUNT' ) {
 		    $rule2=1;
 		} elsif ( $cmd ne 'JUMP' ) {
@@ -193,6 +200,18 @@ sub setup_accounting() {
 	    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
 	}
     } else {
+	if ( $filter_table->{accountin} ) {
+	    for my $chain ( qw/INPUT FORWARD/ ) {
+		add_jump( $filter_table->{$chain}, 'accountin', 0,  '', 0, 0 );
+	    }
+	}
+
+	if ( $filter_table->{accountout} ) {
+	    for my $chain ( qw/FORWARD OUTPUT/ ) {
+		add_jump( $filter_table->{$chain}, 'accountout', 0, '', 0, 0 );
+	    }
+	}
+
 	if ( $filter_table->{accounting} ) {
 	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
 		add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );

@@ -306,6 +306,143 @@
           </variablelist>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">IPSEC - <emphasis>option-list</emphasis>
+        (Optional - Added in Shorewall 4.4.13 )</emphasis></term>
+
+        <listitem>
+          <para>The option-list consists of a comma-separated list of options
+          from the following list. Only packets that will be encrypted or have
+          been de-crypted via an SA that matches these options will have their
+          source address changed.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold">reqid=</emphasis><emphasis>number</emphasis></term>
+
+              <listitem>
+                <para>where <emphasis>number</emphasis> is specified using
+                setkey(8) using the 'unique:<emphasis>number</emphasis> option
+                for the SPD level.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">spi=</emphasis>&lt;number&gt;</term>
+
+              <listitem>
+                <para>where <emphasis>number</emphasis> is the SPI of the SA
+                used to encrypt/decrypt packets.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proto=</emphasis><emphasis
+              role="bold">ah</emphasis>|<emphasis
+              role="bold">esp</emphasis>|<emphasis
+              role="bold">ipcomp</emphasis></term>
+
+              <listitem>
+                <para>IPSEC Encapsulation Protocol</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">mss=</emphasis><emphasis>number</emphasis></term>
+
+              <listitem>
+                <para>sets the MSS field in TCP packets</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">mode=</emphasis><emphasis
+              role="bold">transport</emphasis>|<emphasis
+              role="bold">tunnel</emphasis></term>
+
+              <listitem>
+                <para>IPSEC mode</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tunnel-src=</emphasis><emphasis>address</emphasis>[/<emphasis>mask</emphasis>]</term>
+
+              <listitem>
+                <para>only available with mode=tunnel</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tunnel-dst=</emphasis><emphasis>address</emphasis>[/<emphasis>mask</emphasis>]</term>
+
+              <listitem>
+                <para>only available with mode=tunnel</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">strict</emphasis></term>
+
+              <listitem>
+                <para>Means that packets must match all rules.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">next</emphasis></term>
+
+              <listitem>
+                <para>Separates rules; can only be used with strict</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">yes</emphasis> or <emphasis
+              role="bold">ipsec</emphasis></term>
+
+              <listitem>
+                <para>When used by itself, causes all traffic that will be
+                encrypted/encapsulated or has been decrypted/un-encapsulted to
+                match the rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">no</emphasis> or <emphasis
+              role="bold">none</emphasis></term>
+
+              <listitem>
+                <para>When used by itself, causes all traffic that will not be
+                encrypted/encapsulated or has been decrypted/un-encapsulted to
+                match the rule.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>If this column is non-empty, then:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>A chain NAME may not appear in the ACTION column.</para>
+            </listitem>
+
+            <listitem>
+              <para>The CHAIN column must contain either <emphasis
+              role="bold">accountin</emphasis> or <emphasis
+              role="bold">accountout</emphasis>.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>These rules will NOT appear in the <emphasis
+          role="bold">accounting</emphasis> chain.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
 
     <para>In all of the above columns except <emphasis

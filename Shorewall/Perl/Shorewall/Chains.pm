@@ -687,7 +687,7 @@ sub delete_jumps ( $$ ) {
     # deleting elements from the array over which we are iterating.
     #
     for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
-	if (  $rules->[$rule] =~ / -[gj] ${to}\s*$/ ) {
+	if (  $rules->[$rule] =~ / -[gj] ${to}( -m comment .*)?\s*$/ ) {
 	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
 	    splice(  @$rules, $rule, 1 );
 	    last unless --$refs > 0;
@@ -3118,17 +3118,6 @@ sub expand_rule( $$$$$$$$$$;$ )
 	fatal_error "LOG requires a level";
     }
     #
-    # Mark Target as referenced, if it's a chain
-    #
-    if ( $target =~ /-[jg]\s+([^\s]+)/ ) {
-	my $targetref = $chain_table{$chainref->{table}}{$1};
-	if ( $targetref ) {
-	    $targetref->{referenced} = 1;
-	    add_reference $chainref, $targetref;
-	}
-    }
-
-    #
     # Isolate Source Interface, if any
     #
     if ( $source ) {
@@ -3397,6 +3386,8 @@ sub expand_rule( $$$$$$$$$$;$ )
     fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && ( $inets ne ALLIP || $iexcl || $trivialiexcl);
     fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && ( $dnets ne ALLIP || $dexcl || $trivialdexcl);
 
+    my $fromref;
+
     if ( $iexcl || $dexcl || $oexcl ) {
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain
@@ -3438,7 +3429,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# Generate Final Rule
 	#
-	add_rule( $echainref, $exceptionrule . $target, 1 ) unless $disposition eq 'LOG';
+	add_rule( $fromref = $echainref, $exceptionrule . $target, 1 ) unless $disposition eq 'LOG';
     } else {
 	#
 	# No exclusions
@@ -3478,7 +3469,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 					       'add',
 					       $matches );
 
-				add_rule( $chainref, $matches . $target, 1 );
+				add_rule( $fromref = $chainref, $matches . $target, 1 );
 			    }
 			} else {
 			    #
@@ -3499,10 +3490,20 @@ sub expand_rule( $$$$$$$$$$;$ )
 			#
 			# No logging -- add the target rule with matches to the rule chain
 			#
-			add_rule( $chainref, $matches . $target , 1 );
+			add_rule( $fromref = $chainref, $matches . $target , 1 );
 		    }
 		}
 	    }
+	}
+    }
+    #
+    # Mark Target as referenced, if it's a chain
+    #
+    if ( $fromref && $target =~ /-[jg]\s+([^\s]+)/ ) {
+	my $targetref = $chain_table{$chainref->{table}}{$1};
+	if ( $targetref ) {
+	    $targetref->{referenced} = 1;
+	    add_reference $fromref, $targetref;
 	}
     }
 

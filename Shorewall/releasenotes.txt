@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                      S H O R E W A L L  4 . 4 . 1 2
+                   S H O R E W A L L  4 . 4 . 1 2 . 1
 ----------------------------------------------------------------------------
 
 I.    RELEASE 4.4 HIGHLIGHTS
@@ -10,7 +10,7 @@ V.    NEW FEATURES IN THIS RELEASE
 VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 ----------------------------------------------------------------------------
-             I.  R E L E A S E  4 . 4  H I G H L I G H T S
+                I.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------
 
 1)  Support for Shorewall-shell has been discontinued. Shorewall-perl
@@ -223,6 +223,22 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
 I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+4.4.12.1
+
+1)  Under rare circumstances where COMMENT is used to attach comments
+    to rules, OPTIMIZE 8 through 15 could result in invalid
+    iptables-restore (ip6tables-restore) input.
+
+    Workaround: Don't use optimizaiton levels greater than 7.
+
+2)  Under rare circumstances unvolving exclusion, OPTIMIZE 8 through 15
+    could result in invalid iptables-restore (ip6tables-restore) input.
+
+    Workaround: Don't use optimizaiton levels greater than 7.
+
+4.4.12
+
 
 1)  Previously, the Shorewall6-lite version of shorecap was using
     iptables rather than ip6tables, with the result that many capabilities

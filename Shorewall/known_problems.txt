@@ -85,3 +85,14 @@
 11) AUTOMAKE=Yes is broken -- don't use it.
 
     Corrected in Shorewall 4.4.11.3.
+
+12) Under rare circumstances where COMMENT is used to attach comments
+    to rules, OPTIMIZE 8 through 15 can result in invalid
+    iptables-restore (ip6tables-restore) input.
+
+    Workaround: Don't use optimizaiton levels greater than 7.
+
+2)  Under rare circumstances unvolving exclusion, OPTIMIZE 8 through 15
+    canresult in invalid iptables-restore (ip6tables-restore) input.
+
+    Workaround: Don't use optimizaiton levels greater than 7.

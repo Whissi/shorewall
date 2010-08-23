@@ -1524,8 +1524,8 @@ sub process_section ($) {
 #
 # Build a source or destination zone list
 #
-sub build_zone_list( $$$\$ ) {
-    my ($fw, $input, $which, $intrazoneref ) = @_;
+sub build_zone_list( $$$\$\$ ) {
+    my ($fw, $input, $which, $intrazoneref, $wildref ) = @_;
     my $any = ( $input =~ s/^any/all/ );
     my $exclude;
     my $rest;
@@ -1538,6 +1538,8 @@ sub build_zone_list( $$$\$ ) {
 	$input   = $1;
 	$exclude = $2;
 	$rest    = $3;
+
+	$$wildref = 1;
 
 	if ( defined $exclude ) {
 	    $exclude =~ s/!//;
@@ -1612,10 +1614,8 @@ sub process_rule ( ) {
     
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
-    @source = build_zone_list ( $fw, $source, 'SOURCE', $intrazone );
-    @dest   = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone );
-
-    $wild = ( @source > 1 ) || ( @dest > 1 );
+    @source = build_zone_list ( $fw, $source, 'SOURCE', $intrazone, $wild );
+    @dest   = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone, $wild );
 
     for $source ( @source ) {
 	for $dest ( @dest ) {

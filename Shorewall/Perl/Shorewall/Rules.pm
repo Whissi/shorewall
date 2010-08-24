@@ -1568,8 +1568,9 @@ sub build_zone_list( $$$\$\$ ) {
 	unshift @result, $fw unless $exclude{$fw};
 
     } elsif ( $input =~ /^([^:]+,[^:]+)(:.*)?$/ ) {
-	$input = $1;
-	$rest  = $2;
+	$input    = $1;
+	$rest     = $2;
+	$$wildref = 1;
 
 	$$intrazoneref = ( $input =~ s/\+$// );
 

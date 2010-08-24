@@ -1611,19 +1611,16 @@ sub process_rule ( ) {
 	return 1;
     }
 
-    my $intrazone    = 0;
-    my $wild         = 0;
-    my $thisline     = $currentline; #We must save $currentline because it is overwritten by macro expansion
-    my $action       = isolate_basic_target $target;
-    my $fw           = firewall_zone;
-    my $generated    = 0;
-    my @source;
-    my @dest;
-    
-    fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
+    my $intrazone = 0;
+    my $wild      = 0;
+    my $thisline  = $currentline; #We must save $currentline because it is overwritten by macro expansion
+    my $action    = isolate_basic_target $target;
+    my $fw        = firewall_zone;
+    my @source    = build_zone_list ( $fw, $source, 'SOURCE', $intrazone, $wild );
+    my @dest      = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone, $wild );
+    my $generated = 0;
 
-    @source = build_zone_list ( $fw, $source, 'SOURCE', $intrazone, $wild );
-    @dest   = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone, $wild );
+    fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
     for $source ( @source ) {
 	for $dest ( @dest ) {

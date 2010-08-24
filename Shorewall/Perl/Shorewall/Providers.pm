@@ -853,6 +853,11 @@ sub handle_optional_interfaces( $ ) {
     #
     my $interfaces = find_interfaces_by_option1 'optional';
 
+    if ( $config{REQUIRE_INTERFACE} ) {
+	emit( 'HAVE_INTERFACE=' );
+	emit( '' );
+    }
+
     if ( @$interfaces ) {
 	for my $interface ( @$interfaces ) {
 	    my $provider = $provider_interfaces{$interface};
@@ -860,11 +865,6 @@ sub handle_optional_interfaces( $ ) {
 	    my $base     = uc chain_base( $physical );
 
 	    emit( '' );
-
-	    if ( $config{REQUIRE_INTERFACE} ) {
-		emit( 'HAVE_INTERFACE=' );
-		emit( '' );
-	    }
 
 	    if ( $provider ) {
 		#

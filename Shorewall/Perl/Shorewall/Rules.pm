@@ -890,6 +890,8 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 
     my $format = 1;
 
+    my $generated = 0;
+
     macro_comment $macro;
 
     my $macrofile = $macros{$macro};
@@ -961,21 +963,21 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 	    $mdest = '';
 	}
 
-	process_rule1(
-		      $mtarget,
-		      $msource,
-		      $mdest,
-		      merge_macro_column( $mproto,     $proto ) ,
-		      merge_macro_column( $mports,     $ports ) ,
-		      merge_macro_column( $msports,    $sports ) ,
-		      merge_macro_column( $morigdest,  $origdest ) ,
-		      merge_macro_column( $mrate,      $rate ) ,
-		      merge_macro_column( $muser,      $user ) ,
-		      merge_macro_column( $mmark,      $mark ) ,
-		      merge_macro_column( $mconnlimit, $connlimit) ,
-		      merge_macro_column( $mtime,      $time ),
-		      $wildcard
-		     );
+	$generated |= process_rule1(
+				    $mtarget,
+				    $msource,
+				    $mdest,
+				    merge_macro_column( $mproto,     $proto ) ,
+				    merge_macro_column( $mports,     $ports ) ,
+				    merge_macro_column( $msports,    $sports ) ,
+				    merge_macro_column( $morigdest,  $origdest ) ,
+				    merge_macro_column( $mrate,      $rate ) ,
+				    merge_macro_column( $muser,      $user ) ,
+				    merge_macro_column( $mmark,      $mark ) ,
+				    merge_macro_column( $mconnlimit, $connlimit) ,
+				    merge_macro_column( $mtime,      $time ),
+				    $wildcard
+				   );
 
 	progress_message "   Rule \"$currentline\" $done";
     }
@@ -985,6 +987,8 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
     progress_message "..End Macro $macrofile";
 
     clear_comment unless $nocomment;
+
+    return $generated;
 
 }
 #
@@ -1023,27 +1027,27 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    $current_param = $param;
 	}
 
-	process_macro( $basictarget,
-		       $target ,
-		       $current_param,
-		       $source,
-		       $dest,
-		       $proto,
-		       $ports,
-		       $sports,
-		       $origdest,
-		       $ratelimit,
-		       $user,
-		       $mark,
-		       $connlimit,
-		       $time,
-		       $wildcard );
+	my $generated = process_macro( $basictarget,
+				       $target ,
+				       $current_param,
+				       $source,
+				       $dest,
+				       $proto,
+				       $ports,
+				       $sports,
+				       $origdest,
+				       $ratelimit,
+				       $user,
+				       $mark,
+				       $connlimit,
+				       $time,
+				       $wildcard );
 
 	$macro_nest_level--;
 
 	$current_param = pop @param_stack if $param ne '';
 
-	return;
+	return $generated;
 
     } elsif ( $actiontype & NFQ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
@@ -1173,7 +1177,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	#
 	if ( $destref->{type} == BPORT ) {
 	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
-		return 1 if $wildcard;
+		return 0 if $wildcard;
 		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
 	    }
 	}
@@ -1186,7 +1190,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$policy   = $chainref->{policy};
 
 	if ( $policy eq 'NONE' ) {
-	    return 1 if $wildcard;
+	    return 0 if $wildcard;
 	    fatal_error "Rules may not override a NONE policy";
 	}
 	#
@@ -1195,9 +1199,9 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	if ( $optimize > 0 ) {
 	    my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 	    if ( $loglevel ne '' ) {
-		return 1 if $target eq "${policy}:$loglevel}";
+		return 0 if $target eq "${policy}:$loglevel}";
 	    } else {
-		return 1 if $basictarget eq $policy;
+		return 0 if $basictarget eq $policy;
 	    }
 	}
 	#
@@ -1494,6 +1498,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $log_action ,
 		     '' );
     }
+
+    return 1;
 }
 
 #
@@ -1610,6 +1616,7 @@ sub process_rule ( ) {
     my $thisline     = $currentline; #We must save $currentline because it is overwritten by macro expansion
     my $action       = isolate_basic_target $target;
     my $fw           = firewall_zone;
+    my $generated    = 0;
     my @source;
     my @dest;
     
@@ -1624,12 +1631,14 @@ sub process_rule ( ) {
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
-		process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wild;
+		$generated |= process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wild;
 	    }
 	}
     }
 
-    progress_message "   Rule \"$thisline\" $done";
+    warning_message  qq(Entry generated no $toolname rules) unless $generated;
+
+    progress_message qq(   Rule "$thisline" $done);
 }
 
 #

@@ -2412,7 +2412,7 @@ sub IPSet_Match() {
 		qt1( "$iptables -D $sillyname -m set --match-set $sillyname src -j ACCEPT" );
 		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
 	    } else {
-		have_capability 'OLD_IPSET_MATCH';
+		$result = have_capability 'OLD_IPSET_MATCH';
 	    }
 
 	    qt( "$ipset -X $sillyname" );

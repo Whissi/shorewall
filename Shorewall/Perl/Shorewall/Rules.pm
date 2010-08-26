@@ -294,7 +294,7 @@ sub setup_blacklist() {
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for my $chain ( first_chains $interface ) {
-		add_jump $filter_table->{$chain} , $chainref, 0, "${source}${state}${policy}";
+		add_jump $filter_table->{$chain} , $target, 0, "${source}${state}${policy}";
 	    }
 
 	    set_interface_option $interface, 'use_input_chain', 1;

@@ -92,7 +92,7 @@
 
     Workaround: Don't use optimizaiton levels greater than 7.
 
-13) Under rare circumstances unvolving exclusion, OPTIMIZE 8 through 15
+13) Under rare circumstances involving exclusion, OPTIMIZE 8 through 15
     can result in invalid iptables-restore (ip6tables-restore) input.
 
     Workaround: Don't use optimizaiton levels greater than 7.
@@ -101,3 +101,9 @@
     optional interface defined in the interfaces file is available.
 
     Workaround: None available.
+
+15) The compiler erroneously allows exclusion in CONTINUE rules
+    (tcrules and rules files). The generated iptables (ip6tables) rules
+    do not work as expected.
+
+    Workaround: Do not use exclusion with CONTINUE.

@@ -148,7 +148,7 @@ sub process_tos() {
 		$src ,
 		$dst ,
 		'' ,
-		"-j TOS --set-tos $tos" ,
+		"TOS --set-tos $tos" ,
 		'' ,
 		'TOS' ,
 		'';
@@ -277,7 +277,7 @@ sub setup_blacklist() {
 			    $direction eq 'from' ? $networks : '',
 			    $direction eq 'to'   ? $networks : '',
 			    '' ,
-			    "-j $target" ,
+			    $target ,
 			    '' ,
 			    $target ,
 			    '' );
@@ -1299,7 +1299,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	if ( $actiontype  & REDIRECT ) {
 	    fatal_error "A server IP address may not be specified in a REDIRECT rule" if $server;
-	    $target  = '-j REDIRECT ';
+	    $target  = 'REDIRECT ';
 	    $target .= "--to-port $serverport " if $serverport;
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIP;
@@ -1323,7 +1323,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    }
 
 	    if ( $action eq 'DNAT' ) {
-		$target = '-j DNAT ';
+		$target = 'DNAT ';
 		if ( $server ) {
 		    $serverport = ":$serverport" if $serverport;
 		    for my $serv ( split /,/, $server ) {
@@ -1429,7 +1429,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 			     '', # Source
 			     '', # Dest
 			     '', # Original dest
-			     '-j ACCEPT',
+			     'ACCEPT',
 			     $loglevel,
 			     $log_action,
 			     '',
@@ -1447,7 +1447,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     "-j $tgt",
+		     $tgt,
 		     $loglevel ,
 		     $log_action ,
 		     '' ,
@@ -1493,7 +1493,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		     $source ,
 		     $dest ,
 		     $origdest ,
-		     $action ? "-j $action " : '' ,
+		     $action ,
 		     $loglevel ,
 		     $log_action ,
 		     '' );

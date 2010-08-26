@@ -391,9 +391,9 @@ sub process_tc_rule( ) {
 				     $source ,
 				     $dest ,
 				     '' ,
-				     "-j $target $mark" ,
+				     "$target $mark" ,
 				     '' ,
-				     $target ,
+				     '' ,
 				     '' ) )
 	  && $device ) {
 	#

@@ -64,7 +64,7 @@ sub process_notrack_rule( $$$$$$ ) {
 	$source ,
 	$dest ,
 	'' ,
-	'-j NOTRACK' ,
+	'NOTRACK' ,
 	'' ,
 	'NOTRACK' ,
 	'' ;

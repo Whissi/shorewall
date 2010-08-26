@@ -125,7 +125,7 @@ sub process_one_masq( )
 
     for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';
-	my $target = '-j MASQUERADE ';
+	my $target = 'MASQUERADE ';
 	#
 	# Isolate and verify the interface part
 	#
@@ -171,7 +171,7 @@ sub process_one_masq( )
 		    fatal_error "The SAME target is no longer supported";
 		} elsif ( $addresses eq 'detect' ) {
 		    my $variable = get_interface_address $interface;
-		    $target = "-j SNAT --to-source $variable";
+		    $target = "SNAT --to-source $variable";
 
 		    if ( interface_is_optional $interface ) {
 			add_commands( $chainref,
@@ -181,13 +181,13 @@ sub process_one_masq( )
 			$detectaddress = 1;
 		    }
 		} elsif ( $addresses eq 'NONAT' ) {
-		    $target = '-j RETURN';
+		    $target = 'RETURN';
 		    $add_snat_aliases = 0;
 		} else {
 		    my $addrlist = '';
 		    for my $addr ( split_list $addresses , 'address' ) {
 			if ( $addr =~ /^.*\..*\..*\./ ) {
-			    $target = '-j SNAT ';
+			    $target = 'SNAT ';
 			    my ($ipaddr, $rest) = split ':', $addr;
 			    if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
 				validate_range( $1, $2 );

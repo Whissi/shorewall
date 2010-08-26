@@ -3161,7 +3161,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	$source,       # SOURCE
 	$dest,         # DEST
 	$origdest,     # ORIGINAL DEST
-	$target,       # Target ('-j' part of the rule)
+	$target,       # Target ('-j' part of the rule - may be empty)
 	$loglevel ,    # Log level (and tag)
 	$disposition,  # Primtive part of the target (RETURN, ACCEPT, ...)
 	$exceptionrule,# Caller's matches used in exclusion case
@@ -3170,6 +3170,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl );
     my $chain = $chainref->{name};
+    my $jump  = $target ? '-j ' . $target : '';
 
     our @ends = ();
     #
@@ -3533,7 +3534,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# Generate Final Rule
 	#
-	add_rule( $fromref = $echainref, $exceptionrule . $target, 1 ) unless $disposition eq 'LOG';
+	add_rule $fromref = $echainref, $exceptionrule . $jump , 1 unless $disposition eq 'LOG';
     } else {
 	#
 	# No exclusions
@@ -3552,13 +3553,13 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    if ( $loglevel ne '' ) {
 			if ( $disposition ne 'LOG' ) {
-			    unless ( $logname || $target =~ /-j RETURN\b/ ) {
+			    unless ( $logname || $target =~ /^RETURN\b/ ) {
 				#
 				# Find/Create a chain that both logs and applies the target action
 				# and jump to the log chain if all of the rule's conditions are met
 				#
 				add_jump( $chainref,
-					  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
+					  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $jump ),
 					  $builtin_target{$disposition},
 					  $matches,
 					  1 );
@@ -3573,7 +3574,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 					       'add',
 					       $matches );
 
-				add_rule( $fromref = $chainref, $matches . $target, 1 );
+				add_rule( $fromref = $chainref, $matches . $jump, 1 );
 			    }
 			} else {
 			    #
@@ -3594,7 +3595,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 			#
 			# No logging -- add the target rule with matches to the rule chain
 			#
-			add_rule( $fromref = $chainref, $matches . $target , 1 );
+			add_rule( $fromref = $chainref, $matches . $jump , 1 );
 		    }
 		}
 	    }
@@ -3603,8 +3604,8 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Mark Target as referenced, if it's a chain
     #
-    if ( $fromref && $disposition ) {
-	my $targetref = $chain_table{$chainref->{table}}{$disposition};
+    if ( $fromref && $target ) {
+	my $targetref = $chain_table{$chainref->{table}}{$target};
 	if ( $targetref ) {
 	    $targetref->{referenced} = 1;
 	    add_reference $fromref, $targetref;

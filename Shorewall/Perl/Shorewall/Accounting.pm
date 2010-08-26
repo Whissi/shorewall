@@ -86,7 +86,7 @@ sub process_accounting_rule( ) {
 	$jumpchainref = ensure_accounting_chain( $jumpchain, 0 );
 	check_chain( $jumpchainref );
 	$disposition = $jumpchain;
-	"-j $jumpchain";
+	$jumpchain;
     }
 
     my $target = '';
@@ -101,7 +101,7 @@ sub process_accounting_rule( ) {
     
     unless ( $action eq 'COUNT' ) {
 	if ( $action eq 'DONE' ) {
-	    $target = '-j RETURN';
+	    $target = 'RETURN';
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 	    if ( $cmd ) {

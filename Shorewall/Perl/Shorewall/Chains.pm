@@ -687,7 +687,7 @@ sub delete_jumps ( $$ ) {
     # deleting elements from the array over which we are iterating.
     #
     for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
-	if (  $rules->[$rule] =~ / -[gj] ${to}( -m comment .*)?\s*$/ ) {
+	if (  $rules->[$rule] =~ / -[gj] ${to}(\s+-m comment .*)?\s*$/ ) {
 	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
 	    splice(  @$rules, $rule, 1 );
 	    last unless --$refs > 0;

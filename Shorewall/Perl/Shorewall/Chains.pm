@@ -3488,7 +3488,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain
 	#
-	fatal_error "Exclusion is not possible in ACCEPT+/CONTINUE/NONAT rules" if $disposition eq 'RETURN';
+	fatal_error "Exclusion is not possible in ACCEPT+/CONTINUE/NONAT rules" if $disposition eq 'RETURN' || $disposition eq 'CONTINUE';
 
 	#
 	# Create the Exclusion Chain
@@ -3521,7 +3521,15 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# Log rule
 	#
-	log_rule_limit $loglevel , $echainref , $chain, $disposition , '',  $logtag , 'add' , '' if $loglevel;
+	log_rule_limit( $loglevel , 
+			$echainref , 
+			$chain, 
+			$disposition eq 'reject' ? 'REJECT' : $disposition ,
+			'' ,  
+			$logtag , 
+			'add' ,
+			'' ) 
+	    if $loglevel;
 	#
 	# Generate Final Rule
 	#
@@ -3559,7 +3567,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 					       $loglevel ,
 					       $chainref ,
 					       $logname || $chain,
-					       $disposition ,
+					       $disposition eq 'reject' ? 'REJECT' : $disposition ,
 					       '',
 					       $logtag,
 					       'add',
@@ -3575,7 +3583,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 					   $loglevel ,
 					   $chainref ,
 					   $chain,
-					   $disposition ,
+					   $disposition eq 'reject' ? 'REJECT' : $disposition ,
 					   '' ,
 					   $logtag ,
 					   'add' ,
@@ -3595,8 +3603,8 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Mark Target as referenced, if it's a chain
     #
-    if ( $fromref && $target =~ /-[jg]\s+([^\s]+)/ ) {
-	my $targetref = $chain_table{$chainref->{table}}{$1};
+    if ( $fromref && $disposition ) {
+	my $targetref = $chain_table{$chainref->{table}}{$disposition};
 	if ( $targetref ) {
 	    $targetref->{referenced} = 1;
 	    add_reference $fromref, $targetref;

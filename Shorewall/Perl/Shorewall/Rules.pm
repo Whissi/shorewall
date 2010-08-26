@@ -150,7 +150,7 @@ sub process_tos() {
 		'' ,
 		"-j TOS --set-tos $tos" ,
 		'' ,
-		'' ,
+		'TOS' ,
 		'';
 	}
 
@@ -279,7 +279,7 @@ sub setup_blacklist() {
 			    '' ,
 			    "-j $target" ,
 			    '' ,
-			    $disposition ,
+			    $target ,
 			    '' );
 
 		progress_message "  \"$currentline\" added to blacklist";

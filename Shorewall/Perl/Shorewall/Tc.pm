@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_13';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -393,7 +393,7 @@ sub process_tc_rule( ) {
 				     '' ,
 				     "-j $target $mark" ,
 				     '' ,
-				     '' ,
+				     $target ,
 				     '' ) )
 	  && $device ) {
 	#

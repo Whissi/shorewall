@@ -5,9 +5,28 @@
     to rules, OPTIMIZE 8 through 15 can result in invalid
     iptables-restore (ip6tables-restore) input.
 
-    Workaround: Don't use optimizaiton levels greater than 7.
+    Corrected in Shorewall 4.4.12.1.
 
 3)  Under rare circumstances unvolving exclusion, OPTIMIZE 8 through 15
     canresult in invalid iptables-restore (ip6tables-restore) input.
 
-    Workaround: Don't use optimizaiton levels greater than 7.
+    Corrected in Shorewall 4.4.12.1.
+
+4)  The change in 4.4.12 to detect and use the new ipset match syntax
+    broke the ability to detect the old ipset match capability. 
+
+    Corrected in Shorewall 4.4.12.1.
+
+5)  If REQUIRE_INTERFACE=Yes then start/restart will fail
+    if the last optional interface tested is not available.
+
+    Corrected in Shorewall 4.4.12.1.
+
+6)  The fix for COMMENT and optimization in 4.4.12.1 is incomplete.
+
+    Workaround: Don't use OPTIMIZE 8-15.
+
+7)  Exclusion in the blacklist file is correctly validated but is then
+    ignored when generating iptables (ip6tables) rules.
+
+    Workaround: Don't use exclusion in the blacklist file.

@@ -1576,6 +1576,7 @@ determine_capabilities() {
     PERSISTENT_SNAT=
     FLOW_FILTER=
     FWMARK_RT_MASK=
+    MARK_ANYWHERE=
 
     chain=fooX$$
 
@@ -1713,6 +1714,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
     qt $IPTABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
     qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
+    qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1792,6 +1794,7 @@ report_capabilities() {
 	report_capability "TPROXY Target" $TPROXY_TARGET
 	report_capability "FLOW Classifier" $FLOW_FILTER
 	report_capability "fwmark route mask" $FWMARK_RT_MASK
+	report_capability "Mark in any table" $MARK_ANYWHERE
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1856,6 +1859,7 @@ report_capabilities1() {
     report_capability1 TPROXY_TARGET
     report_capability1 FLOW_FILTER
     report_capability1 FWMARK_RT_MASK
+    report_capability1 MARK_ANYWHERE
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

@@ -252,6 +252,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 TPROXY_TARGET   => 'TPROXY Target',
 		 FLOW_FILTER     => 'Flow Classifier',
 		 FWMARK_RT_MASK  => 'fwmark route mask',
+		 MARK_ANYWHERE   => 'Mark in any table',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -347,7 +348,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED => 0,
 		    VERSION => "4.4.13-Beta2",
-		    CAPVERSION => 40411 ,
+		    CAPVERSION => 40413 ,
 		  );
 
     #
@@ -677,6 +678,7 @@ sub initialize( $ ) {
 	       OLD_HL_MATCH => undef,
 	       FLOW_FILTER => undef,
 	       FWMARK_RT_MASK => undef,
+	       MARK_ANYWHERE => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2474,6 +2476,10 @@ sub Fwmark_Rt_Mask() {
     $ip && system( "$ip rule add help 2>&1 | grep -q /MASK" ) == 0;
 }
 
+sub Mark_Anywhere() {
+    qt1( "$iptables -A $sillyname -j MARK --set-mark 5" );
+}
+
 our %detect_capability =
     ( ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
@@ -2501,6 +2507,7 @@ our %detect_capability =
       MANGLE_ENABLED => \&Mangle_Enabled,
       MANGLE_FORWARD => \&Mangle_Forward,
       MARK => \&Mark,
+      MARK_ANYWHERE => \&Mark_Anywhere,
       MULTIPORT => \&Multiport,
       NAT_ENABLED => \&Nat_Enabled,
       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
@@ -2644,6 +2651,8 @@ sub determine_capabilities() {
 	$capabilities{LOG_TARGET}      = detect_capability( 'LOG_TARGET' );
 	$capabilities{LOGMARK_TARGET}  = detect_capability( 'LOGMARK_TARGET' );
 	$capabilities{FLOW_FILTER}     = detect_capability( 'FLOW_FILTER' );
+	$capabilities{FWMARK_RT_MASK}  = detect_capability( 'FWMARK_RT_MASK' );
+	$capabilities{MARK_ANYWHERE}   = detect_capability( 'MARK_ANYWHERE' );
 
 
 	qt1( "$iptables -F $sillyname" );

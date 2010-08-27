@@ -3483,59 +3483,76 @@ sub expand_rule( $$$$$$$$$$;$ )
     fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && ( $inets ne ALLIP || $iexcl || $trivialiexcl);
     fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && ( $dnets ne ALLIP || $dexcl || $trivialdexcl);
 
-    my $fromref;
+    my ( $fromref, $done );
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain
 	#
-	fatal_error "Exclusion is not possible in ACCEPT+/CONTINUE/NONAT rules" if $disposition eq 'RETURN' || $disposition eq 'CONTINUE';
+	if ( $disposition eq 'RETURN' || $disposition eq 'CONTINUE' ) {
+	    #
+	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the following rules based on the mark value
+	    #
+	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's';
+	    add_rule $chainref = $chainref , '-j MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
+	    
+	    my $exclude = '-j MARK --or-mark ' . in_hex( $globals{EXCLUSION_MASK} );
 
-	#
-	# Create the Exclusion Chain
-	#
-	my $echain = newexclusionchain;
+	    add_rule $chainref, ( match_source_net $_ , $restriction ) . $exclude for ( mysplit $iexcl );
+	    add_rule $chainref, ( match_dest_net $_ )                  . $exclude for ( mysplit $dexcl );
+	    add_rule $chainref, ( match_orig_dest $_ )                 . $exclude for ( mysplit $oexcl );
 
-	my $echainref = new_chain $chainref->{table}, $echain;
+	    $rule .= '-m mark --mark 0/' . in_hex( $globals{EXCLUSION_MASK} ) . ' ';
+	} else {
+	    #
+	    # Create the Exclusion Chain
+	    #
+	    my $echain = newexclusionchain;
 
-	#
-	# Use the current rule and send all possible matches to the exclusion chain
-	#
-	for my $onet ( mysplit $onets ) {
-	    $onet = match_orig_dest $onet;
-	    for my $inet ( mysplit $inets ) {
-		for my $dnet ( mysplit $dnets ) {
-		    #
-		    # We evaluate the source net match in the inner loop to accomodate systems without $capabilities{KLUDGEFREE}
-		    #
-		    add_jump( $chainref, $echainref, 0, join( '', $rule, match_source_net( $inet, $restriction ), match_dest_net( $dnet ), $onet ), 1 );
+	    my $echainref = new_chain $chainref->{table}, $echain;
+	    #
+	    # Use the current rule and send all possible matches to the exclusion chain
+	    #
+	    for my $onet ( mysplit $onets ) {
+		$onet = match_orig_dest $onet;
+		for my $inet ( mysplit $inets ) {
+		    for my $dnet ( mysplit $dnets ) {
+			#
+			# We evaluate the source net match in the inner loop to accomodate systems without $capabilities{KLUDGEFREE}
+			#
+			add_jump( $chainref, $echainref, 0, join( '', $rule, match_source_net( $inet, $restriction ), match_dest_net( $dnet ), $onet ), 1 );
+		    }
 		}
 	    }
-	}
 
-	#
-	# Generate RETURNs for each exclusion
-	#
-	add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN' for ( mysplit $iexcl );
-	add_rule $echainref, ( match_dest_net $_ ) .   '-j RETURN' for ( mysplit $dexcl );
-	add_rule $echainref, ( match_orig_dest $_ ) .  '-j RETURN' for ( mysplit $oexcl );
-	#
-	# Log rule
-	#
-	log_rule_limit( $loglevel , 
-			$echainref , 
-			$chain, 
-			$disposition eq 'reject' ? 'REJECT' : $disposition ,
-			'' ,  
-			$logtag , 
-			'add' ,
-			'' ) 
-	    if $loglevel;
-	#
-	# Generate Final Rule
-	#
-	add_rule $fromref = $echainref, $exceptionrule . $jump , 1 unless $disposition eq 'LOG';
-    } else {
+	    #
+	    # Generate RETURNs for each exclusion
+	    #
+	    add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN' for ( mysplit $iexcl );
+	    add_rule $echainref, ( match_dest_net $_ ) .   '-j RETURN' for ( mysplit $dexcl );
+	    add_rule $echainref, ( match_orig_dest $_ ) .  '-j RETURN' for ( mysplit $oexcl );
+	    #
+	    # Log rule
+	    #
+	    log_rule_limit( $loglevel , 
+			    $echainref , 
+			    $chain, 
+			    $disposition eq 'reject' ? 'REJECT' : $disposition ,
+			    '' ,  
+			    $logtag , 
+			    'add' ,
+			    '' ) 
+		if $loglevel;
+	    #
+	    # Generate Final Rule
+	    #
+	    add_rule $fromref = $echainref, $exceptionrule . $jump , 1 unless $disposition eq 'LOG';
+
+	    $done = 1;
+	}
+    }
+
+    unless ( $done ) {
 	#
 	# No exclusions
 	#

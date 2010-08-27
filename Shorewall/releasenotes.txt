@@ -28,11 +28,25 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 4)  Previously, if REQUIRE_INTERFACE=Yes then start/restart would fail
     if the last optional interface tested was not available.
 
+5)  Exclusion in the blacklist file was correctly validated but was then
+    ignored when generating iptables (ip6tables) rules.
+
+6)  Previously, non-trivial exclusion (more than one excluded
+    address/net) in CONTINUE, NONAT and ACCEPT+ rules generated
+    valid but incorrect iptables input. This has been corrected but
+    requires that your iptables/kernel support marking rules in any
+    Netfilter table.
+
+    This fix implements a new 'Mark in any table' capability; those
+    who utilize a capabilities file should re-generate the file using
+    this release.
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
 
-None.
+1)  On systems running Upstart, shorewall-init cannot reliably start the
+    firewall before interfaces are brought up.
 
 ----------------------------------------------------------------------------
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E

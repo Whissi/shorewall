@@ -393,7 +393,7 @@ sub process_tc_rule( ) {
 				     '' ,
 				     "$target $mark" ,
 				     '' ,
-				     '' ,
+				     $target ,
 				     '' ) )
 	  && $device ) {
 	#

@@ -675,7 +675,7 @@ sub add_common_rules() {
 
 	    for $interface ( @$list ) {
 		my $chainref = $filter_table->{input_chain $interface};
-		my $base     = uc chain_base $interface;
+		my $base     = uc chain_base get_physical $interface;
 		my $variable = get_interface_gateway $interface;
 
 		if ( interface_is_optional $interface ) {

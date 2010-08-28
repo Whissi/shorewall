@@ -331,7 +331,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
           <row>
             <entry>WIDE_TC_MARKS=No, HIGH_ROUTE_MARKS=No</entry>
 
-            <entry>TC_BITS=8, PROVIDER_BITS=0, PROVIDER_OFFSET=0,
+            <entry>TC_BITS=8, PROVIDER_BITS=8, PROVIDER_OFFSET=0,
             MASK_BITS=8</entry>
           </row>
 
@@ -364,7 +364,11 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     than 16 when WIDE_TC_MARKS=Yes.</para>
 
     <para>Beginning with Shorewall 4.4.12, the field between MASK_BITS and
-    PROVIDER_OFFSET can be used for any purpose you want. </para>
+    PROVIDER_OFFSET can be used for any purpose you want.</para>
+
+    <para>Beginning with Shorewall 4.4.13, The first unused bit on the left is
+    used by Shorewall as an <firstterm>exclusion mark</firstterm>, allowing
+    exclusion in CONTINUE, NONAT and ACCEPT+ rules.</para>
   </section>
 
   <section id="Shorewall">

@@ -3487,21 +3487,29 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#
-	# We have non-trivial exclusion -- need to create an exclusion chain
+	# We have non-trivial exclusion
 	#
 	if ( $disposition eq 'RETURN' || $disposition eq 'CONTINUE' ) {
 	    #
 	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the following rules based on the mark value
 	    #
-	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's';
+	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' unless $chainref->{table} eq 'mangle';
+	    require_capability 'KLUDGEFREE' ,    'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' if $rule -~ / -m mark /;
+	    #
+	    # Clear the exclusion bit
+	    #
 	    add_rule $chainref = $chainref , '-j MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
-	    
+	    #
+	    # Mark packet if it matches any of the exclusions
+	    #
 	    my $exclude = '-j MARK --or-mark ' . in_hex( $globals{EXCLUSION_MASK} );
 
 	    add_rule $chainref, ( match_source_net $_ , $restriction ) . $exclude for ( mysplit $iexcl );
 	    add_rule $chainref, ( match_dest_net $_ )                  . $exclude for ( mysplit $dexcl );
 	    add_rule $chainref, ( match_orig_dest $_ )                 . $exclude for ( mysplit $oexcl );
-
+	    #
+	    # Augment the rule to include 'not excluded'
+	    #
 	    $rule .= '-m mark --mark 0/' . in_hex( $globals{EXCLUSION_MASK} ) . ' ';
 	} else {
 	    #
@@ -3514,23 +3522,25 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # Use the current rule and send all possible matches to the exclusion chain
 	    #
 	    for my $onet ( mysplit $onets ) {
+
 		$onet = match_orig_dest $onet;
+
 		for my $inet ( mysplit $inets ) {
+
+		    my $source_match = match_source_net( $inet, $restriction ) if have_capability( 'KLUDGEFREE' );
+
 		    for my $dnet ( mysplit $dnets ) {
-			#
-			# We evaluate the source net match in the inner loop to accomodate systems without $capabilities{KLUDGEFREE}
-			#
-			add_jump( $chainref, $echainref, 0, join( '', $rule, match_source_net( $inet, $restriction ), match_dest_net( $dnet ), $onet ), 1 );
+			$source_match = match_source_net( $inet, $restriction ) unless have_capability( 'KLUDGEFREE' );
+			add_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ), 1 );
 		    }
 		}
 	    }
-
 	    #
 	    # Generate RETURNs for each exclusion
 	    #
 	    add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN' for ( mysplit $iexcl );
-	    add_rule $echainref, ( match_dest_net $_ ) .   '-j RETURN' for ( mysplit $dexcl );
-	    add_rule $echainref, ( match_orig_dest $_ ) .  '-j RETURN' for ( mysplit $oexcl );
+	    add_rule $echainref, ( match_dest_net $_ )                  . '-j RETURN' for ( mysplit $dexcl );
+	    add_rule $echainref, ( match_orig_dest $_ )                 . '-j RETURN' for ( mysplit $oexcl );
 	    #
 	    # Log rule
 	    #
@@ -3554,7 +3564,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     unless ( $done ) {
 	#
-	# No exclusions
+	# No non-trivial exclusions or we're using marks to handle them
 	#
 	for my $onet ( mysplit $onets ) {
 	    $onet = match_orig_dest $onet;

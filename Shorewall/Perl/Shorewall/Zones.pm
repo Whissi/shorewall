@@ -929,10 +929,6 @@ sub process_interface( $$ ) {
 	    } elsif ( $type == IPLIST_IF_OPTION ) {
 		fatal_error "The '$option' option requires a value" unless defined $value;
 		#
-		# Remove parentheses from address list if present
-		#
-		$value =~ s/\)$// if $value =~ s/^\(//;
-		#
 		# Add all IP to the front of a list if the list begins with '!'
 		#
 		$value = join ',' , ALLIP , $value if $value =~ /^!/;
@@ -965,7 +961,7 @@ sub process_interface( $$ ) {
 		fatal_error "The '$option' option requires a value" unless defined $value;
 
 		if ( $option eq 'physical' ) {
-		    fatal_error "Invalid Physical interface name ($value)" unless $value && $value =~ /^[\w.@%-]*\+?$/;
+		    fatal_error "Invalid Physical interface name ($value)" unless $value && $value !~ /%/;
 
 		    fatal_error "Duplicate physical interface name ($value)" if ( $physical{$value} && ! $port );
 

@@ -1479,10 +1479,12 @@ sub split_list1( $$ ) {
 		fatal_error "Invalid $type list ($list)" if $count > 1;
 		push @list2 , $_;
 	    } else {
+		s/\(//;
 		$element = $_;
 	    }
 	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
 	    fatal_error "Invalid $type list ($list)" unless $element && $count == 1;
+	    s/\)//;
 	    push @list2, join ',', $element, $_;
 	    $element = '';
 	} elsif ( $element ) {

@@ -775,6 +775,15 @@ sub is_a_bridge( $ ) {
 #
 sub chain_base($) {
     my $chain = $_[0];
+    my $name  = $basemap{$chain};
+    #
+    # Return existing mapping, if any
+    #
+    return $name if $name;
+    #
+    # Remember initial value 
+    #
+    my $key = $chain;
     #
     # Handle VLANs and wildcards
     #
@@ -783,24 +792,27 @@ sub chain_base($) {
 
     if ( $chain =~ /^[0-9]/ || $chain =~ /[^\w]/ ) {
 	#
-	# Not valid variable name
+	# Must map. Remove all illegal characters
 	#
-	if ( $basemap{$_[0]} ) {
-	    #
-	    # We've mapped this name previously
-	    #
-	    $basemap{$_[0]};
-	} else {
-	    #
-	    # Must map. Remove all illegal characters
-	    #
-	    $chain =~ s/[^\w]//g;
-	    $chain = join( '' , 'if_', $chain ) unless $chain =~ /^[a-zA-z]/;
-	    $basemap{$_[0]} = join ( '_', $chain, ++$baseseq );
-	}
-    } else {	
-	$chain;
+	$chain =~ s/[^\w]//g;
+	#
+	# Prefix with if_ if it begins with a digit
+	#
+	$chain = join( '' , 'if_', $chain ) if $chain =~ /^[0-9]/;
+	#
+	# Save and return mapped name
+	#
+	$name = join ( '_', $chain, ++$baseseq );
+    } else {
+	#
+	# We'll store the identity mapping
+	#
+	$name = $chain;
     }
+    #
+    # Store the mapping
+    #
+    $basemap{$key} = $name;
 }
 
 #

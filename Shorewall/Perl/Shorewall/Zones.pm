@@ -163,8 +163,10 @@ our %interfaces;
 our @bport_zones;
 our %ipsets;
 our %physical;
+our %basemap;
 our $family;
 our $have_ipsec;
+our $baseseq;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -217,6 +219,8 @@ sub initialize( $ ) {
     @bport_zones = ();
     %ipsets = ();
     %physical = ();
+    %basemap = ();
+    $baseseq = 0;
 
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
@@ -771,11 +775,32 @@ sub is_a_bridge( $ ) {
 #
 sub chain_base($) {
     my $chain = $_[0];
-
-    $chain =~ s/^@/at_/;
-    $chain =~ tr/[.\-%@]/_/;
+    #
+    # Handle VLANs and wildcards
+    #
     $chain =~ s/\+$//;
-    $chain;
+    $chain =~ tr/./_/;
+
+    if ( $chain =~ /^[0-9]/ || $chain =~ /[^\w]/ ) {
+	#
+	# Not valid variable name
+	#
+	if ( $basemap{$_[0]} ) {
+	    #
+	    # We've mapped this name previously
+	    #
+	    $basemap{$_[0]};
+	} else {
+	    #
+	    # Must map. Remove all illegal characters
+	    #
+	    $chain =~ s/[^\w]//g;
+	    $chain = join( '' , 'if_', $chain ) unless $chain =~ /^[a-zA-z]/;
+	    $basemap{$_[0]} = join ( '_', $chain, ++$baseseq );
+	}
+    } else {	
+	$chain;
+    }
 }
 
 #

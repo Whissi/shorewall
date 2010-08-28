@@ -433,8 +433,6 @@ sub calculate_quantum( $$ ) {
 sub process_flow($) {
     my $flow = shift;
 
-    $flow =~ s/^\(// if $flow =~ s/\)$//;
-
     my @flow = split /,/, $flow;
 
     for ( @flow ) {

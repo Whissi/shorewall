@@ -177,7 +177,7 @@ sub setup_ecn()
 
 	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file entry';
 
-	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+	    fatal_error "Unknown interface ($interface)" unless known_interface( $interface, 0 );
 
 	    $interfaces{$interface} = 1;
 
@@ -328,7 +328,7 @@ sub process_routestopped() {
 
 	my $interfaceref;
 
-	fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface $interface;
+	fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface( $interface, 0 );
 	$hosts = ALLIP unless $hosts && $hosts ne '-';
 
 	my $routeback = 0;
@@ -769,7 +769,7 @@ sub setup_mac_lists( $ ) {
 		my $targetref = $maclist_targets{$disposition};
 
 		fatal_error "Invalid DISPOSITION ($original_disposition)"              if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
-		fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
+		fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface, 0 );
 		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
 
 		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};

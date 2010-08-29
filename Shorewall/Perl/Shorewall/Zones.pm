@@ -83,7 +83,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_12';
+our $VERSION = '4.4_13';
 
 #
 # IPSEC Option types
@@ -1152,11 +1152,12 @@ sub map_physical( $$ ) {
 #
 # Returns true if passed interface matches an entry in /etc/shorewall/interfaces
 #
-# If the passed name matches a wildcard, an entry for the name is added in %interfaces to speed up validation of other references to that name.
+# If the passed name matches a wildcard and 'cache' is true, an entry for the name is added in 
+# %interfaces.
 #
-sub known_interface($)
+sub known_interface($$)
 {
-    my $interface = $_[0];
+    my ( $interface, $cache ) = @_;
     my $interfaceref = $interfaces{$interface};
 
     return $interfaceref if $interfaceref;
@@ -1165,18 +1166,19 @@ sub known_interface($)
 	$interfaceref = $interfaces{$i};
 	my $root = $interfaceref->{root};
 	if ( $i ne $root && substr( $interface, 0, length $root ) eq $root ) {
-	    #
-	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces and we do not set the root;
-	    #
 	    my $physical = map_physical( $interface, $interfaceref );
+	    
+	    my $copyref = { options  => $interfaceref->{options},
+			    bridge   => $interfaceref->{bridge} ,
+			    name     => $i ,
+			    number   => $interfaceref->{number} ,
+			    physical => $physical ,
+			    base     => chain_base( $physical ) ,
+			  };
 
-	    return $interfaces{$interface} = { options  => $interfaceref->{options},
-					       bridge   => $interfaceref->{bridge} ,
-					       name     => $i ,
-					       number   => $interfaceref->{number} ,
-					       physical => $physical,
-					       base     => chain_base( $physical ),
-					     };
+	    $interfaces{$interface} = $copyref if $cache;
+
+	    return $copyref;
 	}
     }
 
@@ -1228,7 +1230,7 @@ sub get_physical( $ ) {
 #
 sub physical_name( $ ) {
     my $device = shift;
-    my $devref = known_interface $device;
+    my $devref = known_interface( $device, 0 );
 
     $devref ? $devref->{physical} : $device;
 }
@@ -1287,24 +1289,31 @@ sub find_interfaces_by_option( $ ) {
 }
 
 #
-# Returns reference to array of interfaces with the passed option
+# Returns reference to array of interfaces with the passed option. Unlike the preceding function, this one:
 #
-sub find_interfaces_by_option1( $ ) {
-    my $option = $_[0];
+# - All entries in %interfaces are searched.
+# - The second argument is used to return an indication of the presents of wildcard interfaces 
+#
+sub find_interfaces_by_option1( $\$ ) {
+    my ( $option, $wildref) = @_;
     my @ints = ();
+    my $wild = 0;
 
-    for my $interface ( keys %interfaces ) {
+    for my $interface ( sort { $interfaces{$a}->{number} <=> $interfaces{$b}->{number} }
+			keys %interfaces ) {
 	my $interfaceref = $interfaces{$interface};
 
 	next unless defined $interfaceref->{physical};
-	next if $interfaceref->{physical} =~ /\+/;
 
 	my $optionsref = $interfaceref->{options};
+
 	if ( $optionsref && defined $optionsref->{$option} ) {
+	    $wild ||= ( $interfaceref->{physical} =~ /\+$/ );
 	    push @ints , $interface
 	}
     }
 
+    $$wildref = $wild;
     \@ints;
 }
 

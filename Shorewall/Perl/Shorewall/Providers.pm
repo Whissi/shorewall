@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_13';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -275,7 +275,7 @@ sub add_a_provider( ) {
 	require_capability 'REALM_MATCH', "Configuring multiple providers through one interface", "s";
     }
 
-    fatal_error "Unknown Interface ($interface)" unless known_interface $interface;
+    fatal_error "Unknown Interface ($interface)" unless known_interface( $interface, 1 );
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
     my $physical    = get_physical $interface;
@@ -846,53 +846,100 @@ sub lookup_provider( $ ) {
 sub handle_optional_interfaces( $ ) {
 
     my $returnvalue = verify_required_interfaces( shift );
-    #
-    # find_interfaces_by_option1() does not return wildcard interfaces. If an interface is defined
-    # as a wildcard in /etc/shorewall/interfaces, then only specific interfaces matching that
-    # wildcard are returned.
-    #
-    my $interfaces = find_interfaces_by_option1 'optional';
+    my $require     = $config{REQUIRE_INTERFACE};
+    my $wildcards   = 0;
+    my $interfaces  = find_interfaces_by_option1 'optional', $wildcards;
 
-    if ( $config{REQUIRE_INTERFACE} ) {
-	emit( 'HAVE_INTERFACE=' );
-	emit( '' );
-    }
+    emit( 'HAVE_INTERFACE=', '' ) if $require;
 
     if ( @$interfaces ) {
-	for my $interface ( @$interfaces ) {
-	    my $provider = $provider_interfaces{$interface};
-	    my $physical = get_physical $interface;
-	    my $base     = uc chain_base( $physical );
+	#
+	# Clear the '_IS_USABLE' variables
+	#
+	emit( join( '_', 'SW', uc chain_base( get_physical( $_ ) ) , 'IS_USABLE=' ) ) for @$interfaces;
 
-	    emit( '' );
+	if ( $wildcards ) {
+	    emit( '', 
+		  'interfaces=$($IP -' . $family . ' addr list | egrep \'^[[:digit:]]+\' | while read number interface rest; do echo ${interface%:}; done)',
+		  '',
+		  'for interface in $interfaces; do'
+		);
 
-	    if ( $provider ) {
-		#
-		# This interface is associated with a non-shared provider -- get the provider table entry
-		#
-		my $providerref = $providers{$provider};
+	    push_indent;
 
-		if ( $providerref->{gatewaycase} eq 'detect' ) {
-		    emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
-		} else {
-		    emit qq(if interface_is_usable $physical; then);
-		}
+	    emit ( 'case "$interface" in'
+		 );
+
+	    push_indent;
+	} else {
+	    emit '';
+	}
+
+	for my $interface ( grep $provider_interfaces{$_}, @$interfaces ) {
+	    my $provider    = $provider_interfaces{$interface};
+	    my $physical    = get_physical $interface;
+	    my $base        = uc chain_base( $physical );
+	    my $providerref = $providers{$provider};
+
+	    emit( "$physical)" ) if $wildcards;
+
+	    push_indent;
+
+	    if ( $providerref->{gatewaycase} eq 'detect' ) {
+		emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
 	    } else {
-		#
-		# Not a provider interface
-		#
 		emit qq(if interface_is_usable $physical; then);
 	    }
 
-	    emit( '    HAVE_INTERFACE=Yes' ) if $config{REQUIRE_INTERFACE};
+	    emit( '    HAVE_INTERFACE=Yes' ) if $require;
 
 	    emit( "    SW_${base}_IS_USABLE=Yes" ,
-		  'else' ,
-		  "    SW_${base}_IS_USABLE=" ,
 		  'fi' );
+
+	    emit( ';;' ), pop_indent if $wildcards;
 	}
 
-	if ( $config{REQUIRE_INTERFACE} ) {
+	for my $interface ( grep ! $provider_interfaces{$_}, @$interfaces ) {
+	    my $physical    = get_physical $interface;
+	    my $base        = uc chain_base( $physical );
+	    my $case        = $physical;
+	    my $wild        = $case =~ s/\+$/*/;
+
+	    if ( $wildcards ) {
+		emit( "$case)" );
+		push_indent;
+
+		
+		if ( $wild ) {
+		    emit( qq(if [ -z "\$SW_${base}_IS_USABLE" ]; then) );
+		    push_indent; 
+		    emit ( 'if interface_is_usable $interface; then' );
+		} else {
+		    emit ( "if interface_is_usable $physical; then" );
+		}
+	    } else {
+		emit ( "if interface_is_usable $physical; then" );
+	    }
+
+	    emit ( '    HAVE_INTERFACE=Yes' ) if $require;
+
+	    emit ( "    SW_${base}_IS_USABLE=Yes" ,
+		   'fi' );
+
+	    if ( $wildcards ) {
+		pop_indent, emit( 'fi' ) if $wild;
+		emit( ';;' );
+		pop_indent;
+	    }
+	}
+
+	if ( $wildcards ) {
+	    emit( 'esac' );
+	    pop_indent;
+	    emit('done' );
+	}
+
+	if ( $require ) {
 	    emit( '',
 		  'if [ -z "$HAVE_INTERFACE" ]; then' ,
 		  '    case "$COMMAND" in',

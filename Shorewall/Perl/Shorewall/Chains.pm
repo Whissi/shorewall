@@ -2437,7 +2437,7 @@ sub do_length( $ ) {
 #
 sub match_source_dev( $ ) {
     my $interface = shift;
-    my $interfaceref =  known_interface( $interface );
+    my $interfaceref =  known_interface( $interface, 0 );
     $interface = $interfaceref->{physical} if $interfaceref;
     return '' if $interface eq '+';
     if ( $interfaceref && $interfaceref->{options}{port} ) {
@@ -2452,7 +2452,7 @@ sub match_source_dev( $ ) {
 #
 sub match_dest_dev( $ ) {
     my $interface = shift;
-    my $interfaceref =  known_interface( $interface );
+    my $interfaceref =  known_interface( $interface, 0 );
     $interface = $interfaceref->{physical} if $interfaceref;
     return '' if $interface eq '+';
     if ( $interfaceref && $interfaceref->{options}{port} ) {
@@ -3251,7 +3251,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Verify Interface, if any
     #
     if ( $iiface ) {
-	fatal_error "Unknown Interface ($iiface)" unless known_interface $iiface;
+	fatal_error "Unknown Interface ($iiface)" unless known_interface( $iiface, 0 );
 
 	if ( $restriction & POSTROUTE_RESTRICT ) {
 	    #
@@ -3341,7 +3341,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Verify Destination Interface, if any
     #
     if ( $diface ) {
-	fatal_error "Unknown Interface ($diface)" unless known_interface $diface;
+	fatal_error "Unknown Interface ($diface)" unless known_interface( $diface, 0 );
 
 	if ( $restriction & PREROUTE_RESTRICT ) {
 	    #

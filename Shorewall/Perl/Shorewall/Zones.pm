@@ -155,8 +155,12 @@ our %reservedName = ( all => 1,
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                     number      => <ordinal position in the interfaces file>
 #                                     physical    => <physical interface name>
+#                                     base        => <shell variable base representing this interface>
 #                                   }
 #                 }
+#
+#    The purpose of the 'base' member is to ensure that the base names associated with the physical interfaces are assigned in
+#    the same order as the interfaces are encountered in the configuration files. 
 #
 our @interfaces;
 our %interfaces;
@@ -1051,7 +1055,8 @@ sub process_interface( $$ ) {
 						       broadcasts => $broadcasts ,
 						       options    => \%options ,
 						       zone       => '',
-						       physical   => $physical
+						       physical   => $physical ,
+						       base       => chain_base( $physical )
 						     };
 
     if ( $zone ) {
@@ -1163,11 +1168,14 @@ sub known_interface($)
 	    #
 	    # Cache this result for future reference. We set the 'name' to the name of the entry that appears in /etc/shorewall/interfaces and we do not set the root;
 	    #
+	    my $physical = map_physical( $interface, $interfaceref );
+
 	    return $interfaces{$interface} = { options  => $interfaceref->{options},
 					       bridge   => $interfaceref->{bridge} ,
 					       name     => $i ,
 					       number   => $interfaceref->{number} ,
-					       physical => map_physical( $interface, $interfaceref )
+					       physical => $physical,
+					       base     => chain_base( $physical ),
 					     };
 	}
     }

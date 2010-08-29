@@ -3494,7 +3494,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the following rules based on the mark value
 	    #
 	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' unless $chainref->{table} eq 'mangle';
-	    require_capability 'KLUDGEFREE' ,    'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' if $rule -~ / -m mark /;
+	    require_capability 'KLUDGEFREE' ,    'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' if $rule =~ / -m mark /;
 	    #
 	    # Clear the exclusion bit
 	    #

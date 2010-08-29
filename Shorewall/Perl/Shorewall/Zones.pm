@@ -164,6 +164,7 @@ our @bport_zones;
 our %ipsets;
 our %physical;
 our %basemap;
+our %mapbase;
 our $family;
 our $have_ipsec;
 our $baseseq;
@@ -220,6 +221,7 @@ sub initialize( $ ) {
     %ipsets = ();
     %physical = ();
     %basemap = ();
+    %mapbase = ();
     $baseseq = 0;
 
     if ( $family == F_IPV4 ) {
@@ -800,15 +802,19 @@ sub chain_base($) {
 	#
 	$chain = join( '' , 'if_', $chain ) if $chain =~ /^[0-9]/;
 	#
-	# Save and return mapped name
+	# Create a new unique name
 	#
-	$name = join ( '_', $chain, ++$baseseq );
+	1 while $mapbase{$name = join ( '_', $chain, ++$baseseq )};
     } else {
 	#
-	# We'll store the identity mapping
+	# We'll store the identity mapping if it is unique
 	#
-	$name = $chain;
+	$chain = join( '_', $key , ++$baseseq ) while $mapbase{$name = $chain};
     }
+    #
+    # Store the reverse mapping
+    #
+    $mapbase{$name} = $key;
     #
     # Store the mapping
     #

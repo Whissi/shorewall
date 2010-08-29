@@ -102,11 +102,11 @@
 
     Corrected in Shorewall 4.4.11.4.
 
-15) The compiler erroneously allows exclusion in CONTINUE rules
-    (tcrules and rules files). The generated iptables (ip6tables) rules
-    do not work as expected.
+15) The compiler erroneously allows non-trivial exclusion in CONTINUE
+    rules (tcrules and rules files). The generated iptables (ip6tables)
+    rules do not work as expected.
 
-    Corrected in Shorewall 4.4.11.4.
+    Workaround: Don't use exclusion in CONTINUE rules.
 
 16) Exclusion in blacklist file entries is correctly validated but is
     then ignored when generating iptables (ip6tables) input.

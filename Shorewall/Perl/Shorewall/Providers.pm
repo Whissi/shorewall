@@ -845,14 +845,14 @@ sub lookup_provider( $ ) {
 #
 sub handle_optional_interfaces( $ ) {
 
-    my $returnvalue = verify_required_interfaces( shift );
-    my $require     = $config{REQUIRE_INTERFACE};
-    my $wildcards   = 0;
-    my $interfaces  = find_interfaces_by_option1 'optional', $wildcards;
-
-    emit( 'HAVE_INTERFACE=', '' ) if $require;
+    my ( $interfaces, $wildcards )  = find_interfaces_by_option1 'optional';
 
     if ( @$interfaces ) {
+	my $require     = $config{REQUIRE_INTERFACE};
+	
+	verify_required_interfaces( shift );
+
+	emit( 'HAVE_INTERFACE=', '' ) if $require;
 	#
 	# Clear the '_IS_USABLE' variables
 	#
@@ -960,10 +960,10 @@ sub handle_optional_interfaces( $ ) {
 		);
 	}
 
-	$returnvalue = 1;
+	return 1;
     }
 
-    $returnvalue;
+    verify_required_interfaces( shift );
 }
 
 #

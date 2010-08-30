@@ -1292,10 +1292,10 @@ sub find_interfaces_by_option( $ ) {
 # Returns reference to array of interfaces with the passed option. Unlike the preceding function, this one:
 #
 # - All entries in %interfaces are searched.
-# - The second argument is used to return an indication of the presents of wildcard interfaces 
+# - Returns a two-element list; the second element indicates whether any members of the list have wildcard physical names
 #
-sub find_interfaces_by_option1( $\$ ) {
-    my ( $option, $wildref) = @_;
+sub find_interfaces_by_option1( $ ) {
+    my $option = $_[0];
     my @ints = ();
     my $wild = 0;
 
@@ -1313,8 +1313,9 @@ sub find_interfaces_by_option1( $\$ ) {
 	}
     }
 
-    $$wildref = $wild;
-    \@ints;
+    return unless defined wantarray;
+
+    wantarray ? ( \@ints, $wild ) : \@ints;
 }
 
 #

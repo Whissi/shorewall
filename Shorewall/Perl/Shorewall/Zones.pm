@@ -1155,7 +1155,7 @@ sub map_physical( $$ ) {
 # If the passed name matches a wildcard and 'cache' is true, an entry for the name is added in 
 # %interfaces.
 #
-sub known_interface($$)
+sub known_interface($;$)
 {
     my ( $interface, $cache ) = @_;
     my $interfaceref = $interfaces{$interface};
@@ -1230,7 +1230,7 @@ sub get_physical( $ ) {
 #
 sub physical_name( $ ) {
     my $device = shift;
-    my $devref = known_interface( $device, 0 );
+    my $devref = known_interface $device;
 
     $devref ? $devref->{physical} : $device;
 }

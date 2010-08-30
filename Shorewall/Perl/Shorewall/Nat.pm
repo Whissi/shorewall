@@ -142,7 +142,7 @@ sub process_one_masq( )
 	    $rule .= "-m realm --realm $realm ";
 	}
 
-	fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface, 0 );
+	fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 	unless ( $interfaceref->{root} ) {
 	    $rule .= match_dest_dev( $interface );
@@ -314,7 +314,7 @@ sub do_one_nat( $$$$$ )
     my $rulein = '';
     my $ruleout = '';
 
-    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface, 0 );
+    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
     unless ( $interfaceref->{root} ) {
 	$rulein  = match_source_dev $interface;
@@ -408,7 +408,7 @@ sub setup_netmap() {
 	    my $ruleout = '';
 	    my $iface = $interface;
 
-	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface, 0 );
+	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 	    unless ( $interfaceref->{root} ) {
 		$rulein  = match_source_dev( $interface );

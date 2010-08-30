@@ -124,7 +124,14 @@ deleteallchains() {
 # Generate a list of all network interfaces on the system
 #
 find_all_interfaces() {
-    ${IP:-ip} link list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed 's/:$//'
+    ${IP:-ip} link list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed -r 's/(@.*)?:$//'
+}
+
+#
+# Generate a list of all network interfaces on the system that have an ipv4 address
+#
+find_all_interfaces1() {
+    ${IP:-ip} -4 addr list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed -r 's/(@.*)?:$//'
 }
 
 #

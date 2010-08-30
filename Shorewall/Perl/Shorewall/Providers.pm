@@ -859,17 +859,15 @@ sub handle_optional_interfaces( $ ) {
 	emit( join( '_', 'SW', uc chain_base( get_physical( $_ ) ) , 'IS_USABLE=' ) ) for @$interfaces;
 
 	if ( $wildcards ) {
+	    #
+	    # We must consider all interfaces with an address in $family -- generate a list of such addresses. 
+	    #
 	    emit( '', 
-		  'interfaces=$($IP -' . $family . ' addr list | egrep \'^[[:digit:]]+\' | while read number interface rest; do echo ${interface%:}; done)',
-		  '',
-		  'for interface in $interfaces; do'
+		  'for interface in $(find_all_interfaces1); do',
 		);
 
 	    push_indent;
-
-	    emit ( 'case "$interface" in'
-		 );
-
+	    emit ( 'case "$interface" in' );
 	    push_indent;
 	} else {
 	    emit '';
@@ -881,9 +879,7 @@ sub handle_optional_interfaces( $ ) {
 	    my $base        = uc chain_base( $physical );
 	    my $providerref = $providers{$provider};
 
-	    emit( "$physical)" ) if $wildcards;
-
-	    push_indent;
+	    emit( "$physical)" ), push_indent if $wildcards;
 
 	    if ( $providerref->{gatewaycase} eq 'detect' ) {
 		emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
@@ -908,7 +904,6 @@ sub handle_optional_interfaces( $ ) {
 	    if ( $wildcards ) {
 		emit( "$case)" );
 		push_indent;
-
 		
 		if ( $wild ) {
 		    emit( qq(if [ -z "\$SW_${base}_IS_USABLE" ]; then) );
@@ -922,7 +917,6 @@ sub handle_optional_interfaces( $ ) {
 	    }
 
 	    emit ( '    HAVE_INTERFACE=Yes' ) if $require;
-
 	    emit ( "    SW_${base}_IS_USABLE=Yes" ,
 		   'fi' );
 
@@ -934,6 +928,10 @@ sub handle_optional_interfaces( $ ) {
 	}
 
 	if ( $wildcards ) {
+	    emit( '*)' ,
+		  '    ;;'
+		);
+	    pop_indent;
 	    emit( 'esac' );
 	    pop_indent;
 	    emit('done' );

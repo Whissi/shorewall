@@ -1429,16 +1429,16 @@ sub verify_required_interfaces( $ ) {
 
 		$physical =~ s/\+$/*/;
 
-		emit( "${base}_IS_UP=\n",
+		emit( "SW_${base}_IS_UP=\n",
 		      'for interface in $(find_all_interfaces); do',
 		      '    case $interface in',
 		      "        $physical)",
-		      "            interface_is_usable \$interface && ${base}_IS_UP=Yes && break",
+		      "            interface_is_usable \$interface && SW_${base}_IS_UP=Yes && break",
 		      '            ;;',
 		      '    esac',
 		      'done',
 		      '',
-		      "if [ -z \"\$${base}_IS_UP\" ]; then",
+		      "if [ -z \"\$SW_${base}_IS_UP\" ]; then",
 		      "    startup_error \"None of the required interfaces $physical are available\"",
 		      "fi\n"
 		    );

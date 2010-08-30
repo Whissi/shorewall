@@ -3380,7 +3380,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# We have non-trivial exclusion -- need to create an exclusion chain
 	#
-	fatal_error "Exclusion is not possible in ACCEPT+/CONTINUE/NONAT rules" if $disposition eq 'RETURN';
+	fatal_error "Exclusion is not possible in ACCEPT+/CONTINUE/NONAT rules" if $disposition eq 'RETURN' || $disposition eq 'CONTINUE';
 
 	#
 	# Create the Exclusion Chain

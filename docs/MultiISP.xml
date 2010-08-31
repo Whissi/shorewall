@@ -1561,7 +1561,7 @@ connection {
 
 connection {
     name=Comcast
-    checkip=${ETH0_GATEWAY:-71.231.152.1}
+    checkip=${SW_ETH0_GATEWAY:-71.231.152.1}
     device=$COM_IF
     ttl=1
 }
@@ -1577,9 +1577,14 @@ EOF
    /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
 }</programlisting>
 
-        <para>eth3 has a dynamic IP address so I need to use the
-        Shorewall-detected gateway address ($ETH3_GATEWAY). I supply a default
-        value to be used in the event that detection fails.</para>
+        <para>eth0 has a dynamic IP address so I need to use the
+        Shorewall-detected gateway address ($SW_ETH1_GATEWAY). I supply a
+        default value to be used in the event that detection fails.</para>
+
+        <note>
+          <para>In Shorewall 4.4.7 and earlier, the variable name is
+          ETH1_GATEWAY.</para>
+        </note>
 
         <para><filename>/etc/shorewall/started</filename>:</para>
 

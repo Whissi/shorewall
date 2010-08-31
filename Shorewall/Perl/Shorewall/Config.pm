@@ -3094,7 +3094,7 @@ sub get_configuration( $ ) {
 
     if ( $config{PROVIDER_OFFSET} ) {
 	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
-	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 32' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 31;
+	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 31' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 31;
 	$globals{EXCLUSION_MASK} = 1 << ( $config{PROVIDER_OFFSET} + $config{PROVIDER_BITS} );
     } elsif ( $config{MASK_BITS} >= $config{PROVIDER_BITS} ) {
 	$globals{EXCLUSION_MASK} = 1 << $config{MASK_BITS};

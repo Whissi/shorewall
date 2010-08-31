@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_notrack );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_11';
+our $VERSION = '4.4_13';
 
 #
 # Notrack

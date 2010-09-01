@@ -3491,14 +3491,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	if ( $disposition eq 'RETURN' || $disposition eq 'CONTINUE' ) {
 	    #
-	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the following rules based on the mark value
+	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the rules generated in the block below on the mark value
 	    #
 	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' unless $chainref->{table} eq 'mangle';
 	    require_capability 'KLUDGEFREE' ,    'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' if $rule =~ / -m mark /;
 	    #
 	    # Clear the exclusion bit
 	    #
-	    add_rule $chainref = $chainref , '-j MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
+	    add_rule $chainref , '-j MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
 	    #
 	    # Mark packet if it matches any of the exclusions
 	    #

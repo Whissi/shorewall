@@ -2607,6 +2607,7 @@ sub determine_capabilities() {
 	$capabilities{LOG_TARGET}      = detect_capability( 'LOG_TARGET' );
 	$capabilities{LOGMARK_TARGET}  = detect_capability( 'LOGMARK_TARGET' );
 	$capabilities{FLOW_FILTER}     = detect_capability( 'FLOW_FILTER' );
+	$capabilities{FWMARK_RT_MASK}  = detect_capability( 'FWMARK_RT_MASK' );
 
 
 	qt1( "$iptables -F $sillyname" );

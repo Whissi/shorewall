@@ -54,7 +54,8 @@
         role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
         role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
         role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
-        role="bold">CP</emphasis>|<emphasis role="bold">CT</emphasis>}]</term>
+        role="bold">CP</emphasis>|<emphasis
+        role="bold">CT</emphasis>|I|CI}]</term>
 
         <listitem>
           <para>May assume one of the following values.</para>
@@ -76,15 +77,18 @@
 
               <para>May optionally be followed by <emphasis
               role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
-              or <emphasis role="bold">:T</emphasis> where<emphasis
-              role="bold"> :P</emphasis> indicates that marking should occur
-              in the PREROUTING chain, <emphasis role="bold">:F</emphasis>
-              indicates that marking should occur in the FORWARD chain and
-              <emphasis role="bold">:T</emphasis> indicates that marking
-              should occur in the POSTROUTING chain. If neither <emphasis
-              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
-              nor <emphasis role="bold">:T</emphasis> follow the mark value
-              then the chain is determined as follows:</para>
+              or <emphasis role="bold">:T</emphasis>, <emphasis role="bold">:I
+              </emphasis>where<emphasis role="bold"> :P</emphasis> indicates
+              that marking should occur in the PREROUTING chain, <emphasis
+              role="bold">:F</emphasis> indicates that marking should occur in
+              the FORWARD chain, <emphasis role="bold">:I </emphasis>indicates
+              that marking should occur in the INPUT chain (added in Shorewall
+              4.4.13) and <emphasis role="bold">:T</emphasis> indicates that
+              marking should occur in the POSTROUTING chain. If neither
+              <emphasis role="bold">:P</emphasis>, <emphasis
+              role="bold">:F</emphasis> nor <emphasis
+              role="bold">:T</emphasis> follow the mark value then the chain
+              is determined as follows:</para>
 
               <para>- If the SOURCE is <emphasis
               role="bold">$FW</emphasis>[<emphasis
@@ -137,7 +141,15 @@
                   <term>CT</term>
 
                   <listitem>
-                    <para>Mark the connecdtion in the POSTROUTING chain</para>
+                    <para>Mark the connection in the POSTROUTING chain</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>CI (added in Shorewall 4.4.13)</term>
+
+                  <listitem>
+                    <para>Mark the connection in the INPUT chain.</para>
                   </listitem>
                 </varlistentry>
               </variablelist>

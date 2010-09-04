@@ -165,6 +165,7 @@ our %tcclasses;
 our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
+		      tcin       => INPUT_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT );
 
 our $family;
@@ -1374,13 +1375,13 @@ sub setup_traffic_shaping() {
 sub process_secmark_rule() {
     my ( $secmark, $chain, $source, $dest, $proto, $dport, $sport, $mark ) = split_line( 2, 8 , 'Secmarks file' );
 
-    my %chns = ( T => [ 'tcpost'   , POSTROUTE_RESTRICT ] ,
-		 P => [ 'tcpre'    , PREROUTE_RESTRICT ] ,
-		 F => [ 'forward'  , NO_RESTRICT ] ,
-		 I => [ 'tcin' ,   , INPUT_RESTRICT ] ,
-		 O => [ 'tcout' ,  , OUTPUT_RESTRICT ] );
+    my %chns = ( T => 'tcpost'  ,
+		 P => 'tcpre'   ,
+		 F => 'forward' ,
+		 I => 'tcin'    ,
+		 O => 'tcout'   , );
 
-    my ( $chain1 , $restriction ) = @{$chns{$chain}};
+    my $chain1= $chns{$chain};
 
     fatal_error "Invalid or missing CHAIN ( $chain )" unless $chain1;
 
@@ -1393,7 +1394,7 @@ sub process_secmark_rule() {
     $disposition =~ s/ .*//;
 
     expand_rule( ensure_mangle_chain( $chain1 ) , 
-		 $restriction,
+		 $restrictions{$chain1} ,
 		 do_proto( $proto, $dport, $sport ) .
 		 do_test( $mark, $globals{TC_MASK} ) ,
 		 $source , 

@@ -248,6 +248,13 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 4)  Previously, if REQUIRE_INTERFACE=Yes then start/restart would fail
     if the last optional interface tested was not available.
 
+5)  Previously, the interface option combination of 'optional' and
+    'upnpclient' did not work correctly.
+
+6)  Earlier releases allowed CONTINUE rules with exclusion. These rules 
+    generated valid but incorrect iptables (ip6tables) input. Such
+    rules are now disallowed.
+
 4.4.12
 
 

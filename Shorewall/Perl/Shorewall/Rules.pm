@@ -680,7 +680,7 @@ sub add_common_rules() {
 
 		if ( interface_is_optional $interface ) {
 		    add_commands( $chainref,
-				  qq(if [ -n "SW_\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
+				  qq(if [ -n "\$SW_${base}_IS_USABLE" -a -n "$variable" ]; then) ,
 				  '    echo "-A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT" >&3) ,
 				  qq(fi) );
 		} else {

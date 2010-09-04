@@ -44,33 +44,40 @@ our $VERSION = '4.4_13';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
-		    fw       => 1
+		    fw       => 1,
+		    fwi      => 0,
 		  } ,
 	    CT => { chain  => 'tcpost' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
-		    fw       => 1
+		    fw       => 1 ,
+		    fwi      => 0,
 		    } ,
 	    C  => { target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
-		    fw       => 1
+		    fw       => 1 ,
+		    fwi      => 1 ,
 		    } ,
 	    P  => { chain    => 'tcpre' ,
 		    connmark => 0 ,
-		    fw       => 0
+		    fw       => 0 ,
+		    fwi      => 0 ,
 		    } ,
 	    CP => { chain    => 'tcpre' ,
 		    target => 'CONNMARK --set-mark' ,
 		    connmark => 1 ,
-		    fw       => 0
+		    fw       => 0 ,
+		    fwi      => 0 ,
 		    } ,
 	    F =>  { chain    => 'tcfor' ,
 		    connmark => 0 ,
-		    fw       => 0
+		    fw       => 0 ,
+		    fwi      => 0 ,
 		    } ,
 	    CF => { chain    => 'tcfor' ,
 		    connmark => 1 ,
 		    fw       => 0 ,
+		    fwi      => 0 ,
 		    } ,
 	    );
 
@@ -218,12 +225,23 @@ sub process_tc_rule( ) {
 	}
     }
 
+    if ( $dest ) {
+	if ( $dest eq $fw ) {
+	    $chain = 'tcin';
+	    $dest  = '';
+	} else {
+	    $chain = 'tcin' if $dest =~ s/^($fw)://;
+	}
+    }
+
     if ( $designator ) {
 	$tcsref = $tcs{$designator};
 
 	if ( $tcsref ) {
 	    if ( $chain eq 'tcout' ) {
 		fatal_error "Invalid chain designator for source $fw" unless $tcsref->{fw};
+	    } elsif ( $chain eq 'tcin' ) {
+		fatal_error "Invalid chain designator for dest $fw" unless $tcsref->{fwi};
 	    }
 
 	    $chain    = $tcsref->{chain}                       if $tcsref->{chain};
@@ -1351,6 +1369,46 @@ sub setup_traffic_shaping() {
 }
 
 #
+# Process a record in the secmarks file
+#
+sub process_secmark_rule() {
+    my ( $secmark, $chain, $source, $dest, $proto, $dport, $sport, $mark ) = split_line( 2, 8 , 'Secmarks file' );
+
+    my %chns = ( T => [ 'tcpost'   , POSTROUTE_RESTRICT ] ,
+		 P => [ 'tcpre'    , PREROUTE_RESTRICT ] ,
+		 F => [ 'forward'  , NO_RESTRICT ] ,
+		 I => [ 'tcin' ,   , INPUT_RESTRICT ] ,
+		 O => [ 'tcout' ,  , OUTPUT_RESTRICT ] );
+
+    my ( $chain1 , $restriction ) = @{$chns{$chain}};
+
+    fatal_error "Invalid or missing CHAIN ( $chain )" unless $chain1;
+
+    my $target = $mark eq 'SAVE'    ? 'CONNSECMARK --save' :
+	         $mark eq 'RESTORE' ? 'CONNSECMARK --restore' :
+		 "SECMARK --selctx $secmark";
+
+    my $disposition = $target;
+
+    $disposition =~ s/ .*//;
+
+    expand_rule( ensure_mangle_chain( $chain1 ) , 
+		 $restriction,
+		 do_proto( $proto, $dport, $sport ) .
+		 do_test( $mark, $globals{TC_MASK} ) ,
+		 $source , 
+		 $dest , 
+		 '' , 
+		 $target , 
+		 '' , 
+		 $disposition,
+		 '' );
+
+    progress_message "Secmarks rule \"$currentline\" $done";
+		 
+}
+
+#
 # Process the tcrules file and setup traffic shaping
 #
 sub setup_tc() {
@@ -1362,6 +1420,7 @@ sub setup_tc() {
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    ensure_mangle_chain 'tcfor';
 	    ensure_mangle_chain 'tcpost';
+	    ensure_mangle_chain 'tcin';
 	}
 
 	my $mark_part = '';
@@ -1388,6 +1447,7 @@ sub setup_tc() {
 	    add_rule( $mangle_table->{FORWARD},     "-j MARK --set-mark 0${mask}" ) if $config{FORWARD_CLEAR_MARK};
 	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
 	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;
+	    add_jump $mangle_table->{INPUT} ,       'tcin' ,  0;
 	}
     }
 
@@ -1456,9 +1516,19 @@ sub setup_tc() {
 
 	    clear_comment;
 	}
-    }
+
+	if ( my $fn = open_file 'secmarks' ) {
+
+	    first_entry "$doing $fn...";
+
+	    process_secmark_rule while read_a_line;
+	
+	    clear_comment;
+	}
+   }
 
     add_rule ensure_chain( 'mangle' , 'tcpost' ), $_ for @deferred_rules;
+
 
     handle_stickiness( $sticky );
 }

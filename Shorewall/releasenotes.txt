@@ -226,10 +226,14 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 
 4.4.12.2
 
-1)  The fix for COMMENT and OPTIMIZE 8-15 in 4.4.12.1 missed one case
+1)  Earlier releases allowed CONTINUE rules with exclusion. These rules
+    generated valid but incorrect iptables (ip6tables) input. Such
+    rules are now disallowed.
+
+2)  The fix for COMMENT and OPTIMIZE 8-15 in 4.4.12.1 missed one case
     which has mpe been corrected.
 
-2)  Previously, exclusion in the blacklist file was correctly validated
+3)  Previously, exclusion in the blacklist file was correctly validated
     but was then ignored when generating iptables (ip6tables) rules.
 
 4.4.12.1
@@ -251,12 +255,7 @@ I I I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 5)  Previously, the interface option combination of 'optional' and
     'upnpclient' did not work correctly.
 
-6)  Earlier releases allowed CONTINUE rules with exclusion. These rules 
-    generated valid but incorrect iptables (ip6tables) input. Such
-    rules are now disallowed.
-
 4.4.12
-
 
 1)  Previously, the Shorewall6-lite version of shorecap was using
     iptables rather than ip6tables, with the result that many capabilities

@@ -1373,7 +1373,12 @@ sub setup_traffic_shaping() {
 # Process a record in the secmarks file
 #
 sub process_secmark_rule() {
-    my ( $secmark, $chain, $source, $dest, $proto, $dport, $sport, $mark ) = split_line( 2, 8 , 'Secmarks file' );
+    my ( $secmark, $chain, $source, $dest, $proto, $dport, $sport, $mark ) = split_line1( 2, 8 , 'Secmarks file' );
+
+    if ( $secmark eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
 
     my %chns = ( T => 'tcpost'  ,
 		 P => 'tcpre'   ,
@@ -1385,8 +1390,8 @@ sub process_secmark_rule() {
 
     fatal_error "Invalid or missing CHAIN ( $chain )" unless $chain1;
 
-    my $target = $mark eq 'SAVE'    ? 'CONNSECMARK --save' :
-	         $mark eq 'RESTORE' ? 'CONNSECMARK --restore' :
+    my $target = $secmark eq 'SAVE'    ? 'CONNSECMARK --save' :
+	         $secmark eq 'RESTORE' ? 'CONNSECMARK --restore' :
 		 "SECMARK --selctx $secmark";
 
     my $disposition = $target;

@@ -1517,7 +1517,9 @@ sub setup_tc() {
 
 	    clear_comment;
 	}
+    }
 
+    if ( $config{MANGLE_ENABLED} ) {
 	if ( my $fn = open_file 'secmarks' ) {
 
 	    first_entry "$doing $fn...";
@@ -1526,12 +1528,11 @@ sub setup_tc() {
 	
 	    clear_comment;
 	}
-   }
 
-    add_rule ensure_chain( 'mangle' , 'tcpost' ), $_ for @deferred_rules;
+	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_ for @deferred_rules;
 
-
-    handle_stickiness( $sticky );
+	handle_stickiness( $sticky );
+    }
 }
 
 1;

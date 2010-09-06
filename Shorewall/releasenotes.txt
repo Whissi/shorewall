@@ -175,6 +175,21 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     As part of this change, the tcrules file now accepts chain
     designators 'I' and 'CI' for marking packets in the input chain.
 
+4)  The 'blacklist' interface option may now have one of 2 values:
+
+    1 - Inbound blacklisting
+    2 - Outbond blacklisting
+
+    Inbound blacklisting is targeted for use on Internet-facing
+    interfaces. Incoming packets are passed against the blacklist
+    entries with the 'from' option (either explicitly or defaulted). 
+    Traffic originating on the firewall is passed against the blacklist
+    entries with the 'to' option.
+
+    Outbound blacklisting is targeted for use on internal
+    interfaces. Packets arriving on these interfaces is passed against
+    the blacklist entries with the 'to' option.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

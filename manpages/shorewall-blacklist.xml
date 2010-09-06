@@ -84,30 +84,50 @@
           then this column has no effect on the generated rule.</para>
 
           <note>
-            <para>Blacklisting is still restricted to traffic
-            <emphasis>arriving</emphasis> on an interface that has the
+            <para>In Shorewall 4.4.12, blacklisting is still restricted to
+            traffic <emphasis>arriving</emphasis> on an interface that has the
             'blacklist' option set. So to block traffic from your local
             network to an internet host, you must specify
             <option>blacklist</option> on your internal interface in <ulink
             url="shorewall-interfaces.html">shorewall-interfaces</ulink>
             (5).</para>
           </note>
+
+          <note>
+            <para>Beginning with Shorewall 4.4.13, entries specifying
+            <emphasis role="bold">to</emphasis> are applied based on the
+            <emphasis role="bold">blacklist</emphasis> setting in <ulink
+            url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5):</para>
+
+            <orderedlist>
+              <listitem>
+                <para>Input blacklisting (default if no value given). Traffic
+                entering this interface are passed against the entries in
+                <ulink
+                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
+                that have the <emphasis role="bold">from</emphasis> option
+                (specified or defaulted). Traffic originating on the firewall
+                and leaving by this interface is passed against the entries in
+                <ulink
+                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
+                that have the <emphasis role="bold">to</emphasis>
+                option.</para>
+              </listitem>
+
+              <listitem>
+                <para>Output blacklisting. Traffic entering on this interface
+                is passed against the entries in <ulink
+                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
+                that have the <emphasis role="bold">to</emphasis>
+                option.</para>
+              </listitem>
+            </orderedlist>
+          </note>
         </listitem>
       </varlistentry>
     </variablelist>
 
-    <para>When a packet arrives on an interface that has the <emphasis
-    role="bold">blacklist</emphasis> option specified in <ulink
-    url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5), its
-    source IP address and MAC address is checked against this file and
-    disposed of according to the <emphasis
-    role="bold">BLACKLIST_DISPOSITION</emphasis> and <emphasis
-    role="bold">BLACKLIST_LOGLEVEL</emphasis> variables in <ulink
-    url="shorewall.conf.html">shorewall.conf</ulink>(5). If <emphasis
-    role="bold">PROTOCOL</emphasis> or <emphasis
-    role="bold">PROTOCOL</emphasis> and <emphasis role="bold">PORTS</emphasis>
-    are supplied, only packets matching the protocol (and one of the ports if
-    <emphasis role="bold">PORTS</emphasis> supplied) are blocked.</para>
+    <para></para>
   </refsect1>
 
   <refsect1>

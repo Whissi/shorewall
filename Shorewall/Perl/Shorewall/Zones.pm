@@ -41,6 +41,8 @@ our @EXPORT = qw( NOTHING
 		  IP
 		  BPORT
 		  IPSEC
+		  BL_IN
+		  BL_OUT
 
 		  determine_zones
 		  zone_report
@@ -78,6 +80,7 @@ our @EXPORT = qw( NOTHING
 		  compile_updown
 		  validate_hosts_file
 		  find_hosts_by_option
+		  find_hosts_by_option1
 		  all_ipsets
 		  have_ipsec
 		 );
@@ -94,7 +97,12 @@ use constant { NOTHING    => 'NOTHING',
 	       IPSECPROTO => 'ah|esp|ipcomp',
 	       IPSECMODE  => 'tunnel|transport'
 	       };
-
+#
+# blacklist option values
+#
+use constant { 
+	      BL_IN      => 1 ,
+	      BL_OUT     => 2 };
 #
 # Zone Table.
 #
@@ -231,7 +239,7 @@ sub initialize( $ ) {
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
 				  arp_ignore  => ENUM_IF_OPTION,
-				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  blacklist   => ENUM_IF_OPTION,
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
@@ -264,7 +272,7 @@ sub initialize( $ ) {
 			     sourceonly => 1,
 			    );
     } else {
-	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+	%validinterfaceoptions = (  blacklist   => ENUM_IF_OPTION,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -645,6 +653,8 @@ sub add_group_to_zone($$$$$)
 
     $zoneref->{interfaces}{$interface} = 1;
 
+    $options->{blacklist} ||= 0;
+
     my @newnetworks;
     my @exclusions = ();
     my $new = \@newnetworks;
@@ -909,6 +919,7 @@ sub process_interface( $$ ) {
     my %options;
 
     $options{port} = 1 if $port;
+    $options{blacklist} = 0;
 
     my $hostoptionsref = {};
 
@@ -920,7 +931,7 @@ sub process_interface( $$ ) {
 
     if ( $options ne '-' ) {
 
-	my %hostoptions = ( dynamic => 0 );
+	my %hostoptions = ( blacklist => 0, dynamic => 0 );
 
 	for my $option (split_list1 $options, 'option' ) {
 	    next if $option eq '-';
@@ -952,8 +963,8 @@ sub process_interface( $$ ) {
 		$options{$option} = $value;
 		$hostoptions{$option} = $value if $hostopt;
 	    } elsif ( $type == ENUM_IF_OPTION ) {
-		fatal_error "The '$option' option may not be used with a wild-card interface name" if $wildcard;
 		if ( $option eq 'arp_ignore' ) {
+		    fatal_error q(The 'arp_ignore' option may not be used with a wild-card interface name) if $wildcard;
 		    if ( defined $value ) {
 			if ( $value =~ /^[1-3,8]$/ ) {
 			    $options{arp_ignore} = $value;
@@ -963,6 +974,11 @@ sub process_interface( $$ ) {
 		    } else {
 			$options{arp_ignore} = 1;
 		    }
+		} elsif ( $option eq 'blacklist' ) {
+		    $value = BL_IN unless ( defined $value && $value != '' );
+		    fatal_error "Invalid 'blacklist' value ( $value )" unless $value =~ /^[12]$/;
+		    $options{blacklist} = $value eq 1 ? BL_IN | BL_OUT : BL_OUT;
+		    $hostoptions{blacklist} = $options{blacklist} & BL_IN;
 		} else {
 		    assert( 0 );
 		}
@@ -1126,7 +1142,7 @@ sub validate_interfaces_file( $ ) {
 				    number     => $nextinum ,
 				    root       => $interface ,
 				    broadcasts => undef ,
-				    options    => {} ,
+				    options    => { blacklist => 0 } ,
 				    zone       => '',
 				    physical   => 'lo',
 				  };
@@ -1665,11 +1681,11 @@ sub process_host( ) {
 	}
     } 
 
-    my $optionsref = { dynamic => 0 };
+    my $optionsref = { blacklist => 0, dynamic => 0 };
 
     if ( $options ne '-' ) {
 	my @options = split_list $options, 'option';
-	my %options = ( dynamic => 0 );
+	my %options = ( blacklist => 0, dynamic => 0 );
 
 	for my $option ( @options ) {
 	    if ( $option eq 'ipsec' ) {
@@ -1776,6 +1792,33 @@ sub find_hosts_by_option( $ ) {
 
     for my $interface ( @interfaces ) {
 	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
+	    push @hosts, [ $interface, 'none', ALLIP , [] ];
+	}
+    }
+
+    \@hosts;
+}
+
+sub find_hosts_by_option1( $$ ) {
+    my ($option, $bit ) = @_;
+    my @hosts;
+
+    for my $zone ( grep $zones{$_}{type} != FIREWALL , @zones ) {
+	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
+	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
+		for my $host ( @{$arrayref} ) {
+		    if ( $host->{options}{$option} & $bit ) {
+			for my $net ( @{$host->{hosts}} ) {
+			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}];
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    for my $interface ( @interfaces ) {
+	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} & $bit ) {
 	    push @hosts, [ $interface, 'none', ALLIP , [] ];
 	}
     }

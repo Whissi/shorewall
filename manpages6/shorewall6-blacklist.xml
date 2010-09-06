@@ -94,6 +94,38 @@
             url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>
             (5).</para>
           </note>
+
+          <note>
+            <para>Beginning with Shorewall 4.4.13, entries specifying
+            <emphasis role="bold">to</emphasis> are applied to traffic based
+            on the <emphasis role="bold">blacklist</emphasis> setting in
+            <ulink
+            url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).</para>
+
+            <orderedlist>
+              <listitem>
+                <para>Input blacklisting (default if no value given). Traffic
+                entering this interface are passed against the entries in
+                <ulink
+                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
+                that have the <emphasis role="bold">from</emphasis> option
+                (specified or defaulted). Traffic originating on the firewall
+                and leaving by this interface is passed against the entries in
+                <ulink
+                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
+                that have the <emphasis role="bold">to</emphasis>
+                option.</para>
+              </listitem>
+
+              <listitem>
+                <para>Output blacklisting. Traffic entering on this interface
+                is passed against the entries in <ulink
+                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
+                that have the <emphasis role="bold">to</emphasis>
+                option.</para>
+              </listitem>
+            </orderedlist>
+          </note>
         </listitem>
       </varlistentry>
     </variablelist>

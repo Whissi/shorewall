@@ -48,14 +48,10 @@ our @EXPORT = qw( process_tos
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
 our $VERSION = '4.4_13';
 
-#
-# Set to one if we find a SECTION
-#
 our $macro_nest_level;
 our $current_param;
 our @param_stack;
 our $family;
-
 #
 # When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
 #
@@ -217,16 +213,19 @@ sub add_rule_pair( $$$$ ) {
 
 sub setup_blacklist() {
 
-    my $hosts = find_hosts_by_option 'blacklist';
+    my $hosts  = find_hosts_by_option1 'blacklist', BL_IN;
+    my $hosts1 = find_hosts_by_option1 'blacklist', BL_OUT;
     my $chainref;
+    my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
     #
     # We go ahead and generate the blacklist chain and jump to it, even if it turns out to be empty. That is necessary
     # for 'refresh' to work properly.
     #
-    if ( @$hosts ) {
-	$chainref = dont_delete new_standard_chain 'blacklst';
+    if ( @$hosts || @$hosts1 ) {
+	$chainref  = dont_delete new_standard_chain 'blacklst' if @$hosts;
+	$chainref1 = dont_delete new_standard_chain 'blackout' if @$hosts1;
 
 	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';
@@ -250,7 +249,7 @@ sub setup_blacklist() {
 	    while ( read_a_line ) {
 
 		if ( $first_entry ) {
-		    unless  ( @$hosts ) {
+		    unless  ( @$hosts || @$hosts1 ) {
 			warning_message qq(The entries in $fn have been ignored because there are no 'blacklist' interfaces);
 			close_file;
 			last BLACKLIST;
@@ -265,6 +264,8 @@ sub setup_blacklist() {
 
 		$options = 'from' if $options eq '-';
 
+		warning_message "'$options' entry ignored because there are no matching interfaces", next unless @$hosts || $options eq 'to';
+
 		for ( split /,/, $options ) {
 		    fatal_error "Invalid OPTION ($_)" unless /^(from|to)$/;
 		    $direction = $_;
@@ -274,19 +275,31 @@ sub setup_blacklist() {
 			    $chainref ,
 			    NO_RESTRICT ,
 			    do_proto( $protocol , $ports, '' ) ,
-			    $direction eq 'from' ? $networks : '',
-			    $direction eq 'to'   ? $networks : '',
+			    $networks,
+			    '',
 			    '' ,
 			    $target ,
 			    '' ,
 			    $target ,
-			    '' );
+			    '' ) if $chainref && $options eq 'from';
+
+		expand_rule(
+			    $chainref1 ,
+			    NO_RESTRICT ,
+			    do_proto( $protocol , $ports, '' ) ,
+			    $networks,
+			    '',
+			    '' ,
+			    $target ,
+			    '' ,
+			    $target ,
+			    '' ) if $chainref1 && $options eq 'to';
 
 		progress_message "  \"$currentline\" added to blacklist";
 	    }
 
 	    warning_message q(There are interfaces or hosts with the 'blacklist' option but the 'blacklist' file is empty) if $first_entry && @$hosts;
-	} elsif ( @$hosts ) {
+	} elsif ( @$hosts || @$hosts1 ) {
 	    warning_message q(There are interfaces or hosts with the 'blacklist' option, but the 'blacklist' file is either missing or has zero size);
 	}
 
@@ -307,8 +320,27 @@ sub setup_blacklist() {
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
 
-	    progress_message "  Blacklisting enabled on ${interface}:${network}";
+	    progress_message "  Type 1 blacklisting enabled on ${interface}:${network}";
 	}
+
+	for my $hostref ( @$hosts1 ) {
+	    my $interface  = $hostref->[0];
+	    my $ipsec      = $hostref->[1];
+	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
+	    my $network    = $hostref->[2];
+	    my $source     = match_source_net $network;
+	    my $target     = source_exclusion( $hostref->[3], $chainref1 );
+
+	    for my $chain ( first_chains $interface ) {
+		add_jump $filter_table->{$chain} , $target, 0, "${source}${state}${policy}";
+	    }
+
+	    set_interface_option $interface, 'use_input_chain', 1;
+	    set_interface_option $interface, 'use_forward_chain', 1;
+
+	    progress_message "  Type 2 blacklisting enabled on ${interface}:${network}";
+	}
+
     }
 }
 
@@ -1849,6 +1881,7 @@ sub generate_matrix() {
     our %input_jump_added   = ();
     our %output_jump_added  = ();
     our %forward_jump_added = ();
+    my  %needs_bl_jump      = ();
 
     progress_message2 'Generating Rule Matrix...';
     #
@@ -1977,7 +2010,8 @@ sub generate_matrix() {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    my $exclusions = $hostref->{exclusions};
-
+		    my $blacklist  = $hostref->{options}{blacklist} & BL_OUT;
+		    
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $dest   = match_dest_net $net;
 
@@ -1989,10 +2023,11 @@ sub generate_matrix() {
 			    my $interfacematch = '';
 			    my $use_output = 0;
 
-			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
+			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( ( $blacklist || @{$interfacechainref->{rules}} ) && ! $chain1ref ) ) {
 				$outputref = $interfacechainref;
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;
+				$needs_bl_jump{output_chain $interface} = 1 if $blacklist;
 
 				unless ( lc $net eq IPv6_LINKLOCAL ) {
 				    for my $vzone ( vserver_zones ) {
@@ -2002,6 +2037,7 @@ sub generate_matrix() {
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;
+				$needs_bl_jump{output_chain $interface} = 1 if $blacklist;
 			    }
 
 			    add_jump $outputref , $nextchain, 0, join( '', $interfacematch, $dest, $ipsec_out_match );
@@ -2255,6 +2291,7 @@ sub generate_matrix() {
 	add_jump $frwd_ref , $last_chain, 1 if $frwd_ref && $last_chain;
     }
 
+    add_jump( $filter_table->{$_}, $filter_table->{blackout} , 0 , '' , 0 , 0 ) for keys %needs_bl_jump;
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,

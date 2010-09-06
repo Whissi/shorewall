@@ -115,13 +115,36 @@ loc     eth2            -</programlisting>
 
           <variablelist>
             <varlistentry>
-              <term><emphasis role="bold">blacklist</emphasis></term>
+              <term><emphasis
+              role="bold">blacklist[=<replaceable>value</replaceable>]</emphasis></term>
 
               <listitem>
-                <para>Check packets arriving on this interface against the
-                <ulink
-                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
-                file.</para>
+                <para>The value may be specified when running Shorewall 4.4.13
+                or later and can have a value in the range 1-2</para>
+
+                <orderedlist>
+                  <listitem>
+                    <para>Input blacklisting (default if no value given).
+                    Traffic entering this interface are passed against the
+                    entries in <ulink
+                    url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
+                    that have the <emphasis role="bold">from</emphasis> option
+                    (specified or defaulted). Traffic originating on the
+                    firewall and leaving by this interface is passed against
+                    the entries in <ulink
+                    url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
+                    that have the <emphasis role="bold">to</emphasis>
+                    option.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Output blacklisting. Traffic entering on this
+                    interface is passed against the entries in <ulink
+                    url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
+                    that have the <emphasis role="bold">to</emphasis>
+                    option.</para>
+                  </listitem>
+                </orderedlist>
               </listitem>
             </varlistentry>
 

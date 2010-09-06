@@ -24,7 +24,7 @@
     <title>Description</title>
 
     <para>The secmarks file is used to associate an SELinux context with
-    packets.</para>
+    packets. It was added in Shorewall6 version 4.4.13.</para>
 
     <para>The columns in the file are as follows.</para>
 
@@ -66,7 +66,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CHAIN - {P|I|F|O|T}</emphasis></term>
+        <term><emphasis role="bold">CHAIN -
+        {P|I|F|O|T}[:{N|E|ER}]</emphasis></term>
 
         <listitem>
           <simplelist>
@@ -79,6 +80,18 @@
             <member>O - OUTPUT</member>
 
             <member>T - POSTROUTING</member>
+          </simplelist>
+
+          <para>It may be optionally followed by a colon and an indication of
+          the connection state(s) at which the context is to be
+          applied:</para>
+
+          <simplelist>
+            <member>:N - NEW connection</member>
+
+            <member>:E - ESTABLISHED connection</member>
+
+            <member>:ER - ESTABLISHED or RELATED connection</member>
           </simplelist>
         </listitem>
       </varlistentry>
@@ -102,7 +115,7 @@
 
             <listitem>
               <para>A comma-separated list of host or network IP addresses or
-              MAC addresses. </para>
+              MAC addresses.</para>
             </listitem>
 
             <listitem>
@@ -207,6 +220,52 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">USER</emphasis> (Optional) - [<emphasis
+        role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>]</term>
+
+        <listitem>
+          <para>This column may only be non-empty if the SOURCE is the
+          firewall itself.</para>
+
+          <para>When this column is non-empty, the rule applies only if the
+          program generating the output is running under the effective
+          <emphasis>user</emphasis> and/or <emphasis>group</emphasis>
+          specified (or is NOT running under that id if "!" is given).</para>
+
+          <para>Examples:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>joe</term>
+
+              <listitem>
+                <para>program must be run by joe</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>:kids</term>
+
+              <listitem>
+                <para>program must be run by a member of the 'kids'
+                group</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>!:kids</term>
+
+              <listitem>
+                <para>program must not be run by a member of the 'kids'
+                group</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MARK</emphasis> - [<emphasis
         role="bold">!</emphasis>]<emphasis>value</emphasis>[/<emphasis>mask</emphasis>][<emphasis
         role="bold">:C</emphasis>]</term>
@@ -255,6 +314,29 @@
         </listitem>
       </varlistentry>
     </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>EXAMPLE</title>
+
+    <para>Mark the first incoming packet of a connection on the loopback
+    interface and destined for address ::1 and tcp port 3306 with context
+    system_u:object_r:mysqld_t:s0 and save that context in the conntrack
+    table. On subsequent input packets in the connection, set the context from
+    the conntrack table.</para>
+
+    <para><filename>/etc/shorewall6/interfaces</filename>:</para>
+
+    <programlisting>#ZONE      INTERFACE      BROADCAST       OPTIONS
+-          lo             -               ignore</programlisting>
+
+    <para><filename>/etc/shorewall6/secmarks</filename>:</para>
+
+    <programlisting>#SECMARK                       CHAIN:     SOURCE  DEST       PROTO   DEST       SOURCE      USER/     MARK
+#                              STATE                                 PORT(S)    PORT(S)     GROUP
+system_u:object_r:mysqld_t:s0  I:N        lo      ::1        tcp     3306
+SAVE                           I:N        lo      ::1        tcp     3306
+RESTORE                        I:E</programlisting>
   </refsect1>
 
   <refsect1>

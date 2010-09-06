@@ -1373,7 +1373,7 @@ sub setup_traffic_shaping() {
 # Process a record in the secmarks file
 #
 sub process_secmark_rule() {
-    my ( $secmark, $chain, $source, $dest, $proto, $dport, $sport, $mark ) = split_line1( 2, 8 , 'Secmarks file' );
+    my ( $secmark, $chainin, $source, $dest, $proto, $dport, $sport, $user, $mark ) = split_line1( 2, 9 , 'Secmarks file' );
 
     if ( $secmark eq 'COMMENT' ) {
 	process_comment;
@@ -1386,9 +1386,23 @@ sub process_secmark_rule() {
 		 I => 'tcin'    ,
 		 O => 'tcout'   , );
 
-    my $chain1= $chns{$chain};
+    my %state = ( N =>  'NEW' ,
+		  E =>  'ESTABLISHED' , 
+		  ER => 'ESTABLISHED,RELATED' );
 
+    my ( $chain , $state, $rest) = split ':', $chainin , 3;
+
+    fatal_error "Invalid CHAIN:STATE ($chainin)" if $rest || ! $chain;
+
+    my $chain1= $chns{$chain};
+    
     fatal_error "Invalid or missing CHAIN ( $chain )" unless $chain1;
+
+    if ( ( $state ||= '' ) ne '' ) {
+	my $state1;
+	fatal_error "Invalid STATE ( $state )" unless $state1 = $state{$state};
+	$state = "$globals{STATEMATCH} $state1 ";
+    }
 
     my $target = $secmark eq 'SAVE'    ? 'CONNSECMARK --save' :
 	         $secmark eq 'RESTORE' ? 'CONNSECMARK --restore' :
@@ -1400,7 +1414,9 @@ sub process_secmark_rule() {
 
     expand_rule( ensure_mangle_chain( $chain1 ) , 
 		 $restrictions{$chain1} ,
+		 $state .
 		 do_proto( $proto, $dport, $sport ) .
+		 do_user( $user ) .
 		 do_test( $mark, $globals{TC_MASK} ) ,
 		 $source , 
 		 $dest , 

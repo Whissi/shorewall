@@ -587,6 +587,16 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcfilters ]; then
 fi
 
 #
+# Install the secmarks file
+#
+run_install $OWNERSHIP -m 0644 configfiles/secmarks ${DESTDIR}/usr/share/shorewall/configfiles
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/secmarks ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/secmarks ${DESTDIR}/etc/shorewall
+    echo "Secmarks file installed as ${DESTDIR}/etc/shorewall/secmarks"
+fi
+
+#
 # Install the default config path file
 #
 install_file configpath ${DESTDIR}/usr/share/shorewall/configpath 0644

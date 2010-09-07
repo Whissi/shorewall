@@ -507,6 +507,16 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/notrack ]; then
     run_install $OWNERSHIP -m 0600 notrack ${DESTDIR}/etc/shorewall6/notrack
     echo "Notrack file installed as ${DESTDIR}/etc/shorewall6/notrack"
 fi
+
+#
+# Install the Secmarks file
+#
+run_install $OWNERSHIP -m 0644 secmarks ${DESTDIR}/usr/share/shorewall6/configfiles/secmarks
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/secmarks ]; then
+    run_install $OWNERSHIP -m 0600 secmarks ${DESTDIR}/etc/shorewall6/secmarks
+    echo "Secmarks file installed as ${DESTDIR}/etc/shorewall6/secmarks"
+fi
 #
 # Install the default config path file
 #

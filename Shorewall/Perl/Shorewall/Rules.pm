@@ -323,7 +323,7 @@ sub setup_blacklist() {
 	    progress_message "  Type 1 blacklisting enabled on ${interface}:${network}";
 	}
 
-	if ( @{$chainref1->{rules}} ) {
+	if ( $chainref1 && @{$chainref1->{rules}} ) {
 	    for my $hostref ( @$hosts1 ) {
 		my $interface  = $hostref->[0];
 		my $ipsec      = $hostref->[1];
@@ -1874,7 +1874,7 @@ sub generate_matrix() {
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
-    my $blackout = @{$filter_table->{blackout}{rules}};
+    my $blackout = $filter_table->{blackout} && @{$filter_table->{blackout}{rules}};
     my @zones = off_firewall_zones;
     my @vservers = vserver_zones;
     my $interface_jumps_added = 0;

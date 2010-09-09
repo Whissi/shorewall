@@ -1397,7 +1397,7 @@ sub process_secmark_rule() {
     my $chain1= $chns{$chain};
     
     fatal_error "Invalid or missing CHAIN ( $chain )" unless $chain1;
-    fatal_error "USER/GROUP may only be used in the OUTPUT chain" if $user ne '-' && chain1 ne 'tcout';
+    fatal_error "USER/GROUP may only be used in the OUTPUT chain" if $user ne '-' && $chain1 ne 'tcout';
 
     if ( ( $state ||= '' ) ne '' ) {
 	my $state1;

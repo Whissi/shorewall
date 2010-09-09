@@ -685,7 +685,7 @@ sub add_group_to_zone($$$$$)
 		    # Make 'find_hosts_by_option()' work correctly for this zone
 		    #
 		    for ( qw/blacklist maclist nosmurfs tcpflags/ ) {
-			$options->{$_} = 1 if $interfaceref->{options}{$_};
+			$options->{$_} = $interfaceref->{options}{$_} if $interfaceref->{options}{$_};
 		    }
 
 		    $allip = 1;
@@ -977,7 +977,7 @@ sub process_interface( $$ ) {
 		} elsif ( $option eq 'blacklist' ) {
 		    $value = BL_IN unless ( defined $value && $value ne '' );
 		    fatal_error "Invalid 'blacklist' value ( $value )" unless $value =~ /^[12]$/;
-		    $options{blacklist} = $value eq 1 ? BL_IN | BL_OUT : BL_OUT;
+		    $options{blacklist} = $value;
 		    $hostoptions{blacklist} = $options{blacklist} & BL_IN;
 		} else {
 		    assert( 0 );

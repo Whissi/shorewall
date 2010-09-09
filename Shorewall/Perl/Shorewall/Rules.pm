@@ -287,8 +287,8 @@ sub setup_blacklist() {
 			    $chainref1 ,
 			    NO_RESTRICT ,
 			    do_proto( $protocol , $ports, '' ) ,
-			    $networks,
 			    '',
+			    $networks,
 			    '' ,
 			    $target ,
 			    '' ,
@@ -323,24 +323,22 @@ sub setup_blacklist() {
 	    progress_message "  Type 1 blacklisting enabled on ${interface}:${network}";
 	}
 
-	for my $hostref ( @$hosts1 ) {
-	    my $interface  = $hostref->[0];
-	    my $ipsec      = $hostref->[1];
-	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
-	    my $network    = $hostref->[2];
-	    my $source     = match_source_net $network;
-	    my $target     = source_exclusion( $hostref->[3], $chainref1 );
-
-	    for my $chain ( first_chains $interface ) {
-		add_jump $filter_table->{$chain} , $target, 0, "${source}${state}${policy}";
+	if ( @{$chainref1->{rules}} ) {
+	    for my $hostref ( @$hosts1 ) {
+		my $interface  = $hostref->[0];
+		my $ipsec      = $hostref->[1];
+		my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
+		my $network    = $hostref->[2];
+		my $source     = match_source_net $network;
+		my $target     = source_exclusion( $hostref->[3], $chainref1 );
+		
+		add_jump $filter_table->{forward_chain $interface} , $target, 0, "${source}${state}${policy}";
+		
+		set_interface_option $interface, 'use_forward_chain', 1;
+		
+		progress_message "  Type 2 blacklisting enabled on ${interface}:${network}";
 	    }
-
-	    set_interface_option $interface, 'use_input_chain', 1;
-	    set_interface_option $interface, 'use_forward_chain', 1;
-
-	    progress_message "  Type 2 blacklisting enabled on ${interface}:${network}";
 	}
-
     }
 }
 
@@ -1875,6 +1873,8 @@ sub generate_matrix() {
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
+    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
+    my $blackout = @{$filter_table->{blackout}{rules}};
     my @zones = off_firewall_zones;
     my @vservers = vserver_zones;
     my $interface_jumps_added = 0;
@@ -2010,7 +2010,7 @@ sub generate_matrix() {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    my $exclusions = $hostref->{exclusions};
-		    my $blacklist  = $hostref->{options}{blacklist} & BL_OUT;
+		    my $blacklist  = $blackout && $hostref->{options}{blacklist} & BL_IN;
 		    
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $dest   = match_dest_net $net;
@@ -2291,7 +2291,7 @@ sub generate_matrix() {
 	add_jump $frwd_ref , $last_chain, 1 if $frwd_ref && $last_chain;
     }
 
-    add_jump( $filter_table->{$_}, $filter_table->{blackout} , 0 , '' , 0 , 0 ) for keys %needs_bl_jump;
+    add_jump( $filter_table->{$_}, $filter_table->{blackout} , 0 , $state , 0 , 0 ) for keys %needs_bl_jump;
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,

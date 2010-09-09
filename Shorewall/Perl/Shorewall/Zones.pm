@@ -975,7 +975,7 @@ sub process_interface( $$ ) {
 			$options{arp_ignore} = 1;
 		    }
 		} elsif ( $option eq 'blacklist' ) {
-		    $value = BL_IN unless ( defined $value && $value != '' );
+		    $value = BL_IN unless ( defined $value && $value ne '' );
 		    fatal_error "Invalid 'blacklist' value ( $value )" unless $value =~ /^[12]$/;
 		    $options{blacklist} = $value eq 1 ? BL_IN | BL_OUT : BL_OUT;
 		    $hostoptions{blacklist} = $options{blacklist} & BL_IN;

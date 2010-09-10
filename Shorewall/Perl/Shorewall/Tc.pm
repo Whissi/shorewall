@@ -1382,7 +1382,7 @@ sub process_secmark_rule() {
 
     my %chns = ( T => 'tcpost'  ,
 		 P => 'tcpre'   ,
-		 F => 'forward' ,
+		 F => 'tcfor'   ,
 		 I => 'tcin'    ,
 		 O => 'tcout'   , );
 

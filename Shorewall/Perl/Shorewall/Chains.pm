@@ -3354,6 +3354,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
+	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & OUTPUT_RESTRICT && $chainref->{table} eq 'mangle';
 
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );

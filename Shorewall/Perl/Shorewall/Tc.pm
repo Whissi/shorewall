@@ -248,6 +248,8 @@ sub process_tc_rule( ) {
 
     my ($cmd, $rest) = split( '/', $mark, 2 );
 
+    my $restriction = 0;
+
     $list = '';
 
     unless ( $classid ) {
@@ -274,6 +276,8 @@ sub process_tc_rule( ) {
 			} else {
 			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
 			}
+
+			$restriction = DESTIFAC_DISALLOW;
 
 			$sticky++;
 		    } elsif ( $target eq 'IPMARK ' ) {
@@ -380,7 +384,7 @@ sub process_tc_rule( ) {
     }
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
-				     $restrictions{$chain} ,
+				     $restrictions{$chain} | $restriction ,
 				     do_proto( $proto, $ports, $sports) .
 				     do_user( $user ) .
 				     do_test( $testval, $globals{TC_MASK} ) .

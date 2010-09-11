@@ -68,7 +68,7 @@ our %EXPORT_TAGS = (
 				       SET
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
-				       PREROUTE_DISALLOW
+				       DESTIFAC_DISALLOW
 				       INPUT_RESTRICT
 				       OUTPUT_RESTRICT
 				       POSTROUTE_RESTRICT
@@ -265,7 +265,7 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 	       OUTPUT_RESTRICT    => 8,   # OUTPUT chain rule      - -i not allowed
 	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
 	       ALL_RESTRICT       => 12,  # fw->fw rule            - neither -i nor -o allowed
-	       PREROUTE_DISALLOW  => 32,  # Don't allow dest interface
+	       DESTIFAC_DISALLOW  => 32,  # Don't allow dest interface
 	       };
 
 our $iprangematch;
@@ -3350,14 +3350,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Dest interface -- must use routing table
 	    #
-	    fatal_error "A DEST interface is not permitted in the PREROUTING chain" if $restriction & PREROUTE_DISALLOW;
+	    fatal_error "A DEST interface is not permitted in the PREROUTING chain" if $restriction & DESTIFAC_DISALLOW;
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    push_command( $chainref , 'for dest in ' . get_interface_nets( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
-	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & PREROUTE_DISALLOW;
+	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & DESTIFAC_DISALLOW;
 
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );

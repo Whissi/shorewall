@@ -294,9 +294,10 @@ sub process_tc_rule( ) {
 			    $target = 'sticko';
 			} else {
 			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
-			    $restriction = PREROUTE_DISALLOW;
 			}
 
+			$restriction = DESTIFAC_DISALLOW;
+			
 			ensure_mangle_chain($target);
 
 			$sticky++;

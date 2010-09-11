@@ -269,6 +269,8 @@ sub process_tc_rule( ) {
 
     $list = '';
 
+    my $restriction = 0;
+
     unless ( $classid ) {
       MARK:
 	{
@@ -292,6 +294,7 @@ sub process_tc_rule( ) {
 			    $target = 'sticko';
 			} else {
 			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
+			    $restriction = PREROUTE_DISALLOW;
 			}
 
 			ensure_mangle_chain($target);
@@ -401,7 +404,7 @@ sub process_tc_rule( ) {
     }
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
-				     $restrictions{$chain} ,
+				     $restrictions{$chain} | $restriction,
 				     do_proto( $proto, $ports, $sports) .
 				     do_user( $user ) .
 				     do_test( $testval, $globals{TC_MASK} ) .

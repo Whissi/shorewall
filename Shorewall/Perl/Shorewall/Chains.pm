@@ -68,6 +68,7 @@ our %EXPORT_TAGS = (
 				       SET
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
+				       PREROUTE_DISALLOW
 				       INPUT_RESTRICT
 				       OUTPUT_RESTRICT
 				       POSTROUTE_RESTRICT
@@ -263,7 +264,8 @@ use constant { NO_RESTRICT        => 0,   # FORWARD chain rule     - Both -i and
 	       INPUT_RESTRICT     => 4,   # INPUT chain rule       - -o not allowed
 	       OUTPUT_RESTRICT    => 8,   # OUTPUT chain rule      - -i not allowed
 	       POSTROUTE_RESTRICT => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
-	       ALL_RESTRICT       => 12   # fw->fw rule            - neither -i nor -o allowed
+	       ALL_RESTRICT       => 12,  # fw->fw rule            - neither -i nor -o allowed
+	       PREROUTE_DISALLOW  => 32,  # Don't allow dest interface
 	       };
 
 our $iprangematch;
@@ -3170,6 +3172,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl );
     my $chain = $chainref->{name};
+    my $table = $chainref->{table};
     my $jump  = $target ? '-j ' . $target : '';
 
     our @ends = ();
@@ -3259,7 +3262,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
 
-	    if ( $chainref->{table} eq 'nat' ) {
+	    if ( $table eq 'nat' ) {
 		warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
 	    } else {
 		warning_message qq(Using an interface as the SOURCE in a T: rule requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount1++;
@@ -3347,14 +3350,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Dest interface -- must use routing table
 	    #
-	    fatal_error "A DEST interface is not permitted in the PREROUTING chain" if $chainref->{table} eq 'mangle';
+	    fatal_error "A DEST interface is not permitted in the PREROUTING chain" if $restriction & PREROUTE_DISALLOW;
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    push_command( $chainref , 'for dest in ' . get_interface_nets( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
-	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & OUTPUT_RESTRICT && $chainref->{table} eq 'mangle';
+	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & PREROUTE_DISALLOW;
 
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );
@@ -3494,7 +3497,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the rules generated in the block below on the mark value
 	    #
-	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' unless $chainref->{table} eq 'mangle';
+	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' unless $table eq 'mangle';
 	    require_capability 'KLUDGEFREE' ,    'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' if $rule =~ / -m mark /;
 	    #
 	    # Clear the exclusion bit
@@ -3518,7 +3521,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    my $echain = newexclusionchain;
 
-	    my $echainref = new_chain $chainref->{table}, $echain;
+	    my $echainref = new_chain $table, $echain;
 	    #
 	    # Use the current rule and send all possible matches to the exclusion chain
 	    #
@@ -3633,7 +3636,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Mark Target as referenced, if it's a chain
     #
     if ( $fromref && $target ) {
-	my $targetref = $chain_table{$chainref->{table}}{$target};
+	my $targetref = $chain_table{$table}{$target};
 	if ( $targetref ) {
 	    $targetref->{referenced} = 1;
 	    add_reference $fromref, $targetref;

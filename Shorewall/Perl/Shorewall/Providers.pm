@@ -1002,6 +1002,7 @@ sub handle_stickiness( $ ) {
 		    } else {
 			$rule1 = $_;
 			$rule1 =~ s/-j sticky/-m mark --mark $mark\/$mask -m recent --name $list --set/;
+			$rule2 = '';
 		    }
 
 		    assert ( $rule1 =~ s/^-A // );
@@ -1031,7 +1032,6 @@ sub handle_stickiness( $ ) {
 		    }
 
 		    $rule1 =~ s/-A //;
-
 		    add_rule $chainref, $rule1;
 
 		    if ( $rule2 ) {

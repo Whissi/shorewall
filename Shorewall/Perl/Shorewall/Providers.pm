@@ -1031,12 +1031,12 @@ sub handle_stickiness( $ ) {
 			$rule1 =~ s/-j sticko/-m mark --mark $mark -m recent --name $list --rdest --set/;
 		    }
 
-		    $rule1 =~ s/-A tcout //;
+		    $rule1 =~ s/-A //;
 
 		    add_rule $chainref, $rule1;
 
 		    if ( $rule2 ) {
-			$rule2 =~ s/-A tcout //;
+			$rule2 =~ s/-A //;
 			add_rule $chainref, $rule2;
 		    }
 		}

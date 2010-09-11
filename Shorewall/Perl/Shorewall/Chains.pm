@@ -2494,7 +2494,7 @@ sub get_set_flags( $$ ) {
 	$setname  = $1;
 	my $count = $2;
 	$options .= ",$option" while --$count > 0;
-    } elsif ( $setname =~ /^(.*)\[(src|dst)(,(src|dst))*\]$/ ) {
+    } elsif ( $setname =~ /^(.*)\[((src|dst)(,(src|dst))*)\]$/ ) {
 	$setname = $1;
 	$options = $2;
     }

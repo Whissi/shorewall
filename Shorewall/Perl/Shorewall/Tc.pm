@@ -294,6 +294,8 @@ sub process_tc_rule( ) {
 			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
 			}
 
+			ensure_mangle_chain($target);
+
 			$sticky++;
 		    } elsif ( $target eq 'IPMARK ' ) {
 			my ( $srcdst, $mask1, $mask2, $shift ) = ('src', 255, 0, 0 );
@@ -398,6 +400,8 @@ sub process_tc_rule( ) {
 	}
     }
 
+    $target =~ s/ +$// if $mark eq '';
+
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} ,
 				     do_proto( $proto, $ports, $sports) .
@@ -410,7 +414,7 @@ sub process_tc_rule( ) {
 				     $source ,
 				     $dest ,
 				     '' ,
-				     "$target $mark" ,
+				     $mark ? "$target $mark" : $target,
 				     '' ,
 				     $target ,
 				     '' ) )

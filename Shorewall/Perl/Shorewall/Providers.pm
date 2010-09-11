@@ -1032,7 +1032,7 @@ sub handle_stickiness( $ ) {
 			$rule2 = '';
 		    }
 
-		    $rule1 =~ s/-A //;
+		    assert( $rule1 =~ s/-A // );
 		    add_rule $chainref, $rule1;
 
 		    if ( $rule2 ) {

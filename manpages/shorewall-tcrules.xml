@@ -147,15 +147,6 @@
                     <para>Mark the connecdtion in the POSTROUTING chain</para>
                   </listitem>
                 </varlistentry>
-
-                <varlistentry>
-                  <term>CI</term>
-
-                  <listitem>
-                    <para>Added in Shorewall 4.4.13. Mark the connecdtion in
-                    the POSTROUTING chain</para>
-                  </listitem>
-                </varlistentry>
               </variablelist>
 
               <para><emphasis role="bold">Special considerations for If
@@ -456,7 +447,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> - {<emphasis
-        role="bold">-</emphasis>|{<emphasis>interface</emphasis>|[<emphasis>interface</emphasis>:]<emphasis>address-or-range</emphasis>[<emphasis
+        role="bold">-</emphasis>|{<emphasis>interface</emphasis>|$FW}|[<emphasis>{interface</emphasis>|$FW}:]<emphasis>address-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
@@ -476,6 +467,12 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <para>A comma-separated list of host or network IP addresses.
               The list may include ip address ranges if your kernel and
               iptables include iprange support.</para>
+            </listitem>
+
+            <listitem>
+              <para>Beginning with Shorewall 4.4.13, $FW may be specified by
+              itself or qualified by an address list. This causes marking to
+              occur in the INPUT chain.</para>
             </listitem>
           </orderedlist>
 
@@ -812,8 +809,8 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
     shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
     shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
     shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tos(5),
-    shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

@@ -278,7 +278,7 @@ sub process_tc_rule( ) {
 
 		    require_capability ('CONNMARK' , "SAVE/RESTORE Rules", '' ) if $tccmd->{connmark};
 
-		    $target      = "$tccmd->{target} ";
+		    $target      = $tccmd->{target};
 		    my $marktype = $tccmd->{mark};
 
 		    if ( $marktype == NOMARK ) {
@@ -287,21 +287,17 @@ sub process_tc_rule( ) {
 			$mark =~ s/^[|&]//;
 		    }
 
-		    if ( $target eq 'sticky ' ) {
+		    if ( $target eq 'sticky' ) {
 			if ( $chain eq 'tcout' ) {
 			    $target = 'sticko';
 			} else {
 			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
 			}
 
-			my $chain1 = $target;
-
-			$chain1 =~ s/ +$//;
-
-			ensure_mangle_chain($chain1);
+			ensure_mangle_chain($target);
 
 			$sticky++;
-		    } elsif ( $target eq 'IPMARK ' ) {
+		    } elsif ( $target eq 'IPMARK' ) {
 			my ( $srcdst, $mask1, $mask2, $shift ) = ('src', 255, 0, 0 );
 
 			require_capability 'IPMARK_TARGET', 'IPMARK', 's';
@@ -338,7 +334,7 @@ sub process_tc_rule( ) {
 			}
 
 			$target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
-		    } elsif ( $target eq 'TPROXY ' ) {
+		    } elsif ( $target eq 'TPROXY' ) {
 			require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
 
 			fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
@@ -403,8 +399,6 @@ sub process_tc_rule( ) {
 	    }
 	}
     }
-
-    $target =~ s/ +$// if $mark eq '';
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} ,
@@ -1527,7 +1521,7 @@ sub setup_tc() {
 			  mark      => HIGHMARK ,
 			  mask      => '' } ,
 			{ match     => sub ( $ ) { $_[0] =~ '&.*' },
-			  target    => 'MARK --and-mark ' ,
+			  target    => 'MARK --and-mark' ,
 			  mark      => HIGHMARK ,
 			  mask      => '' ,
 			  connmark  => 0

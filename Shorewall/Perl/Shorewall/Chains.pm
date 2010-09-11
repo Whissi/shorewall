@@ -3347,11 +3347,11 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Dest interface -- must use routing table
 	    #
+	    fatal_error "A DEST interface is not permitted in the PREROUTING chain" if $chainref->{table} eq 'mangle';
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
 	    push_command( $chainref , 'for dest in ' . get_interface_nets( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
 	} else {
-
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
 

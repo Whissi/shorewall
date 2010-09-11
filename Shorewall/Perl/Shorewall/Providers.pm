@@ -1004,12 +1004,11 @@ sub handle_stickiness( $ ) {
 			$rule1 =~ s/-j sticky/-m mark --mark $mark\/$mask -m recent --name $list --set/;
 		    }
 
-		    $rule1 =~ s/-A //;
-
+		    assert ( $rule1 =~ s/^-A // );
 		    add_rule $chainref, $rule1;
 
 		    if ( $rule2 ) {
-			$rule2 =~ s/-A //;
+			assert ( $rule2 =~ s/^-A // );
 			add_rule $chainref, $rule2;
 		    }
 		}

@@ -294,7 +294,11 @@ sub process_tc_rule( ) {
 			    fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
 			}
 
-			ensure_mangle_chain($target);
+			my $chain1 = $target;
+
+			$chain1 =~ s/ +$//;
+
+			ensure_mangle_chain($chain1);
 
 			$sticky++;
 		    } elsif ( $target eq 'IPMARK ' ) {

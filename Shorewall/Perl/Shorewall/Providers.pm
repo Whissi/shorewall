@@ -1029,6 +1029,7 @@ sub handle_stickiness( $ ) {
 		    } else {
 			$rule1 = $_;
 			$rule1 =~ s/-j sticko/-m mark --mark $mark -m recent --name $list --rdest --set/;
+			$rule2 = '';
 		    }
 
 		    $rule1 =~ s/-A //;

@@ -538,8 +538,7 @@ sub process_simple_device() {
 
 	emit $command;
 
-	my $id = $number;
-	$number = in_hexp( $devnum | 0x100 );
+	my $id = $number; $number = in_hexp( $devnum | 0x100 );
 
 	emit "run_tc qdisc add dev $physical parent $id: handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
     } else {

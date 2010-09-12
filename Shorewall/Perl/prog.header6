@@ -81,38 +81,6 @@ progress_message3() # $* = Message
 }
 
 #
-# Set a standard chain's policy
-#
-setpolicy() # $1 = name of chain, $2 = policy
-{
-    run_iptables -P $1 $2
-}
-
-#
-# Set a standard chain to enable established and related connections
-#
-setcontinue() # $1 = name of chain
-{
-    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
-}
-
-#
-# Flush one of the Mangle table chains
-#
-flushmangle() # $1 = name of chain
-{
-    run_iptables -t mangle -F $1
-}
-
-#
-# Flush and delete all user-defined chains in the filter table
-#
-deleteallchains() {
-    run_iptables -F
-    run_iptables -X
-}
-
-#
 # Generate a list of all network interfaces on the system
 #
 find_all_interfaces() {
@@ -520,11 +488,12 @@ undo_routing() {
 # Restore the default route that was in place before the initial 'shorewall start'
 #
 restore_default_route() {
+    local result
+    
     if [ -z "$g_noroutes" -a -f ${VARDIR}/default_route ]; then
 	local default_route
 	default_route=
 	local route
-	local result
 	result=1
 
 	while read route ; do

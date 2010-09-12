@@ -468,7 +468,7 @@ sub process_flow($) {
 }
 
 sub process_simple_device() {
-    my ( $device , $type , $in_bandwidth ) = split_line 1, 3, 'tcinterfaces';
+    my ( $device , $type , $in_bandwidth , $out_part ) = split_line 1, 4, 'tcinterfaces';
 
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
     fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
@@ -503,7 +503,48 @@ sub process_simple_device() {
 	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${in_bandwidth}kbit burst 10k drop flowid :1\n"
 	 ) if $in_bandwidth;
 
-    emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
+    if ( $out_part ne '-' ) {
+	my ( $out_bandwidth, $burst, $latency, $peak, $minburst ) = split ':', $out_part;
+
+	fatal_error "Invalid Out-BANDWIDTH ($out_part)" if ( defined $minburst && $minburst =~ /:/ ) || $out_bandwidth eq '';
+
+	$out_bandwidth = rate_to_kbit( $out_bandwidth );
+
+	my $command = "run_tc qdisc add dev $physical root handle $number: tbf rate ${out_bandwidth}kbit";
+
+	if ( defined $burst && $burst ne '' ) {
+	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    $command .= " burst $burst";
+	} else {
+	    fatal_error "Missing OUT-BANDWIDTH Burst ($out_part)";
+	}
+
+	if ( defined $latency && $latency ne '' ) {
+	    fatal_error "Invalid latency ($latency)" unless $latency =~ /^\d+(s|sec|secs|ms|msec|msecs|us|usec|usecs)?$/;
+	    $command .= " latency $latency";
+	} else {
+	    fatal_error "Missing OUT-BANDWIDTH Latency ($out_part)";
+	}
+
+	if ( defined $peak && $peak ne '' ) {
+	    fatal_error "Invalid peak ($peak)" unless $peak =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    $command .= " peakrate $peak";
+	}
+
+	if ( defined $minburst && $minburst ne '' ) {
+	    fatal_error "Invalid minburst ($minburst)" unless $minburst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    $command .= " minburst $minburst";
+	}
+
+	emit $command;
+
+	my $id = $number;
+	$number = in_hexp( $devnum | 0x100 );
+
+	emit "run_tc qdisc add dev $physical parent $id: handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
+    } else {
+	emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
+    }
 
     for ( my $i = 1; $i <= 3; $i++ ) {
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";

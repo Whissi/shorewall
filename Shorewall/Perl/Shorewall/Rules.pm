@@ -260,40 +260,51 @@ sub setup_blacklist() {
 
 		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file';
 
-		my $direction = 'from';
-
 		$options = 'from' if $options eq '-';
 
-		warning_message "'$options' entry ignored because there are no matching interfaces", next unless @$hosts || $options eq 'to';
+		my ( $to, $from ) = ( 0, 0 );
 
 		for ( split /,/, $options ) {
-		    fatal_error "Invalid OPTION ($_)" unless /^(from|to)$/;
-		    $direction = $_;
+		    if ( $_ eq 'from' ) {
+			if ( $from++ ) {
+			    warning_message "Duplicate 'from' ignored";
+			} else {
+			    if ( @$hosts ) {
+				expand_rule(
+					    $chainref ,
+					    NO_RESTRICT ,
+					    do_proto( $protocol , $ports, '' ) ,
+					    $networks,
+					    '',
+					    '' ,
+					    $target ,
+					    '' ,
+					    $target ,
+					    '' );
+			    } else {
+				warning_message 'Blacklist entry ignored because there are no "blacklist=1" interfaces';
+			    }
+			}
+		    } elsif ( $_ eq 'to' ) {
+			if ( $to++ ) {
+			    warning_message "Duplicate 'to' ignored";
+			} else {
+			    expand_rule(
+					$chainref1 ,
+					NO_RESTRICT ,
+					do_proto( $protocol , $ports, '' ) ,
+					'',
+					$networks,
+					'' ,
+					$target ,
+					'' ,
+					$target ,
+					'' );
+			}
+		    } else {
+			fatal_error "Invalid blacklist option($_)";
+		    }
 		}
-
-		expand_rule(
-			    $chainref ,
-			    NO_RESTRICT ,
-			    do_proto( $protocol , $ports, '' ) ,
-			    $networks,
-			    '',
-			    '' ,
-			    $target ,
-			    '' ,
-			    $target ,
-			    '' ) if $chainref && $options eq 'from';
-
-		expand_rule(
-			    $chainref1 ,
-			    NO_RESTRICT ,
-			    do_proto( $protocol , $ports, '' ) ,
-			    '',
-			    $networks,
-			    '' ,
-			    $target ,
-			    '' ,
-			    $target ,
-			    '' ) if $chainref1 && $options eq 'to';
 
 		progress_message "  \"$currentline\" added to blacklist";
 	    }

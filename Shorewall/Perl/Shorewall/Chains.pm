@@ -3816,8 +3816,15 @@ sub load_ipsets() {
 	       '        $IPSET -F' ,
 	       '        $IPSET -X' ,
 	       '        $IPSET -R < ${VARDIR}/ipsets.save' ,
-	       '    fi' ,
-	       'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ,
+	       '    fi' );
+
+	if ( @ipsets ) {
+	    emit ( '' );
+	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    emit ( '' );
+	}
+
+	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ,
 	       '    if [ -f $(my_pathname)-ipsets ]; then' ,
 	       '        if chain_exists shorewall; then' ,
 	       '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,

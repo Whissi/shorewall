@@ -435,11 +435,11 @@ sub rate_to_kbit( $ ) {
     my $rate = $_[0];
 
     return 0           if $rate eq '-';
-    return $1          if $rate =~ /^(\d+)kbit$/i;
-    return $1 * 1000   if $rate =~ /^(\d+)mbit$/i;
-    return $1 * 8000   if $rate =~ /^(\d+)mbps$/i;
-    return $1 * 8      if $rate =~ /^(\d+)kbps$/i;
-    return int($1/125) if $rate =~ /^(\d+)(bps)?$/;
+    return $1          if $rate =~ /^((\d+)(\.\d+)?)kbit$/i;
+    return $1 * 1000   if $rate =~ /^((\d+)(\.\d+)?)mbit$/i;
+    return $1 * 8000   if $rate =~ /^((\d+)(\.\d+)?)mbps$/i;
+    return $1 * 8      if $rate =~ /^((\d+)(\.\d+)?)kbps$/i;
+    return ($1/125)    if $rate =~ /^((\d+)(\.\d+)?)(bps)?$/;
     fatal_error "Invalid Rate ($rate)";
 }
 

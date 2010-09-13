@@ -80,6 +80,22 @@
               <para>Bytes per second.</para>
             </listitem>
           </varlistentry>
+
+          <varlistentry>
+            <term>k or kb</term>
+
+            <listitem>
+              <para>Kilo bytes.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>m or mb</term>
+
+            <listitem>
+              <para>Megabytes.</para>
+            </listitem>
+          </varlistentry>
         </variablelist>
       </listitem>
 
@@ -123,7 +139,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term>IN-BANDWIDTH - [<replaceable>rate</replaceable>]</term>
+        <term>IN-BANDWIDTH -
+        [<replaceable>rate</replaceable>[:<replaceable>burst</replaceable>]]</term>
 
         <listitem>
           <para>Optional. If specified, enables ingress policing on the
@@ -140,6 +157,34 @@
           firewall to the upstream router as you gradually increase the
           setting.The optimal setting is at the point beyond which the ping
           time increases sharply as you increase the setting.</para>
+
+          <para>The <replaceable>burst</replaceable> option was added in
+          Shorewall 4.4.13. If not supplied, 10kb is assumed. A larger
+          <replaceable>burst</replaceable> size can help make the
+          <replaceable>rate</replaceable> estimate more accurate on fast
+          lines. The default <replaceable>burst</replaceable> often make the
+          enforced rate mush less that the specified
+          <replaceable>rate</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>OUT-BANDWIDTH -
+        [<replaceable>rate</replaceable>[:[<replaceable>burst</replaceable>][:[<replaceable>latency</replaceable>][:[<replaceable>peek</replaceable>][:[<replaceable>minburst</replaceable>]]]]]]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.13. The terms are defined in
+          tc-tbf(8).</para>
+
+          <para>Shorewall provides defaults as follows:</para>
+
+          <simplelist>
+            <member><replaceable>burst</replaceable> - 10kb</member>
+
+            <member><replaceable>latency</replaceable> - 200ms</member>
+          </simplelist>
+
+          <para>The remaining options are defaulted by tc(8).</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -158,7 +203,8 @@
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-maclist(5),
     shorewall6-params(5), shorewall6-policy(5), shorewall6-providers(5),
     shorewall6-route_rules(5), shorewall6-routestopped(5),
-    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5), shorewall6-tcpri,
-    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5),
+    shorewall6-tcpri, shorewall6-tos(5), shorewall6-tunnels(5),
+    shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

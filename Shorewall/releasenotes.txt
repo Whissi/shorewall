@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 3
-                                  R C  1
+                              B E T A  5
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -198,6 +198,33 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     Outbound blacklisting is targeted for use on internal
     interfaces. Packets arriving on these interfaces is passed against
     the blacklist entries with the 'to' option.
+
+    As part of this change, the OPTIONS may now be a comma-separated
+    list of 'to' and 'from'.
+
+5)  There is now an OUT-BANDWIDTH column in
+    /etc/shorewall/tcinterfaces.
+
+    The format of this column is:
+
+    	<rate>[:[<burst>][:[<latency>][:[<peak>][:[<minburst>]]]]]
+
+    These terms are described in tc-tbf(8). Shorewall supplies default
+    values as follows:
+
+    	   <burst>   = 10kb
+	   <latency> = 200ms
+
+    The remaining terms are defaulted by tc.
+
+6)  The IN-BANDWIDTH column in both /etc/shorewall/tcdevices and
+    /etc/shorewall/tcinterfaces now accept an optional burst parameter.
+
+        <rate>[:<burst>]
+
+    The default burst is 10kb. A larger burst can help make the <rate>
+    more accurate; often for fast lines, the enforced rate is well
+    below the specified <rate>.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

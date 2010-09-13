@@ -488,7 +488,21 @@ sub process_simple_device() {
 	}
     }
 
-    $in_bandwidth = rate_to_kbit( $in_bandwidth );
+    my $in_burst = '10kb';
+
+    if ( $in_bandwidth =~ /:/ ) {
+	my ( $in_band, $burst ) = split /:/, $in_bandwidth, 2;
+
+	if ( defined $burst && $burst ne '' ) {
+	    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
+	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    $in_burst = $burst;
+	}
+
+	$in_bandwidth = rate_to_kbit( $in_band );
+    } else {
+	$in_bandwidth = rate_to_kbit( $in_bandwidth );
+    }
 
     emit "if interface_is_up $physical; then";
 
@@ -500,7 +514,7 @@ sub process_simple_device() {
 	 );
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
-	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${in_bandwidth}kbit burst 10k drop flowid :1\n"
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n"
 	 ) if $in_bandwidth;
 
     if ( $out_part ne '-' ) {
@@ -516,14 +530,14 @@ sub process_simple_device() {
 	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " burst $burst";
 	} else {
-	    fatal_error "Missing OUT-BANDWIDTH Burst ($out_part)";
+	    $command .= ' burst 10kb';
 	}
 
 	if ( defined $latency && $latency ne '' ) {
 	    fatal_error "Invalid latency ($latency)" unless $latency =~ /^\d+(s|sec|secs|ms|msec|msecs|us|usec|usecs)?$/;
 	    $command .= " latency $latency";
 	} else {
-	    fatal_error "Missing OUT-BANDWIDTH Latency ($out_part)";
+	    $command .= ' latency 200ms';
 	}
 
 	if ( defined $peak && $peak ne '' ) {
@@ -1297,7 +1311,7 @@ sub setup_traffic_shaping() {
 
 	if ( $inband ) {
 	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10k drop flowid :1"
+		   "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst 10kb drop flowid :1"
 		   );
 	}
 

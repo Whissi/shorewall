@@ -231,13 +231,16 @@ loc     eth2            -</programlisting>
                 <ulink
                 url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
                 file. The value may be specified when running Shorewall 4.4.13
-                or later and can have a value in the range 1-2</para>
+                or later and can have a value in the range 1-2; entering no
+                value is equivalent to blacklist=1.</para>
 
                 <orderedlist>
                   <listitem>
-                    <para>Input blacklisting (default if no value given).
-                    Traffic entering this interface are passed against the
-                    entries in <ulink
+                    <para>Input blacklisting (default if no value given). This
+                    setting is intended for Internet-facing interfaces.</para>
+
+                    <para>Traffic entering this interface is passed against
+                    the entries in <ulink
                     url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
                     that have the <emphasis role="bold">from</emphasis> option
                     (specified or defaulted). Traffic originating on the
@@ -249,9 +252,11 @@ loc     eth2            -</programlisting>
                   </listitem>
 
                   <listitem>
-                    <para>Output blacklisting. Forward traffic that entered
-                    through this interface is passed against the entries in
-                    <ulink
+                    <para>Output blacklisting. This setting is intended for
+                    internal interfaces.</para>
+
+                    <para>Forwarded traffic that entered through this
+                    interface is passed against the entries in <ulink
                     url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
                     that have the <emphasis role="bold">to</emphasis>
                     option.</para>

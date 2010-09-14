@@ -120,13 +120,16 @@ loc     eth2            -</programlisting>
 
               <listitem>
                 <para>The value may be specified when running Shorewall 4.4.13
-                or later and can have a value in the range 1-2</para>
+                or later and can have a value in the range 1-2. Specifying no
+                value is equivalent to blacklist=1.</para>
 
                 <orderedlist>
                   <listitem>
-                    <para>Input blacklisting (default if no value given).
-                    Traffic entering this interface are passed against the
-                    entries in <ulink
+                    <para>Input blacklisting (default if no value given). This
+                    setting is intended for Internet-facing interfaces.</para>
+
+                    <para>Traffic entering this interface is passed against
+                    the entries in <ulink
                     url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
                     that have the <emphasis role="bold">from</emphasis> option
                     (specified or defaulted). Traffic originating on the
@@ -138,8 +141,11 @@ loc     eth2            -</programlisting>
                   </listitem>
 
                   <listitem>
-                    <para>Output blacklisting. Traffic entering on this
-                    interface is passed against the entries in <ulink
+                    <para>Output blacklisting. This setting is intended for
+                    internal interfaces.</para>
+
+                    <para>Traffic entering on this interface is passed against
+                    the entries in <ulink
                     url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
                     that have the <emphasis role="bold">to</emphasis>
                     option.</para>
@@ -382,8 +388,8 @@ dmz     eth2      -</programlisting>
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-maclist(5),
     shorewall6-params(5), shorewall6-policy(5), shorewall6-providers(5),
     shorewall6-route_rules(5), shorewall6-routestopped(5),
-    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5), shorewall6-tcclasses(5),
-    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
-    shorewall6-tunnels(5), shorewall6-zones(5)</para>
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

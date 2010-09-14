@@ -18,14 +18,25 @@
     <cmdsynopsis>
       <command>/usr/share/shorewall/modules</command>
     </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>/usr/share/shorewall/helpers</command>
+    </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>This file specifies which kernel modules Shorewall will load before
-    trying to determine your iptables/kernel's capabilities. Each record in
-    the file has the following format:</para>
+    <para>These files specify which kernel modules Shorewall will load before
+    trying to determine your iptables/kernel's capabilities.</para>
+
+    <para>The <filename>modules</filename> file is used when
+    LOAD_HELPERS_ONLY=No in <ulink
+    url="shorewall.conf.html">shorewall.conf</ulink>(8); the
+    <filename>helpers</filename> file is used when
+    LOAD_HELPERS_ONLY=Yes</para>
+
+    <para>Each record in the files has the following format:</para>
 
     <cmdsynopsis>
       <command>loadmodule</command>
@@ -45,7 +56,8 @@
 
     <para>The /usr/share/shorewall/modules file contains a large number of
     modules. Users are encouraged to copy the file to /etc/shorewall/modules
-    and modify the copy to load only the modules required.<note>
+    and modify the copy to load only the modules required or to use
+    LOAD_HELPERS_ONLY=Yes.<note>
         <para>If you build monolithic kernels and have not installed
         module-init-tools, then create an empty /etc/shorewall/modules file;
         that will prevent Shorewall from trying to load modules at all.</para>
@@ -63,7 +75,11 @@
 
     <para>/usr/share/shorewall/modules</para>
 
+    <para>/usr/share/shorewall/helpers</para>
+
     <para>/etc/shorewall/modules</para>
+
+    <para>/etc/shorewall/helpers</para>
   </refsect1>
 
   <refsect1>
@@ -74,8 +90,9 @@
     shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
     shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
     shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

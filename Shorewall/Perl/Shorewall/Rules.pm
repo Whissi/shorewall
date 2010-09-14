@@ -1885,7 +1885,7 @@ sub generate_matrix() {
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
-    my $blackout = $filter_table->{blackout} && @{$filter_table->{blackout}{rules}};
+    my $blackout = $filter_table->{blackout};
     my @zones = off_firewall_zones;
     my @vservers = vserver_zones;
     my $interface_jumps_added = 0;
@@ -2034,7 +2034,7 @@ sub generate_matrix() {
 			    my $interfacematch = '';
 			    my $use_output = 0;
 
-			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( ( $blacklist || @{$interfacechainref->{rules}} ) && ! $chain1ref ) ) {
+			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || $blacklist || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
 				$outputref = $interfacechainref;
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;
@@ -2048,7 +2048,6 @@ sub generate_matrix() {
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;
-				$needs_bl_jump{output_chain $interface} = 1 if $blacklist;
 			    }
 
 			    add_jump $outputref , $nextchain, 0, join( '', $interfacematch, $dest, $ipsec_out_match );

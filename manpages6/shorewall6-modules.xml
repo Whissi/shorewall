@@ -18,14 +18,23 @@
     <cmdsynopsis>
       <command>/usr/share/shorewall6/modules</command>
     </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>/usr/share/shorewall6/helpers</command>
+    </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>This file specifies which kernel modules shorewall6 will load before
-    trying to determine your ip6tables/kernel's capabilities. Each record in
-    the file has the following format:</para>
+    <para>These files specify which kernel modules shorewall6 will load before
+    trying to determine your ip6tables/kernel's capabilities. The
+    <filename>modules</filename> file is used when LOAD_HELPERS_ONLY=No in
+    <ulink url="shorewall6.conf.html">shorewall6.conf</ulink>(8); the
+    <filename>helpers</filename> file is used when
+    LOAD_HELPERS_ONLY=Yes.</para>
+
+    <para>Each record in the files has the following format:</para>
 
     <cmdsynopsis>
       <command>loadmodule</command>
@@ -45,7 +54,8 @@
 
     <para>The /usr/share/shorewall6/modules file contains a large number of
     modules. Users are encouraged to copy the file to /etc/shorewall6/modules
-    and modify the copy to load only the modules required.<note>
+    and modify the copy to load only the modules required or use
+    LOAD_HELPERS_ONLY=Yes.<note>
         <para>If you build monolithic kernels and have not installed
         module-init-tools, then create an empty /etc/shorewall6/modules file;
         that will prevent shorewall6 from trying to load modules at
@@ -64,7 +74,11 @@
 
     <para>/usr/share/shorewall6/modules</para>
 
+    <para>/usr/share/shorewall6/helpers</para>
+
     <para>/etc/shorewall6/modules</para>
+
+    <para>/etc/shorewall6/helpers</para>
   </refsect1>
 
   <refsect1>
@@ -74,8 +88,9 @@
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
     shorewall6-maclist(5), shorewall6-params(5), shorewall6-policy(5),
     shorewall6-providers(5), shorewall6-route_rules(5),
-    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5),
-    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
-    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
+    shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),
+    shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

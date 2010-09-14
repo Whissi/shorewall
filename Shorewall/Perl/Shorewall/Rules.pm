@@ -214,7 +214,7 @@ sub add_rule_pair( $$$$ ) {
 sub setup_blacklist() {
 
     my $hosts  = find_hosts_by_option1 'blacklist', BL_IN;
-    my $hosts1 = find_hosts_by_option1 'blacklist', BL_OUT;
+    my $hosts1 = find_hosts_by_option1 'blacklist', BL_IN | BL_OUT;
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };

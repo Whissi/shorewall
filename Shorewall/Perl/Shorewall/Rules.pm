@@ -225,7 +225,7 @@ sub setup_blacklist() {
     #
     if ( @$hosts || @$hosts1 ) {
 	$chainref  = dont_delete new_standard_chain 'blacklst' if @$hosts;
-	$chainref1 = dont_delete new_standard_chain 'blackout' if @$hosts1;
+	$chainref1 = new_chain( 'filter', 'blackout' ) if @$hosts1;
 
 	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';

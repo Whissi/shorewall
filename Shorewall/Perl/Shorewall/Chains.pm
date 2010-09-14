@@ -4055,6 +4055,7 @@ sub create_chainlist_reload($) {
 
     unless ( @chains ) {
 	@chains = qw( blacklst ) if $filter_table->{blacklst};
+	push @chains, 'blackout' if $filter_table->{blackout};
 	push @chains, 'mangle:' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
 	$chains = join( ',', @chains ) if @chains;
     }

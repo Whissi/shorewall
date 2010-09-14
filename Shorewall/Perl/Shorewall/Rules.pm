@@ -214,18 +214,18 @@ sub add_rule_pair( $$$$ ) {
 sub setup_blacklist() {
 
     my $hosts  = find_hosts_by_option1 'blacklist', BL_IN;
-    my $hosts1 = find_hosts_by_option1 'blacklist', BL_IN | BL_OUT;
+    my $hosts1 = find_hosts_by_option1 'blacklist', BL_OUT;
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
     #
-    # We go ahead and generate the blacklist chain and jump to it, even if it turns out to be empty. That is necessary
+    # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
     # for 'refresh' to work properly.
     #
     if ( @$hosts || @$hosts1 ) {
 	$chainref  = dont_delete new_standard_chain 'blacklst' if @$hosts;
-	$chainref1 = new_chain( 'filter', 'blackout' ) if @$hosts1;
+	$chainref1 = dont_delete new_standard_chain 'blackout' if @$hosts || @$hosts1;
 
 	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';

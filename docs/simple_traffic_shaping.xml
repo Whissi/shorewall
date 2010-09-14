@@ -62,7 +62,7 @@
 
     <para>Assuming that your external interface is eth0:</para>
 
-    <programlisting>#INTERFACE             TYPE          IN-BANDWIDTH
+    <programlisting>#INTERFACE             TYPE          IN-BANDWIDTH        OUT-BANDWIDTH
 eth0                   External</programlisting>
 
     <note>
@@ -214,13 +214,13 @@ eth0                   External</programlisting>
     is NO space between the number and the unit (it is 100kbit not 100 kbit).
     <emphasis role="bold">mbit</emphasis>, <emphasis
     role="bold">mbps</emphasis> or a raw number (which means bytes) can be
-    used, but note that only integer numbers are supported (0.5 is not valid).
-    To pick an appropriate setting, we recommend that you start by setting
-    IN-BANDWIDTH significantly below your measured download bandwidth (20% or
-    so). While downloading, measure the ping response time from the firewall
-    to the upstream router as you gradually increase the setting. The optimal
-    setting is at the point beyond which the ping time increases sharply as
-    you increase the setting.</para>
+    used, but note that before Shorewall 4.4.13 only integer numbers were
+    supported (0.5 was not valid). To pick an appropriate setting, we
+    recommend that you start by setting IN-BANDWIDTH significantly below your
+    measured download bandwidth (20% or so). While downloading, measure the
+    ping response time from the firewall to the upstream router as you
+    gradually increase the setting. The optimal setting is at the point beyond
+    which the ping time increases sharply as you increase the setting.</para>
 
     <para>Simple Traffic Shaping is only appropriate on interfaces where
     output queuing occurs. As a consequence, you usually only use it on
@@ -231,6 +231,19 @@ eth0                   External</programlisting>
 
     <programlisting>#INTERFACE             TYPE          IN-BANDWIDTH
 tun0                   Internal</programlisting>
+
+    <para>For fast lines, the actual download rate may be significantly less
+    than the specified IN-BANDWIDTH. Beginning with Shoreall 4.4.13, you can
+    specify an optional burst </para>
+
+    <para>Also beginning with Shorewall 4.4.13, an OUT-BANDWIDTH column is
+    available in <ulink
+    url="manpages/shorewall-tcpri.html">shorewall-tcpri</ulink>(5). Limiting
+    to outgoing bandwidth can have a positive effect on latency for
+    applications like VOIP. We recommend that you begin with a setting that is
+    at least 20% less than your measured upload rate and then gradually
+    increase it until latency becomes unacceptable. Then reduce it back to the
+    point where latency is acceptable.</para>
   </section>
 
   <section>

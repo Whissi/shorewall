@@ -83,7 +83,8 @@
             <listitem>
               <para>An IP address range of the form
               <emphasis>low.address</emphasis>-<emphasis>high.address</emphasis>.
-              Your kernel and ip6tables must have iprange match support.</para>
+              Your kernel and ip6tables must have iprange match
+              support.</para>
             </listitem>
 
             <listitem>
@@ -126,8 +127,12 @@
               <term><emphasis role="bold">blacklist</emphasis></term>
 
               <listitem>
-                <para>This option only makes sense for ports on a
-                bridge.</para>
+                <para>This option only makes sense for ports on a bridge. As
+                of Shorewall 4.4.13, its use is deprecated and is equivalent
+                to specifying <option>blacklist=1</option> on the associated
+                entry in <ulink
+                url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
+                </para>
 
                 <para>Check packets arriving on this port against the <ulink
                 url="shorewall-blacklist.html">shorewall6-blacklist</ulink>(5)
@@ -178,8 +183,8 @@
     shorewall6-blacklist(5), shorewall6-interfaces(5), shorewall6-maclist(5),
     shorewall6-params(5), shorewall6-policy(5), shorewall6-providers(5),
     shorewall6-route_rules(5), shorewall6-routestopped(5),
-    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5), shorewall6-tcclasses(5),
-    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
-    shorewall6-tunnels(5), shorewall-zones(5)</para>
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

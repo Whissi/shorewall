@@ -979,7 +979,6 @@ sub process_interface( $$ ) {
 		    $value = BL_IN unless ( defined $value && $value ne '' );
 		    fatal_error "Invalid 'blacklist' value ( $value )" unless $value =~ /^[12]$/;
 		    $options{blacklist} = $value;
-		    $hostoptions{blacklist} = $options{blacklist} & BL_IN;
 		} else {
 		    assert( 0 );
 		}
@@ -1697,7 +1696,13 @@ sub process_host( ) {
 		warning_message "The 'norfc1918' option is no longer supported"
 	    } elsif ( $validhostoptions{$option}) {
 		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type == VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
-		$options{$option} = 1;
+
+		if ( $option eq 'blacklist' ) {
+		    warning_message qq(The "blacklist" host option is deprecated and will be removed);
+		    $interfaces{$interface}{options}{blacklist} |= BL_IN;
+		} else {
+		    $options{$option} = 1;
+		}
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }

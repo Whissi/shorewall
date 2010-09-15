@@ -894,6 +894,10 @@ sub use_output_chain($$) {
     #
     return 1 if $nets > 1;
     #
+    # Must also use the interface's chain if there is type-1 blacklisting on the interface
+    #
+    return 1 if $interfaceref->{options}{blacklist} & BL_IN;
+    #
     # Don't need it if it isn't associated with any zone
     #
     return 0 unless $nets;

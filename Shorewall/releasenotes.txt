@@ -205,6 +205,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     As part of this change, the OPTIONS may now be a comma-separated
     list of 'to' and 'from'.
 
+    Additionally, the 'blacklist' option in /etc/shorewall/hosts is now
+    deprecated and is treated as if 'blacklist=1' had been specified in
+    the corresponding entry in /etc/shorewall/interfaces.
+
 5)  There is now an OUT-BANDWIDTH column in
     /etc/shorewall/tcinterfaces.
 
@@ -439,6 +443,14 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
     where 'iface' is a capitalized interface name (e.g., ETH0) and
     'provider' is the capitalized name of a provider.
+
+15) The 'blacklist' option in /etc/shorewall/hosts
+    (/etc/shorewall6/hosts) is now deprecated. It was originally
+    implemented to handle post kernel-2.6.21 bridges which are now
+    handled completely in the interfaces file.
+
+    Setting 'blacklist' in the hosts file is now equivalent to setting
+    blacklist=1 in the associated entry in the interfaces file.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

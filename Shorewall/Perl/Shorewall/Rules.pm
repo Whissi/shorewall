@@ -2034,7 +2034,7 @@ sub generate_matrix() {
 			    my $interfacematch = '';
 			    my $use_output = 0;
 
-			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || $blacklist || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
+			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
 				$outputref = $interfacechainref;
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;

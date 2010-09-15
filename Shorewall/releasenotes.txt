@@ -445,12 +445,13 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     'provider' is the capitalized name of a provider.
 
 15) The 'blacklist' option in /etc/shorewall/hosts
-    (/etc/shorewall6/hosts) is now deprecated. It was originally
-    implemented to handle post kernel-2.6.21 bridges which are now
-    handled completely in the interfaces file.
+    (/etc/shorewall6/hosts) is now ignored with a warning:
 
-    Setting 'blacklist' in the hosts file is now equivalent to setting
-    blacklist=1 in the associated entry in the interfaces file.
+      WARNING: The "blacklist" host option is no longer supported and
+               will be ignored
+
+    The option was originally implemented to handle post kernel-2.6.21
+    bridges which are now handled completely in the interfaces file.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

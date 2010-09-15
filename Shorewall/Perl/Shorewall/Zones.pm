@@ -1698,8 +1698,7 @@ sub process_host( ) {
 		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type == VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
 
 		if ( $option eq 'blacklist' ) {
-		    warning_message qq(The "blacklist" host option is deprecated and will be removed);
-		    $interfaces{$interface}{options}{blacklist} |= BL_IN;
+		    warning_message qq(The "blacklist" host option is no longer supported and will be ignored);
 		} else {
 		    $options{$option} = 1;
 		}
@@ -1804,28 +1803,16 @@ sub find_hosts_by_option( $ ) {
     \@hosts;
 }
 
+#
+# This one returns a 4-tuple for each interface which the passed bit set in the passed option
+#
+
 sub find_hosts_by_option1( $$ ) {
     my ($option, $bit ) = @_;
     my @hosts;
 
-    for my $zone ( grep $zones{$_}{type} != FIREWALL , @zones ) {
-	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
-	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
-		for my $host ( @{$arrayref} ) {
-		    if ( $host->{options}{$option} & $bit ) {
-			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}];
-			}
-		    }
-		}
-	    }
-	}
-    }
-
     for my $interface ( @interfaces ) {
-	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} & $bit ) {
-	    push @hosts, [ $interface, 'none', ALLIP , [] ];
-	}
+	push @hosts, [ $interface, 'none', ALLIP , [] ] if $interfaces{$interface}{options}{$option} & $bit
     }
 
     \@hosts;

@@ -260,14 +260,14 @@ sub setup_blacklist() {
 
 		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file';
 
-		$options = 'from' if $options eq '-';
+		$options = 'src' if $options eq '-';
 
 		my ( $to, $from ) = ( 0, 0 );
 
 		for ( split /,/, $options ) {
-		    if ( $_ eq 'from' ) {
+		    if ( $_ =~ /^(?:from|src)$/ ) {
 			if ( $from++ ) {
-			    warning_message "Duplicate 'from' ignored";
+			    warning_message "Duplicate 'src' ignored";
 			} else {
 			    if ( @$hosts ) {
 				expand_rule(
@@ -285,9 +285,9 @@ sub setup_blacklist() {
 				warning_message 'Blacklist entry ignored because there are no "blacklist=1" interfaces';
 			    }
 			}
-		    } elsif ( $_ eq 'to' ) {
+		    } elsif ( $_ =~ /^(?:dst|to)$/ ) {
 			if ( $to++ ) {
-			    warning_message "Duplicate 'to' ignored";
+			    warning_message "Duplicate 'dst' ignored";
 			} else {
 			    expand_rule(
 					$chainref1 ,

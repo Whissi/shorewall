@@ -975,6 +975,7 @@ sub process_interface( $$ ) {
 			$options{arp_ignore} = 1;
 		    }
 		} elsif ( $option eq 'blacklist' ) {
+		    fatal_error "Duplicate blacklist option" if $options{blacklist};
 		    $value = BL_IN unless ( defined $value && $value ne '' );
 		    fatal_error "Invalid 'blacklist' value ( $value )" unless $value =~ /^[12]$/;
 		    $options{blacklist} = $value;

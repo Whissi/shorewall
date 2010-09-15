@@ -213,19 +213,16 @@ sub add_rule_pair( $$$$ ) {
 
 sub setup_blacklist() {
 
-    my $hosts  = find_hosts_by_option1 'blacklist', BL_IN;
-    my $hosts1 = find_hosts_by_option1 'blacklist', BL_OUT;
+    my $hosts = find_hosts_by_option 'blacklist';
     my $chainref;
-    my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
     #
-    # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
+    # We go ahead and generate the blacklist chain and jump to it, even if it turns out to be empty. That is necessary
     # for 'refresh' to work properly.
     #
-    if ( @$hosts || @$hosts1 ) {
-	$chainref  = dont_delete new_standard_chain 'blacklst' if @$hosts;
-	$chainref1 = dont_delete new_standard_chain 'blackout' if @$hosts || @$hosts1;
+    if ( @$hosts ) {
+	$chainref = dont_delete new_standard_chain 'blacklst';
 
 	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';
@@ -249,7 +246,7 @@ sub setup_blacklist() {
 	    while ( read_a_line ) {
 
 		if ( $first_entry ) {
-		    unless  ( @$hosts || @$hosts1 ) {
+		    unless  ( @$hosts ) {
 			warning_message qq(The entries in $fn have been ignored because there are no 'blacklist' interfaces);
 			close_file;
 			last BLACKLIST;
@@ -258,59 +255,25 @@ sub setup_blacklist() {
 		    $first_entry = 0;
 		}
 
-		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file';
+		my ( $networks, $protocol, $ports ) = split_line 1, 3, 'blacklist file';
 
-		$options = 'src' if $options eq '-';
-
-		my ( $to, $from ) = ( 0, 0 );
-
-		for ( split /,/, $options ) {
-		    if ( $_ =~ /^(?:from|src)$/ ) {
-			if ( $from++ ) {
-			    warning_message "Duplicate 'src' ignored";
-			} else {
-			    if ( @$hosts ) {
-				expand_rule(
-					    $chainref ,
-					    NO_RESTRICT ,
-					    do_proto( $protocol , $ports, '' ) ,
-					    $networks,
-					    '',
-					    '' ,
-					    $target ,
-					    '' ,
-					    $target ,
-					    '' );
-			    } else {
-				warning_message 'Blacklist entry ignored because there are no "blacklist=1" interfaces';
-			    }
-			}
-		    } elsif ( $_ =~ /^(?:dst|to)$/ ) {
-			if ( $to++ ) {
-			    warning_message "Duplicate 'dst' ignored";
-			} else {
-			    expand_rule(
-					$chainref1 ,
-					NO_RESTRICT ,
-					do_proto( $protocol , $ports, '' ) ,
-					'',
-					$networks,
-					'' ,
-					$target ,
-					'' ,
-					$target ,
-					'' );
-			}
-		    } else {
-			fatal_error "Invalid blacklist option($_)";
-		    }
-		}
+		expand_rule(
+			    $chainref ,
+			    NO_RESTRICT ,
+			    do_proto( $protocol , $ports, '' ) ,
+			    $networks ,
+			    '' ,
+			    '' ,
+			    $target ,
+			    '' ,
+			    $disposition ,
+			    '' );
 
 		progress_message "  \"$currentline\" added to blacklist";
 	    }
 
 	    warning_message q(There are interfaces or hosts with the 'blacklist' option but the 'blacklist' file is empty) if $first_entry && @$hosts;
-	} elsif ( @$hosts || @$hosts1 ) {
+	} elsif ( @$hosts ) {
 	    warning_message q(There are interfaces or hosts with the 'blacklist' option, but the 'blacklist' file is either missing or has zero size);
 	}
 
@@ -331,24 +294,7 @@ sub setup_blacklist() {
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
 
-	    progress_message "  Type 1 blacklisting enabled on ${interface}:${network}";
-	}
-
-	if ( $chainref1 && @{$chainref1->{rules}} ) {
-	    for my $hostref ( @$hosts1 ) {
-		my $interface  = $hostref->[0];
-		my $ipsec      = $hostref->[1];
-		my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
-		my $network    = $hostref->[2];
-		my $source     = match_source_net $network;
-		my $target     = source_exclusion( $hostref->[3], $chainref1 );
-		
-		add_jump $filter_table->{forward_chain $interface} , $target, 0, "${source}${state}${policy}";
-		
-		set_interface_option $interface, 'use_forward_chain', 1;
-		
-		progress_message "  Type 2 blacklisting enabled on ${interface}:${network}";
-	    }
+	    progress_message "  Blacklisting enabled on ${interface}:${network}";
 	}
     }
 }
@@ -1885,14 +1831,12 @@ sub generate_matrix() {
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
-    my $blackout = $filter_table->{blackout};
     my @zones = off_firewall_zones;
     my @vservers = vserver_zones;
     my $interface_jumps_added = 0;
     our %input_jump_added   = ();
     our %output_jump_added  = ();
     our %forward_jump_added = ();
-    my  %needs_bl_jump      = ();
 
     progress_message2 'Generating Rule Matrix...';
     #
@@ -2021,7 +1965,6 @@ sub generate_matrix() {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    my $exclusions = $hostref->{exclusions};
-		    my $blacklist  = $blackout && $hostref->{options}{blacklist} & BL_IN;
 		    
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $dest   = match_dest_net $net;
@@ -2038,7 +1981,6 @@ sub generate_matrix() {
 				$outputref = $interfacechainref;
 				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 				$use_output = 1;
-				$needs_bl_jump{output_chain $interface} = 1 if $blacklist;
 
 				unless ( lc $net eq IPv6_LINKLOCAL ) {
 				    for my $vzone ( vserver_zones ) {
@@ -2301,7 +2243,6 @@ sub generate_matrix() {
 	add_jump $frwd_ref , $last_chain, 1 if $frwd_ref && $last_chain;
     }
 
-    add_jump( $filter_table->{$_}, $filter_table->{blackout} , 0 , $state , 0 , 0 ) for keys %needs_bl_jump;
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,

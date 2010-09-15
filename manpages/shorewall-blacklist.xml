@@ -72,62 +72,6 @@
           from services(5).</para>
         </listitem>
       </varlistentry>
-
-      <varlistentry>
-        <term>OPTIONS (Optional - Added in 4.4.12) -
-        {-|{dst|src}[,...]}</term>
-
-        <listitem>
-          <para>If specified, indicates whether traffic
-          <emphasis>from</emphasis> ADDRESS/SUBNET (<emphasis
-          role="bold">src</emphasis>) or traffic <emphasis>to</emphasis>
-          ADDRESS/SUBNET (<emphasis role="bold">dst</emphasis>) should be
-          blacklisted. The default is <emphasis role="bold">src</emphasis>. If
-          the ADDRESS/SUBNET column is empty, then this column has no effect
-          on the generated rule.</para>
-
-          <note>
-            <para>In Shorewall 4.4.12, blacklisting is still restricted to
-            traffic <emphasis>arriving</emphasis> on an interface that has the
-            'blacklist' option set. So to block traffic from your local
-            network to an internet host, you must specify
-            <option>blacklist</option> on your internal interface in <ulink
-            url="shorewall-interfaces.html">shorewall-interfaces</ulink>
-            (5).</para>
-          </note>
-
-          <note>
-            <para>Beginning with Shorewall 4.4.13, entries specifying
-            <emphasis role="bold">to</emphasis> are applied based on the
-            <emphasis role="bold">blacklist</emphasis> setting in <ulink
-            url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5):</para>
-
-            <orderedlist>
-              <listitem>
-                <para>Input blacklisting (default if no value given). Traffic
-                entering this interface are passed against the entries in
-                <ulink
-                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
-                that have the <emphasis role="bold">from</emphasis> option
-                (specified or defaulted). Traffic originating on the firewall
-                and leaving by this interface is passed against the entries in
-                <ulink
-                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
-                that have the <emphasis role="bold">to</emphasis>
-                option.</para>
-              </listitem>
-
-              <listitem>
-                <para>Output blacklisting. Traffic entering on this interface
-                is passed against the entries in <ulink
-                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
-                that have the <emphasis role="bold">to</emphasis>
-                option.</para>
-              </listitem>
-            </orderedlist>
-          </note>
-        </listitem>
-      </varlistentry>
     </variablelist>
 
     <para></para>

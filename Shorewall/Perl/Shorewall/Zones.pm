@@ -41,8 +41,6 @@ our @EXPORT = qw( NOTHING
 		  IP
 		  BPORT
 		  IPSEC
-		  BL_IN
-		  BL_OUT
 
 		  determine_zones
 		  zone_report
@@ -97,12 +95,6 @@ use constant { NOTHING    => 'NOTHING',
 	       IPSECPROTO => 'ah|esp|ipcomp',
 	       IPSECMODE  => 'tunnel|transport'
 	       };
-#
-# blacklist option values
-#
-use constant { 
-	      BL_IN      => 1 ,
-	      BL_OUT     => 2 };
 #
 # Zone Table.
 #
@@ -239,7 +231,7 @@ sub initialize( $ ) {
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
 				  arp_ignore  => ENUM_IF_OPTION,
-				  blacklist   => ENUM_IF_OPTION   + IF_OPTION_HOST,
+				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
@@ -272,7 +264,7 @@ sub initialize( $ ) {
 			     sourceonly => 1,
 			    );
     } else {
-	%validinterfaceoptions = (  blacklist   => ENUM_IF_OPTION   + IF_OPTION_HOST,
+	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -653,8 +645,6 @@ sub add_group_to_zone($$$$$)
 
     $zoneref->{interfaces}{$interface} = 1;
 
-    $options->{blacklist} ||= 0;
-
     my @newnetworks;
     my @exclusions = ();
     my $new = \@newnetworks;
@@ -919,7 +909,6 @@ sub process_interface( $$ ) {
     my %options;
 
     $options{port} = 1 if $port;
-    $options{blacklist} = 0;
 
     my $hostoptionsref = {};
 
@@ -931,7 +920,7 @@ sub process_interface( $$ ) {
 
     if ( $options ne '-' ) {
 
-	my %hostoptions = ( blacklist => 0, dynamic => 0 );
+	my %hostoptions = ( dynamic => 0 );
 
 	for my $option (split_list1 $options, 'option' ) {
 	    next if $option eq '-';
@@ -974,11 +963,6 @@ sub process_interface( $$ ) {
 		    } else {
 			$options{arp_ignore} = 1;
 		    }
-		} elsif ( $option eq 'blacklist' ) {
-		    fatal_error "Duplicate blacklist option" if $options{blacklist};
-		    $value = BL_IN unless ( defined $value && $value ne '' );
-		    fatal_error "Invalid 'blacklist' value ( $value )" unless $value =~ /^[12]$/;
-		    $options{blacklist} = $value;
 		} else {
 		    assert( 0 );
 		}
@@ -1141,7 +1125,7 @@ sub validate_interfaces_file( $ ) {
 				    number     => $nextinum ,
 				    root       => $interface ,
 				    broadcasts => undef ,
-				    options    => { blacklist => 0 } ,
+				    options    => {} ,
 				    zone       => '',
 				    physical   => 'lo',
 				  };
@@ -1680,11 +1664,11 @@ sub process_host( ) {
 	}
     } 
 
-    my $optionsref = { blacklist => 0, dynamic => 0 };
+    my $optionsref = { dynamic => 0 };
 
     if ( $options ne '-' ) {
 	my @options = split_list $options, 'option';
-	my %options = ( blacklist => 0, dynamic => 0 );
+	my %options = ( dynamic => 0 );
 
 	for my $option ( @options ) {
 	    if ( $option eq 'ipsec' ) {
@@ -1696,12 +1680,7 @@ sub process_host( ) {
 		warning_message "The 'norfc1918' option is no longer supported"
 	    } elsif ( $validhostoptions{$option}) {
 		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type == VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
-
-		if ( $option eq 'blacklist' ) {
-		    warning_message qq(The "blacklist" host option is no longer supported and will be ignored);
-		} else {
-		    $options{$option} = 1;
-		}
+		$options{$option} = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }

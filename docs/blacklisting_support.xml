@@ -174,29 +174,6 @@ ipset -A Blacklist 206.124.146.177
 ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
 
     <para>This will blacklist SMTP traffic from host 206.124.146.177.</para>
-
-    <para>Beginning with Shoreall 4.4.13, outgoing blacklisting is also
-    supported. The "blacklist" setting in <ulink
-    url="manpages/shorewall-interfaces.html"><filename>/etc/shorewall/interfaces</filename></ulink>
-    specifes whether an interface is an Internet-facing interface (value 1) or
-    an internal interface (value 2). Additionally, entries in
-    <filename>/etc/shorewall/blacklist</filename> can be specified as defining
-    the destination IP address rather than the source address.</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Traffic entering an Internet-facing interface is passed against
-        those blacklist entries that specify the source IP address. Traffic
-        originating on the firewall and leaving on an Interface-facing
-        interface is passed against the blacklist entries that specify the
-        destination IP address.</para>
-      </listitem>
-
-      <listitem>
-        <para>Traffic entering an internal interface is passed against those
-        blacklist entries that specify the destination IP address.</para>
-      </listitem>
-    </itemizedlist>
   </section>
 
   <section id="Dynamic">

@@ -187,33 +187,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     As part of this change, the tcrules file now accepts $FW in the
     DEST column for marking packets in the INPUT chain.
 
-4)  Blacklisting has undergone considerable change in this release.
-
-    The OPTIONS column may now contain a comma-separated list of the
-    options 'src' and 'dst'. The 'src' keyword supercedes 'from' and
-    'dst' supercedes 'to'. The old keywords are still supported but are
-    no longer documented.
-
-    The 'blacklist' interface option may now have one of 2 values:
-
-    1 - Inbound blacklisting
-    2 - Outbond blacklisting
-
-    Inbound blacklisting is targeted for use on Internet-facing
-    interfaces. Incoming packets are passed against the blacklist
-    entries with the 'src' option (either explicitly or defaulted). 
-    Traffic originating on the firewall is passed against the blacklist
-    entries with the 'dst' option.
-
-    Outbound blacklisting is targeted for use on internal
-    interfaces. Packets arriving on these interfaces is passed against
-    the blacklist entries with the 'dst' option.
-
-    Additionally, the 'blacklist' option in /etc/shorewall/hosts is no
-    longer supported and is ignored with a warning:
-
-    	   WARNING: The "blacklist" host option is no longer supported
-                    and will be ignored.
+4)  After a failed attempt to improve blacklisting by destination IP
+    address, I've decided to remove the OPTIONS column from the
+    blacklist files and take a fresh start at implementing this
+    feature in a later release.
 
 5)  There is now an OUT-BANDWIDTH column in
     /etc/shorewall/tcinterfaces.
@@ -450,14 +427,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     where 'iface' is a capitalized interface name (e.g., ETH0) and
     'provider' is the capitalized name of a provider.
 
-15) The 'blacklist' option in /etc/shorewall/hosts
-    (/etc/shorewall6/hosts) is now ignored with a warning:
-
-      WARNING: The "blacklist" host option is no longer supported and
-               will be ignored
-
-    The option was originally implemented to handle post kernel-2.6.21
-    bridges which are now handled completely in the interfaces file.
+15) Support for the OPTIONS column in /etc/shorewall/blacklist
+    (/etc/shorewall6/blacklist) has been removed. Blacklisting by
+    destination IP address will be included in a later Shorewall
+    release.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

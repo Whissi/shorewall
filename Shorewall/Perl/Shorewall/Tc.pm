@@ -527,26 +527,26 @@ sub process_simple_device() {
 	my $command = "run_tc qdisc add dev $physical root handle $number: tbf rate ${out_bandwidth}kbit";
 
 	if ( defined $burst && $burst ne '' ) {
-	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " burst $burst";
 	} else {
 	    $command .= ' burst 10kb';
 	}
 
 	if ( defined $latency && $latency ne '' ) {
-	    fatal_error "Invalid latency ($latency)" unless $latency =~ /^\d+(s|sec|secs|ms|msec|msecs|us|usec|usecs)?$/;
+	    fatal_error "Invalid latency ($latency)" unless $latency =~ /^\d+(?:\.\d+)?(s|sec|secs|ms|msec|msecs|us|usec|usecs)?$/;
 	    $command .= " latency $latency";
 	} else {
 	    $command .= ' latency 200ms';
 	}
 
 	if ( defined $peak && $peak ne '' ) {
-	    fatal_error "Invalid peak ($peak)" unless $peak =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    fatal_error "Invalid peak ($peak)" unless $peak =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " peakrate $peak";
 	}
 
 	if ( defined $minburst && $minburst ne '' ) {
-	    fatal_error "Invalid minburst ($minburst)" unless $minburst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    fatal_error "Invalid minburst ($minburst)" unless $minburst =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " minburst $minburst";
 	}
 

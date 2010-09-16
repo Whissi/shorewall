@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 our $macro_nest_level;
 our $current_param;
@@ -1850,6 +1850,8 @@ sub generate_matrix() {
 	# Complex zone and we have more than one non-firewall zone -- create a zone forwarding chain
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
+
+	add_jump( $frwd_ref, $filter_table->{blacklst}, 0 ) if $zoneref->{options}{in}{blacklist};
 
 	if ( have_ipsec ) {
 	    #

@@ -84,7 +84,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 #
 # IPSEC Option types
@@ -299,6 +299,7 @@ sub initialize( $ ) {
 sub parse_zone_option_list($$)
 {
     my %validoptions = ( mss          => NUMERIC,
+			 blacklist    => NOTHING,
 			 strict       => NOTHING,
 			 next         => NOTHING,
 			 reqid        => NUMERIC,
@@ -311,7 +312,7 @@ sub parse_zone_option_list($$)
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => 'mss' );
+    my %key = ( mss => 1 , blacklist => 'blacklist' );
 
     my ( $list, $zonetype ) = @_;
     my %h;
@@ -344,7 +345,7 @@ sub parse_zone_option_list($$)
 	    }
 
 	    if ( $key{$e} ) {
-		$h{$e} = $val;
+		$h{$e} = $val || 1;
 	    } else {
 		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype == IPSEC;
 		$options .= $invert;
@@ -435,20 +436,22 @@ sub process_zone( \$ ) {
 	}
     }
 
-    $zones{$zone} = { type       => $type,
-		      parents    => \@parents,
-		      bridge     => '',
-		      options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
-				      in      => parse_zone_option_list( $in_options || '', $type ) ,
-				      out     => parse_zone_option_list( $out_options || '', $type ) ,
-				      complex => ( $type == IPSEC || $options ne '-' || $in_options ne '-' || $out_options ne '-' ) ,
-				      nested  => @parents > 0 ,
-				      super   => 0 ,
-				    } ,
-		      interfaces => {} ,
-		      children   => [] ,
-		      hosts      => {}
-		    };
+    my $zoneref = $zones{$zone} = { type       => $type,
+				    parents    => \@parents,
+				    bridge     => '',
+				    options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
+						    in      => parse_zone_option_list( $in_options || '', $type ) ,
+						    out     => parse_zone_option_list( $out_options || '', $type ) ,
+						    complex => ( $type == IPSEC || $options ne '-' || $in_options ne '-' || $out_options ne '-' ) ,
+						    nested  => @parents > 0 ,
+						    super   => 0 ,
+						  } ,
+				    interfaces => {} ,
+				    children   => [] ,
+				    hosts      => {}
+				  };
+
+    $zoneref->{options}{in}{blacklist} = $zoneref->{options}{out}{blacklist} = 1 if $zoneref->{options}{in_out}{blacklist};
 
     return $zone;
 

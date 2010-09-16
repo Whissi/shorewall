@@ -76,52 +76,46 @@
 
       <varlistentry>
         <term>OPTIONS (Optional - Added in 4.4.12) -
-        {-|{to|from}[,...]}</term>
+        {-|{dst|src}[,...]}</term>
 
         <listitem>
-          <para>If specified, indicates whether traffic <option>to</option> or
-          <option>from</option> the ADDRESS/SUBNET should be blacklisted. The
-          default is <emphasis role="bold">from</emphasis>. If the
-          ADDRESS/SUBNET column is empty, then this column has no effect on
-          the generated rule.</para>
+          <para>If specified, indicates whether traffic
+          <emphasis>from</emphasis> ADDRESS/SUBNET (<emphasis
+          role="bold">src</emphasis>) or traffic <emphasis>to</emphasis>
+          ADDRESS/SUBNET (<emphasis role="bold">dst</emphasis>) should be
+          blacklisted. The default is <emphasis role="bold">src</emphasis>. If
+          the ADDRESS/SUBNET column is empty, then this column has no effect
+          on the generated rule.</para>
 
           <note>
-            <para>Blacklisting is still restricted to traffic
-            <emphasis>arriving</emphasis> on an interface that has the
-            'blacklist' option set. So to block traffic from your local
-            network to an internet host, you must specify
+            <para>In Shorewall 4.4.12, the keywords from and to were used in
+            place of src and dst respectively. Blacklisting was still
+            restricted to traffic <emphasis>arriving</emphasis> on an
+            interface that has the 'blacklist' option set. So to block traffic
+            from your local network to an internet host, you had to specify
             <option>blacklist</option> on your internal interface in <ulink
             url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>
             (5).</para>
           </note>
 
           <note>
-            <para>Beginning with Shorewall 4.4.13, entries specifying
-            <emphasis role="bold">to</emphasis> are applied to traffic based
+            <para>Beginning with Shorewall 4.4.13, entries are applied based
             on the <emphasis role="bold">blacklist</emphasis> setting in
             <ulink
-            url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).</para>
+            url="shorewall-zones.html">shorewall6-zones</ulink>(5):</para>
 
             <orderedlist>
               <listitem>
-                <para>Input blacklisting (default if no value given). Traffic
-                entering this interface are passed against the entries in
-                <ulink
-                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
-                that have the <emphasis role="bold">from</emphasis> option
-                (specified or defaulted). Traffic originating on the firewall
-                and leaving by this interface is passed against the entries in
-                <ulink
-                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
-                that have the <emphasis role="bold">to</emphasis>
-                option.</para>
+                <para>'blacklist' in the OPTIONS or IN_OPTIONS column. Traffic
+                from this zone is passed against the entries in this file that
+                have the <emphasis role="bold">src</emphasis> option
+                (specified or defaulted).</para>
               </listitem>
 
               <listitem>
-                <para>Output blacklisting. Traffic entering on this interface
-                is passed against the entries in <ulink
-                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
-                that have the <emphasis role="bold">to</emphasis>
+                <para>'blacklist' in the OPTIONS or OUT_OPTIONS column.
+                Trafficto this zone is passed against the entries in this file
+                that have the <emphasis role="bold">dst</emphasis>
                 option.</para>
               </listitem>
             </orderedlist>

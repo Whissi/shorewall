@@ -230,6 +230,29 @@ loc     eth2            -</programlisting>
                 <ulink
                 url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5)
                 file.</para>
+
+                <para>Beginning with Shorewall 4.4.13:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>If a <replaceable>zone</replaceable> is given in the
+                    ZONES column, then the behavior is as if <emphasis
+                    role="bold">blacklist</emphasis> had been specified in the
+                    IN_OPTIONS column of <ulink
+                    url="shorewall-zones.html">shorewall-zones</ulink>(5).</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Otherwise, the option is ignored with a
+                    warning:</para>
+
+                    <blockquote>
+                      <para><emphasis role="bold">WARNING: The 'blacklist'
+                      option is ignored on mult-zone
+                      interfaces</emphasis></para>
+                    </blockquote>
+                  </listitem>
+                </itemizedlist>
               </listitem>
             </varlistentry>
 

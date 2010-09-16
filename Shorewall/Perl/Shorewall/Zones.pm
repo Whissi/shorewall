@@ -78,7 +78,7 @@ our @EXPORT = qw( NOTHING
 		  compile_updown
 		  validate_hosts_file
 		  find_hosts_by_option
-		  find_hosts_by_option1
+		  find_zones_by_option
 		  all_ipsets
 		  have_ipsec
 		 );
@@ -231,7 +231,7 @@ sub initialize( $ ) {
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
 				  arp_ignore  => ENUM_IF_OPTION,
-				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  blacklist   => SIMPLE_IF_OPTION,
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
@@ -264,7 +264,7 @@ sub initialize( $ ) {
 			     sourceonly => 1,
 			    );
     } else {
-	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -946,8 +946,16 @@ sub process_interface( $$ ) {
 
 	    if ( $type == SIMPLE_IF_OPTION ) {
 		fatal_error "Option $option does not take a value" if defined $value;
-		$options{$option} = 1;
-		$hostoptions{$option} = 1 if $hostopt;
+		if ( $option eq 'blacklist' ) {
+		    if ( $zone ) {
+			$zoneref->{options}{in}{blacklist} = 1;
+		    } else {
+			warning_message "The 'blacklist' option is ignored on multi-zone interfaces";
+		    }
+		} else {
+		    $options{$option} = 1;
+		    $hostoptions{$option} = 1 if $hostopt;
+		}
 	    } elsif ( $type == BINARY_IF_OPTION ) {
 		$value = 1 unless defined $value;
 		fatal_error "Option value for '$option' must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
@@ -1679,8 +1687,8 @@ sub process_host( ) {
 		$type = IPSEC;
 		$zoneref->{options}{complex} = 1;
 		$ipsec = 1;
-	    } elsif ( $option eq 'norfc1918' ) {
-		warning_message "The 'norfc1918' option is no longer supported"
+	    } elsif ( $option =~ /^(?:norfc1918|blacklist)$/ ) {
+		warning_message "The '$option' host option is no longer supported"
 	    } elsif ( $validhostoptions{$option}) {
 		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type == VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
 		$options{$option} = 1;
@@ -1786,18 +1794,18 @@ sub find_hosts_by_option( $ ) {
 }
 
 #
-# This one returns a 4-tuple for each interface which the passed bit set in the passed option
+# Retruns a reference to a list of zones with the passed in/out option
 #
 
-sub find_hosts_by_option1( $$ ) {
-    my ($option, $bit ) = @_;
-    my @hosts;
+sub find_zones_by_option( $$ ) {
+    my ($option, $in_out ) = @_;
+    my @zns;
 
-    for my $interface ( @interfaces ) {
-	push @hosts, [ $interface, 'none', ALLIP , [] ] if $interfaces{$interface}{options}{$option} & $bit
+    for my $zone ( @zones ) {
+	push @zns, $zone if $zones{$zone}{options}{$in_out}{$option};
     }
 
-    \@hosts;
+    \@zns;
 }
 
 sub all_ipsets() {

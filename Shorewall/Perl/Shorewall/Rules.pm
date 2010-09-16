@@ -2394,6 +2394,17 @@ EOF
 
     case $COMMAND in
 	stop|clear|restore)
+            if chain_exists dynamic; then
+EOF
+
+    if ( $family == F_IPV4 ) {
+	emit( '                ${IPTABLES}-save -t filter | grep \'^-A dynamic\' > ${VARDIR}/.dynamic' );
+    } else {
+	emit( '                ${IP6TABLES}-save -t filter | grep \'^-A dynamic\' > ${VARDIR}/.dynamic' );
+    }
+
+    emit <<'EOF';
+            fi
 	    ;;
 	*)
 	    set +x

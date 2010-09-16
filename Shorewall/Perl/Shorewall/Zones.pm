@@ -1687,8 +1687,10 @@ sub process_host( ) {
 		$type = IPSEC;
 		$zoneref->{options}{complex} = 1;
 		$ipsec = 1;
-	    } elsif ( $option =~ /^(?:norfc1918|blacklist)$/ ) {
-		warning_message "The '$option' host option is no longer supported"
+	    } elsif ( $option eq 'norfc1918' ) {
+		warning_message "The 'norfc1918' host option is no longer supported"
+	    } elsif ( $option eq 'blacklist' ) {
+		$zoneref->{options}{in}{blacklist} = 1;
 	    } elsif ( $validhostoptions{$option}) {
 		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type == VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
 		$options{$option} = 1;

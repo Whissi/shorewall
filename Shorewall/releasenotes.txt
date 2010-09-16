@@ -187,10 +187,48 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     As part of this change, the tcrules file now accepts $FW in the
     DEST column for marking packets in the INPUT chain.
 
-4)  After a failed attempt to improve blacklisting by destination IP
-    address, I've decided to remove the OPTIONS column from the
-    blacklist files and take a fresh start at implementing this
-    feature in a later release.
+4)  Blacklisting has undergone considerable change in Shorewall 4.4.13.
+
+    a) Blacklisting is now based on zones rather than on interfaces and
+       host groups.
+
+    b) Near compatibility with earlier releases is maintained.
+
+    c) The keywords 'src' and 'dst' are now preferred in the OPTIONS
+       column in /etc/shoreawll/blacklist, replacing 'from' and 'to'
+       respectively. The old keywords are still supported.
+
+    d) The 'blacklist' keyword may now appear in the OPTIONS,
+       IN_OPTIONS and OUT_OPTIONS fields in /etc/shorewall/zones.
+
+       i)  In the IN_OPTIONS column, it indicates that packets received
+           on the interface are checked against the 'src' entries in
+           /etc/shorewall/blacklist.
+
+       ii) In the OUT_OPTIONS column, it indicates that packets being
+           sent to the interface are checked against the 'dst' entries.
+
+       iii) Placing 'blacklist' in the OPTIONS column is equivalent to
+           placing in in both the IN_OPTIONS and OUT_OPTIONS columns.
+
+    e) The 'blacklist' option in the OPTIONS column of
+       /etc/shorewall/interfaces or /etc/shorewall/hosts is now
+       equivalent to placing it in the IN_OPTIONS column of the
+       associates record in /etc/shorewall/zones. If no zone is given
+       in the ZONE column of /etc/shorewall/interfaces, the 'blacklist'
+       option is ignored with a warning (it was previously ignored
+       silently).
+
+    f) The 'blacklist' option in the /etc/shorewall/interfaces and
+       /etc/shorewall/hosts files is now deprecated but will continue
+       to be supported for several releases. A warning will be added at
+       least one release before support is removed.
+
+    g) Given that blacklisting is now zone-based, there is a slight
+       change in behavior. Previously, blacklisting was done before
+       the other interface-oriented checks (tcpflags, nosmurfs, dhcp,
+       etc.). Beginning with this release, blacklisting is performed
+       after these checks.
 
 5)  There is now an OUT-BANDWIDTH column in
     /etc/shorewall/tcinterfaces.

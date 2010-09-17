@@ -700,8 +700,7 @@ sub move_rules( $$ ) {
 	my $rules    = $chain2->{rules};
 	my $count    = @{$chain1->{rules}};
 	my $tableref = $chain_table{$chain1->{table}};
-	my @frozen   = ();
-	my $frozen   = $chain2->{frozen} || 0;
+	my $frozen   = $chain2->{frozen};
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
@@ -710,29 +709,19 @@ sub move_rules( $$ ) {
 	for ( @{$chain1->{rules}} ) {
 	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
 	}
-	#
-	# Get the frozen rules out of the way for the moment
-	#
-	$chain2->{frozen} += $chain1->{frozen};
-	unshift @frozen, shift @$rules while $frozen--;
-
-	if ( $debug ) {
-	    my $rule = @{$chain1->{rules}};
-	    trace( $chain2, 'A', ++$rule, $_ ) for @{$chain1->{rules}};
-	}
-
-	unshift @$rules, @{$chain1->{rules}};
-	#
-	# Now re-add the frozen rules at the front
-	#
-	unshift @$rules, @frozen;
-	#
-	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
-	# This hack avoids that.
-	#
-	shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
+	
+	splice @$rules, $chain2->{frozen}, 0, @{$chain1->{rules}};
 
 	$chain2->{referenced} = 1;
+
+	unless ( $chain2->{frozen} += $chain1->{frozen} ) {
+	    #
+	    # In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
+	    # This hack avoids that.
+	    #
+	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
+	}
+	    
 	delete_chain $chain1;
 
 	$count;

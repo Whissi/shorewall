@@ -314,7 +314,7 @@ sub parse_zone_option_list($$)
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => NOFW , blacklist => NOFW );
+    my %key = ( mss => UNRESTRICTED , blacklist => NOFW );
 
     my ( $list, $zonetype ) = @_;
     my %h;

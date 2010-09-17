@@ -309,10 +309,12 @@ sub parse_zone_option_list($$)
 			 "tunnel-src" => NETWORK,
 			 "tunnel-dst" => NETWORK,
 		       );
+
+    use constant { UNRESTRICTED => 1, NOFW => 2 };
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => 1 , blacklist => 'blacklist' );
+    my %key = ( mss => NOFW , blacklist => NOFW );
 
     my ( $list, $zonetype ) = @_;
     my %h;
@@ -345,6 +347,7 @@ sub parse_zone_option_list($$)
 	    }
 
 	    if ( $key{$e} ) {
+		fatal_error "Option '$e' not permitted with this zone type " if $key{$e} == NOFW && ($zonetype == FIREWALL || $zonetype == VSERVER);
 		$h{$e} = $val || 1;
 	    } else {
 		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype == IPSEC;

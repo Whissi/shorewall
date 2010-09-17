@@ -620,6 +620,11 @@ sub insert_rule1($$$)
     $rule .= "-m comment --comment \"$comment\"" if $comment;
     $rule  = join( ' ', '-A', $rule );
 
+    if ( $number < 0 ) {
+	$chainref->{frozen}++;
+	$number = 0;
+    }
+    
     splice( @{$chainref->{rules}}, $number, 0, $rule );
 
     trace( $chainref, 'I', ++$number, $rule ) if $debug;
@@ -1040,8 +1045,8 @@ sub ensure_chain($$)
 # optional 5th argument causes long port lists to be split. The optional 6th
 # argument, if passed, gives the 0-relative index where the jump is to be inserted.
 #
-sub add_jump( $$$;$$$$ ) {
-    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index, $freeze ) = @_;
+sub add_jump( $$$;$$$ ) {
+    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
 
     $predicate |= '';
 
@@ -1074,8 +1079,6 @@ sub add_jump( $$$;$$$$ ) {
     } else {
 	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
     }
-
-    $fromref->{frozen}++ if $freeze;
 }
 
 #

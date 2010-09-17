@@ -1874,20 +1874,20 @@ sub generate_matrix() {
 
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};
-	    add_jump $frwd_ref , $blackref, 0, $state, 0, undef, 1;
-	    add_jump ensure_filter_chain( rules_chain( $zone, firewall_zone ), 1 ) , $blackref , 0, $state, 0, 0, 1;
+	    add_jump $frwd_ref , $blackref, 0, $state, 0, -1;
+	    add_jump ensure_filter_chain( rules_chain( $zone, firewall_zone ), 1 ) , $blackref , 0, $state, 0, -1;
 	}
 
 	if ( $zoneref->{options}{out}{blacklist} ) {
 	    my $blackref = $filter_table->{blackout};
-	    add_jump ensure_filter_chain( rules_chain( firewall_zone, $zone ), 1 ) , $blackref , 0, $state, 0, 0, 1;
+	    add_jump ensure_filter_chain( rules_chain( firewall_zone, $zone ), 1 ) , $blackref , 0, $state, 0, -1;
 
 	    for my $zone1 ( @zones ) {
 		my $ruleschain    = rules_chain( $zone1, $zone );
 		my $ruleschainref = $filter_table->{$ruleschain};
 
 		if ( $zone ne $zone1 || ( $ruleschainref && $ruleschainref->{referenced} ) ) {
-		    add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, 0 , 1 );
+		    add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, -1 );
 		} 
 	    }
 	}

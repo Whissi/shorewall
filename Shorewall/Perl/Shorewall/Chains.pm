@@ -744,8 +744,10 @@ sub copy_rules( $$ ) {
     my $name1     = $chain1->{name};
     my $name      = $name1;
     my $name2     = $chain2->{name};
-    my @rules     = @{$chain1->{rules}};
-    my $rules     = $chain2->{rules};
+    my $frozen1   = $chain1->{frozen};
+    my $frozen2   = $chain2->{frozen};
+    my @rules1    = @{$chain1->{rules}};
+    my $rules2    = $chain2->{rules};
     my $count     = @{$chain1->{rules}};
     my $tableref  = $chain_table{$chain1->{table}};
     #
@@ -753,20 +755,32 @@ sub copy_rules( $$ ) {
     #
     $name1 =~ s/\+/\\+/;
 
-    my $last = pop @$rules; # Delete the jump to chain1
+    my $last = pop @$rules2; # Delete the jump to chain1
 
-    if ( $debug ) {
-	my $rule = @$rules;
-	trace( $chain2, 'A', ++$rule, $_ ) for @rules;
-    }
     #
     # Chain2 is now a referent of all of Chain1's targets
     #
-    for ( @rules ) {
+    for ( @rules1 ) {
 	increment_reference_count( $tableref->{$1}, $name2 ) if / -[jg] ([^\s]+)/;
     }
 
-    push @$rules, @rules;
+    if ( $frozen1 || $frozen2 ) {
+	if ( $debug ) {
+	    my $rule = @$rules2;
+	    trace( $chain2, 'A', ++$rule, $_ ) for @rules1;
+	}
+
+ 	splice @$rules2, $frozen2, 0, splice( @rules1, 0, $frozen1 );
+
+	$chain2->{frozen} += $frozen1;
+    }
+
+    if ( $debug ) {
+	my $rule = @$rules2;
+	trace( $chain2, 'A', ++$rule, $_ ) for @rules1;
+    }
+    
+    push @$rules2, @rules1;
 
     progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
 

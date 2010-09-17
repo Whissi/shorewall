@@ -1875,14 +1875,14 @@ sub generate_matrix() {
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};
 	    add_jump $frwd_ref , $blackref, 0, $state, 0, -1;
-	    add_jump ensure_filter_chain( rules_chain( $zone, firewall_zone ), 1 ) , $blackref , 0, $state, 0, -1;
+	    add_jump ensure_filter_chain( rules_chain( $zone, $_ ), 1 ) , $blackref , 0, $state, 0, -1 for firewall_zone, @vservers;
 	}
 
 	if ( $zoneref->{options}{out}{blacklist} ) {
 	    my $blackref = $filter_table->{blackout};
 	    add_jump ensure_filter_chain( rules_chain( firewall_zone, $zone ), 1 ) , $blackref , 0, $state, 0, -1;
 
-	    for my $zone1 ( @zones ) {
+	    for my $zone1 ( @zones, @vservers ) {
 		my $ruleschain    = rules_chain( $zone1, $zone );
 		my $ruleschainref = $filter_table->{$ruleschain};
 

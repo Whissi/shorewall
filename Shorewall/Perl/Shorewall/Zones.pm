@@ -231,7 +231,7 @@ sub initialize( $ ) {
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
 				  arp_ignore  => ENUM_IF_OPTION,
-				  blacklist   => SIMPLE_IF_OPTION,
+				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
@@ -264,7 +264,7 @@ sub initialize( $ ) {
 			     sourceonly => 1,
 			    );
     } else {
-	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION,
+	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,

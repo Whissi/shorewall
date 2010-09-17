@@ -213,6 +213,7 @@ our $VERSION = '4.4_13';
 #                                                               ]
 #                                               logchains    => { <key1> = <chainref1>, ... }
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
+#                                               frozen       => <number of frozen rules at the head of the rules array>
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -695,6 +696,8 @@ sub move_rules( $$ ) {
 	my $rules    = $chain2->{rules};
 	my $count    = @{$chain1->{rules}};
 	my $tableref = $chain_table{$chain1->{table}};
+	my @frozen   = ();
+	my $frozen   = $chain2->{frozen} || 0;
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
@@ -703,13 +706,22 @@ sub move_rules( $$ ) {
 	for ( @{$chain1->{rules}} ) {
 	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
 	}
+	#
+	# Get the frozen rules out of the way for the moment
+	#
+	$chain2->{frozen} += $chain1->{frozen};
+	unshift @frozen, shift @$rules while $frozen--;
 
 	if ( $debug ) {
 	    my $rule = @{$chain1->{rules}};
 	    trace( $chain2, 'A', ++$rule, $_ ) for @{$chain1->{rules}};
 	}
 
-	unshift @{$rules}, @{$chain1->{rules}};
+	unshift @$rules, @{$chain1->{rules}};
+	#
+	# Now re-add the frozen rules at the front
+	#
+	unshift @$rules, @frozen;
 	#
 	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
 	# This hack avoids that.
@@ -1028,8 +1040,8 @@ sub ensure_chain($$)
 # optional 5th argument causes long port lists to be split. The optional 6th
 # argument, if passed, gives the 0-relative index where the jump is to be inserted.
 #
-sub add_jump( $$$;$$$ ) {
-    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
+sub add_jump( $$$;$$$$ ) {
+    my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index, $freeze ) = @_;
 
     $predicate |= '';
 
@@ -1062,6 +1074,8 @@ sub add_jump( $$$;$$$ ) {
     } else {
 	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
     }
+
+    $fromref->{frozen}++ if $freeze;
 }
 
 #

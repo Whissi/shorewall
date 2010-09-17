@@ -1874,16 +1874,21 @@ sub generate_matrix() {
 
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};
-	    add_jump $frwd_ref , $blackref, 0, $state;
-	    add_jump ensure_filter_chain( rules_chain( $zone, firewall_zone ), 1 ) , $blackref , 0, $state, 0, 0;
+	    add_jump $frwd_ref , $blackref, 0, $state, 0, undef, 1;
+	    add_jump ensure_filter_chain( rules_chain( $zone, firewall_zone ), 1 ) , $blackref , 0, $state, 0, 0, 1;
 	}
 
 	if ( $zoneref->{options}{out}{blacklist} ) {
 	    my $blackref = $filter_table->{blackout};
-	    add_jump ensure_filter_chain( rules_chain( firewall_zone, $zone ), 1 ) , $blackref , 0, $state, 0, 0;
+	    add_jump ensure_filter_chain( rules_chain( firewall_zone, $zone ), 1 ) , $blackref , 0, $state, 0, 0, 1;
 
 	    for my $zone1 ( @zones ) {
-		add_jump( ensure_filter_chain( rules_chain( $zone1, $zone ), 1 ), $blackref, 0, $state, 0, 0 ) unless $zone eq $zone1;
+		my $ruleschain    = rules_chain( $zone1, $zone );
+		my $ruleschainref = $filter_table->{$ruleschain};
+
+		if ( $zone ne $zone1 || ( $ruleschainref && $ruleschainref->{referenced} ) ) {
+		    add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, 0 , 1 );
+		} 
 	    }
 	}
 
@@ -2382,33 +2387,38 @@ EOF
     $output->{policy} = 'ACCEPT' if $config{ADMINISABSENTMINDED};
 
     if ( $family == F_IPV4 ) {
-	emit( '    deletechain() {',
-	      '        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1' );
-    } else {
-	emit( '    deletechain() {',
-	      '         qt $IP6TABLES -L $1 -n && qt $IP6TABLES -F $1 && qt $IP6TABLES -X $1' );
-    }
-
-    emit <<'EOF';
+	emit <<'EOF';
+    deletechain() {
+        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1
     }
 
     case $COMMAND in
-	stop|clear|restore)
+        stop|clear|restore)
             if chain_exists dynamic; then
+                ${IPTABLES}-save -t filter | grep '^-A dynamic' > ${VARDIR}/.dynamic
+            fi
+            ;;
+        *)
+            set +x
 EOF
-
-    if ( $family == F_IPV4 ) {
-	emit( '                ${IPTABLES}-save -t filter | grep \'^-A dynamic\' > ${VARDIR}/.dynamic' );
     } else {
-	emit( '                ${IP6TABLES}-save -t filter | grep \'^-A dynamic\' > ${VARDIR}/.dynamic' );
+	emit <<'EOF';
+    deletechain() {
+        qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1
+    }
+
+    case $COMMAND in
+        stop|clear|restore)
+            if chain_exists dynamic; then
+                ${IP6TABLES}-save -t filter | grep '^-A dynamic' > ${VARDIR}/.dynamic
+            fi
+            ;;
+        *)
+            set +x
+EOF
     }
 
     emit <<'EOF';
-            fi
-	    ;;
-	*)
-	    set +x
-
             case $COMMAND in
 	        start)
 	            logger -p kern.err "ERROR:$g_product start failed"

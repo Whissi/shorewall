@@ -449,7 +449,7 @@ sub add_common_rules() {
     my $list;
     my $chain;
 
-    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
+    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "-m state --state NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
     my $level     = $config{BLACKLIST_LOGLEVEL};
     my $rejectref = dont_move new_standard_chain 'reject';
 
@@ -527,7 +527,7 @@ sub add_common_rules() {
 	    add_jump( $chainref, $smurfdest, 1, '-s ' . IPv6_MULTICAST . ' ' );
 	}
 
-	my $state = $globals{UNTRACKED} ? 'NEW,INVALID,UNTRACKED' : 'NEW,INVALID';
+	my $state = $globals{UNTRACKED} ? '-m state --state NEW,INVALID,UNTRACKED ' : "$globals{STATEMATCH} NEW,INVALID ";
 
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
@@ -536,7 +536,7 @@ sub add_common_rules() {
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( first_chains $interface ) {
-		add_jump $filter_table->{$chain} , $target, 0, join( '', "$globals{STATEMATCH} $state ", match_source_net( $hostref->[2] ),  $policy );
+		add_jump $filter_table->{$chain} , $target, 0, join( '', $state, match_source_net( $hostref->[2] ),  $policy );
 	    }
 
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -816,20 +816,20 @@ sub setup_mac_lists( $ ) {
 	    my $policy     = have_ipsec ? "-m policy --pol $ipsec --dir in " : '';
 	    my $source     = match_source_net $hostref->[2];
 
-	    my $state = $globals{UNTRACKED} ? 'NEW,UNTRACKED' : 'NEW';
+	    my $state = $globals{UNTRACKED} ? '-m state --state NEW,UNTRACKED' : "$globals{STATEMATCH} NEW";
 
 	    if ( $table eq 'filter' ) {
 		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );
 
 		for my $chain ( first_chains $interface ) {
-		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}$globals{STATEMATCH} ${state} ${policy}";
+		    add_jump $filter_table->{$chain} , $chainref, 0, "${source}${state} ${policy}";
 		}
 
 		set_interface_option $interface, 'use_input_chain', 1;
 		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
 		my $chainref = source_exclusion( $hostref->[3], $mangle_table->{mac_chain $interface} );
-		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}$globals{STATEMATCH} ${state} ${policy}";
+		add_jump $mangle_table->{PREROUTING}, $chainref, 0, match_source_dev( $interface ) . "${source}${state} ${policy}";
 	    }
 	}
     } else {
@@ -1851,7 +1851,7 @@ sub generate_matrix() {
     my $preroutingref = ensure_chain 'nat', 'dnat';
     my $fw = firewall_zone;
     my $notrackref = $raw_table->{notrack_chain $fw};
-    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
+    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "-m state --state NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
     my @zones = off_firewall_zones;
     my @vservers = vserver_zones;
     my $interface_jumps_added = 0;

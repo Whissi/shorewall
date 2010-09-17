@@ -61,7 +61,7 @@ sub setup_tunnels() {
 	    }
 	}
 
-	my $options = $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,UNTRACKED -j ACCEPT" : "$globals{STATEMATCH} NEW -j ACCEPT";
+	my $options = $globals{UNTRACKED} ? "-m state --state NEW,UNTRACKED -j ACCEPT" : "$globals{STATEMATCH} NEW -j ACCEPT";
 
 	add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
 	add_tunnel_rule $outchainref, "-p 50 $dest   -j ACCEPT";

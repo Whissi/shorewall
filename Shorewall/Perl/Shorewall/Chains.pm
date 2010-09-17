@@ -764,7 +764,7 @@ sub copy_rules( $$ ) {
 	increment_reference_count( $tableref->{$1}, $name2 ) if / -[jg] ([^\s]+)/;
     }
 
-    if ( $frozen1 || $frozen2 ) {
+    if ( $frozen1 ) {
 	if ( $debug ) {
 	    my $rule = @$rules2;
 	    trace( $chain2, 'A', ++$rule, $_ ) for @rules1;

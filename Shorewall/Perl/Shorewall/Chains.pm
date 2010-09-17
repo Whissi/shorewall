@@ -624,7 +624,7 @@ sub insert_rule1($$$)
 	$chainref->{frozen}++;
 	$number = 0;
     }
-    
+
     splice( @{$chainref->{rules}}, $number, 0, $rule );
 
     trace( $chainref, 'I', ++$number, $rule ) if $debug;
@@ -642,12 +642,13 @@ sub insert_rule($$$) {
 
 #
 # Do final work to 'delete' a chain. We leave it in the chain table but clear
-# the 'referenced', 'rules' and 'references' members.
+# the 'referenced', 'rules', 'references' and 'frozen' members.
 #
 sub delete_chain( $ ) {
     my $chainref = shift;
 
     $chainref->{referenced} = 0;
+    $chainref->{frozen}     = 0;
     $chainref->{rules}      = [];
     $chainref->{references} = {};
     trace( $chainref, 'X', undef, '' ) if $debug;

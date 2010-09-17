@@ -282,7 +282,7 @@ sub setup_blacklist() {
 					    $target ,
 					    '' );
 			    } else {
-				warning_message 'Blacklist entry ignored because there are no "blacklist in" zones';
+				warning_message '"src" entry ignored because there are no "blacklist in" zones';
 			    }
 			}
 		    } elsif ( $_ =~ /^(?:dst|to)$/ ) {
@@ -302,7 +302,7 @@ sub setup_blacklist() {
 					    $target ,
 					    '' );
 			    } else {
-				warning_message 'Blacklist entry ignored because there are no "blacklist out" zones';
+				warning_message '"dst" entry ignored because there are no "blacklist out" zones';
 			    }
 			}
 		    } else {

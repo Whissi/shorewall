@@ -2287,6 +2287,8 @@ sub generate_matrix() {
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
+    promote_blacklist_rules;
+
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );

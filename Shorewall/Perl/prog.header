@@ -614,6 +614,7 @@ clear_firewall() {
     setpolicy OUTPUT ACCEPT
 
     run_iptables -F
+    qt $IPTABLES -t raw -F
 
     echo 1 > /proc/sys/net/ipv4/ip_forward
 

@@ -584,6 +584,7 @@ clear_firewall() {
     setpolicy OUTPUT ACCEPT
 
     run_iptables -F
+    qt $IP6TABLES -t raw -F
 
     echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
 

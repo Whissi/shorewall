@@ -3684,8 +3684,11 @@ sub expand_rule( $$$$$$$$$$;$ )
 # the associated interface chain
 #
 sub promote_blacklist_rules() {
-    my $promoted = 1;
     my $chainbref = $filter_table->{blacklst};
+
+    return 1 unless $chainbref;
+
+    my $promoted = 1;
 
     while ( $promoted ) {
 	$promoted = 0;

@@ -3699,24 +3699,18 @@ sub promote_blacklist_rules() {
 
     while ( $promoted ) {
 	$promoted = 0;
+	#
+	# Copy 'blacklst''s references since they will change in the following loop
+	#
+	my @references = map $filter_table->{$_}, keys %{$chainbref->{references}};
+	
+	for my $chain1ref ( @references ) {
+	    assert( $chain1ref->{blacklist} == 1 );
 
-	for my $chain1ref ( grep $_->{blacklist} , values %$filter_table ) {
 	    my $copied = 0;
 	    my $rule   = $chain1ref->{rules}[0];
 	    my $chain1 = $chain1ref->{name};
-	    #
-	    # Isolate the name of the blacklist chain
-	    #
-	    $rule =~ / -j ([^\s]+)/;
-
-	    my $chainb = $1;
-
-	    assert( $chainb && $chainb =~ /^black/  );
-
-	    next unless $chainb eq 'blacklst';
-	    #
-	    # An 'in' blacklist rule
-	    #
+	    
 	    for my $chain2ref ( map $filter_table->{$_}, keys %{$chain1ref->{references}} ) {
 		unless ( $chain2ref->{builtin} ) {
 		    #
@@ -3738,7 +3732,7 @@ sub promote_blacklist_rules() {
 	    if ( $copied ) {
 		shift @{$chain1ref->{rules}};
 		$chain1ref->{blacklist} = 0;
-		assert ( $chainbref->{references}{$chain1ref->{name}}-- > 0 );
+		delete $chainbref->{references}{$chain1} unless --$chainbref->{references}{$chain1} > 0;
 		$promoted = 1;
 	    }
 	}

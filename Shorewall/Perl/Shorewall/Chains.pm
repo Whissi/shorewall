@@ -214,7 +214,7 @@ our $VERSION = '4.4_13';
 #                                                               ]
 #                                               logchains    => { <key1> = <chainref1>, ... }
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
-#                                               blacklist    => <number of blacklist rules at the head of the rules array>
+#                                               blacklist    => <number of blacklist rules at the head of the rules array> ( 0 or 1 )
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -3684,19 +3684,26 @@ sub expand_rule( $$$$$$$$$$;$ )
 # the associated interface chain
 #
 sub promote_blacklist_rules() {
-    for my $chain1ref ( grep $_->{blacklist} , values %$filter_table ) {
-	my $copied = 0;
-	my $rule   = $chain1ref->{rules}[0];
-	#
-	# Isolate the name of the blacklist chain
-	#
-	$rule =~ / -j ([^\/s]+)/;
+    my $promoted = 1;
+    my $chainbref = $filter_table->{blacklst};
 
-	my $chainb = $1;
+    while ( $promoted ) {
+	$promoted = 0;
 
-	assert( $chainb && $chainb =~ /^black/ );
+	for my $chain1ref ( grep $_->{blacklist} , values %$filter_table ) {
+	    my $copied = 0;
+	    my $rule   = $chain1ref->{rules}[0];
+	    my $chain1 = $chain1ref->{name};
+	    #
+	    # Isolate the name of the blacklist chain
+	    #
+	    $rule =~ / -j ([^\s]+)/;
 
-	unless ( $chainb eq 'blackout' ) {
+	    my $chainb = $1;
+
+	    assert( $chainb && $chainb =~ /^black/  );
+
+	    next unless $chainb eq 'blacklst';
 	    #
 	    # An 'in' blacklist rule
 	    #
@@ -3705,7 +3712,6 @@ sub promote_blacklist_rules() {
 		    #
 		    # This is not INPUT or FORWARD -- we wouldn't want to move the
 		    # rule to the head of one of those chains
-		    #
 		    $copied++;
 		    #
 		    # Copy the blacklist rule to the head of the parent chain unless it
@@ -3713,8 +3719,8 @@ sub promote_blacklist_rules() {
 		    #
 		    unless ( $chain2ref->{blacklist} ) {
 			unshift @{$chain2ref->{rules}}, $rule;
-			$chain2ref->{references}{$chainb}++;
-			$chain2ref->{blacklist}++;
+			$chainbref->{references}{$chain2ref->{name}}++;
+			$chain2ref->{blacklist} = 1;
 		    }
 		}
 	    }
@@ -3722,11 +3728,13 @@ sub promote_blacklist_rules() {
 	    if ( $copied ) {
 		shift @{$chain1ref->{rules}};
 		$chain1ref->{blacklist} = 0;
-		$chain1ref->{references}{chainb}--;
+		assert ( $chainbref->{references}{$chain1ref->{name}}-- > 0 );
+		$promoted = 1;
 	    }
-	}	    
-    }   
+	}
+    }
 }
+
 #
 # The following code generates the input to iptables-restore from the contents of the
 # @rules arrays in the chain table entries.

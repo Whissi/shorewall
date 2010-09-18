@@ -445,7 +445,7 @@ sub expand_port_range( $$ ) {
 	#
 	# Validate the ports
 	#
-	( $first , $last ) = ( validate_port( $proto, $first ) , validate_port( $proto, $last ) );
+	( $first , $last ) = ( validate_port( $proto, $first || 1 ) , validate_port( $proto, $last ) );
 
 	$last++; #Increment last address for limit testing.
 	#

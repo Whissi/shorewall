@@ -762,7 +762,19 @@ sub copy_rules( $$ ) {
     my $last = pop @$rules2; # Delete the jump to chain1
 
     if ( $blacklist2 && $blacklist1 ) {
-	shift @rules1;
+	#
+	# Chains2 already has a blacklist jump -- delete the one at the head of chain1's rule list
+	#
+	my $rule = shift @rules1;
+	
+	$rule =~ / -j ([^\s])/;
+
+	my $chainb = $1;
+
+	assert( $chainb =~ /^black/ );
+
+	delete $tableref->{$chainb}{references}{$name1} unless --$tableref->{$chainb}{references}{$name1} > 0;
+
 	assert( ! --$chain1->{blacklist} );
 	$blacklist1 = 0;
     }

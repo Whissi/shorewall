@@ -454,7 +454,13 @@ sub process_zone( \$ ) {
 				    hosts      => {}
 				  };
 
-    $zoneref->{options}{in}{blacklist} = $zoneref->{options}{out}{blacklist} = 1 if $zoneref->{options}{in_out}{blacklist};
+    if ( $zoneref->{options}{in_out}{blacklist} ) {
+	for ( qw/in out/ ) {
+	    warning_message( "Redundant 'blacklist' in " . uc( $_ ) . '_OPTIONS' ) if $zoneref->{options}{$_}{blacklist};
+	}
+
+	$zoneref->{options}{in}{blacklist} = $zoneref->{options}{out}{blacklist} = 1 ;
+    }
 
     return $zone;
 

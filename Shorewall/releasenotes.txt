@@ -478,7 +478,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S
 ----------------------------------------------------------------------------
-         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 2
 ----------------------------------------------------------------------------
 
 1)  Previously, the Shorewall6-lite version of shorecap was using
@@ -523,62 +523,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     correctly.
 
 ----------------------------------------------------------------------------
-         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
-----------------------------------------------------------------------------
-
-1)  The IPv6 allowBcast action generated an invalid rule.
-
-2)  If IPSET=<pathname> was specified in shorewall.conf, then when an
-    ipset was used in a configuration file entry, the following
-    fatal compilation error occurred:
-
-    ERROR: ipset names in Shorewall configuration files require Ipset
-    Match in your kernel and iptables : /etc/shorewall/rules (line nn)
-
-    If you applied the workaround given in the "Known Problems", then
-    you should remove /etc/shorewall/capabilities after installing
-    this fix.
-
-3)  The start priority of shorewall-init on Debian and Debian-based
-    distributions was previously too low, making it start too late.
-
-4)  The log output from IPv6 logs was almost unreadable due to display
-    of IPv6 addresses in uncompressed format. A similar problem
-    occurred with 'shorewall6 show connections'. This update makes the
-    displays much clearer at the expense of opening the slight
-    possibility of two '::' sequences being incorrectly shown in the
-    same address.
-
-5)  The new REQUIRE_INTERFACE was inadvertently omitted from
-    shorewall.conf and shorewall6.conf. It has been added.
-
-6)  Under some versions of Perl, a Perl run-time diagnostic was produced
-    when options were omitted from shorewall.conf or shorewall6.conf. 
-
-7) If the following options were specified in /etc/shorewall/interfaces
-   for an interface with '-' in the ZONE column, then these options
-   would be ignored if there was an entry in the hosts file for the
-   interface with an explicit or implicit 0.0.0.0/0 (0.0.0.0/0 is
-   implied when the host list begins with '!').
-
-   	blacklist
-	maclist
-	nosmurfs
-	tcpflags
-
-   Note: for IPv6, the network is ::/0 rather than 0.0.0.0/0.
-
-8) The generated script was missing a closing quote when
-   REQUIRE_INTERFACE=Yes.
-
-9) Previously, if nets= was specified under Shorewall6, this error
-   would result:
-
-   	 ERROR: Invalid IPv6 address (224.0.0.0) : 
-                /etc/shorewall6/interfaces (line 16)
-
-----------------------------------------------------------------------------
-               N E W   F E A T U R E S   I N   4 . 4 . 1 1
+               N E W   F E A T U R E S   I N   4 . 4 . 1 2
 ----------------------------------------------------------------------------
 
 1)  Support has been added for ADD and DEL rules in
@@ -674,6 +619,106 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	gateway:/etc/shorewall# 
 
 ----------------------------------------------------------------------------
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
+----------------------------------------------------------------------------
+
+1)  The IPv6 allowBcast action generated an invalid rule.
+
+2)  If IPSET=<pathname> was specified in shorewall.conf, then when an
+    ipset was used in a configuration file entry, the following
+    fatal compilation error occurred:
+
+    ERROR: ipset names in Shorewall configuration files require Ipset
+    Match in your kernel and iptables : /etc/shorewall/rules (line nn)
+
+    If you applied the workaround given in the "Known Problems", then
+    you should remove /etc/shorewall/capabilities after installing
+    this fix.
+
+3)  The start priority of shorewall-init on Debian and Debian-based
+    distributions was previously too low, making it start too late.
+
+4)  The log output from IPv6 logs was almost unreadable due to display
+    of IPv6 addresses in uncompressed format. A similar problem
+    occurred with 'shorewall6 show connections'. This update makes the
+    displays much clearer at the expense of opening the slight
+    possibility of two '::' sequences being incorrectly shown in the
+    same address.
+
+5)  The new REQUIRE_INTERFACE was inadvertently omitted from
+    shorewall.conf and shorewall6.conf. It has been added.
+
+6)  Under some versions of Perl, a Perl run-time diagnostic was produced
+    when options were omitted from shorewall.conf or shorewall6.conf. 
+
+7) If the following options were specified in /etc/shorewall/interfaces
+   for an interface with '-' in the ZONE column, then these options
+   would be ignored if there was an entry in the hosts file for the
+   interface with an explicit or implicit 0.0.0.0/0 (0.0.0.0/0 is
+   implied when the host list begins with '!').
+
+   	blacklist
+	maclist
+	nosmurfs
+	tcpflags
+
+   Note: for IPv6, the network is ::/0 rather than 0.0.0.0/0.
+
+8) The generated script was missing a closing quote when
+   REQUIRE_INTERFACE=Yes.
+
+9) Previously, if nets= was specified under Shorewall6, this error
+   would result:
+
+   	 ERROR: Invalid IPv6 address (224.0.0.0) : 
+                /etc/shorewall6/interfaces (line 16)
+
+----------------------------------------------------------------------------
+               N E W   F E A T U R E S   I N   4 . 4 . 1 1
+----------------------------------------------------------------------------
+
+1)  Beginning with this release, Shorewall supports a 'vserver'
+    zone type. This zone type is used with Shorewall running on a
+    Linux-vserver host system and allows you to define zones that
+    represent a set of Linux-vserver hosts.
+
+    See http://www.shorewall.net/Vserver.html for details.
+
+2)  A new FORWARD_CLEAR_MARK option has been added to shorewall.conf
+    and shorewall6.conf. 
+
+    Traditionally, Shorewall has cleared the packet mark in the first
+    rule in the mangle FORWARD chain. This behavior is maintained with
+    the default setting (FORWARD_CLEAR_MARK=Yes). If the new option is
+    set to No, packet marks set in the PREROUTING chain are retained in
+    the FORWARD chains.
+
+    As part of this change, a new "fwmark route mask" capability has
+    been added. If your version of iproute2 supports this capability,
+    fwmark routing rules may specify a mask to be applied to the mark
+    prior to comparison with the mark value in the rule. The presence
+    of this capability allows Shorewall to relax the restriction that
+    small mark values may not be set in the PREROUTING chain when
+    HIGH_ROUTE_MARKS is in effect. If you take advantage of this
+    capability, be sure that you logically OR mark values in PREROUTING
+    makring rules rather then simply setting them unless you are able
+    to set both the high and low bits in the mark in a single rule.
+
+    As always when a new capability has been introduced, be sure to
+    regenerate your capabilities file(s) after installing this release.
+
+3)  A new column (NET3) has been added to the /etc/shorewall/netmap
+    file. This new column can qualify the INTERFACE column by
+    specifying a SOURCE network (DNAT rule) or DEST network (SNAT rule)
+    associated with the interface.
+
+4)  To accomodate systems with more than one version of Perl installed,
+    the shorewall.conf and shorewall6.conf files now support a PERL
+    option. If the program specified by that option does not exist or
+    is not executable, Shorewall (and Shorewall6) fall back to
+    /usr/bin/perl.
+
+----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 0
 ----------------------------------------------------------------------------
 1)  Startup Errors (those that are detected before the state of the
@@ -720,51 +765,6 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     The XYZTEL provider was never usable.
 
     This configuration now works correctly.
-
-----------------------------------------------------------------------------
-               N E W   F E A T U R E S   I N   4 . 4 . 1 1
-----------------------------------------------------------------------------
-
-1)  Beginning with this release, Shorewall supports a 'vserver'
-    zone type. This zone type is used with Shorewall running on a
-    Linux-vserver host system and allows you to define zones that
-    represent a set of Linux-vserver hosts.
-
-    See http://www.shorewall.net/Vserver.html for details.
-
-2)  A new FORWARD_CLEAR_MARK option has been added to shorewall.conf
-    and shorewall6.conf. 
-
-    Traditionally, Shorewall has cleared the packet mark in the first
-    rule in the mangle FORWARD chain. This behavior is maintained with
-    the default setting (FORWARD_CLEAR_MARK=Yes). If the new option is
-    set to No, packet marks set in the PREROUTING chain are retained in
-    the FORWARD chains.
-
-    As part of this change, a new "fwmark route mask" capability has
-    been added. If your version of iproute2 supports this capability,
-    fwmark routing rules may specify a mask to be applied to the mark
-    prior to comparison with the mark value in the rule. The presence
-    of this capability allows Shorewall to relax the restriction that
-    small mark values may not be set in the PREROUTING chain when
-    HIGH_ROUTE_MARKS is in effect. If you take advantage of this
-    capability, be sure that you logically OR mark values in PREROUTING
-    makring rules rather then simply setting them unless you are able
-    to set both the high and low bits in the mark in a single rule.
-
-    As always when a new capability has been introduced, be sure to
-    regenerate your capabilities file(s) after installing this release.
-
-3)  A new column (NET3) has been added to the /etc/shorewall/netmap
-    file. This new column can qualify the INTERFACE column by
-    specifying a SOURCE network (DNAT rule) or DEST network (SNAT rule)
-    associated with the interface.
-
-4)  To accomodate systems with more than one version of Perl installed,
-    the shorewall.conf and shorewall6.conf files now support a PERL
-    option. If the program specified by that option does not exist or
-    is not executable, Shorewall (and Shorewall6) fall back to
-    /usr/bin/perl.
 
 ----------------------------------------------------------------------------
                N E W   F E A T U R E S   I N   4 . 4 . 1 0

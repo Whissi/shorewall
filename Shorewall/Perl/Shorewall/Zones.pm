@@ -903,6 +903,8 @@ sub process_interface( $$ ) {
 	$root = $interface;
     }
 
+    fatal_error "Invalid interface name ($interface)" if $interface =~ /\*/;
+
     my $physical = $interface;
     my $broadcasts;
 
@@ -1182,6 +1184,8 @@ sub known_interface($;$)
     my $interfaceref = $interfaces{$interface};
 
     return $interfaceref if $interfaceref;
+
+    fatal_error "Invalid interface ($interface)" if $interface =~ /\*/;
 
     for my $i ( @interfaces ) {
 	$interfaceref = $interfaces{$i};

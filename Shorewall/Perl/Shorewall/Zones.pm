@@ -456,10 +456,10 @@ sub process_zone( \$ ) {
 
     if ( $zoneref->{options}{in_out}{blacklist} ) {
 	for ( qw/in out/ ) {
-	    if ( $zoneref->{options}{$_}{blacklist} ) {
-		warning_message( "Redundant 'blacklist' in " . uc( $_ ) . '_OPTIONS' );
-	    } else {
+	    unless ( $zoneref->{options}{$_}{blacklist} ) {
 		$zoneref->{options}{$_}{blacklist} = 1;
+	    } else {
+		warning_message( "Redundant 'blacklist' in " . uc( $_ ) . '_OPTIONS' );
 	    }
 	}
     }

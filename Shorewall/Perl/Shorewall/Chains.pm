@@ -605,6 +605,17 @@ sub add_reference ( $$ ) {
 }
 
 #
+# Delete a previously added reference
+#
+sub delete_reference( $$ ) {
+    my ( $fromref, $to ) = @_;
+
+    my $toref = reftype $to ? $to : $chain_table{$fromref->{table}}{$to};
+
+    delete $toref->{references}{$fromref->{name}} unless --$toref->{references}{$fromref->{name}} > 0;
+}
+
+#
 # Insert a rule into a chain. Arguments are:
 #
 #    Chain reference , Rule Number, Rule
@@ -612,7 +623,7 @@ sub add_reference ( $$ ) {
 # In the first function, the rule number is zero-relative. In the second function,
 # the rule number is one-relative. In the first function, if the rule number is < 0, then
 # the rule is a jump to a blacklist chain (blacklst or blackout). The rule will be 
-# inserted at the front of the chain and the chain's 'blacklist' member is incremented.
+# inserted at the front of the chain and the chain's 'blacklist' member incremented.
 #
 sub insert_rule1($$$)
 {
@@ -773,7 +784,7 @@ sub copy_rules( $$ ) {
 
 	assert( $chainb =~ /^black/ );
 
-	delete $tableref->{$chainb}{references}{$name1} unless --$tableref->{$chainb}{references}{$name1} > 0;
+	delete_reference $chain1, $chainb;
 
 	assert( ! --$chain1->{blacklist} );
 	$blacklist1 = 0;
@@ -3744,7 +3755,7 @@ sub promote_blacklist_rules() {
 	    if ( $copied ) {
 		shift @{$chain1ref->{rules}};
 		$chain1ref->{blacklist} = 0;
-		delete $chainbref->{references}{$chain1} unless --$chainbref->{references}{$chain1} > 0;
+		delete_reference $chain1ref, $chainbref;
 		$promoted = 1;
 	    }
 	}

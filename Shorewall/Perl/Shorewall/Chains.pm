@@ -2588,14 +2588,14 @@ sub match_source_net( $;$ ) {
     } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
-    } elsif ( $net =~ /^\[(\+.+)\]$/ ) {
+    } elsif ( $net =~ /^\+\[(.+)\]$/ ) {
 	my $result = '';
 	my @sets = mysplit $1;
 
 	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
 	}
 
@@ -2624,14 +2624,14 @@ sub match_dest_net( $ ) {
     } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?$/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
 	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
-    } elsif ( $net =~ /^\[(\+.+)\]$/ ) {
+    } elsif ( $net =~ /^\+\[(.+)\]$/ ) {
 	my $result = '';
 	my @sets = mysplit $1;
 
 	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
 	}
 

@@ -2566,6 +2566,8 @@ sub get_set_flags( $$ ) {
     have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
 }
 
+sub mysplit( $ );
+
 #
 # Match a Source.
 #
@@ -2586,6 +2588,18 @@ sub match_source_net( $;$ ) {
     } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+    } elsif ( $net =~ /^\[(\+.+)\]$/ ) {
+	my $result = '';
+	my @sets = mysplit $1;
+
+	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+
+	for $net ( @sets ) {
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/;
+	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+	}
+
+	$result;
     } elsif ( $net =~ s/^!// ) {
 	validate_net $net, 1;
 	"! -s $net ";
@@ -2610,6 +2624,18 @@ sub match_dest_net( $ ) {
     } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?$/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
 	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
+    } elsif ( $net =~ /^\[(\+.+)\]$/ ) {
+	my $result = '';
+	my @sets = mysplit $1;
+
+	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+
+	for $net ( @sets ) {
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/;
+	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
+	}
+
+	$result;
     } elsif ( $net =~ /^!/ ) {
 	$net =~ s/!//;
 	validate_net $net, 1;
@@ -2870,12 +2896,12 @@ sub mysplit( $ ) {
 	my $element = shift @input;
 
 	if ( $element =~ /\[/ ) {
-	    while ( substr( $element, -1, 1 ) ne ']' ) {
+	    while ( $element =~ tr/[/[/ != $element =~ tr/]/]/ ) {
 		last unless @input;
 		$element .= ( ',' . shift @input );
 	    }
 
-	    fatal_error "Invalid Host List ($_[0])" unless substr( $element, -1, 1 ) eq ']';
+	    fatal_error "Invalid Host List ($_[0])" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
 	}
 
 	push @result, $element;

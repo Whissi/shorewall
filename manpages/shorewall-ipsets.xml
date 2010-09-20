@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-ipsets</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>ipsets</refname>
+
+    <refpurpose>Specifying the name if an ipset in Shorewall configuration
+    files</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>+<replaceable>ipsetname</replaceable></command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>+<replaceable>ipsetname</replaceable>[<replaceable>flag</replaceable>,...]</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>+[ipsetname,...]</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>Note: In the above syntax descriptions, the square brackets ("[]")
+    are to be taken literally rather than as meta-characters.</para>
+
+    <para>In most places where a network address may be entered, an ipset may
+    be substituted. Set names must be prefixed by the character "+", must
+    start with a letter and may be composed of alphanumeric characters, "-"
+    and "_".</para>
+
+    <para>Whether the set is matched against the packet source or destination
+    is determined by which column the set name appears (SOURCE or DEST). For
+    those set types that specify a tupple, two alternative syntaxes are
+    available:</para>
+
+    <simplelist>
+      <member>[<replaceable>number</replaceable>] - Indicates that 'src' or
+      'dst' should repleated number times. Example: myset[2].</member>
+
+      <member>[<replaceable>flag</replaceable>,...] where
+      <replaceable>flag</replaceable> is <option>src</option> or
+      <option>dst</option>. Example: myset[src,dst].</member>
+    </simplelist>
+
+    <para>In a SOURCE column, the following pairs are equivalent:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>+myset[2] and +myset[src,src]</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>In a DEST column, the following paris are equivalent:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>+myset[2] and +myset[dst,dst]</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Beginning with Shorewall 4.4.14, multiple source or destination
+    matches may be specified by enclosing the set names within +[...]. The set
+    names need not be prefixed with '+'.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+
+    <para>+myset</para>
+
+    <para>+myset[src]</para>
+
+    <para>+myset[2]</para>
+
+    <para>+[myset1,myset2[dst]]</para>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/accounting</para>
+
+    <para>/etc/shorewall/blacklist</para>
+
+    <para>/etc/shorewall/hosts</para>
+
+    <para>/etc/shorewall/masq</para>
+
+    <para>/etc/shorewall/rules</para>
+
+    <para>/etc/shorewall/secmarks</para>
+
+    <para>/etc/shorewall/tcrules</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall-interfaces(5),
+    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

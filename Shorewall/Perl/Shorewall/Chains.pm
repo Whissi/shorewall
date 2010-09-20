@@ -2896,12 +2896,16 @@ sub mysplit( $ ) {
 	my $element = shift @input;
 
 	if ( $element =~ /\[/ ) {
-	    while ( $element =~ tr/[/[/ != $element =~ tr/]/]/ ) {
+	    while ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
 		last unless @input;
 		$element .= ( ',' . shift @input );
 	    }
-
-	    fatal_error "Invalid Host List ($_[0])" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
+	    
+	    if ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
+		fatal_error "Missing ']' ($element)";
+	    } else {
+		fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
+	    }
 	}
 
 	push @result, $element;

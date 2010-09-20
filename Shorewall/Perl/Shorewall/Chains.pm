@@ -3746,7 +3746,7 @@ sub promote_blacklist_rules() {
 		    #
 		    unless ( $chain2ref->{blacklist} ) {
 			unshift @{$chain2ref->{rules}}, $rule;
-			$chainbref->{references}{$chain2ref->{name}}++;
+			add_reference $chain2ref, $chainbref;
 			$chain2ref->{blacklist} = 1;
 		    }
 		}

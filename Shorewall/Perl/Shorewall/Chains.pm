@@ -2883,7 +2883,7 @@ sub addnatjump( $$$ ) {
 
 #
 # Split a comma-separated source or destination host list but keep [...] together. Used for spliting address lists
-# where an element of the list might be +ipset[binding].
+# where an element of the list might be +ipset[flag,...] or +[ipset[flag,...],...]
 #
 sub mysplit( $ ) {
     my @input = split_list $_[0], 'host';
@@ -2897,15 +2897,11 @@ sub mysplit( $ ) {
 
 	if ( $element =~ /\[/ ) {
 	    while ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
-		last unless @input;
+		fatal_error "Missing ']' ($element)" unless @input;
 		$element .= ( ',' . shift @input );
 	    }
 	    
-	    if ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
-		fatal_error "Missing ']' ($element)";
-	    } else {
-		fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
-	    }
+	    fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
 	}
 
 	push @result, $element;

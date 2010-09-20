@@ -1811,7 +1811,7 @@ sub find_hosts_by_option( $ ) {
 }
 
 #
-# Retruns a reference to a list of zones with the passed in/out option
+# Returns a reference to a list of zones with the passed in/out option
 #
 
 sub find_zones_by_option( $$ ) {

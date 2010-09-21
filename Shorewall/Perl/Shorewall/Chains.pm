@@ -717,6 +717,8 @@ sub move_rules( $$ ) {
 	my $count     = @{$chain1->{rules}};
 	my $tableref  = $chain_table{$chain1->{table}};
 	my $blacklist = $chain2->{blacklist};
+
+	assert( ! $chain1->{blacklist} );
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
@@ -735,11 +737,15 @@ sub move_rules( $$ ) {
 
 	$chain2->{referenced} = 1;
 
-	unless ( $chain2->{blacklist} += $chain1->{blacklist} ) {
-	    #
-	    # In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
-	    # This hack avoids that.
-	    #
+	#
+	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
+	# This hack avoids that.
+	#
+	if ( $blacklist ) {
+	    my $rule = shift @{$rules};
+	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
+	    unshift @{$rules}, $rule;
+	} else {
 	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
 	}
 	    

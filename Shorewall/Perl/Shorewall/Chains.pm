@@ -243,6 +243,9 @@ our $section;
 
 our $comment;
 
+#
+# Target Types
+#
 use constant { STANDARD => 1,              #defined by Netfilter
 	       NATRULE  => 2,              #Involves NAT
 	       BUILTIN  => 4,              #A built-in action
@@ -256,7 +259,9 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       CHAIN    => 1024,           #Manual Chain
 	       SET      => 2048.           #SET
 	   };
-
+#
+# Valid Targets -- value is a combination of one or more of the above
+#
 our %targets;
 #
 # expand_rule() restrictions
@@ -267,7 +272,7 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 	       OUTPUT_RESTRICT     => 8,   # OUTPUT chain rule      - -i not allowed
 	       POSTROUTE_RESTRICT  => 16,  # POSTROUTING chain rule - -i converted to -s <address list> using main routing table
 	       ALL_RESTRICT        => 12,  # fw->fw rule            - neither -i nor -o allowed
-	       DESTIFACE_DISALLOW  => 32,  # Don't allow dest interface
+	       DESTIFACE_DISALLOW  => 32,  # Don't allow dest interface. Similar to INPUT_RESTRICT but generates a more relevant error message
 	       };
 
 our $iprangematch;
@@ -276,7 +281,6 @@ our $idiotcount;
 our $idiotcount1;
 our $warningcount;
 our $hashlimitset;
-
 our $global_variables;
 
 #
@@ -285,7 +289,7 @@ our $global_variables;
 use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
 
 #
-# These hashes hold the shell code to set shell variables
+# These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents
 #
 our %interfaceaddr;         # First interface address
 our %interfaceaddrs;        # All interface addresses
@@ -301,14 +305,16 @@ our %interfacegateways;     # Gateway of default route out of the interface
 our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
 #
-# Mode of the emitter.
+# Mode of the emitter (part of this module that converts rules in the chain table into iptables-restore input)
 #
 use constant { NULL_MODE => 0 ,   # Emitting neither shell commands nor iptables-restore input
 	       CAT_MODE  => 1 ,   # Emitting iptables-restore input
 	       CMD_MODE  => 2 };  # Emitting shell commands.
 
 our $mode;
-
+#
+# Address Family
+#
 our $family;
 
 #
@@ -369,7 +375,7 @@ sub initialize( $ ) {
     #
     $chainseq = 0;
     #
-    # Used to suppress duplicate match specifications.
+    # Used to suppress duplicate match specifications for old iptables binaries.
     #
     $iprangematch = 0;
     #

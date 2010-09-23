@@ -23,6 +23,14 @@
   <refsect1>
     <title>Description</title>
 
+    <important>
+      <para>Unlike rules in the <ulink
+      url="shorewall6-rules.html">shorewall6-rules</ulink>(5) file, evaluation
+      of rules in this file will continue after a match. So the final secmark
+      for each packet will be the one assigned by the LAST rule that
+      matches.</para>
+    </important>
+
     <para>The secmarks file is used to associate an SELinux context with
     packets. It was added in Shorewall6 version 4.4.13.</para>
 

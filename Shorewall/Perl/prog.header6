@@ -43,7 +43,7 @@ progress_message() # $* = Message
     fi
 
     if [ $LOG_VERBOSITY -gt 1 ]; then
-        timestamp="$(date +'%b %d %T') "
+        timestamp="$(date +'%b %_d %T') "
         echo "${timestamp}$@" >> $STARTUP_LOG
     fi
 }
@@ -59,7 +59,7 @@ progress_message2() # $* = Message
     fi
 
     if [ $LOG_VERBOSITY -gt 0 ]; then
-        timestamp="$(date +'%b %d %T') "
+        timestamp="$(date +'%b %_d %T') "
         echo "${timestamp}$@" >> $STARTUP_LOG
     fi
 }
@@ -75,7 +75,7 @@ progress_message3() # $* = Message
     fi
 
     if [ $LOG_VERBOSITY -ge 0 ]; then
-        timestamp="$(date +'%b %d %T') "
+        timestamp="$(date +'%b %_d %T') "
         echo "${timestamp}$@" >> $STARTUP_LOG
     fi
 }

@@ -296,7 +296,7 @@ sub initialize( $ ) {
 # => mss   = <MSS setting>
 # => ipsec = <-m policy arguments to match options>
 #
-sub parse_zone_option_list($$)
+sub parse_zone_option_list($$\$)
 {
     my %validoptions = ( mss          => NUMERIC,
 			 blacklist    => NOTHING,
@@ -316,7 +316,7 @@ sub parse_zone_option_list($$)
     #
     my %key = ( mss => UNRESTRICTED , blacklist => NOFW );
 
-    my ( $list, $zonetype ) = @_;
+    my ( $list, $zonetype, $complexref ) = @_;
     my %h;
     my $options = '';
     my $fmt;
@@ -354,6 +354,7 @@ sub parse_zone_option_list($$)
 		$options .= $invert;
 		$options .= "--$e ";
 		$options .= "$val "if defined $val;
+		$$complexref = 1;
 	    }
 	}
     }
@@ -439,13 +440,15 @@ sub process_zone( \$ ) {
 	}
     }
 
+    my $complex = 0;
+
     my $zoneref = $zones{$zone} = { type       => $type,
 				    parents    => \@parents,
 				    bridge     => '',
-				    options    => { in_out  => parse_zone_option_list( $options || '', $type ) ,
-						    in      => parse_zone_option_list( $in_options || '', $type ) ,
-						    out     => parse_zone_option_list( $out_options || '', $type ) ,
-						    complex => ( $type == IPSEC || $options ne '-' || $in_options ne '-' || $out_options ne '-' ) ,
+				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex ) ,
+						    in      => parse_zone_option_list( $in_options , $type , $complex ) ,
+						    out     => parse_zone_option_list( $out_options , $type , $complex ) ,
+						    complex => ( $type == IPSEC || $complex ) ,
 						    nested  => @parents > 0 ,
 						    super   => 0 ,
 						  } ,

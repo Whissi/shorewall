@@ -1861,14 +1861,28 @@ sub generate_matrix() {
 
     progress_message2 'Generating Rule Matrix...';
     #
-    # Special processing for complex and blacklisting configurations
+    # Special processing for complex and/or blacklisting configurations
     #
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
-
+	my $simple  =  @zones <= 2 && ! $zoneref->{options}{complex};
+	#
+	# Handle blacklisting first
+	#
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};
 	    add_jump ensure_filter_chain( rules_chain( $zone, $_ ), 1 ) , $blackref , 0, $state, 0, -1 for firewall_zone, @vservers;
+	
+	    if ( $simple ) {
+		for my $zone1 ( @zones ) {
+		    my $ruleschain    = rules_chain( $zone, $zone1 );
+		    my $ruleschainref = $filter_table->{$ruleschain};
+		    
+		    if ( ( $zone ne $zone1 || ( $ruleschainref && $ruleschainref->{referenced} ) ) && $ruleschainref->{policy} ne 'NONE' ) {
+			add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, -1 );
+		    }
+		}
+	    }
 	}
 
 	if ( $zoneref->{options}{out}{blacklist} ) {
@@ -1885,7 +1899,7 @@ sub generate_matrix() {
 	    }
 	}
 
-	next if @zones <= 2 && ! $zoneref->{options}{complex};
+	next if $simple;
 	
 	#
 	# Complex zone or we have more than one non-firewall zone -- create a zone forwarding chain

@@ -1892,7 +1892,7 @@ sub generate_matrix() {
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
-	add_jump $frwd_ref , $filter_table->{blacklist}, 0, $state, 0, -1 if $zoneref->{options}{in}{blacklist};
+	add_jump $frwd_ref , $filter_table->{blacklst}, 0, $state, 0, -1 if $zoneref->{options}{in}{blacklist};
 
 	if ( have_ipsec ) {
 	    #

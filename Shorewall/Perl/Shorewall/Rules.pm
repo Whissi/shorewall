@@ -1860,6 +1860,7 @@ sub generate_matrix() {
     our %forward_jump_added = ();
 
     progress_message2 'Generating Rule Matrix...';
+    progress_message  '  Handling blacklisting and complex zones...';
     #
     # Special processing for complex and/or blacklisting configurations
     #
@@ -1874,11 +1875,14 @@ sub generate_matrix() {
 	    add_jump ensure_filter_chain( rules_chain( $zone, $_ ), 1 ) , $blackref , 0, $state, 0, -1 for firewall_zone, @vservers;
 	
 	    if ( $simple ) {
+		#
+		# We won't create a zone forwarding chain for this zone so we must add blacklisting jumps to the rules chains
+		#
 		for my $zone1 ( @zones ) {
 		    my $ruleschain    = rules_chain( $zone, $zone1 );
 		    my $ruleschainref = $filter_table->{$ruleschain};
 		    
-		    if ( ( $zone ne $zone1 || ( $ruleschainref && $ruleschainref->{referenced} ) ) && $ruleschainref->{policy} ne 'NONE' ) {
+		    if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
 			add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, -1 );
 		    }
 		}
@@ -1893,7 +1897,7 @@ sub generate_matrix() {
 		my $ruleschain    = rules_chain( $zone1, $zone );
 		my $ruleschainref = $filter_table->{$ruleschain};
 
-		if ( $zone ne $zone1 || ( $ruleschainref && $ruleschainref->{referenced} ) ) {
+		if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
 		    add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, -1 );
 		} 
 	    }
@@ -1953,6 +1957,8 @@ sub generate_matrix() {
     #
     # Main source-zone matrix-generation loop
     #
+    progress_message '  Entering main matrix-generation loop...';
+
     for my $zone ( @zones ) {
 	my $zoneref          = find_zone( $zone );
 	my $source_hosts_ref = $zoneref->{hosts};
@@ -2300,6 +2306,8 @@ sub generate_matrix() {
 	#
 	add_jump $frwd_ref , $last_chain, 1 if $frwd_ref && $last_chain;
     }
+
+    progress_message '  Finishing matrix...';
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
 

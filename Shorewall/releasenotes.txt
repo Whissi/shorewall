@@ -14,7 +14,30 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-None.
+1)  Previously, messages to the STARTUP_LOG had inconsistent date formats.
+
+2)  The blacklisting change in 4.4.13 was broken in some simple
+    configurations with the effect that blacklisting was not enabled.
+
+3)  Previously, Shorewall6 produced an untidy sequence of error
+    messages when an attempt was made to start it on a system running a
+    kernel older than 2.6.24:
+
+       [root@localhost shorewall6]# shorewall6 start
+       Compiling...
+       Processing /etc/shorewall6/shorewall6.conf...
+       Loading Modules...
+       Compiling /etc/shorewall6/zones...
+       ...
+       Shorewall configuration compiled to /var/lib/shorewall6/.start
+          ERROR: Shorewall6 requires Linux kernel 2.6.24 or later
+       /usr/share/shorewall6/lib.common: line 73: 
+             [: -lt: unary operator expected
+          ERROR: Shorewall6 requires Linux kernel 2.6.24 or later
+       [root@localhost shorewall6]#
+
+    This has been corrected so that a single ERROR message is
+    generated.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G

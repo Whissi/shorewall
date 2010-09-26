@@ -9,3 +9,17 @@
     configurations with the effect that blacklisting was not enabled.
 
     Fixed in 4.4.13.1
+
+    The issue may also be worked around is follows.
+
+    If you currently have an entry similar to this in
+    /etc/shorewall/interfaces:
+
+       #ZONE         INTERFACE BROADCAST        OPTIONS
+       net 	     eth0      detect		blacklist,...
+
+    then remove the 'blacklist' option from that entry and change the
+    'net' entry in /etc/shorewall/zones as follows:
+
+       #ZONE       TYPE       OPTIONS       IN_OPTIONS
+       net         ipv4       -             blacklist

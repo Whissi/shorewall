@@ -184,7 +184,16 @@ sub validate_4net( $$ ) {
     $net = '' unless defined $net;
 
     fatal_error "Missing address" if $net eq '';
-    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
+
+    if ( $net =~ /\+(\[?)/ ) {
+	if ( $1 ) {
+	    fatal_error "An ipset list ($net) is not allowed in this context";
+	} elsif ( $net =~ /^\+[a-zA-Z][-\w]+$/ ) {
+	    fatal_error "An ipset name ($net) is not allowed in this context"; 
+	} else {
+	    fatal_error "Invalid ipset name ($net)";
+	}
+    }
 
     if ( defined $vlsm ) {
         fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
@@ -540,7 +549,15 @@ sub validate_6net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[1];
 
-    fatal_error "An ipset name ($net) is not allowed in this context" if substr( $net, 0, 1 ) eq '+';
+    if ( $net =~ /\+(\[?)/ ) {
+	if ( $1 ) {
+	    fatal_error "An ipset list ($net) is not allowed in this context";
+	} elsif ( $net =~ /^\+[a-zA-Z][-\w]+$/ ) {
+	    fatal_error "An ipset name ($net) is not allowed in this context"; 
+	} else {
+	    fatal_error "Invalid ipset name ($net)";
+	}
+    }
 
     if ( defined $vlsm ) {
         fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 128;

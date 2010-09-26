@@ -188,7 +188,7 @@ sub validate_4net( $$ ) {
     if ( $net =~ /\+(\[?)/ ) {
 	if ( $1 ) {
 	    fatal_error "An ipset list ($net) is not allowed in this context";
-	} elsif ( $net =~ /^\+[a-zA-Z][-\w]+$/ ) {
+	} elsif ( $net =~ /^\+[a-zA-Z][-\w]*$/ ) {
 	    fatal_error "An ipset name ($net) is not allowed in this context"; 
 	} else {
 	    fatal_error "Invalid ipset name ($net)";
@@ -552,7 +552,7 @@ sub validate_6net( $$ ) {
     if ( $net =~ /\+(\[?)/ ) {
 	if ( $1 ) {
 	    fatal_error "An ipset list ($net) is not allowed in this context";
-	} elsif ( $net =~ /^\+[a-zA-Z][-\w]+$/ ) {
+	} elsif ( $net =~ /^\+[a-zA-Z][-\w]*$/ ) {
 	    fatal_error "An ipset name ($net) is not allowed in this context"; 
 	} else {
 	    fatal_error "Invalid ipset name ($net)";

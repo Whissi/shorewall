@@ -39,6 +39,18 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     This has been corrected so that a single ERROR message is
     generated.
 
+4)  Previously, an ipset name appearing in the /etc/shorewall/hosts
+    file could be qualified with a list of 'src' and/or 'dst' enclosed
+    in quotes. This was virtually guaranteed not to work since the set
+    must match when used to verify both a packet source and a
+    packet destination. Now, the following error is raised:
+
+    	   ERROR: ipset name qualification is disallowed in this file
+
+    As part of this change, the ipset name is now verified to begin
+    with a letter and be composed of letters, digits, underscores ("_")
+    and hyphens ("-").
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

@@ -1568,6 +1568,7 @@ sub do_open_file( $ ) {
     my $fname = $_[0];
     open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
     $currentlinenumber = 0;
+    $first_entry       = 0;
     $currentfilename   = $fname;
 }
 

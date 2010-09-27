@@ -1568,7 +1568,6 @@ sub do_open_file( $ ) {
     my $fname = $_[0];
     open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
     $currentlinenumber = 0;
-    $first_entry       = 0;
     $currentfilename   = $fname;
 }
 
@@ -1577,7 +1576,12 @@ sub open_file( $ ) {
 
     assert( ! defined $currentfile );
 
-    -f $fname && -s _ ? do_open_file $fname : '';
+    if ( -f $fname && -s _ ) {
+	$first_entry = 0;
+	do_open_file $fname;;
+    } else {
+	'';
+    }
 }
 
 #

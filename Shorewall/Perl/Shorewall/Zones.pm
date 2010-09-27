@@ -160,7 +160,7 @@ our %reservedName = ( all => 1,
 #                 }
 #
 #    The purpose of the 'base' member is to ensure that the base names associated with the physical interfaces are assigned in
-#    the same order as the interfaces are encountered in the configuration files. 
+#    the same order as the interfaces are encountered in the configuration files.
 #
 our @interfaces;
 our %interfaces;
@@ -804,7 +804,7 @@ sub chain_base($) {
     #
     return $name if $name;
     #
-    # Remember initial value 
+    # Remember initial value
     #
     my $key = $chain;
     #
@@ -882,7 +882,7 @@ sub process_interface( $$ ) {
 	    } else {
 		$zoneref->{bridge} = $interface;
 	    }
-	    
+
 	    fatal_error "Vserver zones may not be associated with bridge ports" if $zoneref->{type} == VSERVER;
 	}
 
@@ -950,7 +950,7 @@ sub process_interface( $$ ) {
 
 	    if ( $zone ) {
 		fatal_error qq(The "$option" option may not be specified for a Vserver zone") if $zoneref->{type} == VSERVER && ! ( $type & IF_OPTION_VSERVER );
-	    } else { 
+	    } else {
 		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY;
 	    }
 
@@ -1178,7 +1178,7 @@ sub map_physical( $$ ) {
 #
 # Returns true if passed interface matches an entry in /etc/shorewall/interfaces
 #
-# If the passed name matches a wildcard and 'cache' is true, an entry for the name is added in 
+# If the passed name matches a wildcard and 'cache' is true, an entry for the name is added in
 # %interfaces.
 #
 sub known_interface($;$)
@@ -1195,7 +1195,7 @@ sub known_interface($;$)
 	my $root = $interfaceref->{root};
 	if ( $i ne $root && substr( $interface, 0, length $root ) eq $root ) {
 	    my $physical = map_physical( $interface, $interfaceref );
-	    
+
 	    my $copyref = { options  => $interfaceref->{options},
 			    bridge   => $interfaceref->{bridge} ,
 			    name     => $i ,
@@ -1392,7 +1392,7 @@ sub verify_required_interfaces( $ ) {
 	    my $wait = $interfaces{$interface}{options}{wait};
 
 	    emit q() unless $first-- > 0;
-	    
+
 	    if ( $wait ) {
 		my $physical = get_physical $interface;
 
@@ -1431,7 +1431,7 @@ sub verify_required_interfaces( $ ) {
 	}
 
 	emit( ";;\n" );
-	
+
 	pop_indent;
 	pop_indent;
 
@@ -1697,7 +1697,7 @@ sub process_host( ) {
 	} elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
 	    fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
 	}
-    } 
+    }
 
     my $optionsref = { dynamic => 0 };
 
@@ -1723,7 +1723,7 @@ sub process_host( ) {
 	    }
 	}
 
-	fatal_error q(A host entry for a Vserver zone may not specify the 'ipsec' option) if $ipsec && $zoneref->{type} == VSERVER; 
+	fatal_error q(A host entry for a Vserver zone may not specify the 'ipsec' option) if $ipsec && $zoneref->{type} == VSERVER;
 
 	$optionsref = \%options;
     }

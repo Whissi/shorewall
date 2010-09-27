@@ -195,7 +195,7 @@ sub split_action ( $ ) {
 	$action = $2 ? $3 : '';
 	$max    = 2;
     }
-	
+
     my @a = split( /:/ , $action, 4 );
     fatal_error "Invalid ACTION ($action)" if ( $action =~ /::/ ) || ( @a > $max );
     $target = shift @a unless $target;

@@ -1064,7 +1064,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$action = "NFQUEUE --queue-num $paramval";
     } elsif ( $actiontype & SET ) {
 	require_capability( 'IPSET_MATCH', 'SET and UNSET rules', '' );
-	fatal_error "$action rules require a set name parameter" unless $param;  
+	fatal_error "$action rules require a set name parameter" unless $param;
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -1531,7 +1531,7 @@ sub process_section ($) {
 	@sections{'ESTABLISHED','RELATED'} = ( 1, 1 );
 	finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
     }
-    
+
     $section = $sect;
 }
 
@@ -1698,13 +1698,13 @@ sub generate_dest_rules( $$$$ ) {
 
     if ( $type2 == VSERVER ) {
 	for my $hostref ( @{$z2ref->{hosts}{ip}{'%vserver%'}} ) {
-	    my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain); 
+	    my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain);
 
 	    for my $net ( @{$hostref->{hosts}} ) {
-		add_jump( $chainref, 
+		add_jump( $chainref,
 			  $exclusion ,
 			  0,
-			  join('', $match, match_dest_net( $net ) ) ) 
+			  join('', $match, match_dest_net( $net ) ) )
 	    }
 	}
     } else {
@@ -1718,7 +1718,7 @@ sub generate_dest_rules( $$$$ ) {
 sub generate_source_rules( $$$$ ) {
     my ( $outchainref, $z1, $z2, $match ) = @_;
     my $chain = rules_target ( $z1, $z2 );
-	    
+
     if ( $chain ) {
 	#
 	# Not a CONTINUE policy with no rules
@@ -1726,16 +1726,16 @@ sub generate_source_rules( $$$$ ) {
 	for my $hostref ( @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
 	    my $ipsec_match = match_ipsec_in $z1 , $hostref;
 	    my $exclusion   = source_exclusion( $hostref->{exclusions}, $chain);
-		
+
 	    for my $net ( @{$hostref->{hosts}} ) {
 		generate_dest_rules( $outchainref,
 				     $exclusion,
-				     $z2,  
+				     $z2,
 				     join('', match_source_net( $net ), $match , $ipsec_match )
 				   );
-	    }	
+	    }
 	}
-    } 
+    }
 }
 
 #
@@ -1780,11 +1780,11 @@ sub handle_loopback_traffic() {
 	    for my $typeref ( values %{$source_hosts_ref} ) {
 		for my $hostref ( @{$typeref->{'%vserver%'}} ) {
 		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $natref);
-		
+
 		    for my $net ( @{$hostref->{hosts}} ) {
 			add_jump( $natout, $exclusion, 0, match_source_net( $net ), 0, $rulenum++ );
 		    }
-		}	
+		}
 	    }
 	}
     }
@@ -1873,7 +1873,7 @@ sub generate_matrix() {
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};
 	    add_jump ensure_filter_chain( rules_chain( $zone, $_ ), 1 ) , $blackref , 0, $state, 0, -1 for firewall_zone, @vservers;
-	
+
 	    if ( $simple ) {
 		#
 		# We won't create a zone forwarding chain for this zone so we must add blacklisting jumps to the rules chains
@@ -1881,7 +1881,7 @@ sub generate_matrix() {
 		for my $zone1 ( @zones ) {
 		    my $ruleschain    = rules_chain( $zone, $zone1 );
 		    my $ruleschainref = $filter_table->{$ruleschain};
-		    
+
 		    if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
 			add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, -1 );
 		    }
@@ -1899,12 +1899,12 @@ sub generate_matrix() {
 
 		if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
 		    add_jump( ensure_filter_chain( $ruleschain, 1 ), $blackref, 0, $state, 0, -1 );
-		} 
+		}
 	    }
 	}
 
 	next if $simple;
-	
+
 	#
 	# Complex zone or we have more than one non-firewall zone -- create a zone forwarding chain
 	#
@@ -2028,7 +2028,7 @@ sub generate_matrix() {
 		    my $ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 		    my $ipsec_out_match = match_ipsec_out $zone , $hostref;
 		    my $exclusions = $hostref->{exclusions};
-		    
+
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my $dest   = match_dest_net $net;
 

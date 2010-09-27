@@ -562,7 +562,7 @@ show_command() {
 
 	    if [ -z "$LOGFILE" ]; then
 		LOGFILE=/var/log/messages
-		
+
 		if [ -n "$(syslog_circular_buffer)" ]; then
 		    g_logread="logread | tac"
 		elif [ -r $LOGFILE ]; then

@@ -849,7 +849,7 @@ sub handle_optional_interfaces( $ ) {
 
     if ( @$interfaces ) {
 	my $require     = $config{REQUIRE_INTERFACE};
-	
+
 	verify_required_interfaces( shift );
 
 	emit( 'HAVE_INTERFACE=', '' ) if $require;
@@ -860,9 +860,9 @@ sub handle_optional_interfaces( $ ) {
 
 	if ( $wildcards ) {
 	    #
-	    # We must consider all interfaces with an address in $family -- generate a list of such addresses. 
+	    # We must consider all interfaces with an address in $family -- generate a list of such addresses.
 	    #
-	    emit( '', 
+	    emit( '',
 		  'for interface in $(find_all_interfaces1); do',
 		);
 
@@ -904,10 +904,10 @@ sub handle_optional_interfaces( $ ) {
 	    if ( $wildcards ) {
 		emit( "$case)" );
 		push_indent;
-		
+
 		if ( $wild ) {
 		    emit( qq(if [ -z "\$SW_${base}_IS_USABLE" ]; then) );
-		    push_indent; 
+		    push_indent;
 		    emit ( 'if interface_is_usable $interface; then' );
 		} else {
 		    emit ( "if interface_is_usable $physical; then" );

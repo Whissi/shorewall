@@ -1841,7 +1841,7 @@ sub read_a_line(;$) {
 		    embedded_perl( $1 );
 		    next;
 		}
-	    } 
+	    }
 
 	    my $count = 0;
 	    #
@@ -2928,12 +2928,12 @@ sub get_configuration( $ ) {
 
 	    if ( $units && $units ne 'sec' ) {
 		my $expire = 60000; # 1 minute in milliseconds
-		
+
 		if ( $units ne 'min' ) {
 		    $expire *= 60; #At least an hour
 		    $expire *= 24 if $units eq 'day';
 		}
-		
+
 		$limit .= "--hashlimit-htable-expire $expire ";
 	    }
 	} elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {

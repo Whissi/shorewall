@@ -628,7 +628,7 @@ sub delete_reference( $$ ) {
 #
 # In the first function, the rule number is zero-relative. In the second function,
 # the rule number is one-relative. In the first function, if the rule number is < 0, then
-# the rule is a jump to a blacklist chain (blacklst or blackout). The rule will be 
+# the rule is a jump to a blacklist chain (blacklst or blackout). The rule will be
 # inserted at the front of the chain and the chain's 'blacklist' member incremented.
 #
 sub insert_rule1($$$)
@@ -733,7 +733,7 @@ sub move_rules( $$ ) {
 	for ( @{$chain1->{rules}} ) {
 	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
 	}
-	
+
 	if ( $debug ) {
 	    my $rule = $blacklist;
 	    trace( $chain2, 'A', ++$rule, $_ ) for @{$chain1->{rules}};
@@ -754,7 +754,7 @@ sub move_rules( $$ ) {
 	} else {
 	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
 	}
-	    
+
 	delete_chain $chain1;
 
 	$count;
@@ -789,7 +789,7 @@ sub copy_rules( $$ ) {
 	# Chains2 already has a blacklist jump -- delete the one at the head of chain1's rule list
 	#
 	my $rule = shift @rules1;
-	
+
 	$rule =~ / -j ([^\s])/;
 
 	my $chainb = $1;
@@ -814,7 +814,7 @@ sub copy_rules( $$ ) {
 	trace( $chain2, 'A', 1 , $rules1[0]) if $debug;
 
  	unshift @$rules2, shift @rules1;
-	
+
 	$chain1->{blacklist} = 0;
 	$chain2->{blacklist} = 1;
     }
@@ -823,7 +823,7 @@ sub copy_rules( $$ ) {
 	my $rule = @$rules2;
 	trace( $chain2, 'A', ++$rule, $_ ) for @rules1;
     }
-    
+
     push @$rules2, @rules1;
 
     progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
@@ -1078,10 +1078,10 @@ sub find_chain($$) {
     my ($table, $chain) = @_;
 
     assert( $table && $chain && $chain_table{$table} );
-    
+
     $chain_table{$table}{$chain};
 }
-    
+
 #
 # Create a chain if it doesn't exist already
 #
@@ -2787,11 +2787,11 @@ sub do_ipsec($$) {
     fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
 
     my @options = split_list $ipsec, 'IPSEC options';
-	
+
     if ( @options == 1 ) {
 	if ( lc( $options[0] ) =~ /^(yes|ipsec)$/ ) {
 	    return do_ipsec_options $dir, 'ipsec', '';
-	} 
+	}
 
 	if ( lc( $options[0] ) =~ /^(no|none)$/ ) {
 	    return do_ipsec_options $dir, 'none', '';
@@ -2912,7 +2912,7 @@ sub mysplit( $ ) {
 		fatal_error "Missing ']' ($element)" unless @input;
 		$element .= ( ',' . shift @input );
 	    }
-	    
+
 	    fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
 	}
 
@@ -3644,14 +3644,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Log rule
 	    #
-	    log_rule_limit( $loglevel , 
-			    $echainref , 
-			    $chain, 
+	    log_rule_limit( $loglevel ,
+			    $echainref ,
+			    $chain,
 			    $disposition eq 'reject' ? 'REJECT' : $disposition ,
-			    '' ,  
-			    $logtag , 
+			    '' ,
+			    $logtag ,
 			    'add' ,
-			    '' ) 
+			    '' )
 		if $loglevel;
 	    #
 	    # Generate Final Rule
@@ -3764,14 +3764,14 @@ sub promote_blacklist_rules() {
 	# Copy 'blacklst''s references since they will change in the following loop
 	#
 	my @references = map $filter_table->{$_}, keys %{$chainbref->{references}};
-	
+
 	for my $chain1ref ( @references ) {
 	    assert( $chain1ref->{blacklist} == 1 );
 
 	    my $copied = 0;
 	    my $rule   = $chain1ref->{rules}[0];
 	    my $chain1 = $chain1ref->{name};
-	    
+
 	    for my $chain2ref ( map $filter_table->{$_}, keys %{$chain1ref->{references}} ) {
 		unless ( $chain2ref->{builtin} ) {
 		    #
@@ -3984,7 +3984,7 @@ sub load_ipsets() {
 	       '        fi' ,
 	       '    fi' ,
 	     );
-	
+
 	if ( @ipsets ) {
 	    emit '';
 

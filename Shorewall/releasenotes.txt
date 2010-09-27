@@ -31,7 +31,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
        ...
        Shorewall configuration compiled to /var/lib/shorewall6/.start
           ERROR: Shorewall6 requires Linux kernel 2.6.24 or later
-       /usr/share/shorewall6/lib.common: line 73: 
+       /usr/share/shorewall6/lib.common: line 73:
              [: -lt: unary operator expected
           ERROR: Shorewall6 requires Linux kernel 2.6.24 or later
        [root@localhost shorewall6]#
@@ -345,18 +345,18 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
         defined as optional in the interfaces file.
 
       o If there were no references matching the wildcard, then the
-        'optional' option was effectively ignored. 
+        'optional' option was effectively ignored.
 
     The new implementation:
 
     - Insures valid shell variable names.
-    
+
     - Insures that shell variable names are unique.
 
     - Handles interface names appearing in the INTERFACE column of the
       providers file as a special case for 'optional'. If the name
       matches a wildcard entry in the interfaces file then the
-      usability of the specific interface is tracked individually. 
+      usability of the specific interface is tracked individually.
 
     - Handles the availabilty of other interfaces matching a wildcard
       as a group; if there is one useable interface in the group then
@@ -392,7 +392,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     state match rather than conntrack match for UNTRACKED state
     matching.
 
-12) If the routestopped files contains NOTRACK rules, 'shorewall* clear' 
+12) If the routestopped files contains NOTRACK rules, 'shorewall* clear'
     did not clear the raw table.
 
 13) An error message was incorrectly generated if a port range of the
@@ -429,7 +429,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     The 'all' and 'any' keywords now support exclusion in the form of a
     comma-separated list of excluded zones.
 
-    Examples: 
+    Examples:
 
     	     all!fw         (same as all-).
 	     any+!dmz,loc   (All zones except 'dmz' and 'loc' and
@@ -554,7 +554,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     fatal compilation error in REDIRECT rules.
 
 4)  A number of problems associated with Shorewall-init and Upstart
-    have been corrected. 
+    have been corrected.
 
     If you use Shorewall-init, then when upgrading to this version, be
     sure to recompile all firewall scripts before you take interfaces
@@ -564,7 +564,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     /usr/share/shorewall/configfiles/Makefile and rather issued the
     following message:
 
-    	      install-file: command not found 
+    	      install-file: command not found
 
     This caused the Makefile to be omitted from RPMs as well.
 
@@ -592,7 +592,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 
 2)  Per-ip log rate limiting has been added in the form of the LOGLIMIT
     option in shorewall.conf. When LOGLIMIT is specified, LOGRATE and
-    LOGBURST are ignored. 
+    LOGBURST are ignored.
 
     LOGRATE and LOGBURST are now deprecated.
 
@@ -675,7 +675,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 	Shorewall is running
 	State:Started (Thu Aug 12 19:41:48 PDT 2010) from /etc/shorewall/
 
-	gateway:/etc/shorewall# 
+	gateway:/etc/shorewall#
 
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 1
@@ -708,7 +708,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     shorewall.conf and shorewall6.conf. It has been added.
 
 6)  Under some versions of Perl, a Perl run-time diagnostic was produced
-    when options were omitted from shorewall.conf or shorewall6.conf. 
+    when options were omitted from shorewall.conf or shorewall6.conf.
 
 7) If the following options were specified in /etc/shorewall/interfaces
    for an interface with '-' in the ZONE column, then these options
@@ -729,7 +729,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 9) Previously, if nets= was specified under Shorewall6, this error
    would result:
 
-   	 ERROR: Invalid IPv6 address (224.0.0.0) : 
+   	 ERROR: Invalid IPv6 address (224.0.0.0) :
                 /etc/shorewall6/interfaces (line 16)
 
 ----------------------------------------------------------------------------
@@ -744,7 +744,7 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     See http://www.shorewall.net/Vserver.html for details.
 
 2)  A new FORWARD_CLEAR_MARK option has been added to shorewall.conf
-    and shorewall6.conf. 
+    and shorewall6.conf.
 
     Traditionally, Shorewall has cleared the packet mark in the first
     rule in the mangle FORWARD chain. This behavior is maintained with

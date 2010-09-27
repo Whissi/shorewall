@@ -445,7 +445,7 @@ EOF
     my $config_dir = $globals{CONFIGDIR};
 
     emit<<"EOF";
-    set_state Started $config_dir 
+    set_state Started $config_dir
     run_restored_exit
 else
     if [ \$COMMAND = refresh ]; then

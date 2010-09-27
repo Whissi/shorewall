@@ -341,7 +341,7 @@ sub validate_policy()
 		    add_or_modify_policy_chain( $zone, $zone1 );
 		    add_or_modify_policy_chain( $zone1, $zone );
 		}
-	    }		
+	    }
 	}
     }
 
@@ -496,13 +496,13 @@ sub setup_syn_flood_chains() {
 	    my $level = $chainref->{loglevel};
 	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
 	    add_rule $synchainref , "${limit}-j RETURN";
-	    log_rule_limit( $level , 
-			    $synchainref , 
-			    $chainref->{name} , 
-			    'DROP', 
-			    $globals{LOGLIMIT} || '-m limit --limit 5/min --limit-burst 5 ' , 
-			    '' , 
-			    'add' , 
+	    log_rule_limit( $level ,
+			    $synchainref ,
+			    $chainref->{name} ,
+			    'DROP',
+			    $globals{LOGLIMIT} || '-m limit --limit 5/min --limit-burst 5 ' ,
+			    '' ,
+			    'add' ,
 			    '' )
 		if $level ne '';
 	    add_rule $synchainref, '-j DROP';

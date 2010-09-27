@@ -189,7 +189,7 @@ sub validate_4net( $$ ) {
 	if ( $1 ) {
 	    fatal_error "An ipset list ($net) is not allowed in this context";
 	} elsif ( $net =~ /^\+[a-zA-Z][-\w]*$/ ) {
-	    fatal_error "An ipset name ($net) is not allowed in this context"; 
+	    fatal_error "An ipset name ($net) is not allowed in this context";
 	} else {
 	    fatal_error "Invalid ipset name ($net)";
 	}
@@ -306,7 +306,7 @@ sub resolve_proto( $ ) {
 	# Allow 'icmp' as a synonym for 'ipv6-icmp' in IPv6 compilations
 	#
 	$proto= 'ipv6-icmp' if $proto eq 'icmp' && $family == F_IPV6;
-	
+
 	defined( $number = $nametoproto{$proto} ) ? $number : scalar getprotobyname $proto;
     }
 }
@@ -553,7 +553,7 @@ sub validate_6net( $$ ) {
 	if ( $1 ) {
 	    fatal_error "An ipset list ($net) is not allowed in this context";
 	} elsif ( $net =~ /^\+[a-zA-Z][-\w]*$/ ) {
-	    fatal_error "An ipset name ($net) is not allowed in this context"; 
+	    fatal_error "An ipset name ($net) is not allowed in this context";
 	} else {
 	    fatal_error "Invalid ipset name ($net)";
 	}

@@ -297,7 +297,7 @@ sub process_tc_rule( ) {
 			}
 
 			$restriction = DESTIFACE_DISALLOW;
-			
+
 			ensure_mangle_chain($target);
 
 			$sticky++;
@@ -1462,7 +1462,7 @@ sub process_secmark_rule() {
 		 O => 'tcout'   , );
 
     my %state = ( N =>  'NEW' ,
-		  E =>  'ESTABLISHED' , 
+		  E =>  'ESTABLISHED' ,
 		  ER => 'ESTABLISHED,RELATED' );
 
     my ( $chain , $state, $rest) = split ':', $chainin , 3;
@@ -1470,7 +1470,7 @@ sub process_secmark_rule() {
     fatal_error "Invalid CHAIN:STATE ($chainin)" if $rest || ! $chain;
 
     my $chain1= $chns{$chain};
-    
+
     fatal_error "Invalid or missing CHAIN ( $chain )" unless $chain1;
     fatal_error "USER/GROUP may only be used in the OUTPUT chain" if $user ne '-' && $chain1 ne 'tcout';
 
@@ -1488,22 +1488,22 @@ sub process_secmark_rule() {
 
     $disposition =~ s/ .*//;
 
-    expand_rule( ensure_mangle_chain( $chain1 ) , 
+    expand_rule( ensure_mangle_chain( $chain1 ) ,
 		 $restrictions{$chain1} ,
 		 $state .
 		 do_proto( $proto, $dport, $sport ) .
 		 do_user( $user ) .
 		 do_test( $mark, $globals{TC_MASK} ) ,
-		 $source , 
-		 $dest , 
-		 '' , 
-		 $target , 
-		 '' , 
+		 $source ,
+		 $dest ,
+		 '' ,
+		 $target ,
+		 '' ,
 		 $disposition,
 		 '' );
 
     progress_message "Secmarks rule \"$currentline\" $done";
-		 
+
 }
 
 #
@@ -1622,7 +1622,7 @@ sub setup_tc() {
 	    first_entry "$doing $fn...";
 
 	    process_secmark_rule while read_a_line;
-	
+
 	    clear_comment;
 	}
 

@@ -98,7 +98,7 @@ sub process_accounting_rule( ) {
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} );
     my $rule2 = 0;
     my $jump  = 0;
-    
+
     unless ( $action eq 'COUNT' ) {
 	if ( $action eq 'DONE' ) {
 	    $target = 'RETURN';
@@ -166,7 +166,7 @@ sub process_accounting_rule( ) {
 		fatal_error "Adding an IPSEC rule to an unreferenced accounting chain is not allowed";
 	    }
 	} else {
-	    warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );	    
+	    warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );
 	    $chainref->{ipsec} = $dir;
 	}
     } elsif ( $ipsec ne '-' ) {

@@ -310,11 +310,11 @@ sub parse_zone_option_list($$\$)
 			 "tunnel-dst" => NETWORK,
 		       );
 
-    use constant { UNRESTRICTED => 1, NOFW => 2 };
+    use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8 };
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => UNRESTRICTED , blacklist => NOFW );
+    my %key = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW );
 
     my ( $list, $zonetype, $complexref ) = @_;
     my %h;
@@ -346,8 +346,11 @@ sub parse_zone_option_list($$\$)
 		fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
 	    }
 
-	    if ( $key{$e} ) {
-		fatal_error "Option '$e' not permitted with this zone type " if $key{$e} == NOFW && ($zonetype == FIREWALL || $zonetype == VSERVER);
+	    my $key = $key{$e};
+
+	    if ( $key ) {
+		fatal_error "Option '$e' not permitted with this zone type " if $key & NOFW && ($zonetype == FIREWALL || $zonetype == VSERVER);
+		$$complexref = 1 if $key & COMPLEX;
 		$h{$e} = $val || 1;
 	    } else {
 		fatal_error "The \"$e\" option may only be specified for ipsec zones" unless $zonetype == IPSEC;

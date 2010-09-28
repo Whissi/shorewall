@@ -1780,6 +1780,8 @@ sub optimize_ruleset() {
 		$progress = 0;
 		$passes++;
 
+		progress_message "\n Table $table pass $passes, level 4a...";
+
 		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
 		    #
 		    # If the chain isn't branched to, then delete it
@@ -1873,6 +1875,8 @@ sub optimize_ruleset() {
 		$progress = 0;
 		$passes++;
 
+		progress_message "\n Table $table pass $passes, level 4b...";
+
 		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
 		    my $lastrule = $chainref->{rules}[-1];
 
@@ -1896,6 +1900,8 @@ sub optimize_ruleset() {
 	    #
 	    $passes++;
 
+	    progress_message "\n Table $table pass $passes, level 8...";
+	    
 	    for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
 		my $rules = $chainref->{rules};
 		next if not @$rules;

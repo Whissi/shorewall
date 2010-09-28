@@ -1134,7 +1134,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	$dest = $2;
     } elsif ( $dest =~ /.*\..*\./ ) {
 	#
-	# Appears to be an address
+	# Appears to be an IPv4 address (no NAT in IPv6)
 	#
 	$destzone = '-';
     } else {
@@ -1256,7 +1256,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
     #
     if ( $actiontype & NATRULE ) {
 	my ( $server, $serverport );
-	my $randomize = $dest =~ s/:random$// ? '--random ' : '';
+	my $randomize = $dest =~ s/:random$// ? ' --random' : '';
 
 	require_capability( 'NAT_ENABLED' , "$basictarget rules", '' );
 	#
@@ -1307,8 +1307,8 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 
 	if ( $actiontype  & REDIRECT ) {
 	    fatal_error "A server IP address may not be specified in a REDIRECT rule" if $server;
-	    $target  = 'REDIRECT ';
-	    $target .= "--to-port $serverport " if $serverport;
+	    $target  = 'REDIRECT';
+	    $target .= " --to-port $serverport" if $serverport;
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIP;
 	    } elsif ( $origdest eq 'detect' ) {
@@ -1331,14 +1331,14 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 	    }
 
 	    if ( $action eq 'DNAT' ) {
-		$target = 'DNAT ';
+		$target = 'DNAT';
 		if ( $server ) {
 		    $serverport = ":$serverport" if $serverport;
 		    for my $serv ( split /,/, $server ) {
-			$target .= "--to-destination ${serv}${serverport} ";
+			$target .= " --to-destination ${serv}${serverport}";
 		    }
 		} else {
-		    $target .= "--to-destination :$serverport ";
+		    $target .= " --to-destination :$serverport";
 		}
 	    }
 

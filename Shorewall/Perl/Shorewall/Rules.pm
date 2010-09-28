@@ -46,7 +46,7 @@ our @EXPORT = qw( process_tos
 		  compile_stop_firewall
 		  );
 our @EXPORT_OK = qw( process_rule process_rule1 initialize );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 our $macro_nest_level;
 our $current_param;
@@ -322,117 +322,118 @@ sub setup_blacklist() {
 
 sub process_routestopped() {
 
-    my ( @allhosts, %source, %dest , %notrack, @rule );
+    if ( my $fn = open_file 'routestopped' ) {
+	my ( @allhosts, %source, %dest , %notrack, @rule );
 
-    my $fn = open_file 'routestopped';
+	my $seq = 0;
 
-    my $seq = 0;
+	first_entry "$doing $fn...";
 
-    first_entry "$doing $fn...";
+	while ( read_a_line ) {
 
-    while ( read_a_line ) {
+	    my ($interface, $hosts, $options , $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
 
-	my ($interface, $hosts, $options , $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
+	    my $interfaceref;
 
-	my $interfaceref;
+	    fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface $interface;
+	    $hosts = ALLIP unless $hosts && $hosts ne '-';
 
-	fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface $interface;
-	$hosts = ALLIP unless $hosts && $hosts ne '-';
+	    my $routeback = 0;
 
-	my $routeback = 0;
+	    my @hosts;
 
-	my @hosts;
+	    $seq++;
 
-	$seq++;
-
-	my $rule = do_proto( $proto, $ports, $sports, 0 );
-
-	for my $host ( split /,/, $hosts ) {
-	    fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
-	    validate_host $host, 1;
-	    push @hosts, "$interface|$host|$seq";
-	    push @rule, $rule;
-	}
-
-	unless ( $options eq '-' ) {
-	    for my $option (split /,/, $options ) {
-		if ( $option eq 'routeback' ) {
-		    if ( $routeback ) {
-			warning_message "Duplicate 'routeback' option ignored";
-		    } else {
-			$routeback = 1;
-		    }
-		} elsif ( $option eq 'source' ) {
-		    for my $host ( split /,/, $hosts ) {
-			$source{"$interface|$host|$seq"} = 1;
-		    }
-		} elsif ( $option eq 'dest' ) {
-		    for my $host ( split /,/, $hosts ) {
-			$dest{"$interface|$host|$seq"} = 1;
-		    }
-		} elsif ( $option eq 'notrack' ) {
-		    for my $host ( split /,/, $hosts ) {
-			$notrack{"$interface|$host|$seq"} = 1;
-		    }
-		} else {
-		    warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
-		    warning_message "The 'critical' option is no longer supported (or needed)";
-		}
-	    }
-	}
-
-	if ( $routeback || $interfaceref->{options}{routeback} ) {
-	    my $chainref = $filter_table->{FORWARD};
+	    my $rule = do_proto( $proto, $ports, $sports, 0 );
 
 	    for my $host ( split /,/, $hosts ) {
-		add_rule( $chainref ,
-			  match_source_dev( $interface ) .
-			  match_dest_dev( $interface ) .
-			  match_source_net( $host ) .
-			  match_dest_net( $host ) );
-		clearrule;
+		fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
+		validate_host $host, 1;
+		push @hosts, "$interface|$host|$seq";
+		push @rule, $rule;
 	    }
-	}
 
-	push @allhosts, @hosts;
-    }
 
-    for my $host ( @allhosts ) {
-	my ( $interface, $h, $seq ) = split /\|/, $host;
-	my $source  = match_source_net $h;
-	my $dest    = match_dest_net $h;
-	my $sourcei = match_source_dev $interface;
-	my $desti   = match_dest_dev $interface;
-	my $rule    = shift @rule;
+	    unless ( $options eq '-' ) {
+		for my $option (split /,/, $options ) {
+		    if ( $option eq 'routeback' ) {
+			if ( $routeback ) {
+			    warning_message "Duplicate 'routeback' option ignored";
+			} else {
+			    $routeback = 1;
+			}
+		    } elsif ( $option eq 'source' ) {
+			for my $host ( split /,/, $hosts ) {
+			    $source{"$interface|$host|$seq"} = 1;
+			}
+		    } elsif ( $option eq 'dest' ) {
+			for my $host ( split /,/, $hosts ) {
+			    $dest{"$interface|$host|$seq"} = 1;
+			}
+		    } elsif ( $option eq 'notrack' ) {
+			for my $host ( split /,/, $hosts ) {
+			    $notrack{"$interface|$host|$seq"} = 1;
+			}
+		    } else {
+			warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
+			warning_message "The 'critical' option is no longer supported (or needed)";
+		    }
+		}
+	    }
 
-	add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
-	add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
+	    if ( $routeback || $interfaceref->{options}{routeback} ) {
+		my $chainref = $filter_table->{FORWARD};
 
-	my $matched = 0;
-
-	if ( $source{$host} ) {
-	    add_rule $filter_table->{FORWARD}, "$sourcei $source $rule -j ACCEPT", 1;
-	    $matched = 1;
-	}
-
-	if ( $dest{$host} ) {
-	    add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
-	    $matched = 1;
-	}
-
-	if ( $notrack{$host} ) {
-	    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
-	    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
-	}
-
-	unless ( $matched ) {
-	    for my $host1 ( @allhosts ) {
-		unless ( $host eq $host1 ) {
-		    my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
-		    my $dest1 = match_dest_net $h1;
-		    my $desti1 = match_dest_dev $interface1;
-		    add_rule $filter_table->{FORWARD}, "$sourcei $desti1 $source $dest1 $rule -j ACCEPT", 1;
+		for my $host ( split /,/, $hosts ) {
+		    add_rule( $chainref ,
+			      match_source_dev( $interface ) .
+			      match_dest_dev( $interface ) .
+			      match_source_net( $host ) .
+			      match_dest_net( $host ) );
 		    clearrule;
+		}
+	    }
+
+	    push @allhosts, @hosts;
+	}
+
+	for my $host ( @allhosts ) {
+	    my ( $interface, $h, $seq ) = split /\|/, $host;
+	    my $source  = match_source_net $h;
+	    my $dest    = match_dest_net $h;
+	    my $sourcei = match_source_dev $interface;
+	    my $desti   = match_dest_dev $interface;
+	    my $rule    = shift @rule;
+
+	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
+	    add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
+
+	    my $matched = 0;
+
+	    if ( $source{$host} ) {
+		add_rule $filter_table->{FORWARD}, "$sourcei $source $rule -j ACCEPT", 1;
+		$matched = 1;
+	    }
+
+	    if ( $dest{$host} ) {
+		add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
+		$matched = 1;
+	    }
+
+	    if ( $notrack{$host} ) {
+		add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
+		add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
+	    }
+
+	    unless ( $matched ) {
+		for my $host1 ( @allhosts ) {
+		    unless ( $host eq $host1 ) {
+			my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
+			my $dest1 = match_dest_net $h1;
+			my $desti1 = match_dest_dev $interface1;
+			add_rule $filter_table->{FORWARD}, "$sourcei $desti1 $source $dest1 $rule -j ACCEPT", 1;
+			clearrule;
+		    }
 		}
 	    }
 	}
@@ -759,54 +760,55 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
 
-	my $fn = open_file 'maclist';
+	if ( my $fn = open_file 'maclist' ) {
 
-	first_entry "$doing $fn...";
+	    first_entry "$doing $fn...";
 
-	while ( read_a_line ) {
+	    while ( read_a_line ) {
 
-	    my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
+		my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
 
-	    if ( $original_disposition eq 'COMMENT' ) {
-		process_comment;
-	    } else {
-		my ( $disposition, $level, $remainder) = split( /:/, $original_disposition, 3 );
-
-		fatal_error "Invalid DISPOSITION ($original_disposition)" if defined $remainder || ! $disposition;
-
-		my $targetref = $maclist_targets{$disposition};
-
-		fatal_error "Invalid DISPOSITION ($original_disposition)"              if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
-		fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
-		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
-
-		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
-
-		$mac       = '' unless $mac && ( $mac ne '-' );
-		$addresses = '' unless defined $addresses && ( $addresses ne '-' );
-
-		fatal_error "You must specify a MAC address or an IP address" unless $mac || $addresses;
-
-		$mac = mac_match $mac if $mac;
-
-		if ( $addresses ) {
-		    for my $address ( split ',', $addresses ) {
-			my $source = match_source_net $address;
-			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
-			    if defined $level && $level ne '';
-			add_jump $chainref , $targetref->{target}, 0, "${mac}${source}";
-		    }
+		if ( $original_disposition eq 'COMMENT' ) {
+		    process_comment;
 		} else {
-		    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
-			if defined $level && $level ne '';
-		    add_jump $chainref , $targetref->{target}, 0, "$mac";
+		    my ( $disposition, $level, $remainder) = split( /:/, $original_disposition, 3 );
+
+		    fatal_error "Invalid DISPOSITION ($original_disposition)" if defined $remainder || ! $disposition;
+
+		    my $targetref = $maclist_targets{$disposition};
+
+		    fatal_error "Invalid DISPOSITION ($original_disposition)"              if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
+		    fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
+		    fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
+
+		    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
+
+		    $mac       = '' unless $mac && ( $mac ne '-' );
+		    $addresses = '' unless defined $addresses && ( $addresses ne '-' );
+
+		    fatal_error "You must specify a MAC address or an IP address" unless $mac || $addresses;
+
+		    $mac = mac_match $mac if $mac;
+
+		    if ( $addresses ) {
+			for my $address ( split ',', $addresses ) {
+			    my $source = match_source_net $address;
+			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
+				if defined $level && $level ne '';
+			    add_jump $chainref , $targetref->{target}, 0, "${mac}${source}";
+			}
+		    } else {
+			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
+			    if defined $level && $level ne '';
+			add_jump $chainref , $targetref->{target}, 0, "$mac";
+		    }
+
+		    progress_message "      Maclist entry \"$currentline\" $done";
 		}
-
-		progress_message "      Maclist entry \"$currentline\" $done";
 	    }
-	}
 
-	clear_comment;
+	    clear_comment;
+	}
 	#
 	# Generate jumps from the input and forward chains
 	#
@@ -1653,11 +1655,15 @@ sub process_rules() {
 
     my $fn = open_file 'rules';
 
-    first_entry "$doing $fn...";
+    if ( $fn ) {
 
-    process_rule while read_a_line;
+	first_entry "$doing $fn...";
 
-    clear_comment;
+	process_rule while read_a_line;
+
+	clear_comment;
+    }
+
     $section = 'DONE';
 }
 
@@ -1698,7 +1704,7 @@ sub generate_dest_rules( $$$$ ) {
 
     if ( $type2 == VSERVER ) {
 	for my $hostref ( @{$z2ref->{hosts}{ip}{'%vserver%'}} ) {
-	    my $exclusion   = dest_exclusion( $hostref->{exclusions}, $chain);
+	    my $exclusion = dest_exclusion( $hostref->{exclusions}, $chain);
 
 	    for my $net ( @{$hostref->{hosts}} ) {
 		add_jump( $chainref,
@@ -1739,7 +1745,7 @@ sub generate_source_rules( $$$$ ) {
 }
 
 #
-# Loopback traffic -- this is where we assemble the intra-firewall traffic routing
+# Loopback traffic -- this is where we assemble the intra-firewall chains
 #
 sub handle_loopback_traffic() {
     my @zones   = ( vserver_zones, firewall_zone );

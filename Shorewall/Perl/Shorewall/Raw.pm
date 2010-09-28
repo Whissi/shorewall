@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_notrack );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 #
 # Notrack
@@ -76,24 +76,25 @@ sub process_notrack_rule( $$$$$$ ) {
 
 sub setup_notrack() {
 
-    my $fn = open_file 'notrack';
+    if ( my $fn = open_file 'notrack' ) {
 
-    first_entry "$doing $fn...";
+	first_entry "$doing $fn...";
 
-    my $nonEmpty = 0;
+	my $nonEmpty = 0;
 
-    while ( read_a_line ) {
+	while ( read_a_line ) {
 
-	my ( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 1, 6, 'Notrack File';
+	    my ( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 1, 6, 'Notrack File';
 
-	if ( $source eq 'COMMENT' ) {
-	    process_comment;
-	} else {
-	    process_notrack_rule $source, $dest, $proto, $ports, $sports, $user;
+	    if ( $source eq 'COMMENT' ) {
+		process_comment;
+	    } else {
+		process_notrack_rule $source, $dest, $proto, $ports, $sports, $user;
+	    }
 	}
-    }
 
-    clear_comment;
+	clear_comment;
+    }
 }
 
 1;

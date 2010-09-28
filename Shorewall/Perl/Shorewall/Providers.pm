@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -757,15 +757,16 @@ sub setup_providers() {
 
     $lastmark = 0;
 
-    my $fn = open_file 'providers';
+    if ( my $fn = open_file 'providers' ) {
 
-    first_entry sub() {
-	progress_message2 "$doing $fn...";
-	emit "\nif [ -z \"\$g_noroutes\" ]; then";
-	push_indent;
-	start_providers; };
-
-    add_a_provider, $providers++ while read_a_line;
+	first_entry sub() {
+	    progress_message2 "$doing $fn...";
+	    emit "\nif [ -z \"\$g_noroutes\" ]; then";
+	    push_indent;
+	    start_providers; };
+ 
+	add_a_provider, $providers++ while read_a_line;
+    }
 
     if ( $providers ) {
 	finish_providers;

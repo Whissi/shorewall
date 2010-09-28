@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4.13';
+our $VERSION = '4.4.14';
 
 #
 # Called by the compiler to [re-]initialize this module's state
@@ -224,48 +224,48 @@ sub process_accounting_rule( ) {
 
 sub setup_accounting() {
 
-    my $fn = open_file 'accounting';
+    if ( my $fn = open_file 'accounting' ) {
 
-    first_entry "$doing $fn...";
+	first_entry "$doing $fn...";
 
-    my $nonEmpty = 0;
+	my $nonEmpty = 0;
 
-    $nonEmpty |= process_accounting_rule while read_a_line;
+	$nonEmpty |= process_accounting_rule while read_a_line;
 
-    clear_comment;
+	clear_comment;
 
-    if ( have_bridges ) {
-	if ( $filter_table->{accounting} ) {
-	    for my $chain ( qw/INPUT FORWARD/ ) {
+	if ( have_bridges ) {
+	    if ( $filter_table->{accounting} ) {
+		for my $chain ( qw/INPUT FORWARD/ ) {
+		    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
+		}
+	    }
+
+	    if ( $filter_table->{accountout} ) {
+		add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
+	    }
+	} elsif ( $filter_table->{accounting} ) {
+	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
 		add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 	    }
 	}
 
-	if ( $filter_table->{accountout} ) {
-	    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
+	if ( $filter_table->{accipsecin} ) {
+	    for my $chain ( qw/INPUT FORWARD/ ) {
+		add_jump( $filter_table->{$chain}, 'accipsecin', 0,  '', 0, 0 );
+	    }
 	}
-    } elsif ( $filter_table->{accounting} ) {
-	for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-	    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
-	}
-    }
 
-    if ( $filter_table->{accipsecin} ) {
-	for my $chain ( qw/INPUT FORWARD/ ) {
-	    add_jump( $filter_table->{$chain}, 'accipsecin', 0,  '', 0, 0 );
+	if ( $filter_table->{accipsecout} ) {
+	    for my $chain ( qw/FORWARD OUTPUT/ ) {
+		add_jump( $filter_table->{$chain}, 'accipsecout', 0, '', 0, 0 );
+	    }
 	}
-    }
 
-    if ( $filter_table->{accipsecout} ) {
-	for my $chain ( qw/FORWARD OUTPUT/ ) {
-	    add_jump( $filter_table->{$chain}, 'accipsecout', 0, '', 0, 0 );
+	for ( accounting_chainrefs ) {
+	    warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
 	}
     }
-
-    for ( accounting_chainrefs ) {
-	warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
-    }
-
 }
 
 1;

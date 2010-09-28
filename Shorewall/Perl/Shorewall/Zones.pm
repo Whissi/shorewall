@@ -84,7 +84,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 #
 # IPSEC Option types
@@ -1774,11 +1774,12 @@ sub validate_hosts_file()
 {
     my $ipsec = 0;
 
-    my $fn = open_file 'hosts';
+    if ( my $fn = open_file 'hosts' ) {
 
-    first_entry "$doing $fn...";
+	first_entry "$doing $fn...";
 
-    $ipsec |= process_host while read_a_line;
+	$ipsec |= process_host while read_a_line;
+    }
 
     $have_ipsec = $ipsec || haveipseczones;
 

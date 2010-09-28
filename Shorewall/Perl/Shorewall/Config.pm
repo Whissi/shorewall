@@ -132,7 +132,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_14';
 
 #
 # describe the current command, it's present progressive, and it's completion.

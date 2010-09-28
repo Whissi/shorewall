@@ -1109,10 +1109,11 @@ sub process_interface( $$ ) {
 #
 sub validate_interfaces_file( $ ) {
     my $export = shift;
+    
+    my @ifaces;
+    my $nextinum = 1;
 
     if ( my $fn = open_file 'interfaces' ) {
-	my @ifaces;
-	my $nextinum = 1;
 	first_entry "$doing $fn...";
 	push @ifaces, process_interface( $nextinum++, $export ) while read_a_line;
     } else {

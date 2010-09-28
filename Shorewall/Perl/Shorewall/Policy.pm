@@ -34,7 +34,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains);
 our @EXPORT_OK = qw(  );
-our $VERSION = '4.4_12';
+our $VERSION = '4.4_14';
 
 # @policy_chains is a list of references to policy chains in the filter table
 
@@ -345,11 +345,12 @@ sub validate_policy()
 	}
     }
 
-    my $fn = open_file 'policy';
-
-    first_entry "$doing $fn...";
-
-    process_a_policy while read_a_line;
+    if ( my $fn = open_file 'policy' ) {
+	first_entry "$doing $fn...";
+	process_a_policy while read_a_line;
+    } else {
+	fatal_error q(The 'policy' file does not exist or has zero size);
+    }
 
     for $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {

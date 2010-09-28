@@ -481,11 +481,12 @@ sub determine_zones()
     my @z;
     my $ip = 0;
 
-    my $fn = open_file 'zones';
-
-    first_entry "$doing $fn...";
-
-    push @z, process_zone( $ip ) while read_a_line;
+    if ( my $fn = open_file 'zones' ) {
+	first_entry "$doing $fn...";
+	push @z, process_zone( $ip ) while read_a_line;
+    } else {
+	fatal_error q(The 'zones' file does not exist or has zero size);
+    }
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
     fatal_error "No IP zones defined" unless $ip;
@@ -1109,15 +1110,14 @@ sub process_interface( $$ ) {
 sub validate_interfaces_file( $ ) {
     my $export = shift;
 
-    my $fn = open_file 'interfaces';
-
-    my @ifaces;
-
-    my $nextinum = 1;
-
-    first_entry "$doing $fn...";
-
-    push @ifaces, process_interface( $nextinum++, $export ) while read_a_line;
+    if ( my $fn = open_file 'interfaces' ) {
+	my @ifaces;
+	my $nextinum = 1;
+	first_entry "$doing $fn...";
+	push @ifaces, process_interface( $nextinum++, $export ) while read_a_line;
+    } else {
+	fatal_error q(The 'interfaces' file does not exist or has zero size);
+    }
 
     #
     # We now assemble the @interfaces array such that bridge ports immediately precede their associated bridge
@@ -1775,9 +1775,7 @@ sub validate_hosts_file()
     my $ipsec = 0;
 
     if ( my $fn = open_file 'hosts' ) {
-
 	first_entry "$doing $fn...";
-
 	$ipsec |= process_host while read_a_line;
     }
 

@@ -54,6 +54,31 @@
       url="shorewall_quickstart_guide.htm">QuickStart Guides</ulink>.</para>
     </section>
 
+    <section id="faq92">
+      <title>(FAQ 92) There are lots of Shorewall packages; which one(s) do I
+      install?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: When first installing
+      Shorewall 4.4.0 or later, you must install the <emphasis
+      role="bold">shorewall</emphasis> package. If you want to configure an
+      IPv6 firewall, you must also install <emphasis
+      role="bold">shorewall6</emphasis>.</para>
+
+      <section id="faq92a">
+        <title>(FAQ 92a) Someone once told me to install shorewall-perl;
+        anything to that?</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: That was good advice in
+        Shorewall 4.2 and earlier. In those releases, there were two packages
+        that provided the basic firewalling functionality: <emphasis
+        role="bold">shorewall-shell</emphasis> and <emphasis
+        role="bold">shorewall-perl</emphasis>. Beginning with Shorewall 4.4.0,
+        <emphasis role="bold">shorewall-shell</emphasis> is discontinued and
+        <emphasis role="bold">shorewall-perl</emphasis> was renamed <emphasis
+        role="bold">shorewall</emphasis>.</para>
+      </section>
+    </section>
+
     <section id="faq37">
       <title>(FAQ 37) I just installed Shorewall on Debian and the
       /etc/shorewall directory is almost empty!!!</title>
@@ -1192,7 +1217,7 @@ to debug/develop the newnat interface.</programlisting></para>
       <title>(FAQ 91) I changed the shorewall.conf file in /etc/shorewall/ to
       spit out logs to /var/log/shorewall.log and it's not happening after I
       restart shorewall. LOGFILE=/var/log/shorewall.log &lt;-- that should be
-      the correct line, right? </title>
+      the correct line, right?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: No, that is not correct.
       The LOGFILE setting tells Shorewall where to find the log; it does not

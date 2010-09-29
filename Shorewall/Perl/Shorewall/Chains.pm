@@ -1757,169 +1757,179 @@ sub check_optimization( $ ) {
 #
 # Perform Optimization
 #
-sub optimize_ruleset() {
-    for my $table ( qw/raw mangle nat filter/ ) {
+sub optimize_level4( $$ ) {
+    my ( $table, $tableref ) = @_;
+    my $progress = 1;
+    my $passes   = 0;
+    #
+    # Make repeated passes through each table looking for short chains (those with less than 2 entries)
+    #
+    # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
+    # When an empty chain is found, delete the references to it.
+    # When a chain with a single entry is found, replace it's references by its contents
+    #
+    # The search continues until no short chains remain
+    # Chains with 'dont_optimize = 1' are exempted from optimization
+    #
+    while ( $progress ) {
+	$progress = 0;
+	$passes++;
 
-	next if $family == F_IPV6 && $table eq 'nat';
+	progress_message "\n Table $table pass $passes, level 4a...";
 
-	my $progress = 1;
-	my $passes   = 0;
-
-	if ( $config{OPTIMIZE} & 4 ) {
+	for my $chainref ( grep $_->{referenced}, values %{$tableref} ) {
 	    #
-	    # Make repeated passes through each table looking for short chains (those with less than 2 entries)
+	    # If the chain isn't branched to, then delete it
 	    #
-	    # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
-	    # When an empty chain is found, delete the references to it.
-	    # When a chain with a single entry is found, replace it's references by its contents
-	    #
-	    # The search continues until no short chains remain
-	    # Chains with 'dont_optimize = 1' are exempted from optimization
-	    #
-	    while ( $progress ) {
-		$progress = 0;
-		$passes++;
-
-		progress_message "\n Table $table pass $passes, level 4a...";
-
-		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-		    #
-		    # If the chain isn't branched to, then delete it
-		    #
-		    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
-			delete_chain $chainref;
-			next;
-		    }
-
-		    unless ( $chainref->{dont_optimize} ) {
-			my $numrules = @{$chainref->{rules}};
-
-			if ( $numrules == 0 ) {
-			    #
-			    # No rules in this chain
-			    #
-			    if ( $chainref->{builtin} ) {
-				#
-				# Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
-				#
-				$chainref->{dont_optimize} = 1;
-			    } else {
-				#
-				# Not a built-in -- we can delete it and it's references
-				#
-				delete_references $chainref;
-				$progress = 1;
-			    }
-			} elsif ( $numrules == 1 ) {
-			    my $firstrule = $chainref->{rules}[0];
-			    #
-			    # Chain has a single rule
-			    #
-			    if ( $firstrule =~ /^-A -[jg] (.*)$/ ) {
-				#
-				# Easy case -- the rule is a simple jump
-				#
-				if ( $chainref->{builtin} ) {
-				    #
-				    # A built-in chain. If the target is a user chain without 'dont_move',
-				    # we can copy its rules to the built-in
-				    #
-				    if ( conditionally_copy_rules $chainref, $1 ) {
-					#
-					# Target was a user chain -- rules moved
-					#
-					$progress = 1;
-				    } else {
-					#
-					# Target was a built-in. Ignore this chain in follow-on passes
-					#
-					$chainref->{dont_optimize} = 1;
-				    }
-				} else {
-				    #
-				    # Replace all references to this chain with references to the target
-				    #
-				    replace_references $chainref, $1;
-				    $progress = 1;
-				}
-			    } elsif ( $firstrule =~ /-A(.+) -[jg] (.*)$/ ) {
-				#
-				# Not so easy -- the rule contains matches
-				#
-				if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
-				    #
-				    # This case requires a new rule merging algorithm. Ignore this chain for
-				    # now.
-				    #
-				    $chainref->{dont_optimize} = 1;
-				} else {
-				    #
-				    # Replace references to this chain with the target and add the matches
-				    #
-				    replace_references1 $chainref, $2, $1;
-				    $progress = 1;
-				}
-			    }
-			}
-		    }
-		}
+	    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
+		delete_chain $chainref;
+		next;
 	    }
 
-	    #
-	    # In this loop, we look for chains that end in an unconditional jump. If the target of the jump
-	    # is subject to deletion (dont_delete = false), the jump is replaced by target's rules.
-	    #
-	    $progress = 1;
+	    unless ( $chainref->{dont_optimize} ) {
+		my $numrules = @{$chainref->{rules}};
 
-	    while ( $progress ) {
-		$progress = 0;
-		$passes++;
-
-		progress_message "\n Table $table pass $passes, level 4b...";
-
-		for my $chainref ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-		    my $lastrule = $chainref->{rules}[-1];
-
-		    if ( defined $lastrule && $lastrule  =~ /^-A -[jg] (.*)$/ ) {
+		if ( $numrules == 0 ) {
+		    #
+		    # No rules in this chain
+		    #
+		    if ( $chainref->{builtin} ) {
 			#
-			# Last rule is a simple branch
-			my $targetref = $chain_table{$table}{$1};
-
-			if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
-			    copy_rules( $targetref, $chainref );
+			# Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
+			#
+			$chainref->{dont_optimize} = 1;
+		    } else {
+			#
+			# Not a built-in -- we can delete it and it's references
+			#
+			delete_references $chainref;
+			$progress = 1;
+		    }
+		} elsif ( $numrules == 1 ) {
+		    my $firstrule = $chainref->{rules}[0];
+		    #
+		    # Chain has a single rule
+		    #
+		    if ( $firstrule =~ /^-A -[jg] (.*)$/ ) {
+			#
+			# Easy case -- the rule is a simple jump
+			#
+			if ( $chainref->{builtin} ) {
+			    #
+			    # A built-in chain. If the target is a user chain without 'dont_move',
+			    # we can copy its rules to the built-in
+			    #
+			    if ( conditionally_copy_rules $chainref, $1 ) {
+				#
+				# Target was a user chain -- rules moved
+				#
+				$progress = 1;
+			    } else {
+				#
+				# Target was a built-in. Ignore this chain in follow-on passes
+				#
+				$chainref->{dont_optimize} = 1;
+			    }
+			} else {
+			    #
+			    # Replace all references to this chain with references to the target
+			    #
+			    replace_references $chainref, $1;
+			    $progress = 1;
+			}
+		    } elsif ( $firstrule =~ /-A(.+) -[jg] (.*)$/ ) {
+			#
+			# Not so easy -- the rule contains matches
+			#
+			if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
+			    #
+			    # This case requires a new rule merging algorithm. Ignore this chain for
+			    # now.
+			    #
+			    $chainref->{dont_optimize} = 1;
+			} else {
+			    #
+			    # Replace references to this chain with the target and add the matches
+			    #
+			    replace_references1 $chainref, $2, $1;
 			    $progress = 1;
 			}
 		    }
 		}
 	    }
 	}
+    }
 
-	if ( $config{OPTIMIZE} & 8 ) {
-	    #
-	    # Now delete duplicate chains
-	    #
-	    $passes++;
+    #
+    # In this loop, we look for chains that end in an unconditional jump. If the target of the jump
+    # is subject to deletion (dont_delete = false), the jump is replaced by target's rules.
+    #
+    $progress = 1;
 
-	    progress_message "\n Table $table pass $passes, level 8...";
-	    
-	    for my $chainref ( grep $_->{referenced} && ! $_->{builtin}, values %{$chain_table{$table}} ) {
-		my $rules = $chainref->{rules};
-		next if not @$rules;
-	      CHAIN:
-		for my $chainref1 ( grep $_->{referenced}, values %{$chain_table{$table}} ) {
-		    next if $chainref eq $chainref1;
-		    my $rules1 = $chainref1->{rules};
-		    next if @$rules != @$rules1;
-		    next if $chainref1->{dont_delete};
+    while ( $progress ) {
+	$progress = 0;
+	$passes++;
 
-		    for ( my $i = 0; $i <= $#$rules; $i++ ) {
-			next CHAIN unless $rules->[$i] eq $rules1->[$i];
-		    }
+	progress_message "\n Table $table pass $passes, level 4b...";
 
-		    replace_references1 $chainref1, $chainref->{name}, '';
+	for my $chainref ( grep $_->{referenced}, values %{$tableref} ) {
+	    my $lastrule = $chainref->{rules}[-1];
+
+	    if ( defined $lastrule && $lastrule  =~ /^-A -[jg] (.*)$/ ) {
+		#
+		# Last rule is a simple branch
+		my $targetref = $tableref->{$1};
+
+		if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
+		    copy_rules( $targetref, $chainref );
+		    $progress = 1;
 		}
 	    }
 	}
+    }
+}
+
+sub optimize_level8( $$ ) {
+    my ( $table, $tableref ) = @_;
+    my $progress = 1;
+    my $passes   = 0;
+    my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+    my @chains1  = @chains;
+    #
+    # Delete duplicate chains
+    #
+    progress_message "\n Table $table pass $passes, level 8...";
+	    
+    for my $chainref ( @chains ) {
+	my $rules = $chainref->{rules};
+	shift @chains1;
+
+	next if not @$rules;
+      CHAIN:
+	for my $chainref1 ( @chains1 ) {
+	    my $rules1 = $chainref1->{rules};
+	    next if @$rules != @$rules1;
+	    next if $chainref1->{dont_delete};
+
+	    for ( my $i = 0; $i <= $#$rules; $i++ ) {
+		next CHAIN unless $rules->[$i] eq $rules1->[$i];
+	    }
+
+	    replace_references1 $chainref1, $chainref->{name}, '';
+	}
+    }
+}
+
+sub optimize_ruleset() {
+    for my $table ( qw/raw mangle nat filter/ ) {
+
+	next if $family == F_IPV6 && $table eq 'nat';
+
+	my $tableref = $chain_table{$table};
+	my $passes   = 0;
+
+	$passes =  optimize_level4( $table, $tableref ) if $config{OPTIMIZE} & 4;
+	$passes++, optimize_level8( $table, $tableref ) if $config{OPTIMIZE} & 8;
 
 	progress_message "  Table $table Optimized -- Passes = $passes";
 	progress_message '';

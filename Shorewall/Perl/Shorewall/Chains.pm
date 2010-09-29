@@ -1775,9 +1775,12 @@ sub optimize_level4( $$ ) {
 	$progress = 0;
 	$passes++;
 
-	progress_message "\n Table $table pass $passes, level 4a...";
+	my @chains  = grep $_->{referenced}, values %$tableref;
+	my $chains  = @chains; 
+	
+	progress_message "\n Table $table pass $passes, referenced chains $chains, level 4a...";
 
-	for my $chainref ( grep $_->{referenced}, values %{$tableref} ) {
+	for my $chainref ( @chains ) {
 	    #
 	    # If the chain isn't branched to, then delete it
 	    #
@@ -1870,9 +1873,12 @@ sub optimize_level4( $$ ) {
 	$progress = 0;
 	$passes++;
 
-	progress_message "\n Table $table pass $passes, level 4b...";
+	my @chains  = grep $_->{referenced}, values %$tableref;
+	my $chains  = @chains; 
+	
+	progress_message "\n Table $table pass $passes, referenced chains $chains, level 4b...";
 
-	for my $chainref ( grep $_->{referenced}, values %{$tableref} ) {
+	for my $chainref ( @chains ) {
 	    my $lastrule = $chainref->{rules}[-1];
 
 	    if ( defined $lastrule && $lastrule  =~ /^-A -[jg] (.*)$/ ) {
@@ -1889,29 +1895,37 @@ sub optimize_level4( $$ ) {
     }
 }
 
+#
+# Delete duplicate chains replacing their references
+#
 sub optimize_level8( $$ ) {
     my ( $table, $tableref ) = @_;
     my $progress = 1;
     my $passes   = 0;
     my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
     my @chains1  = @chains;
-    #
-    # Delete duplicate chains
-    #
-    progress_message "\n Table $table pass $passes, level 8...";
+    my $chains   = @chains;
+    
+    progress_message "\n Table $table pass $passes, user chains $chains, level 8...";
 	    
     for my $chainref ( @chains ) {
-	my $rules = $chainref->{rules};
+	my $rules    = $chainref->{rules};
+	my $numrules = @$rules;
+	#
+	# Shift the current $chainref off of @chains1
+	#
 	shift @chains1;
-
-	next if not @$rules;
+	#
+	# Skip empty chains
+	#
+	next if not $numrules;	
       CHAIN:
 	for my $chainref1 ( @chains1 ) {
 	    my $rules1 = $chainref1->{rules};
-	    next if @$rules != @$rules1;
+	    next if @$rules1 != $numrules;
 	    next if $chainref1->{dont_delete};
 
-	    for ( my $i = 0; $i <= $#$rules; $i++ ) {
+	    for ( my $i = 0; $i < $numrules; $i++ ) {
 		next CHAIN unless $rules->[$i] eq $rules1->[$i];
 	    }
 

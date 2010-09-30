@@ -1778,7 +1778,7 @@ sub optimize_level4( $$ ) {
 	my @chains  = grep $_->{referenced}, values %$tableref;
 	my $chains  = @chains; 
 	
-	progress_message "\n Table $table pass $passes, referenced chains $chains, level 4a...";
+	progress_message "\n Table $table pass $passes, $chains referenced chains, level 4a...";
 
 	for my $chainref ( @chains ) {
 	    #
@@ -1876,7 +1876,7 @@ sub optimize_level4( $$ ) {
 	my @chains  = grep $_->{referenced}, values %$tableref;
 	my $chains  = @chains; 
 	
-	progress_message "\n Table $table pass $passes, referenced chains $chains, level 4b...";
+	progress_message "\n Table $table pass $passes, $chains referenced chains, level 4b...";
 
 	for my $chainref ( @chains ) {
 	    my $lastrule = $chainref->{rules}[-1];
@@ -1893,20 +1893,23 @@ sub optimize_level4( $$ ) {
 	    }
 	}
     }
+
+    $passes;
 }
 
 #
 # Delete duplicate chains replacing their references
 #
-sub optimize_level8( $$ ) {
-    my ( $table, $tableref ) = @_;
+sub optimize_level8( $$$ ) {
+    my ( $table, $tableref , $passes ) = @_;
     my $progress = 1;
-    my $passes   = 0;
     my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
     my @chains1  = @chains;
     my $chains   = @chains;
+
+    $passes++;
     
-    progress_message "\n Table $table pass $passes, user chains $chains, level 8...";
+    progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 	    
     for my $chainref ( @chains ) {
 	my $rules    = $chainref->{rules};
@@ -1932,6 +1935,8 @@ sub optimize_level8( $$ ) {
 	    replace_references1 $chainref1, $chainref->{name}, '';
 	}
     }
+
+    $passes;
 }
 
 sub optimize_ruleset() {
@@ -1942,8 +1947,8 @@ sub optimize_ruleset() {
 	my $tableref = $chain_table{$table};
 	my $passes   = 0;
 
-	$passes =  optimize_level4( $table, $tableref ) if $config{OPTIMIZE} & 4;
-	$passes++, optimize_level8( $table, $tableref ) if $config{OPTIMIZE} & 8;
+	$passes =  optimize_level4( $table, $tableref )           if $config{OPTIMIZE} & 4;
+	$passes =  optimize_level8( $table, $tableref , $passes ) if $config{OPTIMIZE} & 8;
 
 	progress_message "  Table $table Optimized -- Passes = $passes";
 	progress_message '';

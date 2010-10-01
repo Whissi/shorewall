@@ -631,6 +631,15 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcclear ]; then
     echo "Tcclear file installed as ${DESTDIR}/etc/shorewall6/tcclear"
 fi
 #
+# Install the Scfilter file
+#
+run_install $OWNERSHIP -m 0744 tcclear ${DESTDIR}/usr/share/shorewall6/configfiles/scfilter
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/scfilter ]; then
+    run_install $OWNERSHIP -m 0700 scfilter ${DESTDIR}/etc/shorewall6/scfilter
+    echo "Scfilter file installed as ${DESTDIR}/etc/shorewall6/scfilter"
+fi
+#
 # Install the Standard Actions file
 #
 install_file actions.std ${DESTDIR}/usr/share/shorewall6/actions.std 0644

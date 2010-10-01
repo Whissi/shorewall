@@ -145,6 +145,12 @@ get_config() {
 
     [ -n "$g_use_verbosity" ] && VERBOSITY=$g_use_verbosity || VERBOSITY=$(($g_verbose_offset + $VERBOSITY))
 
+    if [ $VERBOSITY -lt -1 ]; then
+	VERBOSITY=-1
+    elif [ $VERBOSITY -gt 2 ]; then
+	VERBOSITY=2
+    fi
+
     g_hostname=$(hostname 2> /dev/null)
 
     IP=$(mywhich ip 2> /dev/null)

@@ -23,3 +23,15 @@
 
        #ZONE       TYPE       OPTIONS       IN_OPTIONS
        net         ipv4       -             blacklist
+
+4)  The Debian init scripts for Shorewall-lite and Shorewall6-lite
+    contain a syntax error.
+
+    Fixed in 4.4.13.2.
+
+5)  If the -v or -q option is passed to /sbin/shorewall-lite or
+    /sbin/shorewall6-lite on a command that involves the compiled
+    script, then the command will fail if the effective verbosity is
+    > 2 or < -1.
+
+    Fixed in 4.4.13.2.

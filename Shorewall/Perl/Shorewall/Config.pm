@@ -3277,13 +3277,17 @@ sub propagateconfig() {
 # Add a shell script file to the output script -- Return true if the
 # file exists and is not in /usr/share/shorewall/ and is non-empty.
 #
-sub append_file( $;$ ) {
-    my $user_exit = find_file $_[0];
+sub append_file( $;$$ ) {
+    my ( $file, $nomsg, $unindented ) = @_;
+    my $user_exit = find_file $file;
     my $result = 0;
+    my $save_indent = $indent;
+    
+    $indent = '' if $unindented;
 
     unless ( $user_exit =~ /^($globals{SHAREDIR})/ ) {
 	if ( -f $user_exit ) {
-	    if ( $_[1] ) {
+	    if ( $nomsg ) {
 		#
 		# Suppress progress message
 		#
@@ -3298,6 +3302,8 @@ sub append_file( $;$ ) {
 	    }
 	}
     }
+
+    $indent = $save_indent;
 
     $result;
 }

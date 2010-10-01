@@ -354,7 +354,7 @@ sub generate_script_3($) {
 	if ( -f $fn ) {
 	    emit( '',
 		  'cat << __EOF__ > ${VARDIR}/scfilter' );
-	    append_file $fn,1 or emit 'cat -';
+	    append_file( $fn,1,1 ) or emit_unindented "#! /bin/sh\ncat -";
 	    emit_unindented( "__EOF__\n" );
 	}
     } else {

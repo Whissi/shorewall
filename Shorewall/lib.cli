@@ -434,6 +434,20 @@ list_zone() {
 }
 
 #
+# Show Filter
+#
+show_connections_filter() {
+    my filter
+    filter=$(find_file scfilter)
+
+    if [ -x $filter ]; then
+	$filter
+    else
+	cat -
+    fi
+}
+
+#
 # Show Command Executor
 #
 show_command() {
@@ -539,9 +553,13 @@ show_command() {
 	    echo
 
 	    if qt mywhich conntrack ; then
-		conntrack -f ipv4 -L
+		conntrack -f ipv4 -L | show_connections_filter
 	    else
-		[ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
+		if [ -f /proc/net/ip_conntrack ]; then
+		    cat /proc/net/ip_conntrack | show_connections_filter
+		else
+		    grep -v '^ipv6' /proc/net/nf_conntrack | show_connections_filter
+		fi
 	    fi
 	    ;;
 	nat)

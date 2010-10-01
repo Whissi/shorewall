@@ -520,19 +520,27 @@ show_command() {
 
     g_ipt_options="$g_ipt_options $g_ipt_options1"
 
+
     [ -n "$g_debugging" ] && set -x
     case "$1" in
 	connections)
 	    [ $# -gt 1 ] && usage 1
-	    if mywhich conntrack ; then
+
+	    if [ -d /proc/sys/net/netfilter/ ]; then
+		local count
+		local max
+		count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+		max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+		echo "$g_product $SHOREWALL_VERSION Connections ($count out of $max) at $g_hostname - $(date)"
+	    else
 		echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
-		echo
+	    fi
+
+	    echo
+
+	    if qt mywhich conntrack ; then
 		conntrack -f ipv4 -L
 	    else
-		local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-		local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-		echo "$g_product $SHOREWALL_VERSION Connections ($count out of $max) at $g_hostname - $(date)"
-		echo
 		[ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
 	    fi
 	    ;;

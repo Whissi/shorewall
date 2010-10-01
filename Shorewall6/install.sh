@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.14-Beta3
+VERSION=4.4.14-Beta4
 
 usage() # $1 = exit status
 {
@@ -249,7 +249,7 @@ fi
 [ -n "$INIT" ] && echo  "Shorewall6 script installed in ${DESTDIR}${DEST}/$INIT"
 
 #
-# Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
+# Create /etc/shorewall, /usr/share/shorewall and /var/lib/shorewall6 if needed
 #
 mkdir -p ${DESTDIR}/etc/shorewall6
 mkdir -p ${DESTDIR}/usr/share/shorewall6

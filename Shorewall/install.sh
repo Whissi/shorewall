@@ -301,7 +301,7 @@ fi
 run_install $OWNERSHIP -m 0644 configfiles/zones ${DESTDIR}/usr/share/shorewall/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/zones ]; then
-    run_install $OWNERSHIP -m 0744 configfiles/zones ${DESTDIR}/etc/shorewall
+    run_install $OWNERSHIP -m 0644 configfiles/zones ${DESTDIR}/etc/shorewall
     echo "Zones file installed as ${DESTDIR}/etc/shorewall/zones"
 fi
 
@@ -739,10 +739,10 @@ fi
 #
 # Install the Scfilter file
 #
-run_install $OWNERSHIP -m 744 configfiles/scfilter ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 644 configfiles/scfilter ${DESTDIR}/usr/share/shorewall/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/scfilter ]; then
-    run_install $OWNERSHIP -m 0700 configfiles/scfilter ${DESTDIR}/etc/shorewall
+    run_install $OWNERSHIP -m 0600 configfiles/scfilter ${DESTDIR}/etc/shorewall
     echo "Scfilter file installed as ${DESTDIR}/etc/shorewall/scfilter"
 fi
 #

@@ -248,18 +248,6 @@ if [ -n "$ARCHLINUX" ] ; then
 fi
 
 #
-# Install the Scfilter file
-#
-if [ ! -f ${DESTDIR}/etc/shorewall-lite/scfilter ]; then
-   run_install $OWNERSHIP -m 0744 scfilter ${DESTDIR}/etc/shorewall-lite
-   echo "Scfilter file installed as ${DESTDIR}/etc/shorewall-lite/scfilter"
-fi
-
-if [ -n "$ARCHLINUX" ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall-lite/shorewall.conf
-fi
-
-#
 # Install the  Makefile
 #
 run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/shorewall-lite

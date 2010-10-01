@@ -361,11 +361,24 @@ show_routing() {
 # Show Connections Filter
 #
 show_connections_filter() {
-    my filter
-    filter=$(find_file scfilter)
+    local filter
+    local command
+    local first
 
-    if [ -x $filter ]; then
-	$filter
+    command=${SHOREWALL_SHELL}
+
+    [ "$g_product" = Shorewall6 ] && filter=$(find_file scfilter) || filter=${VARDIR}/scfilter
+
+    if [ -f $filter ]; then
+	first=$(head -n1 $filter)
+
+	case $first in
+	    \#!*)
+		command=${first#\#!}
+		;;
+	esac
+
+	$command $filter
     else
 	cat -
     fi

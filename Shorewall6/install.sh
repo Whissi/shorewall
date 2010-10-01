@@ -296,7 +296,7 @@ fi
 run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/usr/share/shorewall6/configfiles/zones
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/zones ]; then
-    run_install $OWNERSHIP -m 0744 zones ${DESTDIR}/etc/shorewall6/zones
+    run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/etc/shorewall6/zones
     echo "Zones file installed as ${DESTDIR}/etc/shorewall6/zones"
 fi
 
@@ -633,10 +633,10 @@ fi
 #
 # Install the Scfilter file
 #
-run_install $OWNERSHIP -m 0744 tcclear ${DESTDIR}/usr/share/shorewall6/configfiles/scfilter
+run_install $OWNERSHIP -m 0644 tcclear ${DESTDIR}/usr/share/shorewall6/configfiles/scfilter
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/scfilter ]; then
-    run_install $OWNERSHIP -m 0700 scfilter ${DESTDIR}/etc/shorewall6/scfilter
+    run_install $OWNERSHIP -m 0600 scfilter ${DESTDIR}/etc/shorewall6/scfilter
     echo "Scfilter file installed as ${DESTDIR}/etc/shorewall6/scfilter"
 fi
 #

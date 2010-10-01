@@ -17,7 +17,7 @@ SRWL=/sbin/shorewall6-lite
 SRWL_OPTS="-tvv"
 test -n ${INITLOG:=/var/log/shorewall6-lite-init.log}
 
-[ "$INITLOG" eq "/dev/null" && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
+[ "$INITLOG" = "/dev/null" ] && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
 
 export SHOREWALL_INIT_SCRIPT
 

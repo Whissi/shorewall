@@ -94,9 +94,9 @@ get_config() {
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
     if ( ps ax 2> /dev/null | grep -v grep |  qt grep 'syslogd.*-C' ) ; then
-	LOGREAD="logread | tac"
+	g_logread="logread | tac"
     elif [ -r $LOGFILE ]; then
-	LOGREAD="tac $LOGFILE"
+	g_logread="tac $LOGFILE"
     else
 	echo "LOGFILE ($LOGFILE) does not exist!" >&2
 	exit 2
@@ -453,6 +453,7 @@ g_noroutes=
 g_timestamp=
 g_recovering=
 g_purge=
+g_logread=
 
 finished=0
 

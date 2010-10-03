@@ -210,13 +210,11 @@ esac</programlisting><caution>
         command. The connection information is piped through this script so
         that the script can drop information, add information or alter the
         format of the information. When using Shorewall Lite or Shorewall6
-        Lite, the script is copied into the generated firewall script and is
-        extracted into /var/lib/shorewall-lite (/var/lib/shorewall6-lite)
-        where /sbin/shorewall-lite (/sbin/shorewall6-lite) can find it. After
-        you have generated a new firewall script and copied the script to a
-        firewall system, you must start (or restart) the firewall in order to
-        install a new scfilter script. The default script is as follows and
-        simply pipes the output through unaltered.</para>
+        Lite, the script is copied into the generated auxillary configuration
+        file (firewall.conf) and is extracted into /var/lib/shorewall-lite
+        (/var/lib/shorewall6-lite) where /sbin/shorewall-lite
+        (/sbin/shorewall6-lite) can find it. The default script is as follows
+        and simply pipes the output through unaltered.</para>
 
         <programlisting>#! /bin/sh
 cat -</programlisting>

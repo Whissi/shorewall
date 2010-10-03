@@ -3426,8 +3426,16 @@ sub generate_aux_config() {
 
     conditionally_add_option1 'TC_ENABLED';
 
-    finalize_aux_config;
+    my $fn = find_file 'scfilter';
 
+    if ( -f $fn ) {
+	emit( '',
+	      'cat << __EOF__ > ${VARDIR}/scfilter' );
+	append_file( $fn,1,1 ) or emit_unindented "#! /bin/sh\ncat -";
+	emit_unindented( "__EOF__\n" );
+    }
+
+    finalize_aux_config;
 }
 
 END {

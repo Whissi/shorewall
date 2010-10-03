@@ -348,15 +348,6 @@ sub generate_script_3($) {
 	} else {
 	    emit 'load_kernel_modules Yes';
 	}
-
-	$fn = find_file 'scfilter';
-
-	if ( -f $fn ) {
-	    emit( '',
-		  'cat << __EOF__ > ${VARDIR}/scfilter' );
-	    append_file( $fn,1,1 ) or emit_unindented "#! /bin/sh\ncat -";
-	    emit_unindented( "__EOF__\n" );
-	}
     } else {
 	emit 'load_kernel_modules Yes';
     }

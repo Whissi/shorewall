@@ -203,18 +203,19 @@ esac</programlisting><caution>
 
       <listitem>
         <para><filename>scfilter</filename> -- Added in Shorewall 4.4.14.
-        Unlike the other scripts, this script is executed by the command line
+        Unlike the other scripts, this script is executed by the command-line
         tools (<filename>/sbin/shorewall</filename>,
         <filename>/sbin/shorewall6</filename>, etc) and can be used to
         reformat the output of the <command>show connections</command>
         command. The connection information is piped through this script so
         that the script can drop information, add information or alter the
         format of the information. When using Shorewall Lite or Shorewall6
-        Lite, the script is copied into the generated auxillary configuration
-        file (firewall.conf) and is extracted into /var/lib/shorewall-lite
-        (/var/lib/shorewall6-lite) where /sbin/shorewall-lite
-        (/sbin/shorewall6-lite) can find it. The default script is as follows
-        and simply pipes the output through unaltered.</para>
+        Lite, the script is encapsulated in a function that is copied into the
+        generated auxillary configuration file. That function is invoked by
+        the 'show connections' command.</para>
+
+        <para>The default script is as follows and simply pipes the output
+        through unaltered.</para>
 
         <programlisting>#! /bin/sh
 cat -</programlisting>

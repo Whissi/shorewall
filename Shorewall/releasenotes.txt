@@ -110,12 +110,11 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     which passes the output through unmodified.
 
     If you are using Shorewall-lite and/or Shorewall6-lite, the
-    scfilter file is kept on the administrative system and is copied
+    scfilter file is kept on the administrative system. The compiler
+    encapsulates the script into a shell function that is copied
     into the generated auxillary configuration file
-    (firewall.conf). Each time that configuration file is read, the 
-    scfilter script is extracted into /var/lib/shorewall-lite/scfilter
-    (/var/lib/shorewall6-lite/scfilter) where /sbin/shorewall-lite
-    (/sbin/shorewall6-lite) looks for it.
+    (firewall.conf). That function is then invoked by the 'show
+    connections' command.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

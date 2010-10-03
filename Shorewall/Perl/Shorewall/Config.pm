@@ -3430,9 +3430,11 @@ sub generate_aux_config() {
 
     if ( -f $fn ) {
 	emit( '',
-	      'cat << __EOF__ > ${VARDIR}/scfilter' );
-	append_file( $fn,1,1 ) or emit_unindented "#! /bin/sh\ncat -";
-	emit_unindented( "__EOF__\n" );
+	      'show_connections_filter() {' );
+	push_indent;
+	append_file( $fn,1 ) or emit 'cat -';
+	pop_indent;
+	emit '}';
     }
 
     finalize_aux_config;

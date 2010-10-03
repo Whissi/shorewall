@@ -434,7 +434,10 @@ list_zone() {
 }
 
 #
-# Show Filter
+# Show Filter - For Shorewall-lite, if there was an scfilter file at compile-time,
+#               then the compiler generated another version of this function and
+#               embedded it in the firewall.conf file. That version supersedes this
+#               one.
 #
 show_connections_filter() {
     local filter
@@ -443,7 +446,7 @@ show_connections_filter() {
 
     command=${SHOREWALL_SHELL}
 
-    [ "$g_product" = Shorewall ] && filter=$(find_file scfilter) || filter=${VARDIR}/scfilter
+    filter=$(find_file scfilter)
 
     if [ -f $filter ]; then
 	first=$(head -n1 $filter)

@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Shorewall-perl and Bridged Firewalls</title>
+    <title>Bridged Firewalls</title>
 
     <authorgroup>
       <author>
@@ -37,7 +37,7 @@
   </articleinfo>
 
   <caution>
-    <para><emphasis role="bold">This article applies to Shorewall-perl 4.3 and
+    <para><emphasis role="bold">This article applies to Shorewall 4.4 and
     later.</emphasis></para>
   </caution>
 
@@ -533,7 +533,7 @@ rc-update add bridge boot
     source bridge port.</para>
 
     <para>To deal with the asymmetric nature of the new physdev match,
-    Shorewall-perl supports a new type of zone - a <firstterm>Bridge
+    Shorewall supports a new type of zone - a <firstterm>Bridge
     Port</firstterm> (BP) zone. Bridge port zones have a number of
     restrictions:</para>
 
@@ -559,7 +559,7 @@ rc-update add bridge boot
 
     <para>In /etc/shorewall/zones, BP zones are specified using the <emphasis
     role="bold">bport</emphasis> (or <emphasis role="bold">bport4</emphasis>)
-    keyword. Shorewall perl requires that BRIDGING=No in
+    keyword. Shorewall 4.4 or later requires that BRIDGING=No in
     <filename>shorewall.conf</filename>.</para>
 
     <para>In the scenario pictured above, there would probably be two BP zones

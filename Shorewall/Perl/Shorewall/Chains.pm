@@ -3564,21 +3564,45 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Determine if there is Source Exclusion
     #
     if ( $inets ) {
-	fatal_error "Invalid SOURCE" if $inets =~ /^([^!]+)?,!([^!]+)$/ || $inets =~ /.*!.*!/;
+	if ( $inets =~ /^(!?)(\+\[(.+)\])$/ ) {
+	    if ( $1 ) {
+		$inets = '';
 
-	if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
-	    $inets = $1;
-	    $iexcl = $2;
-	} else {
-	    $iexcl = '';
-	}
+		my @iexcl = mysplit $3;
 
-	unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
-	    my @iexcl = mysplit $iexcl;
-	    if ( @iexcl == 1 ) {
-		$rule .= match_source_net "!$iexcl" , $restriction;
+		for ( @iexcl ) {
+		    fatal_error "Expected ipset name ($_)" unless /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+		    s/^/+/ unless $2;
+		}
+		
+		$iexcl = join ',', @iexcl;
+	    } else {
+		$inets = $2;
 		$iexcl = '';
-		$trivialiexcl = 1;
+	    }
+	} else {
+	    my @inets = mysplit $inets;
+
+	    shift @inets;
+
+	    for ( @inets ) {
+		fatal_error "Invalid SOURCE ($inets)" if /^!/;
+	    }
+
+	    if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
+		$inets = $1;
+		$iexcl = $2;
+	    } else {
+		$iexcl = '';
+	    }
+
+	    unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
+		my @iexcl = mysplit $iexcl;
+		if ( @iexcl == 1 ) {
+		    $rule .= match_source_net "!$iexcl" , $restriction;
+		    $iexcl = '';
+		    $trivialiexcl = 1;
+		}
 	    }
 
 	}
@@ -3590,21 +3614,47 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Determine if there is Destination Exclusion
     #
     if ( $dnets ) {
-	fatal_error "Invalid DEST" if  $dnets =~ /^([^!]+)?,!([^!]+)$/ || $dnets =~ /.*!.*!/;
+	if ( $dnets =~ /^(!?)(\+\[(.+)\])$/ ) {
+	    if ( $1 ) {
+		$dnets = '';
 
-	if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
-	    $dnets = $1;
-	    $dexcl = $2;
-	} else {
-	    $dexcl = '';
-	}
+		my @dexcl = mysplit $3;
 
-	unless ( $dnets ) {
-	    my @dexcl = mysplit $dexcl;
-	    if ( @dexcl == 1 ) {
-		$rule .= match_dest_net "!$dexcl";
+		for ( @dexcl ) {
+		    fatal_error "Expected ipset name ($_)" unless /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+		    s/^/+/ unless $2;
+		}
+
+		$dexcl = join ',', @dexcl;
+	    } else {
+		$dnets = $2;
 		$dexcl = '';
-		$trivialdexcl = 1;
+	    }
+	} else {
+	    my @dnets = mysplit $dnets;
+
+	    shift @dnets;
+
+	    for ( @dnets ) {
+		fatal_error "Invalid DEST ($dnets)" if /^!/;
+	    }
+
+	    fatal_error "Invalid DEST" if  $dnets =~ /^([^!]+)?,!([^!]+)$/ || $dnets =~ /.*!.*!/;
+
+	    if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
+		$dnets = $1;
+		$dexcl = $2;
+	    } else {
+		$dexcl = '';
+	    }
+
+	    unless ( $dnets || $dexcl =~ /!/ ) {
+		my @dexcl = mysplit $dexcl;
+		if ( @dexcl == 1 ) {
+		    $rule .= match_dest_net "!$dexcl";
+		    $dexcl = '';
+		    $trivialdexcl = 1;
+		}
 	    }
 	}
     } else {

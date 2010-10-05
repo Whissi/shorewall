@@ -3279,6 +3279,14 @@ sub set_global_variables( $ ) {
 }
 
 #
+# Issue an invalid list error message
+#
+sub invalid_network_list ( $$ ) {
+    my ( $srcdst, $list ) = @_;
+    fatal_error "Invalid $srcdst network list ($list)";
+}
+
+#
 # Split a network element into the net part and exclusion part (if any)
 #
 sub split_network( $$$ ) {
@@ -3292,12 +3300,14 @@ sub split_network( $$$ ) {
 	    my $element = shift @input;
 
 	    if ( $element =~ /\[/ ) {
-		while ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
+		my $openbrackets;
+
+		while ( ( $openbrackets = ( $element =~ tr/[/[/ ) ) > $element =~ tr/]/]/ ) {
 		    fatal_error "Missing ']' ($element)" unless @input;
 		    $element .= ( '!' . shift @input );
 		}
 
-		fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
+		fatal_error "Mismatched [...] ($element)" unless $openbrackets == $element =~ tr/]/]/;
 	    }
 
 	    push @result, $element;
@@ -3306,7 +3316,7 @@ sub split_network( $$$ ) {
 	@result = @input;
     }
 
-    fatal_error "Invalid $srcdst ($list)" if @result > 2;
+    invalid_network_list( $srcdst, $list ) if @result > 2;
 	
     @result;
 }
@@ -3325,13 +3335,15 @@ sub handle_network_list( $$ ) {
     for ( @nets ) {
 	if ( /!/ ) {
 	    if ( /^!(.*)$/ ) {
-		fatal_error "Invalid $srcdst ($list)" if ( $nets || $excl );
+		invalid_network_list( $srcdst, $list) if ( $nets || $excl );
 		$excl = $1;
 	    } else {
-		fatal_error "Invalid $srcdst ($list)" if $excl;
 		my ( $temp1, $temp2 ) = split_network $_, $srcdst, $list;
 		$nets = $nets ? join(',', $nets, $temp1 ) : $temp1;
-		$excl = $temp2 if $temp2;
+		if ( $temp2 ) {
+		    invalid_network_list( $srcdst, $list) if $excl;
+		    $excl = $temp2;
+		}
 	    }
 	} elsif ( $excl ) {
 	    $excl .= ",$_";

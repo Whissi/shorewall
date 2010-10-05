@@ -3279,32 +3279,6 @@ sub set_global_variables( $ ) {
 }
 
 #
-# Process an element in an exclusion list
-#
-sub handle_network_exclusion( $;$ ) {
-    my ( $net, $excl ) = @_;
-
-    if ( $net =~ /^(\+\[(.+)\])$/ ) {
-	my @excl = mysplit $2;
-
-	for ( @excl ) {
-	    fatal_error "Expected ipset name ($_)" unless /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
-	    unless ( $2 ) {
-		if ( $1 ) {
-		    s/!/!+/;
-		} else {
-		    s/^/+/;
-		}
-	    }
-	}
-
-	$net = join ',', @excl;
-    }
-
-    $excl ? join ',', $excl, $net : $net;
-}
-
-#
 # Split a network element into the net part and exclusion part (if any)
 #
 sub split_network( $$$ ) {
@@ -3352,15 +3326,15 @@ sub handle_network_list( $$ ) {
 	if ( /!/ ) {
 	    if ( /^!(.*)$/ ) {
 		fatal_error "Invalid $srcdst ($list)" if ( $nets || $excl );
-		$excl = handle_network_exclusion $1, '';
+		$excl = $1;
 	    } else {
 		fatal_error "Invalid $srcdst ($list)" if $excl;
 		my ( $temp1, $temp2 ) = split_network $_, $srcdst, $list;
 		$nets = $nets ? join(',', $nets, $temp1 ) : $temp1;
-		$excl = handle_network_exclusion $temp2 if $temp2;
+		$excl = $temp2 if $temp2;
 	    }
 	} elsif ( $excl ) {
-	    $excl = handle_network_exclusion( $_, $excl );
+	    $excl .= ",$_";
 	} else {
 	    $nets = $nets ? join(',', $nets, $_ ) : $_;
 	}	    
@@ -3657,7 +3631,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     if ( $inets ) {
 	( $inets, $iexcl ) = handle_network_list( $inets, 'SOURCE' );
 
-	unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
+	unless ( $inets || $iexcl =~ /^\+\[/ || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
 	    my @iexcl = mysplit $iexcl;
 	    if ( @iexcl == 1 ) {
 		$rule .= match_source_net "!$iexcl" , $restriction;
@@ -3675,7 +3649,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     if ( $dnets ) {
 	( $dnets, $dexcl ) = handle_network_list( $dnets, 'DEST' );
 
-	unless ( $dnets ) {
+	unless ( $dnets || $dexcl =~ /^\+\[/ ) {
 	    my @dexcl = mysplit $dexcl;
 	    if ( @dexcl == 1 ) {
 		$rule .= match_dest_net "!$dexcl";

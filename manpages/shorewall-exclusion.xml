@@ -84,6 +84,31 @@ ACCEPT          all!z2        net         tcp           22</programlisting>
         net ACCEPT rule.</para>
       </blockquote>
     </warning>
+
+    <para>In most contexts, ipset names can be used as an
+    <replaceable>address-or-range</replaceable>. Beginning with Shorewall
+    4.4.14, ipset lists enclosed in +[...] may also be included (see <ulink
+    url="shorewall-ipsets.html">shorewall-ipsets</ulink> (5)). The semantics
+    of these lists when used in an exclusion are as follows:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>!+[<replaceable>set1</replaceable>,<replaceable>set2</replaceable>,...<replaceable>setN</replaceable>]
+        produces a packet match if the packet does not match at least one of
+        the sets. In other words, it is like NOT match
+        <replaceable>set1</replaceable> OR NOT match
+        <replaceable>set2</replaceable> ... OR NOT match
+        <replaceable>setN</replaceable>.</para>
+      </listitem>
+
+      <listitem>
+        <para>+[!<replaceable>set1</replaceable>,!<replaceable>set2</replaceable>,...!<replaceable>setN</replaceable>]
+        produces a packet match if the packet does not match any of the sets.
+        In other words, it is like NOT match <replaceable>set1</replaceable>
+        AND NOT match <replaceable>set2</replaceable> ... AND NOT match
+        <replaceable>setN</replaceable>.</para>
+      </listitem>
+    </itemizedlist>
   </refsect1>
 
   <refsect1>
@@ -151,12 +176,13 @@ ACCEPT          all!z2        net         tcp           22</programlisting>
     <title>See ALSO</title>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-secmarks(5), shorewall-tcclasses(5),
+    shorewall-tcdevices(5), shorewall-tcrules(5), shorewall-tos(5),
+    shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

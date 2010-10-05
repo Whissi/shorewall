@@ -3581,19 +3581,34 @@ sub expand_rule( $$$$$$$$$$;$ )
 		$iexcl = '';
 	    }
 	} else {
+	    my $originets = $inets;
 	    my @inets = mysplit $inets;
 
-	    shift @inets;
+	    $inets= $iexcl = '';
 
 	    for ( @inets ) {
-		fatal_error "Invalid SOURCE ($inets)" if /^!/;
-	    }
+		my $bangs = tr/!/!/;
 
-	    if ( $inets =~ /^([^!]+)?!([^!]+)$/ ) {
-		$inets = $1;
-		$iexcl = $2;
-	    } else {
-		$iexcl = '';
+		if ( $bangs ) {
+		    if ( /^!(.*)$/ ) {
+			fatal_error "Invalid SOURCE ($originets)" if ( $inets || $iexcl );
+			$iexcl = $1;
+		    } elsif ( /^\+/ ) {
+			if ( $iexcl ) {
+			    $iexcl = join(',', $iexcl, $_ );
+			} else {
+			    $inets = join(',', $inets, $_ );
+			}
+		    } else {
+			fatal_error "Invalid SOURCE ($originets)" if $bangs > 1;
+			( my $temp, $iexcl ) = split /!/;
+			$inets = $inets ? join(',', $inets, $temp ) : $temp;
+		    }
+		} elsif ( $iexcl ) {
+		    $iexcl = join(',', $iexcl, $_ );
+		} else {
+		    $inets = $inets ? join(',', $inets, $_ ) : $_;
+		}	    
 	    }
 
 	    unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
@@ -3604,7 +3619,6 @@ sub expand_rule( $$$$$$$$$$;$ )
 		    $trivialiexcl = 1;
 		}
 	    }
-
 	}
     } else {
 	$iexcl = '';
@@ -3615,7 +3629,13 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     if ( $dnets ) {
 	if ( $dnets =~ /^(!?)(\+\[(.+)\])$/ ) {
+	    #
+	    # set list
+	    #
 	    if ( $1 ) {
+		#
+		# Exclusion
+		#
 		$dnets = '';
 
 		my @dexcl = mysplit $3;
@@ -3631,24 +3651,37 @@ sub expand_rule( $$$$$$$$$$;$ )
 		$dexcl = '';
 	    }
 	} else {
+	    my $origdnets = $dnets;
 	    my @dnets = mysplit $dnets;
 
-	    shift @dnets;
+	    $dnets= $dexcl = '';
 
 	    for ( @dnets ) {
-		fatal_error "Invalid DEST ($dnets)" if /^!/;
+		my $bangs = tr/!/!/;
+
+		if ( $bangs ) {
+		    if ( /^!(.*)$/ ) {
+			fatal_error "Invalid DEST ($origdnets)" if ( $dnets || $dexcl );
+			$dexcl = $1;
+		    } elsif ( /^\+/ ) {
+			if ( $dexcl ) {
+			    $dexcl = join(',', $dexcl, $_ );
+			} else {
+			    $dnets = join(',', $dnets, $_ );
+			}
+		    } else {
+			fatal_error "Invalid DEST ($origdnets)" if $bangs > 1;
+			( my $temp, $dexcl ) = split /!/;
+			$dnets = $dnets ? join(',', $dnets, $temp ) : $temp;
+		    }
+		} elsif ( $dexcl ) {
+		    $dexcl = join(',', $dexcl, $_ );
+		} else {
+		    $dnets = $dnets ? join(',', $dnets, $_ ) : $_;
+		}	    
 	    }
 
-	    fatal_error "Invalid DEST" if  $dnets =~ /^([^!]+)?,!([^!]+)$/ || $dnets =~ /.*!.*!/;
-
-	    if ( $dnets =~ /^([^!]+)?!([^!]+)$/ ) {
-		$dnets = $1;
-		$dexcl = $2;
-	    } else {
-		$dexcl = '';
-	    }
-
-	    unless ( $dnets || $dexcl =~ /!/ ) {
+	    unless ( $dnets ) {
 		my @dexcl = mysplit $dexcl;
 		if ( @dexcl == 1 ) {
 		    $rule .= match_dest_net "!$dexcl";

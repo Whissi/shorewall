@@ -3279,6 +3279,98 @@ sub set_global_variables( $ ) {
     }
 }
 
+#
+# Process an element in an exclusion list
+#
+sub handle_network_exclusion( $;$ ) {
+    my ( $net, $excl ) = @_;
+
+    if ( $net =~ /^(\+\[(.+)\])$/ ) {
+	my @excl = mysplit $2;
+
+	for ( @excl ) {
+	    fatal_error "Expected ipset name ($_)" unless /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    unless ( $2 ) {
+		if ( $1 ) {
+		    s/!/!+/;
+		} else {
+		    s/^/+/;
+		}
+	    }
+	}
+
+	$net = join ',', @excl;
+    }
+
+    $excl ? join ',', $excl, $net : $net;
+}
+
+#
+# Split a network element into the net part and exclusion part (if any)
+#
+sub split_network( $$ ) {
+    my ( $input, $srcdst) = @_;
+
+    my @input = split '!', $input;
+    my @result;
+
+    if ( $input =~ /\[/ ) {
+	while ( @input ) {
+	    my $element = shift @input;
+
+	    if ( $element =~ /\[/ ) {
+		while ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
+		    fatal_error "Missing ']' ($element)" unless @input;
+		    $element .= ( '!' . shift @input );
+		}
+
+		fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
+	    }
+
+	    push @result, $element;
+	}
+    } else {
+	@result = @input;
+    }
+
+    fatal_error "Invalid $srcdst element ($input)" if @result > 2;
+	
+    @result;
+}
+
+#
+# Handle SOURCE or DEST network list, including exclusion
+#
+sub handle_network_list( $$ ) {
+    my ( $list, $srcdst ) = @_;
+
+    my $nets = '';
+    my $excl = '';
+	
+    my @nets = mysplit $list;
+
+    for ( @nets ) {
+	if ( /!/ ) {
+	    if ( /^!(.*)$/ ) {
+		fatal_error "Invalid $srcdst ($list)" if ( $nets || $excl );
+		$excl = handle_network_exclusion $1, '';
+	    } else {
+		fatal_error "Invalid $srcdst ($list)" if $excl;
+		my ( $temp1, $temp2 ) = split_network $_, $srcdst;
+		$nets = $nets ? join(',', $nets, $temp1 ) : $temp1;
+		$excl = handle_network_exclusion $temp2 if $temp2;
+	    }
+	} elsif ( $excl ) {
+	    $excl = handle_network_exclusion( $_, $excl );
+	} else {
+	    $nets = $nets ? join(',', $nets, $_ ) : $_;
+	}	    
+    }
+
+    ( $nets, $excl );
+
+}
+
 ################################################################################################################
 #
 # This function provides a uniform way to generate Netfilter[6] rules (something the original Shorewall
@@ -3564,60 +3656,14 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Determine if there is Source Exclusion
     #
     if ( $inets ) {
-	if ( $inets =~ /^(!?)(\+\[(.+)\])$/ ) {
-	    if ( $1 ) {
-		$inets = '';
+	( $inets, $iexcl ) = handle_network_list( $inets, 'SOURCE' );
 
-		my @iexcl = mysplit $3;
-
-		for ( @iexcl ) {
-		    fatal_error "Expected ipset name ($_)" unless /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
-		    s/^/+/ unless $2;
-		}
-		
-		$iexcl = join ',', @iexcl;
-	    } else {
-		$inets = $2;
+	unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
+	    my @iexcl = mysplit $iexcl;
+	    if ( @iexcl == 1 ) {
+		$rule .= match_source_net "!$iexcl" , $restriction;
 		$iexcl = '';
-	    }
-	} else {
-	    my $originets = $inets;
-	    my @inets = mysplit $inets;
-
-	    $inets= $iexcl = '';
-
-	    for ( @inets ) {
-		my $bangs = tr/!/!/;
-
-		if ( $bangs ) {
-		    if ( /^!(.*)$/ ) {
-			fatal_error "Invalid SOURCE ($originets)" if ( $inets || $iexcl );
-			$iexcl = $1;
-		    } elsif ( /^\+/ ) {
-			if ( $iexcl ) {
-			    $iexcl = join(',', $iexcl, $_ );
-			} else {
-			    $inets = join(',', $inets, $_ );
-			}
-		    } else {
-			fatal_error "Invalid SOURCE ($originets)" if $bangs > 1;
-			( my $temp, $iexcl ) = split /!/;
-			$inets = $inets ? join(',', $inets, $temp ) : $temp;
-		    }
-		} elsif ( $iexcl ) {
-		    $iexcl = join(',', $iexcl, $_ );
-		} else {
-		    $inets = $inets ? join(',', $inets, $_ ) : $_;
-		}	    
-	    }
-
-	    unless ( $inets || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
-		my @iexcl = mysplit $iexcl;
-		if ( @iexcl == 1 ) {
-		    $rule .= match_source_net "!$iexcl" , $restriction;
-		    $iexcl = '';
-		    $trivialiexcl = 1;
-		}
+		$trivialiexcl = 1;
 	    }
 	}
     } else {
@@ -3628,66 +3674,14 @@ sub expand_rule( $$$$$$$$$$;$ )
     # Determine if there is Destination Exclusion
     #
     if ( $dnets ) {
-	if ( $dnets =~ /^(!?)(\+\[(.+)\])$/ ) {
-	    #
-	    # set list
-	    #
-	    if ( $1 ) {
-		#
-		# Exclusion
-		#
-		$dnets = '';
+	( $dnets, $dexcl ) = handle_network_list( $dnets, 'DEST' );
 
-		my @dexcl = mysplit $3;
-
-		for ( @dexcl ) {
-		    fatal_error "Expected ipset name ($_)" unless /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
-		    s/^/+/ unless $2;
-		}
-
-		$dexcl = join ',', @dexcl;
-	    } else {
-		$dnets = $2;
+	unless ( $dnets ) {
+	    my @dexcl = mysplit $dexcl;
+	    if ( @dexcl == 1 ) {
+		$rule .= match_dest_net "!$dexcl";
 		$dexcl = '';
-	    }
-	} else {
-	    my $origdnets = $dnets;
-	    my @dnets = mysplit $dnets;
-
-	    $dnets= $dexcl = '';
-
-	    for ( @dnets ) {
-		my $bangs = tr/!/!/;
-
-		if ( $bangs ) {
-		    if ( /^!(.*)$/ ) {
-			fatal_error "Invalid DEST ($origdnets)" if ( $dnets || $dexcl );
-			$dexcl = $1;
-		    } elsif ( /^\+/ ) {
-			if ( $dexcl ) {
-			    $dexcl = join(',', $dexcl, $_ );
-			} else {
-			    $dnets = join(',', $dnets, $_ );
-			}
-		    } else {
-			fatal_error "Invalid DEST ($origdnets)" if $bangs > 1;
-			( my $temp, $dexcl ) = split /!/;
-			$dnets = $dnets ? join(',', $dnets, $temp ) : $temp;
-		    }
-		} elsif ( $dexcl ) {
-		    $dexcl = join(',', $dexcl, $_ );
-		} else {
-		    $dnets = $dnets ? join(',', $dnets, $_ ) : $_;
-		}	    
-	    }
-
-	    unless ( $dnets ) {
-		my @dexcl = mysplit $dexcl;
-		if ( @dexcl == 1 ) {
-		    $rule .= match_dest_net "!$dexcl";
-		    $dexcl = '';
-		    $trivialdexcl = 1;
-		}
+		$trivialdexcl = 1;
 	    }
 	}
     } else {

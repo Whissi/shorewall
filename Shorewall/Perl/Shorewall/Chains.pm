@@ -3253,7 +3253,6 @@ sub have_global_variables() {
 #
 # Generate setting of run-time global shell variables
 #
-
 sub set_global_variables( $ ) {
 
     my $setall = shift;
@@ -3308,8 +3307,8 @@ sub handle_network_exclusion( $;$ ) {
 #
 # Split a network element into the net part and exclusion part (if any)
 #
-sub split_network( $$ ) {
-    my ( $input, $srcdst) = @_;
+sub split_network( $$$ ) {
+    my ( $input, $srcdst, $list ) = @_;
 
     my @input = split '!', $input;
     my @result;
@@ -3333,7 +3332,7 @@ sub split_network( $$ ) {
 	@result = @input;
     }
 
-    fatal_error "Invalid $srcdst element ($input)" if @result > 2;
+    fatal_error "Invalid $srcdst ($list)" if @result > 2;
 	
     @result;
 }
@@ -3356,7 +3355,7 @@ sub handle_network_list( $$ ) {
 		$excl = handle_network_exclusion $1, '';
 	    } else {
 		fatal_error "Invalid $srcdst ($list)" if $excl;
-		my ( $temp1, $temp2 ) = split_network $_, $srcdst;
+		my ( $temp1, $temp2 ) = split_network $_, $srcdst, $list;
 		$nets = $nets ? join(',', $nets, $temp1 ) : $temp1;
 		$excl = handle_network_exclusion $temp2 if $temp2;
 	    }

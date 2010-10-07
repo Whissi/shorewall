@@ -3437,6 +3437,17 @@ sub generate_aux_config() {
 	emit '}';
     }
 
+    my $fn = find_file 'dumpfilter';
+
+    if ( -f $fn ) {
+	emit( '',
+	      'dump_filter() {' );
+	push_indent;
+	append_file( $fn,1 ) or emit 'cat -';
+	pop_indent;
+	emit '}';
+    }
+
     finalize_aux_config;
 }
 

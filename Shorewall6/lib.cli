@@ -687,9 +687,39 @@ show_command() {
 }
 
 #
+# Dump Filter - For Shorewall-lite, if there was a dumpfilter file at compile-time,
+#               then the compiler generated another version of this function and
+#               embedded it in the firewall.conf file. That version supersedes this
+#               one.
+#
+dump_filter() {
+    local filter
+    local command
+    local first
+
+    command=${SHOREWALL_SHELL}
+
+    filter=$(find_file dumpfilter)
+
+    if [ -f $filter ]; then
+	first=$(head -n1 $filter)
+
+	case $first in
+	    \#!*)
+		command=${first#\#!}
+		;;
+	esac
+
+	$command $filter
+    else
+	cat -
+    fi
+}
+
+#
 # Dump Command Executor
 #
-dump_command() {
+do_dump_command() {
     local finished
     finished=0
 
@@ -831,6 +861,10 @@ dump_command() {
 	heading "TC Filters"
 	show_classifiers
 	fi
+}
+
+dump_command() {
+    do_dump_command | dump_filter
 }
 
 #

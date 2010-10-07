@@ -990,6 +990,10 @@ do_dump_command() {
 	fi
 }
 
+dump_command() {
+    do_dump_command | dump_filter
+}
+
 #
 # Restore Comand Executor
 #
@@ -1096,10 +1100,6 @@ read_yesno_with_timeout() {
 		;;
 	esac
     fi
-}
-
-dump_command() {
-    do_dump_command | dump_filter
 }
 
 #

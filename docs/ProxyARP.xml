@@ -34,46 +34,50 @@
     </legalnotice>
   </articleinfo>
 
-  <para>Proxy ARP (RFC 1027) is a way to make a machine physically located on
-  one network appear to be logically part of a different physical network
-  connected to the same router/firewall. Typically it allows us to hide a
-  machine with a public IP address on a private network behind a router, and
-  still have the machine appear to be on the public network "in front of" the
-  router. The router "proxys" ARP requests and all network traffic to and from
-  the hidden machine to make this fiction possible.</para>
+  <section>
+    <title>Overview</title>
 
-  <para>Consider a router with two interface cards, one connected to a public
-  network PUBNET and one connected to a private network PRIVNET. We want to
-  hide a server machine on the PRIVNET network but have it accessible from the
-  PUBNET network. The IP address of the server machine lies in the PUBNET
-  network, even though we are placing the machine on the PRIVNET network
-  behind the router.</para>
+    <para>Proxy ARP (RFC 1027) is a way to make a machine physically located
+    on one network appear to be logically part of a different physical network
+    connected to the same router/firewall. Typically it allows us to hide a
+    machine with a public IP address on a private network behind a router, and
+    still have the machine appear to be on the public network "in front of"
+    the router. The router "proxys" ARP requests and all network traffic to
+    and from the hidden machine to make this fiction possible.</para>
 
-  <para>By enabling proxy ARP on the router, any machine on the PUBNET network
-  that issues an ARP "who has" request for the server's MAC address will get a
-  proxy ARP reply from the router containing the router's MAC address. This
-  tells machines on the PUBNET network that they should be sending packets
-  destined for the server via the router. The router forwards the packets from
-  the machines on the PUBNET network to the server on the PRIVNET
-  network.</para>
+    <para>Consider a router with two interface cards, one connected to a
+    public network PUBNET and one connected to a private network PRIVNET. We
+    want to hide a server machine on the PRIVNET network but have it
+    accessible from the PUBNET network. The IP address of the server machine
+    lies in the PUBNET network, even though we are placing the machine on the
+    PRIVNET network behind the router.</para>
 
-  <para>Similarly, when the server on the PRIVNET network issues a "who has"
-  request for any machines on the PUBNET network, the router provides its own
-  MAC address via proxy ARP. This tells the server to send packets for
-  machines on the PUBNET network via the router. The router forwards the
-  packets from the server on the PRIVNET network to the machines on the PUBNET
-  network.</para>
+    <para>By enabling proxy ARP on the router, any machine on the PUBNET
+    network that issues an ARP "who has" request for the server's MAC address
+    will get a proxy ARP reply from the router containing the router's MAC
+    address. This tells machines on the PUBNET network that they should be
+    sending packets destined for the server via the router. The router
+    forwards the packets from the machines on the PUBNET network to the server
+    on the PRIVNET network.</para>
 
-  <para>The proxy ARP provided by the router allows the server on the
-  PRIVNETnetwork to appear to be on the PUBNET network. It lets the router
-  pass ARP requests and other network packets in both directions between the
-  server machine and the PUBNET network, making the server machine appear to
-  be connected to the PUBNET network even though it is on the PRIVNET network
-  hidden behind the router.</para>
+    <para>Similarly, when the server on the PRIVNET network issues a "who has"
+    request for any machines on the PUBNET network, the router provides its
+    own MAC address via proxy ARP. This tells the server to send packets for
+    machines on the PUBNET network via the router. The router forwards the
+    packets from the server on the PRIVNET network to the machines on the
+    PUBNET network.</para>
 
-  <para>Before you try to use this technique, I strongly recommend that you
-  read the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
-  Guide</ulink>.</para>
+    <para>The proxy ARP provided by the router allows the server on the
+    PRIVNETnetwork to appear to be on the PUBNET network. It lets the router
+    pass ARP requests and other network packets in both directions between the
+    server machine and the PUBNET network, making the server machine appear to
+    be connected to the PUBNET network even though it is on the PRIVNET
+    network hidden behind the router.</para>
+
+    <para>Before you try to use this technique, I strongly recommend that you
+    read the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
+    Guide</ulink>.</para>
+  </section>
 
   <section id="Example">
     <title>Example</title>

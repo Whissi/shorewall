@@ -114,7 +114,7 @@ gateway:~#</programlisting>
   <section>
     <title>Vserver Zones</title>
 
-    <para>Here is a diagram of the network configuration here at Shorewall.net
+    <para>This is a diagram of the network configuration here at Shorewall.net
     during the summer of 2010:</para>
 
     <graphic align="center" fileref="images/Network2010a.png" />
@@ -130,6 +130,12 @@ drct:loc        ipv4            #Direct internet access
 net             ipv4            #Internet
 vpn             ipv4            #OpenVPN clients
 <emphasis role="bold">dmz             vserver         #Vservers</emphasis></programlisting>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE   INTERFACE     BROADCAST           OPTIONS
+<emphasis role="bold">net     eth1          detect              dhcp,optional,routefilter=0,logmartians,proxyarp=0,nosmurfs,upnp</emphasis>
+...</programlisting>
 
     <para><filename>/etc/shorewall/hosts</filename>:</para>
 
@@ -160,10 +166,16 @@ vpn	ipv6
 <emphasis role="bold">dmz	vserver</emphasis>
 </programlisting>
 
+    <para><filename>/etc/shorewall6/interfaces</filename>:</para>
+
+    <programlisting>#ZONE   INTERFACE     BROADCAST           OPTIONS
+<emphasis role="bold">net     sit1          detect              tcpflags,forward=1,nosmurfs,routeback</emphasis>
+...</programlisting>
+
     <para><filename>/etc/shorewall6/hosts</filename>:</para>
 
     <programlisting>#ZONE   HOST(S)                                 OPTIONS
-dmz	sit1:[2001:470:e857:1::/64]</programlisting>
+<emphasis role="bold">dmz     sit1:[2001:470:e857:1::/64]</emphasis></programlisting>
 
     <para>Note that I choose to place the Vservers on sit1 (the IPv6 net
     interface) rather than on eth1. Again, it really doesn't matter

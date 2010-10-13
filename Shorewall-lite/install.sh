@@ -355,6 +355,8 @@ if [ -z "$DESTDIR" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall-lite
 
+	    update-rc.d shorewall-lite defaults
+
 	    if [ -x /sbin/insserv ]; then
 		insserv /etc/init.d/shorewall-lite
 	    else

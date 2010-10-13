@@ -285,11 +285,8 @@ fi
 if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
-	    if [ -x /sbin/insserv ]; then
-		insserv /etc/init.d/shorewall-init
-	    else
-		ln -sf ../init.d/shorewall-init /etc/rcS.d/S38shorewall-init
-	    fi
+	    
+	    update-rc.d shorewall-init defaults
 
 	    echo "Shorewall Init will start automatically at boot"
 	else

@@ -3437,7 +3437,7 @@ sub generate_aux_config() {
 	emit '}';
     }
 
-    my $fn = find_file 'dumpfilter';
+    $fn = find_file 'dumpfilter';
 
     if ( -f $fn ) {
 	emit( '',

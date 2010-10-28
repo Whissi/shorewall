@@ -1365,7 +1365,7 @@ sub setup_traffic_shaping() {
 	my $tcref    = $tcclasses{$device}{$decimalclassnum};
 	my $mark     = $tcref->{mark};
 	my $devicenumber  = in_hexp $devref->{number};
-	my $classid  = join( ':', in_hexp $devicenumber, $classnum);
+	my $classid  = join( ':', $devicenumber, $classnum);
 	my $rate     = "$tcref->{rate}kbit";
 	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 
@@ -1390,15 +1390,15 @@ sub setup_traffic_shaping() {
 	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
 
 	if ( $devref->{qdisc} eq 'htb' ) {
-	    emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
+	    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 	} else {
 	    my $dmax = $tcref->{dmax};
 
 	    if ( $dmax ) {
 		my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
-		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
+		emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
 	    } else {
-		emit ( "run_tc class add dev $device parent $devref->{number}:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
+		emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
 	    }
 	}
 

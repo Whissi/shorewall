@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.14-RC1
+VERSION=4.4.14
 
 usage() # $1 = exit status
 {
@@ -887,11 +887,7 @@ if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
     if [ -n "$DEBIAN" ]; then
 	install_file default.debian /etc/default/shorewall 0644
 
-	if [ -x /sbin/insserv ]; then
-	    insserv /etc/init.d/shorewall
-	else
-	    ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
-	fi
+	update-rc.d shorewall defaults
 
 	echo "shorewall will start automatically at boot"
 	echo "Set startup=1 in /etc/default/shorewall to enable"

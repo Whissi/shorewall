@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.14-RC1
+VERSION=4.4.14
 
 usage() # $1 = exit status
 {
@@ -354,6 +354,8 @@ if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall-lite
+
+	    update-rc.d shorewall-lite defaults
 
 	    if [ -x /sbin/insserv ]; then
 		insserv /etc/init.d/shorewall-lite

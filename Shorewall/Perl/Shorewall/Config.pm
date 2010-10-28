@@ -347,7 +347,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED => 0,
-		    VERSION => "4.4.14-RC1",
+		    VERSION => "4.4.14",
 		    CAPVERSION => 40413 ,
 		  );
 
@@ -3438,7 +3438,7 @@ sub generate_aux_config() {
 	emit '}';
     }
 
-    my $fn = find_file 'dumpfilter';
+    $fn = find_file 'dumpfilter';
 
     if ( -f $fn ) {
 	emit( '',

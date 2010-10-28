@@ -32,6 +32,10 @@ get_script_version() { # $1 = script
     local version
     local ifs
     local digits
+    local verbosity
+
+    verbosity="$VERBOSITY"
+    VERBOSITY=0
 
     temp=$( $SHOREWALL_SHELL $1 version | sed 's/-.*//' )
 
@@ -52,6 +56,8 @@ get_script_version() { # $1 = script
     fi
     
     echo $version
+
+    VERBOSITY="$verbosity"
 }
   
 #

@@ -143,6 +143,7 @@ our %EXPORT_TAGS = (
 				       do_tos
 				       do_connbytes
 				       do_helper
+				       have_ipset_rules
 				       match_source_dev
 				       match_dest_dev
 				       iprange_match
@@ -182,7 +183,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_15';
 
 #
 # Chain Table
@@ -282,6 +283,7 @@ our $idiotcount1;
 our $warningcount;
 our $hashlimitset;
 our $global_variables;
+our $ipset_rules;
 
 #
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
@@ -394,6 +396,7 @@ sub initialize( $ ) {
     $idiotcount1        = 0;
     $warningcount       = 0;
     $hashlimitset       = 0;
+    $ipset_rules        = 0;
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -2595,6 +2598,8 @@ sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
     my $options = $option;
 
+    $ipset_rules++;
+
     $setname =~ s/^!//; # Caller has already taken care of leading !
 
     if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
@@ -2611,6 +2616,11 @@ sub get_set_flags( $$ ) {
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
 
     have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
+
+}
+
+sub have_ipset_rules() {
+    $ipset_rules;
 }
 
 sub mysplit( $ );
@@ -4043,7 +4053,7 @@ sub load_ipsets() {
 
     my @ipsets = all_ipsets;
 
-    if ( @ipsets || $config{SAVE_IPSETS} ) {
+    if ( @ipsets || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit ( '',
 	       'local hack',
 	       '',

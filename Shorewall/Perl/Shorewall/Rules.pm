@@ -2614,7 +2614,7 @@ EOF
 
     my @ipsets = all_ipsets;
 
-    if ( @ipsets || $config{SAVE_IPSETS} ) {
+    if ( @ipsets || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit <<'EOF';
 
     case $IPSET in

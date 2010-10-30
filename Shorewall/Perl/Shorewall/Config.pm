@@ -347,7 +347,7 @@ sub initialize( $ ) {
 		    EXPORT => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED => 0,
-		    VERSION => "4.4.14",
+		    VERSION => "4.4.15-Beta1",
 		    CAPVERSION => 40413 ,
 		  );
 

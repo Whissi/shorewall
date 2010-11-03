@@ -1964,7 +1964,8 @@ iptables: Invalid argument
       <para><emphasis role="bold">Answer:</emphasis> Copy
       <filename>/usr/share/shorewall[-lite]/modules</filename> to
       <filename>/etc/shorewall/modules </filename>and modify the copy to
-      include only the modules that you need.</para>
+      include only the modules that you need. An alternative is to set
+      LOAD_HELPERS_ONLY=Yes in shorewall.conf.</para>
     </section>
 
     <section id="faq61">
@@ -2515,7 +2516,9 @@ rmmod nf_conntrack_sip</programlisting></para>
       <orderedlist>
         <listitem>
           <para>Copy <filename>/usr/share/shorewall/module</filename>s to
-          <filename class="directory">/etc/shorewall</filename>.</para>
+          <filename class="directory">/etc/shorewall</filename>
+          (<filename>/usr/share/shorewall/helpers</filename> if you have
+          LOAD_HELPERS_ONLY in shorewall.conf).</para>
         </listitem>
 
         <listitem>

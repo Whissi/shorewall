@@ -492,6 +492,48 @@ ACCEPT      net:\
     </example>
   </section>
 
+  <section>
+    <title>Addresses</title>
+
+    <para>In both Shorewall and Shorewall6, there are two basic types of
+    addresses:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>Host Address</term>
+
+        <listitem>
+          <para>This address type refer to a single host. </para>
+
+          <para>In IPv4, the format is <emphasis>i.j.k.l</emphasis> where
+          <emphasis>i</emphasis> through <emphasis>l</emphasis> are decimal
+          numbers between 1 and 255. </para>
+
+          <para>In IPv6, the format is <emphasis>a:b:c:d:e:f:g:h</emphasis>
+          where <emphasis>a</emphasis> through <emphasis>h</emphasis> consist
+          of 1 to 4 hexidecimal digits. a single series of 0 addresses may be
+          omitted. For example 2001:0;0;0;0;0;0;0;1 may be written
+          2001::1.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Network Address</term>
+
+        <listitem>
+          <para>A network address refers to 1 or more hosts and consists of a
+          host address followed by a slash ("/") and a <firstterm>Variable
+          Length Subnet Mask</firstterm> (VLSM). The VLSM is a decimal number.
+          For IPv4, it is in the range 0 through 32. For IPv6, the range is 0
+          through 128.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>In the Shorewall documentation and manpages, we have tried to make
+    it clear which type of address is accepted in each specific case.</para>
+  </section>
+
   <section id="SOURCE-DEST">
     <title>Specifying SOURCE and DEST</title>
 

@@ -503,17 +503,17 @@ ACCEPT      net:\
         <term>Host Address</term>
 
         <listitem>
-          <para>This address type refer to a single host. </para>
+          <para>This address type refer to a single host.</para>
 
           <para>In IPv4, the format is <emphasis>i.j.k.l</emphasis> where
           <emphasis>i</emphasis> through <emphasis>l</emphasis> are decimal
-          numbers between 1 and 255. </para>
+          numbers between 1 and 255.</para>
 
           <para>In IPv6, the format is <emphasis>a:b:c:d:e:f:g:h</emphasis>
           where <emphasis>a</emphasis> through <emphasis>h</emphasis> consist
-          of 1 to 4 hexidecimal digits. a single series of 0 addresses may be
-          omitted. For example 2001:0;0;0;0;0;0;0;1 may be written
-          2001::1.</para>
+          of 1 to 4 hexidecimal digits (leading zeros may be omitted). a
+          single series of 0 addresses may be omitted. For example
+          2001:227:e857:1:0:0:0:0:1 may be written 2001:227:e857:1::1.</para>
         </listitem>
       </varlistentry>
 
@@ -523,15 +523,30 @@ ACCEPT      net:\
         <listitem>
           <para>A network address refers to 1 or more hosts and consists of a
           host address followed by a slash ("/") and a <firstterm>Variable
-          Length Subnet Mask</firstterm> (VLSM). The VLSM is a decimal number.
-          For IPv4, it is in the range 0 through 32. For IPv6, the range is 0
-          through 128.</para>
+          Length Subnet Mask</firstterm> (VLSM). This is known as
+          <firstterm>Classless Internet Domain Routing</firstterm> (CIDR)
+          notation.</para>
+
+          <para>The VLSM is a decimal number. For IPv4, it is in the range 0
+          through 32. For IPv6, the range is 0 through 128. The number
+          represents the number of leading bits in the address that represent
+          the network address; the remainder of the bits are a host address
+          and are generally given as zero.</para>
+
+          <para>Examples:</para>
+
+          <para>IPv4: 192.168.1.0/24</para>
+
+          <para>IPv6: 2001:227:e857:1:0:0:0:0:1/64</para>
         </listitem>
       </varlistentry>
     </variablelist>
 
     <para>In the Shorewall documentation and manpages, we have tried to make
     it clear which type of address is accepted in each specific case.</para>
+
+    <para>For more information about addressing, see the<ulink
+    url="shorewall_setup_guide.htm#Addressing"> Setup Guide</ulink>.</para>
   </section>
 
   <section id="SOURCE-DEST">

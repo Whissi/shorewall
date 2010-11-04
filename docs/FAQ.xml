@@ -1842,6 +1842,17 @@ ERROR: Command "ip -4 rule add from all table 254 pref 999" Failed</programlisti
   <section id="Start-Stop">
     <title>Starting and Stopping</title>
 
+    <section id="faq94">
+      <title>(FAQ 94) After I start Shorewall, ps doesn't show any shorewall
+      process running. What is the Shorewall daemon called?</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> Shorewall is not a
+      daemon. It is a configuration tool that configures your kernel based on
+      the contents of <filename>/etc/shorewall/</filename>. Once the
+      <command>start</command> command completes, Shorewall has done its job
+      and there are no Shorewall processes remaining in the system.</para>
+    </section>
+
     <section id="faq7">
       <title>(FAQ 7) When I stop Shorewall using <quote>shorewall[-lite]
       stop</quote>, I can't connect to anything. Why doesn't that command

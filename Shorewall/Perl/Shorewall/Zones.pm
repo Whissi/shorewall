@@ -84,7 +84,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_14';
+our $VERSION = '4.4_15';
 
 #
 # IPSEC Option types
@@ -424,7 +424,7 @@ sub process_zone( \$ ) {
 	fatal_error 'Firewall zone may not be nested' if @parents;
 	fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
 	$firewall_zone = $zone;
-	$ENV{FW} = $zone;
+	$params{FW} = $zone;
 	$type = FIREWALL;
     } elsif ( $type eq 'vserver' ) {
 	fatal_error 'Vserver zones may not be nested' if @parents;

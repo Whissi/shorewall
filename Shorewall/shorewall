@@ -353,12 +353,6 @@ compiler() {
     [ -n "$g_preview" ] && options="$options --preview"
     [ "$g_debugging" = trace ] && options="$options --debug"
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
-    #
-    # Run the appropriate params file
-    #
-    set -a;
-    run_user_exit params
-    set +a
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then

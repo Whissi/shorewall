@@ -97,6 +97,7 @@ fi
 %attr(0755,root,root) /usr/share/shorewall/wait4ifup
 
 %attr(755,root,root) /usr/share/shorewall/compiler.pl
+%attr(755,root,root) /usr/share/shorewall/params
 %attr(0644,root,root) /usr/share/shorewall/prog.*
 %attr(0644,root,root) /usr/share/shorewall/Shorewall/*.pm
 

@@ -290,14 +290,6 @@ compiler() {
     [ "$g_debugging" = trace ] && options="$options --debug"
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     [ -x $pc ] || startup_error "Shorewall6 requires the shorewall package which is not installed"
-    #
-    # Run the appropriate params file
-    #
-    if [ -z "$haveparams" ]; then
-	set -a; 
-	run_user_exit params
-	set +a
-    fi
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then

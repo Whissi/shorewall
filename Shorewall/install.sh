@@ -816,6 +816,13 @@ install_file compiler.pl ${DESTDIR}/usr/share/shorewall/compiler.pl 0755
 echo
 echo "Compiler installed in ${DESTDIR}/usr/share/shorewall/compiler.pl"
 #
+# Install the params file helper
+#
+install_file getparams ${DESTDIR}/usr/share/shorewall/getparams 0755
+
+echo
+echo "Params file helper installed in ${DESTDIR}/usr/share/shorewall/getparams"
+#
 # Install the libraries
 #
 for f in Shorewall/*.pm ; do

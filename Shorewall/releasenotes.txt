@@ -30,13 +30,14 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 1)  Previously, /usr/share/shorewall/compiler.pl expected the contents
     of the params file to be passed in the environment. Now, the
-    compiler invokes the shell program /usr/share/shorewall/getparams
-    to process the file and to pass the (variable,value) pairs back to
-    the compiler.
+    compiler invokes a small shell program
+    (/usr/share/shorewall/getparams) to process the file and to pass
+    the (variable,value) pairs back to the compiler.
 
-    In this new implementation, the contents of the environment of the
-    program that launches /usr/share/shorewall/compiler.pl overrides
-    the contents of /etc/shorewall/params.
+    Shell variable expansion uses the value from the params file if the
+    parameter was set in that file. Otherwise the current environment
+    is used. If the variable does not appear in either place, an error
+    message is generated.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

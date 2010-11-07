@@ -1858,16 +1858,19 @@ sub read_a_line(;$) {
 
 	    my $count = 0;
 	    #
-	    # Expand Shell Variables using %params
+	    # Expand Shell Variables using %params and %ENV
 	    #
 	    #                            $1      $2      $3           -     $4
 	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
+
+		unless ( exists $params{$3} ) {
+		    $params{$3} = $ENV{$3} if exists $ENV{$3};
+		}
+
 		my $val = $params{$3};
-		
-		$params{$3} = $ENV{$3} if exists $ENV{$3};
 
 		unless ( defined $val ) {
-		    fatal_error "Undefined shell variable (\$$3)" unless exists $params{$3};
+		    fatal_error "Undefined shell variable (\$$3)" unless exists $params{$3} || exists $ENV{$3};
 		    $val = '';
 		}
 
@@ -2882,9 +2885,8 @@ sub unsupported_yes_no_warning( $ ) {
 # Process the params file
 #
 sub get_params() {
-    my $fn = find_file 'params';
+    if ( my $fn = find_file 'params' ) {
 
-    if ( $fn ) {
 	progress_message2 "Processing $fn ...";
 
 	my @params = `$globals{SHAREDIRPL}/getparams $fn`;

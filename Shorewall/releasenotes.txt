@@ -28,7 +28,15 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-None.
+1)  Previously, /usr/share/shorewall/compiler.pl expected the contents
+    of the params file to be passed in the environment. Now, the
+    compiler invokes the shell program /usr/share/shorewall/getparams
+    to process the file and to pass the (variable,value) pairs back to
+    the compiler.
+
+    In this new implementation, the contents of the params file
+    override the environment of the program that runs
+    /usr/share/shorewall/compiler.pl.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

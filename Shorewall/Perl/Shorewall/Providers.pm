@@ -648,8 +648,10 @@ sub add_an_rtrule( ) {
 sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
     for ( rfc1918_networks ) {
-	emit( qq(run_ip route replace unreachable $_) );
-	emit( qq(echo "qt \$IP -$family route del unreachable $_" >> \${VARDIR}/undo_routing) );
+	emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
+	      qq(    run_ip route replace unreachable $_),
+	      qq(    echo "qt \$IP -4 route del unreachable $_" >> \${VARDIR}/undo_routing),
+	      qq(fi\n) );
     }
 }
 

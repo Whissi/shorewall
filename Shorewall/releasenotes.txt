@@ -14,12 +14,12 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  If the variable VERBOSE was exported with a non-zero value then
-    startup would fail.
+1)  If the current environment exported the VERBOSE variable with a
+    non-zero value, then startup would fail.
 
-2)  If a route exists for an entire RFC1918 network (10.0.0.0/24,
-    172.20.0.0/12 or 192.168.0.0/16) then setting
-    NULL_ROUTE_RFC1918=Yes would cause the route to replace with a
+2)  If a route existed for an entire RFC1918 subnet (10.0.0.0/8,
+    172.20.0.0/12 or 192.168.0.0/16), then setting
+    NULL_ROUTE_RFC1918=Yes would cause the route to be replaced with an
     'unreachable' one.
 
 ----------------------------------------------------------------------------

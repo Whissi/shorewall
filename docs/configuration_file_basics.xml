@@ -1448,6 +1448,28 @@ Comcast 2        0x20000 main       COM_IF     detect          balance          
     class="devicefile">tun*</filename> in the COPY column.</para>
   </section>
 
+  <section>
+    <title>Zone and Chain Names</title>
+
+    <para>For a pair of zones, Shorewall creates two Netfilter chains; one for
+    connections in each direction. The names of these chains are formed by
+    separating the names of the two zones by either "2" or "-".</para>
+
+    <para>Example: Traffic from zone A to zone B would go through chain A2B
+    (think "A to B") or "A-B".</para>
+
+    <para>The default separator is "2" but you can override that by setting
+    ZONE_SEPARATOR="-" in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+
+    <para>Zones themselves have names that begin with a letter and are
+    composed of letters, numerals, and "_". The maximum length of a name is
+    dependent on the setting of LOGFORMAT in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5). See <ulink
+    url="manpages/shorewall-zones.html">shorewall-zones</ulink> (5) for
+    details.</para>
+  </section>
+
   <section id="Levels">
     <title>Shorewall Configurations</title>
 

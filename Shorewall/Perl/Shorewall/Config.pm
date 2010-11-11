@@ -3322,7 +3322,7 @@ sub append_file( $;$$ ) {
     
     $indent = '' if $unindented;
 
-    unless ( $user_exit =~ /^($globals{SHAREDIRPL})/ ) { #Don't copy from /usr/share/shorewall*
+    unless ( $user_exit =~ m(^/usr/share/shorewall6?/) ) {
 	if ( -f $user_exit ) {
 	    if ( $nomsg ) {
 		#

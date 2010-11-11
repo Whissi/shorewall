@@ -22,6 +22,18 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     NULL_ROUTE_RFC1918=Yes would cause the route to be replaced with an
     'unreachable' one.
 
+3)  Shorewall6 failed to start correctly if all the following were true:
+
+    - Shorewall was installed using the tarball. It may have
+      subsequently been installed using a distribution-specific package
+      or the rpm from shorewall.net without first unstalling the
+      tarball components.
+
+    - Shorewall6 was installed using a distribution-specific package or
+      the rpm from shorewall.net.
+
+    - The file /etc/shorewall6/init was not created.
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

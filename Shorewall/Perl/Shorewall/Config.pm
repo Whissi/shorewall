@@ -2889,7 +2889,9 @@ sub get_params() {
 
 	progress_message2 "Processing $fn ...";
 
-	my @params = `$globals{SHAREDIRPL}/getparams $fn`;
+	my $command = "$globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );
+
+	my @params = `$command`;
 
 	fatal_error "Processing of $fn failed" if $?;
 

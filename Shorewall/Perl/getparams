@@ -21,17 +21,18 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-exported=$(env | sed 's/=.*//');
+. /usr/share/shorewall/lib.base
+. /usr/share/shorewall/lib.cli
 
-#
-# Sigh -- POSIX shells don't support 'typeset +x' or 'declare +x'
-#
+exported=$(env | sed 's/=.*//');
 
 for v in $exported; do
     eval t=\"\$$v\"
-    eval $v=
+    eval unset $v
     eval $v=\"$t\"
 done
+
+CONFIG_PATH="$2"
 
 set -a
 

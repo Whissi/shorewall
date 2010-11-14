@@ -1278,6 +1278,58 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
 /sbin/shorewall refresh</programlisting>
     </section>
 
+    <section>
+      <title>Sharing a TC configuration between Shorewall and
+      Shorewall6</title>
+
+      <para>Beginning with Shorewall 4.4.15, the traffic-shaping configuration
+      in the tcdevices, tcclasses and tcfilters files can be shared between
+      Shorewall and Shorewall6. Only one of the products can control the
+      configuration but the other can configure CLASSIFY rules in its own
+      tcrules file that refer to the shared classes.</para>
+
+      <para>To defined the configuration in Shorewall and shared it with
+      Shorewall6:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Set TC_ENABLED=Internal in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink>
+          (5).</para>
+        </listitem>
+
+        <listitem>
+          <para>Set TC_ENABLED=SHARED in <ulink
+          url="manpages6/shorewall6.conf.html">shorewall6.conf</ulink>
+          (5).</para>
+        </listitem>
+
+        <listitem>
+          <para>Create symbolic links from /etc/shorewall6 to
+          /etc/shorewall/tcdevices and /etc/shorewall/tcclasses:</para>
+
+          <programlisting>ln -s ../shorewall/tcdevices /etc/shorewall6/tcdevices
+ln -s ../shorewall/tcclasses /etc/shorewall6/tcclasses</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>If you need to define IPv6 tcfilter entries, do so in
+          /etc/shorewall/tcfilters. That file now allows entries that apply to
+          IPv6.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Shorewall6 compilations to have access to the tcdevices and
+      tcclasses files although it will create no output. That access allows
+      CLASSIFY rules in /etc/shorewall6/tcrules to be validated against the TC
+      configuration.</para>
+
+      <para>In this configuration, it is Shorewall that controls TC
+      configuration (except for IPv6 tcrules). You can reverse the settings in
+      the files if you want to control the configuration using
+      Shorewall6.</para>
+    </section>
+
     <section id="perIP">
       <title>Per-IP Traffic Shaping</title>
 

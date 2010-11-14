@@ -1351,7 +1351,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis
-        role="bold">Internal</emphasis>]</term>
+        role="bold">Internal|Shared</emphasis>]</term>
 
         <listitem>
           <para>If you say <emphasis role="bold">Yes</emphasis> or <emphasis
@@ -1368,11 +1368,22 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           empty then Shorewall6 will use its builtin traffic shaper
           (tc4shorewall6 written by Arne Bernin.</para>
 
+          <para>Beginning with Shorewall 4.4.15, if you set TC_ENABLED=Shared
+          or shared, then you should create symbolic links from your
+          Shorewall6 configuration directory (normally
+          <filename>/etc/shorewall6/</filename>) to your Shorewall
+          <filename>tcdevices</filename> and <filename>tcclasses</filename>
+          files. This allows the compiler to have access to your Shorewall
+          traffic shaping configuration so that it can validate CLASSIFY rules
+          in <ulink url="shorewall-tcrules.html">shorewall6-tcrules</ulink>
+          (5).</para>
+
           <warning>
             <para>If you also run Shorewall and if you have
             TC_ENABLED=Internal in your <ulink
             url="../manpages/shorewall.conf.html">shorewall-conf</ulink>(5),
-            then you will want TC_ENABLED=No in this file.</para>
+            then you will want TC_ENABLED=No or TC_ENABLED=Shared in this
+            file.</para>
           </warning>
         </listitem>
       </varlistentry>

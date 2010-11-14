@@ -87,7 +87,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(-   ,root,root) /usr/share/shorewall/functions
-%attr(0755,root,root) /usr/share/shorewall/getparams
 %attr(0644,root,root) /usr/share/shorewall/lib.base
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
 %attr(0644,root,root) /usr/share/shorewall/lib.common
@@ -98,7 +97,7 @@ fi
 %attr(0755,root,root) /usr/share/shorewall/wait4ifup
 
 %attr(755,root,root) /usr/share/shorewall/compiler.pl
-%attr(755,root,root) /usr/share/shorewall/params
+%attr(755,root,root) /usr/share/shorewall/getparams
 %attr(0644,root,root) /usr/share/shorewall/prog.*
 %attr(0644,root,root) /usr/share/shorewall/Shorewall/*.pm
 

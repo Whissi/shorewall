@@ -3217,6 +3217,8 @@ sub get_configuration( $ ) {
 	$globals{TC_SCRIPT} = $file;
     } elsif ( $val eq 'internal' ) {
 	$config{TC_ENABLED} = 'Internal';
+     } elsif ( $val eq 'shared' ) {
+	$config{TC_ENABLED} = 'Shared';
     } elsif ( $val eq 'simple' ) {
 	$config{TC_ENABLED} = 'Simple';
     } else {

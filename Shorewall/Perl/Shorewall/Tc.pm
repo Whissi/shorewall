@@ -254,7 +254,7 @@ sub process_tc_rule( ) {
 	} else {
 	    fatal_error "Invalid MARK ($originalmark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
 
-	    if ( $config{TC_ENABLED} eq 'Internal' ) {
+	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
 	    }
 
@@ -424,7 +424,7 @@ sub process_tc_rule( ) {
 	#
 	# expand_rule() returns destination device if any
 	#
-	fatal_error "Class Id $originalmark is not associated with device $result" if $config{TC_ENABLED} eq 'Internal' && $device ne $result;
+	fatal_error "Class Id $originalmark is not associated with device $result" if $device ne $result &&( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' );
     }
 
     progress_message "  TC Rule \"$currentline\" $done";
@@ -1331,180 +1331,181 @@ sub setup_traffic_shaping() {
 	validate_tc_class while read_a_line;
     }
 
-    for my $device ( @tcdevices ) {
-	my $devref  = $tcdevices{$device};
-	my $defmark = in_hexp ( $devref->{default} || 0 );
-	my $devnum  = in_hexp $devref->{number};
-	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
+    unless ( $config{TC_ENABLED} eq 'Shared' ) {
+	for my $device ( @tcdevices ) {
+	    my $devref  = $tcdevices{$device};
+	    my $defmark = in_hexp ( $devref->{default} || 0 );
+	    my $devnum  = in_hexp $devref->{number};
+	    my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
-	$device = physical_name $device;
+	    $device = physical_name $device;
 
-	my $dev = chain_base( $device );
+	    my $dev = chain_base( $device );
 
-	emit "if interface_is_up $device; then";
+	    emit "if interface_is_up $device; then";
 
-	push_indent;
-
-	emit ( "${dev}_exists=Yes",
-	       "qt \$TC qdisc del dev $device root",
-	       "qt \$TC qdisc del dev $device ingress",
-	       "${dev}_mtu=\$(get_device_mtu $device)",
-	       "${dev}_mtu1=\$(get_device_mtu1 $device)"
-	     );
-
-	if ( $devref->{qdisc} eq 'htb' ) {
-	    emit ( "run_tc qdisc add dev $device root handle $devnum: htb default $defmark r2q $r2q" ,
-		   "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1" );
-	} else {
-	    emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmark" ,
-		   "run_tc class add dev $device parent $devnum: classid $devnum:1 hfsc sc rate $devref->{out_bandwidth} ul rate $devref->{out_bandwidth}" );
-	}
-
-	if ( $devref->{occurs} ) {
-	    #
-	    # The following command may succeed yet generate an error message and non-zero exit status :-(. We thus run it silently
-	    # and check the result. Note that since this is the first filter added after the root qdisc was added, the 'ls | grep' test
-	    # is fairly robust
-	    #
-	    my $command = "\$TC filter add dev $device parent $devnum:0 prio 65535 protocol all fw";
-
-	    emit( qq(if ! qt $command ; then) ,
-		  qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
-		  qq(        error_message "ERROR: Command '$command' failed"),
-		  qq(        stop_firewall),
-		  qq(        exit 1),
-		  qq(    fi),
-		  qq(fi) );
-	}
-
-	my $in_burst = '10kb';
-	my $inband;
-
-	if ( $devref->{in_bandwidth} =~ /:/ ) {
-	    my ( $in_band, $burst ) = split /:/, $devref->{in_bandwidth}, 2;
-
-	    if ( defined $burst && $burst ne '' ) {
-		fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
-		fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
-		$in_burst = $burst;
-	    }
-
-	    $inband = rate_to_kbit( $in_band );
-	} else {
-	    $inband = rate_to_kbit $devref->{in_bandwidth};
-	}
-
-	if ( $inband ) {
-	    emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		   "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst $in_burst drop flowid :1"
-		   );
-	}
-
-	for my $rdev ( @{$devref->{redirected}} ) {
-	    emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
-	    emit( "run_tc filter add dev $rdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
-	}
-
-	save_progress_message_short qq("   TC Device $device defined.");
-
-	pop_indent;
-	emit 'else';
-	push_indent;
-
-	emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
-	emit "${dev}_exists=";
-	pop_indent;
-	emit "fi\n";
-    }
-
-    my $lastdevice = '';
-
-    for my $class ( @tcclasses ) {
-	#
-	# The class number in the tcclasses array is expressed in decimal.
-	#
-	my ( $device, $decimalclassnum ) = split /:/, $class;
-	#
-	# For inclusion in 'tc' commands, we also need the hex representation
-	#
-	my $classnum = in_hexp $decimalclassnum;
-	my $devref   = $tcdevices{$device};
-	#
-	# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
-	#
-	my $tcref    = $tcclasses{$device}{$decimalclassnum};
-	my $mark     = $tcref->{mark};
-	my $devicenumber  = in_hexp $devref->{number};
-	my $classid  = join( ':', $devicenumber, $classnum);
-	my $rate     = "$tcref->{rate}kbit";
-	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
-
-	$classids{$classid}=$device;
-	$device = physical_name $device;
-
-	my $dev      = chain_base $device;
-	my $priority = $tcref->{priority} << 8;
-	my $parent   = in_hexp $tcref->{parent};
-
-	if ( $lastdevice ne $device ) {
-	    if ( $lastdevice ) {
-		pop_indent;
-		emit "fi\n";
-	    }
-
-	    emit qq(if [ -n "\$${dev}_exists" ]; then);
 	    push_indent;
-	    $lastdevice = $device;
-	}
 
-	emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
+	    emit ( "${dev}_exists=Yes",
+		   "qt \$TC qdisc del dev $device root",
+		   "qt \$TC qdisc del dev $device ingress",
+		   "${dev}_mtu=\$(get_device_mtu $device)",
+		   "${dev}_mtu1=\$(get_device_mtu1 $device)"
+		 );
 
-	if ( $devref->{qdisc} eq 'htb' ) {
-	    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
-	} else {
-	    my $dmax = $tcref->{dmax};
-
-	    if ( $dmax ) {
-		my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
-		emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
+	    if ( $devref->{qdisc} eq 'htb' ) {
+		emit ( "run_tc qdisc add dev $device root handle $devnum: htb default $defmark r2q $r2q" ,
+		       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1" );
 	    } else {
-		emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
+		emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmark" ,
+		       "run_tc class add dev $device parent $devnum: classid $devnum:1 hfsc sc rate $devref->{out_bandwidth} ul rate $devref->{out_bandwidth}" );
 	    }
+
+	    if ( $devref->{occurs} ) {
+		#
+		# The following command may succeed yet generate an error message and non-zero exit status :-(. We thus run it silently
+		# and check the result. Note that since this is the first filter added after the root qdisc was added, the 'ls | grep' test
+		# is fairly robust
+		#
+		my $command = "\$TC filter add dev $device parent $devnum:0 prio 65535 protocol all fw";
+
+		emit( qq(if ! qt $command ; then) ,
+		      qq(    if ! \$TC filter list dev $device | grep -q 65535; then) ,
+		      qq(        error_message "ERROR: Command '$command' failed"),
+		      qq(        stop_firewall),
+		      qq(        exit 1),
+		      qq(    fi),
+		      qq(fi) );
+	    }
+
+	    my $in_burst = '10kb';
+	    my $inband;
+
+	    if ( $devref->{in_bandwidth} =~ /:/ ) {
+		my ( $in_band, $burst ) = split /:/, $devref->{in_bandwidth}, 2;
+
+		if ( defined $burst && $burst ne '' ) {
+		    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
+		    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+		    $in_burst = $burst;
+		}
+
+		$inband = rate_to_kbit( $in_band );
+	    } else {
+		$inband = rate_to_kbit $devref->{in_bandwidth};
+	    }
+
+	    if ( $inband ) {
+		emit ( "run_tc qdisc add dev $device handle ffff: ingress",
+		       "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst $in_burst drop flowid :1"
+		     );
+	    }
+
+	    for my $rdev ( @{$devref->{redirected}} ) {
+		emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
+		emit( "run_tc filter add dev $rdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
+	    }
+
+	    save_progress_message_short qq("   TC Device $device defined.");
+
+	    pop_indent;
+	    emit 'else';
+	    push_indent;
+
+	    emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
+	    emit "${dev}_exists=";
+	    pop_indent;
+	    emit "fi\n";
 	}
 
-	if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
-	    $sfqinhex = in_hexp( ++$sfq);
-	    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
-	}
-	#
-	# add filters
-	#
-	unless ( $devref->{classify} ) {
-	    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
+	my $lastdevice = '';
+
+	for my $class ( @tcclasses ) {
+	    #
+	    # The class number in the tcclasses array is expressed in decimal.
+	    #
+	    my ( $device, $decimalclassnum ) = split /:/, $class;
+	    #
+	    # For inclusion in 'tc' commands, we also need the hex representation
+	    #
+	    my $classnum = in_hexp $decimalclassnum;
+	    my $devref   = $tcdevices{$device};
+	    #
+	    # The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
+	    #
+	    my $tcref    = $tcclasses{$device}{$decimalclassnum};
+	    my $mark     = $tcref->{mark};
+	    my $devicenumber  = in_hexp $devref->{number};
+	    my $classid  = join( ':', $devicenumber, $classnum);
+	    my $rate     = "$tcref->{rate}kbit";
+	    my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
+
+	    $classids{$classid}=$device;
+	    $device = physical_name $device;
+
+	    my $dev      = chain_base $device;
+	    my $priority = $tcref->{priority} << 8;
+	    my $parent   = in_hexp $tcref->{parent};
+
+	    if ( $lastdevice ne $device ) {
+		if ( $lastdevice ) {
+		    pop_indent;
+		    emit "fi\n";
+		}
+
+		emit qq(if [ -n "\$${dev}_exists" ]; then);
+		push_indent;
+		$lastdevice = $device;
+	    }
+
+	    emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
+
+	    if ( $devref->{qdisc} eq 'htb' ) {
+		emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
+	    } else {
+		my $dmax = $tcref->{dmax};
+
+		if ( $dmax ) {
+		    my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
+		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
+		} else {
+		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
+		}
+	    }
+
+	    if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
+		$sfqinhex = in_hexp( ++$sfq);
+		emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+	    }
+	    #
+	    # add filters
+	    #
+	    unless ( $devref->{classify} ) {
+		emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
+	    }
+
+	    emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+	    #
+	    # options
+	    #
+	    emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+
+	    for my $tospair ( @{$tcref->{tos}} ) {
+		my ( $tos, $mask ) = split q(/), $tospair;
+		emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
+	    }
+
+	    save_progress_message_short qq("   TC Class $classid defined.");
+	    emit '';
 	}
 
-	emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
-	#
-	# options
-	#
-	emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
-
-	for my $tospair ( @{$tcref->{tos}} ) {
-	    my ( $tos, $mask ) = split q(/), $tospair;
-	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
+	if ( $lastdevice ) {
+	    pop_indent;
+	    emit "fi\n";
 	}
 
-	save_progress_message_short qq("   TC Class $classid defined.");
-	emit '';
+	process_tcfilters;
     }
-
-    if ( $lastdevice ) {
-	pop_indent;
-	emit "fi\n";
-    }
-
-    process_tcfilters;
-
 }
 
 #
@@ -1615,7 +1616,7 @@ sub setup_tc() {
     if ( $globals{TC_SCRIPT} ) {
 	save_progress_message q('Setting up Traffic Control...');
 	append_file $globals{TC_SCRIPT};
-    } elsif ( $config{TC_ENABLED} eq 'Internal' ) {
+    } elsif ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 	setup_traffic_shaping;
     } elsif ( $config{TC_ENABLED} eq 'Simple' ) {
 	setup_simple_traffic_shaping;

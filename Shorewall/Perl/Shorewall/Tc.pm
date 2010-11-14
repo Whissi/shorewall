@@ -1164,11 +1164,20 @@ sub process_tc_filter() {
 
     emit '';
 
-    progress_message "  TC Filter \"$currentline\" $done";
+    if ( $family == F_IPV4 ) {
 
-    $currentline =~ s/\s+/ /g;
+	progress_message "  IPv4 TC Filter \"$currentline\" $done";
 
-    save_progress_message_short qq('   TC Filter \"$currentline\" defined.');
+	$currentline =~ s/\s+/ /g;
+
+	save_progress_message_short qq('   IPv4 TC Filter \"$currentline\" defined.');
+    } else {
+	progress_message "  IPv6 TC Filter \"$currentline\" $done";
+
+	$currentline =~ s/\s+/ /g;
+
+	save_progress_message_short qq('   IPv6 TC Filter \"$currentline\" defined.');
+    }
 
     emit '';
 

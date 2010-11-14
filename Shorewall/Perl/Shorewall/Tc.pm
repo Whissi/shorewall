@@ -1445,11 +1445,11 @@ sub setup_traffic_shaping() {
 	$classids{$classid}=$device;
 	$device = physical_name $device;
 
-	my $dev      = chain_base $device;
-	my $priority = $tcref->{priority} << 8;
-	my $parent   = in_hexp $tcref->{parent};
-
 	unless ( $config{TC_ENABLED} eq 'Shared' ) {
+	    my $dev      = chain_base $device;
+	    my $priority = $tcref->{priority} << 8;
+	    my $parent   = in_hexp $tcref->{parent};
+
 	    if ( $lastdevice ne $device ) {
 		if ( $lastdevice ) {
 		    pop_indent;
@@ -1501,11 +1501,13 @@ sub setup_traffic_shaping() {
 	    save_progress_message_short qq("   TC Class $classid defined.");
 	    emit '';
 
-	    if ( $lastdevice ) {
-		pop_indent;
-		emit "fi\n";
-	    }
 	}
+
+    }
+
+    if ( $lastdevice ) {
+	pop_indent;
+	emit "fi\n";
     }
 
     process_tcfilters;

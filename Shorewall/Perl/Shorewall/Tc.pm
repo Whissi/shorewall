@@ -1331,16 +1331,17 @@ sub setup_traffic_shaping() {
 	validate_tc_class while read_a_line;
     }
 
-    unless ( $config{TC_ENABLED} eq 'Shared' ) {
-	for my $device ( @tcdevices ) {
-	    my $devref  = $tcdevices{$device};
-	    my $defmark = in_hexp ( $devref->{default} || 0 );
-	    my $devnum  = in_hexp $devref->{number};
-	    my $r2q     = int calculate_r2q $devref->{out_bandwidth};
+    for my $device ( @tcdevices ) {
+	my $devref  = $tcdevices{$device};
+	my $defmark = in_hexp ( $devref->{default} || 0 );
+	my $devnum  = in_hexp $devref->{number};
+	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
-	    $device = physical_name $device;
+	$device = physical_name $device;
 
-	    my $dev = chain_base( $device );
+	my $dev = chain_base( $device );
+
+	unless ( $config{TC_ENABLED} eq 'Shared' ) {
 
 	    emit "if interface_is_up $device; then";
 
@@ -1417,36 +1418,38 @@ sub setup_traffic_shaping() {
 	    pop_indent;
 	    emit "fi\n";
 	}
+    }
 
-	my $lastdevice = '';
+    my $lastdevice = '';
 
-	for my $class ( @tcclasses ) {
-	    #
-	    # The class number in the tcclasses array is expressed in decimal.
-	    #
-	    my ( $device, $decimalclassnum ) = split /:/, $class;
-	    #
-	    # For inclusion in 'tc' commands, we also need the hex representation
-	    #
-	    my $classnum = in_hexp $decimalclassnum;
-	    my $devref   = $tcdevices{$device};
-	    #
-	    # The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
-	    #
-	    my $tcref    = $tcclasses{$device}{$decimalclassnum};
-	    my $mark     = $tcref->{mark};
-	    my $devicenumber  = in_hexp $devref->{number};
-	    my $classid  = join( ':', $devicenumber, $classnum);
-	    my $rate     = "$tcref->{rate}kbit";
-	    my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
+    for my $class ( @tcclasses ) {
+	#
+	# The class number in the tcclasses array is expressed in decimal.
+	#
+	my ( $device, $decimalclassnum ) = split /:/, $class;
+	#
+	# For inclusion in 'tc' commands, we also need the hex representation
+	#
+	my $classnum = in_hexp $decimalclassnum;
+	my $devref   = $tcdevices{$device};
+	#
+	# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
+	#
+	my $tcref    = $tcclasses{$device}{$decimalclassnum};
+	my $mark     = $tcref->{mark};
+	my $devicenumber  = in_hexp $devref->{number};
+	my $classid  = join( ':', $devicenumber, $classnum);
+	my $rate     = "$tcref->{rate}kbit";
+	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 
-	    $classids{$classid}=$device;
-	    $device = physical_name $device;
+	$classids{$classid}=$device;
+	$device = physical_name $device;
 
-	    my $dev      = chain_base $device;
-	    my $priority = $tcref->{priority} << 8;
-	    my $parent   = in_hexp $tcref->{parent};
+	my $dev      = chain_base $device;
+	my $priority = $tcref->{priority} << 8;
+	my $parent   = in_hexp $tcref->{parent};
 
+	unless ( $config{TC_ENABLED} eq 'Shared' ) {
 	    if ( $lastdevice ne $device ) {
 		if ( $lastdevice ) {
 		    pop_indent;
@@ -1497,15 +1500,15 @@ sub setup_traffic_shaping() {
 
 	    save_progress_message_short qq("   TC Class $classid defined.");
 	    emit '';
-	}
 
-	if ( $lastdevice ) {
-	    pop_indent;
-	    emit "fi\n";
+	    if ( $lastdevice ) {
+		pop_indent;
+		emit "fi\n";
+	    }
 	}
-
-	process_tcfilters;
     }
+
+    process_tcfilters;
 }
 
 #

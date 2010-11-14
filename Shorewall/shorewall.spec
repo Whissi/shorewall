@@ -87,6 +87,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(-   ,root,root) /usr/share/shorewall/functions
+%attr(0755,root,root) /usr/share/shorewall/getparams
 %attr(0644,root,root) /usr/share/shorewall/lib.base
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
 %attr(0644,root,root) /usr/share/shorewall/lib.common
@@ -109,6 +110,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples
 
 %changelog
+* Sun Nov 14 2010 Tom Eastep tom@shorewall.net
+- Added getparams to installed files
 * Sat Oct 30 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.15-0Beta1
 * Sat Oct 23 2010 Tom Eastep tom@shorewall.net

@@ -817,7 +817,7 @@ sub chain_base($) {
     $chain =~ s/\+$//;
     $chain =~ tr/./_/;
 
-    if ( $chain =~ /^[0-9]/ || $chain =~ /[^\w]/ ) {
+    if ( $chain eq '' || $chain =~ /^[0-9]/ || $chain =~ /[^\w]/ ) {
 	#
 	# Must map. Remove all illegal characters
 	#

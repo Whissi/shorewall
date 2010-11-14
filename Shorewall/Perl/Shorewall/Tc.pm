@@ -424,7 +424,7 @@ sub process_tc_rule( ) {
 	#
 	# expand_rule() returns destination device if any
 	#
-	fatal_error "Class Id $originalmark is not associated with device $result" if $device ne $result;
+	fatal_error "Class Id $originalmark is not associated with device $result" if $config{TC_ENABLED} eq 'Internal' && $device ne $result;
     }
 
     progress_message "  TC Rule \"$currentline\" $done";
@@ -939,12 +939,18 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 #
 # Process a record from the tcfilters file
 #
-sub process_tc_filter( ) {
+sub process_tc_filter() {
+
     my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 2, 8, 'tcfilters file';
 
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
+
+    my $ip = $family == F_IPV4 ? 'ip' : 'ipv6';
+    my $ip32 = $family == F_IPV4 ? 'ip' : 'ip6';
+
+    my $lo = $family - 2; #Length offset: 2 for IPV4 and 4 for IPV6.
 
     ( $device , my $devref ) = dev_by_number( $device );
 
@@ -963,16 +969,16 @@ sub process_tc_filter( ) {
     fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
     fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
 
-    my $rule = "filter add dev $devref->{physical} protocol ip parent $devnum:0 prio 10 u32";
+    my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio 10 u32";
 
     if ( $source ne '-' ) {
 	my ( $net , $mask ) = decompose_net( $source );
-	$rule .= "\\\n   match ip src $net/$mask";
+	$rule .= "\\\n   match $ip32 src $net/$mask";
     }
 
     if ( $dest ne '-' ) {
 	my ( $net , $mask ) = decompose_net( $dest );
-	$rule .= "\\\n   match ip dst $net/$mask";
+	$rule .= "\\\n   match $ip dst $net/$mask";
     }
 
     if ( $tos ne '-' ) {
@@ -990,14 +996,14 @@ sub process_tc_filter( ) {
 	    fatal_error "Invalid TOS ($tos)";
 	}
 
-	$rule .= "\\\n  match ip tos $tosval $mask";
+	$rule .= "\\\n  match $ip32 tos $tosval $mask";
     }
 
     if ( $length ne '-' ) {
 	my $len = numeric_value( $length ) || 0;
 	my $mask = $validlengths{$len};
 	fatal_error "Invalid LENGTH ($length)" unless $mask;
-	$rule .="\\\n   match u16 0x0000 $mask at 2";
+	$rule .="\\\n   match u16 0x0000 $mask at $lo";
     }
 
     my $protonumber = 0;
@@ -1005,7 +1011,7 @@ sub process_tc_filter( ) {
     unless ( $proto eq '-' ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
-	$rule .= "\\\n   match ip protocol $protonumber 0xff" if $protonumber;
+	$rule .= "\\\n   match $ip32 protocol $protonumber 0xff" if $protonumber;
     }
 
     if ( $portlist eq '-' && $sportlist eq '-' ) {
@@ -1034,17 +1040,25 @@ sub process_tc_filter( ) {
 	    $lasttnum = $tnum;
 	    $lastrule = $rule;
 
-	    emit( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol ip prio 10 handle $tnum: u32 divisor 1" );
+	    emit( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol $ip prio 10 handle $tnum: u32 divisor 1" );
 	}
 	#
 	# And link to it using the current contents of $rule
 	#
-	emit( "\nrun_tc $rule\\" ,
-	      "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	if ( $family == F_IPV4 ) {
+	    emit( "\nrun_tc $rule\\" ,
+		  "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	} else {
+	    #
+	    # This nonsense simply advances the header pointer by 40 bytes.
+	    #
+	    emit( "\nrun_tc $rule\\" ,
+		  "   link $tnum:0 offset at 0 mask 0x0000 plus 40 eat" );
+	}    
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule     = "filter add dev $devref->{physical} protocol ip parent $devnum:0 prio 10 u32 ht $tnum:0";
+	$rule     = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio 10 u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT"
@@ -1076,12 +1090,24 @@ sub process_tc_filter( ) {
 
 	    for my $portrange ( split_list $portlist, 'port list' ) {
 		if ( $protonumber == ICMP ) {
+		    fatal_error "ICMP not allowed with IPv6" unless $family == F_IPV4;
 		    fatal_error "SOURCE PORT(S) are not allowed with ICMP" if $sportlist ne '-';
 
 		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
 
 		    my $rule1 = "   match icmp type $icmptype 0xff";
 		    $rule1   .= "\\\n   match icmp code $icmpcode 0xff" if defined $icmpcode;
+		    emit( "\nrun_tc ${rule}\\" ,
+			  "$rule1\\" ,
+			  "   flowid $devref->{number}:$class" );
+		} elsif ( $protonumber == IPv6_ICMP ) {
+		    fatal_error "IPv6 ICMP not allowed with IPv4" unless $family == F_IPV4;
+		    fatal_error "SOURCE PORT(S) are not allowed with IPv6 ICMP" if $sportlist ne '-';
+
+		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp6( $portrange );
+
+		    my $rule1 = "   match icmp6 type $icmptype 0xff";
+		    $rule1   .= "\\\n   match icmp6 code $icmpcode 0xff" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
 			  "$rule1\\" ,
 			  "   flowid $devref->{number}:$class" );
@@ -1145,6 +1171,40 @@ sub process_tc_filter( ) {
 
     emit '';
 
+}
+
+sub process_tcfilters() {
+
+    my $fn = open_file 'tcfilters';
+
+    if ( $fn ) {
+	my @family = ( $family );
+	
+	first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message q("Adding TC Filters"); } );
+	
+	while ( read_a_line ) {
+	    if ( $currentline =~ /^\s*IPV4\s*$/ ) {
+		$family = F_IPV4;
+	    } elsif ( $currentline =~ /^\s*IPV6\s*$/ ) {
+		$family = F_IPV6;
+	    } elsif ( $currentline =~ /^\s*ALL\s*$/ ) {
+		$family = 0;
+	    } elsif ( $family ) {
+		process_tc_filter;
+	    } else {
+		push @family, $family;
+
+		for ( F_IPV4, F_IPV6 ) {
+		    $family = $_;
+		    process_tc_filter;
+		}
+
+		$family = pop @family;
+	    }
+	}
+
+	$family = pop @family;
+    }
 }
 
 sub process_tc_priority() {
@@ -1433,15 +1493,8 @@ sub setup_traffic_shaping() {
 	emit "fi\n";
     }
 
-    if ( $family == F_IPV4 ) {
-	$fn = open_file 'tcfilters';
+    process_tcfilters;
 
-	if ( $fn ) {
-	    first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message q("Adding TC Filters"); } );
-
-	    process_tc_filter while read_a_line;
-	}
-    }
 }
 
 #

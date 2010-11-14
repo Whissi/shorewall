@@ -947,8 +947,9 @@ sub process_tc_filter() {
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
 
-    my $ip = $family == F_IPV4 ? 'ip' : 'ipv6';
+    my $ip   = $family == F_IPV4 ? 'ip' : 'ipv6';
     my $ip32 = $family == F_IPV4 ? 'ip' : 'ip6';
+    my $prio = $family == F_IPV4 ?  10  :  11;;
 
     my $lo = $family - 2; #Length offset: 2 for IPV4 and 4 for IPV6.
 
@@ -969,7 +970,7 @@ sub process_tc_filter() {
     fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
     fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
 
-    my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio 10 u32";
+    my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio u32";
 
     if ( $source ne '-' ) {
 	my ( $net , $mask ) = decompose_net( $source );
@@ -1040,7 +1041,7 @@ sub process_tc_filter() {
 	    $lasttnum = $tnum;
 	    $lastrule = $rule;
 
-	    emit( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol $ip prio 10 handle $tnum: u32 divisor 1" );
+	    emit( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol $ip prio $prio handle $tnum: u32 divisor 1" );
 	}
 	#
 	# And link to it using the current contents of $rule
@@ -1058,7 +1059,7 @@ sub process_tc_filter() {
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
-	$rule     = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio 10 u32 ht $tnum:0";
+	$rule     = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio u32 ht $tnum:0";
 
 	if ( $portlist eq '-' ) {
 	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT"

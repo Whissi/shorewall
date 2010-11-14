@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-tcfilters</refentrytitle>
+    <refentrytitle>shorewall6-tcfilters</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -11,12 +11,12 @@
   <refnamediv>
     <refname>tcfilters</refname>
 
-    <refpurpose>Shorewall u32 classifier rules file</refpurpose>
+    <refpurpose>shorewall6 u32 classifier rules file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/tcfilters</command>
+      <command>/etc/shorewall6/tcfilters</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -27,7 +27,7 @@
     shaping.</para>
 
     <para>Beginning with Shorewall 4.4.15, the file may contain entries for
-    both IPv4 and IPv6. By default, all rules apply to IPv4 but that can be
+    both IPv4 and IPv6. By default, all rules apply to IPv6 but that can be
     changed by inserting a line as follows:</para>
 
     <variablelist>
@@ -68,10 +68,10 @@
         <listitem>
           <para>The name or number of an <returnvalue>interface</returnvalue>
           defined in <ulink
-          url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
+          url="shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5)
           followed by a <replaceable>class</replaceable> number defined for
           that interface in <ulink
-          url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5).</para>
+          url="shorewall6-tcclasses.html">shorewall6-tcclasses</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -94,10 +94,6 @@
           <para>Destination of the packet. May be a host or network
           <replaceable>address</replaceable>. DNS names are not
           allowed.</para>
-
-          <para>You may exclude certain hosts from the set already defined
-          through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -203,7 +199,7 @@
           ALL cannot be used because IPv4 ICMP and IPv6 ICMP are two different
           protocols.</para>
 
-          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DEST 
+          <programlisting>        #CLASS    SOURCE    DEST         PROTO   DEST 
        #                                        PORT
 
        IPV4
@@ -223,7 +219,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/tcfilters</para>
+    <para>/etc/shorewall6/tcfilters</para>
   </refsect1>
 
   <refsect1>
@@ -238,14 +234,6 @@
     <para><ulink
     url="http://shorewall.net/PacketMarking.html">http://shorewall.net/PacketMarking.html</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-ecn(5), shorewall-exclusion(5),
-    shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para></para>
   </refsect1>
 </refentry>

@@ -1900,6 +1900,14 @@ ip link set ifb0 up</command></programlisting>
         </listitem>
 
         <listitem>
+          <para>Address ranges and lists are not supported</para>
+        </listitem>
+
+        <listitem>
+          <para>Exclusion is not supported.</para>
+        </listitem>
+
+        <listitem>
           <para>filters are applied to packets as they <emphasis>appear on the
           wire</emphasis>. So incoming packets will not have DNAT applied yet
           (the destination IP address will be the external address) and
@@ -1944,6 +1952,11 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
           <emphasis role="bold">source</emphasis> port 80.</para>
         </listitem>
       </orderedlist>
+
+      <para>Beginning with Shorewall 4.4.15, both IPv4 and IPv6 rules can be
+      defined in this file. See <ulink
+      url="manpages/shorewall-tcfilters.html">shorewall-tcfilters</ulink> (5)
+      for details.</para>
 
       <para>Columns in the file are as follow. As in all Shorewall
       configuration files, a hyphen ("-") may be used to indicate that no

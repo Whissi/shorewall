@@ -947,9 +947,7 @@ sub process_tc_filter() {
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
 
-    my $ip   = $family == F_IPV4 ? 'ip' : 'ipv6';
-    my $ip32 = $family == F_IPV4 ? 'ip' : 'ip6';
-    my $prio = $family == F_IPV4 ?  10  :  11;;
+    my ( $ip, $ip32, $prio ) = $family == F_IPV4 ? ('ip', 'ip', 10 ) : ('ipv6', 'ip6', 11 );
 
     my $lo = $family - 2; #Length offset: 2 for IPV4 and 4 for IPV6.
 

@@ -1050,11 +1050,8 @@ sub process_tc_filter() {
 	    emit( "\nrun_tc $rule\\" ,
 		  "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
 	} else {
-	    #
-	    # This nonsense simply advances the header pointer by 40 bytes.
-	    #
 	    emit( "\nrun_tc $rule\\" ,
-		  "   link $tnum:0 offset at 0 mask 0x0000 plus 40 eat" );
+		  "   link $tnum:0 offset plus 40 eat" );
 	}    
 	#
 	# The rule to match the port(s) will be inserted into the new table

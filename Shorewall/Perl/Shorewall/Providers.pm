@@ -20,8 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module deals with the /etc/shorewall/providers and
-#   /etc/shorewall/route_rules files.
+#   This module deals with the /etc/shorewall/providers,
+#   /etc/shorewall/route_rules and /etc/shorewall/routes files.
 #
 package Shorewall::Providers;
 require Exporter;
@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_14';
+our $VERSION = '4.4_15';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -631,7 +631,7 @@ sub add_an_rtrule( ) {
 	my $base = uc chain_base( $providers{$provider}{physical} );
 	finish_current_if if $base ne $current_if;
 	start_new_if( $base ) unless $current_if;
-  } else {
+    } else {
 	finish_current_if;
     }
 
@@ -639,6 +639,54 @@ sub add_an_rtrule( ) {
 	   "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
 
     progress_message "   Routing rule \"$currentline\" $done";
+}
+
+sub add_a_route( ) {
+    my ( $provider, $dest, $gateway ) = split_line 2, 3, 'routes file';
+
+    our $current_if;
+
+    unless ( $providers{$provider} ) {
+	my $found = 0;
+
+	if ( "\L$provider" =~ /^(0x[a-f0-9]+|0[0-7]*|[0-9]*)$/ ) {
+	    my $provider_number = numeric_value $provider;
+
+	    for ( keys %providers ) {
+		if ( $providers{$_}{number} == $provider_number ) {
+		    $provider = $_;
+		    $found = 1;
+		    last;
+		}
+	    }
+	}
+
+	fatal_error "Unknown provider ($provider)" unless $found;
+    }
+
+    validate_net ( $dest, 1 );
+
+    validate_address ( $gateway, 1 ) if $gateway ne '-';
+
+    my ( $optional, $number , $physical ) = ( $providers{$provider}{optional} , $providers{$provider}{number}, $providers{$provider}{physical} );
+    
+    if ( $providers{$provider}{optional} ) {
+	my $base = uc chain_base( $physical );
+	finish_current_if if $base ne $current_if;
+	start_new_if ( $base ) unless $current_if;
+    } else {
+	finish_current_if;
+    }
+
+    if ( $gateway ne '-' ) {
+	emit( "if ! qt \$IP route -4 add $dest via $gateway dev $physical table $number; then",
+	      "    run_ip route add $dest via $gateway table $number",
+	      "fi" );
+    } else {
+	emit( "run_ip route add $dest dev $physical table $number" );
+    }
+
+    progress_message "   Route \"$currentline\" $done";
 }
 
 #
@@ -773,7 +821,21 @@ sub setup_providers() {
     if ( $providers ) {
 	finish_providers;
 
-	my $fn = open_file 'route_rules';
+	my $fn = open_file 'routes';
+
+	if ( $fn ) {
+	    our $current_if = '';
+
+	    first_entry "$doing $fn...";
+
+	    emit '';
+
+	    add_a_route while read_a_line;
+
+	    finish_current_if;
+	}
+
+	$fn = open_file 'route_rules';
 
 	if ( $fn ) {
 	    our $current_if = '';

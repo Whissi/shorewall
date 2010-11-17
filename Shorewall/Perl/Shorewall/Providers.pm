@@ -642,7 +642,7 @@ sub add_an_rtrule( ) {
 }
 
 sub add_a_route( ) {
-    my ( $provider, $dest, $gateway ) = split_line 2, 3, 'routes file';
+    my ( $provider, $dest, $gateway, $device ) = split_line 2, 4, 'routes file';
 
     our $current_if;
 
@@ -668,7 +668,9 @@ sub add_a_route( ) {
 
     validate_address ( $gateway, 1 ) if $gateway ne '-';
 
-    my ( $optional, $number , $physical ) = ( $providers{$provider}{optional} , $providers{$provider}{number}, $providers{$provider}{physical} );
+    my ( $optional, $number ) = ( $providers{$provider}{optional} , $providers{$provider}{number} );
+
+    my $physical = $device eq '-' ? $providers{$provider}{physical} : physical_name( $device );
     
     if ( $providers{$provider}{optional} ) {
 	my $base = uc chain_base( $physical );
@@ -679,9 +681,11 @@ sub add_a_route( ) {
     }
 
     if ( $gateway ne '-' ) {
-	emit( "if ! qt \$IP route -4 add $dest via $gateway dev $physical table $number; then",
-	      "    run_ip route add $dest via $gateway table $number",
-	      "fi" );
+	if ( $device ne '-' ) {
+	    emit( "run_ip route add $dest via $gateway dev $physical table $number" );
+	} else {
+	    emit ("run_ip route add $dest via $gateway table $number" );
+	}
     } else {
 	emit( "run_ip route add $dest dev $physical table $number" );
     }

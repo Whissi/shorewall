@@ -575,6 +575,12 @@
             Normally, you will list all interfaces on your firewall in this
             column except those Internet interfaces specified in the INTERFACE
             column of entries in this file.</para>
+
+            <note>
+              <para>Beginning with Shorewall 4.4.15, provider routing tables
+              can be augmeted with additional routes through use of the <link
+              linkend="routes">/etc/shorewall/routes</link> file.</para>
+            </note>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -1104,6 +1110,70 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
 -                       10.8.0.0/24     main            1000</programlisting>
       </section>
+    </section>
+
+    <section id="routes">
+      <title>/etc/shorewall/routes File</title>
+
+      <para>Beginning with Shorewall 4.4.15, additional routes can be added to
+      the provider routing tables using the /etc/shorewall/routes file.</para>
+
+      <para>The columns in the file are as follows.</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><emphasis role="bold">PROVIDER</emphasis></term>
+
+          <listitem>
+            <para>The name or number of a provider defined in <ulink
+            url="shorewall-providers.html">shorewall-providers</ulink>
+            (5).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">DEST</emphasis></term>
+
+          <listitem>
+            <para>Destination host address or network address.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">GATEWAY</emphasis> (Optional)</term>
+
+          <listitem>
+            <para>If specified, gives the IP address of the gateway to the
+            DEST.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">DEVICE</emphasis> (Optional)</term>
+
+          <listitem>
+            <para>Specifies the device route. If neither DEVICE nor GATEWAY is
+            given, then the INTERFACE specified for the PROVIDER in <ulink
+            url="manpages/shorewall-providers.html">shorewall-providers</ulink>
+            (5).</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para> Assume the following entry in
+      <filename>/etc/shorewall/providers</filename>:</para>
+
+      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
+Comcast      1     -    xxx             eth2            ....     </programlisting>
+
+      <para>The following table gives some example entries in the file and the
+      <command>ip route</command> command which results.</para>
+
+      <programlisting><emphasis role="bold">#PROVIDER     DEST             GATEWAY         DEVICE</emphasis>        | <emphasis
+          role="bold">             Generated Command</emphasis>
+Comcast       172.20.1.0/24    -               eth0          | ip -4 route add 172.20.1.0/24 dev eth0 table 1
+Comcast       192.168.4.0/24   172.20.1.1                    | ip -4 route add 192.168.1.0/24 via 172.20.1.1 table 1
+Comcast       192.168.4.0/24                                 | ip -4 route add 192.168.4.0/24 dev eth2 table 1 </programlisting>
     </section>
 
     <section>

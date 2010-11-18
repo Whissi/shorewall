@@ -24,14 +24,6 @@
 . /usr/share/shorewall/lib.base
 . /usr/share/shorewall/lib.cli
 
-exported=$(env | sed 's/=.*//');
-
-for v in $exported; do
-    eval t=\"\$$v\"
-    eval unset $v
-    eval $v=\"$t\"
-done
-
 CONFIG_PATH="$2"
 
 set -a

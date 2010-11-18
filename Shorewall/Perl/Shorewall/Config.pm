@@ -1792,7 +1792,7 @@ sub embedded_perl( $ ) {
 #   - Remove trailing comments.
 #   - Handle Line Continuation
 #   - Handle embedded SHELL and PERL scripts
-#   - Expand shell variables from $ENV.
+#   - Expand shell variables from %params and %ENV.
 #   - Handle INCLUDE <filename>
 #
 
@@ -1864,6 +1864,9 @@ sub read_a_line(;$) {
 	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 
 		unless ( exists $params{$3} ) {
+		    #
+		    # Given the way that getparams works, this should never help but better safe than sorry
+		    #
 		    $params{$3} = $ENV{$3} if exists $ENV{$3};
 		}
 

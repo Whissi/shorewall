@@ -1187,9 +1187,9 @@ sub process_tcfilters() {
 	
 	while ( read_a_line ) {
 	    if ( $currentline =~ /^\s*IPV4\s*$/ ) {
-		$family = F_IPV4;
+		Shorewall::IPAddrs::initialize( $family = F_IPV4 ) unless $family == F_IPV4;
 	    } elsif ( $currentline =~ /^\s*IPV6\s*$/ ) {
-		$family = F_IPV6;
+		Shorewall::IPAddrs::initialize( $family = F_IPV6 ) unless $family == F_IPV6;
 	    } elsif ( $currentline =~ /^\s*ALL\s*$/ ) {
 		$family = 0;
 	    } elsif ( $family ) {
@@ -1198,15 +1198,15 @@ sub process_tcfilters() {
 		push @family, $family;
 
 		for ( F_IPV4, F_IPV6 ) {
-		    $family = $_;
+		    Shorewall::IPAddrs::initialize( $family = $_ );
 		    process_tc_filter;
 		}
 
-		$family = pop @family;
+		Shorewall::IPAddrs::initialize( $family = pop @family );
 	    }
 	}
 
-	$family = pop @family;
+	Shorewall::IPAddrs::initialize( $family = pop @family );
     }
 }
 

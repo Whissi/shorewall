@@ -495,7 +495,7 @@ sub setup_syn_flood_chains() {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};
-	    my $synchainref = new_chain 'filter' , syn_flood_chain $chainref;
+	    my $synchainref = new_chain( 'filter' , '@' . $chainref->{name} );
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_rule_limit( $level ,
 			    $synchainref ,

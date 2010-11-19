@@ -2074,7 +2074,7 @@ sub default_log_level( $$ ) {
 #
 sub check_trivalue( $$ ) {
     my ( $var, $default) = @_;
-    my $val = "\L$config{$var}";
+    my $val = lc( $config{$var} || '' );
 
     if ( defined $val ) {
 	if ( $val eq 'yes' || $val eq 'on' ) {

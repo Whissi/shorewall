@@ -1295,6 +1295,54 @@ usage() # $1 = exit status
     exit $1
 }
 
+version_command() {
+    local finished
+    finished=0
+    local all
+    all=
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			a*)
+			    all=Yes
+			    option=${option#a}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ $# -gt 0 ] && usage 1
+
+    echo $SHOREWALL_VERSION
+
+    if [ -n "$all" ]; then
+	for product in shorewall shorewall-lite shorewall6-lite shorewall-init; do
+	    if [ -f /usr/share/$product/version ]; then
+		echo "$product: $(cat /usr/share/$product/version)"
+	    fi
+	done
+    fi
+}
+
 #
 # Execution begins here
 #
@@ -1424,54 +1472,6 @@ while [ $finished -eq 0 ]; do
             ;;
     esac
 done
-
-version_command() {
-    local finished
-    finished=0
-    local all
-    all=
-
-    while [ $finished -eq 0 -a $# -gt 0 ]; do
-	option=$1
-	case $option in
-	    -*)
-		option=${option#-}
-
-		while [ -n "$option" ]; do
-		    case $option in
-			-)
-			    finished=1
-			    option=
-			    ;;
-			a*)
-			    all=Yes
-			    option=${option#a}
-			    ;;
-			*)
-			    usage 1
-			    ;;
-		    esac
-		done
-		shift
-		;;
-	    *)
-		finished=1
-		;;
-	esac
-    done
-
-    [ $# -gt 0 ] && usage 1
-
-    echo $SHOREWALL_VERSION
-
-    if [ -n "$all" ]; then
-	for product in shorewall shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ -f /usr/share/$product/version ]; then
-		echo "$product: $(cat /usr/share/$product/version)"
-	    fi
-	done
-    fi
-}
 
 if [ $# -eq 0 ]; then
     usage 1

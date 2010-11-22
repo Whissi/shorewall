@@ -491,11 +491,14 @@ sub complete_standard_chain ( $$$$ ) {
 # Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
 #
 sub setup_syn_flood_chains() {
+    my @zones = ( non_firewall_zones );
     for my $chainref ( @policy_chains ) {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};
-	    my $synchainref = new_chain( 'filter' , '@' . $chainref->{name} );
+	    my $synchainref = @zones > 1 ? 
+		    new_chain 'filter' , syn_flood_chain $chainref :
+		    new_chain( 'filter' , '@' . $chainref->{name} );
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_rule_limit( $level ,
 			    $synchainref ,

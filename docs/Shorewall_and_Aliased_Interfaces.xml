@@ -194,6 +194,10 @@ DNAT      net        loc:192.168.1.3      tcp        80             -         20
       <programlisting>#INTERFACE             SUBNET          ADDRESS
 eth0                   192.168.1.0/24  206.124.146.178</programlisting>
 
+      <para>Similarly, you want SMTP traffic from local system 10.1.10.22 to
+      have source IP 206.124.146.178:<programlisting>#INTERFACE             SUBNET          ADDRESS             PROTO      DEST PORT(S)
+eth0                   192.168.1.0/24  206.124.146.178     tcp        25</programlisting></para>
+
       <para>Shorewall can create the alias (additional address) for you if you
       set ADD_SNAT_ALIASES=Yes in
       <filename>/etc/shorewall/shorewall.con</filename>f.</para>

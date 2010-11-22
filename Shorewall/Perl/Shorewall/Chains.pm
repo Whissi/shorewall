@@ -454,7 +454,7 @@ sub decr_cmd_level( $ ) {
 sub trace( $$$$ ) {
     my ($chainref, $action, $rulenum, $message) = @_;
 
-    my $heading = $rulenum ? sprintf "NF-(%s)-> %s:%s:%s", $action, $chainref->{table}, $chainref->{name}, $rulenum : sprintf "NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
+    my $heading = $rulenum ? sprintf "NF-(%s)-> %s:%s:%d", $action, $chainref->{table}, $chainref->{name}, $rulenum : sprintf "NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
 
     my $length = length $heading;
 

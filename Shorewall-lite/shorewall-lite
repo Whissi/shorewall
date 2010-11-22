@@ -113,10 +113,6 @@ get_config() {
 
     [ -n "$FW" ] || FW=fw
 
-    [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
-
-    [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
-
     if [ -n "$IPTABLES" ]; then
 	if [ ! -x "$IPTABLES" ]; then
 	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2

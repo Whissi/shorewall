@@ -113,10 +113,6 @@ get_config() {
 
     [ -n "$FW" ] || FW=fw
 
-    [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
-
-    [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
-
     if [ -n "$IP6TABLES" ]; then
 	if [ ! -x "$IP6TABLES" ]; then
 	    echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2

@@ -398,6 +398,27 @@
 #
 #					Defines the ending date and time.
 #
+#	HEADERS [any:|exactly:]<header list>
+#
+#	where <header list> is a comma-separated list of headers from the following:
+#
+#
+#	      Long Name		Short Name	Number
+#             --------------------------------------
+#	      auth   		ah    		50
+#	      esp		esp		51
+#	      hop-by-hop	hop		0
+#	      route		ipv6-route	41
+#	      frag		ipv6-frag	44
+#	      none		ipv6-nonxt	59	
+#	      protocol	proto		255
+#
+#       If 'any:' is specified, the rule will match if any of the listed
+#     	headers are present. If 'exactly:' is specified, the will match
+#     	packets that exactly include all specified headers. If neither is
+#     	given, 'any:' is assumed.
+#
+#
 # A few examples should help show how Macros work.
 #
 # /etc/shorewall/macro.FwdFTP:

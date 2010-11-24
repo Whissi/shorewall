@@ -85,7 +85,36 @@ Beta 1.
 
 RC 1
 
-    A Munin macro has been contributed by Tuomo Soini.
+1)   A Munin macro has been contributed by Tuomo Soini.
+
+2)   The Shorewall6 accounting, tcrules and rules files now include a
+     HEADERS column which allows matching based on the IPv6 extension and
+     protocol headers included in a packet.
+
+     The contents of the column are:
+
+     	 [any:|exactly:]<header list>
+
+     where <header list> is a comma-separated list of headers from the
+     following:
+
+	Long Name	Short Name	Number
+        --------------------------------------
+	auth   		ah    		50
+	esp		esp		51
+	hop-by-hop	hop		0
+	route		ipv6-route	41
+	frag		ipv6-frag	44
+	none		ipv6-nonxt	59	
+	protocol	proto		255
+
+     If 'any:' is specified, the rule will match if any of the listed
+     headers are present. If 'exactly:' is specified, the will match
+     packets that exactly include all specified headers. If neither is
+     given, 'any:' is assumed.
+
+     This change adds a new capability (Header Match) so if you use a
+     capabilities file, you will need to regenerate using this release.
 
 Beta 2
 

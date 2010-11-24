@@ -143,6 +143,7 @@ our %EXPORT_TAGS = (
 				       do_tos
 				       do_connbytes
 				       do_helper
+				       do_headers
 				       have_ipset_rules
 				       match_source_dev
 				       match_dest_dev
@@ -2522,7 +2523,7 @@ sub do_connbytes( $ ) {
 }
 
 #
-# Create a "-m helper" match for the passed argument
+# Create a soft "-m helper" match for the passed argument
 #
 sub do_helper( $ ) {
     my $helper = shift;
@@ -2540,6 +2541,60 @@ sub do_length( $ ) {
 
     require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
     $length ne '-' ? "-m length --length $length " : '';
+}
+
+#
+# Create a "-m -ipv6header" match for the passed argument
+#
+my %headers = ( hop          => 1,
+		dst          => 1,
+		route        => 1,
+		frag         => 1,
+		auth         => 1,
+		esp          => 1,  
+		none         => 1,
+		'hop-by-hop' => 1,
+		'ipv6-opts'  => 1,
+		'ipv6-route' => 1,
+		'ipv6-frag'  => 1,
+		ah           => 1,
+		'ipv6-nonxt' => 1,
+		'protocol'   => 1,
+		0            => 1,
+		43           => 1,
+		44           => 1,
+		50           => 1,
+		51           => 1,
+		59           => 1,
+		60           => 1,
+		255          => 1 );
+
+sub do_headers( $ ) {
+    my $headers = shift;
+
+    return '' if $headers eq '-';
+
+    require_capability 'HEADER_MATCH', 'A non-empty HEADER column', 's';
+
+    my $invert = $headers =~ s/^!// ? '! ' : "";
+
+    my $soft   = '--soft ';
+
+    if ( $headers =~ s/^exactly:// ) {
+	$soft = '';
+    } else {
+	$headers =~ s/^any://;
+    }
+
+    for ( split_list $headers, "Header" ) {
+	if ( $_ eq 'proto' ) {
+	    $_ = 'protocol';
+	} else {
+	    fatal_error "Unknown IPv6 Header ($_)" unless $headers{$_};
+	}
+    }
+
+    "-m ipv6header ${invert}--header ${headers} ${soft}";
 }
 
 #

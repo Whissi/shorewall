@@ -1334,6 +1334,7 @@ determine_capabilities() {
     FLOW_FILTER=
     FWMARK_RT_MASK=
     MARK_ANYWHERE=
+    HEADER_MATCH=
 
     chain=fooX$$
 
@@ -1476,6 +1477,7 @@ determine_capabilities() {
     qt $IP6TABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
     qt $IP6TABLES -A $chain -j LOG || LOG_TARGET=
     qt $IP6TABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
+    qt $IP6TABLES -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
 
     qt $IP6TABLES -F $chain
     qt $IP6TABLES -X $chain
@@ -1553,6 +1555,7 @@ report_capabilities() {
 	report_capability "FLOW Classifier" $FLOW_FILTER
 	report_capability "fwmark route mask" $FWMARK_RT_MASK
 	report_capability "Mark in any table" $MARK_ANYWHERE
+	report_capability "Header Match" $HEADER_MATCH
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1615,6 +1618,7 @@ report_capabilities1() {
     report_capability1 FLOW_FILTER
     report_capability1 FWMARK_RT_MASK
     report_capability1 MARK_ANYWHERE
+    report_capability1 HEADER_MATCH
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION    

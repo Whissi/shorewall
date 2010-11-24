@@ -888,13 +888,13 @@ sub setup_mac_lists( $ ) {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$$$ );
 
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$$$$ ) {
-    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $wildcard ) = @_;
+sub process_macro ( $$$$$$$$$$$$$$$$ ) {
+    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
 
     my $nocomment = no_comment;
 
@@ -912,13 +912,13 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime);
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders );
 
 	if ( $format == 1 ) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $macro_commands;
-	    ( $morigdest, $mmark, $mconnlimit, $mtime ) = qw/- - - -/;
+	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders ) = qw/- - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime ) = split_line1 1, 12, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders ) = split_line1 1, 13, 'macro file', $macro_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {
@@ -986,6 +986,7 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 				    merge_macro_column( $mmark,      $mark ) ,
 				    merge_macro_column( $mconnlimit, $connlimit) ,
 				    merge_macro_column( $mtime,      $time ),
+				    merge_macro_column( $mheaders,   $headers ),
 				    $wildcard
 				   );
 
@@ -1005,8 +1006,8 @@ sub process_macro ( $$$$$$$$$$$$$$$ ) {
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
-sub process_rule1 ( $$$$$$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wildcard ) = @_;
+sub process_rule1 ( $$$$$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
@@ -1051,6 +1052,7 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 				       $mark,
 				       $connlimit,
 				       $time,
+				       $headers,
 				       $wildcard );
 
 	$macro_nest_level--;
@@ -1244,7 +1246,9 @@ sub process_rule1 ( $$$$$$$$$$$$$ ) {
 		      do_user( $user ) ,
 		      do_test( $mark , $globals{TC_MASK} ) ,
 		      do_connlimit( $connlimit ),
-		      do_time( $time ) );
+		      do_time( $time ) ,
+		      do_headers( $headers )
+		    );
     }
 
     unless ( $section eq 'NEW' ) {
@@ -1606,7 +1610,7 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time ) = split_line1 1, 12, 'rules file', \%rules_commands;
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'rules file', \%rules_commands;
 
     process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
@@ -1638,7 +1642,7 @@ sub process_rule ( ) {
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
-		$generated |= process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $wild;
+		$generated |= process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wild;
 	    }
 	}
     }

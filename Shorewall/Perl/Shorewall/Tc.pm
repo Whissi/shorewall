@@ -195,7 +195,7 @@ sub initialize( $ ) {
 }
 
 sub process_tc_rule( ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper ) = split_line1 2, 12, 'tcrules file';
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers ) = split_line1 2, 13, 'tcrules file';
 
     our @tccmd;
 
@@ -412,7 +412,8 @@ sub process_tc_rule( ) {
 				     do_length( $length ) .
 				     do_tos( $tos ) .
 				     do_connbytes( $connbytes ) .
-				     do_helper( $helper ),
+				     do_helper( $helper ) .
+				     do_headers( $headers ) ,
 				     $source ,
 				     $dest ,
 				     '' ,

@@ -254,6 +254,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 FLOW_FILTER     => 'Flow Classifier',
 		 FWMARK_RT_MASK  => 'fwmark route mask',
 		 MARK_ANYWHERE   => 'Mark in any table',
+		 HEADER_MATCH    => 'Header Match',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -353,7 +354,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED => 0,
 		    VERSION => "4.4.15-RC1",
-		    CAPVERSION => 40413 ,
+		    CAPVERSION => 40415 ,
 		  );
 
     #
@@ -2503,6 +2504,10 @@ sub Mark_Anywhere() {
     qt1( "$iptables -A $sillyname -j MARK --set-mark 5" );
 }
 
+sub Header_Match() {
+    qt1( "$iptables -A $sillyname -m ipv6header --header 255 -j ACCEPT" );
+}
+
 our %detect_capability =
     ( ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
@@ -2517,6 +2522,7 @@ our %detect_capability =
       FWMARK_RT_MASK => \&Fwmark_Rt_Mask,
       GOTO_TARGET => \&Goto_Target,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
+      HEADER_MATCH => \&Header_Match,
       HELPER_MATCH => \&Helper_Match,
       IPMARK_TARGET => \&IPMark_Target,
       IPP2P_MATCH => \&Ipp2p_Match,

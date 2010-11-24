@@ -600,6 +600,100 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 4         ::/0      ::/0      TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">HEADERS -
+        [!][any:|exactly:]</emphasis><replaceable>header-list
+        </replaceable>(Optional - Added in Shorewall 4.4.15)</term>
+
+        <listitem>
+          <para>The <replaceable>header-list</replaceable> consists of a
+          comma-separated list of headers from the following list.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">auth</emphasis>, <emphasis
+              role="bold">ah</emphasis>, or <emphasis
+              role="bold">50</emphasis></term>
+
+              <listitem>
+                <para><firstterm>Authentication Headers</firstterm> extension
+                header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">esp</emphasis>, or <emphasis
+              role="bold">51</emphasis></term>
+
+              <listitem>
+                <para><firstterm>Encrypted Security Payload</firstterm>
+                extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">hop</emphasis>, <emphasis
+              role="bold">hop-by-hop</emphasis> or <emphasis
+              role="bold">0</emphasis></term>
+
+              <listitem>
+                <para>Hop-by-hop options extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">route</emphasis>, <emphasis
+              role="bold">ipv6-route</emphasis> or <emphasis
+              role="bold">41</emphasis></term>
+
+              <listitem>
+                <para>IPv6 Route extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">frag</emphasis>, <emphasis
+              role="bold">ipv6-frag</emphasis> or <emphasis
+              role="bold">44</emphasis></term>
+
+              <listitem>
+                <para>IPv6 fragmentation extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">none</emphasis>, <emphasis
+              role="bold">ipv6-nonxt</emphasis> or <emphasis
+              role="bold">59</emphasis></term>
+
+              <listitem>
+                <para>No next header</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proto</emphasis>, <emphasis
+              role="bold">protocol</emphasis> or <emphasis
+              role="bold">255</emphasis></term>
+
+              <listitem>
+                <para>Any protocol header.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>If <emphasis role="bold">any:</emphasis> is specified, the
+          rule will match if any of the listed headers are present. If
+          <emphasis role="bold">exactly:</emphasis> is specified, the will
+          match packets that exactly include all specified headers. If neither
+          is given, <emphasis role="bold">any:</emphasis> is assumed.</para>
+
+          <para>If <emphasis role="bold">!</emphasis> is entered, the rule
+          will match those packets which would not be matched when <emphasis
+          role="bold">!</emphasis> is omitted.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 

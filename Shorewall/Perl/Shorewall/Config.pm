@@ -685,6 +685,7 @@ sub initialize( $ ) {
 	       FLOW_FILTER => undef,
 	       FWMARK_RT_MASK => undef,
 	       MARK_ANYWHERE => undef,
+	       HEADER_MATCH => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );

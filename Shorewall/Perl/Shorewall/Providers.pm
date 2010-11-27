@@ -655,13 +655,14 @@ sub add_a_route( ) {
 	    for ( keys %providers ) {
 		if ( $providers{$_}{number} == $provider_number ) {
 		    $provider = $_;
-		    $found = $providers{$provider}{physical};
+		    fatal_error "You may not add routes to the $provider table" if $provider_number == LOCAL_TABLE || $provider_number == UNSPEC_TABLE;
+		    $found = 1;
 		    last;
 		}
 	    }
 	}
 
-	fatal_error "Unknown or invalid provider ($provider)" unless $found;
+	fatal_error "Unknown provider ($provider)" unless $found;
     }
 
     validate_net ( $dest, 1 );
@@ -682,12 +683,16 @@ sub add_a_route( ) {
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
-	    emit( "run_ip route add $dest via $gateway dev $physical table $number" );
+	    emit qq(run_ip route add $dest via $gateway dev $physical table $number);
+	    emit qq(echo "qt \$IP -$family route del $dest via $gateway dev $physical table $number" >> \${VARDIR}/undo_routing) if $number >= DEFAULT_TABLE;
 	} else {
-	    emit ("run_ip route add $dest via $gateway table $number" );
+	    emit qq(run_ip route add $dest via $gateway table $number);
+	    emit qq(echo "\$IP -$family route del $dest via $gateway table $number" >> \${VARDIR}/undo_routing) if $number >= DEFAULT_TABLE; 
 	}
     } else {
-	emit( "run_ip route add $dest dev $physical table $number" );
+	fatal_error "You must specify a device for this route" unless $physical;
+	emit qq(run_ip route add $dest dev $physical table $number);
+	emit qq(echo "\$IP -$family route del $dest dev $physical table $number" >> \${VARDIR}/undo_routing) if $number >= DEFAULT_TABLE;
     }
 
     progress_message "   Route \"$currentline\" $done";

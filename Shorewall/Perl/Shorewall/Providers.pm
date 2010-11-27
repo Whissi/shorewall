@@ -655,13 +655,13 @@ sub add_a_route( ) {
 	    for ( keys %providers ) {
 		if ( $providers{$_}{number} == $provider_number ) {
 		    $provider = $_;
-		    $found = 1;
+		    $found = $providers{$provider}{physical};
 		    last;
 		}
 	    }
 	}
 
-	fatal_error "Unknown provider ($provider)" unless $found;
+	fatal_error "Unknown or invalid provider ($provider)" unless $found;
     }
 
     validate_net ( $dest, 1 );

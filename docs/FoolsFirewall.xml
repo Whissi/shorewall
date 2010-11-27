@@ -62,7 +62,7 @@
 
     <para>Because Fool's firewall is not physically located between the net
     and the local systems, the local systems are exposed to all of the systems
-    in the same broadcast domain. Because the local systems (expecially those
+    in the same broadcast domain. Because the local systems (especially those
     running Windows) send broadcasts, those systems can be easily detected by
     using a packet sniffer. Once the systems have been spotted, it is child's
     play to add an IP address in Fool's internal IP network and bypass his
@@ -74,8 +74,10 @@
   <section>
     <title>ARP Roulette</title>
 
-    <para>The Linux IP stack exhibits some unexpected behavior with respect to
-    ARP. It will respond to ARP 'who-has' requests received on
+    <para>The Linux IP stack implements the <ulink
+    url="http://en.wikipedia.org/wiki/Host_model">weak host model.</ulink> As
+    a result, it exhibits some unexpected behavior with respect to ARP. It
+    will respond to ARP 'who-has' requests received on
     <emphasis>any</emphasis> interface and not just on the interface owning
     the address. So when the upstream router sends a 'who-has' request for
     Fool's external IP address, the response may come from his

@@ -698,10 +698,6 @@ sub add_a_route( ) {
     progress_message "   Route \"$currentline\" $done";
 }
 
-#
-# This probably doesn't belong here but looking forward to the day when we get Shorewall out of the routing business,
-# it makes sense to keep all of the routing code together
-#
 sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
     for ( rfc1918_networks ) {

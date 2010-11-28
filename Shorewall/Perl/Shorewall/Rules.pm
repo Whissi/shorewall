@@ -1035,7 +1035,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$ ) {
 	}
 
 	my $generated = process_macro( $basictarget,
-				       $target ,
+				       $target,
 				       $current_param,
 				       $source,
 				       $dest,

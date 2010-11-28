@@ -49,7 +49,6 @@ our @EXPORT_OK = qw( process_rule process_rule1 initialize );
 our $VERSION = '4.4_15';
 
 our $macro_nest_level;
-our $current_param;
 our $family;
 #
 # When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
@@ -71,7 +70,6 @@ my %rules_commands = ( COMMENT => 0,
 sub initialize( $ ) {
     $family = shift;
     $macro_nest_level = 0;
-    $current_param = '';
 }
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
@@ -886,7 +884,7 @@ sub setup_mac_lists( $ ) {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$$$$ );
 
 #
 # Expand a macro rule from the rules file
@@ -973,6 +971,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 
 	$generated |= process_rule1(
 				    $mtarget,
+				    $param,
 				    $msource,
 				    $mdest,
 				    merge_macro_column( $mproto,     $proto ) ,
@@ -1004,8 +1003,8 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
-sub process_rule1 ( $$$$$$$$$$$$$$ ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
+sub process_rule1 ( $$$$$$$$$$$$$$$ ) {
+    my ( $target, $current_param, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
@@ -1031,10 +1030,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$ ) {
 	#
 	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
-	my $save_param;
-
 	if ( $param ne '' ) {
-	    $save_param = $current_param;
 	    $current_param = $param unless $param eq 'PARAM';
 	}
 
@@ -1056,8 +1052,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$ ) {
 				       $wildcard );
 
 	$macro_nest_level--;
-
-	$current_param = $save_param if $param ne '';
 
 	return $generated;
 
@@ -1642,7 +1636,7 @@ sub process_rule ( ) {
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
-		$generated |= process_rule1 $target, $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wild;
+		$generated |= process_rule1 $target, '', $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wild;
 	    }
 	}
     }

@@ -1035,7 +1035,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$ ) {
 
 	if ( $param ne '' ) {
 	    push @param_stack, $current_param;
-	    $current_param = $param;
+	    $current_param = $param unless $param eq 'PARAM';
 	}
 
 	my $generated = process_macro( $basictarget,

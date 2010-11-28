@@ -50,7 +50,6 @@ our $VERSION = '4.4_15';
 
 our $macro_nest_level;
 our $current_param;
-our @param_stack;
 our $family;
 #
 # When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
@@ -73,7 +72,6 @@ sub initialize( $ ) {
     $family = shift;
     $macro_nest_level = 0;
     $current_param = '';
-    @param_stack = ();
 }
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
@@ -1033,8 +1031,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$ ) {
 	#
 	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
+	my $save_param;
+
 	if ( $param ne '' ) {
-	    push @param_stack, $current_param;
+	    $save_param = $current_param;
 	    $current_param = $param unless $param eq 'PARAM';
 	}
 
@@ -1057,7 +1057,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$ ) {
 
 	$macro_nest_level--;
 
-	$current_param = pop @param_stack if $param ne '';
+	$current_param = $save_param if $param ne '';
 
 	return $generated;
 

@@ -178,6 +178,15 @@ verify_firewall_script() {
 }
 
 #
+# Fatal error
+#
+startup_error() {
+    echo "   ERROR: $@" >&2
+    kill $$
+    exit 1
+}
+
+#
 # Start Command Executor
 #
 start_command() {

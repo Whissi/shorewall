@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                      S H O R E W A L L  4 . 4 . 1 5
+                      S H O R E W A L L  4 . 4 . 1 5 . 1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -12,6 +12,18 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+4.4.15.1
+
+1)  If the output of 'env' contained a multi-line value, then
+    compilation failed with an Internal Error. The code has been
+    changed so that the compiler now emits a warning and continues:
+
+    	WARNING: Unrecognized output from 'env' (...) ignored
+
+    where ... is the output.
+
+4.4.15
 
 1)  Previously, if 
 

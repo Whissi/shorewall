@@ -1,1 +1,10 @@
-There are no known problems in Shorewall 4.4.15
+1)  On systems running Upstart, shorewall-init cannot reliably secure
+    the firewall before interfaces are brought up.
+
+2)  If the output of 'env' contains a multi-line value, then
+    compilation failed with an Internal Error.
+
+    Workaround: In /etc/shorewall/params, reset any exported variables
+    that have a multi-line value.
+
+    Will be fixed in 4.4.15.1 or 4.4.16, whichever is released first.

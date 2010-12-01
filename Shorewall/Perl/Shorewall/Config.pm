@@ -2909,7 +2909,7 @@ sub get_params() {
 	    if ( /^(.*?)=(.*)$/ ) {
 		$params{$1} = $2 unless $1 eq '_';
 	    } else {
-		assert(0);
+		warning_message "Unrecognized output from 'env' ($_) ignored";
 	    }
 	} 
     }

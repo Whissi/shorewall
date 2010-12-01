@@ -2902,12 +2902,15 @@ sub get_params() {
 	my $variable;
 
 	if ( $params[0] =~ /^declare/ ) {
+	    #
+	    # getparams was interpreted by bash
+	    #
 	    for ( @params ) {
 		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
 		    $params{$variable=$1}="${2}\n";
-		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""/ ) {
+		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
 		    assert($variable);
@@ -2916,8 +2919,13 @@ sub get_params() {
 		}	
 	    }
 	} else {
+	    #
+	    # getparams was interpreted by dash/ash/busybox
+	    #
 	    for ( @params ) {
-		if ( /^export (.*?)='(.*)'$/ ) {
+		if ( /^export (.*?)='(.*'"'"')$/ ) {
+		    $params{$variable=$1}="${2}\n";		    
+		} elsif ( /^export (.*?)='(.*)'$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^export (.*?)='(.*)$/ ) {
 		    $params{$variable=$1}="${2}\n";

@@ -2894,7 +2894,9 @@ sub get_params() {
 	progress_message2 "Processing $fn ...";
 
 	my $command = "$globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );
-
+	#
+	# getparams silently sources the params file under 'set -a', then executes 'export -p'
+	#
 	my @params = `$command`;
 
 	fatal_error "Processing of $fn failed" if $?;

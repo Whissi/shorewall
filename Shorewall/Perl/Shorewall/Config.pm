@@ -2906,11 +2906,9 @@ sub get_params() {
 	fatal_error "Processing of $fn failed" if $?;
 
 	for ( @params ) {
-	    if ( /^(.*?)=(.*)$/ ) {
+	    if ( /^export (.*?)='(.*)'$/ ) {
 		$params{$1} = $2 unless $1 eq '_';
-	    } else {
-		warning_message "Unrecognized output from 'env' ($_) ignored";
-	    }
+	    }	
 	} 
     }
 }

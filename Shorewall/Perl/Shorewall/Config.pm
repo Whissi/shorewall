@@ -2907,15 +2907,32 @@ sub get_params() {
 
 	my $variable;
 
-	for ( @params ) {
-	    if ( /^export (.*?)='(.*)'$/ ) {
-		$params{$1} = $2 unless $1 eq '_';
-	    } elsif ( /^export (.*?)='(.*)$/ ) {
-		$params{$variable=$1}="${2}\n";
-	    } else {
-		assert($variable);
-		$params{$variable} .= $_;
-	    }	
+	if ( $params[0] =~ /^declare/ ) {
+	    for ( @params ) {
+		if ( /^declare -x (.*?)="(.*)"$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
+		    $params{$variable=$1}="${2}\n";
+		} elsif ( /^declare -x (.*)\s+$/ ) {
+		    $params{$1} = '';
+		} else {
+		    assert($variable);
+		    s/'$//;
+		    $params{$variable} .= $_;
+		}	
+	    }
+	} else {
+	    for ( @params ) {
+		if ( /^export (.*?)='(.*)'$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^export (.*?)='(.*)$/ ) {
+		    $params{$variable=$1}="${2}\n";
+		} else {
+		    assert($variable);
+		    s/'$//;
+		    $params{$variable} .= $_;
+		}
+	    }
 	}
 
 	if ( $debug ) {

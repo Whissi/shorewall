@@ -2905,11 +2905,26 @@ sub get_params() {
 
 	fatal_error "Processing of $fn failed" if $?;
 
+	my $variable;
+
 	for ( @params ) {
 	    if ( /^export (.*?)='(.*)'$/ ) {
 		$params{$1} = $2 unless $1 eq '_';
+	    } elsif ( /^export (.*?)='(.*)$/ ) {
+		$params{$variable=$1}="${2}\n";
+	    } else {
+		assert($variable);
+		$params{$variable} .= $_;
 	    }	
-	} 
+	}
+
+	if ( $debug ) {
+	    print "PARAMS:\n";
+	    my $value;
+	    while ( ($variable, $value ) = each %params ) {
+		print "   $variable='$value'\n";
+	    }
+	}
     }
 }
 

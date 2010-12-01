@@ -2906,7 +2906,7 @@ sub get_params() {
 	fatal_error "Processing of $fn failed" if $?;
 
 	for ( @params ) {
-	    if ( /^export (.*?)='(.*)'$/ ) {
+	    if ( /^(.*?)=(.*)$/ ) {
 		$params{$1} = $2 unless $1 eq '_';
 	    }	
 	} 

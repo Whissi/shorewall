@@ -712,17 +712,11 @@ sub initialize( $ ) {
 
     $debug = 0;
 
-    %params = ();
-}
-
-INIT {
-    #
-    # These variables appear within single quotes in shorewall.conf -- add them to ENV
-    # so that read_a_line doesn't have to be smart enough to parse that usage.
-    #
-    for ( qw/root system command files destination/ ) {
-	$ENV{$_} = '' unless exists $ENV{$_};
-    }
+    %params = ( root        => '',
+		system      => '',
+		command     => '',
+		files       => '',
+		destination => '' );
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -2909,11 +2903,11 @@ sub get_params() {
 
 	if ( $params[0] =~ /^declare/ ) {
 	    for ( @params ) {
-		if ( /^declare -x (.*?)="(.*)"$/ ) {
+		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
 		    $params{$variable=$1}="${2}\n";
-		} elsif ( /^declare -x (.*)\s+$/ ) {
+		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""/ ) {
 		    $params{$1} = '';
 		} else {
 		    assert($variable);

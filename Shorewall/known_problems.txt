@@ -8,3 +8,13 @@
     that have a multi-line value.
 
     Will be fixed in 4.4.15.1 or 4.4.16, whichever is released first.
+
+3)  If a params file does not appear in the CONFIG_PATH, compilation
+    fails with the error:
+
+    	   .: 31: Can't open /etc/shorewall6/params
+	   ERROR: Processing of /etc/shorewall6/params failed
+
+    Workaround: 'touch /etc/shorewall/params' (or
+                /etc/shorewall6/params).
+

@@ -2895,8 +2895,9 @@ sub unsupported_yes_no_warning( $ ) {
 # Process the params file
 #
 sub get_params() {
-    if ( my $fn = find_file 'params' ) {
+    my $fn = find_file 'params';
 
+    if ( -f $fn ) {
 	progress_message2 "Processing $fn ...";
 
 	my $command = "$globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );

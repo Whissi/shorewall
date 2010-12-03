@@ -2908,6 +2908,11 @@ sub get_params() {
 	    #
 	    # getparams was interpreted by bash
 	    #
+	    # - Variable names are preceded by 'declare -x '
+	    # - Param values are delimited by double quotes
+	    # - Embedded double quotes are escaped with '\\'
+	    # - Valueless variables are supported (e.g., 'declare -x foo')
+	    #
 	    for ( @params ) {
 		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
@@ -2924,6 +2929,10 @@ sub get_params() {
 	} else {
 	    #
 	    # getparams was interpreted by dash/ash/busybox
+	    #
+	    # - Variable name preceded by 'export '
+	    # - Param values are delimited by single quotes.
+	    # - Embedded single quotes are transformed to the five characters '"'"'
 	    #
 	    for ( @params ) {
 		if ( /^export (.*?)='(.*'"'"')$/ ) {

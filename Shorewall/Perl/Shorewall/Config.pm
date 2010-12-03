@@ -2888,16 +2888,6 @@ sub unsupported_yes_no_warning( $ ) {
 #
 # Process the params file
 #
-sub get_params_bug( \@$ ) {
-    my ( $params, $element ) = @_;
-
-    warning_message "Bug in get_params()";
-    print STDERR "Params\n";
-    print STDERR $_ for @$params;
-    print STDERR "\nElement in error:\n";
-    print STDERR "$element\n";
-}
-
 sub get_params() {
     my $fn = find_file 'params';
 
@@ -2912,6 +2902,11 @@ sub get_params() {
 
 	fatal_error "Processing of $fn failed" if $?;
 
+	if ( $debug ) {
+	    print "Params:\n";
+	    print $_ for @params;
+	}
+	
 	my ( $variable , $bug );
 
 	if ( $params[0] =~ /^declare/ ) {
@@ -2932,10 +2927,34 @@ sub get_params() {
 		    $params{$1} = '';
 		} else {
 		    if ($variable) {
-			s/'$//;
+			s/"$//;
 			$params{$variable} .= $_;
 		    } else {
-			get_params_bug( @params, $_ ) unless $bug++;
+			warning_message "Param line ($_) ignored" unless $bug++;
+		    }
+		}	
+	    }
+	} elsif ( $params[0] =~ /^export (.*?)="/ ) {
+	    #
+	    # getparams interpreted by older (e.g., RHEL 5) Bash
+	    #
+	    # - Variable names preceded by 'export '
+	    # - Variable values are delimited by double quotes
+	    # - Embedded single quotes are escaped with '\'
+	    #
+	    for ( @params ) {
+		if ( /^export (.*?)="(.*[^\\])"$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^export (.*?)="(.*)$/ ) {
+		    $params{$variable=$1}="${2}\n";
+		} elsif ( /^export (.*)\s+$/ || /^export (.*)=""$/ ) {
+		    $params{$1} = '';
+		} else {
+		    if ($variable) {
+			s/"$//;
+			$params{$variable} .= $_;
+		    } else {
+			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}	
 	    }
@@ -2959,7 +2978,7 @@ sub get_params() {
 			s/'$//;
 			$params{$variable} .= $_;
 		    } else {
-			get_params_bug( @params , $_ ) unless $bug++;
+			warning_message "Param line ($_) ignored" unless $bug++;
 		    }				
 		}
 	    }

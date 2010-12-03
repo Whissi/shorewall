@@ -133,7 +133,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_15';
+our $VERSION = '4.4_16';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -2888,6 +2888,16 @@ sub unsupported_yes_no_warning( $ ) {
 #
 # Process the params file
 #
+sub get_params_bug( \@$ ) {
+    my ( $params, $element ) = @_;
+
+    warning_message "Bug in get_params()";
+    print STDERR "Params\n";
+    print STDERR $_ for @$params;
+    print STDERR "\nElement in error:\n";
+    print STDERR "$element\n";
+}
+
 sub get_params() {
     my $fn = find_file 'params';
 
@@ -2902,7 +2912,7 @@ sub get_params() {
 
 	fatal_error "Processing of $fn failed" if $?;
 
-	my $variable;
+	my ( $variable , $bug );
 
 	if ( $params[0] =~ /^declare/ ) {
 	    #
@@ -2921,9 +2931,12 @@ sub get_params() {
 		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
-		    assert($variable);
-		    s/'$//;
-		    $params{$variable} .= $_;
+		    if ($variable) {
+			s/'$//;
+			$params{$variable} .= $_;
+		    } else {
+			get_params_bug( @params, $_ ) unless $bug++;
+		    }
 		}	
 	    }
 	} else {
@@ -2942,9 +2955,12 @@ sub get_params() {
 		} elsif ( /^export (.*?)='(.*)$/ ) {
 		    $params{$variable=$1}="${2}\n";
 		} else {
-		    assert($variable);
-		    s/'$//;
-		    $params{$variable} .= $_;
+		    if ($variable) {
+			s/'$//;
+			$params{$variable} .= $_;
+		    } else {
+			get_params_bug( @params , $_ ) unless $bug++;
+		    }				
 		}
 	    }
 	}

@@ -90,6 +90,12 @@ remove_file /etc/network/if-down.d/shorewall
 remove_file /etc/sysconfig/network/if-up.d/shorewall
 remove_file /etc/sysconfig/network/if-down.d/shorewall
 
+if [ -d /etc/ppp ]; then
+    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
+	remove_file /etc/ppp/$directory/shorewall
+    done
+fi
+
 rm -rf /usr/share/shorewall-init
 
 echo "Shorewall Init Uninstalled"

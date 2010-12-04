@@ -289,6 +289,12 @@ if [ -z "$DESTDIR" ]; then
 	    update-rc.d shorewall-init defaults
 
 	    echo "Shorewall Init will start automatically at boot"
+
+	    if [ -d /etc/ppp ]; then
+		for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
+		    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
+		done
+	    fi
 	else
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-init ; then
@@ -324,6 +330,12 @@ else
 	    ln -sf ../init.d/shorewall-init ${DESTDIR}/etc/rcS.d/S38shorewall-init
 	    echo "Shorewall Init will start automatically at boot"
 	fi
+    fi
+
+    if [ -n "$DEBIAN" ] -a  -d /etc/ppp ]; then
+	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
+	    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
+	done
     fi
 fi
 

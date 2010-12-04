@@ -24,6 +24,7 @@
 
 IFUPDOWN=0
 PRODUCTS=
+SAVEPRODUCTS="$PRODUCTS"
 
 if [ -f /etc/default/shorewall-init ]; then
     . /etc/default/shorewall-init
@@ -34,22 +35,70 @@ fi
 [ "$IFUPDOWN" = 1 -a -n "$PRODUCTS" ] || exit 0
 
 if [ -f /etc/debian_version ]; then
-    #
-    # Debian ifupdown system
-    #
-    INTERFACE="$IFACE"
+    case $0 in
+	/etc/ppp*)
+	    #
+	    # Debian ppp
+	    #
+	    PRODUCTS=
+	    INTERFACE="$1"
 
-    if [ "$MODE" = start ]; then
-	COMMAND=up
-    elif [ "$MODE" = stop ]; then
-	COMMAND=down
-    else
-	exit 0
-    fi
+	    case $0 in
+		/etc/ppp/ip-*)
+		    #
+		    # IPv4
+		    #
+		    for product in $PRODUCTS; do
+			case $product in
+			    shorewall|shorewall-lite)
+				PRODUCTS="$PRODUCTS $product";
+				;;
+			esac
+		    done
+		    ;;
+		*)
+		    #
+		    # IPv6
+		    #
+		    for product in $PRODUCTS; do
+			case $product in
+			    shorewall6|shorewall6-lite)
+				PRODUCTS="$PRODUCTS $product";
+				;;
+			esac
+		    done
+		    ;;
+	    esac
 
-    case "$PHASE" in
-	pre-*)
-	    exit 0
+	    case $0 in
+		*up/*)
+		    COMMAND=up
+		    ;;
+		*)
+		    COMMAND=down
+		    ;;
+	    esac
+	    ;;
+	
+	*)
+            #
+            # Debian ifupdown system
+            #
+	    INTERFACE="$IFACE"
+
+	    if [ "$MODE" = start ]; then
+		COMMAND=up
+	    elif [ "$MODE" = stop ]; then
+		COMMAND=down
+	    else
+		exit 0
+	    fi
+
+	    case "$PHASE" in
+		pre-*)
+		    exit 0
+		    ;;
+	    esac
 	    ;;
     esac
 elif [ -f /etc/SuSE-release ]; then

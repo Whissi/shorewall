@@ -37,6 +37,8 @@ if [ -f /etc/debian_version ]; then
     #
     # Debian ifupdown system
     #
+    INTERFACE="$IFACE"
+
     if [ "$MODE" = start ]; then
 	COMMAND=up
     elif [ "$MODE" = stop ]; then
@@ -54,7 +56,7 @@ elif [ -f /etc/SuSE-release ]; then
     #
     # SuSE ifupdown system
     #
-    IFACE="$2"
+    INTERFACE="$2"
 
     case $0 in
 	*if-up.d*)
@@ -71,7 +73,7 @@ else
     #
     # Assume RedHat/Fedora/CentOS/Foobar/...
     #
-    IFACE="$1"
+    INTERFACE="$1"
     
     case $0 in 
 	*ifup*)
@@ -95,7 +97,7 @@ for PRODUCT in $PRODUCTS; do
     if [ -x $VARDIR/firewall ]; then
 	  ( . /usr/share/$PRODUCT/lib.base
 	    mutex_on
-	    ${VARDIR}/firewall -V0 $COMMAND $IFACE || echo_notdone
+	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
 	    mutex_off
 	  )
     fi

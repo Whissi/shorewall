@@ -332,7 +332,7 @@ else
 	fi
     fi
 
-    if [ -n "$DEBIAN" ] -a  -d /etc/ppp ]; then
+    if [ -n "$DEBIAN" ] -a -d /etc/ppp ]; then
 	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 	    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
 	done

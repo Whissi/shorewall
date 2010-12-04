@@ -48,7 +48,7 @@ if [ -f /etc/debian_version ]; then
 		    #
 		    # IPv4
 		    #
-		    for product in $PRODUCTS; do
+		    for product in $SAVEPRODUCTS; do
 			case $product in
 			    shorewall|shorewall-lite)
 				PRODUCTS="$PRODUCTS $product";
@@ -60,7 +60,7 @@ if [ -f /etc/debian_version ]; then
 		    #
 		    # IPv6
 		    #
-		    for product in $PRODUCTS; do
+		    for product in $SAVEPRODUCTS; do
 			case $product in
 			    shorewall6|shorewall6-lite)
 				PRODUCTS="$PRODUCTS $product";

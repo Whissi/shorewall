@@ -102,40 +102,106 @@ if [ -f /etc/debian_version ]; then
 	    ;;
     esac
 elif [ -f /etc/SuSE-release ]; then
-    #
-    # SuSE ifupdown system
-    #
-    INTERFACE="$2"
-
     case $0 in
-	*if-up.d*)
-	    COMMAND=up
+	/etc/ppp*)
+	    #
+	    # SUSE ppp
+	    #
+	    INTERFACE="$1"
+
+	    case $0 in
+		*ip-*)
+		    #
+		    # IPv4
+		    #
+		    for product in $SAVEPRODUCTS; do
+			case $product in
+			    shorewall|shorewall-lite)
+				PRODUCTS="$PRODUCTS $product";
+				;;
+			esac
+		    done
+		    ;;
+		*)
+		    #
+		    # IPv6
+		    #
+		    for product in $SAVEPRODUCTS; do
+			case $product in
+			    shorewall6|shorewall6-lite)
+				PRODUCTS="$PRODUCTS $product";
+				;;
+			esac
+		    done
+		    ;;
+	    esac
+
+	    case $0 in
+		*up/*)
+		    COMMAND=up
+		    ;;
+		*)
+		    COMMAND=down
+		    ;;
+	    esac
 	    ;;
-	*if-down.d*)
-	    COMMAND=down
-	    ;;
+	
 	*)
-	    exit 0
+            #
+            # SuSE ifupdown system
+            #
+	    INTERFACE="$2"
+
+	    case $0 in
+		*if-up.d*)
+		    COMMAND=up
+		    ;;
+		*if-down.d*)
+		    COMMAND=down
+		    ;;
+		*)
+		    exit 0
+		    ;;
+	    esac
 	    ;;
     esac
 else
     #
     # Assume RedHat/Fedora/CentOS/Foobar/...
     #
-    INTERFACE="$1"
-    
-    case $0 in 
-	*ifup*)
-	    COMMAND=up
-	    ;;
-	*ifdown*)
-	    COMMAND=down
-	    ;;
-	*dispatcher.d*)
-	    COMMAND="$2"
+    case $0 in
+	/etc/ppp*)
+	    INTERFACE="$1"
+
+	    case $0 in
+		*ip-up.local)
+		    COMMAND=up
+		    ;;
+		*)
+		    COMMAND=down
+		    ;;
+	    esac
 	    ;;
 	*)
-	    exit 0
+	    #
+	    # RedHat ifup/down system
+	    #
+	    INTERFACE="$1"
+    
+	    case $0 in 
+		*ifup*)
+		    COMMAND=up
+		    ;;
+		*ifdown*)
+		    COMMAND=down
+		    ;;
+		*dispatcher.d*)
+		    COMMAND="$2"
+		    ;;
+		*)
+		    exit 0
+		    ;;
+	    esac
 	    ;;
     esac
 fi

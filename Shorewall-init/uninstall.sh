@@ -94,6 +94,12 @@ if [ -d /etc/ppp ]; then
     for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 	remove_file /etc/ppp/$directory/shorewall
     done
+
+    for file in if-up.local if-down.local; do
+	if fgrep -q Shorewall-based /etc/ppp/$FILE; then
+	    remove_file /etc/ppp/$FILE
+	fi
+    done
 fi
 
 rm -rf /usr/share/shorewall-init

@@ -289,12 +289,6 @@ if [ -z "$DESTDIR" ]; then
 	    update-rc.d shorewall-init defaults
 
 	    echo "Shorewall Init will start automatically at boot"
-
-	    if [ -d /etc/ppp ]; then
-		for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-		    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
-		done
-	    fi
 	else
 	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-init ; then
@@ -318,12 +312,7 @@ if [ -z "$DESTDIR" ]; then
 	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 		cant_autostart
 	    fi
-	fi
-    elif [ -n "$DEBIAN" ]; then
-	if [ -d /etc/ppp ]; then
-	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-		[ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
-	    done
+
 	fi
     fi
 else
@@ -337,10 +326,30 @@ else
 	    echo "Shorewall Init will start automatically at boot"
 	fi
     fi
+fi
 
-    if [ -n "$DEBIAN" ] -a -d ${DESTDIR}/etc/ppp ]; then
+if [ -f ${DESTDIR}/etc/ppp ]; then
+    if [ -n "$DEBIAN" ] -o -n "$SUSE" ]; then
 	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-	    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
+	    mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
+	    cp -fp ${DESTDIR}/usr/share/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
+	done
+    elif [ -n "$REDHAT" ]; then
+	#
+	# Must use the dreaded ip_xxx.local file
+	#
+	for file in ip-up.local ip-down.local; do
+	    FILE=${DESTDIR}/etc/ppp/$file
+	    if [ -f $FILE ]; then
+		if fgrep -q Shorewall-based $FILE ; then
+		    cp -fp ${DESTDIR}/usr/share/shorewall-init/ifupdown $FILE
+		else
+		    echo "$FILE already exists -- ppp devices will not be handled"
+		    break
+		fi
+	    else
+		cp -fp ${DESTDIR}/usr/share/shorewall-init/ifupdown $FILE
+	    fi
 	done
     fi
 fi

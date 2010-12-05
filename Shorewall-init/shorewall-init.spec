@@ -74,14 +74,12 @@ else
     if [ -d /etc/ppp ]; then
 	if [ -f /etc/ppp/ip-up.local -o -f /etc/ppp/ip-down.local ]; then
 	    if ! grep -q Shorewall-based /etc/ppp/ip-up.local || ! grep -q Shorewall-based /etc/ppp//ip-down.local; then
-	    echo "WARNING: /etc/ppp/ip-up.local and/or /etc/ppp/ip-down.local already exist; ppp devices will not be handled" >&2
+		echo "WARNING: /etc/ppp/ip-up.local and/or /etc/ppp/ip-down.local already exist; ppp devices will not be handled" >&2
+	    fi
 	else
 	    cp -pf /usr/share/shorewall-init/ifupdown /etc/ppp/ip-up.local
 	    cp -pf /usr/share/shorewall-init/ifupdown /etc/ppp/ip-down.local
 	fi
-    else
-	cp -pf /usr/share/shorewall-init/ifupdown /etc/ppp/ip-up.local
-	cp -pf /usr/share/shorewall-init/ifupdown /etc/ppp/ip-down.local
     fi
 
     if [ -d /etc/NetworkManager/dispatcher.d/ ]; then

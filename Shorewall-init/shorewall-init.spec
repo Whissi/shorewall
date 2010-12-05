@@ -55,6 +55,7 @@ if [ -f /etc/SuSE-release ]; then
     cp -pf /usr/share/shorewall-init/ifupdown /etc/sysconfig/network/if-down.d/shorewall
     if [ -d /etc/ppp ]; then
 	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
+	    mkdir -p /etc/ppp/$directory
 	    cp -pf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
 	done
     fi

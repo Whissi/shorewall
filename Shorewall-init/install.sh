@@ -319,6 +319,12 @@ if [ -z "$DESTDIR" ]; then
 		cant_autostart
 	    fi
 	fi
+    elif [ -n "$DEBIAN" ]; then
+	if [ -d /etc/ppp ]; then
+	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
+		[ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
+	    done
+	fi
     fi
 else
     if [ -n "$first_install" ]; then
@@ -332,9 +338,9 @@ else
 	fi
     fi
 
-    if [ -n "$DEBIAN" ] -a -d /etc/ppp ]; then
+    if [ -n "$DEBIAN" ] -a -d ${DESTDIR}/etc/ppp ]; then
 	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-	    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown /etc/ppp/$directory/shorewall
+	    [ -d /etc/ppp/$directory ] && ln -sf /usr/share/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
 	done
     fi
 fi

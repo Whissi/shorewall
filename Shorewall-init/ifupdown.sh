@@ -22,9 +22,54 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+Debian_SuSE_ppp() {
+    NEWPRODUCTS=
+    INTERFACE="$1"
+
+    case $0 in
+	/etc/ppp/ip-*)
+	    #
+	    # IPv4
+	    #
+	    for product in $PRODUCTS; do
+		case $product in
+		    shorewall|shorewall-lite)
+			NEWPRODUCTS="$NEWPRODUCTS $product";
+			;;
+		esac
+	    done
+	    ;;
+	/etc/ppp/ipv6-*)
+	    #
+	    # IPv6
+	    #
+	    for product in $PRODUCTS; do
+		case $product in
+		    shorewall6|shorewall6-lite)
+			NEWPRODUCTS="$NEWPRODUCTS $product";
+			;;
+		esac
+	    done
+	    ;;
+	*)
+	    exit 0
+	    ;;
+    esac
+
+    PRODUCTS="$NEWPRODUCTS"
+
+    case $0 in
+	*up/*)
+	    COMMAND=up
+	    ;;
+	*)
+	    COMMAND=down
+	    ;;
+    esac
+}
+
 IFUPDOWN=0
 PRODUCTS=
-SAVEPRODUCTS="$PRODUCTS"
 
 if [ -f /etc/default/shorewall-init ]; then
     . /etc/default/shorewall-init
@@ -40,44 +85,7 @@ if [ -f /etc/debian_version ]; then
 	    #
 	    # Debian ppp
 	    #
-	    PRODUCTS=
-	    INTERFACE="$1"
-
-	    case $0 in
-		/etc/ppp/ip-*)
-		    #
-		    # IPv4
-		    #
-		    for product in $SAVEPRODUCTS; do
-			case $product in
-			    shorewall|shorewall-lite)
-				PRODUCTS="$PRODUCTS $product";
-				;;
-			esac
-		    done
-		    ;;
-		*)
-		    #
-		    # IPv6
-		    #
-		    for product in $SAVEPRODUCTS; do
-			case $product in
-			    shorewall6|shorewall6-lite)
-				PRODUCTS="$PRODUCTS $product";
-				;;
-			esac
-		    done
-		    ;;
-	    esac
-
-	    case $0 in
-		*up/*)
-		    COMMAND=up
-		    ;;
-		*)
-		    COMMAND=down
-		    ;;
-	    esac
+	    Debian_SuSE_ppp
 	    ;;
 	
 	*)
@@ -107,43 +115,7 @@ elif [ -f /etc/SuSE-release ]; then
 	    #
 	    # SUSE ppp
 	    #
-	    INTERFACE="$1"
-
-	    case $0 in
-		*ip-*)
-		    #
-		    # IPv4
-		    #
-		    for product in $SAVEPRODUCTS; do
-			case $product in
-			    shorewall|shorewall-lite)
-				PRODUCTS="$PRODUCTS $product";
-				;;
-			esac
-		    done
-		    ;;
-		*)
-		    #
-		    # IPv6
-		    #
-		    for product in $SAVEPRODUCTS; do
-			case $product in
-			    shorewall6|shorewall6-lite)
-				PRODUCTS="$PRODUCTS $product";
-				;;
-			esac
-		    done
-		    ;;
-	    esac
-
-	    case $0 in
-		*up/*)
-		    COMMAND=up
-		    ;;
-		*)
-		    COMMAND=down
-		    ;;
-	    esac
+	    Debian_SuSE_ppp
 	    ;;
 	
 	*)
@@ -177,8 +149,11 @@ else
 		*ip-up.local)
 		    COMMAND=up
 		    ;;
-		*)
+		*ip-down.local)
 		    COMMAND=down
+		    ;;
+		*)
+		    exit 0
 		    ;;
 	    esac
 	    ;;

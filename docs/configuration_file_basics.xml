@@ -1470,6 +1470,63 @@ Comcast 2        0x20000 main       COM_IF     detect          balance          
     details.</para>
   </section>
 
+  <section>
+    <title>Optional and Required Interfaces</title>
+
+    <para>Normally, Shorewall assumes that all interfaces described in <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink> (5)
+    are going to be in an up and usable state when Shorewall starts or
+    restarts. You can alter that assumption by specifying the <emphasis
+    role="bold">optional</emphasis> option in the OPTIONS column.</para>
+
+    <para>When an interface is marked as optional, Shorewall will determine
+    the interface state at <command>start</command> and
+    <command>restart</command> and adjust its configuration
+    accordingly.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <emphasis role="bold">arp_filter</emphasis>, <emphasis
+        role="bold">arp_ignore</emphasis>, <emphasis
+        role="bold">routefilter</emphasis>, <emphasis
+        role="bold">logmartians</emphasis>, <emphasis
+        role="bold">proxyarp</emphasis> and <emphasis
+        role="bold">sourceroute</emphasis> options are not enforced when the
+        interface is down, thus avoiding an error message such
+        as:<programlisting>WARNING: Cannot set Martian logging on ppp0</programlisting></para>
+      </listitem>
+
+      <listitem>
+        <para>If the interface is associated with a provider in <ulink
+        url="manpages/shorewall-providers.html">shorewall-providers</ulink>
+        (5), <command>start</command> and <command>restart</command> will not
+        fail if the interface is not usable.</para>
+      </listitem>
+
+      <listitem>
+        <para>When DETECT_DNAT_IPADDRS=Yes in <ulink
+        url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5), DNAT
+        rules in shorewall-rules (5) involving the interface will be omitted
+        when the interface does not have an IP address.</para>
+      </listitem>
+
+      <listitem>
+        <para>If <emphasis role="bold">detect</emphasis> is specified in the
+        ADDRESS column of an entry in <ulink
+        url="manpages/shorewall-masq.html">shorewall-masq</ulink> (5) then the
+        firewall still start if the optional interface in the INTERFACE column
+        does not have an IP address.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you don't want the firewall to start unless a given interface is
+    usable, then specify required in the OPTIONS column of <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink> (5).
+    If you have installed and configured the Shorewall-init package, then when
+    the interface becomes available, an automatic attempt will be made to
+    start the firewall.</para>
+  </section>
+
   <section id="Levels">
     <title>Shorewall Configurations</title>
 

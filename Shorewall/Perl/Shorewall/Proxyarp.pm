@@ -56,8 +56,8 @@ sub initialize( $ ) {
     @proxyarp = ();
 }
 
-sub setup_one_proxy_arp( $$$$$ ) {
-    my ( $address, $interface, $external, $haveroute, $persistent) = @_;
+sub setup_one_proxy_arp( $$$$$$$ ) {
+    my ( $address, $interface, $physical, $external, $extphy, $haveroute, $persistent) = @_;
 
     if ( "\L$haveroute" eq 'no' || $haveroute eq '-' ) {
 	$haveroute = '';
@@ -76,15 +76,15 @@ sub setup_one_proxy_arp( $$$$$ ) {
     }
 
     unless ( $haveroute ) {
-	emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address dev $interface";
+	emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address dev $physical";
 	$haveroute = 1 if $persistent;
     }
 
-    emit ( "if ! arp -i $external -Ds $address $external pub; then",
-	   "    fatal_error \"Command 'arp -i $external -Ds $address $external pub' failed\"" ,
+    emit ( "if ! arp -i $extphy -Ds $address $extphy pub; then",
+	   "    fatal_error \"Command 'arp -i $extphy -Ds $address $extphy pub' failed\"" ,
 	   'fi' ,
 	   '',
-	   "progress_message \"   Host $address connected to $interface added to ARP on $external\"\n" );
+	   "progress_message \"   Host $address connected to $interface added to ARP on $extphy\"\n" );
 
     push @proxyarp, "$address $interface $external $haveroute";
 
@@ -117,30 +117,32 @@ sub setup_proxy_arp() {
 		    $first_entry = 0;
 		}
 
-		$interface = get_physical $interface;
-		$external  = get_physical $external;
+		my $physical = physical_name $interface;
+		my $extphy   = physical_name $external;
 
 		$set{$interface}  = 1;
 		$reset{$external} = 1 unless $set{$external};
 
-		setup_one_proxy_arp( $address, $interface, $external, $haveroute, $persistent );
+		setup_one_proxy_arp( $address, $interface, $physical, $external, $extphy, $haveroute, $persistent );
 	    }
 
 	    emit '';
 
 	    for my $interface ( keys %reset ) {
 		unless ( $set{interface} ) {
-		    emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
-			    "    echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		    my $physical = get_physical $interface;
+		    emit  ( "if [ -f /proc/sys/net/ipv4/conf/$physical/proxy_arp ]; then" ,
+			    "    echo 0 > /proc/sys/net/ipv4/conf/$physical/proxy_arp" );
 		    emit    "fi\n";
 		}
 	    }
 
 	    for my $interface ( keys %set ) {
-		emit  ( "if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ]; then" ,
-			"    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp" );
+		my $physical = get_physical $interface;
+		emit  ( "if [ -f /proc/sys/net/ipv4/conf/$physical/proxy_arp ]; then" ,
+			"    echo 1 > /proc/sys/net/ipv4/conf/$physical/proxy_arp" );
 		emit  ( 'else' ,
-			"    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $interface\"" ) unless interface_is_optional( $interface );
+			"    error_message \"    WARNING: Cannot set the 'proxy_arp' option for interface $physical\"" ) unless interface_is_optional( $interface );
 		emit    "fi\n";
 	    }
 

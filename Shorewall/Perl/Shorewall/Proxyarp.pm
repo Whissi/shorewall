@@ -78,6 +78,8 @@ sub setup_one_proxy_arp( $$$$$$$ ) {
     }
 
     unless ( $haveroute ) {
+	fatal_error "HAVEROUTE=No requires an INTERFACE" if $interface eq '-';
+
 	if ( $family == F_IPV4 ) {
 	    emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address/32 dev $physical";
 	} else {
@@ -123,14 +125,17 @@ sub setup_proxy_arp() {
 		$first_entry = 0;
 	    }
 
-	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 	    fatal_error "Unknown interface ($external)"  unless known_interface $external;
-
-	    my $physical = physical_name $interface;
-	    my $extphy   = physical_name $external;
-
-	    $set{$interface}  = 1;
 	    $reset{$external} = 1 unless $set{$external};
+
+	    my $extphy   = physical_name $external;
+	    my $physical = '-';
+
+	    if ( $interface ne '-' ) {
+		fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+		$physical = physical_name $interface;
+		$set{$interface}  = 1;
+	    }
 
 	    setup_one_proxy_arp( $address, $interface, $physical, $external, $extphy, $haveroute, $persistent );
 	}

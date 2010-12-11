@@ -633,12 +633,32 @@ fi
 #
 # Install the Scfilter file
 #
-run_install $OWNERSHIP -m 0644 tcclear ${DESTDIR}/usr/share/shorewall6/configfiles/scfilter
+run_install $OWNERSHIP -m 0644 scfilter ${DESTDIR}/usr/share/shorewall6/configfiles/scfilter
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/scfilter ]; then
     run_install $OWNERSHIP -m 0600 scfilter ${DESTDIR}/etc/shorewall6/scfilter
     echo "Scfilter file installed as ${DESTDIR}/etc/shorewall6/scfilter"
 fi
+
+#
+# Install the Providers file
+#
+run_install $OWNERSHIP -m 0644 providers ${DESTDIR}/usr/share/shorewall6/configfiles/providers
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/providers ]; then
+    run_install $OWNERSHIP -m 0600 providers ${DESTDIR}/etc/shorewall6/providers
+    echo "Providers file installed as ${DESTDIR}/etc/shorewall6/providers"
+fi
+#
+# Install the Proxyndp file
+#
+run_install $OWNERSHIP -m 0644 proxyndp ${DESTDIR}/usr/share/shorewall6/configfiles/proxyndp
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/proxyndp ]; then
+    run_install $OWNERSHIP -m 0600 proxyndp ${DESTDIR}/etc/shorewall6/proxyndp
+    echo "Proxyndp file installed as ${DESTDIR}/etc/shorewall6/proxyndp"
+fi
+
 #
 # Install the Standard Actions file
 #

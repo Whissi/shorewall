@@ -58,6 +58,27 @@ Beta 1
 
 1)  Shorewall-init now handles ppp devices.
 
+2)  To support proxy NDP in a manner similar to Proxy ARP, an
+    /etc/shorewall6/proxyndp file has been added. It should be noted
+    that IPv6 implements a "strong host model" whereas Linux IPv4
+    implements a "weak host model". In the strong model, IP addresses
+    are associated with interfaces; in the weak model, they are
+    associated with the host. This is relevant with respect to Proxy
+    NDP in that a multi-homed Linux IPv6 host will only respond to
+    neighbor discoverey requests for IPv6 addresses configured on the
+    interface receiving the request. So if eth0 has address
+    2001:470:b:227::44/128 and eth1 has address 2001:470:b:227::1/64
+    then in order for eth1 to respond to neighbor discovery requests
+    for 2001:470:b:227::44, the following entry in
+    /etc/shorewall6/proxyndp is required:
+
+    #ADDRESS	       INTERFACE    EXTERNAL	HAVEROUTE	PERSISTENT
+    2001:470:b:227::44 -            eth1        Yes
+
+    As part of this change, the INTERFACE column in
+    /etc/shorewall/proxyarp is now optional and is only required when
+    HAVEROUTE=No (the default).
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

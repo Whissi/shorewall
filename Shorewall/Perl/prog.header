@@ -593,8 +593,8 @@ conditionally_flush_conntrack() {
 delete_proxyarp() {
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
-	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address dev $interface
+	    qt $IP -4 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address/32 dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -603,7 +603,7 @@ delete_proxyarp() {
     fi
 }
 
-#
+\#
 # Remove all Shorewall-added rules
 #
 clear_firewall() {

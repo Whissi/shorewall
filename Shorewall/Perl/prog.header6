@@ -574,6 +574,22 @@ conditionally_flush_conntrack() {
 }
 
 #
+# Clear Proxy NDP
+#
+delete_proxyndp() {
+    if [ -f ${VARDIR}/proxyndp ]; then
+	while read address interface external haveroute; do
+	    qt $IP -6 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -6 route del $address/128 dev $interface
+	    f=/proc/sys/net/ipv6/conf/$interface/proxy_ndp
+	    [ -f $f ] && echo 0 > $f
+	done < ${VARDIR}/proxyndp
+
+	rm -f ${VARDIR}/proxyndp
+    fi
+}
+
+#
 # Remove all Shorewall-added rules
 #
 clear_firewall() {

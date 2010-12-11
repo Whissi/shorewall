@@ -388,7 +388,11 @@ sub generate_script_3($) {
 	       '' );
 	save_dynamic_chains;
 	mark_firewall_not_started;
-	emit '';
+
+	emit ('',
+	       'delete_proxyndp',
+	       ''
+	     );
     }
 
     emit qq(delete_tc1\n) if $config{CLEAR_TC};
@@ -397,7 +401,12 @@ sub generate_script_3($) {
 
     emit( 'setup_routing_and_traffic_shaping', '' );
 
-    emit 'cat > ${VARDIR}/proxyarp << __EOF__';
+    if ( $family == F_IPV4 ) {
+	emit 'cat > ${VARDIR}/proxyarp << __EOF__';
+    } else {
+	emit 'cat > ${VARDIR}/proxyndp << __EOF__';
+    } 
+
     dump_proxy_arp;
     emit_unindented '__EOF__';
 

@@ -2520,8 +2520,8 @@ EOF
 	emit <<'EOF';
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
-	    qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address dev $interface
+	    qt $IP -4 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address/32 dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -2530,7 +2530,20 @@ EOF
     fi
 
 EOF
-    }
+    } else {
+	emit <<'EOF';
+    if [ -f ${VARDIR}/proxyndp ]; then
+	while read address interface external haveroute; do
+	    qt $IP -6 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -6 route del $address/128 dev $interface
+	    f=/proc/sys/net/ipv4/conf/$interface/proxy_ndp
+	    [ -f $f ] && echo 0 > $f
+	done < ${VARDIR}/proxyndp
+
+         rm -f ${VARDIR}/proxyndp
+    fi
+
+EOF	
 
     push_indent;
 

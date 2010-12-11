@@ -476,6 +476,8 @@ sub process_simple_device() {
 
     my $number = in_hexp( $tcdevices{$device} = ++$devnum );
 
+    fatal_error "Unknown interface( $device )" unless known_interface $device;
+
     my $physical = physical_name $device;
     my $dev      = chain_base( $physical );
 

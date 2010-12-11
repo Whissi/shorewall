@@ -2526,7 +2526,7 @@ EOF
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
 
-         rm -f ${VARDIR}/proxyarp
+        rm -f ${VARDIR}/proxyarp
     fi
 
 EOF
@@ -2540,10 +2540,11 @@ EOF
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyndp
 
-         rm -f ${VARDIR}/proxyndp
+        rm -f ${VARDIR}/proxyndp
     fi
 
-EOF	
+EOF
+    }
 
     push_indent;
 

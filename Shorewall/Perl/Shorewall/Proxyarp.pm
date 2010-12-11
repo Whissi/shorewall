@@ -123,6 +123,9 @@ sub setup_proxy_arp() {
 		$first_entry = 0;
 	    }
 
+	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+	    fatal_error "Unknown interface ($external)"  unless known_interface $external;
+
 	    my $physical = physical_name $interface;
 	    my $extphy   = physical_name $external;
 

@@ -1008,7 +1008,7 @@ sub process_rule ( ) {
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
-		$generated |= process_rule1 $target, '', $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wild;
+		$generated |= process_rule_common $target, '', $source, $dest , $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wild;
 	    }
 	}
     }

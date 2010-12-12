@@ -21,7 +21,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #   This module contains the code for dealing with actions (built-in,
-#   standard and user-defined) and Macros. It also contains process_rule1() which
+#   standard and user-defined) and Macros. It also contains process_rule_common() which
 #   performs low-level rule processing.
 #
 package Shorewall::Actions;
@@ -44,7 +44,7 @@ our @EXPORT = qw( merge_levels
 		  process_actions1
 		  process_actions2
 		  process_actions3
-		  process_rule1
+		  process_rule_common
 
 		  find_macro
 		  split_action
@@ -983,7 +983,7 @@ sub process_actions3 () {
     }
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$$$ );
+sub process_rule_common ( $$$$$$$$$$$$$$$ );
 
 #
 # Expand a macro rule from the rules file
@@ -1068,7 +1068,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 	    $mdest = '';
 	}
 
-	$generated |= process_rule1(
+	$generated |= process_rule_common(
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -1102,7 +1102,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
-sub process_rule1 ( $$$$$$$$$$$$$$$ ) {
+sub process_rule_common ( $$$$$$$$$$$$$$$ ) {
     my ( $target, $current_param, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
@@ -1125,7 +1125,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$ ) {
 
     if ( $actiontype == MACRO ) {
 	#
-	# process_macro() will call process_rule1() recursively for each rule in the macro body
+	# process_macro() will call process_rule_common() recursively for each rule in the macro body
 	#
 	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 

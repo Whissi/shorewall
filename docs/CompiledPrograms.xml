@@ -206,6 +206,41 @@
         <filename
         class="directory">/usr/share/shorewall/configfiles</filename> into
         each export directory.</para>
+
+        <note>
+          <para>Users of Debian and derivatives that install the package from
+          their distribution will be disappointed to find that <filename
+          class="directory">/usr/share/shorewall/configfiles</filename> does
+          not exist on their systems. They will instead need to either:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Copy the files in /usr/share/doc/shorewall/default-config/
+              into each export directory.</para>
+            </listitem>
+
+            <listitem>
+              <para>Copy /etc/shorewall/shorewall.conf into each export
+              directory and remove /etc/shorewall from the CONFIG_PATH setting
+              in the copied files.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>or</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Download the Shorewall tarball corresponding to their
+              package version.</para>
+            </listitem>
+
+            <listitem>
+              <para>Untar and copy the files from the
+              <filename>configfiles</filename> sub-directory in the untarred
+              <filename>shorewall-...</filename> directory.</para>
+            </listitem>
+          </itemizedlist>
+        </note>
       </listitem>
 
       <listitem>

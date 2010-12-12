@@ -624,6 +624,8 @@ sub process_actions2 () {
     }
 }
 
+sub process_rule_common ( $$$$$$$$$$$$$$$$ );
+
 #
 # This function is called to process each rule generated from an action file.
 #
@@ -1005,8 +1007,6 @@ sub process_actions3 () {
     }
 }
 
-sub process_rule_common ( $$$$$$$$$$$$$$$ );
-
 #
 # Expand a macro rule from the rules file
 #
@@ -1091,6 +1091,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 	}
 
 	$generated |= process_rule_common(
+				    undef, # $chainref
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -1124,8 +1125,8 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
-sub process_rule_common ( $$$$$$$$$$$$$$$ ) {
-    my ( $target, $current_param, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
+sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
+    my ( $chainref, $target, $current_param, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
@@ -1288,7 +1289,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$ ) {
 	$restriction = INPUT_RESTRICT if $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER );
     }
 
-    my ( $chain, $chainref, $policy );
+    my ( $chain, $policy );
     #
     # For compatibility with older Shorewall versions
     #

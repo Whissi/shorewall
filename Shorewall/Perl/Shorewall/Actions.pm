@@ -627,147 +627,6 @@ sub process_actions2 () {
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
 #
-# This function is called to process each rule generated from an action file.
-#
-sub process_action( $$$$$$$$$$$$$$$ ) {
-    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = @_;
-
-    my ( $action , $level ) = split_action $target;
-
-    if ( $action eq 'REJECT' ) {
-	$action = 'reject';
-    } elsif ( $action eq 'CONTINUE' ) {
-	$action = 'RETURN';
-    } elsif ( $action =~ /^NFQUEUE/ ) {
-	( $action, my $param ) = get_target_param $action;
-	$param = 1 unless defined $param;
-	$action = "NFQUEUE --queue-num $param";
-    } elsif ( $action eq 'COUNT' ) {
-	$action = '';
-    }
-
-    expand_rule ( $chainref ,
-		  NO_RESTRICT ,
-		  do_proto( $proto, $ports, $sports ) . 
-		  do_ratelimit( $rate, $action ) . 
-		  do_user $user . 
-		  do_test( $mark, $globals{TC_MASK} ) .
-		  do_connlimit ( $connlimit ) .
-		  do_time( $time ) .
-		  do_headers ( $headers ) ,
-		  $source ,
-		  $dest ,
-		  $origdest ,
-		  $action ,
-		  $level ,
-		  $action ,
-		  '' );
-}
-
-#
-# Expand Macro in action files.
-#
-sub process_macro3( $$$$$$$$$$$$$$$$ ) {
-    my ( $macro, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = @_;
-
-    my $nocomment = no_comment;
-
-    my $format = 1;
-
-    macro_comment $macro;
-
-    my $fn = $macros{$macro};
-
-    progress_message "..Expanding Macro $fn...";
-
-    push_open $fn;
-
-    while ( read_a_line ) {
-
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders );
-
-	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $macro_commands;
-	    $morigdest  = '-';
-	    $mmark      = '-';
-	    $mconnlimit = '-';
-	    $mtime      = '-';
-	    $mheaders   = '-';
-	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders ) = split_line1 1, 13, 'macro file', $macro_commands;
-	}
-
-	if ( $mtarget eq 'COMMENT' ) {
-	    process_comment unless $nocomment;
-	    next;
-	}
-
-	if ( $mtarget eq 'FORMAT' ) {
-	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
-	    $format = $msource;
-	    next;
-	}
-
-	if ( $mtarget =~ /^PARAM:?/ ) {
-	    fatal_error 'PARAM requires that a parameter be supplied in macro invocation' unless $param;
-	    $mtarget = substitute_param $param,  $mtarget;
-	}
-
-	fatal_error "Macros used within Actions may not specify an ORIGINAL DEST " if $morigdest ne '-';
-
-	if ( $msource ) {
-	    if ( ( $msource eq '-' ) || ( $msource eq 'SOURCE' ) ) {
-		$msource = $source || '';
-	    } elsif ( $msource eq 'DEST' ) {
-		$msource = $dest || '';
-	    } else {
-		$msource = merge_macro_source_dest $msource, $source;
-	    }
-	} else {
-	    $msource = '';
-	}
-
-	$msource = '' if $msource eq '-';
-
-	if ( $mdest ) {
-	    if ( ( $mdest eq '-' ) || ( $mdest eq 'DEST' ) ) {
-		$mdest = $dest || '';
-	    } elsif ( $mdest eq 'SOURCE' ) {
-		$mdest = $source || '';
-	    } else {
-		$mdest = merge_macro_source_dest $mdest, $dest;
-	    }
-	} else {
-	    $mdest = '';
-	}
-
-	$mdest   = '' if $mdest eq '-';
-
-	process_action( $chainref,
-			$action,
-			$mtarget,
-			$msource,
-			$mdest,
-			merge_macro_column( $mproto,      $proto ),
-			merge_macro_column( $mports,      $ports ),
-			merge_macro_column( $msports,     $sports ),
-			merge_macro_column( $morigdest,   $origdest ),
-			merge_macro_column( $mrate,       $rate ),
-			merge_macro_column( $muser,       $user ),
-			merge_macro_column( $mmark,       $mark ),
-			merge_macro_column( $mconnlimit,  $connlimit ),
-			merge_macro_column( $mtime,       $time ),
-			merge_macro_column( $mheaders,    $headers ) );
-    }
-
-    pop_open;
-
-    progress_message '..End Macro';
-
-    clear_comment unless $nocomment;
-}
-
-#
 # Generate chain for non-builtin action invocation
 #
 sub process_action3( $$$$$ ) {
@@ -787,7 +646,7 @@ sub process_action3( $$$$$ ) {
 
 	if ( $format == 1 ) {
 	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file';
-	    $connlimit = $time = $headers = '-';
+	    $origdest = $connlimit = $time = $headers = '-';
 	} else {
 	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file';
 	}
@@ -803,27 +662,7 @@ sub process_action3( $$$$$ ) {
 	    next;
 	}
 
-	my $target2 = merge_levels $wholeaction, $target;
-
-	my ( $action2 , $level2 ) = split_action $target2;
-
-	( $action2 , my $param ) = get_target_param $action2;
-
-	my $action2type = $targets{$action2} || 0;
-
-	unless ( $action2type == STANDARD ) {
-	    if ( $action2type & ACTION ) {
-		$target2 = (find_logactionchain ( $target = $target2 ))->{name};
-	    } else {
-		assert( $action2type & ( MACRO | LOGRULE | NFQ | CHAIN ) );
-	    }
-	}
-
-	if ( $action2type == MACRO ) {
-	    process_macro3( $action2, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
-	} else {
-	    process_action( $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
-	}
+	process_rule_common( $chainref, $target, '', $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, 0 );
     }
 
     clear_comment;
@@ -1010,8 +849,8 @@ sub process_actions3 () {
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$$$$$ ) {
-    my ($macro, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
+sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
+    my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
 
     my $nocomment = no_comment;
 
@@ -1091,7 +930,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$ ) {
 	}
 
 	$generated |= process_rule_common(
-				    undef, # $chainref
+				    $chainref,
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -1132,6 +971,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my $rule = '';
     my $actionchainref;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
+    my $inaction = defined $chainref;
 
     $param = '' unless defined $param;
 
@@ -1157,6 +997,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	}
 
 	my $generated = process_macro( $basictarget,
+				       $chainref,
 				       $target,
 				       $current_param,
 				       $source,
@@ -1239,31 +1080,33 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my $destref;
     my $origdstports;
 
-    if ( $source =~ /^(.+?):(.*)/ ) {
-	fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
-	$sourcezone = $1;
-	$source = $2;
-    } else {
-	$sourcezone = $source;
-	$source = ALLIP;
-    }
+    unless ( $inaction ) {
+	if ( $source =~ /^(.+?):(.*)/ ) {
+	    fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
+	    $sourcezone = $1;
+	    $source = $2;
+	} else {
+	    $sourcezone = $source;
+	    $source = ALLIP;
+	}
+   
+	if ( $dest =~ /^(.*?):(.*)/ ) {
+	    fatal_error "Missing DEST Qualifier ($dest)" if $2 eq '';
+	    $destzone = $1;
+	    $dest = $2;
+	} elsif ( $dest =~ /.*\..*\./ ) {
+	    #
+	    # Appears to be an IPv4 address (no NAT in IPv6)
+	    #
+	    $destzone = '-';
+	} else {
+	    $destzone = $dest;
+	    $dest = ALLIP;
+	}
 
-    if ( $dest =~ /^(.*?):(.*)/ ) {
-	fatal_error "Missing DEST Qualifier ($dest)" if $2 eq '';
-	$destzone = $1;
-	$dest = $2;
-    } elsif ( $dest =~ /.*\..*\./ ) {
-	#
-	# Appears to be an IPv4 address (no NAT in IPv6)
-	#
-	$destzone = '-';
-    } else {
-	$destzone = $dest;
-	$dest = ALLIP;
+	fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
+	fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
     }
-
-    fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
-    fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
 
     if ( $actiontype & NATONLY ) {
 	unless ( $destzone eq '-' || $destzone eq '' ) {
@@ -1277,16 +1120,20 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     } else {
-	fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
-	fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
+	unless ( $inaction ) {
+	    fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
+	    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
+	}
     }
 
     my $restriction = NO_RESTRICT;
 
-    if ( $sourceref && ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ) ) {
-	$restriction = $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
-    } else {
-	$restriction = INPUT_RESTRICT if $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER );
+    unless ( $inaction ) {
+	if ( $sourceref && ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ) ) {
+	    $restriction = $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
+	} else {
+	    $restriction = INPUT_RESTRICT if $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER );
+	}
     }
 
     my ( $chain, $policy );
@@ -1300,48 +1147,51 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
 
     unless ( $actiontype & NATONLY ) {
-	#
-	# Check for illegal bridge port rule
-	#
-	if ( $destref->{type} == BPORT ) {
-	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
+	if ( $inaction ) {
+	    $chain = $chainref->{name};
+	} else {
+	    #
+	    # Check for illegal bridge port rule
+	    #
+	    if ( $destref->{type} == BPORT ) {
+		unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
+		    return 0 if $wildcard;
+		    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
+		}
+	    }
+
+	    $chain = rules_chain( ${sourcezone}, ${destzone} );
+	    #
+	    # Ensure that the chain exists but don't mark it as referenced until after optimization is checked
+	    #
+	    $chainref = ensure_chain 'filter', $chain;
+	    $policy   = $chainref->{policy};
+
+	    if ( $policy eq 'NONE' ) {
 		return 0 if $wildcard;
-		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
+		fatal_error "Rules may not override a NONE policy";
 	    }
-	}
-
-	$chain = rules_chain( ${sourcezone}, ${destzone} );
-	#
-	# Ensure that the chain exists but don't mark it as referenced until after optimization is checked
-	#
-	$chainref = ensure_chain 'filter', $chain;
-	$policy   = $chainref->{policy};
-
-	if ( $policy eq 'NONE' ) {
-	    return 0 if $wildcard;
-	    fatal_error "Rules may not override a NONE policy";
-	}
-	#
-	# Handle Optimization
-	#
-	if ( $optimize > 0 ) {
-	    my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
-	    if ( $loglevel ne '' ) {
-		return 0 if $target eq "${policy}:$loglevel}";
-	    } else {
-		return 0 if $basictarget eq $policy;
+	    #
+	    # Handle Optimization
+	    #
+	    if ( $optimize > 0 ) {
+		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
+		if ( $loglevel ne '' ) {
+		    return 0 if $target eq "${policy}:$loglevel}";
+		} else {
+		    return 0 if $basictarget eq $policy;
+		}
 	    }
+	    #
+	    # Mark the chain as referenced and add appropriate rules from earlier sections.
+	    #
+	    $chainref = ensure_filter_chain $chain, 1;
+	    #
+	    # Don't let the rules in this chain be moved elsewhere
+	    #
+	    dont_move $chainref;
 	}
-	#
-	# Mark the chain as referenced and add appropriate rules from earlier sections.
-	#
-	$chainref = ensure_filter_chain $chain, 1;
-	#
-	# Don't let the rules in this chain be moved elsewhere
-	#
-	dont_move $chainref;
     }
-
     #
     # Generate Fixed part of the rule
     #
@@ -1367,7 +1217,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 		    );
     }
 
-    unless ( $section eq 'NEW' ) {
+    unless ( $section eq 'NEW' || $inaction ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} $section "

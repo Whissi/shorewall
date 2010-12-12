@@ -965,7 +965,23 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
 sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
-    my ( $chainref, $target, $current_param, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
+    my ( $chainref,   #reference to Action Chain if we are being called from process_action3() 
+	 $target, 
+	 $current_param,
+	 $source,
+	 $dest,
+	 $proto,
+	 $ports,
+	 $sports,
+	 $origdest,
+	 $ratelimit,
+	 $user,
+	 $mark,
+	 $connlimit,
+	 $time,
+	 $headers,
+	 $wildcard ) = @_;
+
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';

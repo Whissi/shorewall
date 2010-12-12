@@ -458,14 +458,12 @@ sub find_logactionchain( $ ) {
 sub process_macro1 ( $$ ) {
     my ( $action, $macrofile ) = @_;
 
-    my $nat;
-
     progress_message "   ..Expanding Macro $macrofile...";
 
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, @rest ) = split_line1 1, 9, 'macro file', $macro_commands;
+	my ( $mtarget, @rest ) = split_line1 1, 13, 'macro file', $macro_commands;
 
 	next if $mtarget eq 'COMMENT' || $mtarget eq 'FORMAT';
 
@@ -478,16 +476,12 @@ sub process_macro1 ( $$ ) {
 	$targettype = 0 unless defined $targettype;
 
 	fatal_error "Invalid target ($mtarget)"
-	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $targettype & ( LOGRULE | NFQ | CHAIN | NATRULE ) );
-
-	$nat ||= ( $targettype & NATRULE );
+	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $targettype & ( LOGRULE | NFQ | CHAIN ) );
     }
 
     progress_message "   ..End Macro $macrofile";
 
     pop_open;
-
-    $nat;
 }
 
 #
@@ -633,8 +627,8 @@ sub process_actions2 () {
 #
 # This function is called to process each rule generated from an action file.
 #
-sub process_action( $$$$$$$$$$$ ) {
-    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = @_;
+sub process_action( $$$$$$$$$$$$$$ ) {
+    my ($chainref, $actionname, $target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark, $connlimit, $time, $headers ) = @_;
 
     my ( $action , $level ) = split_action $target;
 
@@ -652,7 +646,13 @@ sub process_action( $$$$$$$$$$$ ) {
 
     expand_rule ( $chainref ,
 		  NO_RESTRICT ,
-		  do_proto( $proto, $ports, $sports ) . do_ratelimit( $rate, $action ) . do_user $user . do_test( $mark, $globals{TC_MASK} ) ,
+		  do_proto( $proto, $ports, $sports ) . 
+		  do_ratelimit( $rate, $action ) . 
+		  do_user $user . 
+		  do_test( $mark, $globals{TC_MASK} ) .
+		  do_connlimit ( $connlimit ) .
+		  do_time( $time ) .
+		  do_headers ( $headers ) ,
 		  $source ,
 		  $dest ,
 		  '', #Original Dest
@@ -682,14 +682,17 @@ sub process_macro3( $$$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark );
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders );
 
 	if ( $format == 1 ) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $macro_commands;
-	    $morigdest = '-';
-	    $mmark     = '-';
+	    $morigdest  = '-';
+	    $mmark      = '-';
+	    $mconnlimit = '-';
+	    $mtime      = '-';
+	    $mheaders   = '-';
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark ) = split_line1 1, 10, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders ) = split_line1 1, 13, 'macro file', $macro_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {
@@ -738,14 +741,14 @@ sub process_macro3( $$$$$$$$$$$$ ) {
 
 	$mdest   = '' if $mdest eq '-';
 
-	$mproto  = merge_macro_column $mproto,  $proto;
-	$mports  = merge_macro_column $mports,  $ports;
-	$msports = merge_macro_column $msports, $sports;
-	$mrate   = merge_macro_column $mrate,   $rate;
-	$muser   = merge_macro_column $muser,   $user;
-	$mmark   = merge_macro_column $mmark,   $mark;
+	$mproto     = merge_macro_column $mproto,      $proto;
+	$mports     = merge_macro_column $mports,      $ports;
+	$msports    = merge_macro_column $msports,     $sports;
+	$mrate      = merge_macro_column $mrate,       $rate;
+	$muser      = merge_macro_column $muser,       $user;
+	$mmark      = merge_macro_column $mmark,       $mark;
 
-	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $mark;
+	process_action $chainref, $action, $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser, $mark, $mconnlimit, $mtime, $mheaders;
     }
 
     pop_open;
@@ -796,7 +799,7 @@ sub process_action3( $$$$$ ) {
 	if ( $action2type == MACRO ) {
 	    process_macro3( $action2, $param, $chainref, $action, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark );
 	} else {
-	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark;
+	    process_action $chainref, $action, $target2, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark, '-', '-', '-';
 	}
     }
 

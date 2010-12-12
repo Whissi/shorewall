@@ -20,9 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains the code for dealing with actions (built-in,
-#   standard and user-defined) and Macros. It also contains process_rule_common() which
-#   performs low-level rule processing.
+#   This module contains the mid-level processing code for the rules file.
 #
 package Shorewall::Actions;
 require Exporter;
@@ -467,7 +465,7 @@ sub process_macro1 ( $$ ) {
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, $msource,  $mdest,  $mproto,  $mports,  $msports, $morigdest, $mrate, $muser ) = split_line1 1, 9, 'macro file', $macro_commands;
+	my ( $mtarget, @rest ) = split_line1 1, 9, 'macro file', $macro_commands;
 
 	next if $mtarget eq 'COMMENT' || $mtarget eq 'FORMAT';
 
@@ -598,7 +596,7 @@ sub process_actions1() {
 
 	    while ( read_a_line ) {
 
-		my ($wholetarget, $source, $dest, $proto, $ports, $sports, $rate, $users, $mark ) = split_line 1, 9, 'action file';
+		my ($wholetarget, @rest ) = split_line 1, 9, 'action file';
 
 		process_action1( $action, $wholetarget );
 

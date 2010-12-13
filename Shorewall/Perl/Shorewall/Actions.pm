@@ -392,6 +392,8 @@ sub createlogactionchain( $$ ) {
 	    }
 	}
     }
+
+    $chainref;
 }
 
 sub createsimpleactionchain( $ ) {
@@ -418,6 +420,8 @@ sub createsimpleactionchain( $ ) {
 	    }
 	}
     }
+
+    $chainref;
 }
 
 #
@@ -518,7 +522,9 @@ sub process_action1 ( $$ ) {
     my $targettype = $targets{$target};
 
     if ( defined $targettype ) {
-	return if ( $targettype == STANDARD ) || ( $targettype & ( MACRO | LOGRULE |  NFQ | CHAIN ) );
+	$targets{$action} |= ( $targettype & ( NATRULE | NATONLY | NONAT ) );
+
+	return if ( $targettype == STANDARD ) || ( $targettype & ( MACRO | LOGRULE |  NFQ | CHAIN | NATRULE | NONAT ) );
 
 	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
 
@@ -659,6 +665,7 @@ sub process_action3( $$$$$ ) {
 	if ( $target eq 'FORMAT' ) {
 	    my @columns = split_line 2, 2, 'action file';
 	    fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
+	    $format = $source;
 	    next;
 	}
 
@@ -901,7 +908,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO );
+	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE +  MACRO );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {
@@ -1055,7 +1062,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     if ( $actiontype & ACTION ) {
 	unless ( $usedactions{$target} ) {
 	    $usedactions{$target} = 1;
-	    createactionchain $target;
+	    my $ref = createactionchain $target;
+	    new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT );
 	}
     }
     #
@@ -1066,7 +1074,9 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     if ( $actiontype & REDIRECT ) {
 	my $z = $actiontype & NATONLY ? '' : firewall_zone;
 	if ( $dest eq '-' ) {
-	    $dest = join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+	    $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+	} elsif ( $inaction ) {
+	    $dest = ":$dest";
 	} else {
 	    $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
 	}
@@ -1300,6 +1310,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIP;
 	    } elsif ( $origdest eq 'detect' ) {
+		fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $inaction;
+
 		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
 		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
@@ -1308,14 +1320,18 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 		    $origdest = ALLIP;
 		}
 	    }
+	} elsif ( $actiontype & ACTION ) {
+	    $target = $action;
 	} else {
 	    if ( $server eq '' ) {
 		fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
 	    } elsif ( $server =~ /^(.+)-(.+)$/ ) {
 		validate_range( $1, $2 );
 	    } else {
-		my @servers = validate_address $server, 1;
-		$server = join ',', @servers;
+		unless ( ( $actiontype & ACTION ) && $server eq ALLIP ) {
+		    my @servers = validate_address $server, 1;
+		    $server = join ',', @servers;
+		}
 	    }
 
 	    if ( $action eq 'DNAT' ) {
@@ -1331,7 +1347,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 
 	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		if ( ! $inaction && $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
 		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
 		    $origdest = @interfaces ? "detect:@interfaces" : ALLIP;
@@ -1346,7 +1362,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	expand_rule ( ensure_chain ('nat' , $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
+	expand_rule ( ensure_chain ('nat' , $inaction ? $chain : $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
 		      PREROUTE_RESTRICT ,
 		      $rule ,
 		      $source ,
@@ -1393,7 +1409,9 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
 	my $chn;
 
-	if ( $sourceref->{type} == FIREWALL ) {
+	if ( $inaction ) {
+	    $nonat_chain = ensure_chain 'nat', $chain;
+	} elsif ( $sourceref->{type} == FIREWALL ) {
 	    $nonat_chain = $nat_table->{OUTPUT};
 	} else {
 	    $nonat_chain = ensure_chain 'nat', dnat_chain $sourcezone;

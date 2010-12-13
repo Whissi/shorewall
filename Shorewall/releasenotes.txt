@@ -79,6 +79,21 @@ Beta 1
     /etc/shorewall/proxyarp is now optional and is only required when
     HAVEROUTE=No (the default).
 
+3)  Shorewall 4.4.16 introduces format-2 Actions. Based on the similar
+    feature of macros, format-2 actions allow the same column layout
+    for macros, actions and rules.
+
+    In the action.xxx file, simply make the first non-commentary line:
+
+       FORMAT 2
+
+    This allows the lines which follow to have the same columns as
+    those in the rules file.
+
+    As part of this change, DNAT, DNAT-, REDIRECT, REDIRECT- and
+    ACCEPT+ rules are now allowed in Actions and in macros invoked from
+    Actions.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

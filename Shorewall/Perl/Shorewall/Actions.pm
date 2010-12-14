@@ -56,10 +56,9 @@ our @EXPORT = qw( merge_levels
 		  %actions
 
 		  %macros
-		  $macro_commands
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_13';
+our $VERSION = '4.4_16';
 
 #
 #  Used Actions. Each action that is actually used has an entry with value 1.
@@ -596,7 +595,7 @@ sub process_actions1() {
 
 	    while ( read_a_line ) {
 
-		my ($wholetarget, @rest ) = split_line 1, 13, 'action file';
+		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $macro_commands;
 
 		process_action1( $action, $wholetarget )  unless $wholetarget eq 'FORMAT';
 
@@ -651,10 +650,10 @@ sub process_action3( $$$$$ ) {
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
 
 	if ( $format == 1 ) {
-	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file';
+	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $macro_commands;
 	    $origdest = $connlimit = $time = $headers = '-';
 	} else {
-	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file';
+	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file', $macro_commands;
 	}
 
 	if ( $target eq 'COMMENT' ) {
@@ -663,7 +662,6 @@ sub process_action3( $$$$$ ) {
 	}
 
 	if ( $target eq 'FORMAT' ) {
-	    my @columns = split_line 2, 2, 'action file';
 	    fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
 	    $format = $source;
 	    next;

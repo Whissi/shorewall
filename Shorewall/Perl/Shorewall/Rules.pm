@@ -51,13 +51,6 @@ our $VERSION = '4.4_16';
 our $family;
 
 #
-# When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
-#
-
-my %rules_commands = ( COMMENT => 0,
-		       SECTION => 2 );
-
-#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -976,7 +969,7 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'rules file', \%rules_commands;
+    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'rules file', $rule_commands;
 
     process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';

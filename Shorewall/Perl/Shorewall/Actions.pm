@@ -42,6 +42,7 @@ our @EXPORT = qw(
 		  process_actions3
 		  process_rule_common
 
+		  $rule_commands
 		  %usedactions
 		  %default_actions
 		  );
@@ -78,21 +79,13 @@ our $family;
 our @builtins;
 
 #
-# Commands that can be embedded in a macro file and how many total tokens on the line (0 => unlimited).
+# Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-our $macro_commands = { COMMENT => 0, FORMAT => 2 };
+our $rule_commands = { COMMENT => 0, FORMAT => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
 our $macro_nest_level;
-
-#
-# When splitting a line in the rules file, don't pad out the columns with '-' if the first column contains one of these
-#
-
-my %rules_commands = ( COMMENT => 0,
-		       SECTION => 2 );
-
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -454,7 +447,7 @@ sub process_macro1 ( $$ ) {
     push_open( $macrofile );
 
     while ( read_a_line ) {
-	my ( $mtarget, @rest ) = split_line1 1, 13, 'macro file', $macro_commands;
+	my ( $mtarget, @rest ) = split_line1 1, 13, 'macro file', $rule_commands;
 
 	next if $mtarget eq 'COMMENT' || $mtarget eq 'FORMAT';
 
@@ -583,7 +576,7 @@ sub process_actions1() {
 
 	    while ( read_a_line ) {
 
-		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $macro_commands;
+		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
 
 		process_action1( $action, $wholetarget )  unless $wholetarget eq 'FORMAT';
 
@@ -638,10 +631,10 @@ sub process_action3( $$$$$ ) {
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
 
 	if ( $format == 1 ) {
-	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $macro_commands;
+	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands;
 	    $origdest = $connlimit = $time = $headers = '-';
 	} else {
-	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file', $macro_commands;
+	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file', $rule_commands;
 	}
 
 	if ( $target eq 'COMMENT' ) {
@@ -864,10 +857,10 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders );
 
 	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $rule_commands;
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders ) = qw/- - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders ) = split_line1 1, 13, 'macro file', $macro_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders ) = split_line1 1, 13, 'macro file', $rule_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {

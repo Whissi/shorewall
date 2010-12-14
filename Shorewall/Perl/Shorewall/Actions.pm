@@ -29,6 +29,7 @@ use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Policy;
+use Scalar::Util 'reftype';
 
 use strict;
 
@@ -436,37 +437,7 @@ sub find_logactionchain( $ ) {
     fatal_error "Fatal error in find_logactionchain" unless $logactionchains{"$action:$level"};
 }
 
-#
-# Scans a macro file invoked from an action file ensuring that all targets mentioned in the file are known and that none are actions.
-#
-sub process_macro1 ( $$ ) {
-    my ( $action, $macrofile ) = @_;
-
-    progress_message "   ..Expanding Macro $macrofile...";
-
-    push_open( $macrofile );
-
-    while ( read_a_line ) {
-	my ( $mtarget, @rest ) = split_line1 1, 13, 'macro file', $rule_commands;
-
-	next if $mtarget eq 'COMMENT' || $mtarget eq 'FORMAT';
-
-	$mtarget =~ s/:.*$//;
-
-	$mtarget = (split '/' , $mtarget)[0];
-
-	my $targettype = $targets{$mtarget};
-
-	$targettype = 0 unless defined $targettype;
-
-	fatal_error "Invalid target ($mtarget)"
-	    unless ( $targettype == STANDARD ) || ( $mtarget eq 'PARAM' ) || ( $targettype & ( LOGRULE | NFQ | CHAIN ) );
-    }
-
-    progress_message "   ..End Macro $macrofile";
-
-    pop_open;
-}
+sub process_action1( $$ );
 
 #
 # The functions process_actions1-3() implement the three phases of action processing.
@@ -492,47 +463,7 @@ sub process_macro1 ( $$ ) {
 # processed once for each unique [:level[:tag]] applied to an invocation of the action.
 #
 
-sub process_action1 ( $$ ) {
-    my ( $action, $wholetarget ) = @_;
-
-    my ( $target, $level ) = split_action $wholetarget;
-
-    $level = 'none' unless $level;
-
-    my $targettype = $targets{$target};
-
-    if ( defined $targettype ) {
-	$targets{$action} |= ( $targettype & ( NATRULE | NATONLY | NONAT ) );
-
-	return if ( $targettype == STANDARD ) || ( $targettype & ( MACRO | LOGRULE |  NFQ | CHAIN | NATRULE | NONAT ) );
-
-	fatal_error "Invalid TARGET ($target)" if $targettype & STANDARD;
-
-	fatal_error "An action may not invoke itself" if $target eq $action;
-
-	add_requiredby $wholetarget, $action if $targettype & ACTION;
-    } elsif ( $target eq 'COMMENT' ) {
-	fatal_error "Invalid TARGET ($wholetarget)" unless $wholetarget eq $target;
-    } else {
-	( $target, my $param ) = get_target_param $target;
-
-	return if $target eq 'NFQUEUE';
-
-	if ( defined $param ) {
-	    my $paramtype = $targets{$param} || 0;
-
-	    fatal_error "Parameter value not allowed in action files ($param)" if $paramtype & NATRULE;
-	}
-
-	fatal_error "Invalid or missing ACTION ($wholetarget)" unless defined $target;
-
-	if ( find_macro $target ) {
-	    process_macro1( $action, $macros{$target} );
-	} else {
-	    fatal_error "Invalid TARGET ($target)";
-	}
-    }
-}
+sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
 sub process_actions1() {
 
@@ -578,8 +509,23 @@ sub process_actions1() {
 
 		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
 
-		process_action1( $action, $wholetarget )  unless $wholetarget eq 'FORMAT';
-
+		process_rule_common( $action ,
+				     $wholetarget ,
+				     '' ,   # Current Param
+				     undef, # source
+				     undef, # dest
+				     undef, # proto
+				     undef, # ports
+				     undef, # sports
+				     undef, # origdest
+				     undef, # ratelimit
+				     undef, # user
+				     undef, # mark
+				     undef, # connlimit
+				     undef, # time
+				     undef, # headers
+				     0      # wildcard	     
+				   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
 	    }
 
 	    pop_open;
@@ -609,8 +555,6 @@ sub process_actions2 () {
 	}
     }
 }
-
-sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
 #
 # Generate chain for non-builtin action invocation
@@ -951,7 +895,8 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 #
 sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
-    my ( $chainref,   #reference to Action Chain if we are being called from process_action3() 
+    my ( $chainref,   #reference to Action Chain if we are being called from process_action3()
+                      # if defined, we are being called from process_action1() and this is the name of the action
 	 $target, 
 	 $current_param,
 	 $source,
@@ -971,9 +916,17 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
-    my $actionchainref;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
-    my $inaction = defined $chainref;
+    my $inaction1;
+    my $inaction3;
+ 
+    if ( defined $chainref ) {
+	if ( reftype $chainref ) {
+	    $inaction3 = 1;
+	} else {
+	    $inaction1 = $chainref;
+	}
+    }	
 
     $param = '' unless defined $param;
 
@@ -1031,20 +984,37 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
+
     #
     # We can now dispense with the postfix character
     #
     $action =~ s/[\+\-!]$//;
     #
-    # Mark target as used
+    # Handle actions
     #
     if ( $actiontype & ACTION ) {
-	unless ( $usedactions{$target} ) {
-	    $usedactions{$target} = 1;
-	    my $ref = createactionchain $target;
-	    new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT );
+	if ( $inaction1 ) {
+	    add_requiredby( $target , $inaction1 );
+	} else {
+	    unless ( $usedactions{$target} ) {
+		$usedactions{$target} = 1;
+		my $ref = createactionchain $target;
+		new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT );
+	    }
 	}
     }
+
+    if  ( $inaction1 ) {
+	#
+	# We need to transfer the NAT-oriented flags to the action itself
+	#
+	$targets{$inaction1} |= ( $actiontype & ( NATRULE | NONAT | NATONLY ) );
+	#
+	# That's all for the first pass
+	#
+	return 1;
+    }
+
     #
     # Take care of irregular syntax and targets
     #
@@ -1053,8 +1023,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     if ( $actiontype & REDIRECT ) {
 	my $z = $actiontype & NATONLY ? '' : firewall_zone;
 	if ( $dest eq '-' ) {
-	    $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
-	} elsif ( $inaction ) {
+	    $dest = $inaction3 ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+	} elsif ( $inaction3 ) {
 	    $dest = ":$dest";
 	} else {
 	    $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
@@ -1085,7 +1055,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my $destref;
     my $origdstports;
 
-    unless ( $inaction ) {
+    unless ( $inaction3 ) {
 	if ( $source =~ /^(.+?):(.*)/ ) {
 	    fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
 	    $sourcezone = $1;
@@ -1125,7 +1095,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     } else {
-	unless ( $inaction ) {
+	unless ( $inaction3 ) {
 	    fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
 	    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
 	}
@@ -1133,7 +1103,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
     my $restriction = NO_RESTRICT;
 
-    unless ( $inaction ) {
+    unless ( $inaction3 ) {
 	if ( $sourceref && ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ) ) {
 	    $restriction = $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
 	} else {
@@ -1152,7 +1122,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
 
     unless ( $actiontype & NATONLY ) {
-	if ( $inaction ) {
+	if ( $inaction3 ) {
 	    $chain = $chainref->{name};
 	} else {
 	    #
@@ -1222,7 +1192,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 		    );
     }
 
-    unless ( $section eq 'NEW' || $inaction ) {
+    unless ( $section eq 'NEW' || $inaction3 ) {
 	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} $section "
@@ -1289,7 +1259,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    if ( $origdest eq '' || $origdest eq '-' ) {
 		$origdest = ALLIP;
 	    } elsif ( $origdest eq 'detect' ) {
-		fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $inaction;
+		fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $inaction3;
 
 		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
 		    my $interfacesref = $sourceref->{interfaces};
@@ -1326,7 +1296,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 
 	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-		if ( ! $inaction && $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		if ( ! $inaction3 && $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
 		    my $interfacesref = $sourceref->{interfaces};
 		    my @interfaces = keys %$interfacesref;
 		    $origdest = @interfaces ? "detect:@interfaces" : ALLIP;
@@ -1341,7 +1311,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	#
 	# And generate the nat table rule(s)
 	#
-	expand_rule ( ensure_chain ('nat' , $inaction ? $chain : $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
+	expand_rule ( ensure_chain ('nat' , $inaction3 ? $chain : $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
 		      PREROUTE_RESTRICT ,
 		      $rule ,
 		      $source ,
@@ -1388,7 +1358,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
 	my $chn;
 
-	if ( $inaction ) {
+	if ( $inaction3 ) {
 	    $nonat_chain = ensure_chain 'nat', $chain;
 	} elsif ( $sourceref->{type} == FIREWALL ) {
 	    $nonat_chain = $nat_table->{OUTPUT};

@@ -277,411 +277,425 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
       </listitem>
     </orderedlist>
 
-    <para><emphasis role="bold">Beginning with Shorewall 4.4.16, the columns
-    in macro.template are the same as those in <ulink
-    url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5).
-    </emphasis>The first non-commentary line in the template must be</para>
+    <section>
+      <title>Shorewall 4.4.16 and Later</title>
 
-    <programlisting>FORMAT 2</programlisting>
+      <para>Beginning with Shorewall 4.4.16, the columns in macro.template are
+      the same as those in shorewall-rules (5). The first non-commentary line
+      in the template must be</para>
 
-    <para>Before 4.4.16, columns in the macro.template file were as
-    follows:</para>
+      <programlisting>FORMAT 2</programlisting>
 
-    <itemizedlist>
-      <listitem>
-        <para>ACTION - ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
-        LOG, QUEUE, PARAM or an action name. Note that a macro may not invoke
-        another macro.</para>
+      <para>There are no restrictions regarding the ACTIONs that can be
+      performed in a macro.</para>
+    </section>
 
-        <simplelist>
-          <member>ACCEPT - allow the connection request</member>
+    <section>
+      <title>Shorewall 4.4.15 and Earlier</title>
 
-          <member>ACCEPT+ - like ACCEPT but also excludes the connection from
-          any subsequent DNAT[-] or REDIRECT[-] rules.</member>
+      <para>Before 4.4.16, columns in the macro.template file were as
+      follows:</para>
 
-          <member>NONAT - Excludes the connection from any subsequent DNAT[-]
-          or REDIRECT[-] rules but doesn't generate a rule to accept the
-          traffic.</member>
+      <itemizedlist>
+        <listitem>
+          <para>ACTION - ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT,
+          CONTINUE, LOG, QUEUE, PARAM or an action name. Note that a macro may
+          not invoke another macro.</para>
 
-          <member>DROP - ignore the request</member>
+          <simplelist>
+            <member>ACCEPT - allow the connection request</member>
 
-          <member>REJECT - disallow the request and return an icmp unreachable
-          or an RST packet.</member>
+            <member>ACCEPT+ - like ACCEPT but also excludes the connection
+            from any subsequent DNAT[-] or REDIRECT[-] rules.</member>
 
-          <member>DNAT - Forward the request to another address (and
-          optionally another port).</member>
+            <member>NONAT - Excludes the connection from any subsequent
+            DNAT[-] or REDIRECT[-] rules but doesn't generate a rule to accept
+            the traffic.</member>
 
-          <member>DNAT- - Advanced users only. Like DNAT but only generates
-          the DNAT iptables rule and not the companion ACCEPT rule.</member>
+            <member>DROP - ignore the request</member>
 
-          <member>SAME - Similar to DNAT except that the port may not be
-          remapped and when multiple server addresses are listed, all requests
-          from a given remote system go to the same server.</member>
+            <member>REJECT - disallow the request and return an icmp
+            unreachable or an RST packet.</member>
 
-          <member>SAME- - Advanced users only. Like SAME but only generates
-          the SAME iptables rule and not the companion ACCEPT rule.</member>
+            <member>DNAT - Forward the request to another address (and
+            optionally another port).</member>
 
-          <member>REDIRECT - Redirect the request to a local port on the
-          firewall.</member>
+            <member>DNAT- - Advanced users only. Like DNAT but only generates
+            the DNAT iptables rule and not the companion ACCEPT rule.</member>
 
-          <member>REDIRECT- - Advanced users only. Like REDIRECT but only
-          generates the REDIRECT iptables rule and not the companion ACCEPT
-          rule.</member>
+            <member>SAME - Similar to DNAT except that the port may not be
+            remapped and when multiple server addresses are listed, all
+            requests from a given remote system go to the same
+            server.</member>
 
-          <member>CONTINUE - (For experts only). Do not process any of the
-          following rules for this (source zone,destination zone). If The
-          source and/or destination If the address falls into a zone defined
-          later in /etc/shorewall/zones, this connection request will be
-          passed to the rules defined for that (those) zone(s).</member>
+            <member>SAME- - Advanced users only. Like SAME but only generates
+            the SAME iptables rule and not the companion ACCEPT rule.</member>
 
-          <member>LOG - Simply log the packet and continue.</member>
+            <member>REDIRECT - Redirect the request to a local port on the
+            firewall.</member>
 
-          <member>QUEUE - Queue the packet to a user-space application such as
-          ftwall (http://p2pwall.sf.net).</member>
-        </simplelist>
+            <member>REDIRECT- - Advanced users only. Like REDIRECT but only
+            generates the REDIRECT iptables rule and not the companion ACCEPT
+            rule.</member>
 
-        <para>The ACTION may optionally be followed by ":" and a syslog log
-        level (e.g, REJECT:info or DNAT:debug). This causes the packet to be
-        logged at the specified level.</para>
-      </listitem>
+            <member>CONTINUE - (For experts only). Do not process any of the
+            following rules for this (source zone,destination zone). If The
+            source and/or destination If the address falls into a zone defined
+            later in /etc/shorewall/zones, this connection request will be
+            passed to the rules defined for that (those) zone(s).</member>
 
-      <listitem>
-        <para>SOURCE - Source hosts to which the rule applies. A
-        comma-separated list of subnets and/or hosts. Hosts may be specified
-        by IP or MAC address; mac addresses must begin with <quote>~</quote>
-        and must use <quote>-</quote> as a separator.</para>
+            <member>LOG - Simply log the packet and continue.</member>
 
-        <para>Alternatively, clients may be specified by interface name. For
-        example, eth1 specifies a client that communicates with the firewall
-        system through eth1. This may be optionally followed by another colon
-        (<quote>:</quote>) and an IP/MAC/subnet address as described above
-        (e.g. eth1:192.168.1.5).</para>
+            <member>QUEUE - Queue the packet to a user-space application such
+            as ftwall (http://p2pwall.sf.net).</member>
+          </simplelist>
 
-        <para>May also contain 'DEST' as described above.</para>
-      </listitem>
+          <para>The ACTION may optionally be followed by ":" and a syslog log
+          level (e.g, REJECT:info or DNAT:debug). This causes the packet to be
+          logged at the specified level.</para>
+        </listitem>
 
-      <listitem>
-        <para>DEST - Location of Server. Same as above with the exception that
-        MAC addresses are not allowed.</para>
+        <listitem>
+          <para>SOURCE - Source hosts to which the rule applies. A
+          comma-separated list of subnets and/or hosts. Hosts may be specified
+          by IP or MAC address; mac addresses must begin with <quote>~</quote>
+          and must use <quote>-</quote> as a separator.</para>
 
-        <para>Unlike in the SOURCE column, you may specify a range of up to
-        256 IP addresses using the syntax &lt;<emphasis>first
-        ip</emphasis>&gt;-&lt;<emphasis>last ip</emphasis>&gt;.</para>
+          <para>Alternatively, clients may be specified by interface name. For
+          example, eth1 specifies a client that communicates with the firewall
+          system through eth1. This may be optionally followed by another
+          colon (<quote>:</quote>) and an IP/MAC/subnet address as described
+          above (e.g. eth1:192.168.1.5).</para>
 
-        <para>May also contain 'SOURCE' as described above.</para>
-      </listitem>
+          <para>May also contain 'DEST' as described above.</para>
+        </listitem>
 
-      <listitem>
-        <para>PROTO - Protocol - Must be <quote>tcp</quote>,
-        <quote>udp</quote>, <quote>icmp</quote>, a number, or
-        <quote>all</quote>.</para>
-      </listitem>
+        <listitem>
+          <para>DEST - Location of Server. Same as above with the exception
+          that MAC addresses are not allowed.</para>
 
-      <listitem>
-        <para>DEST PORT(S) - Destination Ports. A comma-separated list of Port
-        names (from <filename>/etc/services</filename>), port numbers or port
-        ranges; if the protocol is <quote>icmp</quote>, this column is
-        interpreted as the destination icmp-type(s).</para>
+          <para>Unlike in the SOURCE column, you may specify a range of up to
+          256 IP addresses using the syntax &lt;<emphasis>first
+          ip</emphasis>&gt;-&lt;<emphasis>last ip</emphasis>&gt;.</para>
 
-        <para>A port range is expressed as &lt;<emphasis>low
-        port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
+          <para>May also contain 'SOURCE' as described above.</para>
+        </listitem>
 
-        <para>This column is ignored if PROTOCOL = all but must be entered if
-        any of the following fields are supplied. In that case, it is
-        suggested that this field contain <quote>-</quote>.</para>
+        <listitem>
+          <para>PROTO - Protocol - Must be <quote>tcp</quote>,
+          <quote>udp</quote>, <quote>icmp</quote>, a number, or
+          <quote>all</quote>.</para>
+        </listitem>
 
-        <para>If your kernel contains multi-port match support, then only a
-        single Netfilter rule will be generated if in this list and in the
-        CLIENT PORT(S) list below:</para>
+        <listitem>
+          <para>DEST PORT(S) - Destination Ports. A comma-separated list of
+          Port names (from <filename>/etc/services</filename>), port numbers
+          or port ranges; if the protocol is <quote>icmp</quote>, this column
+          is interpreted as the destination icmp-type(s).</para>
 
-        <orderedlist>
-          <listitem>
-            <para>There are 15 or less ports listed.</para>
-          </listitem>
+          <para>A port range is expressed as &lt;<emphasis>low
+          port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
 
-          <listitem>
-            <para>No port ranges are included.</para>
-          </listitem>
-        </orderedlist>
+          <para>This column is ignored if PROTOCOL = all but must be entered
+          if any of the following fields are supplied. In that case, it is
+          suggested that this field contain <quote>-</quote>.</para>
 
-        <para>Otherwise, a separate rule will be generated for each
-        port.</para>
-      </listitem>
+          <para>If your kernel contains multi-port match support, then only a
+          single Netfilter rule will be generated if in this list and in the
+          CLIENT PORT(S) list below:</para>
 
-      <listitem>
-        <para>SOURCE PORT(S) - Port(s) used by the client. If omitted, any
-        source port is acceptable. Specified as a comma-separated list of port
-        names, port numbers or port ranges.</para>
-
-        <para>If you don't want to restrict client ports but need to specify
-        an ADDRESS in the next column, then place "-" in this column.</para>
-
-        <para>If your kernel contains multi-port match support, then only a
-        single Netfilter rule will be generated if in this list and in the
-        DEST PORT(S) list above:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>There are 15 or less ports listed.</para>
-          </listitem>
-
-          <listitem>
-            <para>No port ranges are included.</para>
-          </listitem>
-        </orderedlist>
-
-        <para>Otherwise, a separate rule will be generated for each
-        port.</para>
-      </listitem>
-
-      <listitem>
-        <para>ORIGINAL DEST (Shorewall-perl 4.2.0 and later)</para>
-
-        <para>To use this column, you must include 'FORMAT 2' as the first
-        non-comment line in your macro file.</para>
-
-        <para>If ACTION is DNAT[-] or REDIRECT[-] then if this column is
-        included and is different from the IP address given in the DEST
-        column, then connections destined for that address will be forwarded
-        to the IP and port specified in the DEST column.</para>
-
-        <para>A comma-separated list of addresses may also be used. This is
-        most useful with the REDIRECT target where you want to redirect
-        traffic destined for particular set of hosts. Finally, if the list of
-        addresses begins with "!" (exclusion) then the rule will be followed
-        only if the original destination address in the connection request
-        does not match any of the addresses listed.</para>
-
-        <para>For other actions, this column may be included and may contain
-        one or more addresses (host or network) separated by commas. Address
-        ranges are not allowed. When this column is supplied, rules are
-        generated that require that the original destination address matches
-        one of the listed addresses. This feature is most useful when you want
-        to generate a filter rule that corresponds to a DNAT- or REDIRECT-
-        rule. In this usage, the list of addresses should not begin with
-        "!".</para>
-
-        <para>It is also possible to specify a set of addresses then exclude
-        part of those addresses. For example, 192.168.1.0/24!192.168.1.16/28
-        specifies the addresses 192.168.1.0-182.168.1.15 and
-        192.168.1.32-192.168.1.255. See <ulink
-        url="manpages/shorewall_exclusion.html">shorewall-exclusion</ulink>(5).</para>
-
-        <para>See <ulink
-        url="http://shorewall.net/PortKnocking.html">http://shorewall.net/PortKnocking.html</ulink>
-        for an example of using an entry in this column with a user-defined
-        action rule.</para>
-      </listitem>
-
-      <listitem>
-        <para>RATE LIMIT - You may rate-limit the rule by placing a value in
-        this column:</para>
-
-        <para><programlisting>     &lt;<emphasis>rate</emphasis>&gt;/&lt;<emphasis>interval</emphasis>&gt;[:&lt;<emphasis>burst</emphasis>&gt;]</programlisting>where
-        &lt;<emphasis>rate</emphasis>&gt; is the number of connections per
-        &lt;<emphasis>interval</emphasis>&gt; (<quote>sec</quote> or
-        <quote>min</quote>) and &lt;<emphasis>burst</emphasis>&gt; is the
-        largest burst permitted. If no &lt;<emphasis>burst</emphasis>&gt; is
-        given, a value of 5 is assumed. There may be no whitespace embedded in
-        the specification.</para>
-
-        <para><programlisting>     Example: 10/sec:20</programlisting></para>
-      </listitem>
-
-      <listitem>
-        <para>USER/GROUP - For output rules (those with the firewall as their
-        source), you may control connections based on the effective UID and/or
-        GID of the process requesting the connection. This column can contain
-        any of the following:</para>
-
-        <simplelist>
-          <member>[!]&lt;<emphasis>user number</emphasis>&gt;[:]</member>
-
-          <member>[!]&lt;<emphasis>user name</emphasis>&gt;[:]</member>
-
-          <member>[!]:&lt;<emphasis>group number</emphasis>&gt;</member>
-
-          <member>[!]:&lt;<emphasis>group name</emphasis>&gt;</member>
-
-          <member>[!]&lt;<emphasis>user
-          number</emphasis>&gt;:&lt;<emphasis>group
-          number</emphasis>&gt;</member>
-
-          <member>[!]&lt;<emphasis>user
-          name</emphasis>&gt;:&lt;<emphasis>group
-          number</emphasis>&gt;</member>
-
-          <member>[!]&lt;<emphasis>user
-          inumber</emphasis>&gt;:&lt;<emphasis>group
-          name</emphasis>&gt;</member>
-
-          <member>[!]&lt;<emphasis>user
-          name</emphasis>&gt;:&lt;<emphasis>group name</emphasis>&gt;</member>
-
-          <member>[!]+&lt;<emphasis>program name</emphasis>&gt; (Note: support
-          for this form was removed from Netfilter in kernel version
-          2.6.14).</member>
-        </simplelist>
-      </listitem>
-
-      <listitem>
-        <para>MARK - (Added in Shorewall-4.4.2) Defines a test on the existing
-        packet or connection mark. The rule will match only if the test
-        returns true. Must be empty or '-' if the macro is to be used within
-        an action.</para>
-
-        <programlisting>     [!]<replaceable>value</replaceable>[/<replaceable>mask</replaceable>][:C]</programlisting>
-
-        <variablelist>
-          <varlistentry>
-            <term>!</term>
+          <orderedlist>
+            <listitem>
+              <para>There are 15 or less ports listed.</para>
+            </listitem>
 
             <listitem>
-              <para>Inverts the test (not equal)</para>
+              <para>No port ranges are included.</para>
             </listitem>
-          </varlistentry>
+          </orderedlist>
 
-          <varlistentry>
-            <term><replaceable>value</replaceable></term>
+          <para>Otherwise, a separate rule will be generated for each
+          port.</para>
+        </listitem>
+
+        <listitem>
+          <para>SOURCE PORT(S) - Port(s) used by the client. If omitted, any
+          source port is acceptable. Specified as a comma-separated list of
+          port names, port numbers or port ranges.</para>
+
+          <para>If you don't want to restrict client ports but need to specify
+          an ADDRESS in the next column, then place "-" in this column.</para>
+
+          <para>If your kernel contains multi-port match support, then only a
+          single Netfilter rule will be generated if in this list and in the
+          DEST PORT(S) list above:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>There are 15 or less ports listed.</para>
+            </listitem>
 
             <listitem>
-              <para>Value of the packet or connection mark.</para>
+              <para>No port ranges are included.</para>
             </listitem>
-          </varlistentry>
+          </orderedlist>
 
-          <varlistentry>
-            <term><replaceable>mask</replaceable></term>
+          <para>Otherwise, a separate rule will be generated for each
+          port.</para>
+        </listitem>
 
-            <listitem>
-              <para>A mask to be applied to the mark before testing.</para>
-            </listitem>
-          </varlistentry>
+        <listitem>
+          <para>ORIGINAL DEST (Shorewall-perl 4.2.0 and later)</para>
 
-          <varlistentry>
-            <term>:C</term>
+          <para>To use this column, you must include 'FORMAT 2' as the first
+          non-comment line in your macro file.</para>
 
-            <listitem>
-              <para>Designates a connection mark. If omitted, the # packet
-              mark's value is tested.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </listitem>
+          <para>If ACTION is DNAT[-] or REDIRECT[-] then if this column is
+          included and is different from the IP address given in the DEST
+          column, then connections destined for that address will be forwarded
+          to the IP and port specified in the DEST column.</para>
 
-      <listitem>
-        <para>CONNLIMIT - (Added in Shorewall-4.4.2) Must be empty or '-' if
-        the macro is to be used within an action.</para>
+          <para>A comma-separated list of addresses may also be used. This is
+          most useful with the REDIRECT target where you want to redirect
+          traffic destined for particular set of hosts. Finally, if the list
+          of addresses begins with "!" (exclusion) then the rule will be
+          followed only if the original destination address in the connection
+          request does not match any of the addresses listed.</para>
 
-        <programlisting>     [!]<replaceable>limit</replaceable>[:<replaceable>mask</replaceable>]</programlisting>
+          <para>For other actions, this column may be included and may contain
+          one or more addresses (host or network) separated by commas. Address
+          ranges are not allowed. When this column is supplied, rules are
+          generated that require that the original destination address matches
+          one of the listed addresses. This feature is most useful when you
+          want to generate a filter rule that corresponds to a DNAT- or
+          REDIRECT- rule. In this usage, the list of addresses should not
+          begin with "!".</para>
 
-        <para>May be used to limit the number of simultaneous connections from
-        each individual host to limit connections. Requires connlimit match in
-        your kernel and iptables. While the limit is only checked on rules
-        specifying CONNLIMIT, the number of current connections is calculated
-        over all current connections from the SOURCE host. By default, the
-        <replaceable>limit</replaceable> is applied to each host but can be
-        made to apply to networks of hosts by specifying a
-        <replaceable>mask</replaceable>. The mask specifies the width of a
-        VLSM mask to be applied to the source address; the number of current
-        connections is then taken over all hosts in the subnet
-        <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.
-        When ! is specified, the rule matches when the number of connection
-        exceeds the limit.</para>
-      </listitem>
+          <para>It is also possible to specify a set of addresses then exclude
+          part of those addresses. For example, 192.168.1.0/24!192.168.1.16/28
+          specifies the addresses 192.168.1.0-182.168.1.15 and
+          192.168.1.32-192.168.1.255. See <ulink
+          url="manpages/shorewall_exclusion.html">shorewall-exclusion</ulink>(5).</para>
 
-      <listitem>
-        <para>TIME - (Added in Shorewall-4.4.2) Must be empty or '-' if the
-        macro is to be used within an action.</para>
+          <para>See <ulink
+          url="http://shorewall.net/PortKnocking.html">http://shorewall.net/PortKnocking.html</ulink>
+          for an example of using an entry in this column with a user-defined
+          action rule.</para>
+        </listitem>
 
-        <programlisting>     &lt;timeelement&gt;[&amp;...]</programlisting>
+        <listitem>
+          <para>RATE LIMIT - You may rate-limit the rule by placing a value in
+          this column:</para>
 
-        <para><replaceable>timeelement</replaceable> may be:</para>
+          <para><programlisting>     &lt;<emphasis>rate</emphasis>&gt;/&lt;<emphasis>interval</emphasis>&gt;[:&lt;<emphasis>burst</emphasis>&gt;]</programlisting>where
+          &lt;<emphasis>rate</emphasis>&gt; is the number of connections per
+          &lt;<emphasis>interval</emphasis>&gt; (<quote>sec</quote> or
+          <quote>min</quote>) and &lt;<emphasis>burst</emphasis>&gt; is the
+          largest burst permitted. If no &lt;<emphasis>burst</emphasis>&gt; is
+          given, a value of 5 is assumed. There may be no whitespace embedded
+          in the specification.</para>
 
-        <variablelist>
-          <varlistentry>
-            <term>timestart=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+          <para><programlisting>     Example: 10/sec:20</programlisting></para>
+        </listitem>
 
-            <listitem>
-              <para>Defines the starting time of day.</para>
-            </listitem>
-          </varlistentry>
+        <listitem>
+          <para>USER/GROUP - For output rules (those with the firewall as
+          their source), you may control connections based on the effective
+          UID and/or GID of the process requesting the connection. This column
+          can contain any of the following:</para>
 
-          <varlistentry>
-            <term>timestop=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+          <simplelist>
+            <member>[!]&lt;<emphasis>user number</emphasis>&gt;[:]</member>
 
-            <listitem>
-              <para>Defines the ending time of day.</para>
-            </listitem>
-          </varlistentry>
+            <member>[!]&lt;<emphasis>user name</emphasis>&gt;[:]</member>
 
-          <varlistentry>
-            <term>utc</term>
+            <member>[!]:&lt;<emphasis>group number</emphasis>&gt;</member>
 
-            <listitem>
-              <para>Times are expressed in Greenwich Mean Time.</para>
-            </listitem>
-          </varlistentry>
+            <member>[!]:&lt;<emphasis>group name</emphasis>&gt;</member>
 
-          <varlistentry>
-            <term>localtz</term>
+            <member>[!]&lt;<emphasis>user
+            number</emphasis>&gt;:&lt;<emphasis>group
+            number</emphasis>&gt;</member>
 
-            <listitem>
-              <para>Times are expressed in Local Civil Time (default).</para>
-            </listitem>
-          </varlistentry>
+            <member>[!]&lt;<emphasis>user
+            name</emphasis>&gt;:&lt;<emphasis>group
+            number</emphasis>&gt;</member>
 
-          <varlistentry>
-            <term>weekdays=ddd[,ddd]...</term>
+            <member>[!]&lt;<emphasis>user
+            inumber</emphasis>&gt;:&lt;<emphasis>group
+            name</emphasis>&gt;</member>
 
-            <listitem>
-              <para>where <replaceable>ddd</replaceable> is one of
-              <option>Mon</option>, <option>Tue</option>,
-              <option>Wed</option>, <option>Thu</option>,
-              <option>Fri</option>, <option>Sat</option> or
-              <option>Sun</option></para>
-            </listitem>
-          </varlistentry>
+            <member>[!]&lt;<emphasis>user
+            name</emphasis>&gt;:&lt;<emphasis>group
+            name</emphasis>&gt;</member>
 
-          <varlistentry>
-            <term>monthdays=dd[,dd],...</term>
+            <member>[!]+&lt;<emphasis>program name</emphasis>&gt; (Note:
+            support for this form was removed from Netfilter in kernel version
+            2.6.14).</member>
+          </simplelist>
+        </listitem>
 
-            <listitem>
-              <para>where <replaceable>dd</replaceable> is an ordinal day of
-              the month</para>
-            </listitem>
-          </varlistentry>
+        <listitem>
+          <para>MARK - (Added in Shorewall-4.4.2) Defines a test on the
+          existing packet or connection mark. The rule will match only if the
+          test returns true. Must be empty or '-' if the macro is to be used
+          within an action.</para>
 
-          <varlistentry>
-            <term>datestart=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+          <programlisting>     [!]<replaceable>value</replaceable>[/<replaceable>mask</replaceable>][:C]</programlisting>
 
-            <listitem>
-              <para>Defines the starting date and time.</para>
-            </listitem>
-          </varlistentry>
+          <variablelist>
+            <varlistentry>
+              <term>!</term>
 
-          <varlistentry>
-            <term>datestop=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+              <listitem>
+                <para>Inverts the test (not equal)</para>
+              </listitem>
+            </varlistentry>
 
-            <listitem>
-              <para>Defines the ending date and time.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </listitem>
-    </itemizedlist>
+            <varlistentry>
+              <term><replaceable>value</replaceable></term>
 
-    <para>Omitted column entries should be entered using a dash ("-:).</para>
+              <listitem>
+                <para>Value of the packet or connection mark.</para>
+              </listitem>
+            </varlistentry>
 
-    <para>Example:</para>
+            <varlistentry>
+              <term><replaceable>mask</replaceable></term>
 
-    <para><phrase><filename>/etc/shorewall/macro.LogAndAccept</filename></phrase><programlisting>     LOG:info
+              <listitem>
+                <para>A mask to be applied to the mark before testing.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>:C</term>
+
+              <listitem>
+                <para>Designates a connection mark. If omitted, the # packet
+                mark's value is tested.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+
+        <listitem>
+          <para>CONNLIMIT - (Added in Shorewall-4.4.2) Must be empty or '-' if
+          the macro is to be used within an action.</para>
+
+          <programlisting>     [!]<replaceable>limit</replaceable>[:<replaceable>mask</replaceable>]</programlisting>
+
+          <para>May be used to limit the number of simultaneous connections
+          from each individual host to limit connections. Requires connlimit
+          match in your kernel and iptables. While the limit is only checked
+          on rules specifying CONNLIMIT, the number of current connections is
+          calculated over all current connections from the SOURCE host. By
+          default, the <replaceable>limit</replaceable> is applied to each
+          host but can be made to apply to networks of hosts by specifying a
+          <replaceable>mask</replaceable>. The mask specifies the width of a
+          VLSM mask to be applied to the source address; the number of current
+          connections is then taken over all hosts in the subnet
+          <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.
+          When ! is specified, the rule matches when the number of connection
+          exceeds the limit.</para>
+        </listitem>
+
+        <listitem>
+          <para>TIME - (Added in Shorewall-4.4.2) Must be empty or '-' if the
+          macro is to be used within an action.</para>
+
+          <programlisting>     &lt;timeelement&gt;[&amp;...]</programlisting>
+
+          <para><replaceable>timeelement</replaceable> may be:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>timestart=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+              <listitem>
+                <para>Defines the starting time of day.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>timestop=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+              <listitem>
+                <para>Defines the ending time of day.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>utc</term>
+
+              <listitem>
+                <para>Times are expressed in Greenwich Mean Time.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>localtz</term>
+
+              <listitem>
+                <para>Times are expressed in Local Civil Time
+                (default).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>weekdays=ddd[,ddd]...</term>
+
+              <listitem>
+                <para>where <replaceable>ddd</replaceable> is one of
+                <option>Mon</option>, <option>Tue</option>,
+                <option>Wed</option>, <option>Thu</option>,
+                <option>Fri</option>, <option>Sat</option> or
+                <option>Sun</option></para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>monthdays=dd[,dd],...</term>
+
+              <listitem>
+                <para>where <replaceable>dd</replaceable> is an ordinal day of
+                the month</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>datestart=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+              <listitem>
+                <para>Defines the starting date and time.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>datestop=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+              <listitem>
+                <para>Defines the ending date and time.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </itemizedlist>
+
+      <para>Omitted column entries should be entered using a dash
+      ("-:).</para>
+
+      <para>Example:</para>
+
+      <para><phrase><filename>/etc/shorewall/macro.LogAndAccept</filename></phrase><programlisting>     LOG:info
      ACCEPT</programlisting></para>
 
-    <para>To use your macro, in <filename>/etc/shorewall/rules</filename> you
-    might do something like:</para>
+      <para>To use your macro, in <filename>/etc/shorewall/rules</filename>
+      you might do something like:</para>
 
-    <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
+      <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
 LogAndAccept loc         $FW         tcp      22</programlisting>
+    </section>
   </section>
 
   <section id="Logging">

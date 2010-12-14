@@ -437,8 +437,6 @@ sub find_logactionchain( $ ) {
     fatal_error "Fatal error in find_logactionchain" unless $logactionchains{"$action:$level"};
 }
 
-sub process_action1( $$ );
-
 #
 # The functions process_actions1-3() implement the three phases of action processing.
 #
@@ -508,7 +506,10 @@ sub process_actions1() {
 	    while ( read_a_line ) {
 
 		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
-
+		#
+		# When passed an action name in the first argument, process_rule_common() only
+		# deals with the target and the parameter.
+		#
 		process_rule_common( $action ,
 				     $wholetarget ,
 				     '' ,   # Current Param

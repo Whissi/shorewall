@@ -213,194 +213,206 @@ ACCEPT   -              -               tcp     135,139,445
       </listitem>
     </orderedlist>
 
-    <para><emphasis role="bold">Beginning with Shorewall 4.4.16, the columns
-    in action.template are the same as those in <ulink
-    url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5).
-    </emphasis>The first non-commentary line in the template must be</para>
+    <section>
+      <title>Shorewall 4.4.16 and Later.</title>
 
-    <programlisting>FORMAT 2</programlisting>
+      <para>Beginning with Shorewall 4.4.16, the columns in action.template
+      are the same as those in shorewall-rules (5). The first non-commentary
+      line in the template must be</para>
 
-    <para>Prior to 4.4.16, columns in the <filename>action.template</filename>
-    file were as follows:</para>
+      <programlisting>FORMAT 2</programlisting>
 
-    <itemizedlist>
-      <listitem>
-        <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, CONTINUE, QUEUE or
-        an &lt;<emphasis>action</emphasis>&gt; where
-        &lt;<emphasis>action</emphasis>&gt; is a previously-defined action
-        (that is, it must precede the action being defined in this file in
-        your <filename>/etc/shorewall/actions</filename> file). These actions
-        have the same meaning as they do in the
-        <filename>/etc/shorewall/rules</filename> file (CONTINUE terminates
-        processing of the current action and returns to the point where that
-        action was invoked). The TARGET may optionally be followed by a colon
-        (<quote>:</quote>) and a syslog log level (e.g, REJECT:info or
-        ACCEPT:debugging). This causes the packet to be logged at the
-        specified level. You may also specify ULOG (must be in upper case) as
-        a log level. This will log to the ULOG target for routing to a
-        separate log through use of ulogd (<ulink
-        url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
+      <para>When using Shorewall 4.4.16 or later, there are no restrictions
+      regarding which targets can be used within your action.</para>
+    </section>
 
-        <para>You may also use a <ulink url="Macros.html">macro</ulink> in
-        your action provided that the macro's expansion only results in the
-        ACTIONs ACCEPT, DROP, REJECT, LOG, CONTINUE, or QUEUE. See
-        <filename>/usr/share/shorewall/action.Drop</filename> for an example
-        of an action that users macros extensively.</para>
-      </listitem>
+    <section>
+      <title>Shorewall 4.4.15 and Earlier.</title>
 
-      <listitem>
-        <para>SOURCE - Source hosts to which the rule applies. A
-        comma-separated list of subnets and/or hosts. Hosts may be specified
-        by IP or MAC address; MAC addresses must begin with <quote>~</quote>
-        and must use <quote>-</quote> as a separator.</para>
+      <para>Prior to 4.4.16, columns in the
+      <filename>action.template</filename> file were as follows:</para>
 
-        <para>Alternatively, clients may be specified by interface name. For
-        example, eth1 specifies a client that communicates with the firewall
-        system through eth1. This may be optionally followed by another colon
-        (<quote>:</quote>) and an IP/MAC/subnet address as described above
-        (e.g., eth1:192.168.1.5).</para>
-      </listitem>
+      <itemizedlist>
+        <listitem>
+          <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, CONTINUE, QUEUE or
+          an &lt;<emphasis>action</emphasis>&gt; where
+          &lt;<emphasis>action</emphasis>&gt; is a previously-defined action
+          (that is, it must precede the action being defined in this file in
+          your <filename>/etc/shorewall/actions</filename> file). These
+          actions have the same meaning as they do in the
+          <filename>/etc/shorewall/rules</filename> file (CONTINUE terminates
+          processing of the current action and returns to the point where that
+          action was invoked). The TARGET may optionally be followed by a
+          colon (<quote>:</quote>) and a syslog log level (e.g, REJECT:info or
+          ACCEPT:debugging). This causes the packet to be logged at the
+          specified level. You may also specify ULOG (must be in upper case)
+          as a log level. This will log to the ULOG target for routing to a
+          separate log through use of ulogd (<ulink
+          url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
 
-      <listitem>
-        <para>DEST - Location of Server. Same as above with the exception that
-        MAC addresses are not allowed.</para>
-      </listitem>
+          <para>You may also use a <ulink url="Macros.html">macro</ulink> in
+          your action provided that the macro's expansion only results in the
+          ACTIONs ACCEPT, DROP, REJECT, LOG, CONTINUE, or QUEUE. See
+          <filename>/usr/share/shorewall/action.Drop</filename> for an example
+          of an action that users macros extensively.</para>
+        </listitem>
 
-      <listitem>
-        <para>PROTO - Protocol - Must be <quote>tcp</quote>,
-        <quote>udp</quote>, <quote>icmp</quote>, a protocol number, or
-        <quote>all</quote>.</para>
-      </listitem>
+        <listitem>
+          <para>SOURCE - Source hosts to which the rule applies. A
+          comma-separated list of subnets and/or hosts. Hosts may be specified
+          by IP or MAC address; MAC addresses must begin with <quote>~</quote>
+          and must use <quote>-</quote> as a separator.</para>
 
-      <listitem>
-        <para>DEST PORT(S) - Destination Ports. A comma-separated list of Port
-        names (from <filename>/etc/services</filename>), port numbers or port
-        ranges; if the protocol is <quote>icmp</quote>, this column is
-        interpreted as the destination icmp-type(s).</para>
+          <para>Alternatively, clients may be specified by interface name. For
+          example, eth1 specifies a client that communicates with the firewall
+          system through eth1. This may be optionally followed by another
+          colon (<quote>:</quote>) and an IP/MAC/subnet address as described
+          above (e.g., eth1:192.168.1.5).</para>
+        </listitem>
 
-        <para>A port range is expressed as &lt;<emphasis>low
-        port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
+        <listitem>
+          <para>DEST - Location of Server. Same as above with the exception
+          that MAC addresses are not allowed.</para>
+        </listitem>
 
-        <para>This column is ignored if PROTO = <quote>all</quote>, but must
-        be entered if any of the following fields are supplied. In that case,
-        it is suggested that this field contain <quote>-</quote>.</para>
-      </listitem>
+        <listitem>
+          <para>PROTO - Protocol - Must be <quote>tcp</quote>,
+          <quote>udp</quote>, <quote>icmp</quote>, a protocol number, or
+          <quote>all</quote>.</para>
+        </listitem>
 
-      <listitem>
-        <para>SOURCE PORT(S) - Port(s) used by the client. If omitted, any
-        source port is acceptable. Specified as a comma-separated list of port
-        names, port numbers or port ranges.</para>
+        <listitem>
+          <para>DEST PORT(S) - Destination Ports. A comma-separated list of
+          Port names (from <filename>/etc/services</filename>), port numbers
+          or port ranges; if the protocol is <quote>icmp</quote>, this column
+          is interpreted as the destination icmp-type(s).</para>
 
-        <para>If you don't want to restrict client ports but need to specify
-        any of the subsequent fields, then place <quote>-</quote> in this
-        column.</para>
-      </listitem>
+          <para>A port range is expressed as &lt;<emphasis>low
+          port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
 
-      <listitem>
-        <para>RATE LIMIT - You may rate-limit the rule by placing a value in
-        this column:</para>
+          <para>This column is ignored if PROTO = <quote>all</quote>, but must
+          be entered if any of the following fields are supplied. In that
+          case, it is suggested that this field contain
+          <quote>-</quote>.</para>
+        </listitem>
 
-        <para><programlisting>     &lt;<emphasis>rate</emphasis>&gt;/&lt;<emphasis>interval</emphasis>&gt;[:&lt;<emphasis>burst</emphasis>&gt;]</programlisting>where
-        &lt;<emphasis>rate</emphasis>&gt; is the number of connections per
-        &lt;<emphasis>interval</emphasis>&gt; (<quote>sec</quote> or
-        <quote>min</quote>) and &lt;<emphasis>burst</emphasis>&gt; is the
-        largest burst permitted. If no &lt;<emphasis>burst</emphasis>&gt; is
-        given, a value of 5 is assumed. There may be no whitespace embedded in
-        the specification.</para>
+        <listitem>
+          <para>SOURCE PORT(S) - Port(s) used by the client. If omitted, any
+          source port is acceptable. Specified as a comma-separated list of
+          port names, port numbers or port ranges.</para>
 
-        <para><programlisting>     Example: 10/sec:20</programlisting></para>
-      </listitem>
+          <para>If you don't want to restrict client ports but need to specify
+          any of the subsequent fields, then place <quote>-</quote> in this
+          column.</para>
+        </listitem>
 
-      <listitem>
-        <para>USER/GROUP - For output rules (those with the firewall as their
-        source), you may control connections based on the effective UID and/or
-        GID of the process requesting the connection. This column can contain
-        any of the following:</para>
+        <listitem>
+          <para>RATE LIMIT - You may rate-limit the rule by placing a value in
+          this column:</para>
 
-        <simplelist>
-          <member>[!]&lt;<emphasis>user number</emphasis>&gt;[:]</member>
+          <para><programlisting>     &lt;<emphasis>rate</emphasis>&gt;/&lt;<emphasis>interval</emphasis>&gt;[:&lt;<emphasis>burst</emphasis>&gt;]</programlisting>where
+          &lt;<emphasis>rate</emphasis>&gt; is the number of connections per
+          &lt;<emphasis>interval</emphasis>&gt; (<quote>sec</quote> or
+          <quote>min</quote>) and &lt;<emphasis>burst</emphasis>&gt; is the
+          largest burst permitted. If no &lt;<emphasis>burst</emphasis>&gt; is
+          given, a value of 5 is assumed. There may be no whitespace embedded
+          in the specification.</para>
 
-          <member>[!]&lt;<emphasis>user name</emphasis>&gt;[:]</member>
+          <para><programlisting>     Example: 10/sec:20</programlisting></para>
+        </listitem>
 
-          <member>[!]:&lt;<emphasis>group number</emphasis>&gt;</member>
+        <listitem>
+          <para>USER/GROUP - For output rules (those with the firewall as
+          their source), you may control connections based on the effective
+          UID and/or GID of the process requesting the connection. This column
+          can contain any of the following:</para>
 
-          <member>[!]:&lt;<emphasis>group name</emphasis>&gt;</member>
+          <simplelist>
+            <member>[!]&lt;<emphasis>user number</emphasis>&gt;[:]</member>
 
-          <member>[!]&lt;<emphasis>user
-          number</emphasis>&gt;:&lt;<emphasis>group
-          number</emphasis>&gt;</member>
+            <member>[!]&lt;<emphasis>user name</emphasis>&gt;[:]</member>
 
-          <member>[!]&lt;<emphasis>user
-          name</emphasis>&gt;:&lt;<emphasis>group
-          number</emphasis>&gt;</member>
+            <member>[!]:&lt;<emphasis>group number</emphasis>&gt;</member>
 
-          <member>[!]&lt;<emphasis>user
-          inumber</emphasis>&gt;:&lt;<emphasis>group
-          name</emphasis>&gt;</member>
+            <member>[!]:&lt;<emphasis>group name</emphasis>&gt;</member>
 
-          <member>[!]&lt;<emphasis>user
-          name</emphasis>&gt;:&lt;<emphasis>group name</emphasis>&gt;</member>
+            <member>[!]&lt;<emphasis>user
+            number</emphasis>&gt;:&lt;<emphasis>group
+            number</emphasis>&gt;</member>
 
-          <member>[!]+&lt;<emphasis>program name</emphasis>&gt; (Note: support
-          for this form was removed from Netfilter in kernel version
-          2.6.14).</member>
-        </simplelist>
-      </listitem>
+            <member>[!]&lt;<emphasis>user
+            name</emphasis>&gt;:&lt;<emphasis>group
+            number</emphasis>&gt;</member>
 
-      <listitem>
-        <para>MARK</para>
+            <member>[!]&lt;<emphasis>user
+            inumber</emphasis>&gt;:&lt;<emphasis>group
+            name</emphasis>&gt;</member>
 
-        <para><simplelist>
-            <member>[!]&lt;<emphasis>value</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;][:C]</member>
-          </simplelist></para>
+            <member>[!]&lt;<emphasis>user
+            name</emphasis>&gt;:&lt;<emphasis>group
+            name</emphasis>&gt;</member>
 
-        <para>Defines a test on the existing packet or connection mark. The
-        rule will match only if the test returns true.</para>
+            <member>[!]+&lt;<emphasis>program name</emphasis>&gt; (Note:
+            support for this form was removed from Netfilter in kernel version
+            2.6.14).</member>
+          </simplelist>
+        </listitem>
 
-        <para>If you don’t want to define a test but need to specify anything
-        in the subsequent columns, place a <quote>-</quote> in this
-        field.<simplelist>
-            <member>! — Inverts the test (not equal)</member>
+        <listitem>
+          <para>MARK</para>
 
-            <member>&lt;<emphasis>value</emphasis>&gt; — Value of the packet
-            or connection mark.</member>
+          <para><simplelist>
+              <member>[!]&lt;<emphasis>value</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;][:C]</member>
+            </simplelist></para>
 
-            <member>&lt;<emphasis>mask</emphasis>&gt; —A mask to be applied to
-            the mark before testing.</member>
+          <para>Defines a test on the existing packet or connection mark. The
+          rule will match only if the test returns true.</para>
 
-            <member>:C — Designates a connection mark. If omitted, the packet
-            mark’s value is tested. This option is only supported by
-            Shorewall-perl</member>
-          </simplelist></para>
-      </listitem>
-    </itemizedlist>
+          <para>If you don’t want to define a test but need to specify
+          anything in the subsequent columns, place a <quote>-</quote> in this
+          field.<simplelist>
+              <member>! — Inverts the test (not equal)</member>
 
-    <para>Omitted column entries should be entered using a dash
-    (<quote>-</quote>).</para>
+              <member>&lt;<emphasis>value</emphasis>&gt; — Value of the packet
+              or connection mark.</member>
 
-    <para>Example:</para>
+              <member>&lt;<emphasis>mask</emphasis>&gt; —A mask to be applied
+              to the mark before testing.</member>
 
-    <para><filename>/etc/shorewall/actions</filename>:</para>
+              <member>:C — Designates a connection mark. If omitted, the
+              packet mark’s value is tested. This option is only supported by
+              Shorewall-perl</member>
+            </simplelist></para>
+        </listitem>
+      </itemizedlist>
 
-    <para><programlisting>     #ACTION             COMMENT (place '# ' below the 'C' in comment followed by
+      <para>Omitted column entries should be entered using a dash
+      (<quote>-</quote>).</para>
+
+      <para>Example:</para>
+
+      <para><filename>/etc/shorewall/actions</filename>:</para>
+
+      <para><programlisting>     #ACTION             COMMENT (place '# ' below the 'C' in comment followed by
      #                   v        a comment describing the action)
      LogAndAccept        # LOG and ACCEPT a connection</programlisting><emphasis
-    role="bold">Note:</emphasis> If your
-    <filename>/etc/shorewall/actions</filename> file doesn't have an
-    indication where to place the comment, put the <quote>#</quote> in column
-    21.</para>
+      role="bold">Note:</emphasis> If your
+      <filename>/etc/shorewall/actions</filename> file doesn't have an
+      indication where to place the comment, put the <quote>#</quote> in
+      column 21.</para>
 
-    <para><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
+      <para><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
      ACCEPT</programlisting></para>
 
-    <para>Placing a comment on the line causes the comment to appear in the
-    output of the <command>shorewall show actions</command> command.</para>
+      <para>Placing a comment on the line causes the comment to appear in the
+      output of the <command>shorewall show actions</command> command.</para>
 
-    <para>To use your action, in <filename>/etc/shorewall/rules</filename> you
-    might do something like:</para>
+      <para>To use your action, in <filename>/etc/shorewall/rules</filename>
+      you might do something like:</para>
 
-    <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
+      <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
 LogAndAccept loc         $FW         tcp      22</programlisting>
+    </section>
   </section>
 
   <section id="Logging">

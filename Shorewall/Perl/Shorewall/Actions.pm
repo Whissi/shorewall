@@ -34,15 +34,15 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
-		  isolate_basic_target
-		  get_target_param
-		  createactionchain
 		  process_actions1
 		  process_actions2
 		  process_actions3
+
 		  process_rule
 
-		  $rule_commands
+		  isolate_basic_target
+		  get_target_param
+		  createactionchain
 		  %usedactions
 		  %default_actions
 		  );

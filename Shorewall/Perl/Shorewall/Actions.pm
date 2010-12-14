@@ -33,29 +33,17 @@ use Shorewall::Policy;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( merge_levels
+our @EXPORT = qw(
 		  isolate_basic_target
 		  get_target_param
-		  add_requiredby
 		  createactionchain
-		  find_logactionchain
 		  process_actions1
 		  process_actions2
 		  process_actions3
 		  process_rule_common
 
-		  find_macro
-		  split_action
-		  substitute_param
-		  merge_macro_source_dest
-		  merge_macro_column
-		  map_old_actions
-
 		  %usedactions
 		  %default_actions
-		  %actions
-
-		  %macros
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.4_16';

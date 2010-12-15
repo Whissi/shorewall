@@ -39,11 +39,12 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 use Shorewall::IPAddrs;
 use Shorewall::Raw;
+use Shorewall::Misc;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_12';
+our $VERSION = '4.4_16';
 
 our $export;
 
@@ -67,6 +68,7 @@ sub initialize_package_globals() {
     Shorewall::Rules::initialize($family);
     Shorewall::Proxyarp::initialize($family);
     Shorewall::IPAddrs::initialize($family);
+    Shorewall::Misc::initialize($family);
 }
 
 #

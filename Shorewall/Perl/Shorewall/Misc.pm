@@ -874,6 +874,32 @@ sub setup_mac_lists( $ ) {
 }
 
 #
+# Helper functions for generate_matrix()
+#-----------------------------------------
+#
+# Return the target for rules from $zone to $zone1.
+#
+sub rules_target( $$ ) {
+    my ( $zone, $zone1 ) = @_;
+    my $chain = rules_chain( ${zone}, ${zone1} );
+    my $chainref = $filter_table->{$chain};
+
+    return $chain   if $chainref && $chainref->{referenced};
+    return 'ACCEPT' if $zone eq $zone1;
+
+    assert( $chainref );
+
+    if ( $chainref->{policy} ne 'CONTINUE' ) {
+	my $policyref = $filter_table->{$chainref->{policychain}};
+	assert( $policyref );
+	return $policyref->{name} if $policyref ne $chainref;
+	return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
+    }
+
+    ''; # CONTINUE policy
+}
+
+#
 # Generate rules for one destination zone
 #
 sub generate_dest_rules( $$$$ ) {

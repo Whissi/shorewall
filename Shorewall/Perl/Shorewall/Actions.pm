@@ -20,7 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains the mid-level processing code for the rules file.
+#   This module contains process_rule() and it's associated helpers for handling 
+#   Actions and Macros.
 #
 package Shorewall::Actions;
 require Exporter;
@@ -39,7 +40,7 @@ our @EXPORT = qw(
 		  process_actions2
 		  process_actions3
 
-		  process_rule
+		  process_ruleS
 
 		  isolate_basic_target
 		  get_target_param
@@ -508,7 +509,8 @@ sub process_actions1() {
 		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
 		#
 		# When passed an action name in the first argument, process_rule_common() only
-		# deals with the target and the parameter.
+		# deals with the target and the parameter. We pass undef for the rest so we'll
+		# know if we try to use one of them.
 		#
 		process_rule_common( $action ,
 				     $wholetarget ,
@@ -525,7 +527,7 @@ sub process_actions1() {
 				     undef, # connlimit
 				     undef, # time
 				     undef, # headers
-				     0      # wildcard	     
+				     undef  # wildcard	     
 				   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
 	    }
 
@@ -1615,6 +1617,25 @@ sub process_rule ( ) {
     warning_message  qq(Entry generated no $toolname rules) unless $generated;
 
     progress_message qq(   Rule "$thisline" $done);
+}
+
+#
+# Process the Rules File
+#
+sub process_rules() {
+
+    my $fn = open_file 'rules';
+
+    if ( $fn ) {
+
+	first_entry "$doing $fn...";
+
+	process_rule while read_a_line;
+
+	clear_comment;
+    }
+
+    $section = 'DONE';
 }
 
 1;

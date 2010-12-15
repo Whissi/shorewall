@@ -1,5 +1,5 @@
 #
-# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Rules.pm
+# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Misc.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -20,9 +20,9 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains the high-level code for dealing with rules.
+#   This module contains those routines that don't seem to fit well elsewhere.
 #
-package Shorewall::Rules;
+package Shorewall::Misc;
 require Exporter;
 
 use Shorewall::Config qw(:DEFAULT :internal);
@@ -40,10 +40,9 @@ our @EXPORT = qw( process_tos
 		  setup_ecn
 		  add_common_rules
 		  setup_mac_lists
-		  process_rules
 		  process_routestopped
-		  generate_matrix
 		  compile_stop_firewall
+		  generate_matrix
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.4_16';
@@ -872,51 +871,6 @@ sub setup_mac_lists( $ ) {
 	    add_jump $chainref, $target, 0;
 	}
     }
-}
-
-#
-# Process the Rules File
-#
-sub process_rules() {
-
-    my $fn = open_file 'rules';
-
-    if ( $fn ) {
-
-	first_entry "$doing $fn...";
-
-	process_rule while read_a_line;
-
-	clear_comment;
-    }
-
-    $section = 'DONE';
-}
-
-#
-# Helper functions for generate_matrix()
-#-----------------------------------------
-#
-# Return the target for rules from $zone to $zone1.
-#
-sub rules_target( $$ ) {
-    my ( $zone, $zone1 ) = @_;
-    my $chain = rules_chain( ${zone}, ${zone1} );
-    my $chainref = $filter_table->{$chain};
-
-    return $chain   if $chainref && $chainref->{referenced};
-    return 'ACCEPT' if $zone eq $zone1;
-
-    assert( $chainref );
-
-    if ( $chainref->{policy} ne 'CONTINUE' ) {
-	my $policyref = $filter_table->{$chainref->{policychain}};
-	assert( $policyref );
-	return $policyref->{name} if $policyref ne $chainref;
-	return $chainref->{policy} eq 'REJECT' ? 'reject' : $chainref->{policy};
-    }
-
-    ''; # CONTINUE policy
 }
 
 #

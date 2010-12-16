@@ -20,8 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains the low-level processing code for Actions. It is separate
-#   from Rules.pm so that it can be used by the Policy module.
+#  This module contains the action variables and routines needed by both the Policy 
+#  and rules modules.
 #
 package Shorewall::Actions;
 require Exporter;

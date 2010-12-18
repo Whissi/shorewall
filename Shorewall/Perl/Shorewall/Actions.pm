@@ -37,6 +37,8 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		  split_action
 		  get_target_param
+		  normalize_action
+		  normalize_action_name
 		  createactionchain
 		  %actions   
 		  %usedactions
@@ -132,6 +134,26 @@ sub get_target_param( $ ) {
 
     ( $target, $param );
 }
+
+#
+# Create a normalized action name from the passed pieces
+#
+sub normalize_action( $$ ) {
+    my $target = shift;
+    my $param  = shift;
+
+    my ($action, $level, $tag ) = split /:/, $target;
+
+    $level = 'none' unless defined $level && $level ne '';
+    $tag   = ''     unless defined $tag;
+    $param = ''     unless defined $param;
+
+    ( $action, $level, $tag, $param );
+}
+
+sub normalize_action_name( $$ ) {
+    join (':', &normalize_action( @_ ) );
+} 
 
 #
 # Create and record a log action chain -- Log action chains have names

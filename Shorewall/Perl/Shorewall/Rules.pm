@@ -86,7 +86,7 @@ sub initialize( $ ) {
 }
 
 #
-# This function determines the logging for a subordinate action or a rule within a superior action
+# This function determines the logging and params for a subordinate action or a rule within a superior action
 #
 sub merge_levels ($$) {
     my ( $superior, $subordinate ) = @_;

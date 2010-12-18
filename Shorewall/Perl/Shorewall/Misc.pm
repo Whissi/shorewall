@@ -1060,13 +1060,19 @@ sub add_interface_jumps {
 #
 sub generate_matrix() {
     my @interfaces = ( all_interfaces );
+    #
+    # Should this be the real PREROUTING chain?
+    #
     my $preroutingref = ensure_chain 'nat', 'dnat';
-    my $fw = firewall_zone;
+
+    my $fw       = firewall_zone;
+    my @zones    = off_firewall_zones;
+    my @vservers = vserver_zones;
+    
     my $notrackref = $raw_table->{notrack_chain $fw};
     my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "-m state --state NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
-    my @zones = off_firewall_zones;
-    my @vservers = vserver_zones;
     my $interface_jumps_added = 0;
+
     our %input_jump_added   = ();
     our %output_jump_added  = ();
     our %forward_jump_added = ();

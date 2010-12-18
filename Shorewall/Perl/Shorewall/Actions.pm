@@ -138,11 +138,12 @@ sub get_target_param( $ ) {
 #
 # Create a normalized action name from the passed pieces
 #
-sub normalize_action( $$ ) {
-    my $target = shift;
+sub normalize_action( $$$ ) {
+    my $action = shift;
+    my $level  = shift;
     my $param  = shift;
 
-    my ($action, $level, $tag ) = split /:/, $target;
+    ( $level, my $tag ) = split ':', $level;
 
     $level = 'none' unless defined $level && $level ne '';
     $tag   = ''     unless defined $tag;
@@ -151,7 +152,7 @@ sub normalize_action( $$ ) {
     ( $action, $level, $tag, $param );
 }
 
-sub normalize_action_name( $$ ) {
+sub normalize_action_name( $$$ ) {
     join (':', &normalize_action( @_ ) );
 } 
 

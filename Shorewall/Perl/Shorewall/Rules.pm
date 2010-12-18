@@ -360,7 +360,7 @@ sub process_actions2 () {
     while ( $changed ) {
 	$changed = 0;
 	for my $target (keys %usedactions) {
-	    my ($action, $level) = split_action $target;
+	    my ( $action, $level, $tag, $param ) = split_action $target;
 	    my $actionref = $actions{$action};
 	    assert( $actionref );
 	    for my $action1 ( keys %{$actionref->{requires}} ) {
@@ -581,10 +581,7 @@ sub process_actions3 () {
 
     for my $wholeaction ( keys %usedactions ) {
 	my $chainref = find_logactionchain $wholeaction;
-	my ( $action, $level, $tag ) = split /:/, $wholeaction;
-
-	$level = '' unless defined $level;
-	$tag   = '' unless defined $tag;
+	my ( $action, $level, $tag, $param ) = split /:/, $wholeaction;
 
 	if ( $targets{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;
@@ -738,6 +735,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
     my $inaction1;
     my $inaction3;
+    my $normalized_target = normalize_action_name( $basictarget, $loglevel, $param );
  
     if ( defined $chainref ) {
 	if ( reftype $chainref ) {

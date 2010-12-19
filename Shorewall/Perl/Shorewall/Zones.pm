@@ -192,6 +192,7 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       IF_OPTION_ZONEONLY => 8,
 	       IF_OPTION_HOST     => 16,
 	       IF_OPTION_VSERVER  => 32,
+	       IF_OPTION_WILDOK   => 64
 	   };
 
 our %validinterfaceoptions;
@@ -249,9 +250,9 @@ sub initialize( $ ) {
 				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  upnp        => SIMPLE_IF_OPTION,
 				  upnpclient  => SIMPLE_IF_OPTION,
-				  mss         => NUMERIC_IF_OPTION,
-				  physical    => STRING_IF_OPTION + IF_OPTION_HOST,
-				  wait        => NUMERIC_IF_OPTION,
+				  mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
+				  physical    => STRING_IF_OPTION  + IF_OPTION_HOST,
+				  wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -276,10 +277,10 @@ sub initialize( $ ) {
 				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				    sourceroute => BINARY_IF_OPTION,
 				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-				    mss         => NUMERIC_IF_OPTION,
+				    mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				    forward     => BINARY_IF_OPTION,
 				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
-				    wait        => NUMERIC_IF_OPTION,
+				    wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -998,6 +999,7 @@ sub process_interface( $$ ) {
 		    assert( 0 );
 		}
 	    } elsif ( $type == NUMERIC_IF_OPTION ) {
+		fatal_error "The '$option' option may not be specified on a wildcard interface" if $wildcard && ! $type && IF_OPTION_WILDOK; 
 		$value = $defaultinterfaceoptions{$option} unless defined $value;
 		fatal_error "The '$option' option requires a value" unless defined $value;
 		my $numval = numeric_value $value;

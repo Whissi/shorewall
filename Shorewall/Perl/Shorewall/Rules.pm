@@ -820,6 +820,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     } elsif ( $actiontype & SET ) {
 	require_capability( 'IPSET_MATCH', 'SET and UNSET rules', '' );
 	fatal_error "$action rules require a set name parameter" unless $param;
+    } elsif ( $actiontype & ACTION ) {
+	split_list $param, 'Action parameter';
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }

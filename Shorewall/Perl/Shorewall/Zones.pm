@@ -1197,7 +1197,7 @@ sub known_interface($;$)
     for my $i ( @interfaces ) {
 	$interfaceref = $interfaces{$i};
 	my $root = $interfaceref->{root};
-	if ( $i ne $root && substr( $interface, 0, length $root ) eq $root ) {
+	if ( $i ne $root && $interface ne $root && substr( $interface, 0, length $root ) eq $root ) {
 	    my $physical = map_physical( $interface, $interfaceref );
 
 	    my $copyref = { options  => $interfaceref->{options},

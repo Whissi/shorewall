@@ -3534,6 +3534,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # An interface in the SOURCE column of a masq file
 	    #
 	    fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
+	    fatal_error "A wildcard interface ( $iiface) is not allowed in this context" if $iiface =~ /\+$/;
 
 	    if ( $table eq 'nat' ) {
 		warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
@@ -3625,6 +3626,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    fatal_error "A DEST interface is not permitted in the PREROUTING chain" if $restriction & DESTIFACE_DISALLOW;
 	    fatal_error "Bridge port ($diface) not allowed" if port_to_bridge( $diface );
+	    fatal_error "A wildcard interface ($diface) is not allowed in this context" if $diface =~ /\+$/;
 	    push_command( $chainref , 'for dest in ' . get_interface_nets( $diface) . '; do', 'done' );
 	    $rule .= '-d $dest ';
 	} else {

@@ -3264,7 +3264,7 @@ sub interface_nets( $ ) {
 sub get_interface_nets ( $ ) {
     my ( $logical ) = $_[0];
 
-    my $interface = get_physical( $logical );
+    my $interface = physical_name( $logical );
     my $variable = interface_nets( $interface );
 
     $global_variables |= ALL_COMMANDS;

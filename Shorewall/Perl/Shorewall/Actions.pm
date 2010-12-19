@@ -170,15 +170,13 @@ sub normalize_action_name( $$$ ) {
 # this function truncates the original chain name where necessary before
 # it adds the leading "%" and trailing sequence number.
 #
-sub createlogactionchain( $$ ) {
-    my ( $action, $level ) = @_;
+sub createlogactionchain( $$$$$ ) {
+    my ( $normalized, $action, $level, $tag, $param ) = @_;
     my $chain = $action;
     my $actionref = $actions{$action};
     my $chainref;
 
-    my ($lev, $tag) = split ':', $level;
-
-    validate_level $lev;
+    validate_level $level;
 
     $actionref = new_action $action unless $actionref;
 
@@ -190,7 +188,7 @@ sub createlogactionchain( $$ ) {
 	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
     }
 
-    $logactionchains{"$action:$level"} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
+    $logactionchains{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
 
@@ -203,9 +201,7 @@ sub createlogactionchain( $$ ) {
 	if ( -f $file ) {
 	    progress_message "Processing $file...";
 
-	    ( $level, my $tag ) = split /:/, $level;
-
-	    $tag = $tag || '';
+	    my @params = split /,/, $param;
 
 	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
@@ -222,7 +218,7 @@ sub createsimpleactionchain( $ ) {
     my $action  = shift;
     my $chainref = new_standard_chain $action;
 
-    $logactionchains{"$action:none"} = $chainref;
+    $logactionchains{"$action:none::"} = $chainref;
 
     unless ( $targets{$action} & BUILTIN ) {
 
@@ -250,18 +246,18 @@ sub createsimpleactionchain( $ ) {
 # Create an action chain and run its associated user exit
 #
 sub createactionchain( $ ) {
-    my ( $action , $level ) = split_action $_[0];
+    my $normalized = shift;
+
+    my ( $target, $level, $tag, $param ) = split /:/, $normalized;
+
+    assert( defined $param );
 
     my $chainref;
 
-    if ( defined $level && $level ne '' ) {
-	if ( $level eq 'none' ) {
-	    createsimpleactionchain $action;
-	} else {
-	    createlogactionchain $action , $level;
-	}
+    if ( $level eq 'none' && $tag eq '' && $param eq '' ) {
+	createsimpleactionchain $target;
     } else {
-	createsimpleactionchain $action;
+	createlogactionchain $normalized, $target , $level , $tag, $param;
     }
 }
 

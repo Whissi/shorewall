@@ -169,17 +169,18 @@ sub process_a_policy() {
     fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
 
     ( $policy , my $queue ) = get_target_param $policy;
-
+    
     if ( $default ) {
 	if ( "\L$default" eq 'none' ) {
 	    $default = 'none';
 	} else {
 	    my $defaulttype = $targets{$default} || 0;
-
+	    
 	    if ( $defaulttype & ACTION ) {
-		unless ( $usedactions{$default} ) {
-		    $usedactions{$default} = 1;
-		    createactionchain $default;
+		my $normalized = "$default:none::";
+		unless ( $usedactions{$normalized} ) {
+		    $usedactions{$normalized} = 1;
+		    createactionchain $normalized;
 		}
 	    } else {
 		fatal_error "Unknown Default Action ($default)";
@@ -310,20 +311,22 @@ sub validate_policy()
     my $firewall = firewall_zone;
     our @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
 
-    for my $option qw/DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT/ {
+    for my $option qw( DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) {
 	my $action = $config{$option};
 	next if $action eq 'none';
 	my $actiontype = $targets{$action};
-
+												 
 	if ( defined $actiontype ) {
 	    fatal_error "Invalid setting ($action) for $option" unless $actiontype & ACTION;
 	} else {
 	    fatal_error "Default Action $option=$action not found";
 	}
 
-	unless ( $usedactions{$action} ) {
-	    $usedactions{$action} = 1;
-	    createactionchain $action;
+	my $normalized = "$action:none::";
+
+	unless ( $usedactions{$normalized} ) {
+	    $usedactions{$normalized} = 1;
+	    createactionchain $normalized;
 	}
 
 	$default_actions{$map{$option}} = $action;

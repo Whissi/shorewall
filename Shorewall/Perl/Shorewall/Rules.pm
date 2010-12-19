@@ -247,11 +247,8 @@ sub map_old_actions( $ ) {
 #
 sub find_logactionchain( $ ) {
     my $fullaction = $_[0];
-    my ( $action, $level ) = split_action $fullaction;
 
-    $level = 'none' unless $level;
-
-    fatal_error "Fatal error in find_logactionchain" unless $logactionchains{"$action:$level"};
+    fatal_error "Fatal error in find_logactionchain" unless $logactionchains{$fullaction};
 }
 
 #
@@ -352,6 +349,31 @@ sub process_actions1() {
     }
 }
 
+sub merge_action_levels( $$ ) {
+    my $superior    = shift;
+    my $subordinate = shift;
+
+    my ( $unused, $suplevel, $suptag, $supparam ) = split /:/, $superior;
+    my ( $action, $sublevel, $subtag, $subparam ) = split /:/, $subordinate;
+
+    assert defined $supparam;
+
+    if ( $suplevel =~ /!$/ ) {
+	( $sublevel, $subtag ) = ( $suplevel, $subtag );
+    } else {
+	$sublevel = 'none' unless defined $sublevel && $sublevel ne '';
+	if ( $sublevel =~ /^none~/ ) {
+	    $subtag = '';
+	} else {
+	    $subtag = '' unless defined $subtag;
+	}
+    }
+
+    $subparam = $supparam unless defined $subparam && $subparam ne '';
+
+    join ':', $action, $sublevel, $subtag, $subparam;
+}
+
 sub process_actions2 () {
     progress_message2 'Generating Transitive Closure of Used-action List...';
 
@@ -360,11 +382,11 @@ sub process_actions2 () {
     while ( $changed ) {
 	$changed = 0;
 	for my $target (keys %usedactions) {
-	    my ( $action, $level, $tag, $param ) = split_action $target;
+	    my ( $action, $level, $tag, $param ) = split ':', $target;
 	    my $actionref = $actions{$action};
 	    assert( $actionref );
 	    for my $action1 ( keys %{$actionref->{requires}} ) {
-		my $action2 = merge_levels $target, $action1;
+		my $action2 = merge_action_levels $target, $action1;
 		unless ( $usedactions{ $action2 } ) {
 		    $usedactions{ $action2 } = 1;
 		    createactionchain $action2;
@@ -813,9 +835,9 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	if ( $inaction1 ) {
 	    add_requiredby( $target , $inaction1 );
 	} else {
-	    unless ( $usedactions{$target} ) {
-		$usedactions{$target} = 1;
-		my $ref = createactionchain $target;
+	    unless ( $usedactions{$normalized_target} ) {
+		$usedactions{$normalized_target} = 1;
+		my $ref = createactionchain $normalized_target;
 		new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT );
 	    }
 	}
@@ -1253,7 +1275,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     unless ( $actiontype & NATONLY ) {
 
 	if ( $actiontype & ACTION ) {
-	    $action = (find_logactionchain $target)->{name};
+	    $action = (find_logactionchain $normalized_target)->{name};
 	    $loglevel = '';
 	}
 

@@ -757,7 +757,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
     my $inaction1;
     my $inaction3;
-    my $normalized_target = normalize_action_name( $basictarget, $loglevel, $param );
+    my $normalized_target;
  
     if ( defined $chainref ) {
 	if ( reftype $chainref ) {
@@ -834,6 +834,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     # Handle actions
     #
     if ( $actiontype & ACTION ) {
+	$normalized_target = normalize_action_name( $basictarget, $loglevel, $param );
+	
 	if ( $inaction1 ) {
 	    add_requiredby( $target , $inaction1 );
 	} else {

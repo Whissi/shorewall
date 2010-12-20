@@ -1358,7 +1358,14 @@ sub find_interfaces_by_option1( $ ) {
 sub get_interface_option( $$ ) {
     my ( $interface, $option ) = @_;
 
-    $interfaces{$interface}{options}{$option};
+    my $ref = $interfaces{$interface};
+
+    return $ref->{options}{$option} if $ref;
+
+    assert( $ref = known_interface( $interface ) );
+
+    $ref->{options}{$option};
+    
 }
 
 #

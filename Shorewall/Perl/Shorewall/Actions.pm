@@ -43,7 +43,7 @@ our @EXPORT = qw(
 		  process_actions2
 		  
 		  %actions   
-		  %logactionchains
+		  %usedactions
 		  %default_actions
 		  );
 our @EXPORT_OK = qw( initialize );
@@ -66,7 +66,7 @@ our %actions;
 #
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
-our %logactionchains;
+our %usedactions;
 
 our $family;
 
@@ -88,7 +88,7 @@ sub initialize( $ ) {
 			  ACCEPT   => 'none' ,
 			  QUEUE    => 'none' );
     %actions          = ();
-    %logactionchains  = ();
+    %usedactions  = ();
 }
 
 #
@@ -188,7 +188,7 @@ sub createlogactionchain( $$$$$ ) {
 	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
     }
 
-    $logactionchains{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
+    $usedactions{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
 
@@ -218,7 +218,7 @@ sub createsimpleactionchain( $ ) {
     my $action  = shift;
     my $chainref = new_standard_chain $action;
 
-    $logactionchains{"$action:none::"} = $chainref;
+    $usedactions{"$action:none::"} = $chainref;
 
     unless ( $targets{$action} & BUILTIN ) {
 
@@ -268,7 +268,7 @@ sub createactionchain( $ ) {
 sub use_action( $ ) {
     my $normalized = shift;
 
-    if ( $logactionchains{$normalized} ) {
+    if ( $usedactions{$normalized} ) {
 	0;
     } else {
 	createactionchain $normalized;
@@ -307,7 +307,7 @@ sub process_actions2 () {
 
     while ( $changed ) {
 	$changed = 0;
-	for my $target (keys %logactionchains) {
+	for my $target (keys %usedactions) {
 	    my ( $action, $level, $tag, $param ) = split ':', $target;
 	    my $actionref = $actions{$action};
 	    assert( $actionref );

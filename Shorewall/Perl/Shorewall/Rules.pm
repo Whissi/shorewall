@@ -241,16 +241,6 @@ sub map_old_actions( $ ) {
 }
 
 #
-# Find the chain that handles the passed action. If the chain cannot be found,
-# a fatal error is generated and the function does not return.
-#
-sub find_logactionchain( $ ) {
-    my $fullaction = $_[0];
-
-    fatal_error "Fatal error in find_logactionchain" unless $logactionchains{$fullaction};
-}
-
-#
 # The functions process_actions1-3() implement the three phases of action processing.
 #
 # The first phase (process_actions1) occurs before the rules file is processed. The builtin-actions are added
@@ -553,7 +543,7 @@ sub process_actions3 () {
 		       'forwardUPnP'    => \&forwardUPnP,
 		       'Limit'          => \&Limit, );
 
-    while ( my ( $wholeaction, $chainref ) = each %logactionchains ) {
+    while ( my ( $wholeaction, $chainref ) = each %usedactions ) {
 	my ( $action, $level, $tag, $param ) = split /:/, $wholeaction;
 
 	if ( $targets{$action} & BUILTIN ) {
@@ -1228,7 +1218,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     unless ( $actiontype & NATONLY ) {
 
 	if ( $actiontype & ACTION ) {
-	    $action = (find_logactionchain $normalized_target)->{name};
+	    $action = $usedactions{$normalized_target}{name};
 	    $loglevel = '';
 	}
 

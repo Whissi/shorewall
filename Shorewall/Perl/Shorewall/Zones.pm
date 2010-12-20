@@ -1192,6 +1192,8 @@ sub known_interface($;$)
     my ( $interface, $cache ) = @_;
     my $interfaceref = $interfaces{$interface};
 
+    $cache = 1 unless defined $cache;
+
     return $interfaceref if $interfaceref;
 
     fatal_error "Invalid interface ($interface)" if $interface =~ /\*/;

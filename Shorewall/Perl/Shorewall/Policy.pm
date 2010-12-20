@@ -177,11 +177,7 @@ sub process_a_policy() {
 	    my $defaulttype = $targets{$default} || 0;
 	    
 	    if ( $defaulttype & ACTION ) {
-		my $normalized = "$default:none::";
-		unless ( $usedactions{$normalized} ) {
-		    $usedactions{$normalized} = 1;
-		    createactionchain $normalized;
-		}
+		use_action( normalize_action_name $default );
 	    } else {
 		fatal_error "Unknown Default Action ($default)";
 	    }
@@ -322,12 +318,7 @@ sub validate_policy()
 	    fatal_error "Default Action $option=$action not found";
 	}
 
-	my $normalized = "$action:none::";
-
-	unless ( $usedactions{$normalized} ) {
-	    $usedactions{$normalized} = 1;
-	    createactionchain $normalized;
-	}
+	use_action( normalize_action_name $action );
 
 	$default_actions{$map{$option}} = $action;
     }

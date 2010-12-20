@@ -39,19 +39,16 @@ our @EXPORT = qw(
 		  get_target_param
 		  normalize_action
 		  normalize_action_name
-		  createactionchain
+		  use_action
+		  process_actions2
+		  
 		  %actions   
-		  %usedactions
 		  %logactionchains
 		  %default_actions
 		  );
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.4_16';
 
-#
-#  Used Actions. Each action that is actually used has an entry with value 1.
-#
-our %usedactions;
 #
 # Default actions for each policy.
 #
@@ -86,7 +83,6 @@ our $family;
 sub initialize( $ ) {
 
     $family           = shift;
-    %usedactions      = ();
     %default_actions  = ( DROP     => 'none' ,
 		 	  REJECT   => 'none' ,
 			  ACCEPT   => 'none' ,
@@ -149,11 +145,15 @@ sub normalize_action( $$$ ) {
     $tag   = ''     unless defined $tag;
     $param = ''     unless defined $param;
 
-    ( $action, $level, $tag, $param );
+    join( ':', $action, $level, $tag, $param );
 }
 
-sub normalize_action_name( $$$ ) {
-    join (':', &normalize_action( @_ ) );
+sub normalize_action_name( $ ) {
+    my $target = shift;
+    my ( $action, $loglevel) = split_action $target;
+
+    normalize_action( $action, $loglevel, '' );
+
 } 
 
 #
@@ -258,6 +258,64 @@ sub createactionchain( $ ) {
 	createsimpleactionchain $target;
     } else {
 	createlogactionchain $normalized, $target , $level , $tag, $param;
+    }
+}
+
+#
+# Mark an action as used and create its chain. Returns one if the chain was
+# created on this call or 0 otherwise.
+#
+sub use_action( $ ) {
+    my $normalized = shift;
+
+    if ( $logactionchains{$normalized} ) {
+	0;
+    } else {
+	createactionchain $normalized;
+    }
+}
+
+sub merge_action_levels( $$ ) {
+    my $superior    = shift;
+    my $subordinate = shift;
+
+    my ( $unused, $suplevel, $suptag, $supparam ) = split /:/, $superior;
+    my ( $action, $sublevel, $subtag, $subparam ) = split /:/, $subordinate;
+
+    assert defined $supparam;
+
+    if ( $suplevel =~ /!$/ ) {
+	( $sublevel, $subtag ) = ( $suplevel, $subtag );
+    } else {
+	$sublevel = 'none' unless defined $sublevel && $sublevel ne '';
+	if ( $sublevel =~ /^none~/ ) {
+	    $subtag = '';
+	} else {
+	    $subtag = '' unless defined $subtag;
+	}
+    }
+
+    $subparam = $supparam unless defined $subparam && $subparam ne '';
+
+    join ':', $action, $sublevel, $subtag, $subparam;
+}
+
+sub process_actions2 () {
+    progress_message2 'Generating Transitive Closure of Used-action List...';
+
+    my $changed = 1;
+
+    while ( $changed ) {
+	$changed = 0;
+	for my $target (keys %logactionchains) {
+	    my ( $action, $level, $tag, $param ) = split ':', $target;
+	    my $actionref = $actions{$action};
+	    assert( $actionref );
+	    for my $action1 ( keys %{$actionref->{requires}} ) {
+		my $action2 = merge_action_levels( $target, $action1 );
+		$changed = 1 if use_action( $action2 );
+	    }
+	}
     }
 }
 

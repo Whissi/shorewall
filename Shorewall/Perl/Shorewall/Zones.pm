@@ -913,7 +913,7 @@ sub process_interface( $$ ) {
 	$root = substr( $interface, 0, -1 );
 	$roots{$root} = $interface;
 	my $len = length $root;
-	
+ 
 	if ( $minroot ) {
 	    $minroot = $len if $minroot > $len;
 	} else {

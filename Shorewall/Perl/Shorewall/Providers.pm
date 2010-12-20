@@ -525,7 +525,7 @@ sub add_a_provider( ) {
 	    $var =~ s/^\$//;
 
 	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" ,
-		   "    $var=fe:ff:ff:ff:ff:ff" );   
+		   "    $var=fe:ff:ff:ff:ff:ff" );
 	    
 	} else {
 	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Added\"" );

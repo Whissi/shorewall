@@ -164,6 +164,7 @@ our %reservedName = ( all => 1,
 #
 our @interfaces;
 our %interfaces;
+our %roots;
 our @bport_zones;
 our %ipsets;
 our %physical;
@@ -221,6 +222,7 @@ sub initialize( $ ) {
     $have_ipsec = undef;
 
     @interfaces = ();
+    %roots = ();
     %interfaces = ();
     @bport_zones = ();
     %ipsets = ();
@@ -907,6 +909,7 @@ sub process_interface( $$ ) {
     if ( $interface =~ /\+$/ ) {
 	$wildcard = 1;
 	$root = substr( $interface, 0, -1 );
+	$roots{$root} = $interface;
     } else {
 	$root = $interface;
     }
@@ -1184,25 +1187,30 @@ sub map_physical( $$ ) {
 #
 # Returns true if passed interface matches an entry in /etc/shorewall/interfaces
 #
-# If the passed name matches a wildcard and 'cache' is true, an entry for the name is added in
-# %interfaces.
+# If the passed name matches a wildcard, an entry for the name is added to %interfaces.
 #
 sub known_interface($)
 {
-    my ( $interface, $cache ) = @_;
+    my $interface = shift;
     my $interfaceref = $interfaces{$interface};
 
     return $interfaceref if $interfaceref;
 
     fatal_error "Invalid interface ($interface)" if $interface =~ /\*/;
 
-    for my $i ( @interfaces ) {
-	$interfaceref = $interfaces{$i};
-	my $root = $interfaceref->{root};
-	if ( $i ne $root && $interface ne $root && substr( $interface, 0, length $root ) eq $root ) {
+    my $iface = $interface;
+
+    while ( 1 ) {
+	chop $iface;
+	
+	return 0 if $iface eq '';
+	
+	if ( my $i = $roots{$iface} ) {
+	    $interfaceref = $interfaces{$i};
+
 	    my $physical = map_physical( $interface, $interfaceref );
 
-	    return $interfaces{$interface} = { options  => $interfaceref->{options},
+	    return $interfaces{$interface} = { options  => $interfaceref->{options} ,
 					       bridge   => $interfaceref->{bridge} ,
 					       name     => $i ,
 					       number   => $interfaceref->{number} ,

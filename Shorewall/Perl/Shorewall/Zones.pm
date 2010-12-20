@@ -1187,12 +1187,10 @@ sub map_physical( $$ ) {
 # If the passed name matches a wildcard and 'cache' is true, an entry for the name is added in
 # %interfaces.
 #
-sub known_interface($;$)
+sub known_interface($)
 {
     my ( $interface, $cache ) = @_;
     my $interfaceref = $interfaces{$interface};
-
-    $cache = 1 unless defined $cache;
 
     return $interfaceref if $interfaceref;
 
@@ -1204,17 +1202,13 @@ sub known_interface($;$)
 	if ( $i ne $root && $interface ne $root && substr( $interface, 0, length $root ) eq $root ) {
 	    my $physical = map_physical( $interface, $interfaceref );
 
-	    my $copyref = { options  => $interfaceref->{options},
-			    bridge   => $interfaceref->{bridge} ,
-			    name     => $i ,
-			    number   => $interfaceref->{number} ,
-			    physical => $physical ,
-			    base     => chain_base( $physical ) ,
-			  };
-
-	    $interfaces{$interface} = $copyref if $cache;
-
-	    return $copyref;
+	    return $interfaces{$interface} = { options  => $interfaceref->{options},
+					       bridge   => $interfaceref->{bridge} ,
+					       name     => $i ,
+					       number   => $interfaceref->{number} ,
+					       physical => $physical ,
+					       base     => chain_base( $physical ) ,
+					     };
 	}
     }
 

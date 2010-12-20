@@ -173,6 +173,7 @@ our %mapbase;
 our $family;
 our $have_ipsec;
 our $baseseq;
+our $minroot;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -230,6 +231,7 @@ sub initialize( $ ) {
     %basemap = ();
     %mapbase = ();
     $baseseq = 0;
+    $minroot = 0;
 
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
@@ -910,6 +912,13 @@ sub process_interface( $$ ) {
 	$wildcard = 1;
 	$root = substr( $interface, 0, -1 );
 	$roots{$root} = $interface;
+	my $len = length $root;
+	
+	if ( $minroot ) {
+	    $minroot = $len if $minroot > $len;
+	} else {
+	    $minroot = $len;
+	}
     } else {
 	$root = $interface;
     }

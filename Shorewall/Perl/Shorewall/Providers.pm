@@ -18,7 +18,7 @@
 #
 #       You should have received a copy of the GNU General Public License
 #       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MAS 02110-1301 USA.
 #
 #   This module deals with the /etc/shorewall/providers,
 #   /etc/shorewall/route_rules and /etc/shorewall/routes files.
@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_15';
+our $VERSION = '4.4_16';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -520,7 +520,13 @@ sub add_a_provider( ) {
 
     if ( $optional ) {
 	if ( $shared ) {
-	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );
+	    my $var = $providers{$table}{mac};
+	    
+	    $var =~ s/^\$//;
+
+	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" ,
+		   "    $var=fe:ff:ff:ff:ff:ff" );   
+	    
 	} else {
 	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Added\"" );
 	}

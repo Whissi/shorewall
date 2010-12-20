@@ -1334,7 +1334,7 @@ sub find_interfaces_by_option1( $ ) {
     my $wild = 0;
 
     for my $interface ( sort { $interfaces{$a}->{number} <=> $interfaces{$b}->{number} }
-			keys %interfaces ) {
+			( grep $interfaces{$_}{root}, keys %interfaces ) ) {
 	my $interfaceref = $interfaces{$interface};
 
 	next unless defined $interfaceref->{physical};

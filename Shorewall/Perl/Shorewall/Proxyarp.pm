@@ -125,15 +125,15 @@ sub setup_proxy_arp() {
 		$first_entry = 0;
 	    }
 
-	    fatal_error "Unknown interface ($external)" unless known_interface $external;
+	    fatal_error "Unknown interface ($external)" unless known_interface $external, 1;
 	    fatal_error "Wildcard interface ($external) not allowed" if $external =~ /\+$/;
 	    $reset{$external} = 1 unless $set{$external};
 
-	    my $extphy   = physical_name $external;
+	    my $extphy   = get_physical $external;
 	    my $physical = '-';
 
 	    if ( $interface ne '-' ) {
-		fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+		fatal_error "Unknown interface ($interface)" unless known_interface $interface, 1;
 		fatal_error "Wildcard interface ($interface) not allowed" if $interface =~ /\+$/;
 		$physical = physical_name $interface;
 		$set{$interface}  = 1;

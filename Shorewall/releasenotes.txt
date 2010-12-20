@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 6
-                              B E T A  5
+                                B E T A  6
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,6 +13,21 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+Beta 6
+
+1)  Previously, the root of a wildcard name erroneously matched that
+    name. For example 'eth' matched 'eth+'. Now there must be at least
+    one additional character (e.g., 'eth4').
+
+2)  Use of logical interface names in the notrack and ecn files
+    resulted in perl runtime warning messages.
+
+3)  The use of wildcard-matching names in certain contexts would result
+    in perl run-time messages similar to this one:
+
+       Use of uninitialized value in numeric comparison (<=>) 
+       at /usr/share/shorewall/Shorewall/Zones.pm line 1334.
 
 Beta 5
 

@@ -342,8 +342,8 @@ sub process_actions1() {
 #
 # Generate chain for non-builtin action invocation
 #
-sub process_action3( $$$$$ ) {
-    my ( $chainref, $wholeaction, $action, $level, $tag ) = @_;
+sub process_action3( $$$$$$ ) {
+    my ( $chainref, $wholeaction, $action, $level, $tag, $param ) = @_;
     my $actionfile = find_file "action.$action";
     my $format = 1;
 
@@ -352,6 +352,8 @@ sub process_action3( $$$$$ ) {
     progress_message2 "Processing $actionfile for chain $chainref->{name}...";
 
     open_file $actionfile;
+
+    add_params( $param );
 
     while ( read_a_line ) {
 
@@ -550,7 +552,7 @@ sub process_actions3 () {
 	    $level = '' if $level =~ /none!?/;
 	    $builtinops{$action}->($chainref, $level, $tag, $param );
 	} else {
-	    process_action3 $chainref, $wholeaction, $action, $level, $tag;
+	    process_action3 $chainref, $wholeaction, $action, $level, $tag, $param;
 	}
     }
 }

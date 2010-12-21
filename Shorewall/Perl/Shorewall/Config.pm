@@ -96,6 +96,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       close_file
 				       push_open
 				       pop_open
+				       add_params
+				       del_params
 				       read_a_line
 				       validate_level
 				       which
@@ -1782,6 +1784,29 @@ sub embedded_perl( $ ) {
 }
 
 #
+# Add parameters
+#
+sub add_params( $ ) {
+    my $params = shift;
+
+    my @params = split /,/, $params;
+
+    for ( my $i = 1; $i <= @params; $i++ ) {
+	$params{$i} = $params[$i];
+    }
+}
+
+sub del_params( $ ) {
+    my $params = shift;
+
+    my @params = split /,/, $params;
+
+    for ( my $i = 1; $i <= @params; $i++ ) {
+	delete $params{$i};
+    }
+}
+
+#
 # Read a line from the current include stack.
 #
 #   - Ignore blank or comment-only lines.
@@ -1857,7 +1882,7 @@ sub read_a_line(;$) {
 	    # Expand Shell Variables using %params and %ENV
 	    #
 	    #                            $1      $2      $3           -     $4
-	    while ( $currentline =~ m( ^(.*?) \$({)? ([a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
+	    while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 
 		unless ( exists $params{$3} ) {
 		    #

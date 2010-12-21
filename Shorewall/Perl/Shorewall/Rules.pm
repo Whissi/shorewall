@@ -353,8 +353,6 @@ sub process_action3( $$$$$$ ) {
 
     open_file $actionfile;
 
-    add_params( $param );
-
     while ( read_a_line ) {
 
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );

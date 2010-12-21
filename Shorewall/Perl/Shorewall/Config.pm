@@ -96,8 +96,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       close_file
 				       push_open
 				       pop_open
-				       add_params
-				       del_params
 				       read_a_line
 				       validate_level
 				       which
@@ -1780,29 +1778,6 @@ sub embedded_perl( $ ) {
 	$currentfilename = "PERL\@$currentfilename:$linenumber";
 	$currentline = '';
 	$currentlinenumber = 0;
-    }
-}
-
-#
-# Add parameters
-#
-sub add_params( $ ) {
-    my $params = shift;
-
-    my @params = split /,/, $params;
-
-    for ( my $i = 1; $i <= @params; $i++ ) {
-	$params{$i} = $params[$i];
-    }
-}
-
-sub del_params( $ ) {
-    my $params = shift;
-
-    my @params = split /,/, $params;
-
-    for ( my $i = 1; $i <= @params; $i++ ) {
-	delete $params{$i};
     }
 }
 

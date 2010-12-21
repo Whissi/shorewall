@@ -293,8 +293,6 @@ sub process_actions1() {
 		next;
 	    }
 
-	    $targets{$action} = ACTION;
-
 	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
 
 	    new_action $action;
@@ -335,6 +333,8 @@ sub process_actions1() {
 	    }
 
 	    pop_open;
+
+	    $targets{$action} = ACTION;
 	}
     }
 }

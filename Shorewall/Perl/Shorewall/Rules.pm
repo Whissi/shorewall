@@ -38,6 +38,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		  process_actions1
+		  process_actions2
 		  process_actions3
 
 		  process_rules
@@ -256,9 +257,8 @@ sub map_old_actions( $ ) {
 # %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
 # length of the chain name does not exceed 30 characters.
 #
-# The second phase (process_actions2 -- see Actions.pm) occurs after the rules file is scanned. The transitive
-# closure of %usedactions is generated; again, as new actions are merged into the hash, their action chains
-# are created.
+# The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of
+# %usedactions is generated; again, as new actions are merged into the hash, their action chains are created.
 #
 # The final phase (process_actions3) traverses the keys of %usedactions populating each chain appropriately
 # by reading the related action definition file and creating rules. Note that a given action definition file is
@@ -335,6 +335,50 @@ sub process_actions1() {
 	    pop_open;
 
 	    $targets{$action} = ACTION;
+	}
+    }
+}
+
+sub merge_action_levels( $$ ) {
+    my $superior    = shift;
+    my $subordinate = shift;
+
+    my ( $unused, $suplevel, $suptag, $supparam ) = split /:/, $superior;
+    my ( $action, $sublevel, $subtag, $subparam ) = split /:/, $subordinate;
+
+    assert defined $supparam;
+
+    if ( $suplevel =~ /!$/ ) {
+	( $sublevel, $subtag ) = ( $suplevel, $subtag );
+    } else {
+	$sublevel = 'none' unless defined $sublevel && $sublevel ne '';
+	if ( $sublevel =~ /^none~/ ) {
+	    $subtag = '';
+	} else {
+	    $subtag = '' unless defined $subtag;
+	}
+    }
+
+    $subparam = $supparam unless defined $subparam && $subparam ne '';
+
+    join ':', $action, $sublevel, $subtag, $subparam;
+}
+
+sub process_actions2 () {
+    progress_message2 'Generating Transitive Closure of Used-action List...';
+
+    my $changed = 1;
+
+    while ( $changed ) {
+	$changed = 0;
+	for my $target (keys %usedactions) {
+	    my ( $action, $level, $tag, $param ) = split ':', $target;
+	    my $actionref = $actions{$action};
+	    assert( $actionref );
+	    for my $action1 ( keys %{$actionref->{requires}} ) {
+		my $action2 = merge_action_levels( $target, $action1 );
+		$changed = 1 if use_action( $action2 );
+	    }
 	}
     }
 }

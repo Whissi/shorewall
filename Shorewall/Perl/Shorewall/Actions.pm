@@ -40,7 +40,6 @@ our @EXPORT = qw(
 		  normalize_action
 		  normalize_action_name
 		  use_action
-		  process_actions2
 		  
 		  %actions   
 		  %usedactions
@@ -119,6 +118,7 @@ sub split_action ( $ ) {
     ( $target, join ":", @a );
 }
 
+#
 # Split the passed target into the basic target and parameter
 #
 sub get_target_param( $ ) {
@@ -272,50 +272,6 @@ sub use_action( $ ) {
 	0;
     } else {
 	createactionchain $normalized;
-    }
-}
-
-sub merge_action_levels( $$ ) {
-    my $superior    = shift;
-    my $subordinate = shift;
-
-    my ( $unused, $suplevel, $suptag, $supparam ) = split /:/, $superior;
-    my ( $action, $sublevel, $subtag, $subparam ) = split /:/, $subordinate;
-
-    assert defined $supparam;
-
-    if ( $suplevel =~ /!$/ ) {
-	( $sublevel, $subtag ) = ( $suplevel, $subtag );
-    } else {
-	$sublevel = 'none' unless defined $sublevel && $sublevel ne '';
-	if ( $sublevel =~ /^none~/ ) {
-	    $subtag = '';
-	} else {
-	    $subtag = '' unless defined $subtag;
-	}
-    }
-
-    $subparam = $supparam unless defined $subparam && $subparam ne '';
-
-    join ':', $action, $sublevel, $subtag, $subparam;
-}
-
-sub process_actions2 () {
-    progress_message2 'Generating Transitive Closure of Used-action List...';
-
-    my $changed = 1;
-
-    while ( $changed ) {
-	$changed = 0;
-	for my $target (keys %usedactions) {
-	    my ( $action, $level, $tag, $param ) = split ':', $target;
-	    my $actionref = $actions{$action};
-	    assert( $actionref );
-	    for my $action1 ( keys %{$actionref->{requires}} ) {
-		my $action2 = merge_action_levels( $target, $action1 );
-		$changed = 1 if use_action( $action2 );
-	    }
-	}
     }
 }
 

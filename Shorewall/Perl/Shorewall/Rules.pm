@@ -334,7 +334,7 @@ sub process_actions1() {
 
 	    pop_open;
 
-	    $targets{$action} = ACTION;
+	    $targets{$action} |= ACTION;
 	}
     }
 }

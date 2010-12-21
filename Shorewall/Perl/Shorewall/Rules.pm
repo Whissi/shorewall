@@ -502,19 +502,19 @@ sub allowinUPnP ( $$$ ) {
 }
 
 sub Limit( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
+    my ($chainref, $level, $tag, $param ) = @_;
 
-    my @tag = split /,/, $tag;
+    my @param = split /,/, $param ? $param : $tag;
 
-    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')' unless @tag == 3;
+    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')' unless @param == 3;
 
-    my $set   = $tag[0];
+    my $set   = $param[0];
 
-    for ( @tag[1,2] ) {
+    for ( @param[1,2] ) {
 	fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
     }
 
-    my $count = $tag[1] + 1;
+    my $count = $param[1] + 1;
 
     require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
 
@@ -522,11 +522,11 @@ sub Limit( $$$ ) {
 
     if ( $level ne '' ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
+	log_rule_limit $level, $xchainref, $param[0], 'DROP', '', '', 'add', '';
 	add_rule $xchainref, '-j DROP';
-	add_jump $chainref,  $xchainref, 0, "-m recent --name $set --update --seconds $tag[2] --hitcount $count ";
+	add_jump $chainref,  $xchainref, 0, "-m recent --name $set --update --seconds $param[2] --hitcount $count ";
     } else {
-	add_rule $chainref, "-m recent --update --name $set --seconds $tag[2] --hitcount $count -j DROP";
+	add_rule $chainref, "-m recent --update --name $set --seconds $param[2] --hitcount $count -j DROP";
     }
 
     add_rule $chainref, '-j ACCEPT';
@@ -548,7 +548,7 @@ sub process_actions3 () {
 
 	if ( $targets{$action} & BUILTIN ) {
 	    $level = '' if $level =~ /none!?/;
-	    $builtinops{$action}->($chainref, $level, $tag);
+	    $builtinops{$action}->($chainref, $level, $tag, $param );
 	} else {
 	    process_action3 $chainref, $wholeaction, $action, $level, $tag;
 	}

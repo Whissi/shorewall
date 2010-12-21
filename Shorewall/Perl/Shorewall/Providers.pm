@@ -121,7 +121,9 @@ sub setup_route_marking() {
 	}
 
 	if ( $providerref->{shared} ) {
+	    add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
 	    add_rule $chainref, match_source_dev( $interface ) . "-m mac --mac-source $providerref->{mac} -j MARK --set-mark $providerref->{mark}";
+	    decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	} else {
 	    add_rule $chainref, match_source_dev( $interface ) . "-j MARK --set-mark $providerref->{mark}";
 	}
@@ -520,13 +522,7 @@ sub add_a_provider( ) {
 
     if ( $optional ) {
 	if ( $shared ) {
-	    my $var = $providers{$table}{mac};
-	    
-	    $var =~ s/^\$//;
-
-	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" ,
-		   "    $var=02:00:00:00:00:00" );
-	    
+	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );	    
 	} else {
 	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Added\"" );
 	}

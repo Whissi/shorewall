@@ -84,7 +84,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_16';
+our $VERSION = '4.4_15';
 
 #
 # IPSEC Option types
@@ -913,7 +913,7 @@ sub process_interface( $$ ) {
 	$root = substr( $interface, 0, -1 );
 	$roots{$root} = $interface;
 	my $len = length $root;
- 
+	
 	if ( $minroot ) {
 	    $minroot = $len if $minroot > $len;
 	} else {
@@ -1209,23 +1209,23 @@ sub known_interface($)
 
     my $iface = $interface;
 
-    while ( 1 ) {
-	chop $iface;
+    if ( $minroot ) {
+	while ( length $iface > $minroot ) {
+	    chop $iface;
 	
-	return 0 if $iface eq '';
-	
-	if ( my $i = $roots{$iface} ) {
-	    $interfaceref = $interfaces{$i};
+	    if ( my $i = $roots{$iface} ) {
+		$interfaceref = $interfaces{$i};
 
-	    my $physical = map_physical( $interface, $interfaceref );
+		my $physical = map_physical( $interface, $interfaceref );
 
-	    return $interfaces{$interface} = { options  => $interfaceref->{options} ,
-					       bridge   => $interfaceref->{bridge} ,
-					       name     => $i ,
-					       number   => $interfaceref->{number} ,
-					       physical => $physical ,
-					       base     => chain_base( $physical ) ,
-					     };
+		return $interfaces{$interface} = { options  => $interfaceref->{options} ,
+						   bridge   => $interfaceref->{bridge} ,
+						   name     => $i ,
+						   number   => $interfaceref->{number} ,
+						   physical => $physical ,
+						   base     => chain_base( $physical ) ,
+						 };
+	    }
 	}
     }
 

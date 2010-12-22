@@ -192,6 +192,8 @@ sub createlogactionchain( $$$$$ ) {
 
     fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
 
+    $chainref->{chain} = $chain;
+
     unless ( $targets{$action} & BUILTIN ) {
 
 	dont_optimize $chainref;
@@ -219,6 +221,8 @@ sub createsimpleactionchain( $ ) {
     my $chainref = new_standard_chain $action;
 
     $usedactions{"$action:none::"} = $chainref;
+
+    $chainref->{chain} = $chain;
 
     unless ( $targets{$action} & BUILTIN ) {
 

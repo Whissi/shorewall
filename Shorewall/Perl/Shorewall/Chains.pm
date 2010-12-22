@@ -217,6 +217,7 @@ our $VERSION = '4.4_16';
 #                                               logchains    => { <key1> = <chainref1>, ... }
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
 #                                               blacklist    => <number of blacklist rules at the head of the rules array> ( 0 or 1 )
+#                                               action       => <name of the action that generated this chain>
 #                                             } ,
 #                                <chain2> => ...
 #                              }

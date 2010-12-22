@@ -555,7 +555,7 @@ sub Limit( $$$ ) {
 
     my @param = split /,/, $param ? $param : $tag;
 
-    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')' unless @param == 3;
+    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag or as parameters' unless @param == 3;
 
     my $set   = $param[0];
 

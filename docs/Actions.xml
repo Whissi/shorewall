@@ -514,6 +514,11 @@ bar:debug</programlisting>
         <listitem>
           <para><emphasis role="bold">$tag</emphasis> is the log tag.</para>
         </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">@params</emphasis> is the list of
+          parameter values (Shorewall 4.4.16 and later).</para>
+        </listitem>
       </itemizedlist>
 
       <para>Example:</para>
@@ -539,9 +544,11 @@ add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
   <section id="Limit">
     <title>Limiting Per-IP Connection Rate using the Limit Action</title>
 
-    <para>Shorewall supports a <quote>Limit</quote> built-in action. Limit is
-    invoked with a comma-separated list in place of a logging tag. The list
-    has three elements:</para>
+    <para>Shorewall supports a <quote>Limit</quote> built-in action. Prior to
+    Shorewall 4.4.16, Limit is invoked with a comma-separated list in place of
+    a logging tag. Beginning in Shorewall 4.4.16, it may also be invoked with
+    a list of three parameters enclosed in parentheses. The list has three
+    elements:</para>
 
     <orderedlist>
       <listitem>
@@ -570,11 +577,20 @@ add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
 
+    <para>Using Shorewall 4.4.16 or later, you can also invoke the action this
+    way: </para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit(SSHA,3,60):none  net               $FW            tcp         22</programlisting>
+
     <para>If you want dropped connections to be logged at the info level, use
     this rule instead:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit:info:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>Shorewall 4.4.16 and later:<programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit(SSH,3,60):info   net               $FW            tcp         22</programlisting></para>
 
     <para>To summarize, you pass four pieces of information to the Limit
     action:</para>
@@ -604,33 +620,32 @@ Limit:info:SSHA,3,60   net               $FW            tcp         22</programl
     <section id="LimitImp">
       <title>How Limit is Implemented</title>
 
-      <para>For those who are curious, the Limit action is implemented as
-      follows:</para>
+      <para>For those who are curious, the Limit action in Shorewall 4.4.16 is
+      implemented as follows:</para>
 
       <programlisting>use Shorewall::Chains;
 
-my @tag = split /,/, $tag;
+@params = split /,/, $tag unless @params;
 
-fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag (' . join( ':', 'Limit', $level eq '' ? 'none' : $level , $tag ) . ')'
-    unless @tag == 3;
+fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag or params' unless @params == 3;
 
 my $list = $tag[0];
 
 for ( @tag[1,2] ) {
-    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
+    fatal_error 'Max connections and interval in Limit rules must be numeric (' . $_ . ')' unless /^\d+$/
 }
 
-my $count = $tag[1] + 1;
+my $count = $params[1] + 1;
 
 add_rule $chainref, "-m recent --name $list --set";
 
 if ( $level ) {
     my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
-    log_rule_limit $level, $xchainref, $tag[0], 'DROP', '', '', 'add', '';
+    log_rule_limit $level, $xchainref, $params[0], 'DROP', '', '', 'add', '';
     add_rule $xchainref, '-j DROP';
-    add_rule $chainref,  "-m recent --name $list --update --seconds $tag[2] --hitcount $count -j $xchainref-&gt;{name}";
+    add_rule $chainref,  "-m recent --name $list --update --seconds $params[2] --hitcount $count -j $xchainref-&gt;{name}";
 } else {
-    add_rule $chainref, "-m recent --update --name $list --seconds $tag[2] --hitcount $count -j DROP";
+    add_rule $chainref, "-m recent --update --name $list --seconds $params[2] --hitcount $count -j DROP";
 }
 
 add_rule $chainref, '-j ACCEPT';

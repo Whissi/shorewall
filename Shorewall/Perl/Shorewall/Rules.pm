@@ -305,6 +305,8 @@ sub process_actions1() {
 
 	    push_open( $actionfile );
 
+	    my $actiontype = 0;
+
 	    while ( read_a_line ) {
 
 		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
@@ -313,28 +315,28 @@ sub process_actions1() {
 		# deals with the target and the parameter. We pass undef for the rest so we'll
 		# know if we try to use one of them.
 		#
-		process_rule_common( $action ,
-				     $wholetarget ,
-				     '' ,   # Current Param
-				     undef, # source
-				     undef, # dest
-				     undef, # proto
-				     undef, # ports
-				     undef, # sports
-				     undef, # origdest
-				     undef, # ratelimit
-				     undef, # user
-				     undef, # mark
-				     undef, # connlimit
-				     undef, # time
-				     undef, # headers
-				     undef  # wildcard	     
-				   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
+		$actiontype |= process_rule_common( $action ,
+						    $wholetarget ,
+						    '' ,   # Current Param
+						    undef, # source
+						    undef, # dest
+						    undef, # proto
+						    undef, # ports
+						    undef, # sports
+						    undef, # origdest
+						    undef, # ratelimit
+						    undef, # user
+						    undef, # mark
+						    undef, # connlimit
+						    undef, # time
+						    undef, # headers
+						    undef  # wildcard	     
+						  ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
 	    }
 
 	    pop_open;
 
-	    $targets{$action} |= ACTION;
+	    $targets{$action} = ACTION | $actiontype;
 	}
     }
 }
@@ -829,17 +831,12 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     }
-
-    if  ( $inaction1 ) {
-	#
-	# We need to transfer the NAT-oriented flags to the action itself
-	#
-	$targets{$inaction1} |= ( $actiontype & ( NATRULE | NONAT | NATONLY ) );
-	#
-	# That's all for the first pass
-	#
-	return 1;
-    }
+    
+    #
+    # Return the NAT-oriented flags to the caller who will eventually add them
+    # to $targets{$inaction1}
+    #
+    return ( $actiontype & ( NATRULE | NONAT | NATONLY ) ) if $inaction1;
 
     #
     # Take care of irregular syntax and targets

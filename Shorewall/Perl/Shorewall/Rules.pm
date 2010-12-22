@@ -315,6 +315,9 @@ sub process_actions1() {
 		# deals with the target and the parameter. We pass undef for the rest so we'll
 		# know if we try to use one of them.
 		#
+		# process_rule_common() returns the NAT-oriented actiontype flags for the target
+		# of the rule. Those are LORed into the action's type below.
+		#
 		$actiontype |= process_rule_common( $action ,
 						    $wholetarget ,
 						    '' ,   # Current Param

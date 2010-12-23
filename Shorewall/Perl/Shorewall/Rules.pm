@@ -304,7 +304,10 @@ sub process_actions1() {
 	    progress_message2 "   Pre-processing $actionfile...";
 
 	    push_open( $actionfile );
-
+	    #
+	    # We defer assigning a type to the action until we've processed it's action file.
+	    # This allows us to easily catch the case where an action invokes itself.
+	    #
 	    my $actiontype = 0;
 
 	    while ( read_a_line ) {

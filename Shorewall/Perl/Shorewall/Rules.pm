@@ -315,8 +315,9 @@ sub process_actions1() {
 		# deals with the target and the parameter. We pass undef for the rest so we'll
 		# know if we try to use one of them.
 		#
-		# process_rule_common() returns the NAT-oriented actiontype flags for the target
-		# of the rule. Those are LORed into the action's type below.
+		# process_rule_common() returns the NATONLY actiontype flag if the target
+		# of the rule includes NATRULE, NATONLY or NONAT. The flag is LORed into the
+		# action's type below.
 		#
 		$actiontype |= process_rule_common( $action ,
 						    $wholetarget ,
@@ -837,14 +838,12 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     }
-    
+
     #
     # Return the NATRULE flag to the caller who will eventually add it
     # to $targets{$inaction1}
     #
-    if ( $inaction1 ) {
-	return ( $actiontype & ( NATRULE | NONAT | NATONLY ) ) ? NATRULE : 0;
-    }
+    return ( $actiontype & ( NATRULE | NONAT | NATONLY ) ) ? NATRULE : 0 if $inaction1;
     #
     # Take care of irregular syntax and targets
     #
@@ -941,7 +940,6 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 
-    my ( $chain, $policy );
     #
     # For compatibility with older Shorewall versions
     #
@@ -950,6 +948,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
     # Take care of chain
     #
+    my ( $chain, $policy );
+
     if ( $inaction3 ) {
 	$chain = $chainref->{name};
     } else { 
@@ -1001,7 +1001,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
     if ( $actiontype & ( NATRULE | NONAT ) && ! ( $actiontype & NATONLY ) ) {
 	#
-	# Either a DNAT, REDIRECT or ACCEPT+ rule; don't apply rate limiting twice
+	# Either a DNAT, REDIRECT or ACCEPT+ rule or an Action with NAT;
+	# don't apply rate limiting twice
 	#
 	$rule = join( '',
 		      do_proto($proto, $ports, $sports),

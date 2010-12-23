@@ -824,10 +824,13 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     # Handle actions
     #
     if ( $actiontype & ACTION ) {
+	#
+	# Create the action:level:tag:param tupple.
+	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 	
 	if ( $inaction1 ) {
-	    add_requiredby( $target , $inaction1 );
+	    add_requiredby( $normalized_target , $inaction1 );
 	} else {
 	    if ( my $ref = use_action( $normalized_target ) ) {
 		new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT );

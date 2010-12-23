@@ -262,7 +262,7 @@ sub map_old_actions( $ ) {
 #
 # The final phase (process_actions3) traverses the keys of %usedactions populating each chain appropriately
 # by reading the related action definition file and creating rules. Note that a given action definition file is
-# processed once for each unique [:level[:tag]] applied to an invocation of the action.
+# processed once for each unique [:level[:tag]][:param] applied to an invocation of the action.
 #
 
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );

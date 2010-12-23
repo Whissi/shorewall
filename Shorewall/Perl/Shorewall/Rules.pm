@@ -833,17 +833,18 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    add_requiredby( $normalized_target , $inaction1 );
 	} else {
 	    if ( my $ref = use_action( $normalized_target ) ) {
-		new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT );
+		new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT | NATONLY );
 	    }
 	}
     }
     
     #
-    # Return the NAT-oriented flags to the caller who will eventually add them
+    # Return the NATRULE flag to the caller who will eventually add it
     # to $targets{$inaction1}
     #
-    return ( $actiontype & ( NATRULE | NONAT | NATONLY ) ) if $inaction1;
-
+    if ( $inaction1 ) {
+	return ( $actiontype & ( NATRULE | NONAT | NATONLY ) ) ? NATRULE : 0;
+    }
     #
     # Take care of irregular syntax and targets
     #
@@ -878,8 +879,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
     # Isolate and validate source and destination zones
     #
-    my $sourcezone;
-    my $destzone;
+    my $sourcezone = '-';
+    my $destzone = '-';
     my $sourceref;
     my $destref;
     my $origdstports;
@@ -949,11 +950,10 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
     # Take care of chain
     #
-
-    unless ( $actiontype & NATONLY ) {
-	if ( $inaction3 ) {
-	    $chain = $chainref->{name};
-	} else {
+    if ( $inaction3 ) {
+	$chain = $chainref->{name};
+    } else { 
+	unless ( $actiontype & NATONLY ) {
 	    #
 	    # Check for illegal bridge port rule
 	    #

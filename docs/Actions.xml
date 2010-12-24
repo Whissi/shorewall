@@ -224,6 +224,9 @@ ACCEPT   -              -               tcp     135,139,445
 
       <para>When using Shorewall 4.4.16 or later, there are no restrictions
       regarding which targets can be used within your action.</para>
+
+      <para>The SOURCE and DEST columns in the action file may not include
+      zone names; those are given when the action is invoked.</para>
     </section>
 
     <section>
@@ -578,7 +581,7 @@ add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
 Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
 
     <para>Using Shorewall 4.4.16 or later, you can also invoke the action this
-    way: </para>
+    way:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit(SSHA,3,60):none  net               $FW            tcp         22</programlisting>

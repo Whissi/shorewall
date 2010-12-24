@@ -120,7 +120,7 @@
       </listitem>
     </orderedlist>
 
-    <para>In Squeeze, there are five packages:</para>
+    <para>In Squeeze, there are six slightly different packages:</para>
 
     <orderedlist>
       <listitem>
@@ -142,6 +142,12 @@
       <listitem>
         <para>shorewall6-lite — Similar to shorewall-lite, except that it only
         runs IPv6 firewall scripts.</para>
+      </listitem>
+
+      <listitem>
+        <para>shorewall-init — Allows the firewall to be closed before
+        interfaces are brought up and also allows the firewall to react to
+        interfaces coming up and going down.</para>
       </listitem>
 
       <listitem>
@@ -223,8 +229,8 @@
             by Shorewall 4.4.x</emphasis></para>
 
             <para>You should not be receiving this error if you are upgrading
-            from Lenny since BRIDGING=Yes did not work in that
-            release<footnote>
+            from Lenny since BRIDGING=Yes did not work in that release
+            either<footnote>
                 <para>If you are upgrading from a release using a kernel
                 earlier than 2.6.20, then BRIDGING=Yes did work correctly with
                 Shorewall-shell.</para>
@@ -424,8 +430,8 @@ loc     Local           The local LAN</programlisting>
 #                                       OPTIONS                 OPTIONS</programlisting>
 
       <para>You will need to add an entry for your firewall zone. The default
-      name for the firewall zone is 'fw' but may have been overriden using
-      <link linkend="FW">the FW option in
+      name for the firewall zone is 'fw' but may have been overriden in your
+      old configuration using <link linkend="FW">the FW option in
       <filename>shorewall.conf</filename></link>.</para>
 
       <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT

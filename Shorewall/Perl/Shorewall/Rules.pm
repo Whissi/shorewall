@@ -297,6 +297,8 @@ sub process_actions1() {
 
 	    new_action $action;
 
+	    $targets{$action} = ACTION;
+
 	    my $actionfile = find_file "action.$action";
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
@@ -304,12 +306,7 @@ sub process_actions1() {
 	    progress_message2 "   Pre-processing $actionfile...";
 
 	    push_open( $actionfile );
-	    #
-	    # We defer assigning a type to the action until we've processed it's action file.
-	    # This allows us to easily catch the case where an action invokes itself.
-	    #
-	    my $actiontype = 0;
-
+	    
 	    while ( read_a_line ) {
 
 		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
@@ -318,32 +315,26 @@ sub process_actions1() {
 		# deals with the target and the parameter. We pass undef for the rest so we'll
 		# know if we try to use one of them.
 		#
-		# process_rule_common() returns the NATONLY actiontype flag if the target
-		# of the rule includes NATRULE, NATONLY or NONAT. The flag is LORed into the
-		# action's type below.
-		#
-		$actiontype |= process_rule_common( $action ,
-						    $wholetarget ,
-						    '' ,   # Current Param
-						    undef, # source
-						    undef, # dest
-						    undef, # proto
-						    undef, # ports
-						    undef, # sports
-						    undef, # origdest
-						    undef, # ratelimit
-						    undef, # user
-						    undef, # mark
-						    undef, # connlimit
-						    undef, # time
-						    undef, # headers
-						    undef  # wildcard	     
-						  ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
+		process_rule_common( $action ,
+				     $wholetarget ,
+				     '' ,   # Current Param
+				     undef, # source
+				     undef, # dest
+				     undef, # proto
+				     undef, # ports
+				     undef, # sports
+				     undef, # origdest
+				     undef, # ratelimit
+				     undef, # user
+				     undef, # mark
+				     undef, # connlimit
+				     undef, # time
+				     undef, # headers
+				     undef  # wildcard	     
+				   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
 	    }
 
 	    pop_open;
-
-	    $targets{$action} = ACTION | $actiontype;
 	}
     }
 }
@@ -839,6 +830,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 	
 	if ( $inaction1 ) {
+	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
 	    add_requiredby( $normalized_target , $inaction1 );
 	} else {
 	    if ( my $ref = use_action( $normalized_target ) ) {
@@ -847,11 +839,10 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 
-    #
-    # Return the NATRULE flag to the caller who will eventually add it
-    # to $targets{$inaction1}
-    #
-    return ( $actiontype & ( NATRULE | NONAT | NATONLY ) ) ? NATRULE : 0 if $inaction1;
+    if ( $inaction1 ) {
+	$targets{$inaction1} |= NATRULE if $actiontype & (NATRULE | NONAT | NATONLY );
+	return 1;
+    } 
     #
     # Take care of irregular syntax and targets
     #

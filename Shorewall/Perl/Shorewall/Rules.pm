@@ -42,7 +42,7 @@ our @EXPORT = qw(
 		  process_actions3
 
 		  process_rules
-		  );
+	       );
 
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.4_16';
@@ -58,9 +58,10 @@ our @builtins;
 #
 our $rule_commands = { COMMENT => 0, FORMAT => 2 };
 
-use constant { MAX_MACRO_NEST_LEVEL => 5 };
+use constant { MAX_MACRO_NEST_LEVEL => 5 , MAX_ACTION_NEST_LEVEL => 5 };
 
 our $macro_nest_level;
+our $action_nest_level;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -73,10 +74,10 @@ our $macro_nest_level;
 #      able to re-initialize its dependent modules' state.
 #
 sub initialize( $ ) {
-
-    $family           = shift;
-    %macros           = ();
-    $macro_nest_level = 0;
+    $family            = shift;
+    %macros            = ();
+    $macro_nest_level  = 0;
+    $action_nest_level = 0;
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
@@ -248,17 +249,15 @@ sub map_old_actions( $ ) {
 # to the target table (%Shorewall::Chains::targets) and actions table, then ${SHAREDIR}/actions.std and
 # ${CONFDIR}/actions are scanned (in that order). For each action:
 #
-#      a) The related action definition file is located and scanned.
-#      b) Forward and unresolved action references are trapped as errors.
-#      c) A dependency graph is created using the 'requires' field in the 'actions' table.
+#      a) The related action definition file is located.
+#      a) The action is added to the target table
 #
-# As the rules file is scanned, each action[:level[:tag]] is merged onto the 'usedactions' hash. When an <action>
-# is merged into the hash, its action chain is created. Where logging is specified, a chain with the name
-# %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
-# length of the chain name does not exceed 30 characters.
+# The second phase (process_actions2) occurs after the policy file is scanned. Each default action's file
+# is processed by process_action2(). That function recursively processes action files up the action 
+# invocation tree, adding to the %usedactions hash as each new action is discovered.
 #
-# The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of
-# %usedactions is generated; again, as new actions are merged into the hash, their action chains are created.
+# During rules file processing, process_action2() is called when a new action:level:tag:params is encountered.
+# Again, each new such tupple is entered into the %usedactions hash.
 #
 # The final phase (process_actions3) traverses the keys of %usedactions populating each chain appropriately
 # by reading the related action definition file and creating rules. Note that a given action definition file is
@@ -267,7 +266,7 @@ sub map_old_actions( $ ) {
 
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
-sub process_action1( $ ) {
+sub process_action2( $ ) {
     my $wholeaction = shift;
     my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
     my $actionfile  = find_file "action.$action";
@@ -276,8 +275,10 @@ sub process_action1( $ ) {
 
     progress_message2 "   Pre-processing $actionfile...";
 
+    fatal_error "Actions nested too deeply" if ++$action_nest_level > MAX_ACTION_NEST_LEVEL;
+
     push_open( $actionfile );
-	    
+ 
     while ( read_a_line ) {
 
 	my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
@@ -304,8 +305,10 @@ sub process_action1( $ ) {
 			     undef  # wildcard	     
 			   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
     }
-    
+
     pop_open;
+
+    --$action_nest_level;
 }
 
 sub process_actions1() {
@@ -343,8 +346,6 @@ sub process_actions1() {
 	    my $actionfile = find_file "action.$action";
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
-
-	    process_action1 normalize_action_name $action;
 	}
     }
 }
@@ -375,27 +376,12 @@ sub merge_action_levels( $$ ) {
 }
 
 sub process_actions2 () {
-    progress_message2 'Generating Transitive Closure of Used-action List...';
+    progress_message2 "Pre-processing default actions...";
 
-    my $changed = 1;
-    my $passes  = 0;
-
-    while ( $changed ) {
-	$changed = 0;
-	$passes++;
-
-	for my $target (keys %usedactions) {
-	    my ( $action, $level, $tag, $param ) = split ':', $target;
-	    my $actionref = $actions{$action};
-	    assert( $actionref );
-	    for my $action1 ( keys %{$actionref->{requires}} ) {
-		my $action2 = merge_action_levels( $target, $action1 );
-		$changed = 1 if use_action( $action2 );
-	    }
-	}
+    for my $action ( keys %usedactions ) {
+	my ( $basic_action, undef, undef, undef ) = split /:/, $action;
+	process_action2( $action ) unless $targets{$basic_action} & BUILTIN;
     }
-
-    progress_message2 "Transitive Closure generated in $passes passes";
 }
 
 #
@@ -603,6 +589,7 @@ sub process_actions3 () {
 		       'Limit'          => \&Limit, );
 
     while ( my ( $wholeaction, $chainref ) = each %usedactions ) {
+	assert( $chainref->{name} );
 	my ( $action, $level, $tag, $param ) = split /:/, $wholeaction;
 
 	if ( $targets{$action} & BUILTIN ) {
@@ -734,7 +721,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 #
 sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action3()
-                      # if defined, we are being called from process_action1() and this is the name of the action
+                      # if defined, we are being called from process_action2() and this is the name of the action
 	 $target, 
 	 $current_param,
 	 $source,
@@ -755,7 +742,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
-    my $inaction1;
+    my $inaction1 = '';
     my $inaction3;
     my $normalized_target;
     my $normalized_action;
@@ -839,14 +826,15 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	# Create the action:level:tag:param tupple.
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
-	
-	if ( $inaction1 ) {
-	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
-	    add_requiredby( $normalized_target , $inaction1 );
-	} else {
+
+	if (  $inaction3 ) {
 	    if ( my $ref = use_action( $normalized_target ) ) {
-		new_nat_chain $ref->{name} if $actiontype & ( NATRULE | NONAT | NATONLY );
+		new_nat_chain $ref->{name} if ( $actiontype = $targets{$basictarget} ) & NATRULE;
 	    }
+	} else {
+	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
+	    process_action2( $normalized_target ) if use_action( $normalized_target ) && ! ( $actiontype & BUILTIN );
+	    $actiontype = $targets{$basictarget};
 	}
     }
 

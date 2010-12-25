@@ -267,6 +267,46 @@ sub map_old_actions( $ ) {
 
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
+sub process_action1( $ ) {
+    my $action     = shift;
+    my $actionfile = find_file "action.$action";
+
+    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+
+    progress_message2 "   Pre-processing $actionfile...";
+
+    push_open( $actionfile );
+	    
+    while ( read_a_line ) {
+
+	my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
+	#
+	# When passed an action name in the first argument, process_rule_common() only
+	# deals with the target and the parameter. We pass undef for the rest so we'll
+	# know if we try to use one of them.
+	#
+	process_rule_common( $action ,
+			     $wholetarget ,
+			     '' ,   # Current Param
+			     undef, # source
+			     undef, # dest
+			     undef, # proto
+			     undef, # ports
+			     undef, # sports
+			     undef, # origdest
+			     undef, # ratelimit
+			     undef, # user
+			     undef, # mark
+			     undef, # connlimit
+			     undef, # time
+			     undef, # headers
+			     undef  # wildcard	     
+			   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
+    }
+    
+    pop_open;
+}
+
 sub process_actions1() {
 
     progress_message2 "Preprocessing Action Files...";
@@ -303,38 +343,7 @@ sub process_actions1() {
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-	    progress_message2 "   Pre-processing $actionfile...";
-
-	    push_open( $actionfile );
-	    
-	    while ( read_a_line ) {
-
-		my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
-		#
-		# When passed an action name in the first argument, process_rule_common() only
-		# deals with the target and the parameter. We pass undef for the rest so we'll
-		# know if we try to use one of them.
-		#
-		process_rule_common( $action ,
-				     $wholetarget ,
-				     '' ,   # Current Param
-				     undef, # source
-				     undef, # dest
-				     undef, # proto
-				     undef, # ports
-				     undef, # sports
-				     undef, # origdest
-				     undef, # ratelimit
-				     undef, # user
-				     undef, # mark
-				     undef, # connlimit
-				     undef, # time
-				     undef, # headers
-				     undef  # wildcard	     
-				   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
-	    }
-
-	    pop_open;
+	    process_action1( $action );
 	}
     }
 }

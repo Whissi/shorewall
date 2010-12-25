@@ -377,9 +377,12 @@ sub process_actions2 () {
     progress_message2 'Generating Transitive Closure of Used-action List...';
 
     my $changed = 1;
+    my $passes  = 0;
 
     while ( $changed ) {
 	$changed = 0;
+	$passes++;
+
 	for my $target (keys %usedactions) {
 	    my ( $action, $level, $tag, $param ) = split ':', $target;
 	    my $actionref = $actions{$action};
@@ -390,6 +393,8 @@ sub process_actions2 () {
 	    }
 	}
     }
+
+    progress_message2 "Transitive Closure generated in $passes passes";
 }
 
 #

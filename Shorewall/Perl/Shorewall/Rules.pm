@@ -268,8 +268,9 @@ sub map_old_actions( $ ) {
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
 sub process_action1( $ ) {
-    my $action     = shift;
-    my $actionfile = find_file "action.$action";
+    my $wholeaction = shift;
+    my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
+    my $actionfile  = find_file "action.$action";
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
@@ -285,7 +286,7 @@ sub process_action1( $ ) {
 	# deals with the target and the parameter. We pass undef for the rest so we'll
 	# know if we try to use one of them.
 	#
-	process_rule_common( $action ,
+	process_rule_common( $wholeaction ,
 			     $wholetarget ,
 			     '' ,   # Current Param
 			     undef, # source
@@ -343,7 +344,7 @@ sub process_actions1() {
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-	    process_action1( $action );
+	    process_action1 normalize_action_name $action;
 	}
     }
 }
@@ -757,12 +758,13 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my $inaction1;
     my $inaction3;
     my $normalized_target;
+    my $normalized_action;
  
     if ( defined $chainref ) {
 	if ( reftype $chainref ) {
 	    $inaction3 = 1;
 	} else {
-	    $inaction1 = $chainref;
+	    ( $inaction1, undef, undef, undef ) = split /:/, $normalized_action = $chainref;
 	}
     }	
 

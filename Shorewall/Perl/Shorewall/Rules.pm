@@ -278,6 +278,8 @@ sub process_action2( $ ) {
     fatal_error "Actions nested too deeply" if ++$action_nest_level > MAX_ACTION_NEST_LEVEL;
 
     push_open( $actionfile );
+
+    my $oldparms = push_params( $param );
  
     while ( read_a_line ) {
 
@@ -309,6 +311,8 @@ sub process_action2( $ ) {
     pop_open;
 
     --$action_nest_level;
+
+    pop_params( $oldparms );
 }
 
 sub process_actions1() {
@@ -398,6 +402,8 @@ sub process_action3( $$$$$$ ) {
 
     open_file $actionfile;
 
+    my $oldparms = push_params( $param );
+
     while ( read_a_line ) {
 
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
@@ -424,6 +430,8 @@ sub process_action3( $$$$$$ ) {
     }
 
     clear_comment;
+
+    pop_params( $oldparms );
 }
 
 #

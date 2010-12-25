@@ -96,6 +96,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       close_file
 				       push_open
 				       pop_open
+				       push_params
+				       pop_params
 				       read_a_line
 				       validate_level
 				       which
@@ -274,6 +276,10 @@ our @openstack;
 # From the params file
 #
 our %params;
+#
+# Action parameters
+#
+our %actparms;
 
 our $currentline;             # Current config file line image
 our $currentfile;             # File handle reference
@@ -717,6 +723,8 @@ sub initialize( $ ) {
 		command     => '',
 		files       => '',
 		destination => '' );
+
+    %actparms = ();
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -1782,6 +1790,27 @@ sub embedded_perl( $ ) {
 }
 
 #
+# Push/pop action params
+#
+sub push_params( $ ) {
+    my @params = split /,/, $_[0];
+    my $oldparams = \%actparms;
+
+    %actparms = ();
+
+    for ( my $i = 1; $i <= @params; $i++ ) {
+	$actparms{$i} = $params[$i - 1];
+    }
+
+    $oldparams;
+}
+
+sub pop_params( $ ) {
+    my $oldparms = shift;
+    %actparms = %$oldparms;
+}
+
+#
 # Read a line from the current include stack.
 #
 #   - Ignore blank or comment-only lines.
@@ -1866,7 +1895,8 @@ sub read_a_line(;$) {
 		    $params{$3} = $ENV{$3} if exists $ENV{$3};
 		}
 
-		my $val = $params{$3};
+
+		my $val = exists $params{$3} ? $params{$3} : $actparms{$3};
 
 		unless ( defined $val ) {
 		    fatal_error "Undefined shell variable (\$$3)" unless exists $params{$3} || exists $ENV{$3};

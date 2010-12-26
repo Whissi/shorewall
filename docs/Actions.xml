@@ -224,6 +224,31 @@ ACCEPT   -              -               tcp     135,139,445
 
       <para>When using Shorewall 4.4.16 or later, there are no restrictions
       regarding which targets can be used within your action.</para>
+
+      <para>Additionally, it is possible to pass parameters to an action, when
+      it is invoked in the rules file or in another action.</para>
+
+      <para>Here's a trivial example:</para>
+
+      <para>/etc/shorewall/action.A:</para>
+
+      <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
+#                                      PORT(S) PORT(S) DEST
+FORMAT 2
+$1             -       -       tcp     80      -       1.2.3.4</programlisting>
+
+      <para>/etc/shorewall/rules:</para>
+
+      <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
+#                                      PORT(S) PORT(S) DEST
+
+A(REDIRECT)    net     fw</programlisting>
+
+      <para>The above is equivalent to this rule:</para>
+
+      <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
+#                                      PORT(S) PORT(S) DEST
+REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
     </section>
 
     <section>
@@ -578,7 +603,7 @@ add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
 Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
 
     <para>Using Shorewall 4.4.16 or later, you can also invoke the action this
-    way: </para>
+    way:</para>
 
     <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
 Limit(SSHA,3,60):none  net               $FW            tcp         22</programlisting>
@@ -625,13 +650,13 @@ Limit(SSH,3,60):info   net               $FW            tcp         22</programl
 
       <programlisting>use Shorewall::Chains;
 
-@params = split /,/, $tag unless @params;
+@params = split( /,/, $tag ), $tag='' unless @params;
 
 fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag or params' unless @params == 3;
 
-my $list = $tag[0];
+my $list = $params[0];
 
-for ( @tag[1,2] ) {
+for ( @params[1,2] ) {
     fatal_error 'Max connections and interval in Limit rules must be numeric (' . $_ . ')' unless /^\d+$/
 }
 
@@ -641,7 +666,7 @@ add_rule $chainref, "-m recent --name $list --set";
 
 if ( $level ) {
     my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
-    log_rule_limit $level, $xchainref, $params[0], 'DROP', '', '', 'add', '';
+    log_rule_limit $level, $xchainref, $params[0], 'DROP', $tag, '', 'add', '';
     add_rule $xchainref, '-j DROP';
     add_rule $chainref,  "-m recent --name $list --update --seconds $params[2] --hitcount $count -j $xchainref-&gt;{name}";
 } else {

@@ -1885,25 +1885,23 @@ sub read_a_line(;$) {
 	    #
 	    # Expand Shell Variables using %params and %ENV
 	    #
-	    #                            $1      $2      $3           -     $4
+	    #                            $1      $2   $3      -     $4
 	    while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 
-		unless ( exists $params{$3} ) {
-		    #
-		    # Given the way that getparams works, this should never help but better safe than sorry
-		    #
-		    $params{$3} = $ENV{$3} if exists $ENV{$3};
+		my ( $first, $var, $rest ) = ( $1, $3, $4);
+
+		my $val;
+
+		if ( $var =~ /^\$\d+$/ ) {
+		    fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
+		    $val = $actparms{$var};
+		} else {
+		    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+		    $val = $params{$var};
 		}
 
-
-		my $val = exists $params{$3} ? $params{$3} : $actparms{$3};
-
-		unless ( defined $val ) {
-		    fatal_error "Undefined shell variable (\$$3)" unless exists $params{$3} || exists $ENV{$3};
-		    $val = '';
-		}
-
-		$currentline = join( '', $1 , $val , $4 );
+		$val = '' unless defined $val;
+		$currentline = join( '', $first , $val , $rest );
 		fatal_error "Variable Expansion Loop" if ++$count > 100;
 	    }
 

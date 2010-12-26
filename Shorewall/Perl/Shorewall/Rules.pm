@@ -266,55 +266,6 @@ sub map_old_actions( $ ) {
 
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
-sub process_action2( $ ) {
-    my $wholeaction = shift;
-    my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
-    my $actionfile  = find_file "action.$action";
-
-    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
-
-    progress_message2 "   Pre-processing $actionfile...";
-
-    fatal_error "Actions nested too deeply" if ++$action_nest_level > MAX_ACTION_NEST_LEVEL;
-
-    push_open( $actionfile );
-
-    my $oldparms = push_params( $param );
- 
-    while ( read_a_line ) {
-
-	my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
-	#
-	# When passed an action name in the first argument, process_rule_common() only
-	# deals with the target and the parameter. We pass undef for the rest so we'll
-	# know if we try to use one of them.
-	#
-	process_rule_common( $wholeaction ,
-			     $wholetarget ,
-			     '' ,   # Current Param
-			     undef, # source
-			     undef, # dest
-			     undef, # proto
-			     undef, # ports
-			     undef, # sports
-			     undef, # origdest
-			     undef, # ratelimit
-			     undef, # user
-			     undef, # mark
-			     undef, # connlimit
-			     undef, # time
-			     undef, # headers
-			     undef  # wildcard	     
-			   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
-    }
-
-    pop_open;
-
-    --$action_nest_level;
-
-    pop_params( $oldparms );
-}
-
 sub process_actions1() {
 
     progress_message2 "Preprocessing Action Files...";
@@ -377,6 +328,55 @@ sub merge_action_levels( $$ ) {
     $subparam = $supparam unless defined $subparam && $subparam ne '';
 
     join ':', $action, $sublevel, $subtag, $subparam;
+}
+
+sub process_action2( $ ) {
+    my $wholeaction = shift;
+    my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
+    my $actionfile  = find_file "action.$action";
+
+    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+
+    progress_message2 "   Pre-processing $actionfile...";
+
+    fatal_error "Actions nested too deeply" if ++$action_nest_level > MAX_ACTION_NEST_LEVEL;
+
+    push_open( $actionfile );
+
+    my $oldparms = push_params( $param );
+ 
+    while ( read_a_line ) {
+
+	my ($wholetarget, @rest ) = split_line1 1, 13, 'action file' , $rule_commands;
+	#
+	# When passed an action name in the first argument, process_rule_common() only
+	# deals with the target and the parameter. We pass undef for the rest so we'll
+	# know if we try to use one of them.
+	#
+	process_rule_common( $wholeaction ,
+			     $wholetarget ,
+			     '' ,   # Current Param
+			     undef, # source
+			     undef, # dest
+			     undef, # proto
+			     undef, # ports
+			     undef, # sports
+			     undef, # origdest
+			     undef, # ratelimit
+			     undef, # user
+			     undef, # mark
+			     undef, # connlimit
+			     undef, # time
+			     undef, # headers
+			     undef  # wildcard	     
+			   ) unless $wholetarget eq 'FORMAT' || $wholetarget eq 'COMMENT';
+    }
+
+    pop_open;
+
+    --$action_nest_level;
+
+    pop_params( $oldparms );
 }
 
 sub process_actions2 () {

@@ -1892,7 +1892,7 @@ sub read_a_line(;$) {
 
 		my $val;
 
-		if ( $var =~ /^\$\d+$/ ) {
+		if ( $var =~ /^\d+$/ ) {
 		    fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
 		    $val = $actparms{$var};
 		} else {
@@ -2739,7 +2739,7 @@ sub ensure_config_path() {
 
 	open_file $f;
 
-	$ENV{CONFDIR} = $globals{CONFDIR};
+	$params{CONFDIR} = $globals{CONFDIR};
 
 	while ( read_a_line ) {
 	    if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {

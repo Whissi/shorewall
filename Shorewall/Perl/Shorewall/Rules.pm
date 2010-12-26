@@ -835,15 +835,13 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
-	if (  $inaction3 ) {
-	    if ( my $ref = use_action( $normalized_target ) ) {
-		new_nat_chain $ref->{name} if ( $actiontype = $targets{$basictarget} ) & NATRULE;
-	    }
-	} else {
+	unless (  $inaction3 ) {
 	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
 	    process_action2( $normalized_target ) if use_action( $normalized_target ) && ! ( $actiontype & BUILTIN );
 	    $actiontype = $targets{$basictarget};
 	}
+
+	$action = $basictarget; # Remove params, if any, from $action.
     }
 
     if ( $inaction1 ) {

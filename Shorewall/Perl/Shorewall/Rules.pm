@@ -203,15 +203,7 @@ sub new_action( $ ) {
 
     my $action = $_[0];
 
-    $actions{$action} = { actchain => '', requires => {} };
-}
-
-#
-# Record a 'requires' relationship between a pair of actions.
-#
-sub add_requiredby ( $$ ) {
-    my ($requiredby , $requires ) = @_;
-    $actions{$requires}{requires}{$requiredby} = 1;
+    $actions{$action} = { actchain => '' };
 }
 
 #
@@ -597,7 +589,6 @@ sub process_actions3 () {
 		       'Limit'          => \&Limit, );
 
     while ( my ( $wholeaction, $chainref ) = each %usedactions ) {
-	assert( $chainref->{name} );
 	my ( $action, $level, $tag, $param ) = split /:/, $wholeaction;
 
 	if ( $targets{$action} & BUILTIN ) {

@@ -1800,7 +1800,8 @@ sub push_params( $ ) {
 
     for ( my $i = 1; $i <= @params; $i++ ) {
 	my $val = $params[$i - 1];
-	$actparms{$i} = $val eq '-' ? '' : $val;
+
+	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
     $oldparams;

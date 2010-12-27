@@ -227,6 +227,40 @@ ACCEPT   -              -               tcp     135,139,445
 
       <para>The SOURCE and DEST columns in the action file may not include
       zone names; those are given when the action is invoked.</para>
+
+      <para>Additionally, it is possible to pass parameters to an action, when
+      it is invoked in the rules file or in another action.</para>
+
+      <para>Here's a trivial example:</para>
+
+      <para>/etc/shorewall/action.A:</para>
+
+      <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
+#                                      PORT(S) PORT(S) DEST
+FORMAT 2
+$1             -       -       tcp     80      -       1.2.3.4</programlisting>
+
+      <para>/etc/shorewall/rules:</para>
+
+      <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
+#                                      PORT(S) PORT(S) DEST
+
+A(REDIRECT)    net     fw</programlisting>
+
+      <para>The above is equivalent to this rule:</para>
+
+      <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
+#                                      PORT(S) PORT(S) DEST
+REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
+
+      <para>You can 'omit' parameters by using '-'.</para>
+
+      <para>Example: ACTION(REDIRECT,-,info)</para>
+
+      <para>In the above example, $2 would expand to nothing.</para>
+
+      <para>If you want to make '-' a parameter value, use '--' (e.g.,
+      ACTION(REDIRECT,--.info)).</para>
     </section>
 
     <section>
@@ -520,7 +554,8 @@ bar:debug</programlisting>
 
         <listitem>
           <para><emphasis role="bold">@params</emphasis> is the list of
-          parameter values (Shorewall 4.4.16 and later).</para>
+          parameter values (Shorewall 4.4.16 and later). 'Omitted' parameters
+          contain '-'.</para>
         </listitem>
       </itemizedlist>
 
@@ -628,13 +663,13 @@ Limit(SSH,3,60):info   net               $FW            tcp         22</programl
 
       <programlisting>use Shorewall::Chains;
 
-@params = split /,/, $tag unless @params;
+@params = split( /,/, $tag ), $tag='' unless @params;
 
 fatal_error 'Limit rules must include &lt;list name&gt;,&lt;max connections&gt;,&lt;interval&gt; as the log tag or params' unless @params == 3;
 
-my $list = $tag[0];
+my $list = $params[0];
 
-for ( @tag[1,2] ) {
+for ( @params[1,2] ) {
     fatal_error 'Max connections and interval in Limit rules must be numeric (' . $_ . ')' unless /^\d+$/
 }
 
@@ -644,7 +679,7 @@ add_rule $chainref, "-m recent --name $list --set";
 
 if ( $level ) {
     my $xchainref = new_chain 'filter' , "$chainref-&gt;{name}%";
-    log_rule_limit $level, $xchainref, $params[0], 'DROP', '', '', 'add', '';
+    log_rule_limit $level, $xchainref, $params[0], 'DROP', $tag, '', 'add', '';
     add_rule $xchainref, '-j DROP';
     add_rule $chainref,  "-m recent --name $list --update --seconds $params[2] --hitcount $count -j $xchainref-&gt;{name}";
 } else {

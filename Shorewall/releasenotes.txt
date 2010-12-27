@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 6
-                                   R C  1
+                                  R C  I
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,6 +13,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+Beta 7
+
+None.
 
 Beta 6
 
@@ -120,8 +124,17 @@ Beta 1
     and in macros invoked from Actions. Additionally, Macros used in
     Actions are now free to invoke other actions.
 
-4)  There is now limited support for parameterized actions. Currently,
-    the parameters are only available to extensions scripts. See
+4)  There is now support for parameterized actions. The parameters are
+    a comma-separated list enclosed in parentheses following the
+    action name (e.g., ACT(REDIRECT,192.168.1.4)). Within the action
+    body, the parameter values are available in $1, $2, etc.
+
+    You can 'omit' a parameter in the list by using '-' (e,g,
+    REDIRECT,-.info) would omit the second parameter (within the action
+    body, $2 would expand to nothing). If you want to specify '-' as an
+    parameter value, use '--'.
+    
+    Parameter values are also available to extensions scripts. See
     http://www.shorewall.net/Actions.html#Extension for more
     information.
 

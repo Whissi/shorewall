@@ -109,8 +109,10 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt Contrib/* Samples
 
 %changelog
-* Wed Dec 22 2010 Tom Eastep tom@shorewall.net
+* Sun Dec 26 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.16-0RC1
+* Sun Dec 26 2010 Tom Eastep tom@shorewall.net
+- Updated to 4.4.16-0Beta7
 * Mon Dec 20 2010 Tom Eastep tom@shorewall.net
 - Updated to 4.4.16-0Beta6
 * Fri Dec 10 2010 Tom Eastep tom@shorewall.net

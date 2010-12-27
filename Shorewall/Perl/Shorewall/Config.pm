@@ -96,6 +96,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       close_file
 				       push_open
 				       pop_open
+				       push_params
+				       pop_params
 				       read_a_line
 				       validate_level
 				       which
@@ -274,6 +276,10 @@ our @openstack;
 # From the params file
 #
 our %params;
+#
+# Action parameters
+#
+our %actparms;
 
 our $currentline;             # Current config file line image
 our $currentfile;             # File handle reference
@@ -717,6 +723,8 @@ sub initialize( $ ) {
 		command     => '',
 		files       => '',
 		destination => '' );
+
+    %actparms = ();
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -1782,6 +1790,29 @@ sub embedded_perl( $ ) {
 }
 
 #
+# Push/pop action params
+#
+sub push_params( $ ) {
+    my @params = split /,/, $_[0];
+    my $oldparams = \%actparms;
+
+    %actparms = ();
+
+    for ( my $i = 1; $i <= @params; $i++ ) {
+	my $val = $params[$i - 1];
+
+	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
+    }
+
+    $oldparams;
+}
+
+sub pop_params( $ ) {
+    my $oldparms = shift;
+    %actparms = %$oldparms;
+}
+
+#
 # Read a line from the current include stack.
 #
 #   - Ignore blank or comment-only lines.
@@ -1856,24 +1887,23 @@ sub read_a_line(;$) {
 	    #
 	    # Expand Shell Variables using %params and %ENV
 	    #
-	    #                            $1      $2      $3           -     $4
+	    #                            $1      $2   $3      -     $4
 	    while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 
-		unless ( exists $params{$3} ) {
-		    #
-		    # Given the way that getparams works, this should never help but better safe than sorry
-		    #
-		    $params{$3} = $ENV{$3} if exists $ENV{$3};
+		my ( $first, $var, $rest ) = ( $1, $3, $4);
+
+		my $val;
+
+		if ( $var =~ /^\d+$/ ) {
+		    fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
+		    $val = $actparms{$var};
+		} else {
+		    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+		    $val = $params{$var};
 		}
 
-		my $val = $params{$3};
-
-		unless ( defined $val ) {
-		    fatal_error "Undefined shell variable (\$$3)" unless exists $params{$3} || exists $ENV{$3};
-		    $val = '';
-		}
-
-		$currentline = join( '', $1 , $val , $4 );
+		$val = '' unless defined $val;
+		$currentline = join( '', $first , $val , $rest );
 		fatal_error "Variable Expansion Loop" if ++$count > 100;
 	    }
 
@@ -2711,7 +2741,7 @@ sub ensure_config_path() {
 
 	open_file $f;
 
-	$ENV{CONFDIR} = $globals{CONFDIR};
+	$params{CONFDIR} = $globals{CONFDIR};
 
 	while ( read_a_line ) {
 	    if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {

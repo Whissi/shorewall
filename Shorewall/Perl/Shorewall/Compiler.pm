@@ -637,6 +637,10 @@ sub compiler {
     #
     validate_policy;
     #
+    # Process default actions
+    #
+    process_actions2;
+    #
     #                                       N O T R A C K
     #                           (Produces no output to the compiled script)
     #
@@ -761,7 +765,6 @@ sub compiler {
     #
     # Post-rules action processing.
     #
-    process_actions2;
     process_actions3;
     #
     # MACLIST Filtration again

@@ -836,8 +836,10 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
 	unless (  $inaction3 ) {
 	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
-	    process_action2( $normalized_target ) if use_action( $normalized_target ) && ! ( $actiontype & BUILTIN );
-	    $actiontype = $targets{$basictarget};
+	    if ( my $ref = use_action( $normalized_target ) ) {
+		process_action2( $normalized_target ) unless $actiontype & BUILTIN;
+		ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
+	    }
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.

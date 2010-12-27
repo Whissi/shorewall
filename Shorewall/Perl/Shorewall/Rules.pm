@@ -837,8 +837,22 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	unless (  $inaction3 ) {
 	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
 	    if ( my $ref = use_action( $normalized_target ) ) {
-		process_action2( $normalized_target ) unless $actiontype & BUILTIN;
-		ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
+		#
+		# First reference to this tupple
+		#
+		unless ( $actiontype & BUILTIN ) {
+		    #
+		    # Not a built-in - do preprocessing
+		    #
+		    process_action2( $normalized_target );
+		    #
+		    # Preprocessing may determine that the chain or one of it's dependents does NAT. If so:
+		    #
+		    #    - Refresh $actiontype
+		    #    - Create the associate nat table chain if appropriate.
+		    #
+		    ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
+		}
 	    }
 	}
 
@@ -1105,7 +1119,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 		}
 	    }
 	} elsif ( $actiontype & ACTION ) {
-	    $target = $action;
+	    $target = $usedactions{$normalized_target}->{name};
 	} else {
 	    if ( $server eq '' ) {
 		fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;

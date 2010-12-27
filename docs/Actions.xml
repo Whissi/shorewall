@@ -249,6 +249,12 @@ A(REDIRECT)    net     fw</programlisting>
       <programlisting>#TARGET        SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL
 #                                      PORT(S) PORT(S) DEST
 REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
+
+      <para>You can 'omit' parameters by using '-'.</para>
+
+      <para>Example: ACTION(REDIRECT,-,info) </para>
+
+      <para>In the above example, $2 would expand to nothing.</para>
     </section>
 
     <section>
@@ -542,7 +548,8 @@ bar:debug</programlisting>
 
         <listitem>
           <para><emphasis role="bold">@params</emphasis> is the list of
-          parameter values (Shorewall 4.4.16 and later).</para>
+          parameter values (Shorewall 4.4.16 and later). 'Omitted' parameters
+          contain '-'.</para>
         </listitem>
       </itemizedlist>
 

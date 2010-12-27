@@ -125,12 +125,17 @@ Beta 1
     Actions are now free to invoke other actions.
 
 4)  There is now support for parameterized actions. The parameters are
-    available to extensions scripts. See
+    a comma-separated list enclosed in parentheses following the
+    action name (e.g., ACT(REDIRECT,192.168.1.4)). Within the action
+    body, the parameter values are available in $1, $2, etc.
+
+    You can 'omit' a parameter in the list by using '-' (e,g,
+    REDIRECT,-.info) would omit the second parameter (within the action
+    body, $2 would expand to nothing). 
+    
+    Parameter values are also available to extensions scripts. See
     http://www.shorewall.net/Actions.html#Extension for more
     information.
-
-    Within the action body, the parameter values are available in $1,
-    $2, etc.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

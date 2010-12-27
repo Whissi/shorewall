@@ -1799,7 +1799,8 @@ sub push_params( $ ) {
     %actparms = ();
 
     for ( my $i = 1; $i <= @params; $i++ ) {
-	$actparms{$i} = $params[$i - 1];
+	my $val = $params[$i - 1];
+	$actparms{$i} = $val eq '-' ? '' : $val;
     }
 
     $oldparams;

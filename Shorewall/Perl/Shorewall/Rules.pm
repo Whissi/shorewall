@@ -260,7 +260,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
 sub process_actions1() {
 
-    progress_message2 "Preprocessing Action Files...";
+    progress_message2 "Locating Action Files...";
     #
     # Add built-in actions to the target table and create those actions
     #
@@ -717,6 +717,14 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 #
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
+# Rules in both the rules file and in action bodies are processed here.
+#
+# This function may be called in three different ways:
+#
+#  1) $chainref undefined -- Being called to process a record in the rules file. All arguments are passed.
+#  2) $chainref is a chain name -- Pre-proessing the records in an action file. Only $target is passed.
+#  3) $chainref is a chain reference -- Processing the records in an action file. The chain is where the generated
+#     rules are added.
 #
 sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action3()
@@ -765,7 +773,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || $param;
     }
 
-    fatal_error "Unknown action ($action)" unless $actiontype;
+    fatal_error "Unknown ACTION ($action)" unless $actiontype;
 
     if ( $actiontype == MACRO ) {
 	#

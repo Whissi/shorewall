@@ -62,7 +62,7 @@ use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
 our $macro_nest_level;
 
-our @actions;
+our @actionstack;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -77,7 +77,7 @@ our @actions;
 sub initialize( $ ) {
     $family            = shift;
     %macros            = ();
-    @actions           = ();
+    @actionstack       = ();
     $macro_nest_level  = 0;
 
     if ( $family == F_IPV4 ) {
@@ -328,7 +328,7 @@ sub process_action2( $ ) {
     my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
     my $actionfile  = find_file "action.$action";
 
-    push @actions, $action;
+    push @actionstack, $action;
 
     $actions{$action}{active}++;
 
@@ -373,7 +373,7 @@ sub process_action2( $ ) {
 
     $actions{$action}{active}--;
 
-    pop @actions;
+    pop @actionstack;
 }
 
 sub process_actions2 () {
@@ -840,7 +840,8 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
 	unless (  $inaction3 ) {
-	    fatal_error( "Action $basictarget invoked Recursively:" . join( '->', @actions, $basictarget ) ) if $actions{$basictarget}{active};
+	    fatal_error( "Action $basictarget invoked Recursively (" . join( '->', @actionstack, $basictarget ) . ')' ) if $actions{$basictarget}{active};
+
 	    if ( my $ref = use_action( $normalized_target ) ) {
 		#
 		# First reference to this tupple

@@ -218,6 +218,9 @@ sub createlogactionchain( $$$$$ ) {
 
 sub createsimpleactionchain( $ ) {
     my $action  = shift;
+
+    return createlogactionchain("$action:none::", $action, 'none', '', '' ) if $filter_table->{$action} || $nat_table->{$action};
+	
     my $chainref = new_standard_chain $action;
 
     $usedactions{"$action:none::"} = $chainref;

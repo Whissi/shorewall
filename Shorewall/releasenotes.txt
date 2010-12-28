@@ -14,6 +14,12 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
+RC 1
+
+1)  Previously, under very rare circumstances, a chain would be
+    optimized away while there were still jumps to the chain. This caused
+    Shorewall start/restart to fail during iptables-restore.
+
 Beta 7
 
 None.
@@ -131,7 +137,7 @@ Beta 1
 
     You can 'omit' a parameter in the list by using '-' (e,g,
     REDIRECT,-.info) would omit the second parameter (within the action
-    body, $2 would expand to nothing). If you want to specify '-' as an
+    body, $2 would expand to nothing). If you want to specify '-' as a
     parameter value, use '--'.
     
     Parameter values are also available to extensions scripts. See

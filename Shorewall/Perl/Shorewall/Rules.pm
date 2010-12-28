@@ -58,10 +58,9 @@ our @builtins;
 #
 our $rule_commands = { COMMENT => 0, FORMAT => 2 };
 
-use constant { MAX_MACRO_NEST_LEVEL => 5 , MAX_ACTION_NEST_LEVEL => 5 };
+use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
 our $macro_nest_level;
-our $action_nest_level;
 
 our @actions;
 
@@ -80,7 +79,6 @@ sub initialize( $ ) {
     %macros            = ();
     @actions           = ();
     $macro_nest_level  = 0;
-    $action_nest_level = 0;
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
@@ -338,8 +336,6 @@ sub process_action2( $ ) {
 
     progress_message2 "   Pre-processing $actionfile...";
 
-    fatal_error "Actions nested too deeply" if ++$action_nest_level > MAX_ACTION_NEST_LEVEL;
-
     push_open( $actionfile );
 
     my $oldparms = push_params( $param );
@@ -372,8 +368,6 @@ sub process_action2( $ ) {
     }
 
     pop_open;
-
-    --$action_nest_level;
 
     pop_params( $oldparms );
 

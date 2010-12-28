@@ -208,7 +208,7 @@ sub createlogactionchain( $$$$$ ) {
 	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
 		fatal_error "Couldn't do $file: $!"    unless defined $return;
-		fatal_error "Couldn't run $file"       unless $return;
+		fatal_error "Couldn't run $file";
 	    }
 	}
     }
@@ -241,7 +241,7 @@ sub createsimpleactionchain( $ ) {
 	    unless ( my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;
 		fatal_error "Couldn't do $file: $!"    unless defined $return;
-		fatal_error "Couldn't run $file"       unless $return;
+		fatal_error "Couldn't run $file";
 	    }
 	}
     }

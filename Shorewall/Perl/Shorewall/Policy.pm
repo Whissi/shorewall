@@ -27,12 +27,11 @@ require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Chains qw( :DEFAULT :internal) ;
-use Shorewall::Actions;
 
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains);
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains get_target_param %policy_actions );
 our @EXPORT_OK = qw(  );
 our $VERSION = '4.4_16';
 
@@ -40,11 +39,32 @@ our $VERSION = '4.4_16';
 
 our @policy_chains;
 
+our %policy_actions;
+
+our %default_actions;
 #
 # Called by the compiler
 #
 sub initialize() {
-    @policy_chains = ();
+    @policy_chains  = ();
+    %policy_actions = ();
+    %default_actions  = ( DROP     => 'none' ,
+		 	  REJECT   => 'none' ,
+			  ACCEPT   => 'none' ,
+			  QUEUE    => 'none' );
+}
+
+#
+# Split the passed target into the basic target and parameter
+#
+sub get_target_param( $ ) {
+    my ( $target, $param ) = split '/', $_[0];
+
+    unless ( defined $param ) {
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
+    }
+
+    ( $target, $param );
 }
 
 #
@@ -143,6 +163,12 @@ sub print_policy($$$$) {
     }
 }
 
+sub use_action( $ ) {
+    my $action = shift;
+
+    $policy_actions{$action} = 1;
+}
+
 sub process_a_policy() {
 
     our %validpolicies;
@@ -177,7 +203,7 @@ sub process_a_policy() {
 	    my $defaulttype = $targets{$default} || 0;
 	    
 	    if ( $defaulttype & ACTION ) {
-		use_action( normalize_action_name $default );
+		use_action( $default );
 	    } else {
 		fatal_error "Unknown Default Action ($default)";
 	    }
@@ -318,7 +344,7 @@ sub validate_policy()
 	    fatal_error "Default Action $option=$action not found";
 	}
 
-	use_action( normalize_action_name $action );
+	use_action( $action );
 
 	$default_actions{$map{$option}} = $action;
     }

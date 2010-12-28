@@ -29,7 +29,6 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
-use Shorewall::Actions;
 use Shorewall::Policy;
 use Shorewall::Proc;
 

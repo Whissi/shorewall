@@ -28,7 +28,6 @@ require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
-use Shorewall::Actions;
 use Shorewall::IPAddrs;
 use Shorewall::Policy;
 use Scalar::Util 'reftype';
@@ -64,6 +63,20 @@ our $macro_nest_level;
 
 our @actionstack;
 
+#  Action Table
+#
+#     %actions{ <action1> =>  { requires => { <requisite1> = 1,
+#                                             <requisite2> = 1,
+#                                             ...
+#                                           } ,
+#                               actchain => <action chain number> # Used for generating unique chain names for each <level>:<tag> pair.
+#
+our %actions;
+#
+# Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
+#
+our %usedactions;
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -79,11 +92,192 @@ sub initialize( $ ) {
     %macros            = ();
     @actionstack       = ();
     $macro_nest_level  = 0;
+    %actions          = ();
+    %usedactions  = ();
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
     } else {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
+    }
+}
+
+#
+# Return ( action, level[:tag] ) from passed full action
+#
+sub split_action ( $ ) {
+    my $action = $_[0];
+
+    my $target = '';
+    my $max    = 3;
+    #
+    # The following rather grim RE, when matched, breaks the action into two parts:
+    #
+    #    basicaction(param)
+    #    logging part (may be empty)
+    #
+    # The param may contain one or more ':' characters
+    #
+    if ( $action =~ /^([^(:]+\(.*?\))(:(.*))?$/ ) {
+	$target = $1;
+	$action = $2 ? $3 : '';
+	$max    = 2;
+    }
+
+    my @a = split( /:/ , $action, 4 );
+    fatal_error "Invalid ACTION ($action)" if ( $action =~ /::/ ) || ( @a > $max );
+    $target = shift @a unless $target;
+    ( $target, join ":", @a );
+}
+
+#
+# Create a normalized action name from the passed pieces
+#
+sub normalize_action( $$$ ) {
+    my $action = shift;
+    my $level  = shift;
+    my $param  = shift;
+
+    ( $level, my $tag ) = split ':', $level;
+
+    $level = 'none' unless defined $level && $level ne '';
+    $tag   = ''     unless defined $tag;
+    $param = ''     unless defined $param;
+
+    join( ':', $action, $level, $tag, $param );
+}
+
+sub normalize_action_name( $ ) {
+    my $target = shift;
+    my ( $action, $loglevel) = split_action $target;
+
+    normalize_action( $action, $loglevel, '' );
+
+} 
+
+#
+# Create and record a log action chain -- Log action chains have names
+# that are formed from the action name by prepending a "%" and appending
+# a 1- or 2-digit sequence number. In the functions that follow,
+# the $chain, $level and $tag variable serves as arguments to the user's
+# exit. We call the exit corresponding to the name of the action but we
+# set $chain to the name of the iptables chain where rules are to be added.
+# Similarly, $level and $tag contain the log level and log tag respectively.
+#
+# The maximum length of a chain name is 30 characters -- since the log
+# action chain name is 2-3 characters longer than the base chain name,
+# this function truncates the original chain name where necessary before
+# it adds the leading "%" and trailing sequence number.
+#
+sub createlogactionchain( $$$$$ ) {
+    my ( $normalized, $action, $level, $tag, $param ) = @_;
+    my $chain = $action;
+    my $actionref = $actions{$action};
+    my $chainref;
+
+    validate_level $level;
+
+    $actionref = new_action $action unless $actionref;
+
+    $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
+
+  CHECKDUP:
+    {
+	$actionref->{actchain}++ while $chain_table{filter}{'%' . $chain . $actionref->{actchain}};
+	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
+    }
+
+    $usedactions{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
+
+    fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
+
+    $chainref->{action} = $action;
+
+    unless ( $targets{$action} & BUILTIN ) {
+
+	dont_optimize $chainref;
+
+	my $file = find_file $chain;
+
+	if ( -f $file ) {
+	    progress_message "Processing $file...";
+
+	    my @params = split /,/, $param;
+
+	    unless ( my $return = eval `cat $file` ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+		fatal_error "Couldn't do $file: $!"    unless defined $return;
+		fatal_error "Couldn't run $file";
+	    }
+	}
+    }
+
+    $chainref;
+}
+
+sub createsimpleactionchain( $ ) {
+    my $action  = shift;
+
+    return createlogactionchain("$action:none::", $action, 'none', '', '' ) if $filter_table->{$action} || $nat_table->{$action};
+	
+    my $chainref = new_standard_chain $action;
+
+    $usedactions{"$action:none::"} = $chainref;
+
+    $chainref->{action} = $action;
+
+    unless ( $targets{$action} & BUILTIN ) {
+
+	dont_optimize $chainref;
+
+	my $file = find_file $action;
+
+	if ( -f $file ) {
+	    progress_message "Processing $file...";
+
+	    my ( $level, $tag ) = ( '', '' );
+
+	    unless ( my $return = eval `cat $file` ) {
+		fatal_error "Couldn't parse $file: $@" if $@;
+		fatal_error "Couldn't do $file: $!"    unless defined $return;
+		fatal_error "Couldn't run $file";
+	    }
+	}
+    }
+
+    $chainref;
+}
+
+#
+# Create an action chain and run its associated user exit
+#
+sub createactionchain( $ ) {
+    my $normalized = shift;
+
+    my ( $target, $level, $tag, $param ) = split /:/, $normalized;
+
+    assert( defined $param );
+
+    my $chainref;
+
+    if ( $level eq 'none' && $tag eq '' && $param eq '' ) {
+	createsimpleactionchain $target;
+    } else {
+	createlogactionchain $normalized, $target , $level , $tag, $param;
+    }
+}
+
+#
+# Mark an action as used and create its chain. Returns one if the chain was
+# created on this call or 0 otherwise.
+#
+sub use_action( $ ) {
+    my $normalized = shift;
+
+    if ( $usedactions{$normalized} ) {
+	0;
+    } else {
+	createactionchain $normalized;
     }
 }
 
@@ -379,9 +573,8 @@ sub process_action2( $ ) {
 sub process_actions2 () {
     progress_message2 "Pre-processing default actions...";
 
-    for my $action ( keys %usedactions ) {
-	my ( $basic_action, undef, undef, undef ) = split /:/, $action;
-	process_action2( $action ) unless $targets{$basic_action} & BUILTIN;
+    for my $action ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
+	process_action2( $action ) if use_action( $action );
     }
 }
 

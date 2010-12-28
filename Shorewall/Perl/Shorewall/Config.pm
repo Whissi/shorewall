@@ -1629,7 +1629,7 @@ sub close_file() {
 
 #
 # The following two functions allow module clients to nest opens. This happens frequently
-# in the Actions module.
+# in the Rules module.
 #
 sub push_open( $ ) {
 

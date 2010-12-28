@@ -32,7 +32,6 @@ use Shorewall::Nat;
 use Shorewall::Providers;
 use Shorewall::Tc;
 use Shorewall::Tunnels;
-use Shorewall::Actions;
 use Shorewall::Accounting;
 use Shorewall::Rules;
 use Shorewall::Proc;
@@ -63,7 +62,6 @@ sub initialize_package_globals() {
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize($family);
     Shorewall::Tc::initialize($family);
-    Shorewall::Actions::initialize( $family );
     Shorewall::Accounting::initialize;
     Shorewall::Rules::initialize($family);
     Shorewall::Proxyarp::initialize($family);

@@ -203,7 +203,7 @@ sub new_action( $ ) {
 
     my $action = $_[0];
 
-    $actions{$action} = { actchain => '' };
+    $actions{$action} = { actchain => '', active => 0 };
 }
 
 #
@@ -327,6 +327,8 @@ sub process_action2( $ ) {
     my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
     my $actionfile  = find_file "action.$action";
 
+    $actions{$action}{active}++;
+
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
     progress_message2 "   Pre-processing $actionfile...";
@@ -369,6 +371,8 @@ sub process_action2( $ ) {
     --$action_nest_level;
 
     pop_params( $oldparms );
+
+    $actions{$action}{active}--;
 }
 
 sub process_actions2 () {
@@ -836,6 +840,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
 	unless (  $inaction3 ) {
 	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
+	    fatal_error "Action $basictarget called Recursively" if $actions{$basictarget}{active};
 	    if ( my $ref = use_action( $normalized_target ) ) {
 		#
 		# First reference to this tupple

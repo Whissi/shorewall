@@ -63,6 +63,8 @@ use constant { MAX_MACRO_NEST_LEVEL => 5 , MAX_ACTION_NEST_LEVEL => 5 };
 our $macro_nest_level;
 our $action_nest_level;
 
+our @actions;
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -76,6 +78,7 @@ our $action_nest_level;
 sub initialize( $ ) {
     $family            = shift;
     %macros            = ();
+    @actions           = ();
     $macro_nest_level  = 0;
     $action_nest_level = 0;
 
@@ -327,6 +330,8 @@ sub process_action2( $ ) {
     my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
     my $actionfile  = find_file "action.$action";
 
+    push @actions, $action;
+
     $actions{$action}{active}++;
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
@@ -373,6 +378,8 @@ sub process_action2( $ ) {
     pop_params( $oldparms );
 
     $actions{$action}{active}--;
+
+    pop @actions;
 }
 
 sub process_actions2 () {
@@ -839,8 +846,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
 	unless (  $inaction3 ) {
-	    fatal_error "An action may not invoke itself" if $basictarget eq $inaction1;
-	    fatal_error "Action $basictarget called Recursively" if $actions{$basictarget}{active};
+	    fatal_error( "Action $basictarget invoked Recursively:" . join( '->', @actions, $basictarget ) ) if $actions{$basictarget}{active};
 	    if ( my $ref = use_action( $normalized_target ) ) {
 		#
 		# First reference to this tupple

@@ -23,6 +23,8 @@
 #   This module contains process_rule() and it's associated helpers for handling 
 #   Actions and Macros.
 #
+#   This module combines the former Rules and Actions modules.
+#
 package Shorewall::Rules;
 require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
@@ -447,8 +449,6 @@ sub map_old_actions( $ ) {
 # processed once for each unique [:level[:tag]][:param] applied to an invocation of the action.
 #
 
-sub process_rule_common ( $$$$$$$$$$$$$$$$ );
-
 sub process_actions1() {
 
     progress_message2 "Locating Action Files...";
@@ -513,6 +513,8 @@ sub merge_action_levels( $$ ) {
     join ':', $action, $sublevel, $subtag, $subparam;
 }
 
+sub process_rule_common ( $$$$$$$$$$$$$$$$ );
+
 sub process_action2( $ ) {
     my $wholeaction = shift;
     my ( $action , $level, $tag, $param ) = split /:/, $wholeaction;
@@ -567,10 +569,10 @@ sub process_action2( $ ) {
 }
 
 sub process_actions2 () {
-    progress_message2 "Pre-processing default actions...";
+    progress_message2 "Pre-processing policy actions...";
 
-    for my $action ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
-	process_action2( $action ) if use_action( $action );
+    for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
+	process_action2( $_ ) if use_action( $_ );
     }
 }
 
@@ -667,7 +669,6 @@ sub dropBcast( $$$ ) {
 
 	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
     }
-
 
     if ( $family == F_IPV4 ) {
 	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';

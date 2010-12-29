@@ -20,7 +20,8 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains those routines that don't seem to fit well elsewhere.
+#   This module contains those routines that don't seem to fit well elsewhere. It
+#   was carved from the Rules module in 4.4.16.
 #
 package Shorewall::Misc;
 require Exporter;
@@ -1055,7 +1056,8 @@ sub add_interface_jumps {
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this function and the rules that it generates.
 #
-# The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table rules.
+# The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table and 
+# nat-table rules.
 #
 sub generate_matrix() {
     my @interfaces = ( all_interfaces );

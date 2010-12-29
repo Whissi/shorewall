@@ -430,7 +430,7 @@ sub map_old_actions( $ ) {
 #
 # The functions process_actions1-3() implement the three phases of action processing.
 #
-# The first phase (process_actions1) occurs before the rules file is processed. The builtin-actions are added
+# The first phase (process_actions1) occurs before the policy file is processed. The builtin-actions are added
 # to the target table (%Shorewall::Chains::targets) and actions table, then ${SHAREDIR}/actions.std and
 # ${CONFDIR}/actions are scanned (in that order). For each action:
 #
@@ -439,14 +439,15 @@ sub map_old_actions( $ ) {
 #
 # The second phase (process_actions2) occurs after the policy file is scanned. Each policy action's chain is
 # created and its action's file is processed by process_action2(). That function recursively processes action
-# files up the action  invocation tree, adding to the %usedactions hash as each new action is discovered.
+# files up the action invocation tree, adding to the %usedactions hash as each new action:level:tag:params tupple
+# is discovered.
 #
 # During rules file processing, process_action2() is called when a new action:level:tag:params is encountered.
 # Again, each new such tupple is entered into the %usedactions hash.
 #
 # The final phase (process_actions3) traverses the keys of %usedactions populating each chain appropriately
 # by reading the related action definition file and creating rules. Note that a given action definition file is
-# processed once for each unique [:level[:tag]][:param] applied to an invocation of the action.
+# processed once for each unique tupple.
 #
 
 sub process_actions1() {

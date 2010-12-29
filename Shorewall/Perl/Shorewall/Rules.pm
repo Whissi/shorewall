@@ -760,7 +760,14 @@ sub allowinUPnP ( $$$ ) {
 sub Limit( $$$ ) {
     my ($chainref, $level, $tag, $param ) = @_;
 
-    my @param = split /,/, $param ? $param : $tag;
+    my @param;
+
+    if ( $param ) {
+	@param = split /,/, $param;
+    } else {
+	@param = split /,/, $tag;
+	$tag = '';
+    }
 
     fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag or as parameters' unless @param == 3;
 
@@ -778,7 +785,7 @@ sub Limit( $$$ ) {
 
     if ( $level ne '' ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_rule_limit $level, $xchainref, $param[0], 'DROP', '', '', 'add', '';
+	log_rule_limit $level, $xchainref, $param[0], 'DROP', $tag, '', 'add', '';
 	add_rule $xchainref, '-j DROP';
 	add_jump $chainref,  $xchainref, 0, "-m recent --name $set --update --seconds $param[2] --hitcount $count ";
     } else {

@@ -65,11 +65,7 @@ our @actionstack;
 
 #  Action Table
 #
-#     %actions{ <action1> =>  { requires => { <requisite1> = 1,
-#                                             <requisite2> = 1,
-#                                             ...
-#                                           } ,
-#                               actchain => <action chain number> # Used for generating unique chain names for each <level>:<tag> pair.
+#     %actions{ actchain => used to eliminate collisions, active => 0|1 - 1 means that the action is in the action stack }
 #
 our %actions;
 #
@@ -92,8 +88,8 @@ sub initialize( $ ) {
     %macros            = ();
     @actionstack       = ();
     $macro_nest_level  = 0;
-    %actions          = ();
-    %usedactions  = ();
+    %actions           = ();
+    %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
@@ -268,7 +264,7 @@ sub createactionchain( $ ) {
 }
 
 #
-# Mark an action as used and create its chain. Returns one if the chain was
+# Mark an action as used and create its chain. Returns a reference to the chain if the chain was
 # created on this call or 0 otherwise.
 #
 sub use_action( $ ) {
@@ -439,9 +435,9 @@ sub map_old_actions( $ ) {
 #      a) The related action definition file is located.
 #      a) The action is added to the target table
 #
-# The second phase (process_actions2) occurs after the policy file is scanned. Each default action's file
-# is processed by process_action2(). That function recursively processes action files up the action 
-# invocation tree, adding to the %usedactions hash as each new action is discovered.
+# The second phase (process_actions2) occurs after the policy file is scanned. Each policy action's chain is
+# created and its action's file is processed by process_action2(). That function recursively processes action
+# files up the action  invocation tree, adding to the %usedactions hash as each new action is discovered.
 #
 # During rules file processing, process_action2() is called when a new action:level:tag:params is encountered.
 # Again, each new such tupple is entered into the %usedactions hash.

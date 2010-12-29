@@ -612,7 +612,7 @@ sub process_action3( $$$$$$ ) {
 	    next;
 	}
 
-	process_rule_common( $chainref, $target, '', $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, 0 );
+	process_rule_common( $chainref, merge_levels( "$action:$level:$tag", $target ), '', $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, 0 );
     }
 
     clear_comment;

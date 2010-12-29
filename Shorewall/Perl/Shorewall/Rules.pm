@@ -541,7 +541,7 @@ sub process_action2( $ ) {
 	# know if we try to use one of them.
 	#
 	process_rule_common( $wholeaction ,
-			     $wholetarget ,
+			     merge_levels( "$action:$level:$tag", $wholetarget ),
 			     '' ,   # Current Param
 			     undef, # source
 			     undef, # dest

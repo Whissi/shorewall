@@ -137,7 +137,16 @@ Beta 1
     post-processed the ones that had been actionally used after the
     rules file had been read. The new algorithm generates the chain for
     each unique action invocation at the time that the invocation is
-    encountered in the rules file. 
+    encountered in the rules file.
+
+    Consideration was given to eliminating the
+    /usr/share/shorewall/actions.std and /etc/shorewall/actions files,
+    since it is possible to discover actions "on the fly" in the same
+    way as macros are discovered. That change was ultimately rejected
+    because it could cause migration issues for users with macros and
+    actions with the same name (e.g., action.xxx and macro.xxx). If a
+    new major release of Shorewall (e.g., 4.6) is created, that change
+    will be reconsidered for inclusion at that time.
 
     There is now support for parameterized actions. The parameters are
     a comma-separated list enclosed in parentheses following the

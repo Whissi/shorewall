@@ -761,10 +761,6 @@ sub compiler {
     #
     setup_tunnels;
     #
-    # Post-rules action processing.
-    #
-    process_actions3;
-    #
     # MACLIST Filtration again
     #
     setup_mac_lists 2;

@@ -130,7 +130,16 @@ Beta 1
     and in macros invoked from Actions. Additionally, Macros used in
     Actions are now free to invoke other actions.
 
-4)  There is now support for parameterized actions. The parameters are
+4)  Action processing has been largely re-implemented in this release.
+    The prior implementation contained a lot of duplicated code which
+    made maintainance difficult. The old implementation pre-processed
+    all action files early in the compilation process and then
+    post-processed the ones that had been actionally used after the
+    rules file had been read. The new algorithm generates the chain for
+    each unique action invocation at the time that the invocation is
+    encountered in the rules file. 
+
+    There is now support for parameterized actions. The parameters are
     a comma-separated list enclosed in parentheses following the
     action name (e.g., ACT(REDIRECT,192.168.1.4)). Within the action
     body, the parameter values are available in $1, $2, etc.

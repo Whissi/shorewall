@@ -40,7 +40,6 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		  process_actions1
 		  process_actions2
-
 		  process_rules
 	       );
 
@@ -157,7 +156,6 @@ sub normalize_action_name( $ ) {
     my ( $action, $loglevel) = split_action $target;
 
     normalize_action( $action, $loglevel, '' );
-
 } 
 
 #

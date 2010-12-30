@@ -613,7 +613,7 @@ sub process_action( $) {
 
     if ( $targets{$action} & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
-	$builtinops{$action}->($chainref, $level, $tag, $param );
+	$builtinops{$action}->( $chainref, $level, $tag, $param );
 	return;
     }
 

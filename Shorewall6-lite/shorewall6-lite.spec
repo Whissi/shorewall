@@ -1,4 +1,4 @@
-'%define name shorewall6-lite
+%define name shorewall6-lite
 %define version 4.4.16
 %define release 0RC1
 

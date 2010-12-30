@@ -1237,6 +1237,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    }
 	} elsif ( $actiontype & ACTION ) {
 	    $target = $usedactions{$normalized_target}->{name};
+	    $loglevel = '';
 	} else {
 	    if ( $server eq '' ) {
 		fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;

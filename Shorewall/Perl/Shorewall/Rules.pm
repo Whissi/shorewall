@@ -128,7 +128,11 @@ sub split_action ( $ ) {
 }
 
 #
-# Create a normalized action name from the passed pieces
+# Create a normalized action name from the passed pieces.
+#
+# Internally, actions are identified by a 4-tuple that 
+# includes the action name, log level, log tag and params. The pieces of the tuple
+# are separated by ":". 
 #
 sub normalize_action( $$$ ) {
     my $action = shift;
@@ -143,6 +147,10 @@ sub normalize_action( $$$ ) {
 
     join( ':', $action, $level, $tag, $param );
 }
+
+#
+# Accepts a rule target and returns a normalized tuple
+#
 
 sub normalize_action_name( $ ) {
     my $target = shift;
@@ -427,31 +435,6 @@ sub map_old_actions( $ ) {
     }
 }
 
-sub merge_action_levels( $$ ) {
-    my $superior    = shift;
-    my $subordinate = shift;
-
-    my ( $unused, $suplevel, $suptag, $supparam ) = split /:/, $superior;
-    my ( $action, $sublevel, $subtag, $subparam ) = split /:/, $subordinate;
-
-    assert defined $supparam;
-
-    if ( $suplevel =~ /!$/ ) {
-	( $sublevel, $subtag ) = ( $suplevel, $subtag );
-    } else {
-	$sublevel = 'none' unless defined $sublevel && $sublevel ne '';
-	if ( $sublevel =~ /^none~/ ) {
-	    $subtag = '';
-	} else {
-	    $subtag = '' unless defined $subtag;
-	}
-    }
-
-    $subparam = $supparam unless defined $subparam && $subparam ne '';
-
-    join ':', $action, $sublevel, $subtag, $subparam;
-}
-
 #
 # The following small functions generate rules for the builtin actions of the same name
 #
@@ -622,7 +605,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 sub process_rule_common ( $$$$$$$$$$$$$$$$ );
 
 #
-# Populate an action invocation chain. As new action tupples are encountered,
+# Populate an action invocation chain. As new action tuples are encountered,
 # the function will be called recursively by process_rules_common().
 #
 sub process_action( $) {
@@ -872,7 +855,8 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 #
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
-# Rules in both the rules file and in action bodies are processed here.
+# Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action 
+# body.
 #
 sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
@@ -970,7 +954,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     #
     if ( $actiontype & ACTION ) {
 	#
-	# Create the action:level:tag:param tupple.
+	# Create the action:level:tag:param tuple.
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
@@ -978,7 +962,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
 	if ( my $ref = use_action( $normalized_target ) ) {
 	    #
-	    # First reference to this tupple
+	    # First reference to this tuple
 	    #
 	    process_action( $ref );
 	    #

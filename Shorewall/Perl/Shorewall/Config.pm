@@ -3284,6 +3284,10 @@ sub get_configuration( $ ) {
 
     default 'BLACKLIST_DISPOSITION'    , 'DROP';
 
+    unless ( $config{BLACKLIST_DISPOSITION} eq 'DROP' || $config{BLACKLIST_DISPOSITION} eq 'REJECT' ) {
+	fatal_error q(BLACKLIST_DISPOSITION must be 'DROP' or 'REJECT');
+    }
+
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
     default_log_level 'MACLIST_LOG_LEVEL',   '';
     default_log_level 'TCP_FLAGS_LOG_LEVEL', '';

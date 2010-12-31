@@ -848,8 +848,8 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
     clear_comment unless $nocomment;
 
     return $generated;
-
 }
+
 #
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
@@ -1085,6 +1085,9 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
     my ( $chain, $policy );
 
     if ( $inaction ) {
+        #
+        # We are generating rules in an action chain -- the chain name is the name of the action chain
+        #
 	$chain = $chainref->{name};
     } else { 
 	unless ( $actiontype & NATONLY ) {

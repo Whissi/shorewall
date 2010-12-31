@@ -159,6 +159,18 @@ sub normalize_action_name( $ ) {
 } 
 
 #
+# Define an Action
+#
+sub new_action( $$ ) {
+
+    my ( $action , $type ) = @_;
+
+    $actions{$action} = { actchain => '', active => 0 };
+
+    $targets{$action} = $type;
+}
+
+#
 # Create and record a log action chain -- Log action chains have names
 # that are formed from the action name by prepending a "%" and appending
 # a 1- or 2-digit sequence number. In the functions that follow,
@@ -180,7 +192,7 @@ sub createlogactionchain( $$$$$ ) {
 
     validate_level $level;
 
-    $actionref = new_action $action unless $actionref;
+    $actionref = new_action( $action , ACTION ) unless $actionref;
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
@@ -393,16 +405,6 @@ sub isolate_basic_target( $ ) {
     my $target = ( split '[/:]', $_[0])[0];
 
     $target =~ /^(\w+)[(].*[)]$/ ? $1 : $target;
-}
-
-#
-# Define an Action
-#
-sub new_action( $ ) {
-
-    my $action = $_[0];
-
-    $actions{$action} = { actchain => '', active => 0 };
 }
 
 #
@@ -690,7 +692,7 @@ sub process_actions1() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = ACTION + BUILTIN, new_action( $_ ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file $file;
@@ -712,9 +714,7 @@ sub process_actions1() {
 
 	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
 
-	    new_action $action;
-
-	    $targets{$action} = ACTION;
+	    new_action $action, ACTION;
 
 	    my $actionfile = find_file "action.$action";
 

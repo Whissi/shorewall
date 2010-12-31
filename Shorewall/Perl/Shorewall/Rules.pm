@@ -602,7 +602,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'forwardUPnP'    => \&forwardUPnP,
 		   'Limit'          => \&Limit, );
 
-sub process_rule_common ( $$$$$$$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -652,22 +652,22 @@ sub process_action( $) {
 	    next;
 	}
 
-	process_rule_common( $chainref,
-			     merge_levels( "$action:$level:$tag", $target ),
-			     '',
-			     $source,
-			     $dest,
-			     $proto,
-			     $ports,
-			     $sports,
-			     $origdest,
-			     $rate,
-			     $user,
-			     $mark,
-			     $connlimit,
-			     $time,
-			     $headers,
-			     0 );
+	process_rule1( $chainref,
+		       merge_levels( "$action:$level:$tag", $target ),
+		       '',
+		       $source,
+		       $dest,
+		       $proto,
+		       $ports,
+		       $sports,
+		       $origdest,
+		       $rate,
+		       $user,
+		       $mark,
+		       $connlimit,
+		       $time,
+		       $headers,
+		       0 );
     }
 
     clear_comment;
@@ -819,7 +819,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 	    $mdest = '';
 	}
 
-	$generated |= process_rule_common(
+	$generated |= process_rule1(
 				    $chainref,
 				    $mtarget,
 				    $param,
@@ -856,7 +856,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action 
 # body.
 #
-sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
+sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $target, 
 	 $current_param,
@@ -899,7 +899,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 
     if ( $actiontype == MACRO ) {
 	#
-	# process_macro() will call process_rule_common() recursively for each rule in the macro body
+	# process_macro() will call process_rule1() recursively for each rule in the macro body
 	#
 	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
@@ -1115,7 +1115,7 @@ sub process_rule_common ( $$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Handle Optimization
 	    #
-	    if ( $optimize > 0 ) {
+	    if ( $optimize & 1 ) {
 		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 		if ( $loglevel ne '' ) {
 		    return 0 if $target eq "${policy}:$loglevel}";
@@ -1559,22 +1559,22 @@ sub process_rule ( ) {
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
-		$generated |= process_rule_common( undef,
-						   $target,
-						   '',
-						   $source,
-						   $dest,
-						   $proto,
-						   $ports,
-						   $sports,
-						   $origdest,
-						   $ratelimit,
-						   $user,
-						   $mark,
-						   $connlimit,
-						   $time,
-						   $headers,
-						   $wild );
+		$generated |= process_rule1( undef,
+					     $target,
+					     '',
+					     $source,
+					     $dest,
+					     $proto,
+					     $ports,
+					     $sports,
+					     $origdest,
+					     $ratelimit,
+					     $user,
+					     $mark,
+					     $connlimit,
+					     $time,
+					     $headers,
+					     $wild );
 	    }
 	}
     }

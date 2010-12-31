@@ -624,7 +624,7 @@ sub process_action( $) {
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-    progress_message2 "Processing $actionfile for chain $chainref->{name}...";
+    progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
     push_open $actionfile;
 
@@ -727,7 +727,7 @@ sub process_actions1() {
 # This function creates and populates the chains for the policy actions.
 #
 sub process_actions2 () {
-    progress_message2 "Pre-processing policy actions...";
+    progress_message2 "$doing policy actions...";
 
     for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
 	if ( my $ref = use_action( $_ ) ) {

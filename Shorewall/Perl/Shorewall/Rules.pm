@@ -129,7 +129,7 @@ sub split_action ( $ ) {
 #
 # Create a normalized action name from the passed pieces.
 #
-# Internally, actions are identified by a 4-tuple that 
+# Internally, action invocations are uniquely identified by a 4-tuple that 
 # includes the action name, log level, log tag and params. The pieces of the tuple
 # are separated by ":". 
 #

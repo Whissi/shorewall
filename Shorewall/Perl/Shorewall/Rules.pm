@@ -1115,7 +1115,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Handle Optimization
 	    #
-	    if ( $optimize & 1 ) {
+	    if ( $optimize > 0 ) {
 		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 		if ( $loglevel ne '' ) {
 		    return 0 if $target eq "${policy}:$loglevel}";

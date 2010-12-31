@@ -1267,7 +1267,7 @@ sub ensure_accounting_chain( $$ )
 	    my $file = find_file $chain;
 
 	    if ( -f $file ) {
-		progress_message "Processing $file...";
+		progress_message "Running $file...";
 
 		my ( $level, $tag ) = ( '', '' );
 

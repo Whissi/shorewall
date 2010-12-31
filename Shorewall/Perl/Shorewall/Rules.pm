@@ -215,7 +215,7 @@ sub createlogactionchain( $$$$$ ) {
 	my $file = find_file $chain;
 
 	if ( -f $file ) {
-	    progress_message "Processing $file...";
+	    progress_message "Running $file...";
 
 	    my @params = split /,/, $param;
 
@@ -249,7 +249,7 @@ sub createsimpleactionchain( $ ) {
 	my $file = find_file $action;
 
 	if ( -f $file ) {
-	    progress_message "Processing $file...";
+	    progress_message "Running $file...";
 
 	    my ( $level, $tag ) = ( '', '' );
 

@@ -3480,7 +3480,7 @@ sub run_user_exit( $ ) {
     my $file = find_file $chainref->{name};
 
     if ( -f $file ) {
-	progress_message2 "Processing $file...";
+	progress_message2 "Running $file...";
 
 	my $command = qq(package Shorewall::User;\nno strict;\n# line 1 "$file"\n) . `cat $file`;
 
@@ -3501,7 +3501,7 @@ sub run_user_exit1( $ ) {
     my $file = find_file $_[0];
 
     if ( -f $file ) {
-	progress_message2 "Processing $file...";
+	progress_message2 "Running $file...";
 	#
 	# File may be empty -- in which case eval would fail
 	#
@@ -3532,7 +3532,7 @@ sub run_user_exit2( $$ ) {
     my ($file, $chainref) = ( find_file $_[0], $_[1] );
 
     if ( -f $file ) {
-	progress_message2 "Processing $file...";
+	progress_message2 "Running $file...";
 	#
 	# File may be empty -- in which case eval would fail
 	#

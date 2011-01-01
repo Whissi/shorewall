@@ -554,7 +554,7 @@ sub allowinUPnP ( $$$ ) {
     add_rule $chainref, '-p 6 --dport 49152 -j ACCEPT';
 }
 
-sub Limit( $$$ ) {
+sub Limit( $$$$ ) {
     my ($chainref, $level, $tag, $param ) = @_;
 
     my @param;

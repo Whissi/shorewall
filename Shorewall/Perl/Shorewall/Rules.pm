@@ -158,8 +158,20 @@ sub normalize_action_name( $ ) {
     my ( $action, $loglevel) = split_action $target;
 
     normalize_action( $action, $loglevel, '' );
-} 
+}
 
+#
+# Produce a recognizable target from a normalized action
+#
+sub externalize( $ ) {
+    my ( $target, $level, $tag, $params ) = split /:/, shift;
+
+    $target  = join( '', $target, '(', $params , ')' ) if $params;
+    $target .= ":$level" if $level && $level ne 'none';
+    $target .= ":$tag"   if $tag;
+    $target;
+}
+    
 #
 # Define an Action
 #
@@ -964,7 +976,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
-	fatal_error( "Action $basictarget invoked Recursively (" . join( '->', @actionstack , $normalized_target ) . ')' ) if $active{$normalized_target};
+	fatal_error( "Action $basictarget invoked Recursively (" .  join( '->', map( externalize( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$normalized_target};
 
 	if ( my $ref = use_action( $normalized_target ) ) {
 	    #

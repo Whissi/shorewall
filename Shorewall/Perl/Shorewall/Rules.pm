@@ -602,6 +602,52 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'forwardUPnP'    => \&forwardUPnP,
 		   'Limit'          => \&Limit, );
 
+#
+# This function is called prior to processing of the policy file. It:
+#
+# - Adds the builtin actions to the target table
+# - Reads actions.std and actions (in that order) and for each entry:
+#   o Adds the action to the target table
+#   o Verifies that the corresponding action file exists
+#
+
+sub process_actions1() {
+
+    progress_message2 "Locating Action Files...";
+    #
+    # Add built-in actions to the target table and create those actions
+    #
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN ) for @builtins;
+
+    for my $file ( qw/actions.std actions/ ) {
+	open_file $file;
+
+	while ( read_a_line ) {
+	    my ( $action ) = split_line 1, 1, 'action file';
+
+	    if ( $action =~ /:/ ) {
+		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
+		$action =~ s/:.*$//;
+	    }
+
+	    next unless $action;
+
+	    if ( $targets{$action} ) {
+		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ACTION;
+		next;
+	    }
+
+	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
+
+	    new_action $action, ACTION;
+
+	    my $actionfile = find_file "action.$action";
+
+	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+	}
+    }
+}
+
 sub process_rule1 ( $$$$$$$$$$$$$$$$ );
 
 #
@@ -678,58 +724,12 @@ sub process_action( $) {
 }
 
 #
-# This function is called prior to processing of the policy file. It:
-#
-# - Adds the builtin actions to the target table
-# - Reads actions.std and actions (in that order) and for each entry:
-#   o Adds the action to the target table
-#   o Verifies that the corresponding action file exists
-#
-
-sub process_actions1() {
-
-    progress_message2 "Locating Action Files...";
-    #
-    # Add built-in actions to the target table and create those actions
-    #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN ) for @builtins;
-
-    for my $file ( qw/actions.std actions/ ) {
-	open_file $file;
-
-	while ( read_a_line ) {
-	    my ( $action ) = split_line 1, 1, 'action file';
-
-	    if ( $action =~ /:/ ) {
-		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
-		$action =~ s/:.*$//;
-	    }
-
-	    next unless $action;
-
-	    if ( $targets{$action} ) {
-		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ACTION;
-		next;
-	    }
-
-	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
-
-	    new_action $action, ACTION;
-
-	    my $actionfile = find_file "action.$action";
-
-	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
-	}
-    }
-}
-
-#
 # This function creates and populates the chains for the policy actions.
 #
 sub process_actions2 () {
     progress_message2 "$doing policy actions...";
 
-    for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
+    for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), policy_actions ) ) {
 	if ( my $ref = use_action( $_ ) ) {
 	    process_action( $ref );
 	}

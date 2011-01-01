@@ -31,7 +31,7 @@ use Shorewall::Chains qw( :DEFAULT :internal) ;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains get_target_param %policy_actions );
+our @EXPORT = qw( validate_policy apply_policy_rules complete_standard_chain setup_syn_flood_chains save_policies optimize_policy_chains get_target_param policy_actions );
 our @EXPORT_OK = qw(  );
 our $VERSION = '4.4_16';
 
@@ -65,6 +65,13 @@ sub get_target_param( $ ) {
     }
 
     ( $target, $param );
+}
+
+#
+# Return a list of actions used by the policies
+#
+sub policy_actions() {
+    keys %policy_actions;
 }
 
 #

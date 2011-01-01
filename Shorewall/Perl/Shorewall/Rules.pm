@@ -129,6 +129,19 @@ sub split_action ( $ ) {
 }
 
 #
+# Split the passed target into the basic target and parameter
+#
+sub get_target_param( $ ) {
+    my ( $target, $param ) = split '/', $_[0];
+
+    unless ( defined $param ) {
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
+    }
+
+    ( $target, $param );
+}
+
+#
 # Create a normalized action name from the passed pieces.
 #
 # Internally, action invocations are uniquely identified by a 4-tuple that 

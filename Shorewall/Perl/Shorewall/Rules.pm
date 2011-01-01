@@ -62,10 +62,11 @@ use constant { MAX_MACRO_NEST_LEVEL => 5 };
 our $macro_nest_level;
 
 our @actionstack;
+our %active;
 
 #  Action Table
 #
-#     %actions{ actchain => used to eliminate collisions, active => 0|1 - 1 means that the action is in the action stack }
+#     %actions{ actchain => used to eliminate collisions }
 #
 our %actions;
 #
@@ -87,6 +88,7 @@ sub initialize( $ ) {
     $family            = shift;
     %macros            = ();
     @actionstack       = ();
+    %active            = ();
     $macro_nest_level  = 0;
     %actions           = ();
     %usedactions       = ();
@@ -165,7 +167,7 @@ sub new_action( $$ ) {
 
     my ( $action , $type ) = @_;
 
-    $actions{$action} = { actchain => '', active => 0 };
+    $actions{$action} = { actchain => ''  };
 
     $targets{$action} = $type;
 }
@@ -676,6 +678,9 @@ sub process_action( $) {
 
     my $oldparms = push_params( $param );
 
+    $active{$wholeaction}++;
+    push @actionstack, $action;
+
     while ( read_a_line ) {
 
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
@@ -717,6 +722,9 @@ sub process_action( $) {
     }
 
     clear_comment;
+
+    $active{$wholeaction}--;
+    pop @actionstack;
 
     pop_open;
 
@@ -956,7 +964,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
-	fatal_error( "Action $basictarget invoked Recursively (" . join( '->', @actionstack, $basictarget ) . ')' ) if $actions{$basictarget}{active};
+	fatal_error( "Action $basictarget invoked Recursively (" . join( '->', @actionstack , $basictarget ) . ')' ) if $active{$normalized_target};
 
 	if ( my $ref = use_action( $normalized_target ) ) {
 	    #

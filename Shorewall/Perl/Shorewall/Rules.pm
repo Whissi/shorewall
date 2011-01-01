@@ -679,7 +679,7 @@ sub process_action( $) {
     my $oldparms = push_params( $param );
 
     $active{$wholeaction}++;
-    push @actionstack, $action;
+    push @actionstack, $wholeaction;
 
     while ( read_a_line ) {
 
@@ -964,7 +964,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
-	fatal_error( "Action $basictarget invoked Recursively (" . join( '->', @actionstack , $basictarget ) . ')' ) if $active{$normalized_target};
+	fatal_error( "Action $basictarget invoked Recursively (" . join( '->', @actionstack , $normalized_target ) . ')' ) if $active{$normalized_target};
 
 	if ( my $ref = use_action( $normalized_target ) ) {
 	    #

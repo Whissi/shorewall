@@ -997,7 +997,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    #
 	    process_action( $ref );
 	    #
-	    # Preprocessing may determine that the chain or one of it's dependents does NAT. If so:
+	    # Preprocessing may determine that the chain or one of it's dependents does NAT, so:
 	    #
 	    #    - Refresh $actiontype
 	    #    - Create the associate nat table chain if appropriate.
@@ -1217,6 +1217,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    $serverport = $3;  # Not Empty due to RE
 	    $origdstports = $ports;
 
+	    fatal_error "Server port ($serverport) not allowed in $action rule" if $actiontype & ACTION;
+
 	    if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
 		$origdstports = validate_port( $proto, $origdstports );
 	    } else {
@@ -1253,7 +1255,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	my $target = '';
 
 	if ( $actiontype  & REDIRECT ) {
-	    fatal_error "A server IP address may not be specified in a REDIRECT rule" if $server;
+	    fatal_error "A server IP address ($server) may not be specified in a REDIRECT rule" if $server;
 	    $target  = 'REDIRECT';
 	    $target .= " --to-port $serverport" if $serverport;
 	    if ( $origdest eq '' || $origdest eq '-' ) {

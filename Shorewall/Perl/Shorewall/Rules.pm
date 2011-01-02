@@ -1217,8 +1217,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    $serverport = $3;  # Not Empty due to RE
 	    $origdstports = $ports;
 
-	    fatal_error "Server port ($serverport) not allowed in $action rule" if $actiontype & ACTION;
-
 	    if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
 		$origdstports = validate_port( $proto, $origdstports );
 	    } else {
@@ -1272,6 +1270,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 		}
 	    }
 	} elsif ( $actiontype & ACTION ) {
+	    fatal_error "A server port ($serverport) is not allowed in $action rule" if $serverport;
 	    $target = $usedactions{$normalized_target}->{name};
 	    $loglevel = '';
 	} else {

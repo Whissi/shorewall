@@ -887,7 +887,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action 
-# body.
+# body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument.
 #
 sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
@@ -1119,7 +1119,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 
     if ( $inaction ) {
         #
-        # We are generating rules in an action chain -- the chain name is the name of the action chain
+        # We are generating rules in an action chain -- the chain name is the name of that action chain
         #
 	$chain = $chainref->{name};
     } else { 

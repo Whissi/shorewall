@@ -657,7 +657,7 @@ sub process_actions1() {
 		$action =~ s/:.*$//;
 	    }
 
-	    next unless $action;
+	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[\w-]+$/;
 
 	    if ( $targets{$action} ) {
 		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ACTION;

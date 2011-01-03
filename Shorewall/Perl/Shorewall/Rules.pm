@@ -177,7 +177,7 @@ sub normalize_action_name( $ ) {
 # Produce a recognizable target from a normalized action
 #
 sub externalize( $ ) {
-    my ( $target, $level, $tag, $params ) = split /:/, shift;
+    my ( $target, $level, $tag, $params ) = split /:/, shift, 4;
 
     $target  = join( '', $target, '(', $params , ')' ) if $params;
     $target .= ":$level" if $level && $level ne 'none';
@@ -297,7 +297,7 @@ sub createsimpleactionchain( $ ) {
 sub createactionchain( $ ) {
     my $normalized = shift;
 
-    my ( $target, $level, $tag, $param ) = split /:/, $normalized;
+    my ( $target, $level, $tag, $param ) = split /:/, $normalized, 4;
 
     assert( defined $param );
 
@@ -684,7 +684,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ );
 sub process_action( $) {
     my $chainref = shift;
     my $wholeaction = $chainref->{action};
-    my ( $action, $level, $tag, $param ) = split /:/, $wholeaction;
+    my ( $action, $level, $tag, $param ) = split /:/, $wholeaction, 4;
 
     if ( $targets{$action} & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
@@ -915,7 +915,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
     my $normalized_target;
     my $normalized_action;
  
-    ( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action} if defined $chainref;
+    ( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if defined $chainref;
 
     $param = '' unless defined $param;
 

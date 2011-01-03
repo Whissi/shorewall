@@ -3843,14 +3843,12 @@ sub expand_rule( $$$$$$$$$$;$ )
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 
 		    if ( $loglevel ne '' ) {
-			if ( $disposition ne 'LOG' ) {
+			unless ( $disposition eq 'LOG' || $disposition eq 'COUNT' ) {
 			    unless ( $logname || $target =~ /^RETURN\b/ ) {
 				#
 				# Find/Create a chain that both logs and applies the target action
 				# and jump to the log chain if all of the rule's conditions are met
  				#
-				assert( $target );
-
 				add_jump( $chainref,
 					  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
 					  $builtin_target{$disposition},

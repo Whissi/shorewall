@@ -1,6 +1,5 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 6
-                                   R C  1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,66 +12,6 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
-
-RC 1
-
-1)  Corrected an issue in Beta 7 whereby the jump to an action chain
-    in the nat table could be logged inappropriately (logging in an
-    action rule should be applied to the entries in the action body,
-    not to the jump itself).
-
-Beta 8
-
-1)  Previously, under very rare circumstances, a chain would be
-    optimized away while there were still jumps to the chain. This caused
-    Shorewall start/restart to fail during iptables-restore.
-
-2)  Previously, the setting of BLACKLIST_DISPOSITION was not
-    validated. Now, an error is raised unless the value is DROP or REJECT.
-
-Beta 7
-
-None.
-
-Beta 6
-
-1)  Previously, the root of a wildcard name erroneously matched that
-    name. For example 'eth' matched 'eth+'. Now there must be at least
-    one additional character (e.g., 'eth4').
-
-2)  Use of logical interface names in the notrack and ecn files
-    resulted in perl runtime warning messages.
-
-3)  The use of wildcard-matching names in certain contexts would result
-    in anomalous behavior. Among the symptoms were:
-
-     - Perl run-time messages similar to this one:
-
-       Use of uninitialized value in numeric comparison (<=>) 
-       at /usr/share/shorewall/Shorewall/Zones.pm line 1334.
-
-     - Failure to treat the interface as optional or required.
-
-4)  Where two ISPs share the same interface, if one of the ISPs was not
-    reachable, an iptables-restore error such as this occurred:
-
-      iptables-restore v1.4.10: Bad mac address "-j"
-
-Beta 5
-
-1)  Previously, proxy ARP with logical interface names did not
-    work. Symptoms included numerous Perl runtime error messages. 
-
-Beta 4
-
-None.
-
-Beta 3
-
-1)  Compilation no longer fails when /bin/sh is an older (e.g.,
-    RHEL5.x) bash.
-
-Beta 1
 
 1)  If the output of 'env' contained a multi-line value, then
     compilation failed with an Internal Error. The code has been
@@ -88,6 +27,41 @@ Beta 1
 
     	   .: 31: Can't open /etc/shorewall6/params 
 	   ERROR: Processing of /etc/shorewall6/params failed
+
+4)  Compilation no longer fails when /bin/sh is an older (e.g.,
+    RHEL5.x) bash.
+
+5)  Previously, proxy ARP with logical interface names did not
+    work. Symptoms included numerous Perl runtime error messages. 
+
+6)  Previously, the root of a wildcard name erroneously matched that
+    name. For example 'eth' matched 'eth+'. Now there must be at least
+    one additional character (e.g., 'eth4').
+
+7)  Use of logical interface names in the notrack and ecn files
+    resulted in perl runtime warning messages.
+
+8)  The use of wildcard-matching names in certain contexts would result
+    in anomalous behavior. Among the symptoms were:
+
+     - Perl run-time messages similar to this one:
+
+       Use of uninitialized value in numeric comparison (<=>) 
+       at /usr/share/shorewall/Shorewall/Zones.pm line 1334.
+
+     - Failure to treat the interface as optional or required.
+
+9)  Where two ISPs share the same interface, if one of the ISPs was not
+    reachable, an iptables-restore error such as this occurred:
+
+      iptables-restore v1.4.10: Bad mac address "-j"
+
+10) Previously, under very rare circumstances, a chain would be
+    optimized away while there were still jumps to the chain. This caused
+    Shorewall start/restart to fail during iptables-restore.
+
+11) Previously, the setting of BLACKLIST_DISPOSITION was not
+    validated. Now, an error is raised unless the value is DROP or REJECT.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G

@@ -135,7 +135,7 @@ sub get_target_param( $ ) {
     my ( $target, $param ) = split '/', $_[0];
 
     unless ( defined $param ) {
-	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.+)[)]$/;
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
     }
 
     ( $target, $param );
@@ -1006,6 +1006,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.
+    } else {
+	#
+	# Catch empty parameter list
+	#
+	fatal_error "The $basictarget TARGET does not accept parameters" if $action =~ s/\(\)$//;
     }
 
     if ( $inaction ) {

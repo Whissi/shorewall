@@ -997,7 +997,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    #
 	    process_action( $ref );
 	    #
-	    # Preprocessing may determine that the chain or one of it's dependents does NAT, so:
+	    # Processing the action may determine that the action or one of it's dependents does NAT, so:
 	    #
 	    #    - Refresh $actiontype
 	    #    - Create the associate nat table chain if appropriate.

@@ -764,7 +764,7 @@ secret /etc/openvpn/bridgekey</programlisting>
 
     <programlisting>iface br0 inet static
       pre-up /usr/sbin/openvpn --mktun --dev tap0
-      pre-up /usr/sbin/brctl addbr br1
+      pre-up /usr/sbin/brctl addbr br0
       address 192.168.1.254
       network 192.168.1.0
       broadcast 192.168.1.255
@@ -774,14 +774,14 @@ secret /etc/openvpn/bridgekey</programlisting>
       post-up /sbin/ip link set eth1 up
       post-up /usr/sbin/brctl addif br0 eth1
       post-down /usr/sbin/brctl delbr br0
-      post-down /usr/sbin/tunctl -d tap0
+      post-down /usr/sbin/openvpn --rmtun tap0
       post-down /sbin/ip link set eth1 down      </programlisting>
 
     <para>/etc/network/interfaces on the right-hand firewall:</para>
 
     <programlisting>iface br0 inet static
       pre-up /usr/sbin/openvpn --mktun --dev tap0
-      pre-up /usr/sbin/brctl addbr br1
+      pre-up /usr/sbin/brctl addbr br0
       address 192.168.1.253
       network 192.168.1.0
       broadcast 192.168.1.255
@@ -791,7 +791,7 @@ secret /etc/openvpn/bridgekey</programlisting>
       post-up /sbin/ip link set eth1 up
       post-up /usr/sbin/brctl addif br0 eth1
       post-down /usr/sbin/brctl delbr br0
-      post-down /usr/sbin/tunctl -d tap0
+      post-down /usr/sbin/openvpn --rmtun tap0
       post-down /sbin/ip link set eth1 down      </programlisting>
 
     <para>The Shorewall configuration is just a <ulink

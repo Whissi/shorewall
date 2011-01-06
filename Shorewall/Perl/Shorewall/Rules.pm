@@ -609,7 +609,7 @@ sub Limit( $$$$ ) {
 
     if ( $level ne '' ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_rule_limit $level, $xchainref, $param[0], 'DROP', $tag, '', 'add', '';
+	log_rule_limit $level, $xchainref, $param[0], 'DROP', '', $tag, 'add', '';
 	add_rule $xchainref, '-j DROP';
 	add_jump $chainref,  $xchainref, 0, "-m recent --name $set --update --seconds $param[2] --hitcount $count ";
     } else {

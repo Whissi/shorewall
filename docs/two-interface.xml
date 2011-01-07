@@ -752,10 +752,17 @@ root@lists:~# </programlisting>
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
     file.</para>
 
-    <para>The general form of a simple port forwarding rule in <filename
+    <para>For forwarding connections from the <emphasis>net</emphasis> zone to
+    a server in the <emphasis>loc</emphasis> zone, the general form of a
+    simple port forwarding rule in <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
     <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
 DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting><important>
+        <para><emphasis role="bold">If you want to forward traffic from the
+        <emphasis>loc</emphasis> zone to a server in the
+        <emphasis>loc</emphasis> zone, see <ulink url="FAQ.htm#faq2">Shorewall
+        FAQ 2</ulink>.</emphasis></para>
+      </important><important>
         <para>Be sure to add your rules after the line that reads <emphasis
         role="bold">SECTION NEW.</emphasis></para>
       </important><important>

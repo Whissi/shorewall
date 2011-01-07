@@ -829,7 +829,15 @@ Web(ACCEPT)  loc    dmz:10.10.11.2</programlisting><itemizedlist>
           <listitem>
             <para>When you are connecting to your server from your local
             systems, you must use the server's internal IP address
-            (<systemitem class="ipaddress">10.10.11.2</systemitem>).</para>
+            (<systemitem class="ipaddress">10.10.11.2</systemitem>) or you
+            must use DNAT from the loc zone as well (see below).</para>
+
+            <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST          SOURCE           ORIGINAL
+#                                                    PORT(S)       PORT(S)          DEST
+Web(DNAT)   loc       dmz:10.10.11.2      -          -             -                <replaceable>external-ip-address</replaceable></programlisting>
+
+            <para>where <replaceable>external-ip-address</replaceable> is the
+            IP address of the firewall's external interface.</para>
           </listitem>
 
           <listitem>
@@ -839,7 +847,7 @@ Web(ACCEPT)  loc    dmz:10.10.11.2</programlisting><itemizedlist>
             <literal>http://w.x.y.z:5000 where w.x.y.z</literal> is your
             external IP).<programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)    SOURCE
 #                                                                  PORT(S)
-DNAT      net       dmz:10.10.11.2:80   tcp        80              5000</programlisting></para>
+DNAT      net       dmz:10.10.11.2:80   tcp        5000</programlisting></para>
           </listitem>
 
           <listitem>

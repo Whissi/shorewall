@@ -223,7 +223,8 @@
       it.</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The format of a
-      port-forwarding rule to a local system is as follows:</para>
+      port-forwarding rule <emphasis>from the net</emphasis> to a local system
+      is as follows:</para>
 
       <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
 DNAT       net         loc:<emphasis>local-IP-address</emphasis>[:<emphasis>local-port</emphasis>]      <emphasis>protocol</emphasis>     <emphasis>port-number</emphasis></programlisting>
@@ -252,6 +253,12 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
       <para>Finally, if you need to forward a range of ports, in the DEST PORT
       column specify the range as
       <emphasis>low-port:high-port</emphasis>.</para>
+
+      <important>
+        <para><emphasis role="bold">The above does not work for forwarding
+        from the local network. If you want to do that, see <link
+        linkend="faq2">FAQ 2</link>.</emphasis></para>
+      </important>
 
       <section id="faq1a">
         <title>(FAQ 1a) Okay -- I followed those instructions but it doesn't

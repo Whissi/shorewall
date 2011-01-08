@@ -689,71 +689,70 @@ sub process_action( $) {
     if ( $targets{$action} & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
 	$builtinops{$action}->( $chainref, $level, $tag, $param );
-	return;
+    } else {
+	my $actionfile = find_file "action.$action";
+	my $format = 1;
+
+	fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+
+	progress_message2 "$doing $actionfile for chain $chainref->{name}...";
+
+	push_open $actionfile;
+
+	my $oldparms = push_params( $param );
+
+	$active{$wholeaction}++;
+	push @actionstack, $wholeaction;
+
+	while ( read_a_line ) {
+
+	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
+
+	    if ( $format == 1 ) {
+		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands;
+		$origdest = $connlimit = $time = $headers = '-';
+	    } else {
+		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file', $rule_commands;
+	    }
+
+	    if ( $target eq 'COMMENT' ) {
+		process_comment;
+		next;
+	    }
+
+	    if ( $target eq 'FORMAT' ) {
+		fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
+		$format = $source;
+		next;
+	    }
+
+	    process_rule1( $chainref,
+			   merge_levels( "$action:$level:$tag", $target ),
+			   '',
+			   $source,
+			   $dest,
+			   $proto,
+			   $ports,
+			   $sports,
+			   $origdest,
+			   $rate,
+			   $user,
+			   $mark,
+			   $connlimit,
+			   $time,
+			   $headers,
+			   0 );
+	}
+
+	clear_comment;
+
+	$active{$wholeaction}--;
+	pop @actionstack;
+
+	pop_open;
+
+	pop_params( $oldparms );
     }
-
-    my $actionfile = find_file "action.$action";
-    my $format = 1;
-
-    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
-
-    progress_message2 "$doing $actionfile for chain $chainref->{name}...";
-
-    push_open $actionfile;
-
-    my $oldparms = push_params( $param );
-
-    $active{$wholeaction}++;
-    push @actionstack, $wholeaction;
-
-    while ( read_a_line ) {
-
-	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
-
-	if ( $format == 1 ) {
-	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands;
-	    $origdest = $connlimit = $time = $headers = '-';
-	} else {
-	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file', $rule_commands;
-	}
-
-	if ( $target eq 'COMMENT' ) {
-	    process_comment;
-	    next;
-	}
-
-	if ( $target eq 'FORMAT' ) {
-	    fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
-	    $format = $source;
-	    next;
-	}
-
-	process_rule1( $chainref,
-		       merge_levels( "$action:$level:$tag", $target ),
-		       '',
-		       $source,
-		       $dest,
-		       $proto,
-		       $ports,
-		       $sports,
-		       $origdest,
-		       $rate,
-		       $user,
-		       $mark,
-		       $connlimit,
-		       $time,
-		       $headers,
-		       0 );
-    }
-
-    clear_comment;
-
-    $active{$wholeaction}--;
-    pop @actionstack;
-
-    pop_open;
-
-    pop_params( $oldparms );
 }
 
 #

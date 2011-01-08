@@ -3842,51 +3842,47 @@ sub expand_rule( $$$$$$$$$$;$ )
 		    my $dest_match = match_dest_net( $dnet );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 
-		    if ( $loglevel ne '' ) {
-			unless ( $disposition eq 'LOG' || $disposition eq 'COUNT' ) {
-			    unless ( $logname || $target =~ /^RETURN\b/ ) {
-				#
-				# Find/Create a chain that both logs and applies the target action
-				# and jump to the log chain if all of the rule's conditions are met
- 				#
-				add_jump( $chainref,
-					  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
-					  $builtin_target{$disposition},
-					  $matches,
-					  1 );
-			    } else {
-				log_rule_limit(
-					       $loglevel ,
-					       $chainref ,
-					       $logname || $chain,
-					       $disposition eq 'reject' ? 'REJECT' : $disposition ,
-					       '',
-					       $logtag,
-					       'add',
-					       $matches );
-
-				add_rule( $fromref = $chainref, $matches . $jump, 1 );
-			    }
-			} else {
-			    #
-			    # The log rule must be added with matches to the rule chain
-			    #
-			    log_rule_limit(
-					   $loglevel ,
-					   $chainref ,
-					   $chain,
-					   $disposition eq 'reject' ? 'REJECT' : $disposition ,
-					   '' ,
-					   $logtag ,
-					   'add' ,
-					   $matches
-					  );
-			}
-		    } else {
+		    if ( $loglevel eq '' ) {
 			#
 			# No logging -- add the target rule with matches to the rule chain
 			#
 			add_rule( $fromref = $chainref, $matches . $jump , 1 );
+		    } elsif ( $disposition eq 'LOG' || $disposition eq 'COUNT' ) {
+			#
+			# The log rule must be added with matches to the rule chain
+			#
+			log_rule_limit(
+				       $loglevel ,
+				       $chainref ,
+				       $chain,
+				       $disposition eq 'reject' ? 'REJECT' : $disposition ,
+				       '' ,
+				       $logtag ,
+				       'add' ,
+				       $matches
+				      );
+		    } elsif ( $logname || $target =~ /^RETURN\b/ ) {
+			log_rule_limit(
+				       $loglevel ,
+				       $chainref ,
+				       $logname || $chain,
+				       $disposition eq 'reject' ? 'REJECT' : $disposition ,
+				       '',
+				       $logtag,
+				       'add',
+				       $matches );
+			
+			add_rule( $fromref = $chainref, $matches . $jump, 1 );
+		    } else {
+			#
+			# Find/Create a chain that both logs and applies the target action
+			# and jump to the log chain if all of the rule's conditions are met
+			#
+			add_jump( $chainref,
+				  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
+				  $builtin_target{$disposition},
+				  $matches,
+				  1 );
 		    }
 		}
 	    }

@@ -77,6 +77,7 @@ our %EXPORT_TAGS = (
 				       NOT_RESTORE
 
 				       initialize_chain_table
+				       lookup_shorewall_action
 				       add_commands
 				       move_rules
 				       insert_rule1
@@ -179,6 +180,19 @@ our %EXPORT_TAGS = (
 				       $section
 				       %sections
 				       %targets
+				       %shorewall_targets
+                                       TGT_ACCEPT
+	                               TGT_REJECT
+	                               TGT_DROP
+	                               TGT_NONAT
+	                               TGT_LOG
+	                               TGT_CONTINUE
+	                               TGT_COUNT
+                                       TGT_QUEUE
+	                               TGT_NFQUEUE
+                                       TGT_ADD
+	                               TGT_DEL
+	                               TGT_REDIRECT
 				     ) ],
 		   );
 
@@ -266,6 +280,38 @@ use constant { STANDARD => 1,              #defined by Netfilter
 # Valid Targets -- value is a combination of one or more of the above
 #
 our %targets;
+
+#
+# Shorewall-defined targets
+#
+
+use constant { TGT_ACCEPT   => 1,
+	       TGT_REJECT   => 2,
+	       TGT_DROP     => 3,
+	       TGT_NONAT    => 4,
+	       TGT_LOG      => 5,
+	       TGT_CONTINUE => 6,
+	       TGT_COUNT    => 7,
+               TGT_QUEUE    => 8,
+	       TGT_NFQUEUE  => 9,
+               TGT_ADD      => 10,
+	       TGT_DEL      => 11,
+	       TGT_REDIRECT => 12,
+	   };
+
+our %shorewall_targets = ( ACCEPT     => TGT_ACCEPT,
+			   REJECT     => TGT_REJECT,
+			   DROP       => TGT_DROP,
+			   NONAT      => TGT_NONAT,
+			   LOG        => TGT_LOG,
+			   CONTINUE   => TGT_CONTINUE,
+			   COUNT      => TGT_COUNT,
+			   QUEUE      => TGT_QUEUE,
+			   NFQUEUE    => TGT_NFQUEUE,
+			   ADD        => TGT_ADD,
+			   DEL        => TGT_DEL,
+			   REDIRECT   => TGT_REDIRECT,
+			 );
 #
 # expand_rule() restrictions
 #
@@ -402,6 +448,17 @@ sub initialize( $ ) {
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
+}
+
+#
+# Lookup a standard action
+#
+sub lookup_shorewall_action( $ ) {
+    my $target = shift;
+
+    $target =~ s/[-+!]$//;
+
+    $shorewall_targets{ $target };
 }
 
 #

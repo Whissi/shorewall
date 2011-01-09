@@ -815,7 +815,7 @@ sub fatal_error	{
     die "   ERROR: @_$currentlineinfo\n";
 }
 
-sub fatal_error1	{
+sub fatal_error1 {
     $| = 1;
 
     if ( $log ) {

@@ -27,9 +27,12 @@ None.
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  The (param,value) pairs set in /etc/shorewall/params
+1)  The shell variables set in /etc/shorewall/params
     (/etc/shorewall6/params) are now available at run-time with
-    EXPORTPARAMS=No. The EXPORTPARAMS parameter is now deprecated.
+    EXPORTPARAMS=No. The EXPORTPARAMS option is now deprecated and the
+    released /etc/shorewall/shorewall.conf and
+    /etc/shorewall/shorewall6.conf have been modified to specify
+    EXPORTPARAMS=No.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -250,7 +253,12 @@ None.
 16) If your /etc/shorewall/params (or /etc/shorewall6/params) file
     sends output to Standard Output, you need to be aware that the
     output will be redirected to Standard Error beginning with
-    Shorewall 4.4.16. 
+    Shorewall 4.4.16.
+
+17) Beginning with Shorewall 4.4.17, the EXPORTPARAMS option is
+    deprecated. With EXPORTPARAMS=No, the variables set by
+    /etc/shorewall/params (/etc/shorewall6/params) at compile time are
+    now available in the compiled firewall script.
 
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S

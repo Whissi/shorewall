@@ -548,9 +548,15 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
       <varlistentry>
         <term><emphasis role="bold">EXPORTPARAMS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}
+        (Deprecated beginning with Shorewall 4.4.17)</term>
 
         <listitem>
+          <para>Beginning with Shorewall 4.4.17, the variables set in the
+          'params' file at compile time are available at run time with
+          EXPORTPARAMS=No. As a consequence, beginning with that version the
+          recommended setting is EXPORTPARAMS=No. </para>
+
           <para>It is quite difficult to code a 'params' file that assigns
           other than constant values such that it works correctly with
           Shorewall Lite. The EXPORTPARAMS option works around this problem.
@@ -582,8 +588,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
           or RELATED sections of <ulink
           url="shorewall-rules.html">shorewall-rules</ulink>(5).</para>
-
-          <para></para>
 
           <note>
             <para>FASTACCEPT=Yes is incompatible with

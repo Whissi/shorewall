@@ -98,6 +98,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       pop_open
 				       push_params
 				       pop_params
+				       export_params
 				       read_a_line
 				       validate_level
 				       which
@@ -135,7 +136,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_16';
+our $VERSION = '4.4_17';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -3021,6 +3022,34 @@ sub get_params() {
 		print "   $variable='$value'\n";
 	    }
 	}
+    }
+}
+
+#
+# emit param=value for each param set in the params file
+#
+sub export_params() {
+    #
+    # These are variables that the compiler adds to the hash
+    #
+    my %exclude = ( root        => 1,
+		    system      => 1,
+		    files       => 1,
+		    destination => 1,
+		    command     => 1,
+		    FW          => 1,
+		    CONFDIR     => 1 );
+
+    while ( my ( $param, $value ) = each %params ) {
+	next if $exclude{$param};
+	#
+	# Don't export pairs from %ENV
+	#
+	if ( exists $ENV{$param} && defined $ENV{$param} ) {
+	    next if $value eq $ENV{$param};
+	}
+	
+	emit "$param='$value'";
     }
 }
 

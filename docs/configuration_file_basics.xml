@@ -649,7 +649,9 @@ ACCEPT      net:\
       <filename>shorewall.conf</filename>. That prevents the
       <filename>params</filename> file from being copied into the compiled
       script. With EXPORTPARAMS=No, it is perfectly okay to use INCLUDE in the
-      <filename>params</filename> file.</para>
+      <filename>params</filename> file. Note that with Shorewall 4.4.17 and
+      later, the variables set at compile time are available at run-time even
+      with EXPORTPARAMS=No.</para>
     </caution>
 
     <example id="include">
@@ -860,8 +862,9 @@ SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
         run-time. If you have set EXPORTPARAMS=No in
         <filename>shorewall.conf</filename>, then the
         <filename><filename>params</filename></filename> file is only
-        processed by the compiler; it is not run by the compiled
-        script.</para>
+        processed by the compiler; it is not run by the compiled script.
+        Beginning with Shorewall 4.4.17, the values of the variables set at
+        compile time are available at run time with EXPORTPRARMS=No.</para>
       </listitem>
 
       <listitem>

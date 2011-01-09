@@ -510,8 +510,10 @@ clean:
             <para>The <filename>params</filename> file is not processed at run
             time if you set EXPORTPARAMS=No in
             <filename>shorewall.conf</filename>. For run-time setting of shell
-            variables, use the <filename>init</filename> extension
-            script.</para>
+            variables, use the <filename>init</filename> extension script.
+            Beginning with Shorewall 4.4.17, the variables set in the
+            <filename>params</filename> file are available in the firewall
+            script when EXPORTPARAMS=No.</para>
 
             <para>If the <filename>params</filename> file needs to set shell
             variables based on the configuration of the firewall system, you
@@ -612,8 +614,10 @@ clean:
               <filename>shorewall.conf</filename>. For run-time setting of
               shell variables, use the <filename>init</filename> extension
               script. Although the default setting is EXPORTPARAMS=Yes for
-              compatibility, the recommended setting is
-              EXPORTPARAMS=No.</para>
+              compatibility, the recommended setting is EXPORTPARAMS=No.
+              Beginning with Shorewall 4.4.17, the variables set in the
+              <filename>params</filename> file are available in the firewall
+              script when EXPORTPARAMS=No.</para>
 
               <para>If the <filename>params</filename> file needs to set shell
               variables based on the configuration of the firewall system, you

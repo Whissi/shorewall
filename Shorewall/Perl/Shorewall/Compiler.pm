@@ -43,7 +43,7 @@ use Shorewall::Misc;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_16';
+our $VERSION = '4.4_17';
 
 our $export;
 
@@ -229,7 +229,11 @@ sub generate_script_2() {
 
     set_chain_variables;
 
-    append_file 'params' if $config{EXPORTPARAMS};
+    if ( $config{EXPORTPARAMS} ) {
+	append_file 'params';
+    } else {
+	export_params;
+    }
 
     emit ( '',
 	   "g_stopping=",

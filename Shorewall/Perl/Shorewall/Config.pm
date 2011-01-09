@@ -103,6 +103,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       which
 				       qt
 				       ensure_config_path
+				       add_param
 				       export_params
 				       get_configuration
 				       require_capability
@@ -125,7 +126,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $debug
 				       %config
 				       %globals
-				       %params
 
 		                       F_IPV4
 		                       F_IPV6
@@ -277,6 +277,10 @@ our @openstack;
 # From the params file
 #
 our %params;
+#
+# Entries that the compiler adds to %params
+#
+our %compiler_params;
 #
 # Action parameters
 #
@@ -718,12 +722,16 @@ sub initialize( $ ) {
     $shorewall_dir = '';      #Shorewall Directory
 
     $debug = 0;
-
+    
     %params = ( root        => '',
 		system      => '',
 		command     => '',
 		files       => '',
 		destination => '' );
+
+    %compiler_params = ();
+
+    $compiler_params{$_} = 1 for keys %params;
 
     %actparms = ();
 }
@@ -2742,7 +2750,7 @@ sub ensure_config_path() {
 
 	open_file $f;
 
-	$params{CONFDIR} = $globals{CONFDIR};
+	add_param( CONFDIR => $globals{CONFDIR} );
 
 	while ( read_a_line ) {
 	    if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
@@ -3026,24 +3034,23 @@ sub get_params() {
 }
 
 #
+# Add an entry to %params
+#
+sub add_param( $$ ) {
+    my ( $param, $value ) = @_;
+
+    $params{$param} = $value;
+    $compiler_params{$param} = 1;
+}
+
+#
 # emit param=value for each param set in the params file
 #
 sub export_params() {
-    #
-    # These are variables that the compiler adds to the hash
-    #
-    my %exclude = ( root        => 1,
-		    system      => 1,
-		    files       => 1,
-		    destination => 1,
-		    command     => 1,
-		    FW          => 1,
-		    CONFDIR     => 1 );
-
     my $count = 0;
 
     while ( my ( $param, $value ) = each %params ) {
-	next if $exclude{$param};
+	next if $compiler_params{$param};
 	#
 	# Don't export pairs from %ENV
 	#

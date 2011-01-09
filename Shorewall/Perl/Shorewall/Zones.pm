@@ -429,7 +429,7 @@ sub process_zone( \$ ) {
 	fatal_error 'Firewall zone may not be nested' if @parents;
 	fatal_error "Only one firewall zone may be defined ($zone)" if $firewall_zone;
 	$firewall_zone = $zone;
-	$params{FW} = $zone;
+	add_param( FW => $zone );
 	$type = FIREWALL;
     } elsif ( $type eq 'vserver' ) {
 	fatal_error 'Vserver zones may not be nested' if @parents;

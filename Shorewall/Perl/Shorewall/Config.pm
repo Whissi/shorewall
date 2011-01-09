@@ -1894,7 +1894,7 @@ sub read_a_line(;$) {
 
 	    my $count = 0;
 	    #
-	    # Expand Shell Variables using %params and %ENV
+	    # Expand Shell Variables using %params and %actparms
 	    #
 	    #                            $1      $2   $3      -     $4
 	    while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {

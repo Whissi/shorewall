@@ -311,7 +311,6 @@ sub generate_script_2() {
 #
 #    Generate code for loading the various files in /var/lib/shorewall[6][-lite]
 #    Generate code to add IP addresses under ADD_IP_ALIASES and ADD_SNAT_ALIASES
-#
 #    Generate the 'setup_netfilter()' function that runs iptables-restore.
 #    Generate the 'define_firewall()' function.
 #
@@ -639,7 +638,7 @@ sub compiler {
     #
     validate_policy;
     #
-    # Process default actions
+    # Process policy actions
     #
     process_actions2;
     #

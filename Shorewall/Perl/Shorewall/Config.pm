@@ -98,12 +98,12 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       pop_open
 				       push_params
 				       pop_params
-				       export_params
 				       read_a_line
 				       validate_level
 				       which
 				       qt
 				       ensure_config_path
+				       export_params
 				       get_configuration
 				       require_capability
 				       have_capability
@@ -3040,6 +3040,8 @@ sub export_params() {
 		    FW          => 1,
 		    CONFDIR     => 1 );
 
+    my $count = 0;
+
     while ( my ( $param, $value ) = each %params ) {
 	next if $exclude{$param};
 	#
@@ -3048,9 +3050,17 @@ sub export_params() {
 	if ( exists $ENV{$param} && defined $ENV{$param} ) {
 	    next if $value eq $ENV{$param};
 	}
-	
-	emit "$param='$value'";
+
+	emit "#\n# From the params file\n#" unless $count++;
+
+	if ( $value =~ /\s/ ) {
+	    emit "$param='$value'";
+	} else {
+	    emit "$param=$value";
+	}
     }
+
+    emit '' if $count;
 }
 
 #

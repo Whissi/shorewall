@@ -52,7 +52,7 @@ our @EXPORT = qw(
 		 progress_message3
                 );
 
-our @EXPORT_OK = qw( $shorewall_dir initialize read_a_line1 set_config_path shorewall);
+our @EXPORT_OK = qw( $shorewall_dir initialize set_config_path shorewall);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       finalize_script

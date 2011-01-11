@@ -179,19 +179,6 @@ our %EXPORT_TAGS = (
 				       $section
 				       %sections
 				       %targets
-				       %shorewall_targets
-                                       TGT_ACCEPT
-	                               TGT_REJECT
-	                               TGT_DROP
-	                               TGT_NONAT
-	                               TGT_LOG
-	                               TGT_CONTINUE
-	                               TGT_COUNT
-                                       TGT_QUEUE
-	                               TGT_NFQUEUE
-                                       TGT_ADD
-	                               TGT_DEL
-	                               TGT_REDIRECT
 				     ) ],
 		   );
 

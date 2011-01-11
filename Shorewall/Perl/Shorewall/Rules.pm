@@ -1021,33 +1021,38 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
     my $log_action = $action;
 
     unless ( $actiontype & ( ACTION | MACRO | NFQ | CHAIN ) ) {
-	if ( my $shorewall_target = lookup_shorewall_action( $basictarget ) ) {
-	    if ( $shorewall_target == TGT_REDIRECT ) {
-		my $z = $actiontype & NATONLY ? '' : firewall_zone;
-		if ( $dest eq '-' ) {
-		    $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
-		} elsif ( $inaction ) {
-		    $dest = ":$dest";
-		} else {
-		    $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
-		}
-	    } elsif ( $shorewall_target == TGT_REJECT ) {
-		$action = 'reject';
-	    } elsif ( $shorewall_target == TGT_CONTINUE ) {
-		$action = 'RETURN';
-	    } elsif ( $shorewall_target == TGT_COUNT ) {
-		$action = '';
-	    } elsif ( $shorewall_target == TGT_LOG ) {
-		fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne '';
-	    } elsif ( $actiontype & SET ) {
-		my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
-		
-		my ( $setname, $flags, $rest ) = split ':', $param, 3;
-		fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
-		fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^[a-zA-Z]\w*$/;
-		fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
-		$action = join( ' ', 'SET --' . $xlate{$basictarget} , $setname , $flags );
-	    }
+	my $bt = $basictarget;
+
+	$bt =~ s/[-+!]$//;
+
+	my %functions = ( REDIRECT => sub () {
+			      my $z = $actiontype & NATONLY ? '' : firewall_zone;
+			      if ( $dest eq '-' ) {
+				  $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+			      } elsif ( $inaction ) {
+				  $dest = ":$dest";
+			      } else {
+				  $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
+			      }
+			  } ,
+			  REJECT => sub { $action = 'reject'; } ,
+			  CONTINUE => sub { $action = 'RETURN'; } ,
+			  COUNT => sub { $action = ''; } ,
+			  LOG => sub { fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne ''; } ,
+		     );
+
+	my $function = $functions{ $bt };
+
+	if ( $function ) {
+	    $function->();
+	} elsif ( $actiontype & SET ) {
+	    my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
+	    
+	    my ( $setname, $flags, $rest ) = split ':', $param, 3;
+	    fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
+	    fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^[a-zA-Z]\w*$/;
+	    fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
+	    $action = join( ' ', 'SET --' . $xlate{$basictarget} , $setname , $flags );
 	}
     }
     #

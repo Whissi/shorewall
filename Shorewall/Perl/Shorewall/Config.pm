@@ -3034,7 +3034,7 @@ sub get_params() {
 }
 
 #
-# Add an entry to %params
+# Add an entry to %params and to %compiler_params
 #
 sub add_param( $$ ) {
     my ( $param, $value ) = @_;
@@ -3050,7 +3050,10 @@ sub export_params() {
     my $count = 0;
 
     while ( my ( $param, $value ) = each %params ) {
-	next if $compiler_params{$param};
+	#
+	# Don't export params added by the compiler
+	#
+	next if exists $compiler_params{$param};
 	#
 	# Don't export pairs from %ENV
 	#

@@ -169,8 +169,10 @@ case "$COMMAND" in
 	    detect_configuration
 	    define_firewall
 	    status=$?
-	    [ -n "$SUBSYSLOCK" -a $status -eq 0 ] && touch $SUBSYSLOCK
-	    progress_message3 "done."
+	    if [ $status -eq 0 ]; then
+		[ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
+		progress_message3 "done."
+	    fi
 	fi
 	;;
     stop)
@@ -225,9 +227,9 @@ case "$COMMAND" in
 	define_firewall
 	status=$?
 	if [ -n "$SUBSYSLOCK" ]; then
- 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-        fi
-	progress_message3 "done."
+	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+	fi
+	[ $status -eq 0 ] && progress_message3 "done."
 	;;
     refresh)
 	[ $# -ne 1 ] && usage 2
@@ -236,7 +238,7 @@ case "$COMMAND" in
 	    detect_configuration
 	    define_firewall
 	    status=$?
-	    progress_message3 "done."
+	    [ $status -eq 0 ] && progress_message3 "done."
 	else
 	    echo "$g_product is not running" >&2
 	    status=2
@@ -256,10 +258,10 @@ case "$COMMAND" in
 	progress_message3 "Clearing $g_product...."
 	clear_firewall
 	status=0
-	if [ -n "$SUBSYSLOCK" ]; then
-	    rm -f $SUBSYSLOCK
+	if [ $status -eq 0 ]; then
+	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	    progress_message3 "done."
 	fi
-	progress_message3 "done."
 	;;
     status)
 	[ $# -ne 1 ] && usage 2

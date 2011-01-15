@@ -3095,8 +3095,6 @@ sub export_params() {
 	    emit "$param=$value";
 	}
     }
-
-    emit '' if $count;
 }
 
 #

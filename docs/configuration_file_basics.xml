@@ -694,7 +694,7 @@ ACCEPT      net:\
       </listitem>
     </itemizedlist>
 
-    <para>When used in these scripts, the included files are copied into the
+    <para>When used in these scripts, the INCLUDEd files are copied into the
     compiled firewall script.</para>
 
     <caution>
@@ -713,8 +713,20 @@ ACCEPT      net:\
       <filename>params</filename> file from being copied into the compiled
       script. With EXPORTPARAMS=No, it is perfectly okay to use INCLUDE in the
       <filename>params</filename> file. Note that with Shorewall 4.4.17 and
-      later, the variables set at compile time are available at run-time even
-      with EXPORTPARAMS=No.</para>
+      later: </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The variables set at compile time are available at run-time
+          even with EXPORTPARAMS=No.</para>
+        </listitem>
+
+        <listitem>
+          <para>The INCLUDE directive in the <filename>params</filename> file
+          is processed at compile time and the INCLUDEd file is copied into
+          the compiled script.</para>
+        </listitem>
+      </itemizedlist>
     </caution>
 
     <example id="include">

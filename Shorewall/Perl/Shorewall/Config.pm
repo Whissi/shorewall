@@ -1195,6 +1195,8 @@ sub copy( $ ) {
     }
 }
 
+sub close_file();
+
 #
 # This one handles line continuation and 'here documents'
 
@@ -1204,72 +1206,72 @@ sub copy1( $ ) {
     my $result = 0;
 
     if ( $script || $debug ) {
-	my $file = $_[0];
-
-	open IF , $file or fatal_error "Unable to open $file: $!";
-
 	my ( $do_indent, $here_documents ) = ( 1, '');
 
-	while ( <IF> ) {
-	    chomp;
+	open_file( $_[0] );
+	
+	while ( $currentfile ) {
+	    while ( <$currentfile> ) {
+		chomp;
 
-	    if ( /^${here_documents}\s*$/ ) {
-		if ( $script ) {
-		    print $script $here_documents if $here_documents;
-		    print $script "\n";
+		if ( /^${here_documents}\s*$/ ) {
+		    if ( $script ) {
+			print $script $here_documents if $here_documents;
+			print $script "\n";
+		    }
+
+		    if ( $debug ) {
+			print "GS-----> $here_documents" if $here_documents;
+			print "GS----->\n";
+		    }
+
+		    $do_indent = 1;
+		    $here_documents = '';
+		    next;
 		}
 
-		if ( $debug ) {
-		    print "GS-----> $here_documents" if $here_documents;
-		    print "GS----->\n";
+		if ( $do_indent && /.*<<\s*([^ ]+)s*(.*)/ ) {
+		    $here_documents = $1;
+		    s/^(\s*)/$indent1$1$indent2/;
+		    s/        /\t/ if $indent2;
+		    $do_indent = 0;
+
+		    if ( $script ) {
+			print $script $_;
+			print $script "\n";
+		    }
+
+		    if ( $debug ) {
+			s/\n/\nGS-----> /g;
+			print "GS-----> $_\n";
+		    }
+
+		    $result = 1;
+		    next;
 		}
 
-		$do_indent = 1;
-		$here_documents = '';
-		next;
-	    }
-
-	    if ( $do_indent && /.*<<\s*([^ ]+)s*(.*)/ ) {
-		$here_documents = $1;
-		s/^(\s*)/$indent1$1$indent2/;
-		s/        /\t/ if $indent2;
-		$do_indent = 0;
+		if ( $indent && $do_indent ) {
+		    s/^(\s*)/$indent1$1$indent2/;
+		    s/        /\t/ if $indent2;
+		}
 
 		if ( $script ) {
 		    print $script $_;
 		    print $script "\n";
 		}
 
+		$do_indent = ! ( $here_documents || /\\$/ );
+
+		$result = 1 unless $result || /^\s*$/ || /^\s*#/;
+
 		if ( $debug ) {
 		    s/\n/\nGS-----> /g;
 		    print "GS-----> $_\n";
 		}
-
-		$result = 1;
-		next;
 	    }
 
-	    if ( $indent && $do_indent ) {
-		s/^(\s*)/$indent1$1$indent2/;
-		s/        /\t/ if $indent2;
-	    }
-
-	    if ( $script ) {
-		print $script $_;
-		print $script "\n";
-	    }
-
-	    $do_indent = ! ( $here_documents || /\\$/ );
-
-	    $result = 1 unless $result || /^\s*$/ || /^\s*#/;
-
-	    if ( $debug ) {
-		s/\n/\nGS-----> /g;
-		print "GS-----> $_\n";
-	    }
+	    close_file;
 	}
-
-	close IF;
     }
 
     $lastlineblank = 0;

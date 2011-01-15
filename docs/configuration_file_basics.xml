@@ -636,12 +636,75 @@ ACCEPT      net:\
     <para>INCLUDE's may be nested to a level of 3 -- further nested INCLUDE
     directives are ignored with a warning message.</para>
 
+    <para>Beginning with Shorewall 4.4.17, the INCLUDE directive may also
+    appear in the following <ulink
+    url="shorewall_extension_scripts.htm">extension scripts</ulink>:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>clear</para>
+      </listitem>
+
+      <listitem>
+        <para>findgw</para>
+      </listitem>
+
+      <listitem>
+        <para>init</para>
+      </listitem>
+
+      <listitem>
+        <para>isusable</para>
+      </listitem>
+
+      <listitem>
+        <para>refresh</para>
+      </listitem>
+
+      <listitem>
+        <para>refreshed</para>
+      </listitem>
+
+      <listitem>
+        <para>restore</para>
+      </listitem>
+
+      <listitem>
+        <para>restored</para>
+      </listitem>
+
+      <listitem>
+        <para>start</para>
+      </listitem>
+
+      <listitem>
+        <para>started</para>
+      </listitem>
+
+      <listitem>
+        <para>stop</para>
+      </listitem>
+
+      <listitem>
+        <para>stopped</para>
+      </listitem>
+
+      <listitem>
+        <para>tcclear</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>When used in these scripts, the included files are copied into the
+    compiled firewall script.</para>
+
     <caution>
-      <para>If you are using <ulink
+      <para>Prior to Shorewall 4.4.17, if you are using <ulink
       url="CompiledPrograms.html%23Lite">Shorewall Lite</ulink> , it is not
       advisable to use INCLUDE in the <filename>params</filename> file in an
-      export directory. If you do that, you must ensure that the included file
-      is also present on the firewall system's <filename
+      export directory if you set EXPORTPARAMS=Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5). If you do
+      that, you must ensure that the included file is also present on the
+      firewall system's <filename
       class="directory">/etc/shorewall-lite/</filename> directory.</para>
 
       <para>If you only need the <filename>params</filename> file at compile

@@ -1164,192 +1164,6 @@ sub pop_indent() {
 }
 
 #
-# Functions for copying files into the script
-#
-sub copy( $ ) {
-    assert( $script_enabled );
-
-    if ( $script ) {
-	my $file = $_[0];
-
-	open IF , $file or fatal_error "Unable to open $file: $!";
-
-	while ( <IF> ) {
-	    chomp;
-	    if ( /^\s*$/ ) {
-		print $script "\n" unless $lastlineblank;
-		$lastlineblank = 1;
-	    } else {
-		if  ( $indent ) {
-		    s/^(\s*)/$indent1$1$indent2/;
-		    s/        /\t/ if $indent2;
-		}
-
-		print $script $_;
-		print $script "\n";
-		$lastlineblank = 0;
-	    }
-	}
-
-	close IF;
-    }
-}
-
-sub close_file();
-
-#
-# This one handles line continuation and 'here documents'
-
-sub copy1( $ ) {
-    assert( $script_enabled );
-
-    my $result = 0;
-
-    if ( $script || $debug ) {
-	my ( $do_indent, $here_documents ) = ( 1, '');
-
-	open_file( $_[0] );
-	
-	while ( $currentfile ) {
-	    while ( <$currentfile> ) {
-		chomp;
-
-		if ( /^${here_documents}\s*$/ ) {
-		    if ( $script ) {
-			print $script $here_documents if $here_documents;
-			print $script "\n";
-		    }
-
-		    if ( $debug ) {
-			print "GS-----> $here_documents" if $here_documents;
-			print "GS----->\n";
-		    }
-
-		    $do_indent = 1;
-		    $here_documents = '';
-		    next;
-		}
-
-		if ( $do_indent && /.*<<\s*([^ ]+)s*(.*)/ ) {
-		    $here_documents = $1;
-		    s/^(\s*)/$indent1$1$indent2/;
-		    s/        /\t/ if $indent2;
-		    $do_indent = 0;
-
-		    if ( $script ) {
-			print $script $_;
-			print $script "\n";
-		    }
-
-		    if ( $debug ) {
-			s/\n/\nGS-----> /g;
-			print "GS-----> $_\n";
-		    }
-
-		    $result = 1;
-		    next;
-		}
-
-		if ( $indent && $do_indent ) {
-		    s/^(\s*)/$indent1$1$indent2/;
-		    s/        /\t/ if $indent2;
-		}
-
-		if ( $script ) {
-		    print $script $_;
-		    print $script "\n";
-		}
-
-		$do_indent = ! ( $here_documents || /\\$/ );
-
-		$result = 1 unless $result || /^\s*$/ || /^\s*#/;
-
-		if ( $debug ) {
-		    s/\n/\nGS-----> /g;
-		    print "GS-----> $_\n";
-		}
-	    }
-
-	    close_file;
-	}
-    }
-
-    $lastlineblank = 0;
-
-    $result;
-}
-
-#
-# This one drops header comments and replaces them with a three-line banner
-#
-sub copy2( $$ ) {
-    my ( $file, $trace ) = @_;
-
-    assert( $script_enabled );
-    my $empty = 1;
-
-    if ( $script || $trace ) {
-	my $file = $_[0];
-
-	open IF , $file or fatal_error "Unable to open $file: $!";
-
-	while ( <IF> ) {
-	    $empty = 0, last unless /^#/;
-	}
-
-	unless ( $empty ) {
-	    emit <<EOF;
-################################################################################
-#   Functions imported from $file
-################################################################################
-EOF
-	    chomp;
-	    emit( $_ ) unless /^\s*$/;
-
-	    while ( <IF> ) {
-		chomp;
-		if ( /^\s*$/ ) {
-		    unless ( $lastlineblank ) {
-			print $script "\n" if $script;
-			print "GS----->\n" if $trace;
-		    }
-
-		    $lastlineblank = 1;
-		} else {
-		    if  ( $indent ) {
-			s/^(\s*)/$indent1$1$indent2/;
-			s/        /\t/ if $indent2;
-		    }
-
-		    if ( $script ) {
-			print $script $_;
-			print $script "\n";
-		    }
-
-		    if ( $trace ) {
-			s/\n/GS-----> \n/g;
-			print "GS-----> $_\n";
-		    }
-
-		    $lastlineblank = 0;
-		}
-	    }
-
-	    close IF;
-
-	    unless ( $lastlineblank ) {
-		print $script "\n" if $script;
-		print "GS----->\n" if $trace;
-	    }
-
-	    emit( '################################################################################',
-		  "#   End of imports from $file",
-		  '################################################################################' );
-	}
-    }
-}
-
-#
 # Create the temporary script file -- the passed file name is the name of the final file.
 # We create a temporary file in the same directory so that we can use rename to finalize it.
 #
@@ -1635,6 +1449,216 @@ sub close_file() {
 
 	$first_entry = 0;
 
+    }
+}
+
+#
+# Functions for copying files into the script
+#
+sub copy( $ ) {
+    assert( $script_enabled );
+
+    if ( $script ) {
+	my $file = $_[0];
+
+	open IF , $file or fatal_error "Unable to open $file: $!";
+
+	while ( <IF> ) {
+	    chomp;
+	    if ( /^\s*$/ ) {
+		print $script "\n" unless $lastlineblank;
+		$lastlineblank = 1;
+	    } else {
+		if  ( $indent ) {
+		    s/^(\s*)/$indent1$1$indent2/;
+		    s/        /\t/ if $indent2;
+		}
+
+		print $script $_;
+		print $script "\n";
+		$lastlineblank = 0;
+	    }
+	}
+
+	close IF;
+    }
+}
+
+#
+# This variant of copy handles line continuation, 'here documents' and INCLUDE
+#
+sub copy1( $ ) {
+    assert( $script_enabled );
+
+    my $result = 0;
+
+    if ( $script || $debug ) {
+	my ( $do_indent, $here_documents ) = ( 1, '');
+
+	open_file( $_[0] );
+	
+	while ( $currentfile ) {
+	    while ( <$currentfile> ) {
+		$currentlinenumber++;
+
+		chomp;
+
+		if ( /^${here_documents}\s*$/ ) {
+		    if ( $script ) {
+			print $script $here_documents if $here_documents;
+			print $script "\n";
+		    }
+
+		    if ( $debug ) {
+			print "GS-----> $here_documents" if $here_documents;
+			print "GS----->\n";
+		    }
+
+		    $do_indent = 1;
+		    $here_documents = '';
+		    next;
+		}
+
+		if ( $do_indent && /.*<<\s*([^ ]+)s*(.*)/ ) {
+		    $here_documents = $1;
+		    s/^(\s*)/$indent1$1$indent2/;
+		    s/        /\t/ if $indent2;
+		    $do_indent = 0;
+
+		    if ( $script ) {
+			print $script $_;
+			print $script "\n";
+		    }
+
+		    if ( $debug ) {
+			s/\n/\nGS-----> /g;
+			print "GS-----> $_\n";
+		    }
+
+		    $result = 1;
+		    next;
+		}
+
+		if ( $do_indent ) {
+		    if ( /^\s*INCLUDE\s/ ) {
+			my @line = split / /;
+
+			fatal_error "Invalid INCLUDE command"    if @line != 2;
+			fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
+
+			my $filename = find_file $line[1];
+
+			fatal_error "INCLUDE file $filename not found" unless -f $filename;
+			fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
+
+			if ( -s _ ) {
+			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+			    $currentfile = undef;
+			    do_open_file $filename;
+			} else {
+			    $currentlinenumber = 0;
+			}
+
+			next;
+		    }
+			
+		    if ( $indent ) {
+			s/^(\s*)/$indent1$1$indent2/;
+			s/        /\t/ if $indent2;
+		    }
+		}
+
+		if ( $script ) {
+		    print $script $_;
+		    print $script "\n";
+		}
+
+		$do_indent = ! ( $here_documents || /\\$/ );
+
+		$result = 1 unless $result || /^\s*$/ || /^\s*#/;
+
+		if ( $debug ) {
+		    s/\n/\nGS-----> /g;
+		    print "GS-----> $_\n";
+		}
+	    }
+
+	    close_file;
+	}
+    }
+
+    $lastlineblank = 0;
+
+    $result;
+}
+
+#
+# This one drops header comments and replaces them with a three-line banner
+#
+sub copy2( $$ ) {
+    my ( $file, $trace ) = @_;
+
+    assert( $script_enabled );
+    my $empty = 1;
+
+    if ( $script || $trace ) {
+	my $file = $_[0];
+
+	open IF , $file or fatal_error "Unable to open $file: $!";
+
+	while ( <IF> ) {
+	    $empty = 0, last unless /^#/;
+	}
+
+	unless ( $empty ) {
+	    emit <<EOF;
+################################################################################
+#   Functions imported from $file
+################################################################################
+EOF
+	    chomp;
+	    emit( $_ ) unless /^\s*$/;
+
+	    while ( <IF> ) {
+		chomp;
+		if ( /^\s*$/ ) {
+		    unless ( $lastlineblank ) {
+			print $script "\n" if $script;
+			print "GS----->\n" if $trace;
+		    }
+
+		    $lastlineblank = 1;
+		} else {
+		    if  ( $indent ) {
+			s/^(\s*)/$indent1$1$indent2/;
+			s/        /\t/ if $indent2;
+		    }
+
+		    if ( $script ) {
+			print $script $_;
+			print $script "\n";
+		    }
+
+		    if ( $trace ) {
+			s/\n/GS-----> \n/g;
+			print "GS-----> $_\n";
+		    }
+
+		    $lastlineblank = 0;
+		}
+	    }
+
+	    close IF;
+
+	    unless ( $lastlineblank ) {
+		print $script "\n" if $script;
+		print "GS----->\n" if $trace;
+	    }
+
+	    emit( '################################################################################',
+		  "#   End of imports from $file",
+		  '################################################################################' );
+	}
     }
 }
 

@@ -611,7 +611,7 @@ sub initialize( $ ) {
 	$globals{CONFDIR}  = '/etc/shorewall';
 	$globals{PRODUCT}  = 'shorewall';
 	$config{IPTABLES}  = undef;
-	$validlevels{ULOG} => 'ULOG',
+	$validlevels{ULOG} = 'ULOG',
     } else {
 	$globals{SHAREDIR} = '/usr/share/shorewall6';
 	$globals{CONFDIR}  = '/etc/shorewall6';

@@ -350,7 +350,8 @@ sub initialize( $ ) {
     $indent        = '';       # Current total indentation
     ( $dir, $file ) = ('',''); # Script's Directory and Filename
     $tempfile = '';            # Temporary File Name
-    $sillyname = '';           # Temporary ipchain
+    $sillyname = 
+    $sillyname1 = '';          # Temporary ipchains
 
     #
     # Misc Globals
@@ -367,281 +368,152 @@ sub initialize( $ ) {
 		    VERSION => "4.4.17-Beta1",
 		    CAPVERSION => 40415 ,
 		  );
-
     #
     # From shorewall.conf file
     #
-    if ( $family == F_IPV4 ) {
-	$globals{PRODUCT} = 'shorewall';
+    %config =
+	( STARTUP_ENABLED => undef,
+	  VERBOSITY => undef,
+	  #
+	  # Logging
+	  #
+	  LOGFILE => undef,
+	  LOGFORMAT => undef,
+	  LOGTAGONLY => undef,
+	  LOGLIMIT => undef,
+	  LOGRATE => undef,
+	  LOGBURST => undef,
+	  LOGALLNEW => undef,
+	  BLACKLIST_LOGLEVEL => undef,
+	  RFC1918_LOG_LEVEL => undef,
+	  MACLIST_LOG_LEVEL => undef,
+	  TCP_FLAGS_LOG_LEVEL => undef,
+	  SMURF_LOG_LEVEL => undef,
+	  LOG_MARTIANS => undef,
+	  LOG_VERBOSITY => undef,
+	  STARTUP_LOG => undef,
+	  #
+	  # Location of Files
+	  #
+	  IP => undef,
+	  TC => undef,
+	  IPSET => undef,
+	  PERL => undef,
+	  #
+	  #PATH is inherited
+	  #
+	  PATH => undef,
+	  SHOREWALL_SHELL => undef,
+	  SUBSYSLOCK => undef,
+	  MODULESDIR => undef,
+	  #
+	  #CONFIG_PATH is inherited
+	  #
+	  CONFIG_PATH => undef,
+	  RESTOREFILE => undef,
+	  IPSECFILE => undef,
+	  LOCKFILE => undef,
+	  #
+	  # Default Actions/Macros
+	  #
+	  DROP_DEFAULT => undef,
+	  REJECT_DEFAULT => undef,
+	  ACCEPT_DEFAULT => undef,
+	  QUEUE_DEFAULT => undef,
+	  NFQUEUE_DEFAULT => undef,
+	  #
+	  # RSH/RCP Commands
+	  #
+	  RSH_COMMAND => undef,
+	  RCP_COMMAND => undef,
+	  #
+	  # Firewall Options
+	  #
+	  BRIDGING => undef,
+	  IP_FORWARDING => undef,
+	  ADD_IP_ALIASES => undef,
+	  ADD_SNAT_ALIASES => undef,
+	  RETAIN_ALIASES => undef,
+	  TC_ENABLED => undef,
+	  TC_EXPERT => undef,
+	  TC_PRIOMAP => undef,
+	  CLEAR_TC => undef,
+	  MARK_IN_FORWARD_CHAIN => undef,
+	  CLAMPMSS => undef,
+	  ROUTE_FILTER => undef,
+	  DETECT_DNAT_IPADDRS => undef,
+	  MUTEX_TIMEOUT => undef,
+	  ADMINISABSENTMINDED => undef,
+	  BLACKLISTNEWONLY => undef,
+	  DELAYBLACKLISTLOAD => undef,
+	  MODULE_SUFFIX => undef,
+	  DISABLE_IPV6 => undef,
+	  DYNAMIC_ZONES => undef,
+	  PKTTYPE=> undef,
+	  MACLIST_TABLE => undef,
+	  MACLIST_TTL => undef,
+	  SAVE_IPSETS => undef,
+	  MAPOLDACTIONS => undef,
+	  FASTACCEPT => undef,
+	  IMPLICIT_CONTINUE => undef,
+	  HIGH_ROUTE_MARKS => undef,
+	  USE_ACTIONS=> undef,
+	  OPTIMIZE => undef,
+	  EXPORTPARAMS => undef,
+	  SHOREWALL_COMPILER => undef,
+	  EXPAND_POLICIES => undef,
+	  KEEP_RT_TABLES => undef,
+	  DELETE_THEN_ADD => undef,
+	  MULTICAST => undef,
+	  DONT_LOAD => '',
+	  AUTO_COMMENT => undef ,
+	  MANGLE_ENABLED => undef ,
+	  RFC1918_STRICT => undef ,
+	  NULL_ROUTE_RFC1918 => undef ,
+	  USE_DEFAULT_RT => undef ,
+	  RESTORE_DEFAULT_ROUTE => undef ,
+	  FAST_STOP => undef ,
+	  AUTOMAKE => undef ,
+	  WIDE_TC_MARKS => undef,
+	  TRACK_PROVIDERS => undef,
+	  ZONE2ZONE => undef,
+	  ACCOUNTING => undef,
+	  OPTIMIZE_ACCOUNTING => undef,
+	  DYNAMIC_BLACKLIST => undef,
+	  LOAD_HELPERS_ONLY => undef,
+	  REQUIRE_INTERFACE => undef,
+	  FORWARD_CLEAR_MARK => undef,
+	  COMPLETE => undef,
+	  #
+	  # Packet Disposition
+	  #
+	  MACLIST_DISPOSITION => undef,
+	  TCP_FLAGS_DISPOSITION => undef,
+	  BLACKLIST_DISPOSITION => undef,
+	  #
+	  # Mark Geometry
+	  #
+	  TC_BITS => undef,
+	  PROVIDER_BITS => undef,
+	  PROVIDER_OFFSET => undef,
+	  MASK_BITS => undef
+	);
 
-	%config =
-	    ( STARTUP_ENABLED => undef,
-	      VERBOSITY => undef,
-	      #
-	      # Logging
-	      #
-	      LOGFILE => undef,
-	      LOGFORMAT => undef,
-	      LOGTAGONLY => undef,
-	      LOGLIMIT => undef,
-	      LOGRATE => undef,
-	      LOGBURST => undef,
-	      LOGALLNEW => undef,
-	      BLACKLIST_LOGLEVEL => undef,
-	      RFC1918_LOG_LEVEL => undef,
-	      MACLIST_LOG_LEVEL => undef,
-	      TCP_FLAGS_LOG_LEVEL => undef,
-	      SMURF_LOG_LEVEL => undef,
-	      LOG_MARTIANS => undef,
-	      LOG_VERBOSITY => undef,
-	      STARTUP_LOG => undef,
-	      #
-	      # Location of Files
-	      #
-	      IPTABLES => undef,
-	      IP => undef,
-	      TC => undef,
-	      IPSET => undef,
-	      PERL => undef,
-	      #
-	      #PATH is inherited
-	      #
-	      PATH => undef,
-	      SHOREWALL_SHELL => undef,
-	      SUBSYSLOCK => undef,
-	      MODULESDIR => undef,
-	      #
-	      #CONFIG_PATH is inherited
-	      #
-	      CONFIG_PATH => undef,
-	      RESTOREFILE => undef,
-	      IPSECFILE => undef,
-	      LOCKFILE => undef,
-	      #
-	      # Default Actions/Macros
-	      #
-	      DROP_DEFAULT => undef,
-	      REJECT_DEFAULT => undef,
-	      ACCEPT_DEFAULT => undef,
-	      QUEUE_DEFAULT => undef,
-	      NFQUEUE_DEFAULT => undef,
-	      #
-	      # RSH/RCP Commands
-	      #
-	      RSH_COMMAND => undef,
-	      RCP_COMMAND => undef,
-	      #
-	      # Firewall Options
-	      #
-	      BRIDGING => undef,
-	      IP_FORWARDING => undef,
-	      ADD_IP_ALIASES => undef,
-	      ADD_SNAT_ALIASES => undef,
-	      RETAIN_ALIASES => undef,
-	      TC_ENABLED => undef,
-	      TC_EXPERT => undef,
-	      TC_PRIOMAP => undef,
-	      CLEAR_TC => undef,
-	      MARK_IN_FORWARD_CHAIN => undef,
-	      CLAMPMSS => undef,
-	      ROUTE_FILTER => undef,
-	      DETECT_DNAT_IPADDRS => undef,
-	      MUTEX_TIMEOUT => undef,
-	      ADMINISABSENTMINDED => undef,
-	      BLACKLISTNEWONLY => undef,
-	      DELAYBLACKLISTLOAD => undef,
-	      MODULE_SUFFIX => undef,
-	      DISABLE_IPV6 => undef,
-	      DYNAMIC_ZONES => undef,
-	      PKTTYPE=> undef,
-	      MACLIST_TABLE => undef,
-	      MACLIST_TTL => undef,
-	      SAVE_IPSETS => undef,
-	      MAPOLDACTIONS => undef,
-	      FASTACCEPT => undef,
-	      IMPLICIT_CONTINUE => undef,
-	      HIGH_ROUTE_MARKS => undef,
-	      USE_ACTIONS=> undef,
-	      OPTIMIZE => undef,
-	      EXPORTPARAMS => undef,
-	      SHOREWALL_COMPILER => undef,
-	      EXPAND_POLICIES => undef,
-	      KEEP_RT_TABLES => undef,
-	      DELETE_THEN_ADD => undef,
-	      MULTICAST => undef,
-	      DONT_LOAD => '',
-	      AUTO_COMMENT => undef ,
-	      MANGLE_ENABLED => undef ,
-	      RFC1918_STRICT => undef ,
-	      NULL_ROUTE_RFC1918 => undef ,
-	      USE_DEFAULT_RT => undef ,
-	      RESTORE_DEFAULT_ROUTE => undef ,
-	      FAST_STOP => undef ,
-	      AUTOMAKE => undef ,
-	      WIDE_TC_MARKS => undef,
-	      TRACK_PROVIDERS => undef,
-	      ZONE2ZONE => undef,
-	      ACCOUNTING => undef,
-	      OPTIMIZE_ACCOUNTING => undef,
-	      DYNAMIC_BLACKLIST => undef,
-	      LOAD_HELPERS_ONLY => undef,
-	      REQUIRE_INTERFACE => undef,
-	      FORWARD_CLEAR_MARK => undef,
-	      COMPLETE => undef,
-	      #
-	      # Packet Disposition
-	      #
-	      MACLIST_DISPOSITION => undef,
-	      TCP_FLAGS_DISPOSITION => undef,
-	      BLACKLIST_DISPOSITION => undef,
-	      #
-	      # Mark Geometry
-	      #
-	      TC_BITS => undef,
-	      PROVIDER_BITS => undef,
-	      PROVIDER_OFFSET => undef,
-	      MASK_BITS => undef
-	    );
+    %validlevels = ( DEBUG   => 7,
+		     INFO    => 6,
+		     NOTICE  => 5,
+		     WARNING => 4,
+		     WARN    => 4,
+		     ERR     => 3,
+		     ERROR   => 3,
+		     CRIT    => 2,
+		     ALERT   => 1,
+		     EMERG   => 0,
+		     PANIC   => 0,
+		     NONE    => '',
+		     NFLOG   => 'NFLOG',
+		     LOGMARK => 'LOGMARK' );
 
-	%validlevels = ( DEBUG   => 7,
-			 INFO    => 6,
-			 NOTICE  => 5,
-			 WARNING => 4,
-			 WARN    => 4,
-			 ERR     => 3,
-			 ERROR   => 3,
-			 CRIT    => 2,
-			 ALERT   => 1,
-			 EMERG   => 0,
-			 PANIC   => 0,
-			 NONE    => '',
-			 ULOG    => 'ULOG',
-			 NFLOG   => 'NFLOG',
-		         LOGMARK => 'LOGMARK' );
-    } else {
-	$globals{SHAREDIR} = '/usr/share/shorewall6';
-	$globals{CONFDIR}  = '/etc/shorewall6';
-	$globals{PRODUCT}  = 'shorewall6';
-
-	%config =
-	    ( STARTUP_ENABLED => undef,
-	      VERBOSITY => undef,
-	      #
-	      # Logging
-	      #
-	      LOGFILE => undef,
-	      LOGFORMAT => undef,
-	      LOGTAGONLY => undef,
-	      LOGLIMIT => undef,
-	      LOGRATE => undef,
-	      LOGBURST => undef,
-	      LOGALLNEW => undef,
-	      BLACKLIST_LOGLEVEL => undef,
-	      TCP_FLAGS_LOG_LEVEL => undef,
-	      SMURF_LOG_LEVEL => undef,
-	      LOG_VERBOSITY => undef,
-	      STARTUP_LOG => undef,
-	      #
-	      # Location of Files
-	      #
-	      IP6TABLES => undef,
-	      IP => undef,
-	      TC => undef,
-	      IPSET => undef,
-	      PERL => undef,
-	      #
-	      #PATH is inherited
-	      #
-	      PATH => undef,
-	      SHOREWALL_SHELL => undef,
-	      SUBSYSLOCK => undef,
-	      MODULESDIR => undef,
-	      #
-	      #CONFIG_PATH is inherited
-	      #
-	      CONFIG_PATH => undef,
-	      RESTOREFILE => undef,
-	      LOCKFILE => undef,
-	      #
-	      # Default Actions/Macros
-	      #
-	      DROP_DEFAULT => undef,
-	      REJECT_DEFAULT => undef,
-	      ACCEPT_DEFAULT => undef,
-	      QUEUE_DEFAULT => undef,
-	      NFQUEUE_DEFAULT => undef,
-	      #
-	      # RSH/RCP Commands
-	      #
-	      RSH_COMMAND => undef,
-	      RCP_COMMAND => undef,
-	      #
-	      # Firewall Options
-	      #
-	      IP_FORWARDING => undef,
-	      TC_ENABLED => undef,
-	      TC_EXPERT => undef,
-	      TC_PRIOMAP => undef,
-	      CLEAR_TC => undef,
-	      MARK_IN_FORWARD_CHAIN => undef,
-	      CLAMPMSS => undef,
-	      MUTEX_TIMEOUT => undef,
-	      ADMINISABSENTMINDED => undef,
-	      BLACKLISTNEWONLY => undef,
-	      MODULE_SUFFIX => undef,
-	      MAPOLDACTIONS => '',
-	      FASTACCEPT => undef,
-	      IMPLICIT_CONTINUE => undef,
-	      HIGH_ROUTE_MARKS => undef,
-	      OPTIMIZE => undef,
-	      EXPORTPARAMS => undef,
-	      EXPAND_POLICIES => undef,
-	      KEEP_RT_TABLES => undef,
-	      DELETE_THEN_ADD => undef,
-	      MULTICAST => undef,
-	      DONT_LOAD => '',
-	      AUTO_COMMENT => undef,
-	      MANGLE_ENABLED => undef ,
-	      AUTOMAKE => undef ,
-	      WIDE_TC_MARKS => undef,
-	      TRACK_PROVIDERS => undef,
-	      ZONE2ZONE => undef,
-	      ACCOUNTING => undef,
-	      OPTIMIZE_ACCOUNTING => undef,
-	      DYNAMIC_BLACKLIST => undef,
-	      LOAD_HELPERS_ONLY => undef,
-	      REQUIRE_INTERFACE => undef,
-	      FORWARD_CLEAR_MARK => undef,
-	      COMPLETE => undef,
-	      #
-	      # Packet Disposition
-	      #
-	      TCP_FLAGS_DISPOSITION => undef,
-	      BLACKLIST_DISPOSITION => undef,
-	      #
-	      # Mark Geometry
-	      #
-	      TC_BITS => undef,
-	      PROVIDER_BITS => undef,
-	      PROVIDER_OFFSET => undef,
-	      MASK_BITS => undef
-	    );
-
-	%validlevels = ( DEBUG   => 7,
-			 INFO    => 6,
-			 NOTICE  => 5,
-			 WARNING => 4,
-			 WARN    => 4,
-			 ERR     => 3,
-			 ERROR   => 3,
-			 CRIT    => 2,
-			 ALERT   => 1,
-			 EMERG   => 0,
-			 PANIC   => 0,
-			 NONE    => '',
-			 NFLOG   => 'NFLOG',
-		         LOGMARK => 'LOGMARK' );
-    }
     #
     # From parsing the capabilities file or capabilities detection
     #
@@ -734,6 +606,19 @@ sub initialize( $ ) {
     $compiler_params{$_} = 1 for keys %params;
 
     %actparms = ();
+
+    if ( $family == F_IPV4 ) {
+	$globals{SHAREDIR} = '/usr/share/shorewall';
+	$globals{CONFDIR}  = '/etc/shorewall';
+	$globals{PRODUCT}  = 'shorewall';
+	$config{IPTABLES}  = undef;
+	$validlevels{ULOG} => 'ULOG',
+    } else {
+	$globals{SHAREDIR} = '/usr/share/shorewall6';
+	$globals{CONFDIR}  = '/etc/shorewall6';
+	$globals{PRODUCT}  = 'shorewall6';
+	$config{IP6TABLES} = undef;
+    }
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );

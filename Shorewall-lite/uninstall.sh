@@ -85,7 +85,9 @@ else
 fi
 
 if [ -n "$FIREWALL" ]; then
-    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+    if [ -x /usr/sbin/updaterc.d ]; then
+	updaterc.d shorewall-lite remove
+    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	chkconfig --del $(basename $FIREWALL)
@@ -108,6 +110,6 @@ rm -rf /usr/share/shorewall-lite
 rm -rf /usr/share/shorewall-lite-*.bkout
 rm -f  /etc/logrotate.d/shorewall-lite
 
-echo "Shorewall Uninstalled"
+echo "Shorewall Lite Uninstalled"
 
 

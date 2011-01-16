@@ -85,7 +85,9 @@ else
 fi
 
 if [ -n "$FIREWALL" ]; then
-    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+    if [ -x /usr/sbin/updaterc.d ]; then
+	updaterc.d shorewall remove
+    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	chkconfig --del $(basename $FIREWALL)

@@ -338,26 +338,25 @@ sub initialize( $ ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall6 Shorewall6 ip6tables IP6TABLES );
     }
 
-    $verbosity = 0;            # Verbosity setting. -1 = silent, 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
-    $log = undef;              # File reference for log file
-    $log_verbosity = -1;       # Verbosity of log.
-    $timestamp = '';           # If true, we are to timestamp each progress message
-    $script = 0;               # Script (output) file Handle Reference
+    $verbosity      = 0;       # Verbosity setting. -1 = silent, 0 = almost silent, 1 = major progress messages only, 2 = all progress messages (very noisy)
+    $log            = undef;   # File reference for log file
+    $log_verbosity  = -1;      # Verbosity of log.
+    $timestamp      = '';      # If true, we are to timestamp each progress message
+    $script         = 0;       # Script (output) file Handle Reference
     $script_enabled = 0;       # Writing to output file is disabled initially
-    $lastlineblank = 0;        # Avoid extra blank lines in the output
-    $indent1       = '';       # Current indentation tabs
-    $indent2       = '';       # Current indentation spaces
-    $indent        = '';       # Current total indentation
+    $lastlineblank  = 0;       # Avoid extra blank lines in the output
+    $indent1        = '';      # Current indentation tabs
+    $indent2        = '';      # Current indentation spaces
+    $indent         = '';      # Current total indentation
     ( $dir, $file ) = ('',''); # Script's Directory and Filename
-    $tempfile = '';            # Temporary File Name
-    $sillyname = 
-    $sillyname1 = '';          # Temporary ipchains
+    $tempfile       = '';      # Temporary File Name
+    $sillyname      = 
+    $sillyname1     = '';      # Temporary ipchains
 
     #
     # Misc Globals
     #
-    %globals  =   ( SHAREDIR => '/usr/share/shorewall' ,
-		    SHAREDIRPL => '/usr/share/shorewall/' ,
+    %globals  =   ( SHAREDIRPL => '/usr/share/shorewall/' ,
 		    CONFDIR =>  '/etc/shorewall',     # Run-time configuration directory
 		    CONFIGDIR => '',                  # Compile-time configuration directory (location of $product.conf)
 		    LOGPARMS => '',

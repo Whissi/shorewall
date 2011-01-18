@@ -1424,7 +1424,7 @@ sub copy1( $ ) {
 		}
 
 		if ( $do_indent ) {
-		    if ( /^\s*INCLUDE\s/ ) {
+		    if ( /^\s*INCLUDE\b/ ) {
 			my @line = split / /;
 
 			fatal_error "Invalid INCLUDE command"    if @line != 2;

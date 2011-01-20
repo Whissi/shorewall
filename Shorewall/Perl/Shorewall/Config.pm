@@ -2952,7 +2952,7 @@ sub get_params() {
 		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
-		    $params{$variable=$1}="${2}\n";
+		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
 		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
@@ -2976,7 +2976,7 @@ sub get_params() {
 		if ( /^export (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^export (.*?)="(.*)$/ ) {
-		    $params{$variable=$1}="${2}\n";
+		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
 		} elsif ( /^export (.*)\s+$/ || /^export (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {

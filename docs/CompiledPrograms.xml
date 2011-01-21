@@ -431,6 +431,20 @@ clean:
         <programlisting><command>ln -sf shorewall-lite /sbin/shorewall</command></programlisting>
       </blockquote>
 
+      <section>
+        <title>Module Loading</title>
+
+        <para>As with a normal Shorewall configuration, the shorewall.conf
+        file can specify LOAD_HELPERS_ONLY which determines if the
+        <filename>modules</filename> file (LOAD_HELPERS_ONLY=No) or
+        <filename>helpers</filename> file (LOAD_HELPERS_ONLY=Yes) is used.
+        Normally, the file on the firewall system is used. If you want to
+        specify modules at compile time on the Administrative System, then you
+        must place a copy of the appropriate file
+        (<filename>modules</filename> or <filename>helpers</filename>) in the
+        firewall's configuration directory before compilation.</para>
+      </section>
+
       <section id="Converting">
         <title>Converting a system from Shorewall to Shorewall Lite</title>
 

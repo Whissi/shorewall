@@ -312,10 +312,10 @@ our $tc;                      # Path to tc
 our $ip;                      # Path to ip
 
 use constant { MIN_VERBOSITY => -1,
-	       MAX_VERBOSITY => 2 ,
+	       AX_VERBOSITY => 2 ,
 	       F_IPV4 => 4,
 	       F_IPV6 => 6,
-	   };
+	     };
 
 our %validlevels;             # Valid log levels.
 
@@ -357,14 +357,14 @@ sub initialize( $ ) {
     # Misc Globals
     #
     %globals  =   ( SHAREDIRPL => '/usr/share/shorewall/' ,
-		    CONFDIR =>  '/etc/shorewall',     # Run-time configuration directory
-		    CONFIGDIR => '',                  # Compile-time configuration directory (location of $product.conf)
-		    LOGPARMS => '',
-		    TC_SCRIPT => '',
-		    EXPORT => 0,
+		    CONFDIR    =>  '/etc/shorewall',     # Run-time configuration directory
+		    CONFIGDIR  => '',                  # Compile-time configuration directory (location of $product.conf)
+		    LOGPARMS   => '',
+		    TC_SCRIPT  => '',
+		    EXPORT     => 0,
 		    STATEMATCH => '-m state --state',
-		    UNTRACKED => 0,
-		    VERSION => "4.4.17-Beta2",
+		    UNTRACKED  => 0,
+		    VERSION    => "4.4.17-Beta2",
 		    CAPVERSION => 40415 ,
 		  );
     #

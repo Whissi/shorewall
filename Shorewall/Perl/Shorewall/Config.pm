@@ -312,7 +312,7 @@ our $tc;                      # Path to tc
 our $ip;                      # Path to ip
 
 use constant { MIN_VERBOSITY => -1,
-	       AX_VERBOSITY => 2 ,
+	       MAX_VERBOSITY => 2 ,
 	       F_IPV4 => 4,
 	       F_IPV6 => 6,
 	     };

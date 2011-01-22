@@ -472,7 +472,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>Beginning with Shorewall 4.4.17, the variables set in the
           'params' file at compile time are available at run time with
           EXPORTPARAMS=No. As a consequence, beginning with that version the
-          recommended setting is EXPORTPARAMS=No. </para>
+          recommended setting is EXPORTPARAMS=No.</para>
 
           <para>It is quite difficult to code a 'params' file that assigns
           other than constant values such that it works correctly with
@@ -1489,6 +1489,22 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
           4.4.3, this change should be transparent to most, if not all,
           users.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">USE_LOCAL_MODULES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.17. When set to Yes when compiling for
+          use by Shorewall6 LIte (<command>shorewall6 load</command>,
+          <command>shorewall6 reload </command>or <command>shorewall6
+          export</command> commands), the compiler will copy the modules or
+          helpers file from the administrative system into the script. When
+          set to No or not specified, the compiler will not copy the modules
+          or helpers file from <filename>/usr/share/shorewall6</filename> but
+          will copy the found in another location on the CONFIG_PATH.</para>
         </listitem>
       </varlistentry>
 

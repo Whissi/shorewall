@@ -77,13 +77,22 @@ Beta 1
 	stopped
 	tcclear
 
-     The directive is executed during compilation so that the INCLUDEd
-     file(s) is(are) copied into the generated script. This same
-     technique is also now used for INCLUDE directives in the params
-     file when EXPORTPARAMS=Yes. Previously, INCLUDE directives in that
-     file were strongly discouraged with EXPORTPARAMS=Yes because the
-     INCLUDE was performed on the firewall system rather than on the
-     administrative system.
+    The directive is executed during compilation so that the INCLUDEd
+    file(s) is(are) copied into the generated script. This same
+    technique is also now used for INCLUDE directives in the params
+    file when EXPORTPARAMS=Yes. Previously, INCLUDE directives in that
+    file were strongly discouraged with EXPORTPARAMS=Yes because the
+    INCLUDE was performed on the firewall system rather than on the
+    administrative system.
+
+3)  Traditionally, the -lite products have used the modules (or
+    helpers) file on the firewall system unless there is a modules (or
+    helpers) file in the configuration directory.  This release
+    introduces the USE_LOCAL_MODULES option in shorewall[6].conf.
+
+    When USE_LOCAL_MODULES=Yes, the modules (helpers) file on the
+    administrative system will be used to determine the set of modules
+    loaded. 
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

@@ -483,6 +483,7 @@ sub initialize( $ ) {
 	  REQUIRE_INTERFACE => undef,
 	  FORWARD_CLEAR_MARK => undef,
 	  COMPLETE => undef,
+	  USE_LOCAL_MODULES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -3204,6 +3205,7 @@ sub get_configuration( $ ) {
     default_yes_no 'REQUIRE_INTERFACE'          , '';
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability 'MARK' ? 'Yes' : '';
     default_yes_no 'COMPLETE'                   , '';
+    default_yes_no 'USE_LOCAL_MODULES'          , '';
 
     require_capability 'MARK' , 'FOREWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

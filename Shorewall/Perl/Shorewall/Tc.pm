@@ -543,6 +543,8 @@ sub process_simple_device() {
 	    $command .= ' latency 200ms';
 	}
 
+	$command .= ' mpu 64'; #Assume Ethernet
+
 	if ( defined $peak && $peak ne '' ) {
 	    fatal_error "Invalid peak ($peak)" unless $peak =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " peakrate $peak";

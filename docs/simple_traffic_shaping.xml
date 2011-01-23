@@ -49,6 +49,49 @@
     described in this document while the original facility is documented in
     <ulink url="traffic_shaping.htm">Complex Traffic
     Shaping/Control</ulink>.</para>
+
+    <para>In the absense of any traffic shaping, interfaces are configured
+    automatically with the pfifo_fast <firstterm>queuing
+    discipline</firstterm> (qdisc). From tc-pfifo_fast (8):</para>
+
+    <blockquote>
+      <para> The algorithm is very similar to that of the classful tc-prio(8)
+      qdisc. pfifo_fast is like three tc-pfifo(8) queues side by side, where
+      packets can be enqueued in any of the three bands based on their Type of
+      Service bits or assigned priority.</para>
+
+      <para>Not all three bands are dequeued simultaneously - as long as lower
+      bands have traffic, higher bands are never dequeued. This can be used to
+      prioritize interactive traffic or penalize ’lowest cost’ traffic.</para>
+
+      <para>Each band can be txqueuelen packets long, as configured with
+      ifconfig(8) or ip(8). Additional packets coming in are not enqueued but
+      are instead dropped.</para>
+
+      <para>See tc-prio(8) for complete details on how TOS bits are translated
+      into bands. </para>
+    </blockquote>
+
+    <para>In other words, if all you want is strict priority queuing, then do
+    nothing.</para>
+
+    <para>Shorewall's Simple Traffic Shaping configures the prio
+    qdisc(rx-prio(8)) on the designated interface then adds an sfq (tc-sfq
+    (8)) qdisc to each of the classes that are implicitly created for the prio
+    qdisc. The sfq qdisc ensures fairness among packets queued in each of the
+    classes such that each <firstterm>flow</firstterm> (session) gets its turn
+    to send packets. The definition of flows can be altered to include all
+    traffic being sent <emphasis>by</emphasis> a given IP address (normally
+    defined for an external interface) or all traffic being sent
+    <emphasis>to</emphasis> a given IP address (internal interface).</para>
+
+    <para>Finally, Simple Traffic Shaping allows you to set a limit on the
+    total bandwidth allowed out of an interface by inserting a Token Bucket
+    Filter (tbf) qdisc before the prio qdisc. Note that this can have the
+    effect of defeating the priority queuing provided by the prio qdisc but
+    seems to provide a benefit when the actual link output temporarily drops
+    below the limit imposed by tbf or when tbf allows a burst of traffic to be
+    released.</para>
   </section>
 
   <section>
@@ -81,8 +124,8 @@ eth0                   External</programlisting>
 
       <para><emphasis role="bold">Update</emphasis>: Beginning with Shorewall
       4.4.7, Shorewall can determine that some environments, such as RHEL5 and
-      derivatives, are incapable of using the TYPE parameter and simply ignore
-      it.</para>
+      derivatives, are incapable of using the TYPE parameter and simply
+      ignores it.</para>
     </note>
 
     <para>With this simple configuration, packets to be sent through interface
@@ -234,7 +277,7 @@ tun0                   Internal</programlisting>
 
     <para>For fast lines, the actual download rate may be significantly less
     than the specified IN-BANDWIDTH. Beginning with Shoreall 4.4.13, you can
-    specify an optional burst </para>
+    specify an optional burst</para>
 
     <para>Also beginning with Shorewall 4.4.13, an OUT-BANDWIDTH column is
     available in <ulink

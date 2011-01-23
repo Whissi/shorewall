@@ -76,22 +76,23 @@
     nothing.</para>
 
     <para>Shorewall's Simple Traffic Shaping configures the prio
-    qdisc(rx-prio(8)) on the designated interface then adds an sfq (tc-sfq
-    (8)) qdisc to each of the classes that are implicitly created for the prio
-    qdisc. The sfq qdisc ensures fairness among packets queued in each of the
-    classes such that each <firstterm>flow</firstterm> (session) gets its turn
-    to send packets. The definition of flows can be altered to include all
-    traffic being sent <emphasis>by</emphasis> a given IP address (normally
-    defined for an external interface) or all traffic being sent
+    qdisc(rx-prio(8)) on the designated interface then adds a
+    <firstterm>Stochastic Fair Queuing</firstterm> sfq (tc-sfq (8)) qdisc to
+    each of the classes that are implicitly created for the prio qdisc. The
+    sfq qdisc ensures fairness among packets queued in each of the classes
+    such that each <firstterm>flow</firstterm> (session) gets its turn to send
+    packets. The definition of flows can be altered to include all traffic
+    being sent <emphasis>by</emphasis> a given IP address (normally defined
+    for an external interface) or all traffic being sent
     <emphasis>to</emphasis> a given IP address (internal interface).</para>
 
     <para>Finally, Simple Traffic Shaping allows you to set a limit on the
-    total bandwidth allowed out of an interface by inserting a Token Bucket
-    Filter (tbf) qdisc before the prio qdisc. Note that this can have the
-    effect of defeating the priority queuing provided by the prio qdisc but
-    seems to provide a benefit when the actual link output temporarily drops
-    below the limit imposed by tbf or when tbf allows a burst of traffic to be
-    released.</para>
+    total bandwidth allowed out of an interface. It does this by inserting a
+    Token Bucket Filter (tbf) qdisc ahead of the prio qdisc. Note that this
+    can have the effect of defeating the priority queuing provided by the prio
+    qdisc but seems to provide a benefit when the actual link output
+    temporarily drops below the limit imposed by tbf or when tbf allows a
+    burst of traffic to be released.</para>
   </section>
 
   <section>
@@ -124,8 +125,8 @@ eth0                   External</programlisting>
 
       <para><emphasis role="bold">Update</emphasis>: Beginning with Shorewall
       4.4.7, Shorewall can determine that some environments, such as RHEL5 and
-      derivatives, are incapable of using the TYPE parameter and simply
-      ignores it.</para>
+      derivatives, are incapable of using the TYPE parameter and simply ignore
+      it.</para>
     </note>
 
     <para>With this simple configuration, packets to be sent through interface

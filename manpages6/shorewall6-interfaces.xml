@@ -161,6 +161,50 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">dhcp</emphasis></term>
+
+              <listitem>
+                <para>Specify this option when any of the following are
+                true:</para>
+
+                <orderedlist spacing="compact">
+                  <listitem>
+                    <para>the interface gets its IP address via DHCP</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface is used by a DHCP server running on
+                    the firewall</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface has a static IP but is on a LAN
+                    segment with lots of DHCP clients.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>the interface is a <ulink
+                    url="../SimpleBridge.html">simple bridge</ulink> with a
+                    DHCP server on one port and DHCP clients on another
+                    port.</para>
+
+                    <note>
+                      <para>If you use <ulink
+                      url="../bridge-Shorewall-perl.html">Shorewall-perl for
+                      firewall/bridging</ulink>, then you need to include
+                      DHCP-specific rules in <ulink
+                      url="shorewall-rules.html">shorewall-rules</ulink>(8).
+                      DHCP uses UDP ports 546 and 547.</para>
+                    </note>
+                  </listitem>
+                </orderedlist>
+
+                <para>This option allows DHCP datagrams to enter and leave the
+                interface.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">forward</emphasis>[={0|1}]</term>
 
               <listitem>

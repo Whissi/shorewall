@@ -553,7 +553,7 @@
           role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] and
           <emphasis role="bold">any</emphasis>[<emphasis
           role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] is
-          removed in Shorewall-4.4.13. </para>
+          removed in Shorewall-4.4.13.</para>
 
           <para><emphasis role="bold">any</emphasis> is equivalent to
           <emphasis role="bold">all</emphasis> when there are no nested zones.
@@ -571,6 +571,13 @@
           may be optionally followed by a number from 1 to 6 enclosed in
           square brackets ([]) to indicate the number of levels of source
           bindings to be matched.</para>
+
+          <para>Beginning with Shorewall 4.4.17, the primary IP address of a
+          firewall interface can be specified by an apersand ('&amp;')
+          followed by the logican name of the interface as found in the
+          INTERFACE column of <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>
+          (5).</para>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
@@ -636,6 +643,15 @@
               <listitem>
                 <para>Subnet 155.186.235.0/24 on the Internet except for
                 155.186.235.16/28</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>$FW:&amp;eth0</term>
+
+              <listitem>
+                <para>The primary IP address of eth0 in the firewall zone
+                (Shorewall 4.4.17 and later).</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -742,6 +758,13 @@
             role="bold">SOURCE</emphasis> and <emphasis
             role="bold">DEST</emphasis> columns may specify an ipset
             name.</para>
+
+            <para>Beginning with Shorewall 4.4.17, the primary IP address of a
+            firewall interface can be specified by an apersand ('&amp;')
+            followed by the logical name of the interface as found in the
+            INTERFACE column of <ulink
+            url="shorewall-interfaces.html">shorewall-interfaces</ulink>
+            (5).</para>
 
             <para>The <replaceable>port</replaceable> that the server is
             listening on may be included and separated from the server's IP
@@ -899,6 +922,13 @@
           (<emphasis>exclusion</emphasis>) then the rule will be followed only
           if the original destination address in the connection request does
           not match any of the addresses listed.</para>
+
+          <para>Beginning with Shorewall 4.4.17, the primary IP address of a
+          firewall interface can be specified by an apersand ('&amp;')
+          followed by the logical name of the interface as found in the
+          INTERFACE column of <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>
+          (5).</para>
 
           <para>For other actions, this column may be included and may contain
           one or more addresses (host or network) separated by commas. Address
@@ -1370,12 +1400,13 @@
     url="http://www.shorewall.net/ipsets.html">http://www.shorewall.net/ipsets.html</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall.conf(5), shorewall-secmarks(5), shorewall-tcclasses(5),
-    shorewall-tcdevices(5), shorewall-tcrules(5), shorewall-tos(5),
-    shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-route_rules(5), shorewall-routestopped(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

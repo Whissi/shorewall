@@ -425,6 +425,13 @@
           square brackets ([]) to indicate the number of levels of source
           bindings to be matched.</para>
 
+          <para>Beginning with Shorewall6 4.4.17, the primary IP address of a
+          firewall interface can be specified by an apersand ('&amp;')
+          followed by the logican name of the interface as found in the
+          INTERFACE column of <ulink
+          url="shorewall-interfaces.html">shorewall6-interfaces</ulink>
+          (5).</para>
+
           <para>When an <replaceable>interface</replaceable> is not specified,
           you may omit the angled brackets ('&lt;' and '&gt;') around the
           address(es) or you may supply them to improve readability.</para>
@@ -478,17 +485,24 @@
                 2001:4d48:ad51:24:6:/80.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>$FW:&amp;eth0</term>
+
+              <listitem>
+                <para>The primary IP address of eth0 in the firewall zone
+                (Shorewall6 4.4.17 and later).</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
-          <blockquote>
-            <para>Alternatively, clients may be specified by interface by
-            appending ":" to the zone name followed by the interface name. For
-            example, <emphasis role="bold">loc:eth1</emphasis> specifies a
-            client that communicates with the firewall system through eth1.
-            This may be optionally followed by another colon (":") and an
-            IP/MAC/subnet address as described above (e.g., <emphasis
-            role="bold">loc:eth1:&lt;2002:ce7c::92b4:1::2&gt;</emphasis>).</para>
-          </blockquote>
+          <para>Alternatively, clients may be specified by interface by
+          appending ":" to the zone name followed by the interface name. For
+          example, <emphasis role="bold">loc:eth1</emphasis> specifies a
+          client that communicates with the firewall system through eth1. This
+          may be optionally followed by another colon (":") and an
+          IP/MAC/subnet address as described above (e.g., <emphasis
+          role="bold">loc:eth1:&lt;2002:ce7c::92b4:1::2&gt;</emphasis>).</para>
 
           <para>Examples:</para>
 
@@ -532,6 +546,13 @@
           well as inter-zone traffic. Beginning with Shorewall-4.4.13,
           exclusion is supported -- see see <ulink
           url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5).</para>
+
+          <para>Beginning with Shorewall6 4.4.17, the primary IP address of a
+          firewall interface can be specified by an apersand ('&amp;')
+          followed by the logican name of the interface as found in the
+          INTERFACE column of <ulink
+          url="shorewall-interfaces.html">shorewall6-interfaces</ulink>
+          (5).</para>
 
           <para>When <emphasis role="bold">none</emphasis> is used either in
           the <emphasis role="bold">SOURCE</emphasis> or <emphasis

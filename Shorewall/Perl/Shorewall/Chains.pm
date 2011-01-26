@@ -2679,6 +2679,15 @@ sub have_ipset_rules() {
     $ipset_rules;
 }
 
+sub get_interface_address( $ );
+
+sub record_runtime_address( $ ) {
+    my $interface = shift;
+    fatal_error "Unknown interface address variable (&$interface)" unless known_interface( $interface );
+    fatal_error "Invalid interface address variable (&$interface)" if $interface =~ /\+$/;
+    get_interface_address( $interface ) . ' ';
+}
+
 sub mysplit( $ );
 
 #
@@ -2714,8 +2723,14 @@ sub match_source_net( $;$ ) {
 
 	$result;
     } elsif ( $net =~ s/^!// ) {
-	validate_net $net, 1;
-	"! -s $net ";
+	if ( $net =~ /^&(.+)/ ) {
+	    '! -s ' . record_runtime_address $1;
+	} else {
+	    validate_net $net, 1;
+	    "! -s $net ";
+	}
+    } elsif ( $net =~ /^&(.+)/ ) {
+	'-s ' . record_runtime_address $1;
     } else {
 	validate_net $net, 1;
 	$net eq ALLIP ? '' : "-s $net ";
@@ -2749,10 +2764,15 @@ sub match_dest_net( $ ) {
 	}
 
 	$result;
-    } elsif ( $net =~ /^!/ ) {
-	$net =~ s/!//;
-	validate_net $net, 1;
-	"! -d $net ";
+    } elsif ( $net =~ s/^!// ) {
+	if ( $net =~ /^&(.+)/ ) {
+	    '! -d ' . record_runtime_address $1;
+	} else {
+	    validate_net $net, 1;
+	    "! -d $net ";
+	}
+    } elsif ( $net =~ /^&(.+)/ ) {
+	'-d ' . record_runtime_address $1;
     } else {
 	validate_net $net, 1;
 	$net eq ALLIP ? '' : "-d $net ";
@@ -2769,10 +2789,20 @@ sub match_orig_dest ( $ ) {
     return '' unless have_capability( 'CONNTRACK_MATCH' );
 
     if ( $net =~ s/^!// ) {
-	validate_net $net, 1;
+	if ( $net =~ /^&(.+)/ ) {
+	    $net = record_runtime_address $1;
+	} else {
+	    validate_net $net, 1;
+	}
+
 	have_capability( 'OLD_CONNTRACK_MATCH' ) ? "-m conntrack --ctorigdst ! $net " : "-m conntrack ! --ctorigdst $net ";
     } else {
-	validate_net $net, 1;
+	if ( $net =~ /^&(.+)/ ) {
+	    $net = record_runtime_address $1;
+	} else {
+	    validate_net $net, 1;
+	}
+
 	$net eq ALLIP ? '' : "-m conntrack --ctorigdst $net ";
     }
 }
@@ -3501,7 +3531,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    if ( $source =~ /^(.+?):(.+)$/ ) {
 		$iiface = $1;
 		$inets  = $2;
-	    } elsif ( $source =~ /\+|~|\..*\./ ) {
+	    } elsif ( $source =~ /\+|&|~|\..*\./ ) {
 		$inets = $source;
 	    } else {
 		$iiface = $source;
@@ -3515,7 +3545,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$inets = $source;
 	    }
-	} elsif ( $source =~ /\+|~|\..*\./ ) {
+	} elsif ( $source =~ /(?:\+|&|~|\..*\.)/ ) {
 	    $inets = $source;
 	} else {
 	    $iiface = $source;
@@ -3592,7 +3622,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
-	    } elsif ( $dest =~ /\+|~|\..*\./ ) {
+	    } elsif ( $dest =~ /\+|&|~|\..*\./ ) {
 		$dnets = $dest;
 	    } else {
 		$diface = $dest;
@@ -3606,7 +3636,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$dnets = $dest;
 	    }
-	} elsif ( $dest =~ /\+|~|\..*\./ ) {
+	} elsif ( $dest =~ /^(?:\+|&|\..*\.)/ ) {
 	    $dnets = $dest;
 	} else {
 	    $diface = $dest;

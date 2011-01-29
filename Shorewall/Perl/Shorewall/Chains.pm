@@ -145,6 +145,7 @@ our %EXPORT_TAGS = (
 				       do_helper
 				       do_headers
 				       have_ipset_rules
+				       record_runtime_address
 				       match_source_dev
 				       match_dest_dev
 				       iprange_match

@@ -21,7 +21,7 @@ Beta 2
     diagnostic.
 
 2)  Previously, the uninstall.sh scripts used insserv (if installed) on
-    Debian-based systems. These scripts now used the preferred tool
+    Debian-based systems. These scripts now use the preferred tool
     (updaterc.d).
 
 3)  Beginning with 4.4.16, compilation would fail if an empty shell
@@ -33,9 +33,9 @@ Beta 2
     (unoptimized). Similarly, if OPTIMIZE=9 then the ruleset displayed
     was the same as when OPTIMIZE=1.
 
-5)  Startup could previously fail on a system where module autoloading
-    was not available and where TC_ENABLED=Simple was specified in
-    shorewall.conf.
+5)  Startup could previously fail on a system where kernel module
+    autoloading was not available and where TC_ENABLED=Simple was
+    specified in shorewall.conf.
 
 Beta 1
 
@@ -58,8 +58,9 @@ Beta 2
 
 1)  Traditionally, the -lite products have used the modules (or
     helpers) file on the firewall system unless there is a modules (or
-    helpers) file in the configuration directory.  This release
-    introduces the USE_LOCAL_MODULES option in shorewall[6].conf.
+    helpers) file in the configuration directory on the administrative
+    system. This release introduces the USE_LOCAL_MODULES option in
+    shorewall[6].conf.
 
     When USE_LOCAL_MODULES=Yes, the modules (helpers) file on the
     administrative system will be used to determine the set of modules
@@ -95,6 +96,9 @@ Beta 2
     	   action files
 	   macro files
 	   rules
+
+    They may also be used in the SOURCE and ADDRESS columns of the masq
+    file.
 
     For optional interfaces, if the interface is not usable at the time
     that the firewall starts the all-zero address will be used (0.0.0.0

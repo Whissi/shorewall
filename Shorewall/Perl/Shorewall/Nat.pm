@@ -186,7 +186,10 @@ sub process_one_masq( )
 		} else {
 		    my $addrlist = '';
 		    for my $addr ( split_list $addresses , 'address' ) {
-			if ( $addr =~ /^.*\..*\..*\./ ) {
+			if ( $addr =~ /^&(.+)$/ ) {
+			    $target = 'SNAT ';
+			    $addrlist .= '--to-source ' . record_runtime_address $1;
+			} elsif ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = 'SNAT ';
 			    my ($ipaddr, $rest) = split ':', $addr;
 			    if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
@@ -197,8 +200,11 @@ sub process_one_masq( )
 			    $addrlist .= "--to-source $addr ";
 			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {
-			    $addr =~ s/^://;
-			    $addrlist .= "--to-ports $addr ";
+			    my $ports = $addr; 
+			    $ports =~ s/^://;
+			    $ports =~ s/:/-/;
+			    validate_portpair( $proto, $ports );
+			    $addrlist .= "--to-ports $ports ";
 			    $exceptionrule = do_proto( $proto, '', '' );
 			}
 		    }

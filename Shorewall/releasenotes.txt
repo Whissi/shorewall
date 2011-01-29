@@ -67,14 +67,15 @@ Beta 2
     loaded. 
 
 2)  Given that shell variables are expanded at compile time, there was
-    previously no way to cause such variables to be expended at run
+    previously no way to cause such variables to be expanded at run
     time. This made it difficult (to impossible) to include dynamic IP
     addresses in a Shorewall-lite configuration.
 
     This release implements "Run-time address variables". In
-    configuration files, these variables are expressed as an apersand
-    ('&') followed by the name of an interface defined in
-    /etc/shorewall/interfaces.
+    configuration files, these variables are expressed using an
+    apersand ('&') followed by the name of an interface defined in
+    /etc/shorewall/interfaces. Wild-card interfaces (those whose names
+    end in '+') are not allowed to be used in this way.
     
     Example: 
 
@@ -101,8 +102,9 @@ Beta 2
     file.
 
     For optional interfaces, if the interface is not usable at the time
-    that the firewall starts the all-zero address will be used (0.0.0.0
-    in IPv4 and :: in IPv6), resulting in no packets matching the rule.
+    that the firewall starts the all-zero address (0.0.0.0 in IPv4 and
+    :: in IPv6) will be substituted, resulting in no packets matching
+    the rule.
 
 Beta 1
 

@@ -1660,6 +1660,7 @@ determine_capabilities() {
     FWMARK_RT_MASK=
     MARK_ANYWHERE=
     HEADER_MATCH=
+    ACCOUNT_TARGET=
 
     chain=fooX$$
 
@@ -1798,6 +1799,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
     qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
     qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
+    qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1879,6 +1881,7 @@ report_capabilities() {
 	report_capability "fwmark route mask" $FWMARK_RT_MASK
 	report_capability "Mark in any table" $MARK_ANYWHERE
 	report_capability "Header Match" $HEADER_MATCH
+        report_capability "ACCOUNT Target" $ACCOUNT_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1945,6 +1948,7 @@ report_capabilities1() {
     report_capability1 FWMARK_RT_MASK
     report_capability1 MARK_ANYWHERE
     report_capability1 HEADER_MATCH
+    report_capability1 ACCOUNT_TARGET
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

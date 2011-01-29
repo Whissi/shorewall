@@ -258,6 +258,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 FWMARK_RT_MASK  => 'fwmark route mask',
 		 MARK_ANYWHERE   => 'Mark in any table',
 		 HEADER_MATCH    => 'Header Match',
+		 ACCOUNT_TARGET  => 'ACCOUNT Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -365,7 +366,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.17-Beta2",
-		    CAPVERSION => 40415 ,
+		    CAPVERSION => 40417 ,
 		  );
     #
     # From shorewall.conf file
@@ -2457,8 +2458,17 @@ sub Header_Match() {
     qt1( "$iptables -A $sillyname -m ipv6header --header 255 -j ACCEPT" );
 }
 
+sub Account_Target() {
+    if ( $family == F_IPV4 ) {
+	qt1( "$iptables -A $sillyname -j ACCOUNT --addr 192.168.1.0/29 --tname $sillyname" );
+    } else {
+	qt1( "$iptables -A $sillyname -j ACCOUNT --addr 1::/122 --tname $sillyname" );
+    }
+}
+
 our %detect_capability =
-    ( ADDRTYPE => \&Addrtype,
+    ( ACCOUNT_TARGET =>\&Account_Target,
+      ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
       COMMENTS => \&Comments,
       CONNLIMIT_MATCH => \&Connlimit_Match,
@@ -2631,6 +2641,7 @@ sub determine_capabilities() {
 	$capabilities{FLOW_FILTER}     = detect_capability( 'FLOW_FILTER' );
 	$capabilities{FWMARK_RT_MASK}  = detect_capability( 'FWMARK_RT_MASK' );
 	$capabilities{MARK_ANYWHERE}   = detect_capability( 'MARK_ANYWHERE' );
+	$capabilities{ACCOUNT_TARGET}  = detect_capability( 'ACCOUNT_TARGET' );
 
 
 	qt1( "$iptables -F $sillyname" );

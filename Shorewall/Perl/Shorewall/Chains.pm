@@ -146,6 +146,8 @@ our %EXPORT_TAGS = (
 				       do_headers
 				       have_ipset_rules
 				       record_runtime_address
+				       conditional_rule
+				       conditional_rule_end
 				       match_source_dev
 				       match_dest_dev
 				       iprange_match
@@ -2689,6 +2691,38 @@ sub record_runtime_address( $ ) {
     get_interface_address( $interface ) . ' ';
 }
 
+#
+# If the passed address is a run-time address variable for an optional interface, then
+# begin a conditional rule block that tests the address for nil.
+#
+sub conditional_rule( $$ ) {
+    my ( $chainref, $address ) = @_;
+
+    if ( $address =~ /^!?&(.+)$/ ) {
+	my $interface = $1;
+	if ( my $ref = known_interface $interface ) {
+	    if ( $ref->{options}{optional} ) {
+		my $variable = get_interface_address( $interface );
+		add_commands( $chainref , "if [ $variable != " . NILIP . ' ]; then' );
+		incr_cmd_level $chainref;
+		return 1;
+	    }
+	};
+    }
+
+    0;
+}
+
+#
+# If end a conditional in a chain
+#
+
+sub conditional_rule_end( $ ) {
+    my $chainref = shift;
+    decr_cmd_level $chainref;
+    add_commands( $chainref , "fi\n" );
+}	
+
 sub mysplit( $ );
 
 #
@@ -3453,6 +3487,8 @@ sub handle_network_list( $$ ) {
 
 }
 
+
+
 ################################################################################################################
 #
 # This function provides a uniform way to generate Netfilter[6] rules (something the original Shorewall
@@ -3800,9 +3836,23 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    my $exclude = '-j MARK --or-mark ' . in_hex( $globals{EXCLUSION_MASK} );
 
-	    add_rule $chainref, ( match_source_net $_ , $restriction ) . $exclude for ( mysplit $iexcl );
-	    add_rule $chainref, ( match_dest_net $_ )                  . $exclude for ( mysplit $dexcl );
-	    add_rule $chainref, ( match_orig_dest $_ )                 . $exclude for ( mysplit $oexcl );
+	    for ( mysplit $iexcl ) {
+		my $cond = conditional_rule( $chainref, $_ );
+		add_rule $chainref, ( match_source_net $_ , $restriction ) . $exclude;
+		conditional_rule_end( $chainref ) if $cond;
+	    }
+
+	    for ( mysplit $dexcl ) {
+		my $cond = conditional_rule( $chainref, $_ );
+		add_rule $chainref, ( match_dest_net $_ ) . $exclude;
+		conditional_rule_end( $chainref ) if $cond;
+	    }
+
+	    for ( mysplit $oexcl ) {
+		my $cond = conditional_rule( $chainref, $_ );
+		add_rule $chainref, ( match_orig_dest $_ ) . $exclude;
+		conditional_rule_end( $chainref ) if $cond;
+	    }
 	    #
 	    # Augment the rule to include 'not excluded'
 	    #
@@ -3818,25 +3868,47 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # Use the current rule and send all possible matches to the exclusion chain
 	    #
 	    for my $onet ( mysplit $onets ) {
+		
+		my $cond = conditional_rule( $chainref, $onet );
 
 		$onet = match_orig_dest $onet;
 
 		for my $inet ( mysplit $inets ) {
 
+		    my $cond = conditional_rule( $chainref, $inet );
+		    
 		    my $source_match = match_source_net( $inet, $restriction ) if have_capability( 'KLUDGEFREE' );
 
 		    for my $dnet ( mysplit $dnets ) {
 			$source_match = match_source_net( $inet, $restriction ) unless have_capability( 'KLUDGEFREE' );
 			add_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ), 1 );
 		    }
+		    
+		    conditional_rule_end( $chainref ) if $cond;
 		}
+
+		conditional_rule_end( $chainref ) if $cond;
 	    }
 	    #
 	    # Generate RETURNs for each exclusion
 	    #
-	    add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN' for ( mysplit $iexcl );
-	    add_rule $echainref, ( match_dest_net $_ )                  . '-j RETURN' for ( mysplit $dexcl );
-	    add_rule $echainref, ( match_orig_dest $_ )                 . '-j RETURN' for ( mysplit $oexcl );
+	    for ( mysplit $iexcl ) {
+		my $cond = conditional_rule( $echainref, $_ );
+		add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN';
+		conditional_rule_end( $echainref ) if $cond;
+	    }
+
+	    for ( mysplit $dexcl ) {
+		my $cond = conditional_rule( $echainref, $_ );
+		add_rule $echainref, ( match_dest_net $_ ) . '-j RETURN';
+		conditional_rule_end( $echainref ) if $cond;
+	    }
+
+	    for ( mysplit $oexcl ) {
+		my $cond = conditional_rule( $echainref, $_ );
+		add_rule $echainref, ( match_orig_dest $_ ) . '-j RETURN';
+		conditional_rule_end( $echainref ) if $cond;
+	    }
 	    #
 	    # Log rule
 	    #
@@ -3863,16 +3935,23 @@ sub expand_rule( $$$$$$$$$$;$ )
 	# No non-trivial exclusions or we're using marks to handle them
 	#
 	for my $onet ( mysplit $onets ) {
+	    my $cond = conditional_rule( $chainref, $onet );
+
 	    $onet = match_orig_dest $onet;
+	    
 	    for my $inet ( mysplit $inets ) {
 		my $source_match;
 
+		my $cond = conditional_rule( $chainref, $inet );
+		
 		$source_match = match_source_net( $inet, $restriction ) if have_capability( 'KLUDGEFREE' );
 
 		for my $dnet ( mysplit $dnets ) {
 		    $source_match  = match_source_net( $inet, $restriction ) unless have_capability( 'KLUDGEFREE' );
 		    my $dest_match = match_dest_net( $dnet );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
+
+		    my $cond = conditional_rule( $chainref, $dnet );
 
 		    if ( $loglevel eq '' ) {
 			#
@@ -3916,8 +3995,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 				  $matches,
 				  1 );
 		    }
+
+		    conditional_rule_end( $chainref ) if $cond;
 		}
+
+		conditional_rule_end( $chainref ) if $cond;
 	    }
+
+	    conditional_rule_end( $chainref ) if $cond;
 	}
     }
     #

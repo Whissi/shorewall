@@ -155,6 +155,7 @@ sub process_one_masq( )
 	my $exceptionrule = '';
 	my $randomize     = '';
 	my $persistent    = '';
+	my $conditional   = 0;
 	#
 	# Parse the ADDRESSES column
 	#
@@ -188,7 +189,11 @@ sub process_one_masq( )
 		    for my $addr ( split_list $addresses , 'address' ) {
 			if ( $addr =~ /^&(.+)$/ ) {
 			    $target = 'SNAT ';
-			    $addrlist .= '--to-source ' . record_runtime_address $1;
+			    if ( $conditional = conditional_rule( $chainref, $addr ) ) {
+				$addrlist .= '--to-source ' . get_interface_address $1;
+			    } else {
+				$addrlist .= '--to-source ' . record_runtime_address $1;
+			    }
 			} elsif ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = 'SNAT ';
 			    my ($ipaddr, $rest) = split ':', $addr;
@@ -232,10 +237,7 @@ sub process_one_masq( )
 		     '' ,
 		     $exceptionrule );
 
-	if ( $detectaddress ) {
-	    decr_cmd_level( $chainref );
-	    add_commands( $chainref , 'fi' );
-	}
+	conditional_rule_end( $chainref ) if $detectaddress || $conditional;
 
 	if ( $add_snat_aliases ) {
 	    my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );

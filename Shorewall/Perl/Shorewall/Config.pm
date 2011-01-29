@@ -2088,12 +2088,16 @@ sub load_kernel_modules( ) {
 	my $uname = `uname -r`;
 	fatal_error "The command 'uname -r' failed" unless $? == 0;
 	chomp $uname;
-	$modulesdir = "/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset";
+	$modulesdir = "/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/ipv6/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset";
     }
 
-    my @moduledirectories = split /:/, $modulesdir;
+    my @moduledirectories; 
 
-    if ( $moduleloader && open_file( $config{LOAD_HELPERS_ONLY} ? 'helpers' : 'modules' ) ) {
+    for ( split /:/, $modulesdir ) {
+	push @moduledirectories, $_ if -d $_;
+    }
+
+    if ( $moduleloader &&  @moduledirectories && open_file( $config{LOAD_HELPERS_ONLY} ? 'helpers' : 'modules' ) ) {
 	my %loadedmodules;
 
 	$loadedmodules{$_}++ for split_list( $config{DONT_LOAD}, 'module' );
@@ -2126,7 +2130,7 @@ sub load_kernel_modules( ) {
 			    } else {
 				system( "modprobe $module $arguments" );
 			    }
-
+				    
 			    $loadedmodules{ $module } = 1;
 			}
 		    }

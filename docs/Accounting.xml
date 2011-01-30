@@ -262,8 +262,13 @@
       </listitem>
     </itemizedlist>
 
-    <para>Versions of xtables-addons supporting the ACCOUNT target do not
-    install successfully on Debian Lenny.</para>
+    <para>and xtables-addons Version 1.21 on:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Debian Lenny</para>
+      </listitem>
+    </itemizedlist>
 
     <para>Information about xtables-addons installation may be found at <ulink
     url="Dynamic.html#xtables-addons">here</ulink>.</para>
@@ -290,6 +295,12 @@
       notation. The network can be as large as a /8 (class A).</member>
     </simplelist>
 
+    <para>One nice feature of per-IP accounting is that the counters survive
+    <command>shorewall restart</command>. This has a downside, however. If you
+    change the network associated with an accounting table, then you must
+    <command>shorewall stop; shorewall start</command> to have a successful
+    restart (counters will be cleared). </para>
+
     <para>Example: Suppose your WAN interface is eth0 and your LAN interface
     is eth1 with network 172.20.1.0/24. To account for all traffic between the
     WAN and LAN interfaces:</para>
@@ -299,9 +310,11 @@ ACCOUNT(net-loc,172.20.1.0/24)  -            eth0                eth1
 ACCOUNT(net-loc,172.20.1.0/24)  -            eth1                eth0</programlisting>
 
     <para>This will create a <emphasis role="bold">net-loc</emphasis> table
-    for counting packets and bytes for traffic between the two interfaces. The
-    table is dumped using the <command>iptaccount</command> utility (part of
-    xtables-addons):</para>
+    for counting packets and bytes for traffic between the two
+    interfaces.</para>
+
+    <para>The table is dumped using the <command>iptaccount</command> utility
+    (part of xtables-addons):</para>
 
     <programlisting><command>iptaccount [-f] -l net-loc</command></programlisting>
 

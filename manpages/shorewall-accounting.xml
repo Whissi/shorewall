@@ -109,6 +109,13 @@
                   /8 (class A).</member>
                 </simplelist>
 
+                <para>One nice feature of per-IP accounting is that the
+                counters survive <command>shorewall restart</command>. This
+                has a downside, however. If you change the network associated
+                with an accounting table, then you must <command>shorewall
+                stop; shorewall start</command> to have a successful restart
+                (counters will be cleared).</para>
+
                 <para>The counters in a <replaceable>table</replaceable> are
                 printed using the <command>iptaccount</command> utility. As of
                 February 2011, the ACCOUNT Target capability and the

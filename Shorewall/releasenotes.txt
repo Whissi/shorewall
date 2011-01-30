@@ -124,6 +124,12 @@ Beta 3
     traffic (IP is SRC) are listed. The -f option causes the table to
     be flushed (reset all counters to zero). 
 
+    One nice feature of per-IP accounting is that the counters survive
+    'shorewall restart'. This has a downside, however. If you change
+    the <network> associated with an accounting table, then you must
+    "shorewall stop; shorewall start" to have a successful restart
+    (counters will be cleared).
+
 Beta 2
 
 1)  Traditionally, the -lite products have used the modules (or

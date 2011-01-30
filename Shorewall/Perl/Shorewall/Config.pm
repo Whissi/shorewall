@@ -570,6 +570,7 @@ sub initialize( $ ) {
 	       FWMARK_RT_MASK => undef,
 	       MARK_ANYWHERE => undef,
 	       HEADER_MATCH => undef,
+               ACCOUNT_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );

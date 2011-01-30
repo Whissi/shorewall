@@ -299,7 +299,7 @@
     <command>shorewall restart</command>. This has a downside, however. If you
     change the network associated with an accounting table, then you must
     <command>shorewall stop; shorewall start</command> to have a successful
-    restart (counters will be cleared). </para>
+    restart (counters will be cleared).</para>
 
     <para>Example: Suppose your WAN interface is eth0 and your LAN interface
     is eth1 with network 172.20.1.0/24. To account for all traffic between the
@@ -321,6 +321,10 @@ ACCOUNT(net-loc,172.20.1.0/24)  -            eth1                eth0</programli
     <para>For each local IP address with non-zero counters, the packet and
     byte count for both incoming traffic (IP is DST) and outgoing traffic (IP
     is SRC) are listed. The -f option causes the table to be flushed (reset
-    all counters to zero) after printing. </para>
+    all counters to zero) after printing.</para>
+
+    <para>For a command synopsis:</para>
+
+    <programlisting><command>iptaccount --help</command></programlisting>
   </section>
 </article>

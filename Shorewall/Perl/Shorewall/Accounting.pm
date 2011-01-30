@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4.14';
+our $VERSION = '4.4.17';
 
 #
 # Called by the compiler to [re-]initialize this module's state

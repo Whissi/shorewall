@@ -243,4 +243,71 @@
     traffic activity. The article may be found at <ulink
     url="http://collectd.org/wiki/index.php/Plugin:IPTables">http://collectd.org/wiki/index.php/Plugin:IPTables</ulink>.</para>
   </section>
+
+  <section id="perIP">
+    <title>Per-IP Accounting</title>
+
+    <para>Shorewall 4.4.17 added support for per-IP accounting using the
+    ACCOUNT target. That target is only available when xtables-addons is
+    installed. This support has been successfully tested with xtables-addons
+    1.32 on:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Fedora 14</para>
+      </listitem>
+
+      <listitem>
+        <para>Debian Squeeze</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Versions of xtables-addons supporting the ACCOUNT target do not
+    install successfully on Debian Lenny.</para>
+
+    <para>Information about xtables-addons installation may be found at <ulink
+    url="Dynamic.html#xtables-addons">here</ulink>.</para>
+
+    <para>Per-IP accounting is configured in <ulink
+    url="manpages/shorewall-accounting.html">shorewall-accounting</ulink> (5)
+    (it is currently not supported in IPv6). In the ACTION column,
+    enter:</para>
+
+    <simplelist>
+      <member><emphasis
+      role="bold">ACCOUNT(</emphasis><replaceable>table</replaceable>,<replaceable>network</replaceable><emphasis
+      role="bold">)</emphasis></member>
+    </simplelist>
+
+    <para>where</para>
+
+    <simplelist>
+      <member><replaceable>table</replaceable> is the name of an accounting
+      table (you choose the name). All rules specifying the same table will
+      have their per-IP counters accumulated in that table.</member>
+
+      <member><replaceable>network</replaceable> is an IPv4 network in CIDR
+      notation. The network can be as large as a /8 (class A).</member>
+    </simplelist>
+
+    <para>Example: Suppose your WAN interface is eth0 and your LAN interface
+    is eth1 with network 172.20.1.0/24. To account for all traffic between the
+    WAN and LAN interfaces:</para>
+
+    <programlisting>#ACTION                         CHAIN        SOURCE              DEST          ...
+ACCOUNT(net-loc,172.20.1.0/24)  -            eth0                eth1
+ACCOUNT(net-loc,172.20.1.0/24)  -            eth1                eth0</programlisting>
+
+    <para>This will create a <emphasis role="bold">net-loc</emphasis> table
+    for counting packets and bytes for traffic between the two interfaces. The
+    table is dumped using the <command>iptaccount</command> utility (part of
+    xtables-addons):</para>
+
+    <programlisting><command>iptaccount [-f] -l net-loc</command></programlisting>
+
+    <para>For each local IP address with non-zero counters, the packet and
+    byte count for both incoming traffic (IP is DST) and outgoing traffic (IP
+    is SRC) are listed. The -f option causes the table to be flushed (reset
+    all counters to zero) after printing. </para>
+  </section>
 </article>

@@ -16,10 +16,13 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 Beta 3
 
-1)  If the SOURCE column in /etc/shorewall6/rules contained [<address>],
-    a spurious error was generated:
+1)  If the SOURCE column in /etc/shorewall6/rules contained an IPv6
+    address enclosed in [...], a spurious error was generated:
 
       ERROR: Invalid VLSM (0]) : /etc/shorewall6/rules (line 20)
+
+    The error did not occur if <...> was used to enclose the IPv6
+    address.
 
 2)  Two compiler defects in module loading have been corrected:
 
@@ -68,6 +71,58 @@ Beta 1
 ----------------------------------------------------------------------------
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+Beta 3
+
+1)  This release adds support for per-IP accounting using the ACCOUNT
+    target. That target is only available when xtables-addons is
+    installed. This support has been successfully tested with
+    xtables-addons 1.32 on:
+
+    - Fedora 14
+    - Debian Squeeze
+
+    Versions of xtables-addons supporting the ACCOUNT target do not
+    install successfully on Debian Lenny.
+
+    Information about xtables-addons installation may be found at
+    http://www.shorewall.net/Dynamic.html#xtables-addons
+
+    This feature required addition of the "ACCOUNT Target" capability
+    so if you use a capabilities file, you will want to refresh it
+    after installing this release.
+
+    Per-IP accounting is configured in /etc/shorewall/accounting (it is
+    not currently supported in IPv6). In the ACTION column, enter:
+
+       ACCOUNT(<table>,<network>)
+
+    where:
+
+       <table> is the name of an accounting table (you choose the
+       	       name). Rules specifying the same table will have their
+       	       per-IP counters accumulated in that table.
+
+       <network> is an IPv4 in CIDR format. May be as large as a /8.
+
+    Example: Suppose your WAN interface is eth0 and your LAN interface
+    	     is eth1 with network 172.20.1.0/24. To account for all
+    	     traffic between the WAN and LAN interfaces:
+
+	#ACTION                        TABLE     SOURCE        DEST ...
+	ACCOUNT(net-loc,172.20.1.0/24) -         eth0          eth1
+	ACCOUNT(net-loc,172.20.1.0/24) -         eth0          eth1
+
+    This will create a net-loc table for counting packets and
+    bytes for traffic between the two interfaces. The table is dumped
+    using the iptaccount utility:
+
+    	iptaccount [-f] -l net-loc
+
+    For each local IP address with non-zero counters, the packet and
+    byte count for both incoming traffic (IP is DST) and outgoing
+    traffic (IP is SRC) are listed. The -f option causes the table to
+    be flushed (reset all counters to zero). 
 
 Beta 2
 

@@ -35,7 +35,7 @@
         <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
         role="bold">COUNT</emphasis>|<emphasis
         role="bold">DONE</emphasis>|<emphasis>chain</emphasis>[:<emphasis
-        role="bold">{COUNT</emphasis>:JUMP}]|COUNT
+        role="bold">{COUNT</emphasis>:JUMP}]|ACCOUNT(<replaceable>table</replaceable>,<replaceable>network</replaceable>)|COUNT
         <emphasis>comment</emphasis>}</term>
 
         <listitem>
@@ -83,6 +83,40 @@
               <listitem>
                 <para>Like the previous option without the <emphasis
                 role="bold">:COUNT</emphasis> part.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">ACCOUNT(</emphasis><replaceable>table</replaceable>,<replaceable>network</replaceable><emphasis
+              role="bold">)</emphasis></term>
+
+              <listitem>
+                <para>This action implements per-IP accounting and was added
+                in Shoreall 4.4.17. Requires the <emphasis>ACCOUNT
+                Target</emphasis> capability in your iptables and kernel (see
+                the output of <command>shorewall show
+                capabilities</command>).</para>
+
+                <simplelist>
+                  <member><replaceable>table</replaceable> is the name of an
+                  accounting table (you choose the name). All rules specifying
+                  the same table will have their per-IP counters accumulated
+                  in that table.</member>
+
+                  <member><replaceable>network</replaceable> is an IPv4
+                  network in CIDR notation. The network can be as large as a
+                  /8 (class A).</member>
+                </simplelist>
+
+                <para>The counters in a <replaceable>table</replaceable> are
+                printed using the <command>iptaccount</command> utility. As of
+                February 2011, the ACCOUNT Target capability and the
+                iptaccount utility are only available when <ulink
+                url="http://xtables-addons.sourceforge.net/">xtables-addons</ulink>
+                is installed. See <ulink
+                url="http://www.shorewall.net/Accounting.html#perIP">http://www.shorewall.net/Accounting.html#perIP</ulink>
+                for additional information.</para>
               </listitem>
             </varlistentry>
 

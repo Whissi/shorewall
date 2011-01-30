@@ -318,6 +318,20 @@ ACCOUNT(net-loc,172.20.1.0/24)  -            eth1                eth0</programli
 
     <programlisting><command>iptaccount [-f] -l net-loc</command></programlisting>
 
+    <para>Example:</para>
+
+    <programlisting>gateway:~# <emphasis role="bold">iptaccount -l net-loc</emphasis>
+
+libxt_ACCOUNT_cl userspace accounting tool v1.3
+
+Showing table: net-loc
+Run #0 - 3 items found
+IP: 172.20.1.105 SRC packets: 115 bytes: 131107 DST packets: 68 bytes: 20045
+IP: 172.20.1.131 SRC packets: 47 bytes: 12729 DST packets: 38 bytes: 25304
+IP: 172.20.1.145 SRC packets: 20747 bytes: 2779676 DST packets: 27050 bytes: 32286071
+Finished.
+gateway:~#</programlisting>
+
     <para>For each local IP address with non-zero counters, the packet and
     byte count for both incoming traffic (IP is DST) and outgoing traffic (IP
     is SRC) are listed. The -f option causes the table to be flushed (reset

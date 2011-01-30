@@ -1479,7 +1479,7 @@ determine_capabilities() {
     qt $IP6TABLES -A $chain -j LOG || LOG_TARGET=
     qt $IP6TABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $IP6TABLES -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
-    qt $IP6TABLES -A $chain -j ACCOUNT --addr 1::/29 --tname $chain
+    qt $IP6TABLES -A $chain -j ACCOUNT --addr 1::/122 --tname $chain && ACCOUNT_TARGET=Yes
 
     qt $IP6TABLES -F $chain
     qt $IP6TABLES -X $chain

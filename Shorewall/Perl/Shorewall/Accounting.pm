@@ -103,11 +103,14 @@ sub process_accounting_rule( ) {
 	if ( $action eq 'DONE' ) {
 	    $target = 'RETURN';
 	} elsif ( $action =~ /^ACCOUNT\((.+)\)$/ ) {
-	    my ( $table, $net ) = split/,/, $1;
 	    require_capability 'ACCOUNT_TARGET' , 'ACCOUNT Rules' , '';
-	    fatal_error "Invalid or Missing Table Name ($table)" unless $table =~ /^([-\w.]+)$/;
-	    fatal_error "Invalid Network Address" unless $net =~ '/(\d+)$';
-	    fatal_error "Netmask ($1) out of range" unless $1 >= 8;
+	    my ( $table, $net, $rest ) = split/,/, $1;
+	    fatal_error "Invalid Network Address (${net}${rest})" if defined $rest;
+	    fatal_error "Missing Table Name"             unless defined $table && $table ne '';;
+	    fatal_error "Invalid Table Name ($table)"    unless $table =~ /^([-\w.]+)$/;
+	    fatal_error "Missing Network Address"        unless defined $net;
+	    fatal_error "Invalid Network Address ($net)" unless defined $net   && $net =~ '/(\d+)$';
+	    fatal_error "Netmask ($1) out of range"      unless $1 >= 8;
 	    validate_net $net, 0;
 	    $target = "ACCOUNT --addr $net --tname $table";
 	} else {

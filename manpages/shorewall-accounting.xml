@@ -99,16 +99,28 @@
                 the output of <command>shorewall show
                 capabilities</command>).</para>
 
-                <simplelist>
-                  <member><replaceable>table</replaceable> is the name of an
-                  accounting table (you choose the name). All rules specifying
-                  the same table will have their per-IP counters accumulated
-                  in that table.</member>
+                <variablelist>
+                  <varlistentry>
+                    <term><replaceable>table</replaceable></term>
 
-                  <member><replaceable>network</replaceable> is an IPv4
-                  network in CIDR notation. The network can be as large as a
-                  /8 (class A).</member>
-                </simplelist>
+                    <listitem>
+                      <para>is the name of an accounting table (you choose the
+                      name). All rules specifying the same name will have
+                      their per-IP counters accumulated in the same
+                      table.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><replaceable>network</replaceable></term>
+
+                    <listitem>
+                      <para>is an IPv4 network in CIDR notation (e.g.,
+                      192.168.1.0/24). The network can be as large as a /8
+                      (class A).</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
 
                 <para>One nice feature of per-IP accounting is that the
                 counters survive <command>shorewall restart</command>. This

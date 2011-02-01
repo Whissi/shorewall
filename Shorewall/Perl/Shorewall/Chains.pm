@@ -1262,7 +1262,7 @@ sub ensure_accounting_chain( $$ )
 	fatal_error "Non-accounting chain ($chain) used in an accounting rule" unless $chainref->{accounting};
     } else {
 	fatal_error "Chain name ($chain) too long" if length $chain > 29;
-	fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w.]+$/;
+	fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/;
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
@@ -1351,7 +1351,7 @@ sub new_nat_chain($) {
 sub new_manual_chain($) {
     my $chain = $_[0];
     fatal_error "Chain name ($chain) too long" if length $chain > 29;
-    fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w.]+$/;
+    fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/;
     fatal_error "Duplicate Chain Name ($chain)" if $targets{$chain} || $filter_table->{$chain};
     $targets{$chain} = CHAIN;
     ( my $chainref = ensure_filter_chain( $chain, 0) )->{manual} = 1;

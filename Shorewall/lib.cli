@@ -713,6 +713,12 @@ show_command() {
 	    echo
 	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
 	    ;;
+	ipaccount)
+	    echo "$g_product $SHOREWALL_VERSION per-IP Accounting at $g_hostname - $(date)"
+	    echo
+	    [ $# -gt 1 ] && usage 1
+	    perip_accounting
+	    ;;
 	*)
 	    if [ "$g_product" = Shorewall ]; then
 		case $1 in
@@ -809,6 +815,27 @@ show_command() {
 	    fi
 	    ;;
     esac
+}
+
+perip_accounting() {
+    if qt mywhich iptaccount; then
+	local hnames
+	local hname
+
+	hnames=$(iptaccount -a | grep '^Found table:' | cut -d ' ' -f 3)
+
+	if [ -n "$hnames" ]; then
+	    for hname in $hnames; do
+		iptaccount -l $hname | egrep '^IP:|^Show' 
+		echo
+	    done
+	else
+	    echo "   No IP Accounting Tables Defined"
+	    echo 
+	fi
+    else
+	echo "   iptaccount is not installed"
+    fi
 }
 
 #
@@ -946,6 +973,10 @@ do_dump_command() {
 	heading "Bridges"
 	brctl show
     fi
+
+    heading "Per-IP Counters"
+
+    perip_accounting
 
     if qt mywhich setkey; then
 	heading "PFKEY SPD"

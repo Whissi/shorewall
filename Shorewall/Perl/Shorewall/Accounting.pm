@@ -122,7 +122,7 @@ sub process_accounting_rule( ) {
 
 		my $prevnet = $tables{$table};
 		if ( $prevnet ) {
-		    fatal_error "Previous net associated with $table ($prevnet) does not match this one ($net)" unless $net eq $prevnet;
+		    fatal_error "Previous net associated with $table ($prevnet) does not match this one ($net)" unless compare_nets( $net , $prevnet );
 		} else {
 		    $tables{$table} = $net;
 		}

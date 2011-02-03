@@ -59,6 +59,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_address
 		  validate_net
 		  decompose_net
+		  compare_nets
 		  validate_host
 		  validate_range
 		  ip_range_explicit
@@ -283,6 +284,15 @@ sub decompose_net( $ ) {
     ( ( $family == F_IPV4 ? encodeaddr( $net) : $net )  , $vlsm );
 
 }
+
+sub compare_nets( $$ ) {
+    my ( @net1, @net2 );
+
+    @net1 = decompose_net( $_[0] );
+    @net2 = decompose_net( $_[1] );
+    
+    $net1[0] eq $net2[0] && $net1[1] == $net2[1];
+}			    
 
 sub allipv4() {
     @allipv4;

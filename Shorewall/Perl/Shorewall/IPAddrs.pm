@@ -280,7 +280,7 @@ sub decompose_net( $ ) {
     my $net = $_[0];
 
     ( $net, my $vlsm ) = validate_net( $net , 0 );
-    ( encodeaddr( $net) , $vlsm );
+    ( ( $family == F_IPV4 ? encodeaddr( $net) : $net )  , $vlsm );
 
 }
 
@@ -586,6 +586,15 @@ sub validate_6net( $$ ) {
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
 	validate_6address $net, $allow_name;
+    }
+
+    if ( defined wantarray ) {
+	assert ( ! $allow_name );
+	if ( wantarray ) {
+	    ( $net , $vlsm );
+	} else {
+	    "$net/$vlsm";
+	}
     }
 }
 

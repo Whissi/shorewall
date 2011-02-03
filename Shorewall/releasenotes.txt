@@ -39,7 +39,28 @@ RC 1
        compile time.
 
     c) There is now an ipv6 tcfilters skeleton included with
-        Shorewall6.
+       Shorewall6.
+
+3)  Several issues with accounting are corrected.
+
+    a)  If an accounting rule of the form:
+
+    	   chain1		 chain2
+
+	was configured and neither chain was referenced again in the
+	configuration, then an internal error was generated when
+	optimize level 4 was selected and OPTIMIZE_ACCOUNTING=Yes.
+
+    b)  If there was only a single accounting rule and that rule
+    	specified an interface in the SOURCE or DEST columns, then the
+    	generated ruleset would fail to load when
+    	OPTIMIZE_ACCOUNTING=Yes.
+
+    c)  If a per-IP accounting table name appeared in more than one
+    	rule and the specified network was not the same in all
+    	occurrences, then the generated ruleset would fail to load.
+
+	This is now flagged as an error at compile time.
 
 Beta 3
 

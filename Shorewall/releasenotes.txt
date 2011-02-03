@@ -26,6 +26,21 @@ RC 1
     ("-"). This eliminates Perl runtime errors or other failures when a
     chain name is embedded within a regular expression.
 
+2)  Several issues with complex traffic shaping have been resolved:
+
+    a) Specifying IPv6 network addresses in the SOURCE or DEST columns
+       of /etc/shorewall6/tcfilters now works correctly. Previously,
+       Perl runtime warnings occurred and an invalid tc command was
+       generated.
+
+    b) Previously, if flow= was specified on a parent class, a perl
+       runtime warning occurred and an invalid tc command was
+       generated. This combination is now flagged as an error at
+       compile time.
+
+    c) There is now an ipv6 tcfilters skeleton included with
+        Shorewall6.
+
 Beta 3
 
 1)  If the SOURCE column in /etc/shorewall6/rules contained an IPv6

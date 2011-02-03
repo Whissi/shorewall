@@ -281,7 +281,7 @@ sub decompose_net( $ ) {
     my $net = $_[0];
 
     ( $net, my $vlsm ) = validate_net( $net , 0 );
-    ( ( $family == F_IPV4 ? encodeaddr( $net) : $net )  , $vlsm );
+    ( ( $family == F_IPV4 ? encodeaddr( $net) : normalize_6addr( $net ) )  , $vlsm );
 
 }
 

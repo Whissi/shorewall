@@ -38,11 +38,17 @@ our @EXPORT_OK = qw( );
 our $VERSION = '4.4.17';
 
 #
+# Per-IP accounting tables. Each entry contains the associated network.
+#
+our %tables;
+
+#
 # Called by the compiler to [re-]initialize this module's state
 #
 sub initialize() {
     our $jumpchainref;
     $jumpchainref = undef;
+    %tables       = ();
 }
 
 #
@@ -113,6 +119,14 @@ sub process_accounting_rule( ) {
 		fatal_error "Invalid Network Address ($net)" unless defined $net   && $net =~ '/(\d+)$';
 		fatal_error "Netmask ($1) out of range"      unless $1 >= 8;
 		validate_net $net, 0;
+
+		my $prevnet = $tables{$table};
+		if ( $prevnet ) {
+		    fatal_error "Previous net associated with $table ($prevnet) does not match this one ($net)" unless $net eq $prevnet;
+		} else {
+		    $tables{$table} = $net;
+		}
+
 		$target = "ACCOUNT --addr $net --tname $table";
 	    } else {
 		fatal_error "Invalid ACCOUNT Action";

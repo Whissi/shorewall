@@ -499,6 +499,16 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcdevices ]; then
 fi
 
 #
+# Install the tcfilters file
+#
+run_install $OWNERSHIP -m 0644 tcfilters ${DESTDIR}/usr/share/shorewall6/configfiles/tcfilters
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcfilters ]; then
+    run_install $OWNERSHIP -m 0600 tcfilters ${DESTDIR}/etc/shorewall6/tcfilters
+    echo "TC Filters file installed as ${DESTDIR}/etc/shorewall6/tcfilters"
+fi
+
+#
 # Install the Notrack file
 #
 run_install $OWNERSHIP -m 0644 notrack ${DESTDIR}/usr/share/shorewall6/configfiles/notrack

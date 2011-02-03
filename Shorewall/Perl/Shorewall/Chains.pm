@@ -1153,20 +1153,28 @@ sub delete_jumps ( $$ ) {
     my $from  = $fromref->{name};
     my $rules = $fromref->{rules};
     my $refs  = $toref->{references}{$from};
-    #
-    # A C-style for-loop with indexing seems to work best here, given that we are
-    # deleting elements from the array over which we are iterating.
-    #
-    for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
-	if (  $rules->[$rule] =~ / -[gj] ${to}(\s+-m comment .*)?\s*$/ ) {
-	    trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
-	    splice(  @$rules, $rule, 1 );
-	    last unless --$refs > 0;
-	    $rule--;
-	}
-    }
 
-    assert( ! $refs );
+    #
+    # The 'from' chain may have had no references and has already been deleted so
+    # we need to check
+    #
+    if ( $fromref->{referenced} ) {
+	#
+	#
+	# A C-style for-loop with indexing seems to work best here, given that we are
+	# deleting elements from the array over which we are iterating.
+	#
+	for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
+	    if (  $rules->[$rule] =~ / -[gj] ${to}(\s+-m comment .*)?\s*$/ ) {
+		trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
+		splice(  @$rules, $rule, 1 );
+		last unless --$refs > 0;
+		$rule--;
+	    }
+	}
+
+	assert( ! $refs );
+    }
 
     delete $toref->{references}{$from};
 

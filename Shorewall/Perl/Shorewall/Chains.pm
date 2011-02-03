@@ -1267,7 +1267,7 @@ sub ensure_accounting_chain( $$ )
 	$chainref->{accounting} = 1;
 	$chainref->{referenced} = 1;
 	$chainref->{ipsec}      = $ipsec;
-	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
+	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING} && $chain ne 'accounting';
 
 	if ( $chain ne 'accounting' ) {
 	    my $file = find_file $chain;

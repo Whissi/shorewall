@@ -1155,7 +1155,7 @@ sub delete_jumps ( $$ ) {
     my $refs  = $toref->{references}{$from};
 
     #
-    # The 'from' chain may have had no references and has already been deleted so
+    # The 'from' chain may have had no references and has been deleted already so
     # we need to check
     #
     if ( $fromref->{referenced} ) {

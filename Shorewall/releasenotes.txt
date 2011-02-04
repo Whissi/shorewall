@@ -1,6 +1,5 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 7
-		                   R C  1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,8 +12,6 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
-
-RC 1
 
 1)  Previously, Shorewall did not check the length of the names of
     accounting chains and manual chains. This could result in 
@@ -62,17 +59,7 @@ RC 1
 
 	This is now flagged as an error at compile time.
 
-Beta 3
-
-1)  If the SOURCE column in /etc/shorewall6/rules contained an IPv6
-    address enclosed in [...], a spurious error was generated:
-
-      ERROR: Invalid VLSM (0]) : /etc/shorewall6/rules (line 20)
-
-    The error did not occur if <...> was used to enclose the IPv6
-    address.
-
-2)  Two defects in compiler module loading have been corrected:
+4)  Two defects in compiler module loading have been corrected:
 
     a) Previously, the kernel/net/ipv6/netfilter/ directory was not
        searched.
@@ -80,32 +67,28 @@ Beta 3
     b) A Perl diagnostic was issued when running on a monolithic kernel
        when the modutils package was installed.
 
-Beta 2
-
-1)  A line containing only 'INCLUDE' appearing in an extension script
+5)  A line containing only 'INCLUDE' appearing in an extension script
     now generates a compile-time diagnostic rather than a run-time
     diagnostic.
 
-2)  Previously, the uninstall.sh scripts used insserv (if installed) on
+6)  Previously, the uninstall.sh scripts used insserv (if installed) on
     Debian-based systems. These scripts now use the preferred tool
     (updaterc.d).
 
-3)  Beginning with 4.4.16, compilation would fail if an empty shell
+7)  Beginning with 4.4.16, compilation would fail if an empty shell
     variable was referenced in a config file on a system where /bin/sh
     is the Bourne Again Shell (bash).
 
-4)  In earlier versions. if OPTIMIZE=8 then the ruleset displayed by
+8)  In earlier versions. if OPTIMIZE=8 then the ruleset displayed by
     'check -r' was the same as when OPTIMIZE=0
     (unoptimized). Similarly, if OPTIMIZE=9 then the ruleset displayed
     was the same as when OPTIMIZE=1.
 
-5)  Startup could previously fail on a system where kernel module
+9)  Startup could previously fail on a system where kernel module
     autoloading was not available and where TC_ENABLED=Simple was
     specified in shorewall.conf.
 
-Beta 1
-
-1)  Previously, a 'done.' message could be printed at the end of
+10) Previously, a 'done.' message could be printed at the end of
     command processing even when the command had failed. Now, such a
     message only appears if the command completed successfully.
 
@@ -119,13 +102,6 @@ Beta 1
 ----------------------------------------------------------------------------
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
-
-RC 1
-
-1)  A 'show ipa' command has been added to /sbin/shorewall. It
-    displays each per-IP accounting table.  
-
-Beta 3
 
 1)  This release adds support for per-IP accounting using the ACCOUNT
     target. That target is only available when xtables-addons is
@@ -206,9 +182,10 @@ Beta 3
     "shorewall stop; shorewall start" to have a successful restart
     (counters will be cleared).
 
-Beta 2
+2)  A 'show ipa' command has been added to /sbin/shorewall. It
+    displays each per-IP accounting table.  
 
-1)  Traditionally, the -lite products have used the modules (or
+3)  Traditionally, the -lite products have used the modules (or
     helpers) file on the firewall system unless there is a modules (or
     helpers) file in the configuration directory on the administrative
     system. This release introduces the USE_LOCAL_MODULES option in
@@ -218,7 +195,7 @@ Beta 2
     administrative system will be used to determine the set of modules
     loaded. 
 
-2)  Given that shell variables are expanded at compile time, there was
+4)  Given that shell variables are expanded at compile time, there was
     previously no way to cause such variables to be expanded at run
     time. This made it difficult (to impossible) to include dynamic IP
     addresses in a Shorewall-lite configuration.
@@ -257,16 +234,14 @@ Beta 2
     that the firewall starts, the resulting Netfilter rule(s)
     containing the interface address are not added.
 
-Beta 1
-
-1)  The shell variables set in /etc/shorewall/params
+5)  The shell variables set in /etc/shorewall/params
     (/etc/shorewall6/params) are now available in the compiled script
     at run-time with EXPORTPARAMS=No. The EXPORTPARAMS option is now
     deprecated and the released /etc/shorewall/shorewall.conf and
     /etc/shorewall/shorewall6.conf have been modified to specify
     EXPORTPARAMS=No.
 
-2)  The INCLUDE directive may now be used in the following extension
+6)  The INCLUDE directive may now be used in the following extension
     scripts:
 
 	clear

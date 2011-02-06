@@ -1,7 +1,7 @@
 #
-# Shorewall version 4 - Modules File
+# Shorewall version 4 - IP Set Modules File
 #
-# /usr/share/shorewall/modules
+# /usr/share/shorewall/modules.ipset
 #
 #	This file loads the modules that may be needed by the firewall.
 #
@@ -13,27 +13,14 @@
 #  copy.
 #
 ###############################################################################
-#
-# Essential Modules
-#
-INCLUDE modules.essentials
-#
-# Other xtables modules
-#
-INCLUDE modules.xtables
-#
-# Helpers
-#
-INCLUDE helpers
-#
-# Ipset
-#
-INCLUDE modules.ipset
-#
-# Traffic Shaping
-#
-INCLUDE modules.tc
-#
-# Extensions
-#
-INCLUDE modules.extensions
+loadmodule ip_set
+loadmodule ip_set_iphash
+loadmodule ip_set_ipmap
+loadmodule ip_set_ipporthash
+loadmodule ip_set_iptree
+loadmodule ip_set_iptreemap
+loadmodule ip_set_macipmap
+loadmodule ip_set_nethash
+loadmodule ip_set_portmap
+loadmodule ipt_SET
+loadmodule ipt_set

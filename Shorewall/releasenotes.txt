@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                      S H O R E W A L L  4 . 4 . 1 7
+                      S H O R E W A L L  4 . 4 . 1 8
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,84 +13,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  Previously, Shorewall did not check the length of the names of
-    accounting chains and manual chains. This could result in 
-    errors when loading the resulting ruleset. Now, the compiler issues
-    an error for chain names longer than 29 characters.
-
-    Additionally, the compiler now ensures that these chain names are
-    composed only of letters, digits, underscores ('_') and dashes
-    ("-"). This eliminates Perl runtime errors or other failures when a
-    chain name is embedded within a regular expression.
-
-2)  Several issues with complex traffic shaping have been resolved:
-
-    a) Specifying IPv6 network addresses in the SOURCE or DEST columns
-       of /etc/shorewall6/tcfilters now works correctly. Previously,
-       Perl runtime warnings occurred and an invalid tc command was
-       generated.
-
-    b) Previously, if flow= was specified on a parent class, a perl
-       runtime warning occurred and an invalid tc command was
-       generated. This combination is now flagged as an error at
-       compile time.
-
-    c) There is now an ipv6 tcfilters skeleton included with
-       Shorewall6.
-
-3)  Several issues with accounting are corrected.
-
-    a)  If an accounting rule of the form:
-
-    	   chain1		 chain2
-
-	was configured and neither chain was referenced again in the
-	configuration, then an internal error was generated when
-	optimize level 4 was selected and OPTIMIZE_ACCOUNTING=Yes.
-
-    b)  If there was only a single accounting rule and that rule
-    	specified an interface in the SOURCE or DEST columns, then the
-    	generated ruleset would fail to load when
-    	OPTIMIZE_ACCOUNTING=Yes.
-
-    c)  If a per-IP accounting table name appeared in more than one
-    	rule and the specified network was not the same in all
-    	occurrences, then the generated ruleset would fail to load.
-
-	This is now flagged as an error at compile time.
-
-4)  Two defects in compiler module loading have been corrected:
-
-    a) Previously, the kernel/net/ipv6/netfilter/ directory was not
-       searched.
-       
-    b) A Perl diagnostic was issued when running on a monolithic kernel
-       when the modutils package was installed.
-
-5)  A line containing only 'INCLUDE' appearing in an extension script
-    now generates a compile-time diagnostic rather than a run-time
-    diagnostic.
-
-6)  Previously, the uninstall.sh scripts used insserv (if installed) on
-    Debian-based systems. These scripts now use the preferred tool
-    (updaterc.d).
-
-7)  Beginning with 4.4.16, compilation would fail if an empty shell
-    variable was referenced in a config file on a system where /bin/sh
-    is the Bourne Again Shell (bash).
-
-8)  In earlier versions. if OPTIMIZE=8 then the ruleset displayed by
-    'check -r' was the same as when OPTIMIZE=0
-    (unoptimized). Similarly, if OPTIMIZE=9 then the ruleset displayed
-    was the same as when OPTIMIZE=1.
-
-9)  Startup could previously fail on a system where kernel module
-    autoloading was not available and where TC_ENABLED=Simple was
-    specified in shorewall.conf or shorewall6.conf.
-
-10) Previously, a 'done.' message could be printed at the end of
-    command processing even when the command had failed. Now, such a
-    message only appears if the command completed successfully.
+None.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
@@ -103,170 +26,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  This release adds support for per-IP accounting using the ACCOUNT
-    target. That target is only available when xtables-addons is
-    installed. This support has been successfully tested with
-    xtables-addons 1.32 on:
-
-    - Fedora 14
-    - Debian Squeeze
-    - OpenSuSE 11.3
-
-    It has also been tested with xtables-addons 1.21 on:
-
-    - Debian Lenny
-
-    Information about xtables-addons installation may be found at
-    http://www.shorewall.net/Dynamic.html#xtables-addons
-
-    This feature required addition of the "ACCOUNT Target" capability
-    so if you use a capabilities file, you will want to refresh it
-    after installing this release.
-
-    Per-IP accounting is configured in /etc/shorewall/accounting (it is
-    not currently supported in IPv6). In the ACTION column, enter:
-
-       ACCOUNT(<table>,<network>)
-
-    where:
-
-       <table> is the name of an accounting table (you choose the
-       	       name). Rules specifying the same table will have their
-       	       per-IP counters accumulated in that table.
-
-       <network> is an IPv4 in CIDR format. May be as large as a /8.
-
-    Example: Suppose your WAN interface is eth0 and your LAN interface
-    	     is eth1 with network 172.20.1.0/24. To account for all
-    	     traffic between the WAN and LAN interfaces:
-
-	#ACTION                        TABLE     SOURCE        DEST ...
-	ACCOUNT(net-loc,172.20.1.0/24) -         eth0          eth1
-	ACCOUNT(net-loc,172.20.1.0/24) -         eth0          eth1
-
-    This will create a net-loc table for counting packets and
-    bytes for traffic between the two interfaces. The table is dumped
-    using the iptaccount utility:
-
-    	iptaccount [-f] -l net-loc
-
-    Example (output folded):
-
-	gateway:~# iptaccount -l loc-net
-
-	libxt_ACCOUNT_cl userspace accounting tool v1.3
-
-	Showing table: loc-net
-	Run #0 - 3 items found
-	IP: 172.20.1.105 SRC packets: 115 bytes: 131107
-                         DST packets: 68 bytes: 20045
-	IP: 172.20.1.131 SRC packets: 47 bytes: 12729
-                         DST packets: 38 bytes: 25304
-	IP: 172.20.1.145 SRC packets: 20747 bytes: 2779676
-                         DST packets: 27050 bytes: 32286071
-	Finished.
-	gateway:~#
-    
-    For each local IP address with non-zero counters, the packet and
-    byte count for both incoming traffic (IP is DST) and outgoing
-    traffic (IP is SRC) are listed. The -f option causes the table to
-    be flushed (reset all counters to zero).
-
-    For a command synopsis, type:
-
-    	iptaccount --help 
-
-    One nice feature of per-IP accounting is that the counters survive
-    'shorewall restart'. This has a downside, however. If you change
-    the <network> associated with an accounting table, then you must
-    "shorewall stop; shorewall start" to have a successful restart
-    (counters will be cleared).
-
-2)  A 'show ipa' command has been added to /sbin/shorewall. It
-    displays each per-IP accounting table.  
-
-3)  Traditionally, the -lite products have used the modules (or
-    helpers) file on the firewall system unless there is a modules (or
-    helpers) file in the configuration directory on the administrative
-    system. This release introduces the USE_LOCAL_MODULES option in
-    shorewall[6].conf.
-
-    When USE_LOCAL_MODULES=Yes, the modules (helpers) file on the
-    administrative system will be used to determine the set of modules
-    loaded.
-
-    As part of this change, the modules and helpers files are now
-    secured for read access by non-root users.
-
-4)  Given that shell variables are expanded at compile time, there was
-    previously no way to cause such variables to be expanded at run
-    time. This made it difficult (to impossible) to include dynamic IP
-    addresses in a Shorewall-lite configuration.
-
-    This release implements "Run-time address variables". In
-    configuration files, these variables are expressed using an
-    apersand ('&') followed by the name of an interface defined in
-    /etc/shorewall/interfaces. Wild-card interfaces (those whose names
-    end in '+') are not allowed to be used in this way.
-    
-    Example: 
-
-    	     &eth0 would represent the primary IP address of eth0.
-
-    Run-time address variables may be used in the SOURCE and DEST
-    column of the following configuration files:
-
-    	   accounting
-	   action files
-	   blacklist
-	   macro files
-	   rules
-	   tcrules
-	   tos
-
-    They may also appear in the ORIGINAL DEST column of
-
-    	   action files
-	   macro files
-	   rules
-
-    They may also be used in the SOURCE and ADDRESS columns of the masq
-    file.
-
-    For optional interfaces, if the interface is not usable at the time
-    that the firewall starts, the resulting Netfilter rule(s)
-    containing the interface address are not added.
-
-5)  The shell variables set in /etc/shorewall/params
-    (/etc/shorewall6/params) are now available in the compiled script
-    at run-time with EXPORTPARAMS=No. The EXPORTPARAMS option is now
-    deprecated and the released /etc/shorewall/shorewall.conf and
-    /etc/shorewall/shorewall6.conf have been modified to specify
-    EXPORTPARAMS=No.
-
-6)  The INCLUDE directive may now be used in the following extension
-    scripts:
-
-	clear
-	findgw
-	init
-	isusable
-	refresh
-	refreshed
-	restored
-	start
-	started
-	stop
-	stopped
-	tcclear
-
-    The directive is executed during compilation so that the INCLUDEd
-    file(s) is(are) copied into the generated script. This same
-    technique is also now used for INCLUDE directives in the params
-    file when EXPORTPARAMS=Yes. Previously, INCLUDE directives in that
-    file were strongly discouraged with EXPORTPARAMS=Yes because the
-    INCLUDE was performed on the firewall system rather than on the
-    administrative system.
+None.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -497,6 +257,258 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S
+----------------------------------------------------------------------------
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 7
+----------------------------------------------------------------------------
+
+1)  Previously, Shorewall did not check the length of the names of
+    accounting chains and manual chains. This could result in 
+    errors when loading the resulting ruleset. Now, the compiler issues
+    an error for chain names longer than 29 characters.
+
+    Additionally, the compiler now ensures that these chain names are
+    composed only of letters, digits, underscores ('_') and dashes
+    ("-"). This eliminates Perl runtime errors or other failures when a
+    chain name is embedded within a regular expression.
+
+2)  Several issues with complex traffic shaping have been resolved:
+
+    a) Specifying IPv6 network addresses in the SOURCE or DEST columns
+       of /etc/shorewall6/tcfilters now works correctly. Previously,
+       Perl runtime warnings occurred and an invalid tc command was
+       generated.
+
+    b) Previously, if flow= was specified on a parent class, a perl
+       runtime warning occurred and an invalid tc command was
+       generated. This combination is now flagged as an error at
+       compile time.
+
+    c) There is now an ipv6 tcfilters skeleton included with
+       Shorewall6.
+
+3)  Several issues with accounting are corrected.
+
+    a)  If an accounting rule of the form:
+
+    	   chain1		 chain2
+
+	was configured and neither chain was referenced again in the
+	configuration, then an internal error was generated when
+	optimize level 4 was selected and OPTIMIZE_ACCOUNTING=Yes.
+
+    b)  If there was only a single accounting rule and that rule
+    	specified an interface in the SOURCE or DEST columns, then the
+    	generated ruleset would fail to load when
+    	OPTIMIZE_ACCOUNTING=Yes.
+
+    c)  If a per-IP accounting table name appeared in more than one
+    	rule and the specified network was not the same in all
+    	occurrences, then the generated ruleset would fail to load.
+
+	This is now flagged as an error at compile time.
+
+4)  Two defects in compiler module loading have been corrected:
+
+    a) Previously, the kernel/net/ipv6/netfilter/ directory was not
+       searched.
+       
+    b) A Perl diagnostic was issued when running on a monolithic kernel
+       when the modutils package was installed.
+
+5)  A line containing only 'INCLUDE' appearing in an extension script
+    now generates a compile-time diagnostic rather than a run-time
+    diagnostic.
+
+6)  Previously, the uninstall.sh scripts used insserv (if installed) on
+    Debian-based systems. These scripts now use the preferred tool
+    (updaterc.d).
+
+7)  Beginning with 4.4.16, compilation would fail if an empty shell
+    variable was referenced in a config file on a system where /bin/sh
+    is the Bourne Again Shell (bash).
+
+8)  In earlier versions. if OPTIMIZE=8 then the ruleset displayed by
+    'check -r' was the same as when OPTIMIZE=0
+    (unoptimized). Similarly, if OPTIMIZE=9 then the ruleset displayed
+    was the same as when OPTIMIZE=1.
+
+9)  Startup could previously fail on a system where kernel module
+    autoloading was not available and where TC_ENABLED=Simple was
+    specified in shorewall.conf or shorewall6.conf.
+
+10) Previously, a 'done.' message could be printed at the end of
+    command processing even when the command had failed. Now, such a
+    message only appears if the command completed successfully.
+
+----------------------------------------------------------------------------
+               N E W   F E A T U R E S   I N   4 . 4 . 1 7
+----------------------------------------------------------------------------
+
+1)  This release adds support for per-IP accounting using the ACCOUNT
+    target. That target is only available when xtables-addons is
+    installed. This support has been successfully tested with
+    xtables-addons 1.32 on:
+
+    - Fedora 14
+    - Debian Squeeze
+    - OpenSuSE 11.3
+
+    It has also been tested with xtables-addons 1.21 on:
+
+    - Debian Lenny
+
+    Information about xtables-addons installation may be found at
+    http://www.shorewall.net/Dynamic.html#xtables-addons
+
+    This feature required addition of the "ACCOUNT Target" capability
+    so if you use a capabilities file, you will want to refresh it
+    after installing this release.
+
+    Per-IP accounting is configured in /etc/shorewall/accounting (it is
+    not currently supported in IPv6). In the ACTION column, enter:
+
+       ACCOUNT(<table>,<network>)
+
+    where:
+
+       <table> is the name of an accounting table (you choose the
+       	       name). Rules specifying the same table will have their
+       	       per-IP counters accumulated in that table.
+
+       <network> is an IPv4 in CIDR format. May be as large as a /8.
+
+    Example: Suppose your WAN interface is eth0 and your LAN interface
+    	     is eth1 with network 172.20.1.0/24. To account for all
+    	     traffic between the WAN and LAN interfaces:
+
+	#ACTION                        TABLE     SOURCE        DEST ...
+	ACCOUNT(net-loc,172.20.1.0/24) -         eth0          eth1
+	ACCOUNT(net-loc,172.20.1.0/24) -         eth0          eth1
+
+    This will create a net-loc table for counting packets and
+    bytes for traffic between the two interfaces. The table is dumped
+    using the iptaccount utility:
+
+    	iptaccount [-f] -l net-loc
+
+    Example (output folded):
+
+	gateway:~# iptaccount -l loc-net
+
+	libxt_ACCOUNT_cl userspace accounting tool v1.3
+
+	Showing table: loc-net
+	Run #0 - 3 items found
+	IP: 172.20.1.105 SRC packets: 115 bytes: 131107
+                         DST packets: 68 bytes: 20045
+	IP: 172.20.1.131 SRC packets: 47 bytes: 12729
+                         DST packets: 38 bytes: 25304
+	IP: 172.20.1.145 SRC packets: 20747 bytes: 2779676
+                         DST packets: 27050 bytes: 32286071
+	Finished.
+	gateway:~#
+    
+    For each local IP address with non-zero counters, the packet and
+    byte count for both incoming traffic (IP is DST) and outgoing
+    traffic (IP is SRC) are listed. The -f option causes the table to
+    be flushed (reset all counters to zero).
+
+    For a command synopsis, type:
+
+    	iptaccount --help 
+
+    One nice feature of per-IP accounting is that the counters survive
+    'shorewall restart'. This has a downside, however. If you change
+    the <network> associated with an accounting table, then you must
+    "shorewall stop; shorewall start" to have a successful restart
+    (counters will be cleared).
+
+2)  A 'show ipa' command has been added to /sbin/shorewall. It
+    displays each per-IP accounting table.  
+
+3)  Traditionally, the -lite products have used the modules (or
+    helpers) file on the firewall system unless there is a modules (or
+    helpers) file in the configuration directory on the administrative
+    system. This release introduces the USE_LOCAL_MODULES option in
+    shorewall[6].conf.
+
+    When USE_LOCAL_MODULES=Yes, the modules (helpers) file on the
+    administrative system will be used to determine the set of modules
+    loaded.
+
+    As part of this change, the modules and helpers files are now
+    secured for read access by non-root users.
+
+4)  Given that shell variables are expanded at compile time, there was
+    previously no way to cause such variables to be expanded at run
+    time. This made it difficult (to impossible) to include dynamic IP
+    addresses in a Shorewall-lite configuration.
+
+    This release implements "Run-time address variables". In
+    configuration files, these variables are expressed using an
+    apersand ('&') followed by the name of an interface defined in
+    /etc/shorewall/interfaces. Wild-card interfaces (those whose names
+    end in '+') are not allowed to be used in this way.
+    
+    Example: 
+
+    	     &eth0 would represent the primary IP address of eth0.
+
+    Run-time address variables may be used in the SOURCE and DEST
+    column of the following configuration files:
+
+    	   accounting
+	   action files
+	   blacklist
+	   macro files
+	   rules
+	   tcrules
+	   tos
+
+    They may also appear in the ORIGINAL DEST column of
+
+    	   action files
+	   macro files
+	   rules
+
+    They may also be used in the SOURCE and ADDRESS columns of the masq
+    file.
+
+    For optional interfaces, if the interface is not usable at the time
+    that the firewall starts, the resulting Netfilter rule(s)
+    containing the interface address are not added.
+
+5)  The shell variables set in /etc/shorewall/params
+    (/etc/shorewall6/params) are now available in the compiled script
+    at run-time with EXPORTPARAMS=No. The EXPORTPARAMS option is now
+    deprecated and the released /etc/shorewall/shorewall.conf and
+    /etc/shorewall/shorewall6.conf have been modified to specify
+    EXPORTPARAMS=No.
+
+6)  The INCLUDE directive may now be used in the following extension
+    scripts:
+
+	clear
+	findgw
+	init
+	isusable
+	refresh
+	refreshed
+	restored
+	start
+	started
+	stop
+	stopped
+	tcclear
+
+    The directive is executed during compilation so that the INCLUDEd
+    file(s) is(are) copied into the generated script. This same
+    technique is also now used for INCLUDE directives in the params
+    file when EXPORTPARAMS=Yes. Previously, INCLUDE directives in that
+    file were strongly discouraged with EXPORTPARAMS=Yes because the
+    INCLUDE was performed on the firewall system rather than on the
+    administrative system.
+
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 6
 ----------------------------------------------------------------------------

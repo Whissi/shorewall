@@ -1,7 +1,7 @@
 #
-# Shorewall6 version 4 - Modules File
+# Shorewall6 version 4 - Essential Modules File
 #
-# /usr/share/shorewall6/modules
+# /usr/share/shorewall6/modules.essential
 #
 #	This file loads the modules that may be needed by the firewall.
 #
@@ -13,23 +13,15 @@
 #  copy.
 #
 ###############################################################################
-#
-# Essential Modules
-#
-INCLUDE modules.essential
-#
-# Other xtables modules
-#
-INCLUDE modules.xtables
-#
-# Helpers
-#
-INCLUDE helpers
-#
-# Traffic Shaping
-#
-INCLUDE modules.tc
-#
-# Extensions
-#
-INCLUDE modules.extensions
+loadmodule nfnetlink
+loadmodule x_tables
+loadmodule ip6_tables 
+loadmodule ip6table_filter 
+loadmodule ip6table_mangle 
+loadmodule ip6table_raw
+loadmodule xt_conntrack
+loadmodule nf_conntrack_ipv6
+loadmodule xt_state
+loadmodule xt_tcpudp
+loadmodule ip6t_REJECT
+loadmodule ip6t_LOG

@@ -395,6 +395,11 @@ fi
 run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall6/modules
 echo "Modules file installed as ${DESTDIR}/usr/share/shorewall6/modules"
 
+for f in modules.*; do
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall6/$f
+    echo "Modules file $f installed as ${DESTDIR}/usr/share/shorewall6/$f"
+fi
+
 #
 # Install the Module Helpers file
 #

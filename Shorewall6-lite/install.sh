@@ -302,7 +302,7 @@ fi
 for f in modules.*; do
     run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall6-lite/$f
     echo "Modules file $f installed as ${DESTDIR}/usr/share/shorewall6-lite/$f"
-fi
+done
 
 if [ -d manpages ]; then
     #

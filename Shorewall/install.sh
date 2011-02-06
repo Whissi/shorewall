@@ -446,7 +446,7 @@ run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall
 echo "Modules file installed as ${DESTDIR}/usr/share/shorewall/modules"
 
 for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall/$f
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall/$f
     echo "Module file $f installed as ${DESTDIR}/usr/share/shorewall/$f"
 done
 

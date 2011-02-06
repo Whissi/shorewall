@@ -336,7 +336,7 @@ sub generate_script_3($) {
 
     save_progress_message 'Initializing...';
 
-    if ( $export ) {
+    if ( $export || $config{USE_LOCAL_MODULES} ) {
 	my $fn = find_file( $config{LOAD_HELPERS_ONLY} ? 'helpers' : 'modules' );
 
 	if ( -f $fn && ( $config{USE_LOCAL_MODULES} || ! $fn =~ "^$globals{SHAREDIR}/" ) ) {

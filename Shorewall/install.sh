@@ -442,13 +442,13 @@ fi
 #
 # Install the Modules file
 #
-run_install $OWNERSHIP -m 0600 modules ${DESTDIR}/usr/share/shorewall
+run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall
 echo "Modules file installed as ${DESTDIR}/usr/share/shorewall/modules"
 
 #
 # Install the Module Helpers file
 #
-run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}/usr/share/shorewall
+run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}/usr/share/shorewall
 echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall/helpers"
 
 #

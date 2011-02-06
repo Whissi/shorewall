@@ -440,10 +440,15 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/notrack ]; then
     echo "Notrack file installed as ${DESTDIR}/etc/shorewall/notrack"
 fi
 #
-# Install the Modules file
+# Install the Modules files
 #
 run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall
 echo "Modules file installed as ${DESTDIR}/usr/share/shorewall/modules"
+
+for f in modules.*; do
+    run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/$f
+    echo "Module file $f installed as ${DESTDIR}/usr/share/shorewall/$f"
+done
 
 #
 # Install the Module Helpers file

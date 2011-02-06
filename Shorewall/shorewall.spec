@@ -91,7 +91,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/lib.cli
 %attr(0644,root,root) /usr/share/shorewall/lib.common
 %attr(0644,root,root) /usr/share/shorewall/macro.*
-%attr(0644,root,root) /usr/share/shorewall/modules
+%attr(0644,root,root) /usr/share/shorewall/modules*
 %attr(0644,root,root) /usr/share/shorewall/helpers
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0755,root,root) /usr/share/shorewall/wait4ifup

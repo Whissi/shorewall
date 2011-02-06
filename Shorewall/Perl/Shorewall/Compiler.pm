@@ -347,13 +347,15 @@ sub generate_script_3($) {
 	    emit_unindented $currentline while read_a_line;
 
 	    emit_unindented 'EOF';
-	    emit 'reload_kernel_modules < ${VARDIR}/.modules';
+	    emit '', 'reload_kernel_modules < ${VARDIR}/.modules';
 	} else {
 	    emit 'load_kernel_modules Yes';
 	}
     } else {
 	emit 'load_kernel_modules Yes';
     }
+
+    emit '';
 
     if ( $family == F_IPV4 ) {
 	load_ipsets;
@@ -387,8 +389,13 @@ sub generate_script_3($) {
 	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     } else {
-	emit ( '[ "$COMMAND" = refresh ] && run_refresh_exit || run_init_exit',
+	emit ( 'if [ "$COMMAND" = refresh ]; then' ,
+	       '   run_refresh_exit' ,
+	       'else' ,
+	       '    run_init_exit',
+	       'fi',
 	       '' );
+
 	save_dynamic_chains;
 	mark_firewall_not_started;
 

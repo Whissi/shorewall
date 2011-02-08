@@ -204,6 +204,8 @@ sub process_accounting_rule( ) {
 	$rule .= do_ipsec( $dir , $ipsec );
     }
 
+    fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
+    
     $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir;
 
     expand_rule

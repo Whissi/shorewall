@@ -149,7 +149,11 @@ sub process_accounting_rule( ) {
 
     my $restriction = NO_RESTRICT;
 
-    $source = ALLIP if $source eq 'any' || $source eq 'all';
+    if ( $source eq 'any' || $source eq 'all' ) {
+	$source = ALLIP;
+    } else {
+	fatal_error "MAC addresses are not allowed in the accounting file" if $source =~ /~/;
+    }
 
     if ( have_bridges ) {
 	my $fw = firewall_zone;

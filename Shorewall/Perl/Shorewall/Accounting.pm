@@ -46,9 +46,9 @@ our %tables;
 # Called by the compiler to [re-]initialize this module's state
 #
 sub initialize() {
-    our $jumpchainref;
-    $jumpchainref = undef;
-    %tables       = ();
+    our $jumpchainref    = undef;
+    %tables              = ();
+    our %accountingjumps = ();
 }
 
 #
@@ -56,7 +56,8 @@ sub initialize() {
 #
 sub process_accounting_rule( ) {
 
-    our $jumpchainref;
+    our $jumpchainref = 0;
+    our %accountingjumps;
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = split_line1 1, 11, 'Accounting File';
 
@@ -208,6 +209,8 @@ sub process_accounting_rule( ) {
 	$rule .= do_ipsec( $dir , $ipsec );
     }
 
+    $accountingjumps{$jumpchainref->{name}}{$chain} = 1 if $jumpchainref;
+
     fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
     
     $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir;
@@ -259,6 +262,8 @@ sub process_accounting_rule( ) {
 
 sub setup_accounting() {
 
+    our %accountingjumps;
+
     if ( my $fn = open_file 'accounting' ) {
 
 	first_entry "$doing $fn...";
@@ -299,6 +304,30 @@ sub setup_accounting() {
 
 	for ( accounting_chainrefs ) {
 	    warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
+	}
+
+	if ( my $chainswithjumps = keys %accountingjumps ) {
+	    my $progress = 1;
+
+	    while ( $chainswithjumps && $progress ) {
+		$progress = 0;
+		for my $chain1 (  keys %accountingjumps ) {
+		    if ( keys %{$accountingjumps{$chain1}} ) {
+			for my $chain2 ( keys %{$accountingjumps{$chain1}} ) {
+			    delete $accountingjumps{$chain1}{$chain2}, $progress = 1 unless $accountingjumps{$chain2};
+			}
+		    } else {
+			delete $accountingjumps{$chain1};
+			$chainswithjumps--;
+			$progress = 1;
+		    }
+		}
+	    }
+
+	    if ( $chainswithjumps ) {
+		my @chainswithjumps = keys %accountingjumps;
+		fatal_error "Jump loop involving the following chains: @chainswithjumps";
+	    }
 	}
     }
 }

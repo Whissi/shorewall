@@ -344,5 +344,27 @@ gateway:~#</programlisting>
     <para>For a command synopsis:</para>
 
     <programlisting><command>iptaccount --help</command></programlisting>
+
+    <para><filename>/sbin/shorewall</filename> also supports a <command>show
+    ipa</command> command (from my own gateway just after I flushed the
+    counters using <command>iptaccount -f -l</command>.:</para>
+
+    <programlisting>gateway:~# <command>shorewall show ipa</command>
+Shorewall 4.4.18-Beta1 per-IP Accounting at gateway - Thu Feb 10 13:28:37 PST 2011
+
+Showing table: loc-net
+IP: 172.20.1.146 SRC packets: 9 bytes: 574 DST packets: 9 bytes: 770
+
+Showing table: dmz-net
+IP: 70.90.191.124 SRC packets: 243 bytes: 23726 DST packets: 248 bytes: 39036
+IP: 70.90.191.125 SRC packets: 73 bytes: 10640 DST packets: 73 bytes: 4846
+
+Showing table: fw-net
+IP: 70.90.191.121 SRC packets: 0 bytes: 0 DST packets: 4 bytes: 243
+IP: 70.90.191.122 SRC packets: 11 bytes: 1338 DST packets: 8 bytes: 5465
+IP: 70.90.191.123 SRC packets: 42 bytes: 4604 DST packets: 44 bytes: 10662
+
+gateway:~# 
+</programlisting>
   </section>
 </article>

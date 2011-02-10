@@ -187,7 +187,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_17';
+our $VERSION = '4.4_18';
 
 #
 # Chain Table
@@ -326,19 +326,41 @@ our $mode;
 our $family;
 
 #
-# These are the zone-oriented builtin targets
+# These are the current builtin targets
 #
-our %builtin_target = ( ACCEPT   => 1,
-			REJECT   => 1,
-			DROP     => 1,
-			RETURN   => 1,
-			COUNT    => 1,
-			DNAT     => 1,
-			LOG      => 1,
-			NFLOG    => 1,
-			QUEUE    => 1,
-			NFQUEUE  => 1,
-			REDIRECT => 1 );
+our %builtin_target = ( ACCEPT      => 1,
+			REJECT      => 1,
+			DROP        => 1,
+			RETURN      => 1,
+			COUNT       => 1,
+			DNAT        => 1,
+			LOG         => 1,
+			NFLOG       => 1,
+			QUEUE       => 1,
+			NFQUEUE     => 1,
+			REDIRECT    => 1,
+		        CLUSTERIP   => 1,
+			ECN         => 1,
+			MASQUERADE  => 1,
+			MIRROR      => 1,
+			NETMAP      => 1,
+			SAME        => 1,
+			SET         => 1,
+			SNAT        => 1,
+			TTL         => 1,
+			ULOG        => 1,
+			HL          => 1,
+			CONNMARK    => 1,
+			CONNSECMARK => 1,
+			DSCP        => 1,
+			MARK        => 1,
+			NOTRACK     => 1,
+			RATTEST     => 1,
+			SECMARK     => 1,
+			TCPOPTSTRIP => 1,
+			TOS         => 1,
+			TRACE       => 1,
+		        );
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

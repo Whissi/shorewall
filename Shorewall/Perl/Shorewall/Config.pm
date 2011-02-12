@@ -2043,6 +2043,28 @@ sub check_trivalue( $$ ) {
 }
 
 #
+# Check ACCOUNTING
+#
+sub check_accounting() {
+    my $val = $config{ACCOUNTING};
+
+    if ( defined $val ) {
+	$val = lc $val;
+	if ( $val eq 'yes' || $val eq 'on' ) {
+	    $config{ACCOUNTING} = 'Yes';
+	} elsif ( $val eq 'no' || $val eq 'off' ) {
+	    $config{ACCOUNTING} = '';
+	} elsif ( $val eq '' ) {
+	    $config{ACCOUNTING} = 'NG';
+	} elsif ( $val ne '' ) {
+	    fatal_error "Invalid value ($val) for ACCOUNTING";
+	}
+    } else {
+	$config{ACCOUNTING} = 'Yes';
+    }
+}
+
+#
 # Produce a report of the detected capabilities
 #
 sub report_capability( $ ) {
@@ -3216,7 +3238,9 @@ sub get_configuration( $ ) {
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
-    default_yes_no 'ACCOUNTING'                 , 'Yes';
+    
+    check_accounting;
+
     default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
     default_yes_no 'REQUIRE_INTERFACE'          , '';

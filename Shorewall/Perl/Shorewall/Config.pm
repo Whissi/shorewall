@@ -2022,9 +2022,10 @@ sub default_log_level( $$ ) {
 #
 sub check_trivalue( $$ ) {
     my ( $var, $default) = @_;
-    my $val = lc( $config{$var} || '' );
+    my $val = $config{$var};
 
     if ( defined $val ) {
+	$val = lc $val;
 	if ( $val eq 'yes' || $val eq 'on' ) {
 	    $config{$var} = 'on';
 	} elsif ( $val eq 'no' || $val eq 'off' ) {

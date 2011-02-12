@@ -42,13 +42,63 @@ our $VERSION = '4.4.17';
 #
 our %tables;
 
+our $jumpchainref;
+our %accountingjumps;
+our $asection;
+our $defaultchain;
+our $defaultrestriction;
+our $restriction;
+our $accounting_commands = { COMMENT => 0, SECTION => 2 };
+our $sectionname;
+
+use constant {
+	      LEGACY  => -1,
+	      INPUT   => 1,
+	      OUTPUT  => 2,
+	      FORWARD => 3 };
+
+our %asections = ( INPUT   => INPUT,
+		   FORWARD => FORWARD,
+		   OUTPUT  => OUTPUT );
+
 #
 # Called by the compiler to [re-]initialize this module's state
 #
 sub initialize() {
-    our $jumpchainref    = undef;
-    %tables              = ();
-    our %accountingjumps = ();
+    $jumpchainref       = undef;
+    %tables             = ();
+    %accountingjumps    = ();
+    $asection           = LEGACY;
+    $defaultchain       = 'accounting';
+    $defaultrestriction = NO_RESTRICT;
+    $sectionname        = '';
+}
+
+#
+# Process a SECTION header
+#
+sub process_section ($) {
+    $sectionname = shift;
+    my $newsect  = $asections{$sectionname};
+    #
+    # read_a_line has already verified that there are exactly two tokens on the line
+    #
+    fatal_error "Invalid SECTION ($sectionname)"                   unless defined $newsect;
+    fatal_error "SECTION not allowed after un-sectioned rules"     unless $asection;
+    fatal_error "Duplicate or out-of-order SECTION ($sectionname)" if     $newsect <= $asection;
+
+    if ( $sectionname eq 'INPUT' ) {
+	$defaultchain = 'accountin';
+	$defaultrestriction = INPUT_RESTRICT;
+    } elsif ( $sectionname eq 'OUTPUT' ) {
+	$defaultchain = 'accountout';
+	$defaultrestriction = OUTPUT_RESTRICT;
+    } else {
+	$defaultchain = 'accounting';
+	$defaultrestriction = NO_RESTRICT;
+    }
+
+    $asection = $newsect;
 }
 
 #
@@ -59,17 +109,24 @@ sub process_accounting_rule( ) {
     our $jumpchainref = 0;
     our %accountingjumps;
 
-    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = split_line1 1, 11, 'Accounting File';
+    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = split_line1 1, 11, 'Accounting File', $accounting_commands;
 
     if ( $action eq 'COMMENT' ) {
 	process_comment;
 	return 0;
     }
 
+    if ( $action eq 'SECTION' ) {
+	process_section( $chain );
+	return 0;
+    }
+
+    $asection = 0 if $asection == LEGACY;
+
     our $disposition = '';
 
     sub reserved_chain_name($) {
-	$_[0] =~ /^acc(?:ount(?:ing|out)|ipsecin|ipsecout)$/;
+	$_[0] =~ /^acc(?:ount(?:in|ing|out)|ipsecin|ipsecout)$/;
     }
 
     sub ipsec_chain_name($) {
@@ -90,7 +147,7 @@ sub process_accounting_rule( ) {
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
 	fatal_error "Jumps to the $jumpchain chain are not allowed" if reserved_chain_name( $jumpchain );
-	$jumpchainref = ensure_accounting_chain( $jumpchain, 0 );
+	$jumpchainref = ensure_accounting_chain( $jumpchain, 0, $restriction );
 	check_chain( $jumpchainref );
 	$disposition = $jumpchain;
 	$jumpchain;
@@ -148,20 +205,21 @@ sub process_accounting_rule( ) {
 	}
     }
 
-    my $restriction = NO_RESTRICT;
+    $restriction = $defaultrestriction;
 
     if ( $source eq 'any' || $source eq 'all' ) {
-	$source = ALLIP;
+        $source = ALLIP;
     } else {
-	fatal_error "MAC addresses are not allowed in the accounting file" if $source =~ /~/;
+	$restriction |= INPUT_RESTRICT if $source =~ /~/;
     }
 
-    if ( have_bridges ) {
+    if ( have_bridges && ! $asection ) {
 	my $fw = firewall_zone;
 
 	if ( $source =~ /^$fw:?(.*)$/ ) {
 	    $source = $1 ? $1 : ALLIP;
 	    $restriction = OUTPUT_RESTRICT;
+	    fatal_error "MAC addresses are not allowed in an unsectioned accounting file" if $restriction & OUTPUT || $source =~ /~/;
 	    $chain = 'accountout' unless $chain and $chain ne '-';
 	    $dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
 	} else {
@@ -181,7 +239,7 @@ sub process_accounting_rule( ) {
 	    }
 	}
     } else {
-	$chain = 'accounting' unless $chain and $chain ne '-';
+	$chain = $defaultchain unless $chain and $chain ne '-';
 	$dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
     }
 
@@ -189,7 +247,15 @@ sub process_accounting_rule( ) {
     my $dir;
 
     if ( ! $chainref ) {
-	$chainref = ensure_accounting_chain $chain, 0;
+	if ( reserved_chain_name( $chain ) ) {
+	    fatal_error "May not use chain $chain in the $sectionname section" if $asection && $chain ne $defaultchain; 
+	    $chainref = ensure_accounting_chain $chain, 0 , $restriction;
+	} elsif ( $asection ) {
+	    fatal_error "Unknown accounting chain ($chain)";
+	} else {
+	    $chainref = ensure_accounting_chain $chain, 0 , $restriction;
+	}
+
 	$dir      = ipsec_chain_name( $chain );
 
 	if ( $ipsec ne '-' ) {
@@ -209,11 +275,18 @@ sub process_accounting_rule( ) {
 	$rule .= do_ipsec( $dir , $ipsec );
     }
 
-    $accountingjumps{$jumpchainref->{name}}{$chain} = 1 if $jumpchainref;
+    if ( $jumpchainref ) {
+	if ( $asection ) { 
+	    my $jumprestrict = $jumpchainref->{restriction} || $restriction;
+	    fatal_error "Chain $jumpchainref->{name} contains rules that are incompatible with the $sectionname section" if $restriction && $jumprestrict ne $restriction;
+	}
+
+	$accountingjumps{$jumpchainref->{name}}{$chain} = 1;
+    }
 
     fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
     
-    $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir;
+    $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir && ! $asection;
 
     expand_rule
 	$chainref ,
@@ -274,59 +347,66 @@ sub setup_accounting() {
 
 	clear_comment;
 
-	if ( have_bridges ) {
-	    if ( $filter_table->{accounting} ) {
-		for my $chain ( qw/INPUT FORWARD/ ) {
+	if ( $nonEmpty ) {
+	    if ( have_bridges || $asection ) {
+		if ( $filter_table->{accountin} ) {
+		    add_jump( $filter_table->{INPUT}, 'accountin', 0, '', 0, 0 );
+		}
+
+		if ( $filter_table->{accounting} ) {
+		    optimize_okay( 'accounting' ) if $section;
+		    for my $chain ( qw/INPUT FORWARD/ ) {
+			add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
+		    }
+		}
+
+		if ( $filter_table->{accountout} ) {
+		    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
+		}
+	    } elsif ( $filter_table->{accounting} ) {
+		for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
 		    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 		}
 	    }
 
-	    if ( $filter_table->{accountout} ) {
-		add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
-	    }
-	} elsif ( $filter_table->{accounting} ) {
-	    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
-	    }
-	}
-
-	if ( $filter_table->{accipsecin} ) {
-	    for my $chain ( qw/INPUT FORWARD/ ) {
-		add_jump( $filter_table->{$chain}, 'accipsecin', 0,  '', 0, 0 );
-	    }
-	}
-
-	if ( $filter_table->{accipsecout} ) {
-	    for my $chain ( qw/FORWARD OUTPUT/ ) {
-		add_jump( $filter_table->{$chain}, 'accipsecout', 0, '', 0, 0 );
-	    }
-	}
-
-	for ( accounting_chainrefs ) {
-	    warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
-	}
-
-	if ( my $chainswithjumps = keys %accountingjumps ) {
-	    my $progress = 1;
-
-	    while ( $chainswithjumps && $progress ) {
-		$progress = 0;
-		for my $chain1 (  keys %accountingjumps ) {
-		    if ( keys %{$accountingjumps{$chain1}} ) {
-			for my $chain2 ( keys %{$accountingjumps{$chain1}} ) {
-			    delete $accountingjumps{$chain1}{$chain2}, $progress = 1 unless $accountingjumps{$chain2};
-			}
-		    } else {
-			delete $accountingjumps{$chain1};
-			$chainswithjumps--;
-			$progress = 1;
-		    }
+	    if ( $filter_table->{accipsecin} ) {
+		for my $chain ( qw/INPUT FORWARD/ ) {
+		    add_jump( $filter_table->{$chain}, 'accipsecin', 0,  '', 0, 0 );
 		}
 	    }
 
-	    if ( $chainswithjumps ) {
-		my @chainswithjumps = keys %accountingjumps;
-		fatal_error "Jump loop involving the following chains: @chainswithjumps";
+	    if ( $filter_table->{accipsecout} ) {
+		for my $chain ( qw/FORWARD OUTPUT/ ) {
+		    add_jump( $filter_table->{$chain}, 'accipsecout', 0, '', 0, 0 );
+		}
+	    }
+
+	    for ( accounting_chainrefs ) {
+		warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
+	    }
+
+	    if ( my $chainswithjumps = keys %accountingjumps ) {
+		my $progress = 1;
+
+		while ( $chainswithjumps && $progress ) {
+		    $progress = 0;
+		    for my $chain1 (  keys %accountingjumps ) {
+			if ( keys %{$accountingjumps{$chain1}} ) {
+			    for my $chain2 ( keys %{$accountingjumps{$chain1}} ) {
+				delete $accountingjumps{$chain1}{$chain2}, $progress = 1 unless $accountingjumps{$chain2};
+			    }
+			} else {
+			    delete $accountingjumps{$chain1};
+			    $chainswithjumps--;
+			    $progress = 1;
+			}
+		    }
+		}
+
+		if ( $chainswithjumps ) {
+		    my @chainswithjumps = keys %accountingjumps;
+		    fatal_error "Jump loop involving the following chains: @chainswithjumps";
+		}
 	    }
 	}
     }

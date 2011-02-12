@@ -43,6 +43,7 @@ our @EXPORT = qw(
 		  ensure_manual_chain
 		  log_rule_limit
 		  dont_optimize
+		  optimize_okay
 		  dont_delete
 		  dont_move
 
@@ -221,6 +222,7 @@ our $VERSION = '4.4_18';
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
 #                                               blacklist    => <number of blacklist rules at the head of the rules array> ( 0 or 1 )
 #                                               action       => <action tuple that generated this chain>
+#                                               restrictions => Logical OR of restrictions in this chain.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -1107,14 +1109,15 @@ sub new_chain($$)
 
     assert( $chain_table{$table} && ! ( $chain_table{$table}{$chain} || $builtin_target{ $chain } ) );
 
-    my $chainref = { name       => $chain,
-		     rules      => [],
-		     table      => $table,
-		     loglevel   => '',
-		     log        => 1,
-		     cmdlevel   => 0,
-		     references => {},
-		     blacklist  => 0 };
+    my $chainref = { name         => $chain,
+		     rules        => [],
+		     table        => $table,
+		     loglevel     => '',
+		     log          => 1,
+		     cmdlevel     => 0,
+		     references   => {},
+		     blacklist    => 0 ,
+		     restriction  => 0 };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
 
@@ -1241,6 +1244,21 @@ sub dont_optimize( $ ) {
 }
 
 #
+# Reverse the effect of dont_optimize
+#
+sub optimize_okay( $ ) {
+    my $chain = shift;
+
+    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
+
+    $chainref->{dont_optimize} = 0;
+
+    trace( $chainref, 'O', undef, '' ) if $debug;
+
+    $chainref;
+}
+
+#
 # Set the dont_optimize and dont_delete flags for a chain
 #
 sub dont_delete( $ ) {
@@ -1301,9 +1319,9 @@ sub ensure_filter_chain( $$ )
 #
 # Create an accounting chain if necessary and return a reference to its table entry.
 #
-sub ensure_accounting_chain( $$ )
+sub ensure_accounting_chain( $$$ )
 {
-    my ($chain, $ipsec) = @_;
+    my ($chain, $ipsec, $restriction ) = @_;
 
     my $chainref = $filter_table->{$chain};
 
@@ -1313,10 +1331,11 @@ sub ensure_accounting_chain( $$ )
 	fatal_error "Chain name ($chain) too long" if length $chain > 29;
 	fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/;
 	$chainref = new_chain 'filter' , $chain;
-	$chainref->{accounting} = 1;
-	$chainref->{referenced} = 1;
-	$chainref->{ipsec}      = $ipsec;
-	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING} && $chain ne 'accounting';
+	$chainref->{accounting}  = 1;
+	$chainref->{referenced}  = 1;
+	$chainref->{restriction} = $restriction;
+	$chainref->{ipsec}       = $ipsec;
+	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
 
 	if ( $chain ne 'accounting' ) {
 	    my $file = find_file $chain;
@@ -3667,7 +3686,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 	    $rule .= '-s $source ';
 	} else {
-	    fatal_error "Source Interface ($iiface) not allowed when the source zone is the firewall zone" if $restriction & OUTPUT_RESTRICT;
+	    fatal_error "Source Interface ($iiface) not allowed when the SOURCE is the firewall" if $restriction & OUTPUT_RESTRICT;
+	    $chainref->{restriction} |= $restriction;
 	    $rule .= match_source_dev( $iiface );
 	}
     }
@@ -3752,14 +3772,15 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    $rule .= '-d $dest ';
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
-	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall zone" if $restriction & INPUT_RESTRICT;
+	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall" if $restriction & INPUT_RESTRICT;
 	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & DESTIFACE_DISALLOW;
-
+	    
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );
 		fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
 	    }
-
+	    
+	    $chainref->{restriction} |= $restriction;
 	    $rule .= match_dest_dev( $diface );
 	}
     } else {

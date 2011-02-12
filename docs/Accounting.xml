@@ -235,6 +235,177 @@
     </itemizedlist>
   </section>
 
+  <section>
+    <title>Sectioned Accounting Rules</title>
+
+    <para>Traditionally, the root of the Shorewall accounting rules has been
+    the <emphasis role="bold">accounting</emphasis> chain. Having a single
+    root chain has drawbacks:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Many rules are traversed needlessly (they could not possibly
+        match traffic).</para>
+      </listitem>
+
+      <listitem>
+        <para>At any time, the Netfilter team could begin generating errors
+        when loading those same rules.</para>
+      </listitem>
+
+      <listitem>
+        <para>MAC addresses may not be used in the accounting rules.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <emphasis role="bold">accounting</emphasis> chain cannot be
+        optimized when OPTIMIZE_ACCOUNTING=Yes.</para>
+      </listitem>
+
+      <listitem>
+        <para>The rules may be defined in any order so the rules compiler must
+        post-process the ruleset to ensure that there are no loops and to
+        alert the user to unreferenced chains.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para> Beginning with Shorewall 4.4.18, the accounting structure can be
+    created with three root chains:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">accountin</emphasis>: Rules that are valid
+        in the <emphasis role="bold">INPUT</emphasis> chain (may not specify
+        an output interface).</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">accountout</emphasis>: Rules that are
+        valid in the OUTPUT chain (may not specify an input interface or a MAC
+        address).</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">accounting</emphasis>: Other rules.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The new structure is enabled by sectioning the accounting file in a
+    manner similar to the <ulink url="manpages/shorewall-rules.html">rules
+    file</ulink>. The sections are <emphasis role="bold">INPUT</emphasis>,
+    <emphasis role="bold">OUTPUT</emphasis> and <emphasis
+    role="bold">FORWARD</emphasis> and must appear in that order (although any
+    of them may be omitted). The first non-commentary record in the accounting
+    file must be a section header when sectioning is used. Section headers
+    have the form:</para>
+
+    <para><option>SECTION</option>
+    <replaceable>section-name</replaceable></para>
+
+    <para>When sections are enabled:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>You must jump to a user-defined accounting chain before you can
+        add rules to that chain.</para>
+      </listitem>
+
+      <listitem>
+        <para>This eliminates loops and unreferenced chains.</para>
+      </listitem>
+
+      <listitem>
+        <para>You may not specify an output interface in the <emphasis
+        role="bold">INPUT</emphasis> section.</para>
+      </listitem>
+
+      <listitem>
+        <para>In the OUTPUT section:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>You may not specify an input interface</para>
+          </listitem>
+
+          <listitem>
+            <para>You may not jump to a chain defined in the <emphasis
+            role="bold">INPUT</emphasis> section that specifies an input
+            interface</para>
+          </listitem>
+
+          <listitem>
+            <para>You may not specify a MAC address</para>
+          </listitem>
+
+          <listitem>
+            <para>You may not jump to a chain defined in the <emphasis
+            role="bold">INPUT</emphasis> section that specifies specifies a
+            MAC address.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>The default value of the CHAIN column is:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">accountin</emphasis> in the <emphasis
+            role="bold">INPUT</emphasis> section</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">accounout</emphasis> in the <emphasis
+            role="bold">OUTPUT</emphasis> section</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">accounting</emphasis> in the <emphasis
+            role="bold">FORWARD</emphasis> section</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>Traffic addressed to the firewall goes through the rules defined
+        in the INPUT section.</para>
+      </listitem>
+
+      <listitem>
+        <para>Traffic originating on the firewall goes through the rules
+        defined in the OUTPUT section.</para>
+      </listitem>
+
+      <listitem>
+        <para>Traffic being forwarded through the firewall goes through the
+        rules from all three sections.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Here is a sample sectioned file that used <link
+    linkend="perIP">Per-IP Accounting</link>.</para>
+
+    <caution>
+      <para>In this example, the dmz net corresponds to a vserver zone so
+      lives on the firewall itself.</para>
+    </caution>
+
+    <programlisting>#ACTION				CHAIN           SOURCE                          DESTINATION                   PROTO   DEST            SOURCE  USER/    MARK     IPSEC
+#                                      		                                                              	      PORT(S)         PORT(S) GROUP
+SECTION INPUT
+ACCOUNT(fw-net,$FW_NET)		-		COM_IF
+ACCOUNT(dmz-net,$DMZ_NET)  	-		COM_IF
+
+SECTION OUTPUT
+ACCOUNT(fw-net,$FW_NET)		-		-				COM_IF
+ACCOUNT(dmz-net,$DMZ_NET)   	-		-				COM_IF
+
+SECTION FORWARD
+ACCOUNT(loc-net,$INT_NET)   	-		COM_IF				INT_IF
+ACCOUNT(loc-net,$INT_NET)   	-		INT_IF				COM_IF
+</programlisting>
+  </section>
+
   <section id="Collectd">
     <title>Integrating Shorewall Accounting with Collectd</title>
 

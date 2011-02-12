@@ -43,6 +43,61 @@ None.
     For example, if you don't use traffic shaping or ipsets, you can
     remove those from your modules file.
 
+2)  Traditionally, the root of the Shorewall accounting rules has been
+    the 'accounting' chain. Having a single root chain has drawbacks:
+
+    - Many rules are traversed needlessly (they could not possibly
+      match traffic).
+    - At any time, the Netfilter team could begin generating errors
+      when loading those same rules.
+    - MAC addresses may not be used in the accounting rules.
+    - The 'accounting' chain cannot be optimized when
+      OPTIMIZE_ACCOUNTING=Yes.
+    - The rules may be defined in any order so the rules compiler must
+      post-process the ruleset to ensure that there are no loops and to
+      alert the user to unreferenced chains.
+
+    Beginning with Shorewall 4.4.18, the accounting structure can be
+    created with three root chains:
+
+    - accountin:  Rules that are valid in the INPUT chain (may not
+      specify an output interface). 
+    - accountout: Rules that are valid in the OUTPUT chain (may not
+      specify an input interface or a MAC address).
+    - accounting: Other rules.
+
+    The new structure is enabled by sectioning the accounting file in a
+    manner similar to the rules file.  
+
+    The sections are INPUT, OUTPUT and FORWARD and must appear in that
+    order (although any of them may be omitted). The first
+    non-commentary record in the accounting file must be a section
+    header when sectioning is used.
+
+    When sections are enabled:
+
+    - You must jump to a user-defined accounting chain before you can
+      add rules to that chain. This eliminates loops and unreferenced
+      chains.
+    - You may not specify an output interface in the INPUT section.
+    - In the OUTPUT section:
+      - You may not specify an input interface
+      - You may not jump to a chain defined in the INPUT section that
+        specifies an input interface
+      - You may not specify a MAC address
+      - You may not jump to a chain defined in the INPUT section that
+        specifies specifies a MAC address.
+    - The default value of the CHAIN column is:
+      - 'accountin' in the INPUT section
+      - 'accountout' in the OUTPUT section
+      - 'accounting' in the FORWARD section
+    - Traffic addressed to the firewall goes through the rules defined
+      in the INPUT section.
+    - Traffic originating on the firewall goes through the rules
+      defined in the OUTPUT section.
+    - Traffic being forwarded through the firewall goes through the
+      rules from all three sections.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

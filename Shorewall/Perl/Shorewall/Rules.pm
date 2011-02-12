@@ -55,7 +55,7 @@ our @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-our $rule_commands = { COMMENT => 0, FORMAT => 2 };
+our $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -1488,7 +1488,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 sub process_section ($) {
     my $sect = shift;
     #
-    # read_a_line has already verified that there are exactly two tokens on the line
+    # split_line1 has already verified that there are exactly two tokens on the line
     #
     fatal_error "Invalid SECTION ($sect)" unless defined $sections{$sect};
     fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};

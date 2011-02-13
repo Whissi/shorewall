@@ -355,8 +355,12 @@ sub setup_accounting() {
 
 		if ( $filter_table->{accounting} ) {
 		    optimize_okay( 'accounting' ) if $section;
-		    for my $chain ( qw/INPUT FORWARD/ ) {
-			add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
+		    if ( $asection ) {
+			add_jump( $filter_table->{FORWARD}, 'accounting', 0, '', 0, 0 );
+		    } else {
+			for my $chain ( qw/INPUT FORWARD/ ) {
+			    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
+			}
 		    }
 		}
 
@@ -364,8 +368,12 @@ sub setup_accounting() {
 		    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
 		}
 	    } elsif ( $filter_table->{accounting} ) {
-		for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
+		if ( $asection ) {
+		    add_jump( $filter_table->{FORWARD}, 'accounting', 0, '', 0, 0 );
+		} else {
+		    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
+			add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
+		    }
 		}
 	    }
 

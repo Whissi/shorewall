@@ -1327,6 +1327,7 @@ sub ensure_accounting_chain( $$$ )
 
     if ( $chainref ) {
 	fatal_error "Non-accounting chain ($chain) used in an accounting rule" unless $chainref->{accounting};
+	$chainref->{restriction} |= $restriction;
     } else {
 	fatal_error "Chain name ($chain) too long" if length $chain > 29;
 	fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/;
@@ -3686,7 +3687,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 	    $rule .= '-s $source ';
 	} else {
-	    fatal_error "Source Interface ($iiface) not allowed when the SOURCE is the firewall" if $restriction & OUTPUT_RESTRICT;
+	    if ( $restriction & OUTPUT_RESTRICT ) {
+		if ( $chainref->{accounting} ) {
+		    fatal_error "Source Interface ($iiface) not allowed in the $chainref->{name} chain";
+		} else {
+		    fatal_error "Source Interface ($iiface) not allowed when the SOURCE is the firewall";
+		}
+	    }
+ 
 	    $chainref->{restriction} |= $restriction;
 	    $rule .= match_source_dev( $iiface );
 	}
@@ -3773,7 +3781,13 @@ sub expand_rule( $$$$$$$$$$;$ )
 	} else {
 	    fatal_error "Bridge Port ($diface) not allowed in OUTPUT or POSTROUTING rules" if ( $restriction & ( POSTROUTE_RESTRICT + OUTPUT_RESTRICT ) ) && port_to_bridge( $diface );
 	    fatal_error "Destination Interface ($diface) not allowed when the destination zone is the firewall" if $restriction & INPUT_RESTRICT;
-	    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain" if $restriction & DESTIFACE_DISALLOW;
+	    if ( $restriction & DESTIFACE_DISALLOW ) {
+		if ( $chainref->{accounting} ) {
+		    fatal_error "Destination Interface ($diface) not allowed in the $chainref->{name} chain";
+		} else {
+		    fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain";
+		}
+	    }
 	    
 	    if ( $iiface ) {
 		my $bridge = port_to_bridge( $diface );

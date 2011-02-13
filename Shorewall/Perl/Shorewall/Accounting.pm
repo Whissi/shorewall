@@ -147,7 +147,7 @@ sub process_accounting_rule( ) {
     sub jump_to_chain( $ ) {
 	my $jumpchain = $_[0];
 	fatal_error "Jumps to the $jumpchain chain are not allowed" if reserved_chain_name( $jumpchain );
-	$jumpchainref = ensure_accounting_chain( $jumpchain, 0, $restriction );
+	$jumpchainref = ensure_accounting_chain( $jumpchain, 0, $defaultrestriction );
 	check_chain( $jumpchainref );
 	$disposition = $jumpchain;
 	$jumpchain;
@@ -273,13 +273,15 @@ sub process_accounting_rule( ) {
 	$dir = $chainref->{ipsec};
 	fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
 	$rule .= do_ipsec( $dir , $ipsec );
+    } elsif ( $asection ) {
+	$restriction |= $chainref->{restriction};
     }
 
     if ( $jumpchainref ) {
 	if ( $asection ) { 
 	    fatal_error "Chain $chain jumps to itself" if $chainref eq $jumpchainref;
 	    my $jumprestrict = $jumpchainref->{restriction} || $restriction;
-	    fatal_error "Chain $jumpchainref->{name} contains rules that are incompatible with the $sectionname section" if $restriction && $jumprestrict ne $restriction;
+	    fatal_error "Chain $jumpchainref->{name} contains rules that are incompatible with the $sectionname section" if $jumprestrict && $jumprestrict ne $restriction;
 	}
 
 	$accountingjumps{$jumpchainref->{name}}{$chain} = 1;

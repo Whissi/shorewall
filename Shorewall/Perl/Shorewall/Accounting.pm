@@ -52,7 +52,7 @@ our $accounting_commands = { COMMENT => 0, SECTION => 2 };
 our $sectionname;
 
 use constant {
-	      LEGACY  => -1,
+	      LEGACY  => 0,
 	      INPUT   => 1,
 	      OUTPUT  => 2,
 	      FORWARD => 3 };
@@ -68,7 +68,7 @@ sub initialize() {
     $jumpchainref       = undef;
     %tables             = ();
     %accountingjumps    = ();
-    $asection           = LEGACY;
+    $asection           = -1;
     $defaultchain       = 'accounting';
     $defaultrestriction = NO_RESTRICT;
     $sectionname        = '';
@@ -121,7 +121,7 @@ sub process_accounting_rule( ) {
 	return 0;
     }
 
-    $asection = 0 if $asection == LEGACY;
+    $asection = LEGACY if $asection < 0;
 
     our $disposition = '';
 
@@ -277,6 +277,7 @@ sub process_accounting_rule( ) {
 
     if ( $jumpchainref ) {
 	if ( $asection ) { 
+	    fatal_error "Chain $chain jumps to itself" if $chainref eq $jumpchainref;
 	    my $jumprestrict = $jumpchainref->{restriction} || $restriction;
 	    fatal_error "Chain $jumpchainref->{name} contains rules that are incompatible with the $sectionname section" if $restriction && $jumprestrict ne $restriction;
 	}
@@ -389,31 +390,33 @@ sub setup_accounting() {
 		}
 	    }
 
-	    for ( accounting_chainrefs ) {
-		warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
-	    }
-
-	    if ( my $chainswithjumps = keys %accountingjumps ) {
-		my $progress = 1;
-
-		while ( $chainswithjumps && $progress ) {
-		    $progress = 0;
-		    for my $chain1 (  keys %accountingjumps ) {
-			if ( keys %{$accountingjumps{$chain1}} ) {
-			    for my $chain2 ( keys %{$accountingjumps{$chain1}} ) {
-				delete $accountingjumps{$chain1}{$chain2}, $progress = 1 unless $accountingjumps{$chain2};
-			    }
-			} else {
-			    delete $accountingjumps{$chain1};
-			    $chainswithjumps--;
-			    $progress = 1;
-			}
-		    }
+	    unless ( $asection ) {
+		for ( accounting_chainrefs ) {
+		    warning_message "Accounting chain $_->{name} has no references" unless keys %{$_->{references}};
 		}
 
-		if ( $chainswithjumps ) {
-		    my @chainswithjumps = keys %accountingjumps;
-		    fatal_error "Jump loop involving the following chains: @chainswithjumps";
+		if ( my $chainswithjumps = keys %accountingjumps ) {
+		    my $progress = 1;
+
+		    while ( $chainswithjumps && $progress ) {
+			$progress = 0;
+			for my $chain1 (  keys %accountingjumps ) {
+			    if ( keys %{$accountingjumps{$chain1}} ) {
+				for my $chain2 ( keys %{$accountingjumps{$chain1}} ) {
+				    delete $accountingjumps{$chain1}{$chain2}, $progress = 1 unless $accountingjumps{$chain2};
+				}
+			    } else {
+				delete $accountingjumps{$chain1};
+				$chainswithjumps--;
+				$progress = 1;
+			    }
+			}
+		    }
+
+		    if ( $chainswithjumps ) {
+			my @chainswithjumps = keys %accountingjumps;
+			fatal_error "Jump loop involving the following chains: @chainswithjumps";
+		    }
 		}
 	    }
 	}

@@ -429,7 +429,7 @@ sub add_a_provider( ) {
 
 	if ( $gatewaycase eq 'none' ) {
 	    if ( $local ) {
-		emit "run_ip route add local 0.0.0.0/0 dev $physical table $number";
+		emit 'run_ip route add local ' . ALLIP . " dev $physical table $number";
 	    } else {
 		emit "run_ip route add default dev $physical table $number";
 	    }

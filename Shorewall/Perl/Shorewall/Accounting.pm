@@ -108,7 +108,6 @@ sub process_accounting_rule( ) {
 
     our $jumpchainref = 0;
     our %accountingjumps;
-    my  $hasmac;
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = split_line1 1, 11, 'Accounting File', $accounting_commands;
 
@@ -210,8 +209,6 @@ sub process_accounting_rule( ) {
 
     if ( $source eq 'any' || $source eq 'all' ) {
         $source = ALLIP;
-    } else {
-	fatal_error "MAC addresses not are not allowed in the OUTPUT section" if $hasmac = ( $source =~ /~/ ) && $asection == OUTPUT;
     }
 
     if ( have_bridges && ! $asection ) {
@@ -220,7 +217,6 @@ sub process_accounting_rule( ) {
 	if ( $source =~ /^$fw:?(.*)$/ ) {
 	    $source = $1 ? $1 : ALLIP;
 	    $restriction = OUTPUT_RESTRICT;
-	    fatal_error "MAC addresses are not allowed in an unsectioned accounting file" if $restriction & OUTPUT || $source =~ /~/;
 	    $chain = 'accountout' unless $chain and $chain ne '-';
 	    $dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
 	} else {
@@ -270,15 +266,17 @@ sub process_accounting_rule( ) {
 	    warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );
 	    $chainref->{ipsec} = $dir;
 	}
-    } elsif ( $ipsec ne '-' ) {
-	$dir = $chainref->{ipsec};
-	fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
-	$rule .= do_ipsec( $dir , $ipsec );
-    } elsif ( $asection ) {
-	$restriction |= $chainref->{restriction};
+    } else {
+	fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
+    
+	if ( $ipsec ne '-' ) {
+	    $dir = $chainref->{ipsec};
+	    fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
+	    $rule .= do_ipsec( $dir , $ipsec );
+	} elsif ( $asection ) {
+	    $restriction |= $chainref->{restriction};
+	}
     }
-
-    $chainref->{restricted} |= INPUT_RESTRICT if $hasmac;
 
     if ( $jumpchainref ) {
 	if ( $asection ) {

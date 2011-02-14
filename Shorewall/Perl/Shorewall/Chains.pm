@@ -2802,8 +2802,8 @@ sub mysplit( $ );
 #
 # Match a Source.
 #
-sub match_source_net( $;$ ) {
-    my ( $net, $restriction) = @_;
+sub match_source_net( $;$\$ ) {
+    my ( $net, $restriction, $macref ) = @_;
 
     $restriction |= NO_RESTRICT;
 
@@ -2814,7 +2814,8 @@ sub match_source_net( $;$ ) {
 	validate_range $addr1, $addr2;
 	iprange_match . "${invert}--src-range $net ";
     } elsif ( $net =~ /^!?~/ ) {
-	fatal_error "MAC address cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
+	fatal_error "A MAC address($net) cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
+	$$macref = 1 if $macref;
 	mac_match $net;
     } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
@@ -3589,6 +3590,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     my $chain = $chainref->{name};
     my $table = $chainref->{table};
     my $jump  = $target ? '-j ' . $target : '';
+    my $mac;
 
     our @ends = ();
     #
@@ -3639,7 +3641,9 @@ sub expand_rule( $$$$$$$$$$;$ )
 	if ( $source eq '-' ) {
 	    $source = '';
 	} elsif ( $family == F_IPV4 ) {
-	    if ( $source =~ /^(.+?):(.+)$/ ) {
+	    if ( $source =~ /^~/ ) {
+		$inets = $source;
+	    } elsif ( $source =~ /^(.+?):(.+)$/ ) {
 		$iiface = $1;
 		$inets  = $2;
 	    } elsif ( $source =~ /\+|&|~|\..*\./ ) {
@@ -3904,7 +3908,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     fatal_error "SOURCE interface may not be specified with a source IP address in the POSTROUTING chain"   if $restriction == POSTROUTE_RESTRICT && $iiface && ( $inets ne ALLIP || $iexcl || $trivialiexcl);
     fatal_error "DEST interface may not be specified with a destination IP address in the PREROUTING chain" if $restriction == PREROUTE_RESTRICT &&  $diface && ( $dnets ne ALLIP || $dexcl || $trivialdexcl);
 
-    my ( $fromref, $done );
+    my ( $fromref, $mac, $done );
 
     if ( $iexcl || $dexcl || $oexcl ) {
 	#
@@ -3927,7 +3931,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 	    for ( mysplit $iexcl ) {
 		my $cond = conditional_rule( $chainref, $_ );
-		add_rule $chainref, ( match_source_net $_ , $restriction ) . $exclude;
+		add_rule $chainref, ( match_source_net $_ , $restriction, $mac ) . $exclude;
 		conditional_rule_end( $chainref ) if $cond;
 	    }
 
@@ -3965,14 +3969,14 @@ sub expand_rule( $$$$$$$$$$;$ )
 		for my $inet ( mysplit $inets ) {
 
 		    my $cond = conditional_rule( $chainref, $inet );
-		    
-		    my $source_match = match_source_net( $inet, $restriction ) if have_capability( 'KLUDGEFREE' );
+
+		    my $source_match = match_source_net( $inet, $restriction, $mac ) if have_capability( 'KLUDGEFREE' );
 
 		    for my $dnet ( mysplit $dnets ) {
-			$source_match = match_source_net( $inet, $restriction ) unless have_capability( 'KLUDGEFREE' );
+			$source_match = match_source_net( $inet, $restriction, $mac ) unless have_capability( 'KLUDGEFREE' );
 			add_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ), 1 );
 		    }
-		    
+
 		    conditional_rule_end( $chainref ) if $cond;
 		}
 
@@ -3983,7 +3987,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    for ( mysplit $iexcl ) {
 		my $cond = conditional_rule( $echainref, $_ );
-		add_rule $echainref, ( match_source_net $_ , $restriction ) . '-j RETURN';
+		add_rule $echainref, ( match_source_net $_ , $restriction, $mac ) . '-j RETURN';
 		conditional_rule_end( $echainref ) if $cond;
 	    }
 
@@ -4033,10 +4037,10 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		my $cond = conditional_rule( $chainref, $inet );
 		
-		$source_match = match_source_net( $inet, $restriction ) if have_capability( 'KLUDGEFREE' );
+		$source_match = match_source_net( $inet, $restriction, $mac ) if have_capability( 'KLUDGEFREE' );
 
 		for my $dnet ( mysplit $dnets ) {
-		    $source_match  = match_source_net( $inet, $restriction ) unless have_capability( 'KLUDGEFREE' );
+		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless have_capability( 'KLUDGEFREE' );
 		    my $dest_match = match_dest_net( $dnet );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 
@@ -4094,6 +4098,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    conditional_rule_end( $chainref ) if $cond;
 	}
     }
+
+    $chainref->{restricted} |= INPUT_RESTRICT if $mac;
     #
     # Mark Target as referenced, if it's a chain
     #

@@ -19,6 +19,13 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
    produce an 'ip route add' command containing an IPv4 address. It now
    correctly uses the equivalent IPv6 address.
 
+2) When optimize level 4 was set, the optimizer mis-handled rules of the
+   form:
+
+	-A <chain1> -j <chain2> -m comment ...
+
+   when such a rule was the only rule in a chain.
+
 4.4.18 Beta 1
 
 None.

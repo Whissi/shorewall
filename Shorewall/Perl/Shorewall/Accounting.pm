@@ -108,6 +108,7 @@ sub process_accounting_rule( ) {
 
     our $jumpchainref = 0;
     our %accountingjumps;
+    my  $hasmac;
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = split_line1 1, 11, 'Accounting File', $accounting_commands;
 
@@ -210,7 +211,7 @@ sub process_accounting_rule( ) {
     if ( $source eq 'any' || $source eq 'all' ) {
         $source = ALLIP;
     } else {
-	$restriction |= INPUT_RESTRICT if $source =~ /~/;
+	fatal_error "MAC addresses not are not allowed in the OUTPUT section" if $hasmac = ( $source =~ /~/ ) && $asection == OUTPUT;
     }
 
     if ( have_bridges && ! $asection ) {
@@ -277,10 +278,16 @@ sub process_accounting_rule( ) {
 	$restriction |= $chainref->{restriction};
     }
 
+    $chainref->{restricted} |= INPUT_RESTRICT if $hasmac;
+
     if ( $jumpchainref ) {
-	if ( $asection ) { 
-	    my $jumprestrict = $jumpchainref->{restriction} || $restriction;
-	    fatal_error "Chain $jumpchainref->{name} contains rules that are incompatible with the $sectionname section" if $jumprestrict && $jumprestrict ne $restriction;
+	if ( $asection ) {
+	    #
+	    # Check the jump-to chain to be sure that it doesn't contain rules that are incompatible with this section
+	    #
+	    my $jumprestricted = $jumpchainref->{restricted};
+	    fatal_error "Chain $jumpchainref->{name} contains rules that are incompatible with the $sectionname section" if $jumprestricted && $restriction && $jumprestricted ne $restriction;
+	    $restriction |= $jumpchainref->{restriction};
 	}
 
 	$accountingjumps{$jumpchainref->{name}}{$chain} = 1;
@@ -288,7 +295,7 @@ sub process_accounting_rule( ) {
 
     fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
     
-    $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir && ! $asection;
+    $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir;
 
     expand_rule
 	$chainref ,

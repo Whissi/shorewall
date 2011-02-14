@@ -222,7 +222,8 @@ our $VERSION = '4.4_18';
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
 #                                               blacklist    => <number of blacklist rules at the head of the rules array> ( 0 or 1 )
 #                                               action       => <action tuple that generated this chain>
-#                                               restrictions => Logical OR of restrictions in this chain.
+#                                               restricted   => Logical OR of restrictions of rules in this chain.
+#                                               restriction  => Restrictions on further rules in this chain.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -1116,8 +1117,7 @@ sub new_chain($$)
 		     log          => 1,
 		     cmdlevel     => 0,
 		     references   => {},
-		     blacklist    => 0 ,
-		     restriction  => 0 };
+		     blacklist    => 0 };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
 
@@ -1335,6 +1335,7 @@ sub ensure_accounting_chain( $$$ )
 	$chainref->{accounting}  = 1;
 	$chainref->{referenced}  = 1;
 	$chainref->{restriction} = $restriction;
+	$chainref->{restricted}  = NO_RESTRICT;
 	$chainref->{ipsec}       = $ipsec;
 	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
 
@@ -3695,7 +3696,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		}
 	    }
  
-	    $chainref->{restriction} |= $restriction;
+	    $chainref->{restricted} |= $restriction;
 	    $rule .= match_source_dev( $iiface );
 	}
     }
@@ -3794,7 +3795,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		fatal_error "Source interface ($iiface) is not a port on the same bridge as the destination interface ( $diface )" if $bridge && $bridge ne source_port_to_bridge( $iiface );
 	    }
 	    
-	    $chainref->{restriction} |= $restriction;
+	    $chainref->{restricted} |= $restriction;
 	    $rule .= match_dest_dev( $diface );
 	}
     } else {

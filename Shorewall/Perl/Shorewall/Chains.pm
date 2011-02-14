@@ -1896,7 +1896,7 @@ sub optimize_level4( $$ ) {
 		    #
 		    # Chain has a single rule
 		    #
-		    if ( $firstrule =~ /^-A -[jg] (.*)$/ ) {
+		    if ( $firstrule =~ /^-A -[jg] ([^\s])(\s+-m comment .*)?\s*$/ ) {
 			#
 			# Easy case -- the rule is a simple jump
 			#

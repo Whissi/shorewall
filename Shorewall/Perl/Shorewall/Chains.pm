@@ -1896,7 +1896,7 @@ sub optimize_level4( $$ ) {
 		    #
 		    # Chain has a single rule
 		    #
-		    if ( $firstrule =~ /^-A -[jg] ([^\s]+)(\s+-m comment .*)?\s*$/ ) {
+		    if ( $firstrule =~ /^-A -[jg] ([^\s])(\s+-m comment .*)?\s*$/ ) {
 			#
 			# Easy case -- the rule is a simple jump
 			#
@@ -2812,15 +2812,21 @@ sub match_source_net( $;$\$ ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
-	iprange_match . "${invert}--src-range $net ";
-    } elsif ( $net =~ /^!?~/ ) {
+	return iprange_match . "${invert}--src-range $net ";
+    }
+
+    if ( $net =~ /^!?~/ ) {
 	fatal_error "A MAC address($net) cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
 	$$macref = 1 if $macref;
-	mac_match $net;
-    } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
+	return mac_match $net;
+    }
+
+    if ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
-	join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
-    } elsif ( $net =~ /^\+\[(.+)\]$/ ) {
+	return join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+    }
+
+    if ( $net =~ /^\+\[(.+)\]$/ ) {
 	my $result = '';
 	my @sets = mysplit $1;
 
@@ -2831,20 +2837,24 @@ sub match_source_net( $;$\$ ) {
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
 	}
 
-	$result;
-    } elsif ( $net =~ s/^!// ) {
-	if ( $net =~ /^&(.+)/ ) {
-	    '! -s ' . record_runtime_address $1;
-	} else {
-	    validate_net $net, 1;
-	    "! -s $net ";
-	}
-    } elsif ( $net =~ /^&(.+)/ ) {
-	'-s ' . record_runtime_address $1;
-    } else {
-	validate_net $net, 1;
-	$net eq ALLIP ? '' : "-s $net ";
+	return $result;
     }
+
+    if ( $net =~ s/^!// ) {
+	if ( $net =~ /^&(.+)/ ) {
+	    return '! -s ' . record_runtime_address $1;
+	}
+
+	validate_net $net, 1;
+	return "! -s $net ";
+    }
+
+    if ( $net =~ /^&(.+)/ ) {
+	return '-s ' . record_runtime_address $1;
+    }
+
+    validate_net $net, 1;
+    $net eq ALLIP ? '' : "-s $net ";
 }
 
 #
@@ -2858,11 +2868,15 @@ sub match_dest_net( $ ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
 	validate_range $addr1, $addr2;
-	iprange_match . "${invert}--dst-range $net ";
-    } elsif ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?$/ ) {
+	return iprange_match . "${invert}--dst-range $net ";
+    }
+
+    if ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?$/ ) {
 	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
-	join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
-    } elsif ( $net =~ /^\+\[(.+)\]$/ ) {
+	return join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
+    }
+
+    if ( $net =~ /^\+\[(.+)\]$/ ) {
 	my $result = '';
 	my @sets = mysplit $1;
 
@@ -2873,20 +2887,24 @@ sub match_dest_net( $ ) {
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
 	}
 
-	$result;
-    } elsif ( $net =~ s/^!// ) {
-	if ( $net =~ /^&(.+)/ ) {
-	    '! -d ' . record_runtime_address $1;
-	} else {
-	    validate_net $net, 1;
-	    "! -d $net ";
-	}
-    } elsif ( $net =~ /^&(.+)/ ) {
-	'-d ' . record_runtime_address $1;
-    } else {
-	validate_net $net, 1;
-	$net eq ALLIP ? '' : "-d $net ";
+	return $result;
     }
+
+    if ( $net =~ s/^!// ) {
+	if ( $net =~ /^&(.+)/ ) {
+	    return '! -d ' . record_runtime_address $1;
+	}
+	
+	validate_net $net, 1;
+	return "! -d $net ";
+    }
+
+    if ( $net =~ /^&(.+)/ ) {
+	return '-d ' . record_runtime_address $1;
+    }
+
+    validate_net $net, 1;
+    $net eq ALLIP ? '' : "-d $net ";
 }
 
 #

@@ -759,6 +759,15 @@ sub increment_reference_count( $$ ) {
     $toref->{references}{$chain}++ if $toref;
 }
 
+sub decrement_reference_count( $$ ) {
+    my ($toref, $chain) = @_;
+
+    if ( $toref && $toref->{referenced} && $toref->{references}{$chain} ) {
+	delete $toref->{references}{$chain} unless --$toref->{references}{$chain};
+	delete_chain( $toref ) unless ( keys %{$toref->{references}} );
+    }
+}	
+
 #
 # Move the rules from one chain to another
 #
@@ -811,6 +820,30 @@ sub move_rules( $$ ) {
 	delete_chain $chain1;
 
 	$count;
+    }
+}
+
+#
+# Recursively delete references from $chain to $name
+#
+sub recursive_delete_references( $$ );
+
+sub recursive_delete_references( $$ ) {
+    my ( $chain1, $chain2 ) = @_;
+
+    my $name2 = $chain2->{name};
+
+    unless ( --$chain1->{references}{$name2} ) {
+	delete $chain1->{references}{$name2};
+	unless ( keys %{$chain1->{references}} ) {
+	    my $tableref = $chain_table{$chain1->{table}};
+	    my $name1    = $chain1->{name}; 
+	    for ( @{$chain1->{rules}} ) {
+		decrement_reference_count( $tableref->{$1}, $name1 ) if / -[jg] ([^\s]+)/;
+	    }
+
+	    delete_chain $chain1;
+	}
     }
 }
 
@@ -881,12 +914,7 @@ sub copy_rules( $$ ) {
 
     progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
 
-    unless ( --$chain1->{references}{$name2} ) {
-	delete $chain1->{references}{$name2};
-	unless ( keys %{$chain1->{references}} ) {
-	    delete_chain $chain1;
-	}
-    }
+    recursive_delete_references( $chain1, $chain2 );
 }
 
 #
@@ -1604,7 +1632,7 @@ sub optimize_chain( $ ) {
 	    progress_message "  $count ACCEPT rules deleted from $type chain $chainref->{name}" if $count;
 	} elsif ( $chainref->{builtin} ) {
 	    $chainref->{policy} = 'ACCEPT';
-	    trace( $chainref, 'P', undef, 'ACCEPT' );
+	    trace( $chainref, 'P', undef, 'ACCEPT' ) if $debug;
 	    $count++;
 	    progress_message "  $count ACCEPT rules deleted from builtin chain $chainref->{name}";
 	} else {
@@ -1667,7 +1695,7 @@ sub replace_references( $$ ) {
 
     $name =~ s/\+/\\+/;
 
-    if ( defined $tableref->{$target}  && ! $tableref->{$target}{builtin} ) {
+    if ( ! $tableref->{$target}{builtin} ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#
@@ -1676,12 +1704,14 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -([jg]) $name(.*$)/ -$1 ${target}$2/ ) {
+		    if ( s/ -([jg]) $name(\s|$)/ -$1 ${target}$2/ ) {
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
 		}
+		
+		delete $chainref->{references}{$fromref->{name}};
 	    }
 	}
 
@@ -1695,13 +1725,18 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -[jg] $name(.*$)/ -j ${target}$1/ ) {
+		    if ( s/ -[jg] $name(\s|$)/ -j ${target}$1/ ) {
+			add_reference ( $fromref, $tableref->{$target} );
 			$count++ ;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
 		}
+
+		delete $chainref->{references}{$fromref->{name}};
 	    }
 	}
+
+	delete $tableref->{$target}{references}{$chainref->{name}};
     }
 
     progress_message "  $count references to chain $chainref->{name} replaced" if $count;

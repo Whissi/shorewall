@@ -278,6 +278,8 @@ sub process_accounting_rule( ) {
 	}
     }
 
+    dont_optimize( $chainref ) if $target eq 'RETURN';
+
     if ( $jumpchainref ) {
 	if ( $asection ) {
 	    #

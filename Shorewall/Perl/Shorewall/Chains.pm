@@ -762,9 +762,10 @@ sub increment_reference_count( $$ ) {
 sub decrement_reference_count( $$ ) {
     my ($toref, $chain) = @_;
 
-    if ( $toref && $toref->{referenced} && $toref->{references}{$chain} ) {
+    if ( $toref && $toref->{referenced} ) {
+	assert($toref->{references}{$chain} > 0 );
 	delete $toref->{references}{$chain} unless --$toref->{references}{$chain};
-	delete_chain( $toref ) unless ( keys %{$toref->{references}} );
+	delete_chain( $toref )              unless ( keys %{$toref->{references}} );
     }
 }	
 

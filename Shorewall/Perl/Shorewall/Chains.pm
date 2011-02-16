@@ -1676,7 +1676,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -([jg]) $name($|\s)/ -$1 ${target}$2/ ) {
+		    if ( s/ -([jg]) $name(.*$)/ -$1 ${target}$2/ ) {
 			add_reference ( $fromref, $tableref->{$target} );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
@@ -1685,7 +1685,7 @@ sub replace_references( $$ ) {
 	    }
 	}
 
-	delete $tableref->{target}{references}{$chainref->{name}};
+	delete $tableref->{$target}{references}{$chainref->{name}};
     } else {
 	#
 	# The target is a builtin -- we must use '-j'
@@ -1695,7 +1695,7 @@ sub replace_references( $$ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -[jg] $name($|\s)/ -j ${target}$1/ ) {
+		    if ( s/ -[jg] $name(.*$)/ -j ${target}$1/ ) {
 			$count++ ;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1896,7 +1896,7 @@ sub optimize_level4( $$ ) {
 		    #
 		    # Chain has a single rule
 		    #
-		    if ( $firstrule =~ /^-A -[jg] ([^\s])(\s+-m comment .*)?\s*$/ ) {
+		    if ( $firstrule =~ /^-A -[jg] ([^\s]+)(\s+-m comment .*)?\s*$/ ) {
 			#
 			# Easy case -- the rule is a simple jump
 			#

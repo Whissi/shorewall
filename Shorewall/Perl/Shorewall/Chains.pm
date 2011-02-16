@@ -824,30 +824,6 @@ sub move_rules( $$ ) {
 }
 
 #
-# Recursively delete references from $chain to $name
-#
-sub recursive_delete_references( $$ );
-
-sub recursive_delete_references( $$ ) {
-    my ( $chain1, $chain2 ) = @_;
-
-    my $name2 = $chain2->{name};
-
-    unless ( --$chain1->{references}{$name2} ) {
-	delete $chain1->{references}{$name2};
-	unless ( keys %{$chain1->{references}} ) {
-	    my $tableref = $chain_table{$chain1->{table}};
-	    my $name1    = $chain1->{name}; 
-	    for ( @{$chain1->{rules}} ) {
-		decrement_reference_count( $tableref->{$1}, $name1 ) if / -[jg] ([^\s]+)/;
-	    }
-
-	    delete_chain $chain1;
-	}
-    }
-}
-
-#
 # Replace the jump at the end of one chain (chain2) with the rules from another chain (chain1).
 #
 
@@ -914,7 +890,18 @@ sub copy_rules( $$ ) {
 
     progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
 
-    recursive_delete_references( $chain1, $chain2 );
+    unless ( --$chain1->{references}{$name2} ) {
+	delete $chain1->{references}{$name2};
+	unless ( keys %{$chain1->{references}} ) {
+	    my $tableref = $chain_table{$chain1->{table}};
+	    my $name1    = $chain1->{name}; 
+	    for ( @{$chain1->{rules}} ) {
+		decrement_reference_count( $tableref->{$1}, $name1 ) if / -[jg] ([^\s]+)/;
+	    }
+
+	    delete_chain $chain1;
+	}
+    }
 }
 
 #

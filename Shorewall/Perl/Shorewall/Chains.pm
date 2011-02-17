@@ -43,7 +43,6 @@ our @EXPORT = qw(
 		  ensure_manual_chain
 		  log_rule_limit
 		  dont_optimize
-		  optimize_okay
 		  dont_delete
 		  dont_move
 
@@ -660,6 +659,8 @@ sub add_reference ( $$ ) {
 
     my $toref = reftype $to ? $to : $chain_table{$fromref->{table}}{$to};
 
+    assert($toref);
+
     $toref->{references}{$fromref->{name}}++;
 }
 
@@ -670,6 +671,8 @@ sub delete_reference( $$ ) {
     my ( $fromref, $to ) = @_;
 
     my $toref = reftype $to ? $to : $chain_table{$fromref->{table}}{$to};
+
+    assert( $toref );
 
     delete $toref->{references}{$fromref->{name}} unless --$toref->{references}{$fromref->{name}} > 0;
 }
@@ -1255,21 +1258,6 @@ sub dont_optimize( $ ) {
     $chainref->{dont_optimize} = 1;
 
     trace( $chainref, '!O', undef, '' ) if $debug;
-
-    $chainref;
-}
-
-#
-# Reverse the effect of dont_optimize
-#
-sub optimize_okay( $ ) {
-    my $chain = shift;
-
-    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
-
-    $chainref->{dont_optimize} = 0;
-
-    trace( $chainref, 'O', undef, '' ) if $debug;
 
     $chainref;
 }

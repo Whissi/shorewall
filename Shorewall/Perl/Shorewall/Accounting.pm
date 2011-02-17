@@ -363,7 +363,7 @@ sub setup_accounting() {
 		}
 
 		if ( $filter_table->{accounting} ) {
-		    optimize_okay( 'accounting' ) if $section;
+		    dont_optimize( 'accounting' ) unless $section;
 		    if ( $asection ) {
 			add_jump( $filter_table->{FORWARD}, 'accounting', 0, '', 0, 0 );
 		    } else {

@@ -732,6 +732,24 @@ sub delete_chain( $ ) {
 }
 
 #
+# This variety first deletes all references to the chain before deleting it.
+#
+sub delete_chain_and_references( $ ) {
+    my $chainref = shift;
+    #
+    #  We're going to delete this chain but first, we must delete all references to it.
+    #
+    my $tableref = $chain_table{$chainref->{table}};
+    my $name1    = $chainref->{name}; 
+    for ( @{$chainref->{rules}} ) {
+	decrement_reference_count( $tableref->{$1}, $name1 ) if / -[jg] ([^\s]+)/;
+    }
+
+    delete_chain $chainref;
+}
+
+
+#
 # Insert a tunnel rule into the passed chain. Tunnel rules are inserted sequentially
 # at the beginning of the 'NEW' section.
 #
@@ -896,15 +914,7 @@ sub copy_rules( $$ ) {
 
     unless ( --$chain1->{references}{$name2} ) {
 	delete $chain1->{references}{$name2};
-	unless ( keys %{$chain1->{references}} ) {
-	    my $tableref = $chain_table{$chain1->{table}};
-	    my $name1    = $chain1->{name}; 
-	    for ( @{$chain1->{rules}} ) {
-		decrement_reference_count( $tableref->{$1}, $name1 ) if / -[jg] ([^\s]+)/;
-	    }
-
-	    delete_chain $chain1;
-	}
+	delete_chain_and_references( $chain1 ) unless keys %{$chain1->{references}};
     }
 }
 
@@ -2095,7 +2105,7 @@ sub setup_zone_mss() {
 
 sub newexclusionchain() {
     my $seq = $chainseq++;
-    "excl${seq}";
+    "~excl${seq}";
 }
 
 sub newlogchain() {

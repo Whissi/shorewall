@@ -1353,7 +1353,7 @@ sub ensure_accounting_chain( $$$ )
 	$chainref->{ipsec}       = $ipsec;
 	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
 
-	unless ( $chain =~ '^account(?:in|ing|out)' ) {
+	unless ( $chain =~ '^account(?:in|ing|out)$' ) {
 	    my $file = find_file $chain;
 
 	    if ( -f $file ) {

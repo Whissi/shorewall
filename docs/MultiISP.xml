@@ -1160,7 +1160,7 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         </varlistentry>
       </variablelist>
 
-      <para> Assume the following entry in
+      <para>Assume the following entry in
       <filename>/etc/shorewall/providers</filename>:</para>
 
       <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
@@ -1287,6 +1287,37 @@ lillycat: #</programlisting>
 linksys       1    1    -        wlan0   172.20.1.1    track,balance=1,optional
 shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional</programlisting>/etc/shorewall/route_rules:<programlisting>#SOURCE     DEST      PROVIDER        PRIORITY
 -           -         shorewall       11999</programlisting></para>
+
+      <para>Tuomo Soini describes the following issue when using
+      USE_DEFAULT_RT=Yes.</para>
+
+      <para>He has a /27 network (let.s call it 70.90.191.0/27 from his
+      primary ISP and his secondary ISP supplies him with a dynamic IP address
+      on the 91.156.0.0/19 network. From the output of <command>shorewall show
+      routing</command>:</para>
+
+      <programlisting>999:    from all lookup main 
+10000:  from all fwmark 0x100 lookup ISP1 
+10001:  from all fwmark 0x200 lookup ISP2</programlisting>
+
+      <para>Note that the main routing table is consulted prior to the marks
+      for his two provlders. When clients in the large /19 network connected
+      to his /27 (through ISP1), the responses were routed out of the ISP2
+      interface because the main routing table included a route to the
+      /19.</para>
+
+      <para>The solution was to add an additional entry to route_rules:</para>
+
+      <programlisting>#SOURCE             DEST           PROVIDER       PRIORITY
+70.90.191.0/27      91.156.0.0/19  ISP1           999</programlisting>
+
+      <para>With this additional entry, the routing rules are as below and
+      traffic from the /27 is returned via ISP1.</para>
+
+      <programlisting>900:    from 188.117.5.224/27 to 91.156.0.0/19 lookup nebula 
+999:    from all lookup main 
+10000:  from all fwmark 0x100 lookup nebula 
+10001:  from all fwmark 0x200 lookup elisa</programlisting>
     </section>
 
     <section id="LinkMonitor">

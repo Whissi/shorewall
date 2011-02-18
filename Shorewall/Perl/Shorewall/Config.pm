@@ -126,6 +126,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $debug
 				       %config
 				       %globals
+				       %config_files
 
 		                       F_IPV4
 		                       F_IPV6
@@ -262,6 +263,50 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
+
+our %config_files = ( accounting       => 1,
+		      actions          => 1,
+		      blacklist        => 1,
+		      clear            => 1,
+		      ecn              => 1,
+		      findgw           => 1,
+		      hosts            => 1,
+		      init             => 1,
+		      initdone         => 1,
+		      interfaces       => 1,
+		      isusable         => 1,
+		      maclist          => 1,
+		      masq             => 1,
+		      nat              => 1,
+		      netmap           => 1,
+		      notrack          => 1,
+		      params           => 1,
+		      policy           => 1,
+		      providers        => 1,
+		      proxyarp         => 1,
+		      refresh          => 1,
+		      refreshed        => 1,
+		      restored         => 1,
+		      route_rules      => 1,
+		      routes           => 1,
+		      routestopped     => 1,
+		      rules            => 1,
+		      scfilter         => 1,
+		      secmarks         => 1,
+		      start            => 1,
+		      started          => 1,
+		      stop             => 1,
+		      stopped          => 1,
+		      tcclasses        => 1,
+		      tcclear          => 1,
+		      tcdevices        => 1,
+		      tcfilters        => 1,
+		      tcinterfaces     => 1,
+		      tcpri            => 1,
+		      tcrules          => 1,
+		      tos              => 1,
+		      tunnels          => 1,
+		      zones            => 1 );
 #
 # Directories to search for configuration files
 #

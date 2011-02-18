@@ -79,7 +79,7 @@ None.
       specify an output interface). 
     - accountout: Rules that are valid in the OUTPUT chain (may not
       specify an input interface or a MAC address).
-    - accounting: Other rules.
+    - accountfwd: Other rules.
 
     The new structure is enabled by sectioning the accounting file in a
     manner similar to the rules file.  
@@ -105,13 +105,13 @@ None.
     - The default value of the CHAIN column is:
       - 'accountin' in the INPUT section
       - 'accountout' in the OUTPUT section
-      - 'accounting' in the FORWARD section
+      - 'accountfwd' in the FORWARD section
     - Traffic addressed to the firewall goes through the rules defined
       in the INPUT section.
     - Traffic originating on the firewall goes through the rules
       defined in the OUTPUT section.
     - Traffic being forwarded through the firewall goes through the
-      rules from all three sections.
+      rules defined in the FORWARD section.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

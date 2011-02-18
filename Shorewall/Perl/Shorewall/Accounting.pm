@@ -94,7 +94,7 @@ sub process_section ($) {
 	$defaultchain = 'accountout';
 	$defaultrestriction = OUTPUT_RESTRICT;
     } else {
-	$defaultchain = 'accounting';
+	$defaultchain = 'accountfwd';
 	$defaultrestriction = NO_RESTRICT;
     }
 
@@ -126,7 +126,7 @@ sub process_accounting_rule( ) {
     our $disposition = '';
 
     sub reserved_chain_name($) {
-	$_[0] =~ /^acc(?:ount(?:in|ing|out)|ipsecin|ipsecout)$/;
+	$_[0] =~ /^acc(?:ount(?:fwd|in|ing|out)|ipsecin|ipsecout)$/;
     }
 
     sub ipsec_chain_name($) {
@@ -363,26 +363,23 @@ sub setup_accounting() {
 		}
 
 		if ( $filter_table->{accounting} ) {
-		    dont_optimize( 'accounting' ) unless $section;
-		    if ( $asection ) {
-			add_jump( $filter_table->{FORWARD}, 'accounting', 0, '', 0, 0 );
-		    } else {
-			for my $chain ( qw/INPUT FORWARD/ ) {
-			    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
-			}
+		    dont_optimize( 'accounting' );
+		    for my $chain ( qw/INPUT FORWARD/ ) {
+			add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 		    }
+		}
+
+		if ( $filter_table->{accountfwd} ) {
+		    add_jump( $filter_table->{FORWARD}, 'accountfwd', 0, '', 0, 0 );
 		}
 
 		if ( $filter_table->{accountout} ) {
 		    add_jump( $filter_table->{OUTPUT}, 'accountout', 0, '', 0, 0 );
 		}
 	    } elsif ( $filter_table->{accounting} ) {
-		if ( $asection ) {
-		    add_jump( $filter_table->{FORWARD}, 'accounting', 0, '', 0, 0 );
-		} else {
-		    for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-			add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
-		    }
+		dont_optimize( 'accounting' );
+		for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
+		    add_jump( $filter_table->{$chain}, 'accounting', 0, '', 0, 0 );
 		}
 	    }
 

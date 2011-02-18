@@ -264,7 +264,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
 
-our %config_files = ( accounting       => 1,
+our %config_files = ( #accounting      => 1,
 		      actions          => 1,
 		      blacklist        => 1,
 		      clear            => 1,

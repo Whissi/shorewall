@@ -1131,6 +1131,9 @@ sub first_chains( $ ) #$1 = interface
     ( $c . '_fwd', $c . '_in' );
 }
 
+#
+# Returns true if the passed name is that of a Shorewall-generated chain
+#
 sub reserved_name( $ ) {
     my $chain = shift;
 

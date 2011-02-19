@@ -645,10 +645,6 @@ sub compiler {
     #
     validate_policy;
     #
-    # Process policy actions
-    #
-    process_actions2;
-    #
     #                                       N O T R A C K
     #                           (Produces no output to the compiled script)
     #
@@ -677,6 +673,14 @@ sub compiler {
     # Do all of the zone-independent stuff (mostly /proc)
     #
     add_common_rules;
+    #
+    # Process policy actions
+    #
+    disable_script;
+
+    process_actions2;
+
+    enable_script;
     #
     # More /proc
     #

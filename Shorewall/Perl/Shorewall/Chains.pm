@@ -2502,7 +2502,7 @@ sub do_ratelimit( $$ ) {
 sub do_connlimit( $ ) {
     my ( $limit ) = @_;
 
-    return '' unless $limit and $limit ne '-';
+    return '' if $limit eq '-';
 
     require_capability 'CONNLIMIT_MATCH', 'A non-empty CONNLIMIT', 's';
 
@@ -2535,7 +2535,7 @@ sub do_time( $ ) {
 	} elsif ( $element =~ /^weekdays=(.*)$/ ) {
 	    my $days = $1;
 	    for my $day ( split /,/, $days ) {
-		fatal_error "Invalid weekday ($day)" unless $day =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/ || ( $day =~ /^\d$/ && $day && $day <= 7);0
+		fatal_error "Invalid weekday ($day)" unless $day =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/ || ( $day =~ /^\d$/ && $day && $day <= 7);
 	    }
 	    $result .= "--weekday $days ";
 	} elsif ( $element =~ /^monthdays=(.*)$/ ) {

@@ -2083,7 +2083,7 @@ sub check_trivalue( $$ ) {
 	    fatal_error "Invalid value ($val) for $var";
 	}
     } else {
-	$config{var} = $default
+	$config{$var} = $default
     }
 }
 

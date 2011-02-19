@@ -2394,8 +2394,15 @@ sub verify_small_mark( $ ) {
 }
 
 sub validate_mark( $ ) {
-    for ( split '/', $_[0] ) {
-	verify_mark $_;
+    my $mark = shift;
+    fatal_error "Missing MARK" unless defined $mark && $mark ne '';
+
+    if ( $mark =~ '/' ) {
+	my @marks = split '/', $mark;
+	fatal_error "Invalid MARK ($mark)" unless @marks == 2;
+	verify_mark $_ for @marks;
+    } else {
+	verify_mark $mark;
     }
 }
 

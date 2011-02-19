@@ -51,12 +51,18 @@ our $restriction;
 our $accounting_commands = { COMMENT => 0, SECTION => 2 };
 our $sectionname;
 
+#
+# Sections in the Accounting File
+#
+
 use constant {
 	      LEGACY  => 0,
 	      INPUT   => 1,
 	      OUTPUT  => 2,
 	      FORWARD => 3 };
-
+#
+# Map names to values
+#
 our %asections = ( INPUT   => INPUT,
 		   FORWARD => FORWARD,
 		   OUTPUT  => OUTPUT );
@@ -68,7 +74,16 @@ sub initialize() {
     $jumpchainref       = undef;
     %tables             = ();
     %accountingjumps    = ();
+    #
+    # The section number is initialized to a value less thatn LEGACY. It will be set to LEGACY if a
+    # the first non-commentary line in the accounting file isn't a section header
+    #
+    # This allows the section header processor to quickly check for correct order 
+    #
     $asection           = -1;
+    #
+    # These are the legacy values
+    #
     $defaultchain       = 'accounting';
     $defaultrestriction = NO_RESTRICT;
     $sectionname        = '';
@@ -106,8 +121,7 @@ sub process_section ($) {
 #
 sub process_accounting_rule( ) {
 
-    our $jumpchainref = 0;
-    our %accountingjumps;
+    $jumpchainref = 0;
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = split_line1 1, 11, 'Accounting File', $accounting_commands;
 
@@ -181,6 +195,7 @@ sub process_accounting_rule( ) {
 		validate_net $net, 0;
 
 		my $prevnet = $tables{$table};
+
 		if ( $prevnet ) {
 		    fatal_error "Previous net associated with $table ($prevnet) does not match this one ($net)" unless compare_nets( $net , $prevnet );
 		} else {
@@ -193,6 +208,7 @@ sub process_accounting_rule( ) {
 	    }
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
+
 	    if ( $cmd ) {
 		if ( $cmd eq 'COUNT' ) {
 		    $rule2 = 1;
@@ -225,6 +241,7 @@ sub process_accounting_rule( ) {
 	    $dest = ALLIP if $dest   eq 'any' || $dest   eq 'all';
 	} else {
 	    $chain = 'accounting' unless $chain and $chain ne '-';
+
 	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIP ) {
 		expand_rule(
 			    ensure_filter_chain( 'accountout' , 0 ) ,
@@ -347,8 +364,6 @@ sub process_accounting_rule( ) {
 }
 
 sub setup_accounting() {
-
-    our %accountingjumps;
 
     if ( my $fn = open_file 'accounting' ) {
 

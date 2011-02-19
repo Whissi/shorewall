@@ -159,6 +159,10 @@ sub process_accounting_rule( ) {
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
+    if ( $asection ) {
+	fatal_error "USER/GROUP may only be specified in the OUTPUT section" unless $user eq '-' || $asection == OUTPUT; 
+    }
+
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} ) . do_headers( $headers );
     my $rule2 = 0;
     my $jump  = 0;
@@ -209,6 +213,8 @@ sub process_accounting_rule( ) {
 
     if ( $source eq 'any' || $source eq 'all' ) {
         $source = ALLIP;
+    } else { 
+	fatal_error "MAC addresses only allowed in the INPUT and FORWARD sections" if $source =~ /~/ && ( $asection == OUTPUT || ! $asection );
     }
 
     if ( have_bridges && ! $asection ) {

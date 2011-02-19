@@ -113,6 +113,11 @@ None.
     - Traffic being forwarded through the firewall goes through the
       rules defined in the FORWARD section.
 
+    As part of this change, the USER/GROUP column must now be empty
+    except in the OUTPUT section. This is consistent with recent
+    Netfilter releases which disallow the owner match in rules
+    reachable from the INPUT and FORWARD hooks.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

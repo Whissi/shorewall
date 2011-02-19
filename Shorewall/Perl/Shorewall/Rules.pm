@@ -192,6 +192,8 @@ sub new_action( $$ ) {
 
     my ( $action , $type ) = @_;
 
+    fatal_error "Invalid action name( $action)" if reserved_name( $action );
+
     $actions{$action} = { actchain => ''  };
 
     $targets{$action} = $type;

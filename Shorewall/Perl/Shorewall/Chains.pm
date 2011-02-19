@@ -107,6 +107,7 @@ our %EXPORT_TAGS = (
 				       ecn_chain
 				       notrack_chain
 				       first_chains
+				       reserved_name
 				       find_chain
 				       ensure_chain
 				       ensure_accounting_chain
@@ -1128,6 +1129,12 @@ sub first_chains( $ ) #$1 = interface
     my $c = $_[0];
 
     ( $c . '_fwd', $c . '_in' );
+}
+
+sub reserved_name( $ ) {
+    my $chain = shift;
+
+    $builtin_target{$chain} || $config_files{$chain} || $chain =~ /^account(?:fwd|in|ing|out)$/;
 }
 
 #

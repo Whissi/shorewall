@@ -86,6 +86,8 @@ our %EXPORT_TAGS = (
 				       no_comment
 				       macro_comment
 				       clear_comment
+				       push_coment
+				       pop_comment
 				       incr_cmd_level
 				       decr_cmd_level
 				       forward_chain
@@ -119,7 +121,6 @@ our %EXPORT_TAGS = (
 				       new_builtin_chain
 				       new_nat_chain
 				       ensure_filter_chain
-				       finish_section
 				       optimize_chain
 				       check_optimization
 				       optimize_ruleset
@@ -180,8 +181,6 @@ our %EXPORT_TAGS = (
 				       preview_netfilter_load
 				       create_chainlist_reload
 				       create_stop_load
-				       $section
-				       %sections
 				       %targets
 				     ) ],
 		   );
@@ -242,15 +241,8 @@ our $raw_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-#
-# It is a layer violation to keep information about the rules file sections in this module but in Shorewall, the rules file
-# and the filter table are very closely tied. By keeping the information here, we avoid making several other modules dependent
-# on Shorewall::Rules.
-#
-our %sections;
-our $section;
-
 our $comment;
+our @comments;
 
 #
 # Target Types
@@ -406,22 +398,11 @@ sub initialize( $ ) {
     $nat_table    = $chain_table{nat};
     $mangle_table = $chain_table{mangle};
     $filter_table = $chain_table{filter};
-
-    #
-    # These are set to 1 as sections are encountered.
-    #
-    %sections = ( ESTABLISHED => 0,
-		  RELATED     => 0,
-		  NEW         => 0
-		  );
-    #
-    # Current rules file section.
-    #
-    $section  = '';
     #
     # Contents of last COMMENT line.
     #
-    $comment = '';
+    $comment  = '';
+    @comments = ();
     #
     # Used to sequence chain names.
     #
@@ -472,10 +453,30 @@ sub no_comment() {
 }
 
 #
-# Clear the $comment variable
+# Clear the $comment variable and the comment stack
 #
 sub clear_comment() {
-    $comment = '';
+    $comment  = '';
+    @comments = ();
+}
+
+#
+# Push and Pop comment stack
+#
+sub push_comment( $ ) {
+    push @comments, $comment;
+    $comment = shift;
+}
+
+sub pop_comment() {
+    $comment = pop @comments;
+}
+
+#
+# Set comment
+#
+sub set_comment( $ ) {
+    $comment = shift;
 }
 
 #
@@ -1312,10 +1313,8 @@ sub dont_move( $ ) {
     $chainref;
 }
 
-sub finish_chain_section( $$ );
-
 #
-# Create a filter chain if necessary. Optionally populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
+# Create a filter chain if necessary.
 #
 # Return a reference to the chain's table entry.
 #
@@ -1325,17 +1324,7 @@ sub ensure_filter_chain( $$ )
 
     my $chainref = ensure_chain 'filter', $chain;
 
-    unless ( $chainref->{referenced} ) {
-	if ( $populate ) {
-	    if ( $section eq 'NEW' or $section eq 'DONE' ) {
-		finish_chain_section $chainref , 'ESTABLISHED,RELATED';
-	    } elsif ( $section eq 'RELATED' ) {
-		finish_chain_section $chainref , 'ESTABLISHED';
-	    }
-	}
-
-	$chainref->{referenced} = 1;
-    }
+    $chainref->{referenced} = 1;
 
     $chainref;
 }
@@ -1550,60 +1539,6 @@ sub initialize_chain_table()
 
 	for my $chain qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
-	}
-    }
-}
-
-#
-# Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
-#
-sub finish_chain_section ($$) {
-    my ($chainref, $state ) = @_;
-    my $chain = $chainref->{name};
-    my $savecomment = $comment;
-
-    $comment = '';
-
-    add_rule $chainref, "$globals{STATEMATCH} $state -j ACCEPT" unless $config{FASTACCEPT};
-
-    if ($sections{NEW} ) {
-	if ( $chainref->{is_policy} ) {
-	    if ( $chainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
-		if ( $section eq 'DONE' ) {
-		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
-			add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
-		    }
-		} else {
-		    add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
-		}
-	    }
-	} else {
-	    my $policychainref = $filter_table->{$chainref->{policychain}};
-	    if ( $policychainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
-		add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
-	    }
-	}
-
-	$chainref->{new} = @{$chainref->{rules}};
-    }
-
-    $comment = $savecomment;
-}
-
-#
-# Do section-end processing
-#
-sub finish_section ( $ ) {
-    my $sections = $_[0];
-
-    $sections{$_} = 1 for split /,/, $sections;
-
-    for my $zone ( all_zones ) {
-	for my $zone1 ( all_zones ) {
-	    my $chainref = $chain_table{'filter'}{rules_chain( $zone, $zone1 )};
-	    finish_chain_section $chainref, $sections if $chainref->{referenced};
 	}
     }
 }

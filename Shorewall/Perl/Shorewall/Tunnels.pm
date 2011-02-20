@@ -28,13 +28,14 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::IPAddrs;
 use Shorewall::Chains qw(:DEFAULT :internal);
+use Shorewall::Rules;
 
 use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tunnels );
 our @EXPORT_OK = ( );
-our $VERSION = '4.4_14';
+our $VERSION = '4.4_18';
 
 #
 # Here starts the tunnel stuff -- we really should get rid of this crap...
@@ -83,8 +84,8 @@ sub setup_tunnels() {
 	    for my $zone ( split_list $gatewayzones, 'zone' ) {
 		my $type = zone_type( $zone );
 		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type == FIREWALL || $type == BPORT;
-		$inchainref  = ensure_filter_chain rules_chain( ${zone}, ${fw} ), 1;
-		$outchainref = ensure_filter_chain rules_chain( ${fw}, ${zone} ), 1;
+		$inchainref  = ensure_rules_chain( rules_chain( ${zone}, ${fw} ) );
+		$outchainref = ensure_rules_chain( rules_chain( ${fw}, ${zone} ) );
 
 		unless ( have_ipsec ) {
 		    add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
@@ -239,8 +240,8 @@ sub setup_tunnels() {
 
 	fatal_error "Invalid tunnel ZONE ($zone)" if $zonetype == FIREWALL || $zonetype == BPORT;
 
-	my $inchainref  = ensure_filter_chain rules_chain( ${zone}, ${fw} ), 1;
-	my $outchainref = ensure_filter_chain rules_chain( ${fw}, ${zone} ), 1;
+	my $inchainref  = ensure_rules_chain( rules_chain( ${zone}, ${fw} ) );
+	my $outchainref = ensure_rules_chain( rules_chain( ${fw}, ${zone} ) );
 
 	$gateway = ALLIP if $gateway eq '-';
 

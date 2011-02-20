@@ -20,9 +20,10 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains
+#   This module handles policies and rules. It contains:
+#
 #       validate_policy() and it's associated helpers.
-#       process_rule() and it's associated helpers for handling Actions and Macros.
+#       process_rules() and it's associated helpers for handling Actions and Macros.
 #
 #   This module combines the former Policy, Rules and Actions modules.
 #
@@ -43,6 +44,7 @@ our @EXPORT = qw(
 		  complete_standard_chain
 		  setup_syn_flood_chains
 		  save_policies
+		  ensure_rules_chain
 		  optimize_policy_chains
 		  process_actions1
 		  process_actions2
@@ -50,9 +52,11 @@ our @EXPORT = qw(
 	       );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_17';
+our $VERSION = '4.4_18';
 
-# @policy_chains is a list of references to policy chains in the filter table
+our %sections;
+
+our $section;
 
 our @policy_chains;
 
@@ -106,6 +110,17 @@ sub initialize( $ ) {
 		 	  REJECT   => 'none' ,
 			  ACCEPT   => 'none' ,
 			  QUEUE    => 'none' );
+    #
+    # These are set to 1 as sections are encountered.
+    #
+    %sections = ( ESTABLISHED => 0,
+		  RELATED     => 0,
+		  NEW         => 0
+		  );
+    #
+    # Current rules file section.
+    #
+    $section  = '';
     %macros            = ();
     @actionstack       = ();
     %active            = ();
@@ -120,6 +135,9 @@ sub initialize( $ ) {
     }
 }
 
+###############################################################################
+# Functions moved from the former Policy Module
+###############################################################################
 #
 # Split the passed target into the basic target and parameter
 #
@@ -500,6 +518,8 @@ sub default_policy( $$$ ) {
 
 }
 
+sub ensure_rules_chain( $ );
+
 sub apply_policy_rules() {
     progress_message2 'Applying Policies...';
 
@@ -521,9 +541,9 @@ sub apply_policy_rules() {
 		    # is a single jump. Generate_matrix() will just use the policy target when
 		    # needed.
 		    #
-		    ensure_filter_chain $name, 1 if $default ne 'none' || $loglevel || $synparms || $config{MULTICAST} || ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} );
+		    ensure_rules_chain $name if $default ne 'none' || $loglevel || $synparms || $config{MULTICAST} || ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} );
 		} else {
-		    ensure_filter_chain $name, 1;
+		    ensure_rules_chain $name;
 		}
 	    }
 
@@ -546,6 +566,9 @@ sub apply_policy_rules() {
     }
 }
 
+################################################################################
+# Modules moved from the Chains module in 4.4.18
+################################################################################
 #
 # Complete a standard chain
 #
@@ -620,6 +643,87 @@ sub optimize_policy_chains() {
     progress_message '';
 }
 
+sub finish_chain_section( $$ );
+
+#
+# Create a rules chain if necessary and populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
+#
+# Return a reference to the chain's table entry.
+#
+sub ensure_rules_chain( $ )
+{
+    my ($chain) = @_;
+
+    my $chainref = ensure_chain 'filter', $chain;
+
+    unless ( $chainref->{referenced} ) {
+	if ( $section eq 'NEW' or $section eq 'DONE' ) {
+	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
+	} elsif ( $section eq 'RELATED' ) {
+	    finish_chain_section $chainref , 'ESTABLISHED';
+	}
+
+	$chainref->{referenced} = 1;
+    }
+
+    $chainref;
+}
+
+#
+# Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
+#
+sub finish_chain_section ($$) {
+    my ($chainref, $state ) = @_;
+    my $chain = $chainref->{name};
+    
+    push_comment(''); #These rules should not have comments
+
+    add_rule $chainref, "$globals{STATEMATCH} $state -j ACCEPT" unless $config{FASTACCEPT};
+
+    if ($sections{NEW} ) {
+	if ( $chainref->{is_policy} ) {
+	    if ( $chainref->{synparams} ) {
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
+		if ( $section eq 'DONE' ) {
+		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
+			add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
+		    }
+		} else {
+		    add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
+		}
+	    }
+	} else {
+	    my $policychainref = $filter_table->{$chainref->{policychain}};
+	    if ( $policychainref->{synparams} ) {
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
+		add_jump $chainref, $synchainref, 0, "-p tcp --syn ";
+	    }
+	}
+
+	$chainref->{new} = @{$chainref->{rules}};
+    }
+
+    pop_comment;
+}
+
+#
+# Do section-end processing
+#
+sub finish_section ( $ ) {
+    my $sections = $_[0];
+
+    $sections{$_} = 1 for split /,/, $sections;
+
+    for my $zone ( all_zones ) {
+	for my $zone1 ( all_zones ) {
+	    my $chainref = $chain_table{'filter'}{rules_chain( $zone, $zone1 )};
+	    finish_chain_section $chainref, $sections if $chainref->{referenced};
+	}
+    }
+}
+################################################################################
+# Functions moved from the Actions module in 4.4.16
+################################################################################
 #
 # Return ( action, level[:tag] ) from passed full action
 #
@@ -1276,7 +1380,9 @@ sub process_actions2 () {
 	}
     }
 }
-
+################################################################################
+# End of functions moved from the Actions module in 4.4.16
+################################################################################
 #
 # Expand a macro rule from the rules file
 #
@@ -1681,7 +1787,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Mark the chain as referenced and add appropriate rules from earlier sections.
 	    #
-	    $chainref = ensure_filter_chain $chain, 1;
+	    $chainref = ensure_rules_chain $chain;
 	    #
 	    # Don't let the rules in this chain be moved elsewhere
 	    #

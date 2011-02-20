@@ -258,7 +258,7 @@ reload_kernel_modules() {
 	moduleloader=insmod
     fi
 
-    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+    [ -n "${MODULE_SUFFIX:=ko ko.gz o o.gz gz}" ]
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \

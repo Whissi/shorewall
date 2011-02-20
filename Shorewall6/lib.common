@@ -279,7 +279,7 @@ reload_kernel_modules() {
 	moduleloader=insmod
     fi
 
-    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+    [ -n "${MODULE_SUFFIX:=ko ko.gz o o.gz gz}" ]
 
     [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter:/lib/modules/$(uname -r)/kernel/net/sched
     MODULES=$(lsmod | cut -d ' ' -f1)

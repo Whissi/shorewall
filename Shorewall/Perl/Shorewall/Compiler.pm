@@ -27,7 +27,6 @@ require Exporter;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Zones;
-use Shorewall::Policy;
 use Shorewall::Nat;
 use Shorewall::Providers;
 use Shorewall::Tc;
@@ -43,7 +42,7 @@ use Shorewall::Misc;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_17';
+our $VERSION = '4.4_18';
 
 our $export;
 
@@ -58,7 +57,6 @@ sub initialize_package_globals() {
     Shorewall::Config::initialize($family);
     Shorewall::Chains::initialize ($family);
     Shorewall::Zones::initialize ($family);
-    Shorewall::Policy::initialize;
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize($family);
     Shorewall::Tc::initialize($family);

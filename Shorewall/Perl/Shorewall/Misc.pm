@@ -30,7 +30,7 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
-use Shorewall::Policy;
+use Shorewall::Rules;
 use Shorewall::Proc;
 
 use strict;
@@ -45,7 +45,7 @@ our @EXPORT = qw( process_tos
 		  generate_matrix
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_16';
+our $VERSION = '4.4_18';
 
 our $family;
 

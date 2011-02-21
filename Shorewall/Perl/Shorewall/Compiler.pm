@@ -641,7 +641,7 @@ sub compiler {
     #                                        P O L I C Y
     #                           (Produces no output to the compiled script)
     #
-    validate_policy;
+    process_policies;
     #
     #                                       N O T R A C K
     #                           (Produces no output to the compiled script)

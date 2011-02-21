@@ -22,7 +22,7 @@
 #
 #   This module handles policies and rules. It contains:
 #
-#       validate_policy() and it's associated helpers.
+#       process_policies() and it's associated helpers.
 #       process_rules() and it's associated helpers for handling Actions and Macros.
 #
 #   This module combines the former Policy, Rules and Actions modules.
@@ -39,7 +39,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
-		  validate_policy
+		  process_policies
 		  apply_policy_rules
 		  complete_standard_chain
 		  setup_syn_flood_chains
@@ -53,7 +53,9 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.4_18';
-
+#
+# Globals are documented in the initialize() function
+#
 our %sections;
 
 our $section;
@@ -104,12 +106,23 @@ our %usedactions;
 #
 sub initialize( $ ) {
     $family            = shift;
+    #
+    # Chains created as a result of entries in the policy file
     @policy_chains  = ();
+    #
+    # Default Actions for policies
+    #
     %policy_actions = ();
+    #
+    # This is updated from the *_DEFAULT settings in shorewall.conf. Those settings were stored
+    # in the %config hash when shorewall[6].conf was processed.
+    #
     %default_actions  = ( DROP     => 'none' ,
 		 	  REJECT   => 'none' ,
 			  ACCEPT   => 'none' ,
-			  QUEUE    => 'none' );
+			  QUEUE    => 'none' ,
+			  NFQUEUE  => 'none' ,
+			);
     #
     # These are set to 1 as sections are encountered.
     #
@@ -121,11 +134,29 @@ sub initialize( $ ) {
     # Current rules file section.
     #
     $section  = '';
+    #
+    # Macro=><macro file> mapping
+    #
     %macros            = ();
+    #
+    # Stack of nested action calls while parsing action.* files.
+    #
     @actionstack       = ();
+    #
+    # This hash provides keyed access to @actionstack
+    #
     %active            = ();
+    #
+    # Self-explainatory
+    #
     $macro_nest_level  = 0;
+    #
+    # All builtin actions plus those mentioned in /etc/shorewall[6]/actions and /usr/share/shorewall[6]/actions
+    #
     %actions           = ();
+    #
+    # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
+    #
     %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
@@ -139,7 +170,7 @@ sub initialize( $ ) {
 # Functions moved from the former Policy Module
 ###############################################################################
 #
-# Split the passed target into the basic target and parameter
+# Split the passed target into the basic target and parameter (previously duplicated in this file)
 #
 sub get_target_param( $ ) {
     my ( $target, $param ) = split '/', $_[0];
@@ -247,12 +278,18 @@ sub print_policy($$$$) {
     }
 }
 
+#
+# Add the passed action to %policy_actions
+#
 sub use_policy_action( $ ) {
     my $action = shift;
 
     $policy_actions{$action} = 1;
 }
 
+#
+# Process an entry in the policy file.
+#
 sub process_a_policy() {
 
     our %validpolicies;
@@ -283,14 +320,10 @@ sub process_a_policy() {
     if ( $default ) {
 	if ( "\L$default" eq 'none' ) {
 	    $default = 'none';
+	} elsif ( $actions{$default} ) {
+	    use_policy_action( $default );
 	} else {
-	    my $defaulttype = $targets{$default} || 0;
-	    
-	    if ( $defaulttype & ACTION ) {
-		use_policy_action( $default );
-	    } else {
-		fatal_error "Unknown Default Action ($default)";
-	    }
+	    fatal_error "Unknown Default Action ($default)";
 	}
     } else {
 	$default = $default_actions{$policy} || '';
@@ -380,6 +413,9 @@ sub process_a_policy() {
     }
 }
 
+#
+# Generate contents of the /var/lib/shorewall[6]/.policies file as 'here documents' in the generated script
+#
 sub save_policies() {
     for my $zone1 ( all_zones ) {
 	for my $zone2 ( all_zones ) {
@@ -395,7 +431,10 @@ sub save_policies() {
     }
 }
 
-sub validate_policy()
+#
+# Process the policy file
+#
+sub process_policies()
 {
     our %validpolicies = (
 			  ACCEPT => undef,
@@ -483,6 +522,9 @@ sub report_syn_flood_protection() {
     progress_message_nocompress '      Enabled SYN flood protection';
 }
 
+#
+# Complete a policy chain - Add policy-enforcing rules and syn flood, if specified
+#
 sub default_policy( $$$ ) {
     my $chainref   = $_[0];
     my $policyref  = $filter_table->{$chainref->{policychain}};
@@ -520,6 +562,9 @@ sub default_policy( $$$ ) {
 
 sub ensure_rules_chain( $ );
 
+#
+# Finish all policy Chains
+#
 sub apply_policy_rules() {
     progress_message2 'Applying Policies...';
 
@@ -566,9 +611,6 @@ sub apply_policy_rules() {
     }
 }
 
-################################################################################
-# Modules moved from the Chains module in 4.4.18
-################################################################################
 #
 # Complete a standard chain
 #
@@ -642,6 +684,10 @@ sub optimize_policy_chains() {
     progress_message '  Policy chains optimized';
     progress_message '';
 }
+
+################################################################################
+# Modules moved from the Chains module in 4.4.18
+################################################################################
 
 sub finish_chain_section( $$ );
 

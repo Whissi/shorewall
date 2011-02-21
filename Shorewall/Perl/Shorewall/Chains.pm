@@ -86,7 +86,7 @@ our %EXPORT_TAGS = (
 				       no_comment
 				       macro_comment
 				       clear_comment
-				       push_coment
+				       push_comment
 				       pop_comment
 				       incr_cmd_level
 				       decr_cmd_level
@@ -620,8 +620,7 @@ sub handle_port_list( $$$$$$ ) {
 #
 #    Chain reference , Rule [, Expand-long-port-lists ]
 #
-sub add_rule($$;$)
-{
+sub add_rule($$;$) {
     my ($chainref, $rule, $expandports) = @_;
 
     assert( ! reftype $rule );

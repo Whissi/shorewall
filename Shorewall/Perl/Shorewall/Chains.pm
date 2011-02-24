@@ -276,7 +276,9 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 	       ALL_RESTRICT        => 12,  # fw->fw rule            - neither -i nor -o allowed
 	       DESTIFACE_DISALLOW  => 32,  # Don't allow dest interface. Similar to INPUT_RESTRICT but generates a more relevant error message
 	       };
-
+#
+# See initialize() below for additional comments on these variables
+#
 our $iprangematch;
 our $chainseq;
 our $idiotcount;
@@ -285,7 +287,6 @@ our $warningcount;
 our $hashlimitset;
 our $global_variables;
 our $ipset_rules;
-
 #
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
 #
@@ -3551,8 +3552,6 @@ sub handle_network_list( $$ ) {
     ( $nets, $excl );
 
 }
-
-
 
 ################################################################################################################
 #

@@ -329,9 +329,12 @@ shorewall start</programlisting>
     receiving the request. So if eth0 has address 2001:470:b:227::44/128 and
     eth1 has address 2001:470:b:227::1/64 then in order for eth1 to respond to
     neighbor discovery requests for 2001:470:b:227::44, the following entry in
-    /etc/shorewall6/proxyndp is required: </para>
+    /etc/shorewall6/proxyndp is required:</para>
 
     <programlisting>#ADDRESS	          INTERFACE    EXTERNAL    HAVEROUTE    PERSISTENT
 2001:470:b:227::44 -            eth1        Yes</programlisting>
+
+    <para>A practical application is shown in the Linux <ulink
+    url="Vserver.html#NDP">Vserver article</ulink>.</para>
   </section>
 </article>

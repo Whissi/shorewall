@@ -186,4 +186,33 @@ vpn	ipv6
     interface) rather than on eth1. Again, it really doesn't matter
     much.</para>
   </section>
+
+  <section>
+    <title>Sharing an IPv6 /64 between Vservers and a LAN</title>
+
+    <para>I have both a /64 (2001:470:b:227::/64) and a /48
+    (2001:470:e857::/48) from <ulink
+    url="http://www.tunnelbroker.net">Hurricane Electric</ulink>. When I first
+    set up my Vserver configuration, I assigned addresses from the /48 to the
+    Vservers as shown above.</para>
+
+    <para>Given that it is likely that when native IPv6 is available from my
+    ISP, I will only be able to afford a single /64, in February 2011 I
+    decided to migrate my vservers to the /68. This was possible because of
+    Proxy NDP support in Shorewall 4.4.16 and later. The new network diagram
+    is as shown below:</para>
+
+    <graphic align="center" fileref="images/Network2011.png" />
+
+    <para>This change was accompanied by the following additions to
+    <filename>/etc/shorewall6/proxyndp</filename>:</para>
+
+    <programlisting>#ADDRESS		INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
+2001:470:b:227::2	-		eth4		Yes		Yes
+2001:470:b:227::3	-		eth4		Yes		Yes
+</programlisting>
+
+    <para>These two entries allow the firewall to respond to NDP requests for
+    the two Vserver IPv6 addresses received on interface eth4.</para>
+  </section>
 </article>

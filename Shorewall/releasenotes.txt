@@ -14,19 +14,27 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
+4.4.18 RC 1
+
+1)  None.
+
 4.4.18 Beta 4
 
 1)  Edting of the MARK column has been tighened to catch errors at
-    compile time.
+    compile time rather than at run time.
 
 2)  The MODULE_SUFFIX default has been changed to "ko ko.gz o o.gz gz"
-    to get the most common suffixes at the front of the list. 
+    to get the most common suffixes at the front of the list. It is
+    still recommended that you modify this setting to include only the
+    suffix(es) used on your system. Current distributions use 'ko'
+    almost exclusively.
 
 4.4.18 Beta 2
 
 1)  Previously, the 'local' option in /etc/shorewall6/providers would
     produce an 'ip route add' command containing an IPv4 address. It now
-    correctly uses the equivalent IPv6 address.
+    correctly uses the equivalent IPv6 address. Note that this option
+    is still undocumented for use with IPv6.
 
 2)  When optimize level 4 was set, the optimizer mis-handled rules of the
     form:
@@ -50,7 +58,7 @@ None.
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  The modules files are now just a driver that INCLUDE several new
+1)  The modules files are now just a driver that INCLUDEs several new
     files and one old file:
 
     - /usr/share/shorewall[6]/modules.essential  # Essential modules
@@ -65,7 +73,8 @@ None.
     upgrade your Shorewall/Shorewall6 installation.
 
     For example, if you don't use traffic shaping or ipsets, you can
-    remove those from your modules file.
+    remove those from your copy of the modules file (copy in
+    /etc/shorewall/).
 
 2)  Traditionally, the root of the Shorewall accounting rules has been
     the 'accounting' chain. Having a single root chain has drawbacks:
@@ -77,9 +86,10 @@ None.
     - MAC addresses may not be used in the accounting rules.
     - The 'accounting' chain cannot be optimized when
       OPTIMIZE_ACCOUNTING=Yes.
-    - The rules may be defined in any order so the rules compiler must
-      post-process the ruleset to ensure that there are no loops and to
-      alert the user to unreferenced chains.
+
+    In addition, currently the rules may be defined in any order so the
+    rules compiler must post-process the ruleset to alert the user to
+    unreferenced chains.
 
     Beginning with Shorewall 4.4.18, the accounting structure can be
     created with three root chains:
@@ -101,8 +111,8 @@ None.
     When sections are enabled:
 
     - You must jump to a user-defined accounting chain before you can
-      add rules to that chain. This eliminates loops and unreferenced
-      chains.
+      add rules to that chain. This eliminates the possibility of
+      unreferenced chains.
     - You may not specify an output interface in the INPUT section.
     - In the OUTPUT section:
       - You may not specify an input interface

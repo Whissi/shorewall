@@ -596,6 +596,7 @@ sub validate_6net( $$ ) {
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
 	validate_6address $net, $allow_name;
+	$vlsm = 128;
     }
 
     if ( defined wantarray ) {

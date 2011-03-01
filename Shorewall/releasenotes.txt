@@ -1,6 +1,5 @@
 ----------------------------------------------------------------------------
                       S H O R E W A L L  4 . 4 . 1 8
-                                   R C  1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,6 +12,17 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+4.4.18 Final
+
+1)  Previously, if an IPv6 host address (no "/<vlsm>") was used in a
+    context where a network address is allowed, the compiler failed to
+    supply the default <vlsm> of 128. This could lead to startup errors
+    and/or Perl errors such as:
+
+    	   Use of uninitialized value $mask in concatenation (.) or
+    	   string at /usr/share/shorewall/Shorewall/Tc.pm line 979,
+    	   <$currentfile> line 11.
 
 4.4.18 RC 1
 

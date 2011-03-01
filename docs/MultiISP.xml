@@ -1309,15 +1309,15 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       <para>The solution was to add an additional entry to route_rules:</para>
 
       <programlisting>#SOURCE             DEST           PROVIDER       PRIORITY
-70.90.191.0/27      91.156.0.0/19  ISP1           999</programlisting>
+70.90.191.0/27      91.156.0.0/19  ISP1           900</programlisting>
 
       <para>With this additional entry, the routing rules are as below and
       traffic from the /27 is returned via ISP1.</para>
 
-      <programlisting>900:    from 188.117.5.224/27 to 91.156.0.0/19 lookup nebula 
+      <programlisting>900:    from 70.90.191.0/27 to 91.156.0.0/19 lookup nebula 
 999:    from all lookup main 
-10000:  from all fwmark 0x100 lookup nebula 
-10001:  from all fwmark 0x200 lookup elisa</programlisting>
+10000:  from all fwmark 0x100 lookup ISP1 
+10001:  from all fwmark 0x200 lookup ISP2</programlisting>
     </section>
 
     <section id="LinkMonitor">

@@ -652,7 +652,22 @@ sub validate_tc_device( ) {
 	}
     }
 
-    $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ) . 'kbit',
+    my $in_burst = '10kb';
+
+    if ( $inband =~ /:/ ) {
+	my ( $in_band, $burst ) = split /:/, $inband, 2;
+
+	if ( defined $burst && $burst ne '' ) {
+	    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
+	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    $in_burst = $burst;
+	}
+
+	$inband = $in_band;
+    }
+
+    $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ),
+			    in_burst      => $in_burst,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit',
 			    number        => $devnumber,
 			    classify      => $classify,
@@ -1378,26 +1393,9 @@ sub setup_traffic_shaping() {
 		      qq(fi) );
 	    }
 
-	    my $in_burst = '10kb';
-	    my $inband;
-
-	    if ( $devref->{in_bandwidth} =~ /:/ ) {
-		my ( $in_band, $burst ) = split /:/, $devref->{in_bandwidth}, 2;
-
-		if ( defined $burst && $burst ne '' ) {
-		    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
-		    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
-		    $in_burst = $burst;
-		}
-
-		$inband = rate_to_kbit( $in_band );
-	    } else {
-		$inband = rate_to_kbit $devref->{in_bandwidth};
-	    }
-
-	    if ( $inband ) {
+	    if ( $devref->{in_bandwidth} ) {
 		emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		       "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${inband}kbit burst $in_burst drop flowid :1"
+		       "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate $devref->{in_bandwidth}kbit burst $devref->{in_burst} drop flowid :1"
 		     );
 	    }
 

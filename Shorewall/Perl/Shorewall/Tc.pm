@@ -759,7 +759,7 @@ sub validate_tc_class( ) {
 	    }
 
 	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
-	    fatal_error "Duplicate interface/class number ($devclass)" if defined $devnums[ $classnumber ];
+	    fatal_error "Duplicate interface:class number ($number:$classnumber}" if $tcclasses{$device}{$classnumber};
 	} else {
 	    fatal_error "Missing interface NUMBER";
 	}

@@ -121,7 +121,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">IN-BANDWIDTH</emphasis> -
-        <replaceable>bandwidth</replaceable></term>
+        <replaceable>bandwidth</replaceable>[:<replaceable>burst</replaceable>]</term>
 
         <listitem>
           <para>The incoming <emphasis>bandwidth</emphasis> of that interface.
@@ -136,6 +136,13 @@
           value to zero in which case Shorewall will not create an ingress
           qdisc.Must be set to zero if the REDIRECTED INTERFACES column is
           non-empty.</para>
+
+          <para>The optional burst option was added in Shorewall 4.4.13. The
+          default <replaceable>burst</replaceable> is 10kb. A larger
+          <replaceable>burst</replaceable> can help make the
+          <replaceable>bandwidth</replaceable> more accurate; often for fast
+          lines, the enforced rate is well below the specified
+          <replaceable>bandwidth</replaceable>.</para>
         </listitem>
       </varlistentry>
 

@@ -966,6 +966,8 @@ sub process_tc_filter() {
 
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
+    our $lastdevice;
+
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
 
     my ( $ip, $ip32, $prio , $lo ) = $family == F_IPV4 ? ('ip', 'ip', 10, 2 ) : ('ipv6', 'ip6', 11 , 4 );
@@ -986,6 +988,17 @@ sub process_tc_filter() {
 
     fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
     fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
+
+    if ( $devref->{physical} ne $lastdevice ) {
+	if ( $lastdevice ) {
+	    pop_indent;
+	    emit "fi\n";
+	}
+
+	$lastdevice = $devref->{physical};
+	emit "if interface_is_up $lastdevice; then";
+	push_indent;
+    }
 
     my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio u32";
 
@@ -1201,6 +1214,8 @@ sub process_tcfilters() {
 
     my $fn = open_file 'tcfilters';
 
+    our $lastdevice = '';
+
     if ( $fn ) {
 	my @family = ( $family );
 	
@@ -1228,6 +1243,12 @@ sub process_tcfilters() {
 	}
 
 	Shorewall::IPAddrs::initialize( $family = pop @family );
+
+	if ( $lastdevice ) {
+	    pop_indent;
+	    emit "fi\n";
+	}
+
     }
 }
 

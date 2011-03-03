@@ -648,7 +648,7 @@ sub validate_tc_device( ) {
 	    fatal_error "Invalid device name ($rdevice)" if $rdevice =~ /[:+]/;
 	    my $rdevref = $tcdevices{$rdevice};
 	    fatal_error "REDIRECTED device ($rdevice) has not been defined in this file" unless $rdevref;
-	    fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} ne '0kbit';
+	    fatal_error "IN-BANDWIDTH must be zero for REDIRECTED devices" if $rdevref->{in_bandwidth} != 0;
 	}
     }
 

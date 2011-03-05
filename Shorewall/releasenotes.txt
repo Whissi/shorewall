@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------------
-                      S H O R E W A L L  4 . 4 . 1 8
+                      S H O R E W A L L  4 . 4 . 1 9
+                              B E T A  1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -12,55 +13,6 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
-
-4.4.18 Final
-
-1)  Previously, if an IPv6 host address (no "/<vlsm>") was used in a
-    context where a network address is allowed, the compiler failed to
-    supply the default <vlsm> of 128. This could lead to startup errors
-    and/or Perl errors such as:
-
-    	   Use of uninitialized value $mask in concatenation (.) or
-    	   string at /usr/share/shorewall/Shorewall/Tc.pm line 979,
-    	   <$currentfile> line 11.
-
-2)  The <burst> option for the IN-BANDWIDTH column of tcdevices was
-    previously not recognized. That functionality has been restored.
-
-3)  If an interface mentioned in the tcfilters file was not up when
-    Shorewall was started or restarted, then the command would fail
-    at run-time with a 'tc' error message.
-
-4.4.18 RC 1
-
-1)  None.
-
-4.4.18 Beta 4
-
-1)  Edting of the MARK column has been tighened to catch errors at
-    compile time rather than at run time.
-
-2)  The MODULE_SUFFIX default has been changed to "ko ko.gz o o.gz gz"
-    to get the most common suffixes at the front of the list. It is
-    still recommended that you modify this setting to include only the
-    suffix(es) used on your system. Current distributions use 'ko'
-    almost exclusively.
-
-4.4.18 Beta 2
-
-1)  Previously, the 'local' option in /etc/shorewall6/providers would
-    produce an 'ip route add' command containing an IPv4 address. It now
-    correctly uses the equivalent IPv6 address. Note that this option
-    is still undocumented for use with IPv6.
-
-2)  When optimize level 4 was set, the optimizer mis-handled rules of the
-    form:
-
-	-A <chain1> -j <chain2> -m comment ...
-
-    when such a rule was the only rule in a chain.
-
-4.4.18 Beta 1
 
 None.
 
@@ -75,87 +27,18 @@ None.
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  The modules files are now just a driver that INCLUDEs several new
-    files and one old file:
+1)  When TC_ENABLED=Simple, ACK packets are now placed in the highest
+    priority class. An ACK packet is a TCP packet with the ACK flag set
+    and no data payload.
 
-    - /usr/share/shorewall[6]/modules.essential  # Essential modules
-    - /usr/share/shorewall[6]/modules.xtables    # xt_ modules
-    - /usr/share/shorewall[6]/helpers            # Existing file
-    - /usr/share/shorewall/ipset                 # ipset modules
-    - /usr/share/shorewall[6]/modules.tc         # Traffic Shaping
-    - /usr/share/shorewall[6]/modules.extensions # Other extensions
-
-    This should make it easier to configure your own
-    /etc/shorewall[6]/modules file that won't be obsolete when you
-    upgrade your Shorewall/Shorewall6 installation.
-
-    For example, if you don't use traffic shaping or ipsets, you can
-    remove those from your copy of the modules file (copy in
-    /etc/shorewall/).
-
-2)  Traditionally, the root of the Shorewall accounting rules has been
-    the 'accounting' chain. Having a single root chain has drawbacks:
-
-    - Many rules are traversed needlessly (they could not possibly
-      match traffic).
-    - At any time, the Netfilter team could begin generating errors
-      when loading those same rules.
-    - MAC addresses may not be used in the accounting rules.
-    - The 'accounting' chain cannot be optimized when
-      OPTIMIZE_ACCOUNTING=Yes.
-
-    In addition, currently the rules may be defined in any order so the
-    rules compiler must post-process the ruleset to alert the user to
-    unreferenced chains.
-
-    Beginning with Shorewall 4.4.18, the accounting structure can be
-    created with three root chains:
-
-    - accountin:  Rules that are valid in the INPUT chain (may not
-      specify an output interface). 
-    - accountout: Rules that are valid in the OUTPUT chain (may not
-      specify an input interface or a MAC address).
-    - accountfwd: Other rules.
-
-    The new structure is enabled by sectioning the accounting file in a
-    manner similar to the rules file.  
-
-    The sections are INPUT, OUTPUT and FORWARD and must appear in that
-    order (although any of them may be omitted). The first
-    non-commentary record in the accounting file must be a section
-    header when sectioning is used.
-
-    When sections are enabled:
-
-    - You must jump to a user-defined accounting chain before you can
-      add rules to that chain. This eliminates the possibility of
-      unreferenced chains.
-    - You may not specify an output interface in the INPUT section.
-    - In the OUTPUT section:
-      - You may not specify an input interface
-      - You may not jump to a chain defined in the INPUT section that
-        specifies an input interface
-      - You may not specify a MAC address
-      - You may not jump to a chain defined in the INPUT section that
-        specifies specifies a MAC address.
-    - The default value of the CHAIN column is:
-      - 'accountin' in the INPUT section
-      - 'accountout' in the OUTPUT section
-      - 'accountfwd' in the FORWARD section
-    - Traffic addressed to the firewall goes through the rules defined
-      in the INPUT section.
-    - Traffic originating on the firewall goes through the rules
-      defined in the OUTPUT section.
-    - Traffic being forwarded through the firewall goes through the
-      rules defined in the FORWARD section.
-
-    As part of this change, the USER/GROUP column must now be empty
-    except in the OUTPUT section. This is consistent with recent
-    Netfilter releases which disallow the owner match in rules
-    reachable from the INPUT and FORWARD hooks.
-
-3)  Internals Change: The Policy.pm module has been merged into the
-    Rules.pm module.
+    Rationale: Entries in /etc/shorewall[6]/tcpri affect both incoming
+    and outgoing connections. If a particular application, SMTP for
+    example, is placed in priority class 3, then outgoing ACK packets
+    for incoming email were previously placed in priority class 3 as
+    well. This could have the effect of slowing down incoming mail when
+    the goal was to give outgoing mail a lower priority. By
+    unconditionally placing ACK packets in priority class 1, this issue
+    is avoided.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -386,6 +269,147 @@ None.
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S
+----------------------------------------------------------------------------
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 8
+----------------------------------------------------------------------------
+
+4.4.18 Final
+
+1)  Previously, if an IPv6 host address (no "/<vlsm>") was used in a
+    context where a network address is allowed, the compiler failed to
+    supply the default <vlsm> of 128. This could lead to startup errors
+    and/or Perl errors such as:
+
+    	   Use of uninitialized value $mask in concatenation (.) or
+    	   string at /usr/share/shorewall/Shorewall/Tc.pm line 979,
+    	   <$currentfile> line 11.
+
+2)  The <burst> option for the IN-BANDWIDTH column of tcdevices was
+    previously not recognized. That functionality has been restored.
+
+3)  If an interface mentioned in the tcfilters file was not up when
+    Shorewall was started or restarted, then the command would fail
+    at run-time with a 'tc' error message.
+
+4.4.18 RC 1
+
+1)  None.
+
+4.4.18 Beta 4
+
+1)  Edting of the MARK column has been tighened to catch errors at
+    compile time rather than at run time.
+
+2)  The MODULE_SUFFIX default has been changed to "ko ko.gz o o.gz gz"
+    to get the most common suffixes at the front of the list. It is
+    still recommended that you modify this setting to include only the
+    suffix(es) used on your system. Current distributions use 'ko'
+    almost exclusively.
+
+4.4.18 Beta 2
+
+1)  Previously, the 'local' option in /etc/shorewall6/providers would
+    produce an 'ip route add' command containing an IPv4 address. It now
+    correctly uses the equivalent IPv6 address. Note that this option
+    is still undocumented for use with IPv6.
+
+2)  When optimize level 4 was set, the optimizer mis-handled rules of the
+    form:
+
+	-A <chain1> -j <chain2> -m comment ...
+
+    when such a rule was the only rule in a chain.
+
+4.4.18 Beta 1
+
+None.
+
+----------------------------------------------------------------------------
+               N E W   F E A T U R E S   I N   4 . 4 . 1 8
+----------------------------------------------------------------------------
+
+1)  The modules files are now just a driver that INCLUDEs several new
+    files and one old file:
+
+    - /usr/share/shorewall[6]/modules.essential  # Essential modules
+    - /usr/share/shorewall[6]/modules.xtables    # xt_ modules
+    - /usr/share/shorewall[6]/helpers            # Existing file
+    - /usr/share/shorewall/ipset                 # ipset modules
+    - /usr/share/shorewall[6]/modules.tc         # Traffic Shaping
+    - /usr/share/shorewall[6]/modules.extensions # Other extensions
+
+    This should make it easier to configure your own
+    /etc/shorewall[6]/modules file that won't be obsolete when you
+    upgrade your Shorewall/Shorewall6 installation.
+
+    For example, if you don't use traffic shaping or ipsets, you can
+    remove those from your copy of the modules file (copy in
+    /etc/shorewall/).
+
+2)  Traditionally, the root of the Shorewall accounting rules has been
+    the 'accounting' chain. Having a single root chain has drawbacks:
+
+    - Many rules are traversed needlessly (they could not possibly
+      match traffic).
+    - At any time, the Netfilter team could begin generating errors
+      when loading those same rules.
+    - MAC addresses may not be used in the accounting rules.
+    - The 'accounting' chain cannot be optimized when
+      OPTIMIZE_ACCOUNTING=Yes.
+
+    In addition, currently the rules may be defined in any order so the
+    rules compiler must post-process the ruleset to alert the user to
+    unreferenced chains.
+
+    Beginning with Shorewall 4.4.18, the accounting structure can be
+    created with three root chains:
+
+    - accountin:  Rules that are valid in the INPUT chain (may not
+      specify an output interface). 
+    - accountout: Rules that are valid in the OUTPUT chain (may not
+      specify an input interface or a MAC address).
+    - accountfwd: Other rules.
+
+    The new structure is enabled by sectioning the accounting file in a
+    manner similar to the rules file.  
+
+    The sections are INPUT, OUTPUT and FORWARD and must appear in that
+    order (although any of them may be omitted). The first
+    non-commentary record in the accounting file must be a section
+    header when sectioning is used.
+
+    When sections are enabled:
+
+    - You must jump to a user-defined accounting chain before you can
+      add rules to that chain. This eliminates the possibility of
+      unreferenced chains.
+    - You may not specify an output interface in the INPUT section.
+    - In the OUTPUT section:
+      - You may not specify an input interface
+      - You may not jump to a chain defined in the INPUT section that
+        specifies an input interface
+      - You may not specify a MAC address
+      - You may not jump to a chain defined in the INPUT section that
+        specifies specifies a MAC address.
+    - The default value of the CHAIN column is:
+      - 'accountin' in the INPUT section
+      - 'accountout' in the OUTPUT section
+      - 'accountfwd' in the FORWARD section
+    - Traffic addressed to the firewall goes through the rules defined
+      in the INPUT section.
+    - Traffic originating on the firewall goes through the rules
+      defined in the OUTPUT section.
+    - Traffic being forwarded through the firewall goes through the
+      rules defined in the FORWARD section.
+
+    As part of this change, the USER/GROUP column must now be empty
+    except in the OUTPUT section. This is consistent with recent
+    Netfilter releases which disallow the owner match in rules
+    reachable from the INPUT and FORWARD hooks.
+
+3)  Internals Change: The Policy.pm module has been merged into the
+    Rules.pm module.
+
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 7
 ----------------------------------------------------------------------------

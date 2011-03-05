@@ -40,7 +40,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 
 our %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
@@ -476,6 +476,8 @@ sub process_simple_device() {
 
     my $number = in_hexp( $tcdevices{$device} = ++$devnum );
 
+    my $ip32   = $family == F_IPV4 ? 'ip' : 'ip6';
+
     fatal_error "Unknown interface( $device )" unless known_interface $device;
 
     my $physical = physical_name $device;
@@ -517,7 +519,7 @@ sub process_simple_device() {
 	 );
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
-	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n"
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src " . ALLIP . " police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n"
 	 ) if $in_bandwidth;
 
     if ( $out_part ne '-' ) {
@@ -566,10 +568,12 @@ sub process_simple_device() {
 
     for ( my $i = 1; $i <= 3; $i++ ) {
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";
-	emit "run_tc filter add dev $physical protocol all parent $number: handle $i fw classid $number:$i";
+	emit "run_tc filter add dev $physical protocol all prio 2 parent $number: handle $i fw classid $number:$i";
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
 	emit '';
     }
+    
+    emit "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32 match $ip32 protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $number:1\n";
 
     save_progress_message_short qq("   TC Device $physical defined.");
 

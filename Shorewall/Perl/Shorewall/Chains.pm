@@ -617,6 +617,16 @@ sub handle_port_list( $$$$$$ ) {
 }
 
 #
+# This much simpler function splits a rule with an icmp type list into discrete rules
+#
+
+sub handle_icmptype_list( $$$$ ) {
+    my ($chainref, $first, $types, $rest) = @_;
+    my @ports = split ',', $types;
+    push_rule ( $chainref, join ( '', $first, shift @ports, $rest ) ) while @ports;
+}
+
+#
 # Add a rule to a chain. Arguments are:
 #
 #    Chain reference , Rule [, Expand-long-port-lists ]
@@ -645,6 +655,17 @@ sub add_rule($$;$) {
 	    # Rule has a --sports specification
 	    #
 	    handle_port_list( $chainref, $rule, 0, $1, $2, $3 )
+	} elsif ( $rule =~ /^(.* --icmp(?:v6)?-type\s*)([^ ]+)(.*)$/ ) {
+	    #
+	    # ICMP rule -- split it up if necessary
+	    #
+	    my ( $first, $types, $rest ) = ($1, $2, $3 );
+
+	    if ( $types =~ /,/ ) {
+		handle_icmptype_list( $chainref, $first, $types, $rest );
+	    } else {
+		push_rule( $chainref, $rule );
+	    }
 	} else {
 	    push_rule ( $chainref, $rule );
 	}
@@ -2203,7 +2224,15 @@ sub do_proto( $$$;$ )
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
-			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $ports ) > 15;
+
+			    if ( port_count ( $ports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
 			    $ports = validate_port_list $pname , $ports;
 			    $output .= "-m multiport ${invert}--dports ${ports} ";
 			    $multiport = 1;
@@ -2218,7 +2247,15 @@ sub do_proto( $$$;$ )
 		    if ( $sports ne '' ) {
 			$invert = $sports =~ s/^!// ? '! ' : '';
 			if ( $multiport ) {
-			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $sports ) > 15;
+
+			    if ( port_count( $sports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
 			    $sports = validate_port_list $pname , $sports;
 			    $output .= "-m multiport ${invert}--sports ${sports} ";
 			}  else {
@@ -2233,9 +2270,20 @@ sub do_proto( $$$;$ )
 		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
-			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
-			$ports = validate_icmp $ports;
-			$output .= "${invert}--icmp-type ${ports} ";
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    $types = '';
+			    for my $type ( split /,/, $ports ) {
+				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp $ports;
+			}
+
+			$output .= "${invert}--icmp-type ${types} ";
 		    }
 
 		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
@@ -2246,9 +2294,20 @@ sub do_proto( $$$;$ )
 		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
-			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
-			$ports = validate_icmp6 $ports;
-			$output .= "${invert}--icmpv6-type ${ports} ";
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    $types = '';
+			    for my $type ( split /,/, $ports ) {
+				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp6 $ports;
+			}
+
+			$output .= "${invert}--icmpv6-type ${types} ";
 		    }
 
 		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';

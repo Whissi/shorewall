@@ -647,14 +647,35 @@ eth0                    <emphasis role="bold">172.20.1.0/24</emphasis></programl
       <para>Before:</para>
 
       <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME
-#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+#                                                       PORT(S) PORT(S)         DEST            LIMIT           GROUP
 NONAT           loc             net             tcp     80</programlisting>
 
       <para>After:</para>
 
       <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME
-#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+#                                                       PORT(S) PORT(S)         DEST            LIMIT           GROUP
 NONAT           loc             -               tcp     80</programlisting>
+
+      <para>Shorewall 4.4 versions prior to 4.4.19 do not support icmp type
+      lists in the DEST PORT(S) column. Only a single ICMP type may be listed.
+      If you have a shell variable with a list of ICMP types that you use in a
+      rule, you can work around this limitation as follows. Replace this
+      rule:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME
+#                                                       PORT(S) PORT(S)         DEST            LIMIT           GROUP
+ACCEPT          z1              z2              icmp    $ITYPES</programlisting>
+
+      <para>with:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME
+#                                                       PORT(S) PORT(S)         DEST            LIMIT           GROUP
+
+BEGIN SHELL
+for type in $ITYPES; do
+ACCEPT          z1              z2              icmp    $type
+done
+END SHELL</programlisting>
     </section>
 
     <section id="routestopped">

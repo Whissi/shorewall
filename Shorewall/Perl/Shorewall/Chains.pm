@@ -187,7 +187,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 
 #
 # Chain Table

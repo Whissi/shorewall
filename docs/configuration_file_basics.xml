@@ -1308,13 +1308,26 @@ POP(ACCEPT)     loc                  net:pop.gmail.com</programlisting>
   </section>
 
   <section id="Compliment">
-    <title>Complementing an Address or Subnet</title>
+    <title>Complementing an Address, Subnet, Protocol or Port List</title>
 
     <para>Where specifying an IP address, a subnet or an interface, you can
     precede the item with <quote>!</quote> to specify the complement of the
     item. For example, !192.168.1.4 means <quote>any host but
     192.168.1.4</quote>. There must be no white space following the
     <quote>!</quote>.</para>
+
+    <para>Similarly, in columns that specify an IP protocol, you can preceed
+    the protocol name or number by "!". For example, !tcp means "any protocol
+    except tcp".</para>
+
+    <para>This also works with port lists, providing that the list has 15 or
+    fewer ports specified (where a <link linkend="Ranges">port range</link>
+    counts as two ports). For example !ssh,smtp means "any port except 22 and
+    25".</para>
+
+    <para>In Shorewall 4.4.19 and later, icmp type lists are supported but
+    complementing an icmp type list is <emphasis>not</emphasis> supported. You
+    may, however, complement a single icmp (icmp6) type.</para>
   </section>
 
   <section id="Exclusion">

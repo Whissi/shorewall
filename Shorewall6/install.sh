@@ -107,7 +107,6 @@ fi
 DEBIAN=
 CYGWIN=
 MAC=
-MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 INSTALLD='-D'
 
@@ -173,11 +172,13 @@ if [ -n "$BASE" ]; then
     [ -n ${SBIN:=${BASE}/sbin/} ]
     [ -n ${SHARE:=${BASE}/share/} ]
     [ -n ${VAR:=${BASE}/var/lib/} ]
+    [ -n ${MANDIR:=${BASE}/man} ]
 else
     [ -n ${ETC:=/etc/} ]
     [ -n ${SBIN:=/sbin/} ]
     [ -n ${SHARE:=/usr/share/} ]
     [ -n ${VAR:=/var/lib/} ]
+    [ -n ${MANDIR:=/usr/share/man} ]
 fi
 
 case "$ETC" in

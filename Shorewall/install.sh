@@ -106,7 +106,6 @@ if [ -z "$INIT" ] ; then
 fi
 
 SPARSE=
-MANDIR=${MANDIR:-"/usr/share/man"}
 INSTALLD='-D'
 
 case $(uname) in
@@ -174,12 +173,15 @@ if [ -n "$BASE" ]; then
     [ -n ${SBIN:=${BASE}/sbin/} ]
     [ -n ${SHARE:=${BASE}/share/} ]
     [ -n ${VAR:=${BASE}/var/lib/} ]
+    [ -n ${MANDIR:=${BASE}/man} ]
 else
     [ -n ${ETC:=/etc/} ]
     [ -n ${SBIN:=/sbin/} ]
     [ -n ${SHARE:=/usr/share/} ]
     [ -n ${VAR:=/var/lib/} ]
+    [ -n ${MANDIR:=/usr/share/man} ]
 fi
+
 
 case "$ETC" in
     */)
@@ -211,7 +213,12 @@ case "$VAR" in
     *)
 	VAR=$VAR/
 	;;
-esac 
+esac
+
+ETC=$(echo $ETC | sed "s'//'/'g")
+SBIN=$(echo $SBIN | sed "s'//'/'g")
+SHARE=$(echo $SHARE | sed "s'//'/'g")
+VAR=$(echo $VAR | sed "s'//'/'g")
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 

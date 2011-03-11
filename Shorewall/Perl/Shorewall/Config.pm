@@ -404,7 +404,7 @@ sub initialize( $ ) {
     #
     # Misc Globals
     #
-    %globals  =   ( SHAREDIRPL => $defaults{shorewall}{share} . 'configpath' ,
+    %globals  =   ( SHAREDIRPL => $defaults{shorewall}{share} . '/shorewall' ,
 		    CONFDIR    =>  '/etc/shorewall',     # Run-time configuration directory
 		    CONFIGDIR  => '',                  # Compile-time configuration directory (location of $product.conf)
 		    LOGPARMS   => '',

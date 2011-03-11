@@ -212,6 +212,11 @@ case "$VAR" in
 	;;
 esac 
 
+ETC=$(echo $ETC | sed "s'//'/'g")
+SBIN=$(echo $SBIN | sed "s'//'/'g")
+SHARE=$(echo $SHARE | sed "s'//'/'g")
+VAR=$(echo $VAR | sed "s'//'/'g")
+
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
 #

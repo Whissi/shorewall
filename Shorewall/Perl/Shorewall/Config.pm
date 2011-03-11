@@ -404,8 +404,8 @@ sub initialize( $ ) {
     #
     # Misc Globals
     #
-    %globals  =   ( SHAREDIRPL => $defaults{shorewall}{share} . '/shorewall' ,
-		    CONFDIR    =>  '/etc/shorewall',     # Run-time configuration directory
+    %globals  =   ( SHAREDIRPL => $defaults{shorewall}{share} . '/shorewall/' ,
+		    CONFDIR    => $defaults{shorewall}{config} . '/shorewall',     # Run-time configuration directory
 		    CONFIGDIR  => '',                  # Compile-time configuration directory (location of $product.conf)
 		    LOGPARMS   => '',
 		    TC_SCRIPT  => '',
@@ -3472,7 +3472,7 @@ sub append_file( $;$$ ) {
     
     $indent = '' if $unindented;
 
-    unless ( $user_exit =~ m(^/usr/share/shorewall6?/) ) {
+    unless ( $user_exit =~ m(^$globals{SHAREDIR}) || $user_exit =~ m(^globals{SHAREDIRPL}) ) {
 	if ( -f $user_exit ) {
 	    if ( $nomsg ) {
 		#

@@ -53,6 +53,10 @@ else
 	exit 0
 fi
 
+[ -n "${ETC:=/etc}" ]
+[ -n "${SBIN:=/sbin}" ]
+[ -n "${VAR}:=/var/lib" ]
+
 # Initialize the firewall
 shorewall_start () {
   local PRODUCT
@@ -60,10 +64,10 @@ shorewall_start () {
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      VARDIR=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
+      VARDIR=${VAR}/$PRODUCT
+      [ -f ${ETC}/$PRODUCT/vardir ] && . ${ETC}/$PRODUCT/vardir 
       if [ -x ${VARDIR}/firewall ]; then
-	  if ! /sbin/$PRODUCT status > /dev/null 2>&1; then
+	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
 	      ${VARDIR}/firewall stop || echo_notdone
 	  fi
       fi

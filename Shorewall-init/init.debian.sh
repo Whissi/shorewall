@@ -74,6 +74,11 @@ else
 	not_configured
 fi
 
+[ -n "${ETC:=/etc}" ]
+[ -n "${SBIN:=/sbin}" ]
+[ -n "${SHARE:=/usr/share}" ]
+[ -n "${VAR}:=/var/lib" ]
+
 # Initialize the firewall
 shorewall_start () {
   local product
@@ -81,8 +86,8 @@ shorewall_start () {
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
-      VARDIR=/var/lib/$product
-      [ -f /etc/$product/vardir ] && . /etc/$product/vardir
+      VARDIR=${VAR}/$product
+      [ -f ${ETC}/$product/vardir ] && . ${ETC}/$product/vardir
       if [ -x ${VARDIR}/firewall ]; then
 	  #
 	  # Run in a sub-shell to avoid name collisions
@@ -113,10 +118,10 @@ shorewall_stop () {
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
-      VARDIR=/var/lib/$product
-      [ -f /etc/$product/vardir ] && . /etc/$product/vardir
+      VARDIR=${VAR/lib/$product
+      [ -f ${VAR}/$product/vardir ] && . ${ETC}/$product/vardir
       if [ -x ${VARDIR}/firewall ]; then
-	  ( . /usr/share/$product/lib.base
+	  ( . ${SHARE}/$product/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall clear || echo_notdone
 	    mutex_off

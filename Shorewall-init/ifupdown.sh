@@ -79,6 +79,11 @@ fi
 
 [ "$IFUPDOWN" = 1 -a -n "$PRODUCTS" ] || exit 0
 
+[ -n "${ETC:=/etc}" ]
+[ -n "${SBIN:=/sbin}" ]
+[ -n "${SHARE:=/usr/share}" ]
+[ -n "${VAR}:=/var/lib" ]
+
 if [ -f /etc/debian_version ]; then
     case $0 in
 	/etc/ppp*)
@@ -182,10 +187,10 @@ else
 fi
 
 for PRODUCT in $PRODUCTS; do
-    VARDIR=/var/lib/$PRODUCT
-    [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
+    VARDIR=${VAR}/$PRODUCT
+    [ -f ${ETC}/$PRODUCT/vardir ] && . ${ETC}/$PRODUCT/vardir
     if [ -x $VARDIR/firewall ]; then
-	  ( . /usr/share/$PRODUCT/lib.base
+	  ( . ${SHARE}/$PRODUCT/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
 	    mutex_off

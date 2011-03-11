@@ -404,7 +404,7 @@ sub initialize( $ ) {
     #
     # Misc Globals
     #
-    %globals  =   ( SHAREDIRPL => '/usr/share/shorewall/' ,
+    %globals  =   ( SHAREDIRPL => $defaults{shorewall}{share} . 'configpath' ,
 		    CONFDIR    =>  '/etc/shorewall',     # Run-time configuration directory
 		    CONFIGDIR  => '',                  # Compile-time configuration directory (location of $product.conf)
 		    LOGPARMS   => '',
@@ -657,14 +657,14 @@ sub initialize( $ ) {
     %actparms = ();
 
     if ( $family == F_IPV4 ) {
-	$globals{SHAREDIR} = '/usr/share/shorewall';
-	$globals{CONFDIR}  = '/etc/shorewall';
+	$globals{SHAREDIR} = $defaults{shorewall}{share} . 'shorewall';
+	$globals{CONFDIR}  = $defaults{shorewall}{config} . 'shorewall';
 	$globals{PRODUCT}  = 'shorewall';
 	$config{IPTABLES}  = undef;
 	$validlevels{ULOG} = 'ULOG',
     } else {
-	$globals{SHAREDIR} = '/usr/share/shorewall6';
-	$globals{CONFDIR}  = '/etc/shorewall6';
+	$globals{SHAREDIR} = $defaults{shorewall6}{share} . 'shorewall6';
+	$globals{CONFDIR}  = $defaults{shorewall6}{config} . 'shorewall6';
 	$globals{PRODUCT}  = 'shorewall6';
 	$config{IP6TABLES} = undef;
     }

@@ -24,6 +24,7 @@
 
 package Shorewall::Compiler;
 require Exporter;
+use Shorewall::Defaults;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::Zones;
@@ -160,51 +161,24 @@ sub generate_script_2() {
 
     push_indent;
 
-    if ( $family == F_IPV4 ) {
-	if ( $export ) {
-	    emit ( 'SHAREDIR=/usr/share/shorewall-lite',
-		   'CONFDIR=/etc/shorewall-lite',
-		   'g_product="Shorewall Lite"'
-		 );
-	} else {
-	    emit ( 'SHAREDIR=/usr/share/shorewall',
-		   'CONFDIR=/etc/shorewall',
-		   'g_product=\'Shorewall\'',
-		 );
-	}
-    } else {
-	if ( $export ) {
-	    emit ( 'SHAREDIR=/usr/share/shorewall6-lite',
-		   'CONFDIR=/etc/shorewall6-lite',
-		   'g_product="Shorewall6 Lite"'
-		 );
-	} else {
-	    emit ( 'SHAREDIR=/usr/share/shorewall6',
-		   'CONFDIR=/etc/shorewall6',
-		   'g_product=\'Shorewall6\'',
-		 );
-	}
-    }
+    my $product = 
+	$family == F_IPV4 ? $export ? 'shorewall-lite' : 'shorewall' : $export ? 'shorewall6-lite' : 'shorewall6';
 
+    emit ( qq(SHAREDIR=$defaults{$product}{share}$product) ,
+	   qq(CONFDIR=$defaults{$product}{config}$product) ,
+	   qq(g_product='$defaults{$product}{name}') );
+    
     emit( '[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir' );
 
-    if ( $family == F_IPV4 ) {
-	if ( $export ) {
-	    emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
-	} else {
-	    emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
-	}
+    if ( $product eq 'shorewall' ) {
+	emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") );
+    } elsif ( $product eq 'shorewall6' ) {
+	emit ( qq(CONFIG_PATH="$defaults{shorewall6}{config}shorewall6:$defaults{shorewall6}{share}shorewall6:$defaults{shorewall}{share}shorewall/") );
     } else {
-	if ( $export ) {
-	    emit ( 'CONFIG_PATH="/etc/shorewall6-lite:/usr/share/shorewall6-lite"' ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall6-lite}" ]' );
-	} else {
-	    emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall6}" ]' );
-	}
+	emit ( qq(CONFIG_PATH=$defaults{$product}{config}$product:$defaults{$product}{share}$product/) );
     }
+
+    emit( qq([ -n "\${VARDIR:=$defaults{$product}{var}$product}" ]) );
 
     emit 'TEMPFILE=';
 

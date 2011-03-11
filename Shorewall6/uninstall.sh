@@ -60,8 +60,45 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall6/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall6/version)"
+[ -n ${ETC:=/etc/} ]
+[ -n ${SBIN:=/sbin/} ]
+[ -n ${SHARE:=/usr/share/} ]
+[ -n ${VAR:=${VAR}/} ]
+
+case "$ETC" in
+    */)
+	;;
+    *)
+	ETC=$ETC/
+	;;
+esac
+
+case "$SBIN" in
+    */)
+	;;
+    *)
+	SBIN=$SBIN/
+	;;
+esac
+
+case "$SHARE" in
+    */)
+	;;
+    *)
+	SHARE=$SHARE/
+	;;
+esac
+
+case "$VAR" in
+    */)
+	;;
+    *)
+	VAR=$VAR/
+	;;
+esac 
+
+if [ -f ${SHARE}shorewall6/version ]; then
+    INSTALLED_VERSION="$(cat ${SHARE}shorewall6/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall6 Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -74,43 +111,45 @@ fi
 
 echo "Uninstalling shorewall6 $VERSION"
 
-if qt ip6tables -L shorewall6 -n && [ ! -f /sbin/shorewall6-lite ]; then
-   /sbin/shorewall6 clear
-fi
-
-if [ -L /usr/share/shorewall6/init ]; then
-    FIREWALL=$(readlink -m -q /usr/share/shorewall6/init)
-else
-    FIREWALL=/etc/init.d/shorewall6
-fi
-
-if [ -n "$FIREWALL" ]; then
-    if [ -x /usr/sbin/updaterc.d ]; then
-	updaterc.d shorewall6 remove
-    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-        insserv -r $FIREWALL
-    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	chkconfig --del $(basename $FIREWALL)
-    else
-	rm -f /etc/rc*.d/*$(basename $FIREWALL)
+if [ `id -u` = 0 ] ; then
+    if qt ip6tables -L shorewall6 -n && [ ! -f ${SBIN}shorewall6-lite ]; then
+	${SBIN}shorewall6 clear
     fi
 
-    remove_file $FIREWALL
-    rm -f ${FIREWALL}-*.bkout
+    if [ -L ${SHARE}shorewall6/init ]; then
+	FIREWALL=$(readlink -m -q ${SHARE}shorewall6/init)
+    else
+	FIREWALL=${ETC}init.d/shorewall6
+    fi
+
+    if [ -n "$FIREWALL" ]; then
+	if [ -x /usr${SBIN}updaterc.d ]; then
+	    updaterc.d shorewall6 remove
+	elif [ -x ${SBIN}insserv -o -x /usr${SBIN}insserv ]; then
+            insserv -r $FIREWALL
+	elif [ -x ${SBIN}chkconfig -o -x /usr${SBIN}chkconfig ]; then
+	    chkconfig --del $(basename $FIREWALL)
+	else
+	    rm -f ${ETC}rc*.d/*$(basename $FIREWALL)
+	fi
+
+	remove_file $FIREWALL
+	rm -f ${FIREWALL}-*.bkout
+    fi
 fi
 
-rm -f /sbin/shorewall6
-rm -f /sbin/shorewall6-*.bkout
+rm -f ${SBIN}shorewall6
+rm -f ${SBIN}shorewall6-*.bkout
 
-rm -rf /etc/shorewall6
-rm -rf /etc/shorewall6-*.bkout
-rm -rf /var/lib/shorewall6
-rm -rf /var/lib/shorewall6-*.bkout
-rm -rf /usr/share/shorewall6
-rm -rf /usr/share/shorewall6-*.bkout
-rm -rf /usr/share/man/man5/shorewall6*
-rm -rf /usr/share/man/man8/shorewall6*
-rm -f  /etc/logrotate.d/shorewall6
+rm -rf ${ETC}shorewall6
+rm -rf ${ETC}shorewall6-*.bkout
+rm -rf ${VAR}/shorewall6
+rm -rf ${VAR}/shorewall6-*.bkout
+rm -rf ${SHARE}shorewall6
+rm -rf ${SHARE}shorewall6-*.bkout
+rm -rf ${SHARE}man/man5/shorewall6*
+rm -rf ${SHARE}man/man8/shorewall6*
+rm -f  ${ETC}logrotate.d/shorewall6
 
 echo "Shorewall6 Uninstalled"
 

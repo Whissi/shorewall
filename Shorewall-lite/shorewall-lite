@@ -83,6 +83,14 @@
 #
 #                                                  Displays the decimal equivalent of an IP
 #                                                  address and vice versa.
+#
+#####################################################################################################
+# These variables are used by the shared libraries. Their values must not be changed.
+#####################################################################################################
+g_etc=/etc/
+g_sbin=/sbin/
+g_share=/usr/share/
+g_var=/var/lib/
 
 #
 # Set the configuration variables from shorewall-lite.conf
@@ -443,8 +451,8 @@ version_command() {
     
     if [ -n "$all" ]; then
 	for product in shorewall shorewall6 shorewall6-lite shorewall-init; do
-	    if [ -f /usr/share/$product/version ]; then
-		echo "$product: $(cat /usr/share/$product/version)"
+	    if [ -f ${g_share}$product/version ]; then
+		echo "$product: $(cat ${g_share}$product/version)"
 	    fi
 	done
     fi
@@ -567,13 +575,13 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHAREDIR=/usr/share/shorewall-lite
-CONFDIR=/etc/shorewall-lite
+SHAREDIR=${g_share}shorewall-lite
+CONFDIR=${g_etc}shorewall-lite
 g_product="Shorewall Lite"
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir ]
 
-[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]
+[ -n "${VARDIR:=${g_var}shorewall-lite}" ]
 
 [ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
 

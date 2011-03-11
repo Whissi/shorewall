@@ -26,6 +26,13 @@
 #       For a list of supported commands, type 'shorewall help'
 #
 #####################################################################################################
+# These variables are set by the installer to indicate the actual location of files.
+# The variable names are changed to g_etc, g_sbin, etc.
+#####################################################################################################
+ETC=/etc/
+SBIN=/sbin/
+SHARE=/usr/share/
+VAR=/var/lib/
 #
 # Set the configuration variables from shorewall.conf
 #
@@ -315,8 +322,8 @@ startup_error() {
 compiler() {
 
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/shorewall ]; then
-	    startup_error "Ordinary users may not compile the /etc/shorewall configuration"
+	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = ${g_etc}shorewall ]; then
+	    startup_error "Ordinary users may not compile the ${g_etc}shorewall configuration"
 	fi
     fi
     #
@@ -363,7 +370,7 @@ compiler() {
 	PERL=/usr/bin/perl
     fi
 
-    $PERL $debugflags /usr/share/shorewall/compiler.pl $options $@
+    $PERL $debugflags ${g_share}shorewall/compiler.pl $options $@
 }
 
 #
@@ -1425,8 +1432,8 @@ version_command() {
 
     if [ -n "$all" ]; then
 	for product in shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ -f /usr/share/$product/version ]; then
-		echo "$product: $(cat /usr/share/$product/version)"
+	    if [ -f ${g_share}$product/version ]; then
+		echo "$product: $(cat ${g_share}$product/version)"
 	    fi
 	done
     fi
@@ -1569,15 +1576,15 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHAREDIR=/usr/share/shorewall
-CONFDIR=/etc/shorewall
+SHAREDIR=${g_share}shorewall
+CONFDIR=${g_etc}shorewall
 g_product="Shorewall"
 g_recovering=
 g_timestamp=
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
-[ -n "${VARDIR:=/var/lib/shorewall}" ]
+[ -n "${VARDIR:=${g_var}/shorewall}" ]
 
 if [ ! -f ${VARDIR}/firewall ]; then
     [ -f ${VARDIR}/.restore ] && cp -f ${VARDIR}/.restore ${VARDIR}/firewall

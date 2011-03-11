@@ -61,6 +61,7 @@ usage() {
 ################################################################################
 # Get startup options (override default)
 ################################################################################
+CLI=/sbin/shorewall
 OPTIONS="-v0"
 if [ -f /etc/sysconfig/shorewall ]; then
     . /etc/sysconfig/shorewall
@@ -69,7 +70,6 @@ elif [ -f /etc/default/shorewall ] ; then
 fi
 
 export SHOREWALL_INIT_SCRIPT=1
-
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
@@ -77,14 +77,14 @@ command="$1"
 
 case "$command" in
     start|restart|stop)
-	exec /sbin/shorewall $OPTIONS $@
+	exec $CLI $OPTIONS $@
 	;;
     stop|restart|status)
-	exec /sbin/shorewall $@
+	exec $CLI $@
 	;;
     reload)
 	shift
-	exec /sbin/shorewall $OPTIONS restart $@
+	exec $CLI $OPTIONS restart $@
 	;;
     *)
 	usage

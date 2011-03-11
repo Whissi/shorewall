@@ -24,21 +24,26 @@
 # This library contains the code common to all Shorewall components.
 #
 # - It is loaded by /sbin/shorewall.
-# - It is loaded by /usr/share/shorewall/firewall.
 # - It is loaded by /usr/share/shorewall-shell/compiler.
 # - It is released as part of Shorewall Lite where it is used by /sbin/shorewall-lite
 #   and /usr/share/shorewall-lite/shorecap.
 # - It is released as part of Shorewall Perl where it is copied into the compiled script
 #   by the compiler.
-#
+########################################################################################
+# These are set by the installer
+########################################################################################
+ETC=/etc/
+SBIN=/sbin/
+SHARE=/usr/share/
+VAR=/var/lib/
 
 SHOREWALL_LIBVERSION=40407
 SHOREWALL_CAPVERSION=40417
 
-[ -n "${VARDIR:=/var/lib/shorewall6}" ]
-[ -n "${SHAREDIR:=/usr/share/shorewall6}" ]
-[ -n "${CONFDIR:=/etc/shorewall6}" ]
-[ -n "${PERLSHAREDIR:=/usr/share/shorewall}" ]
+[ -n "${VARDIR:=${g_lib}shorewall6}" ]
+[ -n "${SHAREDIR:=${g_share}shorewall6}" ]
+[ -n "${CONFDIR:=${g_etc}shorewall6}" ]
+[ -n "${PERLSHAREDIR:=${g_share}shorewall}" ]
 
 #
 # Conditionally produce message
@@ -94,7 +99,7 @@ combine_list()
 
 #
 # Call this function to assert mutual exclusion with Shorewall. If you invoke the
-# /sbin/shorewall program while holding mutual exclusion, you should pass "nolock" as
+# /sbin/shorewall6 program while holding mutual exclusion, you should pass "nolock" as
 # the first argument. Example "shorewall nolock refresh"
 #
 # This function uses the lockfile utility from procmail if it exists.

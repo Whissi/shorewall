@@ -6,7 +6,7 @@
 #
 #     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008 - Tom Eastep (teastep@shorewall.net)
 #
-#	This file should be placed in /sbin/shorewall6.
+#	This file should be placed in ${g_sbin}shorewall6.
 #
 #	Shorewall documentation is available at http://www.shorewall.net
 #
@@ -26,6 +26,12 @@
 #       For a list of supported commands, type 'shorewall6 help'
 #
 ################################################################################################
+# These variables are set by the installer to indicate the actual location of files.
+#####################################################################################################
+ETC=/etc/
+SBIN=/sbin/
+SHARE=/usr/share/
+VAR=/var/lib/
 #
 # Set the configuration variables from shorewall6.conf
 #
@@ -247,8 +253,8 @@ compiler() {
     shift
     
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/shorewall6 ]; then
-	    startup_error "Ordinary users may not compile the /etc/shorewall6 configuration"
+	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = ${g_etc}shorewall6 ]; then
+	    startup_error "Ordinary users may not compile the ${g_etc}shorewall6 configuration"
 	fi
     fi
     #
@@ -1124,7 +1130,7 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+    temp=$(rsh_command ${g_sbin}shorewall6-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
     [ -n "$temp" ] && litedir=$temp
 
@@ -1142,7 +1148,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES /usr/share/shorewall6-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES ${g_share}shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1157,19 +1163,19 @@ reload_command() # $* = original arguments less the command.
     then
 	save=$(find_file save);
 
-	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/shorewall6-lite/" && rcp_command $save /etc/shorewall6-lite/
+	[ -f $save ] && progress_message3 "Copying $save to ${system}:${g_etc}shorewall6-lite/" && rcp_command $save ${g_etc}shorewall6-lite/
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall6-lite $g_debugging $verbose $timestamp restart" && \
+	    rsh_command "${g_sbin}shorewall6-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall6-lite $g_debugging $verbose $timestamp start" && \
+	    rsh_command "${g_sbin}shorewall6-lite $g_debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall6-lite $g_debugging $verbose $timestamp save" && \
+	    rsh_command "${g_sbin}shorewall6-lite $g_debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
@@ -1336,8 +1342,8 @@ version_command() {
 
     if [ -n "$all" ]; then
 	for product in shorewall shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ -f /usr/share/$product/version ]; then
-		echo "$product: $(cat /usr/share/$product/version)"
+	    if [ -f ${g_share}$product/version ]; then
+		echo "$product: $(cat ${g_share}$product/version)"
 	    fi
 	done
     fi
@@ -1480,14 +1486,14 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHAREDIR=/usr/share/shorewall6
-CONFDIR=/etc/shorewall6
+SHAREDIR=${g_share}shorewall6
+CONFDIR=${g_etc}shorewall6
 g_product="Shorewall6"
 g_recovering=
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
-[ -n "${VARDIR:=/var/lib/shorewall6}" ]
+[ -n "${VARDIR:=${g_var}shorewall6}" ]
 
 if [ ! -f ${VARDIR}/firewall ]; then
     [ -f ${VARDIR}/.restore ] && cp -f ${VARDIR}/.restore ${VARDIR}/firewall 

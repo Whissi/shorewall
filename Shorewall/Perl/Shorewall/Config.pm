@@ -38,6 +38,8 @@ use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
 use Scalar::Util 'reftype';
 
+use Shorewall::Defaults;
+
 our @ISA = qw(Exporter);
 #
 # Imported variables should be treated as read-only by importers
@@ -3071,7 +3073,7 @@ sub get_configuration( $ ) {
 
     unshift @INC, @config_path;
 
-    default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
+    default( 'PATH' , qq($defaults{shorewall}{sbin}:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin));
     #
     # get_capabilities requires that the true settings of these options be established
     #

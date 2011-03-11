@@ -26,14 +26,20 @@
 # - It is loaded by /sbin/shorewall.
 # - It is released as part of Shorewall Lite where it is used by /sbin/shorewall-lite
 #   and /usr/share/shorewall-lite/shorecap.
-#
+########################################################################################
+# These are set by the installer. The variable names are changed to g_etc, g_sbin, etc.
+########################################################################################
+ETC=/etc/
+SBIN=/sbin/
+SHARE=/usr/share/
+VAR=/var/lib/
 
 SHOREWALL_LIBVERSION=40407
 SHOREWALL_CAPVERSION=40417
 
-[ -n "${VARDIR:=/var/lib/shorewall}" ]
-[ -n "${SHAREDIR:=/usr/share/shorewall}" ]
-[ -n "${CONFDIR:=/etc/shorewall}" ]
+[ -n "${VARDIR:=${g_var}shorewall}" ]
+[ -n "${SHAREDIR:=${g_share}shorewall}" ]
+[ -n "${CONFDIR:=${g_etc}shorewall}" ]
 
 #
 # Conditionally produce message

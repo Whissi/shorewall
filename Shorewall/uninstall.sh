@@ -60,8 +60,45 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall/version)"
+[ -n ${ETC:=/etc/} ]
+[ -n ${SBIN:=/sbin/} ]
+[ -n ${SHARE:=/usr/share/} ]
+[ -n ${VAR:=/var/lib/} ]
+
+case "$ETC" in
+    */)
+	;;
+    *)
+	ETC=$ETC/
+	;;
+esac
+
+case "$SBIN" in
+    */)
+	;;
+    *)
+	SBIN=$SBIN/
+	;;
+esac
+
+case "$SHARE" in
+    */)
+	;;
+    *)
+	SHARE=$SHARE/
+	;;
+esac
+
+case "$VAR" in
+    */)
+	;;
+    *)
+	VAR=$VAR/
+	;;
+esac 
+
+if [ -f ${SHARE}shorewall/version ]; then
+    INSTALLED_VERSION="$(cat ${SHARE}shorewall/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -74,43 +111,46 @@ fi
 
 echo "Uninstalling shorewall $VERSION"
 
-if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
-   /sbin/shorewall clear
-fi
-
-if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(readlink -m -q /usr/share/shorewall/init)
-else
-    FIREWALL=/etc/init.d/shorewall
-fi
-
-if [ -n "$FIREWALL" ]; then
-    if [ -x /usr/sbin/updaterc.d ]; then
-	updaterc.d shorewall remove
-    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-        insserv -r $FIREWALL
-    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	chkconfig --del $(basename $FIREWALL)
-    else
-	rm -f /etc/rc*.d/*$(basename $FIREWALL)
+if [ `id -u` = 0 ] ; then
+    if qt iptables -L shorewall -n && [ ! -f ${SBIN}shorewall-lite ]; then
+	${SBIN}shorewall clear
     fi
 
-    remove_file $FIREWALL
-    rm -f ${FIREWALL}-*.bkout
+
+    if [ -L ${SHARE}shorewall/init ]; then
+	FIREWALL=$(readlink -m -q ${SHARE}shorewall/init)
+    else
+	FIREWALL=${ETC}init.d/shorewall
+    fi
+
+    if [ -n "$FIREWALL" -a -f "$FIREWALL" ]; then
+	if [ -x /usr/sbin/updaterc.d ]; then
+	    updaterc.d shorewall remove
+	elif [ -x /usr/sbin/insserv -o -x /usr${SBIN}insserv ]; then
+            insserv -r $FIREWALL
+	elif [ -x /usr/sbin/chkconfig -o -x /usr${SBIN}chkconfig ]; then
+	    chkconfig --del $(basename $FIREWALL)
+	else
+	    rm -f ${ETC}rc*.d/*$(basename $FIREWALL)
+	fi
+
+	remove_file $FIREWALL
+	rm -f ${FIREWALL}-*.bkout
+    fi
 fi
 
-rm -f /sbin/shorewall
-rm -f /sbin/shorewall-*.bkout
+rm -f ${SBIN}shorewall
+rm -f ${SBIN}shorewall-*.bkout
 
-rm -rf /etc/shorewall
-rm -rf /etc/shorewall-*.bkout
-rm -rf /var/lib/shorewall
-rm -rf /var/lib/shorewall-*.bkout
-rm -rf /usr/share/shorewall
-rm -rf /usr/share/shorewall-*.bkout
-rm -rf /usr/share/man/man5/shorewall*
-rm -rf /usr/share/man/man8/shorewall*
-rm -f  /etc/logrotate.d/shorewall
+rm -rf ${ETC}shorewall
+rm -rf ${ETC}shorewall-*.bkout
+rm -rf ${VAR}shorewall
+rm -rf ${VAR}shorewall-*.bkout
+rm -rf ${SHARE}shorewall
+rm -rf ${SHARE}shorewall-*.bkout
+rm -rf ${SHARE}man/man5/shorewall*
+rm -rf ${SHARE}man/man8/shorewall*
+rm -f  ${ETC}logrotate.d/shorewall
 
 echo "Shorewall Uninstalled"
 

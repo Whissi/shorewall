@@ -235,6 +235,9 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}/var/log/
     touch ${DESTDIR}/var/log/shorewall6-lite-init.log
     chmod 600 ${DESTDIR}/var/log/shorewall6-lite-init.log
+elif [ -n "$OWNERSHIP" ]; then
+    touch /var/log/shorewall6-lite-init.log
+    chmod 600 /var/log/shorewall6-lite-init.log    
 fi
 
 #

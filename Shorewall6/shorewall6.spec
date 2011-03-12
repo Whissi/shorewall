@@ -105,6 +105,8 @@ fi
 %attr(0644,root,root) %{_mandir}/man5/*
 %attr(0644,root,root) %{_mandir}/man8/shorewall6.8.gz
 
+%attr(0600,root,root) %ghost %{_var}/log/shorewall6-init.log
+
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn ipv6 Samples6
 
 %changelog

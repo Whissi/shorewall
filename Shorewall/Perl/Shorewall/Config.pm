@@ -2942,6 +2942,7 @@ sub get_params() {
 			s/"$//;
 			$params{$variable} .= $_;
 		    } else {
+			chomp;
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}	
@@ -2967,6 +2968,7 @@ sub get_params() {
 			s/"$//;
 			$params{$variable} .= $_;
 		    } else {
+			chomp;
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}	
@@ -2991,6 +2993,7 @@ sub get_params() {
 			s/'$//;
 			$params{$variable} .= $_;
 		    } else {
+			chomp;
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }				
 		}

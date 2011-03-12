@@ -2946,20 +2946,21 @@ sub get_params() {
 		    }
 		}	
 	    }
-	} elsif ( $params[0] =~ /^export (.*?)="/ ) {
+	} elsif ( $params[0] =~ /^export (.*?)="/ || $params[0] =~ /^export ([^\s=]+)\s*$/ ) {
 	    #
 	    # getparams interpreted by older (e.g., RHEL 5) Bash
 	    #
 	    # - Variable names preceded by 'export '
 	    # - Variable values are delimited by double quotes
 	    # - Embedded single quotes are escaped with '\'
+	    # - Valueless variables ( e.g., 'export foo') are supported
 	    #
 	    for ( @params ) {
 		if ( /^export (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^export (.*?)="(.*)$/ ) {
 		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
-		} elsif ( /^export (.*)\s+$/ || /^export (.*)=""$/ ) {
+		} elsif ( /^export ([^\s=])\s*$/ || /^export (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
 		    if ($variable) {

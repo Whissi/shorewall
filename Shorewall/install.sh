@@ -365,6 +365,10 @@ chmod 755 ${DESTDIR}${SHARE}shorewall/configfiles
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
+    mkdir -p ${DESTDIR}/var/log/
+    chmod 755 ${DESTDIR}/var/log/
+    touch ${DESTDIR}/var/log/shorewall-init.log
+    chmod 600 ${DESTDIR}/var/log/shorewall-init.log
 fi
 
 #

@@ -100,6 +100,8 @@ fi
 
 %attr(0644,root,root) %{_mandir}/man8/shorewall6-lite.8.gz
 
+%attr(0600,root,root) %ghost /var/log/shorewall6-lite-init.log
+
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog

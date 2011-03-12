@@ -61,6 +61,16 @@ elif [ -f /etc/shorewall-lite/shorewall.conf.rpmsave ]; then
     echo "/etc/shorewall-lite/shorewall-lite.conf installed as /etc/shorewall-lite/shorewall-lite.conf.rpmnew"
 fi
 
+if [ ! -f /var/log/shorewall-lite-init.log ]; then
+    umask=$(umask)
+    umask 077
+    touch /var/log/shorewall-lite-init.log
+    umask ${umask}
+    if [ -x /sbin/restorecon ]; then
+	/sbin/restorecon /var/log/shorewall-lite-init.log
+    fi
+fi
+
 %preun
 
 if [ $1 -eq 0 ]; then

@@ -47,6 +47,16 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
+if [ ! -f /var/log/shorewall-init.log ]; then
+    umask=$(umask)
+    umask 077
+    touch /var/log/shorewall-init.log
+    umask ${umask}
+    if [ -x /sbin/restorecon ]; then
+	/sbin/restorecon /var/log/shorewall-init.log
+    fi
+fi
+
 %preun
 
 if [ $1 = 0 ]; then

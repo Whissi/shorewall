@@ -47,11 +47,21 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
+if [ ! -f /var/log/shorewall6-init.log ]; then
+    umask=$(umask)
+    umask 077
+    touch /var/log/shorewall6-init.log
+    umask ${umask}
+    if [ -x /sbin/restorecon ]; then
+	/sbin/restorecon /var/log/shorewall6-init.log
+    fi
+fi
+
 %preun
 
 if [ $1 = 0 ]; then
 	if [ -x /sbin/insserv ]; then
-		/sbin/insserv -r /etc/init.d/shorewall6
+	/sbin/insserv -r /etc/init.d/shorewall6
 	elif [ -x /sbin/chkconfig ]; then
 		/sbin/chkconfig --del shorewall6
 	fi

@@ -223,9 +223,14 @@ export GROUP=`id -n -g` ;\
 ./install.sh
 </programlisting>
 
-    <para>The DESTDIR environmental variable specifies the root directory for
-    the installation and must already exist. OWNER and GROUP determine the
-    ownership of the files. </para>
+    <para>The <emphasis role="bold">DESTDIR</emphasis> environmental variable
+    specifies the root directory for the installation and must already exist.
+    <emphasis role="bold">OWNER</emphasis> and <emphasis
+    role="bold">GROUP</emphasis> determine the ownership of the files. The
+    installation target of man pages can be adjusted by setting <emphasis
+    role="bold">MANDIR</emphasis>, causing the man pages to be installed in
+    ${DESTDIR}/${MANDIR}/. The default value of MANDIR is
+    /usr/share/man/.</para>
 
     <para>DESTDIR cannot be used to install Shorewall into a non-standard
     location on a firewall system. </para>
@@ -251,6 +256,8 @@ export GROUP=`id -n -g` ;\
 
       <member>/usr/local/share/shorewall/</member>
 
+      <member>/usr/local/share/man/</member>
+
       <member>/usr/local/sbin/</member>
 
       <member>/usr/local/var/lib</member>
@@ -274,19 +281,23 @@ export GROUP=`id -n -g` ;\
 
         <orderedlist>
           <listitem>
-            <para>ETC - name of the BASE /etc directory </para>
+            <para><emphasis role="bold">ETC</emphasis> - name of the BASE /etc
+            directory </para>
           </listitem>
 
           <listitem>
-            <para>SBIN - name of the BASE /sbin directory</para>
+            <para><emphasis role="bold">SBIN</emphasis> - name of the BASE
+            /sbin directory</para>
           </listitem>
 
           <listitem>
-            <para>SHARE - name of the BASE /usr/share directory</para>
+            <para><emphasis role="bold">SHARE</emphasis> - name of the BASE
+            /usr/share directory</para>
           </listitem>
 
           <listitem>
-            <para>VAR - name of the BASE /var directory</para>
+            <para><emphasis role="bold">VAR</emphasis> - name of the BASE /var
+            directory</para>
           </listitem>
         </orderedlist>
 
@@ -320,7 +331,7 @@ export GROUP=`id -n -g` ;\
       </listitem>
     </orderedlist>
 
-    <para>The ETC, SBIN, SHARE and VAR variables may also be passed to
+    <para>The ETC, SBIN, SHARE and VAR variables, may also be passed to
     install.sh (in addition to the existing MANDIR variable). When passed
     together with BASE, they override BASE if the value is an absolute path
     name (begins with '/'); otherwise, they are appended to base. If BASE is

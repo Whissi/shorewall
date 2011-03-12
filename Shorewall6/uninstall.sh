@@ -60,42 +60,100 @@ remove_file() # $1 = file to restore
     fi
 }
 
-[ -n ${ETC:=/etc/} ]
-[ -n ${SBIN:=/sbin/} ]
-[ -n ${SHARE:=/usr/share/} ]
-[ -n ${VAR:=${VAR}/} ]
+if [ -n "$BASE" ]; then
+    if [ -n "$DESTDIR" ]; then
+	echo "   ERROR: DESTDIR and BASE may not be specified together" >&2
+	exit 1
+    fi
+
+    case "$BASE" in
+	/*)
+	    ;;
+	*)
+	    echo "   ERROR: BASE must contain an absolute path name" >&2
+	    exit 1;
+	    ;;
+    esac
+
+    mkdir -p "$BASE"
+
+    [ -n ${ETC:=${BASE}/etc/} ]
+    [ -n ${SBIN:=${BASE}/sbin/} ]
+    [ -n ${SHARE:=${BASE}/share/} ]
+    [ -n ${VAR:=${BASE}/var/lib/} ]
+    [ -n ${MANDIR:=${BASE}/share/man} ]
+else
+    [ -n ${ETC:=/etc/} ]
+    [ -n ${SBIN:=/sbin/} ]
+    [ -n ${SHARE:=/usr/share/} ]
+    [ -n ${VAR:=/var/lib/} ]
+    [ -n ${MANDIR:=/usr/share/man} ]
+fi
+
 
 case "$ETC" in
-    */)
+    /*/)
+	;;
+    /*)
+	ETC=$ETC/
 	;;
     *)
-	ETC=$ETC/
+	if [ -n "$BASE" ]; THEN
+	    ETC=$BASE/$ETC/
+	else
+	    echo "ERROR: ETC must contain an absolute path name" >&2
+	    exit 1
+	fi
 	;;
 esac
 
 case "$SBIN" in
-    */)
+    /*/)
+	;;
+    /*)
+	SBIN=$SBIN/
 	;;
     *)
-	SBIN=$SBIN/
+	if [ -n "$BASE" ]; THEN
+	    SBIN=$BASE/$SBIN/
+	else
+	    echo "ERROR: SBIN must contain an absolute path name" >&2
+	    exit 1
+	fi
 	;;
 esac
 
 case "$SHARE" in
-    */)
+    /*/)
+	;;
+    /*)
+	SHARE=$SHARE/
 	;;
     *)
-	SHARE=$SHARE/
+	if [ -n "$BASE" ]; THEN
+	    SHARE=$BASE/$SHARE/
+	else
+	    echo "ERROR: SHARE must contain an absolute path name" >&2
+	    exit 1
+	fi
 	;;
 esac
 
 case "$VAR" in
-    */)
+    /*/)
 	;;
-    *)
+    /*)
 	VAR=$VAR/
 	;;
-esac 
+    *)
+	if [ -n "$BASE" ]; THEN
+	    VAR=$BASE/$VAR/
+	else
+	    echo "ERROR: VAR must contain an absolute path name" >&2
+	    exit 1
+	fi
+	;;
+esac
 
 if [ -f ${SHARE}shorewall6/version ]; then
     INSTALLED_VERSION="$(cat ${SHARE}shorewall6/version)"

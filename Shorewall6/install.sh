@@ -181,7 +181,7 @@ if [ -n "$BASE" ]; then
     [ -n ${SBIN:=${BASE}/sbin/} ]
     [ -n ${SHARE:=${BASE}/share/} ]
     [ -n ${VAR:=${BASE}/var/lib/} ]
-    [ -n ${MANDIR:=${BASE}/man} ]
+    [ -n ${MANDIR:=${BASE}/share/man} ]
 else
     [ -n ${ETC:=/etc/} ]
     [ -n ${SBIN:=/sbin/} ]

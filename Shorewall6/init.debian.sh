@@ -15,7 +15,7 @@
 SRWL=/sbin/shorewall6
 SRWL_OPTS="-tvv"
 WAIT_FOR_IFUP=/usr/share/shorewall6/wait4ifup
-INITLOG:=/var/log/shorewall-init.log
+INITLOG=/var/log/shorewall-init.log
 
 if [ "$(id -u)" != "0" ]
 then

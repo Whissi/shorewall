@@ -13,14 +13,7 @@
 SRWL=/sbin/shorewall
 SRWL_OPTS="-tvv"
 WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
-test -n ${INITLOG:=/var/log/shorewall-init.log}
-
-test -x $SRWL || exit 0
-test -x $WAIT_FOR_IFUP || exit 0
-test -n "$INITLOG" || {
-	echo "INITLOG cannot be empty, please configure $0" ;
-	exit 1;
-}
+INITLOG:=/var/log/shorewall-init.log
 
 if [ "$(id -u)" != "0" ]
 then
@@ -64,6 +57,13 @@ then
 else
 	not_configured
 fi
+
+test -x $SRWL || exit 0
+test -x $WAIT_FOR_IFUP || exit 0
+test -n "$INITLOG" || {
+	echo "INITLOG cannot be empty, please configure $0" ;
+	exit 1;
+}
 
 [ "$INITLOG" = "/dev/null" ] && SHOREWALL_INIT_SCRIPT=1 || SHOREWALL_INIT_SCRIPT=0
 

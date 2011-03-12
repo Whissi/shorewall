@@ -200,7 +200,7 @@ case "$ETC" in
 	ETC=$ETC/
 	;;
     *)
-	if [ -n "$BASE" ]; THEN
+	if [ -n "$BASE" ]; then
 	    ETC=$BASE/$ETC/
 	else
 	    echo "ERROR: ETC must contain an absolute path name" >&2
@@ -216,7 +216,7 @@ case "$SBIN" in
 	SBIN=$SBIN/
 	;;
     *)
-	if [ -n "$BASE" ]; THEN
+	if [ -n "$BASE" ]; then
 	    SBIN=$BASE/$SBIN/
 	else
 	    echo "ERROR: SBIN must contain an absolute path name" >&2
@@ -232,7 +232,7 @@ case "$SHARE" in
 	SHARE=$SHARE/
 	;;
     *)
-	if [ -n "$BASE" ]; THEN
+	if [ -n "$BASE" ]; then
 	    SHARE=$BASE/$SHARE/
 	else
 	    echo "ERROR: SHARE must contain an absolute path name" >&2
@@ -248,7 +248,7 @@ case "$VAR" in
 	VAR=$VAR/
 	;;
     *)
-	if [ -n "$BASE" ]; THEN
+	if [ -n "$BASE" ]; then
 	    VAR=$BASE/$VAR/
 	else
 	    echo "ERROR: VAR must contain an absolute path name" >&2

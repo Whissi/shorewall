@@ -163,11 +163,6 @@ done
 
 
 if [ -n "$BASE" ]; then
-    if [ -n "$DESTDIR" ]; then
-	echo "   ERROR: DESTDIR and BASE may not be specified together" >&2
-	exit 1
-    fi
-
     case "$BASE" in
 	/*)
 	    ;;

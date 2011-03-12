@@ -48,6 +48,71 @@ None.
 
 3)  A Shorewall user has contributed a macro for Puppet.
 
+4)  Beginning with this release, it is possible to install Shorewall
+    and Shorewall6 in an arbitrary location.
+
+    The simplest form of this capability is the BASE environmental
+    variable. When set, it causes Shorewall to be installed relate to a
+    specified directory.
+
+    For example:
+
+    	BASE=/usr/local/ ./install.sh
+
+    will install Shorewall's components in
+
+    	 /usr/local/etc/shorewall/
+	 /usr/local/share/shorewall/
+	 /usr/local/sbin/
+	 /usr/local/var/lib
+
+    When run as root, the necessary files are installed in
+    /etc/default, /etc/init.d/ etc.
+
+    When run as non-root, /etc is not modified.
+
+    There are several restrictions and considerations:
+
+    a)  Shorewall and Shorewall6 must be installed in the same BASE
+        directory.
+
+    b)  When Shorewall Init is used, /etc/default/shorewall-init
+        (/etc/sysconfig/shorewall-init) must set four additional
+        variables:
+
+	   ETC   - name of the BASE /etc directory
+	   SBIN  - name of the BASE /sbin directory
+	   SHARE - name of the BASE /usr/share directory
+	   VAR   - name of the BASE /var directory
+
+        If BASE=/usr/local/ then
+
+	   ETC=/usr/local/etc/
+	   SBIN=/usr/local/sbin/
+	   SHARE=/usr/local/share/
+	   VAR=/usr/local/var/lib/
+
+    c)  The CONFIG_PATH variable in shorewall.conf and shorewall6.conf
+        must be adjusted accordingly.
+
+	If BASE=/usr/local/ then the Shorewall CONFIG_PATH would be:
+
+	   CONFIG_PATH=/usr/local/etc/shorewall:/usr/local/share/shorewall
+
+	and for Shorewall6, it would be
+
+	   CONFIG_PATH=/usr/local/etc/shorewall6:/usr/local/share/shorewall6:
+                       /usr/local/share/shorewall/
+
+           (folded)
+
+    The ETC, SBIN, SHARE and VAR variables may also be passed to
+    install.sh (in addition to the existing MANDIR variable). When
+    passed together with BASE, they override BASE if the value is an
+    absolute path name (begins with '/'); otherwise, they are appended
+    to base. If BASE is not passed, then their values must be absolute
+    path names.	  
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

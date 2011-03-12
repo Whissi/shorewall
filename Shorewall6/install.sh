@@ -168,6 +168,15 @@ if [ -n "$BASE" ]; then
 	exit 1
     fi
 
+    case "$BASE" in
+	/*)
+	    ;;
+	*)
+	    echo "   ERROR: BASE must contain an absolute path name" >&2
+	    exit 1;
+	    ;;
+    esac
+
     [ -n ${ETC:=${BASE}/etc/} ]
     [ -n ${SBIN:=${BASE}/sbin/} ]
     [ -n ${SHARE:=${BASE}/share/} ]
@@ -182,36 +191,68 @@ else
 fi
 
 case "$ETC" in
-    */)
+    /*/)
+	;;
+    /*)
+	ETC=$ETC/
 	;;
     *)
-	ETC=$ETC/
+	if [ -n "$BASE" ]; THEN
+	    ETC=$BASE/$ETC/
+	else
+	    echo "ERROR: ETC must contain an absolute path name" >&2
+	    exit 1
+	fi
 	;;
 esac
 
 case "$SBIN" in
-    */)
+    /*/)
+	;;
+    /*)
+	SBIN=$SBIN/
 	;;
     *)
-	SBIN=$SBIN/
+	if [ -n "$BASE" ]; THEN
+	    SBIN=$BASE/$SBIN/
+	else
+	    echo "ERROR: SBIN must contain an absolute path name" >&2
+	    exit 1
+	fi
 	;;
 esac
 
 case "$SHARE" in
-    */)
+    /*/)
+	;;
+    /*)
+	SHARE=$SHARE/
 	;;
     *)
-	SHARE=$SHARE/
+	if [ -n "$BASE" ]; THEN
+	    SHARE=$BASE/$SHARE/
+	else
+	    echo "ERROR: SHARE must contain an absolute path name" >&2
+	    exit 1
+	fi
 	;;
 esac
 
 case "$VAR" in
-    */)
+    /*/)
 	;;
-    *)
+    /*)
 	VAR=$VAR/
 	;;
-esac 
+    *)
+	if [ -n "$BASE" ]; THEN
+	    VAR=$BASE/$VAR/
+	else
+	    echo "ERROR: VAR must contain an absolute path name" >&2
+	    exit 1
+	fi
+	;;
+esac
 
 ETC=$(echo $ETC | sed "s'//'/'g")
 SBIN=$(echo $SBIN | sed "s'//'/'g")

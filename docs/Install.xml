@@ -210,6 +210,123 @@ Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
     <filename>/etc/default/shorewall</filename>.</emphasis></emphasis></para>
   </section>
 
+  <section>
+    <title>Installing to a non-standard Location</title>
+
+    <para>The install.sh script can install Shorewall into a directory. This
+    is intended for use by packagers and shown in the example RPM .spec file
+    included with the Shorewall distribution.</para>
+
+    <programlisting>export DESTDIR=$RPM_BUILD_ROOT ; \
+export OWNER=`id -n -u` ; \
+export GROUP=`id -n -g` ;\
+./install.sh
+</programlisting>
+
+    <para>The DESTDIR environmental variable specifies the root directory for
+    the installation and must already exist. OWNER and GROUP determine the
+    ownership of the files. </para>
+
+    <para>DESTDIR cannot be used to install Shorewall into a non-standard
+    location on a firewall system. </para>
+
+    <para>Beginning with Shorewall 4.4.19, Shorewall and Shorewall6 can be
+    installed in non-standard locations and non-root users can install a copy
+    for their own use. This is useful for centralized management of systems
+    running <ulink url="CompiledPrograms.html#Lite">Shorewall Lite or
+    Shorewall6 Lite</ulink>.</para>
+
+    <para>The simplest form of this capability is the BASE environmental
+    variable. When set, it causes Shorewall to be installed relate to a
+    specified directory.</para>
+
+    <para>For example: </para>
+
+    <programlisting>BASE=/usr/local/ ./install.sh </programlisting>
+
+    <para>will install Shorewall's components in</para>
+
+    <simplelist>
+      <member>/usr/local/etc/shorewall/</member>
+
+      <member>/usr/local/share/shorewall/</member>
+
+      <member>/usr/local/sbin/</member>
+
+      <member>/usr/local/var/lib</member>
+    </simplelist>
+
+    <para>When run as root, the necessary files are installed in /etc/default,
+    /etc/init.d/ etc. When run as non-root, /etc is not modified. </para>
+
+    <para>There are several restrictions and considerations:</para>
+
+    <orderedlist numeration="loweralpha">
+      <listitem>
+        <para>Shorewall and Shorewall6 must be installed in the same BASE
+        directory.</para>
+      </listitem>
+
+      <listitem>
+        <para>When Shorewall Init is used, /etc/default/shorewall-init
+        (/etc/sysconfig/shorewall-init) must set four additional
+        variables:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>ETC - name of the BASE /etc directory </para>
+          </listitem>
+
+          <listitem>
+            <para>SBIN - name of the BASE /sbin directory</para>
+          </listitem>
+
+          <listitem>
+            <para>SHARE - name of the BASE /usr/share directory</para>
+          </listitem>
+
+          <listitem>
+            <para>VAR - name of the BASE /var directory</para>
+          </listitem>
+        </orderedlist>
+
+        <para>If BASE=/usr/local/ then</para>
+
+        <simplelist>
+          <member>ETC=/usr/local/etc/</member>
+
+          <member>SBIN=/usr/local/sbin/</member>
+
+          <member>SHARE=/usr/local/share/</member>
+
+          <member>VAR=/usr/local/var/lib/</member>
+        </simplelist>
+      </listitem>
+
+      <listitem>
+        <para>The CONFIG_PATH variable in shorewall.conf and shorewall6.conf
+        must be adjusted accordingly. If BASE=/usr/local/ then the Shorewall
+        CONFIG_PATH would be:</para>
+
+        <simplelist>
+          <member>CONFIG_PATH=/usr/local/etc/shorewall:/usr/local/share/shorewall</member>
+        </simplelist>
+
+        <para>and for Shorewall6, it would be</para>
+
+        <simplelist>
+          <member>CONFIG_PATH=/usr/local/etc/shorewall6:/usr/local/share/shorewall6:/usr/local/share/shorewall/</member>
+        </simplelist>
+      </listitem>
+    </orderedlist>
+
+    <para>The ETC, SBIN, SHARE and VAR variables may also be passed to
+    install.sh (in addition to the existing MANDIR variable). When passed
+    together with BASE, they override BASE if the value is an absolute path
+    name (begins with '/'); otherwise, they are appended to base. If BASE is
+    not passed, then their values must be absolute path names.</para>
+  </section>
+
   <section id="Upgrade">
     <title>General Notes about Upgrading Shorewall</title>
 

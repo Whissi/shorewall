@@ -372,7 +372,7 @@ fi
 if [ -n "${DESTDIR}${OWNERSHIP}" ]; then
     umask=$(umask)
     umask 077
-    touch /var/log/shorewall-init.log
+    touch ${DESTDIR}/var/log/shorewall-init.log
     umask $umask
 fi
 

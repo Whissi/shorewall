@@ -350,11 +350,13 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}/etc/logrotate.d
     mkdir -p ${DESTDIR}/var/log/
     chmod 755 ${DESTDIR}/var/log/
+fi
+
+if [ -n "${DESTDIR}${OWNERSHIP}" ]; then
+    umask=$(umask)
+    umask 077
     touch ${DESTDIR}/var/log/shorewall6-init.log
-    chmod 600 ${DESTDIR}/var/log/shorewall6-init.log
-elif [ -n "$OWNERSHIP" ]; then
-    touch /var/log/shorewall6-init.log
-    chmod 0600 /var/log/shorewall6-init.log    
+    umask $umask
 fi
 
 if [ -z "$CYGWIN" ]; then

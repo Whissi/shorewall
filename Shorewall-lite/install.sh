@@ -235,11 +235,13 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}/etc/logrotate.d
     mkdir -p ${DESTDIR}/var/log/
     chmod 755 ${DESTDIR}/var/log/
-    touch ${DESTDIR}/var/log/shorewall-lite-init.log
-    chmod 600 ${DESTDIR}/var/log/shorewall-lite-init.log
-elif [ -n "$OWNERSHIP" ]; then
+fi
+
+if [ -n "${DESTDIR}${OWNERSHIP}" ]; then
+    umask=$(umask)
+    umask 077
     touch /var/log/shorewall-lite-init.log
-    chmod 600 /var/log/shorewall-lite-init.log
+    umask $umask
 fi
 
 #

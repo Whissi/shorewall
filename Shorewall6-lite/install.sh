@@ -228,16 +228,18 @@ mkdir -p ${DESTDIR}/var/lib/shorewall6-lite
 chmod 755 ${DESTDIR}/etc/shorewall6-lite
 chmod 755 ${DESTDIR}/usr/share/shorewall6-lite
 
-if [ -n "$DESTDIR" ]; then
+if [ -n "${DESTDIR}$" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
     mkdir -p ${DESTDIR}/var/log/
     chmod 755 ${DESTDIR}/var/log/
-    touch ${DESTDIR}/var/log/shorewall6-lite-init.log
-    chmod 600 ${DESTDIR}/var/log/shorewall6-lite-init.log
-elif [ -n "$OWNERSHIP" ]; then
+fi
+
+if [ -n "${DESTDIR}${OWNERSHIP}" ]; then
+    umask=$(umask)
+    umask 077
     touch /var/log/shorewall6-lite-init.log
-    chmod 600 /var/log/shorewall6-lite-init.log    
+    umask $umask
 fi
 
 #

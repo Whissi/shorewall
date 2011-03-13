@@ -2963,7 +2963,7 @@ sub get_params() {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^export (.*?)="(.*)$/ ) {
 		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
-		} elsif ( /^export ([^\s=])\s*$/ || /^export (.*)=""$/ ) {
+		} elsif ( /^export ([^\s=]+)\s*$/ || /^export (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
 		    if ($variable) {

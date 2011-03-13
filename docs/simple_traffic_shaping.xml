@@ -55,7 +55,7 @@
     discipline</firstterm> (qdisc). From tc-pfifo_fast (8):</para>
 
     <blockquote>
-      <para> The algorithm is very similar to that of the classful tc-prio(8)
+      <para>The algorithm is very similar to that of the classful tc-prio(8)
       qdisc. pfifo_fast is like three tc-pfifo(8) queues side by side, where
       packets can be enqueued in any of the three bands based on their Type of
       Service bits or assigned priority.</para>
@@ -69,7 +69,7 @@
       are instead dropped.</para>
 
       <para>See tc-prio(8) for complete details on how TOS bits are translated
-      into bands. </para>
+      into bands.</para>
     </blockquote>
 
     <para>In other words, if all you want is strict priority queuing, then do
@@ -288,6 +288,19 @@ tun0                   Internal</programlisting>
     at least 20% less than your measured upload rate and then gradually
     increase it until latency becomes unacceptable. Then reduce it back to the
     point where latency is acceptable.</para>
+
+    <important>
+      <para>With recent kernels (later than 2.6.26 -- especially
+      X86-64/AMD64), you may find that outbound traffic crawls or even stalls,
+      no matter how high you set the OUT-BANDWIDTH. The solution is to adjust
+      the &lt;minburst&gt; value. I recomment starting with 10kb, then adjust
+      until your measured rate is the same as OUT-BANDWIDTH. Here is my
+      entry:</para>
+
+      <programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
+eth0		External	50mbit:200kb			5.0mbit:100kb:200ms:100mbit:10kb
+</programlisting>
+    </important>
   </section>
 
   <section>

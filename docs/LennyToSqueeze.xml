@@ -185,13 +185,14 @@
     <section>
       <title>Simple Traffic Shaping on X86-64 (AMD64)</title>
 
-      <para>If you find that output bandwidth is extremely limited, install
-      the ethtool package and add this line to /etc/shorewall/init:</para>
+      <para>If you find that output bandwidth is extremely limited, adjust the
+      minburst value. I suggest that you start with 10kb and experiment from
+      there until your observed rate is the same as your OUT-BANDWIDTH. Here's
+      what I use:</para>
 
-      <programlisting>ethtool -K <replaceable>ethX</replaceable> tso off gso off</programlisting>
-
-      <para>where <replaceable>ethX</replaceable> is the affected
-      interface.</para>
+      <programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
+eth0		External	50mbit:200kb			5.0mbit:100kb:200ms:100mbit:10kb
+</programlisting>
     </section>
 
     <section id="conf">

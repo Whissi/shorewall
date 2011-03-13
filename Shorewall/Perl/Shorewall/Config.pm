@@ -2718,7 +2718,7 @@ sub ensure_config_path() {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = "/usr/share/$product/configfiles/" if $> != 0;
+    $globals{CONFDIR} = "$globals{SHAREDIR}/configfiles/" if $> != 0;
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;

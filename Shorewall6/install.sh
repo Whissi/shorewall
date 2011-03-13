@@ -636,6 +636,7 @@ fi
 # Install the default config path file
 #
 install_file configpath ${DESTDIR}${SHARE}shorewall6/configpath 0644
+echo "CONFIG_PATH=\${CONFDIR}:${SHARE}shorewall6:${SHARE}shorewall" >> ${DESTDIR}${SHARE}shorewall6/configpath
 echo "Default config path file installed as ${DESTDIR}${SHARE}shorewall6/configpath"
 #
 # Install the init file

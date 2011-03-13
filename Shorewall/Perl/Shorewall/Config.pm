@@ -2949,7 +2949,7 @@ sub get_params() {
 		    }
 		}	
 	    }
-	} elsif ( $params[0] =~ /^export (.*?)="/ || $params[0] =~ /^export ([^\s=]+)\s*$/ ) {
+	} elsif ( $params[0] =~ /^export .*?="/ || $params[0] =~ /^export [^\s=]+$/ ) {
 	    #
 	    # getparams interpreted by older (e.g., RHEL 5) Bash
 	    #

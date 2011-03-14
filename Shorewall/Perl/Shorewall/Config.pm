@@ -2908,7 +2908,7 @@ sub get_params() {
     if ( -f $fn ) {
 	progress_message2 "Processing $fn ...";
 
-	my $command = "$globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );
+	my $command = "env -i PATH=$ENV{PATH} TERM=$ENV{TERM} $globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );
 	#
 	# getparams silently sources the params file under 'set -a', then executes 'export -p'
 	#
@@ -3006,7 +3006,7 @@ sub get_params() {
 	    print "PARAMS:\n";
 	    my $value;
 	    while ( ($variable, $value ) = each %params ) {
-		print "   $variable='$value'\n";
+		print "   $variable='$value'\n" unless $compiler_params{$variable};
 	    }
 	}
     }

@@ -2276,7 +2276,7 @@ sub do_proto( $$$;$ )
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
 			    $types = '';
-			    for my $type ( split /,/, $ports ) {
+			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
 			    }
 			} else {
@@ -2300,7 +2300,7 @@ sub do_proto( $$$;$ )
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
 			    $types = '';
-			    for my $type ( split /,/, $ports ) {
+			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
 			    }
 			} else {

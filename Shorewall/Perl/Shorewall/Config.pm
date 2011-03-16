@@ -3385,7 +3385,7 @@ sub get_configuration( $ ) {
 	my @priomap = split ' ',$val;
 	fatal_error "Invalid TC_PRIOMAP ($val)" unless @priomap == 16;
 	for ( @priomap ) {
-	    fatal_error "Invalid TC_PRIOMAP entry ($_)" unless /[1-3]/;
+	    fatal_error "Invalid TC_PRIOMAP entry ($_)" unless /^[1-3]$/;
 	    $_--;
 	}
 

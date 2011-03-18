@@ -1125,7 +1125,7 @@ sub process_tc_filter() {
 		    fatal_error "ICMP not allowed with IPv6" unless $family == F_IPV4;
 		    fatal_error "SOURCE PORT(S) are not allowed with ICMP" if $sportlist ne '-';
 
-		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp( $portrange );
+		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp( $portrange );
 
 		    my $rule1 = "   match icmp type $icmptype 0xff";
 		    $rule1   .= "\\\n   match icmp code $icmpcode 0xff" if defined $icmpcode;
@@ -1136,7 +1136,7 @@ sub process_tc_filter() {
 		    fatal_error "IPv6 ICMP not allowed with IPv4" unless $family == F_IPV4;
 		    fatal_error "SOURCE PORT(S) are not allowed with IPv6 ICMP" if $sportlist ne '-';
 
-		    my ( $icmptype , $icmpcode ) = split '//', validate_icmp6( $portrange );
+		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp6( $portrange );
 
 		    my $rule1 = "   match icmp6 type $icmptype 0xff";
 		    $rule1   .= "\\\n   match icmp6 code $icmpcode 0xff" if defined $icmpcode;

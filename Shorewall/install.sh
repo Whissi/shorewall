@@ -314,21 +314,21 @@ cd "$(dirname $0)"
 
 echo "Installing Shorewall Version $VERSION"
 
-#
-# Check for ${SBIN}shorewall
-#
-if [ -f ${DESTDIR}${SBIN}shorewall ]; then
-    first_install=""
-else
-    first_install="Yes"
-fi
+first_install=""
+
 
 if [ -z "$CYGWIN" ]; then
+   if [ ! -f ${DESTDIR}${SBIN}shorewall ]; then
+       first_install="Yes"
+   fi
    install_file shorewall ${DESTDIR}${SBIN}shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}${SBIN}shorewall"
 else
-   install_file shorewall ${DESTDIR}/bin/shorewall 0755
-   echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
+    if [ ! -f ${DESTDIR}/bin/shorewall ]; then
+	first_install="Yes"
+    fi
+    install_file shorewall ${DESTDIR}/bin/shorewall 0755
+    echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
 fi
 
 #

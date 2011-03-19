@@ -307,9 +307,14 @@ echo "Installing Shorewall6 Version $VERSION"
 #
 # Check for ${SBIN}shorewall6
 #
-if [ -f ${DESTDIR}${SBIN}shorewall6 ]; then
-    first_install=""
-else
+
+first_install=""
+
+if [ -n "$CYGWIN" ]; THEN
+    if [ ! -f ${DESTDIR}/bin/shorewall6 ]; then
+	first_install="Yes"
+    fi
+elif [ ! -f ${DESTDIR}${SBIN}shorewall6 ]; then
     first_install="Yes"
 fi
 

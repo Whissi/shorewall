@@ -119,6 +119,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Sat Mar 19 2011 Tom Eastep tom@shorewall.net
+- Updated to 4.4.18-1
 * Sun Mar 13 2011 Tom Eastep tom@shorewall.net
 - Updated to 4.4.18-1
 * Wed Mar 02 2011 Tom Eastep tom@shorewall.net

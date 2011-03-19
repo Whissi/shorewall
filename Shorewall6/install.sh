@@ -310,7 +310,7 @@ echo "Installing Shorewall6 Version $VERSION"
 
 first_install=""
 
-if [ -n "$CYGWIN" ]; THEN
+if [ -n "$CYGWIN" ]; then
     if [ ! -f ${DESTDIR}/bin/shorewall6 ]; then
 	first_install="Yes"
     fi

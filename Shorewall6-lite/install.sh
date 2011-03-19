@@ -276,6 +276,11 @@ for f in lib.* ; do
     fi
 done
 
+eval sed -i \'s\|ETC=.\*\|g_etc=/etc/\|\' ${DESTDIR}}/usr/share/shorewall6-lite/lib.base ${DESTDIR}/sbin/shorewall6-lite
+eval sed -i \'s\|SBIN=.\*\|g_sbin=/sbin/\|\' ${DESTDIR}/usr/share/shorewall6-lite/lib.base ${DESTDIR}/sbin/shorewall6-lite
+eval sed -i \'s\|SHARE=.\*\|g_share=/usr/share/\|\' ${DESTDIR}/usr/share/shorewall6-lite/lib.base ${DESTDIR}/sbin/shorewall6-lite
+eval sed -i \'s\|VAR=.\*\|g_var=/var/lib/\|\' ${DESTDIR}/usr/share/shorewall6-lite/lib.base ${DESTDIR}/sbin/shorewall6-lite
+
 ln -sf lib.base ${DESTDIR}/usr/share/shorewall6-lite/functions
 
 echo "Common functions linked through ${DESTDIR}/usr/share/shorewall6-lite/functions"

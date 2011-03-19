@@ -592,12 +592,16 @@ show_command() {
 	config)
 	    . ${SHAREDIR}/configpath
 	    if [ -n "$g_filemode" ]; then
-		echo "CONFIG_PATH=$CONFIG_PATH"
-		echo "VARDIR=$VARDIR"
-		[ -n "$LITEDIR" ] && echo "LITEDIR=$LITEDIR"
+		if [ -n "$LITEDIR" ]; then
+		    echo "litedir=$LITEDIR; sharedir=$SHAREDIR; etcdir=$CONFDIR"
+		else
+		    echo "sharedir=$SHAREDIR; etcdir=$CONFDIR"
+		fi
 	    else
 		echo "Default CONFIG_PATH is $CONFIG_PATH"
 		echo "Default VARDIR is $VARDIR"
+		echo "CONFDIR is $CONFDIR"
+		echo "SHAREDIR is $SHAREDIR"
 		[ -n "$LITEDIR" ] && echo "LITEDIR is $LITEDIR"
 	    fi
 	    ;;

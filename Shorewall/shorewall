@@ -1142,8 +1142,13 @@ reload_command() # $* = original arguments less the command.
     getcaps=
     local root
     root=root
+    local config
+    local sharedir
+    local etcdir
 
     litedir=/var/lib/shorewall-lite
+    sharedir=/usr/share/shorewall-lite
+    etcdir=/etc/shorewall-lite
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1198,9 +1203,15 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    temp=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+    temp=$(rsh_command shorewall-lite show config 2> /dev/null)
 
-    [ -n "$temp" ] && litedir="$temp"
+    case $temp in
+	Default*)
+	    ;;
+	*)
+	    $temp
+	    ;;
+    esac
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
@@ -1218,7 +1229,7 @@ reload_command() # $* = original arguments less the command.
 	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" /usr/share/shorewall-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $sharedir/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1233,19 +1244,19 @@ reload_command() # $* = original arguments less the command.
     then
 	save=$(find_file save);
 
-	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/shorewall-lite/" && rcp_command $save /etc/shorewall-lite/
+	[ -f $save ] && progress_message3 "Copying $save to ${system}:$etcdir" && rcp_command $save $etcdir
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp restart" && \
+	    rsh_command "shorewall-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp start" && \
+	    rsh_command "shorewall-lite $g_debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp save" && \
+	    rsh_command "shorewall-lite $g_debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi

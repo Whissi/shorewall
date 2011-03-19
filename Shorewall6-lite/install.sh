@@ -305,12 +305,18 @@ if [ -f wait4ifup ]; then
     echo "wait4ifup installed in ${DESTDIR}/usr/share/shorewall6-lite/wait4ifup"
 fi
 
+#
+# Install the Modules files
+#
+
 if [ -f modules ]; then
-    #
-    # Install the Modules file
-    #
     run_install $OWNERSHIP -m 0600 modules ${DESTDIR}/usr/share/shorewall6-lite
     echo "Modules file installed as ${DESTDIR}/usr/share/shorewall6-lite/modules"
+fi
+
+if [ -f helpers ]; then
+    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}/usr/share/shorewall6-lite
+    echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall6-lite/modules"
 fi
 
 for f in modules.*; do

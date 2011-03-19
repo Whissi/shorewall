@@ -302,6 +302,11 @@ if [ -f modules ]; then
     echo "Modules file installed as ${DESTDIR}/usr/share/shorewall-lite/modules"
 fi
 
+if [ -f helpers ]; then
+    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}/usr/share/shorewall-lite
+    echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall-lite/helpers"
+fi
+
 for f in modules.*; do
     run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall-lite/$f
     echo "Module file $f installed as ${DESTDIR}/usr/share/shorewall-lite/$f"

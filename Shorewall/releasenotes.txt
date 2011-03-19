@@ -29,7 +29,11 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 3)  The Shorewall Lite and Shorewall6 Lite installers now install the
     'helpers' modules file. Previously, this file was not installed 
     with the result that both 'shorewall[6]-lite show capabilities' and
-    'shorecap' failed. 
+    'shorecap' failed.
+
+4)  Previously, if an icmp or icmp6 type which included both a type and
+    a code was used in the tcfilters file, 'start' and 'restart' would
+    fail with a 'tc' error.
 
 4.4.18 Final
 

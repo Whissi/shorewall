@@ -82,6 +82,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6-lite/lib.cli
 %attr(0644,root,root) /usr/share/shorewall6-lite/lib.common
 %attr(0644,root,root) /usr/share/shorewall6-lite/modules*
+%attr(0644,root,root) /usr/share/shorewall6-lite/helpers
 %attr(0544,root,root) /usr/share/shorewall6-lite/shorecap
 %attr(0755,root,root) /usr/share/shorewall6-lite/wait4ifup
 

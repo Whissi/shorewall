@@ -123,6 +123,7 @@ done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
+[ -n "${LIBEXEC:=share}" ]
 #
 # Determine where to install the firewall script
 #
@@ -225,6 +226,7 @@ echo  "Shorewall Lite script installed in ${DESTDIR}${DEST}/$INIT"
 #
 mkdir -p ${DESTDIR}/etc/shorewall-lite
 mkdir -p ${DESTDIR}/usr/share/shorewall-lite
+mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall-lite
 mkdir -p ${DESTDIR}/var/lib/shorewall-lite
 
 chmod 755 ${DESTDIR}/etc/shorewall-lite
@@ -277,20 +279,20 @@ echo "Common functions linked through ${DESTDIR}/usr/share/shorewall-lite/functi
 # Install Shorecap
 #
 
-install_file shorecap ${DESTDIR}/usr/share/shorewall-lite/shorecap 0755
+install_file shorecap ${DESTDIR}/usr/${LIBEXEC}/shorewall-lite/shorecap 0755
 
 echo
-echo "Capability file builder installed in ${DESTDIR}/usr/share/shorewall-lite/shorecap"
+echo "Capability file builder installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall-lite/shorecap"
 
 #
 # Install wait4ifup
 #
 
 if [ -f wait4ifup ]; then
-    install_file wait4ifup ${DESTDIR}/usr/share/shorewall-lite/wait4ifup 0755
+    install_file wait4ifup ${DESTDIR}/usr/${LIBEXEC}/shorewall-lite/wait4ifup 0755
 
     echo
-    echo "wait4ifup installed in ${DESTDIR}/usr/share/shorewall-lite/wait4ifup"
+    echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall-lite/wait4ifup"
 fi
 
 #

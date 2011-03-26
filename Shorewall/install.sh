@@ -107,6 +107,8 @@ fi
 
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
+[ -n "${LIBEXEC:=share}" ]
+
 INSTALLD='-D'
 
 case $(uname) in
@@ -233,9 +235,11 @@ fi
 if [ -z "$CYGWIN" ]; then
    install_file shorewall ${DESTDIR}/sbin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
+   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/sbin/shorewall
 else
    install_file shorewall ${DESTDIR}/bin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
+   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/bin/shorewall
 fi
 
 #
@@ -258,7 +262,7 @@ fi
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
 mkdir -p ${DESTDIR}/etc/shorewall
-mkdir -p ${DESTDIR}/usr/share/shorewall
+mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall
 mkdir -p ${DESTDIR}/usr/share/shorewall/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall
 
@@ -326,7 +330,7 @@ delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 install_file wait4ifup ${DESTDIR}/usr/share/shorewall/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${DESTDIR}/usr/share/shorewall/wait4ifup"
+echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup"
 
 #
 # Install the policy file
@@ -816,14 +820,14 @@ chmod 755 ${DESTDIR}/usr/share/shorewall/Shorewall
 #
 cd Perl
 
-install_file compiler.pl ${DESTDIR}/usr/share/shorewall/compiler.pl 0755
+install_file compiler.pl ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl 0755
 
 echo
 echo "Compiler installed in ${DESTDIR}/usr/share/shorewall/compiler.pl"
 #
 # Install the params file helper
 #
-install_file getparams ${DESTDIR}/usr/share/shorewall/getparams 0755
+install_file getparams ${DESTDIR}/usr/${LIBEXEC}/shorewall/getparams 0755
 
 echo
 echo "Params file helper installed in ${DESTDIR}/usr/share/shorewall/getparams"

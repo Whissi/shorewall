@@ -62,6 +62,15 @@ get_config() {
 
     ensure_config_path
     
+    if [ -n "$LIBEXEC" ]; then
+	if [ ! -x /usr/${LIBEXEC}/shorewall/compiler.pl ]; then
+	    echo "   ERROR: /usr/${LIBEXEC}/shorewall/compiler.pl not found or not executable" >&2
+	    exit 2
+	fi
+    else
+	LIBEXEC=share
+    fi
+
     if [ -z "$g_export" -a "$(id -u)" = 0 ]; then
 	#
 	# This block is avoided for compile for export and when the user isn't root
@@ -239,7 +248,7 @@ startup_error() {
 # Run the appropriate compiler
 #
 compiler() {
-    pc=${PERLSHAREDIR}/compiler.pl
+    pc=/usr/${LIBEXEC}/compiler.pl
 
     local command
     command=$1
@@ -1068,6 +1077,8 @@ reload_command() # $* = original arguments less the command.
     root=root
     local compiler
     compiler=
+    local libexec
+    libexec=share
 
     litedir=/var/lib/shorewall6-lite
 
@@ -1128,6 +1139,10 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$temp" ] && litedir=$temp
 
+    temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
+
+    [ -n "$temp" ] && libexec=$temp
+
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
 	ensure_config_path
@@ -1142,7 +1157,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES /usr/share/shorewall6-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES /usr/$libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1484,6 +1499,7 @@ SHAREDIR=/usr/share/shorewall6
 CONFDIR=/etc/shorewall6
 g_product="Shorewall6"
 g_recovering=
+g_libexec=share
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 

@@ -37,6 +37,7 @@ use File::Temp qw/ tempfile tempdir /;
 use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
 use Scalar::Util 'reftype';
+use FindBin;
 
 our @ISA = qw(Exporter);
 #
@@ -2906,7 +2907,7 @@ sub get_params() {
     if ( -f $fn ) {
 	progress_message2 "Processing $fn ...";
 
-	my $command = "$globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );
+	my $command = "$FindBin::Bin/getparams $fn " . join( ':', @config_path );
 	#
 	# getparams silently sources the params file under 'set -a', then executes 'export -p'
 	#
@@ -3083,6 +3084,7 @@ sub get_configuration( $ ) {
     default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 
     get_capabilities( $export );
+
 
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 

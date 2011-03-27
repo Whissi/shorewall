@@ -236,12 +236,12 @@ fi
 if [ -z "$CYGWIN" ]; then
    install_file shorewall ${DESTDIR}/sbin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
-   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/sbin/shorewall
+   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
    eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
 else
    install_file shorewall ${DESTDIR}/bin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
-   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/bin/shorewall
+   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/bin/shorewall
    eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/bin/shorewall
 fi
 

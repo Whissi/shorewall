@@ -188,6 +188,7 @@ else
     rm -rf ${DESTDIR}/etc/shorewall6-lite
     rm -rf ${DESTDIR}/usr/share/shorewall6-lite
     rm -rf ${DESTDIR}/var/lib/shorewall6-lite
+    [ "$LIBEXEC" = share ] || rm -rf /usr/share/shorewall6-lite/wait4ifup /usr/share/shorewall6-lite/shorecap
 fi
 
 #

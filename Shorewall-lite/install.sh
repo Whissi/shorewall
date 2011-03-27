@@ -190,6 +190,7 @@ else
     rm -rf ${DESTDIR}/etc/shorewall-lite
     rm -rf ${DESTDIR}/usr/share/shorewall-lite
     rm -rf ${DESTDIR}/var/lib/shorewall-lite
+    [ "$LIBEXEC" = share ] || rm -rf /usr/share/shorewall-lite/shorecap /usr/share/shorecap
 fi
 
 #

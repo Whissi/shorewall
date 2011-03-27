@@ -206,6 +206,8 @@ delete_file ${DESTDIR}/usr/share/shorewall-lite/xmodules
 
 install_file shorewall-lite ${DESTDIR}/sbin/shorewall-lite 0544
 
+eval sed -i \'``s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall-lite
+
 echo "Shorewall Lite control program installed in ${DESTDIR}/sbin/shorewall-lite"
 
 #

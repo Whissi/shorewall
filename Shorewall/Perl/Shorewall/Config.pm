@@ -138,7 +138,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -2948,7 +2948,7 @@ sub get_params() {
 		    }
 		}	
 	    }
-	} elsif ( $params[0] =~ /^export (.*?)="/ || $params[0] =~ /^export ([^\s=]+)\s*$/ ) {
+	} elsif ( $params[0] =~ /^export .*?="/ || $params[0] =~ /^export [^\s=]+\s*$/ ) {
 	    #
 	    # getparams interpreted by older (e.g., RHEL 5) Bash
 	    #
@@ -3005,7 +3005,7 @@ sub get_params() {
 	    print "PARAMS:\n";
 	    my $value;
 	    while ( ($variable, $value ) = each %params ) {
-		print "   $variable='$value'\n";
+		print "   $variable='$value'\n" unless $compiler_params{$variable};
 	    }
 	}
     }

@@ -901,6 +901,7 @@ fi
 if [ -z "$DESTDIR" ]; then
     rm -rf /usr/share/shorewall-perl
     rm -rf /usr/share/shorewall-shell
+    [ "$PERLLIB" != share/shorewall ] && rm -rf /usr/share/shorewall/Shorewall
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then

@@ -266,7 +266,7 @@ fi
 #
 mkdir -p ${DESTDIR}/etc/shorewall
 mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall
-mkdir -p ${DESTDIR}/usr/${PERLLIB}/
+mkdir -p ${DESTDIR}/usr/${PERLLIB}/Shorewall
 mkdir -p ${DESTDIR}/usr/share/shorewall/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall
 

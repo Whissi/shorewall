@@ -111,6 +111,7 @@ MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 INSTALLD='-D'
 [ -n "${LIBEXEC:=share}" ]
+[ -n "${PERLLIB:=share/shoreall}" ]
 
 case $(uname) in
     CYGWIN*)
@@ -228,10 +229,12 @@ fi
 if [ -z "$CYGWIN" ]; then
    install_file shorewall6 ${DESTDIR}/sbin/shorewall6 0755 ${DESTDIR}/var/lib/shorewall6-${VERSION}.bkout
    eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/sbin/shorewall6
+   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall6
    echo "shorewall6 control program installed in ${DESTDIR}/sbin/shorewall6"
 else
    install_file shorewall6 ${DESTDIR}/bin/shorewall6 0755 ${DESTDIR}/var/lib/shorewall6-${VERSION}.bkout
    eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/bin/shorewall6
+   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/bin/shorewall6
    echo "shorewall6 control program installed in ${DESTDIR}/bin/shorewall6"
 fi
 
@@ -256,6 +259,7 @@ fi
 #
 mkdir -p ${DESTDIR}/etc/shorewall6
 mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall6
+mkdir -p ${DESTDIR}/usr/${PERLLIB}/
 mkdir -p ${DESTDIR}/usr/share/shorewall6/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall6
 

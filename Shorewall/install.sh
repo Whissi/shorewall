@@ -108,6 +108,7 @@ fi
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 [ -n "${LIBEXEC:=share}" ]
+[ -n "${PERLLIB:=share/shorewall}" ]
 
 INSTALLD='-D'
 
@@ -236,10 +237,12 @@ if [ -z "$CYGWIN" ]; then
    install_file shorewall ${DESTDIR}/sbin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
    eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/sbin/shorewall
+   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
 else
    install_file shorewall ${DESTDIR}/bin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
    eval sed -i \'s\|g_libexec=.\*\|g_libexec=$SHARE\|\' ${DESTDIR}/bin/shorewall
+   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/bin/shorewall
 fi
 
 #
@@ -263,6 +266,7 @@ fi
 #
 mkdir -p ${DESTDIR}/etc/shorewall
 mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall
+mkdir -p ${DESTDIR}/usr/${PERLLIB}/
 mkdir -p ${DESTDIR}/usr/share/shorewall/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall
 
@@ -835,8 +839,8 @@ echo "Params file helper installed in ${DESTDIR}/usr/share/shorewall/getparams"
 # Install the libraries
 #
 for f in Shorewall/*.pm ; do
-    install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
-    echo "Module ${f%.*} installed as ${DESTDIR}/usr/share/shorewall/$f"
+    install_file $f ${DESTDIR}/${PERLLIB}/$f 0644
+    echo "Module ${f%.*} installed as ${DESTDIR}/usr/${PERLLIB}/$f"
 done
 #
 # Install the program skeleton files

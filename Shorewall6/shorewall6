@@ -62,15 +62,6 @@ get_config() {
 
     ensure_config_path
     
-    if [ -n "$LIBEXEC" ]; then
-	if [ ! -x /usr/${LIBEXEC}/shorewall/compiler.pl ]; then
-	    echo "   ERROR: /usr/${LIBEXEC}/shorewall/compiler.pl not found or not executable" >&2
-	    exit 2
-	fi
-    else
-	LIBEXEC=share
-    fi
-
     if [ -z "$g_export" -a "$(id -u)" = 0 ]; then
 	#
 	# This block is avoided for compile for export and when the user isn't root
@@ -248,7 +239,7 @@ startup_error() {
 # Run the appropriate compiler
 #
 compiler() {
-    pc=/usr/${LIBEXEC}/compiler.pl
+    pc=/usr/$g_libexec/compiler.pl
 
     local command
     command=$1

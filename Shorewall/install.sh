@@ -839,7 +839,7 @@ echo "Params file helper installed in ${DESTDIR}/usr/share/shorewall/getparams"
 # Install the libraries
 #
 for f in Shorewall/*.pm ; do
-    install_file $f ${DESTDIR}/${PERLLIB}/$f 0644
+    install_file $f ${DESTDIR}/usr/${PERLLIB}/$f 0644
     echo "Module ${f%.*} installed as ${DESTDIR}/usr/${PERLLIB}/$f"
 done
 #

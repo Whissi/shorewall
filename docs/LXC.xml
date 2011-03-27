@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>LXC and Shorewall</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2011</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Background</title>
+
+    <para>LXC (<ulink
+    url="http://lxc.sourceforge.net/">http://lxc.sourceforge.net/</ulink>) is
+    a set of user-space tools for managing the container capabilities that
+    have been in the Linux Kernel since 2.6.27.</para>
+
+    <para>This short article describes how I've implemented LXC here at
+    shorewall.net, with emphasis on the networking and firewall
+    aspects.</para>
+  </section>
+
+  <section>
+    <title>Overview of a Working Configuration</title>
+
+    <para>The following diagram shows the network at shorewall.net in the
+    spring of 2011.</para>
+
+    <graphic align="center" fileref="images/Network2011a.png" />
+
+    <para>As shown in that diagram, the LXC containers are bridged to br0.
+    Here are the relevant configuration entries.</para>
+
+    <para><filename>/etc/network/interfaces:</filename></para>
+
+    <programlisting>#
+# LXC bridge
+#
+auto br0
+iface br0 inet static
+      bridge_ports none
+      bridge_fd 0
+      address 70.90.191.121
+      broadcast 0.0.0.0
+      netmask 255.255.255.255
+      post-up ip route add 70.90.191.124/31 dev br0
+
+iface br0 inet6 static
+      address 2001:470:b:227::41
+      netmask 124
+</programlisting>
+
+    <para><filename>/etc/lxc/mail.conf</filename><programlisting>lxc.network.type=veth
+lxc.network.link=br0
+lxc.network.flags=up
+
+lxc.network.ipv4=70.90.191.124/29
+lxc.network.ipv6=2001:470:b:227::42/124
+
+…</programlisting></para>
+
+    <para><filename>/etc/lxc/server.conf</filename><programlisting>lxc.network.type=veth
+lxc.network.link=br0
+lxc.network.flags=up
+
+lxc.network.ipv4=70.90.191.125/29
+lxc.network.ipv6=2001:470:b:227::43/124
+
+…</programlisting></para>
+
+    <para>Note that I have subnetted 2001:470:b:227::/64 with a /124
+    (2001:470:b:227::40/124) assigned to the bridge. To make those addresses
+    accessible from the LOC zone, the following entries are required in
+    /etc/shorewall6/proxyndp:</para>
+
+    <programlisting>#ADDRESS		INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
+2001:470:b:227::41	-		eth1		Yes		Yes
+2001:470:b:227::42	-		eth1		Yes		Yes
+2001:470:b:227::43	-		eth1		Yes		Yes
+</programlisting>
+
+    <para>The entries in the LXC .conf files are expected to configure eth0 in
+    the LXC containers; they do, <emphasis>sort of</emphasis>. In both of the
+    containers, no ipv6 default route was assigned. I corrected that by adding
+    this entry in <filename>/etc/sysctl.conf</filename> in both
+    containers:</para>
+
+    <programlisting>net.ipv6.conf.all.forwarding=0
+</programlisting>
+
+    <para>I then added this stanza to <filename>/etc/radvd.conf</filename> on
+    the host:</para>
+
+    <programlisting>interface br0{
+	AdvSendAdvert on;
+	MinRtrAdvInterval 300;
+	MaxRtrAdvInterval 505;
+	AdvDefaultLifetime 9000;
+
+	route ::/0 {
+		AdvRouteLifetime infinity;
+	};
+};
+</programlisting>
+
+    <para>Curiosly, LXC gives container mail's eth0 this somewhat odd
+    configuration, and fails to add a default ipv4 route:</para>
+
+    <programlisting>14: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 4e:56:66:11:3c:6b brd ff:ff:ff:ff:ff:ff
+    inet 70.90.191.124/29 <emphasis role="bold">brd 70.90.191.120</emphasis> scope global eth0
+    inet6 2001:470:b:227::42/124 scope global 
+       valid_lft forever preferred_lft forever
+    inet6 fe80::4c56:66ff:fe11:3c6b/64 scope link 
+       valid_lft forever preferred_lft forever
+</programlisting>
+
+    <para>So in that container's<filename> /etc/rc.local</filename>, I also
+    have:</para>
+
+    <programlisting>ip route add default via 70.90.191.121</programlisting>
+
+    <para>With the exception of the entries in
+    <filename>/etc/shorewall6/proxyndp</filename>. the Shorewall and
+    Shorewall6 configurations are fairly conventional three-interface setups.
+    In both configurations, the <filename>interfaces</filename> file entry for
+    br0 has the <option>routeback</option> option specified.</para>
+  </section>
+</article>

@@ -60,6 +60,8 @@ else
     VERSION=""
 fi
 
+[ -n "${LIBEXEC:=share}" ]
+
 echo "Uninstalling Shorewall Lite $VERSION"
 
 if qt ip6tables -L shorewall -n && [ ! -f /sbin/shorewall6 ]; then
@@ -95,6 +97,7 @@ rm -rf /etc/shorewall6-lite-*.bkout
 rm -rf /var/lib/shorewall6-lite
 rm -rf /var/lib/shorewall6-lite-*.bkout
 rm -rf /usr/share/shorewall6-lite
+rm -rf /usr/${LIBEXEC}/shorewall6-lite
 rm -rf /usr/share/shorewall6-lite-*.bkout
 rm -f  /etc/logrotate.d/shorewall6-lite
 

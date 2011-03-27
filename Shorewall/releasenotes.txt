@@ -63,34 +63,37 @@ Beta 1
 
     Support for ICMP (and ICMPv6) type lists has now been restored.
 
-3)  Distributions have different philosophies about the prober file
+3)  Distributions have different philosophies about the proper file
     hierarchy. Two issures are particularly contentious:
 
-    - Executable files in /usr. These include;
+    - Executable files in /usr/share/shorewall*. These include;
 
       getparams
       compiler.pl
       wait4ifup
       shorecap
+      ifupdown
 
-    - Perl Modules, previously installed in
-      /usr/share/shorewall/Shorewall.
+    - Perl Modules in /usr/share/shorewall/Shorewall.
 
-    To allow distributions to designate alternate locations, the
-    installers (install.sh) now support the following environmental
-    variables:
+    To allow distributions to designate alternate locations for these
+    files, the installers (install.sh) now support the following
+    environmental variables:
 
     LIBEXEC -- determines where in /usr getparams, compiler.pl,
-    wait4ifup and shorecap are installed. Shorewall and Shorewall6
-    must be installed with the same value of LIBEXEC. The listed
-    executables are installed in /usr/${LIBEXEC}/shorewall. The default
-    value of LIBEXEC is 'share'
+    wait4ifup, shorecap and ifupdown are installed. Shorewall and
+    Shorewall6 must be installed with the same value of LIBEXEC. The
+    listed executables are installed in /usr/${LIBEXEC}/shorewall*. The
+    default value of LIBEXEC is 'share'. LIBEXEC is recognized by all
+    installers and uninstallers.
 
     PERLLIB -- determines where in /usr the Shorewall perl modules are
     installed. Shorewall and Shorewall6 must be installed with the same
     value of PERLLIB. The modules are installed in
     /usr/${PERLLIB}/Shorewall. The default value of PERLLIB is
-    'share/shorewall'.
+    'share/shorewall'. PERLLIB is only recognized by the Shorewall and
+    Shorewall6 installers and the same value must be passed to both
+    installers.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

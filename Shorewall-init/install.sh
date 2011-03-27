@@ -124,6 +124,7 @@ done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
+[ -n "${LIBEXEC:=share}" ]
 #
 # Determine where to install the firewall script
 #
@@ -259,9 +260,9 @@ fi
 # Install the ifupdown script
 #
 
-mkdir -p ${DESTDIR}/usr/share/shorewall-init
+mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall-init
 
-install_file ifupdown.sh ${DESTDIR}/usr/share/shorewall-init/ifupdown 0544
+install_file ifupdown.sh ${DESTDIR}/usr/${LIBEXEC}/shorewall-init/ifupdown 0544
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
     install_file ifupdown.sh ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
@@ -332,7 +333,7 @@ if [ -f ${DESTDIR}/etc/ppp ]; then
     if [ -n "$DEBIAN" ] -o -n "$SUSE" ]; then
 	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 	    mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
-	    cp -fp ${DESTDIR}/usr/share/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
+	    cp -fp ${DESTDIR}/usr/${LIBEXEC}/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
 	done
     elif [ -n "$REDHAT" ]; then
 	#
@@ -342,13 +343,13 @@ if [ -f ${DESTDIR}/etc/ppp ]; then
 	    FILE=${DESTDIR}/etc/ppp/$file
 	    if [ -f $FILE ]; then
 		if fgrep -q Shorewall-based $FILE ; then
-		    cp -fp ${DESTDIR}/usr/share/shorewall-init/ifupdown $FILE
+		    cp -fp ${DESTDIR}/usr/${LIBEXEC}/shorewall-init/ifupdown $FILE
 		else
 		    echo "$FILE already exists -- ppp devices will not be handled"
 		    break
 		fi
 	    else
-		cp -fp ${DESTDIR}/usr/share/shorewall-init/ifupdown $FILE
+		cp -fp ${DESTDIR}/usr/${LIBEXEC}/shorewall-init/ifupdown $FILE
 	    fi
 	done
     fi

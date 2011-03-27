@@ -60,6 +60,8 @@ else
     VERSION=""
 fi
 
+[ -n "${LIBEXEC:=share}" ]
+
 echo "Uninstalling Shorewall Init $VERSION"
 
 INITSCRIPT=/etc/init.d/shorewall-init
@@ -105,6 +107,7 @@ if [ -d /etc/ppp ]; then
 fi
 
 rm -rf /usr/share/shorewall-init
+rm -rf /usr/${LIBEXEC}/shorewall-init
 
 echo "Shorewall Init Uninstalled"
 

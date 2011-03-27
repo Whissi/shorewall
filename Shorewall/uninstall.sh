@@ -72,6 +72,9 @@ else
     VERSION=""
 fi
 
+[ -n "${LIBEXEC:=share}" ]
+[ -n "${PERLLIB:=share/shorewall}" ]
+
 echo "Uninstalling shorewall $VERSION"
 
 if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
@@ -106,6 +109,8 @@ rm -rf /etc/shorewall
 rm -rf /etc/shorewall-*.bkout
 rm -rf /var/lib/shorewall
 rm -rf /var/lib/shorewall-*.bkout
+rm -rf /usr/$PERLLIB}/Shorewall/*
+rm -rf /usr/${LIBEXEC}/shorewall
 rm -rf /usr/share/shorewall
 rm -rf /usr/share/shorewall-*.bkout
 rm -rf /usr/share/man/man5/shorewall*

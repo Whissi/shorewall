@@ -146,13 +146,12 @@ our %reservedName = ( all => 1,
 #     %interfaces { <interface1> => { name        => <name of interface>
 #                                     root        => <name without trailing '+'>
 #                                     options     => { port => undef|1
-#                                                    { <option1> } => <val1> ,          #See %validinterfaceoptions
+#                                                      <option1> = <val1> ,          #See %validinterfaceoptions
 #                                                      ...
 #                                                    }
 #                                     zone        => <zone name>
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
-#                                     ports       => [ list of ports on this bridge ]
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                     number      => <ordinal position in the interfaces file>
 #                                     physical    => <physical interface name>
@@ -884,7 +883,6 @@ sub process_interface( $$ ) {
 	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 
 	fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
-	push @{$interfaces{$interface}{ports}}, $port;
 	fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} != BPORT;
 
 	if ( $zone ) {
@@ -1102,8 +1100,7 @@ sub process_interface( $$ ) {
 						       options    => \%options ,
 						       zone       => '',
 						       physical   => $physical ,
-						       base       => chain_base( $physical ),
-						       ports      => [],
+						       base       => chain_base( $physical )
 						     };
 
     if ( $zone ) {
@@ -1693,7 +1690,7 @@ sub process_host( ) {
     fatal_error "Unknown ZONE ($zone)" unless $type;
     fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type == FIREWALL;
 
-    my ( $interface, $interfaceref );
+    my $interface;
 
     if ( $family == F_IPV4 ) {
 	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
@@ -1706,7 +1703,7 @@ sub process_host( ) {
 		fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^\+[a-zA-Z][-\w]*$/;
 	    }
 
-	    fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
+	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
@@ -1714,16 +1711,16 @@ sub process_host( ) {
 	$interface = $1;
 	$hosts = $2;
 	$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
+	fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts";
     }
 
     if ( $type == BPORT ) {
 	if ( $zoneref->{bridge} eq '' ) {
-	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaceref->{options}{port};
+	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
 	    $zoneref->{bridge} = $interfaces{$interface}{bridge};
-	} elsif ( $zoneref->{bridge} ne $interfaceref->{bridge} ) {
+	} elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
 	    fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
 	}
     }
@@ -1781,19 +1778,12 @@ sub process_host( ) {
 	$ipsets{"${zone}_${physical}"} = 1;
 
     }
-
     #
     # We ignore the user's notion of what interface vserver addresses are on and simply invent one for all of the vservers.
     #
-    my $ports;
+    $interface = '%vserver%' if $type == VSERVER;
 
-    if ( $type == VSERVER ) {
-	$ports = [ $interface = '%vserver%' ];
-    } else {
-	$ports = @{$interfaceref->{ports}} ? $interfaceref->{ports} : [ $interface ];
-    }
-
-    add_group_to_zone( $zone, $type , $_, [ split_list( $hosts, 'host' ) ] , $optionsref) for @$ports;
+    add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
 
     progress_message "   Host \"$currentline\" validated";
 

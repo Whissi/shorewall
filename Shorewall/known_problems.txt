@@ -29,10 +29,14 @@
     /etc/shorewall/interface, then an ipsec entry (either ipsec zone or
     the 'ipsec' option specified) in /etc/shorewall/hosts results in
     the compiler generating an incorrect Netfilter configuration.
-
+ 
     Workaround: Change the hosts entry to specify one of the bridge
     ports. If the specified network spans more than one port, then
     replicate for each port.
+ 
+    Will be corrected in Shorewall 4.4.19
 
-    Will be corrected in Shorewall 4.4.18.2 or 4.4.19, whichever occurs
-    first.
+6)  SAVE_IPSETS=Yes doesn't work unless there is a dynamic zone
+    defined.
+
+    Workaround: Create a dummy dynamic zone.

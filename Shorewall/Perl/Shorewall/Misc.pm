@@ -45,7 +45,7 @@ our @EXPORT = qw( process_tos
 		  generate_matrix
 		  );
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 
 our $family;
 
@@ -1036,13 +1036,40 @@ sub add_interface_jumps {
 	my $outputref    = $filter_table->{output_chain $interface};
 	my $interfaceref = find_interface($interface);
 
-	add_rule ( $filter_table->{FORWARD}, match_source_dev( $interface) . match_dest_dev( $interface) . '-j ACCEPT' ) unless $interfaceref->{nets} || ! $interfaceref->{options}{bridge};
+	if ( $interfaceref->{options}{port} ) {
+	    my $bridge = $interfaceref->{bridge};
+	    add_rule ( $filter_table->{forward_chain $bridge},
+		       match_source_dev( $interface, 1) . match_dest_dev( $interface, 1) . '-j ACCEPT'
+		     ) unless $interfaceref->{nets} || ! $interfaceref->{options}{bridge};
 
-	add_jump( $filter_table->{FORWARD} , $forwardref , 0, match_source_dev( $interface ) ) unless $forward_jump_added{$interface} || ! use_forward_chain $interface, $forwardref;
-	add_jump( $filter_table->{INPUT}   , $inputref ,   0, match_source_dev( $interface ) ) unless $input_jump_added{$interface}   || ! use_input_chain $interface, $inputref;
+	    add_jump( $filter_table->{forward_chain $bridge} ,
+		      $forwardref , 
+		      0, 
+		      match_source_dev( $interface, 1 )
+		    ) unless $forward_jump_added{$interface} || ! use_forward_chain $interface, $forwardref;
 
-	unless ( $output_jump_added{$interface} || ! use_output_chain $interface, $outputref ) {
-	    add_jump $filter_table->{OUTPUT} , $outputref , 0, match_dest_dev( $interface ) unless get_interface_option( $interface, 'port' );
+	    add_jump( $filter_table->{input_chain $bridge },
+		      $inputref ,
+		      0,
+		      match_source_dev( $interface, 1 )
+		    ) unless $input_jump_added{$interface}   || ! use_input_chain $interface, $inputref;
+
+	    unless ( $output_jump_added{$interface} || ! use_output_chain $interface, $outputref ) {
+		add_jump( $filter_table->{output_chain $bridge} ,
+			  $outputref ,
+			  0 ,
+			  match_dest_dev( $interface, 1 ) )
+		    unless get_interface_option( $interface, 'port' );
+	    }
+	} else {
+	    add_rule ( $filter_table->{FORWAR}, match_source_dev( $interface) . match_dest_dev( $interface) . '-j ACCEPT' ) unless $interfaceref->{nets} || ! $interfaceref->{options}{bridge};
+
+	    add_jump( $filter_table->{FORWARD} , $forwardref , 0, match_source_dev( $interface ) ) unless $forward_jump_added{$interface} || ! use_forward_chain $interface, $forwardref;
+	    add_jump( $filter_table->{INPUT}   , $inputref ,   0, match_source_dev( $interface ) ) unless $input_jump_added{$interface}   || ! use_input_chain $interface, $inputref;
+
+	    unless ( $output_jump_added{$interface} || ! use_output_chain $interface, $outputref ) {
+		add_jump $filter_table->{OUTPUT} , $outputref , 0, match_dest_dev( $interface ) unless get_interface_option( $interface, 'port' );
+	    }
 	}
     }
 
@@ -1077,6 +1104,7 @@ sub generate_matrix() {
     our %input_jump_added   = ();
     our %output_jump_added  = ();
     our %forward_jump_added = ();
+    my  %ipsec_jump_added   = ();
 
     progress_message2 'Generating Rule Matrix...';
     progress_message  '  Handling blacklisting and complex zones...';
@@ -1143,12 +1171,31 @@ sub generate_matrix() {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
 		my $sourcechainref = $filter_table->{forward_chain $interface};
 		my $interfacematch = '';
+		my $interfaceref = find_interface $interface;
 
 		if ( use_forward_chain( $interface, $sourcechainref ) ) {
-		    add_jump $filter_table->{FORWARD} , $sourcechainref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+		    if ( $interfaceref->{ports} && $interfaceref->{options}{bridge} ) {
+			$interfacematch = match_source_dev $interface;
+			copy_rules( $sourcechainref, $frwd_ref, 1 ) unless $ipsec_jump_added{$zone}++;
+			$sourcechainref = $filter_table->{FORWARD};
+		    } elsif ( $interfaceref->{options}{port} ) {
+			add_jump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
+				  $sourcechainref ,
+				  0 ,
+				  match_source_dev( $interface , 1 ) )
+			    unless $forward_jump_added{$interface}++;
+		    } else {
+			add_jump $filter_table->{FORWARD} , $sourcechainref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+		    }
 		} else {
-		    $sourcechainref = $filter_table->{FORWARD};
-		    $interfacematch = match_source_dev $interface;
+		    if ( $interfaceref->{options}{port} ) {
+			$sourcechainref = $filter_table->{ forward_chain $interfaceref->{bridge} };
+			$interfacematch = match_source_dev $interface, 1;
+		    } else {
+			$sourcechainref = $filter_table->{FORWARD};
+			$interfacematch = match_source_dev $interface;
+		    }
+
 		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
 		}
 
@@ -1235,6 +1282,9 @@ sub generate_matrix() {
 	for my $typeref ( values %$source_hosts_ref ) {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		my $arrayref = $typeref->{$interface};
+		my $interfaceref = find_interface $interface;
+		my $isport = $interfaceref->{options}{port};
+		my $bridge = $interfaceref->{bridge};
 
 		if ( get_physical( $interface ) eq '+' ) {
 		    #
@@ -1261,7 +1311,17 @@ sub generate_matrix() {
 
 			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
 				$outputref = $interfacechainref;
-				add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
+
+				if ( $isport ) {
+				    add_jump( $filter_table->{ output_chain $bridge },
+					      $outputref ,
+					      0 ,
+					      match_dest_dev( $interface, 1 ) )
+					unless $output_jump_added{$interface}++;
+				} else {
+				    add_jump $filter_table->{OUTPUT}, $outputref, 0, match_dest_dev( $interface ) unless $output_jump_added{$interface}++;
+				}
+
 				$use_output = 1;
 
 				unless ( lc $net eq IPv6_LINKLOCAL ) {
@@ -1269,6 +1329,9 @@ sub generate_matrix() {
 					generate_source_rules ( $outputref, $vzone, $zone, $dest );
 				    }
 				}
+			    } elsif ( $isport ) {
+				$outputref = $filter_table->{ output_chain $bridge };
+				$interfacematch = match_dest_dev $interface, 1;
 			    } else {
 				$outputref = $filter_table->{OUTPUT};
 				$interfacematch = match_dest_dev $interface;
@@ -1323,7 +1386,17 @@ sub generate_matrix() {
 
 			if ( @vservers || use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
 			    $inputchainref = $interfacechainref;
-			    add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
+			    
+			    if ( $isport ) {
+				add_jump( $filter_table->{ input_chain $bridge },
+					  $inputchainref ,
+					  0 ,
+					  match_source_dev($interface, 1) )
+				    unless $input_jump_added{$interface}++;
+			    } else {
+				add_jump $filter_table->{INPUT}, $inputchainref, 0, match_source_dev($interface) unless $input_jump_added{$interface}++;
+			    }
+
 			    $use_input = 1;
 
 			    unless ( lc $net eq IPv6_LINKLOCAL ) {
@@ -1332,6 +1405,9 @@ sub generate_matrix() {
 				    generate_dest_rules( $inputchainref, $target, $vzone, $source . $ipsec_in_match ) if $target;
 				}
 			    }
+			} elsif ( $isport ) {
+			    $inputchainref = $filter_table->{ input_chain $bridge };
+			    $interfacematch = match_source_dev $interface, 1;
 			} else {
 			    $inputchainref = $filter_table->{INPUT};
 			    $interfacematch = match_source_dev $interface;
@@ -1345,11 +1421,29 @@ sub generate_matrix() {
 			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
 			    my $ref = source_exclusion( $exclusions, $frwd_ref );
 			    my $forwardref = $filter_table->{forward_chain $interface};
+
 			    if ( use_forward_chain $interface, $forwardref ) {
 				add_jump $forwardref , $ref, 0, join( '', $source, $ipsec_in_match );
-				add_jump $filter_table->{FORWARD} , $forwardref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+				
+				if ( $isport ) {
+				    add_jump( $filter_table->{ forward_chain $bridge } ,
+					      $forwardref ,
+					      0 ,
+					      match_source_dev( $interface , 1 ) )
+					unless $forward_jump_added{$interface}++;
+				} else {
+				    add_jump $filter_table->{FORWARD} , $forwardref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+				}
 			    } else {
-				add_jump $filter_table->{FORWARD} , $ref, 0, join( '', match_source_dev( $interface ) , $source, $ipsec_in_match );
+				if ( $isport ) {
+				    add_jump( $filter_table->{ forward_chain $bridge } ,
+					      $ref ,
+					      0 ,
+					      join( '', match_source_dev( $interface, 1 ) , $source, $ipsec_in_match ) );
+				} else {
+				    add_jump $filter_table->{FORWARD} , $ref, 0, join( '', match_source_dev( $interface ) , $source, $ipsec_in_match );
+				}
+
 				move_rules ( $forwardref , $frwd_ref );
 			    }
 			}
@@ -1461,6 +1555,7 @@ sub generate_matrix() {
 		#
 		for my $typeref ( values %$source_hosts_ref ) {
 		    for my $interface ( keys %$typeref ) {
+			my $interfaceref = find_interface $interface;
 			my $chain3ref;
 			my $match_source_dev = '';
 			my $forwardchainref = $filter_table->{forward_chain $interface};
@@ -1470,13 +1565,28 @@ sub generate_matrix() {
 			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
 			    #
 			    $chain3ref = $forwardchainref;
-			    add_jump $filter_table->{FORWARD} , $chain3ref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+			    
+			    if ( $interfaceref->{options}{port} ) {
+				add_jump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
+					  $chain3ref,
+					  0 ,
+					  match_source_dev( $interface , 1 ) )
+				    unless $forward_jump_added{$interface}++;
+			    } else {
+				add_jump $filter_table->{FORWARD} , $chain3ref, 0 , match_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+			    }
 			} else {
 			    #
 			    # Don't use the interface's forward chain -- move any rules in that chain to this rules chain
 			    #
-			    $chain3ref  = $filter_table->{FORWARD};
-			    $match_source_dev = match_source_dev $interface;
+			    if ( $interfaceref->{options}{port} ) {
+				$chain3ref  = $filter_table->{ forward_chain $interfaceref->{bridge} };
+				$match_source_dev = match_source_dev $interface, 1;
+			    } else {
+				$chain3ref  = $filter_table->{FORWARD};
+				$match_source_dev = match_source_dev $interface;
+			    }
+
 			    move_rules $forwardchainref, $chainref;
 			}
 

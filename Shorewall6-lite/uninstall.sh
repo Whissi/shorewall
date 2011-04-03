@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=4.4.18.1
+VERSION=4.4.19-Beta4
 
 usage() # $1 = exit status
 {
@@ -59,6 +59,8 @@ else
     echo "WARNING: Shorewall Lite Version $VERSION is not installed"
     VERSION=""
 fi
+
+[ -n "${LIBEXEC:=share}" ]
 
 echo "Uninstalling Shorewall Lite $VERSION"
 
@@ -95,6 +97,7 @@ rm -rf /etc/shorewall6-lite-*.bkout
 rm -rf /var/lib/shorewall6-lite
 rm -rf /var/lib/shorewall6-lite-*.bkout
 rm -rf /usr/share/shorewall6-lite
+rm -rf /usr/${LIBEXEC}/shorewall6-lite
 rm -rf /usr/share/shorewall6-lite-*.bkout
 rm -f  /etc/logrotate.d/shorewall6-lite
 

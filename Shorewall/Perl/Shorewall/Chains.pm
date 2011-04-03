@@ -78,6 +78,7 @@ our %EXPORT_TAGS = (
 
 				       initialize_chain_table
 				       add_commands
+				       copy_rules
 				       move_rules
 				       insert_rule1
 				       delete_jumps
@@ -187,7 +188,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 
 #
 # Chain Table
@@ -387,8 +388,8 @@ our %builtin_target = ( ACCEPT      => 1,
 #   2. The compiler can run multiple times in the same process so it has to be
 #      able to re-initialize its dependent modules' state.
 #
-sub initialize( $ ) {
-    $family = shift;
+sub initialize( $$ ) {
+    ( $family, my $hard ) = @_;
 
     %chain_table = ( raw    => {},
 		     mangle => {},
@@ -428,7 +429,7 @@ sub initialize( $ ) {
     $idiotcount1        = 0;
     $warningcount       = 0;
     $hashlimitset       = 0;
-    $ipset_rules        = 0;
+    $ipset_rules        = 0 if $hard;
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -617,6 +618,16 @@ sub handle_port_list( $$$$$$ ) {
 }
 
 #
+# This much simpler function splits a rule with an icmp type list into discrete rules
+#
+
+sub handle_icmptype_list( $$$$ ) {
+    my ($chainref, $first, $types, $rest) = @_;
+    my @ports = split ',', $types;
+    push_rule ( $chainref, join ( '', $first, shift @ports, $rest ) ) while @ports;
+}
+
+#
 # Add a rule to a chain. Arguments are:
 #
 #    Chain reference , Rule [, Expand-long-port-lists ]
@@ -645,6 +656,17 @@ sub add_rule($$;$) {
 	    # Rule has a --sports specification
 	    #
 	    handle_port_list( $chainref, $rule, 0, $1, $2, $3 )
+	} elsif ( $rule =~ /^(.* --icmp(?:v6)?-type\s*)([^ ]+)(.*)$/ ) {
+	    #
+	    # ICMP rule -- split it up if necessary
+	    #
+	    my ( $first, $types, $rest ) = ($1, $2, $3 );
+
+	    if ( $types =~ /,/ ) {
+		handle_icmptype_list( $chainref, $first, $types, $rest );
+	    } else {
+		push_rule( $chainref, $rule );
+	    }
 	} else {
 	    push_rule ( $chainref, $rule );
 	}
@@ -851,8 +873,8 @@ sub move_rules( $$ ) {
 # Replace the jump at the end of one chain (chain2) with the rules from another chain (chain1).
 #
 
-sub copy_rules( $$ ) {
-    my ($chain1, $chain2 ) = @_;
+sub copy_rules( $$;$ ) {
+    my ($chain1, $chain2, $nojump ) = @_;
 
     my $name1      = $chain1->{name};
     my $name       = $name1;
@@ -868,7 +890,7 @@ sub copy_rules( $$ ) {
     #
     $name1 =~ s/\+/\\+/;
 
-    my $last = pop @$rules2; # Delete the jump to chain1
+    pop @$rules2 unless $nojump; # Delete the jump to chain1
 
     if ( $blacklist2 && $blacklist1 ) {
 	#
@@ -948,12 +970,21 @@ sub zone_forward_chain($) {
 sub use_forward_chain($$) {
     my ( $interface, $chainref ) = @_;
     my $interfaceref = find_interface($interface);
+    my $nets = $interfaceref->{nets};
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
-    # We must use the interfaces's chain if the interface is associated with multiple nets
+    # We must use the interfaces's chain if the interface is associated with multiple zones
     #
-    return 1 if $interfaceref->{nets} > 1;
+    return 1 if ( keys %{interface_zones $interface} ) > 1;
+    #
+    # Use interface's chain if there are multiple nets on the interface
+    #
+    return 1 if $nets > 1;
+    #
+    # Use interface's chain if it is a bridge with ports
+    #
+    return 1 if $interfaceref->{ports};
 
     my $zone = $interfaceref->{zone};
 
@@ -990,9 +1021,17 @@ sub use_input_chain($$) {
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
-    # We must use the interfaces's chain if the interface is associated with multiple nets
+    # We must use the interfaces's chain if the interface is associated with multiple Zones
+    #
+    return 1 if ( keys %{interface_zones $interface} ) > 1;
+    #
+    # Use interface's chain if there are multiple nets on the interface
     #
     return 1 if $nets > 1;
+    #
+    # Use interface's chain if it is a bridge with ports
+    #
+    return 1 if $interfaceref->{ports};
     #
     # Don't need it if it isn't associated with any zone
     #
@@ -1043,9 +1082,17 @@ sub use_output_chain($$) {
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
-    # We must use the interfaces's chain if the interface is associated with multiple nets
+    # We must use the interfaces's chain if the interface is associated with multiple Zones
+    #
+    return 1 if ( keys %{interface_zones $interface} ) > 1;
+    #
+    # Use interface's chain if there are multiple nets on the interface
     #
     return 1 if $nets > 1;
+    #
+    # Use interface's chain if it is a bridge with ports
+    #
+    return 1 if $interfaceref->{ports};
     #
     # Don't need it if it isn't associated with any zone
     #
@@ -2203,7 +2250,15 @@ sub do_proto( $$$;$ )
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
-			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $ports ) > 15;
+
+			    if ( port_count ( $ports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
 			    $ports = validate_port_list $pname , $ports;
 			    $output .= "-m multiport ${invert}--dports ${ports} ";
 			    $multiport = 1;
@@ -2218,7 +2273,15 @@ sub do_proto( $$$;$ )
 		    if ( $sports ne '' ) {
 			$invert = $sports =~ s/^!// ? '! ' : '';
 			if ( $multiport ) {
-			    fatal_error "A port list in this file may only have up to 15 ports" if $restricted && port_count( $sports ) > 15;
+
+			    if ( port_count( $sports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
 			    $sports = validate_port_list $pname , $sports;
 			    $output .= "-m multiport ${invert}--sports ${sports} ";
 			}  else {
@@ -2233,9 +2296,20 @@ sub do_proto( $$$;$ )
 		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
-			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
-			$ports = validate_icmp $ports;
-			$output .= "${invert}--icmp-type ${ports} ";
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    $types = '';
+			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
+				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp $ports;
+			}
+
+			$output .= "${invert}--icmp-type ${types} ";
 		    }
 
 		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
@@ -2246,9 +2320,20 @@ sub do_proto( $$$;$ )
 		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
-			fatal_error 'Multiple ICMP types are not permitted' if $ports =~ /,/;
-			$ports = validate_icmp6 $ports;
-			$output .= "${invert}--icmpv6-type ${ports} ";
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    $types = '';
+			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
+				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp6 $ports;
+			}
+
+			$output .= "${invert}--icmpv6-type ${types} ";
 		    }
 
 		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
@@ -2651,13 +2736,18 @@ sub do_headers( $ ) {
 #
 # Match Source Interface
 #
-sub match_source_dev( $ ) {
-    my $interface = shift;
+sub match_source_dev( $;$ ) {
+    my ( $interface, $nodev ) = @_;;
     my $interfaceref =  known_interface( $interface );
     $interface = $interfaceref->{physical} if $interfaceref;
     return '' if $interface eq '+';
     if ( $interfaceref && $interfaceref->{options}{port} ) {
-	"-i $interfaceref->{bridge} -m physdev --physdev-in $interface ";
+	if ( $nodev ) {
+	    "-m physdev --physdev-in $interface ";
+	} else {
+	    my $bridgeref = find_interface $interfaceref->{bridge};
+	    "-i $bridgeref->{physical} -m physdev --physdev-in $interface ";
+	}
     } else {
 	"-i $interface ";
     }
@@ -2666,16 +2756,26 @@ sub match_source_dev( $ ) {
 #
 # Match Dest device
 #
-sub match_dest_dev( $ ) {
-    my $interface = shift;
+sub match_dest_dev( $;$ ) {
+    my ( $interface, $nodev ) = @_;;
     my $interfaceref =  known_interface( $interface );
     $interface = $interfaceref->{physical} if $interfaceref;
     return '' if $interface eq '+';
     if ( $interfaceref && $interfaceref->{options}{port} ) {
-	if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
-	    "-o $interfaceref->{bridge} -m physdev --physdev-is-bridged --physdev-out $interface ";
+	if ( $nodev ) {
+	    if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
+		"-m physdev --physdev-is-bridged --physdev-out $interface ";
+	    } else {
+		"-m physdev --physdev-out $interface ";
+	    }
 	} else {
-	    "-o $interfaceref->{bridge} -m physdev --physdev-out $interface ";
+	    my $bridgeref = find_interface $interfaceref->{bridge};
+	    
+	    if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
+		"-o $bridgeref->{physical} -m physdev --physdev-is-bridged --physdev-out $interface ";
+	    } else {
+		"-o $bridgeref->{physical} -m physdev --physdev-out $interface ";
+	    }
 	}
     } else {
 	"-o $interface ";

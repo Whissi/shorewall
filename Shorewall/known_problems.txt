@@ -1,26 +1,3 @@
 1)  On systems running Upstart, shorewall-init cannot reliably secure
     the firewall before interfaces are brought up.
 
-2)  An issue with params processing on RHEL6 manifested as the
-    following type of warning:
-
-
-       WARNING: Param line (export OLDPWD) ignored at 
-                /usr/share/shorewall/Shorewall/Config.pm line
-                2993.
-
-     Corrected in Shorewall 4.4.18.1
-
-3)  The Shorewall Lite and Shorewall6 Lite installers fail to install
-    the 'helpers' modules file, with the result that both
-    'shorewall[6]-lite show capabilities' and 'shorecap' fail. 
-
-    Workaround: Copy the 'helpers' file from the Administrative System
-    to the firewall system.
-
-    Corrected in Shorewall 4.4.18.1
-
-4)  If an icmp or icmp6 type/code is specified in the tcfilters file, a
-    run-time error occurs.
-
-    Corrected in Shorewall 4.4.18.1

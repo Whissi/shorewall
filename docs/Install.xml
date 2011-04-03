@@ -173,6 +173,80 @@
         instructions</ulink>.</para>
       </listitem>
     </orderedlist>
+
+    <section>
+      <title>Executables in /usr and Perl Modules</title>
+
+      <para>Distributions have different philosophies about the proper file
+      hierarchy. Two issures are particularly contentious:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Executable files in
+          <filename>/usr/share/shorewall*</filename>. These include;</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>getparams</para>
+            </listitem>
+
+            <listitem>
+              <para>compiler.pl</para>
+            </listitem>
+
+            <listitem>
+              <para>wait4ifup</para>
+            </listitem>
+
+            <listitem>
+              <para>shorecap</para>
+            </listitem>
+
+            <listitem>
+              <para>ifupdown</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para>Perl Modules in
+          <filename>/usr/share/shorewall/Shorewall</filename>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>To allow distributions to designate alternate locations for these
+      files, the installers (install.sh) from 4.4.19 onward support the
+      following environmental variables:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>LIBEXEC</term>
+
+          <listitem>
+            <para>Determines where in /usr getparams, compiler.pl, wait4ifup,
+            shorecap and ifupdown are installed. Shorewall and Shorewall6 must
+            be installed with the same value of LIBEXEC. The listed
+            executables are installed in
+            <filename>/usr/${LIBEXEC}/shorewall*</filename>. The default value
+            of LIBEXEC is 'share'. LIBEXEC is recognized by all installers and
+            uninstallers.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>PERLLIB</term>
+
+          <listitem>
+            <para> Determines where in <filename>/usr </filename>the Shorewall
+            perl modules are installed. Shorewall and Shorewall6 must be
+            installed with the same value of PERLLIB. The modules are
+            installed in <filename>/usr/${PERLLIB}/Shorewall</filename>. The
+            default value of PERLLIB is 'share/shorewall'. PERLLIB is only
+            recognized by the Shorewall and Shorewall6 installers.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
   </section>
 
   <section id="Debian">

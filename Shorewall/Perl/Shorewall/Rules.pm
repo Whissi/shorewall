@@ -2235,7 +2235,7 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'rules file', $rule_commands;
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'rules file', $rule_commands;
 
     process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
@@ -2257,9 +2257,14 @@ sub process_rule ( ) {
     my $fw        = firewall_zone;
     my @source    = build_zone_list ( $fw, $source, 'SOURCE', $intrazone, $wild );
     my @dest      = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone, $wild );
+    my @protos    = split_list1 $protos, 'Protocol';
     my $generated = 0;
 
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
+
+    if ( @protos > 1 ) {
+	fatal_error "Inversion not allowed in a PROTO list" if $protos =~ tr/!/!/;
+    }
 
     for $source ( @source ) {
 	for $dest ( @dest ) {
@@ -2267,22 +2272,24 @@ sub process_rule ( ) {
 	    my $destzone   = (split( /:/, $dest,   2 ) )[0];
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
-		$generated |= process_rule1( undef,
-					     $target,
-					     '',
-					     $source,
-					     $dest,
-					     $proto,
-					     $ports,
-					     $sports,
-					     $origdest,
-					     $ratelimit,
-					     $user,
-					     $mark,
-					     $connlimit,
-					     $time,
-					     $headers,
-					     $wild );
+		for my $proto ( @protos ) {
+		    $generated |= process_rule1( undef,
+						 $target,
+						 '',
+						 $source,
+						 $dest,
+						 $proto,
+						 $ports,
+						 $sports,
+						 $origdest,
+						 $ratelimit,
+						 $user,
+						 $mark,
+						 $connlimit,
+						 $time,
+						 $headers,
+						 $wild );
+		}
 	    }
 	}
     }

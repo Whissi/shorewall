@@ -37,6 +37,7 @@ use File::Temp qw/ tempfile tempdir /;
 use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
 use Scalar::Util 'reftype';
+use FindBin;
 
 our @ISA = qw(Exporter);
 #
@@ -137,7 +138,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -410,7 +411,7 @@ sub initialize( $ ) {
 		    EXPORT     => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.18.1",
+		    VERSION    => "4.4.19-Beta4",
 		    CAPVERSION => 40417 ,
 		  );
     #
@@ -2906,7 +2907,7 @@ sub get_params() {
     if ( -f $fn ) {
 	progress_message2 "Processing $fn ...";
 
-	my $command = "$globals{SHAREDIRPL}/getparams $fn " . join( ':', @config_path );
+	my $command = "$FindBin::Bin/getparams $fn " . join( ':', @config_path );
 	#
 	# getparams silently sources the params file under 'set -a', then executes 'export -p'
 	#
@@ -2947,7 +2948,7 @@ sub get_params() {
 		    }
 		}	
 	    }
-	} elsif ( $params[0] =~ /^export (.*?)="/ || $params[0] =~ /^export ([^\s=]+)\s*$/ ) {
+	} elsif ( $params[0] =~ /^export .*?="/ || $params[0] =~ /^export [^\s=]+\s*$/ ) {
 	    #
 	    # getparams interpreted by older (e.g., RHEL 5) Bash
 	    #
@@ -3004,7 +3005,7 @@ sub get_params() {
 	    print "PARAMS:\n";
 	    my $value;
 	    while ( ($variable, $value ) = each %params ) {
-		print "   $variable='$value'\n";
+		print "   $variable='$value'\n" unless $compiler_params{$variable};
 	    }
 	}
     }
@@ -3083,6 +3084,7 @@ sub get_configuration( $ ) {
     default_yes_no 'LOAD_HELPERS_ONLY'          , '';
 
     get_capabilities( $export );
+
 
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 

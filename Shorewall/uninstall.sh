@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=4.4.18.1
+VERSION=4.4.19-Beta4
 
 usage() # $1 = exit status
 {
@@ -72,6 +72,9 @@ else
     VERSION=""
 fi
 
+[ -n "${LIBEXEC:=share}" ]
+[ -n "${PERLLIB:=share/shorewall}" ]
+
 echo "Uninstalling shorewall $VERSION"
 
 if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
@@ -106,6 +109,8 @@ rm -rf /etc/shorewall
 rm -rf /etc/shorewall-*.bkout
 rm -rf /var/lib/shorewall
 rm -rf /var/lib/shorewall-*.bkout
+rm -rf /usr/$PERLLIB}/Shorewall/*
+rm -rf /usr/${LIBEXEC}/shorewall
 rm -rf /usr/share/shorewall
 rm -rf /usr/share/shorewall-*.bkout
 rm -rf /usr/share/man/man5/shorewall*

@@ -74,6 +74,7 @@ our @EXPORT = qw( NOTHING
 		  find_interfaces_by_option1
 		  get_interface_option
 		  set_interface_option
+		  interface_zones
 		  verify_required_interfaces
 		  compile_updown
 		  validate_hosts_file
@@ -84,7 +85,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_17';
+our $VERSION = '4.4_19';
 
 #
 # IPSEC Option types
@@ -146,16 +147,20 @@ our %reservedName = ( all => 1,
 #     %interfaces { <interface1> => { name        => <name of interface>
 #                                     root        => <name without trailing '+'>
 #                                     options     => { port => undef|1
-#                                                      <option1> = <val1> ,          #See %validinterfaceoptions
+#                                                    { <option1> } => <val1> ,          #See %validinterfaceoptions
 #                                                      ...
 #                                                    }
 #                                     zone        => <zone name>
+#                                     multizone   => undef|1   #More than one zone interfaces through this interface
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
 #                                     bridge      => <bridge>
+#                                     ports       => <number of port on this bridge>
+#                                     ipsec       => undef|1 # Has an ipsec host group
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
 #                                     number      => <ordinal position in the interfaces file>
 #                                     physical    => <physical interface name>
 #                                     base        => <shell variable base representing this interface>
+#                                     zones       => { zone1 => 1, ... }
 #                                   }
 #                 }
 #
@@ -668,6 +673,7 @@ sub add_group_to_zone($$$$$)
     my $interfaceref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
+    
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -679,6 +685,8 @@ sub add_group_to_zone($$$$$)
 
     for my $host ( @$networks ) {
 	$interfaceref = $interfaces{$interface};
+
+	$interfaceref->{zones}{$zone} = 1;
 
 	$interfaceref->{nets}++;
 
@@ -883,6 +891,7 @@ sub process_interface( $$ ) {
 	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};
 
 	fatal_error "$interface is not a defined bridge" unless $interfaces{$interface} && $interfaces{$interface}{options}{bridge};
+	$interfaces{$interface}{ports}++;
 	fatal_error "Bridge Ports may only be associated with 'bport' zones" if $zone && $zoneref->{type} != BPORT;
 
 	if ( $zone ) {
@@ -1100,7 +1109,8 @@ sub process_interface( $$ ) {
 						       options    => \%options ,
 						       zone       => '',
 						       physical   => $physical ,
-						       base       => chain_base( $physical )
+						       base       => chain_base( $physical ),
+						       zones      => {},
 						     };
 
     if ( $zone ) {
@@ -1304,6 +1314,16 @@ sub port_to_bridge( $ ) {
 sub source_port_to_bridge( $ ) {
     my $portref = $interfaces{$_[0]};
     return $portref ? $portref->{bridge} : '';
+}
+
+
+#
+# Returns a hash reference for the zones interface through the interface
+#
+sub interface_zones( $ ) {
+    my $interfaceref = $interfaces{(shift)};
+
+    $interfaceref->{zones};
 }
 
 #
@@ -1690,7 +1710,7 @@ sub process_host( ) {
     fatal_error "Unknown ZONE ($zone)" unless $type;
     fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type == FIREWALL;
 
-    my $interface;
+    my ( $interface, $interfaceref );
 
     if ( $family == F_IPV4 ) {
 	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
@@ -1703,7 +1723,7 @@ sub process_host( ) {
 		fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^\+[a-zA-Z][-\w]*$/;
 	    }
 
-	    fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	    fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
@@ -1711,16 +1731,16 @@ sub process_host( ) {
 	$interface = $1;
 	$hosts = $2;
 	$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
-	fatal_error "Unknown interface ($interface)" unless $interfaces{$interface}{root};
+	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts";
     }
 
     if ( $type == BPORT ) {
 	if ( $zoneref->{bridge} eq '' ) {
-	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaces{$interface}{options}{port};
+	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaceref->{options}{port};
 	    $zoneref->{bridge} = $interfaces{$interface}{bridge};
-	} elsif ( $zoneref->{bridge} ne $interfaces{$interface}{bridge} ) {
+	} elsif ( $zoneref->{bridge} ne $interfaceref->{bridge} ) {
 	    fatal_error "Interface $interface is not a port on bridge $zoneref->{bridge}";
 	}
     }
@@ -1736,7 +1756,7 @@ sub process_host( ) {
 		require_capability 'POLICY_MATCH' , q(The 'ipsec' option), 's';
 		$type = IPSEC;
 		$zoneref->{options}{complex} = 1;
-		$ipsec = 1;
+		$ipsec = $interfaceref->{ipsec} = 1;
 	    } elsif ( $option eq 'norfc1918' ) {
 		warning_message "The 'norfc1918' host option is no longer supported"
 	    } elsif ( $option eq 'blacklist' ) {
@@ -1778,6 +1798,7 @@ sub process_host( ) {
 	$ipsets{"${zone}_${physical}"} = 1;
 
     }
+
     #
     # We ignore the user's notion of what interface vserver addresses are on and simply invent one for all of the vservers.
     #

@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=4.4.18.1
+VERSION=4.4.19-Beta4
 
 usage() # $1 = exit status
 {
@@ -59,6 +59,8 @@ else
     echo "WARNING: Shorewall Init Version $VERSION is not installed"
     VERSION=""
 fi
+
+[ -n "${LIBEXEC:=share}" ]
 
 echo "Uninstalling Shorewall Init $VERSION"
 
@@ -105,6 +107,7 @@ if [ -d /etc/ppp ]; then
 fi
 
 rm -rf /usr/share/shorewall-init
+rm -rf /usr/${LIBEXEC}/shorewall-init
 
 echo "Shorewall Init Uninstalled"
 

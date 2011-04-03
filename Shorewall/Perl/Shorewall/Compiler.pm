@@ -55,7 +55,7 @@ our $family;
 #
 sub initialize_package_globals() {
     Shorewall::Config::initialize($family);
-    Shorewall::Chains::initialize ($family);
+    Shorewall::Chains::initialize ($family, 1);
     Shorewall::Zones::initialize ($family);
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize($family);
@@ -818,7 +818,7 @@ sub compiler {
 	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
 	# for stopping the firewall
 	#
-	Shorewall::Chains::initialize( $family );
+	Shorewall::Chains::initialize( $family, 0 );
 	initialize_chain_table;
 	#
 	#                           S T O P _ F I R E W A L L
@@ -882,7 +882,7 @@ sub compiler {
 	# Re-initialize the chain table so that process_routestopped() has the same
 	# environment that it would when called by compile_stop_firewall().
 	#
-	Shorewall::Chains::initialize( $family );
+	Shorewall::Chains::initialize( $family , 0 );
 	initialize_chain_table;
 
 	if ( $debug ) {

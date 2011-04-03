@@ -15,11 +15,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 4.4.18.2
 
-1)  If a bridge interface had subordinate ports defined in
-    /etc/shorewall/interface, then an ipsec entry (either ipsec zone or
-    the 'ipsec' option specified) in /etc/shorewall/hosts resulted in
-    the compiler generating an incorrect Netfilter configuration.
-
+1)  
 4.4.18.1
 
 1)  An issue with params processing on RHEL6 has been corrected. The
@@ -99,6 +95,14 @@ None.
 
 1)  On systems running Upstart, shorewall-init cannot reliably secure
     the firewall before interfaces are brought up.
+
+2)  If a bridge interface has subordinate ports defined in
+    /etc/shorewall/interface, then an ipsec entry (either ipsec zone or
+    the 'ipsec' option specified) in /etc/shorewall/hosts results in
+    an incorrect Netfilter configuration.
+
+    Workaround: Assign the ipsec entry to one or more of the bridge
+    ports rather than the bridge itself.
 
 ----------------------------------------------------------------------------
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E

@@ -478,7 +478,7 @@ show_command() {
     case "$1" in
 	connections)
 	    [ $# -gt 1 ] && usage 1
-	    if mywhich conntrack ; then
+	    if [ -n "$(mywhich conntrack)" ] ; then
 		echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
 		echo
 		conntrack -f ipv6 -L | show_connections_filter

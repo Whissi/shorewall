@@ -111,7 +111,7 @@ MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 INSTALLD='-D'
 [ -n "${LIBEXEC:=share}" ]
-[ -n "${PERLLIB:=share/shoreall}" ]
+[ -n "${PERLLIB:=share/shorewall}" ]
 
 case $(uname) in
     CYGWIN*)

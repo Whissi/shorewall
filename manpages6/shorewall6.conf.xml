@@ -444,22 +444,23 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">EXPAND_POLICIES=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">EXPORTMODULES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>Normally, when the SOURCE or DEST columns in
-          shorewall6-policy(5) contains 'all', a single policy chain is
-          created and the policy is enforced in that chain. For example, if
-          the policy entry is<programlisting>#SOURCE DEST POLICY LOG
-#                   LEVEL
-net     all  DROP   info</programlisting>then the chain name is 'net2all'
-          which is also the chain named in Shorewall6 log messages generated
-          as a result of the policy. If EXPAND_POLICIES=Yes, then Shorewall6
-          will create a separate chain for each pair of zones covered by the
-          policy. This makes the resulting log messages easier to interpret
-          since the chain in the messages will have a name of the form 'a2b'
-          where 'a' is the SOURCE zone and 'b' is the DEST zone.</para>
+          <para>Added in Shorewall 4.4.17. When set to Yes when compiling for
+          use by Shorewall6 Lite (<command>shorewall6 load</command>,
+          <command>shorewall6 reload </command>or <command>shorewall6
+          export</command> commands), the compiler will copy the modules or
+          helpers file from the administrative system into the script. When
+          set to No or not specified, the compiler will not copy the modules
+          or helpers file from <filename>/usr/share/shorewall6</filename> but
+          will copy the found in another location on the CONFIG_PATH.</para>
+
+          <para>When compiling for direct use by Shorewall6, causes the
+          contents of the local module or helpers file to be copied into the
+          compiled script. When set to No or not set, the compiled script
+          reads the file itself.</para>
         </listitem>
       </varlistentry>
 
@@ -1489,27 +1490,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
           4.4.3, this change should be transparent to most, if not all,
           users.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">EXPORTMODULES=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
-
-        <listitem>
-          <para>Added in Shorewall 4.4.17. When set to Yes when compiling for
-          use by Shorewall6 LIte (<command>shorewall6 load</command>,
-          <command>shorewall6 reload </command>or <command>shorewall6
-          export</command> commands), the compiler will copy the modules or
-          helpers file from the administrative system into the script. When
-          set to No or not specified, the compiler will not copy the modules
-          or helpers file from <filename>/usr/share/shorewall6</filename> but
-          will copy the found in another location on the CONFIG_PATH.</para>
-
-          <para>When compiling for direct use by Shorewall6, causes the
-          contents of the local module or helpers file to be copied into the
-          compiled script. When set to No or not set, the compiled script
-          reads the file itself.</para>
         </listitem>
       </varlistentry>
 

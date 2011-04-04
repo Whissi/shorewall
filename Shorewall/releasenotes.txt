@@ -121,6 +121,16 @@ Beta 1
 5)  A list of protocols is now permitted in the PROTO column of the
     rules file.
 
+6)  The contents of the Netfilter mangle table are now included in the
+    output from 'shorewall show tc'.
+
+7)  When simple traffic shaping is configured, the postrouting marking
+    chain 'tcpost' is now exited early if the connection was previously
+    marked.
+
+    Note: tcpost is usually deleted by optimization level 4 and its
+    rules appear in the POSTROUTING chain.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

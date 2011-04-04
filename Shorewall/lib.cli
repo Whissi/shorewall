@@ -631,6 +631,12 @@ show_command() {
 	    echo "$g_product $SHOREWALL_VERSION Traffic Control at $g_hostname - $(date)"
 	    echo
 	    shift
+
+	    if [ -z "$1" ]; then
+		$IPTABLES -t mangle -L -n -v
+		echo
+	    fi
+
 	    show_tc $1
 	    ;;
 	classifiers|filters)

@@ -476,8 +476,6 @@ sub process_simple_device() {
 
     my $number = in_hexp( $tcdevices{$device} = ++$devnum );
 
-    my $ip32   = $family == F_IPV4 ? 'ip' : 'ip6';
-
     fatal_error "Unknown interface( $device )" unless known_interface $device;
 
     my $physical = physical_name $device;
@@ -519,7 +517,8 @@ sub process_simple_device() {
 	 );
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
-	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src " . ALLIP . " police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n"
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src "  . ALLIPv4 . " police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n",
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip6 src " . ALLIPv6 . " police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n"
 	 ) if $in_bandwidth;
 
     if ( $out_part ne '-' ) {
@@ -573,7 +572,8 @@ sub process_simple_device() {
 	emit '';
     }
     
-    emit "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32 match $ip32 protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $number:1\n";
+    emit "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $number:1\n";
+    emit "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32 match ip6 protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $number:1\n";
 
     save_progress_message_short qq("   TC Device $physical defined.");
 

@@ -1330,7 +1330,7 @@ sub setup_simple_traffic_shaping() {
 	first_entry
 	    sub {
 		progress_message2 "$doing $fn1...";
-		warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces;
+		warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces || $family == F_IPV6;
 	    };
 
 	process_tc_priority while read_a_line;
@@ -1339,7 +1339,6 @@ sub setup_simple_traffic_shaping() {
 
 	if ( $ipp2p ) {
 	    insert_rule1 $mangle_table->{tcpost} , 0 , '-m mark --mark 0/'   . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} );
-	    insert_rule1 $mangle_table->{tcpost} , 1 , '-m mark ! --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j RETURN';
 	    add_rule     $mangle_table->{tcpost} ,     '-m mark ! --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} );
 	}
     }

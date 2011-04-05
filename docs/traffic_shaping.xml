@@ -153,12 +153,6 @@
     IFB can result in queues building up both at your ISPs router and at your
     own.</emphasis></para>
 
-    <para>If you wish to shape downloads, you can also configure traffic
-    shaping on your firewall's local interface. An example appears <link
-    linkend="Downloads">below</link>. Again, however, <emphasis
-    role="bold">this can result in queues building up both at your ISPs router
-    and at your own</emphasis>.</para>
-
     <para>You shape and control outgoing traffic by assigning the traffic to
     <firstterm>classes</firstterm>. Each class is associated with exactly one
     network interface and has a number of attributes:</para>
@@ -1784,59 +1778,6 @@ eth0          -                1000kbit               hfsc</programlisting>
       required to transmit 9,000 bits at 400,000 bits/second is
       22.5ms!.</para>
     </section>
-  </section>
-
-  <section id="Downloads">
-    <title>Shaping Download Traffic</title>
-
-    <para>As stated at the outset, traffic shaping works on traffic being sent
-    by the firewall. Download traffic from the Internet to local hosts is sent
-    by the firewall over a local interface. So it follows that if you want to
-    shape such traffic, you must configure shaping on the local
-    interface.</para>
-
-    <para>Shaping of download traffic is most straightforward when there are
-    only two interface. That way, traffic leaving the local interface falls
-    into only two broad categories:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Traffic being forwarded from the Internet</para>
-      </listitem>
-
-      <listitem>
-        <para>Traffic that originated on the firewall itself</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>In general, you will want to shape the forwarded traffic and leave
-    the local traffic unrestricted.</para>
-
-    <para>Extending the <link linkend="simiple">simple example</link>
-    above:</para>
-
-    <para><filename>/etc/shorewall/tcdevices</filename>:<programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
-ppp0            6000kbit        700kbit
-eth1             -              100mbit</programlisting></para>
-
-    <para>/etc/shorewall/tcclasses:<programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY    OPTIONS
-ppp0            1       10kbit          50kbit          1           tcp-ack,tos-minimize-delay
-ppp0            2       300kbit         full            2
-ppp0            3       300kbit         full            2
-ppp0            4       90kbit          200kbit         3           default
-eth1            1       100kbit         500kbit         1           tcp-ack
-eth1            2       3mbit           6mbit           2
-eth1            3       3mbit           6mbit           3
-eth1            4       94mbit          full            4           default #for local traffic</programlisting></para>
-
-    <para>/etc/shorewall/tcrules:<programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)      CLIENT   USER
-#                                                                    PORT(S)
-1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
-1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
-2:F             192.168.2.23    0.0.0.0/0       all
-3:F             192.168.2.42    0.0.0.0/0       all
-2:F             ppp0            192.168.2.23    all
-3:F             ppp0            192.168.2.42    all</programlisting></para>
   </section>
 
   <section id="IFB">

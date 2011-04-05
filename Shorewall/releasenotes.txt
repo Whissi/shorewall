@@ -124,6 +124,16 @@ Beta 1
 6)  The contents of the Netfilter mangle table are now included in the
     output from 'shorewall show tc'.
 
+7)  Simple traffic shaping can now have a common configuration between
+    IPv4 and IPv6. To do that:
+
+    - Set TC_ENABLED=Simple in both /etc/shorewall/shorewall.conf and
+      /etc/shorewall6/shorewall6.conf
+    - Configure /etc/shorewall/tcinterfaces.
+    - Leave /etc/shorewall6/tcinterfaces empty.
+    - Configure /etc/shorewall/tcpri (if desired)
+    - Configure /etc/shorewall6/tcpri (if desired)
+   
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

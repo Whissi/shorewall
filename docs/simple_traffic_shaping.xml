@@ -55,7 +55,7 @@
     discipline</firstterm> (qdisc). From tc-pfifo_fast (8):</para>
 
     <blockquote>
-      <para> The algorithm is very similar to that of the classful tc-prio(8)
+      <para>The algorithm is very similar to that of the classful tc-prio(8)
       qdisc. pfifo_fast is like three tc-pfifo(8) queues side by side, where
       packets can be enqueued in any of the three bands based on their Type of
       Service bits or assigned priority.</para>
@@ -69,7 +69,7 @@
       are instead dropped.</para>
 
       <para>See tc-prio(8) for complete details on how TOS bits are translated
-      into bands. </para>
+      into bands.</para>
     </blockquote>
 
     <para>In other words, if all you want is strict priority queuing, then do
@@ -288,6 +288,61 @@ tun0                   Internal</programlisting>
     at least 20% less than your measured upload rate and then gradually
     increase it until latency becomes unacceptable. Then reduce it back to the
     point where latency is acceptable.</para>
+  </section>
+
+  <section>
+    <title>Combined IPv4/IPv6 Simple TC Configuration</title>
+
+    <para>Beginning with Shorewall 4.4.19, a combined configuration is
+    possible. To do that:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Set TC_ENABLED=Simple in both
+        <filename>/etc/shorewall/shorewall.conf</filename> and
+        <filename>/etc/shorewall6/shorewall6.conf</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Configure your interface(s) in
+        <filename>/etc/shorewall/tcinterfaces</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Add entries to <filename>/etc/shorewall/tcpri</filename> and
+        <filename>/etc/shorewall6/tcpri</filename> as desired. Entries in the
+        former classify IPv4 traffic and entries in the latter classify IPv6
+        traffic.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Example:</para>
+
+    <para><filename>/etc/shorewall/tcinterfaces</filename><programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
+eth0		External	50mbit:200kb			6.0mbit:100kb:200ms:100mbit:1516   
+</programlisting>etc/shorewall/tcpri:</para>
+
+    <programlisting>#BAND	PROTO		PORT(S)		ADDRESS		INTERFACE	HELPER
+COMMENT	 All DMZ traffic in band 3 by default
+3	-	 	-		70.90.191.124/31
+COMMENT Bit Torrent is in band 3
+3	ipp2p:all	bit
+COMMENT But give a boost to DNS queries
+2	udp	   	53
+COMMENT And place echo requests in band 1 to avoid false line-down reports
+1	icmp	        8
+</programlisting>
+
+    <para>etc/shorewall6/tcpri:</para>
+
+    <programlisting>#BAND	PROTO		PORT(S)		ADDRESS		INTERFACE	HELPER
+COMMENT	 All DMZ traffic in band 3 by default
+3	-	 	-		2001:470:b:227::40/124
+COMMENT But give a boost to DNS queries
+2	udp	   	53
+COMMENT And place echo requests in band 1 to avoid false line-down reports
+1	icmp	        8
+</programlisting>
   </section>
 
   <section>

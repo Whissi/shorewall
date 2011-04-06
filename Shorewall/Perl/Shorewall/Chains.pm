@@ -1667,13 +1667,14 @@ sub delete_references( $ ) {
 #
 sub replace_references( $$ ) {
     my ( $chainref, $target ) = @_;
-    my $tableref = $chain_table{$chainref->{table}};
-    my $count    = 0;
-    my $name     = $chainref->{name};
+    my $tableref  = $chain_table{$chainref->{table}};
+    my $count     = 0;
+    my $name      = $chainref->{name};
+    my $targetref = $tableref->{$target};
 
     $name =~ s/\+/\\+/;
 
-    if ( ! $tableref->{$target}{builtin} ) {
+    if ( $targetref ) {
 	#
 	# The target is a chain -- use the jump type from each referencing rule
 	#
@@ -1683,7 +1684,7 @@ sub replace_references( $$ ) {
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
 		    if ( s/ -([jg]) $name(\s|$)/ -$1 ${target}$2/ ) {
-			add_reference ( $fromref, $tableref->{$target} );
+			add_reference ( $fromref, $targetref );
 			$count++;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1693,7 +1694,7 @@ sub replace_references( $$ ) {
 	    }
 	}
 
-	delete $tableref->{$target}{references}{$chainref->{name}};
+	delete $targetref->{references}{$chainref->{name}};
     } else {
 	#
 	# The target is a builtin -- we must use '-j'
@@ -1704,7 +1705,6 @@ sub replace_references( $$ ) {
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
 		    if ( s/ -[jg] $name(\s|$)/ -j ${target}$1/ ) {
-			add_reference ( $fromref, $tableref->{$target} );
 			$count++ ;
 			trace( $fromref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1713,8 +1713,6 @@ sub replace_references( $$ ) {
 		delete $chainref->{references}{$fromref->{name}};
 	    }
 	}
-
-	delete $tableref->{$target}{references}{$chainref->{name}};
     }
 
     progress_message "  $count references to chain $chainref->{name} replaced" if $count;

@@ -1356,7 +1356,18 @@ sub generate_matrix() {
 			    # There are DNAT/REDIRECT rules with this zone as the source.
 			    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
 			    #
-			    add_jump $preroutingref, source_exclusion( $exclusions, $dnatref), 0, join( '', match_source_dev( $interface), $source, $ipsec_in_match );
+			    add_jump( $preroutingref,
+				      source_exclusion( $exclusions, $dnatref),
+				      0,
+				      join( '', match_source_dev( $interface), $source, $ipsec_in_match ) );
+				      
+			    if ( get_physical( $interface ) eq '+' ) {
+				#
+				# The jump from the prerouting chain to dnat may not have been added above
+				# 
+				addnatjump 'PREROUTING', 'dnat', '' unless $preroutingref->{references}{PREROUTING};
+			    }
+				
 			    check_optimization( $dnatref ) if $source;
 			}
 

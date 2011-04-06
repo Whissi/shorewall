@@ -3041,7 +3041,7 @@ sub export_params() {
 
 	emit "#\n# From the params file\n#" unless $count++;
 
-	if ( $value =~ /\s/ ) {
+	if ( $value =~ /[\s()[]/ ) {
 	    emit "$param='$value'";
 	} else {
 	    emit "$param=$value";

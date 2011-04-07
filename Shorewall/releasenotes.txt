@@ -7,7 +7,7 @@ I.    PROBLEMS CORRECTED IN THIS RELEASE
 II.   KNOWN PROBLEMS REMAINING
 III.  NEW FEATURES IN THIS RELEASE
 IV.   RELEASE 4.4 HIGHLIGHTS
-V.    MIGRATION ISSUES
+V.    MIGRATION ISSUES1
 VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 ----------------------------------------------------------------------------
@@ -21,6 +21,11 @@ RC 1
 
         Can't use an undefined value as an ARRAY reference at 
         /usr/share/shorewall/Shorewall/Chains.pm line 862.
+
+2)  If a DNAT or REDIRECT rule applied to a source zone with an
+    interface defined with 'physical=+', then the nat table 'dnat'
+    chain might have been created but not referenced. This prevented
+    the DNAT or REDIRECT rule from working correctly.
 
 Beta 5
 

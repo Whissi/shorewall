@@ -1363,7 +1363,7 @@ sub generate_matrix() {
 				      
 			    if ( get_physical( $interface ) eq '+' ) {
 				#
-				# The jump from the prerouting chain to dnat may not have been added above
+				# The jump from the PREROUTING chain to dnat may not have been added above
 				# 
 				addnatjump 'PREROUTING', 'dnat', '' unless $preroutingref->{references}{PREROUTING};
 			    }

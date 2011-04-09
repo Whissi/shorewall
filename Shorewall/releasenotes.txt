@@ -29,7 +29,15 @@ RC 1
 
 3)  Previously, if a variable set in /etc/shorewall/params was given a
     value containing shell metacharacters, then the compiled script
-    would contain syntax errors. 
+    would contain syntax errors.
+
+4)  The pathname of the 'conntrack' binary was erroneously printed in
+    the output of 'shorewall6 show connections'.
+
+5)  Shorewall6 compilation failed due to a typo in the installer which
+    caused /sbin/shorewall6 to believe that the Shorewall Perl
+    libraries were installed in /usr/share/shoreall/Shorewall/. This
+    defect first appeared in Beta 3.
 
 Beta 5
 

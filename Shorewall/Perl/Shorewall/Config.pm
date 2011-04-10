@@ -1371,7 +1371,6 @@ sub pop_include() {
 # This function is normally called below in read_a_line() when EOF is reached. Clients of the
 # module may also call the function to close the file before EOF
 #
-
 sub close_file() {
     if ( $currentfile ) {
 	my $result = close $currentfile;

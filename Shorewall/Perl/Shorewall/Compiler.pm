@@ -369,7 +369,7 @@ sub generate_script_3($) {
 
 	mark_firewall_not_started;
 
-	emit ('',
+	emit ( '',
 	       'delete_proxyarp',
 	       ''
 	     );

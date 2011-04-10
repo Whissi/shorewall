@@ -507,7 +507,9 @@ sub decr_cmd_level( $ ) {
 sub trace( $$$$ ) {
     my ($chainref, $action, $rulenum, $message) = @_;
 
-    my $heading = $rulenum ? sprintf "NF-(%s)-> %s:%s:%d", $action, $chainref->{table}, $chainref->{name}, $rulenum : sprintf "NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
+    my $heading = $rulenum ? 
+	sprintf "NF-(%s)-> %s:%s:%d", $action, $chainref->{table}, $chainref->{name}, $rulenum : 
+	    sprintf "NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
 
     my $length = length $heading;
 
@@ -1254,7 +1256,8 @@ sub add_jump( $$$;$$$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
+	$toref = ensure_chain( $fromref->{table} , $to )
+	    unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
     }
 
     #
@@ -1386,11 +1389,13 @@ sub ensure_accounting_chain( $$$ )
     my $chainref = $filter_table->{$chain};
 
     if ( $chainref ) {
-	fatal_error "Non-accounting chain ($chain) used in an accounting rule" unless $chainref->{accounting};
+	fatal_error "Non-accounting chain ($chain) used in an accounting rule"
+	    unless $chainref->{accounting};
 	$chainref->{restriction} |= $restriction;
     } else {
 	fatal_error "Chain name ($chain) too long" if length $chain > 29;
-	fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/ && ! ( $builtin_target{$chain} || $config_files{$chain} );
+	fatal_error "Invalid Chain name ($chain)"
+	    unless $chain =~ /^[-\w]+$/ && ! ( $builtin_target{$chain} || $config_files{$chain} );
 	$chainref = new_chain 'filter' , $chain;
 	$chainref->{accounting}  = 1;
 	$chainref->{referenced}  = 1;
@@ -1481,7 +1486,8 @@ sub new_nat_chain($) {
 sub new_manual_chain($) {
     my $chain = $_[0];
     fatal_error "Chain name ($chain) too long" if length $chain > 29;
-    fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/ && ! ( $builtin_target{$chain} || $config_files{$chain} );
+    fatal_error "Invalid Chain name ($chain)"
+	unless $chain =~ /^[-\w]+$/ && ! ( $builtin_target{$chain} || $config_files{$chain} );
     fatal_error "Duplicate Chain Name ($chain)" if $targets{$chain} || $filter_table->{$chain};
     $targets{$chain} = CHAIN;
     ( my $chainref = ensure_filter_chain( $chain, 0) )->{manual} = 1;
@@ -2236,17 +2242,23 @@ sub do_proto( $$$;$ )
 		$output = "-p $proto --syn ";
 	    }
 
-	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO !$pname" if $invert && ($ports ne '' || $sports ne '');
+	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO !$pname"
+		if $invert && ($ports ne '' || $sports ne '');
 
 	  PROTO:
 	    {
-		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
+		if ( $proto == TCP  ||
+		     $proto == UDP  ||
+		     $proto == SCTP ||
+		     $proto == DCCP ||
+		     $proto == UDPLITE ) {
 		    my $multiport = 0;
 
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
+			    fatal_error "Port lists require Multiport support in your kernel/iptables"
+				unless have_capability( 'MULTIPORT' );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 
 			    if ( port_count ( $ports ) > 15 ) {
@@ -2291,7 +2303,8 @@ sub do_proto( $$$;$ )
 		    last PROTO;	}
 
 		if ( $proto == ICMP ) {
-		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
+		    fatal_error "ICMP not permitted in an IPv6 configuration"
+			if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 
@@ -2315,7 +2328,8 @@ sub do_proto( $$$;$ )
 		    last PROTO; }
 
 		if ( $proto == IPv6_ICMP ) {
-		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
+		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration"
+			if $family == F_IPV4;
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 
@@ -2339,7 +2353,8 @@ sub do_proto( $$$;$ )
 		    last PROTO; }
 
 
-		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname" if $ports ne '' || $sports ne '';
+		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname"
+		    if $ports ne '' || $sports ne '';
 
 	    } # PROTO
 
@@ -2357,7 +2372,10 @@ sub do_proto( $$$;$ )
 		    $options .= " --$_" for split /,/, $ports;
 		}
 
-		$options = have_capability( 'OLD_IPP2P_MATCH' ) ? ' --ipp2p' : ' --edk --kazaa --gnu --dc' unless $options;
+		$options = have_capability( 'OLD_IPP2P_MATCH' ) ?
+		    ' --ipp2p' :
+			' --edk --kazaa --gnu --dc'
+		    unless $options;
 
 		$output .= "${proto}-m ipp2p${options} ";
 	    } else {
@@ -2368,7 +2386,8 @@ sub do_proto( $$$;$ )
 	#
 	# No protocol
 	#
-	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO" if $ports ne '' || $sports ne '';
+	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO"
+	    if $ports ne '' || $sports ne '';
     }
 
     $output;
@@ -2381,7 +2400,8 @@ sub mac_match( $ ) {
     my $invert = ( $1 ? '! ' : '');
     $mac =~ tr/-/:/;
 
-    fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
+    fatal_error "Invalid MAC address ($mac)"
+	unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 
     "--match mac ${invert}--mac-source $mac ";
 }
@@ -2402,13 +2422,16 @@ sub verify_mark( $ ) {
 	#
 	# Not a valid TC mark -- must be a provider mark or a user mark
 	#
-	fatal_error "Invalid Mark or Mask value ($mark)" unless ( $value & $globals{PROVIDER_MASK} ) == $value || ( $value & $globals{USER_MASK} ) == $value;
+	fatal_error "Invalid Mark or Mask value ($mark)"
+	    unless ( $value & $globals{PROVIDER_MASK} ) == $value ||
+		( $value & $globals{USER_MASK} ) == $value;
     }
 }
 
 sub verify_small_mark( $ ) {
     verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > $globals{TC_MAX};
+    fatal_error "Mark value ($mark) too large"
+	if numeric_value( $mark ) > $globals{TC_MAX};
 }
 
 sub validate_mark( $ ) {
@@ -2439,7 +2462,9 @@ sub do_test ( $$ )
     $mask = '' unless defined $mask;
 
     my $invert = $testval =~ s/^!// ? '! ' : '';
-    my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";
+    my $match  = $testval =~ s/:C$// ?
+	"-m connmark ${invert}--mark" :
+	    "-m mark ${invert}--mark";
 
     fatal_error "Invalid MARK value ($originaltestval)" if $testval eq '/';
 
@@ -2553,13 +2578,16 @@ sub do_time( $ ) {
 	} elsif ( $element =~ /^weekdays=(.*)$/ ) {
 	    my $days = $1;
 	    for my $day ( split /,/, $days ) {
-		fatal_error "Invalid weekday ($day)" unless $day =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/ || ( $day =~ /^\d$/ && $day && $day <= 7);
+		fatal_error "Invalid weekday ($day)"
+		    unless $day =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/ ||
+			( $day =~ /^\d$/ && $day && $day <= 7);
 	    }
 	    $result .= "--weekday $days ";
 	} elsif ( $element =~ /^monthdays=(.*)$/ ) {
 	    my $days = $1;
 	    for my $day ( split /,/, $days ) {
-		fatal_error "Invalid day of the month ($day)" unless $day =~ /^\d{1,2}$/ && $day && $day <= 31;
+		fatal_error "Invalid day of the month ($day)"
+		    unless $day =~ /^\d{1,2}$/ && $day && $day <= 31;
 	    }
 	} elsif ( $element =~ /^(datestart|datestop)=(\d{4}(-\d{2}(-\d{2}(T\d{1,2}(:\d{1,2}){0,2})?)?)?)$/ ) {
 	    $result .= "--$1 $2 ";

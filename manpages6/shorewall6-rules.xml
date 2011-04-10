@@ -1071,31 +1071,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 2:</term>
-
-        <listitem>
-          <para>Allow all ssh and http connection requests from the internet
-          to local system 2002:cec792b4:1::44</para>
-
-          <programlisting>        #ACTION SOURCE  DEST                    PROTO   DEST    SOURCE  ORIGINAL
-        #                                               PORT    PORT(S) DEST
-        DNAT    net     loc:2002:cec792b4:1::44 tcp     ssh,http</programlisting>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 3:</term>
-
-        <listitem>
-          <para>Allow http connection requests from the internet to local
-          system 2002:cec792b4:1::44 with a limit of 3 per second and a
-          maximum burst of 10<programlisting>        #ACTION SOURCE DEST                      PROTO  DEST  SOURCE  ORIGINAL RATE
-        #                                               PORT  PORT(S) DEST     LIMIT
-        DNAT    net    loc:&lt;2002:cec792b4:1::44&gt; tcp    http  -       -        3/sec:10</programlisting></para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term>Example 4:</term>
 
         <listitem>

@@ -52,7 +52,7 @@ our @EXPORT = qw(
 	       );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_18';
+our $VERSION = '4.4_19';
 #
 # Globals are documented in the initialize() function
 #

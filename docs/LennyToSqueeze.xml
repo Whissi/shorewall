@@ -182,15 +182,6 @@
   <section id="Issues">
     <title>Issues Most Likely to Cause Problems or Concerns</title>
 
-    <section>
-      <title>Simple Traffic Shaping on AMD64</title>
-
-      <para>As of this date (Feb 12, 2011), output rate limiting with Simple
-      Traffic Shaping doesn't work on AMD64 systems. Outbound traffic drops to
-      a crawl and does not recover. This appears to be a kernel issue
-      introduced after kernel 2.6.26.</para>
-    </section>
-
     <section id="conf">
       <title>shorewall.conf</title>
 
@@ -961,6 +952,40 @@ insert_rule $filter_table-&gt;{OUTPUT},     1, "-p udp --sport 1701 -j ACCEPT";
           </ulink>(5) is prohibited when SAVE_IPSETS=Yes.</para>
         </listitem>
       </itemizedlist>
+    </section>
+
+    <section id="SimpleTC">
+      <title>Simple Traffic Shaping</title>
+
+      <para>If you find that output bandwidth is extremely limited, it is
+      likely due to TCP Segmentation Offload (TSO) and/or Generic Segmentation
+      Offload (GSO) being enabled in the network adapter. To verify that,
+      install the <firstterm>ethtool</firstterm> package and use the -k
+      command:</para>
+
+      <programlisting>root@gateway:~# ethtool -k eth1
+Offload parameters for eth1:
+rx-checksumming: on
+tx-checksumming: on
+scatter-gather: on
+tcp-segmentation-offload: <emphasis role="bold">on</emphasis>
+udp-fragmentation-offload: off
+generic-segmentation-offload: <emphasis role="bold">on</emphasis>
+generic-receive-offload: off
+large-receive-offload: off
+ntuple-filters: off
+receive-hashing: off
+root@gateway:~#</programlisting>
+
+      <para>If that is the case, you can correct the problem by adjusting the
+      <replaceable>minburst</replaceable> setting in
+      /etc/shorewall/tcinterfaces. We suggest starting at 10-12kb and adjust
+      as necessary. Example:</para>
+
+      <programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
+eth0		External	50mbit:200kb			5.0mbit:100kb:200ms:100mbit:<emphasis
+          role="bold">10kb</emphasis>
+</programlisting>
     </section>
   </section>
 

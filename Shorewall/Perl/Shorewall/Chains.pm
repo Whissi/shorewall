@@ -2225,6 +2225,8 @@ sub do_proto( $$$;$ )
 	    #
 	    # Protocol is numeric and <= 65535 or is defined in /etc/protocols or NSS equivalent
 	    #
+	    fatal_error "'!0' not allowed in the PROTO column" if $invert && ! $protonum;
+
 	    my $pname = proto_name( $proto = $protonum );
 	    #
 	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol

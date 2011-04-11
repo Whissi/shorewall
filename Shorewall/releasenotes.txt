@@ -13,12 +13,6 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-Final
-
-None.
-
-RC 1
-
 1)  Corrected a problem in optimize level 4 that resulted in the
     following compile-time failure.
 
@@ -37,41 +31,19 @@ RC 1
 4)  The pathname of the 'conntrack' binary was erroneously printed in
     the output of 'shorewall6 show connections'.
 
-5)  Shorewall6 compilation failed due to a typo in the installer which
-    caused /sbin/shorewall6 to believe that the Shorewall Perl
-    libraries were installed in /usr/share/shoreall/Shorewall/. This
-    defect first appeared in Beta 3.
-
-Beta 5
-
-1)  Correct a problem whereby incorrect Netfilter rules were generated
+5)  Correct a problem whereby incorrect Netfilter rules were generated
     when a bridge with ports was given a logical name.
 
-Beta 4
-
-1)  If a bridge interface had subordinate ports defined in
+6)  If a bridge interface had subordinate ports defined in
     /etc/shorewall/interface, then an ipsec entry (either ipsec zone or
     the 'ipsec' option specified) in /etc/shorewall/hosts resulted in
     the compiler generating an incorrect Netfilter configuration.
 
-Beta 3
-
-None.
-
-Beta 2
-
-1)  A correction to the Beta 1 fix for params processing has been
-    included.
-
-2)  Editing of ICMP type lists has been improved.
-
-Beta 1
-
-1)  Previously /var/log/shorewall*-init.log was created in the wrong
+7)  Previously /var/log/shorewall*-init.log was created in the wrong
     Selinux context. The rpm's have been modified to correct that
     issue.
 
-2)  An issue with params processing on RHEL6 has been corrected. The
+8)  An issue with params processing on RHEL6 has been corrected. The
     problem manifested as the following type of warning:
 
        WARNING: Param line (export OLDPWD) ignored at 

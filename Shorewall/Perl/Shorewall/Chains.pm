@@ -2223,7 +2223,7 @@ sub do_proto( $$$;$ )
 
 	if ( defined $protonum ) {
 	    #
-	    # Protocol is numeric and <= 65535 or is defined in /etc/protocols or NSS equivalent
+	    # Protocol is numeric and <= 255 or is defined in /etc/protocols or NSS equivalent
 	    #
 	    fatal_error "'!0' not allowed in the PROTO column" if $invert && ! $protonum;
 

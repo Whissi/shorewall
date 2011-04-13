@@ -493,6 +493,17 @@ undo_routing() {
 }
 
 #
+# Save the default route
+#
+save_default_route() {
+    awk \
+    'BEGIN        {default=0;}; \
+     /^default /  {default=1; print; next}; \
+     /nexthop/    {if (default == 1 ) {print ; next} }; \
+                  { default=0; };'
+}
+
+#
 # Restore the default route that was in place before the initial 'shorewall start'
 #
 restore_default_route() {

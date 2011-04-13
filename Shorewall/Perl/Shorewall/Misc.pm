@@ -1908,7 +1908,6 @@ EOF
     process_routestopped;
 
     add_rule $input, '-i lo -j ACCEPT';
-    add_rule $input, '-i lo -j ACCEPT';
 
     add_rule $output, '-o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
 

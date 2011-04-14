@@ -518,7 +518,11 @@ save_default_route() {
 #
 # Restore the default route that was in place before the initial 'shorewall start'
 #
-replace_default_route() {
+replace_default_route() # $1 = USE_DEFAULT_RT
+{
+    #
+    # default_route and result are inherited from the caller
+    #
     if [ -n "$default_route" ]; then
 	case "$default_route" in
 	    *metric*)
@@ -540,12 +544,12 @@ replace_default_route() {
 restore_default_route() # $1 = USE_DEFAULT_RT
 {
     local result
+    result=1
 
     if [ -z "$g_noroutes" -a -f ${VARDIR}/default_route ]; then
 	local default_route
 	default_route=
 	local route
-	result=1
 
 	while read route ; do
 	    case $route in

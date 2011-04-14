@@ -1,3 +1,22 @@
 1)  On systems running Upstart, shorewall-init cannot reliably secure
     the firewall before interfaces are brought up.
 
+    Corrected in Shorewall 4.4.19.1
+
+2)  There is a harmless duplicate ACCEPT rule in the INPUT filter chain
+    when the firewall is stopped.
+
+    Corrected in Shorewall 4.4.19.1
+
+3)  Shorewall interprets all 'nexthop' routes as default routes when
+    analyzing the pre-start routing configuration. This can lead to
+    unwanted default routes when the firewall was started or stopped.
+
+    Corrected in Shorewall 4.4.19.1
+
+3)  A defect introduced in Shorewall 4.4.17 broke the ability to
+    specify ':<low port>-<high port>' in the ADDRESS column of 
+    /etc/shorewall/masq.
+
+    Corrected in Shorewall 4.4.19.1 
+

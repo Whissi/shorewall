@@ -1887,7 +1887,7 @@ EOF
     emit 'delete_tc1' if $config{CLEAR_TC};
 
     emit( 'undo_routing',
-	  'restore_default_route'
+	  "restore_default_route $config{USE_DEFAULT_RT}"
 	  );
 
     my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;

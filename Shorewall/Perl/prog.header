@@ -518,7 +518,27 @@ save_default_route() {
 #
 # Restore the default route that was in place before the initial 'shorewall start'
 #
-restore_default_route() {
+replace_default_route() {
+    if [ -n "$default_route" ]; then
+	case "$default_route" in
+	    *metric*)
+	        #
+	        # Don't restore a default route with a metric unless USE_DEFAULT_RT=Yes. Otherwise, we only replace the one with metric 0
+	        #
+		[ -n "$1" ] && qt $IP -4 route replace $default_route && progress_message "Default Route (${default_route# }) restored"
+		default_route=
+		;;
+	    *)
+		qt $IP -4 route replace $default_route && progress_message "Default Route (${default_route# }) restored"
+		result=0
+		default_route=
+		;;
+	esac
+    fi
+}
+
+restore_default_route() # $1 = USE_DEFAULT_RT
+{
     local result
 
     if [ -z "$g_noroutes" -a -f ${VARDIR}/default_route ]; then
@@ -530,25 +550,7 @@ restore_default_route() {
 	while read route ; do
 	    case $route in
 		default*)
-		    if [ -n "$default_route" ]; then
-			case "$default_route" in
-			    *metric*)
-		                #
-		                # Don't restore a route with a metric -- we only replace the one with metric == 0
-		                #
-				qt $IP -4 route delete default metric 0 && \
-				    progress_message "Default Route with metric 0 deleted"
-				;;
-			    *)
-				qt $IP -4 route replace $default_route && \
-				    result=0 && \
-				    progress_message "Default Route (${default_route# }) restored"
-				;;
-			esac
-
-			break
-		    fi
-
+		    replace_default_route $1
 		    default_route="$default_route $route"
 		    ;;
 		*)
@@ -556,6 +558,15 @@ restore_default_route() {
 		    ;;
 	    esac
 	done < ${VARDIR}/default_route
+
+	replace_default_route $1
+	
+	if [ $result = 1 ]; then
+	    #
+	    # We added a default route with metric 0 but there wasn't one previously
+	    #
+	    qt -4 ip route del default metric 0 && progress_message "Default route with metric 0 deleted"
+	fi
 
 	rm -f ${VARDIR}/default_route
     fi

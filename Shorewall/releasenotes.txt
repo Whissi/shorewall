@@ -18,14 +18,24 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 1)  A duplicate ACCEPT rule in the INPUT chain has been eliminated when
     the firewall is stopped.
 
-2)  Shorewall previously interpreted all 'nexthop' routes as default
-    routes when analyzing the pre-start routing configuration. This
-    could lead to unwanted default routes when the firewall was started
-    or stopped.
-
-3)  A defect introduced in Shorewall 4.4.17 broke the ability to
+2)  A defect introduced in Shorewall 4.4.17 broke the ability to
     specify ':<low port>-<high port>' in the ADDRESS column of 
     /etc/shorewall/masq. 
+
+3)  Several long-standing defects having to do with default route
+    save/restore have been corrected in the Multi-ISP implementation.
+
+    a)   Shorewall previously interpreted all 'nexthop' routes as
+    	 default routes when analyzing the pre-start routing
+    	 configuration. This could lead to unwanted default routes when
+    	 the firewall was started or stopped.
+
+    b)   The default route with metric 0 was usually not restored
+         during 'stop' processing.
+
+    c)	 If there were multiple default routes in the main table prior
+         to 'shorewall start' and USE_DEFAULT_RT was set, only the
+         first one with metric 0 was deleted.
 
 4.4.19
 

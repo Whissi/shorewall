@@ -331,7 +331,7 @@ delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 # Install wait4ifup
 #
 
-install_file wait4ifup ${DESTDIR}/usr/share/shorewall/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}/usr/share/${LIBEXEC}/wait4ifup 0755
 
 echo
 echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup"

@@ -827,7 +827,7 @@ cd Perl
 install_file compiler.pl ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl 0755
 
 echo
-echo "Compiler installed in ${DESTDIR}/usr/share/shorewall/compiler.pl"
+echo "Compiler installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl"
 #
 # Install the params file helper
 #

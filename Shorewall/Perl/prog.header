@@ -567,9 +567,14 @@ restore_default_route() # $1 = USE_DEFAULT_RT
 	
 	if [ $result = 1 ]; then
 	    #
-	    # We added a default route with metric 0 but there wasn't one previously
+	    # We didn't restore a default route with metric 0
 	    #
-	    qt -4 ip route del default metric 0 && progress_message "Default route with metric 0 deleted"
+	    if $IP -4 -o route ls 2> /dev/null | fgrep default | fgrep -qv metric; then
+	       #
+	       # But we added a default route with metric 0
+	       #
+	       qt $IP -4 route del default metric 0 && progress_message "Default route with metric 0 deleted"
+	    fi
 	fi
 
 	rm -f ${VARDIR}/default_route

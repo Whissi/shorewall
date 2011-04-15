@@ -730,7 +730,7 @@ sub start_providers() {
     emit  ( '#',
 	    '# Capture the default route(s) if we don\'t have it (them) already.',
 	    '#',
-	    "[ -f \${VARDIR}/default_route ] || \$IP -$family route ls | save_default_route > \${VARDIR}/default_route",
+	    "[ -f \${VARDIR}/default_route ] || \$IP -$family route list | save_default_route > \${VARDIR}/default_route",
 	    '#',
 	    '# Initialize the file that holds \'undo\' commands',
 	    '#',

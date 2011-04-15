@@ -557,7 +557,7 @@ restore_default_route() # $1 = USE_DEFAULT_RT
 	    #
 	    # We didn't restore a default route with metric 0
 	    #
-	    if $IP -6 -o route ls 2> /dev/null | fgrep default | fgrep -qv metric; then
+	    if $IP -6 -o route list 2> /dev/null | fgrep default | fgrep -qv metric; then
 	       #
 	       # But we added a default route with metric 0
 	       #

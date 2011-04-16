@@ -12,7 +12,7 @@ Group: Networking/Utilities
 Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-root1
 Requires: iptables iproute perl
 Provides: shoreline_firewall = %{version}-%{release}
 Obsoletes: shorewall-common shorewall-perl shorewall-shell

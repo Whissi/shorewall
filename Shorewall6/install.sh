@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.19.1
+VERSION=4.4.20-Beta1
 
 usage() # $1 = exit status
 {
@@ -110,8 +110,8 @@ MAC=
 MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 INSTALLD='-D'
-[ -n "${LIBEXEC:=share}" ]
-[ -n "${PERLLIB:=share/shorewall}" ]
+[ -n "${LIBEXEC:=/usr/share}" ]
+[ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
 case $(uname) in
     CYGWIN*)
@@ -258,8 +258,8 @@ fi
 # Create /etc/shorewall, /usr/share/shorewall and /var/lib/shorewall6 if needed
 #
 mkdir -p ${DESTDIR}/etc/shorewall6
-mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall6
-mkdir -p ${DESTDIR}/usr/${PERLLIB}/
+mkdir -p ${DESTDIR}${LIBEXEC}/shorewall6
+mkdir -p ${DESTDIR}${PERLLIB}/
 mkdir -p ${DESTDIR}/usr/share/shorewall6/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall6
 
@@ -325,10 +325,10 @@ delete_file ${DESTDIR}/usr/share/shorewall6/prog.footer6
 # Install wait4ifup
 #
 
-install_file wait4ifup ${DESTDIR}/usr/${LIBEXEC}/shorewall6/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall6/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall6/wait4ifup"
+echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall6/wait4ifup"
 
 #
 # Install the policy file

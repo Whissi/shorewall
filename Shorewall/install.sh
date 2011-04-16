@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.19.1
+VERSION=4.4.20-Beta1
 
 usage() # $1 = exit status
 {
@@ -107,8 +107,8 @@ fi
 
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
-[ -n "${LIBEXEC:=share}" ]
-[ -n "${PERLLIB:=share/shorewall}" ]
+[ -n "${LIBEXEC:=/usr/share}" ]
+[ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
 INSTALLD='-D'
 
@@ -265,8 +265,8 @@ fi
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
 mkdir -p ${DESTDIR}/etc/shorewall
-mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall
-mkdir -p ${DESTDIR}/usr/${PERLLIB}/Shorewall
+mkdir -p ${DESTDIR}${LIBEXEC}/shorewall
+mkdir -p ${DESTDIR}${PERLLIB}/Shorewall
 mkdir -p ${DESTDIR}/usr/share/shorewall/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall
 
@@ -331,10 +331,10 @@ delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 # Install wait4ifup
 #
 
-install_file wait4ifup ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}/${LIBEXEC}/shorewall/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup"
+echo "wait4ifup installed in ${DESTDIR}/${LIBEXEC}/shorewall/wait4ifup"
 
 #
 # Install the policy file
@@ -824,10 +824,10 @@ chmod 755 ${DESTDIR}/usr/share/shorewall/Shorewall
 #
 cd Perl
 
-install_file compiler.pl ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl 0755
+install_file compiler.pl ${DESTDIR}/${LIBEXEC}/shorewall/compiler.pl 0755
 
 echo
-echo "Compiler installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl"
+echo "Compiler installed in ${DESTDIR}/${LIBEXEC}/shorewall/compiler.pl"
 #
 # Install the params file helper
 #

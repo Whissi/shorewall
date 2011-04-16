@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                      S H O R E W A L L  4 . 4 . 1 9 . 1
+                   S H O R E W A L L  4 . 4 . 20  Beta  1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -12,8 +12,6 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
-
-4.4.19.1
 
 1)  A duplicate ACCEPT rule in the INPUT chain has been eliminated when
     the firewall is stopped.
@@ -37,48 +35,6 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
          to 'shorewall start' and USE_DEFAULT_RT was set, only the
          first one with metric 0 was deleted.
 
-4.4.19
-
-1)  Corrected a problem in optimize level 4 that resulted in the
-    following compile-time failure.
-
-        Can't use an undefined value as an ARRAY reference at 
-        /usr/share/shorewall/Shorewall/Chains.pm line 862.
-
-2)  If a DNAT or REDIRECT rule applied to a source zone with an
-    interface defined with 'physical=+', then the nat table 'dnat'
-    chain might have been created but not referenced. This prevented
-    the DNAT or REDIRECT rule from working correctly.
-
-3)  Previously, if a variable set in /etc/shorewall/params was given a
-    value containing shell metacharacters, then the compiled script
-    would contain syntax errors.
-
-4)  The pathname of the 'conntrack' binary was erroneously printed in
-    the output of 'shorewall6 show connections'.
-
-5)  Correct a problem whereby incorrect Netfilter rules were generated
-    when a bridge with ports was given a logical name.
-
-6)  If a bridge interface had subordinate ports defined in
-    /etc/shorewall/interface, then an ipsec entry (either ipsec zone or
-    the 'ipsec' option specified) in /etc/shorewall/hosts resulted in
-    the compiler generating an incorrect Netfilter configuration.
-
-7)  Previously /var/log/shorewall*-init.log was created in the wrong
-    Selinux context. The rpm's have been modified to correct that
-    issue.
-
-8)  An issue with params processing on RHEL6 has been corrected. The
-    problem manifested as the following type of warning:
-
-       WARNING: Param line (export OLDPWD) ignored at 
-                /usr/share/shorewall/Shorewall/Config.pm line 2993.
-
-9)  A fatal error is now raised if '!0' appears in the PROTO column of
-    files that have that column. This avoids an iptables-restore
-    failure at run time.
-
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -90,78 +46,20 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  When TC_ENABLED=Simple, ACK packets are now placed in the highest
-    priority class. An ACK packet is a TCP packet with the ACK flag set
-    and no data payload.
+1)  The implementation of the environmental variables LIBEXEC and
+    PERLLIB that was introduced in 4.4.19 has been changed
+    slightly. The top level directory for installing executables and
+    Perl modules is no longer assumed to be /usr. So if you set these
+    variables as follows in your 4.4.19 packaging script:
 
-    Rationale: Entries in /etc/shorewall[6]/tcpri affect both incoming
-    and outgoing connections. If a particular application, SMTP for
-    example, is placed in priority class 3, then outgoing ACK packets
-    for incoming email were previously placed in priority class 3 as
-    well. This could have the effect of slowing down incoming mail when
-    the goal was to give outgoing mail a lower priority. By
-    unconditionally placing ACK packets in priority class 1, this issue
-    is avoided.
+	LIBEXEC=libexec
+	PERLLIB=lib/perl5
 
-2)  Up to this point, the Perl-based rules compiler has not accepted
-    ICMP type lists. This is in contrast to the shell-based compiler
-    which did support such lists. 
+    then you will need to change them to
 
-    Support for ICMP (and ICMPv6) type lists has now been restored.
+ 	LIBEXEC=/usr/libexec
+	PERLLIB=/usr/lib/perl5
 
-3)  Distributions have different philosophies about the proper file
-    hierarchy. Two issures are particularly contentious:
-
-    - Executable files in /usr/share/shorewall*. These include;
-
-      getparams
-      compiler.pl
-      wait4ifup
-      shorecap
-      ifupdown
-
-    - Perl Modules in /usr/share/shorewall/Shorewall.
-
-    To allow distributions to designate alternate locations for these
-    files, the installers (install.sh) now support the following
-    environmental variables:
-
-    LIBEXEC -- determines where in /usr getparams, compiler.pl,
-    wait4ifup, shorecap and ifupdown are installed. Shorewall and
-    Shorewall6 must be installed with the same value of LIBEXEC. The
-    listed executables are installed in /usr/${LIBEXEC}/shorewall*. The
-    default value of LIBEXEC is 'share'. LIBEXEC is recognized by all
-    installers and uninstallers.
-
-    PERLLIB -- determines where in /usr the Shorewall perl modules are
-    installed. Shorewall and Shorewall6 must be installed with the same
-    value of PERLLIB. The modules are installed in
-    /usr/${PERLLIB}/Shorewall. The default value of PERLLIB is
-    'share/shorewall'. PERLLIB is only recognized by the Shorewall and
-    Shorewall6 installers and the same value must be passed to both
-    installers.
-
-4)  Bridge/ports handling has been significantly improved, resulting in
-    packets to/from bridges traversing fewer rules.
-
-5)  A list of protocols is now permitted in the PROTO column of the
-    rules file.
-
-6)  The contents of the Netfilter mangle table are now included in the
-    output from 'shorewall show tc'.
-
-7)  Simple traffic shaping can now have a common configuration between
-    IPv4 and IPv6. To do that:
-
-    - Set TC_ENABLED=Simple in both /etc/shorewall/shorewall.conf and
-      /etc/shorewall6/shorewall6.conf
-    - Configure /etc/shorewall/tcinterfaces.
-    - Leave /etc/shorewall6/tcinterfaces empty.
-    - Configure /etc/shorewall/tcpri (if desired)
-    - Configure /etc/shorewall6/tcpri (if desired)
-
-    It should be noted that when IPv6 packets are encapsulated for
-    transmission by 6to4/6in4, they retain their marks.   
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------
@@ -391,6 +289,126 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S
+----------------------------------------------------------------------------
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 9
+----------------------------------------------------------------------------
+1)  Corrected a problem in optimize level 4 that resulted in the
+    following compile-time failure.
+
+        Can't use an undefined value as an ARRAY reference at 
+        /usr/share/shorewall/Shorewall/Chains.pm line 862.
+
+2)  If a DNAT or REDIRECT rule applied to a source zone with an
+    interface defined with 'physical=+', then the nat table 'dnat'
+    chain might have been created but not referenced. This prevented
+    the DNAT or REDIRECT rule from working correctly.
+
+3)  Previously, if a variable set in /etc/shorewall/params was given a
+    value containing shell metacharacters, then the compiled script
+    would contain syntax errors.
+
+4)  The pathname of the 'conntrack' binary was erroneously printed in
+    the output of 'shorewall6 show connections'.
+
+5)  Correct a problem whereby incorrect Netfilter rules were generated
+    when a bridge with ports was given a logical name.
+
+6)  If a bridge interface had subordinate ports defined in
+    /etc/shorewall/interface, then an ipsec entry (either ipsec zone or
+    the 'ipsec' option specified) in /etc/shorewall/hosts resulted in
+    the compiler generating an incorrect Netfilter configuration.
+
+7)  Previously /var/log/shorewall*-init.log was created in the wrong
+    Selinux context. The rpm's have been modified to correct that
+    issue.
+
+8)  An issue with params processing on RHEL6 has been corrected. The
+    problem manifested as the following type of warning:
+
+       WARNING: Param line (export OLDPWD) ignored at 
+                /usr/share/shorewall/Shorewall/Config.pm line 2993.
+
+9)  A fatal error is now raised if '!0' appears in the PROTO column of
+    files that have that column. This avoids an iptables-restore
+    failure at run time.
+
+----------------------------------------------------------------------------
+               N E W   F E A T U R E S   I N   4 . 4 . 1 9
+----------------------------------------------------------------------------
+
+1)  When TC_ENABLED=Simple, ACK packets are now placed in the highest
+    priority class. An ACK packet is a TCP packet with the ACK flag set
+    and no data payload.
+
+    Rationale: Entries in /etc/shorewall[6]/tcpri affect both incoming
+    and outgoing connections. If a particular application, SMTP for
+    example, is placed in priority class 3, then outgoing ACK packets
+    for incoming email were previously placed in priority class 3 as
+    well. This could have the effect of slowing down incoming mail when
+    the goal was to give outgoing mail a lower priority. By
+    unconditionally placing ACK packets in priority class 1, this issue
+    is avoided.
+
+2)  Up to this point, the Perl-based rules compiler has not accepted
+    ICMP type lists. This is in contrast to the shell-based compiler
+    which did support such lists. 
+
+    Support for ICMP (and ICMPv6) type lists has now been restored.
+
+3)  Distributions have different philosophies about the proper file
+    hierarchy. Two issures are particularly contentious:
+
+    - Executable files in /usr/share/shorewall*. These include;
+
+      getparams
+      compiler.pl
+      wait4ifup
+      shorecap
+      ifupdown
+
+    - Perl Modules in /usr/share/shorewall/Shorewall.
+
+    To allow distributions to designate alternate locations for these
+    files, the installers (install.sh) now support the following
+    environmental variables:
+
+    LIBEXEC -- determines where in /usr getparams, compiler.pl,
+    wait4ifup, shorecap and ifupdown are installed. Shorewall and
+    Shorewall6 must be installed with the same value of LIBEXEC. The
+    listed executables are installed in /usr/${LIBEXEC}/shorewall*. The
+    default value of LIBEXEC is 'share'. LIBEXEC is recognized by all
+    installers and uninstallers.
+
+    PERLLIB -- determines where in /usr the Shorewall perl modules are
+    installed. Shorewall and Shorewall6 must be installed with the same
+    value of PERLLIB. The modules are installed in
+    /usr/${PERLLIB}/Shorewall. The default value of PERLLIB is
+    'share/shorewall'. PERLLIB is only recognized by the Shorewall and
+    Shorewall6 installers and the same value must be passed to both
+    installers.
+
+4)  Bridge/ports handling has been significantly improved, resulting in
+    packets to/from bridges traversing fewer rules.
+
+5)  A list of protocols is now permitted in the PROTO column of the
+    rules file.
+
+6)  The contents of the Netfilter mangle table are now included in the
+    output from 'shorewall show tc'.
+
+7)  Simple traffic shaping can now have a common configuration between
+    IPv4 and IPv6. To do that:
+
+    - Set TC_ENABLED=Simple in both /etc/shorewall/shorewall.conf and
+      /etc/shorewall6/shorewall6.conf
+    - Configure /etc/shorewall/tcinterfaces.
+    - Leave /etc/shorewall6/tcinterfaces empty.
+    - Configure /etc/shorewall/tcpri (if desired)
+    - Configure /etc/shorewall6/tcpri (if desired)
+
+    It should be noted that when IPv6 packets are encapsulated for
+    transmission by 6to4/6in4, they retain their marks.   
+
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 8
 ----------------------------------------------------------------------------

@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.20-Beta1
+VERSION=4.4.19
 
 usage() # $1 = exit status
 {
@@ -331,10 +331,10 @@ delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 # Install wait4ifup
 #
 
-install_file wait4ifup ${DESTDIR}/${LIBEXEC}/shorewall/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${DESTDIR}/${LIBEXEC}/shorewall/wait4ifup"
+echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup"
 
 #
 # Install the policy file
@@ -824,23 +824,23 @@ chmod 755 ${DESTDIR}/usr/share/shorewall/Shorewall
 #
 cd Perl
 
-install_file compiler.pl ${DESTDIR}/${LIBEXEC}/shorewall/compiler.pl 0755
+install_file compiler.pl ${DESTDIR}${LIBEXEC}/shorewall/compiler.pl 0755
 
 echo
-echo "Compiler installed in ${DESTDIR}/${LIBEXEC}/shorewall/compiler.pl"
+echo "Compiler installed in ${DESTDIR}${LIBEXEC}/shorewall/compiler.pl"
 #
 # Install the params file helper
 #
-install_file getparams ${DESTDIR}/usr/${LIBEXEC}/shorewall/getparams 0755
+install_file getparams ${DESTDIR}${LIBEXEC}/shorewall/getparams 0755
 
 echo
-echo "Params file helper installed in ${DESTDIR}/usr/share/shorewall/getparams"
+echo "Params file helper installed in ${DESTDIR}${LIBEXEC}/shorewall/getparams"
 #
 # Install the libraries
 #
 for f in Shorewall/*.pm ; do
-    install_file $f ${DESTDIR}/usr/${PERLLIB}/$f 0644
-    echo "Module ${f%.*} installed as ${DESTDIR}/usr/${PERLLIB}/$f"
+    install_file $f ${DESTDIR}${PERLLIB}/$f 0644
+    echo "Module ${f%.*} installed as ${DESTDIR}${PERLLIB}/$f"
 done
 #
 # Install the program skeleton files

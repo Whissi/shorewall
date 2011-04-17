@@ -1073,7 +1073,7 @@ reload_command() # $* = original arguments less the command.
     local compiler
     compiler=
     local libexec
-    libexec=/usr/share
+    libexec=share
 
     litedir=/var/lib/shorewall6-lite
 
@@ -1136,16 +1136,7 @@ reload_command() # $* = original arguments less the command.
 
     temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
 
-    if [ -n "$temp" ]; then
-	case $temp in
-	    /*)
-		libexec=$temp
-		;;
-	    *)
-		libexec=/usr/$temp
-		;;
-	esac
-    fi
+    [ -n "$temp" ] && libexec=$temp
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
@@ -1161,7 +1152,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES $libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES /usr/$libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi

@@ -239,7 +239,7 @@ startup_error() {
 # Run the appropriate compiler
 #
 compiler() {
-    pc=/usr/$g_libexec/shorewall/compiler.pl
+    pc=$g_libexec/shorewall/compiler.pl
 
     local command
     command=$1
@@ -300,7 +300,7 @@ compiler() {
 	PERL=/usr/bin/perl
     fi
 
-    if [ $g_perllib = share/shorewall ]; then
+    if [ $g_perllib = /usr/share/shorewall ]; then
 	$command $PERL $debugflags $pc $options $@
     else
 	$command PERL5LIB=$g_perllib $PERL $debugflags $pc $options $@
@@ -1073,7 +1073,7 @@ reload_command() # $* = original arguments less the command.
     local compiler
     compiler=
     local libexec
-    libexec=share
+    libexec=/usr/share
 
     litedir=/var/lib/shorewall6-lite
 
@@ -1136,7 +1136,16 @@ reload_command() # $* = original arguments less the command.
 
     temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
 
-    [ -n "$temp" ] && libexec=$temp
+    if [ -n "$temp" ]; then
+	case $temp in
+	    /*)
+		libexec="$temp"
+		;;
+	    *)
+		libexec=/usr/$temp
+		;;
+	esac
+    fi
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
@@ -1152,7 +1161,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES /usr/$libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES $libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1494,7 +1503,7 @@ SHAREDIR=/usr/share/shorewall6
 CONFDIR=/etc/shorewall6
 g_product="Shorewall6"
 g_recovering=
-g_libexec=share
+g_libexec=/usr/share
 g_perllib=share/shorewall
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir

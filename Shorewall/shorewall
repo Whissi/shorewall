@@ -364,9 +364,9 @@ compiler() {
     fi
 
     if [ $g_perllib = share/shorewall ]; then
-	$PERL $debugflags /usr/$g_libexec/shorewall/compiler.pl $options $@
+	$PERL $debugflags $g_libexec/shorewall/compiler.pl $options $@
     else
-	PERL5LIB=$g_perllib $PERL $debugflags /usr/$g_libexec/shorewall/compiler.pl $options $@
+	PERL5LIB=$g_perllib $PERL $debugflags $g_libexec/shorewall/compiler.pl $options $@
     fi
 }
 
@@ -1140,7 +1140,7 @@ reload_command() # $* = original arguments less the command.
     local root
     root=root
     local libexec
-    libexec=share
+    libexec=/usr/share
 
     litedir=/var/lib/shorewall-lite
 
@@ -1203,7 +1203,16 @@ reload_command() # $* = original arguments less the command.
 
     temp=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
 
-    [ -n "$temp" ] && libexec="$temp"
+    if [ -n "$temp" ]; then
+	case $temp in
+	    /*)
+		libexec="$temp"
+		;;
+	    *)
+		libexec=/usr/$temp
+		;;
+	esac
+    fi
 
     if [ -z "$getcaps" ]; then
 	SHOREWALL_DIR=$(resolve_file $directory)
@@ -1221,7 +1230,7 @@ reload_command() # $* = original arguments less the command.
 	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" /usr/$libexec/shorewall-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1584,7 +1593,7 @@ CONFDIR=/etc/shorewall
 g_product="Shorewall"
 g_recovering=
 g_timestamp=
-g_libexec=share
+g_libexec=/usr/share/share
 g_perllib=share/shorewall
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir

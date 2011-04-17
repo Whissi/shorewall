@@ -60,7 +60,7 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=share}" ]
+[ -n "${LIBEXEC:=/usr/share}" ]
 
 echo "Uninstalling Shorewall Lite $VERSION"
 
@@ -97,7 +97,7 @@ rm -rf /etc/shorewall6-lite-*.bkout
 rm -rf /var/lib/shorewall6-lite
 rm -rf /var/lib/shorewall6-lite-*.bkout
 rm -rf /usr/share/shorewall6-lite
-rm -rf /usr/${LIBEXEC}/shorewall6-lite
+rm -rf ${LIBEXEC}/shorewall6-lite
 rm -rf /usr/share/shorewall6-lite-*.bkout
 rm -f  /etc/logrotate.d/shorewall6-lite
 

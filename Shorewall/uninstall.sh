@@ -72,8 +72,8 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=share}" ]
-[ -n "${PERLLIB:=share/shorewall}" ]
+[ -n "${LIBEXEC:=/usr/share}" ]
+[ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
 echo "Uninstalling shorewall $VERSION"
 
@@ -109,8 +109,8 @@ rm -rf /etc/shorewall
 rm -rf /etc/shorewall-*.bkout
 rm -rf /var/lib/shorewall
 rm -rf /var/lib/shorewall-*.bkout
-rm -rf /usr/$PERLLIB}/Shorewall/*
-rm -rf /usr/${LIBEXEC}/shorewall
+rm -rf $PERLLIB}/Shorewall/*
+rm -rf ${LIBEXEC}/shorewall
 rm -rf /usr/share/shorewall
 rm -rf /usr/share/shorewall-*.bkout
 rm -rf /usr/share/man/man5/shorewall*

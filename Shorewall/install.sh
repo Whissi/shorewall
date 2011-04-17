@@ -107,8 +107,8 @@ fi
 
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
-[ -n "${LIBEXEC:=share}" ]
-[ -n "${PERLLIB:=share/shorewall}" ]
+[ -n "${LIBEXEC:=/usr/share}" ]
+[ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
 INSTALLD='-D'
 
@@ -236,8 +236,14 @@ fi
 if [ -z "$CYGWIN" ]; then
    install_file shorewall ${DESTDIR}/sbin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
-   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
-   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
+
+   if [ -z "$MAC" ]; then
+       eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
+       eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
+   else
+       eval sed -i -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
+       eval sed -i -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
+   fi
 else
    install_file shorewall ${DESTDIR}/bin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
@@ -265,8 +271,8 @@ fi
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
 mkdir -p ${DESTDIR}/etc/shorewall
-mkdir -p ${DESTDIR}/usr/${LIBEXEC}/shorewall
-mkdir -p ${DESTDIR}/usr/${PERLLIB}/Shorewall
+mkdir -p ${DESTDIR}${LIBEXEC}/shorewall
+mkdir -p ${DESTDIR}${PERLLIB}/Shorewall
 mkdir -p ${DESTDIR}/usr/share/shorewall/configfiles
 mkdir -p ${DESTDIR}/var/lib/shorewall
 
@@ -331,10 +337,10 @@ delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 # Install wait4ifup
 #
 
-install_file wait4ifup ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup"
+echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup"
 
 #
 # Install the policy file
@@ -824,23 +830,23 @@ chmod 755 ${DESTDIR}/usr/share/shorewall/Shorewall
 #
 cd Perl
 
-install_file compiler.pl ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl 0755
+install_file compiler.pl ${DESTDIR}${LIBEXEC}/shorewall/compiler.pl 0755
 
 echo
-echo "Compiler installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl"
+echo "Compiler installed in ${DESTDIR}${LIBEXEC}/shorewall/compiler.pl"
 #
 # Install the params file helper
 #
-install_file getparams ${DESTDIR}/usr/${LIBEXEC}/shorewall/getparams 0755
+install_file getparams ${DESTDIR}${LIBEXEC}/shorewall/getparams 0755
 
 echo
-echo "Params file helper installed in ${DESTDIR}/usr/share/shorewall/getparams"
+echo "Params file helper installed in ${DESTDIR}${LIBEXEC}/shorewall/getparams"
 #
 # Install the libraries
 #
 for f in Shorewall/*.pm ; do
-    install_file $f ${DESTDIR}/usr/${PERLLIB}/$f 0644
-    echo "Module ${f%.*} installed as ${DESTDIR}/usr/${PERLLIB}/$f"
+    install_file $f ${DESTDIR}${PERLLIB}/$f 0644
+    echo "Module ${f%.*} installed as ${DESTDIR}${PERLLIB}/$f"
 done
 #
 # Install the program skeleton files
@@ -901,7 +907,7 @@ fi
 if [ -z "$DESTDIR" ]; then
     rm -rf /usr/share/shorewall-perl
     rm -rf /usr/share/shorewall-shell
-    [ "$PERLLIB" != share/shorewall ] && rm -rf /usr/share/shorewall/Shorewall
+    [ "$PERLLIB" != /usr/share/shorewall ] && rm -rf /usr/share/shorewall/Shorewall
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then

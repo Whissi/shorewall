@@ -466,7 +466,13 @@ sub add_a_provider( ) {
 
     if ( $gateway ) {
 	$address = get_interface_address $interface unless $address;
-	emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $number $realm";
+	if ( $family == F_IPV4 ) {
+	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $number $realm";
+	} else {
+	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $number $realm";
+	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $number $realm";
+	}
+	
 	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $number $realm";
     }
 
@@ -477,7 +483,12 @@ sub add_a_provider( ) {
     } elsif ( $default ) {
 	emit '';
 	if ( $gateway ) {
-	    emit qq(run_ip route replace default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
+	    if ( $family == F_IPV4 ) {
+		emit qq(run_ip route replace default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
+	    } else {
+		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
+		emit qq(run_ip route add default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
+	    }
 	    emit qq(echo "qt \$IP -$family route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
 	} else {
 	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $physical metric $number);
@@ -757,7 +768,12 @@ sub finish_providers() {
 	}
 
 	emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
-	emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
+	if ( $family == F_IPV4 ) {
+	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
+	} else {
+	    emit  ( "    qt \$IP -6 route del default scope global table $table \$DEFAULT_ROUTE" );
+	    emit  ( "    run_ip route add default scope global table $table \$DEFAULT_ROUTE" );
+	}
 
 	if ( $config{USE_DEFAULT_RT} ) {
 	    emit  ( "    while qt \$IP -$family route del default table " . MAIN_TABLE . '; do',
@@ -788,11 +804,17 @@ sub finish_providers() {
     }
 
     if ( $fallback ) {
-	emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' ,
-		"    run_ip route replace default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" ,
-		"    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
-		'fi',
-		'' );
+	emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' );
+	if ( $family == F_IPV4 ) {
+	    emit( "    run_ip route replace default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" );
+	} else {
+	    emit( "    qt \$IP -6 route del default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" );
+	    emit( "    run_ip route add default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" );
+	}
+
+	emit( "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
+	      'fi',
+	      '' );
     }
 
     unless ( $config{KEEP_RT_TABLES} ) {

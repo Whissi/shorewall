@@ -83,7 +83,11 @@ sub setup_one_proxy_arp( $$$$$$$ ) {
 	if ( $family == F_IPV4 ) {
 	    emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address/32 dev $physical";
 	} else {
-	    emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address/128 dev $physical";
+	    emit( 'if [ -z "$g_noroutes" ]; then',
+		  "    qt \$IP -6 route del $address/128 dev $physical".
+		  "    run_ip route add $address/128 dev $physical",
+		  'fi'
+		);
 	}
 
 	$haveroute = 1 if $persistent;

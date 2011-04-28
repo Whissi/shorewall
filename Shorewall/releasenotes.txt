@@ -15,7 +15,20 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 4.4.19.2
 
-None.
+1)  In Shorewall-shell, there was the ability to specify IPSET names in
+    the ORIGINAL DEST column of DNAT and REDIRECT rules. That ability,
+    inadvertently dropped in Shorewall-perl, has been restored.
+
+    CAUTION: When an IPSET is used in this way, the server port is
+    opened from the SOURCE zone. 
+
+    Example:
+
+	DNAT	net	dmz:10.1.1.2	tcp	80	-	+foo
+
+    will implicitly add this rule
+
+	ACCEPT	net	dmz:10.1.1.2	tcp	80	
 
 4.4.19.1
 

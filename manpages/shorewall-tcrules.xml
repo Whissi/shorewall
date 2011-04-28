@@ -432,6 +432,11 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               packets originating on the firewall. May not be used with a
               chain qualifier (:P, :F, etc.) in the MARK column.</para>
             </listitem>
+
+            <listitem>
+              <para><replaceable>address-or-range</replaceable> may include
+              ipsets.</para>
+            </listitem>
           </orderedlist>
 
           <para>MAC addresses must be prefixed with "~" and use "-" as a
@@ -473,6 +478,11 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <para>Beginning with Shorewall 4.4.13, $FW may be specified by
               itself or qualified by an address list. This causes marking to
               occur in the INPUT chain.</para>
+            </listitem>
+
+            <listitem>
+              <para><replaceable>address-or-range</replaceable> may include
+              ipsets.</para>
             </listitem>
           </orderedlist>
 
@@ -805,10 +815,10 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-ecn(5), shorewall-exclusion(5),
-    shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5), shorewall-maclist(5),
-    shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
-    shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
+    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
     shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
     shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
     shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>

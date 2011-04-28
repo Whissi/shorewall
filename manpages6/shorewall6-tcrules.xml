@@ -292,11 +292,12 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
           names, IP addresses, MAC addresses and/or subnets for packets being
           routed through a common path. List elements may also consist of an
           interface name followed by ":" and an address (e.g.,
-          eth1:&lt;2002:ce7c:92b4::/48&gt;). For example, all packets for
-          connections masqueraded to eth0 from other interfaces can be matched
-          in a single rule with several alternative SOURCE criteria. However,
-          a connection whose packets gets to eth0 in a different way, e.g.,
-          direct from the firewall itself, needs a different rule.</para>
+          eth1:&lt;2002:ce7c:92b4::/48&gt;) or an ipset. For example, all
+          packets for connections masqueraded to eth0 from other interfaces
+          can be matched in a single rule with several alternative SOURCE
+          criteria. However, a connection whose packets gets to eth0 in a
+          different way, e.g., direct from the firewall itself, needs a
+          different rule.</para>
 
           <para>Accordingly, use $<emphasis role="bold">FW</emphasis> in its
           own separate rule for packets originating on the firewall. In such a
@@ -330,8 +331,8 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
           addresses and/or subnets. If your kernel and ip6tables include
           iprange match support, IP address ranges are also allowed. List
           elements may also consist of an interface name followed by ":" and
-          an address (e.g., eth1:&lt;2002:ce7c:92b4::/48&gt;). If the
-          <emphasis role="bold">MARK</emphasis> column specificies a
+          an address (e.g., eth1:&lt;2002:ce7c:92b4::/48&gt;) or an ipset. If
+          the <emphasis role="bold">MARK</emphasis> column specificies a
           classification of the form
           <emphasis>major</emphasis>:<emphasis>minor</emphasis> then this
           column may also contain an interface name.</para>

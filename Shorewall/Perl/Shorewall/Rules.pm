@@ -2013,6 +2013,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';
+	    $origdest = ALLIP if  $origdest =~ /[+]/;
 	}
     } elsif ( $actiontype & NONAT ) {
 	#

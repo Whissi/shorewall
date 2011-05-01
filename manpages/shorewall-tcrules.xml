@@ -80,18 +80,19 @@
               marks (see below).</para>
 
               <para>May optionally be followed by <emphasis
+              role="bold">:P</emphasis>, <emphasis
+              role="bold">:F</emphasis>,<emphasis role="bold">:T</emphasis> or
+              <emphasis role="bold">:I</emphasis> where<emphasis role="bold">
+              :P</emphasis> indicates that marking should occur in the
+              PREROUTING chain, <emphasis role="bold">:F</emphasis> indicates
+              that marking should occur in the FORWARD chain, <emphasis
+              role="bold">:I </emphasis>indicates that marking should occur in
+              the INPUT chain (added in Shorewall 4.4.13), and <emphasis
+              role="bold">:T</emphasis> indicates that marking should occur in
+              the POSTROUTING chain. If neither <emphasis
               role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
-              or <emphasis role="bold">:T</emphasis> where<emphasis
-              role="bold"> :P</emphasis> indicates that marking should occur
-              in the PREROUTING chain, <emphasis role="bold">:F</emphasis>
-              indicates that marking should occur in the FORWARD chain, :I
-              indicates that marking should occur in the INPUT chain (added in
-              Shorewall 4.4.13), and <emphasis role="bold">:T</emphasis>
-              indicates that marking should occur in the POSTROUTING chain. If
-              neither <emphasis role="bold">:P</emphasis>, <emphasis
-              role="bold">:F</emphasis> nor <emphasis
-              role="bold">:T</emphasis> follow the mark value then the chain
-              is determined as follows:</para>
+              nor <emphasis role="bold">:T</emphasis> follow the mark value
+              then the chain is determined as follows:</para>
 
               <para>- If the SOURCE is <emphasis
               role="bold">$FW</emphasis>[<emphasis
@@ -106,13 +107,17 @@
               MARK_IN_FORWARD_CHAIN in <ulink
               url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
+              <para>Please note that <emphasis role="bold">:I</emphasis> is
+              included for completeness and affects neither traffic shaping
+              nor policy routing.</para>
+
               <para>If your kernel and iptables include CONNMARK support then
               you can also mark the connection rather than the packet.</para>
 
               <para>The mark value may be optionally followed by "/" and a
               mask value (used to determine those bits of the connection mark
               to actually be set). The mark and optional mask are then
-              followed by one of:+</para>
+              followed by one of:</para>
 
               <variablelist>
                 <varlistentry>
@@ -145,6 +150,16 @@
 
                   <listitem>
                     <para>Mark the connecdtion in the POSTROUTING chain</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>CI</term>
+
+                  <listitem>
+                    <para>Mark the connection in the INPUT chain. This option
+                    is included for completeness and has no applicability to
+                    traffic shaping or policy routing.</para>
                   </listitem>
                 </varlistentry>
               </variablelist>
@@ -805,10 +820,10 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-ecn(5), shorewall-exclusion(5),
-    shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5), shorewall-maclist(5),
-    shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
-    shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
+    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
+    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
     shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
     shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
     shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>

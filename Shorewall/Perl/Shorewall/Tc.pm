@@ -762,6 +762,7 @@ sub validate_tc_class( ) {
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
 	if ( $device =~ /^(\d+|0x[\da-fA-F]+)$/ ) {
+	    $device =~ s/^0x//;
 	    ( $number , $classnumber ) = ( hex_value $device, hex_value $number );
 	    ( $device , $devref) = dev_by_number( $number );
 	} else {
@@ -778,6 +779,7 @@ sub validate_tc_class( ) {
 	    }
 
 	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
+	    fatal_error "Reserved class number (1)" if $classnumber == 1;
 	    fatal_error "Duplicate interface:class number ($number:$classnumber}" if $tcclasses{$device}{$classnumber};
 	} else {
 	    fatal_error "Missing interface NUMBER";

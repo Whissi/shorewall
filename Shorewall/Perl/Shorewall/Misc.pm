@@ -1887,7 +1887,7 @@ EOF
     emit 'delete_tc1' if $config{CLEAR_TC};
 
     emit( 'undo_routing',
-	  'restore_default_route'
+	  "restore_default_route $config{USE_DEFAULT_RT}"
 	  );
 
     my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;
@@ -1907,7 +1907,6 @@ EOF
 
     process_routestopped;
 
-    add_rule $input, '-i lo -j ACCEPT';
     add_rule $input, '-i lo -j ACCEPT';
 
     add_rule $output, '-o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};

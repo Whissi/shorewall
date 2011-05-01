@@ -730,7 +730,7 @@ sub start_providers() {
     emit  ( '#',
 	    '# Capture the default route(s) if we don\'t have it (them) already.',
 	    '#',
-	    '[ -f ${VARDIR}/default_route ] || $IP -' . $family . ' route list | grep -E \'^\s*(default |nexthop )\' > ${VARDIR}/default_route',
+	    "[ -f \${VARDIR}/default_route ] || \$IP -$family route list | save_default_route > \${VARDIR}/default_route",
 	    '#',
 	    '# Initialize the file that holds \'undo\' commands',
 	    '#',
@@ -758,13 +758,21 @@ sub finish_providers() {
 
 	emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
 	emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
-	emit  ( "    qt \$IP -$family route del default table " . MAIN_TABLE ) if $config{USE_DEFAULT_RT};
+
+	if ( $config{USE_DEFAULT_RT} ) {
+	    emit  ( "    while qt \$IP -$family route del default table " . MAIN_TABLE . '; do',
+		    '        true',
+		    '    done',
+		    ''
+		  );
+	}
+ 
 	emit  ( "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\"",
 		'else',
 		'    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
 
 	if ( $config{RESTORE_DEFAULT_ROUTE} ) {
-	    emit '    restore_default_route && error_message "NOTICE: Default route restored"'
+	    emit qq(    restore_default_route $config{USE_DEFAULT_RT} && error_message "NOTICE: Default route restored")
 	} else {
 	    emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
 	}
@@ -775,7 +783,7 @@ sub finish_providers() {
 	emit ( '#',
 	       '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
 	       '#',
-	       'restore_default_route' ,
+	       "restore_default_route $config{USE_DEFAULT_RT}" ,
 	       '' );
     }
 
@@ -871,7 +879,7 @@ sub setup_providers() {
 	push_indent;
 
 	emit "\nundo_routing";
-	emit 'restore_default_route';
+	emit "restore_default_route $config{USE_DEFAULT_RT}";
 
 	if ( $config{NULL_ROUTE_RFC1918} ) {
 	    emit  ( '#',

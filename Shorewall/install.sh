@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=4.4.19
+VERSION=4.4.19.2
 
 usage() # $1 = exit status
 {
@@ -331,7 +331,7 @@ delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 # Install wait4ifup
 #
 
-install_file wait4ifup ${DESTDIR}/usr/share/shorewall/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup 0755
 
 echo
 echo "wait4ifup installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/wait4ifup"
@@ -827,7 +827,7 @@ cd Perl
 install_file compiler.pl ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl 0755
 
 echo
-echo "Compiler installed in ${DESTDIR}/usr/share/shorewall/compiler.pl"
+echo "Compiler installed in ${DESTDIR}/usr/${LIBEXEC}/shorewall/compiler.pl"
 #
 # Install the params file helper
 #

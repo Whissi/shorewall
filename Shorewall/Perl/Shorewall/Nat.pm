@@ -207,8 +207,9 @@ sub process_one_masq( )
 			} else {
 			    my $ports = $addr; 
 			    $ports =~ s/^://;
-			    $ports =~ s/:/-/;
-			    validate_portpair( $proto, $ports );
+			    my $portrange = $ports;
+			    $portrange =~ s/-/:/;
+			    validate_portpair( $proto, $portrange );
 			    $addrlist .= "--to-ports $ports ";
 			    $exceptionrule = do_proto( $proto, '', '' );
 			}

@@ -28,7 +28,25 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
     will implicitly add this rule
 
-	ACCEPT	net	dmz:10.1.1.2	tcp	80	
+	ACCEPT	net	dmz:10.1.1.2	tcp	80
+
+2)  Two problems with complex TC have been corrected:
+
+    a) The following entry in /etc/shorewall/tcclasses
+
+       	A:1 - 10*full/100:50ms 20*full/100 1 tcp-ack
+
+       produced this error:
+
+        ERROR: Unknown INTERFACE (A) : /etc/shorewall/tcclasses
+
+       This has been corrected by requiring that class numbers
+       containing a-f or A-F must be prefaced by '0x'.
+
+    b) Shorewall reserves class number 1 for the root class of the
+       queuing discipline. Definining class 1 in
+       /etc/shorewall/tcclasses was previoulsly escaping detection by
+       the compiler, resulting in a run-time error.
 
 4.4.19.1
 

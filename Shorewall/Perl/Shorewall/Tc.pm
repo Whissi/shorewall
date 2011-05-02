@@ -562,7 +562,7 @@ sub process_simple_device() {
 
 	my $id = $number; $number = in_hexp( $devnum | 0x100 );
 
-	emit "run_tc qdisc add dev $physical parent $id: handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
+	emit "run_tc qdisc add dev $physical parent $number: handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
     } else {
 	emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
     }
@@ -1517,7 +1517,7 @@ sub setup_traffic_shaping() {
 	    #
 	    # options
 	    #
-	    emit "run_tc filter add dev $device parent $devref->{number}:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
 
 	    for my $tospair ( @{$tcref->{tos}} ) {
 		my ( $tos, $mask ) = split q(/), $tospair;

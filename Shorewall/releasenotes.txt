@@ -52,7 +52,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
     	 ACCEPT	net	dmz:10.1.10.2	tcp	80
 
-5)  Two problems with complex TC have been corrected:
+5)  Several problems with complex TC have been corrected:
 
     a) The following entry in /etc/shorewall/tcclasses
 
@@ -69,6 +69,15 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
        queuing discipline. Definining class 1 in
        /etc/shorewall/tcclasses was previoulsly escaping detection by
        the compiler, resulting in a run-time error.
+
+    c) The compiler did not complain if a CLASSID specified in the MARK
+       column of tcrules referred to an IFB class. Such a rule would be
+       nonsensical since packets are passed through the IFB before
+       they are passed through any marking rules. Such a configuration
+       now results in a compilation error.
+
+    d) Where there are more than 10 tcdevices, tcfilter entries could
+       generate invalid rules. 
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G

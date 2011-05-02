@@ -61,6 +61,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       disable_script
 		                       numeric_value
 		                       numeric_value1
+				       normalize_hex
 		                       hex_value
 		                       in_hex
 		                       in_hex2
@@ -809,6 +810,14 @@ sub numeric_value1 ( $ ) {
     fatal_error "Invalid Number ($_[0])" unless defined $val;
     $val;
     use warnings;
+}
+
+sub normalize_hex( $ ) {
+    my $val = shift;
+
+    $val =~ s/^0x//;
+    $val =~ s/^0// while length $val > 1;
+    $val;
 }
 
 sub hex_value( $ ) {

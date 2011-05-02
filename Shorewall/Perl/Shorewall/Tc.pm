@@ -748,7 +748,6 @@ sub dev_by_number( $ ) {
     }
 
     ( $dev , $devref );
-
 }
 
 sub validate_tc_class( ) {
@@ -764,7 +763,7 @@ sub validate_tc_class( ) {
 	( $device, my ($number, $subnumber, $rest ) )  = split /:/, $device, 4;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
-	if ( $device =~ /^(\d+|0x[\da-fA-F]+)$/ ) {
+	if ( $device =~ /^(\d+|0x[\da-fA-F]+)$/ || ( $device =~ /^[\da-fA-F]+$/ && ! $tcdevices{$device} ) ) {
 	    ( $number , $classnumber ) = ( hex_value $device, hex_value $number );
 	    ( $device , $devref) = dev_by_number( $number );
 	} else {

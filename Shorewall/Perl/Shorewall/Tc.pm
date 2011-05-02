@@ -255,7 +255,7 @@ sub process_tc_rule( ) {
 	    fatal_error "Invalid MARK ($originalmark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
 
 	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
-		$originalmark =~ s/0x//g;
+		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
 		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
 		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
 	    }
@@ -604,6 +604,7 @@ sub validate_tc_device( ) {
 	fatal_error "Invalid NUMBER:INTERFACE ($device:$number:$rest)" if defined $rest;
 
 	if ( defined $number ) {
+	    $number = normalize_hex( $number );
 	    $devnumber = hex_value( $number );
 	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
 	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];

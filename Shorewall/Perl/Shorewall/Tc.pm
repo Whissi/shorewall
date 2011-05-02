@@ -981,7 +981,7 @@ sub process_tc_filter() {
 
     ( $device , my $devref ) = dev_by_number( $device );
 
-    my $devnum = in_hex $devref->{number};
+    my $devnum = in_hexp $devref->{number};
 
     my $tcref = $tcclasses{$device};
 

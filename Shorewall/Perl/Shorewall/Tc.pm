@@ -257,6 +257,7 @@ sub process_tc_rule( ) {
 	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 		$originalmark =~ s/0x//g;
 		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
+		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
 	    }
 
 	    $chain   = 'tcpost';

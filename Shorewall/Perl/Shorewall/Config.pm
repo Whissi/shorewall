@@ -814,7 +814,6 @@ sub numeric_value1 ( $ ) {
 
 sub hex_value( $ ) {
     my $val = lc $_[0];
-    $val =~ s/^0x//;
     return undef unless $val =~ /^[a-fA-F0-9]+$/;
     no warnings;
     oct '0x' . $val;
@@ -825,9 +824,8 @@ sub hex_value( $ ) {
 # Strip off leading 0x and superfluous leading zeros from a hex number
 #
 sub normalize_hex( $ ) {
-    my $val = shift;
+    my $val = lc shift;
 
-    $val =~ s/^0x//;
     $val =~ s/^0// while $val =~ /^0/ && length $val > 1;
     $val;
 }

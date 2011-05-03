@@ -821,7 +821,7 @@ sub hex_value( $ ) {
 }
 
 #
-# Strip off leading 0x and superfluous leading zeros from a hex number
+# Strip off superfluous leading zeros from a hex number
 #
 sub normalize_hex( $ ) {
     my $val = lc shift;

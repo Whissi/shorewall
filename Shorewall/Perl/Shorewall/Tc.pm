@@ -252,7 +252,7 @@ sub process_tc_rule( ) {
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
 	} else {
-	    fatal_error "Invalid MARK ($originalmark)"   unless $mark =~ /^([0-9]+|0x[0-9a-f]+)$/ and $designator =~ /^([0-9]+|0x[0-9a-f]+)$/;
+	    fatal_error "Invalid MARK ($originalmark)"   unless $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/;
 
 	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
@@ -562,7 +562,7 @@ sub process_simple_device() {
 
 	my $id = $number; $number = in_hexp( $devnum | 0x100 );
 
-	emit "run_tc qdisc add dev $physical parent $number: handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
+	emit "run_tc qdisc add dev $physical parent $id: handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
     } else {
 	emit "run_tc qdisc add dev $physical root handle $number: prio bands 3 priomap $config{TC_PRIOMAP}";
     }
@@ -763,7 +763,7 @@ sub validate_tc_class( ) {
 	( $device, my ($number, $subnumber, $rest ) )  = split /:/, $device, 4;
 	fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest;
 
-	if ( $device =~ /^(\d+|0x[\da-fA-F]+)$/ || ( $device =~ /^[\da-fA-F]+$/ && ! $tcdevices{$device} ) ) {
+	if ( $device =~ /^[\da-fA-F]+$/ && ! $tcdevices{$device} ) {
 	    ( $number , $classnumber ) = ( hex_value $device, hex_value $number );
 	    ( $device , $devref) = dev_by_number( $number );
 	} else {

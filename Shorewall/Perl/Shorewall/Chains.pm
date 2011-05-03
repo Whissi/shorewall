@@ -3227,9 +3227,13 @@ sub addnatjump( $$$ ) {
 # where an element of the list might be +ipset[flag,...] or +[ipset[flag,...],...]
 #
 sub mysplit( $ ) {
-    my @input = split_list $_[0], 'host';
+    my $input = $_[0];
 
-    return @input unless $_[0] =~ /\[/;
+    my @input = split_list $input, 'host';
+
+    return @input unless $input =~ /\[/;
+
+    my $exclude = 0;
 
     my @result;
 
@@ -3242,7 +3246,11 @@ sub mysplit( $ ) {
 		$element .= ( ',' . shift @input );
 	    }
 
+	    fatal_error "Invalid host list ($input)" if $exclude && $element =~ /!/;
+	    $exclude ||= $element =~ /^!/ || $element =~ /\]!/;
 	    fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
+	} else {
+	    $exclude ||= $element =~ /!/;
 	}
 
 	push @result, $element;

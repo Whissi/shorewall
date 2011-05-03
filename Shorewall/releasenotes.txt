@@ -54,7 +54,16 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
        now results in a compilation error.
 
     d) Where there are more than 10 tcdevices, tcfilter entries could
-       generate invalid rules. 
+       generate invalid rules.
+
+3)  Double exclusion involving ipset lists was previously not detected,
+    resulting in anomalous behavior.
+
+    Example:
+
+	ACCEPT:info $FW net:!10.1.0.7,10.1.0.9,+[!my-host[src]]]
+
+    Such cases now result in a compilation error.
 
 4.4.19.1
 

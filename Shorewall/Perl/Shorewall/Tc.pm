@@ -606,14 +606,14 @@ sub validate_tc_device( ) {
 	if ( defined $number ) {
 	    $number = normalize_hex( $number );
 	    $devnumber = hex_value( $number );
-	    fatal_error "Invalid interface NUMBER ($number)" unless defined $devnumber && $devnumber;
+	    fatal_error "Invalid device NUMBER ($number)" unless defined $devnumber && $devnumber && $devnumber < 256;
 	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
 	    $devnum = $devnumber if $devnumber > $devnum;
 	} else {
 	    fatal_error "Missing interface NUMBER";
 	}
-    } else {
-	$devnumber = ++$devnum;
+    } elsif ( ( $devnumber = ++$devnum ) > 255 ) {
+	fatal_error "Attempting to assign a device number > 255";
     }
 
     $devnums[ $devnumber ] = $device;
@@ -779,7 +779,7 @@ sub validate_tc_class( ) {
 		$classnumber = hex_value $subnumber;
 	    }
 
-	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber;
+	    fatal_error "Invalid interface/class number ($devclass)" unless defined $classnumber && $classnumber && $classnumber < 0x8000;
 	    fatal_error "Reserved class number (1)" if $classnumber == 1;
 	    fatal_error "Duplicate interface:class number ($number:$classnumber}" if $tcclasses{$device}{$classnumber};
 	} else {

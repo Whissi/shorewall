@@ -1379,6 +1379,8 @@ sub setup_traffic_shaping() {
 	my $devnum  = in_hexp $devref->{number};
 	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
+	fatal_error "No default class defined for device $device" unless $devref->{default};
+
 	$device = physical_name $device;
 
 	my $dev = chain_base( $device );

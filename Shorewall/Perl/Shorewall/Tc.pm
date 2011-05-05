@@ -979,7 +979,13 @@ sub process_tc_filter() {
 
     my ( $ip, $ip32, $prio , $lo ) = $family == F_IPV4 ? ('ip', 'ip', 10, 2 ) : ('ipv6', 'ip6', 11 , 4 );
 
-    ( $device , my $devref ) = dev_by_number( $device );
+    my $devref;
+
+    if ( $device =~ /^[\da-fA-F]+$/ && ! $tcdevices{$device} ) {
+	( $device, $devref ) = dev_by_number( hex_value( $device ) );
+    } else {
+	( $device , $devref ) = dev_by_number( $device );
+    }
 
     my $devnum = in_hexp $devref->{number};
 
@@ -1054,7 +1060,7 @@ sub process_tc_filter() {
 
     if ( $portlist eq '-' && $sportlist eq '-' ) {
 	emit( "\nrun_tc $rule\\" ,
-	      "   flowid $devref->{number}:$class" ,
+	      "   flowid $devnum:$class" ,
 	      '' );
     } else {
 	fatal_error "Ports may not be specified without a PROTO" unless $protonumber;
@@ -1116,7 +1122,7 @@ sub process_tc_filter() {
 
 		    emit( "\nrun_tc $rule\\" ,
 			  "   $rule1\\" ,
-			  "   flowid $devref->{number}:$class" );
+			  "   flowid $devnum:$class" );
 		}
 	    }
 	} else {
@@ -1134,7 +1140,7 @@ sub process_tc_filter() {
 		    $rule1   .= "\\\n   match icmp code $icmpcode 0xff" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
 			  "$rule1\\" ,
-			  "   flowid $devref->{number}:$class" );
+			  "   flowid $devnum:$class" );
 		} elsif ( $protonumber == IPv6_ICMP ) {
 		    fatal_error "IPv6 ICMP not allowed with IPv4" unless $family == F_IPV4;
 		    fatal_error "SOURCE PORT(S) are not allowed with IPv6 ICMP" if $sportlist ne '-';
@@ -1145,7 +1151,7 @@ sub process_tc_filter() {
 		    $rule1   .= "\\\n   match icmp6 code $icmpcode 0xff" if defined $icmpcode;
 		    emit( "\nrun_tc ${rule}\\" ,
 			  "$rule1\\" ,
-			  "   flowid $devref->{number}:$class" );
+			  "   flowid $devnum:$class" );
 		} else {
 		    my @portlist = expand_port_range $protonumber , $portrange;
 
@@ -1165,7 +1171,7 @@ sub process_tc_filter() {
 			if ( $sportlist eq '-' ) {
 			    emit( "\nrun_tc ${rule}\\" ,
 				  "   $rule1\\" ,
-				  "   flowid $devref->{number}:$class" );
+				  "   flowid $devnum:$class" );
 			} else {
 			    for my $sportrange ( split_list $sportlist , 'port list' ) {
 				my @sportlist = expand_port_range $protonumber , $sportrange;
@@ -1186,7 +1192,7 @@ sub process_tc_filter() {
 				    emit( "\nrun_tc ${rule}\\",
 					  "   $rule1\\" ,
 					  "   $rule2\\" ,
-					  "   flowid $devref->{number}:$class" );
+					  "   flowid $devnum:$class" );
 				}
 			    }
 			}

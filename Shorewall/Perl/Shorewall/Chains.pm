@@ -3248,12 +3248,12 @@ sub mysplit( $;$ ) {
 
 	    unless ( $loose ) {
 		fatal_error "Invalid host list ($input)" if $exclude && $element =~ /!/;
+		$exclude ||= $element =~ /^!/ || $element =~ /\]!/;
 	    }
 
-	    $exclude ||= $element =~ /^!/ || $element =~ /\]!/;
 	    fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
 	} else {
-	    $exclude ||= $element =~ /!/;
+	    $exclude ||= $element =~ /!/ unless $loose;
 	}
 
 	push @result, $element;

@@ -258,12 +258,6 @@ sub process_tc_rule( ) {
 		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
 		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
 		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
-
-		if ( $dest eq '-' ) {
-		    $dest = $device;
-		} elsif ( $dest !=~ /^\a/ ) {
-		    $dest = join( ':', $device, $dest );
-		}
 	    }
 
 	    $chain   = 'tcpost';

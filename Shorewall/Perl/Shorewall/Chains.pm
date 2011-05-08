@@ -2870,7 +2870,7 @@ sub conditional_rule_end( $ ) {
     add_commands( $chainref , "fi\n" );
 }	
 
-sub mysplit( $$ );
+sub mysplit( $;$ );
 
 #
 # Match a Source.
@@ -3229,7 +3229,7 @@ sub addnatjump( $$$ ) {
 # Split a comma-separated source or destination host list but keep [...] together. Used for spliting address lists
 # where an element of the list might be +ipset[flag,...] or +[ipset[flag,...],...]
 #
-sub mysplit( $$ ) {
+sub mysplit( $;$ ) {
     my ( $input, $loose ) = @_;
 
     my @input = split_list $input, 'host';
@@ -3638,7 +3638,7 @@ sub handle_network_list( $$ ) {
     my $nets = '';
     my $excl = '';
 	
-    my @nets = mysplit $list, 0;
+    my @nets = mysplit $list;
 
     for ( @nets ) {
 	if ( /!/ ) {
@@ -3954,7 +3954,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    }
 
 	    unless ( $onets ) {
-		my @oexcl = mysplit $oexcl, 0;
+		my @oexcl = mysplit $oexcl;
 		if ( @oexcl == 1 ) {
 		    $rule .= match_orig_dest( "!$oexcl" );
 		    $oexcl = '';
@@ -4029,19 +4029,19 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    my $exclude = '-j MARK --or-mark ' . in_hex( $globals{EXCLUSION_MASK} );
 
-	    for ( mysplit $iexcl, 0 ) {
+	    for ( mysplit $iexcl ) {
 		my $cond = conditional_rule( $chainref, $_ );
 		add_rule $chainref, ( match_source_net $_ , $restriction, $mac ) . $exclude;
 		conditional_rule_end( $chainref ) if $cond;
 	    }
 
-	    for ( mysplit $dexcl, 0 ) {
+	    for ( mysplit $dexcl ) {
 		my $cond = conditional_rule( $chainref, $_ );
 		add_rule $chainref, ( match_dest_net $_ ) . $exclude;
 		conditional_rule_end( $chainref ) if $cond;
 	    }
 
-	    for ( mysplit $oexcl, 0 ) {
+	    for ( mysplit $oexcl ) {
 		my $cond = conditional_rule( $chainref, $_ );
 		add_rule $chainref, ( match_orig_dest $_ ) . $exclude;
 		conditional_rule_end( $chainref ) if $cond;
@@ -4060,19 +4060,19 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Use the current rule and send all possible matches to the exclusion chain
 	    #
-	    for my $onet ( mysplit $onets , 0 ) {
+	    for my $onet ( mysplit $onets ) {
 		
 		my $cond = conditional_rule( $chainref, $onet );
 
 		$onet = match_orig_dest $onet;
 
-		for my $inet ( mysplit $inets , 0 ) {
+		for my $inet ( mysplit $inets ) {
 
 		    my $cond = conditional_rule( $chainref, $inet );
 
 		    my $source_match = match_source_net( $inet, $restriction, $mac ) if have_capability( 'KLUDGEFREE' );
 
-		    for my $dnet ( mysplit $dnets , 0 ) {
+		    for my $dnet ( mysplit $dnets ) {
 			$source_match = match_source_net( $inet, $restriction, $mac ) unless have_capability( 'KLUDGEFREE' );
 			add_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ), 1 );
 		    }
@@ -4085,19 +4085,19 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Generate RETURNs for each exclusion
 	    #
-	    for ( mysplit $iexcl , 0 ) {
+	    for ( mysplit $iexcl ) {
 		my $cond = conditional_rule( $echainref, $_ );
 		add_rule $echainref, ( match_source_net $_ , $restriction, $mac ) . '-j RETURN';
 		conditional_rule_end( $echainref ) if $cond;
 	    }
 
-	    for ( mysplit $dexcl , 0 ) {
+	    for ( mysplit $dexcl ) {
 		my $cond = conditional_rule( $echainref, $_ );
 		add_rule $echainref, ( match_dest_net $_ ) . '-j RETURN';
 		conditional_rule_end( $echainref ) if $cond;
 	    }
 
-	    for ( mysplit $oexcl , 0 ) {
+	    for ( mysplit $oexcl ) {
 		my $cond = conditional_rule( $echainref, $_ );
 		add_rule $echainref, ( match_orig_dest $_ ) . '-j RETURN';
 		conditional_rule_end( $echainref ) if $cond;
@@ -4127,19 +4127,19 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# No non-trivial exclusions or we're using marks to handle them
 	#
-	for my $onet ( mysplit $onets , 0 ) {
+	for my $onet ( mysplit $onets ) {
 	    my $cond = conditional_rule( $chainref, $onet );
 
 	    $onet = match_orig_dest $onet;
 	    
-	    for my $inet ( mysplit $inets , 0 ) {
+	    for my $inet ( mysplit $inets ) {
 		my $source_match;
 
 		my $cond = conditional_rule( $chainref, $inet );
 		
 		$source_match = match_source_net( $inet, $restriction, $mac ) if have_capability( 'KLUDGEFREE' );
 
-		for my $dnet ( mysplit $dnets , 0 ) {
+		for my $dnet ( mysplit $dnets ) {
 		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless have_capability( 'KLUDGEFREE' );
 		    my $dest_match = match_dest_net( $dnet );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );

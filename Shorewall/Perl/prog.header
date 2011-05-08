@@ -509,10 +509,10 @@ undo_routing() {
 #
 save_default_route() {
     awk \
-    'BEGIN        {default=0;}; \
-     /^default /  {default=1; print; next}; \
-     /nexthop/    {if (default == 1 ) {print ; next} }; \
-                  { default=0; };'
+    'BEGIN        {defroute=0;};
+     /^default /  {deroute=1; print; next};
+     /nexthop/    {if (defroute == 1 ) {print ; next} };
+                  { defroute=0; };'
 }
 
 #

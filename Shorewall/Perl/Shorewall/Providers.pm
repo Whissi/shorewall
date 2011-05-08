@@ -466,6 +466,7 @@ sub add_a_provider( ) {
 
     if ( $gateway ) {
 	$address = get_interface_address $interface unless $address;
+	emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
 	emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $number $realm";
 	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $number $realm";
     }

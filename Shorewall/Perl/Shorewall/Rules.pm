@@ -1751,6 +1751,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 
 	fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
 	fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
+	fatal_error 'USER/GROUP may only be specified when the SOURCE zone is $FW' unless $user eq '-' || $sourcezone eq firewall_zone;
     }
 
     if ( $actiontype & NATONLY ) {

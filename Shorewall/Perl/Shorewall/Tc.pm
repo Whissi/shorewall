@@ -406,6 +406,8 @@ sub process_tc_rule( ) {
 	}
     }
 
+    fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || $chain eq 'tcout' ); 
+
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} | $restriction,
 				     do_proto( $proto, $ports, $sports) .

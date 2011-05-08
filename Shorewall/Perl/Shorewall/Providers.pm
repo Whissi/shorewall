@@ -467,13 +467,13 @@ sub add_a_provider( ) {
     if ( $gateway ) {
 	$address = get_interface_address $interface unless $address;
 	if ( $family == F_IPV4 ) {
+	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
 	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $number $realm";
 	} else {
+	    emit "qt \$IP -6 route replace $gateway src $address dev $physical ${mtu}";
 	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $number $realm";
 	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $number $realm";
 	}
-	
-	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $number $realm";
     }
 
     balance_default_route $balance , $gateway, $physical, $realm if $balance;

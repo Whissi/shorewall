@@ -258,6 +258,12 @@ sub process_tc_rule( ) {
 		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
 		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
 		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
+
+		if ( $dest eq '-' ) {
+		    $dest = $device;
+		} else {
+		    $dest = join( ':', $device, $dest ) unless $dest =~ /^[[:alpha:]]/;
+		}
 	    }
 
 	    $chain   = 'tcpost';
@@ -406,7 +412,7 @@ sub process_tc_rule( ) {
 	}
     }
 
-    fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || $chain eq 'tcout' ); 
+    fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || ( $chain eq 'tcout' || $chain eq 'tcpost' ) ); 
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} | $restriction,

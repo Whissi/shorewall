@@ -30,7 +30,22 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 3)  Shorewall now insures that a route to a default gateway exists in
     the main table before it attempts to add a default route through
     that gateway in a provider table. This prevents start/restart
-    failures in the rare event that such a route does not exist. 
+    failures in the rare event that such a route does not exist.
+
+4)  CLASSIFY TC rules can apply to traffic exiting only the interface
+    associated with the class-id specified in the first column. In a
+    Multi-ISP configuration, a naive user might create this TC rule:
+
+        1:2     -       1.2.3.4
+
+    This will work fine when 1.2.3.4 can only be routed out of a single
+    interface, but if we assume that interface 1 is eth0, then the
+    above rule only works for traffic leaving through eth0. 
+
+    Beginning with this release, the Shorewall compiler will interpret
+    the above rule as this one:
+
+        4.2     -       eth0:1.2.3.4
 
 4.4.19.2
 

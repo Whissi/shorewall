@@ -20,6 +20,39 @@
 
     Corrected in Shorewall 4.4.19.1 
 
+4)  There are several known problems in Complex TC:
+
+    a) The following entry in /etc/shorewall/tcclasses
+
+       	A:1 - 10*full/100:50ms 20*full/100 1 tcp-ack
+
+       produces this error:
+
+        ERROR: Unknown INTERFACE (A) : /etc/shorewall/tcclasses
+
+    b) Shorewall reserves class number 1 for the root class of the
+       queuing discipline. Definining class 1 in
+       /etc/shorewall/tcclasses results in a run-time error.
+
+    c) The compiler does not complain if a CLASSID specified in the MARK
+       column of tcrules refers to an IFB class. Such a rule is
+       nonsensical since packets are passed through the IFB before
+       they are passed through any marking rules.
+
+    d) Where there are more than 10 tcdevices, tcfilter entries can
+       generate invalid rules.
+
+    These problems are corrected in Shorewall 4.4.19.2.
+
+3)  Double exclusion involving ipset lists is not detected,
+    resulting in anomalous behavior.
+
+    Example:
+
+	ACCEPT:info $FW net:!10.1.0.7,10.1.0.9,+[!my-host[src]]]
+
+    Corrected in Shorewall 4.4.19.2.
+
 4)  The changes in 4.4.19.1 that corrected long-standing issues with
     default route save/restore are incompatible with 'gawk'. When
     'gawk' is installed (rather than 'mawk'), awk syntax errors having

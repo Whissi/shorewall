@@ -24,13 +24,14 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 2)  Previously, an entry in the USER/GROUP column in the rules and
     tcrules files could cause run-time start/restart failures if the
-    rule(s) being added did not have the firewall as the source or was
-    being added to the POSTROUTING chain. This error is now caught by
+    rule(s) being added did not have the firewall as the source (rules
+    file) and were not being added to the POSTROUTING chain (:T
+    designator in the tcrules file). This error is now caught by
     the compiler.
 
 3)  Shorewall now insures that a route to a default gateway exists in
     the main table before it attempts to add a default route through
-    that gateway to a provider table. This prevents start/restart
+    that gateway in a provider table. This prevents start/restart
     failures in the rare event that such a route does not exist.
 
 4)  CLASSIFY TC rules can apply to traffic exiting only the interface

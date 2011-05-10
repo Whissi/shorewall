@@ -20,3 +20,19 @@
 
     Corrected in Shorewall 4.4.19.1 
 
+4)  The changes in 4.4.19.1 that corrected long-standing issues with
+    default route save/restore are incompatible with 'gawk'. When
+    'gawk' is installed (rather than 'mawk'), awk syntax errors having
+    to do with the symbol 'default' were issued.
+
+    Workaround: Install mawk
+
+5)  An entry in the USER/GROUP column in the rules and tcrules files
+    can cause run-time start/restart failures if the rule(s) being
+    added did not have the firewall as the source or and was not being
+    added to the POSTROUTING chain.
+
+    Workaround: Insure that all USER/GROUP matches are only specified
+    when the SOURCE is $FW (rules file) or is being added to the
+    POSTROUTING chain (:T designator in the tcrules file).
+

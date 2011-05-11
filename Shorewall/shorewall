@@ -366,7 +366,7 @@ compiler() {
     if [ $g_perllib = share/shorewall ]; then
 	$PERL $debugflags /usr/$g_libexec/shorewall/compiler.pl $options $@
     else
-	PERL5LIB=$g_perllib $PERL $debugflags /usr/$g_libexec/shorewall/compiler.pl $options $@
+	eval PERL5LIB=$g_perllib $PERL $debugflags /usr/$g_libexec/shorewall/compiler.pl $options $@
     fi
 }
 

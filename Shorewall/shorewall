@@ -366,7 +366,7 @@ compiler() {
     if [ $g_perllib = share/shorewall ]; then
 	$PERL $debugflags $g_libexec/shorewall/compiler.pl $options $@
     else
-	PERL5LIB=$g_perllib $PERL $debugflags $g_libexec/shorewall/compiler.pl $options $@
+	exec PERL5LIB=$g_perllib $PERL $debugflags $g_libexec/shorewall/compiler.pl $options $@
     fi
 }
 
@@ -1593,7 +1593,7 @@ CONFDIR=/etc/shorewall
 g_product="Shorewall"
 g_recovering=
 g_timestamp=
-g_libexec=/usr/share/share
+g_libexec=/usr/share/shorewall
 g_perllib=share/shorewall
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir

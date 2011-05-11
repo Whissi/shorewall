@@ -301,9 +301,11 @@ compiler() {
     fi
 
     if [ $g_perllib = share/shorewall ]; then
-	$command $PERL $debugflags $pc $options $@
+	$PERL $debugflags $pc $options $@
     else
-	$command PERL5LIB=$g_perllib $PERL $debugflags $pc $options $@
+	PERL5LIB=$g_perllib
+	export PERL5LIB
+	$PERL $debugflags $pc $options $@
     fi
 }    
 

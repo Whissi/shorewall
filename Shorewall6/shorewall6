@@ -300,7 +300,7 @@ compiler() {
 	PERL=/usr/bin/perl
     fi
 
-    if [ $g_perllib = /usr/share/shorewall ]; then
+    if [ $g_perllib = ${g_libexec}/shorewall ]; then
 	$command $PERL $debugflags $pc $options $@
     else
 	PERL5LIB=$g_perllib

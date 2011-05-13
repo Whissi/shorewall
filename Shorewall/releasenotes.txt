@@ -13,71 +13,19 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  A duplicate ACCEPT rule in the INPUT chain has been eliminated when
-    the firewall is stopped.
+1)  Previously, the compiler would allow a degenerate entry (only the
+    BAND specified) in /etc/shorewall/tcpri. Such an entry now raises a
+    compilation error.
 
-2)  A defect introduced in Shorewall 4.4.17 broke the ability to
-    specify ':<low port>-<high port>' in the ADDRESS column of 
-    /etc/shorewall/masq. 
+2)  Previously, it was possible to specify tcfilters and tcrules that
+    classified traffic with the class-id of a non-leaf HFSC class. Such
+    classes are not capabable of handling packets.
 
-3)  Several long-standing defects having to do with default route
-    save/restore have been corrected in the Multi-ISP implementation.
+    Shorewall now generates a compile-time warning in this case.
 
-    a)   Shorewall previously interpreted all 'nexthop' routes as
-    	 default routes when analyzing the pre-start routing
-    	 configuration. This could lead to unwanted default routes when
-    	 the firewall was started or stopped.
-
-    b)   The default route with metric 0 was usually not restored
-         during 'stop' processing.
-
-    c)	 If there were multiple default routes in the main table prior
-         to 'shorewall start' and USE_DEFAULT_RT was set, only the
-         first one with metric 0 was deleted.
-
-4)  Shorewall-shell allowed an IPSET in the ORIGINAL DEST column of
-    DNAT and REDIRECT rules. That capability, inadvertently dropped in
-    Shorewall-perl, has now been restored.
-
-    Please note, however, that using an IPSET in this way will open the
-    server port from the SOURCE zone.
-
-    Example:
-
-    This rule:
-
-    	 DNAT	net	dmz:10.1.10.2	tcp	80	-	+foo
-
-    will implicitly add this rule:
-
-    	 ACCEPT	net	dmz:10.1.10.2	tcp	80
-
-5)  Several problems with complex TC have been corrected:
-
-    a) The following entry in /etc/shorewall/tcclasses
-
-       	A:1 - 10*full/100:50ms 20*full/100 1 tcp-ack
-
-       produced this error:
-
-        ERROR: Unknown INTERFACE (A) : /etc/shorewall/tcclasses
-
-       This has been corrected by requiring that class numbers
-       containing a-f or A-F must be prefaced by '0x'.
-
-    b) Shorewall reserves class number 1 for the root class of the
-       queuing discipline. Definining class 1 in
-       /etc/shorewall/tcclasses was previoulsly escaping detection by
-       the compiler, resulting in a run-time error.
-
-    c) The compiler did not complain if a CLASSID specified in the MARK
-       column of tcrules referred to an IFB class. Such a rule would be
-       nonsensical since packets are passed through the IFB before
-       they are passed through any marking rules. Such a configuration
-       now results in a compilation error.
-
-    d) Where there are more than 10 tcdevices, tcfilter entries could
-       generate invalid rules. 
+    If a non-leaf class is specified as the default class, then
+    Shorewall now generates a compile-time error since that
+    configuration allows no network traffic to flow.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
@@ -336,6 +284,136 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 9
 ----------------------------------------------------------------------------
+4.4.19.4
+
+1)  Previously, the compiler would allow a degenerate entry (only the
+    BAND specified) in /etc/shorewall/tcpri. Such an entry now raises a
+    compilation error.
+
+2)  Previously, it was possible to specify tcfilters and tcrules that
+    classified traffic with the class-id of a non-leaf HFSC class. Such
+    classes are not capabable of handling packets.
+
+    Shorewall now generates a compile-time warning in this case.
+
+    If a non-leaf class is specified as the default class, then
+    Shorewall now generates a compile-time error since that
+    configuration allows no network traffic to flow.
+
+4.4.19.3
+
+1)  The changes in 4.4.19.1 that corrected long-standing issues with
+    default route save/restore were incompatible with 'gawk'. When
+    'gawk' was installed (rather than 'mawk'), awk syntax errors having
+    to do with the symbol 'default' were issued.
+
+    This incompatibility has been corrected.
+
+2)  Previously, an entry in the USER/GROUP column in the rules and
+    tcrules files could cause run-time start/restart failures if the
+    rule(s) being added did not have the firewall as the source (rules
+    file) and were not being added to the POSTROUTING chain (:T
+    designator in the tcrules file). This error is now caught by
+    the compiler.
+
+3)  Shorewall now insures that a route to a default gateway exists in
+    the main table before it attempts to add a default route through
+    that gateway in a provider table. This prevents start/restart
+    failures in the rare event that such a route does not exist.
+
+4)  CLASSIFY TC rules can apply to traffic exiting only the interface
+    associated with the class-id specified in the first column. In a
+    Multi-ISP configuration, a naive user might create this TC rule:
+
+        1:2     -       1.2.3.4
+
+    This will work fine when 1.2.3.4 can only be routed out of a single
+    interface. However, if we assume that eth0 is interface 1, then the
+    above rule only works for traffic leaving via eth0. 
+
+    Beginning with this release, the Shorewall compiler will interpret
+    the above rule as this one:
+
+        1.2     -       eth0:1.2.3.4
+
+4.4.19.2
+
+1)  In Shorewall-shell, there was the ability to specify IPSET names in
+    the ORIGINAL DEST column of DNAT and REDIRECT rules. That ability,
+    inadvertently dropped in Shorewall-perl, has been restored.
+
+    CAUTION: When an IPSET is used in this way, the server port is
+    opened from the SOURCE zone. 
+
+    Example:
+
+	DNAT	net	dmz:10.1.1.2	tcp	80	-	+foo
+
+    will implicitly add this rule
+
+	ACCEPT	net	dmz:10.1.1.2	tcp	80
+
+2)  Several problems with complex TC have been corrected:
+
+    a) The following entry in /etc/shorewall/tcclasses
+
+       	A:1 - 10*full/100:50ms 20*full/100 1 tcp-ack
+
+       produced this error:
+
+        ERROR: Unknown INTERFACE (A) : /etc/shorewall/tcclasses
+
+       This has been corrected.
+
+    b) Shorewall reserves class number 1 for the root class of the
+       queuing discipline. Definining class 1 in
+       /etc/shorewall/tcclasses was previoulsly escaping detection by
+       the compiler, resulting in a run-time error.
+
+    c) The compiler did not complain if a CLASSID specified in the MARK
+       column of tcrules referred to an IFB class. Such a rule would be
+       nonsensical since packets are passed through the IFB before
+       they are passed through any marking rules. Such a configuration
+       now results in a compilation error.
+
+    d) Where there are more than 10 tcdevices, tcfilter entries could
+       generate invalid rules.
+
+3)  Double exclusion involving ipset lists was previously not detected,
+    resulting in anomalous behavior.
+
+    Example:
+
+	ACCEPT:info $FW net:!10.1.0.7,10.1.0.9,+[!my-host[src]]]
+
+    Such cases now result in a compilation error.
+
+4.4.19.1
+
+1)  A duplicate ACCEPT rule in the INPUT chain has been eliminated when
+    the firewall is stopped.
+
+2)  A defect introduced in Shorewall 4.4.17 broke the ability to
+    specify ':<low port>-<high port>' in the ADDRESS column of 
+    /etc/shorewall/masq. 
+
+3)  Several long-standing defects having to do with default route
+    save/restore have been corrected in the Multi-ISP implementation.
+
+    a)   Shorewall previously interpreted all 'nexthop' routes as
+    	 default routes when analyzing the pre-start routing
+    	 configuration. This could lead to unwanted default routes when
+    	 the firewall was started or stopped.
+
+    b)   The default route with metric 0 was usually not restored
+         during 'stop' processing.
+
+    c)	 If there were multiple default routes in the main table prior
+         to 'shorewall start' and USE_DEFAULT_RT was set, only the
+         first one with metric 0 was deleted.
+
+4.4.19
+
 1)  Corrected a problem in optimize level 4 that resulted in the
     following compile-time failure.
 

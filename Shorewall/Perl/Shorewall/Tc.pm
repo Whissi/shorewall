@@ -839,9 +839,11 @@ sub validate_tc_class( ) {
 	# Nested Class
 	#
 	$parentref = $tcref->{$parentclass};
-	fatal_error "Unknown Parent class ($parentclass)" unless $parentref && $parentref->{occurs} == 1;
-	fatal_error "The class ($parentclass) specifies UMAX and/or DMAX; it cannot serve as a parent" if $parentref->{dmax};
-	fatal_error "The class ($parentclass) specifies flow; it cannot serve as a parent"             if $parentref->{flow}; 
+	my $parentnum = in_hexp $parentclass;
+	fatal_error "Unknown Parent class ($parentnum)" unless $parentref && $parentref->{occurs} == 1;
+	fatal_error "The class ($parentnum) specifies UMAX and/or DMAX; it cannot serve as a parent" if $parentref->{dmax};
+	fatal_error "The class ($parentnum) specifies flow; it cannot serve as a parent"             if $parentref->{flow};
+	fatal_error "The default class ($parentnum) may not have sub-classes"                        if $devref->{default} == $parentclass;
 	$parentref->{leaf} = 0;
 	$ratemax  = $parentref->{rate};
 	$ratename = q(the parent class's RATE);

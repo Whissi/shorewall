@@ -258,6 +258,11 @@ sub process_tc_rule( ) {
 		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
 		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
 
+		unless ( $tcclasses{$device}{hex_value $designator}{leaf} ) {
+		    warning_message "Non-leaf Class ($originalmark) - tcrule ignored";
+		    return;
+		}
+
 		if ( $dest eq '-' ) {
 		    $dest = $device;
 		} else {
@@ -1008,6 +1013,11 @@ sub process_tc_filter() {
 
     fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
     fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
+
+    unless ( $tcref->{leaf} ) {
+	warning_message "Filter specifying a non-leaf CLASS ($devnum:$class) ignored";
+	return;
+    }
 
     if ( $devref->{physical} ne $lastdevice ) {
 	if ( $lastdevice ) {

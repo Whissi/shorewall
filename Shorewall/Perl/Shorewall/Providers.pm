@@ -140,13 +140,13 @@ sub copy_table( $$$ ) {
     my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family route show table $duplicate | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
     }
 
     emit ( '    case $net in',
-	   '        default|nexthop)',
+	   '        default)',
 	   '            ;;',
 	   '        *)',
 	   "            run_ip route add table $number \$net \$route $realm",
@@ -172,13 +172,13 @@ sub copy_and_edit_table( $$$$ ) {
     $copy =~ s/\+/*/;
 
     if ( $realm ) {
-	emit  ( "\$IP -$family route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family route show table $duplicate | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
     }
 
     emit (  '    case $net in',
-	    '        default|nexthop)',
+	    '        default)',
 	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',

@@ -40,9 +40,9 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 
-our %tcs = ( T => { chain  => 'tcpost',
+my  %tcs = ( T => { chain  => 'tcpost',
 		    connmark => 0,
 		    fw       => 1,
 		    fwi      => 0,
@@ -86,7 +86,7 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
-our %flow_keys = ( 'src'            => 1,
+my  %flow_keys = ( 'src'            => 1,
 		   'dst'            => 1,
 		   'proto'          => 1,
 		   'proto-src'      => 1,
@@ -104,14 +104,14 @@ our %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
-our %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
+my  %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
 		    'tos-maximize-throughput'  => '0x08/0x08' ,
 		    'tos-maximize-reliability' => '0x04/0x04' ,
 		    'tos-minimize-cost'        => '0x02/0x02' ,
 		    'tos-normal-service'       => '0x00/0x1e' );
-our %classids;
+my  %classids;
 
-our @deferred_rules;
+my  @deferred_rules;
 
 #
 # Perl version of Arn Bernin's 'tc4shorewall'.
@@ -132,12 +132,12 @@ our @deferred_rules;
 #                              name          => <interface>
 #                                               }
 #
-our @tcdevices;
-our %tcdevices;
-our @devnums;
-our $devnum;
-our $sticky;
-our $ipp2p;
+my  @tcdevices;
+my  %tcdevices;
+my  @devnums;
+my  $devnum;
+my  $sticky;
+my  $ipp2p;
 
 #
 # TCClasses Table
@@ -158,17 +158,16 @@ our $ipp2p;
 #                                                }
 #                                     }
 #             }
+my  @tcclasses;
+my  %tcclasses;
 
-our @tcclasses;
-our %tcclasses;
-
-our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
+my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
 		      tcin       => INPUT_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT );
 
-our $family;
+my $family;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

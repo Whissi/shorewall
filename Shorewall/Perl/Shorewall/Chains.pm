@@ -188,7 +188,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 
 #
 # Chain Table
@@ -242,8 +242,8 @@ our $raw_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-our $comment;
-our @comments;
+my  $comment;
+my  @comments;
 
 #
 # Target Types
@@ -280,14 +280,15 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 #
 # See initialize() below for additional comments on these variables
 #
-our $iprangematch;
-our $chainseq;
-our $idiotcount;
-our $idiotcount1;
-our $warningcount;
-our $hashlimitset;
-our $global_variables;
-our $ipset_rules;
+
+my $iprangematch;
+my $chainseq;
+my $idiotcount;
+my $idiotcount1;
+my $warningcount;
+my $hashlimitset;
+my $global_variables;
+my $ipset_rules;
 #
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
 #
@@ -296,18 +297,18 @@ use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
 #
 # These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents
 #
-our %interfaceaddr;         # First interface address
-our %interfaceaddrs;        # All interface addresses
-our %interfacenets;         # Networks routed out of the interface
-our %interfacemacs;         # Interface MAC
-our %interfacebcasts;       # Broadcast addresses associated with the interface (IPv4)
-our %interfaceacasts;       # Anycast addresses associated with the interface (IPv6)
-our %interfacegateways;     # Gateway of default route out of the interface
+my %interfaceaddr;         # First interface address
+my %interfaceaddrs;        # All interface addresses
+my %interfacenets;         # Networks routed out of the interface
+my %interfacemacs;         # Interface MAC
+my %interfacebcasts;       # Broadcast addresses associated with the interface (IPv4)
+my %interfaceacasts;       # Anycast addresses associated with the interface (IPv6)
+my %interfacegateways;     # Gateway of default route out of the interface
 
 #
 # Built-in Chains
 #
-our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
+my @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
 #
 # Mode of the emitter (part of this module that converts rules in the chain table into iptables-restore input)
@@ -316,7 +317,7 @@ use constant { NULL_MODE => 0 ,   # Emitting neither shell commands nor iptables
 	       CAT_MODE  => 1 ,   # Emitting iptables-restore input
 	       CMD_MODE  => 2 };  # Emitting shell commands.
 
-our $mode;
+my $mode;
 #
 # Address Family
 #
@@ -325,7 +326,7 @@ our $family;
 #
 # These are the current builtin targets
 #
-our %builtin_target = ( ACCEPT      => 1,
+my  %builtin_target = ( ACCEPT      => 1,
 			ACCOUNT     => 1,
 			CHAOS       => 1,
 			CHECKSUM    => 1,

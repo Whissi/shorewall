@@ -38,8 +38,8 @@ our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
 our @EXPORT_OK = ();
 our $VERSION = '4.4_20';
 
-our @addresses_to_add;
-our %addresses_to_add;
+my @addresses_to_add;
+my %addresses_to_add;
 
 #
 # Called by the compiler

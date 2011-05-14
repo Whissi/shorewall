@@ -80,25 +80,25 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 
 #
 # Some IPv4/6 useful stuff
 #
-our @allipv4 = ( '0.0.0.0/0' );
-our @allipv6 = ( '::/0' );
-our $allip;
-our @allip;
-our @nilipv4 = ( '0.0.0.0' );
-our @nilipv6 = ( '::' );
-our $nilip;
-our @nilip;
-our $valid_address;
-our $validate_address;
-our $validate_net;
-our $validate_range;
-our $validate_host;
-our $family;
+my @allipv4 = ( '0.0.0.0/0' );
+my @allipv6 = ( '::/0' );
+my $allip;
+my @allip;
+my @nilipv4 = ( '0.0.0.0' );
+my @nilipv6 = ( '::' );
+my $nilip;
+my @nilip;
+my $valid_address;
+my $validate_address;
+my $validate_net;
+my $validate_range;
+my $validate_host;
+my $family;
 
 use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       ALLIPv6             => '::/0' ,
@@ -121,7 +121,7 @@ use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       SCTP                => 132,
 	       UDPLITE             => 136 };
 
-our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
+my @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 
 #
 # Note: initialize() is declared at the bottom of the file

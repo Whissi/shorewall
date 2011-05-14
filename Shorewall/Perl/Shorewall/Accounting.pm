@@ -35,21 +35,21 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_accounting );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4.18';
+our $VERSION = '4.4.20';
 
 #
 # Per-IP accounting tables. Each entry contains the associated network.
 #
-our %tables;
+my %tables;
 
-our $jumpchainref;
-our %accountingjumps;
-our $asection;
-our $defaultchain;
-our $defaultrestriction;
-our $restriction;
-our $accounting_commands = { COMMENT => 0, SECTION => 2 };
-our $sectionname;
+my $jumpchainref;
+my %accountingjumps;
+my $asection;
+my $defaultchain;
+my $defaultrestriction;
+my $restriction;
+my $accounting_commands = { COMMENT => 0, SECTION => 2 };
+my $sectionname;
 
 #
 # Sections in the Accounting File

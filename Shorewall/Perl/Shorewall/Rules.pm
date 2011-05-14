@@ -52,47 +52,47 @@ our @EXPORT = qw(
 	       );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 #
 # Globals are documented in the initialize() function
 #
-our %sections;
+my %sections;
 
-our $section;
+my $section;
 
-our @policy_chains;
+my @policy_chains;
 
-our %policy_actions;
+my %policy_actions;
 
-our %default_actions;
+my %default_actions;
 
-our %macros;
+my %macros;
 
-our $family;
+my $family;
 
-our @builtins;
+my @builtins;
 
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-our $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
+my $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
-our $macro_nest_level;
+my $macro_nest_level;
 
-our @actionstack;
-our %active;
+my @actionstack;
+my %active;
 
 #  Action Table
 #
 #     %actions{ actchain => used to eliminate collisions }
 #
-our %actions;
+my %actions;
 #
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
-our %usedactions;
+my %usedactions;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

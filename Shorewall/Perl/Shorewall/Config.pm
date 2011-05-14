@@ -139,7 +139,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -148,47 +148,47 @@ our ($command, $doing, $done );
 #
 # VERBOSITY
 #
-our $verbosity;
+my $verbosity;
 #
 # Logging
 #
-our ( $log, $log_verbosity );
+my ( $log, $log_verbosity );
 #
 # Timestamp each progress message, if true.
 #
-our $timestamp;
+my $timestamp;
 #
 # Script (output) file handle
 #
-our $script;
+my $script;
 #
 # When 'true', writes to the script are enabled. Used to catch code emission between functions
 #
-our $script_enabled;
+my $script_enabled;
 #
 # True, if last line emitted is blank
 #
-our $lastlineblank;
+my $lastlineblank;
 #
 # Tabs to indent the output
 #
-our $indent1;
+my $indent1;
 #
 # Characters to indent the output
 #
-our $indent2;
+my $indent2;
 #
 # Total indentation
 #
-our $indent;
+my $indent;
 #
 # Script's Directory and File
 #
-our ( $dir, $file );
+my ( $dir, $file );
 #
 # Temporary output file's name
 #
-our $tempfile;
+my $tempfile;
 #
 # Misc Globals
 #
@@ -200,15 +200,15 @@ our %config;
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY SUBSYSLOCK LOG_VERBOSITY/;
+my @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY SUBSYSLOCK LOG_VERBOSITY/;
 #
 # From parsing the capabilities file or detecting capabilities
 #
-our %capabilities;
+my %capabilities;
 #
 # Capabilities
 #
-our %capdesc = ( NAT_ENABLED     => 'NAT',
+my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MANGLE_ENABLED  => 'Packet Mangling',
 		 MULTIPORT       => 'Multi-port Match' ,
 		 XMULTIPORT      => 'Extended Multi-port Match',
@@ -312,52 +312,52 @@ our %config_files = ( #accounting      => 1,
 #
 # Directories to search for configuration files
 #
-our @config_path;
+my @config_path;
 #
 # Stash away file references here when we encounter INCLUDE
 #
-our @includestack;
+my @includestack;
 #
 # Allow nested opens
 #
-our @openstack;
+my @openstack;
 #
 # From the params file
 #
-our %params;
+my %params;
 #
 # Entries that the compiler adds to %params
 #
-our %compiler_params;
+my %compiler_params;
 #
 # Action parameters
 #
-our %actparms;
+my %actparms;
 
-our $currentline;             # Current config file line image
-our $currentfile;             # File handle reference
-our $currentfilename;         # File NAME
-our $currentlinenumber;       # Line number
-our $perlscript;              # File Handle Reference to current temporary file being written by an in-line Perl script
-our $perlscriptname;          # Name of that file.
-our @tempfiles;               # Files that need unlinking at END
-our $first_entry;             # Message to output or function to call on first non-blank line of a file
+our $currentline;            # Current config file line image
+my $currentfile;             # File handle reference
+my $currentfilename;         # File NAME
+my $currentlinenumber;       # Line number
+my $perlscript;              # File Handle Reference to current temporary file being written by an in-line Perl script
+my $perlscriptname;          # Name of that file.
+my @tempfiles;               # Files that need unlinking at END
+my $first_entry;             # Message to output or function to call on first non-blank line of a file
 
-our $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
+my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
-our $debug;                   # If true, use Carp to report errors with stack trace.
+my $debug;                   # If true, use Carp to report errors with stack trace.
 
-our $family;                  # Protocol family (4 or 6)
-our $toolname;                # Name of the tool to use (iptables or iptables6)
-our $toolNAME;                # Tool name in CAPS
-our $product;                 # Name of product that will run the generated script
-our $Product;                 # $product with initial cap.
+our $family;                 # Protocol family (4 or 6)
+my $toolname;                # Name of the tool to use (iptables or iptables6)
+my $toolNAME;                # Tool name in CAPS
+our $product;                # Name of product that will run the generated script
+our $Product;                # $product with initial cap.
 
-our $sillyname;               # Name of temporary filter chains for testing capabilities
-our $sillyname1;
-our $iptables;                # Path to iptables/ip6tables
-our $tc;                      # Path to tc
-our $ip;                      # Path to ip
+my $sillyname;               # Name of temporary filter chains for testing capabilities
+my $sillyname1;
+my $iptables;                # Path to iptables/ip6tables
+my $tc;                      # Path to tc
+my $ip;                      # Path to ip
 
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
@@ -365,7 +365,7 @@ use constant { MIN_VERBOSITY => -1,
 	       F_IPV6 => 6,
 	     };
 
-our %validlevels;             # Valid log levels.
+my %validlevels;             # Valid log levels.
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

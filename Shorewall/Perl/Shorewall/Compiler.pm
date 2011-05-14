@@ -41,13 +41,13 @@ use Shorewall::Misc;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 
-our $export;
+my $export;
 
-our $test;
+my $test;
 
-our $family;
+my $family;
 
 #
 # Initilize the package-globals in the other modules

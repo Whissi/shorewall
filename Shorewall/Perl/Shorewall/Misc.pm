@@ -47,7 +47,7 @@ our @EXPORT = qw( process_tos
 our @EXPORT_OK = qw( initialize );
 our $VERSION = '4.4_20';
 
-our $family;
+my $family;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

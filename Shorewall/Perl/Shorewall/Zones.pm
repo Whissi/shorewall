@@ -85,7 +85,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_19';
+our $VERSION = '4.4_20';
 
 #
 # IPSEC Option types
@@ -129,11 +129,11 @@ use constant { NOTHING    => 'NOTHING',
 #
 #     $firewall_zone names the firewall zone.
 #
-our @zones;
-our %zones;
-our $firewall_zone;
+my @zones;
+my %zones;
+my $firewall_zone;
 
-our %reservedName = ( all => 1,
+my  %reservedName = ( all => 1,
 		      any => 1,
 		      none => 1,
 		      SOURCE => 1,
@@ -167,18 +167,18 @@ our %reservedName = ( all => 1,
 #    The purpose of the 'base' member is to ensure that the base names associated with the physical interfaces are assigned in
 #    the same order as the interfaces are encountered in the configuration files.
 #
-our @interfaces;
-our %interfaces;
-our %roots;
-our @bport_zones;
-our %ipsets;
-our %physical;
-our %basemap;
-our %mapbase;
-our $family;
-our $have_ipsec;
-our $baseseq;
-our $minroot;
+my @interfaces;
+my %interfaces;
+my %roots;
+my @bport_zones;
+my %ipsets;
+my %physical;
+my %basemap;
+my %mapbase;
+my $family;
+my $have_ipsec;
+my $baseseq;
+my $minroot;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -202,13 +202,13 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       IF_OPTION_WILDOK   => 64
 	   };
 
-our %validinterfaceoptions;
+my %validinterfaceoptions;
 
-our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
+my %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
 
-our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 );
+my %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 );
 
-our %validhostoptions;
+my %validhostoptions;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

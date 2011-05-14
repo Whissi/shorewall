@@ -124,6 +124,15 @@ done
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
 [ -n "${LIBEXEC:=/usr/share}" ]
+
+case "$LIBEXEC" in
+    /*)
+	;;
+    *)
+	LIBEXEC=/usr/${LIBEXEC}
+	;;
+esac
+
 #
 # Determine where to install the firewall script
 #

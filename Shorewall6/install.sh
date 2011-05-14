@@ -113,6 +113,22 @@ INSTALLD='-D'
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
+case "$LIBEXEC" in
+    /*)
+	;;
+    *)
+	LIBEXEC=/usr/${LIBEXEC}
+	;;
+esac
+
+case "$PERLLIB" in
+    /*)
+	;;
+    *)
+	PERLLIB=/usr/${PERLLIB}
+	;;
+esac
+
 case $(uname) in
     CYGWIN*)
 	if [ -z "$DESTDIR" ]; then

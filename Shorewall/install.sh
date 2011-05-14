@@ -110,6 +110,22 @@ MANDIR=${MANDIR:-"/usr/share/man"}
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
+case "$LIBEXEC" in
+    /*)
+	;;
+    *)
+	LIBEXEC=/usr/${LIBEXEC}
+	;;
+esac
+
+case "$PERLLIB" in
+    /*)
+	;;
+    *)
+	PERLLIB=/usr/${PERLLIB}
+	;;
+esac
+
 INSTALLD='-D'
 
 case $(uname) in

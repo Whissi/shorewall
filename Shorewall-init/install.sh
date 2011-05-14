@@ -88,9 +88,6 @@ install_file() # $1 = source $2 = target $3 = mode
 
 [ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
 
-#
-# Parse the run line
-#
 # DEST is the SysVInit script directory
 # INIT is the name of the script in the $DEST directory
 # ARGS is "yes" if we've already parsed an argument
@@ -125,6 +122,15 @@ done
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
 [ -n "${LIBEXEC:=/usr/share}" ]
+
+case "$LIBEXEC" in
+    /*)
+	;;
+    *)
+	LIBEXEC=/usr/${LIBEXEC}
+	;;
+esac
+
 #
 # Determine where to install the firewall script
 #

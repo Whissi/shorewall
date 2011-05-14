@@ -40,17 +40,11 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 1)  The implementation of the environmental variables LIBEXEC and
     PERLLIB that was introduced in 4.4.19 has been changed
-    slightly. The top level directory for installing executables and
-    Perl modules is no longer assumed to be /usr. So if you set these
-    variables as follows in your 4.4.19 packaging script:
-
-	LIBEXEC=libexec
-	PERLLIB=lib/perl5
-
-    then you will need to change them to
-
- 	LIBEXEC=/usr/libexec
-	PERLLIB=/usr/lib/perl5
+    slightly. The installers now allow absolute path names to be
+    supplied so that the executables and/or Perl modules may be
+    installed under a top-level directory other than /usr. The change
+    is compatible with 4.4.19 in that if a relative path name is
+    supplied, then '/usr/' is prepended to the name.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

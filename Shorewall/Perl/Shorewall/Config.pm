@@ -335,21 +335,21 @@ my %compiler_params;
 my %actparms;
 
 our $currentline;            # Current config file line image
-my $currentfile;             # File handle reference
-my $currentfilename;         # File NAME
-my $currentlinenumber;       # Line number
-my $perlscript;              # File Handle Reference to current temporary file being written by an in-line Perl script
-my $perlscriptname;          # Name of that file.
-my @tempfiles;               # Files that need unlinking at END
-my $first_entry;             # Message to output or function to call on first non-blank line of a file
+my  $currentfile;            # File handle reference
+my  $currentfilename;        # File NAME
+my  $currentlinenumber;      # Line number
+my  $perlscript;             # File Handle Reference to current temporary file being written by an in-line Perl script
+my  $perlscriptname;         # Name of that file.
+my  @tempfiles;              # Files that need unlinking at END
+my  $first_entry;            # Message to output or function to call on first non-blank line of a file
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
-my $debug;                   # If true, use Carp to report errors with stack trace.
+our $debug;                  # If true, use Carp to report errors with stack trace.
 
 our $family;                 # Protocol family (4 or 6)
-my $toolname;                # Name of the tool to use (iptables or iptables6)
-my $toolNAME;                # Tool name in CAPS
+our $toolname;               # Name of the tool to use (iptables or iptables6)
+my  $toolNAME;               # Tool name in CAPS
 our $product;                # Name of product that will run the generated script
 our $Product;                # $product with initial cap.
 

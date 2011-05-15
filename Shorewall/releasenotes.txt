@@ -29,6 +29,17 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     Shorewall now generates a compile-time error since that
     configuration allows no network traffic to flow.
 
+3)  Traditionally, Shorewall has not checked for the existance of
+    ipsets mentioned in the configuration, potentially resulting in a
+    run-time start/restart failure. Now, the compiler will issue a
+    WARNING if:
+
+    a) The compiler is being run by root.
+    b) The compilation isn't producing a script to run on a remote
+       system under a -lite product.
+    c) An ipset appearing in the configuration does not exist on the
+       local system.     
+
 4.4.19.3
 
 1)  The changes in 4.4.19.1 that corrected long-standing issues with

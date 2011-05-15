@@ -244,6 +244,7 @@ our $mangle_table;
 our $filter_table;
 our $comment;
 our @comments;
+my  $export;
 
 #
 # Target Types
@@ -388,8 +389,8 @@ our %builtin_target = ( ACCEPT      => 1,
 #   2. The compiler can run multiple times in the same process so it has to be
 #      able to re-initialize its dependent modules' state.
 #
-sub initialize( $$ ) {
-    ( $family, my $hard ) = @_;
+sub initialize( $$$ ) {
+    ( $family, my $hard, $export ) = @_;
 
     %chain_table = ( raw    => {},
 		     mangle => {},
@@ -2818,6 +2819,10 @@ sub get_set_flags( $$ ) {
     }
 
     $setname =~ s/^\+//;
+
+    unless ( $export || $> != 0 ) {
+	warning_message "Ipset $setname does not exist" unless qt "ipset -L $setname";
+    }
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
 

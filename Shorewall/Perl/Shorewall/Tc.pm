@@ -863,6 +863,7 @@ sub validate_tc_class( ) {
 	$dmax = convert_delay( $dmax );
 	$umax = convert_size( $umax );
 	fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax;
+	$parentclass ||= 1;
     } else {
 	$rate = convert_rate ( $ratemax, $rate, 'RATE' , $ratename );
     }
@@ -1022,6 +1023,8 @@ sub process_tc_filter() {
 	return;
     }
 
+    my $have_rule = 0;
+
     if ( $devref->{physical} ne $lastdevice ) {
 	if ( $lastdevice ) {
 	    pop_indent;
@@ -1038,11 +1041,13 @@ sub process_tc_filter() {
     if ( $source ne '-' ) {
 	my ( $net , $mask ) = decompose_net( $source );
 	$rule .= "\\\n   match $ip32 src $net/$mask";
+	$have_rule = 1;
     }
 
     if ( $dest ne '-' ) {
 	my ( $net , $mask ) = decompose_net( $dest );
 	$rule .= "\\\n   match $ip32 dst $net/$mask";
+	$have_rule = 1;
     }
 
     if ( $tos ne '-' ) {
@@ -1061,6 +1066,7 @@ sub process_tc_filter() {
 	}
 
 	$rule .= "\\\n  match $ip32 tos $tosval $mask";
+	$have_rule = 1;
     }
 
     if ( $length ne '-' ) {
@@ -1068,6 +1074,7 @@ sub process_tc_filter() {
 	my $mask = $validlengths{$len};
 	fatal_error "Invalid LENGTH ($length)" unless $mask;
 	$rule .="\\\n   match u16 0x0000 $mask at $lo";
+	$have_rule = 1;
     }
 
     my $protonumber = 0;
@@ -1075,13 +1082,20 @@ sub process_tc_filter() {
     unless ( $proto eq '-' ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
-	$rule .= "\\\n   match $ip32 protocol $protonumber 0xff" if $protonumber;
+	if ( $protonumber ) {
+	    $rule .= "\\\n   match $ip32 protocol $protonumber 0xff";
+	    $have_rule = 1;
+	}
     }
 
     if ( $portlist eq '-' && $sportlist eq '-' ) {
-	emit( "\nrun_tc $rule\\" ,
-	      "   flowid $devnum:$class" ,
-	      '' );
+	if ( $have_rule ) {
+	    emit( "\nrun_tc $rule\\" ,
+		  "   flowid $devnum:$class" ,
+		  '' );
+	} else {
+	    warning_message "Degenerate tcfilter ignored";
+	}
     } else {
 	fatal_error "Ports may not be specified without a PROTO" unless $protonumber;
 	our $lastrule;

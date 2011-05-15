@@ -190,11 +190,11 @@ my ( $dir, $file );
 #
 my $tempfile;
 #
-# Misc Globals
+# Misc Globals exported to other modules
 #
 our %globals;
 #
-# From shorewall.conf file
+# From shorewall.conf file - exported to other modules.
 #
 our %config;
 #

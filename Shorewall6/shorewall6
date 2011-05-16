@@ -758,6 +758,8 @@ refresh_command() {
 	    g_refreshchains="$g_refreshchains,$1"
 	    shift
 	done
+    else
+	g_refreshchains=:refresh:
     fi
 
     shorewall6_is_started || fatal_error "Shorewall6 is not running"
@@ -1388,6 +1390,7 @@ g_verbose_offset=0
 g_use_verbosity=
 g_debug=
 g_export=
+g_refreshchains=:none:
 
 g_noroutes=
 g_purge=

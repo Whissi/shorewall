@@ -4734,7 +4734,7 @@ sub create_chainlist_reload($) {
 		fatal_error "Built-in chains may not be refreshed" if $chainref->{builtin};
 		
 		if ( $chainseq{$table} && @{$chainref->{rules}} ) {
-		    $tables{$table} = 1;
+		    warning_message "The entire $table table will be refreshed" unless $tables{$table}++;
 		} else {
 		    $chains{$table}{$chain} = $chainref;
 		}

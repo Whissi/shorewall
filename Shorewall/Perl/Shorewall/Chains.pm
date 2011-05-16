@@ -282,13 +282,14 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 # See initialize() below for additional comments on these variables
 #
 our $iprangematch;
-our $chainseq;
+our %chainseq;
 our $idiotcount;
 our $idiotcount1;
 our $warningcount;
 our $hashlimitset;
 our $global_variables;
 our $ipset_rules;
+
 #
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
 #
@@ -407,9 +408,9 @@ sub initialize( $$$ ) {
     $comment  = '';
     @comments = ();
     #
-    # Used to sequence chain names.
+    # Used to sequence chain names in each table.
     #
-    $chainseq = 0;
+    %chainseq = () if $hard;
     #
     # Used to suppress duplicate match specifications for old iptables binaries.
     #
@@ -748,10 +749,10 @@ sub insert_rule($$$) {
 sub delete_chain( $ ) {
     my $chainref = shift;
 
-    $chainref->{referenced} = 0;
-    $chainref->{blacklist}  = 0;
-    $chainref->{rules}      = [];
-    $chainref->{references} = {};
+    $chainref->{referenced}  = 0;
+    $chainref->{blacklist}   = 0;
+    $chainref->{rules}       = [];
+    $chainref->{references}  = {};
     trace( $chainref, 'X', undef, '' ) if $debug;
     progress_message "  Chain $chainref->{name} deleted";
 }
@@ -1198,14 +1199,14 @@ sub new_chain($$)
 
     assert( $chain_table{$table} && ! ( $chain_table{$table}{$chain} || $builtin_target{ $chain } ) );
 
-    my $chainref = { name         => $chain,
-		     rules        => [],
-		     table        => $table,
-		     loglevel     => '',
-		     log          => 1,
-		     cmdlevel     => 0,
-		     references   => {},
-		     blacklist    => 0 };
+    my $chainref = { name           => $chain,
+		     rules          => [],
+		     table          => $table,
+		     loglevel       => '',
+		     log            => 1,
+		     cmdlevel       => 0,
+		     references     => {},
+		     blacklist => 0 };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
 
@@ -2094,13 +2095,13 @@ sub setup_zone_mss() {
     }
 }
 
-sub newexclusionchain() {
-    my $seq = $chainseq++;
+sub newexclusionchain( $ ) {
+    my $seq = $chainseq{$_[0]}++;
     "~excl${seq}";
 }
 
-sub newlogchain() {
-    my $seq = $chainseq++;
+sub newlogchain( $ ) {
+    my $seq = $chainseq{$_[0]}++;
     "~log${seq}";
 }
 
@@ -2117,7 +2118,7 @@ sub logchain( $$$$$$ ) {
     my $logchainref = $chainref->{logchains}{$key};
 
     unless ( $logchainref ) {
-	$logchainref = $chainref->{logchains}{$key} = new_chain $chainref->{table}, newlogchain;
+	$logchainref = $chainref->{logchains}{$key} = new_chain $chainref->{table}, newlogchain( $chainref->{table} ) ;
 	#
 	# Now add the log rule and target rule without matches to the log chain.
 	#
@@ -2137,7 +2138,7 @@ sub logchain( $$$$$$ ) {
 }
 
 sub newnonatchain() {
-    my $seq = $chainseq++;
+    my $seq = $chainseq{nat}++;
     "nonat${seq}";
 }
 
@@ -2169,7 +2170,9 @@ sub source_exclusion( $$ ) {
 
     return $target unless @$exclusions;
 
-    my $chainref = new_chain( reftype $target ? $target->{table} : 'filter' , newexclusionchain );
+    my $table = reftype $target ? $target->{table} : 'filter';
+
+    my $chainref = new_chain( $table , newexclusionchain( $table ) );
 
     add_rule( $chainref, match_source_net( $_ ) . '-j RETURN' ) for @$exclusions;
     add_jump( $chainref, $target, 1 );
@@ -2182,7 +2185,9 @@ sub dest_exclusion( $$ ) {
 
     return $target unless @$exclusions;
 
-    my $chainref = new_chain( reftype $target ? $target->{table} : 'filter' , newexclusionchain );
+    my $table = reftype $target ? $target->{table} : 'filter';
+
+    my $chainref = new_chain( $table , newexclusionchain( $table ) );
 
     add_rule( $chainref, match_dest_net( $_ ) . '-j RETURN' ) for @$exclusions;
     add_jump( $chainref, $target, 1 );
@@ -4059,7 +4064,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Create the Exclusion Chain
 	    #
-	    my $echain = newexclusionchain;
+	    my $echain = newexclusionchain( $table );
 
 	    my $echainref = new_chain $table, $echain;
 	    #
@@ -4706,21 +4711,33 @@ sub create_chainlist_reload($) {
 
 	my %chains;
 
+	my %tables;
+
 	for my $chain ( @chains ) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 
 	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw)$/;
 
-	    $chains{$table} = [] unless $chains{$table};
+	    $chains{$table} = {} unless $chains{$table};
 
 	    if ( $chain ) {
-		fatal_error "No $table chain found with name $chain" unless  $chain_table{$table}{$chain};
-		fatal_error "Built-in chains may not be refreshed" if $chain_table{table}{$chain}{builtin};
-		push @{$chains{$table}}, $chain;
-	    } else {
-		while ( my ( $chain, $chainref ) = each %{$chain_table{$table}} ) {
-		    push @{$chains{$table}}, $chain if $chainref->{referenced} && ! $chainref->{builtin};
+		my $chainref;
+		fatal_error "No $table chain found with name $chain" unless $chainref = $chain_table{$table}{$chain};
+		fatal_error "Built-in chains may not be refreshed" if $chainref->{builtin};
+		
+		if ( $chainseq{$table} ) {
+		    $tables{$table} = 1;
+		} else {
+		    $chains{$table}{$chain} = $chainref;
 		}
+	    } else {
+		$tables{$table} = 1;
+	    }
+	}
+
+	for $table ( keys %tables ) {
+	    while ( my ( $chain, $chainref ) = each %{$chain_table{$table}} ) {
+		$chains{$table}{$chain} = $chainref if $chainref->{referenced} && ! $chainref->{builtin};
 	    }
 	}
 
@@ -4729,13 +4746,13 @@ sub create_chainlist_reload($) {
 	enter_cat_mode;
 
 	for $table qw(raw nat mangle filter) {
-	    next unless $chains{$table};
+	    my $tableref=$chains{$table};
+
+	    next unless $tableref;
+
+	    @chains = sort keys %$tableref;
 
 	    emit_unindented "*$table";
-
-	    my $tableref=$chain_table{$table};
-
-	    @chains = sort @{$chains{$table}};
 
 	    for my $chain ( @chains ) {
 		my $chainref = $tableref->{$chain};

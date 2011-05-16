@@ -4682,13 +4682,21 @@ sub create_chainlist_reload($) {
 
     my $chains = $_[0];
 
-    my @chains = split_list $chains, 'chain';
+    my @chains;
 
-    unless ( @chains ) {
-	@chains = qw( blacklst ) if $filter_table->{blacklst};
-	push @chains, 'blackout' if $filter_table->{blackout};
-	push @chains, 'mangle:' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
-	$chains = join( ',', @chains ) if @chains;
+    unless ( $chains eq ':none:' ) {
+	if ( $chains eq ':refresh:' ) {
+	    $chains = '';
+	} else {
+	    @chains =  split_list $chains, 'chain';
+	}
+
+	unless ( @chains ) {
+	    @chains = qw( blacklst ) if $filter_table->{blacklst};
+	    push @chains, 'blackout' if $filter_table->{blackout};
+	    push @chains, 'mangle:' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+	    $chains = join( ',', @chains ) if @chains;
+	}
     }
 
     $mode = NULL_MODE;

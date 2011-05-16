@@ -4733,7 +4733,7 @@ sub create_chainlist_reload($) {
 		fatal_error "No $table chain found with name $chain" unless $chainref = $chain_table{$table}{$chain};
 		fatal_error "Built-in chains may not be refreshed" if $chainref->{builtin};
 		
-		if ( $chainseq{$table} && @{chainref->{rules} ) {
+		if ( $chainseq{$table} && @{$chainref->{rules}} ) {
 		    $tables{$table} = 1;
 		} else {
 		    $chains{$table}{$chain} = $chainref;

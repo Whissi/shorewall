@@ -23,7 +23,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     classified traffic with the class-id of a non-leaf HFSC class. Such
     classes are not capabable of handling packets.
 
-    Shorewall now generates a compile-time warning in this case.
+    Shorewall now generates a compile-time warning in this case and
+    ignores the entry.
 
     If a non-leaf class is specified as the default class, then
     Shorewall now generates a compile-time error since that
@@ -38,7 +39,26 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     b) The compilation isn't producing a script to run on a remote
        system under a -lite product.
     c) An ipset appearing in the configuration does not exist on the
-       local system.     
+       local system.
+
+4)  As previously implemented, the 'refresh' command could fail or
+    could result in a ruleset other than what was intended. If there
+    had been changes in the ruleset since it was originally
+    started/restarted/restored that added or deleted sequenced chains
+    (chains such as ~lognnn and ~exclnnn), the resulting ruleset could
+    jump to the wrong such chains or could fail to 'refresh'
+    successfully.
+
+    This issue has been corrected as follows. When a 'refresh' is done
+    and individual chains are involved, then each table that contains
+    both sequenced chains and one of the chains being refreshed is
+    refreshed in its entirety.
+
+    For example, if 'shorwall refresh foo' is issued and the filter
+    table (which is the default) contains any sequenced chains, then
+    the entire table is reloaded. Note that this reload operation is
+    atomic so no packets are passed through an inconsistent
+    configuration.
 
 4.4.19.3
 

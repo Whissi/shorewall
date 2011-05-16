@@ -73,3 +73,27 @@
 
     Corrected in Shorewall 4.4.19.3.
 
+6)  The compiler allow degenerate entries (only the BAND column
+    specified) in /etc/shorewall/tcpri. Such entries cause a run-time
+    failure during start/restart.
+
+7)  It is possible to specify tcfilters and tcrules that classify
+    traffic with the class-id of a non-leaf HFSC class. Such
+    classes are not capabable of handling packets.
+
+    If a non-leaf class is specified as the default class, then
+    a run-time start/restart failure occurs.
+
+8)  Shorewall does not check for the existance of ipsets mentioned in
+    the configuration, potentially resulting in a run-time
+    start/restart failure.
+
+9)  As currently implemented, the 'refresh' command could fail or
+    can result in a ruleset other than what was intended. If there
+    have been changes in the ruleset since it was originally
+    started/restarted/restored that added or deleted sequenced chains
+    (chains such as ~lognnn and ~exclnnn), the resulting ruleset can
+    jump to the wrong such chains or can fail to 'refresh'
+    successfully.
+
+    Workaround: Use 'restart' rather than 'refresh'

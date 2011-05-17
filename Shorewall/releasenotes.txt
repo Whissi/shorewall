@@ -47,6 +47,21 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     is compatible with 4.4.19 in that if a relative path name is
     supplied, then '/usr/' is prepended to the name.
 
+2)  A new ACCOUNTING_TABLE option has been added to shorewall.conf and
+    shorwall6.conf. The setting determines the Netfilter table (filter
+    or mangle) where accounting rules are created.
+
+    When ACCOUNTING_TABLE=mangle, the allowable sections in the
+    accounting file are as follows:
+
+	PREROUTING
+        INPUT
+	OUTPUT
+	FORWARD
+	POSTROUTING
+
+    Present sections must appear in that order.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

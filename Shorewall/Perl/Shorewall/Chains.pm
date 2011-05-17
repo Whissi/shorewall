@@ -1382,7 +1382,9 @@ sub ensure_accounting_chain( $$$ )
 {
     my ($chain, $ipsec, $restriction ) = @_;
 
-    my $chainref = $filter_table->{$chain};
+    my $table = $config{ACCOUNTING_TABLE};
+
+    my $chainref = $chain_table{$table}{$chain};
 
     if ( $chainref ) {
 	fatal_error "Non-accounting chain ($chain) used in an accounting rule" unless $chainref->{accounting};
@@ -1390,7 +1392,7 @@ sub ensure_accounting_chain( $$$ )
     } else {
 	fatal_error "Chain name ($chain) too long" if length $chain > 29;
 	fatal_error "Invalid Chain name ($chain)" unless $chain =~ /^[-\w]+$/ && ! ( $builtin_target{$chain} || $config_files{$chain} );
-	$chainref = new_chain 'filter' , $chain;
+	$chainref = new_chain $table , $chain;
 	$chainref->{accounting}  = 1;
 	$chainref->{referenced}  = 1;
 	$chainref->{restriction} = $restriction;

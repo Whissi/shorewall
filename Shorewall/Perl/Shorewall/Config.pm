@@ -526,6 +526,7 @@ sub initialize( $ ) {
 	  ZONE2ZONE => undef,
 	  ACCOUNTING => undef,
 	  OPTIMIZE_ACCOUNTING => undef,
+	  ACCOUNTING_TABLE => undef,
 	  DYNAMIC_BLACKLIST => undef,
 	  LOAD_HELPERS_ONLY => undef,
 	  REQUIRE_INTERFACE => undef,
@@ -3277,8 +3278,17 @@ sub get_configuration( $ ) {
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
+
     default_yes_no 'ACCOUNTING'                 , 'Yes';
     default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
+    
+    if ( defined $config{ACCOUNTING_TABLE} ) {
+	my $value = $config{ACCOUNTING_TABLE};
+	fatal_error "Invalid ACCOUNTING_TABLE setting ($value)" unless $value eq 'filter' || $value eq 'mangle';
+    } else {
+	$config{ACCOUNTING_TABLE} = 'filter';
+    }
+
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
     default_yes_no 'REQUIRE_INTERFACE'          , '';
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability 'MARK' ? 'Yes' : '';

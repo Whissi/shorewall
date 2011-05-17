@@ -77,6 +77,8 @@
     specified) in /etc/shorewall/tcpri. Such entries cause a run-time
     failure during start/restart.
 
+    Corrected in Shorewall 4.4.19.4.
+
 7)  It is possible to specify tcfilters and tcrules that classify
     traffic with the class-id of a non-leaf HFSC class. Such
     classes are not capabable of handling packets.
@@ -84,11 +86,15 @@
     If a non-leaf class is specified as the default class, then
     a run-time start/restart failure occurs.
 
+    Corrected in Shorewall 4.4.19.4.
+
 8)  Shorewall does not check for the existance of ipsets mentioned in
     the configuration, potentially resulting in a run-time
     start/restart failure.
 
-9)  As currently implemented, the 'refresh' command could fail or
+    Corrected in Shorewall 4.4.19.4.
+
+9)  As currently implemented, the 'refresh' command can fail or
     can result in a ruleset other than what was intended. If there
     have been changes in the ruleset since it was originally
     started/restarted/restored that added or deleted sequenced chains
@@ -97,3 +103,11 @@
     successfully.
 
     Workaround: Use 'restart' rather than 'refresh'
+
+    Corrected in Shorewall 4.4.19.4.
+
+10) 'shorewall6 refresh issues a harmless 'ip6tables: Chain exists'
+    error message.
+
+    Corrected in Shorewall 4.4.19.4.
+

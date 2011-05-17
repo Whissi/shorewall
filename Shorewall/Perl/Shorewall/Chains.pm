@@ -3361,7 +3361,7 @@ sub mark_firewall_not_started() {
     if ( $family == F_IPV4 ) {
 	emit ( 'qt1 $IPTABLES -L shorewall -n && qt1 $IPTABLES -F shorewall && qt1 $IPTABLES -X shorewall' );
     } else {
-	emit ( 'qt1 $IPTABLES6 -L shorewall -n && qt1 $IPTABLES6 -F shorewall && qt1 $IPTABLES6 -X shorewall' );
+	emit ( 'qt1 $IP6TABLES -L shorewall -n && qt1 $IP6TABLES -F shorewall && qt1 $IP6TABLES -X shorewall' );
     }
 }
 

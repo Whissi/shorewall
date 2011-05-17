@@ -13,20 +13,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  Previously, the compiler would allow a degenerate entry (only the
-    BAND specified) in /etc/shorewall/tcpri. Such an entry now raises a
-    compilation error.
-
-2)  Previously, it was possible to specify tcfilters and tcrules that
-    classified traffic with the class-id of a non-leaf HFSC class. Such
-    classes are not capabable of handling packets.
-
-    Shorewall now generates a compile-time warning in this case and
-    ignores the entry.
-
-    If a non-leaf class is specified as the default class, then
-    Shorewall now generates a compile-time error since that
-    configuration allows no network traffic to flow.
+All bug fixes from 4.4.19.1 - 4.4.19.4.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
@@ -61,6 +48,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	POSTROUTING
 
     Present sections must appear in that order.
+
+3)  An NFLOG 'ACTION' has been added to the accounting file to allow
+    sending matching packets (or the leading part of them) to backend
+    accounting daemons via a netlink socket. 
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -309,6 +300,39 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
     If a non-leaf class is specified as the default class, then
     Shorewall now generates a compile-time error since that
     configuration allows no network traffic to flow.
+
+3)  Traditionally, Shorewall has not checked for the existance of
+    ipsets mentioned in the configuration, potentially resulting in a
+    run-time start/restart failure. Now, the compiler will issue a
+    WARNING if:
+
+    a) The compiler is being run by root.
+    b) The compilation isn't producing a script to run on a remote
+       system under a -lite product.
+    c) An ipset appearing in the configuration does not exist on the
+       local system.
+
+4)  As previously implemented, the 'refresh' command could fail or
+    could result in a ruleset other than what was intended. If there
+    had been changes in the ruleset since it was originally
+    started/restarted/restored that added or deleted sequenced chains
+    (chains such as ~lognnn and ~exclnnn), the resulting ruleset could
+    jump to the wrong such chains or could fail to 'refresh'
+    successfully.
+
+    This issue has been corrected as follows. When a 'refresh' is done
+    and individual chains are involved, then each table that contains
+    both sequenced chains and one of the chains being refreshed is
+    refreshed in its entirety.
+
+    For example, if 'shorwall refresh foo' is issued and the filter
+    table (which is the default) contains any sequenced chains, then
+    the entire table is reloaded. Note that this reload operation is
+    atomic so no packets are passed through an inconsistent
+    configuration.
+
+5)  When 'shorewall6 refresh' was run previously, a harmless
+    'ip6tables: Chain exists' message was generated.
 
 4.4.19.3
 

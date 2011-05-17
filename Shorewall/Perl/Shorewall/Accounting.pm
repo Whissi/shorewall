@@ -224,6 +224,8 @@ sub process_accounting_rule( ) {
 	    } else {
 		fatal_error "Invalid ACCOUNT Action";
 	    }
+	} elsif ( $action =~ /^NFLOG/ ) {
+	    $target = validate_level $action;
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 

@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=4.4.20-Beta1
+VERSION=4.4.20-Beta2
 
 usage() # $1 = exit status
 {

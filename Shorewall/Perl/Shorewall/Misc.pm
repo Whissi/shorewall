@@ -247,9 +247,19 @@ sub setup_blacklist() {
 
 		$options = 'src' if $options eq '-';
 
-		my ( $to, $from ) = ( 0, 0 );
+		my ( $to, $from, $whitelist ) = ( 0, 0, 0 );
 
-		for ( split /,/, $options ) {
+		my @options = split_list $options, 'option';
+
+		for ( @options ) {
+		    $whitelist++ if $_ eq 'whitelist';
+		}
+
+		warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
+
+		my $tgt = $whitelist ? 'RETURN' : $target;
+
+		for ( @options ) {
 		    if ( $_ =~ /^(?:from|src)$/ ) {
 			if ( $from++ ) {
 			    warning_message "Duplicate 'src' ignored";
@@ -262,9 +272,9 @@ sub setup_blacklist() {
 					    $networks,
 					    '',
 					    '' ,
-					    $target ,
+					    $tgt ,
 					    '' ,
-					    $target ,
+					    $tgt ,
 					    '' );
 			    } else {
 				warning_message '"src" entry ignored because there are no "blacklist in" zones';
@@ -282,15 +292,15 @@ sub setup_blacklist() {
 					    '',
 					    $networks,
 					    '' ,
-					    $target ,
+					    $tgt ,
 					    '' ,
-					    $target ,
+					    $tgt ,
 					    '' );
 			    } else {
 				warning_message '"dst" entry ignored because there are no "blacklist out" zones';
 			    }
 			}
-		    } else {
+		    } elsif ( $_ ne 'whitelist' ) {
 			fatal_error "Invalid blacklist option($_)";
 		    }
 		}

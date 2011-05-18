@@ -1544,7 +1544,11 @@ sub setup_traffic_shaping() {
 
 	    if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
 		$sfqinhex = in_hexp( ++$sfq);
-		emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+		if ( $devref->{qdisc} eq 'htb' ) {
+		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+		} else {
+		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );
+		}
 	    }
 	    #
 	    # add filters

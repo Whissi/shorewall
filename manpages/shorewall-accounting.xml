@@ -28,6 +28,143 @@
     their packet and byte counters using the <command>shorewall show
     accounting</command> command.</para>
 
+    <para>Beginning with Shorewall 4.4.18, the accounting structure can be
+    created with three root chains:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">accountin</emphasis>: Rules that are valid
+        in the <emphasis role="bold">INPUT</emphasis> chain (may not specify
+        an output interface).</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">accountout</emphasis>: Rules that are
+        valid in the OUTPUT chain (may not specify an input interface or a MAC
+        address).</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">accounting</emphasis>: Other rules.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The new structure is enabled by sectioning the accounting file in a
+    manner similar to the <ulink url="manpages/shorewall-rules.html">rules
+    file</ulink>. The sections are <emphasis role="bold">INPUT</emphasis>,
+    <emphasis role="bold">OUTPUT</emphasis> and <emphasis
+    role="bold">FORWARD</emphasis> and must appear in that order (although any
+    of them may be omitted). The first non-commentary record in the accounting
+    file must be a section header when sectioning is used.</para>
+
+    <para>Beginning with Shorewall 4.4.20, the ACCOUNTING_TABLE setting was
+    added to shorewall.conf and shorewall6.conf. That setting determines the
+    Netfilter table (filter or mangle) where the accounting rules are added.
+    When ACCOUNTING_TABLE=mangle is specified, the available sections are
+    <emphasis role="bold">PREROUTING</emphasis>, <emphasis
+    role="bold">INPUT</emphasis>, <emphasis role="bold">OUTPUT</emphasis>,
+    <emphasis role="bold">FORWARD</emphasis> and <emphasis
+    role="bold">POSTROUTING</emphasis>.</para>
+
+    <para>Section headers have the form:</para>
+
+    <para><option>SECTION</option>
+    <replaceable>section-name</replaceable></para>
+
+    <para>When sections are enabled:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>A jump to a user-defined accounting chain before entries that
+        add rules to that chain.</para>
+      </listitem>
+
+      <listitem>
+        <para>This eliminates loops and unreferenced chains.</para>
+      </listitem>
+
+      <listitem>
+        <para>An output interface may not be specified in the <emphasis
+        role="bold">PREROUTING</emphasis> and <emphasis
+        role="bold">INPUT</emphasis> sections.</para>
+      </listitem>
+
+      <listitem>
+        <para>In the <emphasis role="bold">OUTPUT</emphasis> and <emphasis
+        role="bold">POSTROUTING</emphasis> sections:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>An input interface may not be specified</para>
+          </listitem>
+
+          <listitem>
+            <para>Jumps to a chain defined in the <emphasis
+            role="bold">INPUT</emphasis> or <emphasis
+            role="bold">PREROUTING</emphasis> sections that specifies an input
+            interface are prohibited</para>
+          </listitem>
+
+          <listitem>
+            <para>MAC addresses may not be used</para>
+          </listitem>
+
+          <listitem>
+            <para>Jump to a chain defined in the <emphasis
+            role="bold">INPUT</emphasis> or <emphasis
+            role="bold">PREROUTING</emphasis> section that specifies a MAC
+            address are prohibited.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>The default value of the CHAIN column is:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">accountin</emphasis> in the <emphasis
+            role="bold">INPUT</emphasis> section</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">accounout</emphasis> in the <emphasis
+            role="bold">OUTPUT</emphasis> section</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">accountfwd</emphasis> in the <emphasis
+            role="bold">FORWARD</emphasis> section</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">accountpre</emphasis> in the <emphasis
+            role="bold">PREROUTING</emphasis> section</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">accountpost</emphasis> in the
+            <emphasis role="bold">POSTROUTING</emphasis> section</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>Traffic addressed to the firewall goes through the rules defined
+        in the INPUT section.</para>
+      </listitem>
+
+      <listitem>
+        <para>Traffic originating on the firewall goes through the rules
+        defined in the OUTPUT section.</para>
+      </listitem>
+
+      <listitem>
+        <para>Traffic being forwarded through the firewall goes through the
+        rules from the FORWARD sections.</para>
+      </listitem>
+    </itemizedlist>
+
     <para>The columns in the file are as follows.</para>
 
     <variablelist>

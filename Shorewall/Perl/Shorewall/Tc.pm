@@ -1547,7 +1547,7 @@ sub setup_traffic_shaping() {
 		if ( $devref->{qdisc} eq 'htb' ) {
 		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
 		} else {
-		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$${dev}_mtu limit $tcref->{limit} perturb 10" );
+		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );
 		}
 	    }
 	    #

@@ -260,7 +260,7 @@ sub setup_blacklist() {
 		my $tgt = $whitelist ? 'RETURN' : $target;
 
 		for ( @options ) {
-		    if ( $_ =~ /^(?:from|src)$/ ) {
+		    if ( $_ =~ /^(?:src|from)$/ ) {
 			if ( $from++ ) {
 			    warning_message "Duplicate 'src' ignored";
 			} else {
@@ -300,8 +300,8 @@ sub setup_blacklist() {
 				warning_message '"dst" entry ignored because there are no "blacklist out" zones';
 			    }
 			}
-		    } elsif ( $_ ne 'whitelist' ) {
-			fatal_error "Invalid blacklist option($_)";
+		    } else {
+			fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist';
 		    }
 		}
 

@@ -58,6 +58,49 @@ All bug fixes from 4.4.19.1 - 4.4.19.4.
     are not matched against the entries which follow. No logging of
     whitelisted packets/connections is performed.
 
+5)  Support for the AUDIT target has been added. AUDIT is a feature of
+    the 2.6.39 kernel and iptables 1.4.10 that allows security auditing
+    of access decisions.
+
+    Note: This support note is the only documentation of this support
+    currently available.
+
+    The support involves the following:
+
+    a)  A new "Audit Target" capability is added and is required for
+        auditing support. To use AUDIT support with a capabilities
+        file, that file must be generated using this or a later
+        release.
+
+	Use 'shorewall show capabilities' after installing this release
+	to see if your kernel/iptables support the AUDIT target.
+
+    b)  In /etc/shorewall/policy's POLICY column, the policy (and
+    	default action, if any) may be followed by ':audit' to cause
+	application of the policy to be audited.
+
+	It is allowed to also specify a log level on audited policies
+	resulting in both auditing and logging.
+
+    c)  Three new builtin actions that may be used in the rules file,
+        in macros and in other actions.
+
+    	AACCEPT - Audits and accepts the connection request
+	ADROP   - Audits and drops the connection request
+	AREJECT - Audits and rejects
+
+	It is allowed to specify a log level with these actions to
+	provide both auditing and logging.
+
+    d)  The BLACKLIST_DISPOSITION, MACLIST_DISPOSITION and
+        TCP_FLAGS_DISPOSITION options may be set as follows:
+
+	BLACKLIST_DISPOSITION 	      ADROP or AREJECT
+	MACLIST_DISPOSITION           ADROP 
+				      AREJECT, unless
+				               MACLIST_TABLE=mangle
+        TCP_FLAGS_DISPOSITION         ADROP or AREJECT
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

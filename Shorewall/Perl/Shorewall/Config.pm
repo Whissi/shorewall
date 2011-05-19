@@ -315,7 +315,7 @@ our %config_files = ( #accounting      => 1,
 #
 # Options that involve the the AUDIT target
 #
-my @auditoptions = qw( BLACKLIST_DISPOSITION MACLIST_DISPOSITION TCP_FLAGS_DISPOSITION );
+our @auditoptions = qw( BLACKLIST_DISPOSITION MACLIST_DISPOSITION TCP_FLAGS_DISPOSITION );
 #
 # Directories to search for configuration files
 #

@@ -224,6 +224,7 @@ our $VERSION = '4.4_20';
 #                                               action       => <action tuple that generated this chain>
 #                                               restricted   => Logical OR of restrictions of rules in this chain.
 #                                               restriction  => Restrictions on further rules in this chain.
+#                                               audit        => Audit the result.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -235,7 +236,7 @@ our $VERSION = '4.4_20';
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
-#       'loglevel', 'synparams', 'synchain' and 'default' only apply to policy chains.
+#       'loglevel', 'synparams', 'synchain', 'audit' and 'default' only apply to policy chains.
 #
 our %chain_table;
 our $raw_table;

@@ -95,12 +95,20 @@ my %actions;
 my %usedactions;
 
 #
-# Enumerate the AUDIT policies and map them to their underlying polices
+# Enumerate the AUDIT builtins
 #
-my %auditpolicies = ( AACCEPT => 'ACCEPT',
-		      ADROP   => 'DROP',
-		      AREJECT => 'REJECT'
-		    ); 
+my %auditactions = ( AACCEPT => 1,
+		     ADROP   => 1,
+		     AREJECT => 1
+		   );
+
+#
+# Policies for which AUDIT is allowed
+#
+my %auditpolicies = ( ACCEPT => 1,
+		      DROP   => 1,
+		      REJECT => 1
+		    );
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -168,9 +176,9 @@ sub initialize( $ ) {
     %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit AUDIT AACCEPT ADROP AREJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit AACCEPT ADROP AREJECT/;
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid AUDIT AACCEPT ADROP AREJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid AACCEPT ADROP AREJECT/;
     }
 }
 
@@ -193,13 +201,14 @@ sub get_target_param( $ ) {
 #
 # Convert a chain into a policy chain.
 #
-sub convert_to_policy_chain($$$$$)
+sub convert_to_policy_chain($$$$$$)
 {
-    my ($chainref, $source, $dest, $policy, $provisional ) = @_;
+    my ($chainref, $source, $dest, $policy, $provisional, $audit ) = @_;
 
     $chainref->{is_policy}   = 1;
     $chainref->{policy}      = $policy;
     $chainref->{provisional} = $provisional;
+    $chainref->{audit}       = $audit;
     $chainref->{policychain} = $chainref->{name};
     $chainref->{policypair}  = [ $source, $dest ];
 }
@@ -207,13 +216,13 @@ sub convert_to_policy_chain($$$$$)
 #
 # Create a new policy chain and return a reference to it.
 #
-sub new_policy_chain($$$$)
+sub new_policy_chain($$$$$)
 {
-    my ($source, $dest, $policy, $provisional) = @_;
+    my ($source, $dest, $policy, $provisional, $audit) = @_;
 
     my $chainref = new_chain( 'filter', rules_chain( ${source}, ${dest} ) );
 
-    convert_to_policy_chain( $chainref, $source, $dest, $policy, $provisional );
+    convert_to_policy_chain( $chainref, $source, $dest, $policy, $provisional, $audit );
 
     $chainref;
 }
@@ -237,6 +246,7 @@ sub set_policy_chain($$$$$)
 	    #
 	    $chainref1->{policychain} = $chain1;
 	    $chainref1->{loglevel}    = $chainref->{loglevel} if defined $chainref->{loglevel};
+	    $chainref1->{audit}       = $chainref->{audit}    if defined $chainref->{audit};
 
 	    if ( defined $chainref->{synparams} ) {
 		$chainref1->{synparams}   = $chainref->{synparams};
@@ -260,18 +270,18 @@ sub set_policy_chain($$$$$)
 #
 use constant { PROVISIONAL => 1 };
 
-sub add_or_modify_policy_chain( $$ ) {
-    my ( $zone, $zone1 ) = @_;
+sub add_or_modify_policy_chain( $$$ ) {
+    my ( $zone, $zone1, $audit ) = @_;
     my $chain    = rules_chain( ${zone}, ${zone1} );
     my $chainref = $filter_table->{$chain};
 
     if ( $chainref ) {
 	unless( $chainref->{is_policy} ) {
-	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', PROVISIONAL );
+	    convert_to_policy_chain( $chainref, $zone, $zone1, 'CONTINUE', PROVISIONAL, $audit );
 	    push @policy_chains, $chainref;
 	}
     } else {
-	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', PROVISIONAL );
+	push @policy_chains, ( new_policy_chain $zone, $zone1, 'CONTINUE', PROVISIONAL, $audit );
     }
 }
 
@@ -317,6 +327,10 @@ sub process_a_policy() {
 
     fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
 
+    my $audit = ( $originalpolicy =~ s/:audit$// );
+
+    require_capability 'AUDIT_TARGET', ":audit", "s" if $audit;
+
     my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
 
     fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
@@ -325,6 +339,10 @@ sub process_a_policy() {
 
     ( $policy , my $queue ) = get_target_param $policy;
     
+    fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
+
+    fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
+
     if ( $default ) {
 	if ( "\L$default" eq 'none' ) {
 	    $default = 'none';
@@ -334,12 +352,10 @@ sub process_a_policy() {
 	    fatal_error "Unknown Default Action ($default)";
 	}
     } else {
-	$default = $default_actions{$auditpolicies{$policy} || $policy} || '';
+	$default = $default_actions{$policy} || '';
     }
 
-    use_policy_action $policy if $auditpolicies{$policy};
-
-    fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
+    use_policy_action $policy if $auditactions{$policy};
 
     if ( defined $queue ) {
 	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
@@ -377,11 +393,11 @@ sub process_a_policy() {
 	} elsif ( $chainref->{policy} ) {
 	    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 	} else {
-	    convert_to_policy_chain( $chainref, $client, $server, $policy, 0 );
+	    convert_to_policy_chain( $chainref, $client, $server, $policy, 0 , $audit );
 	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
 	}
     } else {
-	$chainref = new_policy_chain $client, $server, $policy, 0;
+	$chainref = new_policy_chain $client, $server, $policy, 0, $audit;
 	push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
     }
 
@@ -486,16 +502,16 @@ sub process_policies()
     }
 
     for $zone ( all_zones ) {
-	push @policy_chains, ( new_policy_chain $zone,         $zone, 'ACCEPT', PROVISIONAL );
-	push @policy_chains, ( new_policy_chain firewall_zone, $zone, 'NONE',   PROVISIONAL ) if zone_type( $zone ) == BPORT;
+	push @policy_chains, ( new_policy_chain $zone,         $zone, 'ACCEPT', PROVISIONAL, 0 );
+	push @policy_chains, ( new_policy_chain firewall_zone, $zone, 'NONE',   PROVISIONAL, 0 ) if zone_type( $zone ) == BPORT;
 
 	my $zoneref = find_zone( $zone );
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{$zoneref->{parents}} || $zoneref->{type} == VSERVER ) ) {
 	    for my $zone1 ( all_zones ) {
 		unless( $zone eq $zone1 ) {
-		    add_or_modify_policy_chain( $zone, $zone1 );
-		    add_or_modify_policy_chain( $zone1, $zone );
+		    add_or_modify_policy_chain( $zone, $zone1, 0 );
+		    add_or_modify_policy_chain( $zone1, $zone , 0 );
 		}
 	    }
 	}
@@ -526,7 +542,8 @@ sub policy_rules( $$$$$ ) {
 	add_jump $chainref, $default, 0 if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
-
+	
+	add_rule( $chainref , '-j AUDIT --type ' . lc $target ) if $chainref->{audit};
 	add_jump( $chainref , $target eq 'REJECT' ? 'reject' : $target, 1 ) unless $target eq 'CONTINUE';
     }
 }
@@ -1291,17 +1308,6 @@ sub Limit( $$$$ ) {
     add_rule $chainref, '-j ACCEPT';
 }
 
-sub AUDIT( $$$$) {
-    my ($chainref, $level, $tag, $type ) = @_;
-
-    require_capability 'AUDIT_TARGET' , 'AUDIT rules', '';
-
-    fatal_error "Logging is not permitted in the AUDIT action" if $level;
-    fatal_error "AUDIT requires a 'type' parameter";
-    fatal_error "Invalid AUDIT type ($type)" unless $type =~ /^(accept|drop|reject)$/;
-    add_rule $chainref , "-j AUDIT --type $type";
-}
-
 sub AACCEPT ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
@@ -1341,7 +1347,6 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowinUPnP'    => \&allowinUPnP,
 		   'forwardUPnP'    => \&forwardUPnP,
 		   'Limit'          => \&Limit,
-		   'AUDIT'          => \&AUDIT,
 		   'AACCEPT'        => \&AACCEPT,
 		   'ADROP'          => \&ADROP,
 		   'AREJECT'        => \&AREJECT
@@ -1481,9 +1486,13 @@ sub process_actions2 () {
 
     my $ref;
 
-    for ( map normalized_action_name $_, grep $auditpolicies{$config{$_}}, @auditoptions ) {
-	if ( $ref = use_action( $_ ) ) {
-	    process_action( $ref );
+    for my $option ( @auditoptions ) {
+	my $action = $config{ $option };
+
+	if ( $auditactions{$action} ) {
+	    if ( $ref = use_action( normalize_action_name $action ) ) {
+		process_action( $ref );
+	    }
 	}
     }
 

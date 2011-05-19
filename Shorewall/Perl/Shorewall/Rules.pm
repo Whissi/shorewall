@@ -168,9 +168,9 @@ sub initialize( $ ) {
     %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit AACCEPT ADROP AREJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit AUDIT AACCEPT ADROP AREJECT/;
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid AACCEPT ADROP AREJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid AUDIT AACCEPT ADROP AREJECT/;
     }
 }
 
@@ -1291,10 +1291,21 @@ sub Limit( $$$$ ) {
     add_rule $chainref, '-j ACCEPT';
 }
 
+sub AUDIT( $$$$) {
+    my ($chainref, $level, $tag, $type ) = @_;
+
+    require_capability 'AUDIT_TARGET' , 'AUDIT rules', '';
+
+    fatal_error "Logging is not permitted in the AUDIT action" if $level;
+    fatal_error "AUDIT requires a 'type' parameter";
+    fatal_error "Invalid AUDIT type ($type)" unless $type =~ /^(accept|drop|reject)$/;
+    add_rule $chainref , "-j AUDIT --type $type";
+}
+
 sub AACCEPT ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    require_capability 'AUDIT_TARGET' , 'AACCEPT policies and rules', '';
+    require_capability 'AUDIT_TARGET' , 'AACCEPT rules', '';
 
     log_rule_limit $level, $chainref, 'AACCEPT' , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type accept';
@@ -1304,7 +1315,7 @@ sub AACCEPT ( $$$ ) {
 sub ADROP ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    require_capability 'AUDIT_TARGET' , 'ADROP policies and rules', '';
+    require_capability 'AUDIT_TARGET' , 'ADROP rules', '';
 
     log_rule_limit $level, $chainref, 'ADROP' , 'DROP', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type drop';
@@ -1314,7 +1325,7 @@ sub ADROP ( $$$ ) {
 sub AREJECT ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    require_capability 'AUDIT_TARGET' , 'AREJECT policies and rules', '';
+    require_capability 'AUDIT_TARGET' , 'AREJECT rules', '';
 
     log_rule_limit $level, $chainref, 'AREJECT' , 'REJECT', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type reject';
@@ -1329,7 +1340,12 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowInvalid'   => \&allowInvalid,
 		   'allowinUPnP'    => \&allowinUPnP,
 		   'forwardUPnP'    => \&forwardUPnP,
-		   'Limit'          => \&Limit, );
+		   'Limit'          => \&Limit,
+		   'AUDIT'          => \&AUDIT,
+		   'AACCEPT'        => \&AACCEPT,
+		   'ADROP'          => \&ADROP,
+		   'AREJECT'        => \&AREJECT
+		 );
 
 #
 # This function is called prior to processing of the policy file. It:
@@ -1463,14 +1479,16 @@ sub process_action( $) {
 sub process_actions2 () {
     progress_message2 "$doing policy actions...";
 
-    for ( map normalized_action_name $_, grep $auditpolicies{$_}, @auditoptions ) {
-	if ( my $ref = use_action( $_ ) ) {
+    my $ref;
+
+    for ( map normalized_action_name $_, grep $auditpolicies{$config{$_}}, @auditoptions ) {
+	if ( $ref = use_action( $_ ) ) {
 	    process_action( $ref );
 	}
     }
 
     for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
-	if ( my $ref = use_action( $_ ) ) {
+	if ( $ref = use_action( $_ ) ) {
 	    process_action( $ref );
 	}
     }

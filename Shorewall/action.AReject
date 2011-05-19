@@ -1,0 +1,59 @@
+#
+# Shorewall version 4 - AReject Action
+#
+# /usr/share/shorewall/action.Reject
+#
+#	This action is like Reject only it also audits
+#
+#	This action is invoked before a REJECT policy is enforced. The purpose
+#	of the action is:
+#
+#	a) Avoid logging lots of useless cruft.
+#	b) Ensure that certain ICMP packets that are necessary for successful
+#	   internet operation are always ACCEPTed.
+#
+# IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
+###############################################################################
+#TARGET		SOURCE	DEST	PROTO
+#
+# Count packets that come through here
+#
+COUNT
+#
+# Don't log 'auth' -- REJECT
+#
+Auth(REJECT)
+#
+# Drop Broadcasts so they don't clutter up the log
+# (broadcasts must *not* be rejected).
+#
+dropBcast
+#
+# ACCEPT critical ICMP types
+#
+AllowICMPs	-	-	icmp
+#
+# Drop packets that are in the INVALID state -- these are usually ICMP packets
+# and just confuse people when they appear in the log (these ICMPs cannot be
+# rejected).
+#
+dropInvalid
+#
+# Reject Microsoft noise so that it doesn't clutter up the log.
+#
+SMB(REJECT)
+DropUPnP
+#
+# Drop 'newnotsyn' traffic so that it doesn't get logged.
+#
+dropNotSyn	-	-	tcp
+#
+# Drop late-arriving DNS replies. These are just a nuisance and clutter up
+# the log.
+#
+DropDNSrep
+#
+# Audit the result
+#
+AUDIT('reject')
+

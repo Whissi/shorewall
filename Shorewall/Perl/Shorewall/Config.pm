@@ -315,7 +315,7 @@ our %config_files = ( #accounting      => 1,
 #
 # Options that involve the the AUDIT target
 #
-my @auditoptions = qw( BLACKLIST_DISPOSITION TCP_FLAGS_DISPOSITION );
+my @auditoptions = qw( BLACKLIST_DISPOSITION MACLIST_DISPOSITION TCP_FLAGS_DISPOSITION );
 #
 # Directories to search for configuration files
 #
@@ -3362,12 +3362,12 @@ sub get_configuration( $ ) {
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {
 	unless ( $val =~ /^A?REJECT$/ ) {
-	    unless ( $val =~ /^A?DROP/ ) {
-		if ( $val eq 'ACCEPT' ) {
-		    $globals{MACLIST_TARGET} = 'RETURN';
-		} else {
-		    fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
-		}
+	    if ( $val =~ /^A?DROP/ ) {
+		$globals{MACLIST_TARGET} = $val;
+	    } elsif ( $val eq 'ACCEPT' ) {
+		$globals{MACLIST_TARGET} = 'RETURN';
+	    } else {
+		fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
 	    }
 	}
     } else {

@@ -1847,7 +1847,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
     qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
-    qt $IPTABLES -A $chain -j AUDIT --type DROP && ACCOUNT_TARGET=Yes
+    qt $IPTABLES -A $chain -j AUDIT --type drop && ACCOUNT_TARGET=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain

@@ -130,6 +130,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %globals
 				       %config_files
 
+				       @auditoptions
+
 		                       F_IPV4
 		                       F_IPV6
 
@@ -310,6 +312,10 @@ our %config_files = ( #accounting      => 1,
 		      tos              => 1,
 		      tunnels          => 1,
 		      zones            => 1 );
+#
+# Options that involve the the AUDIT target
+#
+my @auditoptions = qw( BLACKLIST_DISPOSITION TCP_FLAGS_DISPOSITION );
 #
 # Directories to search for configuration files
 #
@@ -562,8 +568,7 @@ sub initialize( $ ) {
 		     PANIC   => 0,
 		     NONE    => '',
 		     NFLOG   => 'NFLOG',
-		     LOGMARK => 'LOGMARK',
-		     AUDIT   => 'AUDIT' );
+		     LOGMARK => 'LOGMARK' );
 
     #
     # From parsing the capabilities file or capabilities detection
@@ -2056,12 +2061,6 @@ sub validate_level( $ ) {
 	    return 'LOGMARK';
 	}
 
-	if ( $level =~ /^AUDIT\(.+\)$/ ) {
-	    require_capability( 'AUDIT_TARGET', 'AUDIT', 's' );
-	    fatal_error "Invalid AUDIT type ($2)" unless $2 =~ /^(?:DROP|REJECT|ACCEPT)$/;
-	    return "AUDIT --type $2";
-	}
-
 	level_error( $rawlevel );
     }
 
@@ -2535,7 +2534,7 @@ sub Account_Target() {
 }
 
 sub Audit_Target() {
-    qt1( "$iptables -A $sillyname -j AUDIT --type DROP" );
+    qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
 }
 
 our %detect_capability =
@@ -3345,8 +3344,8 @@ sub get_configuration( $ ) {
 
     default 'BLACKLIST_DISPOSITION'    , 'DROP';
 
-    unless ( $config{BLACKLIST_DISPOSITION} eq 'DROP' || $config{BLACKLIST_DISPOSITION} eq 'REJECT' ) {
-	fatal_error q(BLACKLIST_DISPOSITION must be 'DROP' or 'REJECT');
+    unless ( $config{BLACKLIST_DISPOSITION} =~ /^A?DROP$/ || $config{BLACKLIST_DISPOSITION} =~ /^A?REJECT/ ) {
+	fatal_error q(BLACKLIST_DISPOSITION must be 'DROP', 'ADROP', 'REJECT' or 'AREJECT');
     }
 
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
@@ -3362,14 +3361,14 @@ sub get_configuration( $ ) {
     $globals{MACLIST_TARGET} = 'reject';
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {
-	unless ( $val eq 'REJECT' ) {
-	    if ( $val eq 'DROP' ) {
-		$globals{MACLIST_TARGET} = 'DROP';
-	    } elsif ( $val eq 'ACCEPT' ) {
-		$globals{MACLIST_TARGET} = 'RETURN';
-	    } else {
-		fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
+	unless ( $val =~ /^A?REJECT$/ ) {
+	    unless ( $val =~ /^A?DROP/ ) {
+		if ( $val eq 'ACCEPT' ) {
+		    $globals{MACLIST_TARGET} = 'RETURN';
+		} else {
+		    fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
 		}
+	    }
 	}
     } else {
 	$config{MACLIST_DISPOSITION} = 'REJECT';
@@ -3377,7 +3376,7 @@ sub get_configuration( $ ) {
 
     if ( $val = $config{MACLIST_TABLE} ) {
 	if ( $val eq 'mangle' ) {
-	    fatal_error 'MACLIST_DISPOSITION=REJECT is not allowed with MACLIST_TABLE=mangle' if $config{MACLIST_DISPOSITION} eq 'REJECT';
+	    fatal_error 'MACLIST_DISPOSITION=$1 is not allowed with MACLIST_TABLE=mangle' if $config{MACLIST_DISPOSITION} =~ /^(A?REJECT)$/;
 	} else {
 	    fatal_error "Invalid value ($val) for MACLIST_TABLE option" unless $val eq 'filter';
 	}
@@ -3386,7 +3385,7 @@ sub get_configuration( $ ) {
     }
 
     if ( $val = $config{TCP_FLAGS_DISPOSITION} ) {
-	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(REJECT|ACCEPT|DROP)$/;
+	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(A?REJECT|A?ACCEPT|A?DROP)$/;
     } else {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }

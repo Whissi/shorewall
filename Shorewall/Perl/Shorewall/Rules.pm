@@ -95,6 +95,14 @@ my %actions;
 my %usedactions;
 
 #
+# Enumerate the AUDIT policies and map them to their underlying polices
+#
+my %auditpolicies = ( AACCEPT => 'ACCEPT',
+		      ADROP   => 'DROP',
+		      AREJECT => 'REJECT'
+		    ); 
+
+#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -160,9 +168,9 @@ sub initialize( $ ) {
     %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit AACCEPT ADROP AREJECT/;
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid AACCEPT ADROP AREJECT/;
     }
 }
 
@@ -326,8 +334,10 @@ sub process_a_policy() {
 	    fatal_error "Unknown Default Action ($default)";
 	}
     } else {
-	$default = $default_actions{$policy} || '';
+	$default = $default_actions{$auditpolicies{$policy} || $policy} || '';
     }
+
+    use_policy_action $policy if $auditpolicies{$policy};
 
     fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
 
@@ -440,7 +450,10 @@ sub process_policies()
 			  ACCEPT => undef,
 			  REJECT => undef,
 			  DROP   => undef,
-			  CONTINUE => undef,
+			  AACCEPT => undef,
+			  AREJECT => undef,
+			  ADROP   => undef,
+			  ACONTINUE => undef,
 			  QUEUE => undef,
 			  NFQUEUE => undef,
 			  NONE => undef
@@ -1278,6 +1291,36 @@ sub Limit( $$$$ ) {
     add_rule $chainref, '-j ACCEPT';
 }
 
+sub AACCEPT ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    require_capability 'AUDIT_TARGET' , 'AACCEPT policies and rules', '';
+
+    log_rule_limit $level, $chainref, 'AACCEPT' , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
+    add_rule $chainref , '-j AUDIT --type accept';
+    add_rule $chainref , '-j ACCEPT';
+}
+
+sub ADROP ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    require_capability 'AUDIT_TARGET' , 'ADROP policies and rules', '';
+
+    log_rule_limit $level, $chainref, 'ADROP' , 'DROP', '', $tag, 'add', '' if $level ne '';
+    add_rule $chainref , '-j AUDIT --type drop';
+    add_rule $chainref , '-j DROP';
+}
+
+sub AREJECT ( $$$ ) {
+    my ($chainref, $level, $tag) = @_;
+
+    require_capability 'AUDIT_TARGET' , 'AREJECT policies and rules', '';
+
+    log_rule_limit $level, $chainref, 'AREJECT' , 'REJECT', '', $tag, 'add', '' if $level ne '';
+    add_rule $chainref , '-j AUDIT --type reject';
+    add_rule $chainref , '-j reject';
+}
+
 my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowBcast'     => \&allowBcast,
 		   'dropNotSyn'     => \&dropNotSyn,
@@ -1419,6 +1462,12 @@ sub process_action( $) {
 #
 sub process_actions2 () {
     progress_message2 "$doing policy actions...";
+
+    for ( map normalized_action_name $_, grep $auditpolicies{$_}, @auditoptions ) {
+	if ( my $ref = use_action( $_ ) ) {
+	    process_action( $ref );
+	}
+    }
 
     for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
 	if ( my $ref = use_action( $_ ) ) {

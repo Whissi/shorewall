@@ -264,7 +264,6 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MARK_ANYWHERE   => 'Mark in any table',
 		 HEADER_MATCH    => 'Header Match',
 		 ACCOUNT_TARGET  => 'ACCOUNT Target',
-		 AUDIT_TARGET    => 'AUDIT Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -419,8 +418,8 @@ sub initialize( $ ) {
 		    EXPORT     => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.20-Beta3",
-		    CAPVERSION => 40420,
+		    VERSION    => "4.4.20-Beta2",
+		    CAPVERSION => 40417 ,
 		  );
     #
     # From shorewall.conf file
@@ -626,7 +625,6 @@ sub initialize( $ ) {
 	       MARK_ANYWHERE => undef,
 	       HEADER_MATCH => undef,
                ACCOUNT_TARGET => undef,
-	       AUDIT_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2539,8 +2537,8 @@ sub Audit_Target() {
 
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
-      ADDRTYPE => \&Addrtype,
       AUDIT_TARGET => \&Audit_Target,
+      ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
       COMMENTS => \&Comments,
       CONNLIMIT_MATCH => \&Connlimit_Match,

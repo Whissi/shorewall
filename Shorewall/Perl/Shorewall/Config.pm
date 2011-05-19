@@ -262,7 +262,6 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MARK_ANYWHERE   => 'Mark in any table',
 		 HEADER_MATCH    => 'Header Match',
 		 ACCOUNT_TARGET  => 'ACCOUNT Target',
-		 AUDIT_TARGET    => 'AUDIT Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -413,8 +412,8 @@ sub initialize( $ ) {
 		    EXPORT     => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.20-Beta3",
-		    CAPVERSION => 40420,
+		    VERSION    => "4.4.20-Beta2",
+		    CAPVERSION => 40417 ,
 		  );
     #
     # From shorewall.conf file
@@ -562,8 +561,7 @@ sub initialize( $ ) {
 		     PANIC   => 0,
 		     NONE    => '',
 		     NFLOG   => 'NFLOG',
-		     LOGMARK => 'LOGMARK',
-		     AUDIT   => 'AUDIT' );
+		     LOGMARK => 'LOGMARK' );
 
     #
     # From parsing the capabilities file or capabilities detection
@@ -621,7 +619,6 @@ sub initialize( $ ) {
 	       MARK_ANYWHERE => undef,
 	       HEADER_MATCH => undef,
                ACCOUNT_TARGET => undef,
-	       AUDIT_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2056,12 +2053,6 @@ sub validate_level( $ ) {
 	    return 'LOGMARK';
 	}
 
-	if ( $level =~ /^AUDIT\(.+\)$/ ) {
-	    require_capability( 'AUDIT_TARGET', 'AUDIT', 's' );
-	    fatal_error "Invalid AUDIT type ($2)" unless $2 =~ /^(?:DROP|REJECT|ACCEPT)$/;
-	    return "AUDIT --type $2";
-	}
-
 	level_error( $rawlevel );
     }
 
@@ -2534,14 +2525,9 @@ sub Account_Target() {
     }
 }
 
-sub Audit_Target() {
-    qt1( "$iptables -A $sillyname -j AUDIT --type DROP" );
-}
-
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       ADDRTYPE => \&Addrtype,
-      AUDIT_TARGET => \&Audit_Target,
       CLASSIFY_TARGET => \&Classify_Target,
       COMMENTS => \&Comments,
       CONNLIMIT_MATCH => \&Connlimit_Match,

@@ -1707,6 +1707,7 @@ determine_capabilities() {
     MARK_ANYWHERE=
     HEADER_MATCH=
     ACCOUNT_TARGET=
+    AUDIT_TARGET=
 
     chain=fooX$$
 
@@ -1846,6 +1847,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
     qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
+    qt $IPTABLES -A $chain -j AUDIT --type DROP && ACCOUNT_TARGET=Yes
 
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
@@ -1928,6 +1930,7 @@ report_capabilities() {
 	report_capability "Mark in any table" $MARK_ANYWHERE
 	report_capability "Header Match" $HEADER_MATCH
         report_capability "ACCOUNT Target" $ACCOUNT_TARGET
+        report_capability "AUDIT Target" $AUDIT_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1995,6 +1998,7 @@ report_capabilities1() {
     report_capability1 MARK_ANYWHERE
     report_capability1 HEADER_MATCH
     report_capability1 ACCOUNT_TARGET
+    report_capability1 AUDIT_TARGET
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

@@ -67,7 +67,7 @@ All bug fixes from 4.4.19.1 - 4.4.19.4.
 
     The support involves the following:
 
-    a)  A new "Audit Target" capability is added and is required for
+    a)  A new "AUDIT Target" capability is added and is required for
         auditing support. To use AUDIT support with a capabilities
         file, that file must be generated using this or a later
         release.
@@ -79,6 +79,14 @@ All bug fixes from 4.4.19.1 - 4.4.19.4.
     	default action, if any) may be followed by ':audit' to cause
 	application of the policy to be audited.
 
+	Only ACCEPT, DROP and REJECT policies may be audited.
+
+	Example:
+
+	#SOURCE	DEST	POLICY		LOG
+	#				LEVEL
+	net	fw      DROP:audit
+
 	It is allowed to also specify a log level on audited policies
 	resulting in both auditing and logging.
 
@@ -89,8 +97,12 @@ All bug fixes from 4.4.19.1 - 4.4.19.4.
 	ADROP   - Audits and drops the connection request
 	AREJECT - Audits and rejects
 
-	It is allowed to specify a log level with these actions to
+	A log level may be supplied with these actions to
 	provide both auditing and logging.
+
+	Example:
+
+	AACCEPT:info	loc	net	...
 
     d)  The BLACKLIST_DISPOSITION, MACLIST_DISPOSITION and
         TCP_FLAGS_DISPOSITION options may be set as follows:

@@ -1488,13 +1488,9 @@ sub process_actions2 () {
 
     my $ref;
 
-    for my $option ( @auditoptions ) {
-	my $action = $config{ $option };
-
-	if ( $auditactions{$action} ) {
-	    if ( $ref = use_action( normalize_action_name $action ) ) {
-		process_action( $ref );
-	    }
+    for ( map normalize_action_name $_ , ( grep $auditactions{$_}, ( map $config{$_}, @auditoptions ) ) ) {
+	if ( $ref = use_action( $_ ) ) {
+	    process_action( $ref );
 	}
     }
 
@@ -1504,6 +1500,7 @@ sub process_actions2 () {
 	}
     }
 }
+
 ################################################################################
 # End of functions moved from the Actions module in 4.4.16
 ################################################################################

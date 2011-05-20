@@ -1489,15 +1489,11 @@ sub process_actions2 () {
     my $ref;
 
     for ( map normalize_action_name $_ , ( grep $auditactions{$_}, ( map $config{$_}, @auditoptions ) ) ) {
-	if ( $ref = use_action( $_ ) ) {
-	    process_action( $ref );
-	}
+	process_action( $ref ) if $ref = use_action($_);
     }
 
     for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
-	if ( $ref = use_action( $_ ) ) {
-	    process_action( $ref );
-	}
+	process_action( $ref ) if $ref = use_action($_);
     }
 }
 

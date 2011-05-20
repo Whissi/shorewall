@@ -97,9 +97,9 @@ my %usedactions;
 #
 # Enumerate the AUDIT builtins
 #
-my %auditactions = ( AACCEPT => 1,
-		     ADROP   => 1,
-		     AREJECT => 1
+my %auditactions = ( A_ACCEPT => 1,
+		     A_DROP   => 1,
+		     A_REJECT => 1
 		   );
 
 #
@@ -176,9 +176,9 @@ sub initialize( $ ) {
     %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit AACCEPT ADROP AREJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit A_ACCEPT A_DROP A_REJECT/;
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid AACCEPT ADROP AREJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid A_ACCEPT A_DROP A_REJECT/;
     }
 }
 
@@ -341,7 +341,9 @@ sub process_a_policy() {
     
     fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
 
-    fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
+    if ( $audit ) {
+	fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
+    }
 
     if ( $default ) {
 	if ( "\L$default" eq 'none' ) {
@@ -466,10 +468,10 @@ sub process_policies()
 			  ACCEPT => undef,
 			  REJECT => undef,
 			  DROP   => undef,
-			  AACCEPT => undef,
-			  AREJECT => undef,
-			  ADROP   => undef,
-			  ACONTINUE => undef,
+			  A_ACCEPT => undef,
+			  A_DROP   => undef,
+			  A_REJECT => undef,
+			  CONTINUE => undef,
 			  QUEUE => undef,
 			  NFQUEUE => undef,
 			  NONE => undef
@@ -1308,32 +1310,32 @@ sub Limit( $$$$ ) {
     add_rule $chainref, '-j ACCEPT';
 }
 
-sub AACCEPT ( $$$ ) {
+sub A_ACCEPT ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    require_capability 'AUDIT_TARGET' , 'AACCEPT rules', '';
+    require_capability 'AUDIT_TARGET' , 'A_ACCEPT rules', '';
 
-    log_rule_limit $level, $chainref, 'AACCEPT' , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
+    log_rule_limit $level, $chainref, 'A_ACCEPT' , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type accept';
     add_rule $chainref , '-j ACCEPT';
 }
 
-sub ADROP ( $$$ ) {
+sub A_DROP ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    require_capability 'AUDIT_TARGET' , 'ADROP rules', '';
+    require_capability 'AUDIT_TARGET' , 'A_DROP rules', '';
 
-    log_rule_limit $level, $chainref, 'ADROP' , 'DROP', '', $tag, 'add', '' if $level ne '';
+    log_rule_limit $level, $chainref, 'A_DROP' , 'DROP', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type drop';
     add_rule $chainref , '-j DROP';
 }
 
-sub AREJECT ( $$$ ) {
+sub A_REJECT ( $$$ ) {
     my ($chainref, $level, $tag) = @_;
 
-    require_capability 'AUDIT_TARGET' , 'AREJECT rules', '';
+    require_capability 'AUDIT_TARGET' , 'A_REJECT rules', '';
 
-    log_rule_limit $level, $chainref, 'AREJECT' , 'REJECT', '', $tag, 'add', '' if $level ne '';
+    log_rule_limit $level, $chainref, 'A_REJECT' , 'REJECT', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type reject';
     add_rule $chainref , '-j reject';
 }
@@ -1347,9 +1349,9 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowinUPnP'    => \&allowinUPnP,
 		   'forwardUPnP'    => \&forwardUPnP,
 		   'Limit'          => \&Limit,
-		   'AACCEPT'        => \&AACCEPT,
-		   'ADROP'          => \&ADROP,
-		   'AREJECT'        => \&AREJECT
+		   'A_ACCEPT'       => \&A_ACCEPT,
+		   'A_DROP'         => \&A_DROP,
+		   'A_REJECT'       => \&A_REJECT
 		 );
 
 #

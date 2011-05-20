@@ -264,6 +264,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MARK_ANYWHERE   => 'Mark in any table',
 		 HEADER_MATCH    => 'Header Match',
 		 ACCOUNT_TARGET  => 'ACCOUNT Target',
+		 AUDIT_TARGET    => 'AUDIT Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -418,7 +419,7 @@ sub initialize( $ ) {
 		    EXPORT     => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.20-Beta2",
+		    VERSION    => "4.4.20-Beta3",
 		    CAPVERSION => 40417 ,
 		  );
     #
@@ -624,7 +625,8 @@ sub initialize( $ ) {
 	       FWMARK_RT_MASK => undef,
 	       MARK_ANYWHERE => undef,
 	       HEADER_MATCH => undef,
-               ACCOUNT_TARGET => undef,
+	       ACCOUNT_TARGET => undef,
+	       AUDIT_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2712,6 +2714,7 @@ sub determine_capabilities() {
 	$capabilities{FWMARK_RT_MASK}  = detect_capability( 'FWMARK_RT_MASK' );
 	$capabilities{MARK_ANYWHERE}   = detect_capability( 'MARK_ANYWHERE' );
 	$capabilities{ACCOUNT_TARGET}  = detect_capability( 'ACCOUNT_TARGET' );
+	$capabilities{AUDIT_TARGET}    = detect_capability( 'AUDIT_TARGET' );
 
 
 	qt1( "$iptables -F $sillyname" );
@@ -3342,8 +3345,8 @@ sub get_configuration( $ ) {
 
     default 'BLACKLIST_DISPOSITION'    , 'DROP';
 
-    unless ( $config{BLACKLIST_DISPOSITION} =~ /^A?DROP$/ || $config{BLACKLIST_DISPOSITION} =~ /^A?REJECT/ ) {
-	fatal_error q(BLACKLIST_DISPOSITION must be 'DROP', 'ADROP', 'REJECT' or 'AREJECT');
+    unless ( $config{BLACKLIST_DISPOSITION} =~ /^(?:A_)?DROP$/ || $config{BLACKLIST_DISPOSITION} =~ /^(?:A_)?REJECT/ ) {
+	fatal_error q(BLACKLIST_DISPOSITION must be 'DROP', 'A_DROP', 'REJECT' or 'A_REJECT');
     }
 
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
@@ -3356,25 +3359,25 @@ sub get_configuration( $ ) {
     default_log_level 'SMURF_LOG_LEVEL',     '';
     default_log_level 'LOGALLNEW',           '';
 
-    $globals{MACLIST_TARGET} = 'reject';
-
     if ( $val = $config{MACLIST_DISPOSITION} ) {
-	unless ( $val =~ /^A?REJECT$/ ) {
-	    if ( $val =~ /^A?DROP/ ) {
-		$globals{MACLIST_TARGET} = $val;
-	    } elsif ( $val eq 'ACCEPT' ) {
-		$globals{MACLIST_TARGET} = 'RETURN';
-	    } else {
-		fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
-	    }
+	if ( $val =~ /^((?:A_)?(?:DROP))$/ ) {
+	    $globals{MACLIST_TARGET} = $1;
+	} elsif ( $val eq 'REJECT' ) {
+	    $globals{MACLIST_TARGET} = 'reject';
+	} elsif ( $val eq 'A_REJECT' ) {
+	    $globals{MACLIST_TARGET} = $val;
+	} elsif ( $val eq 'ACCEPT' ) {
+	    $globals{MACLIST_TARGET} = 'RETURN';
+	} else {
+	    fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
 	}
     } else {
-	$config{MACLIST_DISPOSITION} = 'REJECT';
+	$config{MACLIST_DISPOSITION} = 'reject';
     }
 
     if ( $val = $config{MACLIST_TABLE} ) {
 	if ( $val eq 'mangle' ) {
-	    fatal_error 'MACLIST_DISPOSITION=$1 is not allowed with MACLIST_TABLE=mangle' if $config{MACLIST_DISPOSITION} =~ /^(A?REJECT)$/;
+	    fatal_error 'MACLIST_DISPOSITION=$1 is not allowed with MACLIST_TABLE=mangle' if $config{MACLIST_DISPOSITION} =~ /^((?:A)?REJECT)$/;
 	} else {
 	    fatal_error "Invalid value ($val) for MACLIST_TABLE option" unless $val eq 'filter';
 	}
@@ -3383,7 +3386,7 @@ sub get_configuration( $ ) {
     }
 
     if ( $val = $config{TCP_FLAGS_DISPOSITION} ) {
-	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(A?REJECT|A?ACCEPT|A?DROP)$/;
+	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:A_)?(REJECT|ACCEPT|DROP)$/;
     } else {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }

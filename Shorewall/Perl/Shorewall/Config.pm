@@ -3360,8 +3360,8 @@ sub get_configuration( $ ) {
     default_log_level 'LOGALLNEW',           '';
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {
-	if ( $val =~ /^((?:A_)?(?:DROP))$/ ) {
-	    $globals{MACLIST_TARGET} = $1;
+	if ( $val =~ /^(?:A_)?DROP$/ ) {
+	    $globals{MACLIST_TARGET} = $val;
 	} elsif ( $val eq 'REJECT' ) {
 	    $globals{MACLIST_TARGET} = 'reject';
 	} elsif ( $val eq 'A_REJECT' ) {

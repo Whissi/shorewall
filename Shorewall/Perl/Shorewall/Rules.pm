@@ -46,8 +46,7 @@ our @EXPORT = qw(
 		  save_policies
 		  ensure_rules_chain
 		  optimize_policy_chains
-		  process_actions1
-		  process_actions2
+		  process_actions
 		  process_rules
 	       );
 
@@ -61,8 +60,6 @@ my %sections;
 my $section;
 
 my @policy_chains;
-
-my %policy_actions;
 
 my %default_actions;
 
@@ -125,10 +122,6 @@ sub initialize( $ ) {
     #
     # Chains created as a result of entries in the policy file
     @policy_chains  = ();
-    #
-    # Default Actions for policies
-    #
-    %policy_actions = ();
     #
     # This is updated from the *_DEFAULT settings in shorewall.conf. Those settings were stored
     # in the %config hash when shorewall[6].conf was processed.
@@ -296,15 +289,7 @@ sub print_policy($$$$) {
     }
 }
 
-#
-# Add the passed action to %policy_actions
-#
-sub use_policy_action( $ ) {
-    my $action = shift;
-
-    $policy_actions{$action} = 1;
-}
-
+sub use_policy_action( $ );
 #
 # Process an entry in the policy file.
 #
@@ -356,8 +341,6 @@ sub process_a_policy() {
     } else {
 	$default = $default_actions{$policy} || '';
     }
-
-    use_policy_action $policy if $auditactions{$policy};
 
     if ( defined $queue ) {
 	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
@@ -1361,9 +1344,10 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 # - Reads actions.std and actions (in that order) and for each entry:
 #   o Adds the action to the target table
 #   o Verifies that the corresponding action file exists
+#   o Creates action chains for config options that have audited settings.
 #
 
-sub process_actions1() {
+sub process_actions() {
 
     progress_message2 "Locating Action Files...";
     #
@@ -1398,6 +1382,13 @@ sub process_actions1() {
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 	}
     }
+
+    my $ref;
+
+    for ( map normalize_action_name $_ , ( grep $auditactions{$_}, ( map $config{$_}, @auditoptions ) ) ) {
+	process_action( $ref ) if $ref = use_action($_);
+    }
+
 }
 
 sub process_rule1 ( $$$$$$$$$$$$$$$$ );
@@ -1481,20 +1472,22 @@ sub process_action( $) {
 }
 
 #
-# This function creates and populates the chains for the policy actions.
+# Create a policy action if it doesn't already exist
+#
+sub use_policy_action( $ ) {
+    my $ref = use_action( normalize_action_name $_[0] );
+    
+    process_action( $ref ) if $ref;
+}
+
+
+
+#
+# This function creates and populates the chains for config options with audited settings.
 #
 sub process_actions2 () {
-    progress_message2 "$doing policy actions...";
-
     my $ref;
 
-    for ( map normalize_action_name $_ , ( grep $auditactions{$_}, ( map $config{$_}, @auditoptions ) ) ) {
-	process_action( $ref ) if $ref = use_action($_);
-    }
-
-    for ( map normalize_action_name $_, ( grep ! ( $targets{$_} & BUILTIN ), keys %policy_actions ) ) {
-	process_action( $ref ) if $ref = use_action($_);
-    }
 }
 
 ################################################################################

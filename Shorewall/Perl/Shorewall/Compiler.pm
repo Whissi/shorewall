@@ -635,7 +635,7 @@ sub compiler {
     #
     # Do action pre-processing.
     #
-    process_actions1;
+    process_actions;
     #
     #                                        P O L I C Y
     #                           (Produces no output to the compiled script)
@@ -674,8 +674,6 @@ sub compiler {
     # Process policy actions
     #
     disable_script;
-
-    process_actions2;
 
     enable_script;
     #

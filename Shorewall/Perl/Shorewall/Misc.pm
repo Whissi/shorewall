@@ -203,7 +203,9 @@ sub setup_blacklist() {
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my $audit  = $disposition =~ s/^A_//;
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my $auditref;
     #
     # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
     # for 'refresh' to work properly.
@@ -212,10 +214,12 @@ sub setup_blacklist() {
 	$chainref  = dont_delete new_standard_chain 'blacklst' if @$zones;
 	$chainref1 = dont_delete new_standard_chain 'blackout' if @$zones1;
 
-	if ( defined $level && $level ne '' ) {
+	if ( $audit || ( defined $level && $level ne '' ) ) {
 	    my $logchainref = new_standard_chain 'blacklog';
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+
+	    add_rule( $logchainref, '-j AUDIT --type ' . lc $target ) if $audit;
 
 	    add_jump $logchainref, $target, 1;
 
@@ -247,17 +251,36 @@ sub setup_blacklist() {
 
 		$options = 'src' if $options eq '-';
 
-		my ( $to, $from, $whitelist ) = ( 0, 0, 0 );
+		my ( $to, $from, $whitelist, $auditone ) = ( 0, 0, 0, 0 );
 
 		my @options = split_list $options, 'option';
 
 		for ( @options ) {
 		    $whitelist++ if $_ eq 'whitelist';
+		    $auditone++  if $_ eq 'audit'; 
 		}
 
 		warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
 
 		my $tgt = $whitelist ? 'RETURN' : $target;
+
+		if ( $auditone ) {
+		    fatal_error "'audit' not allowed in whitelist entries" if $whitelist;
+
+		    if ( $audit ) {
+			warning_message "Superfluous 'audit' option ignored";
+		    } else {
+			warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
+
+			unless ( $auditref ) {
+			    $auditref = new_standard_chain 'blackaud';
+			    add_rule $auditref, '-j AUDIT --type ' . lc $target;
+			    add_jump $auditref, $target, 1;
+			}
+		    
+			$tgt = 'blackaud';
+		    }
+		}
 
 		for ( @options ) {
 		    if ( $_ =~ /^(?:src|from)$/ ) {
@@ -301,7 +324,7 @@ sub setup_blacklist() {
 			    }
 			}
 		    } else {
-			fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist';
+			fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist' || $_ eq 'audit';
 		    }
 		}
 
@@ -604,22 +627,28 @@ sub add_common_rules() {
     $list = find_hosts_by_option 'tcpflags';
 
     if ( @$list ) {
-	my $disposition;
+	my $level = $config{TCP_FLAGS_LOG_LEVEL};
+	my $disposition = $config{TCP_FLAGS_DISPOSITION};
+	my $audit = $disposition =~ s/^A_//;
 
 	progress_message2 "$doing TCP Flags filtering...";
 
 	$chainref = new_standard_chain 'tcpflags';
 
-	if ( $config{TCP_FLAGS_LOG_LEVEL} ne ''  ) {
+	if ( $audit || $level  ) {
 	    my $logflagsref = new_standard_chain 'logflags';
 
-	    my $savelogparms = $globals{LOGPARMS};
+	    if ( $level ) {
+		my $savelogparms = $globals{LOGPARMS};
 
-	    $globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
+		$globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
 
-	    log_rule $config{TCP_FLAGS_LOG_LEVEL} , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
+		log_rule $level , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
 
-	    $globals{LOGPARMS} = $savelogparms;
+		$globals{LOGPARMS} = $savelogparms;
+	    }
+
+	    add_rule( $logflagsref, '-j AUDIT --type ' . lc $disposition ) if $audit;
 
 	    if ( $config{TCP_FLAGS_DISPOSITION} eq 'REJECT' ) {
 		add_rule $logflagsref , '-p 6 -j REJECT --reject-with tcp-reset';
@@ -628,8 +657,6 @@ sub add_common_rules() {
 	    }
 
 	    $disposition = 'logflags';
-	} else {
-	    $disposition = $config{TCP_FLAGS_DISPOSITION};
 	}
 
 	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags ALL FIN,URG,PSH ';
@@ -713,6 +740,7 @@ sub setup_mac_lists( $ ) {
     my $target      = $globals{MACLIST_TARGET};
     my $level       = $config{MACLIST_LOG_LEVEL};
     my $disposition = $config{MACLIST_DISPOSITION};
+    my $audit       = $disposition =~ /^A_/;
     my $ttl         = $config{MACLIST_TTL};
 
     progress_message2 "$doing MAC Filtration -- Phase $phase...";
@@ -790,11 +818,13 @@ sub setup_mac_lists( $ ) {
 			    my $source = match_source_net $address;
 			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 				if defined $level && $level ne '';
+			    add_rule( $chainref , '-j AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
 			    add_jump $chainref , $targetref->{target}, 0, "${mac}${source}";
 			}
 		    } else {
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			    if defined $level && $level ne '';
+			add_rule( $chainref , '-j AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
 			add_jump $chainref , $targetref->{target}, 0, "$mac";
 		    }
 

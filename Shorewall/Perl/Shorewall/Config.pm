@@ -3345,9 +3345,11 @@ sub get_configuration( $ ) {
 
     default 'BLACKLIST_DISPOSITION'    , 'DROP';
 
-    unless ( $config{BLACKLIST_DISPOSITION} =~ /^(?:A_)?DROP$/ || $config{BLACKLIST_DISPOSITION} =~ /^(?:A_)?REJECT/ ) {
+    unless ( ( $val = $config{BLACKLIST_DISPOSITION} ) =~ /^(?:A_)?DROP$/ || $config{BLACKLIST_DISPOSITION} =~ /^(?:A_)?REJECT/ ) {
 	fatal_error q(BLACKLIST_DISPOSITION must be 'DROP', 'A_DROP', 'REJECT' or 'A_REJECT');
     }
+
+    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$val", 's' if $val =~ /^A_/;
 
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
     default_log_level 'MACLIST_LOG_LEVEL',   '';
@@ -3371,6 +3373,8 @@ sub get_configuration( $ ) {
 	} else {
 	    fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
 	}
+
+	require_capability 'AUDIT_TARGET' , "MACLIST_DISPOSITION=$val", 's' if $val =~ /^A_/;
     } else {
 	$config{MACLIST_DISPOSITION} = 'reject';
     }
@@ -3386,10 +3390,12 @@ sub get_configuration( $ ) {
     }
 
     if ( $val = $config{TCP_FLAGS_DISPOSITION} ) {
-	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:A_)?(REJECT|ACCEPT|DROP)$/;
+	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:(?:A_)?(?:REJECT|DROP)|ACCEPT)$/;
     } else {
 	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
+
+    require_capability 'AUDIT_TARGET' , "TCP_FLAGS_DISPOSITION=$val", 's' if $val =~ /^A_/;
 
     default 'TC_ENABLED' , $family == F_IPV4 ? 'Internal' : 'no';
 

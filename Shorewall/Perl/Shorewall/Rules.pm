@@ -1136,16 +1136,43 @@ sub map_old_actions( $ ) {
     }
 }
 
+sub require_audit($$) {
+    my ($action, $audit ) = @_;
+
+    return $action unless defined $audit and $audit ne '';
+
+    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
+
+    my $target = 'A_' . $action;
+
+    require_capability 'AUDIT_TARGET', 'audit', 's';
+
+    my $ref = $filter_table->{$target};
+
+    unless ( $ref ) {
+	$ref = new_chain 'filter', $target;
+
+	add_rule $ref, '-j AUDIT --type ' . lc $action;
+	
+	if ( $action eq 'REJECT' ) {
+	    add_jump $ref , 'reject', 1;
+	} else {
+	    add_rule $ref , "-j $action";
+	}
+
+	$usedactions{normalize_action_name $target} = $ref;
+    }
+
+    return $target;
+}   
+    
 #
 # The following small functions generate rules for the builtin actions of the same name
 #
 sub dropBcast( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
-    if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-	require_capability 'AUDIT_TARGET', 'audit', 's';
-    }
+    my $target = require_audit ( 'DROP', $audit );
 
     if ( have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
@@ -1157,8 +1184,7 @@ sub dropBcast( $$$$ ) {
 	    }
 	}
 	
-	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j AUDIT --type drop' if $audit;
-	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j DROP';
+	add_rule $chainref, "-m addrtype --dst-type BROADCAST -j $target";
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -1168,7 +1194,7 @@ sub dropBcast( $$$$ ) {
 
 	incr_cmd_level $chainref;
 	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
-	add_rule $chainref, '-d $address -j DROP';
+	add_rule $chainref, "-d \$address -j $target";
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
 
@@ -1176,21 +1202,16 @@ sub dropBcast( $$$$ ) {
     }
 
     if ( $family == F_IPV4 ) {
-	add_rule $chainref, '-d 224.0.0.0/4 -j AUDIT --type drop' if $audit;
-	add_rule $chainref, '-d 224.0.0.0/4 -j DROP';
+	add_rule $chainref, "-d 224.0.0.0/4 -j $target";
     } else {
-	add_rule $chainref, join( ' ', '-d', IPv6_MULTICAST, '-j AUDIT --type drop' );
-	add_rule $chainref, join( ' ', '-d', IPv6_MULTICAST, '-j DROP' );
+	add_rule $chainref, join( ' ', '-d', IPv6_MULTICAST, "-j $target" );
     }
 }
 
 sub allowBcast( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
-    if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-   	require_capability 'AUDIT_TARGET', 'audit', 's';
- }
+    my $target = require_audit( 'ACCEPT', $audit );
 
     if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
@@ -1198,10 +1219,8 @@ sub allowBcast( $$$$ ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	}
 
-	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j AUDIT --type accept' if $audit;
-	add_rule $chainref, '-m addrtype --dst-type BROADCAST -j ACCEPT';
-	add_rule $chainref, '-d 224.0.0.0/4 -j AUDIT --type accept' if $audit;
-	add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
+	add_rule $chainref, "-m addrtype --dst-type BROADCAST -j $target";
+	add_rule $chainref, "-d 224.0.0.0/4 -j $target";
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -1211,19 +1230,16 @@ sub allowBcast( $$$$ ) {
 
 	incr_cmd_level $chainref;
 	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
-	add_rule $chainref, '-d $address -j AUDIT --type accept' if $audit;
-	add_rule $chainref, '-d $address -j ACCEPT';
+	add_rule $chainref, "-d \$address -j $target";
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
 
 	if ( $family == F_IPV4 ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
-	    add_rule $chainref, '-d 224.0.0.0/4 -j AUDIT --type accept' if $audit;
-	    add_rule $chainref, '-d 224.0.0.0/4 -j ACCEPT';
+	    add_rule $chainref, "-d 224.0.0.0/4 -j $target";
 	} else {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ' . IPv6_MULTICAST . ' ' if $level ne '';
-	    add_rule $chainref, join ( ' ', '-d', IPv6_MULTICAST, '-j AUDIT --type accept' ) if $audit;
-	    add_rule $chainref, join ( ' ', '-d', IPv6_MULTICAST, '-j ACCEPT' );
+	    add_rule $chainref, join ( ' ', '-d', IPv6_MULTICAST, "-j $target" );
 	}
     }
 }
@@ -1231,53 +1247,41 @@ sub allowBcast( $$$$ ) {
 sub dropNotSyn ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
-    if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-	require_capability 'AUDIT_TARGET', 'audit', 's';
-    }
+    my $target = require_audit( 'DROP', $audit );
 
     log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
-    add_rule $chainref , '-p 6 ! --syn -j AUDIT --type drop' if $audit;
-    add_rule $chainref , '-p 6 ! --syn -j DROP';
+    add_rule $chainref , "-p 6 ! --syn -j $target";
 }
 
 sub rejNotSyn ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
+    my $target = 'REJECT --reject-with tcp-reset';
+
     if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-	require_capability 'AUDIT_TARGET', 'audit', 's';
+	$target = require_audit( 'REJECT' , $audit );
     }
 
     log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
-    add_rule $chainref , '-p 6 ! --syn -j AUDIT --type reject' if $audit;
-    add_rule $chainref , '-p 6 ! --syn -j REJECT --reject-with tcp-reset';
+    add_rule $chainref , "-p 6 ! --syn -j $target";
 }
 
 sub dropInvalid ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
-    if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-	require_capability 'AUDIT_TARGET', 'audit', 's';
-    }
+    my $target = require_audit( 'DROP', $audit );
 
     log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
-    add_rule $chainref , "$globals{STATEMATCH} INVALID -j AUDIT --type drop" if $audit;
-    add_rule $chainref , "$globals{STATEMATCH} INVALID -j DROP";
+    add_rule $chainref , "$globals{STATEMATCH} INVALID -j $target";
 }
 
 sub allowInvalid ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
-    if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-	require_capability 'AUDIT_TARGET', 'audit', 's';
-    }
+    my $target = require_audit( 'ACCEPT', $audit );
 
     log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
-    add_rule $chainref , "$globals{STATEMATCH} INVALID -j AUDIT --type accept" if $audit;
-    add_rule $chainref , "$globals{STATEMATCH} INVALID -j ACCEPT";
+    add_rule $chainref , "$globals{STATEMATCH} INVALID -j $target";
 }
 
 sub forwardUPnP ( $$$$ ) {
@@ -1289,20 +1293,15 @@ sub forwardUPnP ( $$$$ ) {
 sub allowinUPnP ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
-    if ( defined $audit && $audit ne '' ) {
-	fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-	require_capability 'AUDIT_TARGET', 'audit', 's';
-    }
+    my $target = require_audit( 'ACCEPT', $audit );
 
     if ( $level ne '' ) {
 	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 17 --dport 1900 ';
 	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 6 --dport 49152 ';
     }
 
-    add_rule $chainref, '-p 17 --dport 1900 -j AUDIT --type accept' if $audit;
-    add_rule $chainref, '-p 17 --dport 1900 -j ACCEPT';
-    add_rule $chainref, '-p 6 --dport 49152 -j AUDIT --type accept' if $audit;
-    add_rule $chainref, '-p 6 --dport 49152 -j ACCEPT';
+    add_rule $chainref, "-p 17 --dport 1900 -j $target";
+    add_rule $chainref, "-p 6 --dport 49152 -j $target";
 }
 
 sub Limit( $$$$ ) {
@@ -1348,7 +1347,7 @@ sub A_ACCEPT ( $$$ ) {
 
     require_capability 'AUDIT_TARGET' , 'A_ACCEPT rules', '';
 
-    log_rule_limit $level, $chainref, 'A_ACCEPT' , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
+    log_rule_limit $level, $chainref, $chainref->{name} , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type accept';
     add_rule $chainref , '-j ACCEPT';
 }
@@ -1358,7 +1357,7 @@ sub A_DROP ( $$$ ) {
 
     require_capability 'AUDIT_TARGET' , 'A_DROP rules', '';
 
-    log_rule_limit $level, $chainref, 'A_DROP' , 'DROP', '', $tag, 'add', '' if $level ne '';
+    log_rule_limit $level, $chainref, $chainref->{name} , 'DROP', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type drop';
     add_rule $chainref , '-j DROP';
 }
@@ -1368,7 +1367,7 @@ sub A_REJECT ( $$$ ) {
 
     require_capability 'AUDIT_TARGET' , 'A_REJECT rules', '';
 
-    log_rule_limit $level, $chainref, 'A_REJECT' , 'REJECT', '', $tag, 'add', '' if $level ne '';
+    log_rule_limit $level, $chainref, $chainref->{name} , 'REJECT', '', $tag, 'add', '' if $level ne '';
     add_rule $chainref , '-j AUDIT --type reject';
     add_rule $chainref , '-j reject';
 }

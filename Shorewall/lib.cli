@@ -749,12 +749,8 @@ show_command() {
 			echo "dropBcast           # Silently Drop Broadcast/multicast"
 			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
 			echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
-			echo "drop1918src         # Drop packets with an RFC 1918 source address"
-			echo "drop1918dst         # Drop packets with an RFC 1918 original dest address"
 			echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
 			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
-			echo "rej1918src          # Reject packets with an RFC 1918 source address"
-			echo "rej1918dst          # Reject packets with an RFC 1918 original dest address"
 
 			if [ -f ${CONFDIR}/actions ]; then
 			    cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'

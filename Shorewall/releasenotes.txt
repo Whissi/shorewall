@@ -122,12 +122,15 @@ All bug fixes from 4.4.19.1 - 4.4.19.4.
         the entryto be audited. 'audit' may not be specified together
         with 'accept'.
 
-    g)  With the exception of 'Limit', the builtin actions
-        (dropBroadcast, rejNonSyn, etc.) now support
+    g)  The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
         an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
         performed by the action to be audited. This allows creation of
         audited versions of the Shorewall-provided default actions
         (action.Drop and action.Reject).
+
+	Note: The builtin actions are those actions listed in the
+	output of 'shorewall show actions' whose names begin with a
+	lower-case letter.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

@@ -240,8 +240,8 @@
       <varlistentry>
         <term><emphasis
         role="bold">BLACKLIST_DISPOSITION=</emphasis>[<emphasis
-        role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>]</term>
+        role="bold">DROP</emphasis>|A_DROP|<emphasis
+        role="bold">REJECT|A_REJECT</emphasis>]</term>
 
         <listitem>
           <para>This parameter determines the disposition of packets from
@@ -935,7 +935,7 @@
         <term><emphasis role="bold">MACLIST_DISPOSITION=</emphasis>[<emphasis
         role="bold">ACCEPT</emphasis>|<emphasis
         role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>]</term>
+        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
 
         <listitem>
           <para>Determines the disposition of connections requests that fail
@@ -944,6 +944,10 @@
           or DROP (ignore the connection request). If not set or if set to the
           empty value (e.g., MACLIST_DISPOSITION="") then
           MACLIST_DISPOSITION=REJECT is assumed.</para>
+
+          <para>A_DROP and A_REJECT are audited versions of DROP and REJECT
+          respectively and were added in Shorewall 4.4.20. They require
+          AUDIT_TARGET in the kernel and ip6tables.</para>
         </listitem>
       </varlistentry>
 
@@ -1286,6 +1290,20 @@
           interpret the compiled script. If not specified or specified as a
           null value, /bin/sh is assumed. Using a light-weight shell such as
           ash or dash can significantly improve performance.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SMURF_DISPOSITION=</emphasis>[<emphasis
+        role="bold">DROP</emphasis>|A_DROP]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.20. The default setting is DROP which
+          causes smurf packets (see the nosmurfs option in <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) to
+          be dropped. A_DROP causes the packets to be audited prior to being
+          dropped and requires AUDIT_TARGET support in the kernel and
+          ip6tables.</para>
         </listitem>
       </varlistentry>
 

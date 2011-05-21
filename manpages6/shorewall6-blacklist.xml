@@ -78,7 +78,7 @@
 
       <varlistentry>
         <term>OPTIONS (Optional - Added in 4.4.12) -
-        {-|{dst|src|whitelist}[,...]}</term>
+        {-|{dst|src|whitelist|audit}[,...]}</term>
 
         <listitem>
           <para>If specified, indicates whether traffic
@@ -128,6 +128,12 @@
           role="bold">whitelist</emphasis> is specified, packets/connections
           that match the entry are not matched against the remaining entries
           in the file.</para>
+
+          <para>The <emphasis role="bold">audit</emphasis> option was also
+          added in 4.4.20 and causes packets matching the entry to be audited.
+          The <emphasis role="bold">audit</emphasis> option may not be
+          specified in whitelist entries and require AUDIT_TARGET support in
+          the kernel and ip6tables.</para>
         </listitem>
       </varlistentry>
     </variablelist>

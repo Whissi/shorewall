@@ -113,6 +113,18 @@ All bug fixes from 4.4.19.1 - 4.4.19.4.
 				               MACLIST_TABLE=mangle
         TCP_FLAGS_DISPOSITION         A_DROP or A_REJECT
 
+    e)  An 'audit' option has been added to the
+        /etc/shorewall/blacklist file which causes the packets matching
+        the entryto be audited. 'audit' may not be specified together
+        with 'accept'.
+
+    f)  With the exception of 'Limit', the builtin actions
+        (dropBroadcast, rejNonSyn, etc.) now support
+        an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
+        performed by the action to be audited. This allows creation of
+        audited versions of the Shorewall-provided default actions
+        (action.Drop and action.Reject).
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

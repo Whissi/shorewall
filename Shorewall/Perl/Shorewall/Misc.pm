@@ -203,9 +203,8 @@ sub setup_blacklist() {
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit  = $disposition =~ s/^A_//;
+    my $audit  = $disposition =~ /^A_/;
     my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
-    my $auditref;
     #
     # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
     # for 'refresh' to work properly.
@@ -214,7 +213,7 @@ sub setup_blacklist() {
 	$chainref  = dont_delete new_standard_chain 'blacklst' if @$zones;
 	$chainref1 = dont_delete new_standard_chain 'blackout' if @$zones1;
 
-	if ( $audit || ( defined $level && $level ne '' ) ) {
+	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
@@ -224,7 +223,10 @@ sub setup_blacklist() {
 	    add_jump $logchainref, $target, 1;
 
 	    $target = 'blacklog';
-	}
+	} elsif ( $audit ) {
+	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
+	    $target = verify_audit( $disposition );
+	}	    
     }
 
   BLACKLIST:
@@ -272,13 +274,7 @@ sub setup_blacklist() {
 		    } else {
 			warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
 
-			unless ( $auditref ) {
-			    $auditref = new_standard_chain 'blackaud';
-			    add_rule $auditref, '-j AUDIT --type ' . lc $target;
-			    add_jump $auditref, $target, 1;
-			}
-		    
-			$tgt = 'blackaud';
+			$tgt = verify_audit( 'A_' . $target );
 		    }
 		}
 
@@ -501,10 +497,10 @@ sub add_common_rules() {
 
 	$chainref = new_standard_chain 'smurfs';
 
-	my $smurfdest;
+	my $smurfdest = $config{SMURF_DISPOSITION};
 
 	if ( defined $config{SMURF_LOG_LEVEL} && $config{SMURF_LOG_LEVEL} ne '' ) {
-	    my $smurfref = new_chain( 'filter', $smurfdest = 'smurflog' );
+	    my $smurfref = new_chain( 'filter', 'smurflog' );
 
 	    log_rule_limit( $config{SMURF_LOG_LEVEL},
 			    $smurfref,
@@ -514,9 +510,12 @@ sub add_common_rules() {
 			    '',
 			    'add',
 			    '' );
+	    add_rule( $smurfref, '-j AUDIT --type drop' ) if $smurfdest eq 'A_DROP';
 	    add_rule( $smurfref, '-j DROP' );
+
+	    $smurfdest = 'smurflog';
 	} else {
-	    $smurfdest = 'DROP';
+	    verify_audit( $smurfdest ) if $smurfdest eq 'A_DROP';
 	}
 
 	if ( have_capability( 'ADDRTYPE' ) ) {
@@ -629,34 +628,38 @@ sub add_common_rules() {
     if ( @$list ) {
 	my $level = $config{TCP_FLAGS_LOG_LEVEL};
 	my $disposition = $config{TCP_FLAGS_DISPOSITION};
-	my $audit = $disposition =~ s/^A_//;
+	my $audit = $disposition =~ /^A_/;
 
 	progress_message2 "$doing TCP Flags filtering...";
 
 	$chainref = new_standard_chain 'tcpflags';
 
-	if ( $audit || $level  ) {
+	if ( $level  ) {
 	    my $logflagsref = new_standard_chain 'logflags';
 
-	    if ( $level ) {
-		my $savelogparms = $globals{LOGPARMS};
+	    my $savelogparms = $globals{LOGPARMS};
 
-		$globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
+	    $globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
 
-		log_rule $level , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
+	    log_rule $level , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
+	    
+	    $globals{LOGPARMS} = $savelogparms;
 
-		$globals{LOGPARMS} = $savelogparms;
+	    if ( $audit ) {
+		$disposition =~ s/^A_//;
+		add_rule( $logflagsref, '-j AUDIT --type ' . lc $disposition );
 	    }
 
-	    add_rule( $logflagsref, '-j AUDIT --type ' . lc $disposition ) if $audit;
-
-	    if ( $config{TCP_FLAGS_DISPOSITION} eq 'REJECT' ) {
+	    if ( $disposition eq 'REJECT' ) {
 		add_rule $logflagsref , '-p 6 -j REJECT --reject-with tcp-reset';
 	    } else {
-		add_rule $logflagsref , "-j $config{TCP_FLAGS_DISPOSITION}";
+		add_rule $logflagsref , "-j $disposition";
 	    }
 
 	    $disposition = 'logflags';
+	} elsif ( $audit ) {
+	    require_capability( 'AUDIT_TARGET', "TCP_FLAGS_DISPOSITION=$disposition", 's' );
+	    verify_audit( $disposition );
 	}
 
 	add_jump $chainref , $disposition, 1, '-p tcp --tcp-flags ALL FIN,URG,PSH ';

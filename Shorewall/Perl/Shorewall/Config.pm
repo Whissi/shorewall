@@ -546,6 +546,7 @@ sub initialize( $ ) {
 	  MACLIST_DISPOSITION => undef,
 	  TCP_FLAGS_DISPOSITION => undef,
 	  BLACKLIST_DISPOSITION => undef,
+	  SMURF_DISPOSITION => undef,
 	  #
 	  # Mark Geometry
 	  #
@@ -3350,6 +3351,14 @@ sub get_configuration( $ ) {
     }
 
     require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$val", 's' if $val =~ /^A_/;
+
+    default 'SMURF_DISPOSITION'    , 'DROP';
+
+    unless ( ( $val = $config{SMURF_DISPOSITION} ) =~ /^(?:A_)?DROP$/ ) {
+	fatal_error q(SMURF_DISPOSITION must be 'DROP' or 'A_DROP');
+    }
+
+    require_capability 'AUDIT_TARGET', "SMURF_DISPOSITION=$val", 's' if $val =~ /^A_/;
 
     default_log_level 'BLACKLIST_LOGLEVEL',  '';
     default_log_level 'MACLIST_LOG_LEVEL',   '';

@@ -66,6 +66,7 @@ our %EXPORT_TAGS = (
 				       NFQ
 				       CHAIN
 				       SET
+				       AUDIT
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
 				       DESTIFACE_DISALLOW
@@ -261,7 +262,8 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       LOGRULE  => 256,            #'LOG','NFLOG'
 	       NFQ      => 512,            #'NFQUEUE'
 	       CHAIN    => 1024,           #Manual Chain
-	       SET      => 2048.           #SET
+	       SET      => 2048,           #SET
+	       AUDIT    => 4096,           #A_ACCEPT, etc
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -1510,11 +1512,17 @@ sub initialize_chain_table()
 	%targets = ('ACCEPT'          => STANDARD,
 		    'ACCEPT+'         => STANDARD  + NONAT,
 		    'ACCEPT!'         => STANDARD,
+		    'A_ACCEPT'        => STANDARD  + AUDIT,
+		    'A_ACCEPT+'       => STANDARD  + NONAT + AUDIT,
 		    'NONAT'           => STANDARD  + NONAT + NATONLY,
 		    'DROP'            => STANDARD,
 		    'DROP!'           => STANDARD,
+		    'A_DROP'          => STANDARD + AUDIT,
+		    'A_DROP!'         => STANDARD + AUDIT,
 		    'REJECT'          => STANDARD,
 		    'REJECT!'         => STANDARD,
+		    'A_REJECT'        => STANDARD + AUDIT,
+		    'A_REJECT!'       => STANDARD + AUDIT,
 		    'DNAT'            => NATRULE,
 		    'DNAT-'           => NATRULE  + NATONLY,
 		    'REDIRECT'        => NATRULE  + REDIRECT,

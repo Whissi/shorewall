@@ -48,6 +48,7 @@ our @EXPORT = qw(
 		  optimize_policy_chains
 		  process_actions
 		  process_rules
+		  verify_audit
 	       );
 
 our @EXPORT_OK = qw( initialize );
@@ -90,14 +91,6 @@ my %actions;
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
 my %usedactions;
-
-#
-# Enumerate the AUDIT builtins
-#
-my %auditactions = ( A_ACCEPT => 1,
-		     A_DROP   => 1,
-		     A_REJECT => 1
-		   );
 
 #
 # Policies for which AUDIT is allowed
@@ -169,9 +162,9 @@ sub initialize( $ ) {
     %usedactions       = ();
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit A_ACCEPT A_DROP A_REJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid A_ACCEPT A_DROP A_REJECT/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
     }
 }
 
@@ -451,9 +444,6 @@ sub process_policies()
 			  ACCEPT => undef,
 			  REJECT => undef,
 			  DROP   => undef,
-			  A_ACCEPT => undef,
-			  A_DROP   => undef,
-			  A_REJECT => undef,
 			  CONTINUE => undef,
 			  QUEUE => undef,
 			  NFQUEUE => undef,
@@ -1141,9 +1131,9 @@ sub require_audit($$) {
 
     return $action unless defined $audit and $audit ne '';
 
-    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-
     my $target = 'A_' . $action;
+
+    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
 
     require_capability 'AUDIT_TARGET', 'audit', 's';
 
@@ -1159,8 +1149,6 @@ sub require_audit($$) {
 	} else {
 	    add_rule $ref , "-j $action";
 	}
-
-	$usedactions{normalize_action_name $target} = $ref;
     }
 
     return $target;
@@ -1342,36 +1330,6 @@ sub Limit( $$$$ ) {
     add_rule $chainref, '-j ACCEPT';
 }
 
-sub A_ACCEPT ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    require_capability 'AUDIT_TARGET' , 'A_ACCEPT rules', '';
-
-    log_rule_limit $level, $chainref, $chainref->{name} , 'ACCEPT', '', $tag, 'add', '' if $level ne '';
-    add_rule $chainref , '-j AUDIT --type accept';
-    add_rule $chainref , '-j ACCEPT';
-}
-
-sub A_DROP ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    require_capability 'AUDIT_TARGET' , 'A_DROP rules', '';
-
-    log_rule_limit $level, $chainref, $chainref->{name} , 'DROP', '', $tag, 'add', '' if $level ne '';
-    add_rule $chainref , '-j AUDIT --type drop';
-    add_rule $chainref , '-j DROP';
-}
-
-sub A_REJECT ( $$$ ) {
-    my ($chainref, $level, $tag) = @_;
-
-    require_capability 'AUDIT_TARGET' , 'A_REJECT rules', '';
-
-    log_rule_limit $level, $chainref, $chainref->{name} , 'REJECT', '', $tag, 'add', '' if $level ne '';
-    add_rule $chainref , '-j AUDIT --type reject';
-    add_rule $chainref , '-j reject';
-}
-
 my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowBcast'     => \&allowBcast,
 		   'dropNotSyn'     => \&dropNotSyn,
@@ -1381,9 +1339,6 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowinUPnP'    => \&allowinUPnP,
 		   'forwardUPnP'    => \&forwardUPnP,
 		   'Limit'          => \&Limit,
-		   'A_ACCEPT'       => \&A_ACCEPT,
-		   'A_DROP'         => \&A_DROP,
-		   'A_REJECT'       => \&A_REJECT
 		 );
 
 #
@@ -1639,6 +1594,32 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
     clear_comment unless $nocomment;
 
     return $generated;
+}
+
+sub verify_audit($) {
+    my ($target, $audit ) = @_;
+
+    require_capability 'AUDIT_TARGET', "$target rules", '';
+
+    my $ref = $filter_table->{$target};
+
+    unless ( $ref ) {
+	$ref = new_chain 'filter', $target;
+
+	my $action = $target;
+
+	$action =~ s/^A_//;
+
+	add_rule $ref, '-j AUDIT --type ' . lc $action;
+	
+	if ( $action eq 'REJECT' ) {
+	    add_jump $ref , 'reject', 1;
+	} else {
+	    add_rule $ref , "-j $action";
+	}
+    }
+
+    return $target;
 }
 
 #
@@ -2095,7 +2076,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 		      $target ,
 		      $loglevel ,
 		      $log_action ,
-		      $serverport ? do_proto( $proto, '', '' ) : '' );
+		      $serverport ? do_proto( $proto, '', '' ) : '',
+		    );
 	#
 	# After NAT:
 	#   - the destination port will be the server port ($ports) -- we did that above
@@ -2189,7 +2171,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 		     $tgt,
 		     $loglevel ,
 		     $log_action ,
-		     '' ,
+		     '',
 		   );
 	#
 	# Possible optimization if the rule just generated was a simple jump to the nonat chain
@@ -2225,6 +2207,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	}
 
 	$rule .= "-m conntrack --ctorigdstport $origdstports " if have_capability( 'NEW_CONNTRACK_MATCH' ) && $origdstports;
+
+	verify_audit( $action ) if $actiontype & AUDIT;
 
 	expand_rule( ensure_chain( 'filter', $chain ) ,
 		     $restriction ,

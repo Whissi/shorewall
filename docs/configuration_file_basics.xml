@@ -800,6 +800,22 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     </example>
   </section>
 
+  <section id="CONFIG_PATH">
+    <title>CONFIG_PATH</title>
+
+    <para>The CONFIG_PATH option in shorewall.conf determines where the
+    compiler searches for files. The default setting is
+    CONFIG_PATH=/etc/shorewall:/usr/share/shorewall which means that the
+    compiler first looks in /etc/shorewall and if it doesn't find the file, it
+    then looks in /usr/share/shorewall.</para>
+
+    <para>You can change this setting to have the compiler look in different
+    places. For example, if you want to put your own versions of standard
+    macros in /etc/shorewall/Macros, then you could set
+    CONFIG_PATH=/etc/shorewall:/etc/shorewall/Macros:/usr/share/shorewall and
+    the compiler will use your versions rather than the standard ones.</para>
+  </section>
+
   <section id="Variables">
     <title>Using Shell Variables</title>
 

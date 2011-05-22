@@ -137,7 +137,7 @@
         application of the policy to be audited. Only ACCEPT, DROP and REJECT
         policies may be audited.</para>
 
-        <para>Example: </para>
+        <para>Example:</para>
 
         <programlisting>#SOURCE	DEST	POLICY		LOG
 #				LEVEL
@@ -148,8 +148,8 @@ net	fw      DROP:audit</programlisting>
       </listitem>
 
       <listitem>
-        <para> Three new builtin targets that may be used in the rules file,
-        in macros and in other actions.</para>
+        <para>Three new builtin targets that may be used in the rules file, in
+        macros and in other actions.</para>
 
         <itemizedlist>
           <listitem>
@@ -166,7 +166,7 @@ net	fw      DROP:audit</programlisting>
         </itemizedlist>
 
         <para>A log level may be supplied with these actions to provide both
-        auditing and logging. </para>
+        auditing and logging.</para>
 
         <para>Example:</para>
 
@@ -189,7 +189,7 @@ A_ACCEPT:info  loc          net        ...</programlisting>
               </row>
 
               <row>
-                <entry>MACLIST_DISPOSITION </entry>
+                <entry>MACLIST_DISPOSITION</entry>
 
                 <entry>A_DROP, A_REJECT unless MACLIST_TABLE=mangle</entry>
               </row>
@@ -223,13 +223,56 @@ A_ACCEPT:info  loc          net        ...</programlisting>
         an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
         performed by the action to be audited. This allows creation of audited
         versions of the Shorewall-provided default actions (action.Drop and
-        action.Reject). </para>
+        action.Reject).</para>
 
         <note>
-          <para> The builtin actions are those actions listed in the output of
+          <para>The builtin actions are those actions listed in the output of
           <command>shorewall show actions</command> whose names begin with a
           lower-case letter.</para>
         </note>
+
+        <para>Here's a version of action.Drop that does auditing:</para>
+
+        <programlisting>#TARGET         SOURCE  DEST    PROTO   DPORT   SPORT
+#
+# Count packets that come through here
+#
+COUNT
+#
+# Reject 'auth'
+#
+A_REJECT        -       -       tcp     
+#
+# Don't log broadcasts
+#
+dropBcast(audit)
+#
+# ACCEPT critical ICMP types
+#
+AudAllowICMPs      -       -       icmp
+#
+# Drop packets that are in the INVALID state -- these are usually ICMP packets
+# and just confuse people when they appear in the log.
+#
+dropInvalid(audit)
+#
+# Drop Microsoft noise so that it doesn't clutter up the log.
+#
+AudSMB(DROP)
+AudDropUPnP
+#
+# Drop 'newnotsyn' traffic so that it doesn't get logged.
+#
+dropNotSyn(audit)  -       -       tcp
+#
+# Drop late-arriving DNS replies. These are just a nuisance and clutter up
+# the log.
+#
+A_DROP          -       -       udp      -     53</programlisting>
+
+        <para>The 'Aud...' macros would be auditing versions of their standard
+        macro counterparts (if you are interested in auditing those connection
+        types).</para>
       </listitem>
     </orderedlist>
   </section>

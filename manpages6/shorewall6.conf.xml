@@ -78,7 +78,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis
-        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -88,7 +88,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -98,7 +98,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -108,7 +108,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -118,7 +118,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis>macro</emphasis>|<emphasis
+        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -721,6 +721,22 @@
           command.</para>
 
           <para>The default is KEEP_RT_TABLES=No.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">LEGACY_FASTSTART=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall6 4.4.20. If not specified, the default is
+          Yes which preserves the legacy behavior of <command>start
+          -s</command> in that the modification times of the files in
+          <filename>/etc/shorewall6</filename> are compare with that of
+          <filename>/var/lib/shorewall6/restore</filename>. If set to No, then
+          the times are compared with that of /var/lib/shorewall6/firewall
+          which is consistant with the way that <command>restart -f</command>
+          works.</para>
         </listitem>
       </varlistentry>
 

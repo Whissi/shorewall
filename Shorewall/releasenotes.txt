@@ -135,6 +135,17 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	output of 'shorewall show actions' whose names begin with a
 	lower-case letter.
 
+6)  Up to this release, the behaviors of 'start -f' and 'restart -f'
+    were inconsistent. The 'start -f' command compares the modification
+    times of /etc/shorewall[6] with /var/lib/shorewall[6]/restore while
+    'restart -f' compares with /var/lib/shorewall[6]/firewall.
+
+    To make the two consistent, a new LEGACY_FASTSTART option has been
+    added. The default value when the option isn't specified is
+    LEGACY_FASTSTART=Yes which preserves the old behavior. When
+    LEGACY_FASTSTART=No, both commands compare with
+    /var/lib/shorewall[6]/firewall.
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

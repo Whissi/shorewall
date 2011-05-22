@@ -298,6 +298,24 @@ get_config() {
 	    fi
 	    ;;
     esac
+
+
+    case $LEGACY_FASTSTART in
+	Yes|yes)
+	    ;;
+	No|no)
+	    LEGACY_FASTSTART=
+	    ;;
+	*)
+	    if [ -n "$LEGACY_FASTSTART" ]; then
+		echo "   ERROR: Invalid LEGACY_FASTSTART setting (LEGACY_FASTSTART)" >&2
+		exit 1
+	    fi
+
+	    LEGACY_FASTSTART=Yes
+	    ;;
+    esac
+
 }
 
 #
@@ -312,8 +330,8 @@ startup_error() {
 #
 # Determine if there are config files newer than the passed object
 #
-upofdate() {
-    [ -z "$(find ${CONFDIR} -newer $1)" ]
+uptodate() {
+    [ -f $1 ] && [ -z "$(find ${CONFDIR} -newer $1)" ]
 }
 
 #
@@ -481,7 +499,7 @@ start_command() {
     esac
 
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
-	if [ -z "$g_fast" ]; then
+	if [ -z "$g_fast" -o -z "$LEGACY_FASTSTART" ]; then
 	    #
 	    # Automake -- use the last compiled script
 	    #

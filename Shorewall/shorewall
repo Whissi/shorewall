@@ -310,6 +310,13 @@ startup_error() {
 }
 
 #
+# Determine if there are config files newer than the passed object
+#
+upofdate() {
+    [ -z "$(find ${CONFDIR} -newer $1)" ]
+}
+
+#
 # Run the compiler
 #
 compiler() {
@@ -378,7 +385,7 @@ compiler() {
 start_command() {
     local finished
     finished=0
-    local restorefile
+    local object
 
     do_it() {
 	local rc
@@ -474,25 +481,16 @@ start_command() {
     esac
 
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
-	if qt mywhich make; then
-	    restorefile=$RESTOREFILE
-
-	    if [ -z "$g_fast" ]; then
-		#
-		# Automake -- use the last compiled script
-		#
-		RESTOREFILE=firewall
-	    fi
-
-	    export RESTOREFILE
-
-	    if ! make -qf ${CONFDIR}/Makefile; then
-		g_fast=
-		AUTOMAKE=
-	    fi
-
-	    RESTOREFILE=$restorefile
+	if [ -z "$g_fast" ]; then
+	    #
+	    # Automake -- use the last compiled script
+	    #
+	    object=firewall
 	else
+	    object=$RESTOREFILE
+	fi
+
+	if ! uptodate ${VARDIR}/$object; then
 	    g_fast=
 	    AUTOMAKE=
 	fi
@@ -753,15 +751,7 @@ restart_command() {
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
     if [ -z "$g_fast" -a -n "$AUTOMAKE" ]; then
-	if qt mywhich make; then
-	    #
-	    # RESTOREFILE is exported by get_config()
-	    #
-	    restorefile=$RESTOREFILE
-	    RESTOREFILE=firewall
-	    make -qf ${CONFDIR}/Makefile && g_fast=Yes
-	    RESTOREFILE=$restorefile
-	fi
+	uptodate ${VARDIR}/firewall && g_fast=Yes
     fi
 
     if [ -z "$g_fast" ]; then

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>AUDIT Target Support</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2011</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Background</title>
+
+    <para>In early 2011, Thomas Graf submitted a set of patches to the
+    Netfilter development list that implemented an AUDIT rule target. This is
+    from the initial submittal:</para>
+
+    <blockquote>
+      <para>This patch adds a new netfilter target which creates audit records
+      for packets traversing a certain chain. It can be used to record packets
+      which are rejected administraively as follows:</para>
+
+      <simplelist>
+        <member>-N AUDIT_DROP</member>
+
+        <member>-A AUDIT_DROP -j AUDIT --type DROP</member>
+
+        <member>-A AUDIT_DROP -j DROP</member>
+      </simplelist>
+
+      <para>A rule which would typically drop or reject a packet would then
+      invoke the new chain to record packets before dropping them.</para>
+
+      <simplelist>
+        <member>-j AUDIT_DROP</member>
+      </simplelist>
+
+      <para>The module is protocol independant and works for iptables,
+      ip6tables and ebtables.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>netfilter hook</para>
+        </listitem>
+
+        <listitem>
+          <para>packet length</para>
+        </listitem>
+
+        <listitem>
+          <para>incoming/outgoing interface</para>
+        </listitem>
+
+        <listitem>
+          <para>MAC src/dst/proto for ethernet packets</para>
+        </listitem>
+
+        <listitem>
+          <para>src/dst/protocol address for IPv4/IPv6</para>
+        </listitem>
+
+        <listitem>
+          <para></para>
+        </listitem>
+
+        <listitem>
+          <para>src/dst port for TCP/UDP/UDPLITE</para>
+        </listitem>
+
+        <listitem>
+          <para>icmp type/code</para>
+        </listitem>
+      </itemizedlist>
+    </blockquote>
+
+    <para>Additionally, Thomas released a daemon (auditd) that write the audit
+    information to a log file.</para>
+
+    <para>In a later post, the following additional information was
+    posted:</para>
+
+    <blockquote>
+      <para>AUDIT exists because a very large number of gov't customers (Not
+      just USA) have special requirements about how 'relevant' information is
+      gathered and stored. They require centralization and standardization and
+      require pretty formal documentation describing it's operation. The gov't
+      certification authority has recently added a requirement that they be
+      able to log 'illegal attempted network connections' via the approved
+      audit facility. Thus, this patch.</para>
+    </blockquote>
+
+    <para>The AUDIT target was included in Linux kernel 2.6.39.</para>
+  </section>
+
+  <section>
+    <title>Shorewall Support</title>
+
+    <para>Shorewall support for the AUDIT target was added in 4.4.20.</para>
+
+    <para>The support involves the following:</para>
+
+    <orderedlist numeration="loweralpha">
+      <listitem>
+        <para>A new "AUDIT Target" capability is added and is required for
+        auditing support. To use AUDIT support with a capabilities file, that
+        file must be generated using this or a later release.</para>
+
+        <para>Use 'shorewall show capabilities' after installing this release
+        to see if your kernel/iptables support the AUDIT target.</para>
+      </listitem>
+
+      <listitem>
+        <para>In /etc/shorewall/policy's POLICY column, the policy (and
+        default action, if any) may be followed by ':audit' to cause
+        application of the policy to be audited. Only ACCEPT, DROP and REJECT
+        policies may be audited.</para>
+
+        <para>Example: </para>
+
+        <programlisting>#SOURCE	DEST	POLICY		LOG
+#				LEVEL
+net	fw      DROP:audit</programlisting>
+
+        <para>It is allowed to also specify a log level on audited policies
+        resulting in both auditing and logging.</para>
+      </listitem>
+
+      <listitem>
+        <para> Three new builtin targets that may be used in the rules file,
+        in macros and in other actions.</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>A_ACCEPT - Audits and accepts the connection request</para>
+          </listitem>
+
+          <listitem>
+            <para>A_DROP - Audits and drops the connection request</para>
+          </listitem>
+
+          <listitem>
+            <para>A_REJECT - Audits and rejects</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>A log level may be supplied with these actions to provide both
+        auditing and logging. </para>
+
+        <para>Example:</para>
+
+        <programlisting>#ACTION        SOURCE       DEST       PROTO
+A_ACCEPT:info  loc          net        ...</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>The BLACKLIST_DISPOSITION, MACLIST_DISPOSITION,
+        SMURF_DISPOSITION and TCP_FLAGS_DISPOSITION options may be set as
+        follows:</para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>BLACKLIST_DISPOSITION</entry>
+
+                <entry>A_DROP or A_REJECT</entry>
+              </row>
+
+              <row>
+                <entry>MACLIST_DISPOSITION </entry>
+
+                <entry>A_DROP, A_REJECT unless MACLIST_TABLE=mangle</entry>
+              </row>
+
+              <row>
+                <entry>SMURF_DISPOSITION<footnote>
+                    <para>This option was added in Shorewall 4.4.20</para>
+                  </footnote></entry>
+
+                <entry>A_DROP</entry>
+              </row>
+
+              <row>
+                <entry>TCP_FLAGS_DISPOSITION</entry>
+
+                <entry>A_DROP or A_REJECT</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </listitem>
+
+      <listitem>
+        <para>An 'audit' option has been added to the /etc/shorewall/blacklist
+        file which causes the packets matching the entryto be audited. 'audit'
+        may not be specified together with 'accept'.</para>
+      </listitem>
+
+      <listitem>
+        <para>The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
+        an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
+        performed by the action to be audited. This allows creation of audited
+        versions of the Shorewall-provided default actions (action.Drop and
+        action.Reject). </para>
+
+        <note>
+          <para> The builtin actions are those actions listed in the output of
+          <command>shorewall show actions</command> whose names begin with a
+          lower-case letter.</para>
+        </note>
+      </listitem>
+    </orderedlist>
+  </section>
+</article>

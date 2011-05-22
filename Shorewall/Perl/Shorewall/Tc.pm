@@ -620,12 +620,15 @@ sub validate_tc_device( ) {
 	    $devnumber = hex_value( $number );
 	    fatal_error "Invalid device NUMBER ($number)" unless defined $devnumber && $devnumber && $devnumber < 256;
 	    fatal_error "Duplicate interface number ($number)" if defined $devnums[ $devnumber ];
-	    $devnum = $devnumber if $devnumber > $devnum;
 	} else {
 	    fatal_error "Missing interface NUMBER";
 	}
-    } elsif ( ( $devnumber = ++$devnum ) > 255 ) {
-	fatal_error "Attempting to assign a device number > 255";
+    } else {
+	1 while $devnums[++$devnum];
+
+	if ( ( $devnumber = $devnum ) > 255 ) {
+	    fatal_error "Attempting to assign a device number > 255";
+	}
     }
 
     $devnums[ $devnumber ] = $device;

@@ -33,17 +33,18 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 1)  The implementation of the environmental variables LIBEXEC and
     PERLLIB that was introduced in 4.4.19 has been changed
     slightly. The installers now allow absolute path names to be
-    supplied so that the executables and/or Perl modules may be
-    installed under a top-level directory other than /usr. The change
-    is compatible with 4.4.19 in that if a relative path name is
-    supplied, then '/usr/' is prepended to the name.
+    supplied in these variables so that the executables and/or Perl
+    modules may be installed under a top-level directory other than
+    /usr. The change is compatible with 4.4.19 in that if a relative
+    path name is supplied, then '/usr/' is prepended to the supplied
+    name.
 
 2)  A new ACCOUNTING_TABLE option has been added to shorewall.conf and
-    shorwall6.conf. The setting determines the Netfilter table (filter
+    shorewall6.conf. The setting determines the Netfilter table (filter
     or mangle) where accounting rules are created.
 
-    When ACCOUNTING_TABLE=mangle, the allowable sections in the
-    accounting file are as follows:
+    When ACCOUNTING_TABLE=mangle, the allowable accounting file
+     sections are:
 
 	PREROUTING
         INPUT
@@ -74,11 +75,13 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
         release.
 
 	Use 'shorewall show capabilities' after installing this release
-	to see if your kernel/iptables support the AUDIT target.
+	to see if your kernel and iptables support the AUDIT target.
 
     b)  In /etc/shorewall/policy's POLICY column, the policy (and
     	default action, if any) may be followed by ':audit' to cause
-	application of the policy to be audited.
+	applications of the policy to be audited. This means that any
+    	NEW connection that does not match any rule in the rules file
+    	or in the applicable 'default action' will be audited.
 
 	Only ACCEPT, DROP and REJECT policies may be audited.
 
@@ -111,7 +114,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	BLACKLIST_DISPOSITION 	      A_DROP or A_REJECT
 	MACLIST_DISPOSITION           A_DROP 
 				      A_REJECT, unless
-				               MACLIST_TABLE=mangle
+				                MACLIST_TABLE=mangle
         TCP_FLAGS_DISPOSITION         A_DROP or A_REJECT
 
     e)  A SMURF_DISPOSITION option has been added to
@@ -120,8 +123,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
     f)  An 'audit' option has been added to the
         /etc/shorewall/blacklist file which causes the packets matching
-        the entryto be audited. 'audit' may not be specified together
-        with 'accept'.
+        the entry to be audited. 'audit' may not be specified together
+        with 'whitelist'.
 
     g)  The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
         an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
@@ -130,14 +133,19 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
         (action.Drop and action.Reject).
 
 	Note: The builtin actions are those actions listed in the
-	output of 'shorewall show actions' whose names begin with a
+	output of 'shorewall show actions' with names begin with a
 	lower-case letter.
 
+	Example:
+
+		#ACTION			SOURCE		DEST
+		rejNonSyn(audit)	net		all
+
 6)  Up to this release, the behaviors of 'start -f' and 'restart -f'
-    has been inconsistent with AUTOMAKE=Yes. The 'start -f' and
-    'restart -f' commands compares the modification times of
-    /etc/shorewall[6] with /var/lib/shorewall[6]/restore while
-    AUTOMAKE compares with /var/lib/shorewall[6]/firewall.
+    has been inconsistent. The 'start -f' command  compares the
+    modification times of /etc/shorewall[6] with
+    /var/lib/shorewall[6]/restore while 'restart -f' compares with
+    /var/lib/shorewall[6]/firewall.
 
     To make the two consistent, a new LEGACY_FASTSTART option has been
     added. The default value when the option isn't specified is
@@ -216,6 +224,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 17) A 'Universal' sample configuration is now availale for a
     'plug-and-play' firewall.
+
+18) Support for the AUDIT iptables target has been added.
 
 ----------------------------------------------------------------------------
                    V.  M I G R A T I O N   I S S U E S

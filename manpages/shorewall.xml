@@ -377,9 +377,11 @@
 
       <arg><option>-n</option></arg>
 
-      <arg><option>-p</option></arg>
+      <arg><option>-p</option><arg><option>-d</option></arg></arg>
 
       <arg><option>-f</option></arg>
+
+      <arg><option>-c</option></arg>
 
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
@@ -1114,9 +1116,18 @@
           table to be flushed; the <command>conntrack</command> utility must
           be installed to use this option.</para>
 
+          <para>The <option>-d </option>option causes the compiler to run
+          under the Perl debugger.</para>
+
           <para>The <option>-f</option> option suppresses the compilation step
           and simply reused the compiled script which last started/restarted
-          Shorewall.</para>
+          Shorewall, provided that /etc/shorewall and its contents have not
+          been modified since the last start/restart.</para>
+
+          <para>The <option>-c</option> option was added in Shorewall 4.4.20
+          and performs the compilation step unconditionally, overriding the
+          AUTOMAKE setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 

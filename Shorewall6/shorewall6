@@ -651,6 +651,10 @@ restart_command() {
 			    g_fast=Yes
 			    option=${option#f}
 			    ;;
+			c*)
+			    AUTOMAKE=
+			    option=${option#c}
+			    ;;			    
 			n*)
 			    g_noroutes=Yes
 			    option=${option#n}
@@ -1310,7 +1314,7 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -f ] [ <directory> ]"
+    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ][ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log [<regex>]|macros|mangle|nat|policies|raw|routing|tc|vardir|zones} ]"

@@ -922,9 +922,24 @@
           <para>The <option>-n</option> option causes Shorewall6 to avoid
           updating the routing table(s).</para>
 
+          <para>The <option>-p</option> option causes the connection tracking
+          table to be flushed; the <command>conntrack</command> utility must
+          be installed to use this option.</para>
+
+          <para>The <option>-d </option>option causes the compiler to run
+          under the Perl debugger.</para>
+
           <para>The <option>-f</option> option suppresses the compilation step
           and simply reused the compiled script which last started/restarted
-          Shorewall6.</para>
+          Shorewall, provided that /etc/shorewall6 and its contents have not
+          been modified since the last start/restart.</para>
+
+          <para>The <option>-c</option> option was added in Shorewall 4.4.20
+          and performs the compilation step unconditionally, overriding the
+          AUTOMAKE setting in <ulink
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5). When both
+          <option>-f</option> and <option>-c </option>are present, the result
+          is determined by the option that appears last.</para>
         </listitem>
       </varlistentry>
 

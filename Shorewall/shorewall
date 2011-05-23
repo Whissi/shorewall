@@ -337,6 +337,7 @@ uptodate() {
 # Run the compiler
 #
 compiler() {
+    local pc
     pc=$g_libexec/shorewall/compiler.pl
 
     if [ $(id -u) -ne 0 ]; then
@@ -870,6 +871,7 @@ refresh_command() {
 safe_commands() {
     local finished
     finished=0
+    local command
 
     # test is the shell supports timed read
     read -t 0 junk 2> /dev/null
@@ -972,7 +974,7 @@ safe_commands() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if ${VARDIR}/.$command $g_debugging $command; then
+    if run_it ${VARDIR}/.$command $g_debugging $command; then
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 
@@ -980,9 +982,9 @@ safe_commands() {
 	    echo "New configuration has been accepted"
 	else
 	    if [ "$command" = "restart" ]; then
-		${VARDIR}/.safe restore
+		run_it ${VARDIR}/.safe restore
 	    else
-		${VARDIR}/.$command clear
+		run_it ${VARDIR}/.$command clear
 	    fi
 
 	    [ -n "$nolock" ] || mutex_off
@@ -1108,13 +1110,13 @@ try_command() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if ${VARDIR}/.$command $command && [ -n "$timeout" ]; then
+    if run_it ${VARDIR}/.$command $command && [ -n "$timeout" ]; then
 	sleep $timeout
 
 	if [ "$command" = "restart" ]; then
-	    ${VARDIR}/.try restore
+	    run_it ${VARDIR}/.try restore
 	else
-	    ${VARDIR}/.$command clear
+	    run_it ${VARDIR}/.$command clear
 	fi
     fi
 
@@ -1669,9 +1671,9 @@ case "$COMMAND" in
 	start_command $@
 	;;
     stop|clear)
-	get_config
 	[ $# -ne 1 ] && usage 1
-	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
+	get_config
+	[ -x $g_firewall ] || fatal_error "Shorewall6 has never been started"
 	[ -n "$nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off

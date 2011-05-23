@@ -1261,7 +1261,7 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$g_timestamp" ] && timestamp='-t' || timestamp=
 
-    if shorewall6 $g_debugging $verbose $timestamp compile -e $compiler $directory $directory/firewall && \
+    if shorewall6 $g_debugging $verbose $timestamp compile -e $directory $directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${litedir}
     then
@@ -1348,7 +1348,7 @@ export_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall6 $g_debugging $verbose compile -e $compiler $directory $directory/firewall && \
+    if shorewall6 $g_debugging $verbose compile -e $directory $directory/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $directory/firewall $directory/firewall.conf $target
     then
@@ -1391,8 +1391,23 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ][ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [-f] [ -t {filter|mangle} ] [ {chain [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|filters|ip|log [<regex>]|macros|mangle|nat|policies|raw|routing|tc|vardir|zones} ]"
-    echo "   start [ -f ] [ -n ] [ <directory> ]"
+    echo "   show [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   show actions"
+    echo "   show [ -f ] capabilities"
+    echo "   show classifiers"
+    echo "   show config"
+    echo "   show connections"
+    echo "   show filters"
+    echo "   show ip"
+    echo "   show [ -m ] log [<regex>]"
+    echo "   show macro <macro>"
+    echo "   show macros"
+    echo "   show [ -x ] mangle|raw|routing"
+    echo "   show policies"
+    echo "   show tc [ device ]"
+    echo "   show vardir"
+    echo "   show zones"
+    echo "   start [ -f ] [ -n ] [ -p ] [ <directory> ]"
     echo "   stop"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"

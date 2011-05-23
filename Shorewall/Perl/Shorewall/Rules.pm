@@ -1133,21 +1133,21 @@ sub map_old_actions( $ ) {
     }
 }
 
-sub require_audit($$) {
-    my ($action, $audit ) = @_;
+#
+# Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
 
-    return $action unless defined $audit and $audit ne '';
-
-    my $target = 'A_' . $action;
-
-    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-
-    require_capability 'AUDIT_TARGET', 'audit', 's';
+sub ensure_audit_chain( $;$ ) {
+    my ( $target, $action ) = @_;
 
     my $ref = $filter_table->{$target};
 
     unless ( $ref ) {
 	$ref = new_chain 'filter', $target;
+
+	unless ( $action ) {
+	    $action = $target;
+	    $action =~ s/^A_//;
+	} 
 
 	if ( $config{FAKE_AUDIT} ) {
 	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
@@ -1163,6 +1163,24 @@ sub require_audit($$) {
     }
 
     return $target;
+}
+
+#
+# Return the appropriate target based on whether the second argument is 'audit'
+#
+
+sub require_audit($$) {
+    my ($action, $audit ) = @_;
+
+    return $action unless defined $audit and $audit ne '';
+
+    my $target = 'A_' . $action;
+
+    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
+
+    require_capability 'AUDIT_TARGET', 'audit', 's';
+
+    return ensure_audit_chain $target, $action;
 }   
     
 #
@@ -1607,34 +1625,15 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
     return $generated;
 }
 
+#
+# Confirm that we have AUDIT_TARGET capability and ensure the appropriate AUDIT chain.
+#
 sub verify_audit($) {
     my ($target, $audit ) = @_;
 
     require_capability 'AUDIT_TARGET', "$target rules", '';
 
-    my $ref = $filter_table->{$target};
-
-    unless ( $ref ) {
-	$ref = new_chain 'filter', $target;
-
-	my $action = $target;
-
-	$action =~ s/^A_//;
-
-	if ( $config{FAKE_AUDIT} ) {
-	    add_rule $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"';
-	} else {
-	    add_rule $ref, '-j AUDIT --type ' . lc $action;
-	}
-
-	if ( $action eq 'REJECT' ) {
-	    add_jump $ref , 'reject', 1;
-	} else {
-	    add_rule $ref , "-j $action";
-	}
-    }
-
-    return $target;
+    return ensure_audit_chain $target;
 }
 
 #

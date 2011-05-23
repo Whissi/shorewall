@@ -48,7 +48,7 @@ get_config() {
     fi
 
     config=$(find_file shorewall6.conf)
-    
+
     if [ -f $config ]; then
 	if [ -r $config ]; then
 	    . $config
@@ -62,7 +62,7 @@ get_config() {
     fi
 
     ensure_config_path
-    
+
     if [ -z "$g_export" -a "$(id -u)" = 0 ]; then
 	#
 	# This block is avoided for compile for export and when the user isn't root
@@ -123,7 +123,7 @@ get_config() {
 		;;
 	esac
 
-	[ -n "$LOGFORMAT" ] || LOGFORMAT='Shorewall6:%s.%s'
+	[ -z "$LOGFORMAT" ] && LOGFORMAT='Shorewall:%s.%s'
 
 	[ -n "$LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
 
@@ -149,7 +149,7 @@ get_config() {
     else
 	STARTUP_LOG=
 	LOG_VERBOSITY=-1
-    fi   
+    fi
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -x "$SHOREWALL_SHELL" ]; then
@@ -251,7 +251,7 @@ startup_error() {
     kill $$
     exit 1
 }
-    
+
 #
 # Determine if there are config files newer than the passed object
 #
@@ -260,7 +260,7 @@ uptodate() {
 }
 
 #
-# Run the appropriate compiler
+# Run the compiler
 #
 compiler() {
     pc=$g_libexec/shorewall/compiler.pl
@@ -298,10 +298,10 @@ compiler() {
     [ -n "$g_profile" ] && debugflags='-wd:DProf'
 
     # Perl compiler only takes the output file as a argument
-	    
+
     [ "$1" = debug -o "$1" = trace ]  && shift;
     [ "$1" = nolock ] && shift;
-    shift 
+    shift
 
     options="--verbose=$VERBOSITY --family=6"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
@@ -331,7 +331,7 @@ compiler() {
 	export PERL5LIB
 	$command $PERL $debugflags $pc $options $@
     fi
-}    
+}
 
 #
 # Start Command Executor
@@ -432,10 +432,13 @@ start_command() {
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
 	if [ -z "$g_fast" -o -z "$LEGACY_FASTSTART" ]; then
 	    #
-	    # Autofast -- use the last compiled script
+	    # Automake or LEGACY_FASTSTART=No -- use the last compiled script
 	    #
 	    object=firewall
 	else
+	    #
+	    # 'start -f' with LEGACY_FASTSTART=Yes -- use last saved configuration
+	    #
 	    object=$RESTOREFILE
 	fi
 
@@ -471,7 +474,7 @@ compile_command() {
     finished=0
 
     while [ $finished -eq 0 ]; do
-	[ $# -eq 0 ] && break;
+	[ $# -eq 0 ] && break
 	option=$1
 	case $option in
 	    -*)
@@ -493,7 +496,7 @@ compile_command() {
 			t*)
 			    g_test=Yes
 			    option=${option#t}
-			    ;;			    
+			    ;;
 			d*)
 			    g_debug=Yes;
 			    option=${option#d}
@@ -575,13 +578,13 @@ check_command() {
 			    g_profile=Yes
 			    option=${option#p}
 			    ;;
-			r*)
-			    g_preview=Yes;
-			    option=${option#r}
-			    ;;
 			d*)
 			    g_debug=Yes;
 			    option=${option#d}
+			    ;;
+			r*)
+			    g_preview=Yes;
+			    option=${option#r}
 			    ;;
 			*)
 			    usage 1
@@ -912,7 +915,7 @@ safe_commands() {
 	    else
 		run_it ${VARDIR}/.$command clear
 	    fi
-	    
+
 	    [ -n "$nolock" ] || mutex_off
 
 	    echo "New configuration has been rejected and the old one restored"
@@ -943,7 +946,7 @@ try_command() {
 		echo "Directory $1 does not exist" >&2 && exit 2
 	    fi
 	fi
-	
+
 	SHOREWALL_DIR=$(resolve_file $1)
     }
 
@@ -986,7 +989,7 @@ try_command() {
 	2)
 	    handle_directory $1
 	    timeout=$2
-	    case $timeout in 
+	    case $timeout in
 		*[!0-9]*)
                     echo "   ERROR: Invalid timeout ($timeout)" >&2;
 		    exit 1
@@ -1038,12 +1041,12 @@ try_command() {
 
     if run_it ${VARDIR}/.$command $command && [ -n "$timeout" ]; then
 	sleep $timeout
-	    
+
 	if [ "$command" = "restart" ]; then
 	    run_it ${VARDIR}/.try restore
 	else
 	    run_it ${VARDIR}/.$command clear
-	fi	    
+	fi
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -1060,7 +1063,7 @@ rsh_command() {
 rcp_command() {
     files="$1"
     destination=$2
-    
+
     eval $RCP_COMMAND
 }
 
@@ -1148,7 +1151,7 @@ reload_command() # $* = original arguments less the command.
 
     temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
-    [ -n "$temp" ] && litedir=$temp
+    [ -n "$temp" ] && litedir="$temp"
 
     temp=$(rsh_command /sbin/shorewall6-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
 
@@ -1216,12 +1219,12 @@ reload_command() # $* = original arguments less the command.
 export_command() # $* = original arguments less the command.
 {
     local verbose
-    verbose=$(make_verbose) 
+    verbose=$(make_verbose)
     local file
-    file= 
+    file=
     local finished
-    finished=0 
-    local directory 
+    finished=0
+    local directory
     local target
     local compiler
     compiler=
@@ -1396,6 +1399,9 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
 fi
 
 SHOREWALL_DIR=
+g_noroutes=
+g_purge=
+
 g_ipt_options="-nv"
 g_fast=
 g_verbose_offset=0
@@ -1403,10 +1409,6 @@ g_use_verbosity=
 g_debug=
 g_export=
 g_refreshchains=:none:
-
-g_noroutes=
-g_purge=
-g_timestamp=
 
 #
 # Make sure that these variables are cleared
@@ -1461,7 +1463,7 @@ while [ $finished -eq 0 ]; do
 			;;
 		    v*)
 			option=${option#v}
-			case $option in 
+			case $option in
 			    -1*)
 				g_use_verbosity=-1
 				option=${option#-1}
@@ -1520,8 +1522,9 @@ SHAREDIR=/usr/share/shorewall6
 CONFDIR=/etc/shorewall6
 g_product="Shorewall6"
 g_recovering=
+g_timestamp=
 g_libexec=/usr/share
-g_perllib=share/shorewall
+g_perllib=/usr/share/shorewall
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
@@ -1805,7 +1808,7 @@ case "$COMMAND" in
 	else
 	    fatal_error "Shorewall6 is not started"
 	fi
-	;;	
+	;;
      noiptrace)
 	get_config
 	shift
@@ -1815,7 +1818,8 @@ case "$COMMAND" in
 	else
 	    fatal_error "Shorewall6 is not started"
 	fi
-	;;	    *)
+	;;
+    *)
 	usage 1
 	;;
 

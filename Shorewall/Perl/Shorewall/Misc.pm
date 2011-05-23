@@ -218,7 +218,13 @@ sub setup_blacklist() {
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    add_rule( $logchainref, '-j AUDIT --type ' . lc $target ) if $audit;
+	    if ( $audit ) {
+		if ( $config{FAKE_AUDIT} ) {
+		    add_rule( $logchainref, '-j AUDIT -m comment --comment "--type ' . lc $target . '"' );
+		} else {
+		    add_rule( $logchainref, '-j AUDIT --type ' . lc $target );
+		}
+	    }
 
 	    add_jump $logchainref, $target, 1;
 
@@ -510,7 +516,14 @@ sub add_common_rules() {
 			    '',
 			    'add',
 			    '' );
-	    add_rule( $smurfref, '-j AUDIT --type drop' ) if $smurfdest eq 'A_DROP';
+	    if ( $smurfdest eq 'A_DROP' ) {
+		if ( $config{FAKE_AUDIT} ) {
+		    add_rule( $smurfref, '-j AUDIT -m comment --comment "--type drop"' );
+		} else {
+		    add_rule( $smurfref, '-j AUDIT --type drop' );
+		}
+	    }
+ 
 	    add_rule( $smurfref, '-j DROP' );
 
 	    $smurfdest = 'smurflog';
@@ -647,7 +660,12 @@ sub add_common_rules() {
 
 	    if ( $audit ) {
 		$disposition =~ s/^A_//;
-		add_rule( $logflagsref, '-j AUDIT --type ' . lc $disposition );
+		
+		if ( $config{FAKE_AUDIT} ) {
+		    add_rule( $logflagsref, '-j AUDIT -m comment --comment "--type ' . lc $disposition . '"' );
+		} else {
+		    add_rule( $logflagsref, '-j AUDIT --type ' . lc $disposition );
+		}
 	    }
 
 	    if ( $disposition eq 'REJECT' ) {
@@ -821,13 +839,29 @@ sub setup_mac_lists( $ ) {
 			    my $source = match_source_net $address;
 			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 				if defined $level && $level ne '';
-			    add_rule( $chainref , '-j AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			    
+			    if ( $audit && $disposition ne 'ACCEPT' ) {
+				if ( $config{FAKE_AUDIT} ) {
+				    add_rule( $chainref , '-j AUDIT -m comment --comment "--type ' . lc $disposition . '"' );
+				} else {
+				    add_rule( $chainref , '-j AUDIT --type ' . lc $disposition );
+				}
+			    }
+
 			    add_jump $chainref , $targetref->{target}, 0, "${mac}${source}";
 			}
 		    } else {
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			    if defined $level && $level ne '';
-			add_rule( $chainref , '-j AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+
+			if ( $audit && $disposition ne 'ACCEPT' ) {
+			    if ( $config{FAKE_AUDIT} ) {
+				add_rule( $chainref , '-j AUDIT -m comment --comment "--type ' . lc $disposition . '"' );
+			    } else {
+				add_rule( $chainref , '-j AUDIT --type ' . lc $disposition );
+			    }
+			}
+
 			add_jump $chainref , $targetref->{target}, 0, "$mac";
 		    }
 
@@ -1151,6 +1185,7 @@ sub generate_matrix() {
 
     progress_message2 'Generating Rule Matrix...';
     progress_message  '  Handling blacklisting and complex zones...';
+
     #
     # Special processing for complex and/or blacklisting configurations
     #

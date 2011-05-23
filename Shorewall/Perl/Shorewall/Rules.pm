@@ -518,7 +518,14 @@ sub policy_rules( $$$$$ ) {
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 	
-	add_rule( $chainref , '-j AUDIT --type ' . lc $target ) if $chainref->{audit};
+	if ( $chainref->{audit} ) {
+	    if ( $config{FAKE_AUDIT} ) {
+		add_rule( $chainref , '-j AUDIT -m comment --comment "--type ' . lc $target . '"' );
+	    } else { 
+		add_rule( $chainref , '-j AUDIT --type ' . lc $target );
+	    }
+	}
+
 	add_jump( $chainref , $target eq 'REJECT' ? 'reject' : $target, 1 ) unless $target eq 'CONTINUE';
     }
 }
@@ -1142,8 +1149,12 @@ sub require_audit($$) {
     unless ( $ref ) {
 	$ref = new_chain 'filter', $target;
 
-	add_rule $ref, '-j AUDIT --type ' . lc $action;
-	
+	if ( $config{FAKE_AUDIT} ) {
+	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
+	} else {
+	    add_rule $ref, '-j AUDIT --type ' . lc $action;
+	}
+
 	if ( $action eq 'REJECT' ) {
 	    add_jump $ref , 'reject', 1;
 	} else {
@@ -1610,8 +1621,12 @@ sub verify_audit($) {
 
 	$action =~ s/^A_//;
 
-	add_rule $ref, '-j AUDIT --type ' . lc $action;
-	
+	if ( $config{FAKE_AUDIT} ) {
+	    add_rule $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"';
+	} else {
+	    add_rule $ref, '-j AUDIT --type ' . lc $action;
+	}
+
 	if ( $action eq 'REJECT' ) {
 	    add_jump $ref , 'reject', 1;
 	} else {

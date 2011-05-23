@@ -541,6 +541,7 @@ sub initialize( $ ) {
 	  COMPLETE => undef,
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
+	  FAKE_AUDIT => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -2536,7 +2537,7 @@ sub Account_Target() {
 }
 
 sub Audit_Target() {
-    qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
+    $config{FAKE_AUDIT} || qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
 }
 
 our %detect_capability =

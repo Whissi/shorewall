@@ -1598,6 +1598,8 @@ sub initialize_chain_table()
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
     }
+
+    dont_delete ensure_filter_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
 }
 
 #

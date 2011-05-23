@@ -33,9 +33,9 @@
 #     $1 = Yes: read the params file
 #     $2 = Yes: check for STARTUP_ENABLED
 #     $3 = Yes: Check for LOGFILE
-#     
 #
 get_config() {
+    local prog
 
     ensure_config_path
 
@@ -93,6 +93,68 @@ get_config() {
 	    fi
 	fi
 
+	if [ -n "$IP" ]; then
+	    case "$IP" in
+		*/*)
+		    if [ ! -x "$IP" ] ; then
+			echo "   ERROR: The program specified in IP ($IP) does not exist or is not executable" >&2
+			exit 2
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $IP 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			echo "   ERROR: Can't find $IP executable" >&2
+			exit 2
+		    fi
+		    IP=$prog
+		    ;;
+	    esac
+	else
+	    IP='ip'
+	fi
+
+	if [ -n "$IPSET" ]; then
+	    case "$IPSET" in
+		*/*)
+		    if [ ! -x "$IPSET" ] ; then
+			echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
+			exit 2
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $IPSET 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			echo "   ERROR: Can't find $IPSET executable" >&2
+			exit 2
+		    fi
+		    IPSET=$prog
+		    ;;
+	    esac
+	else
+	    IPSET='ipset'
+	fi
+
+	if [ -n "$TC" ]; then
+	    case "$TC" in
+		*/*)
+		    if [ ! -x "$TC" ] ; then
+			echo "   ERROR: The program specified in TC ($TC) does not exist or is not executable" >&2
+			exit 2
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $TC 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			echo "   ERROR: Can't find $TC executable" >&2
+			exit 2
+		    fi
+		    TC=$prog
+		    ;;
+	    esac
+	else
+	    TC='tc'
+	fi
 	#
 	# Compile by non-root needs no restore file
 	#
@@ -116,6 +178,18 @@ get_config() {
 		    ;;
 	    esac
 	fi
+
+	case ${SHOREWALL_COMPILER:=perl} in
+	    perl|Perl)
+		;;
+	    shell|Shell)
+		echo "   WARNING: SHOREWALL_COMPILER=shell ignored. Shorewall-shell support has been removed in this release" >&2
+		;;
+	    *)
+		echo "   ERROR: Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER" >&2
+		exit 2
+		;;
+	esac
 
 	case ${TC_ENABLED:=Internal} in
 	    No|NO|no)
@@ -263,13 +337,9 @@ uptodate() {
 # Run the compiler
 #
 compiler() {
+    local pc
     pc=$g_libexec/shorewall/compiler.pl
 
-    local command
-    command=$1
-
-    shift
-    
     if [ $(id -u) -ne 0 ]; then
 	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/shorewall6 ]; then
 	    startup_error "Ordinary users may not compile the /etc/shorewall6 configuration"
@@ -280,8 +350,6 @@ compiler() {
     #
     ensure_config_path
 
-    haveparams=
-
     case $COMMAND in
 	*start|try|refresh)
 	    ;;
@@ -291,8 +359,6 @@ compiler() {
 	    ;;
     esac
 
-    [ $command = exec ] || command=
-    
     debugflags="-w"
     [ -n "$g_debug" ]   && debugflags='-wd'
     [ -n "$g_profile" ] && debugflags='-wd:DProf'
@@ -325,11 +391,11 @@ compiler() {
     fi
 
     if [ $g_perllib = ${g_libexec}/shorewall ]; then
-	$command $PERL $debugflags $pc $options $@
+	$PERL $debugflags $pc $options $@
     else
 	PERL5LIB=$g_perllib
 	export PERL5LIB
-	$command $PERL $debugflags $pc $options $@
+	$PERL $debugflags $pc $options $@
     fi
 }
 
@@ -353,7 +419,7 @@ start_command() {
 	else
 	    progress_message3 "Compiling..."
 
-	    if compiler run $g_debugging $nolock compile ${VARDIR}/.start; then
+	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
 		[ -n "$nolock" ] || mutex_on
 		run_it ${VARDIR}/.start $g_debugging start
 		rc=$?
@@ -393,6 +459,11 @@ start_command() {
 			f*)
 			    g_fast=Yes
 			    option=${option#f}
+			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    g_purge=Yes
+			    option=${option%p}
 			    ;;
 			*)
 			    usage 1
@@ -548,7 +619,7 @@ compile_command() {
 
     [ "x$file" = x- ] || progress_message3 "Compiling..."
 
-    compiler exec $g_debugging compile $file
+    compiler $g_debugging compile $file
 }
 
 #
@@ -622,7 +693,7 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    compiler exec $g_debugging $nolock check
+    compiler $g_debugging $nolock check
 }
 
 #
@@ -710,10 +781,10 @@ restart_command() {
 	uptodate ${VARDIR}/firewall && g_fast=Yes
     fi
 
-    if [ -z "$g_fast" ]; then  
+    if [ -z "$g_fast" ]; then
 	progress_message3 "Compiling..."
 
-	if compiler run $g_debugging $nolock compile ${VARDIR}/.restart; then
+	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
 	    [ -n "$nolock" ] || mutex_on
 	    run_it ${VARDIR}/.restart $g_debugging restart
 	    rc=$?
@@ -783,7 +854,7 @@ refresh_command() {
 
     progress_message3 "Compiling..."
 
-    if compiler run $g_debugging $nolock compile ${VARDIR}/.refresh; then
+    if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	[ -n "$nolock" ] || mutex_on
 	run_it ${VARDIR}/.refresh $g_debugging refresh
 	rc=$?
@@ -801,6 +872,7 @@ refresh_command() {
 safe_commands() {
     local finished
     finished=0
+    local command
 
     # test is the shell supports timed read
     read -t 0 junk 2> /dev/null
@@ -883,7 +955,7 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler run $g_debugging nolock compile ${VARDIR}/.$command; then
+    if ! compiler $g_debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	exit $status
     fi
@@ -903,7 +975,7 @@ safe_commands() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if run_it ${VARDIR}/.$command $command; then
+    if run_it ${VARDIR}/.$command $g_debugging $command; then
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 
@@ -1019,7 +1091,7 @@ try_command() {
 
     progress_message3 "Compiling..."
 
-    if ! compiler run $g_debugging $nolock compile ${VARDIR}/.$command; then
+    if ! compiler $g_debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?
 	exit $status
     fi
@@ -1089,8 +1161,6 @@ reload_command() # $* = original arguments less the command.
     getcaps=
     local root
     root=root
-    local compiler
-    compiler=
     local libexec
     libexec=/usr/share
 
@@ -1179,8 +1249,10 @@ reload_command() # $* = original arguments less the command.
 	    ensure_config_path
 	fi
 
+	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
+
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES $libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
+	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "ERROR: Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1226,8 +1298,6 @@ export_command() # $* = original arguments less the command.
     finished=0
     local directory
     local target
-    local compiler
-    compiler=
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1338,6 +1408,7 @@ version_command() {
     finished=0
     local all
     all=
+    local product
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1682,6 +1753,11 @@ case "$COMMAND" in
 	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall6_is_started ; then
+	    if ! chain_exists dynamic; then
+		echo "Dynamic blacklisting is not supported in the current $g_product configuration"
+		exit 2
+	    fi
+
 	    [ -n "$nolock" ] || mutex_on
 	    block DROP Dropped $*
 	    [ -n "$nolock" ] || mutex_off
@@ -1694,6 +1770,11 @@ case "$COMMAND" in
 	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall6_is_started ; then
+	    if ! chain_exists dynamic; then
+		echo "Dynamic blacklisting is not supported in the current $g_product configuration"
+		exit 2
+	    fi
+
 	    [ -n "$nolock" ] || mutex_on
 	    block logdrop Dropped $*
 	    [ -n "$nolock" ] || mutex_off
@@ -1762,14 +1843,9 @@ case "$COMMAND" in
 	g_restorepath=${VARDIR}/$RESTOREFILE
 
 	if [ -x $g_restorepath ]; then
-
-	    if [ -x ${g_restorepath}-ipsets ]; then
-		rm -f ${g_restorepath}-ipsets
-		echo "    ${g_restorepath}-ipsets removed"
-	    fi
-
 	    rm -f $g_restorepath
 	    rm -f ${g_restorepath}-iptables
+	    rm -f ${g_restorepath}-ipsets
 	    echo "    $g_restorepath removed"
 	elif [ -f $g_restorepath ]; then
 	    echo "   $g_restorepath exists and is not a saved Shorewall6 configuration"

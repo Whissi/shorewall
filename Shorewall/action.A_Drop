@@ -1,0 +1,56 @@
+#
+# Shorewall version 4 - Drop Action
+#
+# /usr/share/shorewall/action.A_Drop
+#
+#	The audited default DROP common rules
+#
+#	This action is invoked before a DROP policy is enforced. The purpose
+#	of the action is:
+#
+#	a) Avoid logging lots of useless cruft.
+#	b) Ensure that 'auth' requests are rejected, even if the policy is
+#	   DROP. Otherwise, you may experience problems establishing
+#	   connections with servers that use auth.
+#	c) Ensure that certain ICMP packets that are necessary for successful
+#	   internet operation are always ACCEPTed.
+#
+# IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
+#
+###############################################################################
+#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
+#
+# Count packets that come through here
+#
+COUNT
+#
+# Reject 'auth'
+#
+Auth(A_REJECT)
+#
+# Don't log broadcasts
+#
+dropBcast(audit)
+#
+# ACCEPT critical ICMP types
+#
+A_AllowICMPs	-	-	icmp
+#
+# Drop packets that are in the INVALID state -- these are usually ICMP packets
+# and just confuse people when they appear in the log.
+#
+dropInvalid(audit)
+#
+# Drop Microsoft noise so that it doesn't clutter up the log.
+#
+SMB(A_DROP)
+A_DropUPnP
+#
+# Drop 'newnotsyn' traffic so that it doesn't get logged.
+#
+dropNotSyn(audit)	-	-	tcp
+#
+# Drop late-arriving DNS replies. These are just a nuisance and clutter up
+# the log.
+#
+A_DropDNSrep

@@ -1,9 +1,9 @@
 #
-# Shorewall version 4 - Drop Action
+# Shorewall6 version 4 - Audited Drop Action
 #
-# /usr/share/shorewall/action.Drop
+# /usr/share/shorewall6/action.ADrop
 #
-#	The default DROP common rules
+#	The Audited default DROP common rules
 #
 #	This action is invoked before a DROP policy is enforced. The purpose
 #	of the action is:
@@ -18,23 +18,20 @@
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
 ###############################################################################
-#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
-#
-# Count packets that come through here
-#
-COUNT
+#TARGET			SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Reject 'auth'
 #
 Auth(A_REJECT)
 #
-# Don't log broadcasts
-#
-dropBcast(audit)
-#
 # ACCEPT critical ICMP types
 #
-AAllowICMPs	-	-	icmp
+A_AllowICMPs		-	-	ipv6-icmp
+#
+# Drop Broadcasts so they don't clutter up the log
+# (broadcasts must *not* be rejected).
+#
+dropBcast(audit)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log.
@@ -44,7 +41,6 @@ dropInvalid(audit)
 # Drop Microsoft noise so that it doesn't clutter up the log.
 #
 SMB(A_DROP)
-ADropUPnP
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
@@ -53,4 +49,4 @@ dropNotSyn(audit)	-	-	tcp
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-ADropDNSrep
+A_DropDNSrep

@@ -84,9 +84,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/actions.std
 %attr(0644,root,root) /usr/share/shorewall/action.Drop
-%attr(0644,root,root) /usr/share/shorewall/action.ADrop
+%attr(0644,root,root) /usr/share/shorewall/action.A_Drop
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
-%attr(0644,root,root) /usr/share/shorewall/action.AReject
+%attr(0644,root,root) /usr/share/shorewall/action.A_Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(-   ,root,root) /usr/share/shorewall/functions
 %attr(0644,root,root) /usr/share/shorewall/lib.base

@@ -1,32 +1,29 @@
 #
-# Shorewall6 version 4 - Audited Drop Action
+# Shorewall6 version 4 - Audited Reject Action
 #
-# /usr/share/shorewall6/action.ADrop
+# /usr/share/shorewall6/action.A_Reject
 #
-#	The Audited default DROP common rules
+#	The audited default REJECT action common rules
 #
-#	This action is invoked before a DROP policy is enforced. The purpose
+#	This action is invoked before a REJECT policy is enforced. The purpose
 #	of the action is:
 #
 #	a) Avoid logging lots of useless cruft.
-#	b) Ensure that 'auth' requests are rejected, even if the policy is
-#	   DROP. Otherwise, you may experience problems establishing
-#	   connections with servers that use auth.
-#	c) Ensure that certain ICMP packets that are necessary for successful
+#	b) Ensure that certain ICMP packets that are necessary for successful
 #	   internet operation are always ACCEPTed.
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
-#
 ###############################################################################
-#TARGET			SOURCE	DEST	PROTO	DPORT	SPORT
+#TARGET			SOURCE	DEST	PROTO
 #
-# Reject 'auth'
+# Don't log 'auth' -- REJECT
 #
 Auth(A_REJECT)
 #
-# ACCEPT critical ICMP types
+# Drop Multicasts so they don't clutter up the log
+# (broadcasts must *not* be rejected).
 #
-AAllowICMPs		-	-	ipv6-icmp
+A_AllowICMPs		-	-	ipv6-icmp
 #
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).
@@ -34,13 +31,14 @@ AAllowICMPs		-	-	ipv6-icmp
 dropBcast(audit)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
-# and just confuse people when they appear in the log.
+# and just confuse people when they appear in the log (these ICMPs cannot be
+# rejected).
 #
 dropInvalid(audit)
 #
-# Drop Microsoft noise so that it doesn't clutter up the log.
+# Reject Microsoft noise so that it doesn't clutter up the log.
 #
-SMB(A_DROP)
+SMB(A_REJECT)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
@@ -49,4 +47,4 @@ dropNotSyn(audit)	-	-	tcp
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-ADropDNSrep
+A_DropDNSrep

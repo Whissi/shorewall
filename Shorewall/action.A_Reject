@@ -1,9 +1,9 @@
 #
 # Shorewall version 4 - Reject Action
 #
-# /usr/share/shorewall/action.Reject
+# /usr/share/shorewall/action.A_Reject
 #
-#	The default REJECT action common rules
+#	The audited default REJECT action common rules
 #
 #	This action is invoked before a REJECT policy is enforced. The purpose
 #	of the action is:
@@ -31,7 +31,7 @@ dropBcast(audit)
 #
 # ACCEPT critical ICMP types
 #
-AAllowICMPs	-	-	icmp
+A_AllowICMPs	-	-	icmp
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
@@ -42,7 +42,7 @@ dropInvalid(audit)
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
 SMB(A_REJECT)
-ADropUPnP
+A_DropUPnP
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
@@ -51,4 +51,4 @@ dropNotSyn(audit)	-	-	tcp
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-ADropDNSrep
+A_DropDNSrep

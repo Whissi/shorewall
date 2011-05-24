@@ -1600,6 +1600,7 @@ sub initialize_chain_table()
     }
 
     dont_delete ensure_filter_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
+    dont_move new_standard_chain 'reject';
 }
 
 #

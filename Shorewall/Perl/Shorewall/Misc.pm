@@ -472,7 +472,7 @@ sub add_common_rules() {
 
     my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "-m state --state NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
     my $level     = $config{BLACKLIST_LOGLEVEL};
-    my $rejectref = dont_move new_standard_chain 'reject';
+    my $rejectref = $filter_table->{reject};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
 	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;

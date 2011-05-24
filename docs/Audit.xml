@@ -221,58 +221,16 @@ A_ACCEPT:info  loc          net        ...</programlisting>
       <listitem>
         <para>The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
         an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
-        performed by the action to be audited. This allows creation of audited
-        versions of the Shorewall-provided default actions (action.Drop and
-        action.Reject).</para>
+        performed by the action to be audited. </para>
+      </listitem>
 
-        <note>
-          <para>The builtin actions are those actions listed in the output of
-          <command>shorewall show actions</command> whose names begin with a
-          lower-case letter.</para>
-        </note>
-
-        <para>Here's a version of action.Drop that does auditing:</para>
-
-        <programlisting>#TARGET         SOURCE  DEST    PROTO   DPORT   SPORT
-#
-# Count packets that come through here
-#
-COUNT
-#
-# Reject 'auth'
-#
-A_REJECT        -       -       tcp     
-#
-# Don't log broadcasts
-#
-dropBcast(audit)
-#
-# ACCEPT critical ICMP types
-#
-AudAllowICMPs      -       -       icmp
-#
-# Drop packets that are in the INVALID state -- these are usually ICMP packets
-# and just confuse people when they appear in the log.
-#
-dropInvalid(audit)
-#
-# Drop Microsoft noise so that it doesn't clutter up the log.
-#
-AudSMB(DROP)
-AudDropUPnP
-#
-# Drop 'newnotsyn' traffic so that it doesn't get logged.
-#
-dropNotSyn(audit)  -       -       tcp
-#
-# Drop late-arriving DNS replies. These are just a nuisance and clutter up
-# the log.
-#
-A_DROP          -       -       udp      -     53</programlisting>
-
-        <para>The 'Aud...' macros would be auditing versions of their standard
-        macro counterparts (if you are interested in auditing those connection
-        types).</para>
+      <listitem>
+        <para>There are audited versions of the standard <ulink
+        url="Actions.html#Default">Default Actions</ulink> (ADrop and
+        AReject). These actions audit everything they do which is probably
+        more than you want; as a consequence, you probably will want to make
+        your own copies of these actions and modify them to only audit the
+        packets that you are interested in.</para>
       </listitem>
     </orderedlist>
   </section>

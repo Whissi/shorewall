@@ -1599,8 +1599,11 @@ sub initialize_chain_table()
 	}
     }
 
-    dont_delete ensure_filter_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
-    dont_move new_standard_chain 'reject';
+    #
+    # Create these chains early in case they are needed by Policy actions
+    #
+    dont_delete new_standard_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
+    dont_move   new_standard_chain 'reject';
 }
 
 #

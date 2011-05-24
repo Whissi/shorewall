@@ -302,6 +302,8 @@
 
       <arg><option>-f</option></arg>
 
+      <arg><option>-c</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -457,7 +459,7 @@
 
       <arg><option>-n</option></arg>
 
-      <arg><option>-f</option></arg>
+      <arg><option>-f</option><arg><option>-c</option></arg></arg>
 
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
@@ -1201,6 +1203,13 @@
 
           <para>The <option>-n</option> option causes Shorewall6 to avoid
           updating the routing table(s).</para>
+
+          <para>The <option>-c</option> option was added in Shorewall 4.4.20
+          and performs the compilation step unconditionally, overriding the
+          AUTOMAKE setting in <ulink
+          url="shorewall6.conf.html">shorewall6.conf</ulink>(5). When both
+          <option>-f</option> and <option>-c </option>are present, the result
+          is determined by the option that appears last.</para>
         </listitem>
       </varlistentry>
 

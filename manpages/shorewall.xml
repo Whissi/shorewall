@@ -573,6 +573,8 @@
 
       <arg><option>-p</option></arg>
 
+      <arg><option>-c</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -1127,7 +1129,9 @@
           <para>The <option>-c</option> option was added in Shorewall 4.4.20
           and performs the compilation step unconditionally, overriding the
           AUTOMAKE setting in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="shorewall.conf.html">shorewall.conf</ulink>(5). When both
+          <option>-f</option> and <option>-c</option>are present, the result
+          is determined by the option that appears last.</para>
         </listitem>
       </varlistentry>
 
@@ -1439,6 +1443,13 @@
           <para>The <option>-p</option> option causes the connection tracking
           table to be flushed; the <command>conntrack</command> utility must
           be installed to use this option.</para>
+
+          <para>The <option>-c</option> option was added in Shorewall 4.4.20
+          and performs the compilation step unconditionally, overriding the
+          AUTOMAKE setting in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5). When both
+          <option>-f</option> and <option>-c</option>are present, the result
+          is determined by the option that appears last.</para>
         </listitem>
       </varlistentry>
 

@@ -54,6 +54,7 @@ sub usage( $ ) {
     [ --verbose={-1|0-2} ]
     [ --timestamp ]
     [ --debug ]
+    [ --confess ]
     [ --refresh=<chainlist> ]
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
@@ -73,6 +74,7 @@ my $shorewall_dir = '';
 my $verbose       = 0;
 my $timestamp     = 0;
 my $debug         = 0;
+my $confess       = 0;
 my $chains        = ':none:';
 my $log           = '';
 my $log_verbose   = 0;
@@ -103,6 +105,8 @@ my $result = GetOptions('h'               => \$help,
 			'preview'         => \$preview,
 			'f=i'             => \$family,
 			'family=i'        => \$family,
+			'c'               => \$confess,
+			'confess'         => \$confess,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -119,4 +123,6 @@ compiler( script          => $ARGV[0] || '',
 	  log_verbosity   => $log_verbose,
 	  test            => $test,
 	  preview         => $preview,
-	  family          => $family );
+	  family          => $family,
+	  confess         => $confess,
+	);

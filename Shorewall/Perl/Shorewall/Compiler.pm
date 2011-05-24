@@ -523,8 +523,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0 );
 
     $export = 0;
     $test   = 0;
@@ -557,6 +557,7 @@ sub compiler {
 		  log_verbosity => { store => \$log_verbosity, validate => \&validate_verbosity } ,
 		  test          => { store => \$test },
 		  preview       => { store => \$preview },
+		  confess       => { store => \$confess },
 		);
     #
     #                               P A R A M E T E R    P R O C E S S I N G
@@ -586,7 +587,7 @@ sub compiler {
     set_verbosity( $verbosity );
     set_log($log, $log_verbosity) if $log;
     set_timestamp( $timestamp );
-    set_debug( $debug );
+    set_debug( $debug , $confess );
     #
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #

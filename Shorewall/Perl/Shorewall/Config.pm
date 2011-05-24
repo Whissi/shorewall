@@ -352,7 +352,8 @@ my  $first_entry;            # Message to output or function to call on first no
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
-our $debug;                  # If true, use Carp to report errors with stack trace.
+our $debug;                  # Global debugging flag
+my  $confess;                # If true, use Carp to report errors with stack trace.   
 
 our $family;                 # Protocol family (4 or 6)
 our $toolname;               # Name of the tool to use (iptables or iptables6)
@@ -655,6 +656,7 @@ sub initialize( $ ) {
     $shorewall_dir = '';      #Shorewall Directory
 
     $debug = 0;
+    $confess = 0;
     
     %params = ( root        => '',
 		system      => '',
@@ -700,7 +702,7 @@ sub warning_message
 	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
     }
 
-    if ( $debug ) {
+    if ( $confess ) {
 	print STDERR longmess( "   WARNING: @_$currentlineinfo" );
 	print $log   longmess( "   WARNING: @_$currentlineinfo\n" ) if $log;
     } else {
@@ -754,7 +756,7 @@ sub fatal_error	{
 	our @localtime = localtime;
 	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
-	if ( $debug ) {
+	if ( $confess ) {
 	    print $log longmess( "   ERROR: @_$currentlineinfo\n" );
 	} else {
 	    print $log "   ERROR: @_$currentlineinfo\n";
@@ -765,7 +767,7 @@ sub fatal_error	{
     }
 
     cleanup;
-    confess "   ERROR: @_$currentlineinfo" if $debug;
+    confess "   ERROR: @_$currentlineinfo" if $confess;
     die "   ERROR: @_$currentlineinfo\n";
 }
 
@@ -1222,8 +1224,10 @@ sub set_config_path( $ ) {
 #
 # Set $debug
 #
-sub set_debug( $ ) {
-    $debug = shift;
+sub set_debug( $$ ) {
+    $debug   = shift;
+    $confess = shift;
+    $confess ||= $debug;
 }
 
 #

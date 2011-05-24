@@ -379,6 +379,7 @@ compiler() {
     [ -n "$g_preview" ] && options="$options --preview"
     [ "$g_debugging" = trace ] && options="$options --debug"
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
+    [ -n "$g_confess" ] && options="$options --confess"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -575,6 +576,10 @@ compile_command() {
 			    g_debug=Yes;
 			    option=${option#d}
 			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
+			    ;;
 			-)
 			    finished=1
 			    option=
@@ -657,8 +662,12 @@ check_command() {
 			    option=${option#d}
 			    ;;
 			r*)
-			    g_preview=Yes;
+			    g_preview=Yes
 			    option=${option#r}
+			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
 			    ;;
 			*)
 			    usage 1
@@ -1504,6 +1513,7 @@ g_use_verbosity=
 g_debug=
 g_export=
 g_refreshchains=:none:
+g_confess=
 
 #
 # Make sure that these variables are cleared

@@ -1,0 +1,40 @@
+#
+# Shorewall6 version 4 - Audited AllowICMPs Action
+#
+# /usr/share/shorewall6/action.AAllowICMPs
+#
+#	This action A_ACCEPTs needed ICMP types
+#
+###############################################################################
+#TARGET		SOURCE		DEST	PROTO		DEST
+#							PORT(S)	
+COMMENT Needed ICMP types (RFC4890)
+
+A_ACCEPT	-		-	ipv6-icmp	destination-unreachable
+A_ACCEPT	-		-	ipv6-icmp	packet-too-big
+A_ACCEPT	-		-	ipv6-icmp	time-exceeded
+A_ACCEPT	-		-	ipv6-icmp	parameter-problem
+
+# The following should have a ttl of 255 and must be allowed to transit a bridge
+A_ACCEPT	-		-	ipv6-icmp	router-solicitation
+A_ACCEPT	-		-	ipv6-icmp	router-advertisement
+A_ACCEPT	-		-	ipv6-icmp	neighbour-solicitation
+A_ACCEPT	-		-	ipv6-icmp	neighbour-advertisement
+A_ACCEPT	-		-	ipv6-icmp	137	# Redirect
+A_ACCEPT	-		-	ipv6-icmp	141	# Inverse neighbour discovery solicitation
+A_ACCEPT	-		-	ipv6-icmp	142	# Inverse neighbour discovery advertisement
+
+# The following should have a link local source address and must be allowed to transit a bridge
+A_ACCEPT	fe80::/10	-	ipv6-icmp	130	# Listener query
+A_ACCEPT	fe80::/10	-	ipv6-icmp	131	# Listener report
+A_ACCEPT	fe80::/10	-	ipv6-icmp	132	# Listener done
+A_ACCEPT	fe80::/10	-	ipv6-icmp	143	# Listener report v2
+
+# The following should be received with a ttl of 255 and must be allowed to transit a bridge
+A_ACCEPT	-		-	ipv6-icmp	148	# Certificate path solicitation
+A_ACCEPT	-		-	ipv6-icmp	149	# Certificate path advertisement
+
+# The following should have a link local source address and a ttl of 1 and must be allowed to transit abridge
+A_ACCEPT	fe80::/10	-	ipv6-icmp	151	# Multicast router advertisement
+A_ACCEPT	fe80::/10	-	ipv6-icmp	152	# Multicast router solicitation
+A_ACCEPT	fe80::/10	-	ipv6-icmp	153	# Multicast router termination

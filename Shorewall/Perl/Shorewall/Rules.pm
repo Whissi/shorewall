@@ -636,8 +636,6 @@ sub apply_policy_rules() {
 sub complete_standard_chain ( $$$$ ) {
     my ( $stdchainref, $zone, $zone2, $default ) = @_;
 
-    add_rule $stdchainref, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" unless $config{FASTACCEPT};
-
     run_user_exit $stdchainref;
 
     my $ruleschainref = $filter_table->{rules_chain( ${zone}, ${zone2} ) } || $filter_table->{rules_chain( 'all', 'all' ) };
@@ -1217,11 +1215,16 @@ sub prevent_hairpins() {
     for my $interface (all_interfaces) {
 	my $interfaceref = find_interface( $interface );
        
-	add_jump( $filter_table->{forward_chain $interface},
-		  $target,
-		  1,
-		  match_dest_dev( $interface ) )
-	    unless $interfaceref->{routefilter} || $interfaceref->{options}{routeback} || $interfaceref->{options}{ignore};
+	if ( $interfaceref->{bridge} eq $interface ) {
+	    #
+	    # It is not possible to block these attempts on a bridge :-(
+	    #
+	    add_jump( $filter_table->{forward_chain $interface},
+		      $target,
+		      1,
+		      match_dest_dev( $interface ) )
+		unless $interfaceref->{optiones}{routefilter} || $interfaceref->{options}{routeback} || $interfaceref->{options}{ignore};
+	}	    
     }
 }
 

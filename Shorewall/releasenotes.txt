@@ -19,6 +19,33 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     did not specify a number. Now, the compiler selects the lowest
     unallocated number when no device number is explicitly allocated.
 
+2)  Eric Leblond, creator of NuFW, has discovered an exploit that
+    allows locally-connected hosts to poke holes in the firewall. The
+    known ways to protect against the exploit are:
+
+    a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4.
+    b)  Insert a DROP rule that prevents hairpinning (routeback). The rule
+        must be inserted before any RELATED firewall rules.  This 
+        approach is not appropriate for bridges.
+
+    To deal with this issue, Shorewall will insert a hairpin-prevention
+    rule for each interface that has none of these options:
+
+    - ignore
+    - routeback
+    - routefilter
+         
+    To control logging and auditing of these DROP operations, two new
+    options are added to shorewall.conf (shorewall6.conf):
+
+    - ROUTEBACK_LOG_LEVEL - Default is 'info'. If you don't want these
+                            DROPs logged, set ROUTEBACK_LOG_LEVEL=none
+
+    - ROUTEBACK_AUDIT     - Defaults to 'No'; 'Yes' causes auditing.
+
+    This leaves IPv6 bridges still unprotected unless each of its ports 
+    is described as bridge ports in /etc/shorewall/interfaces.
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

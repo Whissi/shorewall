@@ -158,7 +158,7 @@ sub process_accounting_rule( ) {
     our $disposition = '';
 
     sub reserved_chain_name($) {
-	$_[0] =~ /^acc(?:ount(?:fwd|in|ing|out)|ipsecin|ipsecout)$/;
+	$_[0] =~ /^acc(?:ount(?:fwd|in|ing|out|pre|post)|ipsecin|ipsecout)$/;
     }
 
     sub ipsec_chain_name($) {

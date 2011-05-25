@@ -447,6 +447,7 @@ sub initialize( $ ) {
 	  LOG_MARTIANS => undef,
 	  LOG_VERBOSITY => undef,
 	  STARTUP_LOG => undef,
+	  ROUTEBACK_LOG_LEVEL => undef,
 	  #
 	  # Location of Files
 	  #
@@ -550,6 +551,7 @@ sub initialize( $ ) {
 	  TCP_FLAGS_DISPOSITION => undef,
 	  BLACKLIST_DISPOSITION => undef,
 	  SMURF_DISPOSITION => undef,
+	  ROUTEBACK_DISPOSITION => undef,
 	  #
 	  # Mark Geometry
 	  #
@@ -3376,6 +3378,14 @@ sub get_configuration( $ ) {
 
     default_log_level 'SMURF_LOG_LEVEL',     '';
     default_log_level 'LOGALLNEW',           '';
+
+    default_log_level 'ROUTEBACK_LOG_LEVEL', 'info';
+    
+    if ( $val = $config{ROUTEBACK_DISPOSITION} ) {
+	fatal_error "Invalid ROUTEBACK_DISPOSITION setting ($val)" unless $val =~ /^(?:A_)?DROP$/;
+    } else {
+	$config{ROUTEBACK_DISPOSITION} = 'DROP';
+    }
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {
 	if ( $val =~ /^(?:A_)?DROP$/ ) {

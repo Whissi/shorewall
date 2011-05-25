@@ -49,6 +49,7 @@ our @EXPORT = qw(
 		  process_actions
 		  process_rules
 		  verify_audit
+		  prevent_hairpins
 	       );
 
 our @EXPORT_OK = qw( initialize );
@@ -650,6 +651,8 @@ sub complete_standard_chain ( $$$$ ) {
     policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }
 
+sub require_audit($$);
+
 #
 # Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
 #
@@ -1182,7 +1185,46 @@ sub require_audit($$) {
 
     return ensure_audit_chain $target, $action;
 }   
+  
+#
+# Generate rules to prevent hairpins
+#
+sub prevent_hairpins() {
+    my $loglevel = $config{ROUTEBACK_LOG_LEVEL};
+    my $target   = $config{ROUTEBACK_DISPOSITION};
+    my $audit    = $target eq 'A_DROP';
+
+    require_capability 'AUDIT_TARGET' , 'ROUTEBACK_DISPOSITION=A_DROP', 's' if $audit;
     
+    if ( $loglevel ) {
+	my $chainref = new_standard_chain 'routeback';
+	log_rule $loglevel , $chainref , $target, '';
+
+	if ( $audit ) {
+	    if ( $config{FAKE_AUDIT} ) {
+		add_jump( $chainref, 'AUDIT', 0, '-m comment --comment "--type drop"' , 0 );
+	    } else {
+		add_rule $chainref, 'AUDIT --type drop';
+	    }
+	}
+	
+	add_jump $chainref, $target, 1;
+	$target = $chainref;
+    } else {
+	$target = require_audit( 'DROP', $audit ? 'audit' : '' );
+    }
+
+    for my $interface (all_interfaces) {
+	my $interfaceref = find_interface( $interface );
+       
+	add_jump( $filter_table->{forward_chain $interface},
+		  $target,
+		  1,
+		  match_dest_dev( $interface ) )
+	    unless $interfaceref->{routefilter} || $interfaceref->{options}{routeback} || $interfaceref->{options}{ignore};
+    }
+}
+
 #
 # The following small functions generate rules for the builtin actions of the same name
 #

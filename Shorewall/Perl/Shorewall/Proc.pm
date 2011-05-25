@@ -106,7 +106,7 @@ sub setup_route_filtering() {
 
 	my $val = '';
 
-	if ( $config{ROUTE_FILTER} ne '' ) {
+	if ( $config ne '' ) {
 	    $val = $config eq 'on' ? 1 : $config eq 'off' ? 0 : $config;
 
 	    emit ( 'for file in /proc/sys/net/ipv4/conf/*; do',

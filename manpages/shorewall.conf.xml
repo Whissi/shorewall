@@ -622,6 +622,41 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">FILTER_DISPOSITION=</emphasis>[<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.20. Determines the disposition of
+          packets matching the <option>filter</option> option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
+          of <firstterm>hairpin</firstterm> packets on interfaces without the
+          <option>routeback</option> option.<footnote>
+              <para>Hairpin packets are packets that are routed out of the
+              same interface that they arrived on.</para>
+            </footnote> interfaces without the routeback option.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">FILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added on Shorewall 4.4.20. Determines the logging of packets
+          matching the <option>filter</option> option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
+          of <firstterm>hairpin</firstterm> packets on interfaces without the
+          <option>routeback</option> option.<footnote>
+              <para>Hairpin packets are packets that are routed out of the
+              same interface that they arrived on.</para>
+            </footnote> interfaces without the routeback option. The default
+          is <option>info</option>. If you don't wish for these packets to be
+          logged, use FILTER_LOG_LEVEL=none.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">FORWARD_CLEAR_MARK=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 

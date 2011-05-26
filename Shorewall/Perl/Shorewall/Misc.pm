@@ -469,27 +469,65 @@ sub add_common_rules() {
     my $rule;
     my $list;
     my $chain;
+    my $dynamicref;
 
-    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "-m state --state NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
+    my $state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
     my $level     = $config{BLACKLIST_LOGLEVEL};
     my $rejectref = $filter_table->{reject};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
 	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
 	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), ' ' , 'reject' , $level ;
-	$chainref = dont_optimize( new_standard_chain( 'dynamic' ) );
-	add_jump $filter_table->{$_}, $chainref, 0, $state for qw( INPUT FORWARD );
-	add_commands( $chainref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
+	$dynamicref = dont_optimize( new_standard_chain( 'dynamic' ) );
+	add_jump $filter_table->{INPUT}, $dynamicref, 0, $state;
+	add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
     }
 
     setup_mss;
 
     if ( $config{FASTACCEPT} ) {
-	add_rule( $filter_table->{$_} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT FORWARD OUTPUT );
+	add_rule( $filter_table->{$_} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT OUTPUT );
+    }
+
+    my $policy   = $config{FILTER_DISPOSITION};
+    $level       = $config{FILTER_LOG_LEVEL};
+    my $audit    = $policy =~ s/^A_//;
+
+    if ( $level || $audit ) {
+	$chainref = new_standard_chain 'filter';
+
+	log_rule $level , $chainref , $policy , '' if $level ne '';
+	
+	add_rule( $chainref, '-j AUDIT --type ' . lc $policy ) if $audit;
+	
+	add_jump $chainref, $policy eq 'REJECT' ? 'reject' : $policy , 1;
+	
+	$target = 'filter';
+    } elsif ( ( $target = $policy ) eq 'REJECT' ) {
+	$target = 'reject';
     }
 
     for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
+
+	my $interfaceref = find_interface $interface;
+
+	unless ( $interfaceref->{options}{ignore} ) {
+
+	    my @filters = @{$interfaceref->{filter}};
+	
+	    $chainref = $filter_table->{forward_chain $interface};
+	
+	    if ( @filters ) {
+		add_jump( $chainref , $target, 1, match_source_net( $_ ) ), $chainref->{filtered}++ for @filters;
+	    } elsif ( $interfaceref->{bridge} eq $interface ) {
+		add_jump( $chainref , $target, 1, match_dest_dev( $interface ) ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
+	    }
+	
+	    add_rule( $chainref, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};
+	    add_jump( $chainref, $dynamicref, 0, $state ), $chainref->{filtered}++ if $dynamicref;
+
+	}
     }
 
     run_user_exit1 'initdone';
@@ -1175,7 +1213,7 @@ sub generate_matrix() {
     my @vservers = vserver_zones;
     
     my $notrackref = $raw_table->{notrack_chain $fw};
-    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "-m state --state NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
+    my $state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? "$globals{STATEMATCH} NEW,INVALID,UNTRACKED " : "$globals{STATEMATCH} NEW,INVALID " : '';
     my $interface_jumps_added = 0;
 
     our %input_jump_added   = ();

@@ -153,7 +153,7 @@ my  %reservedName = ( all => 1,
 #                                     zone        => <zone name>
 #                                     multizone   => undef|1   #More than one zone interfaces through this interface
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
-#                                     bridge      => <bridge>
+#                                     bridge      => <bridge name>
 #                                     ports       => <number of port on this bridge>
 #                                     ipsec       => undef|1 # Has an ipsec host group
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
@@ -245,6 +245,7 @@ sub initialize( $ ) {
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
+				  filter      => IPLIST_IF_OPTION,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
@@ -277,6 +278,7 @@ sub initialize( $ ) {
 	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
+				    filter      => IPLIST_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -864,7 +866,8 @@ sub chain_base($) {
 #
 sub process_interface( $$ ) {
     my ( $nextinum, $export ) = @_;
-    my $netsref = '';
+    my $netsref   = '';
+    my $filterref = [];
     my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file';
     my $zoneref;
     my $bridge = '';
@@ -1055,6 +1058,12 @@ sub process_interface( $$ ) {
 		    # Assume 'broadcast'
 		    #
 		    $hostoptions{broadcast} = 1;
+		} elsif ( $option eq 'filter' ) {
+		    warning_message "filter is ineffective with FASTACCEPT=Yes" if $config{FASTACCEPT};
+
+		    $filterref = [ split_list $value, 'address' ];
+		    
+		    validate_net( $_, 1) for @{$filterref}
 		} else {
 		    assert(0);
 		}
@@ -1102,6 +1111,7 @@ sub process_interface( $$ ) {
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
 						       bridge     => $bridge ,
+						       filter     => $filterref ,
 						       nets       => 0 ,
 						       number     => $nextinum ,
 						       root       => $root ,

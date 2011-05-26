@@ -19,32 +19,57 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     did not specify a number. Now, the compiler selects the lowest
     unallocated number when no device number is explicitly allocated.
 
-2)  Eric Leblond, creator of NuFW, has discovered an exploit that
-    allows locally-connected hosts to poke holes in the firewall. The
-    known ways to protect against the exploit are:
+2)  Network developers have discovered an exploit that allows hosts to
+    poke holes in the firewall. The known ways to protect against the
+    exploit are:
 
-    a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4.
+    a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4
+    	and can't be used with some multi-ISP configurations.
+
     b)  Insert a DROP rule that prevents hairpinning (routeback). The rule
-        must be inserted before any RELATED firewall rules.  This 
-        approach is not appropriate for bridges.
+        must be inserted before any ESTABLISHED,RELATED firewall rules.
+        This approach is not appropriate for bridges and other cases,
+        where the 'routeback' option is specified or implied.
 
-    To deal with this issue, Shorewall will insert a hairpin-prevention
-    rule for each interface that has none of these options:
+    For non-bridges, Shorewall will insert a hairpin rule, provided
+    that the following options are not specified:
 
-    - ignore
-    - routeback
     - routefilter
-         
-    To control logging and auditing of these DROP operations, two new
-    options are added to shorewall.conf (shorewall6.conf):
+    - routeback
 
-    - ROUTEBACK_LOG_LEVEL - Default is 'info'. If you don't want these
-                            DROPs logged, set ROUTEBACK_LOG_LEVEL=none
+    The rule will handle hairpins according to the setting of two new
+    options in shorewall.conf and shorewall6.conf:
 
-    - ROUTEBACK_AUDIT     - Defaults to 'No'; 'Yes' causes auditing.
+    FILTER_LOG_LEVEL specifies the logging level; default is 'info'.
+    		     To omit logging, specify FILTER_LOG_LEVEL=none.
 
-    This leaves IPv6 bridges still unprotected unless each of its ports 
-    is described as bridge ports in /etc/shorewall/interfaces.
+    FILTER_DISPOSITION specifies the disposition. Default is DROP and
+    the possible values are DROP, A_DROP, REJECT and A_REJECT.
+
+    To deal with bridges and other routeback interfaces , there is now
+    a 'filter' option in /shorewall/interfaces and
+    /etc/shorewall6/interfaces.
+
+    The value of the 'filter' option is a list of addresses enclosed in
+    in parentheses. Where only a single address is listed, the
+    parentheses may be deleted. When a packet from a filtered address
+    is received on the interface, it is handled based on the new
+    options described above.
+
+    For each bridge, you should list all of your other local networks
+    (those networks not attached to the bridge) in the bridge's filter
+    list.
+
+    Example:
+
+	My DMZ is 2001:470:b:227::40/124
+
+	My local interface (br1) is a bridge.
+
+	In /etc/shorewall6/interfaces, I have:
+
+	#ZONE INTERFACE BROADCAST OPTIONS
+	loc   br1       -         filter=2001:470:b:227::40/124
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G

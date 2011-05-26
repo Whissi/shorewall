@@ -763,10 +763,6 @@ sub compiler {
     #
     setup_mac_lists 1;
     #
-    # Prevent Hairpins on non-routeback interfaces 
-    #
-    prevent_hairpins;
-    #
     # Process the rules file.
     #
     process_rules;

@@ -313,6 +313,18 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
+              <term>filter=(<emphasis>net</emphasis>[,...])</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.20. This option should be used on
+                bridges or other interfaces with the
+                <option>routeback</option> option. On these interfaces, it
+                should list those local networks that are not routed out of
+                the bridge or interface.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis
               role="bold">logmartians[={0|1}]</emphasis></term>
 
@@ -518,6 +530,10 @@ loc     eth2            -</programlisting>
                 required when you have used a wildcard in the INTERFACE column
                 if you want to allow traffic between the interfaces that match
                 the wildcard.</para>
+
+                <para>Beginning with Shorewall 4.4.20, if you specify this
+                option, then you should also specify <option>filter</option>;
+                see above.</para>
               </listitem>
             </varlistentry>
 

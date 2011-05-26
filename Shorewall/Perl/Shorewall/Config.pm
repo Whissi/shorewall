@@ -447,7 +447,7 @@ sub initialize( $ ) {
 	  LOG_MARTIANS => undef,
 	  LOG_VERBOSITY => undef,
 	  STARTUP_LOG => undef,
-	  ROUTEBACK_LOG_LEVEL => undef,
+	  FILTER_LOG_LEVEL => undef,
 	  #
 	  # Location of Files
 	  #
@@ -551,7 +551,7 @@ sub initialize( $ ) {
 	  TCP_FLAGS_DISPOSITION => undef,
 	  BLACKLIST_DISPOSITION => undef,
 	  SMURF_DISPOSITION => undef,
-	  ROUTEBACK_DISPOSITION => undef,
+	  FILTER_DISPOSITION => undef,
 	  #
 	  # Mark Geometry
 	  #
@@ -3379,12 +3379,13 @@ sub get_configuration( $ ) {
     default_log_level 'SMURF_LOG_LEVEL',     '';
     default_log_level 'LOGALLNEW',           '';
 
-    default_log_level 'ROUTEBACK_LOG_LEVEL', 'info';
+    default_log_level 'FILTER_LOG_LEVEL', 'info';
     
-    if ( $val = $config{ROUTEBACK_DISPOSITION} ) {
-	fatal_error "Invalid ROUTEBACK_DISPOSITION setting ($val)" unless $val =~ /^(?:A_)?DROP$/;
+    if ( $val = $config{FILTER_DISPOSITION} ) {
+	fatal_error "Invalid FILTER_DISPOSITION setting ($val)" unless $val =~ /^(A_)?(DROP|REJECT)$/;
+	require_capability 'AUDIT_TARGET' , "FILTER_DISPOSITION=$val", 's' if $1;
     } else {
-	$config{ROUTEBACK_DISPOSITION} = 'DROP';
+	$config{FILTER_DISPOSITION} = 'DROP';
     }
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {

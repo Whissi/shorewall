@@ -226,6 +226,7 @@ our $VERSION = '4.4_20';
 #                                               restricted   => Logical OR of restrictions of rules in this chain.
 #                                               restriction  => Restrictions on further rules in this chain.
 #                                               audit        => Audit the result.
+#                                               filtered     => Number of filter rules at the front of an interface forward chain
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -834,6 +835,12 @@ sub move_rules( $$ ) {
 	my $count     = @{$chain1->{rules}};
 	my $tableref  = $chain_table{$chain1->{table}};
 	my $blacklist = $chain2->{blacklist};
+	my $filtered;
+	my $filtered1 = $chain1->{filtered};
+	my $filtered2 = $chain2->{filtered};
+	my @filtered1;
+	my @filtered2;
+	my $rule;
 
 	assert( ! $chain1->{blacklist} );
 	#
@@ -844,9 +851,20 @@ sub move_rules( $$ ) {
 	for ( @{$chain1->{rules}} ) {
 	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
 	}
+	#
+	# We set aside the filtered rules for the time being
+	#
+	$filtered = $filtered1;
+	
+	push @filtered1 , shift @{$chain1->{rules}} while $filtered--;
+
+	$chain1->{filtered} = 0;
+	
+	$filtered = $filtered2;
+	push @filtered2 , shift @{$chain2->{rules}} while $filtered--;
 
 	if ( $debug ) {
-	    my $rule = $blacklist;
+	    my $rule = $blacklist + $filtered2;
 	    trace( $chain2, 'A', ++$rule, $_ ) for @{$chain1->{rules}};
 	}
 
@@ -866,6 +884,25 @@ sub move_rules( $$ ) {
 	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
 	}
 
+	#
+	# Now insert the filter rules at the head of the chain (before blacklist rules)
+	#
+
+	if ( $filtered1 ) {
+	    if ( $debug ) {
+		$rule = $filtered2;
+		$filtered = 0;
+		trace( $chain2, 'I', ++$rule, $filtered1[$filtered++] ) while $filtered < $filtered1;
+	    }
+
+	    splice @{$rules}, 0, 0, @filtered1;
+	    
+	}
+    
+	splice @{$rules}, 0, 0, @filtered2;
+	   
+	$chain2->{filtered} = $filtered1 + $filtered2;
+	
 	delete_chain $chain1;
 
 	$count;
@@ -1206,7 +1243,9 @@ sub new_chain($$)
 		     log            => 1,
 		     cmdlevel       => 0,
 		     references     => {},
-		     blacklist => 0 };
+		     blacklist      => 0,
+		     filtered       => 0
+		   };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
 
@@ -4275,11 +4314,11 @@ sub promote_blacklist_rules() {
 		    # rule to the head of one of those chains
 		    $copied++;
 		    #
-		    # Copy the blacklist rule to the head of the parent chain unless it
-		    # already has a blacklist rule.
+		    # Copy the blacklist rule to the head of the parent chain (after any
+		    # filter rules) unless it already has a blacklist rule.
 		    #
 		    unless ( $chain2ref->{blacklist} ) {
-			unshift @{$chain2ref->{rules}}, $rule;
+			splice @{$chain2ref->{rules}}, $chain2ref->{filtered}, 0, $rule;
 			add_reference $chain2ref, $chainbref;
 			$chain2ref->{blacklist} = 1;
 		    }

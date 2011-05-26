@@ -610,7 +610,7 @@ sub compiler {
     # Chain table initialization depends on shorewall.conf and capabilities. So it must be deferred until
     # shorewall.conf has been processed and the capabilities have been determined.
     #
-    initialize_chain_table;
+    initialize_chain_table(1);
 
     #
     # Allow user to load Perl modules
@@ -817,7 +817,7 @@ sub compiler {
 	# for stopping the firewall
 	#
 	Shorewall::Chains::initialize( $family, 0 , $export );
-	initialize_chain_table;
+	initialize_chain_table(0);
 	#
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
@@ -881,7 +881,7 @@ sub compiler {
 	# environment that it would when called by compile_stop_firewall().
 	#
 	Shorewall::Chains::initialize( $family , 0 , $export );
-	initialize_chain_table;
+	initialize_chain_table(0);
 
 	if ( $debug ) {
 	    compile_stop_firewall( $test, $export );

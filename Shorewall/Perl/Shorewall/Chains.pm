@@ -1542,8 +1542,9 @@ sub ensure_manual_chain($) {
 # Add all builtin chains to the chain table -- it is separate from initialize() because it depends on capabilities and configuration.
 # The function also initializes the target table with the pre-defined targets available for the specfied address family.
 #
-sub initialize_chain_table()
-{
+sub initialize_chain_table($) {
+    my $full = shift;
+
     if ( $family == F_IPV4 ) {
 	#
 	#   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
@@ -1638,11 +1639,13 @@ sub initialize_chain_table()
 	}
     }
 
-    #
-    # Create these chains early in case they are needed by Policy actions
-    #
-    dont_delete new_standard_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
-    dont_move   new_standard_chain 'reject';
+    if ( $full ) {
+	#
+	# Create these chains early in case they are needed by Policy actions
+	#
+	dont_delete new_standard_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
+	dont_move   new_standard_chain 'reject';
+    }
 }
 
 #

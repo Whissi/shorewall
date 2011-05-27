@@ -899,7 +899,19 @@ sub move_rules( $$ ) {
 	    
 	}
     
-	splice @{$rules}, 0, 0, @filtered2;
+	#
+	# Restore the filters originally in chain2 but drop duplicates of those from $chain1
+	#
+      FILTER:
+	while ( @filtered2 ) {
+	    $filtered = pop @filtered2;
+	    
+	    for ( $rule = 0; $rule < $filtered1; $rule++ ) {
+		$filtered2--, next FILTER if ${$rules}[$rule] eq $filtered;
+	    }
+	    
+	    unshift @{$rules}, $filtered;
+	}
 	   
 	$chain2->{filtered} = $filtered1 + $filtered2;
 	

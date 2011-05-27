@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                   S H O R E W A L L  4 . 4 . 20  Beta 5
+                   S H O R E W A L L  4 . 4 . 20  RC 1.
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -26,10 +26,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4
     	and can't be used with some multi-ISP configurations.
 
-    b)  Insert a DROP rule that prevents hairpinning (routeback). The rule
-        must be inserted before any ESTABLISHED,RELATED firewall rules.
-        This approach is not appropriate for bridges and other cases,
-        where the 'routeback' option is specified or implied.
+    b)  Insert a DROP rule that prevents hairpinning (routeback). The
+        rule must be inserted before any ESTABLISHED,RELATED firewall
+        rules. This approach is not appropriate for bridges and other
+        cases, where the 'routeback' option is specified or implied.
 
     For non-routeback interfaces, Shorewall and Shorewall6 will insert
     a hairpin rule, provided that the routefilter option is not

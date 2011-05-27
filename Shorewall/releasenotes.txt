@@ -20,7 +20,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     unallocated number when no device number is explicitly allocated.
 
 2)  Network developers have discovered an exploit that allows hosts to
-    poke holes in the firewall. The known ways to protect against the
+    poke holes in a firewall. The known ways to protect against the
     exploit are:
 
     a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4
@@ -31,34 +31,33 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
         This approach is not appropriate for bridges and other cases,
         where the 'routeback' option is specified or implied.
 
-    For non-bridges, Shorewall will insert a hairpin rule, provided
-    that the following options are not specified:
+    For non-routeback interfaces, Shorewall and Shorewall6 will insert
+    a hairpin rule, provided that the routefilter option is not
+    specified. The rule will dispose of hairpins according to the
+    setting of two new options in shorewall.conf and shorewall6.conf:
 
-    - routefilter
-    - routeback
+    FILTER_LOG_LEVEL
+	Specifies the logging level; default is 'info'. To omit
+	logging, specify FILTER_LOG_LEVEL=none.
 
-    The rule will handle hairpins according to the setting of two new
-    options in shorewall.conf and shorewall6.conf:
 
-    FILTER_LOG_LEVEL specifies the logging level; default is 'info'.
-    		     To omit logging, specify FILTER_LOG_LEVEL=none.
-
-    FILTER_DISPOSITION specifies the disposition. Default is DROP and
-    the possible values are DROP, A_DROP, REJECT and A_REJECT.
+    FILTER_DISPOSITION
+	Specifies the disposition. Default is DROP and the possible
+	values are DROP, A_DROP, REJECT and A_REJECT.
 
     To deal with bridges and other routeback interfaces , there is now
     a 'filter' option in /shorewall/interfaces and
     /etc/shorewall6/interfaces.
 
-    The value of the 'filter' option is a list of addresses enclosed in
-    in parentheses. Where only a single address is listed, the
-    parentheses may be deleted. When a packet from a filtered address
-    is received on the interface, it is handled based on the new
-    options described above.
+    The value of the 'filter' option is a list of network addresses
+    enclosed in in parentheses. Where only a single address is listed,
+    the parentheses may be omitted. When a packet from a filtered
+    address is received on the interface, it is disposed of based on
+    the new FILTER_ options described above.
 
-    For each bridge, you should list all of your other local networks
-    (those networks not attached to the bridge) in the bridge's filter
-    list.
+    For a bridge or other routeback interface, you should list all of
+    your other local networks (those networks not attached to the
+    bridge) in the bridge's filter list.
 
     Example:
 

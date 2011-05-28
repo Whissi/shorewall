@@ -530,6 +530,11 @@ sub add_common_rules() {
 	}
     }
 
+    #
+    # Delete 'sfilter' chain unless there are referenced to it
+    #
+    $chainref->{referenced} = 0 unless @{($chainref = $filter_table->{sfilter})->{referenced}};
+
     run_user_exit1 'initdone';
 
     setup_blacklist;

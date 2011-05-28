@@ -822,6 +822,20 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">IPSECFILE=zones</emphasis></term>
+
+        <listitem>
+          <para>This option indicates that zone-related ipsec information is
+          found in the zones file (<ulink
+          url="shorewall-zones.html">shorewall-zones</ulink>(5)). The option
+          indicates to the compiler that this is not a legacy configuration
+          where the ipsec information was contained in a separate file. The
+          value of this option must not be changed and the option must not be
+          deleted.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">IPSET</emphasis>=[<emphasis>pathname</emphasis>]</term>
 
@@ -1472,17 +1486,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           the pathname specified by this option does not exist or the named
           file is not executable, then Shorewall falls back to
           <filename>/usr/bin/perl/</filename></para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">PKTTYPE=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para><emphasis role="bold">Obsolete</emphasis> - This option is
-          included for compatibility with older Shorewall releases. Its
-          setting has no effect.</para>
         </listitem>
       </varlistentry>
 

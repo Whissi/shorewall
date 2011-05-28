@@ -1139,6 +1139,8 @@ sub map_old_actions( $ ) {
 sub ensure_audit_chain( $;$ ) {
     my ( $target, $action ) = @_;
 
+    push_comment( '' );
+
     my $ref = $filter_table->{$target};
 
     unless ( $ref ) {
@@ -1161,6 +1163,8 @@ sub ensure_audit_chain( $;$ ) {
 	    add_rule $ref , "-j $action";
 	}
     }
+
+    pop_comment;
 
     return $target;
 }

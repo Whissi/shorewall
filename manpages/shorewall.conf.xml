@@ -186,6 +186,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">ACCOUNTING_TABLE=</emphasis>[<emphasis
+        role="bold">filter</emphasis>|<emphasis
+        role="bold">mangle</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.20. This setting determines which
+          Netfilter table the accounting rules are added in. By default,
+          ACCOUNTING_TABLE=filter is assumed. See also <ulink
+          url="shorewall-accounting.html">shorewall-accounting</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">ADD_IP_ALIASES=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -618,41 +631,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             <para>FASTACCEPT=Yes is incompatible with
             BLACKLISTNEWONLY=No.</para>
           </note>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">FILTER_DISPOSITION=</emphasis>[<emphasis
-        role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
-
-        <listitem>
-          <para>Added in Shorewall 4.4.20. Determines the disposition of
-          packets matching the <option>filter</option> option (see <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
-          of <firstterm>hairpin</firstterm> packets on interfaces without the
-          <option>routeback</option> option.<footnote>
-              <para>Hairpin packets are packets that are routed out of the
-              same interface that they arrived on.</para>
-            </footnote> interfaces without the routeback option.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis
-        role="bold">FILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
-
-        <listitem>
-          <para>Added on Shorewall 4.4.20. Determines the logging of packets
-          matching the <option>filter</option> option (see <ulink
-          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
-          of <firstterm>hairpin</firstterm> packets on interfaces without the
-          <option>routeback</option> option.<footnote>
-              <para>Hairpin packets are packets that are routed out of the
-              same interface that they arrived on.</para>
-            </footnote> interfaces without the routeback option. The default
-          is <option>info</option>. If you don't wish for these packets to be
-          logged, use FILTER_LOG_LEVEL=none.</para>
         </listitem>
       </varlistentry>
 
@@ -1220,6 +1198,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">MANGLE_ENABLED=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Determines whether Shorewall will generate rules in the
+          Netfilter mangle table. Setting MANGLE_ENABLED=No disables all
+          Shorewall features that require the mangle table. The default is
+          MANGLE_ENABLED=Yes.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MAPOLDACTIONS=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -1646,6 +1636,41 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           role="bold">shorewall save</emphasis> commands and restored by the
           <emphasis role="bold">shorewall start</emphasis> and <emphasis
           role="bold">shorewall restore</emphasis> commands.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SFILTER_DISPOSITION=</emphasis>[<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.20. Determines the disposition of
+          packets matching the <option>filter</option> option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
+          of <firstterm>hairpin</firstterm> packets on interfaces without the
+          <option>routeback</option> option.<footnote>
+              <para>Hairpin packets are packets that are routed out of the
+              same interface that they arrived on.</para>
+            </footnote> interfaces without the routeback option.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">SFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added on Shorewall 4.4.20. Determines the logging of packets
+          matching the <option>filter</option> option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
+          of <firstterm>hairpin</firstterm> packets on interfaces without the
+          <option>routeback</option> option.<footnote>
+              <para>Hairpin packets are packets that are routed out of the
+              same interface that they arrived on.</para>
+            </footnote> interfaces without the routeback option. The default
+          is <option>info</option>. If you don't wish for these packets to be
+          logged, use FILTER_LOG_LEVEL=none.</para>
         </listitem>
       </varlistentry>
 

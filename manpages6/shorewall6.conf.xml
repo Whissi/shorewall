@@ -184,6 +184,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">ACCOUNTING_TABLE=</emphasis>[<emphasis
+        role="bold">filter</emphasis>|<emphasis
+        role="bold">mangle</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.20. This setting determines which
+          Netfilter table the accounting rules are added in. By default,
+          ACCOUNTING_TABLE=filter is assumed. See also <ulink
+          url="shorewall-accounting.html">shorewall-accounting</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">ADMINISABSENTMINDED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -440,6 +453,26 @@
           <command>shorewall6 reject</command>, <command>shorewall6
           logdrop</command> and <command>shorewall6 logreject</command> is
           disabled. Default is <emphasis role="bold">Yes</emphasis>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">EXPAND_POLICIES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Normally, when the SOURCE or DEST columns in
+          shorewall-policy(5) contains 'all', a single policy chain is created
+          and the policy is enforced in that chain. For example, if the policy
+          entry is<programlisting>#SOURCE DEST POLICY LOG
+#                   LEVEL
+net     all  DROP   info</programlisting>then the chain name is 'net2all'
+          which is also the chain named in Shorewall log messages generated as
+          a result of the policy. If EXPAND_POLICIES=Yes, then Shorewall will
+          create a separate chain for each pair of zones covered by the
+          policy. This makes the resulting log messages easier to interpret
+          since the chain in the messages will have a name of the form 'a2b'
+          where 'a' is the SOURCE zone and 'b' is the DEST zone.</para>
         </listitem>
       </varlistentry>
 
@@ -998,6 +1031,18 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">MANGLE_ENABLED=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Determines whether Shorewall will generate rules in the
+          Netfilter mangle table. Setting MANGLE_ENABLED=No disables all
+          Shorewall features that require the mangle table. The default is
+          MANGLE_ENABLED=Yes.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">MARK_IN_FORWARD_CHAIN=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
@@ -1333,6 +1378,41 @@
           url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)).
           If set to the empty value ( SMURF_LOG_LEVEL="" ) then smurfs are not
           logged.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SFILTER_DISPOSITION=</emphasis>[<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.20. Determines the disposition of
+          packets matching the <option>filter</option> option (see <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5))
+          and of <firstterm>hairpin</firstterm> packets on interfaces without
+          the <option>routeback</option> option.<footnote>
+              <para>Hairpin packets are packets that are routed out of the
+              same interface that they arrived on.</para>
+            </footnote> interfaces without the routeback option.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">SFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added on Shorewall 4.4.20. Determines the logging of packets
+          matching the <option>filter</option> option (see <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5))
+          and of <firstterm>hairpin</firstterm> packets on interfaces without
+          the <option>routeback</option> option.<footnote>
+              <para>Hairpin packets are packets that are routed out of the
+              same interface that they arrived on.</para>
+            </footnote> interfaces without the routeback option. The default
+          is <option>info</option>. If you don't wish for these packets to be
+          logged, use FILTER_LOG_LEVEL=none.</para>
         </listitem>
       </varlistentry>
 

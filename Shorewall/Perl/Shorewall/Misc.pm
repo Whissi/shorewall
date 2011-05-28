@@ -529,6 +529,10 @@ sub add_common_rules() {
 
 	}
     }
+    #
+    # Delete 'sfilter' chain unless it has been referenced
+    #
+    $chainref->{referenced} = 0 unless @{$chainref = filter_table-{sfilter}}->{references};
 
     run_user_exit1 'initdone';
 

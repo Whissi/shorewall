@@ -36,28 +36,28 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     specified. The rule will dispose of hairpins according to the
     setting of two new options in shorewall.conf and shorewall6.conf:
 
-    FILTER_LOG_LEVEL
+    SFILTER_LOG_LEVEL
 	Specifies the logging level; default is 'info'. To omit
 	logging, specify FILTER_LOG_LEVEL=none.
 
 
-    FILTER_DISPOSITION
+    SFILTER_DISPOSITION
 	Specifies the disposition. Default is DROP and the possible
 	values are DROP, A_DROP, REJECT and A_REJECT.
 
     To deal with bridges and other routeback interfaces , there is now
-    a 'filter' option in /shorewall/interfaces and
+    an 'sfilter' option in /shorewall/interfaces and
     /etc/shorewall6/interfaces.
 
-    The value of the 'filter' option is a list of network addresses
+    The value of the 'sfilter' option is a list of network addresses
     enclosed in in parentheses. Where only a single address is listed,
-    the parentheses may be omitted. When a packet from a filtered
-    address is received on the interface, it is disposed of based on
-    the new FILTER_ options described above.
+    the parentheses may be omitted. When a packet from a
+    source-filtered address is received on the interface, it is
+    disposed of based on the new SFILTER_ options described above.
 
     For a bridge or other routeback interface, you should list all of
     your other local networks (those networks not attached to the
-    bridge) in the bridge's filter list.
+    bridge) in the bridge's sfilter list.
 
     Example:
 
@@ -68,7 +68,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	In /etc/shorewall6/interfaces, I have:
 
 	#ZONE INTERFACE BROADCAST OPTIONS
-	loc   br1       -         filter=2001:470:b:227::40/124
+	loc   br1       -         sfilter=2001:470:b:227::40/124
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G

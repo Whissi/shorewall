@@ -245,7 +245,6 @@ sub initialize( $ ) {
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
-				  filter      => IPLIST_IF_OPTION,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
@@ -256,6 +255,7 @@ sub initialize( $ ) {
 				  required    => SIMPLE_IF_OPTION,
 				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				  routefilter => NUMERIC_IF_OPTION ,
+				  sfilter     => IPLIST_IF_OPTION,
 				  sourceroute => BINARY_IF_OPTION,
 				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  upnp        => SIMPLE_IF_OPTION,
@@ -278,7 +278,6 @@ sub initialize( $ ) {
 	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
-				    filter      => IPLIST_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -286,6 +285,7 @@ sub initialize( $ ) {
 				    proxyndp    => BINARY_IF_OPTION,
 				    required    => SIMPLE_IF_OPTION,
 				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
+				    sfilter     => IPLIST_IF_OPTION,
 				    sourceroute => BINARY_IF_OPTION,
 				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
@@ -1058,8 +1058,8 @@ sub process_interface( $$ ) {
 		    # Assume 'broadcast'
 		    #
 		    $hostoptions{broadcast} = 1;
-		} elsif ( $option eq 'filter' ) {
-		    warning_message "filter is ineffective with FASTACCEPT=Yes" if $config{FASTACCEPT};
+		} elsif ( $option eq 'sfilter' ) {
+		    warning_message "sfilter is ineffective with FASTACCEPT=Yes" if $config{FASTACCEPT};
 
 		    $filterref = [ split_list $value, 'address' ];
 		    

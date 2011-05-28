@@ -489,12 +489,12 @@ sub add_common_rules() {
 	add_rule( $filter_table->{$_} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT OUTPUT );
     }
 
-    my $policy   = $config{FILTER_DISPOSITION};
-    $level       = $config{FILTER_LOG_LEVEL};
+    my $policy   = $config{SFILTER_DISPOSITION};
+    $level       = $config{SFILTER_LOG_LEVEL};
     my $audit    = $policy =~ s/^A_//;
 
     if ( $level || $audit ) {
-	$chainref = new_standard_chain 'filter';
+	$chainref = new_standard_chain 'sfilter';
 
 	log_rule $level , $chainref , $policy , '' if $level ne '';
 	
@@ -502,7 +502,7 @@ sub add_common_rules() {
 	
 	add_jump $chainref, $policy eq 'REJECT' ? 'reject' : $policy , 1;
 	
-	$target = 'filter';
+	$target = 'sfilter';
     } elsif ( ( $target = $policy ) eq 'REJECT' ) {
 	$target = 'reject';
     }
@@ -529,10 +529,6 @@ sub add_common_rules() {
 
 	}
     }
-    #
-    # Delete 'sfilter' chain unless it has been referenced
-    #
-    $chainref->{referenced} = 0 unless @{$chainref = filter_table-{sfilter}}->{references};
 
     run_user_exit1 'initdone';
 

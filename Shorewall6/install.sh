@@ -104,6 +104,7 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall6"
 fi
 
+PLAIN=
 DEBIAN=
 CYGWIN=
 MAC=
@@ -172,6 +173,9 @@ while [ $# -gt 0 ] ; do
 	    ;;
 	-s)
 	    SPARSE=Yes
+	    ;;
+	-p)
+	    PLAIN=Yes
 	    ;;
 	*)
 	    usage 1
@@ -296,14 +300,13 @@ fi
 #
 # Install the config file
 #
-run_install $OWNERSHIP -m 0644 shorewall6.conf ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
-run_install $OWNERSHIP -m 0644 shorewall6.conf.default ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf.default
+run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
 
 perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall6/configfiles:/usr/share/shorewall6|;' ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
 perl -p -w -i -e 's|^STARTUP_LOG=.*|STARTUP_LOG=/var/log/shorewall6-lite-init.log|;' ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
 
 if [ ! -f ${DESTDIR}/etc/shorewall6/shorewall6.conf ]; then
-   run_install $OWNERSHIP -m 0644 shorewall6.conf ${DESTDIR}/etc/shorewall6/shorewall6.conf
+   run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf ${DESTDIR}/etc/shorewall6/shorewall6.conf
 
    if [ -n "$DEBIAN" ] && mywhich perl; then
        #
@@ -319,16 +322,6 @@ fi
 if [ -n "$ARCHLINUX" ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall6/shorewall6.conf
 fi
-#
-# Install the zones file
-#
-run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/usr/share/shorewall6/configfiles/zones
-
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/zones ]; then
-    run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/etc/shorewall6/zones
-    echo "Zones file installed as ${DESTDIR}/etc/shorewall6/zones"
-fi
-
 delete_file ${DESTDIR}/usr/share/shorewall6/compiler
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.accounting
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.actions
@@ -351,6 +344,64 @@ install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall6/wait4ifup 0755
 
 echo
 echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall6/wait4ifup"
+
+#
+# Install the Modules file
+#
+run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall6/modules
+echo "Modules file installed as ${DESTDIR}/usr/share/shorewall6/modules"
+
+for f in modules.*; do
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall6/$f
+    echo "Modules file $f installed as ${DESTDIR}/usr/share/shorewall6/$f"
+done
+
+#
+# Install the Module Helpers file
+#
+run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}/usr/share/shorewall6/helpers
+echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall6/helpers"
+
+#
+# Install the default config path file
+#
+install_file configpath ${DESTDIR}/usr/share/shorewall6/configpath 0644
+echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall6/configpath"
+#
+# Install the Standard Actions file
+#
+install_file actions.std ${DESTDIR}/usr/share/shorewall6/actions.std 0644
+echo "Standard actions file installed as ${DESTDIR}/usr/shared/shorewall6/actions.std"
+
+if [ -n "$PLAIN" ]; then
+    mkdir plain
+    cp configfiles/* plain/
+    cd plain
+    for f in *.plain; do
+	mv -f $f ${f%.plain}
+    done
+else
+    pushd configfiles > /dev/null
+fi
+#
+# Install the init file
+#
+run_install $OWNERSHIP -m 0644 init ${DESTDIR}/usr/share/shorewall6/configfiles/init
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/init ]; then
+    run_install $OWNERSHIP -m 0600 init ${DESTDIR}/etc/shorewall6/init
+    echo "Init file installed as ${DESTDIR}/etc/shorewall6/init"
+fi
+
+#
+# Install the zones file
+#
+run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/usr/share/shorewall6/configfiles/zones
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/zones ]; then
+    run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/etc/shorewall6/zones
+    echo "Zones file installed as ${DESTDIR}/etc/shorewall6/zones"
+fi
 
 #
 # Install the policy file
@@ -418,23 +469,6 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/maclist ]; then
     run_install $OWNERSHIP -m 0600 maclist ${DESTDIR}/etc/shorewall6/maclist
     echo "MAC list file installed as ${DESTDIR}/etc/shorewall6/maclist"
 fi
-#
-# Install the Modules file
-#
-run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall6/modules
-echo "Modules file installed as ${DESTDIR}/usr/share/shorewall6/modules"
-
-for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall6/$f
-    echo "Modules file $f installed as ${DESTDIR}/usr/share/shorewall6/$f"
-done
-
-#
-# Install the Module Helpers file
-#
-run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}/usr/share/shorewall6/helpers
-echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall6/helpers"
-
 #
 # Install the TC Rules file
 #
@@ -560,20 +594,6 @@ run_install $OWNERSHIP -m 0644 secmarks ${DESTDIR}/usr/share/shorewall6/configfi
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/secmarks ]; then
     run_install $OWNERSHIP -m 0600 secmarks ${DESTDIR}/etc/shorewall6/secmarks
     echo "Secmarks file installed as ${DESTDIR}/etc/shorewall6/secmarks"
-fi
-#
-# Install the default config path file
-#
-install_file configpath ${DESTDIR}/usr/share/shorewall6/configpath 0644
-echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall6/configpath"
-#
-# Install the init file
-#
-run_install $OWNERSHIP -m 0644 init ${DESTDIR}/usr/share/shorewall6/configfiles/init
-
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/init ]; then
-    run_install $OWNERSHIP -m 0600 init ${DESTDIR}/etc/shorewall6/init
-    echo "Init file installed as ${DESTDIR}/etc/shorewall6/init"
 fi
 #
 # Install the start file
@@ -704,12 +724,6 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/proxyndp ]; then
 fi
 
 #
-# Install the Standard Actions file
-#
-install_file actions.std ${DESTDIR}/usr/share/shorewall6/actions.std 0644
-echo "Standard actions file installed as ${DESTDIR}/usr/shared/shorewall6/actions.std"
-
-#
 # Install the Actions file
 #
 run_install $OWNERSHIP -m 0644 actions ${DESTDIR}/usr/share/shorewall6/configfiles/actions
@@ -718,6 +732,10 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/actions ]; then
     run_install $OWNERSHIP -m 0644 actions ${DESTDIR}/etc/shorewall6/actions
     echo "Actions file installed as ${DESTDIR}/etc/shorewall6/actions"
 fi
+
+cd ..
+
+[ -n "$PLAIN" ] && rm -rf plain/
 
 #
 # Install the  Makefiles

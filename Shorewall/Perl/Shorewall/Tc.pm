@@ -331,18 +331,18 @@ sub process_tc_rule( ) {
 			    if ( defined $m1 && $m1 ne '' ) {
 				$val = numeric_value ($m1);
 				fatal_error "Invalid Mask ($m1)" unless defined $val && $val && $val <= 0xffffffff;
-				$mask1 = $m1;
+				$mask1 = in_hex ( $m1 & 0xffffffff );
 			    }
 
 			    if ( defined $m2 && $m2 ne '' ) {
 				$val = numeric_value ($m2);
 				fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
-				$mask2 = $m2;
+				$mask2 = in_hex ( $m2 & 0xffffffff );
 			    }
 
 			    if ( defined $s ) {
 				$val = numeric_value ($s);
-				fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val < 128;
+				fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val >= 0 && $val < 128;
 				$shift = $s;
 			    }
 			} else {

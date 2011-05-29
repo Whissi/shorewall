@@ -73,6 +73,10 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 3)  The obsolete PKTTYPE option has been removed from shorewall.conf
     and the associated manpage.
 
+4)  The iptables 1.4.11 release produces an error when negative numbers
+    are specified for IPMARK mask values. Shorewall now converts such
+    numbers to their 32-bit hex equivalent.
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------
@@ -225,7 +229,16 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 9)  A '-T' (trace) option has been added to the 'check' and 'compile'
     commands. When a warning or error message is generated, a Perl
     stack trace is included to aid in isolating the source of the
-    message. 
+    message.
+
+10) The Shorewall and Shorewall6 configuration files (including the
+    samples) are now annotated with documentation from the associated
+    manpage. 
+
+    The installers for these two packages support a -p (plain)
+    option that installs unannotated versions of the packages. Both
+    versions are available in the configfiles directory within the
+    tarball.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S

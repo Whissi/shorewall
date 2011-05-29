@@ -1031,6 +1031,39 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">MACLIST_TTL=[</emphasis><emphasis>number</emphasis>]</term>
+
+        <listitem>
+          <para>The performance of configurations with a large numbers of
+          entries in <ulink
+          url="shorewall-maclist.html">shorewall-maclist</ulink>(5) can be
+          improved by setting the MACLIST_TTL variable in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+
+          <para>If your iptables and kernel support the "Recent Match" (see
+          the output of "shorewall check" near the top), you can cache the
+          results of a 'maclist' file lookup and thus reduce the overhead
+          associated with MAC Verification.</para>
+
+          <para>When a new connection arrives from a 'maclist' interface, the
+          packet passes through then list of entries for that interface in
+          <ulink url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
+          there is a match then the source IP address is added to the 'Recent'
+          set for that interface. Subsequent connection attempts from that IP
+          address occurring within $MACLIST_TTL seconds will be accepted
+          without having to scan all of the entries. After $MACLIST_TTL from
+          the first accepted connection request from an IP address, the next
+          connection request from that IP address will be checked against the
+          entire list.</para>
+
+          <para>If MACLIST_TTL is not specified or is specified as empty (e.g,
+          MACLIST_TTL="" or is specified as zero then 'maclist' lookups will
+          not be cached).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MANGLE_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 

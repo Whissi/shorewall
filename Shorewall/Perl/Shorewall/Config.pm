@@ -3403,7 +3403,7 @@ sub get_configuration( $ ) {
 
 	require_capability 'AUDIT_TARGET' , "MACLIST_DISPOSITION=$val", 's' if $val =~ /^A_/;
     } else {
-	$config{MACLIST_DISPOSITION} = 'reject';
+	$globals{MACLIST_TARGET} = 'reject';
     }
 
     if ( $val = $config{MACLIST_TABLE} ) {

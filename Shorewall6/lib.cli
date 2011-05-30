@@ -1345,6 +1345,7 @@ determine_capabilities() {
     MARK_ANYWHERE=
     HEADER_MATCH=
     ACCOUNT_TARGET=
+    AUDIT_TARGET=
 
     chain=fooX$$
 
@@ -1569,7 +1570,8 @@ report_capabilities() {
 	report_capability "fwmark route mask" $FWMARK_RT_MASK
 	report_capability "Mark in any table" $MARK_ANYWHERE
 	report_capability "Header Match" $HEADER_MATCH
-	report_capability "ACCOUNT Match" $ACCOUNT_TARGET
+	report_capability "ACCOUNT Target" $ACCOUNT_TARGET
+	report_capability "AUDIT Target" $AUDIT_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1634,6 +1636,7 @@ report_capabilities1() {
     report_capability1 MARK_ANYWHERE
     report_capability1 HEADER_MATCH
     report_capability1 ACCOUNT_TARGET
+    report_capability1 AUDIT_TARGET
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION    

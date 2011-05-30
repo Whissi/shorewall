@@ -1733,7 +1733,7 @@ sub process_host( ) {
 		fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^\+[a-zA-Z][-\w]*$/;
 	    }
 
-	    fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
+	    fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}

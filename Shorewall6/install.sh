@@ -162,27 +162,45 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-while [ $# -gt 0 ] ; do
-    case "$1" in
-	-h|help|?)
-	    usage 0
-	    ;;
-        -v)
-	    echo "Shorewall6 Firewall Installer Version $VERSION"
-	    exit 0
-	    ;;
-	-s)
-	    SPARSE=Yes
-	    ;;
-	-p)
-	    PLAIN=Yes
+finished=0
+
+while [ $finished -eq 0 ]; do
+    option=$1
+
+    case "$option" in
+	-*)
+	    option=${option#-}
+	    
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "Shorewall6 Firewall Installer Version $VERSION"
+			exit 0
+			;;
+		    s*)
+			SPARSE=Yes
+			option=${option#s}
+			;;
+		    p*)
+			PLAIN=Yes
+			option=${option#p}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
 	    ;;
 	*)
-	    usage 1
+	    [ -n "$option" ] && usage 1
+	    finished=1
 	    ;;
     esac
-    shift
-    ARGS="yes"
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin

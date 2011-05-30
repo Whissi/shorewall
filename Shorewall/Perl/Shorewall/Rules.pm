@@ -1160,7 +1160,7 @@ sub ensure_audit_chain( $;$ ) {
 	if ( $action eq 'REJECT' ) {
 	    add_jump $ref , 'reject', 1;
 	} else {
-	    add_rule $ref , "-j $action";
+	    add_jump $ref , $action, 0;
 	}
     }
 

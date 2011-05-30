@@ -203,8 +203,10 @@ sub setup_blacklist() {
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit  = $disposition =~ /^A_/;
-    my $target = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my $audit       = $disposition =~ /^A_/;
+    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my $orig_target = $target;
+    
     #
     # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
     # for 'refresh' to work properly.
@@ -280,7 +282,9 @@ sub setup_blacklist() {
 		    } else {
 			warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
 
-			$tgt = verify_audit( 'A_' . $target );
+			
+
+			$tgt = verify_audit( 'A_' . $target, $orig_target );
 		    }
 		}
 

@@ -1632,12 +1632,12 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 #
 # Confirm that we have AUDIT_TARGET capability and ensure the appropriate AUDIT chain.
 #
-sub verify_audit($) {
+sub verify_audit($;$) {
     my ($target, $audit ) = @_;
 
     require_capability 'AUDIT_TARGET', "$target rules", '';
 
-    return ensure_audit_chain $target;
+    return ensure_audit_chain $target, $audit;
 }
 
 #

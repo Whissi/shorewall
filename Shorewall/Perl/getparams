@@ -21,8 +21,13 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-. /usr/share/shorewall/lib.base
-. /usr/share/shorewall/lib.cli
+if [ "$3" = 6 ]; then
+    . /usr/share/shorewall6/lib.base
+    . /usr/share/shorewall6/lib.cli
+else
+    . /usr/share/shorewall/lib.base
+    . /usr/share/shorewall/lib.cli
+fi
 
 CONFIG_PATH="$2"
 

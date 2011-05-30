@@ -2941,7 +2941,7 @@ sub get_params() {
     if ( -f $fn ) {
 	progress_message2 "Processing $fn ...";
 
-	my $command = "$FindBin::Bin/getparams $fn " . join( ':', @config_path );
+	my $command = "$FindBin::Bin/getparams $fn " . join( ':', @config_path ) . " $family";
 	#
 	# getparams silently sources the params file under 'set -a', then executes 'export -p'
 	#

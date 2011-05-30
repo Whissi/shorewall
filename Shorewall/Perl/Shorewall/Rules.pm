@@ -66,7 +66,7 @@ my %default_actions;
 
 my %macros;
 
-my $family;
+our $family;
 
 my @builtins;
 

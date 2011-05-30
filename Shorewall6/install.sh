@@ -399,7 +399,7 @@ if [ -n "$PLAIN" ]; then
 	mv -f $f ${f%.plain}
     done
 else
-    pushd configfiles > /dev/null
+    cd configfiles
 fi
 #
 # Install the init file

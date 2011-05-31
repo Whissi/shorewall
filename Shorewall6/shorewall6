@@ -1827,6 +1827,16 @@ case "$COMMAND" in
 	get_config
 	allow_command $@
 	;;
+    add)
+	get_config
+	shift
+	add_command $@
+	;;
+    delete)
+	get_config
+	shift
+	delete_command $@
+	;;
     save)
 	get_config
 	[ -n "$g_debugging" ] && set -x

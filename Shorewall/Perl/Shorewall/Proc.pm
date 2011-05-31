@@ -227,6 +227,10 @@ sub setup_forwarding( $$ ) {
 	}
 
 	emit '';
+
+	emit ( '        echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables' ,
+	       ''
+	     ) if have_bridges;
     } else {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit '        echo 1 > /proc/sys/net/ipv6/conf/all/forwarding';
@@ -237,6 +241,10 @@ sub setup_forwarding( $$ ) {
 	}
 
 	emit '';
+
+	emit ( '        echo 1 > /proc/sys/net/bridge/bridge-nf-call-ip6tables' ,
+	       ''
+	     ) if have_bridges;
 
 	my $interfaces = find_interfaces_by_option 'forward';
 

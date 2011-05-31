@@ -85,7 +85,12 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 6)  Shorewall now sets /proc/sys/net/bridge/bridge_nf_call_iptables or
     /proc/sys/net/bridge/bridge_nf_call_ip6tables when there are
     interfaces with the 'bridge' option. This insures that netfilter
-    rules are invoked for bridged traffic.
+    rules are invoked for bridged traffic. Previously, Shorewall was
+    not setting these flags with the possible result that a
+    bridge/firewall would not work properly.
+
+7)  Problem corrections released in 4.4.19.1-4.4.19.4 (see below)
+    are also included in this release.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G

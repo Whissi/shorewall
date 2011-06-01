@@ -672,12 +672,6 @@ sub compiler {
     #
     add_common_rules;
     #
-    # Process policy actions
-    #
-    disable_script;
-
-    enable_script;
-    #
     # More /proc
     #
     if ( $family == F_IPV4 ) {

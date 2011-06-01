@@ -201,9 +201,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
     g)  The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
         an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
-        performed by the action to be audited. This allows creation of
-        audited versions of the Shorewall-provided default actions
-        (action.Drop and action.Reject).
+        performed by the action to be audited.
 
 	Note: The builtin actions are those actions listed in the
 	output of 'shorewall show actions' with names begin with a
@@ -215,9 +213,9 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 		rejNonSyn(audit)	net		all
 
     h)  There are audited versions of the standard Default Actions
-    	named ADrop and AReject. Note that these audit everything that
-    	they do so you will probably want to make your own copies and
-    	modify them to only audit the packets that you care about. 
+    	named A_Drop and A_Reject. Note that these audit everything
+    	that they do so you will probably want to make your own copies
+    	and modify them to only audit the packets that you care about. 
 
 6)  Up to this release, the behaviors of 'start -f' and 'restart -f'
     has been inconsistent. The 'start -f' command  compares the
@@ -228,7 +226,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     To make the two consistent, a new LEGACY_FASTSTART option has been
     added. The default value when the option isn't specified is
     LEGACY_FASTSTART=Yes which preserves the old behavior. When
-    LEGACY_FASTSTART=No, 'start -f' and 'restart -f' compare with
+    LEGACY_FASTSTART=No, 'start -f' and 'restart -f' both compare with
     /var/lib/shorewall[6]/firewall.
 
 7)  A '-c' (compile) option has been added to the 'start' and 'restart'

@@ -90,7 +90,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">CHAIN:STATE -
-        {P|I|F|O|T}[:{N|E|ER}]</emphasis></term>
+        {P|I|F|O|T}[:{N|NI|E|ER}]</emphasis></term>
 
         <listitem>
           <para>This column determines the CHAIN where the SElinux context is
@@ -109,11 +109,13 @@
           </simplelist>
 
           <para>It may be optionally followed by a colon and an indication of
-          the connection state(s) at which the context is to be
+          the Netfilter connection state(s) at which the context is to be
           applied:</para>
 
           <simplelist>
             <member>:N - NEW connection</member>
+
+            <member>:NI - NEW or INVALID connection</member>
 
             <member>:E - ESTABLISHED connection</member>
 

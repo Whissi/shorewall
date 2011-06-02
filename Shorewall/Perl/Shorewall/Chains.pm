@@ -2920,7 +2920,9 @@ sub record_runtime_address( $ ) {
 
 #
 # If the passed address is a run-time address variable for an optional interface, then
-# begin a conditional rule block that tests the address for nil.
+# begin a conditional rule block that tests the address for nil. Returns 1 if a conditional
+# block was opened. The caller stores the result, and if the result is true the caller 
+# invokes conditional_rule_end() when the conditional block is complete.
 #
 sub conditional_rule( $$ ) {
     my ( $chainref, $address ) = @_;
@@ -2941,7 +2943,8 @@ sub conditional_rule( $$ ) {
 }
 
 #
-# If end a conditional in a chain
+# End a conditional in a chain begun by conditional_rule(). Should only be called
+# if conditional_rule() returned true.
 #
 
 sub conditional_rule_end( $ ) {

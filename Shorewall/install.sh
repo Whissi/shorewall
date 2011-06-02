@@ -106,7 +106,6 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall"
 fi
 
-PLAIN=
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 [ -n "${LIBEXEC:=/usr/share}" ]

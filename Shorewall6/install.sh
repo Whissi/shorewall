@@ -104,7 +104,6 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall6"
 fi
 
-PLAIN=
 DEBIAN=
 CYGWIN=
 MAC=

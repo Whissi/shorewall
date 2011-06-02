@@ -1604,6 +1604,7 @@ sub process_secmark_rule() {
 		 O => 'tcout'   , );
 
     my %state = ( N =>  'NEW' ,
+		  I => 'INVALID',
 		  NI => 'NEW,INVALID',
 		  E =>  'ESTABLISHED' ,
 		  ER => 'ESTABLISHED,RELATED',

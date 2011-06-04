@@ -203,7 +203,7 @@ sub setup_blacklist() {
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit       = $disposition =~ /^A_/;
+    my $audit       = $disposition =~ s/^A_//;
     my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
     my $orig_target = $target;
     
@@ -233,7 +233,7 @@ sub setup_blacklist() {
 	    $target = 'blacklog';
 	} elsif ( $audit ) {
 	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
-	    $target = verify_audit( $disposition );
+	    $target = verify_audit( $config{BLACKLIST_DISPOSITION} );
 	}	    
     }
 

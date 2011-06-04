@@ -203,7 +203,7 @@ sub setup_blacklist() {
     my $chainref;
     my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit       = $disposition =~ s/^A_//;
+    my $audit       = $disposition =~ /^A_/;
     my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
     my $orig_target = $target;
     
@@ -217,6 +217,9 @@ sub setup_blacklist() {
 
 	if ( defined $level && $level ne '' ) {
 	    my $logchainref = new_standard_chain 'blacklog';
+
+	    $target =~ s/A_//;
+	    $target = 'reject' if $target eq 'REJECT';
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
@@ -233,7 +236,7 @@ sub setup_blacklist() {
 	    $target = 'blacklog';
 	} elsif ( $audit ) {
 	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
-	    $target = verify_audit( $config{BLACKLIST_DISPOSITION} );
+	    $target = verify_audit( $disposition );
 	}	    
     }
 
@@ -259,7 +262,11 @@ sub setup_blacklist() {
 
 		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file';
 
-		$options = 'src' if $options eq '-';
+		if ( $options eq '-' ) {
+		    $options = 'src';
+		} elsif ( $options eq 'audit' ) {
+		    $options = 'audit,src';
+		}
 
 		my ( $to, $from, $whitelist, $auditone ) = ( 0, 0, 0, 0 );
 
@@ -284,7 +291,7 @@ sub setup_blacklist() {
 
 			
 
-			$tgt = verify_audit( 'A_' . $target, $orig_target );
+			$tgt = verify_audit( 'A_' . $target, $orig_target, $target );
 		    }
 		}
 

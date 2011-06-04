@@ -648,7 +648,7 @@ sub complete_standard_chain ( $$$$ ) {
     policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }
 
-sub require_audit($$);
+sub require_audit($$;$);
 
 #
 # Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
@@ -1136,8 +1136,8 @@ sub map_old_actions( $ ) {
 #
 # Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
 
-sub ensure_audit_chain( $;$ ) {
-    my ( $target, $action ) = @_;
+sub ensure_audit_chain( $;$$ ) {
+    my ( $target, $action, $tgt ) = @_;
 
     push_comment( '' );
 
@@ -1149,7 +1149,9 @@ sub ensure_audit_chain( $;$ ) {
 	unless ( $action ) {
 	    $action = $target;
 	    $action =~ s/^A_//;
-	} 
+	}
+
+	$tgt ||= $action;
 
 	if ( $config{FAKE_AUDIT} ) {
 	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
@@ -1157,10 +1159,11 @@ sub ensure_audit_chain( $;$ ) {
 	    add_rule $ref, '-j AUDIT --type ' . lc $action;
 	}
 
-	if ( $action eq 'REJECT' ) {
+	
+	if ( $tgt eq 'REJECT' ) {
 	    add_jump $ref , 'reject', 1;
 	} else {
-	    add_jump $ref , $action, 0;
+	    add_jump $ref , $tgt, 0;
 	}
     }
 
@@ -1173,8 +1176,8 @@ sub ensure_audit_chain( $;$ ) {
 # Return the appropriate target based on whether the second argument is 'audit'
 #
 
-sub require_audit($$) {
-    my ($action, $audit ) = @_;
+sub require_audit($$;$) {
+    my ($action, $audit, $tgt ) = @_;
 
     return $action unless defined $audit and $audit ne '';
 
@@ -1184,7 +1187,7 @@ sub require_audit($$) {
 
     require_capability 'AUDIT_TARGET', 'audit', 's';
 
-    return ensure_audit_chain $target, $action;
+    return ensure_audit_chain $target, $action, $tgt;
 }   
   
 #
@@ -1632,12 +1635,12 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 #
 # Confirm that we have AUDIT_TARGET capability and ensure the appropriate AUDIT chain.
 #
-sub verify_audit($;$) {
-    my ($target, $audit ) = @_;
+sub verify_audit($;$$) {
+    my ($target, $audit, $tgt ) = @_;
 
     require_capability 'AUDIT_TARGET', "$target rules", '';
 
-    return ensure_audit_chain $target, $audit;
+    return ensure_audit_chain $target, $audit, $tgt;
 }
 
 #

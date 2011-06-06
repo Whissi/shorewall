@@ -333,7 +333,6 @@ our $family;
 #
 my  %builtin_target = ( ACCEPT      => 1,
 			ACCOUNT     => 1,
-			AUDIT       => 1,
 			CHAOS       => 1,
 			CHECKSUM    => 1,
 			CLASSIFY    => 1,
@@ -1657,7 +1656,12 @@ sub initialize_chain_table($) {
 	#
 	# Create these chains early in case they are needed by Policy actions
 	#
-	dont_delete new_standard_chain 'AUDIT', 0 if $config{FAKE_AUDIT};
+	if ( $config{FAKE_AUDIT} ) {
+	    dont_delete new_standard_chain 'AUDIT', 0;
+	} else {
+	    $builtin_target{AUDIT} = 111;
+	}
+
 	dont_move   new_standard_chain 'reject';
     }
 }

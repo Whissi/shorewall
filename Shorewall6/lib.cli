@@ -292,37 +292,6 @@ do_save() {
 	status=1
     fi
 
-    case ${SAVE_IPSETS:=No} in
-	[Yy]es)
-	    case ${IPSET:=ipset} in
-		*/*)
-		    if [ ! -x "$IPSET" ]; then
-			error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
-			IPSET=
-		    fi
-		    ;;
-		*)
-		    IPSET="$(mywhich $IPSET)"
-		    [ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
-		    ;;
-	    esac
-
-	    if [ -n "$IPSET" ]; then
-		if eval $IPSET -S > ${VARDIR}/ipsets.tmp; then
-                    #
-                    # Don't save an 'empty' file
-                    #
-		    grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
-		fi
-	    fi
-	    ;;
-	[Nn]o)
-	    ;;
-	*)
-	    error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
-	    ;;
-    esac
-
     return $status
 }
 
@@ -386,34 +355,6 @@ show_routing() {
 	heading "Routing Table"
 	ip -6 route list
     fi
-}
-
-#
-# 'list dynamic' command executor
-#
-find_sets() {
-    local junk
-    local setname
-
-    ipset -L -n | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
-}
-
-list_zone() {
-
-    local sets
-    local setname
-
-    [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
-
-    sets=$(find_sets $1)
-
-    for setname in $sets; do
-	echo "${setname#${1}_}:"
-	ipset -L $setname -n | awk 'BEGIN        {prnt=0;}; \
-                                    /^Members:/  {prnt=1; next; }; \
-                                    /^Bindings:/ {prnt=0; }; \
-                                                 { if (prnt == 1) print "   ", $1; };'
-    done
 }
 
 #
@@ -731,13 +672,6 @@ show_command() {
 	    fi
 
 	    if [ $# -gt 0 ]; then
-		if [ $1 = dynamic -a $# -gt 1 ]; then
-		    shift
-		    [ $# -eq 1 ] || usage 1
-		    list_zone $1
-		    return;
-                fi
-
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IP6TABLES -t $table -L $chain $g_ipt_options; then
 			error_message "ERROR: Chain '$chain' is not recognized by $IP6TABLES."
@@ -1000,6 +934,13 @@ restore_command() {
     [ -n "$nolock" ] || mutex_on
 
     if [ -x $g_restorepath ]; then
+	if [ -x ${g_restorepath}-ipsets ] ; then
+	    echo Restoring Ipsets...
+	    $IP6TABLES -F
+	    $IP6TABLES -X
+	    $SHOREWALL_SHELL ${g_restorepath}-ipsets
+	fi
+
 	progress_message3 "Restoring Shorewall6..."
 
 	run_it $g_restorepath restore && progress_message3 "$g_product restored from ${VARDIR}/$RESTOREFILE"
@@ -1142,191 +1083,6 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 	echo "$1 $finished"
 	shift
     done
-}
-
-#
-# Replace commas with spaces and echo the result
-#
-separate_list() {
-    local list
-    list="$@"
-    local part
-    local newlist
-    local firstpart
-    local lastpart
-    local enclosure
-
-    case "$list" in
-	*,|,*|*,,*|*[[:space:]]*)
-	    #
-	    # There's been whining about us not catching embedded white space in
-	    # comma-separated lists. This is an attempt to snag some of the cases.
-	    #
-            echo "WARNING -- invalid comma-separated list \"$@\"" >&2
-	    ;;
-	*\[*\]*)
-	    #
-	    # Where we need to embed comma-separated lists within lists, we enclose them
-	    # within square brackets.
-	    #
-	    firstpart=${list%%\[*}
-	    lastpart=${list#*\[}
-	    enclosure=${lastpart%%\]*}
-	    lastpart=${lastpart#*\]}
-	    case $lastpart in
-		\,*)
-		    case $firstpart in
-			*\,)
-			    echo "$(separate_list ${firstpart%,}) [$enclosure] $(separate_list ${lastpart#,})"
-			    ;;
-			*)
-			    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
-			    ;;
-		    esac
-		    ;;
-		*)
-		    case $firstpart in
-			*\,)
-			    echo "$(separate_list ${firstpart%,}) [$enclosure]$(separate_list $lastpart)"
-			    ;;
-			*)
-			    echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
-			    ;;
-		    esac
-		    ;;
-	    esac
-	    return
-	    ;;
-    esac
-
-    list="$@"
-    part="${list%%,*}"
-    newlist="$part"
-
-    while [ "x$part" != "x$list" ]; do
-	list="${list#*,}";
-	part="${list%%,*}";
-	newlist="$newlist $part";
-    done
-
-    echo "$newlist"
-}
-
-#
-# add command executor
-#
-add_command() {
-    local interface host hostlist zone ipset
-    if ! shorewall_is_started ; then
-	echo "Shorewall Not Started" >&2
-	exit 2
-    fi
-
-    case "$IPSET" in
-	*/*)
-	    ;;
-	*)
-	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
-	    ;;
-    esac
-    #
-    # Normalize host list
-    #
-    while [ $# -gt 1 ]; do
-	interface=${1%%:*}
-	host=${1#*:}
-	[ "$host" = "$1" ] && host=
-
-	if [ -z "$host" ]; then
-	    hostlist="$hostlist $interface:::/0"
-	else
-	    for h in $(separate_list $host); do
-		hostlist="$hostlist $interface:$h"
-	    done
-	fi
-
-	shift
-    done
-
-    zone=$1
-
-    for host in $hostlist; do
-	interface=${host%:*}
-
-	ipset=${zone}_${interface};
-
-	if ! qt $IPSET -L $ipset -n; then
-	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
-	fi
-
-	host=${host#*:}
-
-	if $IPSET -A $ipset $host; then
-	    echo "Host $interface:$host added to zone $zone"
-	else
-	    fatal_error "Unable to add $interface:$host to zone $zone"
-	fi
-    done
-
-}
-
-#
-# delete command executor
-#
-delete_command() {
-    local interface host hostent hostlist zone ipset
-    if ! shorewall_is_started ; then
-	echo "Shorewall Not Started" >&2
-	exit 2;
-    fi
-
-    case "$IPSET" in
-	*/*)
-	    ;;
-	*)
-	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
-	    ;;
-    esac
-
-    #
-    # Normalize host list
-    #
-    while [ $# -gt 1 ]; do
-	interface=${1%%:*}
-	host=${1#*:}
-	[ "$host" = "$1" ] && host=
-
-	if [ -z "$host" ]; then
-	    hostlist="$hostlist $interface:::/0"
-	else
-	    for h in $(separate_list $host); do
-		hostlist="$hostlist $interface:$h"
-	    done
-	fi
-
-	shift
-    done
-
-    zone=$1
-
-    for hostent in $hostlist; do
-	interface=${hostent%:*}
-
-	ipset=${zone}_${interface};
-
-	if ! qt $IPSET -L $ipset -n; then
-	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
-	fi
-
-	host=${hostent#*:}
-
-	if $IPSET -D $ipset $host; then
-	    echo "Host $hostend deleted from zone $zone"
-	else
-	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
-	fi
-    done
-
 }
 
 #
@@ -1778,8 +1534,10 @@ report_capabilities() {
 	report_capability "IP range Match" $IPRANGE_MATCH
 	report_capability "Recent Match" $RECENT_MATCH
 	report_capability "Owner Match" $OWNER_MATCH
-	report_capability "Ipset Match" $IPSET_MATCH
-	[ -n "$IPSET_MATCH" ] && report_capability "OLD_Ipset Match" $OLD_IPSET_MATCH
+	if [ -n "$IPSET_MATCH" ]; then
+	    report_capability "Ipset Match" $IPSET_MATCH
+	    [ -n "$OLD_IPSET_MATCH" ] && report_capability "OLD_Ipset Match" $OLD_IPSET_MATCH
+	fi
 	report_capability "CONNMARK Target" $CONNMARK
 	[ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target" $XCONNMARK
 	report_capability "Connmark Match" $CONNMARK_MATCH

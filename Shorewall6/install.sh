@@ -30,6 +30,8 @@ usage() # $1 = exit status
     echo "usage: $ME"
     echo "       $ME -v"
     echo "       $ME -h"
+    echo "       $ME -s"
+    echo "       $ME -a"
     exit $1
 }
 
@@ -104,6 +106,7 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall6"
 fi
 
+PLAIN=Yes
 DEBIAN=
 CYGWIN=
 MAC=
@@ -182,6 +185,10 @@ while [ $finished -eq 0 ]; do
 		    s*)
 			SPARSE=Yes
 			option=${option#s}
+			;;
+		    a*)
+			PLAIN=
+			option=${option#a}
 			;;
 		    p*)
 			PLAIN=Yes
@@ -314,28 +321,6 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}/etc/logrotate.d
 fi
 
-#
-# Install the config file
-#
-run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
-
-if [ ! -f ${DESTDIR}/etc/shorewall6/shorewall6.conf ]; then
-   run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf ${DESTDIR}/etc/shorewall6/shorewall6.conf
-
-   if [ -n "$DEBIAN" ] && mywhich perl; then
-       #
-       # Make a Debian-like shorewall6.conf
-       #
-       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}/etc/shorewall6/shorewall6.conf
-   fi
-
-   echo "Config file installed as ${DESTDIR}/etc/shorewall6/shorewall6.conf"
-fi
-
-
-if [ -n "$ARCHLINUX" ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall6/shorewall6.conf
-fi
 delete_file ${DESTDIR}/usr/share/shorewall6/compiler
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.accounting
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.actions
@@ -387,16 +372,39 @@ echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall6/conf
 install_file actions.std ${DESTDIR}/usr/share/shorewall6/actions.std 0644
 echo "Standard actions file installed as ${DESTDIR}/usr/shared/shorewall6/actions.std"
 
-if [ -n "$PLAIN" ]; then
-    mkdir plain
-    cp configfiles/* plain/
-    cd plain
-    for f in *.plain; do
-	mv -f $f ${f%.plain}
+if [ -z "$PLAIN" ]; then
+    mkdir annotated
+    cp configfiles/* annotated/
+    cd annotated
+    for f in *.annotated; do
+	mv -f $f ${f%.annotated}
     done
 else
     cd configfiles
 fi
+#
+# Install the config file
+#
+run_install $OWNERSHIP -m 0644 shorewall6.conf ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
+
+if [ ! -f ${DESTDIR}/etc/shorewall6/shorewall6.conf ]; then
+   run_install $OWNERSHIP -m 0644 shorewall6.conf ${DESTDIR}/etc/shorewall6/shorewall6.conf
+
+   if [ -n "$DEBIAN" ] && mywhich perl; then
+       #
+       # Make a Debian-like shorewall6.conf
+       #
+       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}/etc/shorewall6/shorewall6.conf
+   fi
+
+   echo "Config file installed as ${DESTDIR}/etc/shorewall6/shorewall6.conf"
+fi
+
+
+if [ -n "$ARCHLINUX" ] ; then
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall6/shorewall6.conf
+fi
+
 #
 # Install the init file
 #
@@ -749,7 +757,7 @@ fi
 
 cd ..
 
-[ -n "$PLAIN" ] && rm -rf plain/
+rm -rf annotated/
 
 #
 # Install the  Makefiles

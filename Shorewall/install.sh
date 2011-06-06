@@ -31,7 +31,7 @@ usage() # $1 = exit status
     echo "       $ME -v"
     echo "       $ME -h"
     echo "       $ME -s"
-    echo "       $ME -p"
+    echo "       $ME -f"
     exit $1
 }
 
@@ -106,6 +106,7 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall"
 fi
 
+PLAIN=Yes
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 [ -n "${LIBEXEC:=/usr/share}" ]
@@ -183,6 +184,10 @@ while [ $finished -eq 0 ]; do
 		    s*)
 			SPARSE=Yes
 			option=${option#s}
+			;;
+		    a*)
+			PLAIN=
+			option=${option#a}
 			;;
 		    p*)
 			PLAIN=Yes
@@ -323,14 +328,14 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}/etc/logrotate.d
 fi
 
-if [ -n "$PLAIN" ]; then
-    mkdir plain/
-    cp configfiles/* plain/
-    for f in plain/*.plain; do
-	mv $f ${f%.plain}
+if [ -z "$PLAIN" ]; then
+    mkdir annotated/
+    cp configfiles/* annotated/
+    for f in annotated/*.annotated; do
+	mv $f ${f%.annotated}
     done
     
-    CONFIGFILES=plain
+    CONFIGFILES=annotated
 else
     CONFIGFILES=configfiles
 fi
@@ -826,7 +831,7 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/actions ]; then
     echo "Actions file installed as ${DESTDIR}/etc/shorewall/actions"
 fi
 
-rm -rf plain/
+rm -rf annotated/
 
 #
 # Install the  Makefiles

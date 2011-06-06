@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                   S H O R E W A L L  4 . 4 . 20
+                   S H O R E W A L L  4 . 4 . 20 . 1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -12,6 +12,22 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 ----------------------------------------------------------------------------
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
+
+4.4.20.1
+
+1)  The address of the Free Software Foundation has been corrected in
+    the License files.
+
+2)  The shorewall[6].conf file installed in
+    /usr/share/shorewall[6]/configfiles is no longer modified for use
+    with Shorewall[6]-lite. When creating a new configuration for a
+    remote forewall, two lines need to be modified in the copy
+
+    	   CONFIG_PATH=/usr/share/shorewall (or shorewall6)
+	   STARTUP_LOG=/var/log/shorewall-lite-init.log
+	               (or shorewall6-lite-init.log)
+
+4.4.20
 
 1)  Previously, when a device number was explicitly specified in
     /etc/shorewall/tcdevices, all unused numbers less than the one

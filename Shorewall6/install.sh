@@ -319,9 +319,6 @@ fi
 #
 run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
 
-perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall6/configfiles:/usr/share/shorewall6|;' ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
-perl -p -w -i -e 's|^STARTUP_LOG=.*|STARTUP_LOG=/var/log/shorewall6-lite-init.log|;' ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
-
 if [ ! -f ${DESTDIR}/etc/shorewall6/shorewall6.conf ]; then
    run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf ${DESTDIR}/etc/shorewall6/shorewall6.conf
 

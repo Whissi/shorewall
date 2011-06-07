@@ -1659,7 +1659,7 @@ sub initialize_chain_table($) {
 	if ( $config{FAKE_AUDIT} ) {
 	    dont_delete new_standard_chain 'AUDIT', 0;
 	} else {
-	    $builtin_target{AUDIT} = 111;
+	    $builtin_target{AUDIT} = 1;
 	}
 
 	dont_move   new_standard_chain 'reject';

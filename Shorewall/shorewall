@@ -330,7 +330,24 @@ startup_error() {
 # Determine if there are config files newer than the passed object
 #
 uptodate() {
-    [ -f $1 ] && [ -z "$(find ${CONFDIR} -newer $1)" ]
+    [ -f $1 ] || return 1
+
+    local dir
+    local ifs
+
+    ifs="$IFS"
+    IFS=':'
+
+    for dir in $CONFIG_PATH; do
+	if [ -n "$(find ${dir} -newer $1)" ]; then
+	    IFS="$ifs"
+	    return 1;
+	fi
+    done
+
+    IFS="$ifs"
+
+    return 0
 }
 
 #

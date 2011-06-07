@@ -1309,6 +1309,13 @@ sub process_tc_priority() {
 	return;
     }
 
+    fatal_error "Invalid tcpri entry" if ( $proto     eq '-' &&
+					   $ports     eq '-' &&
+					   $address   eq '-' &&
+					   $interface eq '-' &&
+					   $helper    eq '-' );
+
+
     my $val = numeric_value $band;
 
     fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;

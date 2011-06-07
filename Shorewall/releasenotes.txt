@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                   S H O R E W A L L  4 . 4 . 20 . 1
+                S H O R E W A L L  4 . 4 . 2 1  B e t a  1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,60 +13,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-4.4.20.1
-
-1)  The address of the Free Software Foundation has been corrected in
-    the License files.
-
-2)  The shorewall[6].conf file installed in
-    /usr/share/shorewall[6]/configfiles is no longer modified for use
-    with Shorewall[6]-lite. When creating a new configuration for a
-    remote forewall, two lines need to be modified in the copy
-
-    	   CONFIG_PATH=/usr/share/shorewall (or shorewall6)
-	   STARTUP_LOG=/var/log/shorewall-lite-init.log
-	               (or shorewall6-lite-init.log)
-
-3)  The 4.4.20 Shorewall6 installer always installed the plain
-    (unannotated) version of shorewall6.conf, regardless of the '-p'
-    setting.
-
-4)  Due to dissatisfaction with the default setting for configuration
-    file annotation, the default has returned to 'plain' (unannotated)
-    configuration files. If you wish to include documentation in your
-    installed configuration files, use the '-a' option in the
-    installer. The '-p' option will remain supported until 4.4.21 when
-    it will be removed.
-
-4.4.20
-
-1)  Previously, when a device number was explicitly specified in
-    /etc/shorewall/tcdevices, all unused numbers less than the one
-    specified were unavailable for allocation to following entries that
-    did not specify a number. Now, the compiler selects the lowest
-    unallocated number when no device number is explicitly allocated.
-
-2)  The obsolete PKTTYPE option has been removed from shorewall.conf
-    and the associated manpage.
-
-3)  The iptables 1.4.11 release produces an error when negative numbers
-    are specified for IPMARK mask values. Shorewall now converts such
-    numbers to their 32-bit hex equivalent.
-
-4)  Previously, before /etc/shorewall6/params was processed, the
-    IPv4 Shorewall libraries (/usr/share/shorewall/lib.*) were
-    loaded rather that the IPv6 versions (/usr/share/shorewall6/lib.*).
-    Now, the correct libraries are loaded.
-
-5)  Shorewall now sets /proc/sys/net/bridge/bridge_nf_call_iptables or
-    /proc/sys/net/bridge/bridge_nf_call_ip6tables when there are
-    interfaces with the 'bridge' option. This insures that netfilter
-    rules are invoked for bridged traffic. Previously, Shorewall was
-    not setting these flags with the possible result that a
-    bridge/firewall would not work properly.
-
-6)  Problem corrections released in 4.4.19.1-4.4.19.4 (see below)
-    are also included in this release.
+None.
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
@@ -79,209 +26,11 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
       I I I.  N E W   F E A T U R E S   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-1)  The implementation of the environmental variables LIBEXEC and
-    PERLLIB that was introduced in 4.4.19 has been changed
-    slightly. The installers now allow absolute path names to be
-    supplied in these variables so that the executables and/or Perl
-    modules may be installed under a top-level directory other than
-    /usr. The change is compatible with 4.4.19 in that if a relative
-    path name is supplied, then '/usr/' is prepended to the supplied
-    name.
+1)  Support for IPSETs is now inclued in Shorewall6.
 
-2)  A new ACCOUNTING_TABLE option has been added to shorewall.conf and
-    shorewall6.conf. The setting determines the Netfilter table (filter
-    or mangle) where accounting rules are created.
-
-    When ACCOUNTING_TABLE=mangle, the allowable accounting file
-     sections are:
-
-	PREROUTING
-        INPUT
-	OUTPUT
-	FORWARD
-	POSTROUTING
-
-    Present sections must appear in that order.
-
-3)  An NFLOG 'ACTION' has been added to the accounting file to allow
-    sending matching packets (or the leading part of them) to backend
-    accounting daemons via a netlink socket.
-
-4)  A 'whitelist' option has been added to the blacklist file. When
-    'whitelist' is specified, packets/connections matching the entry
-    are not matched against the entries which follow. No logging of
-    whitelisted packets/connections is performed.
-
-5)  Support for the AUDIT target has been added. AUDIT is a feature of
-    the 2.6.39 kernel and iptables 1.4.10 that allows security auditing
-    of access decisions.
-
-    The support involves the following:
-
-    a)  A new "AUDIT Target" capability is added and is required for
-        auditing support. To use AUDIT support with a capabilities
-        file, that file must be generated using this or a later
-        release.
-
-	Use 'shorewall show capabilities' after installing this release
-	to see if your kernel and iptables support the AUDIT target.
-
-    b)  In /etc/shorewall/policy's POLICY column, the policy (and
-    	default action, if any) may be followed by ':audit' to cause
-	applications of the policy to be audited. This means that any
-    	NEW connection that does not match any rule in the rules file
-    	or in the applicable 'default action' will be audited.
-
-	Only ACCEPT, DROP and REJECT policies may be audited.
-
-	Example:
-
-	#SOURCE	DEST	POLICY		LOG
-	#				LEVEL
-	net	fw      DROP:audit
-
-	It is allowed to also specify a log level on audited policies
-	resulting in both auditing and logging.
-
-    c)  Three new builtin actions that may be used in the rules file,
-        in macros and in other actions.
-
-    	A_ACCEPT - Audits and accepts the connection request
-	A_DROP   - Audits and drops the connection request
-	A_REJECT - Audits and rejects
-
-	A log level may be supplied with these actions to
-	provide both auditing and logging.
-
-	Example:
-
-	A_ACCEPT:info	loc	net	...
-
-    d)  The BLACKLIST_DISPOSITION, MACLIST_DISPOSITION and
-        TCP_FLAGS_DISPOSITION options may be set as follows:
-
-	BLACKLIST_DISPOSITION 	      A_DROP or A_REJECT
-	MACLIST_DISPOSITION           A_DROP 
-				      A_REJECT, unless
-				                MACLIST_TABLE=mangle
-        TCP_FLAGS_DISPOSITION         A_DROP or A_REJECT
-
-    e)  A SMURF_DISPOSITION option has been added to
-        shorewall.conf. The default value is DROP; if the option is set
-        to A_DROP, then dropped smurfs are audited.
-
-    f)  An 'audit' option has been added to the
-        /etc/shorewall/blacklist file which causes the packets matching
-        the entry to be audited. 'audit' may not be specified together
-        with 'whitelist'.
-
-    g)  The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
-        an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
-        performed by the action to be audited.
-
-	Note: The builtin actions are those actions listed in the
-	output of 'shorewall show actions' with names that begin with a
-	lower-case letter.
-
-	Example:
-
-		#ACTION			SOURCE		DEST
-		rejNonSyn(audit)	net		all
-
-    h)  There are audited versions of the standard Default Actions
-    	named A_Drop and A_Reject. Note that these audit everything
-    	that they do so you will probably want to make your own copies
-    	and modify them to only audit the packets that you care about. 
-
-6)  Up to this release, the behaviors of 'start -f' and 'restart -f'
-    has been inconsistent. The 'start -f' command  compares the
-    modification times of /etc/shorewall[6] with
-    /var/lib/shorewall[6]/restore while 'restart -f' compares with
-    /var/lib/shorewall[6]/firewall.
-
-    To make the two consistent, a new LEGACY_FASTSTART option has been
-    added. The default value when the option isn't specified is
-    LEGACY_FASTSTART=Yes which preserves the old behavior. When
-    LEGACY_FASTSTART=No, 'start -f' and 'restart -f' both compare with
-    /var/lib/shorewall[6]/firewall.
-
-7)  A '-c' (compile) option has been added to the 'start' and 'restart'
-    commands in both Shorewall and Shorewall6. It overrides the setting
-    of AUTOMAKE and unconditionally forces a recompilation of the
-    configuration.
-
-    When both -c and -f are specified, the result is determined by the
-    option that appears last.
-
-8)  Shorewall and Shorewall6 no longer depend on 'make'.
-
-9)  A '-T' (trace) option has been added to the 'check' and 'compile'
-    commands. When a warning or error message is generated, a Perl
-    stack trace is included to aid in isolating the source of the
-    message.
-
-10) The Shorewall and Shorewall6 configuration files (including the
-    samples) may now be annotated with documentation from the associated
-    manpage. 
-
-    The installers for these two packages support a -a (annotated)
-    option that installs annotated versions of the packages. Both
-    versions are available in the configfiles directory within the
-    tarball and in the Sample directories.
-
-11) The STATE subcolumn of the secmarks file now allows the values 'I'
-    which will match packets in the INVALID state, and 'NI'
-    which will match packets in either NEW or INVALID state.
-
-12) Certain attacks can be best defended through use of one of these
-    two measures.
-
-    a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4
-    	and can't be used with some multi-ISP configurations.
-
-    b)  Insert a DROP rule that prevents hairpinning (routeback). The
-        rule must be inserted before any ESTABLISHED,RELATED firewall
-        rules. This approach is not appropriate for bridges and other
-        cases, where the 'routeback' option is specified or implied.
-
-    For non-routeback interfaces, Shorewall and Shorewall6 will now
-    insert a hairpin rule, provided that the routefilter option is not
-    specified. The rule will dispose of hairpins according to the
-    setting of two new options in shorewall.conf and shorewall6.conf:
-
-    SFILTER_LOG_LEVEL
-	Specifies the logging level; default is 'info'. To omit
-	logging, specify FILTER_LOG_LEVEL=none.
-
-
-    SFILTER_DISPOSITION
-	Specifies the disposition. Default is DROP and the possible
-	values are DROP, A_DROP, REJECT and A_REJECT.
-
-    To deal with bridges and other routeback interfaces , there is now
-    an 'sfilter' option in /shorewall/interfaces and
-    /etc/shorewall6/interfaces.
-
-    The value of the 'sfilter' option is a list of network addresses
-    enclosed in in parentheses. Where only a single address is listed,
-    the parentheses may be omitted. When a packet from a
-    source-filtered address is received on the interface, it is
-    disposed of based on the new SFILTER_ options described above.
-
-    For a bridge or other routeback interface, you should list all of
-    your other local networks (those networks not attached to the
-    bridge) in the bridge's sfilter list.
-
-    Example:
-
-	My DMZ is 2001:470:b:227::40/124
-
-	My local interface (br1) is a bridge.
-
-	In /etc/shorewall6/interfaces, I have:
-
-	#ZONE INTERFACE BROADCAST OPTIONS
-	loc   br1       -         sfilter=2001:470:b:227::40/124
+2)  AUTOMAKE=Yes now causes all directories on the CONFIG_PATH to be
+    searched for files newer than the script that last
+    started/restarted the firewall.
 
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -515,8 +264,276 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
       I N   P R I O R  R E L E A S E S
 ----------------------------------------------------------------------------
+         P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2 0
+----------------------------------------------------------------------------
+
+4.4.20.1
+
+1)  The address of the Free Software Foundation has been corrected in
+    the License files.
+
+2)  The shorewall[6].conf file installed in
+    /usr/share/shorewall[6]/configfiles is no longer modified for use
+    with Shorewall[6]-lite. When creating a new configuration for a
+    remote forewall, two lines need to be modified in the copy
+
+    	   CONFIG_PATH=/usr/share/shorewall (or shorewall6)
+	   STARTUP_LOG=/var/log/shorewall-lite-init.log
+	               (or shorewall6-lite-init.log)
+
+3)  The 4.4.20 Shorewall6 installer always installed the plain
+    (unannotated) version of shorewall6.conf, regardless of the '-p'
+    setting.
+
+4)  Due to dissatisfaction with the default setting for configuration
+    file annotation, the default has returned to 'plain' (unannotated)
+    configuration files. If you wish to include documentation in your
+    installed configuration files, use the '-a' option in the
+    installer. The '-p' option will remain supported until 4.4.21 when
+    it will be removed.
+
+4.4.20
+
+1)  Previously, when a device number was explicitly specified in
+    /etc/shorewall/tcdevices, all unused numbers less than the one
+    specified were unavailable for allocation to following entries that
+    did not specify a number. Now, the compiler selects the lowest
+    unallocated number when no device number is explicitly allocated.
+
+2)  The obsolete PKTTYPE option has been removed from shorewall.conf
+    and the associated manpage.
+
+3)  The iptables 1.4.11 release produces an error when negative numbers
+    are specified for IPMARK mask values. Shorewall now converts such
+    numbers to their 32-bit hex equivalent.
+
+4)  Previously, before /etc/shorewall6/params was processed, the
+    IPv4 Shorewall libraries (/usr/share/shorewall/lib.*) were
+    loaded rather that the IPv6 versions (/usr/share/shorewall6/lib.*).
+    Now, the correct libraries are loaded.
+
+5)  Shorewall now sets /proc/sys/net/bridge/bridge_nf_call_iptables or
+    /proc/sys/net/bridge/bridge_nf_call_ip6tables when there are
+    interfaces with the 'bridge' option. This insures that netfilter
+    rules are invoked for bridged traffic. Previously, Shorewall was
+    not setting these flags with the possible result that a
+    bridge/firewall would not work properly.
+
+6)  Problem corrections released in 4.4.19.1-4.4.19.4 (see below)
+    are also included in this release.
+
+----------------------------------------------------------------------------
+               N E W   F E A T U R E S   I N   4 . 4 . 2 0
+----------------------------------------------------------------------------
+
+1)  The implementation of the environmental variables LIBEXEC and
+    PERLLIB that was introduced in 4.4.19 has been changed
+    slightly. The installers now allow absolute path names to be
+    supplied in these variables so that the executables and/or Perl
+    modules may be installed under a top-level directory other than
+    /usr. The change is compatible with 4.4.19 in that if a relative
+    path name is supplied, then '/usr/' is prepended to the supplied
+    name.
+
+2)  A new ACCOUNTING_TABLE option has been added to shorewall.conf and
+    shorewall6.conf. The setting determines the Netfilter table (filter
+    or mangle) where accounting rules are created.
+
+    When ACCOUNTING_TABLE=mangle, the allowable accounting file
+     sections are:
+
+	PREROUTING
+        INPUT
+	OUTPUT
+	FORWARD
+	POSTROUTING
+
+    Present sections must appear in that order.
+
+3)  An NFLOG 'ACTION' has been added to the accounting file to allow
+    sending matching packets (or the leading part of them) to backend
+    accounting daemons via a netlink socket.
+
+4)  A 'whitelist' option has been added to the blacklist file. When
+    'whitelist' is specified, packets/connections matching the entry
+    are not matched against the entries which follow. No logging of
+    whitelisted packets/connections is performed.
+
+5)  Support for the AUDIT target has been added. AUDIT is a feature of
+    the 2.6.39 kernel and iptables 1.4.10 that allows security auditing
+    of access decisions.
+
+    The support involves the following:
+
+    a)  A new "AUDIT Target" capability is added and is required for
+        auditing support. To use AUDIT support with a capabilities
+        file, that file must be generated using this or a later
+        release.
+
+	Use 'shorewall show capabilities' after installing this release
+	to see if your kernel and iptables support the AUDIT target.
+
+    b)  In /etc/shorewall/policy's POLICY column, the policy (and
+    	default action, if any) may be followed by ':audit' to cause
+	applications of the policy to be audited. This means that any
+    	NEW connection that does not match any rule in the rules file
+    	or in the applicable 'default action' will be audited.
+
+	Only ACCEPT, DROP and REJECT policies may be audited.
+
+	Example:
+
+	#SOURCE	DEST	POLICY		LOG
+	#				LEVEL
+	net	fw      DROP:audit
+
+	It is allowed to also specify a log level on audited policies
+	resulting in both auditing and logging.
+
+    c)  Three new builtin actions that may be used in the rules file,
+        in macros and in other actions.
+
+    	A_ACCEPT - Audits and accepts the connection request
+	A_DROP   - Audits and drops the connection request
+	A_REJECT - Audits and rejects
+
+	A log level may be supplied with these actions to
+	provide both auditing and logging.
+
+	Example:
+
+	A_ACCEPT:info	loc	net	...
+
+    d)  The BLACKLIST_DISPOSITION, MACLIST_DISPOSITION and
+        TCP_FLAGS_DISPOSITION options may be set as follows:
+
+	BLACKLIST_DISPOSITION 	      A_DROP or A_REJECT
+	MACLIST_DISPOSITION           A_DROP 
+				      A_REJECT, unless
+				                MACLIST_TABLE=mangle
+        TCP_FLAGS_DISPOSITION         A_DROP or A_REJECT
+
+    e)  A SMURF_DISPOSITION option has been added to
+        shorewall.conf. The default value is DROP; if the option is set
+        to A_DROP, then dropped smurfs are audited.
+
+    f)  An 'audit' option has been added to the
+        /etc/shorewall/blacklist file which causes the packets matching
+        the entry to be audited. 'audit' may not be specified together
+        with 'whitelist'.
+
+    g)  The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
+        an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
+        performed by the action to be audited.
+
+	Note: The builtin actions are those actions listed in the
+	output of 'shorewall show actions' with names that begin with a
+	lower-case letter.
+
+	Example:
+
+		#ACTION			SOURCE		DEST
+		rejNonSyn(audit)	net		all
+
+    h)  There are audited versions of the standard Default Actions
+    	named A_Drop and A_Reject. Note that these audit everything
+    	that they do so you will probably want to make your own copies
+    	and modify them to only audit the packets that you care about. 
+
+6)  Up to this release, the behaviors of 'start -f' and 'restart -f'
+    has been inconsistent. The 'start -f' command  compares the
+    modification times of /etc/shorewall[6] with
+    /var/lib/shorewall[6]/restore while 'restart -f' compares with
+    /var/lib/shorewall[6]/firewall.
+
+    To make the two consistent, a new LEGACY_FASTSTART option has been
+    added. The default value when the option isn't specified is
+    LEGACY_FASTSTART=Yes which preserves the old behavior. When
+    LEGACY_FASTSTART=No, 'start -f' and 'restart -f' both compare with
+    /var/lib/shorewall[6]/firewall.
+
+7)  A '-c' (compile) option has been added to the 'start' and 'restart'
+    commands in both Shorewall and Shorewall6. It overrides the setting
+    of AUTOMAKE and unconditionally forces a recompilation of the
+    configuration.
+
+    When both -c and -f are specified, the result is determined by the
+    option that appears last.
+
+8)  Shorewall and Shorewall6 no longer depend on 'make'.
+
+9)  A '-T' (trace) option has been added to the 'check' and 'compile'
+    commands. When a warning or error message is generated, a Perl
+    stack trace is included to aid in isolating the source of the
+    message.
+
+10) The Shorewall and Shorewall6 configuration files (including the
+    samples) may now be annotated with documentation from the associated
+    manpage. 
+
+    The installers for these two packages support a -a (annotated)
+    option that installs annotated versions of the packages. Both
+    versions are available in the configfiles directory within the
+    tarball and in the Sample directories.
+
+11) The STATE subcolumn of the secmarks file now allows the values 'I'
+    which will match packets in the INVALID state, and 'NI'
+    which will match packets in either NEW or INVALID state.
+
+12) Certain attacks can be best defended through use of one of these
+    two measures.
+
+    a)  rt_filter (Shorewall's routefilter). Only applicable to IPv4
+    	and can't be used with some multi-ISP configurations.
+
+    b)  Insert a DROP rule that prevents hairpinning (routeback). The
+        rule must be inserted before any ESTABLISHED,RELATED firewall
+        rules. This approach is not appropriate for bridges and other
+        cases, where the 'routeback' option is specified or implied.
+
+    For non-routeback interfaces, Shorewall and Shorewall6 will now
+    insert a hairpin rule, provided that the routefilter option is not
+    specified. The rule will dispose of hairpins according to the
+    setting of two new options in shorewall.conf and shorewall6.conf:
+
+    SFILTER_LOG_LEVEL
+	Specifies the logging level; default is 'info'. To omit
+	logging, specify FILTER_LOG_LEVEL=none.
+
+
+    SFILTER_DISPOSITION
+	Specifies the disposition. Default is DROP and the possible
+	values are DROP, A_DROP, REJECT and A_REJECT.
+
+    To deal with bridges and other routeback interfaces , there is now
+    an 'sfilter' option in /shorewall/interfaces and
+    /etc/shorewall6/interfaces.
+
+    The value of the 'sfilter' option is a list of network addresses
+    enclosed in in parentheses. Where only a single address is listed,
+    the parentheses may be omitted. When a packet from a
+    source-filtered address is received on the interface, it is
+    disposed of based on the new SFILTER_ options described above.
+
+    For a bridge or other routeback interface, you should list all of
+    your other local networks (those networks not attached to the
+    bridge) in the bridge's sfilter list.
+
+    Example:
+
+	My DMZ is 2001:470:b:227::40/124
+
+	My local interface (br1) is a bridge.
+
+	In /etc/shorewall6/interfaces, I have:
+
+	#ZONE INTERFACE BROADCAST OPTIONS
+	loc   br1       -         sfilter=2001:470:b:227::40/124
+
+----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 1 9
 ----------------------------------------------------------------------------
+
 4.4.19.4
 
 1)  Previously, the compiler would allow a degenerate entry (only the

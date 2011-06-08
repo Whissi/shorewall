@@ -388,7 +388,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
           <para>Destination Ports. A comma-separated list of Port names (from
           services(5)), <emphasis>port number</emphasis>s or <emphasis>port
           range</emphasis>s; if the protocol is <emphasis
-          role="bold">icmp</emphasis>, this column is interpreted as the
+          role="bold">ipv6-icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
           type, a numberic type and code separated by a slash (e.g., 3/4), or
           a typename. See <ulink
@@ -400,9 +400,9 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
           If no PORT is given, <emphasis role="bold">ipp2p</emphasis> is
           assumed.</para>
 
-          <para>This column is ignored if PROTOCOL = all but must be entered
-          if any of the following field is supplied. In that case, it is
-          suggested that this field contain "-"</para>
+          <para>An entry in this field requires that the PROTO column specify
+          tcp (6), udp (17), ipv6-icmp (58), sctp (132) or udplite (136). Use
+          '-' if any of the following field is supplied.</para>
         </listitem>
       </varlistentry>
 
@@ -416,6 +416,10 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
           <para>Source port(s). If omitted, any source port is acceptable.
           Specified as a comma-separated list of port names, port numbers or
           port ranges.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
+          the following fields is supplied.</para>
         </listitem>
       </varlistentry>
 

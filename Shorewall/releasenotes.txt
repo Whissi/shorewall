@@ -15,14 +15,18 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 4.4.20.2
 
-1)  Fixed item 1 from 4.4.19.4 was inadvertently omitted from 4.4.20. It
-    is now included.
+1)  Corrected item #1 from 4.4.19.4 was inadvertently omitted from
+    4.4.20. It is now included.
 
 2)  A defect introduced in 4.4.20 could cause the following failure at
     start/restart:
 
 	ERROR: Command "tc qdisc add dev eth0 parent 1:11 handle 1:
                         sfq quantum 12498 limit 127 perturb 10" failed
+
+3)  The 'sfilter' interface option introduced in 4.4.20 was only
+    applied to forwarded traffic. Now it is also applied to traffic
+    addressed to the firewall itself.
 
 4.4.20.1
 

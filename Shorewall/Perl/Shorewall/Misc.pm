@@ -476,6 +476,7 @@ sub setup_mss();
 sub add_common_rules() {
     my $interface;
     my $chainref;
+    my $chainref1;
     my $target;
     my $rule;
     my $list;
@@ -528,9 +529,13 @@ sub add_common_rules() {
 	    my @filters = @{$interfaceref->{filter}};
 	
 	    $chainref = $filter_table->{forward_chain $interface};
+	    $chainref1 = $filter_table->{input_chain $interface};
 	
 	    if ( @filters ) {
-		add_jump( $chainref , $target, 1, match_source_net( $_ ) ), $chainref->{filtered}++ for @filters;
+		for ( @filters ) {
+		    add_jump( $chainref  , $target, 1, match_source_net( $_ ) ), $chainref->{filtered}++;
+		    add_jump( $chainref1 , $target, 1, match_source_net( $_ ) ), $chainref1->{filtered}++;
+		}
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
 		add_jump( $chainref , $target, 1, match_dest_dev( $interface ) ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
 	    }

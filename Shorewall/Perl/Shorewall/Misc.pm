@@ -478,6 +478,7 @@ sub add_common_rules() {
     my $chainref;
     my $chainref1;
     my $target;
+    my $target1;
     my $rule;
     my $list;
     my $chain;
@@ -497,16 +498,14 @@ sub add_common_rules() {
 
     setup_mss;
 
-    if ( $config{FASTACCEPT} ) {
-	add_rule( $filter_table->{$_} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) for qw( INPUT OUTPUT );
-    }
+    add_rule( $filter_table->{OUTPUT} , "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ) if ( $config{FASTACCEPT} );
 
     my $policy   = $config{SFILTER_DISPOSITION};
     $level       = $config{SFILTER_LOG_LEVEL};
     my $audit    = $policy =~ s/^A_//;
-    my $ipsec    = have_ipsec ? '-m policy --pol none --dir in ' : '';
+    my $ipsec    = have_ipsec ? '-m policy --pol none --dir in '  : '';
 
-    if ( $level || $audit ) {
+    if ( $level || $audit || $ipsec ) {
 	$chainref = new_standard_chain 'sfilter';
 
 	log_rule $level , $chainref , $policy , '' if $level ne '';
@@ -516,9 +515,25 @@ sub add_common_rules() {
 	add_jump $chainref, $policy eq 'REJECT' ? 'reject' : $policy , 1;
 	
 	$target = 'sfilter';
+
+	if ( $ipsec ) {
+	    $chainref = new_standard_chain 'sfilter1';
+
+	    add_rule ( $chainref, '-m policy --pol ipsec --dir out -j RETURN' );
+
+	    log_rule $level , $chainref , $policy , '' if $level ne '';
+	
+	    add_rule( $chainref, '-j AUDIT --type ' . lc $policy ) if $audit;
+	
+	    add_jump $chainref, $policy eq 'REJECT' ? 'reject' : $policy , 1;
+	
+	    $target1 = 'sfilter1';
+	}
     } elsif ( ( $target = $policy ) eq 'REJECT' ) {
 	$target = 'reject';
     }
+
+    $target1 = $target unless $target1;
 
     for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
@@ -530,20 +545,26 @@ sub add_common_rules() {
 	    my @filters = @{$interfaceref->{filter}};
 	
 	    $chainref = $filter_table->{forward_chain $interface};
-	    $chainref1 = $filter_table->{input_chain $interface};
 	
 	    if ( @filters ) {
-		for ( @filters ) {
-		    add_jump( $chainref  , $target, 1, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++;
-		    add_jump( $chainref1 , $target, 1, match_source_net( $_ ) . $ipsec ), $chainref1->{filtered}++;
-		}
+		add_jump( $chainref  , $target1, 1, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++ for @filters;
+	    } elsif ( $interfaceref->{bridge} eq $interface ) {
+		add_jump( $chainref , $target1, 1, match_dest_dev( $interface ) . $ipsec ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
+	    }
+
+	    add_rule( $chainref,  "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};
+	    add_jump( $chainref, $dynamicref, 0, $state ), $chainref->{filtered}++ if $dynamicref;
+
+	    $chainref = $filter_table->{input_chain $interface};
+	
+	    if ( @filters ) {
+		add_jump( $chainref  , $target, 1, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++ for @filters;
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
 		add_jump( $chainref , $target, 1, match_dest_dev( $interface ) . $ipsec ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
 	    }
 	
-	    add_rule( $chainref, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};
+	    add_rule( $chainref,  "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};
 	    add_jump( $chainref, $dynamicref, 0, $state ), $chainref->{filtered}++ if $dynamicref;
-
 	}
     }
 

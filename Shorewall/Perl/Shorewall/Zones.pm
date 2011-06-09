@@ -1059,10 +1059,7 @@ sub process_interface( $$ ) {
 		    #
 		    $hostoptions{broadcast} = 1;
 		} elsif ( $option eq 'sfilter' ) {
-		    warning_message "sfilter is ineffective with FASTACCEPT=Yes" if $config{FASTACCEPT};
-
 		    $filterref = [ split_list $value, 'address' ];
-		    
 		    validate_net( $_, 1) for @{$filterref}
 		} else {
 		    assert(0);

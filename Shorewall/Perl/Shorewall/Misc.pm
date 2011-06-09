@@ -504,6 +504,7 @@ sub add_common_rules() {
     my $policy   = $config{SFILTER_DISPOSITION};
     $level       = $config{SFILTER_LOG_LEVEL};
     my $audit    = $policy =~ s/^A_//;
+    my $ipsec    = have_ipsec ? '-m policy --pol none --dir in ' : '';
 
     if ( $level || $audit ) {
 	$chainref = new_standard_chain 'sfilter';
@@ -533,11 +534,11 @@ sub add_common_rules() {
 	
 	    if ( @filters ) {
 		for ( @filters ) {
-		    add_jump( $chainref  , $target, 1, match_source_net( $_ ) ), $chainref->{filtered}++;
-		    add_jump( $chainref1 , $target, 1, match_source_net( $_ ) ), $chainref1->{filtered}++;
+		    add_jump( $chainref  , $target, 1, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++;
+		    add_jump( $chainref1 , $target, 1, match_source_net( $_ ) . $ipsec ), $chainref1->{filtered}++;
 		}
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
-		add_jump( $chainref , $target, 1, match_dest_dev( $interface ) ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
+		add_jump( $chainref , $target, 1, match_dest_dev( $interface ) . $ipsec ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
 	    }
 	
 	    add_rule( $chainref, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};

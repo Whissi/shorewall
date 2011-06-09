@@ -1026,6 +1026,10 @@ sub use_forward_chain($$) {
 
     return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
     #
+    # Use it if we already have jumps to it
+    #
+    return 1 if keys %{$chainref->{references}};
+    #
     # We must use the interfaces's chain if the interface is associated with multiple zones
     #
     return 1 if ( keys %{interface_zones $interface} ) > 1;

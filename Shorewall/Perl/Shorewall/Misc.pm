@@ -547,9 +547,9 @@ sub add_common_rules() {
 	    $chainref = $filter_table->{forward_chain $interface};
 	
 	    if ( @filters ) {
-		add_jump( $chainref  , $target1, 1, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++ for @filters;
+		add_jump( $chainref  , $target1, 0, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++ for @filters;
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
-		add_jump( $chainref , $target1, 1, match_dest_dev( $interface ) . $ipsec ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
+		add_jump( $chainref , $target1, 0, match_dest_dev( $interface ) . $ipsec ), $chainref->{filtered}++ unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter};
 	    }
 
 	    add_rule( $chainref,  "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};

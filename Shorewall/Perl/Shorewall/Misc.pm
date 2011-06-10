@@ -568,9 +568,13 @@ sub add_common_rules() {
     }
 
     #
-    # Delete 'sfilter' chain unless there are referenced to it
+    # Delete 'sfilter' chains unless there are referenced to them
     #
-    $chainref->{referenced} = 0 unless keys %{($chainref = $filter_table->{sfilter})->{references}};
+    for ( qw/sfilter sfilter1/ ) {
+	if ( $chainref = $filter_table->{$_} ) {
+	    $chainref->{referenced} = 0 unless keys %{$chainref->{references}};
+	}
+    }
 
     run_user_exit1 'initdone';
 

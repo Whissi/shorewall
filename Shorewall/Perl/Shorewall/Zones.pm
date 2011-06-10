@@ -1834,6 +1834,8 @@ sub validate_hosts_file()
 
     $have_ipsec = $ipsec || haveipseczones;
 
+    $_->{options}{complex} ||= ( keys %{$_->{interfaces}} > 1 ) for values %zones;
+
 }
 
 #

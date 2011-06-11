@@ -283,6 +283,9 @@ sub print_policy($$$$) {
 }
 
 sub use_policy_action( $ );
+sub normalize_action( $$$ );
+sub normalize_action_name( $ );
+
 #
 # Process an entry in the policy file.
 #
@@ -324,15 +327,18 @@ sub process_a_policy() {
     }
 
     if ( $default ) {
+	my ( $def, $param ) = get_target_param( $default );
+
 	if ( "\L$default" eq 'none' ) {
 	    $default = 'none';
-	} elsif ( $actions{$default} ) {
+	} elsif ( $actions{$def} ) {
+	    $default = defined $param && $param ne '' ? normalize_action( $def, 'none', $param  ) : normalize_action_name $default;
 	    use_policy_action( $default );
 	} else {
 	    fatal_error "Unknown Default Action ($default)";
 	}
     } else {
-	$default = $default_actions{$policy} || '';
+	$default = $default_actions{$policy} || 'none';
     }
 
     if ( defined $queue ) {
@@ -390,7 +396,9 @@ sub process_a_policy() {
 	$chainref->{synchain}  = $chain
     }
 
-    $chainref->{default} = $default if $default;
+    assert( $default );
+    my $chainref1 = $usedactions{$default};
+    $chainref->{default} = $chainref1 ? $chainref1->{name} : $default;
 
     if ( $clientwild ) {
 	if ( $serverwild ) {
@@ -462,16 +470,21 @@ sub process_policies()
 
     for my $option qw( DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) {
 	my $action = $config{$option};
-	next if $action eq 'none';
-	my $actiontype = $targets{$action};
-												 
-	if ( defined $actiontype ) {
-	    fatal_error "Invalid setting ($action) for $option" unless $actiontype & ACTION;
-	} else {
-	    fatal_error "Default Action $option=$action not found";
-	}
+	
+	unless ( $action eq 'none' ) {
+	    my ( $act, $param ) = get_target_param( $action );
 
-	use_policy_action( $action );
+	    if ( "\L$action" eq 'none' ) {
+		$action = 'none';
+	    } elsif ( $actions{$act} ) {
+		$action = defined $param && $param ne '' ? normalize_action( $act, 'none', $param  ) : normalize_action_name $action;
+		use_policy_action( $action );
+	    } elsif ( $targets{$act} ) {
+		fatal_error "Invalid setting ($action) for $option";
+	    } else {
+		fatal_error "Default Action $option=$action not found";
+	    }
+	}
 
 	$default_actions{$map{$option}} = $action;
     }
@@ -1515,7 +1528,7 @@ sub process_action( $) {
 # Create a policy action if it doesn't already exist
 #
 sub use_policy_action( $ ) {
-    my $ref = use_action( normalize_action_name $_[0] );
+    my $ref = use_action( $_[0] );
     
     process_action( $ref ) if $ref;
 }

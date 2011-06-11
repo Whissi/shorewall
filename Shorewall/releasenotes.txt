@@ -41,6 +41,41 @@ None.
     is the default value for the second parameter and so on. To specify
     an empty default, use '-'.
 
+4)  The standard Drop and Reject actions are now parameterized. Each 
+    has three parameters:
+
+    1) Pass 'audit' if you want all ACCEPTs, DROPs and REJECTs audited.
+       Pass '-' otherwise.
+
+    2) The action to be applied to Auth requests 
+
+       	      FIRST PARAMETER           DEFAULT
+  
+  	      -				REJECT
+	      audit			A_REJECT
+
+    3) The action to be applied to SMB traffic. The default depends on
+       the first parameter:
+
+              ACTION	 FIRST PARAMETER		DEFAULT
+
+	      Reject	 -				REJECT
+	      Drop	 -				DROP
+	      Reject	 audit				A_REJECT
+	      Drop	 audit				A_DROP
+
+    The parameters can be passed in the POLICY column of the policy
+    file.
+
+    Examples:
+
+	SOURCE	DEST	POLICY
+	net	all	DROP:Drop(audit):audit  #Same as 
+						#DROP:A_DROP:audit
+
+	SOURCE	DEST	POLICY
+	net	all	DROP:Drop(-,DROP) #DROP rather than REJECT Auth
+
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
 ----------------------------------------------------------------------------

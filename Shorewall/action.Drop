@@ -15,11 +15,23 @@
 #	c) Ensure that certain ICMP packets that are necessary for successful
 #	   internet operation are always ACCEPTed.
 #
+#  The action accepts three optional parameters:
+#
+#	1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
+#           actions.
+#       2 - Action to take with Auth requests. Default is REJECT or A_REJECT,
+#           depending on the setting of the first parameter.
+#	3 - Action to take with SMB requests. Default is DROP or A_DROP,
+#           depending on the setting of the first parameter.
+#
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
 ###############################################################################
 FORMAT 2
-
+#
+# The following magic provides different defaults for $2 and $3, when $1 is 
+# 'audit'.
+#
 BEGIN PERL
 use Shorewall::Config;
 
@@ -28,15 +40,15 @@ my $p1 = read_action_param(1);
 if ( defined $p1 && $p1 eq 'audit' ) {
    my ( $p2, $p3 ) = ( read_action_param(2) , read_action_param(3) );
 
-   set_action_param( 2, 'A_DROP')     unless defined $p2;
-   set_action_param( 3, 'A_REJECT')   unless defined $p3;
+   set_action_param( 2, 'A_REJECT')   unless defined $p2;
+   set_action_param( 3, 'A_DROP')     unless defined $p3;
 };
 
 1;
 
 END PERL
 
-DEFAULTS -,DROP,REJECT
+DEFAULTS -,REJECT,DROP
 
 #TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
 #
@@ -46,7 +58,7 @@ COUNT
 #
 # Reject 'auth'
 #
-Auth($3)
+Auth($2)
 #
 # Don't log broadcasts
 #
@@ -63,7 +75,7 @@ dropInvalid($1)
 #
 # Drop Microsoft noise so that it doesn't clutter up the log.
 #
-SMB($2)
+SMB($3)
 DropUPnP($1)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.

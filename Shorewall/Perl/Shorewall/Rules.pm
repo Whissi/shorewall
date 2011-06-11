@@ -1450,7 +1450,7 @@ sub process_action( $) {
 
 	push_open $actionfile;
 
-	my $oldparms = push_params( $param );
+	my $oldparms = push_action_params( $param );
 
 	$active{$wholeaction}++;
 	push @actionstack, $wholeaction;
@@ -1478,7 +1478,7 @@ sub process_action( $) {
 	    }
 
 	    if ( $format == 2 && $target eq 'DEFAULTS' ) {
-		default_params( split_list $source, 'defaults' );
+		default_action_params( split_list $source, 'defaults' );
 		next;
 	    }	      
 
@@ -1507,7 +1507,7 @@ sub process_action( $) {
 
 	pop_open;
 
-	pop_params( $oldparms );
+	pop_action_params( $oldparms );
     }
 }
 
@@ -1566,7 +1566,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 	}
 
 	if ( $format == 2 && $target eq 'DEFAULTS' ) {
-	    default_params( split_list $source, 'defaults' );
+	    default_action_params( split_list $source, 'defaults' );
 	    next;
 	}
 	      

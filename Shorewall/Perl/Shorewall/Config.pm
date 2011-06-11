@@ -98,9 +98,9 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       close_file
 				       push_open
 				       pop_open
-				       push_params
-				       pop_params
-				       default_params
+				       push_action_params
+				       pop_action_params
+				       default_action_params
 				       read_a_line
 				       validate_level
 				       which
@@ -1789,7 +1789,7 @@ sub embedded_perl( $ ) {
 #
 # Push/pop action params
 #
-sub push_params( $ ) {
+sub push_action_params( $ ) {
     my @params = split /,/, $_[0];
     my $oldparams = \%actparms;
 
@@ -1804,12 +1804,12 @@ sub push_params( $ ) {
     $oldparams;
 }
 
-sub pop_params( $ ) {
+sub pop_action_params( $ ) {
     my $oldparms = shift;
     %actparms = %$oldparms;
 }
 
-sub default_params {
+sub default_action_params {
     my $val;
 
     for ( my $i = 1; 1; $i++ ) {

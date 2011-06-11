@@ -73,7 +73,7 @@ my @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-my $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
+my $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -1476,6 +1476,11 @@ sub process_action( $) {
 		$format = $source;
 		next;
 	    }
+
+	    if ( $format == 2 && $target eq 'DEFAULTS' ) {
+		default_params( split_list $source, 'defaults' );
+		next;
+	    }	      
 
 	    process_rule1( $chainref,
 			   merge_levels( "$action:$level:$tag", $target ),

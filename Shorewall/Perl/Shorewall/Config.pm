@@ -100,6 +100,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       pop_open
 				       push_params
 				       pop_params
+				       default_params
 				       read_a_line
 				       validate_level
 				       which
@@ -1806,6 +1807,16 @@ sub push_params( $ ) {
 sub pop_params( $ ) {
     my $oldparms = shift;
     %actparms = %$oldparms;
+}
+
+sub default_params {
+    my $val;
+
+    for ( my $i = 1; 1; $i++ ) {
+	last unless defined ( $val = shift );
+	my $curval = $actparms{$i};
+	$actparms{$i} =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless defined $curval && $curval ne '';
+    }
 }
 
 #

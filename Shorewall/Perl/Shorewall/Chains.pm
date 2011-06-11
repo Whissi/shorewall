@@ -2499,7 +2499,7 @@ sub verify_small_mark( $ ) {
 
 sub validate_mark( $ ) {
     my $mark = shift;
-    fatal_error "Missing MARK" unless defined $mark && $mark ne '';
+    fatal_error "Missing MARK" unless supplied $mark;
 
     if ( $mark =~ '/' ) {
 	my @marks = split '/', $mark;
@@ -2669,17 +2669,17 @@ sub do_user( $ ) {
     return '' unless defined $user and $user ne '-';
 
     if ( $user =~ /^(!)?(.*)\+(.*)$/ ) {
-	$rule .= "! --cmd-owner $2 " if defined $2 && $2 ne '';
+	$rule .= "! --cmd-owner $2 " if supplied $2;
 	$user = "!$1";
     } elsif ( $user =~ /^(.*)\+(.*)$/ ) {
-	$rule .= "--cmd-owner $2 " if defined $2 && $2 ne '';
+	$rule .= "--cmd-owner $2 " if supplied $2;
 	$user = $1;
     }
 
     if ( $user =~ /^(!)?(.*):(.*)$/ ) {
 	my $invert = $1 ? '! ' : '';
 	my $group  = defined $3 ? $3 : '';
-	if ( defined $2 && $2 ne '' ) {
+	if ( supplied $2 ) {
 	    $user = $2;
 	    fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
 	    $rule .= "${invert}--uid-owner $user ";

@@ -332,7 +332,7 @@ sub process_a_policy() {
 	if ( "\L$default" eq 'none' ) {
 	    $default = 'none';
 	} elsif ( $actions{$def} ) {
-	    $default = defined $param && $param ne '' ? normalize_action( $def, 'none', $param  ) : normalize_action_name $default;
+	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $default;
 	    use_policy_action( $default );
 	} else {
 	    fatal_error "Unknown Default Action ($default)";
@@ -385,7 +385,7 @@ sub process_a_policy() {
 	push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
     }
 
-    $chainref->{loglevel}  = validate_level( $loglevel ) if defined $loglevel && $loglevel ne '';
+    $chainref->{loglevel}  = validate_level( $loglevel ) if supplied $loglevel;
 
     if ( $synparams ne '' || $connlimit ne '' ) {
 	my $value = '';
@@ -477,7 +477,7 @@ sub process_policies()
 	    if ( "\L$action" eq 'none' ) {
 		$action = 'none';
 	    } elsif ( $actions{$act} ) {
-		$action = defined $param && $param ne '' ? normalize_action( $act, 'none', $param  ) : normalize_action_name $action;
+		$action = supplied $param ? normalize_action( $act, 'none', $param  ) : normalize_action_name $action;
 		use_policy_action( $action );
 	    } elsif ( $targets{$act} ) {
 		fatal_error "Invalid setting ($action) for $option";
@@ -837,7 +837,7 @@ sub normalize_action( $$$ ) {
 
     ( $level, my $tag ) = split ':', $level;
 
-    $level = 'none' unless defined $level && $level ne '';
+    $level = 'none' unless supplied $level;
     $tag   = ''     unless defined $tag;
     $param = ''     unless defined $param;
 
@@ -1102,7 +1102,7 @@ sub merge_macro_source_dest( $$ ) {
 sub merge_macro_column( $$ ) {
     my ( $body, $invocation ) = @_;
 
-    if ( defined $invocation && $invocation ne '' && $invocation ne '-' ) {
+    if ( supplied( $invocation ) && $invocation ne '-' ) {
 	$invocation;
     } else {
 	$body;
@@ -1192,7 +1192,7 @@ sub ensure_audit_chain( $;$$ ) {
 sub require_audit($$;$) {
     my ($action, $audit, $tgt ) = @_;
 
-    return $action unless defined $audit and $audit ne '';
+    return $action unless supplied $audit;
 
     my $target = 'A_' . $action;
 
@@ -1295,7 +1295,7 @@ sub rejNotSyn ( $$$$ ) {
 
     my $target = 'REJECT --reject-with tcp-reset';
 
-    if ( defined $audit && $audit ne '' ) {
+    if ( supplied $audit ) {
 	$target = require_audit( 'REJECT' , $audit );
     }
 
@@ -1822,7 +1822,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 			  REJECT => sub { $action = 'reject'; } ,
 			  CONTINUE => sub { $action = 'RETURN'; } ,
 			  COUNT => sub { $action = ''; } ,
-			  LOG => sub { fatal_error 'LOG requires a log level' unless defined $loglevel and $loglevel ne ''; } ,
+			  LOG => sub { fatal_error 'LOG requires a log level' unless supplied $loglevel; } ,
 		     );
 
 	my $function = $functions{ $bt };

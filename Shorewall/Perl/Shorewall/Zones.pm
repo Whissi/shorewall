@@ -692,7 +692,7 @@ sub add_group_to_zone($$$$$)
 
 	$interfaceref->{nets}++;
 
-	fatal_error "Invalid Host List" unless defined $host and $host ne '';
+	fatal_error "Invalid Host List" unless supplied $host;
 
 	if ( substr( $host, 0, 1 ) eq '!' ) {
 	    fatal_error "Only one exclusion allowed in a host list" if $switched;
@@ -887,7 +887,7 @@ sub process_interface( $$ ) {
 
     fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
 
-    if ( defined $port && $port ne '' ) {
+    if ( supplied $port ) {
 	fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
 	fatal_error "Your iptables is not recent enough to support bridge ports" unless have_capability( 'KLUDGEFREE' );

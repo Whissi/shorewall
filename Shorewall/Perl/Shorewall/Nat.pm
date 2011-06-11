@@ -384,7 +384,7 @@ sub setup_nat() {
 		$digit = defined $digit ? ":$digit" : '';
 
 		for my $interface ( split_list $interfacelist , 'interface' ) {
-		    fatal_error "Invalid Interface List ($interfacelist)" unless defined $interface && $interface ne '';
+		    fatal_error "Invalid Interface List ($interfacelist)" unless supplied $interface;
 		    do_one_nat $external, "${interface}${digit}", $internal, $allints, $localnat;
 		}
 

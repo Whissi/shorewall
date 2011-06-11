@@ -1827,7 +1827,7 @@ sub default_action_params {
     for ( my $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
 	my $curval = $actparms{$i};
-	$actparms{$i} =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless defined $curval && $curval ne '';
+	$actparms{$i} =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless supplied( $curval );
     }
 }
 
@@ -1997,7 +1997,7 @@ sub read_a_line1() {
 sub default ( $$ ) {
     my ( $var, $val ) = @_;
 
-    $config{$var} = $val unless defined $config{$var} && $config{$var} ne '';
+    $config{$var} = $val unless supplied( $config{$var} );
 }
 
 #
@@ -2008,7 +2008,7 @@ sub default_yes_no ( $$ ) {
 
     my $curval = $config{$var};
 
-    if ( defined $curval && $curval ne '' ) {
+    if ( supplied $curval ) {
 	$curval = lc $curval;
 
 	if (  $curval eq 'no' ) {
@@ -2034,7 +2034,7 @@ sub numeric_option( $$$ ) {
 
     my $val = $default;
 
-    if ( defined $value && $value ne '' ) {
+    if ( supplied $value ) {
 	$val = numeric_value $value;
 	fatal_error "Invalid value ($value) for '$option'" unless defined $val && $val <= 32;
     }
@@ -2061,7 +2061,7 @@ sub validate_level( $ ) {
     my $rawlevel = $_[0];
     my $level    = uc $rawlevel;
 
-    if ( defined $level && $level ne '' ) {
+    if ( supplied ( $level ) ) {
 	$level =~ s/!$//;
 	my $value = $validlevels{$level};
 
@@ -2084,7 +2084,7 @@ sub validate_level( $ ) {
 	    level_error( $level ) if @options > 3;
 
 	    for ( @options ) {
-		if ( defined $_ and $_ ne '' ) {
+		if ( supplied( $_ ) ) {
 		    level_error( $level ) unless /^\d+/;
 		    $olevel .= " --${prefix}-$suffixes[$index] $_";
 		}
@@ -2121,7 +2121,7 @@ sub default_log_level( $$ ) {
 
     my $value = $config{$level};
 
-    unless ( defined $value && $value ne '' ) {
+    unless ( supplied $value ) {
 	$config{$level} = $default;
     } else {
 	$config{$level} = validate_level $value;
@@ -3699,7 +3699,7 @@ sub generate_aux_config() {
 
 	my $value = $config{$option};
 
-	emit "[ -n \"\${$option:=$value}\" ]" if defined $value && $value ne '';
+	emit "[ -n \"\${$option:=$value}\" ]" if supplied $value;
     }
 
     sub conditionally_add_option1( $ ) {

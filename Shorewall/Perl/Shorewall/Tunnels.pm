@@ -141,10 +141,10 @@ sub setup_tunnels() {
 
 	fatal_error "Invalid port ($p:$remainder)" if defined $remainder;
 
-	if ( defined $p && $p ne '' ) {
+	if ( supplied $p ) {
 	    $port = $p;
 	    $protocol = $proto;
-	} elsif ( defined $proto && $proto ne '' ) {
+	} elsif ( supplied $proto ) {
 	    if ( "\L$proto" =~ /udp|tcp/ ) {
 		$protocol = $proto;
 	    } else {
@@ -166,10 +166,10 @@ sub setup_tunnels() {
 
 	fatal_error "Invalid port ($p:$remainder)" if defined $remainder;
 
-	if ( defined $p && $p ne '' ) {
+	if ( supplied $p ) {
 	    $port = $p;
 	    $protocol = $proto;
-	} elsif ( defined $proto && $proto ne '' ) {
+	} elsif ( supplied $proto ) {
 	    if ( "\L$proto" =~ /udp|tcp/ ) {
 		$protocol = $proto;
 	    } else {
@@ -191,10 +191,10 @@ sub setup_tunnels() {
 
 	fatal_error "Invalid port ($p:$remainder)" if defined $remainder;
 
-	if ( defined $p && $p ne '' ) {
+	if ( supplied $p ) {
 	    $port = $p;
 	    $protocol = $proto;
-	} elsif ( defined $proto && $proto ne '' ) {
+	} elsif ( supplied $proto ) {
 	    if ( "\L$proto" =~ /udp|tcp/ ) {
 		$protocol = $proto;
 	    } else {

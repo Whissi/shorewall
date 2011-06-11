@@ -328,13 +328,13 @@ sub process_tc_rule( ) {
 			    fatal_error "Invalid IPMARK parameter ($sd)" unless ( $sd eq 'src' || $sd eq 'dst' );
 			    $srcdst = $sd;
 
-			    if ( defined $m1 && $m1 ne '' ) {
+			    if ( supplied $m1 ) {
 				$val = numeric_value ($m1);
 				fatal_error "Invalid Mask ($m1)" unless defined $val && $val && $val <= 0xffffffff;
 				$mask1 = in_hex ( $val & 0xffffffff );
 			    }
 
-			    if ( defined $m2 && $m2 ne '' ) {
+			    if ( supplied $m2 ) {
 				$val = numeric_value ($m2);
 				fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
 				$mask2 = in_hex ( $val & 0xffffffff );
@@ -375,7 +375,7 @@ sub process_tc_rule( ) {
 
 			$target .= "--on-port $port";
 
-			if ( defined $ip && $ip ne '' ) {
+			if ( supplied $ip ) {
 			    validate_address $ip, 1;
 			    $target .= " --on-ip $ip";
 			}
@@ -510,7 +510,7 @@ sub process_simple_device() {
     if ( $in_bandwidth =~ /:/ ) {
 	my ( $in_band, $burst ) = split /:/, $in_bandwidth, 2;
 
-	if ( defined $burst && $burst ne '' ) {
+	if ( supplied $burst ) {
 	    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
 	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $in_burst = $burst;
@@ -544,14 +544,14 @@ sub process_simple_device() {
 
 	my $command = "run_tc qdisc add dev $physical root handle $number: tbf rate ${out_bandwidth}kbit";
 
-	if ( defined $burst && $burst ne '' ) {
+	if ( supplied $burst ) {
 	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " burst $burst";
 	} else {
 	    $command .= ' burst 10kb';
 	}
 
-	if ( defined $latency && $latency ne '' ) {
+	if ( supplied $latency ) {
 	    fatal_error "Invalid latency ($latency)" unless $latency =~ /^\d+(?:\.\d+)?(s|sec|secs|ms|msec|msecs|us|usec|usecs)?$/;
 	    $command .= " latency $latency";
 	} else {
@@ -560,12 +560,12 @@ sub process_simple_device() {
 
 	$command .= ' mpu 64'; #Assume Ethernet
 
-	if ( defined $peak && $peak ne '' ) {
+	if ( supplied $peak ) {
 	    fatal_error "Invalid peak ($peak)" unless $peak =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " peakrate $peak";
 	}
 
-	if ( defined $minburst && $minburst ne '' ) {
+	if ( supplied $minburst ) {
 	    fatal_error "Invalid minburst ($minburst)" unless $minburst =~ /^\d+(?:\.\d+)?(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $command .= " minburst $minburst";
 	}
@@ -679,7 +679,7 @@ sub validate_tc_device( ) {
     if ( $inband =~ /:/ ) {
 	my ( $in_band, $burst ) = split /:/, $inband, 2;
 
-	if ( defined $burst && $burst ne '' ) {
+	if ( supplied $burst ) {
 	    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
 	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
 	    $in_burst = $burst;

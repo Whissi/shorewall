@@ -192,7 +192,7 @@ sub setup_ecn()
 sub add_rule_pair( $$$$ ) {
     my ($chainref , $predicate , $target , $level ) = @_;
 
-    log_rule( $level, $chainref, "\U$target", $predicate )  if defined $level && $level ne '';
+    log_rule( $level, $chainref, "\U$target", $predicate )  if supplied $level;
     add_jump( $chainref , $target, 0, $predicate );
 }
 
@@ -215,7 +215,7 @@ sub setup_blacklist() {
 	$chainref  = dont_delete new_standard_chain 'blacklst' if @$zones;
 	$chainref1 = dont_delete new_standard_chain 'blackout' if @$zones1;
 
-	if ( defined $level && $level ne '' ) {
+	if ( supplied $level ) {
 	    my $logchainref = new_standard_chain 'blacklog';
 
 	    $target =~ s/A_//;
@@ -589,7 +589,7 @@ sub add_common_rules() {
 
 	my $smurfdest = $config{SMURF_DISPOSITION};
 
-	if ( defined $config{SMURF_LOG_LEVEL} && $config{SMURF_LOG_LEVEL} ne '' ) {
+	if ( supplied $config{SMURF_LOG_LEVEL} ) {
 	    my $smurfref = new_chain( 'filter', 'smurflog' );
 
 	    log_rule_limit( $config{SMURF_LOG_LEVEL},
@@ -922,7 +922,7 @@ sub setup_mac_lists( $ ) {
 			for my $address ( split ',', $addresses ) {
 			    my $source = match_source_net $address;
 			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
-				if defined $level && $level ne '';
+				if supplied $level;
 			    
 			    if ( $audit && $disposition ne 'ACCEPT' ) {
 				if ( $config{FAKE_AUDIT} ) {
@@ -936,7 +936,7 @@ sub setup_mac_lists( $ ) {
 			}
 		    } else {
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
-			    if defined $level && $level ne '';
+			    if supplied $level;
 
 			if ( $audit && $disposition ne 'ACCEPT' ) {
 			    if ( $config{FAKE_AUDIT} ) {

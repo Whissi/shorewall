@@ -73,7 +73,7 @@ my @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-my $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
+my $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -1565,6 +1565,11 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 	    next;
 	}
 
+	if ( $format == 2 && $target eq 'DEFAULTS' ) {
+	    default_params( split_list $source, 'defaults' );
+	    next;
+	}
+	      
 	$mtarget = merge_levels $target, $mtarget;
 
 	if ( $mtarget =~ /^PARAM(:.*)?$/ ) {

@@ -261,6 +261,16 @@ REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
 
       <para>If you want to make '-' a parameter value, use '--' (e.g.,
       ACTION(REDIRECT,--.info)).</para>
+
+      <para>Beginning with Shorewall 4.4.21, you can specify the default
+      values of your FORMAT-2 actions:</para>
+
+      <programlisting>DEFAULTS <replaceable>def1</replaceable>,<replaceable>def2</replaceable>,...</programlisting>
+
+      <para>where <replaceable>def1</replaceable> is the default value for the
+      first parameter, <replaceable>def2</replaceable> is the default value
+      for the second parameter and so on. You can specify an empty default
+      using '-' (e.g. DEFAULTS DROP,-,audit).</para>
     </section>
 
     <section>

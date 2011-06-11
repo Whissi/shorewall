@@ -552,6 +552,35 @@ loc     eth2            -</programlisting>
                 <para>This option can also be enabled globally in the <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5)
                 file.</para>
+
+                <note>
+                  <para>There are certain cases where
+                  <option>routefilter</option> cannot be used on an
+                  interface:</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para>If USE_DEFAULT_RT=Yes in <ulink
+                      url="shorewall.conf.html">shorewall.conf</ulink>(5) and
+                      the interface is listed in <ulink
+                      url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>If there is an entry for the interface in <ulink
+                      url="shorewall-providers.html">shorewall-providers</ulink>(5)
+                      that doesn't specify the <option>balance</option>
+                      option.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>If IPSEC is used to allow a road-warrior to have a
+                      local address, then any interface through which the
+                      road-warrior might connect cannot specify
+                      <option>routefilter</option>.</para>
+                    </listitem>
+                  </itemizedlist>
+                </note>
               </listitem>
             </varlistentry>
 
@@ -559,11 +588,13 @@ loc     eth2            -</programlisting>
               <term>sfilter=(<emphasis>net</emphasis>[,...])</term>
 
               <listitem>
-                <para>Added in Shorewall 4.4.20. This option should be used on
-                bridges or other interfaces with the
-                <option>routeback</option> option. On these interfaces, it
-                should list those local networks that are not routed out of
-                the bridge or interface.</para>
+                <para>Added in Shorewall 4.4.20. This option provides an
+                anti-spoofing alternative to <option>routefilter</option> on
+                interfaces where that option cannot be used, but where the
+                <option>routeback</option> option is required (on a bridge,
+                for example). On these interfaces, <option>sfilter</option>
+                should list those local networks that are connected to the
+                firewall through other interfaces.</para>
               </listitem>
             </varlistentry>
 

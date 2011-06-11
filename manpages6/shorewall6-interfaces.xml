@@ -341,11 +341,16 @@ loc     eth2            -</programlisting>
               <term>sfilter=(<emphasis>net</emphasis>[,...])</term>
 
               <listitem>
-                <para>Added in Shorewall 4.4.20. This option should be used on
-                bridges or other interfaces with the
-                <option>routeback</option> option. On these interfaces, it
-                should list those local networks that are not routed out of
-                the bridge or interface.</para>
+                <para>Added in Shorewall 4.4.20. At this writing (spring
+                2011), Linux does not support reverse path filtering (RFC3704)
+                for IPv6. In its absense, <option>sfilter</option> may be used
+                as an anti-spoofing measure.</para>
+
+                <para>This option should be used on bridges or other
+                interfaces with the <option>routeback</option> option. On
+                these interfaces, <option>sfilter</option> should list those
+                local networks that are connected to the firewall through
+                other interfaces.</para>
               </listitem>
             </varlistentry>
 

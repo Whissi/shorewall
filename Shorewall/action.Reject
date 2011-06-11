@@ -14,6 +14,26 @@
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
+FORMAT 2
+
+BEGIN PERL
+use Shorewall::Config;
+
+my $p1 = read_action_param(1);
+
+if ( defined $p1 && $p1 eq 'audit' ) {
+   my ( $p2, $p3 ) = ( read_action_param(2) , read_action_param(3) );
+
+   set_action_param( 2, 'A_DROP')     unless defined $p2;
+   set_action_param( 3, 'A_REJECT')   unless defined $p3;
+};
+
+1;
+
+END PERL
+
+DEFAULTS -,REJECT,REJECT
+
 #TARGET		SOURCE	DEST	PROTO
 #
 # Count packets that come through here
@@ -22,33 +42,33 @@ COUNT
 #
 # Don't log 'auth' -- REJECT
 #
-Auth(REJECT)
+Auth($3)
 #
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).
 #
-dropBcast
+dropBcast($1)
 #
 # ACCEPT critical ICMP types
 #
-AllowICMPs	-	-	icmp
+AllowICMPs($1)	-	-	icmp
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
 # rejected).
 #
-dropInvalid
+dropInvalid($1)
 #
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
-SMB(REJECT)
-DropUPnP
+SMB($2)
+DropUPnP($1)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-dropNotSyn	-	-	tcp
+dropNotSyn($1)	-	-	tcp
 #
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-DropDNSrep
+DropDNSrep($1)

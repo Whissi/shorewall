@@ -101,6 +101,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       push_action_params
 				       pop_action_params
 				       default_action_params
+				       read_action_param
 				       read_a_line
 				       validate_level
 				       which
@@ -1817,6 +1818,13 @@ sub default_action_params {
 	my $curval = $actparms{$i};
 	$actparms{$i} =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless defined $curval && $curval ne '';
     }
+}
+
+sub read_action_param( $ ) {
+    my $i = shift;
+
+    fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/;
+    $actparams{$i};
 }
 
 #

@@ -51,6 +51,8 @@ our @EXPORT = qw(
 		 progress_message_nocompress
 		 progress_message2
 		 progress_message3
+		 read_action_param
+		 set_action_param
                 );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize set_config_path shorewall);
@@ -101,7 +103,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       push_action_params
 				       pop_action_params
 				       default_action_params
-				       read_action_param
 				       read_a_line
 				       validate_level
 				       which
@@ -1824,7 +1825,14 @@ sub read_action_param( $ ) {
     my $i = shift;
 
     fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/;
-    $actparams{$i};
+    $actparms{$i};
+}
+
+sub set_action_param( $$ ) {
+    my $i = shift;
+
+    fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/;
+    $actparms{$i} = shift;
 }
 
 #

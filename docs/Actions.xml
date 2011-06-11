@@ -172,6 +172,97 @@ ACCEPT   -              -               tcp     135,139,445
       Remember — default actions are only invoked immediately before the
       packet is going to be dropped or rejected anyway!!!</para>
     </important>
+
+    <para>Beginning with Shorewall 4.4.21, the standard Drop and Reject
+    options are parameterized. Each has three parameters as follows:</para>
+
+    <informaltable>
+      <tgroup cols="4">
+        <tbody>
+          <row>
+            <entry>ACTION</entry>
+
+            <entry>PARAMETER</entry>
+
+            <entry>VALUE</entry>
+
+            <entry>DEFAULT</entry>
+          </row>
+
+          <row>
+            <entry>Drop</entry>
+
+            <entry>1</entry>
+
+            <entry>Either '-' or 'audit'. 'audit' causes auditing by the
+            builtin actions invoked by Drop</entry>
+
+            <entry>-</entry>
+          </row>
+
+          <row>
+            <entry>Drop</entry>
+
+            <entry>2</entry>
+
+            <entry>Determines what to do with Auth requests</entry>
+
+            <entry>REJECT or A_REJECT depending on the setting of parameter
+            1</entry>
+          </row>
+
+          <row>
+            <entry>Drop</entry>
+
+            <entry>3</entry>
+
+            <entry>Determines what to do with SMB</entry>
+
+            <entry>DROP or A_DROP depending on the setting of parameter
+            1</entry>
+          </row>
+
+          <row>
+            <entry>Reject</entry>
+
+            <entry>1</entry>
+
+            <entry>Either '-' or 'audit'. 'audit' causes auditing by the
+            builtin actions invoked by Drop</entry>
+
+            <entry>-</entry>
+          </row>
+
+          <row>
+            <entry>Reject</entry>
+
+            <entry>2</entry>
+
+            <entry>Determines what to do with Auth requests</entry>
+
+            <entry>REJECT or A_REJECT depending on the setting of parameter
+            1</entry>
+          </row>
+
+          <row>
+            <entry>Reject</entry>
+
+            <entry>3</entry>
+
+            <entry>Determines what to do with SMB</entry>
+
+            <entry>REJECT or A_REJECT depending on the setting of parameter
+            1</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>The parameters may be specified in either shorewall.conf (e.g.,
+    DROP_DEFAULT=<emphasis role="bold">Drop(-,DROP)</emphasis> or in the
+    POLICY column of <ulink
+    url="manpages/shorewall-policy.html">shorewall-policy</ulink>(5) (e.g.,
+    DROP:<emphasis role="bold">Drop(audit)</emphasis>:audit).</para>
   </section>
 
   <section id="Defining">

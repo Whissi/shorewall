@@ -51,6 +51,7 @@ our @EXPORT = qw(
 		 progress_message_nocompress
 		 progress_message2
 		 progress_message3
+		 supplied
 		 read_action_param
 		 set_action_param
                 );
@@ -1297,6 +1298,15 @@ sub split_list1( $$ ) {
     }
 
     @list2;
+}
+
+#
+# Determine if a value has been supplied
+#
+sub supplied( $ ) {
+    my $val = shift;
+
+    defined $val && $val ne '';
 }
 
 #

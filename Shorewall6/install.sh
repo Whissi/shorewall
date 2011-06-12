@@ -106,7 +106,7 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall6"
 fi
 
-PLAIN=Yes
+ANNOTATED=
 DEBIAN=
 CYGWIN=
 MAC=
@@ -187,11 +187,11 @@ while [ $finished -eq 0 ]; do
 			option=${option#s}
 			;;
 		    a*)
-			PLAIN=
+			ANNOTATED=Yes
 			option=${option#a}
 			;;
 		    p*)
-			PLAIN=Yes
+			ANNOTATED=
 			option=${option#p}
 			;;
 		    *)
@@ -372,7 +372,7 @@ echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall6/conf
 install_file actions.std ${DESTDIR}/usr/share/shorewall6/actions.std 0644
 echo "Standard actions file installed as ${DESTDIR}/usr/shared/shorewall6/actions.std"
 
-if [ -z "$PLAIN" ]; then
+if [ -n "$ANNOTATED" ]; then
     mkdir annotated
     cp configfiles/* annotated/
     cd annotated

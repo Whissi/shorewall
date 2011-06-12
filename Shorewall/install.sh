@@ -106,7 +106,7 @@ if [ -z "$INIT" ] ; then
 	INIT="shorewall"
 fi
 
-PLAIN=Yes
+ANNOTATED=
 SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 [ -n "${LIBEXEC:=/usr/share}" ]
@@ -186,11 +186,11 @@ while [ $finished -eq 0 ]; do
 			option=${option#s}
 			;;
 		    a*)
-			PLAIN=
+			ANNOTATED=Yes
 			option=${option#a}
 			;;
 		    p*)
-			PLAIN=Yes
+			ANNOTATED=
 			option=${option#p}
 			;;
 		    *)
@@ -328,7 +328,7 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}/etc/logrotate.d
 fi
 
-if [ -z "$PLAIN" ]; then
+if [ -n "$ANNOTATED" ]; then
     mkdir annotated/
     cp configfiles/* annotated/
     for f in annotated/*.annotated; do

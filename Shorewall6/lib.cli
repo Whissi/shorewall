@@ -292,6 +292,46 @@ do_save() {
 	status=1
     fi
 
+    case ${SAVE_IPSETS:=No} in
+	[Yy]es)
+	    case ${IPSET:=ipset} in
+		*/*)
+		    if [ ! -x "$IPSET" ]; then
+			error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
+			IPSET=
+		    fi
+		    ;;
+		*)
+		    IPSET="$(mywhich $IPSET)"
+		    [ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
+		    ;;
+	    esac
+
+	    if [ -n "$IPSET" ]; then
+		if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
+                    #
+                    # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
+                    #
+		    hack='| grep -v /31'
+		else
+		    hack=
+		fi
+
+		if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
+                    #
+                    # Don't save an 'empty' file
+                    #
+		    grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+		fi
+	    fi
+	    ;;
+	[Nn]o)
+	    ;;
+	*)
+	    error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
+	    ;;
+    esac
+
     return $status
 }
 
@@ -355,6 +395,34 @@ show_routing() {
 	heading "Routing Table"
 	ip -6 route list
     fi
+}
+
+#
+# 'list dynamic' command executor
+#
+find_sets() {
+    local junk
+    local setname
+
+    ipset -L -n | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
+}
+
+list_zone() {
+
+    local sets
+    local setname
+
+    [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
+
+    sets=$(find_sets $1)
+
+    for setname in $sets; do
+	echo "${setname#${1}_}:"
+	ipset -L $setname -n | awk 'BEGIN        {prnt=0;}; \
+                                    /^Members:/  {prnt=1; next; }; \
+                                    /^Bindings:/ {prnt=0; }; \
+                                                 { if (prnt == 1) print "   ", $1; };'
+    done
 }
 
 #
@@ -535,7 +603,14 @@ show_command() {
 	    [ $# -gt 2 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION Traffic Control at $g_hostname - $(date)"
 	    echo
-	    show_tc
+	    shift
+
+	    if [ -z "$1" ]; then
+		$IP6TABLES -t mangle -L -n -v
+		echo
+	    fi
+
+	    show_tc $1
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1
@@ -630,9 +705,14 @@ show_command() {
 		case $1 in
 		    actions)
 			[ $# -gt 1 ] && usage 1
-			echo "allowBcast          # Accept Multicast and Anycast Packets"
-			echo "dropBcast           # Silently Drop Multicast and Anycast Packets"
+			echo "A_ACCEPT            # Audit and accept the connection"
+			echo "A_DROP              # Audit and drop the connection"
+			echo "A_REJECT            # Audit and reject the connection "
+			echo "allowBcast          # Silently Allow Broadcast/multicast"
 			echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
+			echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
+			echo "allowoutUPnP        # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
+			echo "dropBcast           # Silently Drop Broadcast/multicast"
 			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
 			echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
 			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
@@ -643,6 +723,18 @@ show_command() {
 			    grep -Ev '^\#|^$' ${SHAREDIR}/actions.std
 			fi
 
+			return
+			;;
+		    macro)
+			[ $# -ne 2 ] && usage 1
+			for directory in $(split $CONFIG_PATH); do
+			    if [ -f ${directory}/macro.$2 ]; then
+				echo "Shorewall6 $SHOREWALL_VERSION Macro $2 at $g_hostname - $(date)"
+				cat ${directory}/macro.$2
+				return
+			    fi
+			done
+			echo "   WARNING: Macro $2 not found" >&2
 			return
 			;;
 		    macros)
@@ -672,13 +764,20 @@ show_command() {
 	    fi
 
 	    if [ $# -gt 0 ]; then
+		if [ $1 = dynamic -a $# -gt 1 ]; then
+		    shift
+		    [ $# -eq 1 ] || usage 1
+		    list_zone $1
+		    return;
+                fi
+
 		[ -n "$table_given" ] || for chain in $*; do
 		    if ! qt $IP6TABLES -t $table -L $chain $g_ipt_options; then
 			error_message "ERROR: Chain '$chain' is not recognized by $IP6TABLES."
 			exit 1
 		    fi
 		done
-		
+
 		echo "$g_product $SHOREWALL_VERSION $([ $# -gt 1 ] && echo "Chains " || echo "Chain ")$* at $g_hostname - $(date)"
 		echo
 		show_reset
@@ -1086,92 +1185,188 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 }
 
 #
-# 'hits' commmand executor
+# Replace commas with spaces and echo the result
 #
-hits_command() {
-    local finished
-    finished=0
-    local today
-    today=
+separate_list() {
+    local list
+    list="$@"
+    local part
+    local newlist
+    local firstpart
+    local lastpart
+    local enclosure
 
-    while [ $finished -eq 0 -a $# -gt 0 ]; do
-	option=$1
-	case $option in
-	    -*)
-		option=${option#-}
-
-		while [ -n "$option" ]; do
-		    case $option in
-			-)
-			    finished=1
-			    option=
-			    ;;
-			t*)
-			    today=$(date +'^%b %_d.*')
-			    option=${option#t}
+    case "$list" in
+	*,|,*|*,,*|*[[:space:]]*)
+	    #
+	    # There's been whining about us not catching embedded white space in
+	    # comma-separated lists. This is an attempt to snag some of the cases.
+	    #
+            echo "WARNING -- invalid comma-separated list \"$@\"" >&2
+	    ;;
+	*\[*\]*)
+	    #
+	    # Where we need to embed comma-separated lists within lists, we enclose them
+	    # within square brackets.
+	    #
+	    firstpart=${list%%\[*}
+	    lastpart=${list#*\[}
+	    enclosure=${lastpart%%\]*}
+	    lastpart=${lastpart#*\]}
+	    case $lastpart in
+		\,*)
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure] $(separate_list ${lastpart#,})"
 			    ;;
 			*)
-			    usage 1
+			    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
 			    ;;
 		    esac
-		done
-		shift
-		;;
-	    *)
-		finished=1
-		;;
-	esac
+		    ;;
+		*)
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure]$(separate_list $lastpart)"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    return
+	    ;;
+    esac
+
+    list="$@"
+    part="${list%%,*}"
+    newlist="$part"
+
+    while [ "x$part" != "x$list" ]; do
+	list="${list#*,}";
+	part="${list%%,*}";
+	newlist="$newlist $part";
     done
 
-    [ $# -eq 0 ] || usage 1
+    echo "$newlist"
+}
 
-    clear_term
-    echo "$g_product $SHOREWALL_VERSION Hits at $g_hostname - $(date)"
-    echo
-
-    timeout=30
-
-    if $g_logread | grep -q "${today}IN=.* OUT=" ; then
-	echo "   HITS IP	        DATE"
-	echo "   ---- --------------- ------"
-	$g_logread | grep "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | while read count address month day; do
-	    printf '%7d %-15s %3s %2d\n' $count $address $month $day
-	done
-
-	echo ""
-
-	echo "   HITS IP	        PORT"
-	echo "   ---- --------------- -----"
-	$g_logread | grep  "${today}IN=.* OUT=" | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
-						t
-						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn | while read count address port; do
-	    printf '%7d %-15s %d\n' $count $address $port
-	done
-
-	echo ""
-
-	echo "   HITS DATE"
-	echo "   ---- ------"
-	$g_logread | grep  "${today}IN=.* OUT=" | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn | while read count month day; do
-	    printf '%7d %3s %2d\n' $count $month $day
-	done
-
-	echo ""
-
-	echo "   HITS  PORT SERVICE(S)"
-	echo "   ---- ----- ----------"
-	$g_logread | grep "${today}IN=.* OUT=.*DPT" | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | while read count port ; do
-	    # List all services defined for the given port
-	    srv=$(grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | cut -f 1 -d' ' | sort -u)
-	    srv=$(echo $srv | sed 's/ /,/g')
-
-	    if [ -n "$srv" ] ; then
-		printf '%7d %5d %s\n' $count $port $srv
-	    else
-		printf '%7d %5d\n' $count $port
-	    fi
-	done
+#
+# add command executor
+#
+add_command() {
+    local interface host hostlist zone ipset
+    if ! shorewall6_is_started ; then
+	echo "Shorewall6 Not Started" >&2
+	exit 2
     fi
+
+    case "$IPSET" in
+	*/*)
+	    ;;
+	*)
+	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
+	    ;;
+    esac
+    #
+    # Normalize host list
+    #
+    while [ $# -gt 1 ]; do
+	interface=${1%%:*}
+	host=${1#*:}
+	[ "$host" = "$1" ] && host=
+
+	if [ -z "$host" ]; then
+	    hostlist="$hostlist $interface:::/0"
+	else
+	    for h in $(separate_list $host); do
+		hostlist="$hostlist $interface:$h"
+	    done
+	fi
+
+	shift
+    done
+
+    zone=$1
+
+    for host in $hostlist; do
+	interface=${host%:*}
+
+	ipset=${zone}_${interface};
+
+	if ! qt $IPSET -L $ipset -n; then
+	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
+	fi
+
+	host=${host#*:}
+
+	if $IPSET -A $ipset $host; then
+	    echo "Host $interface:$host added to zone $zone"
+	else
+	    fatal_error "Unable to add $interface:$host to zone $zone"
+	fi
+    done
+
+}
+
+#
+# delete command executor
+#
+delete_command() {
+    local interface host hostent hostlist zone ipset
+    if ! shorewall_is_started ; then
+	echo "Shorewall6 Not Started" >&2
+	exit 2;
+    fi
+
+    case "$IPSET" in
+	*/*)
+	    ;;
+	*)
+	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
+	    ;;
+    esac
+
+    #
+    # Normalize host list
+    #
+    while [ $# -gt 1 ]; do
+	interface=${1%%:*}
+	host=${1#*:}
+	[ "$host" = "$1" ] && host=
+
+	if [ -z "$host" ]; then
+	    hostlist="$hostlist $interface:::/0"
+	else
+	    for h in $(separate_list $host); do
+		hostlist="$hostlist $interface:$h"
+	    done
+	fi
+
+	shift
+    done
+
+    zone=$1
+
+    for hostent in $hostlist; do
+	interface=${hostent%:*}
+
+	ipset=${zone}_${interface};
+
+	if ! qt $IPSET -L $ipset -n; then
+	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
+	fi
+
+	host=${hostent#*:}
+
+	if $IPSET -D $ipset $host; then
+	    echo "Host $hostend deleted from zone $zone"
+	else
+	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
+	fi
+    done
+
 }
 
 #
@@ -1467,6 +1662,10 @@ determine_capabilities() {
 	    if qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
 		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
 		IPSET_MATCH=Yes
+	    elif qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
+		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
+		IPSET_MATCH=Yes
+		OLD_IPSET_MATCH=Yes
 	    fi
 	    qt ipset -X $chain
 	fi

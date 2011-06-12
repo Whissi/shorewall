@@ -1427,6 +1427,7 @@ usage() # $1 = exit status
     echo "   show classifiers"
     echo "   show config"
     echo "   show connections"
+    echo "   show dynamic <zone>"
     echo "   show filters"
     echo "   show ip"
     echo "   show [ -m ] log [<regex>]"
@@ -1843,6 +1844,16 @@ case "$COMMAND" in
     allow)
 	get_config
 	allow_command $@
+	;;
+    add)
+	get_config
+	shift
+	add_command $@
+	;;
+    delete)
+	get_config
+	shift
+	delete_command $@
 	;;
     save)
 	get_config

@@ -108,7 +108,7 @@ sub generate_script_1( $ ) {
 ################################################################################
 EOF
 
-    for my $exit qw/init start tcclear started stop stopped clear refresh refreshed restored/ {
+    for my $exit ( qw/init start tcclear started stop stopped clear refresh refreshed restored/ ) {
 	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
@@ -116,7 +116,7 @@ EOF
 	emit '}';
     }
 
-    for my $exit qw/isusable findgw/ {
+    for my $exit ( qw/isusable findgw/ ) {
 	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file($exit, 1) or emit 'true';

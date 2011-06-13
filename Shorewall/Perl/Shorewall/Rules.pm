@@ -460,7 +460,7 @@ sub process_policies()
     my $firewall = firewall_zone;
     our @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
 
-    for my $option qw( DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) {
+    for my $option ( qw( DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) ) {
 	my $action = $config{$option};
 	next if $action eq 'none';
 	my $actiontype = $targets{$action};

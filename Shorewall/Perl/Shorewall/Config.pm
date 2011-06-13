@@ -3511,7 +3511,7 @@ sub get_configuration( $ ) {
     fatal_error 'IPSECFILE=ipsec is not supported by Shorewall ' . $globals{VERSION} if $config{IPSECFILE} eq 'ipsec';
     fatal_error "Invalid IPSECFILE value ($config{IPSECFILE}"                    unless $config{IPSECFILE} eq 'zones';
 
-    for my $default qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ {
+    for my $default ( qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
 
@@ -3716,7 +3716,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE) ) {
 	conditionally_add_option $option;
     }
 

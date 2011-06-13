@@ -1826,7 +1826,7 @@ sub generate_matrix() {
     }
 
     if ( $config{LOGALLNEW} ) {
-	for my $table qw/mangle nat filter/ {
+	for my $table ( qw/mangle nat filter/ ) {
 	    for my $chain ( @{$builtins{$table}} ) {
 		log_rule_limit
 		    $config{LOGALLNEW} ,

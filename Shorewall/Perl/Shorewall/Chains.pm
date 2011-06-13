@@ -1596,24 +1596,24 @@ sub initialize_chain_table($) {
 		    'DEL'             => STANDARD + SET,
 		   );
 
-	for my $chain qw(OUTPUT PREROUTING) {
+	for my $chain ( qw(OUTPUT PREROUTING) ) {
 	    new_builtin_chain 'raw', $chain, 'ACCEPT';
 	}
 
-	for my $chain qw(INPUT OUTPUT FORWARD) {
+	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
 	}
 
-	for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
+	for my $chain ( qw(PREROUTING POSTROUTING OUTPUT) ) {
 	    new_builtin_chain 'nat', $chain, 'ACCEPT';
 	}
 
-	for my $chain qw(PREROUTING INPUT OUTPUT ) {
+	for my $chain ( qw(PREROUTING INPUT OUTPUT ) ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    for my $chain qw( FORWARD POSTROUTING ) {
+	    for my $chain ( qw( FORWARD POSTROUTING ) ) {
 		new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	    }
 	}
@@ -1639,19 +1639,19 @@ sub initialize_chain_table($) {
 		    'DEL'             => STANDARD + SET,
 		   );
 
-	for my $chain qw(OUTPUT PREROUTING) {
+	for my $chain ( qw(OUTPUT PREROUTING) ) {
 	    new_builtin_chain 'raw', $chain, 'ACCEPT';
 	}
 
-	for my $chain qw(INPUT OUTPUT FORWARD) {
+	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
 	}
 
-	for my $chain qw(PREROUTING POSTROUTING OUTPUT) {
+	for my $chain ( qw(PREROUTING POSTROUTING OUTPUT) ) {
 	    new_builtin_chain 'nat', $chain, 'ACCEPT';
 	}
 
-	for my $chain qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) {
+	for my $chain ( qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
     }
@@ -4834,7 +4834,7 @@ sub create_chainlist_reload($) {
 
 	enter_cat_mode;
 
-	for $table qw(raw nat mangle filter) {
+	for $table ( qw(raw nat mangle filter) ) {
 	    my $tableref=$chains{$table};
 
 	    next unless $tableref;

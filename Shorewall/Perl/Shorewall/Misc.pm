@@ -559,9 +559,6 @@ sub add_common_rules() {
 	
 	    if ( @filters ) {
 		add_jump( $chainref  , $target, 1, match_source_net( $_ ) . $ipsec ), $chainref->{filtered}++ for @filters;
-	    } elsif ( $interfaceref->{bridge} eq $interface ) {
-		add_jump( $chainref , $target, 1, match_dest_dev( $interface ) . $ipsec ), $chainref->{filtered}++
-		    unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter} || $interfaceref->{physical} eq '+';
 	    }
 	
 	    add_rule( $chainref,  "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" ), $chainref->{filtered}++ if $config{FASTACCEPT};

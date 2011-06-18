@@ -219,7 +219,7 @@ our %defaults =
 	  LOGFORMAT => 'Shorewall:%s:%s:',
 	  LOGTAGONLY => 'No',
 	  LOGLIMIT => '',
-	  LOGALLNEW => 'No',
+	  LOGALLNEW => 'none',
 	  BLACKLIST_LOGLEVEL => 'none',
 	  MACLIST_LOG_LEVEL => 'none',
 	  TCP_FLAGS_LOG_LEVEL => 'none',
@@ -233,6 +233,8 @@ our %defaults =
 	  TC => '',
 	  IPSET => '',
 	  PERL => '',
+	  IPTABLES => '',
+	  IP6TABLES => '',
 	  #
 	  #PATH is inherited
 	  #
@@ -309,6 +311,7 @@ our %defaults =
 	  COMPLETE => 'No',
 	  EXPORTMODULES => 'Yes',
 	  LEGACY_FASTSTART => 'Yes',
+	  RESTORE_DEFAULT_ROUTE => 'Yes',
 	  #
 	  # Packet Disposition
 	  #
@@ -3896,7 +3899,7 @@ sub upgrade_config_file( $ ) {
 		       LOGBURST           => '' ,
 		       EXPORTPARAMS       => 'no' );
 
-    my @undocumented = ( qw( FAKE_AUDIT ) );
+    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS FAKE_AUDIT ) );
 
     if ( -f $fn ) {
 	my ( $template, $output );
@@ -3909,10 +3912,19 @@ sub upgrade_config_file( $ ) {
 
 	while ( <$template> ) {
 	    if ( /^(\w+)=/ ) {
-		my ($var, $val ) = ( $1, $rawconfig{$1} );
-		$val = $defaults{$var} unless defined $val;
+		my ($var, $val, $default ) = ( $1, $rawconfig{$1}, $defaults{$1} );
+
+		fatal_error "Default value for $var is undefined" unless defined $default;
+
+		unless ( supplied $val ) {
+		    if ( defined $val ) {
+			$val = $default if $default eq 'Yes' || $default eq 'No';
+		    } else {
+			$val = $default;
+		    }
+		}
 		
-		if ( $val =~ /\s/ ) {
+		unless ( $val =~ /^\w*$/ ) {
 		    $val = qq("$val") unless $val =~ /'/;
 		}
  
@@ -3927,19 +3939,21 @@ sub upgrade_config_file( $ ) {
 	my $heading_printed;
 
 	for ( @undocumented ) {
-	    if ( $rawconfig{$_} ) {
+	    if ( defined $rawconfig{$_} ) {
 
 		unless ( $heading_printed ) {
 		    print $output
-'#################################################################################
+'
+#################################################################################
 #                          U N D O C U M E N T E D
 #                               O P T I O N S
 #################################################################################
+
 ';
 		    $heading_printed = 1;
 		}
 
-		print $output "$_=$rawconfig{$_}\n";
+		print $output "$_=$rawconfig{$_}\n\n";
 	    }
 	}
 
@@ -3950,15 +3964,17 @@ sub upgrade_config_file( $ ) {
 		if ( lc $rawconfig{$_} ne $deprecated{$_} ) {
 		    unless ( $heading_printed ) {
 			print $output
-'#################################################################################
+'
+#################################################################################
 #                           D E P R E C A T E D
 #                               O P T I O N S
 #################################################################################
+
 ';
 			$heading_printed = 1;
 		    }
 
-		    print $output "$_=$rawconfig{$_}\n";
+		    print $output "$_=$rawconfig{$_}\n\n";
 
 		    warning_message "Deprecated option $_ is being set in your $product.conf file";
 		}

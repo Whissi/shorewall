@@ -208,6 +208,9 @@ our %globals;
 # From shorewall.conf file - exported to other modules.
 #
 our %config;
+#
+# Raw values from shorewall.conf - used to upgrade the config file
+#
 my  %rawconfig;
 #
 # Config options and global settings that are to be copied to output script
@@ -2854,7 +2857,9 @@ sub process_shorewall_conf() {
 	    open_file $file;
 
 	    first_entry "Processing $file...";
-
+	    #
+	    # Don't expand shell variables
+	    #
 	    while ( read_a_line(0,0) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
@@ -2874,7 +2879,9 @@ sub process_shorewall_conf() {
     } else {
 	fatal_error "$file does not exist!";
     }
-
+    #
+    # Now that we have the raw values stored, we expand shell variables and store the expanded values
+    #
     while ( my ( $opt, $v ) = each %rawconfig ) {
 	my $count = 0;
 
@@ -2901,8 +2908,7 @@ sub process_shorewall_conf() {
 	}
 
 	$config{$opt} = $v;
-    }
-	
+    }	
 }
 
 #

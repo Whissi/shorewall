@@ -48,6 +48,8 @@
 
       <arg><option>-T</option></arg>
 
+      <arg><option>-u</option><arg><option>-a</option></arg></arg>
+
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -600,6 +602,20 @@
           <para>The <option>-T</option> option was added in Shorewall 4.4.20
           and causes a Perl stack trace to be included with each
           compiler-generated error and warning message.</para>
+
+          <para>The <option>-u</option> option was added in Shorewall 4.4.21
+          and causes the compiler to upgrade
+          <filename>/etc/shorewall6/shorewall6.conf</filename>. The upgrade
+          will add new options with their default values and will move
+          deprecated options with non-defaults to a deprecated options section
+          at the bottom of the file. Your existing
+          <filename>shorewall6.conf</filename> file is renamed
+          <filename>shorewall6.conf.bak.</filename></para>
+
+          <para>The <option>-a</option> option was added in Shorewall 4.4.21
+          and is only meaningful when used with <option>-u</option>. It causes
+          the upgraded <filename>shorewall6.conf</filename> file to be
+          annotated with documentation.</para>
         </listitem>
       </varlistentry>
 

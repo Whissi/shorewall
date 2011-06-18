@@ -516,15 +516,15 @@ EOF
 
 }
 
-#
+#1
 #  The Compiler.
 #
 #     Arguments are named -- see %parms below.
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $upgrade , $annotate ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,         0,        );
 
     $export = 0;
     $test   = 0;
@@ -556,8 +556,10 @@ sub compiler {
 		  log           => { store => \$log },
 		  log_verbosity => { store => \$log_verbosity, validate => \&validate_verbosity } ,
 		  test          => { store => \$test },
-		  preview       => { store => \$preview },
-		  confess       => { store => \$confess },
+		  preview       => { store => \$preview,       validate=> \&validate_boolean    } ,    
+		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
+		  upgrade       => { store => \$upgrade,       validate=> \&validate_boolean    } ,
+		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,		  
 		);
     #
     #                               P A R A M E T E R    P R O C E S S I N G
@@ -887,6 +889,11 @@ sub compiler {
 	    #
 	    process_routestopped;
 	}
+
+	#
+	# Upgrade the configuration file if requested
+	#
+	upgrade_config_file( $annotate ) if $upgrade;
 
 	if ( $family == F_IPV4 ) {
 	    progress_message3 "Shorewall configuration verified";

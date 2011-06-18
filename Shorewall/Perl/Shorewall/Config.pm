@@ -121,6 +121,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
+				       upgrade_config_file
 
 				       $product
 				       $Product
@@ -196,6 +197,10 @@ my ( $dir, $file );
 #
 my $tempfile;
 #
+# Fully qualified name of the configuration file
+#
+my $configfile;
+#
 # Misc Globals exported to other modules
 #
 our %globals;
@@ -203,6 +208,7 @@ our %globals;
 # From shorewall.conf file - exported to other modules.
 #
 our %config;
+my  %rawconfig;
 #
 # Config options and global settings that are to be copied to output script
 #
@@ -424,7 +430,7 @@ sub initialize( $ ) {
 		    EXPORT     => 0,
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.21-Beta1",
+		    VERSION    => "4.4.21-Beta2",
 		    CAPVERSION => 40417 ,
 		  );
     #
@@ -1920,24 +1926,26 @@ sub read_a_line(;$) {
 	    #
 	    # Expand Shell Variables using %params and %actparms
 	    #
-	    #                            $1      $2   $3      -     $4
-	    while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+	    unless ( $currentline =~ /^(\w+)='.*'$/ ) {
+		#                            $1      $2   $3      -     $4
+		while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+		    
+		    my ( $first, $var, $rest ) = ( $1, $3, $4);
 
-		my ( $first, $var, $rest ) = ( $1, $3, $4);
+		    my $val;
 
-		my $val;
+		    if ( $var =~ /^\d+$/ ) {
+			fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
+			$val = $actparms{$var};
+		    } else {
+			fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+			$val = $params{$var};
+		    }
 
-		if ( $var =~ /^\d+$/ ) {
-		    fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
-		    $val = $actparms{$var};
-		} else {
-		    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
-		    $val = $params{$var};
+		    $val = '' unless defined $val;
+		    $currentline = join( '', $first , $val , $rest );
+		    fatal_error "Variable Expansion Loop" if ++$count > 100;
 		}
-
-		$val = '' unless defined $val;
-		$currentline = join( '', $first , $val , $rest );
-		fatal_error "Variable Expansion Loop" if ++$count > 100;
 	    }
 
 	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
@@ -2014,7 +2022,7 @@ sub default_yes_no ( $$ ) {
 	if (  $curval eq 'no' ) {
 	    $config{$var} = '';
 	} else {
-	    fatal_error "Invalid value for $var ($val)" unless $curval eq 'yes';
+	    fatal_error "Invalid value for $var ($curval)" unless $curval eq 'yes';
 	}
     } else {
 	$config{$var} = $val;
@@ -2838,7 +2846,7 @@ sub process_shorewall_conf() {
     my $file = find_file "$product.conf";
 
     if ( -f $file ) {
-	$globals{CONFIGDIR} =  $file;
+	$globals{CONFIGDIR} =  $configfile = $file;
 	$globals{CONFIGDIR} =~ s/$product.conf//;
 
 	if ( -r _ ) {
@@ -2865,6 +2873,8 @@ sub process_shorewall_conf() {
     } else {
 	fatal_error "$file does not exist!";
     }
+
+    %rawconfig = %config;
 }
 
 #
@@ -3342,7 +3352,7 @@ sub get_configuration( $ ) {
     default_yes_no 'ACCOUNTING'                 , 'Yes';
     default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
     
-    if ( defined $config{ACCOUNTING_TABLE} ) {
+    if ( supplied $config{ACCOUNTING_TABLE} ) {
 	my $value = $config{ACCOUNTING_TABLE};
 	fatal_error "Invalid ACCOUNTING_TABLE setting ($value)" unless $value eq 'filter' || $value eq 'mangle';
     } else {
@@ -3384,7 +3394,7 @@ sub get_configuration( $ ) {
 	$globals{USER_MASK} = 0;
     }
 
-    if ( defined ( $val = $config{ZONE2ZONE} ) ) {
+    if ( supplied ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;
     } else {
 	$config{ZONE2ZONE} = '2';
@@ -3745,6 +3755,99 @@ sub generate_aux_config() {
     }
 
     finalize_aux_config;
+}
+
+#
+# Upgrade the configuration file
+#
+sub upgrade_config_file( $ ) {
+    my $annotate = shift;
+
+    my $fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
+
+    my %deprecated = ( LOGRATE            => '' ,
+		       LOGBURST           => '' ,
+		       EXPORTPARAMS       => 'no' );
+
+    my @undocumented = ( qw( FAKE_AUDIT ) );
+
+    if ( -f $fn ) {
+	my ( $template, $output );
+	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
+
+	unless ( open $output, '>', "$configfile.upgraded" ) { 
+	    close $template;
+	    fatal_error "Unable to open $configfile.upgraded for output: $!";
+	}
+
+	while ( <$template> ) {
+	    if ( /^(\w+)=/ ) {
+		my ($var, $val ) = ( $1, $rawconfig{$1} );
+		$val = '' unless defined $val;
+		
+		if ( $val =~ /\s/ ) {
+		    $val = qq("$val") unless $val =~ /'/;
+		}
+ 
+		$_ = "$var=$val\n";
+	    }
+
+	    print $output "$_";
+	}
+
+	close $template;
+
+	my $heading_printed;
+
+	for ( @undocumented ) {
+	    if ( $rawconfig{$_} ) {
+
+		unless ( $heading_printed ) {
+		    print $output
+'#################################################################################
+#                          U N D O C U M E N T E D
+#                               O P T I O N S
+#################################################################################
+';
+		    $heading_printed = 1;
+		}
+
+		print $output "$_=$rawconfig{$_}\n";
+	    }
+	}
+
+	$heading_printed = 0;
+
+	for ( keys %deprecated ) {
+	    if ( supplied $rawconfig{$_} ) {
+		if ( lc $rawconfig{$_} ne $deprecated{$_} ) {
+		    unless ( $heading_printed ) {
+			print $output
+'#################################################################################
+#                           D E P R E C A T E D
+#                               O P T I O N S
+#################################################################################
+';
+			$heading_printed = 1;
+		    }
+
+		    print $output "$_=$rawconfig{$_}\n";
+
+		    warning_message "Deprecated option $_ is being set in your $product.conf file";
+		}
+	    }
+	}
+
+	close $output;
+
+	fatal_error "Can't rename $configfile to $configfile.bak: $!"      unless rename $configfile, "$configfile.bak";
+	fatal_error "Can't rename $configfile.upgraded to $configfile: $!" unless rename "$configfile.upgraded", $configfile;
+
+
+	progress_message3 "Configuration file $configfile upgraded - old file renamed $configfile.bak";
+    } else {
+	fatal_error "$fn does not exist";
+    }
 }
 
 END {

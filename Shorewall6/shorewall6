@@ -397,6 +397,8 @@ compiler() {
     [ "$g_debugging" = trace ] && options="$options --debug"
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     [ -n "$g_confess" ] && options="$options --confess"
+    [ -n "$g_upgrade" ] && options="$options --upgrade"
+    [ -n "$g_annotate" ] && options="$options --annotate"
     [ -x $pc ] || startup_error "Shorewall6 requires the shorewall package which is not installed"
 
     if [ -n "$PERL" ]; then
@@ -686,6 +688,14 @@ check_command() {
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
+			    ;;
+			u*)
+			    g_upgrade=Yes
+			    option=${option#u}
+			    ;;
+			a*)
+			    g_annotate=Yes
+			    option=${option#a}
 			    ;;
 			*)
 			    usage 1
@@ -1527,6 +1537,8 @@ g_debug=
 g_export=
 g_refreshchains=:none:
 g_confess=
+g_upgrade=
+g_annotate=
 
 #
 # Make sure that these variables are cleared

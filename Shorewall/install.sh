@@ -323,6 +323,9 @@ chmod 755 ${DESTDIR}/etc/shorewall
 chmod 755 ${DESTDIR}/usr/share/shorewall
 chmod 755 ${DESTDIR}/usr/share/shorewall/configfiles
 
+run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf           ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
@@ -342,8 +345,6 @@ fi
 #
 # Install the config file
 #
-run_install $OWNERSHIP -m 0644 $CONFIGFILES/shorewall.conf ${DESTDIR}/usr/share/shorewall/configfiles
-
 if [ ! -f ${DESTDIR}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 $CONFIGFILES/shorewall.conf ${DESTDIR}/etc/shorewall
 

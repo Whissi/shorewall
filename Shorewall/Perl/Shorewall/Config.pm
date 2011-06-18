@@ -209,6 +209,123 @@ our %globals;
 #
 our %config;
 my  %rawconfig;
+our %defaults =
+	( STARTUP_ENABLED => 'Yes',
+	  VERBOSITY => 1,
+	  #
+	  # Logging
+	  #
+	  LOGFILE => '/var/log/messages',
+	  LOGFORMAT => 'Shorewall:%s:%s:',
+	  LOGTAGONLY => 'No',
+	  LOGLIMIT => '',
+	  LOGALLNEW => 'No',
+	  BLACKLIST_LOGLEVEL => 'none',
+	  MACLIST_LOG_LEVEL => 'none',
+	  TCP_FLAGS_LOG_LEVEL => 'none',
+	  SMURF_LOG_LEVEL => 'none',
+	  LOG_VERBOSITY => 2,
+	  SFILTER_LOG_LEVEL => 'none',
+	  #
+	  # Location of Files
+	  #
+	  IP => '',
+	  TC => '',
+	  IPSET => '',
+	  PERL => '',
+	  #
+	  #PATH is inherited
+	  #
+	  PATH => '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin',
+	  SHOREWALL_SHELL => '/bin/sh',
+	  MODULESDIR => '',
+	  #
+	  #CONFIG_PATH is inherited
+	  #
+	  RESTOREFILE => 'restore',
+	  IPSECFILE => 'zones',
+	  #
+	  # Default Actions/Macros
+	  #
+	  DROP_DEFAULT => 'Drop',
+	  REJECT_DEFAULT => 'Reject',
+	  ACCEPT_DEFAULT => 'none',
+	  QUEUE_DEFAULT => 'none',
+	  NFQUEUE_DEFAULT => 'none',
+	  #
+	  # RSH/RCP Commands
+	  #
+	  RSH_COMMAND => q('ssh ${root}@${system} ${command}'),
+	  RCP_COMMAND => q('scp ${files} ${root}@${system}:${destination}'),
+	  #
+	  # Firewall Options
+	  #
+	  BRIDGING => 'No',
+	  IP_FORWARDING => 'Keep',
+	  ADD_IP_ALIASES => 'No',
+	  ADD_SNAT_ALIASES => 'No',
+	  RETAIN_ALIASES => 'No',
+	  TC_ENABLED => 'Yes',
+	  TC_EXPERT => 'No',
+	  TC_PRIOMAP => '2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2',
+	  CLEAR_TC => 'Yes',
+	  MARK_IN_FORWARD_CHAIN => 'No',
+	  CLAMPMSS => 'No',
+	  DETECT_DNAT_IPADDRS => 'No',
+	  MUTEX_TIMEOUT => 60,
+	  ADMINISABSENTMINDED => 'Yes',
+	  BLACKLISTNEWONLY => 'Yes',
+	  MODULE_SUFFIX => 'ko',
+	  DISABLE_IPV6 => 'No',
+	  MACLIST_TABLE => 'filter',
+	  MACLIST_TTL => '',
+	  SAVE_IPSETS => 'No',
+	  MAPOLDACTIONS => 'No',
+	  FASTACCEPT => 'No',
+	  IMPLICIT_CONTINUE => 'No',
+	  HIGH_ROUTE_MARKS => 'No',
+	  OPTIMIZE => 0,
+	  EXPAND_POLICIES => 'Yes',
+	  KEEP_RT_TABLES => 'No',
+	  DELETE_THEN_ADD => 'Yes',
+	  MULTICAST => 'No',
+	  DONT_LOAD => '',
+	  AUTO_COMMENT => 'Yes' ,
+	  MANGLE_ENABLED => 'Yes' ,
+	  NULL_ROUTE_RFC1918 => 'No' ,
+	  USE_DEFAULT_RT => 'No' ,
+	  RESTORE_DEFAULT_ROUTE => undef ,
+	  AUTOMAKE => 'No',
+	  WIDE_TC_MARKS => 'No',
+	  TRACK_PROVIDERS => 'No',
+	  ZONE2ZONE => '2',
+	  ACCOUNTING => 'Yes',
+	  OPTIMIZE_ACCOUNTING => 'No',
+	  ACCOUNTING_TABLE => 'filter',
+	  DYNAMIC_BLACKLIST => 'Yes',
+	  LOAD_HELPERS_ONLY => 'No',
+	  REQUIRE_INTERFACE => 'No',
+	  FORWARD_CLEAR_MARK => '',
+	  COMPLETE => 'No',
+	  EXPORTMODULES => 'Yes',
+	  LEGACY_FASTSTART => 'Yes',
+	  #
+	  # Packet Disposition
+	  #
+	  MACLIST_DISPOSITION => 'REJECT',
+	  TCP_FLAGS_DISPOSITION => 'DROP',
+	  BLACKLIST_DISPOSITION => 'DROP',
+	  SMURF_DISPOSITION => 'DROP',
+	  SFILTER_DISPOSITION => 'DROP',
+	  #
+	  # Mark Geometry
+	  #
+	  TC_BITS => undef,
+	  PROVIDER_BITS => undef,
+	  PROVIDER_OFFSET => undef,
+	  MASK_BITS => undef
+	);
+
 #
 # Config options and global settings that are to be copied to output script
 #
@@ -683,16 +800,26 @@ sub initialize( $ ) {
     %actparms = ();
 
     if ( $family == F_IPV4 ) {
-	$globals{SHAREDIR} = '/usr/share/shorewall';
-	$globals{CONFDIR}  = '/etc/shorewall';
-	$globals{PRODUCT}  = 'shorewall';
-	$config{IPTABLES}  = undef;
-	$validlevels{ULOG} = 'ULOG',
+	$globals{SHAREDIR}      = '/usr/share/shorewall';
+	$globals{CONFDIR}       = '/etc/shorewall';
+	$globals{PRODUCT}       = 'shorewall';
+	$config{IPTABLES}       = undef;
+	$validlevels{ULOG}      = 'ULOG';
+	$defaults{LOG_MARTIANS} = 'On';
+	$defaults{ROUTE_FILTER} = 'On';
+	$defaults{STARTUP_LOG}  = '/var/log/shorewall-init.log';
+	$defaults{CONFIG_PATH}  = '/etc/shorewall:/usr/share/shorewall/';
+	$defaults{SUBSYSLOCK}   = '/var/lock/subsys/shorewall';
     } else {
-	$globals{SHAREDIR} = '/usr/share/shorewall6';
-	$globals{CONFDIR}  = '/etc/shorewall6';
-	$globals{PRODUCT}  = 'shorewall6';
-	$config{IP6TABLES} = undef;
+	$globals{SHAREDIR}      = '/usr/share/shorewall6';
+	$globals{CONFDIR}       = '/etc/shorewall6';
+	$globals{PRODUCT}       = 'shorewall6';
+	$config{IP6TABLES}      = undef;
+	$defaults{LOG_MARTIANS} = 'Off';
+	$defaults{ROUTE_FILTER} = 'Off';
+	$defaults{STARTUP_LOG}  = '/var/log/shorewall6-init.log',
+	$defaults{CONFIG_PATH}  = '/etc/shorewall:/usr/share/shorewall6/:/usr/share/shorewall/';
+	$defaults{SUBSYSLOCK}   = '/var/lock/subsys/shorewall6';
     }
 }
 
@@ -3783,7 +3910,7 @@ sub upgrade_config_file( $ ) {
 	while ( <$template> ) {
 	    if ( /^(\w+)=/ ) {
 		my ($var, $val ) = ( $1, $rawconfig{$1} );
-		$val = '' unless defined $val;
+		$val = $defaults{$var} unless defined $val;
 		
 		if ( $val =~ /\s/ ) {
 		    $val = qq("$val") unless $val =~ /'/;

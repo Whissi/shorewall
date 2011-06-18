@@ -3223,17 +3223,17 @@ sub get_configuration( $ ) {
 	warning_message "LOGBURST Ignored when LOGLIMIT is specified" if $config{LOGBURST};
 
     } elsif ( $config{LOGRATE} || $config{LOGBURST} ) {
-	if ( defined $config{LOGRATE} ) {
+	if ( supplied $config{LOGRATE} ) {
 	    fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
 	}
 
-	if ( defined $config{LOGBURST} ) {
+	if ( supplied $config{LOGBURST} ) {
 	    fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
 	}
 
 	$globals{LOGLIMIT}  = '-m limit ';
-	$globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if defined $config{LOGRATE};
-	$globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if defined $config{LOGBURST};
+	$globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if supplied $config{LOGRATE};
+	$globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if supplied $config{LOGBURST};
     } else {
 	$globals{LOGLIMIT} = '';
     }
@@ -3246,7 +3246,7 @@ sub get_configuration( $ ) {
 	check_trivalue ( 'ROUTE_FILTER',  '' );
     } else {
 	$val = $config{ROUTE_FILTER};
-	if ( defined $val ) {
+	if ( supplied $val ) {
 	    if ( $val =~ /\d+/ ) {
 		fatal_error "Invalid value ($val) for ROUTE_FILTER" unless $val < 3;
 	    } else {
@@ -3272,7 +3272,7 @@ sub get_configuration( $ ) {
     default 'STARTUP_LOG'   , '';
 
     if ( $config{STARTUP_LOG} ne '' ) {
-	if ( defined $config{LOG_VERBOSITY} ) {
+	if ( supplied $config{LOG_VERBOSITY} ) {
 	    if ( $config{LOG_VERBOSITY} eq '' ) {
 		$config{LOG_VERBOSITY} = 2;
 	    } else {
@@ -3294,7 +3294,7 @@ sub get_configuration( $ ) {
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'CLEAR_TC'                   , $family == F_IPV4 ? 'Yes' : '';
 
-    if ( defined $config{CLAMPMSS} ) {
+    if ( supplied $config{CLAMPMSS} ) {
 	default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
     } else {
 	$config{CLAMPMSS} = '';
@@ -3527,7 +3527,7 @@ sub get_configuration( $ ) {
 
     $val = numeric_value $config{OPTIMIZE};
 
-    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless defined( $val ) && $val >= 0 && ( $val & ( 4096 ^ -1 ) ) <= 15;
+    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless supplied( $val ) && $val >= 0 && ( $val & ( 4096 ^ -1 ) ) <= 15;
 
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 

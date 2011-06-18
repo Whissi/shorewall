@@ -1862,8 +1862,9 @@ sub set_action_param( $$ ) {
 #   - Handle INCLUDE <filename>
 #
 
-sub read_a_line(;$) {
+sub read_a_line(;$$) {
     my $embedded_enabled = defined $_[0] ? shift : 1;
+    my $expand_variables = defined $_[0] ? shift : 1;
 
     while ( $currentfile ) {
 
@@ -1926,7 +1927,7 @@ sub read_a_line(;$) {
 	    #
 	    # Expand Shell Variables using %params and %actparms
 	    #
-	    unless ( $currentline =~ /^(\w+)='.*'$/ ) {
+	    if ( $expand_variables ) {
 		#                            $1      $2   $3      -     $4
 		while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 		    
@@ -2854,7 +2855,7 @@ sub process_shorewall_conf() {
 
 	    first_entry "Processing $file...";
 
-	    while ( read_a_line(0) ) {
+	    while ( read_a_line(0,0) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
@@ -2862,7 +2863,7 @@ sub process_shorewall_conf() {
 			next;
 		    }
 
-		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
+		    $rawconfig{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 		} else {
 		    fatal_error "Unrecognized entry";
 		}
@@ -2874,7 +2875,34 @@ sub process_shorewall_conf() {
 	fatal_error "$file does not exist!";
     }
 
-    %rawconfig = %config;
+    while ( my ( $opt, $v ) = each %rawconfig ) {
+	my $count = 0;
+
+	unless ( $v =~ /^'(.*?)'$/ ) {
+	    #                            $1      $2   $3      -     $4
+	    while ( $v =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+
+		my ( $first, $var, $rest ) = ( $1, $3, $4);
+
+		my $val;
+
+		if ( $var =~ /^\d+$/ ) {
+		    fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
+		    $val = $actparms{$var};
+		} else {
+		    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+		    $val = $params{$var};
+		}
+
+		$val = '' unless defined $val;
+		$v = join( '', $first , $val , $rest );
+		fatal_error "Variable Expansion Loop in option $opt" if ++$count > 100;
+	    }
+	}
+
+	$config{$opt} = $v;
+    }
+	
 }
 
 #
@@ -3764,11 +3792,15 @@ sub upgrade_config_file( $ ) {
     my $annotate = shift;
 
     my $fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
-
+    #
+    # Deprecated options with their default values
+    #
     my %deprecated = ( LOGRATE            => '' ,
 		       LOGBURST           => '' ,
 		       EXPORTPARAMS       => 'no' );
-
+    #
+    # Undocumented options -- won't be listed in shorewall.conf (shorewall6.conf)..
+    #
     my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS FAKE_AUDIT ) );
 
     if ( -f $fn ) {
@@ -3781,21 +3813,34 @@ sub upgrade_config_file( $ ) {
 	}
 
 	while ( <$template> ) {
-	    if ( /^(\w+)=(.*)/ ) {
+	    if ( /^(\w+)="?(.*?)"?$/ ) {
+		#
+		# Option assignment -- get value and default
+		#
 		my ($var, $val, $default ) = ( $1, $rawconfig{$1}, $2 );
 
-		fatal_error "Default value for $var is undefined" unless defined $default;
-
 		unless ( supplied $val ) {
+		    #
+		    # Value is either undefined (option not in config file) or is ''
+		    #
 		    if ( defined $val ) {
+			#
+			# OPTION='' - use default if 'Yes' or 'No'
+			#
 			$val = $default if $default eq 'Yes' || $default eq 'No';
 		    } else {
+			#
+			# Wasn't mentioned in old file - use default value
+			#
 			$val = $default;
 		    }
 		}
 		
-		unless ( $val =~ /^\w*$/ ) {
-		    $val = qq("$val") unless $val =~ /'/;
+		unless ( $val =~ /^[-\w\/\.]*$/ ) {
+		    #
+		    # Funny characters (including whitespace) -- use double quotes unless the thing is single-quoted
+		    #
+		    $val = qq("$val") unless $val =~ /^'.+'$/;
 		}
  
 		$_ = "$var=$val\n";

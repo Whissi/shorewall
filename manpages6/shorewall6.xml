@@ -48,8 +48,6 @@
 
       <arg><option>-T</option></arg>
 
-      <arg><option>-u</option><arg><option>-a</option></arg></arg>
-
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -513,6 +511,30 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>upgrade</option></arg>
+
+      <arg><option>-e</option></arg>
+
+      <arg><option>-d</option></arg>
+
+      <arg><option>-p</option></arg>
+
+      <arg><option>-r</option></arg>
+
+      <arg><option>-T</option></arg>
+
+      <arg><option>-a</option></arg>
+
+      <arg><replaceable>directory</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg
       choice="plain"><option>version</option><arg><option>-a</option></arg></arg>
     </cmdsynopsis>
@@ -602,20 +624,6 @@
           <para>The <option>-T</option> option was added in Shorewall 4.4.20
           and causes a Perl stack trace to be included with each
           compiler-generated error and warning message.</para>
-
-          <para>The <option>-u</option> option was added in Shorewall 4.4.21
-          and causes the compiler to upgrade
-          <filename>/etc/shorewall6/shorewall6.conf</filename>. The upgrade
-          will add new options with their default values and will move
-          deprecated options with non-defaults to a deprecated options section
-          at the bottom of the file. Your existing
-          <filename>shorewall6.conf</filename> file is renamed
-          <filename>shorewall6.conf.bak.</filename></para>
-
-          <para>The <option>-a</option> option was added in Shorewall 4.4.21
-          and is only meaningful when used with <option>-u</option>. It causes
-          the upgraded <filename>shorewall6.conf</filename> file to be
-          annotated with documentation.</para>
         </listitem>
       </varlistentry>
 
@@ -1290,6 +1298,28 @@
           role="bold">clear</emphasis> or <emphasis
           role="bold">restore</emphasis> is performed after
           <replaceable>timeout</replaceable> seconds.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">upgrade</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.21 and causes the compiler to validate
+          the configuration and then upgrade
+          <filename>/etc/shorewall6/shorewall6.conf</filename>. The upgrade
+          will add new options with their default values and will move
+          deprecated options with non-defaults to a deprecated options section
+          at the bottom of the file. Your existing
+          <filename>shorewall6.conf</filename> file is renamed
+          <filename>shorewall6.conf.bak.</filename></para>
+
+          <para>The <option>-a</option> option causes the upgraded
+          <filename>shorewall6.conf</filename> file to be annotated with
+          documentation.</para>
+
+          <para>For a description of the other options, see the <emphasis
+          role="bold">check</emphasis> command above.</para>
         </listitem>
       </varlistentry>
 

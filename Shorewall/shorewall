@@ -688,10 +688,6 @@ check_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
-			u*)
-			    g_upgrade=Yes
-			    option=${option#u}
-			    ;;
 			a*)
 			    g_annotate=Yes
 			    option=${option#a}
@@ -1408,7 +1404,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ -r ] [ <directory> ]"
+    echo "   check [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ <directory> ]"
     echo "   clear"
     echo "   compile [ -e ] [ -d ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"
@@ -1459,6 +1455,7 @@ usage() # $1 = exit status
     echo "   version [ -a ]"
     echo "   safe-start [ <directory> ]"
     echo "   safe-restart [ <directory> ]"
+    echo "   upgrade [ -e ] [ -d ] [ -p ] [ -r ] [ -T ] [ -a ] [ <directory> ]"
     echo
     exit $1
 }
@@ -1747,6 +1744,12 @@ case "$COMMAND" in
     check)
 	get_config Yes
 	shift
+	check_command $@
+	;;
+    upgrade)
+	get_config Yes
+	shift
+	g_upgrade=Yes
 	check_command $@
 	;;
     show|list)

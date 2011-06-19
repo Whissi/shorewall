@@ -2888,6 +2888,8 @@ sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
     my $options = $option;
 
+    require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
+
     $ipset_rules++;
 
     $setname =~ s/^!//; # Caller has already taken care of leading !
@@ -2986,7 +2988,6 @@ sub match_source_net( $;$\$ ) {
     }
 
     if ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
-	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 	return join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     }
 
@@ -3036,7 +3037,6 @@ sub match_dest_net( $ ) {
     }
 
     if ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?$/ ) {
-	require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '');
 	return join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     }
 

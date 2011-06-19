@@ -85,7 +85,7 @@ our @EXPORT = qw( NOTHING
 		 );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_20';
+our $VERSION = '4.4_21';
 
 #
 # IPSEC Option types

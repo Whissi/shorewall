@@ -41,7 +41,7 @@ use Shorewall::Misc;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
-our $VERSION = '4.4_20';
+our $VERSION = '4.4_21';
 
 my $export;
 

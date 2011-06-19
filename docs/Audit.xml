@@ -221,16 +221,126 @@ A_ACCEPT:info  loc          net        ...</programlisting>
       <listitem>
         <para>The builtin actions (dropBroadcast, rejNonSyn, etc.) now support
         an 'audit' parameter which causes all ACCEPT, DROP and REJECTs
-        performed by the action to be audited. </para>
+        performed by the action to be audited.</para>
       </listitem>
 
       <listitem>
         <para>There are audited versions of the standard <ulink
-        url="Actions.html#Default">Default Actions</ulink> (ADrop and
-        AReject). These actions audit everything they do which is probably
+        url="Actions.html#Default">Default Actions</ulink> (A_Drop and
+        A_Reject). These actions audit everything they do which is probably
         more than you want; as a consequence, you probably will want to make
         your own copies of these actions and modify them to only audit the
         packets that you are interested in.</para>
+      </listitem>
+
+      <listitem>
+        <para>In Shorewall 4.4.21, the standard <ulink
+        url="Actions.html#Default">Default Actions</ulink> were parameterized,
+        accepting three parameters:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Pass 'audit' if you want all ACCEPTs, DROPs and REJECTs
+            audited. Pass '-' otherwise.</para>
+          </listitem>
+
+          <listitem>
+            <para>The action to be applied to Auth requests; the default
+            depends on the first parameter:</para>
+
+            <informaltable border="">
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry><emphasis role="bold">FIRST
+                    PARAMETER</emphasis></entry>
+
+                    <entry><emphasis role="bold">DEFAULT</emphasis></entry>
+                  </row>
+
+                  <row>
+                    <entry>-</entry>
+
+                    <entry>REJECT</entry>
+                  </row>
+
+                  <row>
+                    <entry>audit</entry>
+
+                    <entry>A_REJECT</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </listitem>
+
+          <listitem>
+            <para>The action to be applied to SMB traffic. The default depends
+            on the first parameter:</para>
+
+            <informaltable>
+              <tgroup cols="3">
+                <tbody>
+                  <row>
+                    <entry><emphasis role="bold">ACTION</emphasis></entry>
+
+                    <entry><emphasis role="bold">FIRST
+                    PARAMETER</emphasis></entry>
+
+                    <entry><emphasis role="bold">DEFAULT</emphasis></entry>
+                  </row>
+
+                  <row>
+                    <entry>Reject</entry>
+
+                    <entry>-</entry>
+
+                    <entry>REJECT</entry>
+                  </row>
+
+                  <row>
+                    <entry>Drop</entry>
+
+                    <entry>-</entry>
+
+                    <entry>DROP</entry>
+                  </row>
+
+                  <row>
+                    <entry>Reject</entry>
+
+                    <entry>audit</entry>
+
+                    <entry>A_REJECT</entry>
+                  </row>
+
+                  <row>
+                    <entry>Drop</entry>
+
+                    <entry>audit</entry>
+
+                    <entry>A_DROP</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </listitem>
+        </orderedlist>
+
+        <para> The parameters can be passed in the POLICY column of the policy
+        file. </para>
+
+        <programlisting>SOURCE	DEST	POLICY
+net	all	DROP:Drop(audit):audit  #Same as DROP:A_DROP:audit
+</programlisting>
+
+        <programlisting>SOURCE	DEST	POLICY
+net	all	DROP:Drop(-,DROP) #DROP rather than REJECT Auth
+</programlisting>
+
+        <para>The parameters can also be specified in shorewall.conf: </para>
+
+        <programlisting>DROP_DEFAULT=Drop(-,DROP) #DROP Auth rather than REJECT </programlisting>
       </listitem>
     </orderedlist>
   </section>

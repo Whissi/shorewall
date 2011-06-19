@@ -4532,7 +4532,13 @@ sub load_ipsets() {
 
 	if ( @ipsets ) {
 	    emit ( '' );
-	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+
+	    if ( $family == F_IPV4 ) {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    } else {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ hash:ip family ipv6" ) for @ipsets;
+	    }
+
 	    emit ( '' );
 	}
 
@@ -4551,7 +4557,11 @@ sub load_ipsets() {
 	if ( @ipsets ) {
 	    emit '';
 
-	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    if ( $family == F_IPV4 ) {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    } else {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ hash:ip family ipv6" ) for @ipsets;
+	    }
 
 	    emit ( '' ,
 		   'elif [ "$COMMAND" = restart ]; then' ,
@@ -4574,7 +4584,11 @@ sub load_ipsets() {
 		   '    fi',
 		   'elif [ "$COMMAND" = refresh ]; then' );
 
-	    emit ( "   qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    if ( $family == F_IPV4 ) {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    } else {
+		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ hash:ip family ipv6" ) for @ipsets;
+	    }
 	}
 
 	emit ( 'fi' ,

@@ -523,8 +523,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $upgrade , $annotate ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,         0,        );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        );
 
     $export = 0;
     $test   = 0;
@@ -558,7 +558,7 @@ sub compiler {
 		  test          => { store => \$test },
 		  preview       => { store => \$preview,       validate=> \&validate_boolean    } ,    
 		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
-		  upgrade       => { store => \$upgrade,       validate=> \&validate_boolean    } ,
+		  update        => { store => \$update,        validate=> \&validate_boolean    } ,
 		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,		  
 		);
     #
@@ -891,9 +891,9 @@ sub compiler {
 	}
 
 	#
-	# Upgrade the configuration file if requested
+	# Update the configuration file if requested
 	#
-	upgrade_config_file( $annotate ) if $upgrade;
+	update_config_file( $annotate ) if $update;
 
 	if ( $family == F_IPV4 ) {
 	    progress_message3 "Shorewall configuration verified";

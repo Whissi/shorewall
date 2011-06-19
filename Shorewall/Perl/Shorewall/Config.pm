@@ -121,7 +121,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
-				       upgrade_config_file
+				       update_config_file
 
 				       $product
 				       $Product
@@ -209,7 +209,7 @@ our %globals;
 #
 our %config;
 #
-# Raw values from shorewall.conf - used to upgrade the config file
+# Raw values from shorewall.conf - used to update the config file
 #
 my  %rawconfig;
 #
@@ -3792,9 +3792,9 @@ sub generate_aux_config() {
 }
 
 #
-# Upgrade the configuration file
+# Update the configuration file
 #
-sub upgrade_config_file( $ ) {
+sub update_config_file( $ ) {
     my $annotate = shift;
 
     my $fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
@@ -3813,9 +3813,9 @@ sub upgrade_config_file( $ ) {
 	my ( $template, $output );
 	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
 
-	unless ( open $output, '>', "$configfile.upgraded" ) { 
+	unless ( open $output, '>', "$configfile.updated" ) { 
 	    close $template;
-	    fatal_error "Unable to open $configfile.upgraded for output: $!";
+	    fatal_error "Unable to open $configfile.updated for output: $!";
 	}
 
 	while ( <$template> ) {
@@ -3904,11 +3904,11 @@ sub upgrade_config_file( $ ) {
 
 	close $output;
 
-	fatal_error "Can't rename $configfile to $configfile.bak: $!"      unless rename $configfile, "$configfile.bak";
-	fatal_error "Can't rename $configfile.upgraded to $configfile: $!" unless rename "$configfile.upgraded", $configfile;
+	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
+	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
 
 
-	progress_message3 "Configuration file $configfile upgraded - old file renamed $configfile.bak";
+	progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
     } else {
 	fatal_error "$fn does not exist";
     }

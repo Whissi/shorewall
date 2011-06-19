@@ -62,7 +62,7 @@ sub usage( $ ) {
     [ --preview ]
     [ --family={4|6} ]
     [ --annotate ]
-    [ --upgrade ]
+    [ --updatee ]
 ';
 
     exit shift @_;
@@ -85,7 +85,7 @@ my $test          = 0;
 my $family        = 4; # F_IPV4
 my $preview       = 0;
 my $annotate      = 0;
-my $upgrade       = 0;
+my $update        = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -113,8 +113,8 @@ my $result = GetOptions('h'               => \$help,
 			'confess'         => \$confess,
 			'a'               => \$annotate,
 			'annotate'        => \$annotate,
-			'u'               => \$upgrade,
-			'upgrade'         => \$upgrade,
+			'u'               => \$update,
+			'update'          => \$update,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -133,6 +133,6 @@ compiler( script          => $ARGV[0] || '',
 	  preview         => $preview,
 	  family          => $family,
 	  confess         => $confess,
-	  upgrade         => $upgrade,
+	  update          => $update,
 	  annotate        => $annotate,
 	);

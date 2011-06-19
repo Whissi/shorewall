@@ -756,6 +756,8 @@ DNAT-              net                192.168.1.3      tcp          21</programl
       by the --log parameter.</para>
 
       <simplelist>
+        <member><emphasis role="bold">-f</emphasis>=4|6</member>
+
         <member><emphasis role="bold">--family=</emphasis>4|6</member>
       </simplelist>
 
@@ -769,6 +771,35 @@ DNAT-              net                192.168.1.3      tcp          21</programl
       <para>Added in Shorewall 4.4.6. If no filename is given, this option
       causes the generated input to iptables-input to be displayed on standard
       output.</para>
+
+      <simplelist>
+        <member><emphasis role="bold">-c</emphasis></member>
+
+        <member><emphasis role="bold">--confess</emphasis></member>
+      </simplelist>
+
+      <para>Added in Shorewall 4.4.20. Causes error and warning messages to
+      include a Perl stack trace. Useful for finding the place in the code
+      where the message is generated.</para>
+
+      <simplelist>
+        <member><emphasis role="bold">-u</emphasis></member>
+
+        <member><emphasis role="bold">--update</emphasis></member>
+      </simplelist>
+
+      <para>Added in Shorewall 4.4.21. Causes the .conf file to be updated
+      (<command>shorewall update</command> command).</para>
+
+      <simplelist>
+        <member><emphasis role="bold">-a</emphasis></member>
+
+        <member><emphasis role="bold">--annotate</emphasis></member>
+      </simplelist>
+
+      <para>Added in Shorewall 4.4.21. Causes the updated .conf file to be
+      annotated with documentation. Ignored unless <emphasis
+      role="bold">--update</emphasis> is also specified.</para>
 
       <para>Example (compiles the configuration in the current directory
       generating a script named 'firewall' and using VERBOSITY

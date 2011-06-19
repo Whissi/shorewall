@@ -339,7 +339,7 @@ do_save() {
                     #
                     # Don't save an 'empty' file
                     #
-		    grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+		    grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
 		fi
 	    fi
 	    ;;

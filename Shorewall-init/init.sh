@@ -93,7 +93,7 @@ shorewall_stop () {
   if [ -n "$SAVE_IPSETS" ]; then
       mkdir -p $(dirname "$SAVE_IPSETS")
       if ipset -S > "${SAVE_IPSETS}.tmp"; then
-	  grep -q '^-N' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
+	  grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
       fi
   fi
 

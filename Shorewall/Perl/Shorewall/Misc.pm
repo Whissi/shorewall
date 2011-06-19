@@ -2152,7 +2152,7 @@ EOF
             #
             # Don't save an 'empty' file
             #
-            grep -q '^-N' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
+            grep -qE '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save
         fi
     fi
 EOF

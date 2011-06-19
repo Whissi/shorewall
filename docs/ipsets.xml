@@ -155,4 +155,23 @@ ACCEPT       net:+sshok  $FW      tcp      22</programlisting></para>
       </listitem>
     </orderedlist>
   </section>
+
+  <section>
+    <title>Shorewall6 and Shorewall-init Support for Ipsets</title>
+
+    <para>Ipset support in Shorewall6 was added in Shorewall 4.4.21.</para>
+
+    <para>Unlike iptables, which has separate configurations for IPv4 and
+    IPv6, ipset has a single configuration that handles both. This means the
+    SAVE_IPSETS=Yes in shorewall.conf or shorewall6.conf won't work correctly
+    because . To work around this issue, Shorewall-init is now capable
+    restoring ipset contents during 'start' and saving them during 'stop'. To
+    direct Shorewall-init to save/restore ipset contents, set the SAVE_IPSETS
+    option in /etc/sysconfig/shorewall-init (/etc/default/shorewall-init on
+    Debian and derivatives). The value of the option is a file name where the
+    contents of the ipsets will be save to and restored from. Shorewall-init
+    will create any necessary directories during the first 'save' operation.
+    If you configure Shorewall-init to save/restore ipsets, be sure to set
+    SAVE_IPSETS=No in shorewall.conf and shorewall6.conf. </para>
+  </section>
 </article>

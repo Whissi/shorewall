@@ -29,7 +29,7 @@
 # Required-start: $local_fs
 # Required-stop:  $local_fs
 # Default-Start:  2 3 5
-# Default-Stop:
+# Default-Stop:   6
 # Short-Description: Initialize the firewall at boot time
 # Description:       Place the firewall in a safe state at boot time
 #                    prior to bringing up the network.  
@@ -69,6 +69,10 @@ shorewall_start () {
       fi
   done
 
+  if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
+      ipset -R < "$SAVE_IPSETS"
+  fi
+
   return 0
 }
 
@@ -85,6 +89,13 @@ shorewall_stop () {
 	  ${VARDIR}/firewall clear || exit 1
       fi
   done
+
+  if [ -n "$SAVE_IPSETS" ]; then
+      mkdir -p $(dirname "$SAVE_IPSETS")
+      if ipset -S > "${SAVE_IPSETS}.tmp"; then
+	  grep -q '^-N' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
+      fi
+  fi
 
   return 0
 }

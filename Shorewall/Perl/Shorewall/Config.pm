@@ -3863,14 +3863,14 @@ sub update_config_file( $ ) {
 	    if ( defined $rawconfig{$_} ) {
 
 		unless ( $heading_printed ) {
-		    print $output
-'
+		    print $output <<'EOF';
+
 #################################################################################
 #                          U N D O C U M E N T E D
 #                               O P T I O N S
 #################################################################################
 
-';
+EOF
 		    $heading_printed = 1;
 		}
 
@@ -3884,14 +3884,14 @@ sub update_config_file( $ ) {
 	    if ( supplied $rawconfig{$_} ) {
 		if ( lc $rawconfig{$_} ne $deprecated{$_} ) {
 		    unless ( $heading_printed ) {
-			print $output
-'
+			print $output <<'EOF';
+
 #################################################################################
 #                           D E P R E C A T E D
 #                               O P T I O N S
 #################################################################################
 
-';
+EOF
 			$heading_printed = 1;
 		    }
 

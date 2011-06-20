@@ -62,7 +62,8 @@
         <term><emphasis role="bold">HOST(S)</emphasis> -
         <emphasis>interface</emphasis>:{[{<emphasis>address-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}[<emphasis>exclusion</emphasis>]</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|<emphasis
+        role="bold">dynamic</emphasis>}[<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
           <para>The name of an interface defined in the <ulink
@@ -88,6 +89,19 @@
 
             <listitem>
               <para>The name of an <emphasis>ipset</emphasis>.</para>
+            </listitem>
+
+            <listitem>
+              <para>The word <option>dynamic</option> which makes the zone
+              dynamic in that you can use the <command>shorewall add</command>
+              and <command>shorewall delete</command> commands to change to
+              composition of the zone.</para>
+
+              <warning>
+                <para>You can not have a dynamic ipv6 zone with the same
+                <replaceable>zone-name</replaceable> and
+                <replaceable>interface</replaceable>.</para>
+              </warning>
             </listitem>
           </orderedlist>
 

@@ -3811,6 +3811,7 @@ sub update_config_file( $ ) {
 
     if ( -f $fn ) {
 	my ( $template, $output );
+
 	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
 
 	unless ( open $output, '>', "$configfile.updated" ) { 
@@ -3841,14 +3842,14 @@ sub update_config_file( $ ) {
 			$val = $default;
 		    }
 		}
-		
+
 		unless ( $val =~ /^[-\w\/\.]*$/ ) {
 		    #
 		    # Funny characters (including whitespace) -- use double quotes unless the thing is single-quoted
 		    #
 		    $val = qq("$val") unless $val =~ /^'.+'$/;
 		}
- 
+
 		$_ = "$var=$val\n";
 	    }
 
@@ -3906,7 +3907,6 @@ EOF
 
 	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
 	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
-
 
 	progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
     } else {

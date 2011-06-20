@@ -385,6 +385,8 @@ my  %builtin_target = ( ACCEPT      => 1,
 			ULOG        => 1,
 		        );
 
+my %ipset_exists;
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -437,6 +439,8 @@ sub initialize( $$$ ) {
     $warningcount       = 0;
     $hashlimitset       = 0;
     $ipset_rules        = 0 if $hard;
+
+    %ipset_exists       = ();
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -2906,7 +2910,11 @@ sub get_set_flags( $$ ) {
     $setname =~ s/^\+//;
 
     unless ( $export || $> != 0 ) {
-	warning_message "Ipset $setname does not exist" unless qt "ipset -L $setname";
+	unless ( $ipset_exists{$setname} ) {
+	    warning_message "Ipset $setname does not exist" unless qt "ipset -L $setname";
+	}
+
+	$ipset_exists{$setname} = 1; # Suppress subsequent checks/warnings
     }
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
@@ -4532,34 +4540,38 @@ sub load_ipsets() {
 	       '        IPSET="$(mywhich $IPSET)"',
 	       '        [ -n "$IPSET" ] || startup_error "The ipset utility cannot be located"' ,
 	       '        ;;',
-	       'esac',
-	       '',
-	       'if [ "$COMMAND" = start ]; then' ,
-	       '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-	       '        $IPSET -F' ,
-	       '        $IPSET -X' ,
-	       '        $IPSET -R < ${VARDIR}/ipsets.save' ,
-	       '    fi' );
+	       'esac' ,
+	       '' ,
+	       'if [ "$COMMAND" = start ]; then' );
+	
+	if ( $config{SAVE_IPSETS} ) {
+	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
+		   '        $IPSET -F' ,
+		   '        $IPSET -X' ,
+		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
+		   '    fi' );
+	}
 
 	if ( @ipsets ) {
 	    emit ( '' );
-
 	    ensure_ipset( $_ ) for @ipsets;
-
 	    emit ( '' );
 	}
 
-	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ,
-	       '    if [ -f $(my_pathname)-ipsets ]; then' ,
-	       '        if chain_exists shorewall; then' ,
-	       '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,
-	       '        else' ,
-	       '            $IPSET -F' ,
-	       '            $IPSET -X' ,
-	       '            $IPSET -R < $(my_pathname)-ipsets' ,
-	       '        fi' ,
-	       '    fi' ,
-	     );
+	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' );
+
+	if ( $config{SAVE_IPSETS} ) {
+	    emit( '    if [ -f $(my_pathname)-ipsets ]; then' ,
+		  '        if chain_exists shorewall; then' ,
+		  '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,
+		  '        else' ,
+		  '            $IPSET -F' ,
+		  '            $IPSET -X' ,
+		  '            $IPSET -R < $(my_pathname)-ipsets' ,
+		  '        fi' ,
+		  '    fi' ,
+		);
+	}
 
 	if ( @ipsets ) {
 	    emit '';

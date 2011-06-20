@@ -4550,12 +4550,14 @@ sub load_ipsets() {
 		   '        $IPSET -X' ,
 		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
 		   '    fi' );
-	}
 
-	if ( @ipsets ) {
-	    emit ( '' );
+	    if ( @ipsets ) {
+		emit ( '' );
+		ensure_ipset( $_ ) for @ipsets;
+		emit ( '' );
+	    }
+	} else {
 	    ensure_ipset( $_ ) for @ipsets;
-	    emit ( '' );
 	}
 
 	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' );
@@ -4571,21 +4573,30 @@ sub load_ipsets() {
 		  '        fi' ,
 		  '    fi' ,
 		);
+
+	    if ( @ipsets ) {
+		emit ( '' );
+		ensure_ipset( $_ ) for @ipsets;
+		emit ( '' );
+	    }
+	} else {
+	    ensure_ipset( $_ ) for @ipsets;
+	}
+	
+	if ( @ipsets ) {
+	    emit ( 'elif [ "$COMMAND" = restart ]; then' );
+	    ensure_ipset( $_ ) for @ipsets;
 	}
 
+	emit( 'elif [ "$COMMAND" = stop ]; then' );
+
 	if ( @ipsets ) {
-	    emit '';
-
 	    ensure_ipset( $_ ) for @ipsets;
-
-	    emit ( '' ,
-		   'elif [ "$COMMAND" = restart ]; then' ,
-		   '' );
-
-	    ensure_ipset( $_ ) for @ipsets;
-
-	    emit ( '' ,
-		   '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
+	    emit( '' );
+	}
+	
+	if ( $family == F_IPV4 ) {
+	    emit ( '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
 		   '        #',
 		   '        # The \'grep -v\' is a hack for a bug in ipset\'s nethash implementation when xtables-addons is applied to Lenny' ,
 		   '        #',
@@ -4596,9 +4607,15 @@ sub load_ipsets() {
 		   '',
 		   '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
 		   '        grep -qE -- "^(-N|create )" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
-		   '    fi',
-		   'elif [ "$COMMAND" = refresh ]; then' );
-
+		   '    fi' );
+	} else {
+	    emit ( '    if eval $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
+		   '        grep -qE -- "^(-N|create )" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
+		   '    fi' );
+	}
+	    
+	if ( @ipsets ) {
+	    emit( 'elif [ "$COMMAND" = refresh ]; then' );
 	    ensure_ipset( $_ ) for @ipsets;
 	}
 

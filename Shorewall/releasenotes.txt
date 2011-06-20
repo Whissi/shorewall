@@ -113,6 +113,17 @@ None.
 
     If you configure Shorewall-init to save/restore ipsets, be sure to
     set SAVE_IPSETS=No in shorewall.conf and shorewall6.conf.
+
+    As part of this change, Shorewall and Shorewall6 will only restore
+    saved ipsets if SAVE_IPSETS=Yes in shorewall.conf
+    (shorewall6.conf).
+
+6)  Shorewall6 now supports dynamic zones:
+
+    1) The nets=dynamic option is allowed in /etc/shorewall6/interfaces
+    2) The HOSTS column of /etc/shorewall6/hosts may now contain
+        <interface>:dynamic.
+    3) /sbin/shorewall6 now supports the 'add' and 'delete' commands.
  
 ----------------------------------------------------------------------------
              I V.  R E L E A S E  4 . 4  H I G H L I G H T S
@@ -3628,7 +3639,7 @@ None.
 
 8)  The generated script now uses iptables[6]-restore to instantiate
     the Netfilter ruleset during processing of the 'stop' command. As a
-    consequence, the 'critical' option in /etc/shorewall/route_stopped
+    consequence, the 'critical' option in /etc/shorewall/routestopped
     is no longer needed and will result in a warning.
 
 9)  A new AUTOMAKE option has been added to shorewall.conf and

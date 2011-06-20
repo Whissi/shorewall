@@ -22,6 +22,22 @@
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
+      <arg rep="norepeat">-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>add</option></arg>
+
+      <arg choice="plain"
+      rep="repeat"><replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]</arg>
+
+      <arg choice="plain"><replaceable>zone</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
       <arg>-<replaceable>options</replaceable></arg>
 
       <arg choice="plain"><option>allow</option></arg>
@@ -584,6 +600,29 @@
 
     <variablelist>
       <varlistentry>
+        <term><emphasis role="bold">add</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.21. Adds a list of hosts or subnets to
+          a dynamic zone usually used with VPN's.</para>
+
+          <para>The <emphasis>interface</emphasis> argument names an interface
+          defined in the <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
+          file. A <emphasis>host-list</emphasis> is comma-separated list whose
+          elements are host or network addresses.<caution>
+              <para>The <command>add</command> command is not very robust. If
+              there are errors in the <replaceable>host-list</replaceable>,
+              you may see a large number of error messages yet a subsequent
+              <command>shorewall show zones</command> command will indicate
+              that all hosts were added. If this happens, replace
+              <command>add</command> by <command>delete</command> and run the
+              same command again. Then enter the correct command.</para>
+            </caution></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">allow</emphasis></term>
 
         <listitem>
@@ -674,6 +713,22 @@
           <para>The <option>-T</option> option was added in Shorewall 4.4.20
           and causes a Perl stack trace to be included with each
           compiler-generated error and warning message.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">delete</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.21. The delete command reverses the
+          effect of an earlier <emphasis role="bold">add</emphasis>
+          command.</para>
+
+          <para>The <emphasis>interface</emphasis> argument names an interface
+          defined in the <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
+          file. A <emphasis>host-list</emphasis> is comma-separated list whose
+          elements are a host or network address.</para>
         </listitem>
       </varlistentry>
 

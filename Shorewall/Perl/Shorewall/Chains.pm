@@ -4505,6 +4505,17 @@ EOF
 	   '' );
 }
 
+sub ensure_ipset( $ ) {
+    my $set = shift;
+
+    if ( $family == F_IPV4 ) {
+	emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ iphash" );
+    } else {
+	emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ hash:ip family inet6" );
+    }
+}
+    
+
 sub load_ipsets() {
 
     my @ipsets = all_ipsets;
@@ -4533,11 +4544,7 @@ sub load_ipsets() {
 	if ( @ipsets ) {
 	    emit ( '' );
 
-	    if ( $family == F_IPV4 ) {
-		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
-	    } else {
-		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ hash:ip family ipv6" ) for @ipsets;
-	    }
+	    ensure_ipset( $_ ) for @ipsets;
 
 	    emit ( '' );
 	}
@@ -4557,17 +4564,13 @@ sub load_ipsets() {
 	if ( @ipsets ) {
 	    emit '';
 
-	    if ( $family == F_IPV4 ) {
-		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
-	    } else {
-		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ hash:ip family ipv6" ) for @ipsets;
-	    }
+	    ensure_ipset( $_ ) for @ipsets;
 
 	    emit ( '' ,
 		   'elif [ "$COMMAND" = restart ]; then' ,
 		   '' );
 
-	    emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
+	    ensure_ipset( $_ ) for @ipsets;
 
 	    emit ( '' ,
 		   '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
@@ -4580,15 +4583,11 @@ sub load_ipsets() {
 		   '    fi' ,
 		   '',
 		   '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
-		   '        grep -q "^-N" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
+		   '        grep -qE -- "^(-N|create )" ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${VARDIR}/ipsets.save' ,
 		   '    fi',
 		   'elif [ "$COMMAND" = refresh ]; then' );
 
-	    if ( $family == F_IPV4 ) {
-		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ iphash" ) for @ipsets;
-	    } else {
-		emit ( "    qt \$IPSET -L $_ -n || \$IPSET -N $_ hash:ip family ipv6" ) for @ipsets;
-	    }
+	    ensure_ipset( $_ ) for @ipsets;
 	}
 
 	emit ( 'fi' ,

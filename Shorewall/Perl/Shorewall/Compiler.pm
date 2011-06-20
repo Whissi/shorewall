@@ -354,9 +354,9 @@ sub generate_script_3($) {
 
     emit '';
 
-    if ( $family == F_IPV4 ) {
-	load_ipsets;
+    load_ipsets;
 
+    if ( $family == F_IPV4 ) {
 	emit ( 'if [ "$COMMAND" = refresh ]; then' ,
 	       '   run_refresh_exit' ,
 	       'else' ,

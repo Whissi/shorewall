@@ -178,8 +178,7 @@ sub get_target_param( $ ) {
     my ( $target, $param ) = split '/', $_[0];
 
     unless ( defined $param ) {
-	$target =~ s/\(\)$//;
-	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.+)[)]$/;
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
     }
 
     ( $target, $param );

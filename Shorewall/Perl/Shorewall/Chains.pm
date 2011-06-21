@@ -2917,7 +2917,7 @@ sub get_set_flags( $$ ) {
 	$ipset_exists{$setname} = 1; # Suppress subsequent checks/warnings
     }
 
-    fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^[a-zA-Z]\w*/;
+    fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z]\w*/;
 
     have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
 
@@ -2995,7 +2995,7 @@ sub match_source_net( $;$\$ ) {
 	return mac_match $net;
     }
 
-    if ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?/ ) {
+    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?/ ) {
 	return join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
     }
 
@@ -3044,7 +3044,7 @@ sub match_dest_net( $ ) {
 	return iprange_match . "${invert}--dst-range $net ";
     }
 
-    if ( $net =~ /^(!?)\+[a-zA-Z][-\w]*(\[.*\])?$/ ) {
+    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?$/ ) {
 	return join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
     }
 

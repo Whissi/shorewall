@@ -720,7 +720,7 @@ sub add_group_to_zone($$$$$)
 	}
 
 	if ( substr( $host, 0, 1 ) eq '+' ) {
-	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+[a-zA-Z]\w*$/;
+	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+(6_)?[a-zA-Z]\w*$/;
 	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', '');
 	} else {
 	    validate_host $host, 0;
@@ -1087,7 +1087,7 @@ sub process_interface( $$ ) {
 	fatal_error "Invalid combination of interface options" if $options{required} && $options{optional};
 
 	if ( $netsref eq 'dynamic' ) {
-	    my $ipset = "${zone}_" . chain_base $physical;
+	    my $ipset = $family == F_IPV4 ? "${zone}_" . chain_base $physical : "6_${zone}_" . chain_base $physical;
 	    $netsref = [ "+$ipset" ];
 	    $ipsets{$ipset} = 1;
 	}
@@ -1801,11 +1801,11 @@ sub process_host( ) {
     if ( $hosts eq 'dynamic' ) {
 	fatal_error "Vserver zones may not be dynamic" if $type == VSERVER;
 	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-	my $physical = physical_name $interface;
-	$hosts = "+${zone}_${physical}";
+	my $physical = chain_base( physical_name $interface );
+	my $set      = $family == F_IPV4 ? "${zone}_${physical}" : "6_${zone}_${physical}";
+	$hosts = "+$set";
 	$optionsref->{dynamic} = 1;
-	$ipsets{"${zone}_${physical}"} = 1;
-
+	$ipsets{$set} = 1;
     }
 
     #

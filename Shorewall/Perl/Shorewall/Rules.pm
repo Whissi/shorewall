@@ -178,7 +178,8 @@ sub get_target_param( $ ) {
     my ( $target, $param ) = split '/', $_[0];
 
     unless ( defined $param ) {
-	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
+	$target =~ s/\(\)$//;
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.+)[)]$/;
     }
 
     ( $target, $param );
@@ -332,7 +333,7 @@ sub process_a_policy() {
 	if ( "\L$default" eq 'none' ) {
 	    $default = 'none';
 	} elsif ( $actions{$def} ) {
-	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $default;
+	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $def;
 	    use_policy_action( $default );
 	} else {
 	    fatal_error "Unknown Default Action ($default)";

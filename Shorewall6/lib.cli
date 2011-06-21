@@ -400,13 +400,6 @@ show_routing() {
 #
 # 'list dynamic' command executor
 #
-find_sets() {
-    local junk
-    local setname
-
-    ipset -L -n | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
-}
-
 list_zone() {
 
     local sets
@@ -414,11 +407,11 @@ list_zone() {
 
     [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
 
-    sets=$(find_sets $1)
+    sets=$(ipset -L -n | grep "^6_$1_")
 
     for setname in $sets; do
 	echo "${setname#${1}_}:"
-	ipset -L $setname -n | awk 'BEGIN        {prnt=0;}; \
+	ipset -L $setname     | awk 'BEGIN        {prnt=0;}; \
                                     /^Members:/  {prnt=1; next; }; \
                                     /^Bindings:/ {prnt=0; }; \
                                                  { if (prnt == 1) print "   ", $1; };'
@@ -1293,7 +1286,7 @@ add_command() {
     for host in $hostlist; do
 	interface=${host%%:*}
 
-	ipset=${zone}_${interface};
+	ipset=6_${zone}_${interface};
 
 	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
@@ -1352,7 +1345,7 @@ delete_command() {
     for hostent in $hostlist; do
 	interface=${hostent%%:*}
 
-	ipset=${zone}_${interface};
+	ipset=6_${zone}_${interface};
 
 	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"

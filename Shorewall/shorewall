@@ -1713,7 +1713,7 @@ case "$COMMAND" in
     stop|clear)
 	[ $# -ne 1 ] && usage 1
 	get_config
-	[ -x $g_firewall ] || fatal_error "Shorewall6 has never been started"
+	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
 	[ -n "$nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off

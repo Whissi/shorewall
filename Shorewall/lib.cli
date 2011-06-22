@@ -1672,6 +1672,7 @@ determine_capabilities() {
     OWNER_MATCH=
     IPSET_MATCH=
     OLD_IPSET_MATCH=
+    IPSET_V4=
     CONNMARK=
     XCONNMARK=
     CONNMARK_MATCH=
@@ -1817,7 +1818,16 @@ determine_capabilities() {
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
 
-	if qt ipset -N $chain iphash ; then
+	local have_ipset
+
+	if qt ipset -N $chain hash:ip family inet; then
+	    IPSET_V4=Yes
+	    have_ipset=Yes
+	elif qt ipset -N $chain iphash ; then
+	    have_ipset=Yes
+	fi
+
+	if [ -n "$have_ipset" ]; then
 	    if qt $IPTABLES -A $chain -m set --match-set $chain src -j ACCEPT; then
 		qt $IPTABLES -D $chain -m set --match-set $chain src -j ACCEPT
 		IPSET_MATCH=Yes
@@ -1932,6 +1942,7 @@ report_capabilities() {
 	report_capability "Header Match" $HEADER_MATCH
         report_capability "ACCOUNT Target" $ACCOUNT_TARGET
 	report_capability "AUDIT Target" $AUDIT_TARGET
+	report_capability "ipset V4" $IPSET_V4
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=

@@ -1499,6 +1499,7 @@ determine_capabilities() {
     OWNER_MATCH=
     IPSET_MATCH=
     OLD_IPSET_MATCH=
+    IPSET_V4=
     CONNMARK=
     XCONNMARK=
     CONNMARK_MATCH=
@@ -1534,6 +1535,7 @@ determine_capabilities() {
     HEADER_MATCH=
     ACCOUNT_TARGET=
     AUDIT_TARGET=
+    IPSET_V4=
 
     chain=fooX$$
 
@@ -1651,7 +1653,8 @@ determine_capabilities() {
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
 
-	if qt ipset -N $chain iphash ; then
+	if qt ipset -N $chain hash:ip family inet6; then
+	    IPSET_V4=Yes
 	    if qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
 		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
 		IPSET_MATCH=Yes
@@ -1764,6 +1767,7 @@ report_capabilities() {
 	report_capability "Header Match" $HEADER_MATCH
 	report_capability "ACCOUNT Target" $ACCOUNT_TARGET
 	report_capability "AUDIT Target" $AUDIT_TARGET
+	report_capability "IPSET V4" $IPSET_V4
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -1829,6 +1833,7 @@ report_capabilities1() {
     report_capability1 HEADER_MATCH
     report_capability1 ACCOUNT_TARGET
     report_capability1 AUDIT_TARGET
+    report_capability1 IPSET_V4
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION    

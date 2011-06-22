@@ -4517,7 +4517,11 @@ sub ensure_ipset( $ ) {
     my $set = shift;
 
     if ( $family == F_IPV4 ) {
-	emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ iphash" );
+	if ( have_capability 'IPSET_V4' ) {
+	    emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ hash:ip family inet" );
+	} else {
+	    emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ iphash" );
+	}
     } else {
 	emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ hash:ip family inet6" );
     }

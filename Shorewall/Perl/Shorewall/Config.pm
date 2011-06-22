@@ -433,7 +433,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.21-Beta3",
-		    CAPVERSION => 40417 ,
+		    CAPVERSION => 40421 ,
 		  );
     #
     # From shorewall.conf file
@@ -609,6 +609,7 @@ sub initialize( $ ) {
 	       OWNER_MATCH => undef,
 	       IPSET_MATCH => undef,
 	       OLD_IPSET_MATCH => undef,
+	       IPSET_V4 => undef,
 	       CONNMARK => undef,
 	       XCONNMARK => undef,
 	       CONNMARK_MATCH => undef,
@@ -2508,13 +2509,14 @@ sub Old_IPSet_Match() {
 sub IPSet_Match() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
+    my $fam    = $family == F_IPV4 ? 'inet' : 'inet6';
 
     $ipset = which $ipset unless $ipset =~ '/';
 
     if ( $ipset && -x $ipset ) {
 	qt( "$ipset -X $sillyname" );
 
-	if ( qt( "$ipset -N $sillyname iphash" ) ) {
+	if ( qt( "$ipset -N $sillyname iphash" ) || qt( "$ipset -N $sillyname hash:ip family $fam") ) {
 	    if ( qt1( "$iptables -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
 		qt1( "$iptables -D $sillyname -m set --match-set $sillyname src -j ACCEPT" );
 		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
@@ -2522,6 +2524,24 @@ sub IPSet_Match() {
 		$result = have_capability 'OLD_IPSET_MATCH';
 	    }
 
+	    qt( "$ipset -X $sillyname" );
+	}
+    }
+
+    $result;
+}
+
+sub IPSET_V4() {
+    my $ipset  = $config{IPSET} || 'ipset';
+    my $result = 0;
+
+    $ipset = which $ipset unless $ipset =~ '/';
+
+    if ( $ipset && -x $ipset ) {
+	qt( "$ipset -X $sillyname" );
+
+	if ( qt( "$ipset -N $sillyname hash:ip family inet" ) ) {
+	    $result = 1;
 	    qt( "$ipset -X $sillyname" );
 	}
     }

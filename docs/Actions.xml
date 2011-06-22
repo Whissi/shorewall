@@ -174,7 +174,7 @@ ACCEPT   -              -               tcp     135,139,445
     </important>
 
     <para>Beginning with Shorewall 4.4.21, the standard Drop and Reject
-    options are parameterized. Each has three parameters as follows:</para>
+    options are parameterized. Each has five parameters as follows:</para>
 
     <informaltable>
       <tgroup cols="4">
@@ -253,6 +253,30 @@ ACCEPT   -              -               tcp     135,139,445
 
             <entry>REJECT or A_REJECT depending on the setting of parameter
             1</entry>
+          </row>
+
+          <row>
+            <entry>Both</entry>
+
+            <entry>4</entry>
+
+            <entry>Determines what to do with accepted critical ICMP
+            packets.</entry>
+
+            <entry>ACCEPT or A_ACCEPT depending on the setting of parameter
+            1</entry>
+          </row>
+
+          <row>
+            <entry>Both</entry>
+
+            <entry>5</entry>
+
+            <entry>Determines what to do with late-arriving DNS replies
+            (source port 53) or UPnP (udp port 1900).</entry>
+
+            <entry>DROP or A_DROP depending on the setting of parameter
+            1.</entry>
           </row>
         </tbody>
       </tgroup>

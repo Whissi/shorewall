@@ -33,14 +33,25 @@ None.
 2)  FORMAT-2 actions may now specify default parameter values using the
     DEFAULTS directive.
 
-    	    DEFAULTS <def1>,<def2>,...
+    	DEFAULTS <def1>,<def2>,...
 
     Where <def1> is the default value for the first parameter, <def2>
     is the default value for the second parameter and so on. To specify
     an empty default, use '-'.
 
-3)  The standard Drop and Reject actions are now parameterized. Each 
-    has three parameters:
+3)  Macros may now specify a default parameter value using the DEFAULT
+    directive.
+
+	DEFAULT <default>
+
+    Example macro.Foo -- by default, accepts connections on ficticous
+    	    	      	 tcp port 'foo'.
+
+    	DEFAULT ACCEPT
+	PARAM	-	-	tcp	foo
+
+4)  The standard Drop and Reject actions are now parameterized. Each 
+    has 5 parameters:
 
     1) Pass 'audit' if you want all ACCEPTs, DROPs and REJECTs audited.
        Pass '-' otherwise.
@@ -62,6 +73,21 @@ None.
 	      Reject	 audit				A_REJECT
 	      Drop	 audit				A_DROP
 
+    4)  The action to be applied to accepted ICMP packets.
+
+       	      FIRST PARAMETER           DEFAULT
+
+	      -	    			ACCEPT
+	      audit			A_ACCEPT
+
+    5)  The action to be applied to UPnP (udp port 1900) and late DNS
+    	replies (udp source port 53)
+
+       	      FIRST PARAMETER           DEFAULT
+
+	      -	    			DROP
+	      audit			A_DROP
+
     The parameters can be passed in the POLICY column of the policy
     file.
 
@@ -80,7 +106,7 @@ None.
 
 	DROP_DEFAULT=Drop(-,DROP)
 
-4)  An 'update' command has been added to /sbin/shorewall and
+5)  An 'update' command has been added to /sbin/shorewall and
     /sbin/shorewall6. The command validates the configuration and then
     updates the shorewall.conf (shorewall6.conf) file. The updated file
     will set any new options with their default values and will move
@@ -95,7 +121,7 @@ None.
     '-a' option that causes the updated file to be annotated with
     documentation.
 
-5)  Shorewall6 now supports ipsets. 
+6)  Shorewall6 now supports ipsets. 
 
     Unlike iptables, which has separate configurations for IPv4 and
     IPv6, ipset has a single configuration that handles both. This
@@ -118,7 +144,7 @@ None.
     saved ipsets if SAVE_IPSETS=Yes in shorewall.conf
     (shorewall6.conf).
 
-6)  Shorewall6 now supports dynamic zones:
+7)  Shorewall6 now supports dynamic zones:
 
     1) The nets=dynamic option is allowed in /etc/shorewall6/interfaces
     2) The HOSTS column of /etc/shorewall6/hosts may now contain

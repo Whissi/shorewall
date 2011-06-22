@@ -15,7 +15,7 @@
 #	c) Ensure that certain ICMP packets that are necessary for successful
 #	   internet operation are always ACCEPTed.
 #
-#  The action accepts three optional parameters:
+#  The action accepts five optional parameters:
 #
 #	1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
 #           actions.
@@ -23,6 +23,10 @@
 #           depending on the setting of the first parameter.
 #	3 - Action to take with SMB requests. Default is DROP or A_DROP,
 #           depending on the setting of the first parameter.
+#       4 - Action to take with required ICMP packets. Default is ACCEPT or
+#           A_ACCEPT depending on the first parameter.
+#       5 - Action to take with late UDP replies (UDP source port 53). Default
+#           is DROP or A_DROP depending on the first parameter.
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #

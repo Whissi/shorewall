@@ -2853,8 +2853,10 @@ sub set_shorewall_dir( $ ) {
 #
 # Small functions called by get_configuration. We separate them so profiling is more useful
 #
-sub process_shorewall_conf() {
-    my $file = find_file "$product.conf";
+sub process_shorewall_conf( $ ) {
+    my $update = shift;
+    my $file   = find_file "$product.conf";
+    my $config = $update ? \%rawconfig : \%config;
 
     if ( -f $file ) {
 	$globals{CONFIGDIR} =  $configfile = $file;
@@ -2865,9 +2867,9 @@ sub process_shorewall_conf() {
 
 	    first_entry "Processing $file...";
 	    #
-	    # Don't expand shell variables
+	    # Don't expand shell variables if $config
 	    #
-	    while ( read_a_line(0,0) ) {
+	    while ( read_a_line( 0,! $update ) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 		    unless ( exists $config{$var} ) {
@@ -2875,7 +2877,7 @@ sub process_shorewall_conf() {
 			next;
 		    }
 
-		    $rawconfig{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
+		    $config->{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 		} else {
 		    fatal_error "Unrecognized entry";
 		}
@@ -2886,36 +2888,39 @@ sub process_shorewall_conf() {
     } else {
 	fatal_error "$file does not exist!";
     }
-    #
-    # Now that we have the raw values stored, we expand shell variables and store the expanded values
-    #
-    while ( my ( $opt, $v ) = each %rawconfig ) {
-	my $count = 0;
 
-	unless ( $v =~ /^'(.*?)'$/ ) {
-	    #                            $1      $2   $3      -     $4
-	    while ( $v =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+    if ( $config ) {
+	#
+	# Now that we have the raw values stored, we expand shell variables and store the expanded values
+	#
+	while ( my ( $opt, $v ) = each %rawconfig ) {
+	    my $count = 0;
 
-		my ( $first, $var, $rest ) = ( $1, $3, $4);
+	    unless ( $v =~ /^'(.*?)'$/ ) {
+		#                            $1      $2   $3      -     $4
+		while ( $v =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+		    
+		    my ( $first, $var, $rest ) = ( $1, $3, $4);
 
-		my $val;
+		    my $val;
 
-		if ( $var =~ /^\d+$/ ) {
-		    fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
-		    $val = $actparms{$var};
-		} else {
-		    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
-		    $val = $params{$var};
+		    if ( $var =~ /^\d+$/ ) {
+			fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
+			$val = $actparms{$var};
+		    } else {
+			fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+			$val = $params{$var};
+		    }
+
+		    $val = '' unless defined $val;
+		    $v = join( '', $first , $val , $rest );
+		    fatal_error "Variable Expansion Loop in option $opt" if ++$count > 100;
 		}
-
-		$val = '' unless defined $val;
-		$v = join( '', $first , $val , $rest );
-		fatal_error "Variable Expansion Loop in option $opt" if ++$count > 100;
 	    }
-	}
 
-	$config{$opt} = $v;
-    }	
+	    $config{$opt} = $v;
+	}
+    }
 }
 
 #
@@ -3176,9 +3181,9 @@ sub export_params() {
 # - Read the capabilities file, if any
 # - establish global hashes %config , %globals and %capabilities
 #
-sub get_configuration( $ ) {
+sub get_configuration( $$ ) {
 
-    my $export = $_[0];
+    my ( $export, $update ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -3190,7 +3195,7 @@ sub get_configuration( $ ) {
 
     get_params;
 
-    process_shorewall_conf;
+    process_shorewall_conf( $update );
 
     ensure_config_path;
 

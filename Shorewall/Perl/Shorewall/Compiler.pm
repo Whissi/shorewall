@@ -593,7 +593,7 @@ sub compiler {
     #
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #
-    get_configuration( $export );
+    get_configuration( $export , $update );
 
     report_capabilities unless $config{LOAD_HELPERS_ONLY};
 

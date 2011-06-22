@@ -593,7 +593,7 @@ sub compiler {
     #
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #
-    get_configuration( $export , $update );
+    get_configuration( $export , $update , $annotate );
 
     report_capabilities unless $config{LOAD_HELPERS_ONLY};
 
@@ -889,11 +889,6 @@ sub compiler {
 	    #
 	    process_routestopped;
 	}
-
-	#
-	# Update the configuration file if requested
-	#
-	update_config_file( $annotate ) if $update;
 
 	if ( $family == F_IPV4 ) {
 	    progress_message3 "Shorewall configuration verified";

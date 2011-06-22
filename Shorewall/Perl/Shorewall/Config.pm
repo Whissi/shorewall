@@ -121,7 +121,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
-				       update_config_file
 
 				       $product
 				       $Product
@@ -2853,8 +2852,10 @@ sub set_shorewall_dir( $ ) {
 #
 # Small functions called by get_configuration. We separate them so profiling is more useful
 #
-sub process_shorewall_conf( $ ) {
-    my $update = shift;
+sub update_config_file( $ );
+
+sub process_shorewall_conf( $$ ) {
+    my ( $update, $annotate ) = @_;
     my $file   = find_file "$product.conf";
     my $config = $update ? \%rawconfig : \%config;
 
@@ -2921,6 +2922,10 @@ sub process_shorewall_conf( $ ) {
 	    $config{$opt} = $v;
 	}
     }
+    #
+    # Now update the config file if asked
+    #
+    update_config_file( $annotate) if $update;
 }
 
 #
@@ -3181,9 +3186,9 @@ sub export_params() {
 # - Read the capabilities file, if any
 # - establish global hashes %config , %globals and %capabilities
 #
-sub get_configuration( $$ ) {
+sub get_configuration( $$$ ) {
 
-    my ( $export, $update ) = @_;
+    my ( $export, $update, $annotate ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -3195,7 +3200,7 @@ sub get_configuration( $$ ) {
 
     get_params;
 
-    process_shorewall_conf( $update );
+    process_shorewall_conf( $update, $annotate );
 
     ensure_config_path;
 

@@ -2373,11 +2373,20 @@ sub process_rule ( ) {
     #
     process_section( 'NEW' ) unless $section;
 
+    if ( $target eq 'DEFAULTS' ) {
+	if ( @actionstack ) {
+	    default_action_params( split_list $source, 'defaults' );
+	    next;
+	}	
+	
+	fatal_error "DEFAULTS is only allowed in an ACTION file";
+    }
+
     if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
 	progress_message "Rule \"$currentline\" ignored.";
 	return 1;
     }
-
+    
     my $intrazone = 0;
     my $wild      = 0;
     my $thisline  = $currentline; #We must save $currentline because it is overwritten by macro expansion

@@ -3415,7 +3415,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability 'MARK' ? 'Yes' : '';
     default_yes_no 'COMPLETE'                   , '';
     default_yes_no 'EXPORTMODULES'              , '';
-    default_yes_no 'LEGACY_FASTSTART'           , '';
+    default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
 
     require_capability 'MARK' , 'FOREWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

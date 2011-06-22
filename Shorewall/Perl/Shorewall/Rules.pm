@@ -75,6 +75,7 @@ my @builtins;
 #
 my $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
 my $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
+my $macro_commands  = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -1577,6 +1578,11 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 	if ( $mtarget eq 'FORMAT' ) {
 	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
 	    $format = $msource;
+	    next;
+	}
+
+	if ( $mtarget eq 'DEFAULT' ) {
+	    $param = $msource unless supplied $param;
 	    next;
 	}
 

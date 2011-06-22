@@ -31,18 +31,20 @@ FORMAT 2
 BEGIN PERL
 use Shorewall::Config;
 
-my ( $p1, $p2, $p3 ) = get_action_params(1, 2, 3);
+my ( $p1, $p2, $p3 ) = get_action_params(1, 2, 3, 4, 5);
 
 if ( defined $p1 && $p1 eq 'audit' ) {
-   set_action_param( 2, 'A_REJECT') unless defined $p2;
-   set_action_param( 3, 'A_REJECT') unless defined $p3;
+   set_action_param( 2, 'A_REJECT')  unless defined $p2;
+   set_action_param( 3, 'A_REJECT')  unless defined $p3;
+   set_action_param( 4, 'A_ACCEPT' ) unless defined $p5;
+   set_action_param( 5, 'A_DROP' )   unless defined $p5;
 };
 
 1;
 
 END PERL
 
-DEFAULTS -,REJECT,REJECT
+DEFAULTS -,REJECT,REJECT,ACCEPT,DROP
 
 #TARGET		SOURCE	DEST	PROTO
 #
@@ -61,7 +63,7 @@ dropBcast($1)
 #
 # ACCEPT critical ICMP types
 #
-AllowICMPs($1)	-	-	icmp
+AllowICMPs($4)	-	-	icmp
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
@@ -72,7 +74,7 @@ dropInvalid($1)
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
 SMB($3)
-DropUPnP($1)
+DropUPnP($5)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
@@ -81,4 +83,4 @@ dropNotSyn($1)	-	-	tcp
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-DropDNSrep($1)
+DropDNSrep($5)

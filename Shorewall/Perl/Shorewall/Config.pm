@@ -1840,13 +1840,16 @@ sub default_action_params {
     }
 }
 
-sub get_action_params {
+sub get_action_params( $ ) {
+    my $num = shift;
+
+    fatal_error "Invalid argument to get_action_params()" unless $num =~ /^\d+$/;
+
     my @values;
 
-    for ( @_ ) {
-	fatal_error "Parameter numbers must be numeric" unless $_ =~ /^\d+$/;
-	push @values, $actparms{$_};
-    }
+    my $index = 1;
+
+    push @values, $actparms{$index++} while $num-- > 0;
 
     @values;	    
 }

@@ -73,7 +73,8 @@ my @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-my $rule_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
+my $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
+my $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -1476,7 +1477,8 @@ sub process_action( $) {
 		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands;
 		$origdest = $connlimit = $time = $headers = '-';
 	    } else {
-		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'action file', $rule_commands;
+		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers )
+		    = split_line1 1, 13, 'action file', $action_commands;
 	    }
 
 	    if ( $target eq 'COMMENT' ) {
@@ -1490,9 +1492,9 @@ sub process_action( $) {
 		next;
 	    }
 
-	    if ( $format == 2 && $target eq 'DEFAULTS' ) {
-		default_action_params( split_list $source, 'defaults' );
-		next;
+	    if ( $target eq 'DEFAULTS' ) {
+		default_action_params( split_list $source, 'defaults' ), next if $format == 2;
+		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions'; 
 	    }	      
 
 	    process_rule1( $chainref,
@@ -1578,11 +1580,6 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 	    next;
 	}
 
-	if ( $format == 2 && $target eq 'DEFAULTS' ) {
-	    default_action_params( split_list $source, 'defaults' );
-	    next;
-	}
-	      
 	$mtarget = merge_levels $target, $mtarget;
 
 	if ( $mtarget =~ /^PARAM(:.*)?$/ ) {
@@ -2363,7 +2360,8 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers ) = split_line1 1, 13, 'rules file', $rule_commands;
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers )
+	= split_line1 1, 13, 'rules file', $rule_commands;
 
     process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
@@ -2372,15 +2370,6 @@ sub process_rule ( ) {
     # we close off any missing sections.
     #
     process_section( 'NEW' ) unless $section;
-
-    if ( $target eq 'DEFAULTS' ) {
-	if ( @actionstack ) {
-	    default_action_params( split_list $source, 'defaults' );
-	    next;
-	}	
-	
-	fatal_error "DEFAULTS is only allowed in an ACTION file";
-    }
 
     if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
 	progress_message "Rule \"$currentline\" ignored.";

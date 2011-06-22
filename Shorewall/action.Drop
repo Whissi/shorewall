@@ -35,11 +35,9 @@ FORMAT 2
 BEGIN PERL
 use Shorewall::Config;
 
-my $p1 = read_action_param(1);
+my ($p1, $p2, $p3 ) = get_action_params(1, 2, 3);
 
 if ( defined $p1 && $p1 eq 'audit' ) {
-   my ( $p2, $p3 ) = ( read_action_param(2) , read_action_param(3) );
-
    set_action_param( 2, 'A_REJECT')   unless defined $p2;
    set_action_param( 3, 'A_DROP')     unless defined $p3;
 };

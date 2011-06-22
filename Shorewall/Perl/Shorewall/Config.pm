@@ -52,7 +52,7 @@ our @EXPORT = qw(
 		 progress_message2
 		 progress_message3
 		 supplied
-		 read_action_param
+		 get_action_params
 		 set_action_param
                 );
 
@@ -1840,11 +1840,15 @@ sub default_action_params {
     }
 }
 
-sub read_action_param( $ ) {
-    my $i = shift;
+sub get_action_params {
+    my @values;
 
-    fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/;
-    $actparms{$i};
+    for ( @_ ) {
+	fatal_error "Parameter numbers must be numeric" unless $_ =~ /^\d+$/;
+	push @values, $actparms{$_};
+    }
+
+    @values;	    
 }
 
 sub set_action_param( $$ ) {

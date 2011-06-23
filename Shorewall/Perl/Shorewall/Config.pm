@@ -609,7 +609,7 @@ sub initialize( $ ) {
 	       OWNER_MATCH => undef,
 	       IPSET_MATCH => undef,
 	       OLD_IPSET_MATCH => undef,
-	       IPSET_V4 => undef,
+	       IPSET_V5 => undef,
 	       CONNMARK => undef,
 	       XCONNMARK => undef,
 	       CONNMARK_MATCH => undef,
@@ -2531,7 +2531,7 @@ sub IPSet_Match() {
     $result;
 }
 
-sub IPSET_V4() {
+sub IPSET_V5() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
 
@@ -2644,6 +2644,7 @@ our %detect_capability =
       IPRANGE_MATCH => \&IPRange_Match,
       IPSET_MATCH => \&IPSet_Match,
       OLD_IPSET_MATCH => \&Old_IPSet_Match,
+      IPSET_V5 => \&IPSET_V5,
       KLUDGEFREE => \&Kludgefree,
       LENGTH_MATCH => \&Length_Match,
       LOGMARK_TARGET => \&Logmark_Target,
@@ -2783,6 +2784,7 @@ sub determine_capabilities() {
 	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
 	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
 	$capabilities{IPSET_MATCH}     = detect_capability( 'IPSET_MATCH' );
+	$capabilities{OLD_IPSET_MATCH} = detect_capability( 'OLD_IPSET_MATCH' );
 	$capabilities{USEPKTTYPE}      = detect_capability( 'USEPKTTYPE' );
 	$capabilities{ADDRTYPE}        = detect_capability( 'ADDRTYPE' );
 	$capabilities{TCPMSS_MATCH}    = detect_capability( 'TCPMSS_MATCH' );
@@ -2799,6 +2801,7 @@ sub determine_capabilities() {
 	$capabilities{MARK_ANYWHERE}   = detect_capability( 'MARK_ANYWHERE' );
 	$capabilities{ACCOUNT_TARGET}  = detect_capability( 'ACCOUNT_TARGET' );
 	$capabilities{AUDIT_TARGET}    = detect_capability( 'AUDIT_TARGET' );
+	$capabilities{IPSET_V5}        = detect_capability( 'IPSET_V5' );
 
 
 	qt1( "$iptables -F $sillyname" );

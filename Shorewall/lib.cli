@@ -1672,7 +1672,7 @@ determine_capabilities() {
     OWNER_MATCH=
     IPSET_MATCH=
     OLD_IPSET_MATCH=
-    IPSET_V4=
+    IPSET_V5=
     CONNMARK=
     XCONNMARK=
     CONNMARK_MATCH=
@@ -1821,7 +1821,7 @@ determine_capabilities() {
 	local have_ipset
 
 	if qt ipset -N $chain hash:ip family inet; then
-	    IPSET_V4=Yes
+	    IPSET_V5=Yes
 	    have_ipset=Yes
 	elif qt ipset -N $chain iphash ; then
 	    have_ipset=Yes
@@ -1942,7 +1942,7 @@ report_capabilities() {
 	report_capability "Header Match" $HEADER_MATCH
         report_capability "ACCOUNT Target" $ACCOUNT_TARGET
 	report_capability "AUDIT Target" $AUDIT_TARGET
-	report_capability "ipset V4" $IPSET_V4
+	report_capability "ipset V5" $IPSET_V5
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -2011,6 +2011,7 @@ report_capabilities1() {
     report_capability1 HEADER_MATCH
     report_capability1 ACCOUNT_TARGET
     report_capability1 AUDIT_TARGET
+    report_capability1 IPSET_V5
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

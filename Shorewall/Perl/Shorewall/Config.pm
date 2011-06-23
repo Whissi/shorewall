@@ -2873,10 +2873,131 @@ sub set_shorewall_dir( $ ) {
 }
 
 #
+# Update the configuration file
+#
+sub update_config_file( $ ) {
+    my $annotate = shift;
+
+    my $fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
+    #
+    # Deprecated options with their default values
+    #
+    my %deprecated = ( LOGRATE            => '' ,
+		       LOGBURST           => '' ,
+		       EXPORTPARAMS       => 'no' );
+    #
+    # Undocumented options -- won't be listed in shorewall.conf (shorewall6.conf)..
+    #
+    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS FAKE_AUDIT ) );
+
+    if ( -f $fn ) {
+	my ( $template, $output );
+
+	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
+
+	unless ( open $output, '>', "$configfile.updated" ) { 
+	    close $template;
+	    fatal_error "Unable to open $configfile.updated for output: $!";
+	}
+
+	while ( <$template> ) {
+	    if ( /^(\w+)="?(.*?)"?$/ ) {
+		#
+		# Option assignment -- get value and default
+		#
+		my ($var, $val, $default ) = ( $1, $rawconfig{$1}, $2 );
+
+		unless ( supplied $val ) {
+		    #
+		    # Value is either undefined (option not in config file) or is ''
+		    #
+		    if ( defined $val ) {
+			#
+			# OPTION='' - use default if 'Yes' or 'No'
+			#
+			$val = $default if $default eq 'Yes' || $default eq 'No';
+		    } else {
+			#
+			# Wasn't mentioned in old file - use default value
+			#
+			$val = $default;
+		    }
+		}
+
+		unless ( $val =~ /^[-\w\/\.]*$/ ) {
+		    #
+		    # Funny characters (including whitespace) -- use double quotes unless the thing is single-quoted
+		    #
+		    $val = qq("$val") unless $val =~ /^'.+'$/;
+		}
+
+		$_ = "$var=$val\n";
+	    }
+
+	    print $output "$_";
+	}
+
+	close $template;
+
+	my $heading_printed;
+
+	for ( @undocumented ) {
+	    if ( defined $rawconfig{$_} ) {
+
+		unless ( $heading_printed ) {
+		    print $output <<'EOF';
+
+#################################################################################
+#                          U N D O C U M E N T E D
+#                               O P T I O N S
+#################################################################################
+
+EOF
+		    $heading_printed = 1;
+		}
+
+		print $output "$_=$rawconfig{$_}\n\n";
+	    }
+	}
+
+	$heading_printed = 0;
+
+	for ( keys %deprecated ) {
+	    if ( supplied $rawconfig{$_} ) {
+		if ( lc $rawconfig{$_} ne $deprecated{$_} ) {
+		    unless ( $heading_printed ) {
+			print $output <<'EOF';
+
+#################################################################################
+#                           D E P R E C A T E D
+#                               O P T I O N S
+#################################################################################
+
+EOF
+			$heading_printed = 1;
+		    }
+
+		    print $output "$_=$rawconfig{$_}\n\n";
+
+		    warning_message "Deprecated option $_ is being set in your $product.conf file";
+		}
+	    }
+	}
+
+	close $output;
+
+	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
+	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
+
+	progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
+    } else {
+	fatal_error "$fn does not exist";
+    }
+}
+
+#
 # Small functions called by get_configuration. We separate them so profiling is more useful
 #
-sub update_config_file( $ );
-
 sub process_shorewall_conf( $$ ) {
     my ( $update, $annotate ) = @_;
     my $file   = find_file "$product.conf";
@@ -3829,129 +3950,6 @@ sub generate_aux_config() {
     }
 
     finalize_aux_config;
-}
-
-#
-# Update the configuration file
-#
-sub update_config_file( $ ) {
-    my $annotate = shift;
-
-    my $fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
-    #
-    # Deprecated options with their default values
-    #
-    my %deprecated = ( LOGRATE            => '' ,
-		       LOGBURST           => '' ,
-		       EXPORTPARAMS       => 'no' );
-    #
-    # Undocumented options -- won't be listed in shorewall.conf (shorewall6.conf)..
-    #
-    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS FAKE_AUDIT ) );
-
-    if ( -f $fn ) {
-	my ( $template, $output );
-
-	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
-
-	unless ( open $output, '>', "$configfile.updated" ) { 
-	    close $template;
-	    fatal_error "Unable to open $configfile.updated for output: $!";
-	}
-
-	while ( <$template> ) {
-	    if ( /^(\w+)="?(.*?)"?$/ ) {
-		#
-		# Option assignment -- get value and default
-		#
-		my ($var, $val, $default ) = ( $1, $rawconfig{$1}, $2 );
-
-		unless ( supplied $val ) {
-		    #
-		    # Value is either undefined (option not in config file) or is ''
-		    #
-		    if ( defined $val ) {
-			#
-			# OPTION='' - use default if 'Yes' or 'No'
-			#
-			$val = $default if $default eq 'Yes' || $default eq 'No';
-		    } else {
-			#
-			# Wasn't mentioned in old file - use default value
-			#
-			$val = $default;
-		    }
-		}
-
-		unless ( $val =~ /^[-\w\/\.]*$/ ) {
-		    #
-		    # Funny characters (including whitespace) -- use double quotes unless the thing is single-quoted
-		    #
-		    $val = qq("$val") unless $val =~ /^'.+'$/;
-		}
-
-		$_ = "$var=$val\n";
-	    }
-
-	    print $output "$_";
-	}
-
-	close $template;
-
-	my $heading_printed;
-
-	for ( @undocumented ) {
-	    if ( defined $rawconfig{$_} ) {
-
-		unless ( $heading_printed ) {
-		    print $output <<'EOF';
-
-#################################################################################
-#                          U N D O C U M E N T E D
-#                               O P T I O N S
-#################################################################################
-
-EOF
-		    $heading_printed = 1;
-		}
-
-		print $output "$_=$rawconfig{$_}\n\n";
-	    }
-	}
-
-	$heading_printed = 0;
-
-	for ( keys %deprecated ) {
-	    if ( supplied $rawconfig{$_} ) {
-		if ( lc $rawconfig{$_} ne $deprecated{$_} ) {
-		    unless ( $heading_printed ) {
-			print $output <<'EOF';
-
-#################################################################################
-#                           D E P R E C A T E D
-#                               O P T I O N S
-#################################################################################
-
-EOF
-			$heading_printed = 1;
-		    }
-
-		    print $output "$_=$rawconfig{$_}\n\n";
-
-		    warning_message "Deprecated option $_ is being set in your $product.conf file";
-		}
-	    }
-	}
-
-	close $output;
-
-	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
-	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
-
-	progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
-    } else {
-	fatal_error "$fn does not exist";
-    }
 }
 
 END {

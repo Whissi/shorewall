@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                S H O R E W A L L  4 . 4 . 2 1  B e t a  3
+                S H O R E W A L L  4 . 4 . 2 1  R C  I
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -13,7 +13,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
   I.  P R O B L E M S   C O R R E C T E D   I N   T H I S  R E L E A S E
 ----------------------------------------------------------------------------
 
-None.
+1)  All problems corrections included in Shorewall 4.4.20.1 - 4.4.20.3
+    (see below).
 
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
@@ -386,6 +387,50 @@ V I.  P R O B L E M S  C O R R E C T E D  A N D  N E W   F E A T U R E S
 ----------------------------------------------------------------------------
          P R O B L E M S   C O R R E C T E D   I N   4 . 4 . 2 0
 ----------------------------------------------------------------------------
+
+4.4.20.3
+
+1)  Deprecated options have been removed from the .conf files. 
+    They remain in the man pages.
+
+2)  A simple configuration like the 'Universal' sample that includes a
+    single wildcard interface ('+' in the INTERFACE column) produces a
+    ruleset that blocks all incoming packets.
+
+    As part of correcting this defect, which was introduced in
+    4.4.20.2, one or more superfluous rules (which could never match)
+    have been eliminated from most configurations.
+
+4.4.20.2
+
+1)  Problem Corrected #1 from 4.4.19.4 was inadvertently omitted from
+    4.4.20. It is now included.
+
+2)  A defect introduced in 4.4.20 could cause the following failure at
+    start/restart:
+
+	ERROR: Command "tc qdisc add dev eth0 parent 1:11 handle 1:
+                        sfq quantum 12498 limit 127 perturb 10" failed
+
+3)  The 'sfilter' interface option introduced in 4.4.20 was only
+    applied to forwarded traffic. Now it is also applied to traffic
+    addressed to the firewall itself.
+
+4)  IPSEC traffic is now (correctly) excluded from sfilter.
+
+5)  Shorewall 4.4.20 could, under some circumstances, fail during
+    iptables-restore with a message such as the following:
+
+    iptables-restore v1.4.10: Couldn't load target
+    `dsl0_fwd':/usr/lib/xtables/libipt_dsl0_fwd.so: cannot open shared object
+    file: No such file or directory
+
+    Error occurred at line: 113
+    Try `iptables-restore -h' or 'iptables-restore --help' for more
+    information.
+
+    ERROR: iptables-restore Failed. Input is in
+    	   /var/lib/shorewall/.iptables-restore-input
 
 6)  The following incorrect warning message has been eliminated:
 

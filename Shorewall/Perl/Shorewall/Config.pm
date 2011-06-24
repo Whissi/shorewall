@@ -2875,6 +2875,20 @@ sub set_shorewall_dir( $ ) {
 #
 # Update the configuration file
 #
+
+sub conditional_quote( $ ) {
+    my $val = shift;
+
+    unless ( $val =~ /^[-\w\/\.]*$/ ) {
+	#
+	# Funny characters (including whitespace) -- use double quotes unless the thing is single-quoted
+	#
+	$val = qq("$val") unless $val =~ /^'.+'$/;
+    }
+
+    $val;
+}
+
 sub update_config_file( $ ) {
     my $annotate = shift;
 
@@ -2926,12 +2940,7 @@ sub update_config_file( $ ) {
 
 		}
 
-		unless ( $val =~ /^[-\w\/\.]*$/ ) {
-		    #
-		    # Funny characters (including whitespace) -- use double quotes unless the thing is single-quoted
-		    #
-		    $val = qq("$val") unless $val =~ /^'.+'$/;
-		}
+		$val = conditional_quote $val;
 
 		$_ = "$var=$val\n";
 	    }
@@ -2944,7 +2953,7 @@ sub update_config_file( $ ) {
 	my $heading_printed;
 
 	for ( @undocumented ) {
-	    if ( defined $rawconfig{$_} ) {
+	    if ( defined ( my $val = $rawconfig{$_} ) ) {
 
 		unless ( $heading_printed ) {
 		    print $output <<'EOF';
@@ -2958,15 +2967,17 @@ EOF
 		    $heading_printed = 1;
 		}
 
-		print $output "$_=$rawconfig{$_}\n\n";
+		$val = conditional_quote $val;
+
+		print $output "$_=$val\n\n";
 	    }
 	}
 
 	$heading_printed = 0;
 
 	for ( keys %deprecated ) {
-	    if ( supplied $rawconfig{$_} ) {
-		if ( lc $rawconfig{$_} ne $deprecated{$_} ) {
+	    if ( supplied( my $val = $rawconfig{$_} ) ) {
+		if ( lc $val ne $deprecated{$_} ) {
 		    unless ( $heading_printed ) {
 			print $output <<'EOF';
 
@@ -2979,7 +2990,9 @@ EOF
 			$heading_printed = 1;
 		    }
 
-		    print $output "$_=$rawconfig{$_}\n\n";
+		    $val = conditional_quote $val;
+
+		    print $output "$_=$val\n\n";
 
 		    warning_message "Deprecated option $_ is being set in your $product.conf file";
 		}

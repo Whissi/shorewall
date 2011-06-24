@@ -2915,13 +2915,15 @@ sub update_config_file( $ ) {
 			#
 			# OPTION='' - use default if 'Yes' or 'No'
 			#
-			$val = $default if $default eq 'Yes' || $default eq 'No';
+			$config{$var} = $val = $default if $default eq 'Yes' || $default eq 'No';
 		    } else {
 			#
 			# Wasn't mentioned in old file - use default value
 			#
-			$val = $default;
+			$config{$var} = $val = $default;
+
 		    }
+
 		}
 
 		unless ( $val =~ /^[-\w\/\.]*$/ ) {

@@ -2894,7 +2894,7 @@ sub update_config_file( $ ) {
 
     my $fn;
 
-    if ( -f "/usr/share/doc/${product}/default-config/${product}.conf" ) {
+    unless ( -d "$globals{SHAREDIR}/configfiles/" ) {
 	#
 	# Debian or derivative
 	#

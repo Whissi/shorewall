@@ -2886,7 +2886,7 @@ sub update_config_file( $ ) {
 		       LOGBURST           => '' ,
 		       EXPORTPARAMS       => 'no' );
     #
-    # Undocumented options -- won't be listed in shorewall.conf (shorewall6.conf)..
+    # Undocumented options -- won't be listed in the template
     #
     my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS FAKE_AUDIT ) );
 
@@ -2971,7 +2971,7 @@ EOF
 			print $output <<'EOF';
 
 #################################################################################
-#                           D E P R E C A T E D
+#                            D E P R E C A T E D
 #                               O P T I O N S
 #################################################################################
 

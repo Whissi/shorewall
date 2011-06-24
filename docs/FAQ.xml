@@ -115,18 +115,6 @@
       </section>
     </section>
 
-    <section id="faq75">
-      <title>(FAQ 75) I can't find the Shorewall 4.0 (or 4.2) shorewall-common
-      RPM. Where is it?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> If you use Simon Matter's
-      Redhat/Fedora/CentOS rpms, be aware that Simon calls the
-      <emphasis>shorewall-common</emphasis> RPM
-      <emphasis>shorewall</emphasis>. So you should download and install the
-      appropriate <emphasis>shorewall-4.x.y</emphasis> RPM from his
-      site.</para>
-    </section>
-
     <section id="faq14">
       <title>(FAQ 14) I can't find the Shorewall 4.4 shorewall-common,
       shorewall-shell and shorewall-perl packages? Where are they?</title>
@@ -143,27 +131,11 @@
     <title>Upgrading Shorewall</title>
 
     <section id="faq66">
-      <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.0 (or 4.2); where
-      is the 'shorewall' package?</title>
+      <title>(FAQ 66) I'm trying to upgrade to Shorewall 4.x; which of these
+      packages do I need to install?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
       url="upgrade_issues.htm">upgrade issues.</ulink></para>
-
-      <section id="faq66a">
-        <title>(FAQ 66a) I'm trying to upgrade to Shorewall 4.0 (or 4.2); do I
-        have to uninstall the 'shorewall' package?</title>
-
-        <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
-        url="upgrade_issues.htm">upgrade issues.</ulink></para>
-      </section>
-
-      <section id="faq66b">
-        <title>(FAQ 66b) I'm trying to upgrade to Shorewall 4.x: which of
-        these packages do I need to install?</title>
-
-        <para><emphasis role="bold">Answer:</emphasis> Please see the <ulink
-        url="upgrade_issues.htm">upgrade issues.</ulink></para>
-      </section>
     </section>
 
     <section id="faq34">
@@ -186,7 +158,7 @@
       these issues?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Please see the <ulink
-      url="upgrade_issues.htm">upgrade issues.</ulink></para>
+      url="upgrade_issues.htm">upgrade issues</ulink>.</para>
     </section>
 
     <section id="faq34b">
@@ -211,6 +183,11 @@
       url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink></filename>
       contains the Debian default setting IP_FORWARDING=Keep; it should be
       IP_FORWARDING=On.</para>
+
+      <para><emphasis role="bold">Update</emphasis>: Beginning with Shorewall
+      4.4.21, there is a <emphasis role="bold">shorewall update</emphasis>
+      command that does a smart merge of your existing shorewall.conf and the
+      new one.</para>
     </section>
   </section>
 
@@ -617,7 +594,7 @@ DNAT       net           net:192.168.4.22       tcp      80,443      -         <
     </section>
 
     <section id="faq48">
-      <title>(FAQ 48) How do I Set up Transparent HTTP Proxy with
+      <title>(FAQ 48) How do I Set up a Transparent HTTP Proxy with
       Shorewall?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> See <ulink
@@ -1040,10 +1017,23 @@ to debug/develop the newnat interface.</programlisting></para>
       your firewall is responding to connection requests on those
       ports.</para>
 
-      <para>If you would prefer to 'stealth' port 113, then copy
-      /<filename>usr/share/shorewall/action.Drop</filename> to
-      <filename>/etc/shorewall/</filename> and modify the invocation of Auth
-      to <emphasis role="bold">Auth(DROP)</emphasis>.</para>
+      <para>If you would prefer to 'stealth' port 113, then:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>If you are running Shorewall 4.4.20 or earlier, copy
+          /<filename>usr/share/shorewall/action.Drop</filename> to
+          <filename>/etc/shorewall/</filename> and modify the invocation of
+          Auth to <emphasis role="bold">Auth(DROP)</emphasis>.</para>
+        </listitem>
+
+        <listitem>
+          <para>If you are running Shorewall 4.4.21 or later, in
+          shorewall.conf, set DROP_DEFAULT=Drop(-,DROP). See the <ulink
+          url="Actions.html">Action HOWTO</ulink> to learn why that magic
+          works.</para>
+        </listitem>
+      </itemizedlist>
 
       <section id="faq4a">
         <title>(FAQ 4a) I just ran an nmap UDP scan of my firewall and it
@@ -1866,20 +1856,6 @@ Dec 15 16:47:30 heath-desktop last message repeated 2 times</programlisting>
       solution is to <emphasis role="bold">not specify the primary IP address
       of an interface in the EXTERNAL column</emphasis>.</para>
     </section>
-
-    <section id="faq82">
-      <title>(FAQ 82) When I enable USE_DEFAULT_RT, Shorewall won't
-      start</title>
-
-      <para>I get the following errors:</para>
-
-      <programlisting>RTNETLINK answers: Numerical result out of range
-ERROR: Command "ip -4 rule add from all table 254 pref 999" Failed</programlisting>
-
-      <para><emphasis role="bold">Answer:</emphasis> This is a known kernel
-      issue -- see <ulink
-      url="http://lkml.org/lkml/2007/3/30/253">http://lkml.org/lkml/2007/3/30/253</ulink>.</para>
-    </section>
   </section>
 
   <section id="Start-Stop">
@@ -2022,36 +1998,6 @@ iptables: Invalid argument
       LOAD_HELPERS_ONLY=Yes in shorewall.conf.</para>
     </section>
 
-    <section id="faq61">
-      <title>(FAQ 61) I just installed the latest Debian kernel and now
-      "shorewall start" fails with the message "ipt_policy: matchsize 116 !=
-      308". What's wrong?</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> Your iptables is
-      incompatible with your kernel. Either</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>rebuild iptables using the kernel headers that match your new
-          kernel; or</para>
-        </listitem>
-
-        <listitem>
-          <para>if you don't need policy match support (you are not using the
-          IPSEC implementation builtinto the 2.6 kernel) then you can rename
-          <filename>/lib/iptables/libipt_policy.so</filename>.</para>
-        </listitem>
-      </itemizedlist>
-
-      <note>
-        <para>Shorewall does not attempt to use policy match if you have no
-        IPSEC zones and you have not specified the <option>ipsec</option>
-        option on any entry in <filename>/etc/shorewall/hosts</filename>. The
-        subject message will still appear in your kernel log each time that
-        Shorewall determines the capabilities of your kernel/iptables.</para>
-      </note>
-    </section>
-
     <section id="faq68">
       <title>(FAQ 68) I have a VM under an OpenVZ system. I can't get rid of
       the following message:</title>
@@ -2095,28 +2041,6 @@ iptables: Invalid argument
       installed on a Debian (or derivative) system, the
       <filename>/etc/init.d/shorewall</filename> file is the same as would be
       installed by the .deb.</para>
-    </section>
-
-    <section id="faq74">
-      <title>(FAQ 74) When I "<command>shorewall start</command>" or
-      "<command>shorewall check</command>" on my SuSE 10.0 system, I get FATAL
-      ERROR messages and/or the system crashes"</title>
-
-      <para><emphasis role="bold">Answer:</emphasis> These failures result
-      from trying to load a particular combination of kernel modules. To work
-      around the problem:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>Copy /usr/share/shorewall/modules to
-          /etc/shorewall/modules</para>
-        </listitem>
-
-        <listitem>
-          <para>Edit /etc/shorewall/modules and remove all entries except for
-          those for the helper modules that you need.</para>
-        </listitem>
-      </orderedlist>
     </section>
 
     <section id="faq78">
@@ -2171,22 +2095,6 @@ shorewall status &gt; /dev/null 2&gt;&amp;1 || shorewall start # Start Shorewall
           </listitem>
         </varlistentry>
       </variablelist>
-    </section>
-
-    <section id="faq87">
-      <title>(FAQ 87) My firewall starts and restarts fine but if I try
-      'shorewall restore', the script fails because none of my shell variables
-      from /etc/shorewall/params are set. Why?</title>
-
-      <para><emphasis role="bold">Answer</emphasis>: You probably need to set
-      EXPORTPARAMS=Yes. During <emphasis role="bold">start</emphasis> and
-      <emphasis role="bold">restart</emphasis>,
-      <filename>/etc/shorewall/params</filename> is processed by the shell
-      after <emphasis role="bold">set -a</emphasis>; as a result, all param
-      settings become part of the shell's environment and are inherited by the
-      running script. The shell does not process
-      <filename>/etc/shorewall/params</filename> when processing the <emphasis
-      role="bold">restore</emphasis> command.</para>
     </section>
 
     <section id="faq90">

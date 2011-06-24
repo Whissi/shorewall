@@ -3561,7 +3561,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'EXPORTMODULES'              , '';
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
 
-    require_capability 'MARK' , 'FOREWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
+    require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 
     numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};

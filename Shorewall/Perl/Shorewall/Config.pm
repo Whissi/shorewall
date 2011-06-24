@@ -2892,7 +2892,19 @@ sub conditional_quote( $ ) {
 sub update_config_file( $ ) {
     my $annotate = shift;
 
-    my $fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
+    my $fn;
+
+    if ( -f "/usr/share/doc/${product}/default-config/${product}.conf" ) {
+	#
+	# Debian or derivative
+	#
+	$fn = $annotate ? "/usr/share/doc/${product}/default-config/${product}.conf.annotated" : "/usr/share/doc/${product}/default-config/${product}.conf";
+    } else {
+	#
+	# The rest of the World
+	#
+	$fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
+    }
     #
     # Deprecated options with their default values
     #

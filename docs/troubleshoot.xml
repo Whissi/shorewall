@@ -49,7 +49,12 @@ gateway:~/test # </programlisting>In this case, line 19 in the rules file
     specified an invalid ICMP Type (0/400).</para>
 
     <para>Additional information about the error can be obtained using the
-    'debug' keyword:<programlisting>gateway:~/test # shorewall debug restart .
+    'debug' keyword (Shorewall 4.4.19 and earlier) or using the (-T)
+    option.</para>
+
+    <para>Example (4.4.19 and earlier):</para>
+
+    <para><programlisting>gateway:~/test # shorewall debug restart
 Compiling...
    ERROR: Invalid ICMP Type (0/400) : /root/test/rules (line 19) at /usr/share/shorewall/Shorewall/Config.pm line 338
         Shorewall::Config::fatal_error('Invalid ICMP Type (0/400)') called at /usr/share/shorewall/Shorewall/Chains.pm line 885
@@ -59,9 +64,24 @@ Compiling...
         Shorewall::Rules::process_rule('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall/Shorewall/Rules.pm line 1336
         Shorewall::Rules::process_rules() called at /usr/share/shorewall/Shorewall/Compiler.pm line 799
         Shorewall::Compiler::compiler('/var/lib/shorewall/.restart', '/root/test', 0, 4) called at /usr/share/shorewall/compiler.pl line 86
-gateway:~/test # </programlisting>This information is useful to Shorewall
-    support if you need to <ulink url="support.html">file a problem
-    report</ulink>.</para>
+gateway:~/test # </programlisting></para>
+
+    <para>Example (4.4.20 and later):</para>
+
+    <programlisting>gateway:~/test # shorewall restart -T
+Compiling...
+   ERROR: Invalid ICMP Type (0/400) : /root/test/rules (line 19) at /usr/share/shorewall/Shorewall/Config.pm line 338
+        Shorewall::Config::fatal_error('Invalid ICMP Type (0/400)') called at /usr/share/shorewall/Shorewall/Chains.pm line 885
+        Shorewall::Chains::validate_icmp('0/400') called at /usr/share/shorewall/Shorewall/Chains.pm line 949
+        Shorewall::Chains::do_proto('icmp', '0/400', '-') called at /usr/share/shorewall/Shorewall/Rules.pm line 1055
+        Shorewall::Rules::process_rule1('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall/Shorewall/Rules.pm line 1290
+        Shorewall::Rules::process_rule('ACCEPT', 'loc', 'net', 'icmp', '0/400', '-', '-', '-', '-', ...) called at /usr/share/shorewall/Shorewall/Rules.pm line 1336
+        Shorewall::Rules::process_rules() called at /usr/share/shorewall/Shorewall/Compiler.pm line 799
+        Shorewall::Compiler::compiler('/var/lib/shorewall/.restart', '/root/test', 0, 4) called at /usr/share/shorewall/compiler.pl line 86
+gateway:~/test # </programlisting>
+
+    <para>This information is useful to Shorewall support if you need to
+    <ulink url="support.html">file a problem report</ulink>.</para>
 
     <para>The end of the compile phase is signaled by a message such as the
     following:<programlisting>Shorewall configuration compiled to /var/lib/shorewall/.restart</programlisting>Errors

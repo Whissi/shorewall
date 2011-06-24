@@ -376,21 +376,18 @@ run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf           ${DESTDIR}/
 run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf.annotated
 
 if [ -n "$ANNOTATED" ]; then
-    mkdir annotated
-    cp configfiles/* annotated/
-    cd annotated
-    for f in *.annotated; do
-	mv -f $f ${f%.annotated}
-    done
+    suffix=.annotated
 else
-    cd configfiles
+    suffix=
 fi
+
+cd $configfiles
 #
 # Install the config file
 #
 
 if [ ! -f ${DESTDIR}/etc/shorewall6/shorewall6.conf ]; then
-   run_install $OWNERSHIP -m 0644 shorewall6.conf ${DESTDIR}/etc/shorewall6/shorewall6.conf
+   run_install $OWNERSHIP -m 0644 shorewall6.conf${suffix} ${DESTDIR}/etc/shorewall6/shorewall6.conf
 
    if [ -n "$DEBIAN" ] && mywhich perl; then
        #
@@ -420,193 +417,213 @@ fi
 #
 # Install the zones file
 #
-run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/usr/share/shorewall6/configfiles/zones
+run_install $OWNERSHIP -m 0644 zones           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 zones.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/zones ]; then
-    run_install $OWNERSHIP -m 0644 zones ${DESTDIR}/etc/shorewall6/zones
+    run_install $OWNERSHIP -m 0644 zones${suffix} ${DESTDIR}/etc/shorewall6/zones
     echo "Zones file installed as ${DESTDIR}/etc/shorewall6/zones"
 fi
 
 #
 # Install the policy file
 #
-run_install $OWNERSHIP -m 0644 policy ${DESTDIR}/usr/share/shorewall6/configfiles/policy
+run_install $OWNERSHIP -m 0644 policy           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 policy.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/policy ]; then
-    run_install $OWNERSHIP -m 0600 policy ${DESTDIR}/etc/shorewall6/policy
+    run_install $OWNERSHIP -m 0600 policy${suffix} ${DESTDIR}/etc/shorewall6/policy
     echo "Policy file installed as ${DESTDIR}/etc/shorewall6/policy"
 fi
 #
 # Install the interfaces file
 #
-run_install $OWNERSHIP -m 0644 interfaces ${DESTDIR}/usr/share/shorewall6/configfiles/interfaces
+run_install $OWNERSHIP -m 0644 interfaces           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 interfaces.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/interfaces ]; then
-    run_install $OWNERSHIP -m 0600 interfaces ${DESTDIR}/etc/shorewall6/interfaces
+    run_install $OWNERSHIP -m 0600 interfaces${suffix} ${DESTDIR}/etc/shorewall6/interfaces
     echo "Interfaces file installed as ${DESTDIR}/etc/shorewall6/interfaces"
 fi
 
 #
 # Install the hosts file
 #
-run_install $OWNERSHIP -m 0644 hosts ${DESTDIR}/usr/share/shorewall6/configfiles/hosts
+run_install $OWNERSHIP -m 0644 hosts            ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 hosts.$annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/hosts ]; then
-    run_install $OWNERSHIP -m 0600 hosts ${DESTDIR}/etc/shorewall6/hosts
+    run_install $OWNERSHIP -m 0600 hosts${suffix} ${DESTDIR}/etc/shorewall6/hosts
     echo "Hosts file installed as ${DESTDIR}/etc/shorewall6/hosts"
 fi
 #
 # Install the rules file
 #
-run_install $OWNERSHIP -m 0644 rules ${DESTDIR}/usr/share/shorewall6/configfiles/rules
+run_install $OWNERSHIP -m 0644 rules           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 rules.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/rules ]; then
-    run_install $OWNERSHIP -m 0600 rules ${DESTDIR}/etc/shorewall6/rules
+    run_install $OWNERSHIP -m 0600 rule${suffix} ${DESTDIR}/etc/shorewall6/rules
     echo "Rules file installed as ${DESTDIR}/etc/shorewall6/rules"
 fi
 #
 # Install the Parameters file
 #
-run_install $OWNERSHIP -m 0644 params ${DESTDIR}/usr/share/shorewall6/configfiles/params
+run_install $OWNERSHIP -m 0644 params        ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 params.suffix ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -f ${DESTDIR}/etc/shorewall6/params ]; then
     chmod 0644 ${DESTDIR}/etc/shorewall6/params
 else
-    run_install $OWNERSHIP -m 0644 params ${DESTDIR}/etc/shorewall6/params
+    run_install $OWNERSHIP -m 0644 params${suffix} ${DESTDIR}/etc/shorewall6/params
     echo "Parameter file installed as ${DESTDIR}/etc/shorewall6/params"
 fi
 #
 # Install the Stopped Routing file
 #
-run_install $OWNERSHIP -m 0644 routestopped ${DESTDIR}/usr/share/shorewall6/configfiles/routestopped
+run_install $OWNERSHIP -m 0644 routestopped           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 routestopped.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/routestopped ]; then
-    run_install $OWNERSHIP -m 0600 routestopped ${DESTDIR}/etc/shorewall6/routestopped
+    run_install $OWNERSHIP -m 0600 routestopped${suffix} ${DESTDIR}/etc/shorewall6/routestopped
     echo "Stopped Routing file installed as ${DESTDIR}/etc/shorewall6/routestopped"
 fi
 #
 # Install the Mac List file
 #
-run_install $OWNERSHIP -m 0644 maclist ${DESTDIR}/usr/share/shorewall6/configfiles/maclist
+run_install $OWNERSHIP -m 0644 maclist           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 maclist.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/maclist ]; then
-    run_install $OWNERSHIP -m 0600 maclist ${DESTDIR}/etc/shorewall6/maclist
+    run_install $OWNERSHIP -m 0600 maclist${suffix} ${DESTDIR}/etc/shorewall6/maclist
     echo "MAC list file installed as ${DESTDIR}/etc/shorewall6/maclist"
 fi
 #
 # Install the TC Rules file
 #
-run_install $OWNERSHIP -m 0644 tcrules ${DESTDIR}/usr/share/shorewall6/configfiles/tcrules
+run_install $OWNERSHIP -m 0644 tcrules        ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcrules.suffix ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcrules ]; then
-    run_install $OWNERSHIP -m 0600 tcrules ${DESTDIR}/etc/shorewall6/tcrules
+    run_install $OWNERSHIP -m 0600 tcrules${suffix} ${DESTDIR}/etc/shorewall6/tcrules
     echo "TC Rules file installed as ${DESTDIR}/etc/shorewall6/tcrules"
 fi
 
 #
 # Install the TC Interfaces file
 #
-run_install $OWNERSHIP -m 0644 tcinterfaces ${DESTDIR}/usr/share/shorewall6/configfiles/tcinterfaces
+run_install $OWNERSHIP -m 0644 tcinterfaces           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcinterfaces.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcinterfaces ]; then
-    run_install $OWNERSHIP -m 0600 tcinterfaces ${DESTDIR}/etc/shorewall6/tcinterfaces
+    run_install $OWNERSHIP -m 0600 tcinterfaces${suffix} ${DESTDIR}/etc/shorewall6/tcinterfaces
     echo "TC Interfaces file installed as ${DESTDIR}/etc/shorewall6/tcinterfaces"
 fi
 
 #
 # Install the TC Priority file
 #
-run_install $OWNERSHIP -m 0644 tcpri ${DESTDIR}/usr/share/shorewall6/configfiles/tcpri
+run_install $OWNERSHIP -m 0644 tcpri           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcpri.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcpri ]; then
-    run_install $OWNERSHIP -m 0600 tcpri ${DESTDIR}/etc/shorewall6/tcpri
+    run_install $OWNERSHIP -m 0600 tcpri${suffix} ${DESTDIR}/etc/shorewall6/tcpri
     echo "TC Priority file installed as ${DESTDIR}/etc/shorewall6/tcpri"
 fi
 
 #
 # Install the TOS file
 #
-run_install $OWNERSHIP -m 0644 tos ${DESTDIR}/usr/share/shorewall6/configfiles/tos
+run_install $OWNERSHIP -m 0644 tos           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tos.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tos ]; then
-    run_install $OWNERSHIP -m 0600 tos ${DESTDIR}/etc/shorewall6/tos
+    run_install $OWNERSHIP -m 0600 tos${suffix} ${DESTDIR}/etc/shorewall6/tos
     echo "TOS file installed as ${DESTDIR}/etc/shorewall6/tos"
 fi
 #
 # Install the Tunnels file
 #
-run_install $OWNERSHIP -m 0644 tunnels ${DESTDIR}/usr/share/shorewall6/configfiles/tunnels
+run_install $OWNERSHIP -m 0644 tunnels           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tunnels.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tunnels ]; then
-    run_install $OWNERSHIP -m 0600 tunnels ${DESTDIR}/etc/shorewall6/tunnels
+    run_install $OWNERSHIP -m 0600 tunnels${suffix} ${DESTDIR}/etc/shorewall6/tunnels
     echo "Tunnels file installed as ${DESTDIR}/etc/shorewall6/tunnels"
 fi
 #
 # Install the blacklist file
 #
-run_install $OWNERSHIP -m 0644 blacklist ${DESTDIR}/usr/share/shorewall6/configfiles/blacklist
+run_install $OWNERSHIP -m 0644 blacklist           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 blacklist.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/blacklist ]; then
-    run_install $OWNERSHIP -m 0600 blacklist ${DESTDIR}/etc/shorewall6/blacklist
+    run_install $OWNERSHIP -m 0600 blacklist${suffix} ${DESTDIR}/etc/shorewall6/blacklist
     echo "Blacklist file installed as ${DESTDIR}/etc/shorewall6/blacklist"
 fi
 #
 # Install the Providers file
 #
-run_install $OWNERSHIP -m 0644 providers ${DESTDIR}/usr/share/shorewall6/configfiles/providers
+run_install $OWNERSHIP -m 0644 providers           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 providers.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/providers ]; then
-    run_install $OWNERSHIP -m 0600 providers ${DESTDIR}/etc/shorewall6/providers
+    run_install $OWNERSHIP -m 0600 providers${suffix} ${DESTDIR}/etc/shorewall6/providers
     echo "Providers file installed as ${DESTDIR}/etc/shorewall6/providers"
 fi
 
 #
 # Install the Route Rules file
 #
-run_install $OWNERSHIP -m 0644 route_rules ${DESTDIR}/usr/share/shorewall6/configfiles/route_rules
+run_install $OWNERSHIP -m 0644 route_rules           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 route_rules.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/route_rules ]; then
-    run_install $OWNERSHIP -m 0600 route_rules ${DESTDIR}/etc/shorewall6/route_rules
+    run_install $OWNERSHIP -m 0600 route_rules${suffix} ${DESTDIR}/etc/shorewall6/route_rules
     echo "Routing rules file installed as ${DESTDIR}/etc/shorewall6/route_rules"
 fi
 
 #
 # Install the tcclasses file
 #
-run_install $OWNERSHIP -m 0644 tcclasses ${DESTDIR}/usr/share/shorewall6/configfiles/tcclasses
+run_install $OWNERSHIP -m 0644 tcclasses           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcclasses.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcclasses ]; then
-    run_install $OWNERSHIP -m 0600 tcclasses ${DESTDIR}/etc/shorewall6/tcclasses
+    run_install $OWNERSHIP -m 0600 tcclasses${suffix} ${DESTDIR}/etc/shorewall6/tcclasses
     echo "TC Classes file installed as ${DESTDIR}/etc/shorewall6/tcclasses"
 fi
 
 #
 # Install the tcdevices file
 #
-run_install $OWNERSHIP -m 0644 tcdevices ${DESTDIR}/usr/share/shorewall6/configfiles/tcdevices
+run_install $OWNERSHIP -m 0644 tcdevices           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcdevices.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcdevices ]; then
-    run_install $OWNERSHIP -m 0600 tcdevices ${DESTDIR}/etc/shorewall6/tcdevices
+    run_install $OWNERSHIP -m 0600 tcdevices${suffix} ${DESTDIR}/etc/shorewall6/tcdevices
     echo "TC Devices file installed as ${DESTDIR}/etc/shorewall6/tcdevices"
 fi
 
 #
 # Install the tcfilters file
 #
-run_install $OWNERSHIP -m 0644 tcfilters ${DESTDIR}/usr/share/shorewall6/configfiles/tcfilters
+run_install $OWNERSHIP -m 0644 tcfilters           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcfilters.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcfilters ]; then
-    run_install $OWNERSHIP -m 0600 tcfilters ${DESTDIR}/etc/shorewall6/tcfilters
+    run_install $OWNERSHIP -m 0600 tcfilters${suffix} ${DESTDIR}/etc/shorewall6/tcfilters
     echo "TC Filters file installed as ${DESTDIR}/etc/shorewall6/tcfilters"
 fi
 
 #
 # Install the Notrack file
 #
-run_install $OWNERSHIP -m 0644 notrack ${DESTDIR}/usr/share/shorewall6/configfiles/notrack
+run_install $OWNERSHIP -m 0644 notrack           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 notrack.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/notrack ]; then
-    run_install $OWNERSHIP -m 0600 notrack ${DESTDIR}/etc/shorewall6/notrack
+    run_install $OWNERSHIP -m 0600 notrack${suffix} ${DESTDIR}/etc/shorewall6/notrack
     echo "Notrack file installed as ${DESTDIR}/etc/shorewall6/notrack"
 fi
 
@@ -649,10 +666,11 @@ fi
 #
 # Install the Accounting file
 #
-run_install $OWNERSHIP -m 0644 accounting ${DESTDIR}/usr/share/shorewall6/configfiles/accounting
+run_install $OWNERSHIP -m 0644 accounting           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 accounting.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/accounting ]; then
-    run_install $OWNERSHIP -m 0600 accounting ${DESTDIR}/etc/shorewall6/accounting
+    run_install $OWNERSHIP -m 0600 accounting${suffix} ${DESTDIR}/etc/shorewall6/accounting
     echo "Accounting file installed as ${DESTDIR}/etc/shorewall6/accounting"
 fi
 #
@@ -712,10 +730,11 @@ fi
 #
 # Install the Tcclear file
 #
-run_install $OWNERSHIP -m 0644 tcclear ${DESTDIR}/usr/share/shorewall6/configfiles/tcclear
+run_install $OWNERSHIP -m 0644 tcclear           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcclear.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcclear ]; then
-    run_install $OWNERSHIP -m 0600 tcclear ${DESTDIR}/etc/shorewall6/tcclear
+    run_install $OWNERSHIP -m 0600 tcclear${suffix} ${DESTDIR}/etc/shorewall6/tcclear
     echo "Tcclear file installed as ${DESTDIR}/etc/shorewall6/tcclear"
 fi
 #
@@ -731,35 +750,36 @@ fi
 #
 # Install the Providers file
 #
-run_install $OWNERSHIP -m 0644 providers ${DESTDIR}/usr/share/shorewall6/configfiles/providers
+run_install $OWNERSHIP -m 0644 providers           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 providers.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/providers ]; then
-    run_install $OWNERSHIP -m 0600 providers ${DESTDIR}/etc/shorewall6/providers
+    run_install $OWNERSHIP -m 0600 providers${suffix} ${DESTDIR}/etc/shorewall6/providers
     echo "Providers file installed as ${DESTDIR}/etc/shorewall6/providers"
 fi
 #
 # Install the Proxyndp file
 #
-run_install $OWNERSHIP -m 0644 proxyndp ${DESTDIR}/usr/share/shorewall6/configfiles/proxyndp
+run_install $OWNERSHIP -m 0644 proxyndp           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 proxyndp.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/proxyndp ]; then
-    run_install $OWNERSHIP -m 0600 proxyndp ${DESTDIR}/etc/shorewall6/proxyndp
+    run_install $OWNERSHIP -m 0600 proxyndp${suffix} ${DESTDIR}/etc/shorewall6/proxyndp
     echo "Proxyndp file installed as ${DESTDIR}/etc/shorewall6/proxyndp"
 fi
 
 #
 # Install the Actions file
 #
-run_install $OWNERSHIP -m 0644 actions ${DESTDIR}/usr/share/shorewall6/configfiles/actions
+run_install $OWNERSHIP -m 0644 actions           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 actions.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/actions ]; then
-    run_install $OWNERSHIP -m 0644 actions ${DESTDIR}/etc/shorewall6/actions
+    run_install $OWNERSHIP -m 0644 actions${suffix} ${DESTDIR}/etc/shorewall6/actions
     echo "Actions file installed as ${DESTDIR}/etc/shorewall6/actions"
 fi
 
 cd ..
-
-rm -rf annotated/
 
 #
 # Install the  Makefiles

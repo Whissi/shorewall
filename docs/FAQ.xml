@@ -20,7 +20,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2010</year>
+      <year>2001-2011</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -902,6 +902,13 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
       role="bold">from</emphasis> that address are disallowed; traffic from
       that address that is part of an established connection (such as ping
       replies) is allowed.</para>
+
+      <note>
+        <para>Beginning with Shorewall 4.4.13, you can use the
+        <option>blacklist</option> option in <ulink
+        url="manpages/shorewall-interfaces.html"><filename>/etc/shorewall/interfaces</filename></ulink>
+        to implement blacklisting by destination IP address.</para>
+      </note>
     </section>
 
     <section id="faq84">
@@ -912,8 +919,8 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
 
       <para><emphasis role="bold">Answer</emphasis>: You probably forgot to
       specify the <emphasis role="bold">blacklist</emphasis> option for your
-      external interface(s) in
-      <filename>/etc/shorewall/interfaces</filename>.</para>
+      external interface(s) in <filename><ulink
+      url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink></filename>.</para>
     </section>
   </section>
 
@@ -926,23 +933,8 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
 
       <para><emphasis role="bold">Answer:</emphasis> There is an <ulink
       url="http://www.kfki.hu/~kadlec/sw/netfilter/newnat-suite/">H.323
-      connection tracking/NAT module</ulink> that helps with Netmeeting. Note
-      however that one of the Netfilter developers recently posted the
-      following:</para>
-
-      <blockquote>
-        <para><programlisting>&gt; I know PoM -ng is going to address this issue, but till it is ready, and
-&gt; all the extras are ported to it, is there any way to use the h.323
-&gt; conntrack module kernel patch with a 2.6 kernel?
-&gt; Running 2.6.1 - no 2.4 kernel stuff on the system, so downgrade is not
-&gt; an option... The module is not ported yet to 2.6, sorry.
-&gt; Do I have any options besides a gatekeeper app (does not work in my
-&gt; network) or a proxy (would prefer to avoid them)?
-
-I suggest everyone to setup a proxy (gatekeeper) instead: the module is
-really dumb and does not deserve to exist at all. It was an excellent tool
-to debug/develop the newnat interface.</programlisting></para>
-      </blockquote>
+      connection tracking/NAT module</ulink> that helps with Netmeeting.
+      </para>
 
       <para>Look <ulink url="UPnP.html">here</ulink> for a solution for MSN IM
       but be aware that there are significant security risks involved with
@@ -1036,7 +1028,7 @@ to debug/develop the newnat interface.</programlisting></para>
         <listitem>
           <para>If you are running Shorewall 4.4.21 or later, in
           shorewall.conf, set DROP_DEFAULT=Drop(-,DROP). See the <ulink
-          url="Actions.html">Action HOWTO</ulink> to learn why that magic
+          url="Actions.html">Action HOWTO</ulink> to learn how that magic
           works.</para>
         </listitem>
       </itemizedlist>
@@ -1046,11 +1038,11 @@ to debug/develop the newnat interface.</programlisting></para>
         showed 100s of ports as open!!!!</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Take a deep breath and
-        read the nmap man page section about UDP scans. If nmap gets <emphasis
+        read the nmap manpage section about UDP scans. If nmap gets <emphasis
         role="bold">nothing</emphasis> back from your firewall then it reports
         the port as open. If you want to see which UDP ports are really open,
         temporarily change your net-&gt;all policy to REJECT, restart
-        Shorewall and do the nmap UDP scan again.</para>
+        Shorewall and run the nmap UDP scan again.</para>
       </section>
 
       <section id="faq4b">
@@ -1104,7 +1096,7 @@ to debug/develop the newnat interface.</programlisting></para>
       <para><emphasis role="bold">Answer:</emphasis> Every time I read
       <quote>systems can't see out to the net</quote>, I wonder where the
       poster bought computers with eyes and what those computers will
-      <quote>see</quote> when things are working properly. That aside, the
+      <quote>see</quote> when things are working properly :-). That aside, the
       most common causes of this problem are:</para>
 
       <orderedlist>
@@ -1166,7 +1158,7 @@ to debug/develop the newnat interface.</programlisting></para>
       Shorewall to allow traffic through the bridge?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Add the
-      <firstterm>routeback</firstterm> option to <filename
+      <option>routeback</option> option to <filename
       class="devicefile">br0</filename> in <filename><ulink
       url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink></filename>.</para>
 
@@ -1176,7 +1168,7 @@ to debug/develop the newnat interface.</programlisting></para>
     </section>
 
     <section id="faq64">
-      <title>(FAQ 64) I just upgraded my kernel to 2.6.20 and my
+      <title>(FAQ 64) I just upgraded my kernel to 2.6.20 (or later) and my
       bridge/firewall stopped working. What is wrong?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> In kernel 2.6.20, the
@@ -1251,14 +1243,6 @@ to debug/develop the newnat interface.</programlisting></para>
       <filename>/etc/syslog.conf</filename>, be sure to restart syslogd (on a
       RedHat system, <quote>service syslog restart</quote>).</para>
 
-      <para>By default, older versions of Shorewall rate-limited log messages
-      through <ulink url="manpages/shorewall.conf.html">settings</ulink> in
-      <filename>/etc/shorewall/shorewall.conf</filename> -- If you want to log
-      all messages, set:</para>
-
-      <programlisting>LOGLIMIT=""
-LOGBURST=""</programlisting>
-
       <para>It is also possible to <ulink url="shorewall_logging.html">set up
       Shorewall to log all of Netfilter's messages to a separate
       file</ulink>.</para>
@@ -1329,17 +1313,6 @@ DROP      net       fw      udp      10619</programlisting>
 -                       udp             10619</programlisting>
       </section>
 
-      <section id="faq6c">
-        <title>(FAQ 6c) cat /proc/sys/kernel/prink returns '4 4 1 7' and still
-        I get dmesg filled up</title>
-
-        <para><emphasis role="bold">Answer</emphasis>: While we would argue
-        that 'dmesg filled up' is not necessarily a problem, the only way to
-        eliminate that is to <ulink url="shorewall_logging.html">set up
-        Shorewall to log all of Netfilter's messages to a separate
-        file</ulink>.</para>
-      </section>
-
       <section id="faq6d">
         <title>(FAQ 6d) Why is the MAC address in Shorewall log messages so
         long? I thought MAC addresses were only 6 bytes in length.</title>
@@ -1392,7 +1365,7 @@ DROP      net       fw      udp      10619</programlisting>
       <para>Just to be clear, it is not Shorewall that is writing all over
       your console. Shorewall issues a single log message during each
       <command>start</command>, <command>restart</command>,
-      <command>stop</command>, etc. It is rather the klogd daemon that is
+      <command>stop</command>, etc. It is rather your logging daemon that is
       writing messages to your console. Shorewall itself has no control over
       where a particular class of messages are written. See the <ulink
       url="shorewall_logging.html">Shorewall logging
@@ -1424,7 +1397,18 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       <para>then<programlisting><command>sysctl -p /etc/sysctl.conf</command></programlisting></para>
 
       <section id="faq16a">
-        <title>(FAQ 16a) Why can't I see any Shorewall messages in
+        <title>(FAQ 16a) cat /proc/sys/kernel/prink returns '4 4 1 7' and
+        still I get dmesg filled up</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: While we would argue
+        that 'dmesg filled up' is not necessarily a problem, the only way to
+        eliminate that is to <ulink url="shorewall_logging.html">set up
+        Shorewall to log all of Netfilter's messages to a separate
+        file</ulink>.</para>
+      </section>
+
+      <section id="faq16b">
+        <title>(FAQ 16b) Why can't I see any Shorewall messages in
         /var/log/messages?</title>
 
         <para>Some people who ask this question report that the only Shorewall
@@ -1454,20 +1438,20 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         logging documentation</ulink> for further information.</para>
       </section>
 
-      <section id="faq16b">
-        <title>(FAQ 16b) Shorewall messages are flooding the output of
+      <section id="faq16c">
+        <title>(FAQ 16c) Shorewall messages are flooding the output of
         'dmesg'; how to I stop that?</title>
 
         <para><emphasis role="bold">Answer</emphasis>: Switch to using <ulink
         url="???">ulogd</ulink>.</para>
       </section>
 
-      <section id="faq16c">
-        <title>(FAQ 16c) I set LOGFILE=/var/log/shorewall but log messages are
+      <section id="faq16d">
+        <title>(FAQ 16d) I set LOGFILE=/var/log/shorewall but log messages are
         still going to /var/log/messages.</title>
 
         <para><emphasis role="bold">Answer</emphasis>: See the answer to <link
-        linkend="faq16a">FAQ 16a</link> above.</para>
+        linkend="faq16b">FAQ 16b</link> above.</para>
       </section>
     </section>
 
@@ -1794,9 +1778,8 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
       <title>(FAQ 81) logdrop and logreject don't log.</title>
 
       <para>I love the ability to type 'shorewall logdrop ww.xx.yy.zz' and
-      &gt;&gt; completely block a particular IP address. However, the log part
-      doesn't happen. When I look in the logdrop chain, there is no LOG
-      prefix.</para>
+      completely block a particular IP address. However, the log part doesn't
+      happen. When I look in the logdrop chain, there is no LOG prefix.</para>
 
       <para><emphasis role="bold">Answer</emphasis>: You haven't set a value
       for BLACKLIST_LOGLEVEL in <ulink
@@ -1814,8 +1797,9 @@ Dec 15 16:47:30 heath-desktop last message repeated 2 times</programlisting>
 
       <para><emphasis role="bold">Answer</emphasis>: The Webmin 'bandwidth'
       module adds commands to <filename>/etc/shorewall/start</filename> that
-      creates rules to log every packet to/from/through the firewall. DON'T
-      START THE BANDWIDTH SERVICE IN WEBMIN!!!!!</para>
+      creates rules to log every packet to/from/through the firewall.
+      <emphasis role="bold">DON'T START THE BANDWIDTH SERVICE IN
+      WEBMIN!</emphasis></para>
 
       <para>To correct this situation once it occurs, edit
       <filename>/etc/shorewall/start</filename> and insert 'return 0' prior to
@@ -1886,7 +1870,7 @@ Dec 15 16:47:30 heath-desktop last message repeated 2 times</programlisting>
       <para><emphasis role="bold">Answer:</emphasis> The <quote>
       <command>stop</command> </quote> command is intended to place your
       firewall into a safe state whereby only those hosts listed in
-      <filename>/etc/shorewall/routestopped</filename> are activated. If you
+      <filename>/etc/shorewall/routestopped</filename> are allowed. If you
       want to totally open up your firewall, you must use the <quote>
       <command>shorewall[-lite] clear</command> </quote> command.</para>
     </section>
@@ -1955,42 +1939,6 @@ Creating input Chains...
       configuring Shorewall startup. You will need to run that tool (insserv,
       chkconfig, run-level editor, …) to configure Shorewall to start in the
       the default run-levels of your firewall system.</para>
-    </section>
-
-    <section id="faq45">
-      <title>(FAQ 45) Why does "shorewall[-lite] start" fail when trying to
-      set up SNAT/Masquerading?</title>
-
-      <para><command>shorewall start</command> produces the following
-      output:</para>
-
-      <programlisting>…
-Processing /etc/shorewall/policy...
-   Policy ACCEPT for fw to net using chain fw2net
-   Policy ACCEPT for loc0 to net using chain loc02net
-   Policy ACCEPT for loc1 to net using chain loc12net
-   Policy ACCEPT for wlan to net using chain wlan2net
-Masqueraded Networks and Hosts:
-iptables: Invalid argument
-   ERROR: Command "/sbin/iptables -t nat -A …" Failed</programlisting>
-
-      <para><emphasis role="bold">Answer:</emphasis> 99.999% of the time, this
-      error is caused by a mismatch between your iptables and kernel.</para>
-
-      <orderedlist numeration="loweralpha">
-        <listitem>
-          <para>Your iptables must be compiled against a kernel source tree
-          that is Netfilter-compatible with the kernel that you are
-          running.</para>
-        </listitem>
-
-        <listitem>
-          <para>If you rebuild iptables using the defaults and install it, it
-          will be installed in /usr/local/sbin/iptables. As shown above, you
-          have the IPTABLES variable in shorewall.conf set to
-          "/sbin/iptables".</para>
-        </listitem>
-      </orderedlist>
     </section>
 
     <section id="faq59">
@@ -2126,8 +2074,7 @@ Shorewall-4.4.11 Status at gateway - Wed Jul 21 13:21:41 PDT 2010
 Shorewall is <emphasis role="bold">stopped</emphasis>
 State:<emphasis role="bold">Started</emphasis> (Tue Jul 20 16:01:49 PDT 2010)
 
-gateway:~# 
-</programlisting>
+gateway:~#</programlisting>
       </blockquote>
 
       <para>then it means that something outside of Shorewall has deleted the
@@ -2629,34 +2576,6 @@ else
       <emphasis role="bold">NAT of local connections (READ HELP)</emphasis>
       </quote> on the Netfilter Configuration menu. Otherwise, DNAT rules with
       your firewall as the source zone won't work with your new kernel.</para>
-
-      <section id="faq27a">
-        <title>(FAQ 27a) I just built (or downloaded or otherwise acquired)
-        and installed a new kernel and now Shorewall won't start. I know that
-        my kernel options are correct.</title>
-
-        <para>The last few lines of <ulink url="troubleshoot.htm">a startup
-        trace</ulink> are these:</para>
-
-        <programlisting>+ run_iptables2 -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
-MASQUERADE
-+ '[' 'x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
-MASQUERADE' = 'x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.
-0/0 -j MASQUERADE' ']'
-+ run_iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
-MASQUERADE
-+ iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
-MASQUERADE
-iptables: Invalid argument
-+ '[' -z '' ']'
-+ stop_firewall
-+ set +x</programlisting>
-
-        <para><emphasis role="bold">Answer:</emphasis> Your new kernel
-        contains headers that are incompatible with the ones used to compile
-        your <command>iptables</command> utility. You need to rebuild
-        <command>iptables</command> using your new kernel source.</para>
-      </section>
     </section>
 
     <section id="faq28">

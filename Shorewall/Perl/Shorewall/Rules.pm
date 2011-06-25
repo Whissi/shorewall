@@ -22,7 +22,7 @@
 #
 #   This module handles policies and rules. It contains:
 #
-#       process_policies() and it's associated helpers.
+#       process_() and it's associated helpers.
 #       process_rules() and it's associated helpers for handling Actions and Macros.
 #
 #   This module combines the former Policy, Rules and Actions modules.
@@ -479,7 +479,7 @@ sub process_policies()
 	    if ( "\L$action" eq 'none' ) {
 		$action = 'none';
 	    } elsif ( $actions{$act} ) {
-		$action = supplied $param ? normalize_action( $act, 'none', $param  ) : normalize_action_name $action;
+		$action = supplied $param ? normalize_action( $act, 'none', $param  ) : normalize_action_name $act;
 		use_policy_action( $action );
 	    } elsif ( $targets{$act} ) {
 		fatal_error "Invalid setting ($action) for $option";

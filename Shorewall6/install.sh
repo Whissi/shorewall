@@ -372,8 +372,7 @@ echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall6/conf
 install_file actions.std ${DESTDIR}/usr/share/shorewall6/actions.std 0644
 echo "Standard actions file installed as ${DESTDIR}/usr/shared/shorewall6/actions.std"
 
-run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf           ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf
-run_install $OWNERSHIP -m 0644 configfiles/shorewall6.conf.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/shorewall6.conf.annotated
+cd configfiles
 
 if [ -n "$ANNOTATED" ]; then
     suffix=.annotated
@@ -381,10 +380,12 @@ else
     suffix=
 fi
 
-cd $configfiles
 #
 # Install the config file
 #
+run_install $OWNERSHIP -m 0644 shorewall6.conf           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 shorewall6.conf.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
+
 
 if [ ! -f ${DESTDIR}/etc/shorewall6/shorewall6.conf ]; then
    run_install $OWNERSHIP -m 0644 shorewall6.conf${suffix} ${DESTDIR}/etc/shorewall6/shorewall6.conf
@@ -449,8 +450,8 @@ fi
 #
 # Install the hosts file
 #
-run_install $OWNERSHIP -m 0644 hosts            ${DESTDIR}/usr/share/shorewall6/configfiles/
-run_install $OWNERSHIP -m 0644 hosts.$annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 hosts           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 hosts.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/hosts ]; then
     run_install $OWNERSHIP -m 0600 hosts${suffix} ${DESTDIR}/etc/shorewall6/hosts
@@ -463,14 +464,14 @@ run_install $OWNERSHIP -m 0644 rules           ${DESTDIR}/usr/share/shorewall6/c
 run_install $OWNERSHIP -m 0644 rules.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/rules ]; then
-    run_install $OWNERSHIP -m 0600 rule${suffix} ${DESTDIR}/etc/shorewall6/rules
+    run_install $OWNERSHIP -m 0600 rules${suffix} ${DESTDIR}/etc/shorewall6/rules
     echo "Rules file installed as ${DESTDIR}/etc/shorewall6/rules"
 fi
 #
 # Install the Parameters file
 #
-run_install $OWNERSHIP -m 0644 params        ${DESTDIR}/usr/share/shorewall6/configfiles/
-run_install $OWNERSHIP -m 0644 params.suffix ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 params          ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 params.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -f ${DESTDIR}/etc/shorewall6/params ]; then
     chmod 0644 ${DESTDIR}/etc/shorewall6/params
@@ -498,11 +499,12 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/maclist ]; then
     run_install $OWNERSHIP -m 0600 maclist${suffix} ${DESTDIR}/etc/shorewall6/maclist
     echo "MAC list file installed as ${DESTDIR}/etc/shorewall6/maclist"
 fi
+
 #
 # Install the TC Rules file
 #
-run_install $OWNERSHIP -m 0644 tcrules        ${DESTDIR}/usr/share/shorewall6/configfiles/
-run_install $OWNERSHIP -m 0644 tcrules.suffix ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcrules           ${DESTDIR}/usr/share/shorewall6/configfiles/
+run_install $OWNERSHIP -m 0644 tcrules.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcrules ]; then
     run_install $OWNERSHIP -m 0600 tcrules${suffix} ${DESTDIR}/etc/shorewall6/tcrules
@@ -731,10 +733,9 @@ fi
 # Install the Tcclear file
 #
 run_install $OWNERSHIP -m 0644 tcclear           ${DESTDIR}/usr/share/shorewall6/configfiles/
-run_install $OWNERSHIP -m 0644 tcclear.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tcclear ]; then
-    run_install $OWNERSHIP -m 0600 tcclear${suffix} ${DESTDIR}/etc/shorewall6/tcclear
+    run_install $OWNERSHIP -m 0600 tcclear ${DESTDIR}/etc/shorewall6/tcclear
     echo "Tcclear file installed as ${DESTDIR}/etc/shorewall6/tcclear"
 fi
 #

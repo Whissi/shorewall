@@ -392,8 +392,8 @@ echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup"
 #
 # Install the policy file
 #
-install_file -m 0644 configfiles/policy           ${DESTDIR}/usr/share/shorewall/
-install_file -m 0644 configfiles/policy.annotated ${DESTDIR}/usr/share/shorewall/
+run_install -m 0644 configfiles/policy           ${DESTDIR}/usr/share/shorewall/configfiles
+run_install -m 0644 configfiles/policy.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/policy ]; then
     run_install $OWNERSHIP -m 0600 configfiles/policy${suffix} ${DESTDIR}/etc/shorewall/policy
@@ -413,8 +413,8 @@ fi
 #
 # Install the hosts file
 #
-run_install $OWNERSHIP -m 0644 configfiles/hosts          ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/host.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 configfiles/hosts           ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 configfiles/hosts.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/hosts ]; then
     run_install $OWNERSHIP -m 0600 configfiles/hosts${suffix} ${DESTDIR}/etc/shorewall/hosts
@@ -575,8 +575,8 @@ fi
 #
 # Install the Tunnels file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tunnels          ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tunnel.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 configfiles/tunnels           ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 configfiles/tunnels.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tunnels ]; then
     run_install $OWNERSHIP -m 0600 configfiles/tunnels${suffix} ${DESTDIR}/etc/shorewall/tunnels
@@ -671,7 +671,7 @@ run_install $OWNERSHIP -m 0644 configfiles/tcfilters           ${DESTDIR}/usr/sh
 run_install $OWNERSHIP -m 0644 configfiles/tcfilters.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcfilters ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcfilters.${suffix} ${DESTDIR}/etc/shorewall/tcfilters
+    run_install $OWNERSHIP -m 0600 configfiles/tcfilters${suffix} ${DESTDIR}/etc/shorewall/tcfilters
     echo "TC Filters file installed as ${DESTDIR}/etc/shorewall/tcfilters"
 fi
 

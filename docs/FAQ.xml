@@ -109,9 +109,9 @@
         the sample configurations.</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Beginning with
-        Shorewall 4.0, the samples are in the shorewall-common package and are
+        Shorewall 4.4, the samples are in the shorewall package and are
         installed in <filename
-        class="directory">/usr/share/doc/shorewall-common/examples/</filename>.</para>
+        class="directory">/usr/share/doc/shorewall/examples/</filename>.</para>
       </section>
     </section>
 
@@ -313,8 +313,9 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
             redirected to the server. In this case, the problem is usually a
             missing or incorrect default gateway setting on the local system
             (the system you are trying to forward to -- its default gateway
-            should be the IP address of the firewall's interface to that
-            system).</para>
+            must be the IP address of the firewall's interface to that system
+            unless you use the hack described in <link linkend="faq1f">FAQ
+            1f</link>).</para>
           </listitem>
 
           <listitem>
@@ -337,7 +338,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
               <listitem>
                 <para>your DNAT rule doesn't match the connection request in
                 some other way. In that case, you may have to use a packet
-                sniffer such as tcpdump or ethereal to further diagnose the
+                sniffer such as tcpdump or Wireshark to further diagnose the
                 problem.</para>
               </listitem>
             </itemizedlist>
@@ -399,9 +400,9 @@ DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
 
         <para><emphasis role="bold">Answer </emphasis>courtesy of Ryan: Assume
         that the IP address of your local firewall interface is 192.168.1.1.
-        If you configure SSHD to only listen on that interface and add the
-        following rule then from the net, you will have 4104 listening, from
-        your LAN, port 22.</para>
+        If you configure SSHD to only listen on that address and add the
+        following rule, then you will have access on port 4104 from the net
+        and on port 22 from your LAN.</para>
 
         <programlisting>#ACTION SOURCE  DEST                    PROTO   DEST PORT(S)
 DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
@@ -448,7 +449,7 @@ DNAT       net           loc:192.168.1.4    tcp      21          -         206.1
           </listitem>
         </itemizedlist>
 
-        <para>This results in the following set of events:</para>
+        <para>This results in the following sequence of events:</para>
 
         <orderedlist>
           <listitem>
@@ -486,7 +487,7 @@ DNAT       net           loc:192.168.1.4    tcp      21          -         206.1
         <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE              SOURCE             ADDRESS            PROTO         PORT
 eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</programlisting></para>
 
-        <para>This rule has the undesirable side effect that it makes all FTP
+        <para>This rule has the undesirable side effect of making all FTP
         connections from the net appear to the FTP server as if they
         originated on the Shorewall system. But it will force the FTP server
         to reply back through the Shorewall system who can then rewrite the
@@ -652,8 +653,8 @@ DNAT       net           net:192.168.4.22       tcp      80,443      -         <
 
       <para>If you really want to route traffic between two internal systems
       through your firewall, then proceed as described below.<warning>
-          <para>All traffic redirected through use of this hack will look to
-          the server as if it originated on the firewall rather than on the
+          <para>All traffic redirected through use of this technique will look
+          to the server as if it originated on the firewall rather than on the
           original client! So the server's access logs will be useless for
           determining which local hosts are accessing the server.</para>
         </warning></para>
@@ -679,8 +680,9 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
           <para>Note: The technique described here is known as
           <firstterm>hairpinning NAT</firstterm> and is described in section 6
           of <ulink url="http://www.faqs.org/rfcs/rfc4787.html">RFC
-          4787</ulink>. There it is required that the <emphasis>external IP
-          address</emphasis> be used as the source:</para>
+          4787</ulink>. In that RFC, it is required that the
+          <emphasis>external IP address</emphasis> be used as the
+          source:</para>
 
           <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
 eth1:192.168.1.5        eth1            <emphasis role="bold">130.151.100.69</emphasis>  tcp     www</programlisting>
@@ -720,7 +722,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
             the latter terminates the calling program.</para>
           </note>
 
-          <note>
+          <note id="Call">
             <para>If you run Shorewall-lite on your firewall, you must use the
             following in the firewall's configuration directory
             <filename>params</filename> file:</para>
@@ -759,8 +761,8 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
         addresses and can be accessed externally and internally using the same
         address.</para>
 
-        <para>If you don't like those solutions and prefer, incredibly, to
-        route all Z-&gt;Z traffic through your firewall then:</para>
+        <para>If you don't like those solutions and prefer to route all
+        Z-&gt;Z traffic through your firewall then:</para>
 
         <orderedlist>
           <listitem>
@@ -791,7 +793,7 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
           <programlisting>#INTERFACE    SOURCE      ADDRESS
 <emphasis role="bold">eth2          eth2        192.168.2.254</emphasis></programlisting>
 
-          <para>Like the silly hack in FAQ 2 above, this will make all
+          <para>Like the technique in FAQ 2 above, this will make all
           dmz-&gt;dmz traffic appear to originate on the firewall.</para>
         </example>
       </section>
@@ -826,11 +828,9 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
-        <para>In <filename>/etc/shorewall/params</filename> (or in your
-        <filename>&lt;export directory&gt;/init</filename> file if you are
-        using Shorewall Lite on the firewall system):</para>
+        <para>In <filename>/etc/shorewall/params</filename>:</para>
 
-        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
+        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command> </programlisting>
 
         <para>and make your DNAT rule:</para>
 
@@ -854,6 +854,12 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
           role="bold">find_first_interface_address()</emphasis>. The former
           will return 0.0.0.0 if the interface has no configured IP address;
           the latter terminates the calling program.</para>
+        </note>
+
+        <note>
+          <para>If you use Shorewall-lite, then you need to configure the
+          params file in the firewall's configuration directory as described
+          <link linkend="Call">above</link>.</para>
         </note>
       </section>
 

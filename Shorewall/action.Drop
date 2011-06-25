@@ -33,13 +33,15 @@
 ###############################################################################
 FORMAT 2
 #
-# The following magic provides different defaults for $2 and $3, when $1 is 
+# The following magic provides different defaults for $2 thru $5, when $1 is 
 # 'audit'.
 #
 BEGIN PERL
 use Shorewall::Config;
 
-my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
+my ( $p1, $p2, $p3 , $p4, $p5, $p6 ) = get_action_params( 6 );
+
+fatal_error "Too many parameters to Drop" if defined $p6;
 
 if ( defined $p1 && $p1 eq 'audit' ) {
    set_action_param( 2, 'A_REJECT')   unless defined( $p2 ) && $p2 ne '-';

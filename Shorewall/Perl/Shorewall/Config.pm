@@ -351,7 +351,7 @@ my %compiler_params;
 #
 # Action parameters
 #
-my %actparms;
+my @actparms;
 
 our $currentline;            # Current config file line image
 my  $currentfile;            # File handle reference
@@ -683,7 +683,7 @@ sub initialize( $ ) {
 
     $compiler_params{$_} = 1 for keys %params;
 
-    %actparms = ();
+    @actparms = ();
 
     if ( $family == F_IPV4 ) {
 	$globals{SHAREDIR}      = '/usr/share/shorewall';
@@ -1812,14 +1812,14 @@ sub embedded_perl( $ ) {
 #
 sub push_action_params( $ ) {
     my @params = split /,/, $_[0];
-    my $oldparams = \%actparms;
+    my $oldparams = \@actparms;
 
-    %actparms = ();
+    @actparms = ();
 
     for ( my $i = 1; $i <= @params; $i++ ) {
 	my $val = $params[$i - 1];
 
-	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
+	$actparms[$i] = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
     $oldparams;
@@ -1827,7 +1827,7 @@ sub push_action_params( $ ) {
 
 sub pop_action_params( $ ) {
     my $oldparms = shift;
-    %actparms = %$oldparms;
+    @actparms = @$oldparms;
 }
 
 sub default_action_params {
@@ -1835,30 +1835,24 @@ sub default_action_params {
 
     for ( my $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
-	my $curval = $actparms{$i};
-	$actparms{$i} =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless supplied( $curval );
+	my $curval = $actparms[$i];
+	$actparms[$i] =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless supplied( $curval );
     }
 }
 
 sub get_action_params( $ ) {
     my $num = shift;
 
-    fatal_error "Invalid argument to get_action_params()" unless $num =~ /^\d+$/;
+    fatal_error "Invalid argument to get_action_params()" unless $num =~ /^\d+$/ && $num > 0;
 
-    my @values;
-
-    my $index = 1;
-
-    push @values, $actparms{$index++} while $num-- > 0;
-
-    @values;	    
+    @actparms[1..$num];
 }
 
 sub set_action_param( $$ ) {
     my $i = shift;
 
-    fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/;
-    $actparms{$i} = shift;
+    fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/ && $i > 0;
+    $actparms[$i] = shift;
 }
 
 #
@@ -1935,7 +1929,7 @@ sub read_a_line(;$$) {
 
 	    my $count = 0;
 	    #
-	    # Expand Shell Variables using %params and %actparms
+	    # Expand Shell Variables using %params and @actparms
 	    #
 	    if ( $expand_variables ) {
 		#                            $1      $2   $3      -     $4
@@ -1946,8 +1940,8 @@ sub read_a_line(;$$) {
 		    my $val;
 
 		    if ( $var =~ /^\d+$/ ) {
-			fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
-			$val = $actparms{$var};
+			fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
+			$val = $actparms[$var];
 		    } else {
 			fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
 			$val = $params{$var};
@@ -3077,8 +3071,8 @@ sub process_shorewall_conf( $$ ) {
 		    my $val;
 
 		    if ( $var =~ /^\d+$/ ) {
-			fatal_error "Undefined parameter (\$$var)" unless exists $actparms{$var};
-			$val = $actparms{$var};
+			fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
+			$val = $actparms[$var];
 		    } else {
 			fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
 			$val = $params{$var};

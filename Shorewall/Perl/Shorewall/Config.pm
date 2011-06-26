@@ -669,15 +669,9 @@ sub initialize( $ ) {
     $debug = 0;
     $confess = 0;
     
-    %params = ( root        => '',
-		system      => '',
-		command     => '',
-		files       => '',
-		destination => '' );
+    %params = ();
 
     %compiler_params = ();
-
-    $compiler_params{$_} = 1 for keys %params;
 
     @actparms = ();
 
@@ -3037,9 +3031,9 @@ sub process_shorewall_conf( $$ ) {
 
 	    first_entry "Processing $file...";
 	    #
-	    # Don't expand shell variables if $update
+	    # Don't expand shell variables or allow embedded scripting
 	    #
-	    while ( read_a_line( 0,! $update ) ) {
+	    while ( read_a_line( 0, 0 ) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 
@@ -3060,14 +3054,15 @@ sub process_shorewall_conf( $$ ) {
     #
     # Now update the config file if asked
     #
-    if ( $update ) {
-	update_config_file( $annotate) if $update;
-	#
-	# Config file update requires that the option values not have
-	# Shell variables expanded. We do that now.
-	#
-	supplied $_ && expand_variables( $_ ) for values  %config;
-
+    update_config_file( $annotate) if $update;
+    #
+    # Config file update requires that the option values not have
+    # Shell variables expanded. We do that now.
+    #
+    for ( values  %config ) {
+	if ( supplied $_ ) {
+	    expand_variables( $_ ) unless /$'(.+)'$/;
+	}
     }
 }
 

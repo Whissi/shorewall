@@ -1856,10 +1856,9 @@ sub set_action_param( $$ ) {
 #
 sub expand_variables( \$ ) {
     my ( $line, $count ) = ( $_[0], 0 );
-
     #                    $1      $2   $3      -     $4
     while ( $$line =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
-		    
+
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
 	my $val;
@@ -1871,7 +1870,7 @@ sub expand_variables( \$ ) {
 	    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
 	    $val = $params{$var};
 	}
-	
+
 	$val = '' unless defined $val;
 	$$line = join( '', $first , $val , $rest );
 	fatal_error "Variable Expansion Loop" if ++$count > 100;
@@ -1955,7 +1954,7 @@ sub read_a_line(;$$) {
 	    # Expand Shell Variables using %params and @actparms
 	    #
 	    expand_variables( $currentline ) if $expand_variables;
-	    
+
 	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
 
 		my @line = split ' ', $currentline;

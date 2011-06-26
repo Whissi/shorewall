@@ -1852,12 +1852,12 @@ sub set_action_param( $$ ) {
 }
 
 #
-# Expand shell variables and action parameters in the passed scalar
+# Expand Shell Variables in the passed buffer using %params and @actparms
 #
 sub expand_variables( \$ ) {
-    my ( $line, $count ) = ( $_[0], 0 );
+    my ( $lineref, $count ) = ( $_[0], 0 );
     #                    $1      $2   $3      -     $4
-    while ( $$line =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+    while ( $$lineref =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
@@ -1872,7 +1872,7 @@ sub expand_variables( \$ ) {
 	}
 
 	$val = '' unless defined $val;
-	$$line = join( '', $first , $val , $rest );
+	$$lineref = join( '', $first , $val , $rest );
 	fatal_error "Variable Expansion Loop" if ++$count > 100;
     }
 }
@@ -3037,19 +3037,17 @@ sub process_shorewall_conf( $$ ) {
 
 	    first_entry "Processing $file...";
 	    #
-	    # Don't expand shell variables if $config
+	    # Don't expand shell variables if $update
 	    #
 	    while ( read_a_line( 0,! $update ) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
-		    unless ( exists $config{$var} ) {
-			warning_message "Unknown configuration option ($var) ignored";
-			next;
-		    }
+
+		    warning_message "Unknown configuration option ($var) ignored", next unless exists $config{$var};
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 		} else {
-		    fatal_error "Unrecognized entry";
+		    fatal_error "Unrecognized $product.conf entry";
 		}
 	    }
 	} else {
@@ -3064,7 +3062,10 @@ sub process_shorewall_conf( $$ ) {
     #
     if ( $update ) {
 	update_config_file( $annotate) if $update;
-
+	#
+	# Config file update requires that the option values not have
+	# Shell variables expanded. We do that now.
+	#
 	supplied $_ && expand_variables( $_ ) for values  %config;
 
     }

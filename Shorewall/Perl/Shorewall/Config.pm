@@ -208,10 +208,6 @@ our %globals;
 #
 our %config;
 #
-# Raw values from shorewall.conf - used to update the config file
-#
-my  %rawconfig;
-#
 # Config options and global settings that are to be copied to output script
 #
 my @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY SUBSYSLOCK LOG_VERBOSITY/;
@@ -1856,6 +1852,33 @@ sub set_action_param( $$ ) {
 }
 
 #
+# Expand shell variables and action parameters in the passed scalar
+#
+sub expand_variables( \$ ) {
+    my ( $line, $count ) = ( $_[0], 0 );
+
+    #                    $1      $2   $3      -     $4
+    while ( $$line =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+		    
+	my ( $first, $var, $rest ) = ( $1, $3, $4);
+
+	my $val;
+
+	if ( $var =~ /^\d+$/ ) {
+	    fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
+	    $val = $actparms[$var];
+	} else {
+	    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+	    $val = $params{$var};
+	}
+	
+	$val = '' unless defined $val;
+	$$line = join( '', $first , $val , $rest );
+	fatal_error "Variable Expansion Loop" if ++$count > 100;
+    }
+}
+
+#
 # Read a line from the current include stack.
 #
 #   - Ignore blank or comment-only lines.
@@ -1931,28 +1954,8 @@ sub read_a_line(;$$) {
 	    #
 	    # Expand Shell Variables using %params and @actparms
 	    #
-	    if ( $expand_variables ) {
-		#                            $1      $2   $3      -     $4
-		while ( $currentline =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
-		    
-		    my ( $first, $var, $rest ) = ( $1, $3, $4);
-
-		    my $val;
-
-		    if ( $var =~ /^\d+$/ ) {
-			fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
-			$val = $actparms[$var];
-		    } else {
-			fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
-			$val = $params{$var};
-		    }
-
-		    $val = '' unless defined $val;
-		    $currentline = join( '', $first , $val , $rest );
-		    fatal_error "Variable Expansion Loop" if ++$count > 100;
-		}
-	    }
-
+	    expand_variables( $currentline ) if $expand_variables;
+	    
 	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
 
 		my @line = split ' ', $currentline;
@@ -2883,6 +2886,9 @@ sub conditional_quote( $ ) {
     $val;
 }
 
+#
+# Update the shorewall[6].conf file. Save the current file with a .bak suffix.
+#
 sub update_config_file( $ ) {
     my $annotate = shift;
 
@@ -2925,7 +2931,7 @@ sub update_config_file( $ ) {
 		#
 		# Option assignment -- get value and default
 		#
-		my ($var, $val, $default ) = ( $1, $rawconfig{$1}, $2 );
+		my ($var, $val, $default ) = ( $1, $config{$1}, $2 );
 
 		unless ( supplied $val ) {
 		    #
@@ -2959,7 +2965,7 @@ sub update_config_file( $ ) {
 	my $heading_printed;
 
 	for ( @undocumented ) {
-	    if ( defined ( my $val = $rawconfig{$_} ) ) {
+	    if ( defined ( my $val = $config{$_} ) ) {
 
 		unless ( $heading_printed ) {
 		    print $output <<'EOF';
@@ -2982,7 +2988,7 @@ EOF
 	$heading_printed = 0;
 
 	for ( keys %deprecated ) {
-	    if ( supplied( my $val = $rawconfig{$_} ) ) {
+	    if ( supplied( my $val = $config{$_} ) ) {
 		if ( lc $val ne $deprecated{$_} ) {
 		    unless ( $heading_printed ) {
 			print $output <<'EOF';
@@ -3022,7 +3028,6 @@ EOF
 sub process_shorewall_conf( $$ ) {
     my ( $update, $annotate ) = @_;
     my $file   = find_file "$product.conf";
-    my $config = $update ? \%rawconfig : \%config;
 
     if ( -f $file ) {
 	$globals{CONFIGDIR} =  $configfile = $file;
@@ -3043,7 +3048,7 @@ sub process_shorewall_conf( $$ ) {
 			next;
 		    }
 
-		    $config->{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
+		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 		} else {
 		    fatal_error "Unrecognized entry";
 		}
@@ -3055,42 +3060,15 @@ sub process_shorewall_conf( $$ ) {
 	fatal_error "$file does not exist!";
     }
 
-    if ( $config ) {
-	#
-	# Now that we have the raw values stored, we expand shell variables and store the expanded values
-	#
-	while ( my ( $opt, $v ) = each %rawconfig ) {
-	    my $count = 0;
-
-	    unless ( $v =~ /^'(.*?)'$/ ) {
-		#                            $1      $2   $3      -     $4
-		while ( $v =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
-		    
-		    my ( $first, $var, $rest ) = ( $1, $3, $4);
-
-		    my $val;
-
-		    if ( $var =~ /^\d+$/ ) {
-			fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
-			$val = $actparms[$var];
-		    } else {
-			fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
-			$val = $params{$var};
-		    }
-
-		    $val = '' unless defined $val;
-		    $v = join( '', $first , $val , $rest );
-		    fatal_error "Variable Expansion Loop in option $opt" if ++$count > 100;
-		}
-	    }
-
-	    $config{$opt} = $v;
-	}
-    }
     #
     # Now update the config file if asked
     #
-    update_config_file( $annotate) if $update;
+    if ( $update ) {
+	update_config_file( $annotate) if $update;
+
+	supplied $_ && expand_variables( $_ ) for values  %config;
+
+    }
 }
 
 #

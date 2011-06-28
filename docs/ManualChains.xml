@@ -199,7 +199,7 @@ sub Knock {
 SSHKnock         net               $FW            tcp         22,1599,1600,1601
 </programlisting>
 
-    <para>becomes:<programlisting>PERL Knock 'net', 'loc:192.168.1.5', {target =&gt; 22, knocker =&gt; 1600, trap =&gt; [1599, 1601]};</programlisting>Similarly<programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
+    <para>becomes:<programlisting>PERL Knock 'net', '$FW', {target =&gt; 22, knocker =&gt; 1600, trap =&gt; [1599, 1601]};</programlisting>Similarly<programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
 #                                                                            PORT(S)     DEST
 DNAT-            net               loc:192.168.1.5 tcp         22            -           206.124.146.178
 SSHKnock         net               $FW             tcp         1599,1600,1601

@@ -3061,7 +3061,7 @@ sub process_shorewall_conf( $$ ) {
     #
     for ( values  %config ) {
 	if ( supplied $_ ) {
-	    expand_variables( $_ ) unless /$'(.+)'$/;
+	    expand_variables( $_ ) unless /^'(.+)'$/;
 	}
     }
 }
@@ -3085,7 +3085,8 @@ sub read_capabilities() {
     }
 
     if ( $capabilities{CAPVERSION} ) {
-	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}" unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
+	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}"
+	    unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
     } else {
 	warning_message "Your capabilities file may not contain all of the capabilities defined by $Product version $globals{VERSION}";
     }

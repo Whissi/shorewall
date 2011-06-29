@@ -399,6 +399,11 @@ show_routing() {
 	    heading "Table $table:"
 	    ip route list table $table
 	done
+
+	if [ -n "$g_routecache" ]; then
+	    heading "Route Cache"
+	    ip -4 route list cache
+	fi
     else
 	heading "Routing Table"
 	ip route list
@@ -536,6 +541,10 @@ show_command() {
 			l*)
 			    g_ipt_options1="--line-numbers"
 			    option=${option#l}
+			    ;;
+			c*)
+			    g_routecache=Yes
+			    option=${option#c}
 			    ;;
 			*)
 			    usage 1
@@ -914,6 +923,10 @@ do_dump_command() {
 			l*)
 			    g_ipt_options1="--line-numbers"
 			    option=${option#l}
+			    ;;
+			c*)
+			    g_routecache=Yes
+			    option=${option#c}
 			    ;;
 			*)
 			    usage 1

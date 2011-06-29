@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------
-                S H O R E W A L L  4 . 4 . 2 1  R C  I
+                      S H O R E W A L L  4 . 4 . 2 1
 ----------------------------------------------------------------------------
 
 I.    PROBLEMS CORRECTED IN THIS RELEASE
@@ -16,7 +16,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 1)  All problems corrections included in Shorewall 4.4.20.1 - 4.4.20.3
     (see below).
 
-2)  The following error message has been corrected
+2)  The following error message
 
     	FOREWARD_CLEAR_MARK=Yes requires MARK Target in your kernel
 	    and iptables
@@ -39,7 +39,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
 1)  AUTOMAKE=Yes now causes all directories on the CONFIG_PATH to be
     searched for files newer than the script that last
-    started/restarted the firewall.
+    started/restarted the firewall. Previously, only /etc/shorewall
+    (/etc/shorewall6) was searched.
 
 2)  FORMAT-2 actions may now specify default parameter values using the
     DEFAULTS directive.
@@ -50,8 +51,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     is the default value for the second parameter and so on. To specify
     an empty default, use '-'.
 
-3)  Macros may now specify a default parameter value using the DEFAULT
-    directive.
+3)  Parameterized macros may now specify a default parameter value
+    using the DEFAULT directive.
 
 	DEFAULT <default>
 
@@ -67,7 +68,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     1) Pass 'audit' if you want all ACCEPTs, DROPs and REJECTs audited.
        Pass '-' otherwise.
 
-    2) The action to be applied to Auth requests 
+    2) The action to be applied to Auth requests: 
 
        	      FIRST PARAMETER           DEFAULT
   
@@ -75,7 +76,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	      audit			A_REJECT
 
     3) The action to be applied to SMB traffic. The default depends on
-       the first parameter:
+       the action and its first parameter:
 
               ACTION	 FIRST PARAMETER		DEFAULT
 
@@ -118,7 +119,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	DROP_DEFAULT=Drop(-,DROP)
 
 5)  An 'update' command has been added to /sbin/shorewall and
-    /sbin/shorewall6. The command updates he shorewall.conf
+    /sbin/shorewall6. The command updates the shorewall.conf
     (shorewall6.conf) file then validates the configuration. The
     updated file will set any options not specified in the old file
     with their default values, and will move any deprecated options
@@ -131,7 +132,7 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 
     The 'update' command accepts the same options as the 'check'
     command plus a '-a' option that causes the updated file to be
-    annotated with documentation.
+    annotated with manpage documentation.
 
 6)  Shorewall6 now supports ipsets. 
 
@@ -146,8 +147,8 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     SAVE_IPSETS option in /etc/sysconfig/shorewall-init
     (/etc/default/shorewall-init on Debian and derivatives). The value
     of the option is a file name where the contents of the ipsets will
-    be save to and restored from. Shorewall-init will create any
-    necessary directories during the first 'save' operation.
+    be saved to and restored from. Shorewall-init will create any
+    parent directories during the first 'save' operation.
 
     If you configure Shorewall-init to save/restore ipsets, be sure to
     set SAVE_IPSETS=No in shorewall.conf and shorewall6.conf.

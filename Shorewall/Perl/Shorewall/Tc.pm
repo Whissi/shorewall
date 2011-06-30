@@ -373,7 +373,7 @@ sub process_tc_rule( ) {
 			    $port = 0;
 			}
 
-			$target .= "--on-port $port";
+			$target .= " --on-port $port";
 
 			if ( supplied $ip ) {
 			    validate_address $ip, 1;

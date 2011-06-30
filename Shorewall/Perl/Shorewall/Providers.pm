@@ -349,6 +349,8 @@ sub add_a_provider( ) {
 	}
     }
 
+    fatal_error q(The 'balance' and 'fallback' options are mutually exclusive) if $balance && $default;
+
     my $val = 0;
     my $pref;
 

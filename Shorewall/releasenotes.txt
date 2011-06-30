@@ -26,6 +26,18 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
     	FORWARD_CLEAR_MARK=Yes requires MARK Target in your kernel
 	    and iptables
 
+3)  The TPROXY target in the tcrules file could cause a failure during
+    iptables restore like this:
+
+       Running /usr/sbin/iptables-restore...
+       Bad argument `3128'
+       Error occurred at line: 110
+       Try `iptables-restore -h' or 'iptables-restore --help' for more
+       information.
+
+          ERROR: iptables-restore Failed. Input is in
+	  	 /var/lib/shorewall/.iptables-restore-input
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

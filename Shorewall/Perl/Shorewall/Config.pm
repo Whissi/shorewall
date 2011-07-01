@@ -1803,11 +1803,14 @@ sub embedded_perl( $ ) {
 sub push_action_params( $ ) {
     my @params = split /,/, $_[0];
     my $oldparams = \@actparms;
-    my $params    = @params;
 
     @actparms = ();
 
-    @actparms[1..$params] = @params;
+    for ( my $i = 1; $i <= @params; $i++ ) {
+	my $val = $params[$i - 1];
+
+	$actparms[$i] = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
+    }
 
     $oldparams;
 }

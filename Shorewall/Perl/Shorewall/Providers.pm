@@ -35,7 +35,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = '4.4_20';
+our $VERSION = '4.4_21';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,

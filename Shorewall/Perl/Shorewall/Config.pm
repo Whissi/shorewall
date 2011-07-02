@@ -53,6 +53,7 @@ our @EXPORT = qw(
 		 progress_message3
 		 supplied
 		 get_action_params
+		 get_action_chain
 		 set_action_param
                 );
 
@@ -1800,11 +1801,13 @@ sub embedded_perl( $ ) {
 #
 # Push/pop action params
 #
-sub push_action_params( $ ) {
-    my @params = split /,/, $_[0];
+sub push_action_params( $$ ) {
+    my @params = split /,/, $_[1];
     my $oldparams = \@actparms;
 
     @actparms = ();
+
+    $actparms[0] = $_[0];
 
     for ( my $i = 1; $i <= @params; $i++ ) {
 	my $val = $params[$i - 1];
@@ -1836,6 +1839,10 @@ sub get_action_params( $ ) {
     fatal_error "Invalid argument to get_action_params()" unless $num =~ /^\d+$/ && $num > 0;
 
     @actparms[1..$num];
+}
+
+sub get_action_chain() {
+    $actparms[0];
 }
 
 sub set_action_param( $$ ) {

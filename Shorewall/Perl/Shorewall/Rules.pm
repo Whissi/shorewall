@@ -1465,7 +1465,7 @@ sub process_action( $) {
 
 	push_open $actionfile;
 
-	my $oldparms = push_action_params( $param );
+	my $oldparms = push_action_params( $chainref, $param );
 
 	$active{$wholeaction}++;
 	push @actionstack, $wholeaction;

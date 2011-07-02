@@ -1343,6 +1343,7 @@ sub split_line1( $$$;$ ) {
     my ( $mincolumns, $maxcolumns, $description, $nopad) = @_;
 
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $currentline =~ /["`\\]/;
+    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 
     my @line = split( ' ', $currentline );
 
@@ -1427,7 +1428,7 @@ sub close_file() {
 }
 
 #
-# Functions for copying files into the script
+# Functions for copying a file into the script
 #
 sub copy( $ ) {
     assert( $script_enabled );
@@ -1779,7 +1780,7 @@ sub embedded_perl( $ ) {
     if ( $perlscript ) {
 	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
 
-	close $perlscript or assert(0);
+	assert( close $perlscript );
 
 	$perlscript = undef;
 

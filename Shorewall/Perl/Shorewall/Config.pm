@@ -1803,7 +1803,7 @@ sub embedded_perl( $ ) {
 #
 sub push_action_params( $$ ) {
     my @params = split /,/, $_[1];
-    my $oldparams = \@actparms;
+    my @oldparams = @actparms;
 
     @actparms = ();
 
@@ -1815,7 +1815,7 @@ sub push_action_params( $$ ) {
 	$actparms[$i] = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    $oldparams;
+    \@oldparams;
 }
 
 sub pop_action_params( $ ) {

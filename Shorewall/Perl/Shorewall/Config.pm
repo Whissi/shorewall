@@ -53,6 +53,7 @@ our @EXPORT = qw(
 		 progress_message3
 		 supplied
 		 get_action_params
+		 get_action_chain
 		 set_action_param
                 );
 
@@ -1806,7 +1807,7 @@ sub push_action_params( $$ ) {
 
     @actparms = ();
 
-    $actparms[0]          = $_[0];
+    $actparms[0] = $_[0];
 
     for ( my $i = 1; $i <= @params; $i++ ) {
 	my $val = $params[$i - 1];
@@ -1840,7 +1841,7 @@ sub get_action_params( $ ) {
     @actparms[1..$num];
 }
 
-sub get_actionchain() {
+sub get_action_chain() {
     $actparms[0];
 }
 

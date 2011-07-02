@@ -2275,11 +2275,16 @@ sub load_kernel_modules( ) {
 # Q[uie]t version of system(). Returns true for success
 #
 sub qt( $ ) {
-    system( "@_ > /dev/null 2>&1" ) == 0;
+    if ( $debug ) {
+	print "SYS----> @_\n";
+	system( "@_ 2>&1" );
+    } else {
+	system( "@_ > /dev/null 2>&1" ) == 0;
+    }
 }
 
 sub qt1( $ ) {
-    1 while system( "@_ > /dev/null 2>&1" ) == 4;
+    1 while qt( "@_" ) == 4;
     $? == 0;
 }
 

@@ -1828,13 +1828,16 @@ sub pop_action_params( $ ) {
 }
 
 sub default_action_params {
-    my $val;
+    my $action = shift;
+    my ( $val, $i );
 
-    for ( my $i = 1; 1; $i++ ) {
+    for ( $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
 	my $curval = $actparms[$i];
 	$actparms[$i] =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless supplied( $curval );
     }
+
+    fatal_error "Too Many arguments to action $action" if defined $actparms[$i];
 }
 
 sub get_action_params( $ ) {

@@ -1439,7 +1439,7 @@ sub process_action( $) {
 	    }
 
 	    if ( $target eq 'DEFAULTS' ) {
-		default_action_params( split_list $source, 'defaults' ), next if $format == 2;
+		default_action_params( $action, split_list $source, 'defaults' ), next if $format == 2;
 		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions'; 
 	    }	      
 

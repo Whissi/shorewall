@@ -1163,11 +1163,12 @@ sub dropBcast( $$$$ ) {
 	    if ( $family == F_IPV4 ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
 	    } else {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST , '-j DROP ' );
+		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST , '' );
 	    }
 	}
 	
 	add_jump $chainref, $target, 0, "-m addrtype --dst-type BROADCAST ";
+	add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -1181,7 +1182,11 @@ sub dropBcast( $$$$ ) {
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
 
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+	if ( $family == F_IPV4 ) {
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+	} else {
+	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST . ' ' ) if $level ne '';
+	}
     }
 
     if ( $family == F_IPV4 ) {
@@ -1199,11 +1204,15 @@ sub allowBcast( $$$$ ) {
     if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
+	    if ( $family == F_IPV4 ) {
+		log_rule_limit $level, $chainref, 'dropBcast' , 'ACCECT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
+	    } else {
+		log_rule_limit $level, $chainref, 'dropBcast' , 'ACCEPT', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST . ' ' );
+	    }
 	}
 
 	add_jump $chainref, $target, 0, "-m addrtype --dst-type BROADCAST ";
-	add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
+	add_jump $chainref, $target, 0, join( ' ' , ' -d', IPv6_MULTICAST , '' );
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -1222,7 +1231,7 @@ sub allowBcast( $$$$ ) {
 	    add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
 	} else {
 	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ' . IPv6_MULTICAST . ' ' if $level ne '';
-	    add_jump $chainref, $target, 0, join ( ' ', '-d', IPv6_MULTICAST, ' ' );
+	    add_jump $chainref, $target, 0, join ( ' ', '-d', IPv6_MULTICAST . ' ' );
 	}
     }
 }

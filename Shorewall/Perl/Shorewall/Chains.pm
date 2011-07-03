@@ -1609,7 +1609,7 @@ sub ensure_audit_chain( $;$$ ) {
 sub require_audit($$;$) {
     my ($action, $audit, $tgt ) = @_;
 
-    return $action unless supplied $audit;
+    return $action unless supplied $audit && $audit ne '-';
 
     my $target = 'A_' . $action;
 

@@ -842,6 +842,7 @@ sub normalize_action( $$$ ) {
     $level = 'none' unless supplied $level;
     $tag   = ''     unless defined $tag;
     $param = ''     unless defined $param;
+    $param = ''     if $param eq '-';
 
     join( ':', $action, $level, $tag, $param );
 }

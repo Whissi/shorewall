@@ -663,8 +663,6 @@ sub complete_standard_chain ( $$$$ ) {
     policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }
 
-sub require_audit($$;$);
-
 #
 # Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
 #
@@ -1145,105 +1143,6 @@ sub map_old_actions( $ ) {
 	find_old_action( $target, $1, 'REJECT' );
     } else {
 	( $target, 0, '' );
-    }
-}
-
-#
-# Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
-
-sub ensure_audit_chain( $;$$ ) {
-    my ( $target, $action, $tgt ) = @_;
-
-    push_comment( '' );
-
-    my $ref = $filter_table->{$target};
-
-    unless ( $ref ) {
-	$ref = new_chain 'filter', $target;
-
-	unless ( $action ) {
-	    $action = $target;
-	    $action =~ s/^A_//;
-	}
-
-	$tgt ||= $action;
-
-	if ( $config{FAKE_AUDIT} ) {
-	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
-	} else {
-	    add_rule $ref, '-j AUDIT --type ' . lc $action;
-	}
-
-	
-	if ( $tgt eq 'REJECT' ) {
-	    add_jump $ref , 'reject', 1;
-	} else {
-	    add_jump $ref , $tgt, 0;
-	}
-    }
-
-    pop_comment;
-
-    return $target;
-}
-
-#
-# Return the appropriate target based on whether the second argument is 'audit'
-#
-
-sub require_audit($$;$) {
-    my ($action, $audit, $tgt ) = @_;
-
-    return $action unless supplied $audit;
-
-    my $target = 'A_' . $action;
-
-    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-
-    require_capability 'AUDIT_TARGET', 'audit', 's';
-
-    return ensure_audit_chain $target, $action, $tgt;
-}   
-  
-#
-# The following small functions generate rules for the builtin actions of the same name
-#
-sub dropBcast( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit ( 'DROP', $audit );
-
-    if ( have_capability( 'ADDRTYPE' ) ) {
-	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-	    if ( $family == F_IPV4 ) {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
-	    } else {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST , '-j DROP ' );
-	    }
-	}
-	
-	add_jump $chainref, $target, 0, "-m addrtype --dst-type BROADCAST ";
-    } else {
-	if ( $family == F_IPV4 ) {
-	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
-	} else {
-	    add_commands $chainref, 'for address in $ALL_ACASTS; do';
-	}
-
-	incr_cmd_level $chainref;
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
-	add_jump $chainref, $target, 0, "-d \$address ";
-	decr_cmd_level $chainref;
-	add_commands $chainref, 'done';
-
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
-    }
-
-    if ( $family == F_IPV4 ) {
-	add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
-    } else {
-	add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
     }
 }
 

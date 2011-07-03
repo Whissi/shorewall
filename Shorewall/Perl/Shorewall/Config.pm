@@ -47,14 +47,20 @@ our @EXPORT = qw(
 		 warning_message
 		 fatal_error
 		 assert
+		 
 		 progress_message
 		 progress_message_nocompress
 		 progress_message2
 		 progress_message3
+		 
 		 supplied
+		 
 		 get_action_params
 		 get_action_chain
 		 set_action_param
+		 
+		 have_capability
+		 require_capability
                 );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize set_config_path shorewall);
@@ -113,8 +119,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       add_param
 				       export_params
 				       get_configuration
-				       require_capability
-				       have_capability
 				       report_capabilities
 				       propagateconfig
 				       append_file
@@ -1804,7 +1808,7 @@ sub embedded_perl( $ ) {
 #
 sub push_action_params( $$ ) {
     my @params = split /,/, $_[1];
-    my $oldparams = \@actparms;
+    my @oldparams = @actparms;
 
     @actparms = ();
 
@@ -1816,7 +1820,7 @@ sub push_action_params( $$ ) {
 	$actparms[$i] = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    $oldparams;
+    \@oldparams;
 }
 
 sub pop_action_params( $ ) {

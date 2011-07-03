@@ -1470,6 +1470,8 @@ sub process_action( $) {
 	$active{$wholeaction}++;
 	push @actionstack, $wholeaction;
 
+	push_comment( '' );
+
 	while ( read_a_line ) {
 
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
@@ -1516,7 +1518,7 @@ sub process_action( $) {
 			   0 );
 	}
 
-	clear_comment;
+	pop_comment;
 
 	$active{$wholeaction}--;
 	pop @actionstack;

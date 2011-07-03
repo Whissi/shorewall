@@ -35,23 +35,29 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
-		  add_rule
-		  add_jump
-		  insert_rule
-		  new_chain
-		  new_manual_chain
-		  ensure_manual_chain
-		  log_rule_limit
-		  dont_optimize
-		  dont_delete
-		  dont_move
+		    add_rule
+		    add_jump
+		    insert_rule
+		    add_commands
+		    incr_cmd_level
+		    decr_cmd_level
+		    new_chain
+		    new_manual_chain
+		    ensure_manual_chain
+		    ensure_audit_chain
+		    require_audit
+		    log_rule_limit
+		    dont_optimize
+		    dont_delete
+		    dont_move
+		    get_action_logging
 
-		  %chain_table
-		  $raw_table
-		  $nat_table
-		  $mangle_table
-		  $filter_table
-		  );
+		    %chain_table
+		    $raw_table
+		    $nat_table
+		    $mangle_table
+		    $filter_table
+	       );
 
 our %EXPORT_TAGS = (
 		    internal => [  qw( STANDARD
@@ -78,7 +84,6 @@ our %EXPORT_TAGS = (
 				       NOT_RESTORE
 
 				       initialize_chain_table
-				       add_commands
 				       copy_rules
 				       move_rules
 				       insert_rule1
@@ -90,8 +95,6 @@ our %EXPORT_TAGS = (
 				       clear_comment
 				       push_comment
 				       pop_comment
-				       incr_cmd_level
-				       decr_cmd_level
 				       forward_chain
 				       rules_chain
 				       zone_forward_chain
@@ -1557,6 +1560,77 @@ sub ensure_manual_chain($) {
     my $chainref = $filter_table->{$chain} || new_manual_chain($chain);
     fatal_error "$chain exists and is not a manual chain" unless $chainref->{manual};
     $chainref;
+}
+
+#
+# Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
+#
+
+sub ensure_audit_chain( $;$$ ) {
+    my ( $target, $action, $tgt ) = @_;
+
+    push_comment( '' );
+
+    my $ref = $filter_table->{$target};
+
+    unless ( $ref ) {
+	$ref = new_chain 'filter', $target;
+
+	unless ( $action ) {
+	    $action = $target;
+	    $action =~ s/^A_//;
+	}
+
+	$tgt ||= $action;
+
+	if ( $config{FAKE_AUDIT} ) {
+	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
+	} else {
+	    add_rule $ref, '-j AUDIT --type ' . lc $action;
+	}
+
+	
+	if ( $tgt eq 'REJECT' ) {
+	    add_jump $ref , 'reject', 1;
+	} else {
+	    add_jump $ref , $tgt, 0;
+	}
+    }
+
+    pop_comment;
+
+    return $target;
+}
+
+#
+# Return the appropriate target based on whether the second argument is 'audit'
+#
+
+sub require_audit($$;$) {
+    my ($action, $audit, $tgt ) = @_;
+
+    return $action unless supplied $audit;
+
+    my $target = 'A_' . $action;
+
+    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
+
+    require_capability 'AUDIT_TARGET', 'audit', 's';
+
+    return ensure_audit_chain $target, $action, $tgt;
+}   
+  
+#
+# Returns the Level and Tag for the current action chain
+#
+sub get_action_logging() {
+    my $chainref = get_action_chain;
+    my $wholeaction = $chainref->{action};
+    my ( undef, $level, $tag, undef ) = split ':', $wholeaction;
+    
+    $level = '' if $level =~ /^none/;
+
+    ( $level, $tag );
 }
 
 #

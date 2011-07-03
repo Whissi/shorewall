@@ -1168,7 +1168,6 @@ sub dropBcast( $$$$ ) {
 	}
 	
 	add_jump $chainref, $target, 0, "-m addrtype --dst-type BROADCAST ";
-	add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -1181,17 +1180,13 @@ sub dropBcast( $$$$ ) {
 	add_jump $chainref, $target, 0, "-d \$address ";
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
-
-	if ( $family == F_IPV4 ) {
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
-	} else {
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST . ' ' ) if $level ne '';
-	}
     }
 
     if ( $family == F_IPV4 ) {
+	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 	add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
     } else {
+	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST . ' ' ) if $level ne '';
 	add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
     }
 }
@@ -1212,7 +1207,6 @@ sub allowBcast( $$$$ ) {
 	}
 
 	add_jump $chainref, $target, 0, "-m addrtype --dst-type BROADCAST ";
-	add_jump $chainref, $target, 0, join( ' ' , ' -d', IPv6_MULTICAST , '' );
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -1225,14 +1219,14 @@ sub allowBcast( $$$$ ) {
 	add_rule $chainref, "-d \$address -j $target";
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
+    }
 
-	if ( $family == F_IPV4 ) {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
-	    add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
-	} else {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ' . IPv6_MULTICAST . ' ' if $level ne '';
-	    add_jump $chainref, $target, 0, join ( ' ', '-d', IPv6_MULTICAST . ' ' );
-	}
+    if ( $family == F_IPV4 ) {
+	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+	add_jump $chainref, $target, 0, "-d 224.0.0.0/4 ";
+    } else {
+	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ' . IPv6_MULTICAST . ' ' if $level ne '';
+	add_jump $chainref, $target, 0, join ( ' ', '-d', IPv6_MULTICAST . ' ' );
     }
 }
 

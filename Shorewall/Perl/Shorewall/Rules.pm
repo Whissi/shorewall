@@ -1149,63 +1149,6 @@ sub map_old_actions( $ ) {
 }
 
 #
-# Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
-
-sub ensure_audit_chain( $;$$ ) {
-    my ( $target, $action, $tgt ) = @_;
-
-    push_comment( '' );
-
-    my $ref = $filter_table->{$target};
-
-    unless ( $ref ) {
-	$ref = new_chain 'filter', $target;
-
-	unless ( $action ) {
-	    $action = $target;
-	    $action =~ s/^A_//;
-	}
-
-	$tgt ||= $action;
-
-	if ( $config{FAKE_AUDIT} ) {
-	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
-	} else {
-	    add_rule $ref, '-j AUDIT --type ' . lc $action;
-	}
-
-	
-	if ( $tgt eq 'REJECT' ) {
-	    add_jump $ref , 'reject', 1;
-	} else {
-	    add_jump $ref , $tgt, 0;
-	}
-    }
-
-    pop_comment;
-
-    return $target;
-}
-
-#
-# Return the appropriate target based on whether the second argument is 'audit'
-#
-
-sub require_audit($$;$) {
-    my ($action, $audit, $tgt ) = @_;
-
-    return $action unless supplied $audit;
-
-    my $target = 'A_' . $action;
-
-    fatal_error "Invalid parameter ($audit)" unless $audit eq 'audit';
-
-    require_capability 'AUDIT_TARGET', 'audit', 's';
-
-    return ensure_audit_chain $target, $action, $tgt;
-}   
-  
-#
 # The following small functions generate rules for the builtin actions of the same name
 #
 sub dropBcast( $$$$ ) {

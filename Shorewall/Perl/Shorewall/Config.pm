@@ -1834,7 +1834,7 @@ sub default_action_params {
     for ( $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
 	my $curval = $actparms[$i];
-	$actparms[$i] =$val eq '-' ? '' : $val eq '--' ? '-' : $val unless supplied( $curval );
+	$actparms[$i] =$val unless supplied( $curval );
     }
 
     fatal_error "Too Many arguments to action $action" if defined $actparms[$i];
@@ -1845,7 +1845,14 @@ sub get_action_params( $ ) {
 
     fatal_error "Invalid argument to get_action_params()" unless $num =~ /^\d+$/ && $num > 0;
 
-    @actparms[1..$num];
+    my @return;
+
+    for ( my $i = 1; $i <= $num; $i++ ) {
+	my $val = $actparms[$i];
+	push @return, defined $val ? $val eq '-' ? '' : $val eq '--' ? '-' : $val : $val;
+    }
+
+    @return;
 }
 
 sub get_action_chain() {

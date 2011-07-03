@@ -35,9 +35,7 @@ FORMAT 2
 BEGIN PERL
 use Shorewall::Config;
 
-my ( $p1, $p2, $p3 , $p4, $p5, $p6 ) = get_action_params( 6 );
-
-fatal_error "Too many parameters to Reject" if defined $p6;
+my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
 
 if ( defined $p1 ) { 
     if ( $p1 eq 'audit' ) {

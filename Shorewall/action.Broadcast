@@ -51,9 +51,9 @@ if ( have_capability( 'ADDRTYPE' ) ) {
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type ANYCAST ';
     }	
 
-    add_jump $chainref, $target, 0, "-m addrtype --dst-type BROADCAST ";
-    add_jump $chainref, $target, 0, "-m addrtype --dst-type MULTICAST ";
-    add_jump $chainref, $target, 0, "-m addrtype --dst-type ANYCAST ";
+    add_jump $chainref, $target, 0, '-m addrtype --dst-type BROADCAST ';
+    add_jump $chainref, $target, 0, '-m addrtype --dst-type MULTICAST ';
+    add_jump $chainref, $target, 0, '-m addrtype --dst-type ANYCAST ';
 } else {
     add_commands $chainref, 'for address in $ALL_BCASTS; do';
     incr_cmd_level $chainref;

@@ -78,11 +78,9 @@ fi
 %attr(0644,root,root) /usr/share/shorewall6/actions.std
 %attr(0644,root,root) /usr/share/shorewall6/action.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall6/action.A_AllowICMPs
-%attr(0644,root,root) /usr/share/shorewall/action.Broadcast
+%attr(0644,root,root) /usr/share/shorewall6/action.Broadcast
 %attr(0644,root,root) /usr/share/shorewall6/action.Drop
 %attr(0644,root,root) /usr/share/shorewall6/action.A_Drop
-%attr(0644,root,root) /usr/share/shorewall/action.Invalid
-%attr(0644,root,root) /usr/share/shorewall/action.NotSyn
 %attr(0644,root,root) /usr/share/shorewall6/action.Reject
 %attr(0644,root,root) /usr/share/shorewall6/action.A_Reject
 %attr(0644,root,root) /usr/share/shorewall6/action.template

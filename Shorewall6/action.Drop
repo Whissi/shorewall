@@ -84,7 +84,7 @@ SMB($3)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-dropNotSyn	-	-	tcp
+dropNotSyn($1)	-	-	tcp
 #
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.

@@ -36,7 +36,7 @@ FORMAT 2
 # The following magic provides different defaults for $2 thru $5, when $1 is 
 # 'audit'.
 #
-BEGIN PERL
+BEGIN PERL;
 use Shorewall::Config;
 
 my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
@@ -54,7 +54,7 @@ if ( defined $p1 ) {
 
 1;
 
-END PERL
+END PERL;
 
 DEFAULTS -,REJECT,DROP,ACCEPT,DROP
 

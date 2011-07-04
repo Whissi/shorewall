@@ -47,6 +47,8 @@ fatal_error "Invalid parameter to action Invalid"   if supplied $audit && $audit
 log_rule_limit $level, $chainref, 'Invalid' , $action, '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
 add_jump $chainref , $target, 0, "$globals{STATEMATCH} INVALID ";
 
+$chainref->{dont_optimize} = 0;
+
 1;
 
 END PERL;

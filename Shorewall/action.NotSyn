@@ -47,6 +47,8 @@ fatal_error "Invalid parameter to action NotSyn"   if supplied $audit && $audit 
 log_rule_limit $level, $chainref, 'NotSyn' , $action, '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
 add_jump $chainref , $target, 0, '-p 6 ! --syn ';
 
+$chainref->{dont_optimize} = 0;
+
 1;
 
 END PERL;

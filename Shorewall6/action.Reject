@@ -68,13 +68,13 @@ AllowICMPs($4)	-	-	ipv6-icmp
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).
 #
-dropBcast($1)
+Broadcast(DROP,$1)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
 # rejected).
 #
-dropInvalid($1)
+Invalid(DROP,$1)
 #
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
@@ -82,7 +82,7 @@ SMB($3)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-dropNotSyn($1)	-	-	tcp
+NotSyn(DROP,$1)	-	-	tcp
 #
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.

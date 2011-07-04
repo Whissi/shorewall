@@ -77,7 +77,7 @@ AllowICMPs($4)	-	-	icmp
 # and just confuse people when they appear in the log (these ICMPs cannot be
 # rejected).
 #
-dropInvalid($1)
+Invalid(DROP,$1)
 #
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
@@ -86,7 +86,7 @@ DropUPnP($5)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-dropNotSyn($1)	-	-	tcp
+NotSyn(DROP,$1)	-	-	tcp
 #
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.

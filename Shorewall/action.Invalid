@@ -1,0 +1,52 @@
+#
+# Shorewall 4 - Invalid Action
+#
+#    /usr/share/shorewall/action.Invalid
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2011 - Tom Eastep (teastep@shorewall.net)
+#
+#       Complete documentation is available at http://shorewall.net
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of Version 2 of the GNU General Public License
+#       as published by the Free Software Foundation.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#   Invalid[([<action>|-[,{audit|-}])] 
+#
+#       Default action is DROP
+#
+##########################################################################################
+FORMAT 2
+
+DEFAULTS DROP,-
+
+BEGIN PERL;
+
+use Shorewall::IPAddrs;
+use Shorewall::Config;
+use Shorewall::Chains;
+
+my $chainref         = get_action_chain;
+my ( $action, $audit ) = get_action_params( 2 );
+my ( $level, $tag )  = get_action_logging;
+my $target           = require_audit ( $action , $audit );
+
+fatal_error "Invalid parameter to action Invalid"   if supplied $audit && $audit ne 'audit';
+
+log_rule_limit $level, $chainref, 'Invalid' , $action, '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
+add_jump $chainref , $target, 0, "$globals{STATEMATCH} INVALID ";
+
+1;
+
+END PERL;

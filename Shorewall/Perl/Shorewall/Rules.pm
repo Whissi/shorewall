@@ -910,15 +910,19 @@ sub createlogactionchain( $$$$$ ) {
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
-  CHECKDUP:
-    {
-	$actionref->{actchain}++ while $chain_table{filter}{'%' . $chain . $actionref->{actchain}};
-	$chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
+    if ( $filter_table->{$chain} ) {
+      CHECKDUP:
+	{
+	    $actionref->{actchain}++ while $chain_table{filter}{'%' . $chain . $actionref->{actchain}};
+	    $chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
+	}
+
+	$usedactions{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
+
+	fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
+    } else {
+	$usedactions{$normalized} = $chainref = new_standard_chain $chain;
     }
-
-    $usedactions{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
-
-    fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
 
     $chainref->{action} = $normalized;
 

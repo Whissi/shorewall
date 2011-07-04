@@ -15,32 +15,72 @@
 #	c) Ensure that certain ICMP packets that are necessary for successful
 #	   internet operation are always ACCEPTed.
 #
+#  The action accepts five optional parameters:
+#
+#	1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
+#           actions.
+#       2 - Action to take with Auth requests. Default is REJECT or A_REJECT,
+#           depending on the setting of the first parameter.
+#	3 - Action to take with SMB requests. Default is DROP or A_DROP,
+#           depending on the setting of the first parameter.
+#       4 - Action to take with required ICMP packets. Default is ACCEPT or
+#           A_ACCEPT depending on the first parameter.
+#       5 - Action to take with late UDP replies (UDP source port 53). Default
+#           is DROP or A_DROP depending on the first parameter.
+#
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
 ###############################################################################
+FORMAT 2
+#
+# The following magic provides different defaults for $2 thru $5, when $1 is 
+# 'audit'.
+#
+BEGIN PERL
+use Shorewall::Config;
+
+my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
+
+if ( defined $p1 ) { 
+    if ( $p1 eq 'audit' ) {
+	set_action_param( 2, 'A_REJECT')   unless supplied $p2;
+	set_action_param( 3, 'A_DROP')     unless supplied $p3;
+	set_action_param( 4, 'A_ACCEPT' )  unless supplied $p4;
+	set_action_param( 5, 'A_DROP' )    unless supplied $p5;
+    } else {
+	fatal_error "Invalid value ($p1) for first Drop parameter" if supplied $p1;
+    }
+}
+
+1;
+
+END PERL
+
+DEFAULTS -,REJECT,DROP,ACCEPT,DROP
+
 #TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Reject 'auth'
 #
-Auth(REJECT)
+Auth($2)
 #
 # ACCEPT critical ICMP types
 #
-AllowICMPs	-	-	ipv6-icmp
+AllowICMPs($4)	-	-	ipv6-icmp
 #
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).
 #
-dropBcast
+dropBcast($1)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log.
 #
-dropInvalid
+dropInvalid($1)
 #
 # Drop Microsoft noise so that it doesn't clutter up the log.
 #
-SMB(DROP)
+SMB($3)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
@@ -49,4 +89,4 @@ dropNotSyn	-	-	tcp
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-DropDNSrep
+DropDNSrep($5)

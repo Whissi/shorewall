@@ -1,6 +1,6 @@
 %define name shorewall-init
 %define version 4.4.21
-%define release 0base
+%define release 0RC3
 
 Summary: Shorewall-init adds functionality to Shoreline Firewall (Shorewall).
 Name: %{name}
@@ -119,8 +119,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
-* Sun Jul 03 2011 Tom Eastep tom@shorewall.net
-- Updated to 4.4.21-0base
+* Mon Jul 04 2011 Tom Eastep tom@shorewall.net
+- Updated to 4.4.21-0RC3
 * Sun Jul 03 2011 Tom Eastep tom@shorewall.net
 - Updated to 4.4.21-0RC2
 * Thu Jun 23 2011 Tom Eastep tom@shorewall.net

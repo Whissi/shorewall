@@ -8,7 +8,7 @@
 #
 # Builtin Actions are:
 #
-#    allowBcasts        # Accept multicast and anycast packets
+#    allowBcasts        # Accept multicast and anycast packets 
 #    dropBcasts         # Silently Drop multicast and anycast packets
 #    dropNotSyn		# Silently Drop Non-syn TCP packets
 #    rejNotSyn		# Silently Reject Non-syn TCP packets
@@ -23,5 +23,8 @@ A_Drop	            # Audited Default Action for DROP policy
 A_Reject	    # Audited Default Action for REJECT policy
 A_AllowICMPs	    # Audited Accept needed ICMP6 types
 AllowICMPs	    # Accept needed ICMP6 types
+Broadcast           # Handles Broadcast/Multicast/Anycast
 Drop		    # Default Action for DROP policy
+Invalid		    # Handles packets in the INVALID conntrack state
+NotSyn		    # Handles TCP packets that do not have SYN=1 and ACK=0
 Reject		    # Default Action for REJECT policy

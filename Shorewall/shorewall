@@ -1278,12 +1278,17 @@ reload_command() # $* = original arguments less the command.
 	[ -f $capabilities ] || getcaps=Yes
     fi
 
-    if [ -n "$getcaps" ]; then
-	if [ -f $directory/shorewall.conf ]; then
-	    . $directory/shorewall.conf
-	    ensure_config_path
+    if [ -f $directory/shorewall.conf ]; then
+	if [ -f $directory/params ]; then
+	    . $directory/params
 	fi
 
+	. $directory/shorewall.conf
+	
+	ensure_config_path
+    fi
+
+    if [ -n "$getcaps" ]; then
 	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
 
 	progress_message "Getting Capabilities on system $system..."

@@ -1670,8 +1670,8 @@ determine_capabilities() {
 
 	if qt ipset -N $chain hash:ip family inet6; then
 	    IPSET_V5=Yes
-	    if qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
-		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
+	    if qt $IP6TABLES -A $chain -m set --match-set $chain src -j ACCEPT; then
+		qt $IP6TABLES -D $chain -m set --match-set $chain src -j ACCEPT
 		IPSET_MATCH=Yes
 	    elif qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
 		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT

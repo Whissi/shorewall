@@ -421,6 +421,15 @@ FTP(ACCEPT)   dmz        net</programlisting>
 
     <programlisting>Apr 28 23:55:09 gateway kernel: conntrack_ftp: partial PORT 715014972+1</programlisting>
 
+    <para>or this one:</para>
+
+    <programlisting>21:37:40 insert-master kernel: [832161.057782] <emphasis
+        role="bold">nf_ct_ftp: dropping 
+packet</emphasis> IN=eth4 OUT= MAC=00:0a:cd:1a:d1:95:00:22:6b:be:3c:41:08:00 
+SRC=66.199.187.46 DST=192.168.41.1 LEN=102 TOS=0x00 PREC=0x00 TTL=45 
+ID=30239 DF PROTO=TCP SPT=21 DPT=50892 SEQ=698644583 ACK=3438176321 
+WINDOW=46 RES=0x00 ACK PSH URGP=0 OPT (0101080A932DFE0231935CF7) MARK=0x1</programlisting>
+
     <para>I see this problem occasionally with the FTP server in my DMZ. My
     solution is to add the following rule:</para>
 

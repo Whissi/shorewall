@@ -205,7 +205,15 @@ sub process_tc_rule( ) {
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
-    fatal_error "Invalid MARK ($originalmark)" if defined $remainder || ! defined $mark || $mark eq '';
+    fatal_error "Invalid MARK ($originalmark)" unless defined $mark || $mark eq '';
+
+    if ( $remainder ) { 
+	if ( $originalmark =~ /^\w+\(?.*\)$/ ) {
+	    $mark = $originalmark; # Most likely, an IPv6 address is included in the parameter list
+	} else {
+	    fatal_error "Invalid MARK ($originalmark)";
+	}
+    }
 
     my $chain  = $globals{MARKING_CHAIN};
     my $target = 'MARK --set-mark';
@@ -376,6 +384,10 @@ sub process_tc_rule( ) {
 			$target .= " --on-port $port";
 
 			if ( supplied $ip ) {
+			    if ( $family == F_IPV6 ) {
+				$ip = $1 if $ip =~ /^\[(.+)\]$/ || $ip =~ /^<(.+)>$/;
+			    }
+
 			    validate_address $ip, 1;
 			    $target .= " --on-ip $ip";
 			}

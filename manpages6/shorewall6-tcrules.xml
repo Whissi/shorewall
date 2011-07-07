@@ -43,22 +43,11 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">MARK/CLASSIFY</emphasis> -
-        {<emphasis>value</emphasis>|<emphasis>major</emphasis><emphasis
-        role="bold">:</emphasis><emphasis>minor</emphasis>|<emphasis
-        role="bold">RESTORE</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">SAVE</emphasis>[<emphasis
-        role="bold">/</emphasis><emphasis>mask</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>|<emphasis
-        role="bold">COMMENT</emphasis>}[<emphasis
-        role="bold">:</emphasis>{<emphasis role="bold">C</emphasis>|<emphasis
-        role="bold">F</emphasis>|<emphasis role="bold">P</emphasis>|<emphasis
-        role="bold">T</emphasis>|<emphasis role="bold">CF</emphasis>|<emphasis
-        role="bold">CP</emphasis>|<emphasis
-        role="bold">CT</emphasis>|I|CI}]</term>
+        <replaceable>mark</replaceable></term>
 
         <listitem>
-          <para>May assume one of the following values.</para>
+          <para><replaceable>mark</replaceable> may assume one of the
+          following values.</para>
 
           <orderedlist numeration="arabic">
             <listitem>
@@ -289,6 +278,39 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
               <para>To stop the comment from being attached to further rules,
               simply include COMMENT on a line by itself.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis
+              role="bold">TPROXY</emphasis>(<replaceable>mark</replaceable>[/<replaceable>mask</replaceable>][,[<replaceable>port</replaceable>][,[<replaceable>address</replaceable>]]])</para>
+
+              <para>Transparently redirects a packet without altering the IP
+              header. Requires a local provider to be defined in <ulink
+              url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
+
+              <para>There are three parameters to TPROXY - only the first
+              (mark) is required:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><replaceable>mark</replaceable> - the MARK value
+                  corresponding to the local provider in <ulink
+                  url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
+                </listitem>
+
+                <listitem>
+                  <para><replaceable>port</replaceable> - the port on which
+                  the proxy server is listening. If omitted, the original
+                  destination port.</para>
+                </listitem>
+
+                <listitem>
+                  <para><replaceable>address</replaceable> - a local (to the
+                  firewall) IP address on which the proxy server is listening.
+                  If omitted, the IP address of the interface on which the
+                  request arrives.</para>
+                </listitem>
+              </itemizedlist>
             </listitem>
           </orderedlist>
         </listitem>

@@ -205,7 +205,7 @@ sub process_tc_rule( ) {
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
-    fatal_error "Invalid MARK ($originalmark)" unless defined $mark || $mark eq '';
+    fatal_error "Invalid MARK ($originalmark)" unless supplied $mark;
 
     if ( $remainder ) { 
 	if ( $originalmark =~ /^\w+\(?.*\)$/ ) {

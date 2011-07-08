@@ -3924,7 +3924,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$iiface = $source;
 	    }
-	} elsif  ( $source =~ /^(.+?):<(.+)>\s*$/ || $source =~ /^(.+?):\[(.+)\]\s*$/ || $source =~ /^(.+?):(\+.+)$/ ) {
+	} elsif  ( $source =~ /^(.+?):<(.+)>\s*$/ || $source =~ /^(.+?):\[(.+)\]\s*$/ || $source =~ /^(.+?):(!?\+.+)$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /:/ ) {
@@ -4023,7 +4023,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$diface = $dest;
 	    }
-	} elsif ( $dest =~ /^(.+?):<(.+)>\s*$/ || $dest =~ /^(.+?):\[(.+)\]\s*$/ || $dest =~ /^(.+?):(\+.+)$/ ) {
+	} elsif ( $dest =~ /^(.+?):<(.+)>\s*$/ || $dest =~ /^(.+?):\[(.+)\]\s*$/ || $dest =~ /^(.+?):(!?\+.+)$/ ) {
 	    $diface = $1;
 	    $dnets  = $2;
 	} elsif ( $dest =~ /:/ ) {

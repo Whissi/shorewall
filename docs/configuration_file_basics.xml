@@ -1598,6 +1598,30 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     passes, one of the bursts will be regained; if no packets hit the rule for
     30 seconds, the burst will be fully recharged; back where we
     started.</para>
+
+    <note>
+      <para>The LOGRATE and LOGBURST options are deprecated in favor of
+      LOGLIMIT.</para>
+    </note>
+
+    <para>Shorewall also supports per-IP rate limiting. </para>
+
+    <para>Another example from <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5):</para>
+
+    <simplelist>
+      <member>LOGLIMIT="s:5/min:5"</member>
+    </simplelist>
+
+    <para>Here, the leading "s:" indicates that logging is to be limited by
+    source IP address ("d:" would indicate limiting by destination IP
+    address).</para>
+
+    <para>"s:" is followed by the rate (5 messages per minute) and the burst
+    (5).</para>
+
+    <para>The rate and limit arguments have the same meaning as in the example
+    above.</para>
   </section>
 
   <section id="Logical">

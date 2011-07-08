@@ -64,6 +64,20 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 	ERROR: Invalid MARK (TPROXY(10,3128,::1)) :
     	       /etc/shorewall6/tcrules (line 4)
 
+8)  With LOAD_HELPERS_ONLY=Yes, the compiler could use the deprectated
+    --set parameter to the ipset match when --match-set was
+    appropriate.
+
+9)  If 'shorewall clear' was executed when there was no
+    /var/lib/shorewall/firewall file, the following incorrect error
+    message was produced:
+
+    	    ERROR: Shorewall6 has never been started
+
+    The message now reads:
+
+    	    ERROR: Shorewall has never been started
+
 ----------------------------------------------------------------------------
            I I.  K N O W N   P R O B L E M S   R E M A I N I N G
 ----------------------------------------------------------------------------

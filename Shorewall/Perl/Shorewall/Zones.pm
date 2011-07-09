@@ -1725,24 +1725,26 @@ sub process_host( ) {
 	if ( $hosts =~ /^([\w.@%-]+\+?):(.*)$/ ) {
 	    $interface = $1;
 	    $hosts = $2;
-
-	    if ( $hosts =~ /^\+/ ) {
-		$zoneref->{options}{complex} = 1;
-		fatal_error "ipset name qualification is disallowed in this file" if $hosts =~ /[\[\]]/;
-		fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^\+[a-zA-Z][-\w]*$/;
-	    }
-
 	    fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
-    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>\s*$/ || $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]\s*$/ || $hosts =~ /^([\w.@%-]+\+?):(dynamic)\s*$/   ) {
+    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/   ||
+	      $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]$/ ||
+	      $hosts =~ /^([\w.@%-]+\+?):(\+.*)$/   ||
+	      $hosts =~ /^([\w.@%-]+\+?):(dynamic)$/ ) {
 	$interface = $1;
 	$hosts = $2;
-	$zoneref->{options}{complex} = 1 if $hosts =~ /^\+/;
+
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts" 
+    }
+
+    if ( $hosts =~ /^\+/ ) {
+	$zoneref->{options}{complex} = 1;
+	fatal_error "ipset name qualification is disallowed in this file" if $hosts =~ /[\[\]]/;
+	fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^\+[a-zA-Z][-\w]*$/;
     }
 
     if ( $type == BPORT ) {

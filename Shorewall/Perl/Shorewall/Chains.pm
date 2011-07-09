@@ -4032,7 +4032,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$dnets = $dest;
 	    }
-	} elsif ( $dest =~ /^(?:\+|&|\..*\.)/ ) {
+	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ ) {
 	    $dnets = $dest;
 	} else {
 	    $diface = $dest;

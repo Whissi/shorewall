@@ -3910,7 +3910,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Isolate Source Interface, if any
     #
-    if ( $source ) {
+    if ( supplied $source ) {
 	if ( $source eq '-' ) {
 	    $source = '';
 	} elsif ( $family == F_IPV4 ) {
@@ -3945,7 +3945,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Verify Interface, if any
     #
-    if ( $iiface ) {
+    if ( supplied $iiface ) {
 	fatal_error "Unknown Interface ($iiface)" unless known_interface $iiface;
 
 	if ( $restriction & POSTROUTE_RESTRICT ) {
@@ -3981,7 +3981,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Isolate Destination Interface, if any
     #
-    if ( $dest ) {
+    if ( supplied $dest ) {
 	if ( $dest eq '-' ) {
 	    $dest = '';
 	} elsif ( ( $restriction & PREROUTE_RESTRICT ) && $dest =~ /^detect:(.*)$/ ) {
@@ -4044,7 +4044,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     #
     # Verify Destination Interface, if any
     #
-    if ( $diface ) {
+    if ( supplied $diface ) {
 	fatal_error "Unknown Interface ($diface)" unless known_interface $diface;
 
 	if ( $restriction & PREROUTE_RESTRICT ) {

@@ -130,6 +130,15 @@
       <para>The files from the web site that are maintained in HTML format.
       are kept in this directory.</para>
     </section>
+
+    <section>
+      <title>release</title>
+
+      <para>Added in Shorewall 4.4.22, this directory contains the files that
+      contain release-dependent information (change.txt, releasenotes.txt,
+      .spec files, etc). This is actually a symbolic link to ../release which
+      has it's own Git repository.</para>
+    </section>
   </section>
 
   <section>
@@ -156,7 +165,7 @@
     </section>
 
     <section>
-      <title>build44</title>
+      <title>build</title>
 
       <para>This is the script that builds Shorewall 4.4 packages from
       Git.</para>
@@ -270,8 +279,8 @@
       <para>The general form of the build command is:</para>
 
       <blockquote>
-        <para><command>build44</command> [ -<replaceable>options</replaceable>
-        ] <replaceable>release</replaceable> [ <replaceable>prior
+        <para><command>build</command> [ -<replaceable>options</replaceable> ]
+        <replaceable>release</replaceable> [ <replaceable>prior
         release</replaceable> ]</para>
       </blockquote>
 
@@ -383,28 +392,27 @@
       4.3.6:</para>
 
       <blockquote>
-        <para><command>build44 4.3.7 4.3.6</command></para>
+        <para><command>build 4.3.7 4.3.6</command></para>
       </blockquote>
 
       <para>Example 2 - Build Shorewall 4.2.7.1 Shorewall and generate patches
       against 4.2.7:</para>
 
       <blockquote>
-        <para><command>build44 -trc 4.3.7.1 4.3.7</command></para>
+        <para><command>build -trc 4.3.7.1 4.3.7</command></para>
       </blockquote>
     </section>
 
     <section>
-      <title>upload44</title>
+      <title>upload</title>
 
       <para>This script is used to upload a release to www1.shorewall.net. The
-      command is run in the build directory for the major release of the
+      command is run in the build directory for the minor release of the
       product.</para>
 
       <blockquote>
-        <para><command>upload44</command> [
-        -<replaceable>products</replaceable> ]
-        <replaceable>release</replaceable></para>
+        <para><command>upload</command> [ -<replaceable>products</replaceable>
+        ] <replaceable>release</replaceable></para>
       </blockquote>
 
       <para>where</para>
@@ -474,13 +482,13 @@
       <para>Example 1 - Upload release 4.3.7:</para>
 
       <blockquote>
-        <para><command>upload44 4.3.7</command></para>
+        <para><command>upload 4.3.7</command></para>
       </blockquote>
 
       <para>Example 2 - Upload shorewall-4.3.7.3:</para>
 
       <blockquote>
-        <para><command>upload44 -c 4.3.7.3</command></para>
+        <para><command>upload -c 4.3.7.3</command></para>
       </blockquote>
     </section>
 

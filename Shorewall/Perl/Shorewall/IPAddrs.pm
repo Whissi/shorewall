@@ -80,7 +80,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_icmp6
 		 );
 our @EXPORT_OK = qw( );
-our $VERSION = '4.4_20';
+our $VERSION = 'MODULEVERSION';
 
 #
 # Some IPv4/6 useful stuff

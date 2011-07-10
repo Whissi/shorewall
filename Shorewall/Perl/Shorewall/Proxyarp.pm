@@ -35,7 +35,7 @@ our @EXPORT = qw(
 		  );
 
 our @EXPORT_OK = qw( initialize );
-our $VERSION = '4.4_19';
+our $VERSION = 'MODULEVERSION';
 
 our @proxyarp;
 

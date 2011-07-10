@@ -1731,7 +1731,7 @@ sub process_host( ) {
 	}
     } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/   ||
 	      $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]$/ ||
-	      $hosts =~ /^([\w.@%-]+\+?):(\+.*)$/   ||
+	      $hosts =~ /^([\w.@%-]+\+?):(!?\+.*)$/   ||
 	      $hosts =~ /^([\w.@%-]+\+?):(dynamic)$/ ) {
 	$interface = $1;
 	$hosts = $2;
@@ -1741,10 +1741,10 @@ sub process_host( ) {
 	fatal_error "Invalid HOST(S) column contents: $hosts" 
     }
 
-    if ( $hosts =~ /^\+/ ) {
+    if ( $hosts =~ /^!?\+/ ) {
 	$zoneref->{options}{complex} = 1;
 	fatal_error "ipset name qualification is disallowed in this file" if $hosts =~ /[\[\]]/;
-	fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^\+[a-zA-Z][-\w]*$/;
+	fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^!?\+[a-zA-Z][-\w]*$/;
     }
 
     if ( $type == BPORT ) {

@@ -2816,5 +2816,39 @@ EXT_IF:192.168.1.1	     	0.0.0.0/0		192.168.1.254
       If you simply want to allow all traffic between ports, then see <ulink
       url="SimpleBridge.html">http://www.shorewall.net/SimpleBridge.html</ulink>.</para>
     </section>
+
+    <section id="faq95">
+      <title>(FAQ 95) What is this $FW that I see in the configuration files
+      and documentation?</title>
+
+      <para><emphasis role="bold">Answer: FW</emphasis> is a <ulink
+      url="configuration_file_basics.htm#Variables">shell variable</ulink>
+      that expands to the name that you gave to the firewall zone in <ulink
+      url="manpages/shorewall-zones.html">shorewall-zones</ulink>(5). The
+      default name for the firewall zone is <emphasis
+      role="bold">fw</emphasis>:</para>
+
+      <programlisting>#ZONE            TYPE             OPTIONS
+<emphasis role="bold">fw</emphasis>               firewall</programlisting>
+
+      <para>So, using the default or sample configurations, writing <emphasis
+      role="bold">$FW</emphasis> is the same as writing <emphasis
+      role="bold">fw</emphasis>. If you give the firewall zone a different
+      name, <emphasis role="bold">gate</emphasis> for example, then writing
+      <emphasis role="bold">$FW</emphasis> would be the same as writing
+      <emphasis role="bold">gate</emphasis>.</para>
+
+      <programlisting>#ZONE            TYPE             OPTIONS
+<emphasis role="bold">gate</emphasis>             firewall</programlisting>
+
+      <section id="faq95a">
+        <title>Why was that done?</title>
+
+        <para><emphasis role="bold">Answer:</emphasis> The firewall zone has
+        special semantics, so having a way to refer to it in a
+        configuration-independent way makes writing the documentation,
+        examples, macros, etc. easier.</para>
+      </section>
+    </section>
   </section>
 </article>

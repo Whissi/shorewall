@@ -402,6 +402,8 @@ use constant { UNIQUE      => 1,
 	       CONTROL     => 16 };
 
 my %special = ( rule       => CONTROL,
+
+		dhcp       => UNIQUE,
 		
 	        mode       => CONTROL,
 		cmdlevel   => CONTROL,
@@ -793,6 +795,9 @@ sub add_commands ( $$;@ ) {
     $chainref->{referenced} = 1;
 }
 
+#
+# Transform the passed rule and add it to the end of the passed chain's rule list
+#
 sub push_rule( $$ ) {
     my $chainref = $_[0];
     my $ruleref  = transform_rule( $_[1] );
@@ -803,6 +808,8 @@ sub push_rule( $$ ) {
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
     trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1]" ) if $debug;
+
+    $ruleref;
 }
 
 sub add_transformed_rule( $$ ) {
@@ -891,6 +898,8 @@ sub handle_icmptype_list( $$$$ ) {
 # Add a rule to a chain. Arguments are:
 #
 #    Chain reference , Rule [, Expand-long-port-lists ]
+#
+#    Returns a reference to the generated internal-form rule
 #
 sub add_rule($$;$) {
     my ($chainref, $rule, $expandports) = @_;
@@ -993,6 +1002,8 @@ sub insert_rule1($$$)
     $iprangematch = 0;
 
     $chainref->{referenced} = 1;
+
+    $ruleref;
 }
 
 sub insert_rule($$$) {
@@ -1131,14 +1142,12 @@ sub move_rules( $$ ) {
 	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
 	# This hack avoids that.
 	#
-	$_->{rule} = format_rule( $chain2, $_ ) for @$rules;
-
 	if ( $blacklist ) {
 	    my $rule = shift @{$rules};
-	    shift @{$rules} while @{$rules} > 1 && $rules->[0]{rule} eq $rules->[1]{rule};
+	    shift @{$rules} while @{$rules} > 1 && $rules->[0]{dhcp} && $rules->[1]{dhcp};
 	    unshift @{$rules}, $rule;
 	} else {
-	    shift @{$rules} while @{$rules} > 1 && $rules->[0]{rule} eq $rules->[1]{rule};
+	    shift @{$rules} while @{$rules} > 1 && $rules->[0]{dhcp} && $rules->[1]{dhcp};
 	}
 
 	#
@@ -1152,8 +1161,7 @@ sub move_rules( $$ ) {
 		trace( $chain2, 'I', ++$rule, $filtered1[$filtered++] ) while $filtered < $filtered1;
 	    }
 
-	    splice @{$rules}, 0, 0, @filtered1;
-	    
+	    splice @{$rules}, 0, 0, @filtered1;   
 	}
     
 	#

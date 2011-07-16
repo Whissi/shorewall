@@ -708,7 +708,8 @@ sub add_common_rules() {
 	    set_interface_option $interface, 'use_forward_chain', 1;
 
 	    for $chain ( input_chain $interface, output_chain $interface ) {
-		add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
+		my $ruleref = add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
+		set_rule_option( $ruleref, 'dhcp', 1 );
 	    }
 
 	    add_rule( $filter_table->{forward_chain $interface} ,

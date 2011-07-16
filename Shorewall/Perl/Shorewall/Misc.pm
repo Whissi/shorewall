@@ -706,11 +706,11 @@ sub add_common_rules() {
 	for $interface ( @$list ) {
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
-
-	    for $chain ( input_chain $interface, output_chain $interface ) {
-		my $ruleref = add_rule $filter_table->{$chain} , "-p udp --dport $ports -j ACCEPT";
-		set_rule_option( $ruleref, 'dhcp', 1 );
-	    }
+	    
+	    set_rule_option( add_rule( $filter_table->{$_} , 
+				       "-p udp --dport $ports -j ACCEPT" ) ,
+			     'dhcp',
+			     1 ) for input_chain( $interface ), output_chain( $interface );
 
 	    add_rule( $filter_table->{forward_chain $interface} ,
 		      "-p udp " .
@@ -814,9 +814,11 @@ sub add_common_rules() {
 
 		if ( interface_is_optional $interface ) {
 		    add_commands( $chainref,
-				  qq(if [ -n "SW_\$${base}_IS_USABLE" -a -n "$variable" ]; then) ,
-				  '    echo "-A ' . match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT" >&3) ,
-				  qq(fi) );
+				  qq(if [ -n "SW_\$${base}_IS_USABLE" -a -n "$variable" ]; then) );
+		    incr_cmd_level( $chainref );
+		    add_rule( $chainref, match_source_dev( $interface ) . " -s $variable -p udp -j ACCEPT" );
+		    decr_cmd_level( $chainref );
+		    add_commands( $chainref, 'fi' );
 		} else {
 		    add_rule( $chainref, match_source_dev( $interface ) . qq(-s $variable -p udp -j ACCEPT) );
 		}
@@ -1005,24 +1007,26 @@ sub setup_mac_lists( $ ) {
 
 			add_commands( $chainref,
 				      "for address in $variable; do" );
+			incr_cmd_level( $chainref );
 
 			if ( $bridgeref->{broadcasts} ) {
 			    for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
-				add_commands( $chainref ,
-					      "    echo \"-A -s \$address -d $address -j RETURN\" >&3" );
+				add_rule( $chainref, qq( -s \$address -d $address -j RETURN") );
 			    }
 			} else {
 			    my $variable1 = get_interface_bcasts $bridge;
 
 			    add_commands( $chainref,
-					  "    for address1 in $variable1; do" ,
-					  "        echo \"-A -s \$address -d \$address1 -j RETURN\" >&3",
-					  "    done" );
+					  "    for address1 in $variable1; do" );
+			    incr_cmd_level( $chainref );
+			    add_rule( $chainref, 's $address -d $address1 -j RETURN' );
+			    decr_cmd_level( $chainref );
+			    add_commands( $chainref, 'done' );
 			}
 
-			add_commands( $chainref
-				      , "    echo \"-A -s \$address -d 224.0.0.0/4 -j RETURN\" >&3" ,
-				      , 'done' );
+			add_rule( $chainref, '-s $address -d 224.0.0.0/4 -j RETURN' );
+			decr_cmd_level( $chainref );
+			add_commands( $chainref, 'done' );
 		    }
 		}
 	    }

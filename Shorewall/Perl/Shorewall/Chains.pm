@@ -395,6 +395,34 @@ my  %builtin_target = ( ACCEPT      => 1,
 
 my %ipset_exists;
 
+use constant { UNIQUE      => 1,
+	       TARGET      => 2,
+	       EXCLUSIVE   => 4,
+	       MATCH       => 8,
+	       CONTROL     => 16 };
+
+my %special = ( rule       => CONTROL,
+		
+	        mode       => CONTROL,
+		cmdlevel   => CONTROL,
+		simple     => CONTROL,
+
+	        i          => UNIQUE,
+		s          => UNIQUE,
+		o          => UNIQUE,
+		d          => UNIQUE,
+		p          => UNIQUE,
+		
+		comment    => CONTROL,
+
+		policy     => MATCH,
+		state      => EXCLUSIVE,
+		ctstate    => EXCLUSIVE,
+		
+		jump       => TARGET,
+		target     => TARGET,
+		targetopts => TARGET );
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -528,10 +556,22 @@ sub set_rule_option( $$$ ) {
 
     assert( defined $value );
 
+    $ruleref->{simple} = 0;
+    
+    my $special = $special{$option} || MATCH;
+
     if ( exists $ruleref->{$option} ) {
 	assert( defined $ruleref->{$option} );
-	$ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
-	push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
+	if ( $special != EXCLUSIVE ) {
+	    if ( $special == UNIQUE ) {
+		$ruleref->{$option} = $value;
+	    } elsif ( $special == MATCH ) { 
+		$ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
+		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
+	    } else {
+		assert(0);
+	    }
+	}
     } else {
 	$ruleref->{$option} = $value;
     }
@@ -631,28 +671,6 @@ sub set_rule_target( $$$ ) {
 
     1
 }
-
-my %special = ( rule       => 1,
-		
-	        mode       => 1,
-		cmdlevel   => 1,
-		simple     => 1,
-
-	        i          => 1,
-		s          => 1,
-		o          => 1,
-		d          => 1,
-		p          => 1,
-		
-		comment    => 1,
-
-		policy     => 1,
-		state      => 1,
-		ctstate    => 1,
-		
-		jump       => 1,
-		target     => 1,
-		targetopts => 1 );
 
 #
 # Convert a transformed rule into iptables input

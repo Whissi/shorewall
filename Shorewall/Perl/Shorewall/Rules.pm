@@ -704,7 +704,7 @@ sub optimize_policy_chains() {
     #
     my $outputrules = $filter_table->{OUTPUT}{rules};
 
-    if ( @{$outputrules} && $outputrules->[-1] =~ /-j ACCEPT/ ) {
+    if ( @{$outputrules} && $outputrules->[-1]->{target} eq 'ACCEPT' ) {
 	optimize_chain( $filter_table->{OUTPUT} );
     }
 

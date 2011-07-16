@@ -242,6 +242,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 OWNER_MATCH     => 'Owner Match',
 		 IPSET_MATCH     => 'Ipset Match',
 		 OLD_IPSET_MATCH => 'Old Ipset Match',
+		 IPSET_V5        => 'Version 5 ipsets',
 		 CONNMARK        => 'CONNMARK Target',
 		 XCONNMARK       => 'Extended CONNMARK Target',
 		 CONNMARK_MATCH  => 'Connmark Match',
@@ -635,10 +636,10 @@ sub initialize( $ ) {
 	       CONNLIMIT_MATCH => undef,
 	       TIME_MATCH => undef,
 	       GOTO_TARGET => undef,
+	       LOG_TARGET => 1,         # Assume that we have it.
 	       LOGMARK_TARGET => undef,
 	       IPMARK_TARGET => undef,
 	       TPROXY_TARGET => undef,
-	       LOG_TARGET => 1,         # Assume that we have it.
 	       PERSISTENT_SNAT => undef,
 	       OLD_HL_MATCH => undef,
 	       FLOW_FILTER => undef,
@@ -806,7 +807,7 @@ sub fatal_error1 {
 #
 # C/C++-like assertion checker
 #
-sub assert( $ ) {
+sub assert( $;$ ) {
     unless ( $_[0] ) {
 	my @caller0 = caller 0; # Where assert() was called
 	my @caller1 = caller 1; # Who called assert()

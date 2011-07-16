@@ -38,6 +38,11 @@ our @EXPORT = qw(
 		    add_rule
 		    add_jump
 		    insert_rule
+		    rule_target
+		    clear_rule_target
+		    set_rule_target
+		    set_rule_option
+		    add_transformed_rule
 		    add_commands
 		    incr_cmd_level
 		    decr_cmd_level
@@ -516,17 +521,237 @@ sub decr_cmd_level( $ ) {
 }
 
 #
+# Transform the passed iptables rule into an internal-form hash reference
+#
+sub set_rule_option( $$$ ) {
+    my ( $ruleref, $option, $value ) = @_;
+
+    assert( defined $value );
+
+    if ( exists $ruleref->{$option} ) {
+	assert( defined $ruleref->{$option} );
+	$ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
+	push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
+    } else {
+	$ruleref->{$option} = $value;
+    }
+}
+
+sub transform_rule( $ ) {
+    my $input    = shift;
+    my $ruleref  = { mode => CAT_MODE, target => '' };
+    my $simple   = 1;
+    #
+    # This is the first step in converting the compiler to use an intermediate form for rules.
+    # We parse the iptables input and convert it into a hash. Eventually, the upper levels
+    # will generate the hash from the outset
+    #
+    while ( $input ) {
+	assert( $input =~ s/^(!|-[psdjgiom])\s*//, $input );
+	my $option = $1;
+	my $invert = '';
+
+	if ( $option eq '!' ) {
+	    $invert = '! ';
+	    assert( $input =~ s/^-([psdjgiom])\s*//, $input );
+	    $option = $1;
+	} else {
+	    $option =~ s/^-//;
+	}
+
+	if ( $option eq 'j' or $option eq 'g' ) {
+	    $ruleref->{jump} = $option;
+	    assert( $input =~ s/([^\s]+)\s*//, $input );
+	    $ruleref->{target} = $1;
+	    $option = 'targetopts';
+	} else {
+	    $simple = 0;
+	    if ( $option eq 'm' ) {
+		assert( $input =~ s/(\w+)\s*//, $input );
+		$option = $1;
+	    }
+	}
+
+	my $params = $invert;
+
+      PARAM:
+	{
+	    while ( $input ne '' && $input !~ /^(?:!|-[psdjgiom])\s/ ) {
+		assert( $input =~ s/^([^\s]+)\s*// , $input );
+		$params = $params eq '' ? $1 : join( ' ' , $params, $1);
+	    }
+
+	    if ( $input =~ /^(?:!\s+--|!\s+[^-])/ ) {
+		$params = $params eq '' ? '!' : join( ' ' , $params, '!' );
+		$input =~ s/^!\s+//;
+		redo PARAM;
+	    }
+	}
+
+	set_rule_option( $ruleref, $option, $params ) unless $params eq '';
+  }
+
+    $ruleref->{target} ||= '';
+    $ruleref->{simple} = $simple;
+
+    $ruleref;
+}
+
+#
+#  A couple of small functions for other modules to use to manipulate rules
+#
+sub rule_target( $ ) {
+    my $ruleref = shift;
+
+    assert( reftype $ruleref );
+
+    $ruleref->{mode} == CAT_MODE ? $ruleref->{target} || '' : '';
+}
+
+sub clear_rule_target( $ ) {
+    my $ruleref = shift;
+
+    assert( reftype $ruleref );
+
+    delete $ruleref->{jump};
+    delete $ruleref->{target};
+    delete $ruleref->{targetopts};
+
+    1;
+}
+
+sub set_rule_target( $$$ ) {
+    my ( $ruleref, $target, $opts) = @_;
+
+    assert( reftype $ruleref );
+
+    $ruleref->{jump}     = 'j';
+    $ruleref->{target}   = $target;
+    $ruleref->{targetopts} = $opts if defined $opts;
+
+    1
+}
+
+my %special = ( rule       => 1,
+		
+	        mode       => 1,
+		cmdlevel   => 1,
+		simple     => 1,
+
+	        i          => 1,
+		s          => 1,
+		o          => 1,
+		d          => 1,
+		p          => 1,
+		
+		comment    => 1,
+
+		policy     => 1,
+		state      => 1,
+		ctstate    => 1,
+		
+		jump       => 1,
+		target     => 1,
+		targetopts => 1 );
+
+#
+# Convert a transformed rule into iptables input
+#
+# First, a helper function
+#
+sub format_option( $$ ) {
+    my ( $option, $value ) = @_;
+
+    my $list = reftype $value ? $value : [ $value ];
+
+    my $rule = '';
+
+    $rule .= join( ' ' , ' -m', $option, $_ ) for @$list;
+
+    $rule;
+}
+	
+sub format_rule( $$;$ ) {
+    my ( $chainref, $ruleref, $suppresshdr ) = @_;
+
+    my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
+    
+    for ( qw/ p i s o d / ) {
+	if ( exists $ruleref->{$_} ) {
+	    my $value = $ruleref->{$_};
+
+	    $rule .= ' !' if $value =~ s/^! //;
+	    $rule .= join( '' , ' -', $_, ' ', $value );
+	}
+    }
+
+    $rule .= format_option( 'state',   $ruleref->{state} )   if defined $ruleref->{state};  
+    $rule .= format_option( 'ctstate', $ruleref->{ctstate} ) if defined $ruleref->{ctstate};  
+    $rule .= format_option( 'policy',  $ruleref->{policy} )  if defined $ruleref->{policy};  
+
+    $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $special{$_}, keys %{$ruleref} );
+
+    if ( $ruleref->{target} ) {
+	$rule .= join( ' ', " -$ruleref->{jump}", $ruleref->{target} );
+	$rule .= join( '', ' ', $ruleref->{targetopts} ) if $ruleref->{targetopts};
+    }
+
+    $rule .= join( '', ' -m comment --comment "', $ruleref->{comment}, '"' ) if $ruleref->{comment};
+
+    $rule;
+}
+
+#
+# Merge two rules.
+#
+sub merge_rules( $$$ ) {
+    my ( $tableref, $toref, $fromref ) = @_;
+
+    my $target = $fromref->{target};
+
+    for my $option ( qw/p i o s d/ ) {
+	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
+    }
+		    
+    for my $option ( grep ! $special{$_}, keys %$fromref ) {
+	set_rule_option( $toref, $option, $fromref->{$option} );
+    }
+
+    unless ( $toref->{state} || $toref->{ctstate} ) {
+	set_rule_option ( $toref, 'state',   $fromref->{state} )   if $fromref->{state};
+	set_rule_option ( $toref, 'ctstate', $fromref->{ctstate} ) if $fromref->{ctstate};
+    }
+
+    set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
+
+    $toref->{target}     = $target;
+    $toref->{targetopts} = $fromref->{targetopts} if $fromref->{targetopts};
+    $toref->{jump}       = 'j' unless $tableref->{$target};
+
+    unless ( $toref->{comment} ) {
+	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
+    }
+
+    $toref->{rule} = format_rule( $fromref, $_, 1 ) if $toref->{rule};
+}
+
+#
 # Trace a change to the chain table
 #
+ 
 sub trace( $$$$ ) {
     my ($chainref, $action, $rulenum, $message) = @_;
 
-    my $heading = $rulenum ? sprintf "NF-(%s)-> %s:%s:%d", $action, $chainref->{table}, $chainref->{name}, $rulenum : sprintf "NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
+    my $heading = $rulenum ? 
+	sprintf "                NF-(%s)-> %s:%s:%d", $action, $chainref->{table}, $chainref->{name}, $rulenum : 
+	sprintf "                NF-(%s)-> %s:%s", $action, $chainref->{table}, $chainref->{name};
 
     my $length = length $heading;
 
-    if ( $length < 32 ) {
-	print $heading . ' ' x ( 32 - $length) . "$message\n";
+    $message = format_rule( $chainref, $message ) if reftype $message;
+
+    if ( $length < 48 ) {
+	print $heading . ' ' x ( 48 - $length) . "$message\n";
     } else {
 	print $heading . ' ' x 8 * ( ( $length + 8 ) / 8 ) . "$message\n";
     }
@@ -539,32 +764,37 @@ sub trace( $$$$ ) {
 #
 sub add_commands ( $$;@ ) {
     my $chainref    = shift @_;
-    my $indentation = '    ' x $chainref->{cmdlevel};
 
     if ( $debug ) {
 	my $rulenum = @{$chainref->{rules}};
-	trace( $chainref, 'T', ++$rulenum, "${indentation}$_\n" ) for @_;
+	trace( $chainref, 'T', ++$rulenum, "$_\n" ) for @_;
     }
 
-    push @{$chainref->{rules}}, join ('', $indentation , $_ ) for @_;
+    push @{$chainref->{rules}}, { mode => CMD_MODE, cmd => $_ , cmdlevel => $chainref->{cmdlevel} } for @_;
 
     $chainref->{referenced} = 1;
 }
 
 sub push_rule( $$ ) {
     my $chainref = $_[0];
-    my $rule     = join( ' ',  '-A' , $_[1]);
+    my $ruleref  = transform_rule( $_[1] );
 
-    $rule .= qq( -m comment --comment "$comment") if $comment;
+    $ruleref->{comment}  = "$comment" if $comment;
+    $ruleref->{mode}     = CMD_MODE   if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
 
-    if ( $chainref->{cmdlevel} ) {
-	$rule =~ s/"/\\"/g; #Must preserve quotes in the rule
-	add_commands $chainref , qq(echo "$rule" >&3);
-    } else {
-	push @{$chainref->{rules}}, $rule;
-	$chainref->{referenced} = 1;
-	trace( $chainref, 'A', @{$chainref->{rules}}, $rule ) if $debug;
-    }
+    push @{$chainref->{rules}}, $ruleref;
+    $chainref->{referenced} = 1;
+    trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1]" ) if $debug;
+}
+
+sub add_transformed_rule( $$ ) {
+    my ( $chainref, $ruleref ) = @_;
+
+    assert( reftype $ruleref );
+    push @{$chainref->{rules}}, $ruleref;
+    $chainref->{referenced} = 1;
+
+    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
 }
 
 #
@@ -727,19 +957,20 @@ sub insert_rule1($$$)
 {
     my ($chainref, $number, $rule) = @_;
 
-    assert( ! $chainref->{cmdlevel});
+    my $ruleref = transform_rule( $rule );
 
-    $rule .= "-m comment --comment \"$comment\"" if $comment;
-    $rule  = join( ' ', '-A', $rule );
+    $ruleref->{comment}  = "$comment" if $comment;
+    assert( ! ( $ruleref->{cmdlevel} = $chainref->{cmdlevel}) );
+    $ruleref->{mode} = CAT_MODE;
 
     if ( $number < 0 ) {
 	$chainref->{blacklist}++;
 	$number = 0;
     }
 
-    splice( @{$chainref->{rules}}, $number, 0, $rule );
+    splice( @{$chainref->{rules}}, $number, 0, $ruleref );
 
-    trace( $chainref, 'I', ++$number, $rule ) if $debug;
+    trace( $chainref, 'I', ++$number, $ruleref ) if $debug;
 
     $iprangematch = 0;
 
@@ -778,7 +1009,7 @@ sub delete_chain_and_references( $ ) {
     my $tableref = $chain_table{$chainref->{table}};
     my $name1    = $chainref->{name}; 
     for ( @{$chainref->{rules}} ) {
-	decrement_reference_count( $tableref->{$1}, $name1 ) if / -[jg] ([^\s]+)/;
+	decrement_reference_count( $tableref->{$_->{target}}, $name1 ) if $_->{target};
     }
 
     delete_chain $chainref;
@@ -854,10 +1085,8 @@ sub move_rules( $$ ) {
 	#
 	# We allow '+' in chain names and '+' is an RE meta-character. Escape it.
 	#
-	$name1 =~ s/\+/\\+/;
-
 	for ( @{$chain1->{rules}} ) {
-	    adjust_reference_counts( $tableref->{$1}, $name1, $name2 ) if / -[jg] ([^\s]+)/;
+	    adjust_reference_counts( $tableref->{$_->{target}}, $name1, $name2 ) if $_->{target};
 	}
 	#
 	# We set aside the filtered rules for the time being
@@ -884,12 +1113,14 @@ sub move_rules( $$ ) {
 	# In a firewall->x policy chain, multiple DHCP ACCEPT rules can be moved to the head of the chain.
 	# This hack avoids that.
 	#
+	$_->{rule} = format_rule( $chain2, $_ ) for @$rules;
+
 	if ( $blacklist ) {
 	    my $rule = shift @{$rules};
-	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
+	    shift @{$rules} while @{$rules} > 1 && $rules->[0]{rule} eq $rules->[1]{rule};
 	    unshift @{$rules}, $rule;
 	} else {
-	    shift @{$rules} while @{$rules} > 1 && $rules->[0] eq $rules->[1];
+	    shift @{$rules} while @{$rules} > 1 && $rules->[0]{rule} eq $rules->[1]{rule};
 	}
 
 	#
@@ -947,8 +1178,6 @@ sub copy_rules( $$;$ ) {
     #
     # We allow '+' in chain names and '+' is an RE meta-character. Escape it.
     #
-    $name1 =~ s/\+/\\+/;
-
     pop @$rules2 unless $nojump; # Delete the jump to chain1
 
     if ( $blacklist2 && $blacklist1 ) {
@@ -957,9 +1186,7 @@ sub copy_rules( $$;$ ) {
 	#
 	my $rule = shift @rules1;
 
-	$rule =~ / -j ([^\s])/;
-
-	my $chainb = $1;
+	my $chainb = $rule->{target};
 
 	assert( $chainb =~ /^black/ );
 
@@ -972,7 +1199,7 @@ sub copy_rules( $$;$ ) {
     # Chain2 is now a referent of all of Chain1's targets
     #
     for ( @rules1 ) {
-	increment_reference_count( $tableref->{$1}, $name2 ) if / -[jg] ([^\s]+)/;
+	increment_reference_count( $tableref->{$_->{target}}, $name2 ) if $_->{target};
     }
 
     if ( $blacklist1 ) {
@@ -1361,7 +1588,7 @@ sub delete_jumps ( $$ ) {
 	# deleting elements from the array over which we are iterating.
 	#
 	for ( my $rule = 0; $rule <= $#{$rules}; $rule++ ) {
-	    if (  $rules->[$rule] =~ / -[gj] ${to}(\s+-m comment .*)?\s*$/ ) {
+	    if (  $rules->[$rule]->{target} eq $to ) {
 		trace( $fromref, 'D', $rule + 1, $rules->[$rule] ) if $debug;
 		splice(  @$rules, $rule, 1 );
 		last unless --$refs > 0;
@@ -1760,7 +1987,7 @@ sub optimize_chain( $ ) {
 
 	pop @$rules; # Pop the plain -j ACCEPT rule at the end of the chain
 
-	pop @$rules, $count++ while @$rules && $rules->[-1] =~ /-j ACCEPT(?:$|\s)/;
+	pop @$rules, $count++ while @$rules && $rules->[-1]->{target} eq 'ACCEPT';
 
 	if ( @${rules} ) {
 	    add_rule $chainref, '-j ACCEPT';
@@ -1781,7 +2008,9 @@ sub optimize_chain( $ ) {
 		my $rule = 0;
 		for ( @{$fromref->{rules}} ) {
 		    $rule++;
-		    if ( s/ -[jg] $chainref->{name}(\s|$)/ -j ACCEPT$1/ ) {
+		    if ( $_->{target} eq $chainref->{name} ) {
+			$_->{target} = 'ACCEPT';
+			$_->{jump}   = 'j';
 			$count++;
 			trace( $chainref, 'R', $rule, $_ ) if $debug;
 		    }
@@ -1823,55 +2052,45 @@ sub delete_references( $ ) {
 #
 # Replace jumps to the passed chain with jumps to the passed target
 #
-sub replace_references( $$ ) {
-    my ( $chainref, $target ) = @_;
+sub replace_references( $$$ ) {
+    my ( $chainref, $target, $targetopts ) = @_;
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     my $name      = $chainref->{name};
+
+    assert defined $target;
+
     my $targetref = $tableref->{$target};
 
-    $name =~ s/\+/\\+/;
+    for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
+	if ( $fromref->{referenced} ) {
+	    my $rule = 0;
+	    for ( @{$fromref->{rules}} ) {
+		$rule++;
+		if ( $_->{target} eq $name ) {
+		    $_->{target}     = $target;
+		    $_->{targetopts} = $targetopts if $targetopts;
 
-    if ( $targetref ) {
-	#
-	# The target is a chain -- use the jump type from each referencing rule
-	#
-	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
-	    if ( $fromref->{referenced} ) {
-		my $rule = 0;
-		for ( @{$fromref->{rules}} ) {
-		    $rule++;
-		    if ( s/ -([jg]) $name(\s|$)/ -$1 ${target}$2/ ) {
+		    if ( $targetref ) {
 			add_reference ( $fromref, $targetref );
-			$count++;
-			trace( $fromref, 'R', $rule, $_ ) if $debug;
+		    } else {
+			$_->{jump}   = 'j';
 		    }
-		}
-		
-		delete $chainref->{references}{$fromref->{name}};
-	    }
-	}
 
-	delete $targetref->{references}{$chainref->{name}};
-    } else {
-	#
-	# The target is a builtin -- we must use '-j'
-	#
-	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
-	    if ( $fromref->{referenced} ) {
-		my $rule = 0;
-		for ( @{$fromref->{rules}} ) {
-		    $rule++;
-		    if ( s/ -[jg] $name(\s|$)/ -j ${target}$1/ ) {
-			$count++ ;
-			trace( $fromref, 'R', $rule, $_ ) if $debug;
-		    }
+		    $count++;
+		    trace( $fromref, 'R', $rule, $_ ) if $debug;
 		}
-
-		delete $chainref->{references}{$fromref->{name}};
 	    }
+	    #
+	    # The passed chain is no longer referenced by chain $fromref
+	    #
+	    delete $chainref->{references}{$fromref->{name}};
 	}
     }
+    #
+    # The passed chain is no longer referenced by the target chain
+    #
+    delete $targetref->{references}{$chainref->{name}} if $targetref;
 
     progress_message "  $count references to chain $chainref->{name} replaced" if $count;
 
@@ -1879,85 +2098,35 @@ sub replace_references( $$ ) {
 }
 
 #
-# Replace jumps to the passed chain with jumps to the passed target while
-# adding the passed matches to the rule.
+# Replace jumps to the passed chain with jumps to the target of the passed rule while merging
+# options and matches
 #
-sub replace_references1( $$$ ) {
-    my ( $chainref, $target, $matches ) = @_;
+sub replace_references1( $$ ) {
+    my ( $chainref, $ruleref ) = @_;
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
-    my $name     = $chainref->{name};
-    #
-    # The caller has ensured that $matches does not contain /! -[piosd] /
-    #
-    my $hasp     = $matches =~ / -p /;
-    my $hasi     = $matches =~ / -i /;
-    my $haso     = $matches =~ / -o /;
-    my $hass     = $matches =~ / -s /;
-    my $hasd     = $matches =~ / -d /;
+    my $name      = $chainref->{name};
+    my $target    = $ruleref->{target};
 
-    $name =~ s/\+/\\+/;
-    #
-    # Note: If $matches is non-empty, then it begins with white space
-    #
-    if ( defined $tableref->{$target} && ! $tableref->{$target}{builtin} ) {
-	#
-	# The target is a chain -- use the jump type from each referencing rule
-	#
-	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
-	    if ( $fromref->{referenced} ) {
-		my $rule = 0;
-		for ( @{$fromref->{rules}} ) {
-		    $rule++;
-		    if ( /^-A .*-[jg] $name(?:$|\s)/ ) {
-			#
-			# Prevent multiple '-p', '-i', '-o', '-s' and '-d' matches
-			#
-			s/( !)? -p [^ ]+ / / if $hasp;
-			s/( !)? -i [^ ]+ / / if $hasi;
-			s/( !)? -o [^ ]+ / / if $haso;
-			s/( !)? -s [^ ]+ / / if $hass;
-			s/( !)? -d [^ ]+ / / if $hasd;
+    for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
+	my $rule = 0;
+	if ( $fromref->{referenced} ) {
+	    for ( @{$fromref->{rules}} ) {
+		$rule++;
+		if ( ( $_->{target} || '' ) eq $name ) {
+		    #
+		    # The target is the passed chain -- merge the two rules into one
+		    #
+		    merge_rules( $tableref, $_, $ruleref );
 
-			s/\s+-([jg]) $name($|\s)/$matches -$1 ${target}$2/;
-			add_reference ( $fromref, $tableref->{$target} );
-			$count++;
-			trace( $fromref, 'R', $rule, $_ ) if $debug;
-		    }
+		    $count++;
+		    trace( $fromref, 'R', $rule, $_ ) if $debug;
 		}
 	    }
 	}
 
-	delete $tableref->{target}{references}{$chainref->{name}};
-    } else {
-	#
-	# The target is a builtin -- we must use '-j'
-	#
-	for my $fromref ( map $tableref->{$_} , keys %{$chainref->{references}} ) {
-	    my $rule = 0;
-	    if ( $fromref->{referenced} ) {
-		for ( @{$fromref->{rules}} ) {
-		    $rule++;
-		    if ( /^-A .*-[jg] $name(?:$|\s)/ ) {
-			#
-			# Prevent multiple '-p', '-i', '-o', '-s' and '-d' matches
-			#
-			s/( !)? -p [^ ]+ / / if $hasp;
-			s/( !)? -i [^ ]+ / / if $hasi;
-			s/( !)? -o [^ ]+ / / if $haso;
-			s/( !)? -s [^ ]+ / / if $hass;
-			s/( !)? -d [^ ]+ / / if $hasd;
-
-			s/\s+-[jg] $name($|\s)/$matches -j ${target}$1/;
-			$count++;
-			trace( $fromref, 'R', $rule, $_ ) if $debug;
-		    }
-		}
-	    }
-	}
+	delete $tableref->{$target}{references}{$chainref->{name}} if $tableref->{$target};
     }
-
-
 
     progress_message "  $count references to chain $chainref->{name} replaced" if $count;
 
@@ -1969,23 +2138,17 @@ sub replace_references1( $$$ ) {
 # chain to the builtin and return true; otherwise, do nothing and return false.
 #
 sub conditionally_copy_rules( $$ ) {
-    my ( $chainref, $target ) = @_;
+    my ( $chainref, $basictarget ) = @_;
 
-    if ( $target =~ /^\s*([^\s]+)/ ) {
-	#
-	# The above test is simply to isolate the basic target in $1
-	#
-	my $basictarget = $1;
-	my $targetref = $chain_table{$chainref->{table}}{$basictarget};
+    my $targetref = $chain_table{$chainref->{table}}{$basictarget};
 
-	if ( $targetref && ! $targetref->{dont_move} ) {
-	    #
-	    # Move is safe -- start with an empty rule list
-	    #
-	    $chainref->{rules} = [];
-	    copy_rules( $targetref, $chainref );
-	    1;
-	}
+    if ( $targetref && ! $targetref->{dont_move} ) {
+	#
+	# Move is safe -- start with an empty rule list
+	#
+	$chainref->{rules} = [];
+	copy_rules( $targetref, $chainref );
+	1;
     }
 }
 
@@ -1999,7 +2162,7 @@ sub check_optimization( $ ) {
 	my $chainref = shift;
 
 	for ( @{$chainref->{rules}} ) {
-	    dont_optimize $chainref, return 0 if / -s /;
+	    dont_optimize $chainref, return 0 if $_->{s};
 	}
     }
 
@@ -2016,7 +2179,7 @@ sub optimize_level4( $$ ) {
     #
     # Make repeated passes through each table looking for short chains (those with less than 2 entries)
     #
-    # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
+    # When an unreferenced chain is found, itis deleted unless its 'dont_delete' flag is set.
     # When an empty chain is found, delete the references to it.
     # When a chain with a single entry is found, replace it's references by its contents
     #
@@ -2065,7 +2228,7 @@ sub optimize_level4( $$ ) {
 		    #
 		    # Chain has a single rule
 		    #
-		    if ( $firstrule =~ /^-A -[jg] ([^\s]+)(\s+-m comment .*)?\s*$/ ) {
+		    if ( $firstrule ->{simple} ) {
 			#
 			# Easy case -- the rule is a simple jump
 			#
@@ -2074,7 +2237,7 @@ sub optimize_level4( $$ ) {
 			    # A built-in chain. If the target is a user chain without 'dont_move',
 			    # we can copy its rules to the built-in
 			    #
-			    if ( conditionally_copy_rules $chainref, $1 ) {
+			    if ( conditionally_copy_rules $chainref, $firstrule->{target} ) {
 				#
 				# Target was a user chain -- rules moved
 				#
@@ -2089,10 +2252,10 @@ sub optimize_level4( $$ ) {
 			    #
 			    # Replace all references to this chain with references to the target
 			    #
-			    replace_references $chainref, $1;
+			    replace_references $chainref, $firstrule->{target}, $firstrule->{targetopts};
 			    $progress = 1;
 			}
-		    } elsif ( $firstrule =~ /-A(.+) -[jg] (.*)$/ ) {
+		    } elsif ( $firstrule->{target} ) {
 			#
 			# Not so easy -- the rule contains matches
 			#
@@ -2106,7 +2269,7 @@ sub optimize_level4( $$ ) {
 			    #
 			    # Replace references to this chain with the target and add the matches
 			    #
-			    replace_references1 $chainref, $2, $1;
+			    replace_references1 $chainref, $firstrule;
 			    $progress = 1;
 			}
 		    }
@@ -2133,10 +2296,10 @@ sub optimize_level4( $$ ) {
 	for my $chainref ( @chains ) {
 	    my $lastrule = $chainref->{rules}[-1];
 
-	    if ( defined $lastrule && $lastrule  =~ /^-A -[jg] (.*)$/ ) {
+	    if ( defined $lastrule && $lastrule->{simple} ) {
 		#
 		# Last rule is a simple branch
-		my $targetref = $tableref->{$1};
+		my $targetref = $tableref->{$lastrule->{target}};
 
 		if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
 		    copy_rules( $targetref, $chainref );
@@ -2162,6 +2325,12 @@ sub optimize_level8( $$$ ) {
     $passes++;
     
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
+
+    for my $chainref ( @chains ) {
+	for ( @{$chainref->{rules}} ) {
+	    $_->{rule} = format_rule( $chainref, $_, 1 );
+	}
+    }
 	    
     for my $chainref ( @chains ) {
 	my $rules    = $chainref->{rules};
@@ -2181,10 +2350,10 @@ sub optimize_level8( $$$ ) {
 	    next if $chainref1->{dont_delete};
 
 	    for ( my $i = 0; $i < $numrules; $i++ ) {
-		next CHAIN unless $rules->[$i] eq $rules1->[$i];
+		next CHAIN unless $rules->[$i]->{rule} eq $rules1->[$i]->{rule};
 	    }
 
-	    replace_references1 $chainref1, $chainref->{name}, '';
+	    replace_references $chainref1, $chainref->{name}, undef;
 	}
     }
 
@@ -2547,7 +2716,7 @@ sub mac_match( $ ) {
 
     fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 
-    "--match mac ${invert}--mac-source $mac ";
+    "-m mac ${invert}--mac-source $mac ";
 }
 
 #
@@ -4475,26 +4644,33 @@ sub enter_cmd_mode() {
 # Emits the passed rule (input to iptables-restore) or command
 #
 sub emitr( $$ ) {
-    my ( $chain, $rule ) = @_;
+    my ( $chainref, $ruleref ) = @_;
 
-    assert( $chain );
+    assert( $chainref );
 
-    if ( $rule ) {
-	my $replaced = ($rule =~ s/((^|[ "])?)-A /$1-A $chain /);
-
-	if ( substr( $rule, 0, 2 ) eq '-A' ) {
+    if ( $ruleref ) {
+	if ( $ruleref->{mode} == CAT_MODE ) {
 	    #
 	    # A rule
 	    #
-	    assert( $replaced);
 	    enter_cat_mode unless $mode == CAT_MODE;
-	    emit_unindented $rule;
+	    emit_unindented format_rule( $chainref, $ruleref );
 	} else {
 	    #
 	    # A command
 	    #
 	    enter_cmd_mode unless $mode == CMD_MODE;
-	    emit $rule;
+	    
+	    if ( $ruleref->{cmd} ) {
+		emit join( '', '    ' x $ruleref->{cmdlevel}, $ruleref->{cmd} );
+	    } else {
+		#
+		# Must preserve quotes in the rule
+		#
+		( my $rule = format_rule( $chainref, $ruleref ) ) =~ s/"/\\"/g;
+		
+		emit join( '', '    ' x $ruleref->{cmdlevel} , 'echo "' , $rule, '" >&3' );
+	    }
 	}
     }
 }
@@ -4517,21 +4693,25 @@ sub emitr1( $$ ) {
     my ( $chain, $rule ) = @_;
 
     if ( $rule ) {
-	$rule =~ s/( ?)-A /$1-A $chain /;
-
-	if ( substr( $rule, 0, 2 ) eq '-A' ) {
+	if ( $rule->{mode} == CAT_MODE ) {
 	    #
 	    # A rule
 	    #
 	    enter_cat_mode1 unless $mode == CAT_MODE;
-	    print "$rule\n";
+
+	    my $formated = format_rule $chain, $rule;
+	    print "$formated\n";
 	} else {
 	    #
 	    # A command
 	    #
 	    enter_cmd_mode1 unless $mode == CMD_MODE;
-	    $rule =~ s/ >&3//;
-	    emitstd $rule;
+
+	    if ( $rule->{cmd} ) {
+		emitstd $rule->{cmd};
+	    } else {
+		emitstd format_rule $chain, $rule;
+	    }
 	}
     }
 }
@@ -4776,8 +4956,7 @@ sub create_netfilter_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    my $name = $chainref->{name};
-	    emitr( $name, $_ ) for @{$chainref->{rules}};
+	    emitr( $chainref, $_ ) for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
@@ -4859,8 +5038,7 @@ sub preview_netfilter_load() {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    my $name = $chainref->{name};
-	    emitr1($name, $_ ) for @{$chainref->{rules}};
+	    emitr1($chainref, $_ ) for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table
@@ -4977,7 +5155,7 @@ sub create_chainlist_reload($) {
 		#
 		# Emit the chain rules
 		#
-		emitr($name, $_) for @rules;
+		emitr($chainref, $_) for @rules;
 	    }
 	    #
 	    # Commit the changes to the table
@@ -5084,8 +5262,7 @@ sub create_stop_load( $ ) {
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
-	    my $name = $chainref->{name};
-	    emitr( $name, $_ ) for @{$chainref->{rules}};
+	    emitr( $chainref, $_ ) for @{$chainref->{rules}};
 	}
 	#
 	# Commit the changes to the table

@@ -1095,7 +1095,7 @@ sub handle_stickiness( $ ) {
 	    my $base      = uc chain_base $interface;
 	    my $mark      = $providerref->{mark};
 
-	    for ( grep /-j sticky/, @{$tcpreref->{rules}} ) {
+	    for ( grep rule_target($_) eq 'sticky', @{$tcpreref->{rules}} ) {
 		my $stickyref = ensure_mangle_chain 'sticky';
 		my ( $rule1, $rule2 );
 		my $list = sprintf "sticky%03d" , $sticky++;
@@ -1103,26 +1103,32 @@ sub handle_stickiness( $ ) {
 		for my $chainref ( $stickyref, $setstickyref ) {
 		    if ( $chainref->{name} eq 'sticky' ) {
 			$rule1 = $_;
-			$rule1 =~ s/-j sticky/-m recent --name $list --update --seconds 300 -j MARK --set-mark $mark/;
+
+			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
+			set_rule_option( $rule1, 'recent', "--name $list --update --seconds 300" );
+
 			$rule2 = $_;
-			$rule2 =~ s/-j sticky/-m mark --mark 0\/$mask -m recent --name $list --remove/;
+
+			clear_rule_target( $rule2 );
+			set_rule_option( $rule2, 'mark', "--mark 0/$mask -m recent --name $list --remove" );
 		    } else {
 			$rule1 = $_;
-			$rule1 =~ s/-j sticky/-m mark --mark $mark\/$mask -m recent --name $list --set/;
+
+			clear_rule_target( $rule1 );
+			set_rule_option( $rule1, 'mark', "--mark $mark\/$mask -m recent --name $list --set" ); 
+
 			$rule2 = '';
 		    }
 
-		    assert ( $rule1 =~ s/^-A // );
-		    add_rule $chainref, $rule1;
+		    add_transformed_rule $chainref, $rule1;
 
 		    if ( $rule2 ) {
-			assert ( $rule2 =~ s/^-A // );
-			add_rule $chainref, $rule2;
+			add_transformed_rule $chainref, $rule2;
 		    }
 		}
 	    }
 
-	    for ( grep /-j sticko/, @{$tcoutref->{rules}} ) {
+	    for ( grep rule_target( $_ ) eq 'sticko', , @{$tcoutref->{rules}} ) {
 		my ( $rule1, $rule2 );
 		my $list = sprintf "sticky%03d" , $sticky++;
 		my $stickoref = ensure_mangle_chain 'sticko';
@@ -1130,21 +1136,27 @@ sub handle_stickiness( $ ) {
 		for my $chainref ( $stickoref, $setstickoref ) {
 		    if ( $chainref->{name} eq 'sticko' ) {
 			$rule1 = $_;
-			$rule1 =~ s/-j sticko/-m recent --name $list --rdest --update --seconds 300 -j MARK --set-mark $mark/;
+
+			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
+			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300 -j MARK --set-mark $mark" );
+
 			$rule2 = $_;
-			$rule2 =~ s/-j sticko/-m mark --mark 0\/$mask -m recent --name $list --rdest --remove/;
+			
+			clear_rule_target( $rule2 );
+			set_rule_option  ( $rule2, 'mark', "--mark 0\/$mask -m recent --name $list --rdest --remove" );
 		    } else {
 			$rule1 = $_;
-			$rule1 =~ s/-j sticko/-m mark --mark $mark -m recent --name $list --rdest --set/;
+
+			clear_rule_target( $rule1 );
+			set_rule_option  ( $rule1, 'mark', "--mark $mark -m recent --name $list --rdest --set" );
+
 			$rule2 = '';
 		    }
 
-		    assert( $rule1 =~ s/-A // );
-		    add_rule $chainref, $rule1;
+		    add_transformed_rule $chainref, $rule1;
 
 		    if ( $rule2 ) {
-			$rule2 =~ s/-A //;
-			add_rule $chainref, $rule2;
+			add_transformed_rule $chainref, $rule2;
 		    }
 		}
 	    }

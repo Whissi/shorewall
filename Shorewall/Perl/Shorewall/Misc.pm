@@ -488,8 +488,8 @@ sub add_common_rules() {
     my $rejectref = $filter_table->{reject};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
-	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   ' ' , 'DROP'   , $level ;
-	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), ' ' , 'reject' , $level ;
+	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   '' , 'DROP'   , $level ;
+	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), '' , 'reject' , $level ;
 	$dynamicref = dont_optimize( new_standard_chain( 'dynamic' ) );
 	add_jump $filter_table->{INPUT}, $dynamicref, 0, $state;
 	add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
@@ -992,11 +992,12 @@ sub setup_mac_lists( $ ) {
 		    my $variable = get_interface_addresses source_port_to_bridge( $interface );
 
 		    if ( have_capability( 'ADDRTYPE' ) ) {
-			add_commands( $chainref,
-				      "for address in $variable; do",
-				      "    echo \"-A -s \$address -m addrtype --dst-type BROADCAST -j RETURN\" >&3",
-				      "    echo \"-A -s \$address -d 224.0.0.0/4 -j RETURN\" >&3",
-				      'done' );
+			add_commands( $chainref, "for address in $variable; do" );
+			incr_cmd_level( $chainref );
+			add_rule( $chainref, '-s $address -m addrtype --dst-type BROADCAST -j RETURN' );
+			add_rule( $chainref, '-s $address -d 224.0.0.0/4 -j RETURN' );
+			decr_cmd_level( $chainref );
+			add_commands( $chainref, 'done' );
 		    } else {
 			my $bridge    = source_port_to_bridge( $interface );
 			my $bridgeref = find_interface( $bridge );

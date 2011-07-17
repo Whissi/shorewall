@@ -62,22 +62,22 @@ sub setup_tunnels() {
 	    }
 	}
 
-	my $options = $globals{UNTRACKED} ? "-m state --state NEW,UNTRACKED -j ACCEPT" : "$globals{STATEMATCH} NEW -j ACCEPT";
+	my @options = $globals{UNTRACKED} ? state_imatch 'NEW,UNTRACKED' : state_imatch 'NEW';
 
-	add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p 50 $dest   -j ACCEPT";
+	add_tunnel_rule $inchainref,  p => 50, @$source;
+	add_tunnel_rule $outchainref, p => 50, @$dest;
 
 	unless ( $noah ) {
-	    add_tunnel_rule $inchainref,  "-p 51 $source -j ACCEPT";
-	    add_tunnel_rule $outchainref, "-p 51 $dest   -j ACCEPT";
+	    add_tunnel_rule $inchainref,  p => 51, @$source;
+	    add_tunnel_rule $outchainref, p => 51, @$dest;
 	}
 
 	if ( $kind eq 'ipsec' ) {
-	    add_tunnel_rule $inchainref,  "-p udp $source --dport 500 $options";
-	    add_tunnel_rule $outchainref, "-p udp $dest   --dport 500 $options";
+	    add_tunnel_rule $inchainref,  p => 'udp --dport 500', @$source, @options;
+	    add_tunnel_rule $outchainref, p => 'udp --dport 500', @$dest,   @options;
 	} else {
-	    add_tunnel_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
-	    add_tunnel_rule $outchainref, "-p udp $dest   -m multiport --dports 500,4500 $options";
+	    add_tunnel_rule $inchainref,  p => 'udp', @$source, multiport => '--dports 500,4500', @options;
+	    add_tunnel_rule $outchainref, p => 'udp', @$dest,   multiport => '--dports 500,4500', @options;
 	}
 
 	unless ( $gatewayzones eq '-' ) {
@@ -88,21 +88,21 @@ sub setup_tunnels() {
 		$outchainref = ensure_rules_chain( rules_chain( ${fw}, ${zone} ) );
 
 		unless ( have_ipsec ) {
-		    add_tunnel_rule $inchainref,  "-p 50 $source -j ACCEPT";
-		    add_tunnel_rule $outchainref, "-p 50 $dest -j ACCEPT";
+		    add_tunnel_rule $inchainref,  p => 50, @$source;
+		    add_tunnel_rule $outchainref, p => 50, @$dest;
 
 		    unless ( $noah ) {
-			add_tunnel_rule $inchainref,  "-p 51 $source -j ACCEPT";
-			add_tunnel_rule $outchainref, "-p 51 $dest -j ACCEPT";
+			add_tunnel_rule $inchainref,  p => 51, @$source;
+			add_tunnel_rule $outchainref, p => 51, @$dest;
 		    }
 		}
 
 		if ( $kind eq 'ipsec' ) {
-		    add_tunnel_rule $inchainref,  "-p udp $source --dport 500 $options";
-		    add_tunnel_rule $outchainref, "-p udp $dest --dport 500 $options";
+		    add_tunnel_rule $inchainref,  p => 'udp --dport 500', @$source, @options;
+		    add_tunnel_rule $outchainref, p => 'udp --dport 500', @$dest,   @options;
 		} else {
-		    add_tunnel_rule $inchainref,  "-p udp $source -m multiport --dports 500,4500 $options";
-		    add_tunnel_rule $outchainref, "-p udp $dest -m multiport --dports 500,4500 $options";
+		    add_tunnel_rule $inchainref,  p => 'udp', @$source, multiport => '--dports 500,4500', @options;
+		    add_tunnel_rule $outchainref, p => 'udp', @$dest,   multiport => '--dports 500,4500', @options;
 		}
 	    }
 	}
@@ -111,24 +111,24 @@ sub setup_tunnels() {
     sub setup_one_other {
 	my ($inchainref, $outchainref, $source, $dest , $protocol) = @_;
 
-	add_tunnel_rule $inchainref ,  "-p $protocol $source -j ACCEPT";
-	add_tunnel_rule $outchainref , "-p $protocol $dest -j ACCEPT";
+	add_tunnel_rule $inchainref ,  p => $protocol, @$source;
+	add_tunnel_rule $outchainref , p => $protocol, @$dest;
     }
 
     sub setup_pptp_client {
 	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
 
-	add_tunnel_rule $outchainref,  "-p 47 $dest -j ACCEPT";
-	add_tunnel_rule $inchainref,   "-p 47 $source -j ACCEPT";
-	add_tunnel_rule $outchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
-	}
+	add_tunnel_rule $outchainref,  p => 47, @$dest;
+	add_tunnel_rule $inchainref,   p => 47, @$source;
+	add_tunnel_rule $outchainref,  p => 'tcp --dport 1723', @$dest;
+    }
 
     sub setup_pptp_server {
 	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
 
-	add_tunnel_rule $inchainref,  "-p 47 $dest -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p 47 $source -j ACCEPT";
-	add_tunnel_rule $inchainref,  "-p tcp --dport 1723 $dest -j ACCEPT"
+	add_tunnel_rule $inchainref,  p => 47, @$dest;
+	add_tunnel_rule $outchainref, p => 47, @$source;
+	add_tunnel_rule $inchainref,  p => 'tcp --dport 1723', @$dest
 	}
 
     sub setup_one_openvpn {
@@ -152,8 +152,8 @@ sub setup_tunnels() {
 	    }
 	}
 
-	add_tunnel_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  p => "$protocol --dport $port", @$source;
+	add_tunnel_rule $outchainref, p => "$protocol --dport $port", @$dest;;
     }
 
     sub setup_one_openvpn_client {
@@ -177,8 +177,8 @@ sub setup_tunnels() {
 	    }
 	}
 
-	add_tunnel_rule $inchainref,  "-p $protocol $source --sport $port -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p $protocol $dest --dport $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  p => "$protocol --sport $port", @$source;
+	add_tunnel_rule $outchainref, p => "$protocol --dport $port", @$dest;
     }
 
     sub setup_one_openvpn_server {
@@ -202,8 +202,8 @@ sub setup_tunnels() {
 	    }
 	}
 
-	add_tunnel_rule $inchainref,  "-p $protocol $source --dport $port -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p $protocol $dest --sport $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  p => "$protocol --dport $port" , @$source;
+	add_tunnel_rule $outchainref, p => "$protocol --sport $port",  @$dest;
     }
 
     sub setup_one_l2tp {
@@ -211,8 +211,8 @@ sub setup_tunnels() {
 
 	fatal_error "Unknown option ($1)" if $kind =~ /^.*?:(.*)$/;
 
-	add_tunnel_rule $inchainref,  "-p udp $source --sport 1701 --dport 1701 -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p udp $dest   --sport 1701 --dport 1701 -j ACCEPT";
+	add_tunnel_rule $inchainref,  p => 'udp --sport 1701 --dport 1701', @$source;
+	add_tunnel_rule $outchainref, p => 'udp --sport 1701 --dport 1701', @$dest;
     }
 
     sub setup_one_generic {
@@ -229,8 +229,8 @@ sub setup_tunnels() {
 	    ( $kind, $protocol ) = split /:/ , $kind if $kind =~ /.*:.*/;
 	}
 
-	add_tunnel_rule $inchainref,  "-p $protocol $source $port -j ACCEPT";
-	add_tunnel_rule $outchainref, "-p $protocol $dest $port -j ACCEPT";
+	add_tunnel_rule $inchainref,  p => "$protocol $port", @$source;
+	add_tunnel_rule $outchainref, p => "$protocol $port", @$dest;
     }
 
     sub setup_one_tunnel($$$$) {
@@ -245,21 +245,21 @@ sub setup_tunnels() {
 
 	$gateway = ALLIP if $gateway eq '-';
 
-	my $source = match_source_net $gateway;
-	my $dest   = match_dest_net   $gateway;
+	my @source = imatch_source_net $gateway;
+	my @dest   = imatch_dest_net   $gateway;
 
-	my %tunneltypes = ( 'ipsec'         => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
-			    'ipsecnat'      => { function => \&setup_one_ipsec ,         params   => [ $kind, $source, $dest , $gatewayzones ] } ,
-			    'ipip'          => { function => \&setup_one_other,          params   => [ $source, $dest , 4 ] } ,
-			    'gre'           => { function => \&setup_one_other,          params   => [ $source, $dest , 47 ] } ,
-			    '6to4'          => { function => \&setup_one_other,          params   => [ $source, $dest , 41 ] } ,
-			    'pptpclient'    => { function => \&setup_pptp_client,        params   => [ $kind, $source, $dest ] } ,
-			    'pptpserver'    => { function => \&setup_pptp_server,        params   => [ $kind, $source, $dest ] } ,
-			    'openvpn'       => { function => \&setup_one_openvpn,        params   => [ $kind, $source, $dest ] } ,
-			    'openvpnclient' => { function => \&setup_one_openvpn_client, params   => [ $kind, $source, $dest ] } ,
-			    'openvpnserver' => { function => \&setup_one_openvpn_server, params   => [ $kind, $source, $dest ] } ,
-			    'l2tp'          => { function => \&setup_one_l2tp ,          params   => [ $kind, $source, $dest ] } ,
-			    'generic'       => { function => \&setup_one_generic ,       params   => [ $kind, $source, $dest ] } ,
+	my %tunneltypes = ( 'ipsec'         => { function => \&setup_one_ipsec ,         params   => [ $kind, \@source, \@dest , $gatewayzones ] } ,
+			    'ipsecnat'      => { function => \&setup_one_ipsec ,         params   => [ $kind, \@source, \@dest , $gatewayzones ] } ,
+			    'ipip'          => { function => \&setup_one_other,          params   => [ \@source, \@dest , 4 ] } ,
+			    'gre'           => { function => \&setup_one_other,          params   => [ \@source, \@dest , 47 ] } ,
+			    '6to4'          => { function => \&setup_one_other,          params   => [ \@source, \@dest , 41 ] } ,
+			    'pptpclient'    => { function => \&setup_pptp_client,        params   => [ $kind, \@source, \@dest ] } ,
+			    'pptpserver'    => { function => \&setup_pptp_server,        params   => [ $kind, \@source, \@dest ] } ,
+			    'openvpn'       => { function => \&setup_one_openvpn,        params   => [ $kind, \@source, \@dest ] } ,
+			    'openvpnclient' => { function => \&setup_one_openvpn_client, params   => [ $kind, \@source, \@dest ] } ,
+			    'openvpnserver' => { function => \&setup_one_openvpn_server, params   => [ $kind, \@source, \@dest ] } ,
+			    'l2tp'          => { function => \&setup_one_l2tp ,          params   => [ $kind, \@source, \@dest ] } ,
+			    'generic'       => { function => \&setup_one_generic ,       params   => [ $kind, \@source, \@dest ] } ,
 			  );
 
 	$kind = "\L$kind";

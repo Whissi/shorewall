@@ -90,6 +90,7 @@ our %EXPORT_TAGS = (
 				       ALL_COMMANDS
 				       NOT_RESTORE
 
+				       state_imatch
 				       initialize_chain_table
 				       copy_rules
 				       move_rules
@@ -167,7 +168,9 @@ our %EXPORT_TAGS = (
 				       match_dest_dev
 				       iprange_match
 				       match_source_net
+				       imatch_source_net
 				       match_dest_net
+				       imatch_dest_net
 				       match_orig_dest
 				       match_ipsec_in
 				       match_ipsec_out
@@ -1134,10 +1137,10 @@ sub delete_chain_and_references( $ ) {
 # Insert a tunnel rule into the passed chain. Tunnel rules are inserted sequentially
 # at the beginning of the 'NEW' section.
 #
-sub add_tunnel_rule( $$ ) {
-    my ( $chainref, $rule ) = @_;
+sub add_tunnel_rule ( $;@ ) {
+    my $chainref = shift;
 
-    insert_rule1( $chainref, $chainref->{new}++, $rule );
+    insert_irule( $chainref, j => 'ACCEPT', $chainref->{new}++, @_ );
 }
 
 #
@@ -2629,6 +2632,15 @@ sub clearrule() {
 #
 sub port_count( $ ) {
     ( $_[0] =~ tr/,:/,:/ ) + 1;
+}
+
+#
+# Generate a state match
+#
+sub state_imatch( $ ) {
+    my $state = shift;
+
+    have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => $state );
 }
 
 #

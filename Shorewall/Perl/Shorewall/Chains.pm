@@ -39,6 +39,7 @@ our @EXPORT = qw(
 		    add_irule
 		    add_jump
 		    insert_rule
+		    insert_irule
 		    rule_target
 		    clear_rule_target
 		    set_rule_target
@@ -144,6 +145,7 @@ our %EXPORT_TAGS = (
 				       port_count
 				       do_proto
 				       do_mac
+				       do_imac
 				       verify_mark
 				       verify_small_mark
 				       validate_mark
@@ -981,6 +983,11 @@ sub add_irule( $$$;@ ) {
     }
 
     push @{$chainref->{rules}}, $ruleref;
+
+    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
+
+    $iprangematch = 0;
+
     $chainref->{referenced} = 1;
 
     $ruleref;
@@ -1054,6 +1061,43 @@ sub insert_rule($$$) {
     insert_rule1( $chainref, $number - 1, $rule );
 }
 
+sub insert_irule( $$$$;@ ) {
+    my ( $chainref, $jump, $target, $number, @matches ) = @_;
+
+    my $ruleref = {};
+    
+    $ruleref->{mode} = $ruleref->{cmdlevel} = $chainref->{cmdlevel} ? CMD_MODE : CAT_MODE;
+ 
+    if ( $jump ) {
+	$jump = 'j' unless have_capability 'GOTO_TARGET';
+	( $target, my $targetopts ) = split ' ', $target, 2;
+	$ruleref->{jump}       = $jump;
+	$ruleref->{target}     = $target;
+	$ruleref->{targetopts} = $targetopts if $targetopts;
+    }
+
+    unless ( $ruleref->{simple} = ! @matches ) {
+	while ( @matches ) {
+	    my ( $option, $value ) = ( shift @matches, shift @matches );
+	    $ruleref->{$option} = $value; 
+	}
+    }
+
+    if ( $comment ) {
+	$ruleref->{comment} = $comment unless $ruleref->{comment};
+    }
+
+    splice( @{$chainref->{rules}}, $number, 0, $ruleref );
+
+    trace( $chainref, 'I', ++$number, format_rule( $chainref, $ruleref ) ) if $debug;
+
+    $iprangematch = 0;
+
+    $chainref->{referenced} = 1;
+
+    $ruleref;
+}
+
 #
 # Do final work to 'delete' a chain. We leave it in the chain table but clear
 # the 'referenced', 'rules', 'references' and 'blacklist' members.
@@ -1085,7 +1129,6 @@ sub delete_chain_and_references( $ ) {
 
     delete_chain $chainref;
 }
-
 
 #
 # Insert a tunnel rule into the passed chain. Tunnel rules are inserted sequentially
@@ -2777,6 +2820,18 @@ sub do_mac( $ ) {
     "-m mac ${invert}--mac-source $mac ";
 }
 
+sub do_imac( $ ) {
+    my $mac = $_[0];
+
+    $mac =~ s/^(!?)~//;
+    my $invert = ( $1 ? '! ' : '');
+    $mac =~ tr/-/:/;
+
+    fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
+
+    ( mac => "${invert}--mac-source $mac" );
+}
+
 #
 # Mark validatation functions
 #
@@ -3331,6 +3386,60 @@ sub match_source_net( $;$\$ ) {
     $net eq ALLIP ? '' : "-s $net ";
 }
 
+sub imatch_source_net( $;$\$ ) {
+    my ( $net, $restriction, $macref ) = @_;
+
+    $restriction |= NO_RESTRICT;
+
+    if ( ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) ||
+	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
+	my ($addr1, $addr2) = ( $2, $3 );
+	$net =~ s/!// if my $invert = $1 ? '! ' : '';
+	require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
+	return ( iprange => "${invert}--src-range $net" );
+    }
+
+    if ( $net =~ /^!?~/ ) {
+	fatal_error "A MAC address($net) cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
+	$$macref = 1 if $macref;
+	return do_imac $net;
+    }
+
+    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?/ ) {
+	return ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) ) );
+    }
+
+    if ( $net =~ /^\+\[(.+)\]$/ ) {
+	my @result = ();
+	my @sets = mysplit $1, 1;
+
+	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+
+	for $net ( @sets ) {
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    push @result, join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+	}
+
+	return ( s => \@result );
+    }
+
+    if ( $net =~ s/^!// ) {
+	if ( $net =~ /^&(.+)/ ) {
+	    return  ( s => '! ' . record_runtime_address $1 );
+	}
+
+	validate_net $net, 1;
+	return ( s => "! $net " );
+    }
+
+    if ( $net =~ /^&(.+)/ ) {
+	return ( s =>  record_runtime_address $1 );
+    }
+
+    validate_net $net, 1;
+    $net eq ALLIP ? () : ( s => $net );
+}
+
 #
 # Match a Destination.
 #
@@ -3378,6 +3487,53 @@ sub match_dest_net( $ ) {
 
     validate_net $net, 1;
     $net eq ALLIP ? '' : "-d $net ";
+}
+
+sub imatch_dest_net( $ ) {
+    my $net = $_[0];
+
+    if ( ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) ||
+	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
+	my ($addr1, $addr2) = ( $2, $3 );
+	$net =~ s/!// if my $invert = $1 ? '! ' : '';
+	validate_range $addr1, $addr2;
+	require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
+	return ( iprange => "${invert}--dst-range $net" );
+    }
+
+    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?$/ ) {
+	return ( set => $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
+    }
+
+    if ( $net =~ /^\+\[(.+)\]$/ ) {
+	my @result;
+	my @sets = mysplit $1, 1;
+
+	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+
+	for $net ( @sets ) {
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    push @result , join( '', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
+	}
+
+	return ( set => \@result );
+    }
+
+    if ( $net =~ s/^!// ) {
+	if ( $net =~ /^&(.+)/ ) {
+	    return ( d => '! ' . record_runtime_address $1 );
+	}
+	
+	validate_net $net, 1;
+	return ( d => "! $net " );
+    }
+
+    if ( $net =~ /^&(.+)/ ) {
+	return ( d => record_runtime_address $1 );
+    }
+
+    validate_net $net, 1;
+    $net eq ALLIP ? () : ( d =>  $net );
 }
 
 #

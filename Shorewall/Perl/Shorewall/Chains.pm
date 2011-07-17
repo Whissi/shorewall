@@ -38,8 +38,10 @@ our @EXPORT = qw(
 		    add_rule
 		    add_irule
 		    add_jump
+		    add_ijump
 		    insert_rule
 		    insert_irule
+		    insert_ijump
 		    rule_target
 		    clear_rule_target
 		    set_rule_target
@@ -165,7 +167,9 @@ our %EXPORT_TAGS = (
 				       conditional_rule
 				       conditional_rule_end
 				       match_source_dev
+				       imatch_source_dev
 				       match_dest_dev
+				       imatch_dest_dev
 				       iprange_match
 				       match_source_net
 				       imatch_source_net
@@ -964,7 +968,7 @@ sub add_irule( $$$;@ ) {
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
 
-    my $ruleref = {};
+    my $ruleref       = {};
     
     $ruleref->{mode} = $ruleref->{cmdlevel} = $chainref->{cmdlevel} ? CMD_MODE : CAT_MODE;
  
@@ -975,10 +979,15 @@ sub add_irule( $$$;@ ) {
     }
 
     unless ( $ruleref->{simple} = ! @matches ) {
+	my $dont_optimize = $chainref->{dont_optimize};
+	
 	while ( @matches ) {
 	    my ( $option, $value ) = ( shift @matches, shift @matches );
-	    $ruleref->{$option} = $value; 
+	    $ruleref->{$option} = $value;
+	    $dont_optimize ||= $option =~ /^[piosd]/ && $option =~ /^!/;
 	}
+	
+	$chainref->{ dont_optimize } = $dont_optimize;
     }
 
     if ( $comment ) {
@@ -1068,7 +1077,7 @@ sub insert_irule( $$$$;@ ) {
     my ( $chainref, $jump, $target, $number, @matches ) = @_;
 
     my $ruleref = {};
-    
+   
     $ruleref->{mode} = $ruleref->{cmdlevel} = $chainref->{cmdlevel} ? CMD_MODE : CAT_MODE;
  
     if ( $jump ) {
@@ -1080,10 +1089,15 @@ sub insert_irule( $$$$;@ ) {
     }
 
     unless ( $ruleref->{simple} = ! @matches ) {
+	my $dont_optimize = $chainref->{dont_optimize};
+	
 	while ( @matches ) {
 	    my ( $option, $value ) = ( shift @matches, shift @matches );
 	    $ruleref->{$option} = $value; 
+	    $dont_optimize ||= $option =~ /^[piosd]/ && $option =~ /^!/;
 	}
+	
+	$chainref->{ dont_optimize } = $dont_optimize;
     }
 
     if ( $comment ) {
@@ -1678,6 +1692,58 @@ sub add_jump( $$$;$$$ ) {
     } else {
 	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
     }
+}
+
+sub add_ijump( $$$;@ ) {
+    my ( $fromref, $jump, $to, @matches ) = @_;
+
+    my $toref;
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
+    }
+
+    $jump = 'j' unless $toref && have_capability 'GOTO_TARGET';
+    #
+    # If the destination is a chain, mark it referenced
+    #
+    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
+
+    add_irule ($fromref, $jump => $to, @matches );
+}
+
+sub insert_ijump( $$$$;@ ) {
+    my ( $fromref, $jump, $to, $index, @matches ) = @_;
+
+    my $toref;
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
+	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
+    }
+
+    $jump = 'j' unless $toref && have_capability 'GOTO_TARGET';
+    #
+    # If the destination is a chain, mark it referenced
+    #
+    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
+
+    insert_irule ($fromref, $jump => $to, $index, @matches );
 }
 
 #
@@ -3209,6 +3275,23 @@ sub match_source_dev( $;$ ) {
     }
 }
 
+sub imatch_source_dev( $;$ ) {
+    my ( $interface, $nodev ) = @_;;
+    my $interfaceref =  known_interface( $interface );
+    $interface = $interfaceref->{physical} if $interfaceref;
+    return () if $interface eq '+';
+    if ( $interfaceref && $interfaceref->{options}{port} ) {
+	if ( $nodev ) {
+	    ( physdev => "--physdev-in $interface" );
+	} else {
+	    my $bridgeref = find_interface $interfaceref->{bridge};
+	    ( i => $bridgeref->{physical}, physdev => "--physdev-in $interface" );
+	}
+    } else {
+	( i => $interface );
+    }
+}
+
 #
 # Match Dest device
 #
@@ -3235,6 +3318,32 @@ sub match_dest_dev( $;$ ) {
 	}
     } else {
 	"-o $interface ";
+    }
+}
+
+sub imatch_dest_dev( $;$ ) {
+    my ( $interface, $nodev ) = @_;;
+    my $interfaceref =  known_interface( $interface );
+    $interface = $interfaceref->{physical} if $interfaceref;
+    return () if $interface eq '+';
+    if ( $interfaceref && $interfaceref->{options}{port} ) {
+	if ( $nodev ) {
+	    if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
+		( physdev => "--physdev-is-bridged --physdev-out $interface" );
+	    } else {
+		( physdev => "--physdev-out $interface" );
+	    }
+	} else {
+	    my $bridgeref = find_interface $interfaceref->{bridge};
+	    
+	    if ( have_capability( 'PHYSDEV_BRIDGE' ) ) {
+		( o => $bridgeref->{physical}, physdev => "--physdev-is-bridged --physdev-out $interface" );
+	    } else {
+		( o => $bridgeref->{physical}, physdev => "--physdev-out $interface" );
+	    }
+	}
+    } else {
+	( o => $interface );
     }
 }
 

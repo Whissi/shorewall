@@ -533,14 +533,7 @@ sub policy_rules( $$$$$ ) {
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 	
-	if ( $chainref->{audit} ) {
-	    if ( $config{FAKE_AUDIT} ) {
-		add_rule( $chainref , '-j AUDIT -m comment --comment "--type ' . lc $target . '"' );
-	    } else { 
-		add_rule( $chainref , '-j AUDIT --type ' . lc $target );
-	    }
-	}
-
+	add_rule( $chainref , '-j AUDIT --type ' . lc $target ) if $chainref->{audit};
 	add_jump( $chainref , $target eq 'REJECT' ? 'reject' : $target, 1 ) unless $target eq 'CONTINUE';
     }
 }

@@ -557,7 +557,6 @@ sub initialize( $ ) {
 	  COMPLETE => undef,
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
-	  FAKE_AUDIT => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -2636,7 +2635,7 @@ sub Account_Target() {
 }
 
 sub Audit_Target() {
-    $config{FAKE_AUDIT} || qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
+    qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
 }
 
 our %detect_capability =
@@ -2935,7 +2934,7 @@ sub update_config_file( $ ) {
     #
     # Undocumented options -- won't be listed in the template
     #
-    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS FAKE_AUDIT ) );
+    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS ) );
 
     if ( -f $fn ) {
 	my ( $template, $output );

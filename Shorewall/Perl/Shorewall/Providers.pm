@@ -1120,10 +1120,10 @@ sub handle_stickiness( $ ) {
 			$rule2 = '';
 		    }
 
-		    add_transformed_rule $chainref, $rule1;
+		    add_trule $chainref, $rule1;
 
 		    if ( $rule2 ) {
-			add_transformed_rule $chainref, $rule2;
+			add_trule $chainref, $rule2;
 		    }
 		}
 	    }
@@ -1153,10 +1153,10 @@ sub handle_stickiness( $ ) {
 			$rule2 = '';
 		    }
 
-		    add_transformed_rule $chainref, $rule1;
+		    add_trule $chainref, $rule1;
 
 		    if ( $rule2 ) {
-			add_transformed_rule $chainref, $rule2;
+			add_trule $chainref, $rule2;
 		    }
 		}
 	    }

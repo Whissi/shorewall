@@ -223,15 +223,8 @@ sub setup_blacklist() {
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    if ( $audit ) {
-		if ( $config{FAKE_AUDIT} ) {
-		    add_rule( $logchainref, '-j AUDIT -m comment --comment "--type ' . lc $target . '"' );
-		} else {
-		    add_rule( $logchainref, '-j AUDIT --type ' . lc $target );
-		}
-	    }
-
-	    add_jump $logchainref, $target, 1;
+	    add_irule( $logchainref, j => 'AUDIT --type ' . lc $target ) if $audit;
+	    add_jump(  $logchainref, $target, 1 );
 
 	    $target = 'blacklog';
 	} elsif ( $audit ) {
@@ -509,7 +502,7 @@ sub add_common_rules() {
 
 	log_rule $level , $chainref , $policy , '' if $level ne '';
 	
-	add_rule( $chainref, '-j AUDIT --type ' . lc $policy ) if $audit;
+	add_irule( $chainref, j => 'AUDIT --type ' . lc $policy ) if $audit;
 	
 	add_jump $chainref, $policy eq 'REJECT' ? 'reject' : $policy , 1;
 	
@@ -518,11 +511,10 @@ sub add_common_rules() {
 	if ( $ipsec ) {
 	    $chainref = new_standard_chain 'sfilter1';
 
-	    add_rule ( $chainref, '-m policy --pol ipsec --dir out -j RETURN' );
-
+	    add_irule ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
 	    log_rule $level , $chainref , $policy , '' if $level ne '';
 	
-	    add_rule( $chainref, '-j AUDIT --type ' . lc $policy ) if $audit;
+	    add_irule( $chainref, j => 'AUDIT --type ' . lc $policy ) if $audit;
 	
 	    add_jump $chainref, $policy eq 'REJECT' ? 'reject' : $policy , 1;
 	
@@ -599,15 +591,8 @@ sub add_common_rules() {
 			    '',
 			    'add',
 			    '' );
-	    if ( $smurfdest eq 'A_DROP' ) {
-		if ( $config{FAKE_AUDIT} ) {
-		    add_rule( $smurfref, '-j AUDIT -m comment --comment "--type drop"' );
-		} else {
-		    add_rule( $smurfref, '-j AUDIT --type drop' );
-		}
-	    }
- 
-	    add_rule( $smurfref, '-j DROP' );
+	    add_irule( $smurfref, j => 'AUDIT --type drop' ) if $smurfdest eq 'A_DROP';
+	    add_irule( $smurfref, j => 'DROP' );
 
 	    $smurfdest = 'smurflog';
 	} else {
@@ -616,9 +601,9 @@ sub add_common_rules() {
 
 	if ( have_capability( 'ADDRTYPE' ) ) {
 	    if ( $family == F_IPV4 ) {
-		add_rule $chainref , '-s 0.0.0.0 -j RETURN';
+		add_irule $chainref , j => 'RETURN', s => '0.0.0.0';         ;
 	    } else {
-		add_rule $chainref , '-s :: -j RETURN';
+		add_irule $chainref , j => 'RETURN', s => '::';
 	    }
 
 	    add_jump( $chainref, $smurfdest, 1, '-m addrtype --src-type BROADCAST ' ) ;
@@ -659,7 +644,7 @@ sub add_common_rules() {
     }
 
     if ( have_capability( 'ADDRTYPE' ) ) {
-	add_rule $rejectref , '-m addrtype --src-type BROADCAST -j DROP';
+	add_irule $rejectref , j => 'DROP' , addrtype => '--src-type BROADCAST';
     } else {
 	if ( $family == F_IPV4 ) {
 	    add_commands $rejectref, 'for address in $ALL_BCASTS; do';
@@ -668,32 +653,32 @@ sub add_common_rules() {
 	}
 
 	incr_cmd_level $rejectref;
-	add_rule $rejectref, '-d $address -j DROP';
+	add_irule $rejectref, j => 'DROP', d => '$address';
 	decr_cmd_level $rejectref;
 	add_commands $rejectref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
-	add_rule $rejectref , '-s 224.0.0.0/4 -j DROP';
+	add_irule $rejectref , j => 'DROP', s => '224.0.0.0/4';
     } else {
-	add_rule $rejectref , '-s ' . IPv6_MULTICAST . ' -j DROP';
+	add_irule $rejectref , j => 'DROP', s => IPv6_MULTICAST;
     }
 
-    add_rule $rejectref , '-p 2 -j DROP';
-    add_rule $rejectref , '-p 6 -j REJECT --reject-with tcp-reset';
+    add_irule $rejectref , j => 'DROP', p => 2;
+    add_irule $rejectref , j => 'REJECT --reject-with tcp-reset', p => 6;
 
     if ( have_capability( 'ENHANCED_REJECT' ) ) {
-	add_rule $rejectref , '-p 17 -j REJECT';
+	add_irule $rejectref , j => 'REJECT', p => 17;
 
 	if ( $family == F_IPV4 ) {
-	    add_rule $rejectref, '-p 1 -j REJECT --reject-with icmp-host-unreachable';
-	    add_rule $rejectref, '-j REJECT --reject-with icmp-host-prohibited';
+	    add_irule $rejectref, j => 'REJECT --reject-with icmp-host-unreachable', p => 1;
+	    add_irule $rejectref, j => 'REJECT --reject-with icmp-host-prohibited';
 	} else {
-	    add_rule $rejectref, '-p 58 -j REJECT --reject-with icmp6-addr-unreachable';
-	    add_rule $rejectref, '-j REJECT --reject-with icmp6-adm-prohibited';
+	    add_irule $rejectref, j => 'REJECT --reject-with icmp6-addr-unreachable', p => 58;
+	    add_irule $rejectref, j => 'REJECT --reject-with icmp6-adm-prohibited';
 	}
     } else {
-	add_rule $rejectref , '-j REJECT';
+	add_irule $rejectref , j => 'REJECT';
     }
 
     $list = find_interfaces_by_option 'dhcp';
@@ -707,8 +692,7 @@ sub add_common_rules() {
 	    set_interface_option $interface, 'use_input_chain', 1;
 	    set_interface_option $interface, 'use_forward_chain', 1;
 	    
-	    set_rule_option( add_rule( $filter_table->{$_} , 
-				       "-p udp --dport $ports -j ACCEPT" ) ,
+	    set_rule_option( add_irule( $filter_table->{$_} , j => 'ACCEPT', p => "udp --dport $ports" ) ,
 			     'dhcp',
 			     1 ) for input_chain( $interface ), output_chain( $interface );
 
@@ -744,18 +728,13 @@ sub add_common_rules() {
 
 	    if ( $audit ) {
 		$disposition =~ s/^A_//;
-		
-		if ( $config{FAKE_AUDIT} ) {
-		    add_rule( $logflagsref, '-j AUDIT -m comment --comment "--type ' . lc $disposition . '"' );
-		} else {
-		    add_rule( $logflagsref, '-j AUDIT --type ' . lc $disposition );
-		}
+		add_irule( $logflagsref, j => 'AUDIT --type ' . lc $disposition );
 	    }
 
 	    if ( $disposition eq 'REJECT' ) {
-		add_rule $logflagsref , '-p 6 -j REJECT --reject-with tcp-reset';
+		add_irule $logflagsref , j => 'REJECT --reject-with tcp-reset', p => 6;
 	    } else {
-		add_rule $logflagsref , "-j $disposition";
+		add_irule $logflagsref , j => $disposition;
 	    }
 
 	    $disposition = 'logflags';
@@ -864,18 +843,18 @@ sub setup_mac_lists( $ ) {
 	    my $chainref = new_chain $table , mac_chain $interface;
 
 	    if ( $family == F_IPV4 ) {
-		add_rule $chainref , '-s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67:68 -j RETURN'
+		add_irule $chainref , j => 'RETURN', s => '0.0.0.0', d => '255.255.255.255', p => 'udp --dport 67:68'
 		    if $table eq 'mangle'  && get_interface_option( $interface, 'dhcp');
 	    } else {
 		#
 		# Accept any packet with a link-level source or destination address
 		#
-		add_rule $chainref , '-s ff80::/10 -j RETURN';
-		add_rule $chainref , '-d ff80::/10 -j RETURN';
+		add_irule $chainref , j => 'RETURN', s => 'ff80::/10';
+		add_irule $chainref , j => 'RETURN', d => 'ff80::/10';
 		#
 		# Accept Multicast
 		#
-		add_rule $chainref , '-d ' . IPv6_MULTICAST . ' -j RETURN';
+		add_irule $chainref , j => 'RETURN', d => IPv6_MULTICAST;
 	    }
 
 	    if ( $ttl ) {
@@ -883,10 +862,10 @@ sub setup_mac_lists( $ ) {
 
 		my $chain = $chainref->{name};
 
-		add_rule $chainref, "-m recent --rcheck --seconds $ttl --name $chain -j RETURN";
-		add_jump $chainref, $chain1ref, 0;
-		add_rule $chainref, "-m recent --update --name $chain -j RETURN";
-		add_rule $chainref, "-m recent --set --name $chain";
+		add_irule $chainref, j => 'RETURN', recent => "--rcheck --seconds $ttl --name $chain";
+		add_jump  $chainref, $chain1ref, 0;
+		add_irule $chainref, j => 'RETURN', recent => "--update --name $chain";
+		add_irule $chainref, '', '', recent => "--set --name $chain";
 	    }
 	}
 
@@ -918,7 +897,7 @@ sub setup_mac_lists( $ ) {
 
 		    fatal_error "You must specify a MAC address or an IP address" unless $mac || $addresses;
 
-		    $mac = mac_match $mac if $mac;
+		    $mac = do_mac $mac if $mac;
 
 		    if ( $addresses ) {
 			for my $address ( split ',', $addresses ) {
@@ -926,29 +905,15 @@ sub setup_mac_lists( $ ) {
 			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 				if supplied $level;
 			    
-			    if ( $audit && $disposition ne 'ACCEPT' ) {
-				if ( $config{FAKE_AUDIT} ) {
-				    add_rule( $chainref , '-j AUDIT -m comment --comment "--type ' . lc $disposition . '"' );
-				} else {
-				    add_rule( $chainref , '-j AUDIT --type ' . lc $disposition );
-				}
-			    }
-
-			    add_jump $chainref , $targetref->{target}, 0, "${mac}${source}";
+			    add_irule( $chainref , j => 'AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			    add_jump( $chainref , $targetref->{target}, 0, "${mac}${source}" );
 			}
 		    } else {
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			    if supplied $level;
 
-			if ( $audit && $disposition ne 'ACCEPT' ) {
-			    if ( $config{FAKE_AUDIT} ) {
-				add_rule( $chainref , '-j AUDIT -m comment --comment "--type ' . lc $disposition . '"' );
-			    } else {
-				add_rule( $chainref , '-j AUDIT --type ' . lc $disposition );
-			    }
-			}
-
-			add_jump $chainref , $targetref->{target}, 0, "$mac";
+			add_irule( $chainref , j => 'AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			add_jump ( $chainref , $targetref->{target}, 0, "$mac" );
 		    }
 
 		    progress_message "      Maclist entry \"$currentline\" $done";
@@ -997,8 +962,8 @@ sub setup_mac_lists( $ ) {
 		    if ( have_capability( 'ADDRTYPE' ) ) {
 			add_commands( $chainref, "for address in $variable; do" );
 			incr_cmd_level( $chainref );
-			add_rule( $chainref, '-s $address -m addrtype --dst-type BROADCAST -j RETURN' );
-			add_rule( $chainref, '-s $address -d 224.0.0.0/4 -j RETURN' );
+			add_irule( $chainref, j => 'RETURN', s => '$address', addrtype => '--dst-type BROADCAST' );
+			add_irule( $chainref, j => 'RETURN', s => '$address', d => '224.0.0.0/4' );
 			decr_cmd_level( $chainref );
 			add_commands( $chainref, 'done' );
 		    } else {
@@ -1011,7 +976,7 @@ sub setup_mac_lists( $ ) {
 
 			if ( $bridgeref->{broadcasts} ) {
 			    for my $address ( @{$bridgeref->{broadcasts}}, '255.255.255.255' ) {
-				add_rule( $chainref, qq( -s \$address -d $address -j RETURN") );
+				add_irule( $chainref, j => 'RETURN', s => '$address', d => $address );
 			    }
 			} else {
 			    my $variable1 = get_interface_bcasts $bridge;
@@ -1019,12 +984,12 @@ sub setup_mac_lists( $ ) {
 			    add_commands( $chainref,
 					  "    for address1 in $variable1; do" );
 			    incr_cmd_level( $chainref );
-			    add_rule( $chainref, 's $address -d $address1 -j RETURN' );
+			    add_irule( $chainref, j => 'RETURN', s => '$address', d => '$address1' );
 			    decr_cmd_level( $chainref );
 			    add_commands( $chainref, 'done' );
 			}
 
-			add_rule( $chainref, '-s $address -d 224.0.0.0/4 -j RETURN' );
+			add_irule( $chainref, j => 'RETURN', s => '$address', d => '224.0.0.0/4' );
 			decr_cmd_level( $chainref );
 			add_commands( $chainref, 'done' );
 		    }
@@ -1167,7 +1132,7 @@ sub handle_loopback_traffic() {
 	}
     }
 
-    add_rule $filter_table->{INPUT}  , '-i lo -j ACCEPT';
+    add_irule $filter_table->{INPUT} , j => 'ACCEPT', i => 'lo';
 }
 
 #
@@ -2062,21 +2027,20 @@ EOF
     add_rule $filter_table->{$_}, "$globals{STATEMATCH} ESTABLISHED,RELATED -j ACCEPT" for @chains;
 
     if ( $family == F_IPV6 ) {
-	add_rule $input, '-s ' . IPv6_LINKLOCAL . ' -j ACCEPT';
-	add_rule $input, '-d ' . IPv6_LINKLOCAL . ' -j ACCEPT';
-	add_rule $input, '-d ' . IPv6_MULTICAST . ' -j ACCEPT';
+	add_irule $input, j => 'ACCEPT', s => IPv6_LINKLOCAL;
+	add_irule $input, j => 'ACCEPT', d => IPv6_LINKLOCAL;
+	add_irule $input, j => 'ACCEPT', d => IPv6_MULTICAST;
 
 	unless ( $config{ADMINISABSENTMINDED} ) {
-	    add_rule $output, '-d ' . IPv6_LINKLOCAL . ' -j ACCEPT';
-	    add_rule $output, '-d ' . IPv6_MULTICAST . ' -j ACCEPT';
+	    add_irule $output, j => 'ACCEPT', d => IPv6_LINKLOCAL;
+	    add_irule $output, j => 'ACCEPT', d => IPv6_MULTICAST;
 	}
     }
 
     process_routestopped;
 
-    add_rule $input, '-i lo -j ACCEPT';
-
-    add_rule $output, '-o lo -j ACCEPT' unless $config{ADMINISABSENTMINDED};
+    add_irule $input,  j => 'ACCEPT', i => 'lo';
+    add_irule $output, j => 'ACCEPT', o => 'lo' unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 

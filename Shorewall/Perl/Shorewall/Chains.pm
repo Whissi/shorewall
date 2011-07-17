@@ -36,13 +36,14 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		    add_rule
+		    add_irule
 		    add_jump
 		    insert_rule
 		    rule_target
 		    clear_rule_target
 		    set_rule_target
 		    set_rule_option
-		    add_transformed_rule
+		    add_trule
 		    add_commands
 		    incr_cmd_level
 		    decr_cmd_level
@@ -142,7 +143,7 @@ our %EXPORT_TAGS = (
 				       clearrule
 				       port_count
 				       do_proto
-				       mac_match
+				       do_mac
 				       verify_mark
 				       verify_small_mark
 				       validate_mark
@@ -341,6 +342,7 @@ our $family;
 #
 my  %builtin_target = ( ACCEPT      => 1,
 			ACCOUNT     => 1,
+			AUDIT       => 1,
 			CHAOS       => 1,
 			CHECKSUM    => 1,
 			CLASSIFY    => 1,
@@ -675,7 +677,7 @@ sub set_rule_target( $$$ ) {
 }
 
 #
-# Convert a transformed rule into iptables input
+# Convert an trule into iptables input
 #
 # First, a helper function
 #
@@ -812,7 +814,10 @@ sub push_rule( $$ ) {
     $ruleref;
 }
 
-sub add_transformed_rule( $$ ) {
+#
+# Add a Transformed rule
+#
+sub add_trule( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
     assert( reftype $ruleref );
@@ -820,6 +825,8 @@ sub add_transformed_rule( $$ ) {
     $chainref->{referenced} = 1;
 
     trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
+
+    $ruleref;
 }
 
 #
@@ -942,6 +949,41 @@ sub add_rule($$;$) {
     } else {
 	push_rule( $chainref, $rule );
     }
+}
+
+#
+# New add_rule implementation
+#
+sub add_irule( $$$;@ ) {
+    my ( $chainref, $jump, $target, @matches ) = @_;
+
+    ( $target, my $targetopts ) = split ' ', $target, 2;
+
+    my $ruleref = {};
+    
+    $ruleref->{mode} = $ruleref->{cmdlevel} = $chainref->{cmdlevel} ? CMD_MODE : CAT_MODE;
+ 
+    if ( $jump ) {
+	$ruleref->{jump}       = $jump;
+	$ruleref->{target}     = $target;
+	$ruleref->{targetopts} = $targetopts if $targetopts;
+    }
+
+    unless ( $ruleref->{simple} = ! @matches ) {
+	while ( @matches ) {
+	    my ( $option, $value ) = ( shift @matches, shift @matches );
+	    $ruleref->{$option} = $value; 
+	}
+    }
+
+    if ( $comment ) {
+	$ruleref->{comment} = $comment unless $ruleref->{comment};
+    }
+
+    push @{$chainref->{rules}}, $ruleref;
+    $chainref->{referenced} = 1;
+
+    $ruleref;
 }
 
 #
@@ -1836,12 +1878,7 @@ sub ensure_audit_chain( $;$$ ) {
 
 	$tgt ||= $action;
 
-	if ( $config{FAKE_AUDIT} ) {
-	    add_rule( $ref, '-j AUDIT -m comment --comment "--type ' . lc $action . '"' );
-	} else {
-	    add_rule $ref, '-j AUDIT --type ' . lc $action;
-	}
-
+	add_rule $ref, '-j AUDIT --type ' . lc $action;
 	
 	if ( $tgt eq 'REJECT' ) {
 	    add_jump $ref , 'reject', 1;
@@ -1991,12 +2028,6 @@ sub initialize_chain_table($) {
 	#
 	# Create these chains early in case they are needed by Policy actions
 	#
-	if ( $config{FAKE_AUDIT} ) {
-	    dont_delete new_standard_chain 'AUDIT', 0;
-	} else {
-	    $builtin_target{AUDIT} = 1;
-	}
-
 	dont_move   new_standard_chain 'reject';
     }
 }
@@ -2733,7 +2764,8 @@ sub do_proto( $$$;$ )
     $output;
 }
 
-sub mac_match( $ ) {
+
+sub do_mac( $ ) {
     my $mac = $_[0];
 
     $mac =~ s/^(!?)~//;
@@ -3261,7 +3293,7 @@ sub match_source_net( $;$\$ ) {
     if ( $net =~ /^!?~/ ) {
 	fatal_error "A MAC address($net) cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
 	$$macref = 1 if $macref;
-	return mac_match $net;
+	return do_mac $net;
     }
 
     if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?/ ) {

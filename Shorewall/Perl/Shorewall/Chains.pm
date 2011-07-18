@@ -594,6 +594,8 @@ sub transform_rule( $ ) {
     my $input    = shift;
     my $ruleref  = { mode => CAT_MODE, target => '' };
     my $simple   = 1;
+
+    $input =~ s/^\s*//;
     #
     # This is the first step in converting the compiler to use an intermediate form for rules.
     # We parse the iptables input and convert it into a hash. Eventually, the upper levels
@@ -697,7 +699,7 @@ sub format_option( $$ ) {
 
     my $rule = '';
 
-    $rule .= join( ' ' , ' -m', $option, $_ ) for @$list;
+    s/\s*$//, $rule .= join( ' ' , ' -m', $option, $_ ) for @$list;
 
     $rule;
 }
@@ -963,6 +965,29 @@ sub add_rule($$;$) {
 #
 # New add_rule implementation
 #
+sub push_matches {
+    
+    my $ruleref = shift;
+    my $dont_optimize = 0;
+
+    while ( @_ ) {
+	my ( $option, $value ) = ( shift , shift );
+
+	assert( defined $value );
+
+	if ( exists $ruleref->{$option} ) {
+	    my $curvalue = $ruleref->{$option};
+	    $ruleref->{$option} = [ $curvalue ] unless reftype $curvalue;
+	    push @{$ruleref->{$option}}, reftype $value ? @$value : $value;
+	} else {
+	    $ruleref->{$option} = $value;
+	    $dont_optimize ||= $option =~ /^[piosd]/ && $value =~ /^!/;
+	}
+    }
+
+    $dont_optimize;
+}
+
 sub add_irule( $$$;@ ) {
     my ( $chainref, $jump, $target, @matches ) = @_;
 
@@ -979,15 +1004,7 @@ sub add_irule( $$$;@ ) {
     }
 
     unless ( $ruleref->{simple} = ! @matches ) {
-	my $dont_optimize = $chainref->{dont_optimize};
-	
-	while ( @matches ) {
-	    my ( $option, $value ) = ( shift @matches, shift @matches );
-	    $ruleref->{$option} = $value;
-	    $dont_optimize ||= $option =~ /^[piosd]/ && $option =~ /^!/;
-	}
-	
-	$chainref->{ dont_optimize } = $dont_optimize;
+	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
     }
 
     if ( $comment ) {
@@ -1089,19 +1106,16 @@ sub insert_irule( $$$$;@ ) {
     }
 
     unless ( $ruleref->{simple} = ! @matches ) {
-	my $dont_optimize = $chainref->{dont_optimize};
-	
-	while ( @matches ) {
-	    my ( $option, $value ) = ( shift @matches, shift @matches );
-	    $ruleref->{$option} = $value; 
-	    $dont_optimize ||= $option =~ /^[piosd]/ && $option =~ /^!/;
-	}
-	
-	$chainref->{ dont_optimize } = $dont_optimize;
+	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
     }
 
     if ( $comment ) {
 	$ruleref->{comment} = $comment unless $ruleref->{comment};
+    }
+
+    if ( $number < 0 ) {
+	$chainref->{blacklist}++;
+	$number = 0;
     }
 
     splice( @{$chainref->{rules}}, $number, 0, $ruleref );
@@ -1737,7 +1751,6 @@ sub insert_ijump( $$$$;@ ) {
 	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
     }
 
-    $jump = 'j' unless $toref && have_capability 'GOTO_TARGET';
     #
     # If the destination is a chain, mark it referenced
     #
@@ -3623,7 +3636,7 @@ sub imatch_dest_net( $ ) {
     }
 
     if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?$/ ) {
-	return ( set => $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
+	return ( set => join( '', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) ) );
     }
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
@@ -3634,7 +3647,7 @@ sub imatch_dest_net( $ ) {
 
 	for $net ( @sets ) {
 	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
-	    push @result , join( '', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
+	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) ) );
 	}
 
 	return ( set => \@result );
@@ -3690,47 +3703,48 @@ sub match_orig_dest ( $ ) {
 #
 sub match_ipsec_in( $$ ) {
     my ( $zone , $hostref ) = @_;
-    my $match = '';
+    my @match;
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
     unless ( $optionsref->{super} || $zoneref->{type} == VSERVER ) {
-	$match = '-m policy --dir in --pol ';
+	my $match = '--dir in --pol ';
 
 	if ( $zoneref->{type} == IPSEC ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
 	} elsif ( have_ipsec ) {
 	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";
 	} else {
-	    return '';
+	    return ();
 	}
+
+	@match = ( policy => $match );
     }
 
-    $match;
+    @match;
 }
 
-#
-# Match Dest IPSEC
-#
 sub match_ipsec_out( $$ ) {
     my ( $zone , $hostref ) = @_;
-    my $match = '';
+    my @match;
     my $zoneref    = find_zone( $zone );
     my $optionsref = $zoneref->{options};
 
     unless ( $optionsref->{super} || $zoneref->{type} == VSERVER ) {
-	$match = '-m policy --dir out --pol ';
+	my $match = '--dir out --pol ';
 
 	if ( $zoneref->{type} == IPSEC ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}";
 	} elsif ( have_ipsec ) {
 	    $match .= "$hostref->{ipsec} $optionsref->{in_out}{ipsec}$optionsref->{out}{ipsec}"
 	} else {
-	    return '';
+	    return ();
 	}
+
+	@match = ( policy => $match );
     }
 
-    $match;
+    @match;
 }
 
 #

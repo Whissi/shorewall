@@ -448,6 +448,8 @@ my %special = ( rule       => CONTROL,
 		o          => UNIQUE,
 		d          => UNIQUE,
 		p          => UNIQUE,
+		dport      => UNIQUE,
+		sport      => UNIQUE,
 		
 		comment    => CONTROL,
 
@@ -457,6 +459,20 @@ my %special = ( rule       => CONTROL,
 		jump       => TARGET,
 		target     => TARGET,
 		targetopts => TARGET );
+
+my %aliases = ( protocol        => 'p',
+		source          => 's',
+		destination     => 'd',
+		jump            => 'j',
+		goto            => 'g',
+		'in-interface'  => 'i',
+		'out-interface' => 'o',
+		dport           => 'dport',
+		sport           => 'sport',
+	      );
+
+my @unique_options = ( qw/p dport sport s d i o/ );
+	     
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -623,16 +639,21 @@ sub transform_rule( $ ) {
     # will generate the hash from the outset
     #
     while ( $input ) {
-	assert( $input =~ s/^(!|-[psdjgiom])\s*//, $input );
-	my $option = $1;
+	my $option;
 	my $invert = '';
+	
+	if ( $input =~ s/^(!\s+)?-([psdjgiom])\s+// ) {
+	    #
+	    # Normal case of single-character
+	    $invert = '!' if $1;
+	    $option = $2;
+	} elsif ( $input =~ s/^(!\s+)?--([^\s]+)\s*// ) {
+	    $invert = '!' if $1;
+	    my $opt = $option = $2;
 
-	if ( $option eq '!' ) {
-	    $invert = '! ';
-	    assert( $input =~ s/^-([psdjgiom])\s*//, $input );
-	    $option = $1;
+	    fatal_error "Unregonized iptables command ($opt}" unless $option = $aliases{$option};	    
 	} else {
-	    $option =~ s/^-//;
+	    fatal_error "Unrecognized iptables command string ($input)";
 	}
 
 	if ( $option eq 'j' or $option eq 'g' ) {
@@ -653,11 +674,14 @@ sub transform_rule( $ ) {
       PARAM:
 	{
 	    while ( $input ne '' && $input !~ /^(?:!|-[psdjgiom])\s/ ) {
+		last PARAM if $input =~ /^--([^\s]+)/ && $aliases{$1 || '' };
 		assert( $input =~ s/^([^\s]+)\s*// , $input );
-		$params = $params eq '' ? $1 : join( ' ' , $params, $1);
+		my $token = $1;
+		$params = $params eq '' ? $token : join( ' ' , $params, $token);	
 	    }
 
-	    if ( $input =~ /^(?:!\s+--|!\s+[^-])/ ) {
+	    if ( $input =~ /^(?:!\s+--([^\s]+)|!\s+[^-])/ ) {
+		last PARAM if $aliases{$1 || ''};
 		$params = $params eq '' ? '!' : join( ' ' , $params, '!' );
 		$input =~ s/^!\s+//;
 		redo PARAM;
@@ -665,7 +689,7 @@ sub transform_rule( $ ) {
 	}
 
 	set_rule_option( $ruleref, $option, $params ) unless $params eq '';
-  }
+    }
 
     $ruleref->{target} ||= '';
     $ruleref->{simple} = $simple;
@@ -732,12 +756,16 @@ sub format_rule( $$;$ ) {
 
     my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
     
-    for ( qw/ p i s o d / ) {
+    for ( @unique_options ) {
 	if ( exists $ruleref->{$_} ) {
 	    my $value = $ruleref->{$_};
 
-	    $rule .= ' !' if $value =~ s/^! //;
-	    $rule .= join( '' , ' -', $_, ' ', $value );
+	    if ( length == 1 ) {
+		$rule .= ' !' if $value =~ s/^! //;
+		$rule .= join( '' , ' -', $_, ' ', $value );
+	    } else {
+		$rule .= join( '' , ' --', $_, ' ', $value );
+	    }
 	}
     }
 
@@ -764,7 +792,7 @@ sub merge_rules( $$$ ) {
 
     my $target = $fromref->{target};
 
-    for my $option ( qw/p i o s d/ ) {
+    for my $option ( @unique_options ) {
 	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
     }
 		    

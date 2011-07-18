@@ -163,8 +163,8 @@ sub process_one_masq( )
 	    if ( $addresses eq 'random' ) {
 		$randomize = '--random ';
 	    } else {
-		$addresses =~ s/:persistent$// and $persistent = '--persistent ';
-		$addresses =~ s/:random$//     and $randomize  = '--random ';
+		$addresses =~ s/:persistent$// and $persistent = ' --persistent ';
+		$addresses =~ s/:random$//     and $randomize  = ' --random ';
 
 		require_capability 'PERSISTENT_SNAT', ':persistent', 's' if $persistent;
 

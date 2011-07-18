@@ -728,6 +728,8 @@ sub format_option( $$ ) {
 sub format_rule( $$;$ ) {
     my ( $chainref, $ruleref, $suppresshdr ) = @_;
 
+    return $ruleref->{cmd} if exists $ruleref->{cmd};
+
     my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
     
     for ( qw/ p i s o d / ) {

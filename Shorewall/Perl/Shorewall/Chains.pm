@@ -1016,7 +1016,7 @@ sub add_irule( $$$;@ ) {
 
     my $ruleref       = {};
     
-    $ruleref->{mode} = $ruleref->{cmdlevel} = $chainref->{cmdlevel} ? CMD_MODE : CAT_MODE;
+    $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
  
     if ( $jump ) {
 	$ruleref->{jump}       = $jump;
@@ -1116,7 +1116,7 @@ sub insert_irule( $$$$;@ ) {
 
     my $ruleref = {};
    
-    $ruleref->{mode} = $ruleref->{cmdlevel} = $chainref->{cmdlevel} ? CMD_MODE : CAT_MODE;
+    $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
  
     if ( $jump ) {
 	$jump = 'j' unless have_capability 'GOTO_TARGET';

@@ -2529,6 +2529,9 @@ sub optimize_level8( $$$ ) {
     
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
+    #
+    # To be able to quickly compare two rules, we generate the -A command for each rule
+    #
     for my $chainref ( @chains ) {
 	for ( @{$chainref->{rules}} ) {
 	    $_->{rule} = format_rule( $chainref, $_, 1 );
@@ -5060,27 +5063,28 @@ sub enter_cmd_mode1() {
 }
 
 sub emitr1( $$ ) {
-    my ( $chain, $rule ) = @_;
+    my ( $chainref, $ruleref ) = @_;
 
-    if ( $rule ) {
-	if ( $rule->{mode} == CAT_MODE ) {
+    if ( $ruleref ) {
+	if ( $ruleref->{mode} == CAT_MODE ) {
 	    #
 	    # A rule
 	    #
 	    enter_cat_mode1 unless $mode == CAT_MODE;
 
-	    my $formated = format_rule $chain, $rule;
-	    print "$formated\n";
+	    print format_rule( $chainref, $ruleref ) . "\n";
 	} else {
 	    #
 	    # A command
 	    #
 	    enter_cmd_mode1 unless $mode == CMD_MODE;
 
-	    if ( $rule->{cmd} ) {
-		emitstd $rule->{cmd};
+	    if ( exists $ruleref->{cmd} ) {
+		emitstd $ruleref->{cmd};
 	    } else {
-		emitstd format_rule $chain, $rule;
+		( my $rule = format_rule( $chainref, $ruleref ) ) =~ s/"/\\"/g;
+		
+		emitstd join( '', '    ' x $ruleref->{cmdlevel} , 'echo "' , $rule, '" >&3' );
 	    }
 	}
     }

@@ -100,7 +100,7 @@ sub setup_route_marking() {
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
-    add_rule $mangle_table->{$_} , "-m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask" for qw/PREROUTING OUTPUT/;
+    add_irule $mangle_table->{$_} , j => "CONNMARK --restore-mark --mask $mask", connmark => "! --mark 0/$mask" for qw/PREROUTING OUTPUT/;
 
     my $chainref  = new_chain 'mangle', 'routemark';
     my $chainref1 = new_chain 'mangle', 'setsticky';
@@ -114,22 +114,22 @@ sub setup_route_marking() {
 	my $mark      = $providerref->{mark};
 
 	unless ( $marked_interfaces{$interface} ) {
-	    add_jump $mangle_table->{PREROUTING} , $chainref,  0, "-i $physical -m mark --mark 0/$mask ";
-	    add_jump $mangle_table->{PREROUTING} , $chainref1, 0, "! -i $physical -m mark --mark  $mark/$mask ";
-	    add_jump $mangle_table->{OUTPUT}     , $chainref2, 0, "-m mark --mark  $mark/$mask ";
+	    add_ijump $mangle_table->{PREROUTING} , j => $chainref,  i => $physical,     mark => "--mark 0/$mask";
+	    add_ijump $mangle_table->{PREROUTING} , j => $chainref1, i => "! $physical", mark => "--mark  $mark/$mask";
+	    add_ijump $mangle_table->{OUTPUT}     , j => $chainref2,                     mark => "--mark  $mark/$mask";
 	    $marked_interfaces{$interface} = 1;
 	}
 
 	if ( $providerref->{shared} ) {
 	    add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-	    add_rule $chainref, match_source_dev( $interface ) . "-m mac --mac-source $providerref->{mac} -j MARK --set-mark $providerref->{mark}";
+	    add_irule $chainref, j => "MARK --set-mark $providerref->{mark}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
 	    decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	} else {
-	    add_rule $chainref, match_source_dev( $interface ) . "-j MARK --set-mark $providerref->{mark}";
+	    add_irule $chainref, j => "MARK --set-mark $providerref->{mark}", imatch_source_dev( $interface );
 	}
     }
 
-    add_rule $chainref, "-m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask";
+    add_irule $chainref, j => "CONNMARK --save-mark --mask $mask", mark => "! --mark 0/$mask";
 }
 
 sub copy_table( $$$ ) {

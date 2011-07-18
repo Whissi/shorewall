@@ -406,6 +406,28 @@ my  %builtin_target = ( ACCEPT      => 1,
 
 my %ipset_exists;
 
+#
+# Rules are stored in an internal form
+#
+#     {   mode       => CAT_MODE if rule is not part of a conditional block or loop
+#                    => CMD_MODE if the rule contains a shell command or if it
+#                                part of a loop or conditional block. If it is a
+#                                shell command, the text of the command is in
+#                                the cmd
+#         cmd        => Shell command, if mode == CMD_MODE and cmdlevel == 0
+#         cmdlevel   => nesting level within loops and conditional blocks. 
+#                       determines indentation
+#         simple     => true|false. If true, there are no matches or options
+#         jump       => 'j', 'g' or '' (determines whether '-j' or '-g' is included
+#         target     => Rule target, if jump is 'j' or 'g'.
+#         targetopts => Target options. Only included if non-empty
+#         <option>   => iptables/ip6tables -A options (e.g., i => eth0)
+#         <match>    => iptables match. Value may be a scalar or array.
+#                       if an array, multiple "-m <match>"s will be generated
+#    } 
+#
+# The following constants and hash are used to classify keys in a rule hash
+#
 use constant { UNIQUE      => 1,
 	       TARGET      => 2,
 	       EXCLUSIVE   => 4,
@@ -413,6 +435,7 @@ use constant { UNIQUE      => 1,
 	       CONTROL     => 16 };
 
 my %special = ( rule       => CONTROL,
+		cmd        => CONTROL,
 
 		dhcp       => UNIQUE,
 		
@@ -430,12 +453,10 @@ my %special = ( rule       => CONTROL,
 
 		policy     => MATCH,
 		state      => EXCLUSIVE,
-		ctstate    => EXCLUSIVE,
 		
 		jump       => TARGET,
 		target     => TARGET,
 		targetopts => TARGET );
-
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -719,7 +740,6 @@ sub format_rule( $$;$ ) {
     }
 
     $rule .= format_option( 'state',   $ruleref->{state} )   if defined $ruleref->{state};  
-    $rule .= format_option( 'ctstate', $ruleref->{ctstate} ) if defined $ruleref->{ctstate};  
     $rule .= format_option( 'policy',  $ruleref->{policy} )  if defined $ruleref->{policy};  
 
     $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $special{$_}, keys %{$ruleref} );
@@ -750,9 +770,8 @@ sub merge_rules( $$$ ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 
-    unless ( $toref->{state} || $toref->{ctstate} ) {
+    unless ( $toref->{state} ) {
 	set_rule_option ( $toref, 'state',   $fromref->{state} )   if $fromref->{state};
-	set_rule_option ( $toref, 'ctstate', $fromref->{ctstate} ) if $fromref->{ctstate};
     }
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
@@ -5010,7 +5029,7 @@ sub emitr( $$ ) {
 	    #
 	    enter_cmd_mode unless $mode == CMD_MODE;
 	    
-	    if ( $ruleref->{cmd} ) {
+	    if ( exists $ruleref->{cmd} ) {
 		emit join( '', '    ' x $ruleref->{cmdlevel}, $ruleref->{cmd} );
 	    } else {
 		#

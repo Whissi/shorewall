@@ -26,6 +26,22 @@ VI.   PROBLEMS CORRECTED AND NEW FEATURES IN PRIOR RELEASES
 3)  The SNAT options --persistent and --randomize now work properly
     (/etc/shorewall/masq).
 
+4)  The LOGMARK log level was previously generated invalid iptables 
+    input making it unusable. That has been corrected.
+
+    The syntax for LOGMARK is now:
+
+    	LOGMARK(<priority>) 
+
+    where <priority> is a syslog priority (1-7 or debug, info, notice,
+    etc.).
+
+    Example rule:
+
+    	    #ACTION		SOURCE	DEST	PROTO	DEST
+	    #						PORT(S)
+	    LOG:LOGMARK(info)	lan	dmz	udp	1234
+
 4.4.21 Final
 
 1)  All problems corrections included in Shorewall 4.4.20.1 - 4.4.20.3

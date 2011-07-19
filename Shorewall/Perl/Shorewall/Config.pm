@@ -2132,10 +2132,21 @@ sub validate_level( $ ) {
 	    return $rawlevel;
 	}
 
-	if ( $level eq 'LOGMARK' ) {
+	if ( $level =~ /^LOGMARK --/ ) {
+	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
+	    return $rawlevel;
+	}
+
+	if ( $level =~ /LOGMARK[(](.*)[)]$/ ) {
+	    my $sublevel = $1;
+	    
+	    $sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;
+
+	    level_error( $level ) unless defined $sublevel  =~ /^[0-7]$/; 
+	    
 	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
 	    require_capability( 'LOGMARK_TARGET' , 'LOGMARK', 's' );
-	    return 'LOGMARK';
+	    return "LOGMARK --log-level $sublevel";
 	}
 
 	level_error( $rawlevel );

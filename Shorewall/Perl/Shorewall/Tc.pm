@@ -111,8 +111,6 @@ my  %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
 		    'tos-normal-service'       => '0x00/0x1e' );
 my  %classids;
 
-my  @deferred_rules;
-
 #
 # Perl version of Arn Bernin's 'tc4shorewall'.
 #
@@ -182,7 +180,6 @@ my $family;
 sub initialize( $ ) {
     $family   = shift;
     %classids = ();
-    @deferred_rules = ();
     @tcdevices = ();
     %tcdevices = ();
     @tcclasses = ();
@@ -1402,8 +1399,16 @@ sub setup_simple_traffic_shaping() {
 	clear_comment;
 
 	if ( $ipp2p ) {
-	    insert_rule1 $mangle_table->{tcpost} , 0 , '-m mark --mark 0/'   . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} );
-	    add_rule     $mangle_table->{tcpost} ,     '-m mark ! --mark 0/' . in_hex( $globals{TC_MASK} ) . ' -j CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} );
+	    insert_irule( $mangle_table->{tcpost} ,
+			  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
+			  0 ,
+			  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
+			);
+
+	    add_irule( $mangle_table->{tcpost} ,
+		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
+		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
+		     );
 	}
     }
 }
@@ -1687,31 +1692,31 @@ sub setup_tc() {
 	    ensure_mangle_chain 'tcin';
 	}
 
-	my $mark_part = '';
+	my @mark_part;
 
 	if ( @routemarked_interfaces && ! $config{TC_EXPERT} ) {
-	    $mark_part = '-m mark --mark 0/' . in_hex( $globals{PROVIDER_MASK} ) . ' ';
+	    @mark_part = ( mark => '--mark 0/' . in_hex( $globals{PROVIDER_MASK} ) );
 
 	    unless ( $config{TRACK_PROVIDERS} ) {
 		#
 		# This is overloading TRACK_PROVIDERS a bit but sending tracked packets through PREROUTING is a PITA for users
 		#
 		for my $interface ( @routemarked_interfaces ) {
-		    add_jump $mangle_table->{PREROUTING} , 'tcpre', 0, match_source_dev( $interface );
+		    add_ijump $mangle_table->{PREROUTING} , j => 'tcpre', imatch_source_dev( $interface );
 		}
 	    }
 	}
 
-	add_jump $mangle_table->{PREROUTING} , 'tcpre', 0, $mark_part;
-	add_jump $mangle_table->{OUTPUT} ,     'tcout', 0, $mark_part;
+	add_ijump $mangle_table->{PREROUTING} , j => 'tcpre', @mark_part;
+	add_ijump $mangle_table->{OUTPUT} ,     j => 'tcout', @mark_part;
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    my $mask = have_capability 'EXMARK' ? have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '' : '';
 
-	    add_rule( $mangle_table->{FORWARD},     "-j MARK --set-mark 0${mask}" ) if $config{FORWARD_CLEAR_MARK};
-	    add_jump $mangle_table->{FORWARD} ,     'tcfor',  0;
-	    add_jump $mangle_table->{POSTROUTING} , 'tcpost', 0;
-	    add_jump $mangle_table->{INPUT} ,       'tcin' ,  0;
+	    add_irule $mangle_table->{FORWARD},      j => "MARK --set-mark 0${mask}" if $config{FORWARD_CLEAR_MARK};
+	    add_ijump $mangle_table->{FORWARD} ,     j => 'tcfor';
+	    add_ijump $mangle_table->{POSTROUTING} , j => 'tcpost';
+	    add_ijump $mangle_table->{INPUT} ,       j => 'tcin';
 	}
     }
 
@@ -1791,8 +1796,6 @@ sub setup_tc() {
 
 	    clear_comment;
 	}
-
-	add_rule ensure_chain( 'mangle' , 'tcpost' ), $_ for @deferred_rules;
 
 	handle_stickiness( $sticky );
     }

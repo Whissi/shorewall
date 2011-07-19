@@ -400,47 +400,47 @@ sub setup_accounting() {
 
 	    if ( have_bridges || $asection ) {
 		if ( $tableref->{accountin} ) {
-		    add_jump( $tableref->{INPUT}, 'accountin', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{INPUT}, j => 'accountin', 0 );
 		}
 
 		if ( $tableref->{accounting} ) {
 		    dont_optimize( 'accounting' );
 		    for my $chain ( qw/INPUT FORWARD/ ) {
-			add_jump( $tableref->{$chain}, 'accounting', 0, '', 0, 0 );
+			insert_ijump( $tableref->{$chain}, j => 'accounting', 0 );
 		    }
 		}
 
 		if ( $tableref->{accountfwd} ) {
-		    add_jump( $tableref->{FORWARD}, 'accountfwd', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{FORWARD}, j => 'accountfwd', 0 );
 		}
 
 		if ( $tableref->{accountout} ) {
-		    add_jump( $tableref->{OUTPUT}, 'accountout', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{OUTPUT}, j => 'accountout', 0 );
 		}
 
 		if ( $tableref->{accountpre} ) {
-		    add_jump( $tableref->{PREROUTING}, 'accountpre', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{PREROUTING}, j => 'accountpre' , 0 );
 		}
 
 		if ( $tableref->{accountpost} ) {
-		    add_jump( $tableref->{POSTROUTING}, 'accountpost', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{POSTROUTING}, j => 'accountpost', 0 );
 		}
 	    } elsif ( $tableref->{accounting} ) {
 		dont_optimize( 'accounting' );
 		for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
-		    add_jump( $tableref->{$chain}, 'accounting', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{$chain}, j => 'accounting', 0 );
 		}
 	    }
 
 	    if ( $tableref->{accipsecin} ) {
 		for my $chain ( qw/INPUT FORWARD/ ) {
-		    add_jump( $tableref->{$chain}, 'accipsecin', 0,  '', 0, 0 );
+		    insert_ijump( $tableref->{$chain}, j => 'accipsecin', 0 );
 		}
 	    }
 
 	    if ( $tableref->{accipsecout} ) {
 		for my $chain ( qw/FORWARD OUTPUT/ ) {
-		    add_jump( $tableref->{$chain}, 'accipsecout', 0, '', 0, 0 );
+		    insert_ijump( $tableref->{$chain}, j => 'accipsecout', 0 );
 		}
 	    }
 

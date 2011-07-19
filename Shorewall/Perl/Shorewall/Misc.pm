@@ -1151,17 +1151,17 @@ sub add_interface_jumps {
     # Add Nat jumps
     #
     for my $interface ( @_ ) {
-	addnatjump 'POSTROUTING' , snat_chain( $interface ), match_dest_dev( $interface );
+	addnatjump 'POSTROUTING' , snat_chain( $interface ), imatch_dest_dev( $interface );
     }
 
-    addnatjump 'PREROUTING'  , 'nat_in'  , '';
-    addnatjump 'POSTROUTING' , 'nat_out' , '';
-    addnatjump 'PREROUTING', 'dnat', '';
+    addnatjump 'PREROUTING'  , 'nat_in';
+    addnatjump 'POSTROUTING' , 'nat_out';
+    addnatjump 'PREROUTING', 'dnat';
 
     for my $interface ( grep $_ ne '%vserver%', @_ ) {
-	addnatjump 'PREROUTING'  , input_chain( $interface )  , match_source_dev( $interface );
-	addnatjump 'POSTROUTING' , output_chain( $interface ) , match_dest_dev( $interface );
-	addnatjump 'POSTROUTING' , masq_chain( $interface ) , match_dest_dev( $interface );
+	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
+	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
+	addnatjump 'POSTROUTING' , masq_chain( $interface ) , imatch_dest_dev( $interface );
     }
     #
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
@@ -1501,7 +1501,7 @@ sub generate_matrix() {
 				#
 				# The jump from the PREROUTING chain to dnat may not have been added above
 				# 
-				addnatjump 'PREROUTING', 'dnat', '' unless $preroutingref->{references}{PREROUTING};
+				addnatjump 'PREROUTING', 'dnat' unless $preroutingref->{references}{PREROUTING};
 			    }
 				
 			    check_optimization( $dnatref ) if @source;
@@ -1839,7 +1839,7 @@ sub setup_mss( ) {
 	#
 	# Send all forwarded SYN packets to the 'settcpmss' chain
 	#
-	add_jump $filter_table->{FORWARD} , $chainref, 0, '-p tcp --tcp-flags SYN,RST SYN ';
+	add_ijump $filter_table->{FORWARD} , j => $chainref, p => 'tcp --tcp-flags SYN,RST SYN';
 
 	my @in_match  = ();
 	my @out_match = ();

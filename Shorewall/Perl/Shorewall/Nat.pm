@@ -413,22 +413,22 @@ sub setup_netmap() {
 
 	    for my $interface ( split_list $interfacelist, 'interface' ) {
 
-		my $rulein = '';
-		my $ruleout = '';
+		my @rulein;
+		my @ruleout;
 		my $iface = $interface;
 
 		fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
 		unless ( $interfaceref->{root} ) {
-		    $rulein  = match_source_dev( $interface );
-		    $ruleout = match_dest_dev( $interface );
+		    @rulein  = imatch_source_dev( $interface );
+		    @ruleout = imatch_dest_dev( $interface );
 		    $interface = $interfaceref->{name};
 		}
 
 		if ( $type eq 'DNAT' ) {
-		    add_rule ensure_chain( 'nat' , input_chain $interface ) , $rulein   . match_source_net( $net3 ) . "-d $net1 -j NETMAP --to $net2";
+		    add_irule ensure_chain( 'nat' , input_chain $interface ) ,  j => "NETMAP --to $net2", @rulein  , imatch_source_net( $net3 ), d => $net1;
 		} elsif ( $type eq 'SNAT' ) {
-		    add_rule ensure_chain( 'nat' , output_chain $interface ) , $ruleout . match_dest_net( $net3 )   . "-s $net1 -j NETMAP --to $net2";
+		    add_irule ensure_chain( 'nat' , output_chain $interface ) , j => "NETMAP --to $net2", @ruleout , imatch_dest_net( $net3 ) ,  s => $net1;
 		} else {
 		    fatal_error "Invalid type ($type)";
 		}

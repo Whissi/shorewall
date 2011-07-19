@@ -1809,7 +1809,7 @@ sub insert_ijump( $$$$;@ ) {
 }
 
 #
-# Delete jumps previously added via add_jump. If the target chain is empty, reset its
+# Delete jumps previously added via add_ijump. If the target chain is empty, reset its
 # referenced flag
 #
 sub delete_jumps ( $$ ) {
@@ -2052,12 +2052,12 @@ sub ensure_audit_chain( $;$$ ) {
 
 	$tgt ||= $action;
 
-	add_rule $ref, '-j AUDIT --type ' . lc $action;
+	add_irule $ref, j => 'AUDIT --type ' . lc $action;
 	
 	if ( $tgt eq 'REJECT' ) {
-	    add_jump $ref , 'reject', 1;
+	    add_ijump $ref , g => 'reject';
 	} else {
-	    add_jump $ref , $tgt, 0;
+	    add_ijump $ref , j => $tgt;
 	}
     }
 
@@ -2221,7 +2221,7 @@ sub optimize_chain( $ ) {
 	pop @$rules, $count++ while @$rules && $rules->[-1]->{target} eq 'ACCEPT';
 
 	if ( @${rules} ) {
-	    add_rule $chainref, '-j ACCEPT';
+	    add_irule $chainref, j => 'ACCEPT';
 	    my $type = $chainref->{builtin} ? 'builtin' : 'policy';
 	    progress_message "  $count ACCEPT rules deleted from $type chain $chainref->{name}" if $count;
 	} elsif ( $chainref->{builtin} ) {
@@ -2733,8 +2733,8 @@ sub source_exclusion( $$ ) {
 
     my $chainref = new_chain( $table , newexclusionchain( $table ) );
 
-    add_rule( $chainref, match_source_net( $_ ) . '-j RETURN' ) for @$exclusions;
-    add_jump( $chainref, $target, 1 );
+    add_irule( $chainref, j => 'RETURN', imatch_source_net( $_ ) ) for @$exclusions;
+    add_ijump( $chainref, g => $target );
 
     reftype $target ? $chainref : $chainref->{name};
 }
@@ -2748,8 +2748,8 @@ sub dest_exclusion( $$ ) {
 
     my $chainref = new_chain( $table , newexclusionchain( $table ) );
 
-    add_rule( $chainref, match_dest_net( $_ ) . '-j RETURN' ) for @$exclusions;
-    add_jump( $chainref, $target, 1 );
+    add_irule( $chainref, j => 'RETURN', imatch_dest_net( $_ ) ) for @$exclusions;
+    add_ijump( $chainref, g => $target );
 
     reftype $target ? $chainref : $chainref->{name};
 }
@@ -3956,13 +3956,13 @@ sub log_rule( $$$$ ) {
 #
 # If the destination chain exists, then at the end of the source chain add a jump to the destination.
 #
-sub addnatjump( $$$ ) {
-    my ( $source , $dest, $matches ) = @_;
+sub addnatjump( $$;@ ) {
+    my ( $source , $dest, @matches ) = @_;
 
     my $destref   = $nat_table->{$dest} || {};
 
     if ( $destref->{referenced} ) {
-	add_jump $nat_table->{$source} , $dest , 0, $matches;
+	add_ijump $nat_table->{$source} , j => $dest , @matches;
     } else {
 	clearrule;
     }
@@ -4766,7 +4766,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Clear the exclusion bit
 	    #
-	    add_rule $chainref , '-j MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
+	    add_rule $chainref , j => 'MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
 	    #
 	    # Mark packet if it matches any of the exclusions
 	    #

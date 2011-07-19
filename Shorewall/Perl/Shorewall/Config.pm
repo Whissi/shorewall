@@ -574,6 +574,13 @@ sub initialize( $ ) {
 	  MASK_BITS => undef
 	);
 
+
+    #
+    # Valid log levels
+    #
+    # Note that we don't include LOGMARK; that is so we can default its
+    # priority to 'info' (LOGMARK itself defaults to 'warn').
+    #
     %validlevels = ( DEBUG   => 7,
 		     INFO    => 6,
 		     NOTICE  => 5,
@@ -587,7 +594,7 @@ sub initialize( $ ) {
 		     PANIC   => 0,
 		     NONE    => '',
 		     NFLOG   => 'NFLOG',
-		     LOGMARK => 'LOGMARK' );
+		   );
 
     #
     # From parsing the capabilities file or capabilities detection
@@ -2137,12 +2144,15 @@ sub validate_level( $ ) {
 	    return $rawlevel;
 	}
 
-	if ( $level =~ /LOGMARK[(](.*)[)]$/ ) {
-	    my $sublevel = $1;
-	    
-	    $sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;
+	if ( $level =~ /LOGMARK([(](.+)[)])?$/ ) {
+	    my $sublevel = $2;
 
-	    level_error( $level ) unless defined $sublevel  =~ /^[0-7]$/; 
+	    if ( $1 ) {	    
+		$sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;
+		level_error( $level ) unless defined $sublevel  =~ /^[0-7]$/;
+	    } else {
+		$sublevel = 6; # info
+	    }
 	    
 	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
 	    require_capability( 'LOGMARK_TARGET' , 'LOGMARK', 's' );

@@ -1037,7 +1037,7 @@ sub push_matches {
     $dont_optimize;
 }
 
-sub add_irule( $$$;@ ) {
+sub push_irule( $$$;@ ) {
     my ( $chainref, $jump, $target, @matches ) = @_;
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
@@ -1069,6 +1069,13 @@ sub add_irule( $$$;@ ) {
     $chainref->{referenced} = 1;
 
     $ruleref;
+}
+
+sub add_irule( $;@ ) {
+    my ( $chainref, @matches ) = @_;
+
+    push_irule( $chainref, '' => '', @matches );
+
 }
 
 #
@@ -1774,13 +1781,18 @@ sub add_ijump( $$$;@ ) {
 	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
     }
 
-    $jump = 'j' unless $toref && have_capability 'GOTO_TARGET';
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
+    if ( $toref ) {
+	$toref->{referenced} = 1;
+	add_reference $fromref, $toref;
+	$jump = 'j' unless have_capability 'GOTO_TARGET';
+    } else {
+	$jump = 'j';
+    }
 
-    add_irule ($fromref, $jump => $to, @matches );
+    push_irule ($fromref, $jump => $to, @matches );
 }
 
 sub insert_ijump( $$$$;@ ) {
@@ -2052,7 +2064,7 @@ sub ensure_audit_chain( $;$$ ) {
 
 	$tgt ||= $action;
 
-	add_irule $ref, j => 'AUDIT --type ' . lc $action;
+	add_ijump $ref, j => 'AUDIT --type ' . lc $action;
 	
 	if ( $tgt eq 'REJECT' ) {
 	    add_ijump $ref , g => 'reject';
@@ -2221,7 +2233,7 @@ sub optimize_chain( $ ) {
 	pop @$rules, $count++ while @$rules && $rules->[-1]->{target} eq 'ACCEPT';
 
 	if ( @${rules} ) {
-	    add_irule $chainref, j => 'ACCEPT';
+	    add_ijump $chainref, j => 'ACCEPT';
 	    my $type = $chainref->{builtin} ? 'builtin' : 'policy';
 	    progress_message "  $count ACCEPT rules deleted from $type chain $chainref->{name}" if $count;
 	} elsif ( $chainref->{builtin} ) {
@@ -2298,7 +2310,7 @@ sub replace_references( $$$ ) {
 	    my $rule = 0;
 	    for ( @{$fromref->{rules}} ) {
 		$rule++;
-		if ( $_->{target} eq $name ) {
+		if ( ( $_->{target} || '' ) eq $name ) {
 		    $_->{target}     = $target;
 		    $_->{targetopts} = $targetopts if $targetopts;
 
@@ -2733,7 +2745,7 @@ sub source_exclusion( $$ ) {
 
     my $chainref = new_chain( $table , newexclusionchain( $table ) );
 
-    add_irule( $chainref, j => 'RETURN', imatch_source_net( $_ ) ) for @$exclusions;
+    add_ijump( $chainref, j => 'RETURN', imatch_source_net( $_ ) ) for @$exclusions;
     add_ijump( $chainref, g => $target );
 
     reftype $target ? $chainref : $chainref->{name};
@@ -2748,7 +2760,7 @@ sub dest_exclusion( $$ ) {
 
     my $chainref = new_chain( $table , newexclusionchain( $table ) );
 
-    add_irule( $chainref, j => 'RETURN', imatch_dest_net( $_ ) ) for @$exclusions;
+    add_ijump( $chainref, j => 'RETURN', imatch_dest_net( $_ ) ) for @$exclusions;
     add_ijump( $chainref, g => $target );
 
     reftype $target ? $chainref : $chainref->{name};
@@ -4766,7 +4778,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Clear the exclusion bit
 	    #
-	    add_rule $chainref , j => 'MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
+	    add_ijump $chainref , j => 'MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
 	    #
 	    # Mark packet if it matches any of the exclusions
 	    #

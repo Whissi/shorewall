@@ -100,7 +100,7 @@ sub setup_route_marking() {
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
-    add_irule $mangle_table->{$_} , j => "CONNMARK --restore-mark --mask $mask", connmark => "! --mark 0/$mask" for qw/PREROUTING OUTPUT/;
+    add_ijump $mangle_table->{$_} , j => "CONNMARK --restore-mark --mask $mask", connmark => "! --mark 0/$mask" for qw/PREROUTING OUTPUT/;
 
     my $chainref  = new_chain 'mangle', 'routemark';
     my $chainref1 = new_chain 'mangle', 'setsticky';
@@ -122,14 +122,14 @@ sub setup_route_marking() {
 
 	if ( $providerref->{shared} ) {
 	    add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-	    add_irule $chainref, j => "MARK --set-mark $providerref->{mark}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
+	    add_ijump $chainref, j => "MARK --set-mark $providerref->{mark}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
 	    decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	} else {
-	    add_irule $chainref, j => "MARK --set-mark $providerref->{mark}", imatch_source_dev( $interface );
+	    add_ijump $chainref, j => "MARK --set-mark $providerref->{mark}", imatch_source_dev( $interface );
 	}
     }
 
-    add_irule $chainref, j => "CONNMARK --save-mark --mask $mask", mark => "! --mark 0/$mask";
+    add_ijump $chainref, j => "CONNMARK --save-mark --mask $mask", mark => "! --mark 0/$mask";
 }
 
 sub copy_table( $$$ ) {

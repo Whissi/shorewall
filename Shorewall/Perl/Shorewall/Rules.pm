@@ -528,12 +528,12 @@ sub policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
 
     unless ( $target eq 'NONE' ) {
-	add_irule $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
+	add_ijump $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
 	add_ijump $chainref, j => $default if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 	
-	add_irule( $chainref , j => 'AUDIT --type ' . lc $target ) if $chainref->{audit};
+	add_ijump( $chainref , j => 'AUDIT --type ' . lc $target ) if $chainref->{audit};
 	add_ijump( $chainref , g => $target eq 'REJECT' ? 'reject' : $target ) unless $target eq 'CONTINUE';
     }
 }
@@ -680,7 +680,7 @@ sub setup_syn_flood_chains() {
 			    'add' ,
 			    '' )
 		if $level ne '';
-	    add_irule $synchainref, j => 'DROP';
+	    add_ijump $synchainref, j => 'DROP';
 	}
     }
 }
@@ -744,7 +744,7 @@ sub finish_chain_section ($$) {
     
     push_comment(''); #These rules should not have comments
 
-    add_irule $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
+    add_ijump $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
 
     if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {
@@ -1209,7 +1209,7 @@ sub allowBcast( $$$$ ) {
 
 	incr_cmd_level $chainref;
 	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
-	add_irule $chainref, j => $target, d => '$address';
+	add_ijump $chainref, j => $target, d => '$address';
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
@@ -1260,7 +1260,7 @@ sub allowInvalid ( $$$$ ) {
     my $target = require_audit( 'ACCEPT', $audit );
 
     log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
-    add_irule $chainref , j => $target, state_imatch 'INVALID';
+    add_ijump $chainref , j => $target, state_imatch 'INVALID';
 }
 
 sub forwardUPnP ( $$$$ ) {
@@ -1307,18 +1307,18 @@ sub Limit( $$$$ ) {
 
     require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
 
-    add_irule $chainref, '' => '', recent => "--name $set --set";
+    add_irule $chainref, recent => "--name $set --set";
 
     if ( $level ne '' ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
 	log_rule_limit $level, $xchainref, $param[0], 'DROP', '', $tag, 'add', '';
-	add_irule $xchainref, j => 'DROP';
+	add_ijump $xchainref, j => 'DROP';
 	add_ijump $chainref,  j => $xchainref, recent => "--name $set --update --seconds $param[2] --hitcount $count";
     } else {
-	add_irule $chainref, j => 'DROP', recent => "--update --name $set --seconds $param[2] --hitcount $count";
+	add_ijump $chainref, j => 'DROP', recent => "--update --name $set --seconds $param[2] --hitcount $count";
     }
 
-    add_irule $chainref, j => 'ACCEPT';
+    add_ijump $chainref, j => 'ACCEPT';
 }
 
 my %builtinops = ( 'dropBcast'      => \&dropBcast,

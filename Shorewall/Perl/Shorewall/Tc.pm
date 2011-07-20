@@ -1405,7 +1405,7 @@ sub setup_simple_traffic_shaping() {
 			  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
 			);
 
-	    add_irule( $mangle_table->{tcpost} ,
+	    add_ijump( $mangle_table->{tcpost} ,
 		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
 		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
 		     );
@@ -1713,7 +1713,7 @@ sub setup_tc() {
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    my $mask = have_capability 'EXMARK' ? have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '' : '';
 
-	    add_irule $mangle_table->{FORWARD},      j => "MARK --set-mark 0${mask}" if $config{FORWARD_CLEAR_MARK};
+	    add_ijump $mangle_table->{FORWARD},      j => "MARK --set-mark 0${mask}" if $config{FORWARD_CLEAR_MARK};
 	    add_ijump $mangle_table->{FORWARD} ,     j => 'tcfor';
 	    add_ijump $mangle_table->{POSTROUTING} , j => 'tcpost';
 	    add_ijump $mangle_table->{INPUT} ,       j => 'tcin';

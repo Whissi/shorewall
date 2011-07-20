@@ -426,9 +426,9 @@ sub setup_netmap() {
 		}
 
 		if ( $type eq 'DNAT' ) {
-		    add_irule ensure_chain( 'nat' , input_chain $interface ) ,  j => "NETMAP --to $net2", @rulein  , imatch_source_net( $net3 ), d => $net1;
+		    add_ijump ensure_chain( 'nat' , input_chain $interface ) ,  j => "NETMAP --to $net2", @rulein  , imatch_source_net( $net3 ), d => $net1;
 		} elsif ( $type eq 'SNAT' ) {
-		    add_irule ensure_chain( 'nat' , output_chain $interface ) , j => "NETMAP --to $net2", @ruleout , imatch_dest_net( $net3 ) ,  s => $net1;
+		    add_ijump ensure_chain( 'nat' , output_chain $interface ) , j => "NETMAP --to $net2", @ruleout , imatch_dest_net( $net3 ) ,  s => $net1;
 		} else {
 		    fatal_error "Invalid type ($type)";
 		}

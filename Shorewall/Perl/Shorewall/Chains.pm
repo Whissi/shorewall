@@ -2856,6 +2856,7 @@ sub do_proto( $$$;$ )
 			    $output .= "-m multiport ${invert}--dports ${ports} ";
 			    $multiport = 1;
 			}  else {
+			    fatal_error "Missing DEST PORT" unless supplied $ports;
 			    $ports   = validate_portpair $pname , $ports;
 			    $output .= "${invert}--dport ${ports} ";
 			}
@@ -2878,6 +2879,7 @@ sub do_proto( $$$;$ )
 			    $sports = validate_port_list $pname , $sports;
 			    $output .= "-m multiport ${invert}--sports ${sports} ";
 			}  else {
+			    fatal_error "Missing SOURCE PORT" unless supplied $sports;
 			    $sports  = validate_portpair $pname , $sports;
 			    $output .= "${invert}--sport ${sports} ";
 			}

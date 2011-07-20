@@ -458,7 +458,8 @@ my %special = ( rule       => CONTROL,
 		
 		jump       => TARGET,
 		target     => TARGET,
-		targetopts => TARGET );
+		targetopts => TARGET,
+	      );
 
 my %aliases = ( protocol        => 'p',
 		source          => 's',
@@ -599,7 +600,13 @@ sub decr_cmd_level( $ ) {
 }
 
 #
-# Transform the passed iptables rule into an internal-form hash reference
+# Transform the passed iptables rule into an internal-form hash reference. 
+# Most of the compiler has been converted to use the new form natively. 
+# A few parts, mostly those dealing with expand_rule(), still generate 
+# iptables command strings which are converted into the new form by
+# transform_rule()
+#
+# First a helper for setting an individual option
 #
 sub set_rule_option( $$$ ) {
     my ( $ruleref, $option, $value ) = @_;
@@ -614,8 +621,8 @@ sub set_rule_option( $$$ ) {
 	assert( defined $ruleref->{$option} );
 	if ( $special != EXCLUSIVE ) {
 	    if ( $special == UNIQUE ) {
-		$ruleref->{$option} = $value;
-	    } elsif ( $special == MATCH ) { 
+		assert(0);
+	    } elsif ( $special == MATCH ) {
 		$ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
 		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 	    } else {
@@ -633,11 +640,7 @@ sub transform_rule( $ ) {
     my $simple   = 1;
 
     $input =~ s/^\s*//;
-    #
-    # This is the first step in converting the compiler to use an intermediate form for rules.
-    # We parse the iptables input and convert it into a hash. Eventually, the upper levels
-    # will generate the hash from the outset
-    #
+
     while ( $input ) {
 	my $option;
 	my $invert = '';
@@ -651,7 +654,7 @@ sub transform_rule( $ ) {
 	    $invert = '!' if $1;
 	    my $opt = $option = $2;
 
-	    fatal_error "Unregonized iptables command ($opt}" unless $option = $aliases{$option};	    
+	    fatal_error "Unrecognized iptables command ($opt}" unless $option = $aliases{$option};	    
 	} else {
 	    fatal_error "Unrecognized iptables command string ($input)";
 	}
@@ -691,7 +694,6 @@ sub transform_rule( $ ) {
 	set_rule_option( $ruleref, $option, $params ) unless $params eq '';
     }
 
-    $ruleref->{target} ||= '';
     $ruleref->{simple} = $simple;
 
     $ruleref;
@@ -701,11 +703,7 @@ sub transform_rule( $ ) {
 #  A couple of small functions for other modules to use to manipulate rules
 #
 sub rule_target( $ ) {
-    my $ruleref = shift;
-
-    assert( reftype $ruleref );
-
-    $ruleref->{mode} == CAT_MODE ? $ruleref->{target} || '' : '';
+    shift->{target};
 }
 
 sub clear_rule_target( $ ) {
@@ -735,7 +733,7 @@ sub set_rule_target( $$$ ) {
 #
 # Convert an trule into iptables input
 #
-# First, a helper function
+# First, a helper function that formats a single option
 #
 sub format_option( $$ ) {
     my ( $option, $value ) = @_;
@@ -760,8 +758,9 @@ sub format_rule( $$;$ ) {
 	if ( exists $ruleref->{$_} ) {
 	    my $value = $ruleref->{$_};
 
+	    $rule .= ' !' if $value =~ s/^! //;
+	    
 	    if ( length == 1 ) {
-		$rule .= ' !' if $value =~ s/^! //;
 		$rule .= join( '' , ' -', $_, ' ', $value );
 	    } else {
 		$rule .= join( '' , ' --', $_, ' ', $value );
@@ -852,7 +851,11 @@ sub add_commands ( $$;@ ) {
 	trace( $chainref, 'T', ++$rulenum, "$_\n" ) for @_;
     }
 
-    push @{$chainref->{rules}}, { mode => CMD_MODE, cmd => $_ , cmdlevel => $chainref->{cmdlevel} } for @_;
+    push @{$chainref->{rules}}, { mode     => CMD_MODE,
+				  cmd      => $_ ,
+				  cmdlevel => $chainref->{cmdlevel} ,
+				  target   => '', # Insure that all rules have a target
+				} for @_;
 
     $chainref->{referenced} = 1;
 }
@@ -1030,7 +1033,7 @@ sub push_matches {
 	    push @{$ruleref->{$option}}, reftype $value ? @$value : $value;
 	} else {
 	    $ruleref->{$option} = $value;
-	    $dont_optimize ||= $option =~ /^[piosd]/ && $value =~ /^!/;
+	    $dont_optimize ||= $option =~ /^[piosd]$/ && $value =~ /^!/;
 	}
     }
 
@@ -1154,7 +1157,7 @@ sub insert_irule( $$$$;@ ) {
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
  
     if ( $jump ) {
-	$jump = 'j' unless have_capability 'GOTO_TARGET';
+	$jump = 'j' if $jump eq 'g' && ! have_capability 'GOTO_TARGET';
 	( $target, my $targetopts ) = split ' ', $target, 2;
 	$ruleref->{jump}       = $jump;
 	$ruleref->{target}     = $target;
@@ -1788,11 +1791,10 @@ sub add_ijump( $$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
+	push_irule ($fromref, $jump => $to, @matches );
     } else {
-	$jump = 'j';
+	push_irule( $fromref, 'j' => $to, @matches );
     }
-
-    push_irule ($fromref, $jump => $to, @matches );
 }
 
 sub insert_ijump( $$$$;@ ) {
@@ -1815,9 +1817,14 @@ sub insert_ijump( $$$$;@ ) {
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
-
-    insert_irule ($fromref, $jump => $to, $index, @matches );
+    if ( $toref ) {
+	$toref->{referenced} = 1;
+	add_reference $fromref, $toref;
+	$jump = 'j' unless have_capability 'GOTO_TARGET';
+	insert_irule ($fromref, $jump => $to, $index, @matches );
+    } else {
+	insert_irule( $fromref, 'j' => $to, $index, @matches );
+    }
 }
 
 #
@@ -2310,7 +2317,7 @@ sub replace_references( $$$ ) {
 	    my $rule = 0;
 	    for ( @{$fromref->{rules}} ) {
 		$rule++;
-		if ( ( $_->{target} || '' ) eq $name ) {
+		if ( $_->{target} eq $name ) {
 		    $_->{target}     = $target;
 		    $_->{targetopts} = $targetopts if $targetopts;
 
@@ -2356,7 +2363,7 @@ sub replace_references1( $$ ) {
 	if ( $fromref->{referenced} ) {
 	    for ( @{$fromref->{rules}} ) {
 		$rule++;
-		if ( ( $_->{target} || '' ) eq $name ) {
+		if ( $_->{target} eq $name ) {
 		    #
 		    # The target is the passed chain -- merge the two rules into one
 		    #

@@ -611,7 +611,7 @@ sub decr_cmd_level( $ ) {
 sub set_rule_option( $$$ ) {
     my ( $ruleref, $option, $value ) = @_;
 
-    assert( defined $value );
+    assert( defined $value && reftype $ruleref );
 
     $ruleref->{simple} = 0;
     
@@ -790,7 +790,11 @@ sub merge_rules( $$$ ) {
     my ( $tableref, $toref, $fromref ) = @_;
 
     my $target = $fromref->{target};
-
+    #
+    # Since the 'to' rule is a jump to a chain containing the 'from' rule, we
+    # assume that common unique option values are compatible (such as 'tcp' and
+    # 'tcp ! syn').
+    #
     for my $option ( @unique_options ) {
 	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
     }
@@ -800,7 +804,7 @@ sub merge_rules( $$$ ) {
     }
 
     unless ( $toref->{state} ) {
-	set_rule_option ( $toref, 'state',   $fromref->{state} )   if $fromref->{state};
+	set_rule_option ( $toref, 'state',   $fromref->{state} ) if $fromref->{state};
     }
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
@@ -1055,21 +1059,27 @@ sub push_irule( $$$;@ ) {
 	$ruleref->{targetopts} = $targetopts if $targetopts;
     }
 
-    unless ( $ruleref->{simple} = ! @matches ) {
-	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
-    }
-
     if ( $comment ) {
 	$ruleref->{comment} = $comment unless $ruleref->{comment};
     }
 
-    push @{$chainref->{rules}}, $ruleref;
-
-    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
-
     $iprangematch = 0;
 
     $chainref->{referenced} = 1;
+
+    if ( $ruleref->{simple} = ! @matches ) {
+	push @{$chainref->{rules}}, $ruleref;
+
+    } else {
+	#
+	# In the future, we can expand port lists here
+	#
+	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
+	push @{$chainref->{rules}}, $ruleref;
+    }
+
+
+    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
 
     $ruleref;
 }

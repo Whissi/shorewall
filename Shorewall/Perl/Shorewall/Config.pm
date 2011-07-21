@@ -432,6 +432,7 @@ sub initialize( $ ) {
 		    LOGPARMS   => '',
 		    TC_SCRIPT  => '',
 		    EXPORT     => 0,
+		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22-Beta1",
@@ -2731,9 +2732,11 @@ sub have_capability( $ ) {
     my $capability = shift;
     our %detect_capability;
 
-    $capabilities{ $capability } = detect_capability( $capability ) unless defined $capabilities{ $capability };
+    my $setting = $capabilities{ $capability };
 
-    $capabilities{ $capability };
+    $setting = $capabilities{ $capability } = detect_capability( $capability ) unless defined $setting;
+
+    $setting;
 }
 
 #
@@ -2758,6 +2761,7 @@ sub determine_capabilities() {
 	    qt1( "$iptables -A $sillyname -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT") ||
 	    qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");;
 
+    $globals{KLUDGEFREE} = $capabilities{KLUDGEFREE} = detect_capability 'KLUDGEFREE';
 
     unless ( $config{ LOAD_HELPERS_ONLY } ) {
 	#
@@ -2776,24 +2780,17 @@ sub determine_capabilities() {
 	    $capabilities{OLD_CONNTRACK_MATCH} = '';
 	}
 
-	if ( $capabilities{ MULTIPORT } = detect_capability( 'MULTIPORT' ) ) {
-	     $capabilities{KLUDGEFREE}  = Kludgefree1;
-	}
-
+	$capabilities{ MULTIPORT } = detect_capability( 'MULTIPORT' );
 	$capabilities{XMULTIPORT}   = detect_capability( 'XMULTIPORT' );
 	$capabilities{POLICY_MATCH} = detect_capability( 'POLICY_MATCH' );
 
 	if ( $capabilities{PHYSDEV_MATCH} = detect_capability( 'PHYSDEV_MATCH' ) ) {
 	    $capabilities{PHYSDEV_BRIDGE} = detect_capability( 'PHYSDEV_BRIDGE' );
-	    $capabilities{KLUDGEFREE}   ||= Kludgefree2;
 	} else {
 	    $capabilities{PHYSDEV_BRIDGE} = '';
 	}
 
-	if ( $capabilities{IPRANGE_MATCH} = detect_capability( 'IPRANGE_MATCH' ) ) {
-	    $capabilities{KLUDGEFREE}   ||= Kludgefree3;
-	}
-
+	$capabilities{IPRANGE_MATCH}   = detect_capability( 'IPRANGE_MATCH' );
 	$capabilities{RECENT_MATCH}    = detect_capability( 'RECENT_MATCH' );
 	$capabilities{OWNER_MATCH}     = detect_capability( 'OWNER_MATCH' );
 	$capabilities{CONNMARK_MATCH}  = detect_capability( 'CONNMARK_MATCH' );
@@ -3148,6 +3145,7 @@ sub read_capabilities() {
 	$capabilities{$_} = '' unless defined $capabilities{$_};
     }
 
+    $globals{KLUDGEFREE} = $capabilities{KLUDGEFREE};
 }
 
 #

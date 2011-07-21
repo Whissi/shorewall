@@ -619,15 +619,17 @@ sub set_rule_option( $$$ ) {
 
     if ( exists $ruleref->{$option} ) {
 	assert( defined $ruleref->{$option} );
-	if ( $special != EXCLUSIVE ) {
-	    if ( $special == UNIQUE ) {
-		assert(0);
-	    } elsif ( $special == MATCH ) {
-		$ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
-		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
-	    } else {
-		assert(0);
-	    }
+
+	if ( $special == MATCH ) {
+	    assert( $globals{KLUDGEFREE} );
+	    $ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
+	    push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
+	} elsif ( $special == EXCLUSIVE ) {
+	    $ruleref->{$option} .= ",$value";
+	} elsif ( $special == UNIQUE ) {
+	    fatal_error "Multiple $option settings in one rule is prohibited";
+	} else {
+	    assert(0);
 	}
     } else {
 	$ruleref->{$option} = $value;
@@ -654,9 +656,9 @@ sub transform_rule( $ ) {
 	    $invert = '!' if $1;
 	    my $opt = $option = $2;
 
-	    fatal_error "Unrecognized iptables command ($opt}" unless $option = $aliases{$option};	    
+	    fatal_error "Unrecognized iptables option ($opt}" unless $option = $aliases{$option};	    
 	} else {
-	    fatal_error "Unrecognized iptables command string ($input)";
+	    fatal_error "Unrecognized iptables option string ($input)";
 	}
 
 	if ( $option eq 'j' or $option eq 'g' ) {
@@ -2519,7 +2521,7 @@ sub optimize_level4( $$ ) {
 			#
 			# Not so easy -- the rule contains matches
 			#
-			if ( $chainref->{builtin} || ! have_capability 'KLUDGEFREE' ) {
+			if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} ) {
 			    #
 			    # This case requires a new rule merging algorithm. Ignore this chain for
 			    # now.
@@ -3452,7 +3454,7 @@ sub iprange_match() {
     require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
     unless ( $iprangematch ) {
 	$match = '-m iprange ';
-	$iprangematch = 1 unless have_capability( 'KLUDGEFREE' );
+	$iprangematch = 1 unless $globals{KLUDGEFREE};
     }
 
     $match;
@@ -3576,7 +3578,7 @@ sub match_source_net( $;$\$ ) {
 	my $result = '';
 	my @sets = mysplit $1, 1;
 
-	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
 	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
@@ -3612,7 +3614,7 @@ sub imatch_source_net( $;$\$ ) {
 	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
-	require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
+	fatal_error "Address Ranges require the Multiple Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 	return ( iprange => "${invert}--src-range $net" );
     }
 
@@ -3630,7 +3632,7 @@ sub imatch_source_net( $;$\$ ) {
 	my @result = ();
 	my @sets = mysplit $1, 1;
 
-	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
 	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
@@ -3679,7 +3681,7 @@ sub match_dest_net( $ ) {
 	my $result = '';
 	my @sets = mysplit $1, 1;
 
-	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
 	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
@@ -3726,7 +3728,7 @@ sub imatch_dest_net( $ ) {
 	my @result;
 	my @sets = mysplit $1, 1;
 
-	require_capability 'KLUDGEFREE', 'Multiple ipset matches', '' if @sets > 1;
+	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
 	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
@@ -4793,7 +4795,9 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # We can't use an exclusion chain -- we mark those packets to be excluded and then condition the rules generated in the block below on the mark value
 	    #
 	    require_capability 'MARK_ANYWHERE' , 'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' unless $table eq 'mangle';
-	    require_capability 'KLUDGEFREE' ,    'Exclusion in ACCEPT+/CONTINUE/NONAT rules', 's' if $rule =~ / -m mark /;
+
+	    fatal_error "Exclusion in ACCEPT+/CONTINUE/NONAT rules requires the Multiple Match capability in your kernel and iptables"
+		if $rule =~ / -m mark / && ! $globals{KLUDGEFREE};
 	    #
 	    # Clear the exclusion bit
 	    #
@@ -4844,10 +4848,10 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    my $cond = conditional_rule( $chainref, $inet );
 
-		    my $source_match = match_source_net( $inet, $restriction, $mac ) if have_capability( 'KLUDGEFREE' );
+		    my $source_match = match_source_net( $inet, $restriction, $mac ) if $globals{KLUDGEFREE};
 
 		    for my $dnet ( mysplit $dnets ) {
-			$source_match = match_source_net( $inet, $restriction, $mac ) unless have_capability( 'KLUDGEFREE' );
+			$source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 			add_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ), 1 );
 		    }
 
@@ -4911,10 +4915,10 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		my $cond = conditional_rule( $chainref, $inet );
 		
-		$source_match = match_source_net( $inet, $restriction, $mac ) if have_capability( 'KLUDGEFREE' );
+		$source_match = match_source_net( $inet, $restriction, $mac ) if $globals{KLUDGEFREE};
 
 		for my $dnet ( mysplit $dnets ) {
-		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless have_capability( 'KLUDGEFREE' );
+		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 

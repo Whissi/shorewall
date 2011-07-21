@@ -890,7 +890,7 @@ sub process_interface( $$ ) {
     if ( supplied $port ) {
 	fatal_error qq("Virtual" interfaces are not supported -- see http://www.shorewall.net/Shorewall_and_Aliased_Interfaces.html) if $port =~ /^\d+$/;
 	require_capability( 'PHYSDEV_MATCH', 'Bridge Ports', '');
-	fatal_error "Your iptables is not recent enough to support bridge ports" unless have_capability( 'KLUDGEFREE' );
+	fatal_error "Your iptables is not recent enough to support bridge ports" unless $globals{KLUDGEFREE};
 
 	fatal_error "Invalid Interface Name ($interface:$port)" unless $port =~ /^[\w.@%-]+\+?$/;
 	fatal_error "Duplicate Interface ($port)" if $interfaces{$port};

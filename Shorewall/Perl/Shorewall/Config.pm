@@ -2149,7 +2149,7 @@ sub validate_level( $ ) {
 
 	    if ( $1 ) {	    
 		$sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;
-		level_error( $level ) unless defined $sublevel  =~ /^[0-7]$/;
+		level_error( $level ) unless defined $sublevel && $sublevel  =~ /^[0-7]$/;
 	    } else {
 		$sublevel = 6; # info
 	    }

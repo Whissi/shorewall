@@ -421,6 +421,7 @@ my %ipset_exists;
 #         jump       => 'j', 'g' or '' (determines whether '-j' or '-g' is included
 #         target     => Rule target, if jump is 'j' or 'g'.
 #         targetopts => Target options. Only included if non-empty
+#         rule       => String representation of rule for comparison
 #         <option>   => iptables/ip6tables -A options (e.g., i => eth0)
 #         <match>    => iptables match. Value may be a scalar or array.
 #                       if an array, multiple "-m <match>"s will be generated
@@ -818,8 +819,6 @@ sub merge_rules( $$$ ) {
     unless ( $toref->{comment} ) {
 	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
     }
-
-    $toref->{rule} = format_rule( $fromref, $_, 1 ) if $toref->{rule};
 }
 
 #
@@ -2569,6 +2568,28 @@ sub optimize_level4( $$ ) {
 }
 
 #
+# Convert a rule hash into a string for easy comparison.
+#
+sub stringify_rule {
+    for ( @_ ) {
+	if ( reftype $_ ) {
+	    #
+	    # So we don't damage the referenced list
+	    #
+	    my @flat = @_;
+    
+	    for ( @flat ) {
+		$_ = "@$_" if reftype $_;
+	    }
+	    
+	    return "@flat";
+	}
+    }
+
+    "@_";
+}
+
+#
 # Delete duplicate chains replacing their references
 #
 sub optimize_level8( $$$ ) {
@@ -2582,13 +2603,8 @@ sub optimize_level8( $$$ ) {
     
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
-    #
-    # To be able to quickly compare two rules, we generate the -A command for each rule
-    #
     for my $chainref ( @chains ) {
-	for ( @{$chainref->{rules}} ) {
-	    $_->{rule} = format_rule( $chainref, $_, 1 );
-	}
+	$_->{rule} = stringify_rule %$_ for @{$chainref->{rules}};
     }
 	    
     for my $chainref ( @chains ) {

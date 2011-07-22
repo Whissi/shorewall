@@ -1069,17 +1069,11 @@ sub push_irule( $$$;@ ) {
 
     $chainref->{referenced} = 1;
 
-    if ( $ruleref->{simple} = ! @matches ) {
-	push @{$chainref->{rules}}, $ruleref;
-
-    } else {
-	#
-	# In the future, we can expand port lists here
-	#
+    unless ( $ruleref->{simple} = ! @matches ) {
 	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
-	push @{$chainref->{rules}}, $ruleref;
     }
 
+    push @{$chainref->{rules}}, $ruleref;
 
     trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
 

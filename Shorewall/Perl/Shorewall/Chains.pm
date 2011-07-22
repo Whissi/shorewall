@@ -2598,6 +2598,9 @@ sub optimize_level8( $$$ ) {
     my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
     my @chains1  = @chains;
     my $chains   = @chains;
+    my $chainseq = 0;
+    my %renamed;
+    
 
     $passes++;
     
@@ -2629,6 +2632,59 @@ sub optimize_level8( $$$ ) {
 	    }
 
 	    replace_references $chainref1, $chainref->{name}, undef;
+	    $renamed{ $chainref->{name} } = 1 unless $chainref->{name} =~ /^~/;
+	}
+    }
+
+    if ( keys %renamed ) {
+	#
+	# First create aliases for each renamed chain and change the {name} member.
+	#
+	my $step1 = 1;
+
+	for my $oldname ( keys %renamed ) {
+	    my $newname = $renamed{ $oldname } = '~opt-' . $chainseq++;
+
+	    trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
+	    $tableref->{$newname} = $tableref->{$oldname};
+	    $tableref->{$oldname}{name} = $newname;
+	    progress_message "   Chain $oldname renamed to $newname";
+	}
+	#
+	# Now adjust the references to point to the new name
+	#
+	my $step2 = 2;
+
+	while ( my ($chain, $chainref ) = each %$tableref ) {
+	    my %references = %{$chainref->{references}};
+
+	    while ( my ( $chain1, $chainref1 ) = each %references ) {
+		if ( my $newname = $renamed{$chainref->{references}{$chain1}} ) {
+		    $chainref->{references}{$newname} = $chainref->{references}{$chain1};
+		    delete $chainref->{references}{$chain1};
+		}
+	    }
+	}
+	#
+	# Delete the old names from the table
+	#
+	my $step3 = 3;
+	
+	delete $tableref->{$_} for keys %renamed;
+	#
+	# And fix up the rules
+	#
+	for my $chainref ( values %$tableref ) {
+	    my $rulenum = 0;
+
+	    for ( @{$chainref->{rules}} ) {
+		$rulenum++;
+
+		if ( my $newname = $renamed{$_->{target}} ) {
+		    $_->{target} = $newname;
+		    trace( $chainref, 'R', $rulenum, $_ ) if $debug;
+		}
+	    }
 	}
     }
 

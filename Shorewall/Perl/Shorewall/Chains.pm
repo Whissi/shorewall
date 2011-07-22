@@ -434,7 +434,7 @@ use constant { UNIQUE      => 1,
 	       MATCH       => 8,
 	       CONTROL     => 16 };
 
-my %special = ( rule       => CONTROL,
+my %opttype = ( rule       => CONTROL,
 		cmd        => CONTROL,
 
 		dhcp       => UNIQUE,
@@ -615,18 +615,18 @@ sub set_rule_option( $$$ ) {
 
     $ruleref->{simple} = 0;
     
-    my $special = $special{$option} || MATCH;
+    my $opttype = $opttype{$option} || MATCH;
 
     if ( exists $ruleref->{$option} ) {
 	assert( defined $ruleref->{$option} );
 
-	if ( $special == MATCH ) {
+	if ( $opttype == MATCH ) {
 	    assert( $globals{KLUDGEFREE} );
 	    $ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
 	    push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
-	} elsif ( $special == EXCLUSIVE ) {
+	} elsif ( $opttype == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";
-	} elsif ( $special == UNIQUE ) {
+	} elsif ( $opttype == UNIQUE ) {
 	    fatal_error "Multiple $option settings in one rule is prohibited";
 	} else {
 	    assert(0);
@@ -773,7 +773,7 @@ sub format_rule( $$;$ ) {
     $rule .= format_option( 'state',   $ruleref->{state} )   if defined $ruleref->{state};  
     $rule .= format_option( 'policy',  $ruleref->{policy} )  if defined $ruleref->{policy};  
 
-    $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $special{$_}, keys %{$ruleref} );
+    $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $opttype{$_}, keys %{$ruleref} );
 
     if ( $ruleref->{target} ) {
 	$rule .= join( ' ', " -$ruleref->{jump}", $ruleref->{target} );
@@ -801,7 +801,7 @@ sub merge_rules( $$$ ) {
 	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
     }
 		    
-    for my $option ( grep ! $special{$_}, keys %$fromref ) {
+    for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 

@@ -147,31 +147,21 @@ our %EXPORT_TAGS = (
 				       clearrule
 				       port_count
 				       do_proto
-				       do_iproto
 				       do_mac
 				       do_imac
 				       verify_mark
 				       verify_small_mark
 				       validate_mark
 				       do_test
-				       do_itest
 				       do_ratelimit
-				       do_iratelimit
 				       do_connlimit
 				       do_time
-				       do_itime
 				       do_user
-				       do_iuser
 				       do_length
-				       do_ilength
 				       do_tos
-				       do_itos
 				       do_connbytes
-				       do_iconnbytes
 				       do_helper
-				       do_ihelper
 				       do_headers
-				       do_iheaders
 				       have_ipset_rules
 				       record_runtime_address
 				       conditional_rule
@@ -442,41 +432,34 @@ use constant { UNIQUE      => 1,
 	       TARGET      => 2,
 	       EXCLUSIVE   => 4,
 	       MATCH       => 8,
-	       CONTROL     => 16,
-	       MULTIPORT   => 32
-	   };
+	       CONTROL     => 16 };
 
-my %optiontype = ( rule          => CONTROL,
-		   cmd           => CONTROL,
+my %special = ( rule       => CONTROL,
+		cmd        => CONTROL,
 
-		   dhcp          => UNIQUE,
-		   
-		   mode          => CONTROL,
-		   cmdlevel      => CONTROL,
-		   simple        => CONTROL,
-
-		   i             => UNIQUE,
-		   s             => UNIQUE,
-		   o             => UNIQUE,
-		   d             => UNIQUE,
-		   p             => UNIQUE,
-		   dport         => UNIQUE,
-		   sport         => UNIQUE,
-		   
-		   'icmp-type'   => MULTIPORT,
-		   'icmpv6-type' => MULTIPORT,
-		   sports        => MULTIPORT,
-		   dports        => MULTIPORT,
+		dhcp       => UNIQUE,
 		
-		   comment       => CONTROL,
+	        mode       => CONTROL,
+		cmdlevel   => CONTROL,
+		simple     => CONTROL,
 
-		   policy        => MATCH,
-		   state         => EXCLUSIVE,
+	        i          => UNIQUE,
+		s          => UNIQUE,
+		o          => UNIQUE,
+		d          => UNIQUE,
+		p          => UNIQUE,
+		dport      => UNIQUE,
+		sport      => UNIQUE,
 		
-		   jump          => TARGET,
-		   target        => TARGET,
-		   targetopts    => TARGET,
-		 );
+		comment    => CONTROL,
+
+		policy     => MATCH,
+		state      => EXCLUSIVE,
+		
+		jump       => TARGET,
+		target     => TARGET,
+		targetopts => TARGET,
+	      );
 
 my %aliases = ( protocol        => 'p',
 		source          => 's',
@@ -489,7 +472,7 @@ my %aliases = ( protocol        => 'p',
 		sport           => 'sport',
 	      );
 
-my @unique_options = ( qw/p dport sport icmp-type icmpv6-type s d i o/ );
+my @unique_options = ( qw/p dport sport s d i o/ );
 	     
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -632,18 +615,18 @@ sub set_rule_option( $$$ ) {
 
     $ruleref->{simple} = 0;
     
-    my $optiontype = $optiontype{$option} || MATCH;
+    my $special = $special{$option} || MATCH;
 
     if ( exists $ruleref->{$option} ) {
 	assert( defined $ruleref->{$option} );
 
-	if ( $optiontype == MATCH ) {
+	if ( $special == MATCH ) {
 	    assert( $globals{KLUDGEFREE} );
 	    $ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
 	    push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
-	} elsif ( $optiontype == EXCLUSIVE || $optiontype == MULTIPORT ) {
+	} elsif ( $special == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";
-	} elsif ( $optiontype == UNIQUE ) {
+	} elsif ( $special == UNIQUE ) {
 	    fatal_error "Multiple $option settings in one rule is prohibited";
 	} else {
 	    assert(0);
@@ -787,18 +770,10 @@ sub format_rule( $$;$ ) {
 	}
     }
 
-    for ( qw/sports dports/ ) {
-	if ( exists $ruleref->{$_} ) {
-	    my $value  = $ruleref->{$_};
-	    my $invert = ( $value =~ s/^! // ) ? '! ' : ''; 
-	    $rule .= "-m multiport ${invert}--$_ $ruleref->{$_}";
-	}
-    }
-
     $rule .= format_option( 'state',   $ruleref->{state} )   if defined $ruleref->{state};  
     $rule .= format_option( 'policy',  $ruleref->{policy} )  if defined $ruleref->{policy};  
 
-    $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $optiontype{$_}, keys %{$ruleref} );
+    $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $special{$_}, keys %{$ruleref} );
 
     if ( $ruleref->{target} ) {
 	$rule .= join( ' ', " -$ruleref->{jump}", $ruleref->{target} );
@@ -826,11 +801,7 @@ sub merge_rules( $$$ ) {
 	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
     }
 		    
-    for my $option ( grep $optiontype{$_} == MULTIPORT, keys %$fromref ) {
-	set_rule_option( $toref, $option, $fromref->{$option} );
-    }
-
-    for my $option ( grep ! $optiontype{$_}, keys %$fromref ) {
+    for my $option ( grep ! $special{$_}, keys %$fromref ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 
@@ -990,66 +961,6 @@ sub handle_port_list( $$$$$$ ) {
     }
 }
 
-sub handle_iport_list( $$$$ );
-
-sub handle_iport_list( $$$$ ) {
-    my ($chainref, $ruleref, $dports, $ports ) = @_;
-
-    if ( port_count( $ports ) > 15 ) {
-	#
-	# More than 15 ports specified
-	#
-	my @ports = split '([,:])', $ports;
-
-	while ( @ports ) {
-	    my $count = 0;
-	    my $newports = '';
-
-	    while ( @ports && $count < 15 ) {
-		my ($port, $separator) = ( shift @ports, shift @ports );
-
-		$separator ||= '';
-
-		if ( ++$count == 15 ) {
-		    if ( $separator eq ':' ) {
-			unshift @ports, $port, ':';
-			chop $newports;
-			last;
-		    } else {
-			$newports .= $port;
-		    }
-		} else {
-		    $newports .= "${port}${separator}";
-		}
-	    }
-
-	    my %newrule = %$ruleref;
-
-	    if ( $dports ) {
-		$newrule{dports} = $newports;
-		
-		if ( my $sports = $newrule{sports} ) {
-		    handle_iport_list( $chainref, \%newrule, 0 , $sports );
-		} else {
-		    push @{$chainref->{rules}}, \%newrule;
-		    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, \%newrule ) ) if $debug;
-		}
-	    } else {
-		$newrule{sports} = $newports;
-		push @{$chainref->{rules}}, \%newrule;
-		trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, \%newrule ) ) if $debug;
-	    }
-	}
-    } elsif ( $dports && ( $ports = $ruleref->{sports} ) ) {
-	handle_iport_list( $chainref, $ruleref, $ports, 0 );
-    } else {
-	push @{$chainref->{rules}}, $ruleref;
-	trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
-    }
-
-    1;
-}
-
 #
 # This much simpler function splits a rule with an icmp type list into discrete rules
 #
@@ -1057,20 +968,6 @@ sub handle_icmptype_list( $$$$ ) {
     my ($chainref, $first, $types, $rest) = @_;
     my @ports = split ',', $types;
     push_rule ( $chainref, join ( '', $first, shift @ports, $rest ) ) while @ports;
-}
-
-sub handle_icmptype_ilist( $$$$ ) {
-    my ($chainref, $ruleref, $option, $types ) = @_;
-    my @types = split ',', $types;
-    
-    while ( @types ) {
-	my %newrule = %$ruleref;
-	
-	$newrule{$option} = shift @types;
-	
-	push @{$chainref->{rules}}, \%newrule;
-	trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, \%newrule ) ) if $debug;
-    }
 }
 
 #
@@ -1149,7 +1046,7 @@ sub push_matches {
     $dont_optimize;
 }
 
-sub push_irule( $$$$;@ ) {
+sub push_irule( $$$;@ ) {
     my ( $chainref, $jump, $target, @matches ) = @_;
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
@@ -1172,36 +1069,8 @@ sub push_irule( $$$$;@ ) {
 
     $chainref->{referenced} = 1;
 
-    my $expandports;
-
-    if ( @matches ) {
-	my $first = $matches[0];
-	shift @matches if $expandports = ( $first =~ /^\d$/ );
-    } else {
-	$ruleref->{simple} = 1;
-    }
-    
-    $chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
-    
-    if ( $expandports ) {
-	#
-	# Caller wants us to split long port lists
-	#
-	if ( my $dports = $ruleref->{dports} ) {
-	    return handle_iport_list( $chainref, $ruleref, 1, $dports );
-	}
-
-	if ( my $sports = $ruleref->{sports} ) {
-	    return handle_iport_list( $chainref, $ruleref, 0, $sports );
-	}
-
-	my $types;
-
-	if ( $types = $ruleref->{'icmp-type'} ) {
-	    return handle_icmp_ilist( $chainref, $ruleref, 'icmp-type', $types );
-	} elsif ( $types = $ruleref->{'icmpv6-type'} ) {
-	    return handle_icmp_ilist( $chainref, $ruleref, 'icmpv6-type', $types );
-	}
+    unless ( $ruleref->{simple} = ! @matches ) {
+	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
     }
 
     push @{$chainref->{rules}}, $ruleref;
@@ -3108,178 +2977,6 @@ sub do_proto( $$$;$ )
     $output;
 }
 
-sub do_iproto( $$$;$ )
-{
-    my ($proto, $ports, $sports, $restricted ) = @_;
-
-    my @output;
-
-    $proto  = '' if $proto  eq '-';
-    $ports  = '' if $ports  eq '-';
-    $sports = '' if $sports eq '-';
-
-    if ( $proto ne '' ) {
-
-	my $synonly  = ( $proto =~ s/:syn$//i );
-	my $invert   = ( $proto =~ s/^!// ? '! ' : '' );
-	my $protonum = resolve_proto $proto;
-
-	if ( defined $protonum ) {
-	    #
-	    # Protocol is numeric and <= 255 or is defined in /etc/protocols or NSS equivalent
-	    #
-	    fatal_error "'!0' not allowed in the PROTO column" if $invert && ! $protonum;
-
-	    my $pname = proto_name( $proto = $protonum );
-	    #
-	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol
-	    #
-	    unless ( $synonly ) {
-		@output = ( p => "${invert}${proto}" );
-	    } else {
-		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;
-		@output = ( p => "${invert}${proto} --syn" );
-	    }
-
-	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO !$pname" if $invert && ($ports ne '' || $sports ne '');
-
-	  PROTO:
-	    {
-		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
-		    my $multiport = 0;
-
-		    if ( $ports ne '' ) {
-			$invert = $ports =~ s/^!// ? '! ' : '';
-			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
-			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
-
-			    if ( port_count ( $ports ) > 15 ) {
-				if ( $restricted ) {
-				    fatal_error "A port list in this file may only have up to 15 ports";
-				} elsif ( $invert ) {
-				    fatal_error "An inverted port list may only have up to 15 ports";
-				}
-			    }
-
-			    $ports = validate_port_list $pname , $ports;
-			    push @output, dports => "${invert} $ports";
-			    $multiport = 1;
-			}  else {
-			    fatal_error "Missing DEST PORT" unless supplied $ports;
-			    $ports   = validate_portpair $pname , $ports;
-			    push @output, dport => "${invert}$(ports}";
-			}
-		    } else {
-			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
-		    }
-
-		    if ( $sports ne '' ) {
-			$invert = $sports =~ s/^!// ? '! ' : '';
-			if ( $multiport ) {
-
-			    if ( port_count( $sports ) > 15 ) {
-				if ( $restricted ) {
-				    fatal_error "A port list in this file may only have up to 15 ports";
-				} elsif ( $invert ) {
-				    fatal_error "An inverted port list may only have up to 15 ports";
-				}
-			    }
-
-			    $sports = validate_port_list $pname , $sports;
-			    push @output, sports => "${invert} $sports";
-			}  else {
-			    fatal_error "Missing SOURCE PORT" unless supplied $sports;
-			    $sports  = validate_portpair $pname , $sports;
-			    push @output, dport => "${invert}$(ports}";
-			}
-		    }
-
-		    last PROTO;	}
-
-		if ( $proto == ICMP ) {
-		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
-		    if ( $ports ne '' ) {
-			$invert = $ports =~ s/^!// ? '! ' : '';
-
-			my $types;
-
-			if ( $ports =~ /,/ ) {
-			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
-			    $types = '';
-			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
-				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
-			    }
-			} else {
-			    $types = validate_icmp $ports;
-			}
-
-			push @output, 'icmp-type' => "${invert}${types}";
-		    }
-
-		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
-
-		    last PROTO; }
-
-		if ( $proto == IPv6_ICMP ) {
-		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
-		    if ( $ports ne '' ) {
-			$invert = $ports =~ s/^!// ? '! ' : '';
-
-			my $types;
-
-			if ( $ports =~ /,/ ) {
-			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
-			    $types = '';
-			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
-				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
-			    }
-			} else {
-			    $types = validate_icmp6 $ports;
-			}
-
-			push @output, 'icmpv6-type' => "${invert}${types}";
-		    }
-
-		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
-
-		    last PROTO; }
-
-
-		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname" if $ports ne '' || $sports ne '';
-
-	    } # PROTO
-
-	} else {
-	    fatal_error '":syn" is only allowed with tcp' if $synonly;
-
-	    if ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
-		my $p = $2 ? lc $3 : 'tcp';
-		require_capability( 'IPP2P_MATCH' , "PROTO = $proto" , 's' );
-		$proto = '-p ' . proto_name($p) . ' ';
-
-		my $options = '';
-
-		if ( $ports ne 'ipp2p' ) {
-		    $options .= " --$_" for split /,/, $ports;
-		}
-
-		$options = have_capability( 'OLD_IPP2P_MATCH' ) ? '--ipp2p' : '--edk --kazaa --gnu --dc' unless $options;
-
-		@output = ( p => ${proto}, ipp2p => ${options} )
-	    } else {
-		fatal_error "Invalid/Unknown protocol ($proto)"
-	    }
-	}
-    } else {
-	#
-	# No protocol
-	#
-	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO" if $ports ne '' || $sports ne '';
-    }
-
-    \@output;
-}
 
 sub do_mac( $ ) {
     my $mac = $_[0];
@@ -3302,7 +2999,7 @@ sub do_imac( $ ) {
 
     fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 
-    [ mac => "${invert}--mac-source $mac" ];
+    ( mac => "${invert}--mac-source $mac" );
 }
 
 #
@@ -3369,28 +3066,6 @@ sub do_test ( $$ )
     "$match $testval ";
 }
 
-sub do_itest ( $$ )
-{
-    my ($testval, $mask) = @_;
-
-    my $originaltestval = $testval;
-
-    return [] unless defined $testval and $testval ne '-';
-
-    $mask = '' unless defined $mask;
-
-    my $invert = $testval =~ s/^!// ? '! ' : '';
-    my $match  = $testval =~ s/:C$// ? 'connmark' : 'mark';
-
-    fatal_error "Invalid MARK value ($originaltestval)" if $testval eq '/';
-
-    validate_mark $testval;
-
-    $testval = join( '/', $testval, in_hex($mask) ) unless ( $testval =~ '/' );
-
-    [ $match => "--mark $testval" ];
-}
-
 my %norate = ( DROP => 1, REJECT => 1 );
 
 #
@@ -3455,71 +3130,6 @@ sub do_ratelimit( $$ ) {
     }
 }
 
-sub do_iratelimit( $$ ) {
-    my ( $rate, $action ) = @_;
-
-    return [] unless $rate and $rate ne '-';
-
-    fatal_error "Rate Limiting not available with $action" if $norate{$action};
-    #
-    # "-m hashlimit" match for the passed LIMIT/BURST
-    #
-    if ( $rate =~ /^[sd]:{1,2}/ ) {
-	require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
-
-	my $limit = '';
-	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
-	my $units;
-
-	if ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	    fatal_error "Invalid Rate ($3)" unless $4;
-	    fatal_error "Invalid Burst ($7)" unless $7;
-	    $limit .= "--hashlimit $3 --hashlimit-burst $7 --hashlimit-name ";
-	    $limit .= $2 ? $2 : 'shorewall' . $hashlimitset++;
-	    $limit .= ' --hashlimit-mode ';
-	    $units = $6;
-	} elsif ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?)$/ ) {
-	    fatal_error "Invalid Rate ($3)" unless $4;
-	    $limit .= "--$match $3 --hashlimit-name ";
-	    $limit .= $2 ? $2 :  'shorewall' . $hashlimitset++;
-	    $limit .= ' --hashlimit-mode ';
-	    $units = $6;
-	} else {
-	    fatal_error "Invalid rate ($rate)";
-	}
-
-	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
-
-	if ( $units && $units ne 'sec' ) {
-	    my $expire = 60000; # 1 minute in milliseconds
-
-	    if ( $units ne 'min' ) {
-		$expire *= 60; #At least an hour
-		$expire *= 24 if $units eq 'day';
-	    }
-
-	    $limit .= "--hashlimit-htable-expire $expire ";
-	}
-
-	return [ $match => $limit ];
-    }
-
-    if ( $rate =~ /^((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	fatal_error "Invalid Rate ($1)" unless $2;
-	fatal_error "Invalid Burst ($5)" unless $5;
-
-	return [ limit => "--limit $1 --limit-burst $5" ];
-    }
-    
-    if ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
-	fatal_error "Invalid Rate (${1}${2})" unless $1;
-
-	return [ limit => "--limit $rate" ];
-    }
-    
-    fatal_error "Invalid rate ($rate)";
-}
-
 #
 # Create a "-m connlimit" match for the passed CONNLIMIT
 #
@@ -3540,27 +3150,6 @@ sub do_connlimit( $ ) {
     } else {
 	fatal_error "Invalid connlimit ($limit)";
     }
-}
-
-sub do_iconnlimit( $ ) {
-    my ( $limit ) = @_;
-
-    return [] if $limit eq '-';
-
-    require_capability 'CONNLIMIT_MATCH', 'A non-empty CONNLIMIT', 's';
-
-    my $invert =  $limit =~ s/^!// ? '' : '! '; # Note Carefully -- we actually do 'connlimit-at-or-below'
-
-    if ( $limit =~ /^(\d+):(\d+)$/ ) {
-	fatal_error "Invalid Mask ($2)" unless $2 > 0 || $2 < 31;
-	return [ connlimit => "${invert}--connlimit-above $1 --connlimit-mask $2" ];
-    }
-
-    if ( $limit =~ /^(\d+)$/ )  {
-	return [ connlimit => "${invert}--connlimit-above $limit" ];
-    }
-
-    fatal_error "Invalid connlimit ($limit)";
 }
 
 sub do_time( $ ) {
@@ -3598,43 +3187,6 @@ sub do_time( $ ) {
     }
 
     $result;
-}
-
-sub do_iime( $ ) {
-    my ( $time ) = @_;
-
-    return [] if $time eq '-';
-
-    require_capability 'TIME_MATCH', 'A non-empty TIME', 's';
-
-    my $result = '';
-
-    for my $element (split /&/, $time ) {
-	fatal_error "Invalid time element list ($time)" unless defined $element && $element;
-
-	if ( $element =~ /^(timestart|timestop)=(\d{1,2}:\d{1,2}(:\d{1,2})?)$/ ) {
-	    $result .= "--$1 $2 ";
-	} elsif ( $element =~ /^weekdays=(.*)$/ ) {
-	    my $days = $1;
-	    for my $day ( split /,/, $days ) {
-		fatal_error "Invalid weekday ($day)" unless $day =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/ || ( $day =~ /^\d$/ && $day && $day <= 7);
-	    }
-	    $result .= "--weekday $days ";
-	} elsif ( $element =~ /^monthdays=(.*)$/ ) {
-	    my $days = $1;
-	    for my $day ( split /,/, $days ) {
-		fatal_error "Invalid day of the month ($day)" unless $day =~ /^\d{1,2}$/ && $day && $day <= 31;
-	    }
-	} elsif ( $element =~ /^(datestart|datestop)=(\d{4}(-\d{2}(-\d{2}(T\d{1,2}(:\d{1,2}){0,2})?)?)?)$/ ) {
-	    $result .= "--$1 $2 ";
-	} elsif ( $element =~ /^(utc|localtz)$/ ) {
-	    $result .= "--$1 ";
-	} else {
-	    fatal_error "Invalid time element ($element)";
-	}
-    }
-
-    [ time => $result ];
 }
 
 #
@@ -3681,47 +3233,6 @@ sub do_user( $ ) {
     $rule;
 }
 
-sub do_iuser( $ ) {
-    my $user = $_[0];
-    my $rule = '';
-
-    return [] unless defined $user and $user ne '-';
-
-    if ( $user =~ /^(!)?(.*)\+(.*)$/ ) {
-	$rule .= "! --cmd-owner $2 " if supplied $2;
-	$user = "!$1";
-    } elsif ( $user =~ /^(.*)\+(.*)$/ ) {
-	$rule .= "--cmd-owner $2 " if supplied $2;
-	$user = $1;
-    }
-
-    if ( $user =~ /^(!)?(.*):(.*)$/ ) {
-	my $invert = $1 ? '! ' : '';
-	my $group  = defined $3 ? $3 : '';
-	if ( supplied $2 ) {
-	    $user = $2;
-	    fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
-	    $rule .= "${invert}--uid-owner $user ";
-	}
-
-	if ( $group ne '' ) {
-	    fatal_error "Unknown group ($group)" unless $group =~ /\d+$/ || $globals{EXPORT} || defined getgrnam( $group );
-	    $rule .= "${invert}--gid-owner $group ";
-	}
-    } elsif ( $user =~ /^(!)?(.*)$/ ) {
-	my $invert = $1 ? '! ' : '';
-	$user   = $2;
-	fatal_error "Invalid USER/GROUP (!)" if $user eq '';
-	fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
-	$rule .= "${invert}--uid-owner $user ";
-    } else {
-	fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
-	$rule .= "--uid-owner $user ";
-    }
-
-    [ owner => $rule ];
-}
-
 #
 # Create a "-m tos" match for the passed TOS
 #
@@ -3729,12 +3240,6 @@ sub do_tos( $ ) {
     my $tos = $_[0];
 
     $tos ne '-' ? "-m tos --tos $tos " : '';
-}
-
-sub do_itos( $ ) {
-    my $tos = $_[0];
-
-    $tos ne '-' ? [ tos => "--tos $tos" ] : [];
 }
 
 my %dir = ( O => 'original' ,
@@ -3767,25 +3272,6 @@ sub do_connbytes( $ ) {
     "-m connbytes ${invert}--connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode} ";
 }
 
-sub do_iconnbytes( $ ) {
-    my $connbytes = $_[0];
-
-    return [] if $connbytes eq '-';
-    #                                                                    1     2      3        5       6
-    fatal_error "Invalid CONNBYTES ($connbytes)" unless $connbytes =~ /^(!)? (\d+): (\d+)? ((:[ORB]) (:[PBA])?)?$/x;
-
-    my $invert = $1 || ''; $invert = '! ' if $invert;
-    my $min    = $2;       $min    = 0  unless defined $min;
-    my $max    = $3;       $max    = '' unless defined $max; fatal_error "Invalid byte range ($min:$max)" if $max ne '' and $min > $max;
-    my $dir    = $5 || 'B';
-    my $mode   = $6 || 'B';
-
-    $dir  =~ s/://;
-    $mode =~ s/://;
-
-    [ connbytes => "${invert}--connbytes $min:$max --connbytes-dir $dir{$dir} --connbytes-mode $mode{$mode}" ];
-}
-
 #
 # Create a soft "-m helper" match for the passed argument
 #
@@ -3797,14 +3283,6 @@ sub do_helper( $ ) {
     qq(-m helper --helper "$helper" );
 }
 
-sub do_ihelper( $ ) {
-    my $helper = shift;
-
-    return [] if $helper eq '-';
-
-    [ helper => qq(--helper "$helper") ];
-}
-
 #
 # Create a "-m length" match for the passed LENGTH
 #
@@ -3813,13 +3291,6 @@ sub do_length( $ ) {
 
     require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
     $length ne '-' ? "-m length --length $length " : '';
-}
-
-sub do_ilength( $ ) {
-    my $length = $_[0];
-
-    require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
-    $length ne '-' ? [ length > "--length $length" ] : [];
 }
 
 #
@@ -3873,35 +3344,7 @@ sub do_headers( $ ) {
 	}
     }
 
-    "-m ipv6header ${invert}--header ${headers} ${soft} ";
-}
-
-sub do_iheaders( $ ) {
-    my $headers = shift;
-
-    return [] if $headers eq '-';
-
-    require_capability 'HEADER_MATCH', 'A non-empty HEADER column', 's';
-
-    my $invert = $headers =~ s/^!// ? '! ' : "";
-
-    my $soft   = '--soft ';
-
-    if ( $headers =~ s/^exactly:// ) {
-	$soft = '';
-    } else {
-	$headers =~ s/^any://;
-    }
-
-    for ( split_list $headers, "Header" ) {
-	if ( $_ eq 'proto' ) {
-	    $_ = 'protocol';
-	} else {
-	    fatal_error "Unknown IPv6 Header ($_)" unless $headers{$_};
-	}
-    }
-
-    [ ipv6header => "${invert}--header ${headers} ${soft}" ];
+    "-m ipv6header ${invert}--header ${headers} ${soft}";
 }
 
 #
@@ -4172,7 +3615,7 @@ sub imatch_source_net( $;$\$ ) {
     if ( $net =~ /^!?~/ ) {
 	fatal_error "A MAC address($net) cannot be used in this context" if $restriction >= OUTPUT_RESTRICT;
 	$$macref = 1 if $macref;
-	return @{do_imac $net};
+	return do_imac $net;
     }
 
     if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?/ ) {

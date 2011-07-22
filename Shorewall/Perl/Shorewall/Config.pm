@@ -3406,12 +3406,12 @@ sub get_configuration( $$$ ) {
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 
     if ( my $rate = $config{LOGLIMIT} ) {
-	my $limit;
+	my ( $option, $limit );
 
 	if ( $rate =~ /^[sd]:/ ) {
 	    require_capability 'HASHLIMIT_MATCH', 'Per-ip log rate limiting' , 's';
 
-	    $limit = "-m hashlimit ";
+	    $option = 'hashlimit';
 
 	    my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
 	    my $units;
@@ -3420,11 +3420,11 @@ sub get_configuration( $$$ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
 		fatal_error "Invalid burst value ($5)" unless $5;
 
-		$limit .= "--$match $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
+		$limit = "--$match $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
 	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))?)$/ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
-		$limit .= "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
+		$limit = "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
 	    } else {
 		fatal_error "Invalid rate ($rate)";
@@ -3442,18 +3442,22 @@ sub get_configuration( $$$ ) {
 
 		$limit .= "--hashlimit-htable-expire $expire ";
 	    }
-	} elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
-	    fatal_error "Invalid rate ($1)" unless $2;
-	    fatal_error "Invalid burst value ($5)" unless $5;
-	    $limit = "-m limit --limit $1 --limit-burst $5 ";
-	} elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
-	    fatal_error "Invalid rate (${1}${2})" unless $1;
-	    $limit = "-m limit --limit $rate ";
 	} else {
-	    fatal_error "Invalid rate ($rate)";
+	    $option = 'limit';
+
+	    if ( $rate =~ /^((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+		fatal_error "Invalid rate ($1)" unless $2;
+		fatal_error "Invalid burst value ($5)" unless $5;
+		$limit = "--limit $1 --limit-burst $5";
+	    } elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
+		fatal_error "Invalid rate (${1}${2})" unless $1;
+		$limit = "--limit $rate";
+	    } else {
+		fatal_error "Invalid rate ($rate)";
+	    }
 	}
 
-	$globals{LOGLIMIT} = $limit;
+	$globals{LOGLIMIT} = [ $option => $limit ];
 
 	warning_message "LOGRATE Ignored when LOGLIMIT is specified"  if $config{LOGRATE};
 	warning_message "LOGBURST Ignored when LOGLIMIT is specified" if $config{LOGBURST};
@@ -3467,11 +3471,12 @@ sub get_configuration( $$$ ) {
 	    fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
 	}
 
-	$globals{LOGLIMIT}  = '-m limit ';
-	$globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if supplied $config{LOGRATE};
-	$globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if supplied $config{LOGBURST};
+	my $limit = "--limit $config{LOGRATE} "        if supplied $config{LOGRATE};
+	$limit   .= "--limit-burst $config{LOGBURST} " if supplied $config{LOGBURST};
+	
+	$globals{LOGLIMIT} = [ limit => $limit ];
     } else {
-	$globals{LOGLIMIT} = '';
+	$globals{LOGLIMIT} = [];
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );

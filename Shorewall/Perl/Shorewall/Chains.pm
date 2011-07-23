@@ -4523,14 +4523,16 @@ sub expand_rule( $$$$$$$$$$;$ )
     my ($iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl );
     my $chain = $chainref->{name};
     my $table = $chainref->{table};
-    my $jump  = $target ? '-j ' . $target : '';
+    my $jump;
     my $mac;
     my $targetref;
 
     if ( $target ) {
-	my ( $basic_target, $rest ) = split ' ', $target, 2;
+	my ( $basictarget, $rest ) = split ' ', $target, 2;
 
-	$targetref = $chain_table{$table}{$basic_target};
+	$jump  = '-j ' . $target unless $targetref = $chain_table{$table}{$basictarget};
+    } else {
+	$jump = '';
     }
     
     our @ends = ();

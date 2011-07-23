@@ -266,7 +266,6 @@ our $filter_table;
 my  $comment;
 my  @comments;
 my  $export;
-my  $splitcount;
 
 #
 # Target Types
@@ -918,6 +917,8 @@ sub handle_port_list( $$$$$$ );
 sub handle_port_list( $$$$$$ ) {
     my ($chainref, $rule, $dport, $first, $ports, $rest) = @_;
 
+    our $splitcount;
+
     if ( port_count( $ports ) > 15 ) {
 	#
 	# More than 15 ports specified
@@ -969,6 +970,7 @@ sub handle_port_list( $$$$$$ ) {
 sub handle_icmptype_list( $$$$ ) {
     my ($chainref, $first, $types, $rest) = @_;
     my @ports = split ',', $types;
+    our $splitcount;
     push_rule ( $chainref, join ( '', $first, shift @ports, $rest ) ), $splitcount++ while @ports;
 }
 
@@ -981,6 +983,8 @@ sub handle_icmptype_list( $$$$ ) {
 #
 sub add_rule($$;$) {
     my ($chainref, $rule, $expandports) = @_;
+
+    our $splitcount;
 
     assert( ! reftype $rule );
 
@@ -1775,6 +1779,19 @@ sub add_jump( $$$;$$$ ) {
     } else {
 	add_rule ($fromref, join( '', $predicate, "-$param $to" ), $expandports || 0 );
     }
+}
+
+#
+# This function is used by expand_rule() to generate jumps that require splitting long port lists
+#
+# The global $splitcount is incremented each time that a rule is inserted in the split path.
+# Rules in excess of the minimum (1) are accounted for here.
+#
+sub add_expanded_jump( $$$ ) {
+    my ( $chainref, $toref, $rule ) = @_;
+    our $splitcount = 0;
+    add_jump( $chainref, $toref, 0, $rule, 1 );
+    add_reference( $chainref, $toref ) while --$splitcount > 0;
 }
 
 sub add_ijump( $$$;@ ) {
@@ -4508,7 +4525,14 @@ sub expand_rule( $$$$$$$$$$;$ )
     my $table = $chainref->{table};
     my $jump  = $target ? '-j ' . $target : '';
     my $mac;
+    my $targetref;
 
+    if ( $target ) {
+	my ( $basic_target, $rest ) = split ' ', $target, 2;
+
+	$targetref = $chain_table{$table}{$basic_target};
+    }
+    
     our @ends = ();
     #
     # In the generated rules, we sometimes need run-time loops or conditional blocks. This function is used
@@ -4527,10 +4551,6 @@ sub expand_rule( $$$$$$$$$$;$ )
 	incr_cmd_level $chainref;
 	push @ends, $end;
     }
-    #
-    # Clear Split Count
-    #
-    $splitcount = 0;
     #
     # Trim disposition
     #
@@ -4897,7 +4917,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    for my $dnet ( mysplit $dnets ) {
 			$source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
-			add_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ), 1 );
+			add_expanded_jump( $chainref, $echainref, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ) );
 		    }
 
 		    conditional_rule_end( $chainref ) if $cond;
@@ -4905,6 +4925,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		conditional_rule_end( $chainref ) if $cond;
 	    }
+		
 	    #
 	    # Generate RETURNs for each exclusion
 	    #
@@ -4940,7 +4961,11 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Generate Final Rule
 	    #
-	    add_rule $fromref = $echainref, $exceptionrule . $jump , 1 unless $disposition eq 'LOG';
+	    if ( $targetref ) {
+		add_expanded_jump( $fromref = $echainref, $targetref, $exceptionrule );
+	    } else {
+		add_rule( $fromref = $echainref, $exceptionrule . $jump , 1 ) unless $disposition eq 'LOG';
+	    }
 
 	    $done = 1;
 	}
@@ -4973,7 +4998,11 @@ sub expand_rule( $$$$$$$$$$;$ )
 			#
 			# No logging -- add the target rule with matches to the rule chain
 			#
-			add_rule( $fromref = $chainref, $matches . $jump , 1 );
+			if ( $targetref ) {
+			    add_expanded_jump( $fromref = $chainref, $targetref , $matches );
+			} else {
+			    add_rule( $fromref = $chainref, $matches . $jump , 1 );
+			}
 		    } elsif ( $disposition eq 'LOG' || $disposition eq 'COUNT' ) {
 			#
 			# The log rule must be added with matches to the rule chain
@@ -4998,8 +5027,12 @@ sub expand_rule( $$$$$$$$$$;$ )
 				       $logtag,
 				       'add',
 				       $matches );
-			
-			add_rule( $fromref = $chainref, $matches . $jump, 1 );
+
+			if ( $targetref ) {
+			    add_expanded_jump( $fromref = $chainref, $targetref, $matches );
+			} else {
+			    add_rule( $fromref = $chainref, $matches . $jump, 1 );
+			}
 		    } else {
 			#
 			# Find/Create a chain that both logs and applies the target action
@@ -5023,19 +5056,6 @@ sub expand_rule( $$$$$$$$$$;$ )
     }
 
     $chainref->{restricted} |= INPUT_RESTRICT if $mac;
-    #
-    # Mark Target as referenced, if it's a chain
-    #
-    if ( $fromref && $target ) {
-	my $targetref = $chain_table{$table}{$target};
-	if ( $targetref ) {
-	    $targetref->{referenced} = 1;
-	    
-	    for ( my $i = 0; $i < $splitcount; $i++ ) {
-		add_reference $fromref, $targetref;
-	    }
-	}
-    }
 
     while ( @ends ) {
 	decr_cmd_level $chainref;

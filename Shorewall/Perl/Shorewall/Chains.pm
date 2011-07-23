@@ -664,13 +664,13 @@ sub transform_rule( $ ) {
 
 	if ( $option eq 'j' or $option eq 'g' ) {
 	    $ruleref->{jump} = $option;
-	    assert( $input =~ s/([^\s]+)\s*//, $input );
+	    $input =~ s/([^\s]+)\s*//;
 	    $ruleref->{target} = $1;
 	    $option = 'targetopts';
 	} else {
 	    $simple = 0;
 	    if ( $option eq 'm' ) {
-		assert( $input =~ s/(\w+)\s*//, $input );
+		$input =~ s/(\w+)\s*//;
 		$option = $1;
 	    }
 	}
@@ -681,7 +681,7 @@ sub transform_rule( $ ) {
 	{
 	    while ( $input ne '' && $input !~ /^(?:!|-[psdjgiom])\s/ ) {
 		last PARAM if $input =~ /^--([^\s]+)/ && $aliases{$1 || '' };
-		assert( $input =~ s/^([^\s]+)\s*// , $input );
+		$input =~ s/^([^\s]+)\s*//;
 		my $token = $1;
 		$params = $params eq '' ? $token : join( ' ' , $params, $token);	
 	    }
@@ -2568,28 +2568,6 @@ sub optimize_level4( $$ ) {
 }
 
 #
-# Convert a rule hash into a string for easy comparison.
-#
-sub stringify_rule {
-    for ( @_ ) {
-	if ( reftype $_ ) {
-	    #
-	    # So we don't damage the referenced list
-	    #
-	    my @flat = @_;
-    
-	    for ( @flat ) {
-		$_ = "@$_" if reftype $_;
-	    }
-	    
-	    return "@flat";
-	}
-    }
-
-    "@_";
-}
-
-#
 # Delete duplicate chains replacing their references
 #
 sub optimize_level8( $$$ ) {
@@ -2600,19 +2578,21 @@ sub optimize_level8( $$$ ) {
     my $chains   = @chains;
     my $chainseq = 0;
     my %renamed;
-    
 
     $passes++;
     
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
     for my $chainref ( @chains ) {
-	$_->{rule} = stringify_rule %$_ for @{$chainref->{rules}};
+	my $digest = '|';
+	$digest .= ' |' . format_rule( $chainref, $_, 1 ) for @{$chainref->{rules}};
+	$chainref->{digest} = $digest;
     }
+
+    
 	    
     for my $chainref ( @chains ) {
 	my $rules    = $chainref->{rules};
-	my $numrules = @$rules;
 	#
 	# Shift the current $chainref off of @chains1
 	#
@@ -2620,30 +2600,24 @@ sub optimize_level8( $$$ ) {
 	#
 	# Skip empty chains
 	#
-	next if not $numrules;	
-      CHAIN:
 	for my $chainref1 ( @chains1 ) {
-	    my $rules1 = $chainref1->{rules};
-	    next if @$rules1 != $numrules;
+	    next unless @{$chainref1->{rules}};
 	    next if $chainref1->{dont_delete};
-
-	    for ( my $i = 0; $i < $numrules; $i++ ) {
-		next CHAIN unless $rules->[$i]->{rule} eq $rules1->[$i]->{rule};
+	    if ( $chainref->{digest} eq $chainref1->{digest} ) {
+		replace_references $chainref1, $chainref->{name}, undef;
+		$renamed{ $chainref->{name} } = 1 unless $chainref->{name} =~ /^~/;
 	    }
-
-	    replace_references $chainref1, $chainref->{name}, undef;
-	    $renamed{ $chainref->{name} } = 1 unless $chainref->{name} =~ /^~/;
 	}
     }
 
-    if ( keys %renamed ) {
+    my @renamed = keys %renamed;
+
+    if ( @renamed ) {
 	#
 	# First create aliases for each renamed chain and change the {name} member.
 	#
-	my $step1 = 1;
-
-	for my $oldname ( keys %renamed ) {
-	    my $newname = $renamed{ $oldname } = '~opt-' . $chainseq++;
+	for my $oldname ( @renamed ) {
+	    my $newname = $renamed{ $oldname } = '~comb' . $chainseq++;
 
 	    trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
 	    $tableref->{$newname} = $tableref->{$oldname};
@@ -2653,8 +2627,6 @@ sub optimize_level8( $$$ ) {
 	#
 	# Now adjust the references to point to the new name
 	#
-	my $step2 = 2;
-
 	while ( my ($chain, $chainref ) = each %$tableref ) {
 	    my %references = %{$chainref->{references}};
 
@@ -2668,9 +2640,7 @@ sub optimize_level8( $$$ ) {
 	#
 	# Delete the old names from the table
 	#
-	my $step3 = 3;
-	
-	delete $tableref->{$_} for keys %renamed;
+	delete $tableref->{$_} for @renamed;
 	#
 	# And fix up the rules
 	#

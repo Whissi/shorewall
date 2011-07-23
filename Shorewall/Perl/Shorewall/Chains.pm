@@ -2595,7 +2595,7 @@ sub optimize_level4( $$ ) {
 sub optimize_level8( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my $progress = 1;
-    my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+    my @chains   = ( grep $_->{referenced} && ! ( $_->{builtin} || $_->{is_policy} ), values %{$tableref} );
     my @chains1  = @chains;
     my $chains   = @chains;
     my $chainseq = 0;

@@ -715,8 +715,8 @@ sub clear_rule_target( $ ) {
     assert( reftype $ruleref );
 
     delete $ruleref->{jump};
-    delete $ruleref->{target};
     delete $ruleref->{targetopts};
+    $ruleref->{target} = '';
 
     1;
 }

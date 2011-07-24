@@ -245,6 +245,8 @@ our $VERSION = 'MODULEVERSION';
 #                                               restriction  => Restrictions on further rules in this chain.
 #                                               audit        => Audit the result.
 #                                               filtered     => Number of filter rules at the front of an interface forward chain
+#                                               digest       => string representation of the chain's rules for use in optimization
+#                                                               level 8.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -418,10 +420,10 @@ my %ipset_exists;
 #         cmdlevel   => nesting level within loops and conditional blocks. 
 #                       determines indentation
 #         simple     => true|false. If true, there are no matches or options
-#         jump       => 'j', 'g' or '' (determines whether '-j' or '-g' is included
+#         jump       => 'j' or 'g' (determines whether '-j' or '-g' is included)
+#                       Omitted, if target is ''.
 #         target     => Rule target, if jump is 'j' or 'g'.
 #         targetopts => Target options. Only included if non-empty
-#         rule       => String representation of rule for comparison
 #         <option>   => iptables/ip6tables -A options (e.g., i => eth0)
 #         <match>    => iptables match. Value may be a scalar or array.
 #                       if an array, multiple "-m <match>"s will be generated
@@ -656,7 +658,6 @@ sub transform_rule( $ ) {
 	} elsif ( $input =~ s/^(!\s+)?--([^\s]+)\s*// ) {
 	    $invert = '!' if $1;
 	    my $opt = $option = $2;
-
 	    fatal_error "Unrecognized iptables option ($opt}" unless $option = $aliases{$option};	    
 	} else {
 	    fatal_error "Unrecognized iptables option string ($input)";
@@ -2254,9 +2255,9 @@ sub initialize_chain_table($) {
 
     if ( $full ) {
 	#
-	# Create these chains early in case they are needed by Policy actions
+	# Create this chain early in case it is needed by Policy actions
 	#
-	dont_move   new_standard_chain 'reject';
+	dont_move new_standard_chain 'reject';
     }
 }
 
@@ -2613,17 +2614,23 @@ sub optimize_level8( $$$ ) {
     my %renamed;
 
     $passes++;
-    
+
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
     for my $chainref ( @chains ) {
-	my $digest = '|';
-	$digest .= ' |' . format_rule( $chainref, $_, 1 ) for @{$chainref->{rules}};
+	my $digest = '';
+
+	for ( @{$chainref->{rules}} ) {
+	    if ( $digest ) {
+		$digest .= ' |' . format_rule( $chainref, $_, 1 );
+	    } else {
+		$digest = format_rule( $chainref, $_, 1 );
+	    }
+	}
+
 	$chainref->{digest} = $digest;
     }
 
-    
-	    
     for my $chainref ( @chains ) {
 	my $rules    = $chainref->{rules};
 	#

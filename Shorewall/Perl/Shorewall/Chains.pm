@@ -1032,6 +1032,8 @@ sub push_irule( $$$;@ ) {
 	$ruleref->{jump}       = $jump;
 	$ruleref->{target}     = $target;
 	$ruleref->{targetopts} = $targetopts if $targetopts;
+    } else {
+	$ruleref->{target} = '';
     }
 
     if ( $comment ) {

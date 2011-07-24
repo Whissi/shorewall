@@ -1402,7 +1402,7 @@ sub copy_rules( $$;$ ) {
 
     push @$rules2, @rules1;
 
-    progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}";
+    progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}" if $count;
 
     unless ( --$chain1->{references}{$name2} ) {
 	delete $chain1->{references}{$name2};
@@ -2489,7 +2489,7 @@ sub optimize_level4( $$ ) {
 	    # If the chain isn't branched to, then delete it
 	    #
 	    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
-		delete_chain $chainref;
+		delete_chain $chainref if $chainref->{referenced};
 		next;
 	    }
 
@@ -2638,6 +2638,7 @@ sub optimize_level8( $$$ ) {
 	    next unless @{$chainref1->{rules}};
 	    next if $chainref1->{dont_delete};
 	    if ( $chainref->{digest} eq $chainref1->{digest} ) {
+		progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		replace_references $chainref1, $chainref->{name}, undef;
 		$renamed{ $chainref->{name} } = 1 unless $chainref->{name} =~ /^~/;
 	    }
@@ -2656,7 +2657,7 @@ sub optimize_level8( $$$ ) {
 	    trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
 	    $tableref->{$newname} = $tableref->{$oldname};
 	    $tableref->{$oldname}{name} = $newname;
-	    progress_message "   Chain $oldname renamed to $newname";
+	    progress_message "  Chain $oldname renamed to $newname";
 	}
 	#
 	# Now adjust the references to point to the new name

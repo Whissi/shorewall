@@ -37,12 +37,14 @@ use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
 
-my $chainref         = get_action_chain;
 my ( $action, $audit ) = get_action_params( 2 );
+
+fatal_error "Invalid parameter ($audit) to action Invalid"   if supplied $audit && $audit ne 'audit';
+fatal_error "Invalid parameter ($action) to action Invalid"  unless $action =~ /^ACCEPT|DROP|REJECT$/;
+
+my $chainref         = get_action_chain;
 my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
-
-fatal_error "Invalid parameter to action Invalid"   if supplied $audit && $audit ne 'audit';
 
 log_rule_limit $level, $chainref, 'Invalid' , $action, '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
 add_jump $chainref , $target, 0, "$globals{STATEMATCH} INVALID ";

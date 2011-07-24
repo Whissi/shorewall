@@ -37,12 +37,14 @@ use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
 
-my $chainref         = get_action_chain;
 my ( $action, $audit ) = get_action_params( 2 );
+
+fatal_error "Invalid parameter ($audit) to action NotSyn"   if supplied $audit && $audit ne 'audit';
+fatal_error "Invalid parameter ($action) to action NotSyn"  unless $action =~ /^ACCEPT|DROP|REJECT$/;
+
+my $chainref         = get_action_chain;
 my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
-
-fatal_error "Invalid parameter to action NotSyn"   if supplied $audit && $audit ne 'audit';
 
 log_rule_limit $level, $chainref, 'NotSyn' , $action, '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
 add_jump $chainref , $target, 0, '-p 6 ! --syn ';

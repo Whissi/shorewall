@@ -787,41 +787,6 @@ sub format_rule( $$;$ ) {
 }
 
 #
-# Merge two rules.
-#
-sub merge_rules( $$$ ) {
-    my ( $tableref, $toref, $fromref ) = @_;
-
-    my $target = $fromref->{target};
-    #
-    # Since the 'to' rule is a jump to a chain containing the 'from' rule, we
-    # assume that common unique option values are compatible (such as 'tcp' and
-    # 'tcp ! syn').
-    #
-    for my $option ( @unique_options ) {
-	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
-    }
-		    
-    for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
-	set_rule_option( $toref, $option, $fromref->{$option} );
-    }
-
-    unless ( $toref->{state} ) {
-	set_rule_option ( $toref, 'state',   $fromref->{state} ) if $fromref->{state};
-    }
-
-    set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
-
-    $toref->{target}     = $target;
-    $toref->{targetopts} = $fromref->{targetopts} if $fromref->{targetopts};
-    $toref->{jump}       = 'j' unless $tableref->{$target};
-
-    unless ( $toref->{comment} ) {
-	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
-    }
-}
-
-#
 # Trace a change to the chain table
 #
  
@@ -2375,6 +2340,48 @@ sub replace_references( $$$ ) {
 }
 
 #
+# Merge two rules.
+#
+sub merge_rules( $$$ ) {
+    my ( $tableref, $toref, $fromref ) = @_;
+
+    my $target = $fromref->{target};
+    #
+    # Since the 'to' rule is a jump to a chain containing the 'from' rule, we
+    # assume that common unique option values are compatible (such as 'tcp' and
+    # 'tcp ! syn').
+    #
+    for my $option ( @unique_options ) {
+	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
+    }
+		    
+    for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
+	set_rule_option( $toref, $option, $fromref->{$option} );
+    }
+
+    unless ( $toref->{state} ) {
+	set_rule_option ( $toref, 'state',   $fromref->{state} ) if $fromref->{state};
+    }
+
+    set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
+
+
+    unless ( $toref->{comment} ) {
+	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
+    }
+
+    $toref->{target}     = $target;
+    
+    if ( my $targetref = $tableref->{$target} ) {
+	return $targetref;
+    } else {
+	$toref->{targetopts} = $fromref->{targetopts} if $fromref->{targetopts};
+	$toref->{jump}       = 'j';
+	return '';
+    }
+}
+
+#
 # Replace jumps to the passed chain with jumps to the target of the passed rule while merging
 # options and matches
 #
@@ -2394,7 +2401,10 @@ sub replace_references1( $$ ) {
 		    #
 		    # The target is the passed chain -- merge the two rules into one
 		    #
-		    merge_rules( $tableref, $_, $ruleref );
+		    if ( my $targetref = merge_rules( $tableref, $_, $ruleref ) ) {
+			add_reference( $fromref, $targetref );
+			delete_reference( $fromref, $chainref );
+		    }
 
 		    $count++;
 		    trace( $fromref, 'R', $rule, $_ ) if $debug;

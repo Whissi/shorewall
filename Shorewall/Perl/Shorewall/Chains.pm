@@ -787,9 +787,50 @@ sub format_rule( $$;$ ) {
 }
 
 #
-# Trace a change to the chain table
+# Merge two rules.
 #
- 
+sub merge_rules( $$$ ) {
+    my ( $tableref, $toref, $fromref ) = @_;
+
+    my $target = $fromref->{target};
+    #
+    # Since the 'to' rule is a jump to a chain containing the 'from' rule, we
+    # assume that common unique option values are compatible (such as 'tcp' and
+    # 'tcp ! syn').
+    #
+    for my $option ( @unique_options ) {
+	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
+    }
+		    
+    for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
+	set_rule_option( $toref, $option, $fromref->{$option} );
+    }
+
+    unless ( $toref->{state} ) {
+	set_rule_option ( $toref, 'state',   $fromref->{state} ) if $fromref->{state};
+    }
+
+    set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
+
+
+    unless ( $toref->{comment} ) {
+	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
+    }
+
+    $toref->{target}     = $target;
+    
+    if ( my $targetref = $tableref->{$target} ) {
+	return $targetref;
+    } else {
+	$toref->{targetopts} = $fromref->{targetopts} if $fromref->{targetopts};
+	$toref->{jump}       = 'j';
+	return '';
+    }
+}
+
+#
+# Trace a change to the chain table
+# 
 sub trace( $$$$ ) {
     my ($chainref, $action, $rulenum, $message) = @_;
 
@@ -2339,48 +2380,6 @@ sub replace_references( $$$ ) {
     progress_message "  $count references to chain $chainref->{name} replaced" if $count;
 
     delete_chain $chainref;
-}
-
-#
-# Merge two rules.
-#
-sub merge_rules( $$$ ) {
-    my ( $tableref, $toref, $fromref ) = @_;
-
-    my $target = $fromref->{target};
-    #
-    # Since the 'to' rule is a jump to a chain containing the 'from' rule, we
-    # assume that common unique option values are compatible (such as 'tcp' and
-    # 'tcp ! syn').
-    #
-    for my $option ( @unique_options ) {
-	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
-    }
-		    
-    for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
-	set_rule_option( $toref, $option, $fromref->{$option} );
-    }
-
-    unless ( $toref->{state} ) {
-	set_rule_option ( $toref, 'state',   $fromref->{state} ) if $fromref->{state};
-    }
-
-    set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
-
-
-    unless ( $toref->{comment} ) {
-	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
-    }
-
-    $toref->{target}     = $target;
-    
-    if ( my $targetref = $tableref->{$target} ) {
-	return $targetref;
-    } else {
-	$toref->{targetopts} = $fromref->{targetopts} if $fromref->{targetopts};
-	$toref->{jump}       = 'j';
-	return '';
-    }
 }
 
 #

@@ -1798,10 +1798,10 @@ sub add_jump( $$$;$$$ ) {
 # The global $splitcount is incremented each time that a rule is inserted in the split path.
 # Rules in excess of the minimum (1) are accounted for here.
 #
-sub add_expanded_jump( $$$ ) {
-    my ( $chainref, $toref, $rule ) = @_;
+sub add_expanded_jump( $$$$ ) {
+    my ( $chainref, $toref, $goto, $rule ) = @_;
     our $splitcount = 0;
-    add_jump( $chainref, $toref, 0, $rule, 1 );
+    add_jump( $chainref, $toref, $goto, $rule, 1 );
     add_reference( $chainref, $toref ) while --$splitcount > 0;
 }
 
@@ -4547,13 +4547,14 @@ sub expand_rule( $$$$$$$$$$;$ )
     my $jump;
     my $mac;
     my $targetref;
+    my $basictarget;
 
     if ( $target ) {
-	my ( $basictarget, $rest ) = split ' ', $target, 2;
+	( $basictarget, my $rest ) = split ' ', $target, 2;
 
 	$jump  = '-j ' . $target unless $targetref = $chain_table{$table}{$basictarget};
     } else {
-	$jump = '';
+	$jump = $basictarget = '';
     }
     
     our @ends = ();
@@ -4940,7 +4941,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    for my $dnet ( mysplit $dnets ) {
 			$source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
-			add_expanded_jump( $chainref, $echainref, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ) );
+			add_expanded_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ) );
 		    }
 
 		    conditional_rule_end( $chainref ) if $cond;
@@ -4985,7 +4986,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    # Generate Final Rule
 	    #
 	    if ( $targetref ) {
-		add_expanded_jump( $fromref = $echainref, $targetref, $exceptionrule );
+		add_expanded_jump( $fromref = $echainref, $targetref, 0, $exceptionrule );
 	    } else {
 		add_rule( $fromref = $echainref, $exceptionrule . $jump , 1 ) unless $disposition eq 'LOG';
 	    }
@@ -5022,7 +5023,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 			# No logging -- add the target rule with matches to the rule chain
 			#
 			if ( $targetref ) {
-			    add_expanded_jump( $fromref = $chainref, $targetref , $matches );
+			    add_expanded_jump( $fromref = $chainref, $targetref , 0, $matches );
 			} else {
 			    add_rule( $fromref = $chainref, $matches . $jump , 1 );
 			}
@@ -5040,19 +5041,19 @@ sub expand_rule( $$$$$$$$$$;$ )
 				       'add' ,
 				       $matches
 				      );
-		    } elsif ( $logname || $target =~ /^RETURN\b/ ) {
+		    } elsif ( $logname || $basictarget eq 'RETURN' ) {
 			log_rule_limit(
 				       $loglevel ,
 				       $chainref ,
 				       $logname || $chain,
-				       $disposition eq 'reject' ? 'REJECT' : $disposition ,
+				       $disposition,
 				       '',
 				       $logtag,
 				       'add',
 				       $matches );
 
 			if ( $targetref ) {
-			    add_expanded_jump( $fromref = $chainref, $targetref, $matches );
+			    add_expanded_jump( $fromref = $chainref, $targetref, 0, $matches );
 			} else {
 			    add_rule( $fromref = $chainref, $matches . $jump, 1 );
 			}
@@ -5061,11 +5062,10 @@ sub expand_rule( $$$$$$$$$$;$ )
 			# Find/Create a chain that both logs and applies the target action
 			# and jump to the log chain if all of the rule's conditions are met
 			#
-			add_jump( $chainref,
-				  logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
-				  $builtin_target{$disposition},
-				  $matches,
-				  1 );
+			add_expanded_jump( $chainref,
+					   logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
+					   1,
+					   $matches );
 		    }
 
 		    conditional_rule_end( $chainref ) if $cond;

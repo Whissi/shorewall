@@ -788,7 +788,10 @@ sub format_rule( $$;$ ) {
 }
 
 #
-# Merge two rules.
+# Merge two rules - If the target of the merged rule is a chain, a reference to its
+#                   chain table entry is returned. It is the caller's responsibility
+#                   to handle reference counting. If the target is a builtin, '' is
+#                   returned.
 #
 sub merge_rules( $$$ ) {
     my ( $tableref, $toref, $fromref ) = @_;
@@ -813,13 +816,12 @@ sub merge_rules( $$$ ) {
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
 
-
     unless ( $toref->{comment} ) {
 	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
     }
 
-    $toref->{target}     = $target;
-    
+    $toref->{target} = $target;
+
     if ( my $targetref = $tableref->{$target} ) {
 	return $targetref;
     } else {
@@ -873,7 +875,7 @@ sub add_commands ( $$;@ ) {
 }
 
 #
-# Transform the passed rule and add it to the end of the passed chain's rule list
+# Transform the passed rule and add it to the end of the passed chain's rule list.
 #
 sub push_rule( $$ ) {
     my $chainref = $_[0];

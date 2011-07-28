@@ -3705,7 +3705,7 @@ sub get_configuration( $$$ ) {
     if ( $val = $config{TCP_FLAGS_DISPOSITION} ) {
 	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:(?:A_)?(?:REJECT|DROP)|ACCEPT)$/;
     } else {
-	$config{TCP_FLAGS_DISPOSITION} = 'DROP';
+	$val = $config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
 
     require_capability 'AUDIT_TARGET' , "TCP_FLAGS_DISPOSITION=$val", 's' if $val =~ /^A_/;

@@ -1712,7 +1712,17 @@ determine_capabilities() {
     [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
 
     CAPVERSION=$SHOREWALL_CAPVERSION
-    KERNELVERSION=$(printf "%d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+
+    KERNELVERSION=$(uname -r 2> /dev/null | sed -e 's/-.*//')
+
+    case "$KERNELVERSION" in 
+	*.*.*)
+	    KERNELVERSION=$(printf "%d%02d%02d" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+	    ;;
+	*)
+	    KERNELVERSION=$(printf "%d%02d00" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
+	    ;;
+    esac
 }
 
 report_capabilities() {

@@ -2332,6 +2332,8 @@ sub determine_kernelversion() {
 
     if ( $kernelversion =~ /^(\d+)\.(\d+).(\d+)/ ) {
 	$capabilities{KERNELVERSION} = sprintf "%d%02d%02d", $1 , $2 , $3;
+    } elsif ( $kernelversion =~ /^(\d+)\.(\d+)/ ) {
+	$capabilities{KERNELVERSION} = sprintf "%d%02d00", $1 , $2;
     } else {
 	fatal_error "Unrecognized Kernel Version Format ($kernelversion)";
     }

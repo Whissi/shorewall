@@ -21,7 +21,16 @@ usage() {
 checkkernelversion() {
     local kernel
 
-    kernel=$(printf "%2d%02d%02d" $(uname -r 2> /dev/null | sed -e 's/-.*//' -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+    kernel=$(uname -r 2> /dev/null | sed -e 's/-.*//')
+
+    case "$kernel" in 
+	*.*.*)
+	    kernel=$(printf "%d%02d%02d" $(echo $kernel | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+	    ;;
+	*)
+	    kernel=$(printf "%d%02d00" $(echo $kernel | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
+	    ;;
+    esac
 
     if [ $kernel -lt 20624 ]; then
 	error_message "ERROR: $g_product requires Linux kernel 2.6.24 or later"

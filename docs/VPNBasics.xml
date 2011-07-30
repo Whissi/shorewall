@@ -204,9 +204,9 @@ loc             ipv4
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
-net             eth0               detect             norft1918,routefilter
-loc             eth1               detect
-<emphasis role="bold">rem             ppp0               192.168.10.0/24</emphasis></programlisting>
+net             eth0               -                  tcpflags,routefilter
+loc             eth1               -
+<emphasis role="bold">rem             ppp0               -</emphasis></programlisting>
   </section>
 
   <section id="Traffic">
@@ -251,17 +251,17 @@ loc           rem                 ACCEPT</programlisting>
 
     <para><filename>etc/shorewall/zones</filename>:</para>
 
-    <programlisting>#ZONE           DISPLAY              COMMENT
-net             Internet             The big bad net
-loc             Local                Local LAN
-<emphasis role="bold">rem1            Remote1              Remote LAN 1
-rem2            Remote2              Remote LAN 2</emphasis></programlisting>
+    <programlisting>#ZONE           TYPE                 OPTIONS
+net             ipv4
+loc             ipv4
+<emphasis role="bold">rem1            ipv4    #Remote LAN 1
+rem2            ipv4    #Remote LAN 2</emphasis></programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
-net             eth0               detect             norft1918,routefilter
-loc             eth1               detect
+net             eth0               -                  tcpflags,routefilter
+loc             eth1               -
 <emphasis role="bold">-               tun+               -</emphasis></programlisting>
 
     <para>/etc/shorewall/hosts:</para>

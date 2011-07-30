@@ -268,6 +268,7 @@ our $filter_table;
 my  $comment;
 my  @comments;
 my  $export;
+my  %renamed;
 
 #
 # Target Types
@@ -499,6 +500,7 @@ sub initialize( $$$ ) {
     $nat_table    = $chain_table{nat};
     $mangle_table = $chain_table{mangle};
     $filter_table = $chain_table{filter};
+    %renamed      = ();
     #
     # Contents of last COMMENT line.
     #
@@ -1458,7 +1460,8 @@ sub copy_rules( $$;$ ) {
 # Name of canonical chain between an ordered pair of zones
 #
 sub rules_chain ($$) {
-    join "$config{ZONE2ZONE}", @_;
+    my $name = join "$config{ZONE2ZONE}", @_;
+    $renamed{$name} || $name;
 }
 
 #
@@ -2609,11 +2612,12 @@ sub optimize_level4( $$ ) {
 sub optimize_level8( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my $progress = 1;
-    my @chains   = ( grep $_->{referenced} && ! ( $_->{builtin} || $_->{is_policy} ), values %{$tableref} );
+    my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
     my @chains1  = @chains;
     my $chains   = @chains;
     my $chainseq = 0;
-    my %renamed;
+    my %rename;
+    my %combined;
 
     $passes++;
 
@@ -2648,30 +2652,41 @@ sub optimize_level8( $$$ ) {
 	    if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		replace_references $chainref1, $chainref->{name}, undef;
-		$renamed{ $chainref->{name} } = 1 unless $chainref->{name} =~ /^~/;
+		$rename{ $chainref->{name} }    = 1 unless $chainref->{name} =~ /^~/;
+		$combined{ $chainref1->{name} } = $chainref->{name};
 	    }
 	}
     }
 
-    my @renamed = keys %renamed;
+    my @rename = keys %rename;
 
-    if ( @renamed ) {
+    if ( @rename ) {
 	#
 	# First create aliases for each renamed chain and change the {name} member.
 	#
-	for my $oldname ( @renamed ) {
+	for my $oldname ( @rename ) {
 	    my $newname = $renamed{ $oldname } = '~comb' . $chainseq++;
-
+	    
 	    trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
 	    $tableref->{$newname} = $tableref->{$oldname};
 	    $tableref->{$oldname}{name} = $newname;
 	    progress_message "  Chain $oldname renamed to $newname";
 	}
 	#
+	# Next, map the combined names 
+	#
+	while ( my ( $oldname, $combinedname ) = each %combined ) {
+	    $renamed{$oldname} = $renamed{$combinedname} || $combinedname;
+	}
+	#
 	# Now adjust the references to point to the new name
 	#
 	while ( my ($chain, $chainref ) = each %$tableref ) {
 	    my %references = %{$chainref->{references}};
+
+	    if ( my $newname = $renamed{$chainref->{policychain} || ''} ) {
+		$chainref->{policychain} = $newname;
+	    }
 
 	    while ( my ( $chain1, $chainref1 ) = each %references ) {
 		if ( my $newname = $renamed{$chainref->{references}{$chain1}} ) {
@@ -2683,7 +2698,7 @@ sub optimize_level8( $$$ ) {
 	#
 	# Delete the old names from the table
 	#
-	delete $tableref->{$_} for @renamed;
+	delete $tableref->{$_} for @rename;
 	#
 	# And fix up the rules
 	#

@@ -760,6 +760,12 @@ secret /etc/openvpn/bridgekey</programlisting>
     /etc/network/interfaces (Debian and derivatives) will create the bridged
     interfaces.</para>
 
+    <note>
+      <para>The stanzas below were written before bridges could be defined in
+      /etc/network/interfaces. For current usage, see bridge-utils-interfaces
+      (5).</para>
+    </note>
+
     <para>/etc/network/interfaces on the left-hand firewall:</para>
 
     <programlisting>iface br0 inet static
@@ -774,7 +780,7 @@ secret /etc/openvpn/bridgekey</programlisting>
       post-up /sbin/ip link set eth1 up
       post-up /usr/sbin/brctl addif br0 eth1
       post-down /usr/sbin/brctl delbr br0
-      post-down /usr/sbin/openvpn --rmtun tap0
+      post-down /usr/sbin/openvpn --rmtun --dev tap0
       post-down /sbin/ip link set eth1 down      </programlisting>
 
     <para>/etc/network/interfaces on the right-hand firewall:</para>
@@ -791,7 +797,7 @@ secret /etc/openvpn/bridgekey</programlisting>
       post-up /sbin/ip link set eth1 up
       post-up /usr/sbin/brctl addif br0 eth1
       post-down /usr/sbin/brctl delbr br0
-      post-down /usr/sbin/openvpn --rmtun tap0
+      post-down /usr/sbin/openvpn --rmtun --dev tap0
       post-down /sbin/ip link set eth1 down      </programlisting>
 
     <para>The Shorewall configuration is just a <ulink

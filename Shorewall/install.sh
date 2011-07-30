@@ -111,6 +111,7 @@ SPARSE=
 MANDIR=${MANDIR:-"/usr/share/man"}
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
+MACHOST=
 
 case "$LIBEXEC" in
     /*)
@@ -152,6 +153,7 @@ case $(uname) in
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
+        MACHOST=Yes
 	INSTALLD=
 	T=
 	;;
@@ -280,12 +282,12 @@ if [ -z "$CYGWIN" ]; then
    install_file shorewall ${DESTDIR}/sbin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
 
-   if [ -z "$MAC" ]; then
+   if [ -z "$MACHOST" ]; then
        eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
        eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
    else
-       eval sed -i -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
-       eval sed -i -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
+       eval sed -i \'\' -e  \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall 
+       eval sed -i \'\' -e  \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
    fi
 else
    install_file shorewall ${DESTDIR}/bin/shorewall 0755

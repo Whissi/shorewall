@@ -110,6 +110,7 @@ ANNOTATED=
 DEBIAN=
 CYGWIN=
 MAC=
+MACHOST=
 MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 INSTALLD='-D'
@@ -154,6 +155,7 @@ case $(uname) in
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
+	MACHOST=Yes
 	INSTALLD=
 	;;	
     *)
@@ -272,12 +274,12 @@ fi
 
 if [ -z "$CYGWIN" ]; then
    install_file shorewall6 ${DESTDIR}/sbin/shorewall6 0755 ${DESTDIR}/var/lib/shorewall6-${VERSION}.bkout
-   if [ -z "$MAC" ]; then
+   if [ -z "$MACHOST" ]; then
        eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall6
        eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall6
    else
-       eval sed -i -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall6
-       eval sed -i -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall6
+       eval sed -i \'\' -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall6
+       eval sed -i \'\' -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall6
    fi
    echo "shorewall6 control program installed in ${DESTDIR}/sbin/shorewall6"
 else

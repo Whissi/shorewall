@@ -3703,12 +3703,12 @@ sub get_configuration( $$$ ) {
     }
 
     if ( $val = $config{TCP_FLAGS_DISPOSITION} ) {
-	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:(?:A_)?(?:REJECT|DROP)|ACCEPT)$/;
+	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:(A_)?(?:REJECT|DROP))|ACCEPT$/;
+	require_capability 'AUDIT_TARGET' , "TCP_FLAGS_DISPOSITION=$val", 's' if $1;
     } else {
 	$val = $config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
 
-    require_capability 'AUDIT_TARGET' , "TCP_FLAGS_DISPOSITION=$val", 's' if $val =~ /^A_/;
 
     default 'TC_ENABLED' , $family == F_IPV4 ? 'Internal' : 'no';
 

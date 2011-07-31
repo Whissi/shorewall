@@ -990,8 +990,6 @@ sub handle_icmptype_list( $$$$ ) {
 #
 #    Chain reference , Rule [, Expand-long-port-lists ]
 #
-#    Returns a reference to the generated internal-form rule
-#
 sub add_rule($$;$) {
     my ($chainref, $rule, $expandports) = @_;
 

@@ -2252,7 +2252,7 @@ sub build_zone_list( $$$\$\$ ) {
     #
     # Handle Wildcards
     #
-    if ( $input =~ /^(all[-+]*)(![^:]+)?(:.*)?/ ) {
+    if ( $input =~ /^(all[-+]*)(![^:]+)?(:.*)?$/ ) {
 	$input   = $1;
 	$exclude = $2;
 	$rest    = $3;

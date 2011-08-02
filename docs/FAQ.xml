@@ -2530,6 +2530,44 @@ else
       url="manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>
       (5).</para>
     </section>
+
+    <section>
+      <title id="faq96">(FAQ 96) I am starting to use ipv6, but on my ipv4 FW,
+      when restarting Shorewall . it puts in ip6tables rules. How do i
+      dissable that ?</title>
+
+      <para>Answer: This is a two-step process.</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Set DISABLE_IPV6=No in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) and
+          restart Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para>Execute these commands at a root shell prompt:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>ip6tables -P INPUT ACCEPT</para>
+            </listitem>
+
+            <listitem>
+              <para>ip6tables -P OUTPUT ACCEPT</para>
+            </listitem>
+
+            <listitem>
+              <para>ip6tables -P FORWARD ACCEPT</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </orderedlist>
+
+      <para>You will probably want to soon install <ulink
+      url="IPv6Support.html">Shorewall6</ulink> so that you have an IPv6
+      firewall as well as one for IPv4.</para>
+    </section>
   </section>
 
   <section id="Misc">

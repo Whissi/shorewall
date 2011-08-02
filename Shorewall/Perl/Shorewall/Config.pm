@@ -2315,7 +2315,7 @@ sub qt( $ ) {
 	print "SYS----> @_\n";
 	system( "@_ 2>&1" );
     } else {
-	system( "@_ > /dev/null 2>&1" ) == 0;
+	system( "@_ > /dev/null 2>&1 < /dev/null" ) == 0;
     }
 }
 

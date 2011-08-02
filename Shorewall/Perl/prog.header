@@ -272,7 +272,7 @@ get_interface_bcasts() # $1 = interface
 #
 del_ip_addr() # $1 = address, $2 = interface
 {
-    [ $(find_first_interface_address_if_any $2) = $1 ] || qt $IP addr del $1 dev $2
+    [ $(find_first_interface_address_if_any $2) = $1 ] || qtnoin $IP addr del $1 dev $2
 }
 
 # Add IP Aliases
@@ -624,8 +624,8 @@ conditionally_flush_conntrack() {
 delete_proxyarp() {
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
-	    qt $IP -4 neigh del proxy $address dev $external
-	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address/32 dev $interface
+	    qtnoin $IP -4 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qtnoin $IP -4 route del $address/32 dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp

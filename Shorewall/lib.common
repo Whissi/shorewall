@@ -164,12 +164,21 @@ qt()
     "$@" >/dev/null 2>&1
 }
 
+#
+# Suppress all output and input - mainly for preventing leaked file descriptors
+# to avoid SELinux denials
+#
+qtnoin()
+{
+    "$@" </dev/null >/dev/null 2>&1
+}
+
 qt1()
 {
     local status
 
     while [ 1 ]; do
-	"$@" >/dev/null 2>&1
+	"$@" </dev/null >/dev/null 2>&1
 	status=$?
 	[ $status -ne 4 ] && return $status
     done
@@ -179,7 +188,7 @@ qt1()
 # Determine if Shorewall is "running"
 #
 shorewall_is_started() {
-    qt $IPTABLES -L shorewall -n
+    qt1 $IPTABLES -L shorewall -n
 }
 
 #

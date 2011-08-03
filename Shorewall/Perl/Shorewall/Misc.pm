@@ -1989,8 +1989,8 @@ EOF
 	emit <<'EOF';
     if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
-	    qt $IP -4 neigh del proxy $address dev $external
-	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -4 route del $address/32 dev $interface
+	    qtnoin $IP -4 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qtnoin $IP -4 route del $address/32 dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_arp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyarp
@@ -2003,8 +2003,8 @@ EOF
 	emit <<'EOF';
     if [ -f ${VARDIR}/proxyndp ]; then
 	while read address interface external haveroute; do
-	    qt $IP -6 neigh del proxy $address dev $external
-	    [ -z "${haveroute}${g_noroutes}" ] && qt $IP -6 route del $address/128 dev $interface
+	    qtnoin $IP -6 neigh del proxy $address dev $external
+	    [ -z "${haveroute}${g_noroutes}" ] && qtnoin $IP -6 route del $address/128 dev $interface
 	    f=/proc/sys/net/ipv4/conf/$interface/proxy_ndp
 	    [ -f $f ] && echo 0 > $f
 	done < ${VARDIR}/proxyndp

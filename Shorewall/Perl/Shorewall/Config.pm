@@ -435,7 +435,7 @@ sub initialize( $ ) {
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.22-Beta1",
+		    VERSION    => "4.4.22.1",
 		    CAPVERSION => 40421 ,
 		  );
     #
@@ -1442,7 +1442,7 @@ sub close_file() {
 #
 # Functions for copying a file into the script
 #
-sub copy( $;$ ) {
+sub copy( $ ) {
     assert( $script_enabled );
 
     if ( $script ) {
@@ -3376,8 +3376,6 @@ sub get_configuration( $$$ ) {
 
     my ( $export, $update, $annotate ) = @_;
 
-    my $val;
-
     $globals{EXPORT} = $export;
 
     our ( $once, @originalinc );
@@ -3405,18 +3403,6 @@ sub get_configuration( $$$ ) {
 
     get_capabilities( $export );
 
-    if ( supplied( $val = $config{SHOREWALL_SHELL} ) ) {
-	unless ( $val =~ /^\// ) {
-	    if ( $export ) {
-		$val = $config{SHOREWALL_SHELL} = "/bin/$val";
-		warning_message "Assuming SHOREWALL_SHELL=$val";
-	    } else {
-		warning_message "Can't find SHOREWALL_SHELL ($val)" unless $config{SHOREWALL_SHELL} = which $val;
-	    }
-	}
-    } else {
-	$config{SHOREWALL_SHELL} = '/bin/sh';
-    }
 
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
 
@@ -3490,6 +3476,8 @@ sub get_configuration( $$$ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
+
+    my $val;
 
     if ( have_capability( 'KERNELVERSION' ) < 20631 ) {
 	check_trivalue ( 'ROUTE_FILTER',  '' );

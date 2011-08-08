@@ -1922,7 +1922,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 		      do_user( $user ) ,
 		      do_test( $mark , $globals{TC_MASK} ) ,
 		      do_connlimit( $connlimit ),
-		      do_time( $time ) );
+		      do_time( $time ) ,
+		      do_headers( $headers ) ,
+		    );
     } else {
 	$rule = join( '',
 		      do_proto($proto, $ports, $sports),

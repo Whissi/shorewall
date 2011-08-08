@@ -1722,6 +1722,7 @@ determine_capabilities() {
     HEADER_MATCH=
     ACCOUNT_TARGET=
     AUDIT_TARGET=
+    QUOTA_MATCH=
 
     chain=fooX$$
 
@@ -1871,7 +1872,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
     qt $IPTABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
-
+    qt $IPTABLES -A $chain -m quota --quota 1000 & QUOTA_MATCH=Yes
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
     qt $IPTABLES -F $chain1
@@ -1964,6 +1965,7 @@ report_capabilities() {
 	report_capability "Header Match" $HEADER_MATCH
         report_capability "ACCOUNT Target" $ACCOUNT_TARGET
 	report_capability "AUDIT Target" $AUDIT_TARGET
+	report_capability "Quota Match" $QUOTA_MATCH
 	report_capability "ipset V5" $IPSET_V5
     fi
 
@@ -2033,6 +2035,7 @@ report_capabilities1() {
     report_capability1 HEADER_MATCH
     report_capability1 ACCOUNT_TARGET
     report_capability1 AUDIT_TARGET
+    report_capability1 QUOTA_MATCH
     report_capability1 IPSET_V5
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION

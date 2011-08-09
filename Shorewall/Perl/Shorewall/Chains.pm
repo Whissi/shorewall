@@ -2894,7 +2894,7 @@ sub port_count( $ ) {
 sub state_imatch( $ ) {
     my $state = shift;
 
-    have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => $state );
+    have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => "--state $state" );
 }
 
 #

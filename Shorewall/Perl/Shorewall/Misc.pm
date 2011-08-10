@@ -152,7 +152,10 @@ sub setup_ecn()
 
     if ( my $fn = open_file 'ecn' ) {
 
-	first_entry "$doing $fn...";
+	first_entry( sub { progress_message2 "$doing $fn...";
+			   require_capability 'MANGLE_ENABLED', 'Entries in the ecn file', '';
+			   warning_message 'ECN will not be applied to forwarded packets' unless have_capability 'MANGLE_FORWARD';
+		       } );
 
 	while ( read_a_line ) {
 
@@ -178,7 +181,7 @@ sub setup_ecn()
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
 
-		add_ijump $mangle_table->{POSTROUTING} , j => $chainref, p => 'tcp', imatch_dest_dev( $interface );
+		add_ijump $mangle_table->{POSTROUTING} , j => $chainref, p => 'tcp', imatch_dest_dev( $interface ) if have_capability 'MANGLE_FORWARD';
 		add_ijump $mangle_table->{OUTPUT},       j => $chainref, p => 'tcp', imatch_dest_dev( $interface );
 	    }
 

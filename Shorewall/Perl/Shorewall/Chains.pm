@@ -4786,7 +4786,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     if ( $origdest ) {
 	if ( $origdest eq '-' || ! have_capability( 'CONNTRACK_MATCH' ) ) {
-	    $origdest = '';
+	    $onets = $oexcl = '';
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #
 	    # Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
@@ -4816,7 +4816,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		$rule .= "-m conntrack --ctorigdst $variable ";
 	    }
 
-	    $origdest = '';
+	    $onets = $oexcl = '';
 	} else {
 	    fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/ || $origdest =~ /.*!.*!/;
 

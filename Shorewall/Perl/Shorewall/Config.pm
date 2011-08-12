@@ -3054,8 +3054,19 @@ EOF
 
 	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
 	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
+	
+	if ( system( "diff -q $configfile $configfile.bak > /dev/null" ) ) {
+	    progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
+	} else {
+	    if ( unlink "$configfile.bak" ) {
+		progress_message3 "No update required to configuration file $configfile; $configfile.bak not saved";
+	    } else {
+		warning_message "Unable to unlink $configfile.bak";
+		progress_message3 "No update required to configuration file $configfile; $configfile.b";
+	    }
 
-	progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
+	    exit 0;
+	}
     } else {
 	fatal_error "$fn does not exist";
     }

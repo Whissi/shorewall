@@ -409,6 +409,9 @@ sub setup_netmap() {
 
 	    my ( $type, $net1, $interfacelist, $net2, $net3 ) = split_line 4, 5, 'netmap file';
 
+	    validate_net $net1, 0;
+	    validate_net $net2, 0;
+
 	    $net3 = ALLIP if $net3 eq '-';
 
 	    for my $interface ( split_list $interfacelist, 'interface' ) {

@@ -1519,6 +1519,7 @@ determine_capabilities() {
     CONNMARK_MATCH=
     XCONNMARK_MATCH=
     RAW_TABLE=
+    RAWPOST_TABLE=
     IPP2P_MATCH=
     OLD_IPP2P_MATCH=
     LENGTH_MATCH=
@@ -1664,6 +1665,7 @@ determine_capabilities() {
     fi
 
     qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
+    qt $IP6TABLES -t rawpost	   -L -n && RAWPOST_TABLE=Yes
 
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
@@ -1764,6 +1766,7 @@ report_capabilities() {
 	report_capability "Connmark Match" $CONNMARK_MATCH
 	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
+	report_capability "Rawpost Table" $RAWPOST_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
 	[ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
@@ -1831,6 +1834,7 @@ report_capabilities1() {
     report_capability1 CONNMARK_MATCH
     report_capability1 XCONNMARK_MATCH
     report_capability1 RAW_TABLE
+    report_capability1 RAWPOST_TABLE
     report_capability1 IPP2P_MATCH
     report_capability1 OLD_IPP2P_MATCH
     report_capability1 CLASSIFY_TARGET

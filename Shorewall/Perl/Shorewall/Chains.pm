@@ -2110,7 +2110,7 @@ sub ensure_audit_chain( $;$$ ) {
 
 	$tgt ||= $action;
 
-	add_ijump $ref, j => 'AUDIT --type ' . lc $action;
+	add_ijump $ref, j => 'AUDIT', targetopts => '--type ' . lc $action;
 	
 	if ( $tgt eq 'REJECT' ) {
 	    add_ijump $ref , g => 'reject';
@@ -4903,7 +4903,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Clear the exclusion bit
 	    #
-	    add_ijump $chainref , j => 'MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
+	    add_ijump $chainref , j => 'MARK', targetopts => '--and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
 	    #
 	    # Mark packet if it matches any of the exclusions
 	    #

@@ -533,7 +533,7 @@ sub policy_rules( $$$$$ ) {
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 	
-	add_ijump( $chainref , j => 'AUDIT --type ' . lc $target ) if $chainref->{audit};
+	add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $target ) if $chainref->{audit};
 	add_ijump( $chainref , g => $target eq 'REJECT' ? 'reject' : $target ) unless $target eq 'CONTINUE';
     }
 }

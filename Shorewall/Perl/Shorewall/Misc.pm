@@ -186,7 +186,7 @@ sub setup_ecn()
 	    }
 
 	    for my $host ( @hosts ) {
-		add_ijump( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN --ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[1] ) );
+		add_ijump( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN', targetopts => '--ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[1] ) );
 	    }
 	}
     }
@@ -226,7 +226,7 @@ sub setup_blacklist() {
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    add_ijump( $logchainref, j => 'AUDIT --type ' . lc $target ) if $audit;
+	    add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
 	    add_ijump( $logchainref, g => $target );
 
 	    $target = 'blacklog';
@@ -506,7 +506,7 @@ sub add_common_rules() {
 
 	log_rule $level , $chainref , $policy , '' if $level ne '';
 	
-	add_ijump( $chainref, j => 'AUDIT --type ' . lc $policy ) if $audit;
+	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
 	
 	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
 	
@@ -518,7 +518,7 @@ sub add_common_rules() {
 	    add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
 	    log_rule $level , $chainref , $policy , '' if $level ne '';
 	
-	    add_ijump( $chainref, j => 'AUDIT --type ' . lc $policy ) if $audit;
+	    add_ijump( $chainref, j => 'AUDIT ', targetopts => '--type ' . lc $policy ) if $audit;
 	
 	    add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
 	
@@ -595,7 +595,7 @@ sub add_common_rules() {
 			    '',
 			    'add',
 			    '' );
-	    add_ijump( $smurfref, j => 'AUDIT --type drop' ) if $smurfdest eq 'A_DROP';
+	    add_ijump( $smurfref, j => 'AUDIT', targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
 	    add_ijump( $smurfref, j => 'DROP' );
 
 	    $smurfdest = 'smurflog';
@@ -669,7 +669,7 @@ sub add_common_rules() {
     }
 
     add_ijump $rejectref , j => 'DROP', p => 2;
-    add_ijump $rejectref , j => 'REJECT --reject-with tcp-reset', p => 6;
+    add_ijump $rejectref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
 
     if ( have_capability( 'ENHANCED_REJECT' ) ) {
 	add_ijump $rejectref , j => 'REJECT', p => 17;
@@ -732,11 +732,11 @@ sub add_common_rules() {
 
 	    if ( $audit ) {
 		$disposition =~ s/^A_//;
-		add_ijump( $logflagsref, j => 'AUDIT --type ' . lc $disposition );
+		add_ijump( $logflagsref, j => 'AUDIT', targetopts => '--type ' . lc $disposition );
 	    }
 
 	    if ( $disposition eq 'REJECT' ) {
-		add_ijump $logflagsref , j => 'REJECT --reject-with tcp-reset', p => 6;
+		add_ijump $logflagsref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
 	    } else {
 		add_ijump $logflagsref , j => $disposition;
 	    }
@@ -909,14 +909,14 @@ sub setup_mac_lists( $ ) {
 			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 				if supplied $level;
 			    
-			    add_ijump( $chainref , j => 'AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			    add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
 			    add_jump( $chainref , $targetref->{target}, 0, "${mac}${source}" );
 			}
 		    } else {
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			    if supplied $level;
 
-			add_ijump( $chainref , j => 'AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
 			add_jump ( $chainref , $targetref->{target}, 0, "$mac" );
 		    }
 
@@ -1824,10 +1824,10 @@ sub setup_mss( ) {
 
     if ( $clampmss ) {
 	if ( "\L$clampmss" eq 'yes' ) {
-	    $option = ' --clamp-mss-to-pmtu';
+	    $option = '--clamp-mss-to-pmtu';
 	} else {
 	    @match  = ( tcpmss => "--mss $clampmss:" ) if have_capability( 'TCPMSS_MATCH' );
-	    $option = " --set-mss $clampmss";
+	    $option = "--set-mss $clampmss";
 	}
 
 	push @match, ( policy => '--pol none --dir out' ) if have_ipsec;
@@ -1858,14 +1858,14 @@ sub setup_mss( ) {
 	    my @mssmatch = have_capability( 'TCPMSS_MATCH' ) ? ( tcpmss => "--mss $mss:" ) : ();
 	    my @source   = imatch_source_dev $_;
 	    my @dest     = imatch_dest_dev $_;
-	    add_ijump $chainref, j => "TCPMSS --set-mss $mss", @dest,   p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @out_match;
+	    add_ijump $chainref, j => 'TCPMSS', targetopts => "--set-mss $mss", @dest,   p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @out_match;
 	    add_ijump $chainref, j => 'RETURN', @dest if $clampmss;
-	    add_ijump $chainref, j => "TCPMSS --set-mss $mss", @source, p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @in_match;
+	    add_ijump $chainref, j => 'TCPMSS', targetopts => "--set-mss $mss", @source, p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @in_match;
 	    add_ijump $chainref, j => 'RETURN', @source if $clampmss;
 	}
     }
 
-    add_ijump $chainref , j => "TCPMSS${option}", p => 'tcp --tcp-flags SYN,RST SYN', @match if $clampmss;
+    add_ijump $chainref , j => 'TCPMSS', targetopts => $option, p => 'tcp --tcp-flags SYN,RST SYN', @match if $clampmss;
 }
 
 #

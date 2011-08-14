@@ -1166,6 +1166,12 @@ sub add_interface_jumps {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , imatch_dest_dev( $interface );
+	
+	if ( have_capability 'RAWPOST_TABLE' ) {
+	    insert_ijump ( $rawpost_table->{POSTROUTING}, j => postrouting_chain( $interface ), 0, imatch_dest_dev( $interface) )   if $rawpost_table->{postrouting_chain $interface};
+	    insert_ijump ( $raw_table->{PREROUTING},      j => prerouting_chain( $interface ),  0, imatch_source_dev( $interface) ) if $raw_table->{prerouting_chain $interface};
+	    insert_ijump ( $raw_table->{OUTPUT},          j => output_chain( $interface ),      0, imatch_dest_dev( $interface) )   if $raw_table->{output_chain $interface};
+	}
     }
     #
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT

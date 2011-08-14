@@ -525,7 +525,7 @@ show_command() {
 			    [ $# -eq 1 ] && usage 1
 
 			    case $2 in
-				mangle|nat|filter|raw)
+				mangle|nat|filter|raw|rawpost)
 				    table=$2
 				    table_given=Yes
 				    ;;
@@ -601,6 +601,13 @@ show_command() {
 	    echo
 	    show_reset
 	    $IPTABLES -t raw -L $g_ipt_options
+	    ;;
+	rawpost)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION RAWPOST Table at $g_hostname - $(date)"
+	    echo
+	    show_reset
+	    $IPTABLES -t rawpost -L $g_ipt_options
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1

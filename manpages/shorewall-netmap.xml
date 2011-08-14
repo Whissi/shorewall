@@ -36,19 +36,39 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">TYPE</emphasis> - <emphasis
-        role="bold">DNAT</emphasis>|<emphasis
-        role="bold">SNAT</emphasis></term>
+        role="bold">{DNAT</emphasis>|<emphasis
+        role="bold">SNAT}[:{P|O|T}</emphasis>]</term>
 
         <listitem>
-          <para>Must be DNAT or SNAT.</para>
+          <para>Must be DNAT or SNAT; beginning with Shorewall 4.4.23, may be
+          optionally followed by :P, :O or :T to perform <firstterm>stateless
+          NAT</firstterm>. Stateless NAT requires <firstterm>Rawpost Table
+          support</firstterm> in your kernel and iptables (see the output of
+          <command>shorewall show capabilities</command>).</para>
 
-          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
-          its destination address rewritten to the corresponding address in
-          NET2.</para>
+          <para>If DNAT or DNAT:P, traffic entering INTERFACE and addressed to
+          NET1 has its destination address rewritten to the corresponding
+          address in NET2.</para>
 
-          <para>If SNAT, traffic leaving INTERFACE with a source address in
-          NET1 has it's source address rewritten to the corresponding address
-          in NET2.</para>
+          <para>If SNAT or SNAT:T, traffic leaving INTERFACE with a source
+          address in NET1 has it's source address rewritten to the
+          corresponding address in NET2.</para>
+
+          <para>If DNAT:O, traffic originating on the firewall and leaving via
+          INTERFACE and addressed to NET1 has its destination address
+          rewritten to the corresponding address in NET2.</para>
+
+          <para>If DNAT:P, traffic entering via INTERFACE and addressed to
+          NET1 has its destination address rewritten to the corresponding
+          address in NET2.</para>
+
+          <para>If SNAT:T, traffic leaving via INTERFACE with a source address
+          in NET1 has it's source address rewritten to the corresponding
+          address in NET2.</para>
+
+          <para>If SNAT:O, traffic originating on the firewall and leaving via
+          INTERFACE with a source address in NET1 has it's source address
+          rewritten to the corresponding address in NET2.</para>
         </listitem>
       </varlistentry>
 
@@ -114,12 +134,13 @@
     url="http://shorewall.net/netmap.html">http://shorewall.net/netmap.html</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

@@ -165,123 +165,157 @@
             firewall 1.</para>
           </listitem>
         </itemizedlist>
-      </important> The entries in
-    <filename><filename>/etc/shorewall/netmap</filename></filename> in
-    firewall1 would be as follows:</para>
+      </important></para>
 
-    <programlisting>#TYPE NET1           INTERFACE        NET2
+    <section id="Solution">
+      <title>If you are running Shorewall 4.4.22 or Earlier</title>
+
+      <para>The entries in
+      <filename><filename>/etc/shorewall/netmap</filename></filename> in
+      firewall1 would be as follows:</para>
+
+      <programlisting>#TYPE NET1           INTERFACE        NET2
 SNAT  192.168.1.0/24 vpn              10.10.11.0/24        #RULE 1A
 DNAT  10.10.11.0/24  vpn              192.168.1.0/24       #RULE 1B</programlisting>
 
-    <para>The entry in <filename>/etc/shorewall/netmap</filename> in firewall2
-    would be:</para>
+      <para>The entry in <filename>/etc/shorewall/netmap</filename> in
+      firewall2 would be:</para>
 
-    <programlisting>#TYPE NET1           INTERFACE        NET2
+      <programlisting>#TYPE NET1           INTERFACE        NET2
 DNAT  10.10.10.0/24  vpn              192.168.1.0/24       #RULE 2A
 SNAT  192.168.1.0/24 vpn              10.10.10.0/24        #RULE 2B</programlisting>
 
-    <example id="Example1">
-      <title>192.168.1.4 in the top cloud connects to 192.168.1.27 in the
-      bottom cloud</title>
+      <example id="Example1">
+        <title>192.168.1.4 in the top cloud connects to 192.168.1.27 in the
+        bottom cloud</title>
 
-      <para>In order to make this connection, the client attempts a connection
-      to 10.10.10.27. The following table shows how the source and destination
-      IP addresses are modified as requests are sent and replies are returned.
-      The RULE column refers to the above
-      <filename>/etc/shorewall/netmap</filename> entries and gives the rule
-      which transforms the source and destination IP addresses to those shown
-      on the next line. <informaltable>
-          <tgroup cols="5">
-            <thead>
-              <row>
-                <entry>FROM</entry>
+        <para>In order to make this connection, the client attempts a
+        connection to 10.10.10.27. The following table shows how the source
+        and destination IP addresses are modified as requests are sent and
+        replies are returned. The RULE column refers to the above
+        <filename>/etc/shorewall/netmap</filename> entries and gives the rule
+        which transforms the source and destination IP addresses to those
+        shown on the next line. <informaltable>
+            <tgroup cols="5">
+              <thead>
+                <row>
+                  <entry>FROM</entry>
 
-                <entry>TO</entry>
+                  <entry>TO</entry>
 
-                <entry>SOURCE IP ADDRESS</entry>
+                  <entry>SOURCE IP ADDRESS</entry>
 
-                <entry>DESTINATION IP ADDRESS</entry>
+                  <entry>DESTINATION IP ADDRESS</entry>
 
-                <entry>RULE</entry>
-              </row>
-            </thead>
+                  <entry>RULE</entry>
+                </row>
+              </thead>
 
-            <tbody>
-              <row>
-                <entry>192.168.1.4 in upper cloud</entry>
+              <tbody>
+                <row>
+                  <entry>192.168.1.4 in upper cloud</entry>
 
-                <entry>Firewall 1</entry>
+                  <entry>Firewall 1</entry>
 
-                <entry>192.168.1.4</entry>
+                  <entry>192.168.1.4</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>1A</entry>
-              </row>
+                  <entry>1A</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 1</entry>
+                <row>
+                  <entry>Firewall 1</entry>
 
-                <entry>Firewall 2</entry>
+                  <entry>Firewall 2</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>2A</entry>
-              </row>
+                  <entry>2A</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 2</entry>
+                <row>
+                  <entry>Firewall 2</entry>
 
-                <entry>192.168.1.27 in lower cloud</entry>
+                  <entry>192.168.1.27 in lower cloud</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>192.168.1.27</entry>
+                  <entry>192.168.1.27</entry>
 
-                <entry></entry>
-              </row>
+                  <entry></entry>
+                </row>
 
-              <row>
-                <entry>192.168.1.27 in the lower cloud</entry>
+                <row>
+                  <entry>192.168.1.27 in the lower cloud</entry>
 
-                <entry>Firewall 2</entry>
+                  <entry>Firewall 2</entry>
 
-                <entry>192.168.1.27</entry>
+                  <entry>192.168.1.27</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>2B</entry>
-              </row>
+                  <entry>2B</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 2</entry>
+                <row>
+                  <entry>Firewall 2</entry>
 
-                <entry>Firewall 1</entry>
+                  <entry>Firewall 1</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>1B</entry>
-              </row>
+                  <entry>1B</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 1</entry>
+                <row>
+                  <entry>Firewall 1</entry>
 
-                <entry>192.168.1.4 in upper cloud</entry>
+                  <entry>192.168.1.4 in upper cloud</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>192.168.1.4</entry>
+                  <entry>192.168.1.4</entry>
 
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable></para>
-    </example>
+                  <entry></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+
+        <para>See the<ulink url="OPENVPN.html"> OpenVPN documentation</ulink>
+        for a solution contributed by Nicola Moretti for resolving duplicate
+        networks in a roadwarrior VPN environment.</para>
+      </example>
+    </section>
+
+    <section>
+      <title>If you are running Shorewall 4.4.23 or Later</title>
+
+      <para>Beginning with Shorewall 4.4.23, you <emphasis>can</emphasis>
+      bridge two duplicate networks with one router, provided that your kernel
+      and iptables include <emphasis>Rawpost Table Support</emphasis>. That
+      support is used to implement Stateless NAT which allows for performing
+      DNAT in the rawpost table POSTROUTING and OUTPUT chains and for
+      performing SNAT in the raw table PREROUTING chain. Using this support,
+      only firewall1 requires <filename>/etc/shorewall/netmap</filename>. Two
+      additional entries are added.</para>
+
+      <programlisting>#TYPE NET1            INTERFACE        NET2
+SNAT   192.168.1.0/24 vpn              10.10.11.0/24
+DNAT   10.10.11.0/24  vpn              192.168.1.0/24
+<emphasis role="bold">SNAT:P 192.168.1.0/24 vpn              10.10.10.0/24
+DNAT:T 10.10.10.0/24  vpn              192.168.1.0/24</emphasis></programlisting>
+
+      <para>The last two entries define Stateless NAT by specifying a chain
+      designator (:P for PREROUTING and :T for POSTROUTING respectively). See
+      <ulink url="manpages/shorewall-netlink.html">shorewall-netmap</ulink>
+      (5) for details.</para>
+    </section>
   </section>
 
   <section id="Notes">
@@ -300,20 +334,5 @@ SNAT  192.168.1.0/24 vpn              10.10.10.0/24        #RULE 2B</programlist
     needed to handle the replies. They ARE needed though for hosts in the
     bottom cloud to be able to establish connections with the 192.168.1.0/24
     network in the top cloud.</para>
-  </section>
-
-  <section id="WhyTwo">
-    <title>Can't I do this with one router? Why do I need two?</title>
-
-    <para>I wrote this article before Shorewall included <ulink
-    url="MultiISP.html">multiple provider support</ulink>. You should be able
-    to accomplish the same thing with just one router through careful use of
-    /etc/shorewall/netmap and <ulink url="MultiISP.html">multiple
-    providers</ulink>. If you try it and get it working, please contribute an
-    update to this article.</para>
-
-    <para>See the<ulink url="OPENVPN.html"> OpenVPN documentation</ulink> for
-    a solution contributed by Nicola Moretti for resolving duplicate networks
-    in a roadwarrior VPN environment.</para>
   </section>
 </article>

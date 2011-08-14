@@ -63,6 +63,7 @@ our @EXPORT = qw(
 
 		    %chain_table
 		    $raw_table
+		    $rawpost_table
 		    $nat_table
 		    $mangle_table
 		    $filter_table
@@ -113,6 +114,8 @@ our %EXPORT_TAGS = (
 				       zone_input_chain
 				       use_input_chain
 				       output_chain
+				       prerouting_chain
+				       postrouting_chain
 				       zone_output_chain
 				       use_output_chain
 				       masq_chain
@@ -132,6 +135,7 @@ our %EXPORT_TAGS = (
 				       ensure_mangle_chain
 				       ensure_nat_chain
 				       ensure_raw_chain
+				       ensure_rawpost_chain
 				       new_standard_chain
 				       new_builtin_chain
 				       new_nat_chain
@@ -262,6 +266,7 @@ our $VERSION = 'MODULEVERSION';
 #
 our %chain_table;
 our $raw_table;
+our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
@@ -491,16 +496,18 @@ my @unique_options = ( qw/p dport sport s d i o/ );
 sub initialize( $$$ ) {
     ( $family, my $hard, $export ) = @_;
 
-    %chain_table = ( raw    => {},
-		     mangle => {},
-		     nat    => {},
-		     filter => {} );
+    %chain_table = ( raw    =>  {},
+		     rawpost => {},
+		     mangle =>  {},
+		     nat    =>  {},
+		     filter =>  {} );
 
-    $raw_table    = $chain_table{raw};
-    $nat_table    = $chain_table{nat};
-    $mangle_table = $chain_table{mangle};
-    $filter_table = $chain_table{filter};
-    %renamed      = ();
+    $raw_table     = $chain_table{raw};
+    $rawpost_table = $chain_table{rawpost};
+    $nat_table     = $chain_table{nat};
+    $mangle_table  = $chain_table{mangle};
+    $filter_table  = $chain_table{filter};
+    %renamed       = ();
     #
     # Contents of last COMMENT line.
     #
@@ -1583,6 +1590,22 @@ sub output_chain($)
 }
 
 #
+# Prerouting Chain for an interface
+#
+sub prerouting_chain($) 
+{
+    $_[0] . '_pre';
+}
+	    
+#
+# Prerouting Chain for an interface
+#
+sub postrouting_chain($) 
+{
+    $_[0] . '_post';
+}
+	    
+#
 # Output Chain for a zone
 #
 sub zone_output_chain($) {
@@ -2044,6 +2067,14 @@ sub ensure_raw_chain($) {
     $chainref;
 }
 
+sub ensure_rawpost_chain($) {
+    my $chain = $_[0];
+
+    my $chainref = ensure_chain 'rawpost', $chain;
+    $chainref->{referenced} = 1;
+    $chainref;
+}
+
 #
 # Add a builtin chain
 #
@@ -2200,6 +2231,8 @@ sub initialize_chain_table($) {
 	    new_builtin_chain 'raw', $chain, 'ACCEPT';
 	}
 
+	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
+
 	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
 	}
@@ -2242,6 +2275,8 @@ sub initialize_chain_table($) {
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
 	    new_builtin_chain 'raw', $chain, 'ACCEPT';
 	}
+
+	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
 
 	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
@@ -2718,7 +2753,7 @@ sub optimize_level8( $$$ ) {
 }
 
 sub optimize_ruleset() {
-    for my $table ( qw/raw mangle nat filter/ ) {
+    for my $table ( qw/raw rawpost mangle nat filter/ ) {
 
 	next if $family == F_IPV6 && $table eq 'nat';
 
@@ -5432,9 +5467,10 @@ sub create_netfilter_load( $ ) {
 
     my @table_list;
 
-    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
-    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
-    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
+    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
+    push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -5534,9 +5570,10 @@ sub preview_netfilter_load() {
 
     my @table_list;
 
-    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
-    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
-    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
+    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
+    push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -5644,7 +5681,7 @@ sub create_chainlist_reload($) {
 	for my $chain ( @chains ) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 
-	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw)$/;
+	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw|rawpost)$/;
 
 	    $chains{$table} = {} unless $chains{$table};
 
@@ -5673,7 +5710,7 @@ sub create_chainlist_reload($) {
 
 	enter_cat_mode;
 
-	for $table ( qw(raw nat mangle filter) ) {
+	for $table ( qw(raw rawpost nat mangle filter) ) {
 	    my $tableref=$chains{$table};
 
 	    next unless $tableref;
@@ -5748,9 +5785,10 @@ sub create_stop_load( $ ) {
 
     my @table_list;
 
-    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
-    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
-    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
+    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
+    push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';

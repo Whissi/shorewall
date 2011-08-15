@@ -518,7 +518,7 @@ sub add_common_rules() {
 	    add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
 	    log_rule $level , $chainref , $policy , '' if $level ne '';
 	
-	    add_ijump( $chainref, j => 'AUDIT ', targetopts => '--type ' . lc $policy ) if $audit;
+	    add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
 	
 	    add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
 	

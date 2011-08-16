@@ -442,6 +442,8 @@ sub setup_netmap() {
 		    my $table = 'raw';
 		    my @match = ();
 
+		    require_capability 'RAWPOST_TABLE', 'Stateless NAT Entries', '';
+
 		    unless ( $interfaceref->{root} ) {
 			@match = imatch_dest_dev(  $interface ); 
 			$interface = $interfaceref->{name};
@@ -477,83 +479,6 @@ sub setup_netmap() {
 		}
 		
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";
-	    }
-	}
-
-	clear_comment;
-    }
-
-}
-
-#
-# Setup Raw NAT
-#
-sub setup_rawnat() {
-
-    if ( my $fn = open_file 'rawnat' ) {
-
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'RAWPOST_TABLE' , 'a non-empty rawnat file' , 's'; } );
-
-	while ( read_a_line ) {
-
-	    my ( $type, $net1, $interfacelist, $net2, $net3 ) = split_line 4, 5, 'rawnat file';
-
-	    validate_net $net1, 0;
-	    validate_net $net2, 0;
-
-	    $net3 = ALLIP if $net3 eq '-';
-
-	    for my $interface ( split_list $interfacelist, 'interface' ) {
-
-		my @rulein;
-		my @ruleout;
-		my $iface = $interface;
-
-		fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
-
-		unless ( $interfaceref->{root} ) {
-		    @rulein  = imatch_source_dev( $interface );
-		    @ruleout = imatch_dest_dev( $interface );
-		    $interface = $interfaceref->{name};
-		}
-
-		if ( $type =~ /^(DNAT|SNAT):([POT])$/ ) {
-		    my ( $target , $chain ) = ( $1, $2 );
-		    my $table = 'raw';
-		    my $match = 'o';
-
-		    if ( $chain eq 'P' ) {
-			$chain = prerouting_chain $interface;
-			$match = 'i';
-		    } elsif ( $chain eq 'O' ) {
-			$chain = output_chain $interface;
-		    } else {
-			$chain = postrouting_chain $interface;
-			$table = 'rawpost';
-		    }
-		    
-		    if ( $target eq 'DNAT' ) { 
-			add_ijump( ensure_chain( $table, $chain ) ,
-				   j          => 'RAWDNAT',
-				   targetopts => "--to-dest $net2",
-				   imatch_source_net( $net3 ) ,
-				   imatch_dest_net( $net1 ) ,
-				   $match     => $interface,
-				   $interfaceref->{root} ? () : @rulein );
-		    } else {
-			add_ijump( ensure_chain( $table, $chain ) ,
-				   j          => 'RAWSNAT',
-				   targetopts => "--to-source $net2",
-				   imatch_dest_net( $net3 ) ,
-				   imatch_source_net( $net1 ) ,
-				   $match     => $interface,
-				   $interfaceref->{root} ? () : @ruleout );
-		    }
-		} else {
-		    fatal_error "Invalid type ($type)";
-		}
-
-		progress_message "   $net1 on $iface mapped to $net2 ($type)";
 	    }
 	}
 

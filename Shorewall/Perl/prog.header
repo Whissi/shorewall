@@ -803,12 +803,16 @@ debug_restore_input() {
 	qt1 $IPTABLES -t mangle -P $chain ACCEPT
     done
 
-    qt1 $IPTABLES -t raw    -F
-    qt1 $IPTABLES -t raw    -X
+    qt1 $IPTABLES -t raw     -F
+    qt1 $IPTABLES -t raw     -X
+    qt1 $IPTABLES -t rawpost -F
+    qt1 $IPTABLES -t rawpost -X
 
     for chain in PREROUTING OUTPUT; do
 	qt1 $IPTABLES -t raw -P $chain ACCEPT
     done
+
+    qt1 $iptables -T rawpost -P POSTROUTING ACCEPT
 
     run_iptables -t nat -F
     run_iptables -t nat -X
@@ -858,6 +862,9 @@ debug_restore_input() {
 	    #
 	    '*'raw)
 		table=raw
+		;;
+	    '*'rawpost)
+		table=rawpost
 		;;
 	    '*'mangle)
 		table=mangle

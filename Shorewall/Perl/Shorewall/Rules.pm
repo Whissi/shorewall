@@ -2233,7 +2233,7 @@ sub process_section ($) {
 
     if ( $sect eq 'ESTABLISHED' ) {
 	$sections{ALL} = 1;
-    elsif ( $sect eq 'RELATED' ) {
+    } elsif ( $sect eq 'RELATED' ) {
 	@sections{'ALL','ESTABLISHED'} = ( 1, 1);
 	finish_section 'ESTABLISHED';
     } elsif ( $sect eq 'NEW' ) {

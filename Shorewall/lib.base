@@ -101,6 +101,7 @@ mutex_on()
     try=0
     local lockf
     lockf=${LOCKFILE:=${VARDIR}/lock}
+    local lockpid
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
@@ -108,8 +109,22 @@ mutex_on()
 
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
+	if [ -f $lockf ]; then
+	    lockpid=`cat ${lockf} 2> /dev/null`
+	    if [ -z "$lockpid" -o $lockpid = 0 ]; then
+		rm -f ${lockf}
+		error_message "WARNING: Stale lockfile ${lockf} removed"
+	    elif ! qt ps p ${lockpid}; then
+		rm -f ${lockf}
+		error_message "WARNING: Stale lockfile ${lockf} from pid ${lockpid} removed"
+	    fi
+	fi
+
 	if qt mywhich lockfile; then
 	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
+	    chmod u+w ${lockf}
+	    echo $$ > ${lockf}
+	    chmod u-w ${lockf}
 	else
 	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
 		sleep 1

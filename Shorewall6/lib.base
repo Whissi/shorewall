@@ -125,10 +125,8 @@ mutex_on()
 	fi
 
 	if qt mywhich lockfile; then
-	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
-	    chmod u+w ${lockf}
+	    lockfile -r${MUTEX_TIMEOUT} -s1 ${lockf}
 	    echo $$ > ${lockf}
-	    chmod u-w ${lockf}
 	else
 	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
 		sleep 1

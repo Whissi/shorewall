@@ -107,7 +107,6 @@ if [ -z "$INIT" ] ; then
 fi
 
 ANNOTATED=
-DEBIAN=
 CYGWIN=
 MAC=
 MACHOST=
@@ -242,6 +241,9 @@ else
 	    echo "Installing Debian-specific configuration..."
 	    DEBIAN=yes
 	    SPARSE=yes
+        elif [ -f /etc/redhat-release ]; then
+	    echo "Installing Redhat/Fedora-specific configuration..."
+	    FEDORA=yes
 	elif [ -f /etc/slackware-version ] ; then
 	    echo "Installing Slackware-specific configuration..."
 	    DEST="/etc/rc.d"
@@ -295,6 +297,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh /etc/init.d/shorewall6 0544 ${DESTDIR}/usr/share/shorewall6-${VERSION}.bkout
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh /etc/init.d/shorewall6 0544 ${DESTDIR}/usr/share/shorewall6-${VERSION}.bkout
 elif [ -n "$SLACKWARE" ]; then
     install_file init.slackware.shorewall6.sh ${DESTDIR}${DEST}/rc.shorewall6 0544 ${DESTDIR}/usr/share/shorewall6-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then

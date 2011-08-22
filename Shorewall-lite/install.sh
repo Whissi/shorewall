@@ -136,7 +136,6 @@ esac
 #
 # Determine where to install the firewall script
 #
-DEBIAN=
 CYGWIN=
 INSTALLD='-D'
 T='-T'
@@ -173,6 +172,8 @@ if [ -n "$DESTDIR" ]; then
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
 elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
+elif [ -f /etc/redhat-release ]; then
+    FEDORA=yes
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
@@ -223,10 +224,11 @@ echo "Shorewall Lite control program installed in ${DESTDIR}/sbin/shorewall-lite
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh /etc/init.d/shorewall-lite 0544
+    install_file init.debian.sh ${DESTDIR}etc/init.d/shorewall-lite 0544
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh ${DESTDIR}etc/init.d/shorewall-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
-
 else
     install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
 fi

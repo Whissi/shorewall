@@ -160,6 +160,8 @@ elif [ -f /etc/debian_version ]; then
     DEBIAN=yes
 elif [ -f /etc/SuSE-release ]; then
     SUSE=Yes
+elif [ -f /etc/redhat-release ]; then
+    FEDORA=Yes
 elif [ -f /etc/slackware-version ] ; then
     echo "Shorewall-init is currently not supported on Slackware" >&2
     exit 1
@@ -201,6 +203,8 @@ fi
 # Install the Init Script
 #
 if [ -n "$DEBIAN" ]; then
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+elif [ -n "$FEDORA" ]; then
     install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 #elif [ -n "$ARCHLINUX" ]; then
 #    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544

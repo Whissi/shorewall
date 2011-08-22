@@ -248,6 +248,9 @@ else
 	    echo "Installing Debian-specific configuration..."
 	    DEBIAN=yes
 	    SPARSE=yes
+	elif [ -f /etc/redhat-version ]; then
+	    echo "Installing Redhat/Fedora-specific configuration..."
+	    FEDORA=yes
 	elif [ -f /etc/slackware-version ] ; then
 	    echo "Installing Slackware-specific configuration..."
 	    DEST="/etc/rc.d"
@@ -301,6 +304,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall 0544
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
 elif [ -n "$SLACKWARE" ]; then

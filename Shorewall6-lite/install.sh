@@ -171,6 +171,8 @@ if [ -n "$DESTDIR" ]; then
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
 elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
+elif [ -f /etc/redhat-release ]; then
+    FEDORA=yes
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
@@ -222,6 +224,8 @@ echo "Shorewall6 Lite control program installed in ${DESTDIR}/sbin/shorewall6-li
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall6-lite 0544
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh /etc/init.d/shorewall6-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
 

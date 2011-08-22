@@ -1,0 +1,16 @@
+[Unit]
+Description=Shorewall IPv6 firewall (lite)
+After=syslog.target
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-/etc/sysconfig/shorewall6-lite
+StandardOutput=syslog
+ExecStart=/sbin/shorewall6-lite $OPTIONS start
+ExecReload=/sbin/shorewall6-lite $OPTIONS restart
+ExecStop=/sbin/shorewall6-lite $OPTIONS stop
+
+[Install]
+WantedBy=multi-user.target

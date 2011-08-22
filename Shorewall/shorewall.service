@@ -1,0 +1,16 @@
+[Unit]
+Description=Shorewall IPv4 firewall
+After=syslog.target
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-/etc/sysconfig/shorewall
+StandardOutput=syslog
+ExecStart=/sbin/shorewall $OPTIONS start
+ExecReload=/sbin/shorewall $OPTIONS restart
+ExecStop=/sbin/shorewall $OPTIONS stop
+
+[Install]
+WantedBy=multi-user.target

@@ -183,6 +183,14 @@ elif [ -f /etc/arch-release ] ; then
       ARCHLINUX=yes
 fi
 
+if [ -z "$DESTDIR" ]; then
+    if [ -f /lib/systemd/system ]; then
+	SYSTEMD=Yes
+    fi
+elif [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}/lib/systemd/system
+fi
+
 #
 # Change to the directory containing this script
 #
@@ -249,6 +257,14 @@ chmod 755 ${DESTDIR}/usr/share/shorewall-lite
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
+fi
+
+#
+# Install the .service file
+#
+if [ -n "$SYSTEMD" ]; then
+    run_install $OWNERSHIP -m 600 shorewall-lite.service ${DESTDIR}/lib/systemd/system/shorewall-lite.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-lite.service"
 fi
 
 #
@@ -391,7 +407,11 @@ if [ -z "$DESTDIR" ]; then
 
 	    echo "Shorewall Lite will start automatically at boot"
 	else
-	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	    if [ -n "$SYSTEMD" ]; then
+		if systemctl enable shorewall-lite; then
+		    echo "Shorewall Lite will start automatically at boot"
+		fi
+	    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-lite ; then
 		    echo "Shorewall Lite will start automatically at boot"
 		else

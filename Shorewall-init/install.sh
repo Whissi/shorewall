@@ -183,6 +183,14 @@ else
     exit 1
 fi
 
+if [ -z "$DESTDIR" ]; then
+    if [ -f /lib/systemd/system ]; then
+	SYSTEMD=Yes
+    fi
+elif [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}/lib/systemd/system
+fi
+
 #
 # Change to the directory containing this script
 #
@@ -213,6 +221,14 @@ else
 fi
 
 echo  "Shorewall Init script installed in ${DESTDIR}${DEST}/$INIT"
+
+#
+# Install the .service file
+#
+if [ -n "$SYSTEMD" ]; then
+    run_install $OWNERSHIP -m 600 shorewall-init.service ${DESTDIR}/lib/systemd/system/shorewall-init.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-init.service"
+fi
 
 #
 # Create /usr/share/shorewall-init if needed
@@ -301,7 +317,11 @@ if [ -z "$DESTDIR" ]; then
 
 	    echo "Shorewall Init will start automatically at boot"
 	else
-	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	    if [ -n "$SYSTEMD" ]; then
+		if systemctl enable shorewall-init; then
+		    echo "Shorewall Init will start automatically at boot"
+		fi
+	    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-init ; then
 		    echo "Shorewall Init will start automatically at boot"
 		else

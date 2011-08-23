@@ -93,6 +93,8 @@ if [ -n "$FIREWALL" ]; then
         insserv -r $FIREWALL
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	chkconfig --del $(basename $FIREWALL)
+    elif [ -x /sbin/systemctl ]; then
+	systemctl disable shorewall6
     else
 	rm -f /etc/rc*.d/*$(basename $FIREWALL)
     fi
@@ -114,6 +116,7 @@ rm -rf /usr/share/shorewall6-*.bkout
 rm -rf /usr/share/man/man5/shorewall6*
 rm -rf /usr/share/man/man8/shorewall6*
 rm -f  /etc/logrotate.d/shorewall6
+rm -f  /lib/systemd/system/shorewall6.service
 
 echo "Shorewall6 Uninstalled"
 

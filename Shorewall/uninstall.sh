@@ -92,6 +92,8 @@ if [ -n "$FIREWALL" ]; then
 	updaterc.d shorewall remove
     elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
+    elif [ -x /sbin/systemctl ]; then
+	systemctl disable shorewall
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	chkconfig --del $(basename $FIREWALL)
     else
@@ -116,6 +118,7 @@ rm -rf /usr/share/shorewall-*.bkout
 rm -rf /usr/share/man/man5/shorewall*
 rm -rf /usr/share/man/man8/shorewall*
 rm -f  /etc/logrotate.d/shorewall
+rm -f  /lib/systemd/system/shorewall.service
 
 echo "Shorewall Uninstalled"
 

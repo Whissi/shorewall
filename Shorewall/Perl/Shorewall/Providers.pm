@@ -33,7 +33,11 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_providers @routemarked_interfaces handle_stickiness handle_optional_interfaces );
+our @EXPORT = qw( process_providers
+		  setup_providers
+		  @routemarked_interfaces
+		  handle_stickiness
+		  handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = 'MODULEVERSION';
 
@@ -242,13 +246,16 @@ sub balance_fallback_route( $$$$ ) {
 sub start_provider( $$$ ) {
     my ($table, $number, $test ) = @_;
 
+    emit "\n#\n# Add Provider $table ($number)\n#";
+
+    emit "start_provider_$table() {";
+    push_indent;
     emit $test;
     push_indent;
 
-    emit "#\n# Add Provider $table ($number)\n#";
-
     emit "qt ip -$family route flush table $number";
-    emit "echo \"qt \$IP -$family route flush table $number\" >> \${VARDIR}/undo_routing";
+    emit "echo \"qt \$IP -$family route flush table $number\" > \${VARDIR}/undo_${table}_routing";
+    emit "echo \". \${VARDIR}/undo_${table}_routing\" >> \${VARDIR}/undo_routing";
 }
 
 sub add_a_provider( ) {
@@ -256,6 +263,8 @@ sub add_a_provider( ) {
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
+
+    fatal_error "Invalid Provider Name ($table)" unless $table =~ /^[\w]+$/;
 
     my $num = numeric_value $number;
 
@@ -394,7 +403,10 @@ sub add_a_provider( ) {
 			   gateway     => $gateway ,
 			   gatewaycase => $gatewaycase ,
 			   shared      => $shared ,
-			   default     => $default };
+			   default     => $default ,
+			   rules       => [] ,
+			   routes      => [] ,
+			 };
 
     if ( $track ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
@@ -444,7 +456,7 @@ sub add_a_provider( ) {
 	emit ( "qt \$IP -$family rule del fwmark ${mark}${mask}" ) if $config{DELETE_THEN_ADD};
 
 	emit ( "run_ip rule add fwmark ${mark}${mask} pref $pref table $number",
-	       "echo \"qt \$IP -$family rule del fwmark ${mark}${mask}\" >> \${VARDIR}/undo_routing"
+	       "echo \"qt \$IP -$family rule del fwmark ${mark}${mask}\" >> \${VARDIR}/undo_${table}_routing"
 	     );
     }
 
@@ -494,10 +506,10 @@ sub add_a_provider( ) {
 		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
 		emit qq(run_ip route add default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
 	    }
-	    emit qq(echo "qt \$IP -$family route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
+	    emit qq(echo "qt \$IP -$family route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	} else {
 	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $physical metric $number);
-	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_routing);
+	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
     }
 
@@ -516,7 +528,7 @@ sub add_a_provider( ) {
     } elsif ( $shared ) {
 	emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
 	emit( "run_ip rule add from $address pref 20000 table $number" ,
-	      "echo \"qt \$IP -$family rule del from $address\" >> \${VARDIR}/undo_routing" );
+	      "echo \"qt \$IP -$family rule del from $address\" >> \${VARDIR}/undo_${table}_routing" );
     } else {
 	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
 
@@ -525,11 +537,14 @@ sub add_a_provider( ) {
 	emit  ( "find_interface_addresses $physical | while read address; do" );
 	emit  (	"    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
 	emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
-		"    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_routing",
+		"    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_${table}_routing",
 		'    rulenum=$(($rulenum + 1))',
 		'done'
 	      );
     }
+
+    emit "\nadd_${table}_routing_rules";
+    emit "add_${table}_routes";
 
     emit qq(\nprogress_message "   Provider $table ($number) Added"\n);
 
@@ -550,32 +565,15 @@ sub add_a_provider( ) {
 	}
     }
 
-    emit "fi\n";
+    emit 'fi';
+
+    pop_indent;
+
+    emit "}\n";
 
     push @providers, $table;
 
     progress_message "   Provider \"$currentline\" $done";
-}
-
-#
-# Begin an 'if' statement testing whether the passed interface is available
-#
-sub start_new_if( $ ) {
-    our $current_if = shift;
-
-    emit ( '', qq(if [ -n "\$SW_${current_if}_IS_USABLE" ]; then) );
-    push_indent;
-}
-
-#
-# Complete any current 'if' statement in the output script
-#
-sub finish_current_if() {
-    if ( our $current_if ) {
-	pop_indent;
-	emit ( "fi\n" );
-	$current_if = '';
-    }
 }
 
 sub add_an_rtrule( ) {
@@ -600,6 +598,10 @@ sub add_an_rtrule( ) {
 
 	fatal_error "Unknown provider ($provider)" unless $found;
     }
+
+    my $providerref = $providers{$provider};
+
+    my $number = $providerref->{number};
 
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
@@ -641,20 +643,9 @@ sub add_an_rtrule( ) {
 
     $priority = "priority $priority";
 
-    finish_current_if, emit ( "qt \$IP -$family rule del $source $dest $priority" ) if $config{DELETE_THEN_ADD};
-
-    my ( $optional, $number ) = ( $providers{$provider}{optional} , $providers{$provider}{number} );
-
-    if ( $optional ) {
-	my $base = uc chain_base( $providers{$provider}{physical} );
-	finish_current_if if $base ne $current_if;
-	start_new_if( $base ) unless $current_if;
-    } else {
-	finish_current_if;
-    }
-
-    emit ( "run_ip rule add $source $dest $priority table $number",
-	   "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_routing" );
+    push @{$providerref->{rules}}, "qt \$IP -$family rule del $source $dest $priority" if $config{DELETE_THEN_ADD};
+    push @{$providerref->{rules}}, "run_ip rule add $source $dest $priority table $number";
+    push @{$providerref->{rules}},  "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_${provider}_routing";
 
     progress_message "   Routing rule \"$currentline\" $done";
 }
@@ -687,30 +678,23 @@ sub add_a_route( ) {
 
     validate_address ( $gateway, 1 ) if $gateway ne '-';
 
-    my ( $optional, $number ) = ( $providers{$provider}{optional} , $providers{$provider}{number} );
-
+    my $providerref = $providers{$provider};
+    my $number = $providerref->{number};
     my $physical = $device eq '-' ? $providers{$provider}{physical} : physical_name( $device );
-    
-    if ( $providers{$provider}{optional} ) {
-	my $base = uc chain_base( $physical );
-	finish_current_if if $base ne $current_if;
-	start_new_if ( $base ) unless $current_if;
-    } else {
-	finish_current_if;
-    }
+    my $routes = $providerref->{routes};
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
-	    emit qq(run_ip route add $dest via $gateway dev $physical table $number);
-	    emit qq(echo "qt \$IP -$family route del $dest via $gateway dev $physical table $number" >> \${VARDIR}/undo_routing) if $number >= DEFAULT_TABLE;
+	    push @$routes, qq(run_ip route add $dest via $gateway dev $physical table $number);
+	    emit qq(echo "qt \$IP -$family route del $dest via $gateway dev $physical table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
-	    emit qq(run_ip route add $dest via $gateway table $number);
-	    emit qq(echo "\$IP -$family route del $dest via $gateway table $number" >> \${VARDIR}/undo_routing) if $number >= DEFAULT_TABLE; 
+	    push @$routes, qq(run_ip route add $dest via $gateway table $number);
+	    emit qq(echo "\$IP -$family route del $dest via $gateway table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE; 
 	}
     } else {
 	fatal_error "You must specify a device for this route" unless $physical;
-	emit qq(run_ip route add $dest dev $physical table $number);
-	emit qq(echo "\$IP -$family route del $dest dev $physical table $number" >> \${VARDIR}/undo_routing) if $number >= DEFAULT_TABLE;
+	push @$routes, qq(run_ip route add $dest dev $physical table $number);
+	emit qq(echo "\$IP -$family route del $dest dev $physical table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
     }
 
     progress_message "   Route \"$currentline\" $done";
@@ -844,52 +828,80 @@ sub finish_providers() {
     }
 }
 
-sub setup_providers() {
-    my $providers = 0;
+sub process_providers() {
+    our $providers = 0;
 
     $lastmark = 0;
 
     if ( my $fn = open_file 'providers' ) {
-
-	first_entry sub() {
-	    progress_message2 "$doing $fn...";
-	    emit "\nif [ -z \"\$g_noroutes\" ]; then";
-	    push_indent;
-	    start_providers; };
- 
+	first_entry "$doing $fn..."; 
 	add_a_provider, $providers++ while read_a_line;
     }
 
     if ( $providers ) {
-	finish_providers;
-
-	my $fn = open_file 'routes';
+	my $fn = open_file 'route_rules';
 
 	if ( $fn ) {
-	    our $current_if = '';
-
 	    first_entry "$doing $fn...";
-
-	    emit '';
-
-	    add_a_route while read_a_line;
-
-	    finish_current_if;
-	}
-
-	$fn = open_file 'route_rules';
-
-	if ( $fn ) {
-	    our $current_if = '';
-
-	    first_entry "$doing $fn...";
-
+	    
 	    emit '';
 
 	    add_an_rtrule while read_a_line;
-
-	    finish_current_if;
 	}
+
+	$fn = open_file 'routes';
+
+	if ( $fn ) {
+	    first_entry "$doing $fn...";
+	    emit '';
+	    add_a_route while read_a_line;
+	}
+    }
+
+    for my $provider ( @providers ) {
+	emit "\n#\n# Add ${provider}'s Routing Rules\n#\nadd_${provider}_routing_rules() {";
+	push_indent;
+	
+	if ( @{$providers{$provider}->{rules}} ) {
+	    emit $_ for @{$providers{$provider}->{rules}};
+	} else {
+	    emit 'true';
+	}
+	
+	pop_indent;
+	emit '}';
+    }
+
+    for  my $provider ( @providers ) {
+	emit "\n#\n# Add ${provider}'s Routes\n#\nadd_${provider}_routes() {";
+	push_indent;
+	
+	if ( @{$providers{$provider}->{rules}} ) {
+	    emit $_ for @{$providers{$provider}->{rules}};
+	} else {
+	    emit 'true';
+	}
+
+	pop_indent;
+	emit '}';
+    }
+}
+
+sub setup_providers() {
+    our $providers;
+
+    if ( $providers ) {
+	emit "\nif [ -z \"\$g_noroutes\" ]; then";
+	
+	push_indent;
+
+	start_providers;
+		
+	emit "start_provider_$_" for @providers;
+
+	emit '';
+
+	finish_providers;
 
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";

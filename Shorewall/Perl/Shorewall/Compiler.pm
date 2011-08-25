@@ -704,7 +704,13 @@ sub compiler {
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
     enable_script;
-
+    #
+    # Generate a function to bring up each provider
+    #
+    process_providers;
+    #
+    # [Re-]establish Routing
+    #
     if ( $scriptfilename || $debug ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
@@ -713,11 +719,9 @@ sub compiler {
 	    );
 
 	push_indent;
+
+	setup_providers;
     }
-    #
-    # [Re-]establish Routing
-    #
-    setup_providers;
     #
     # TCRules and Traffic Shaping
     #

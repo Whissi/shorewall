@@ -1937,6 +1937,9 @@ EOF
 	        refresh)
 	            logger -p kern.err "ERROR:$g_product refresh failed"
 	            ;;
+                enable)
+                    logger -p kern.err "ERROR: 'enable $g_interface' failed"
+                    ;;
             esac
 
             if [ "$RESTOREFILE" = NONE ]; then

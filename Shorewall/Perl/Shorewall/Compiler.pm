@@ -263,9 +263,9 @@ sub generate_script_2() {
 	push_indent;
 
 	if ( $global_variables & NOT_RESTORE ) {
-	    emit( 'start|restart|refresh)' );
+	    emit( 'start|restart|refresh|enable)' );
 	} else {
-	    emit( 'start|restart|refresh|restore)' );
+	    emit( 'start|restart|refresh|enable|restore)' );
 	}
 
 	push_indent;
@@ -719,9 +719,9 @@ sub compiler {
 	    );
 
 	push_indent;
-
-	setup_providers;
     }
+
+    setup_providers;
     #
     # TCRules and Traffic Shaping
     #

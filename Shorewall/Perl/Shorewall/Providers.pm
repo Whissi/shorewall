@@ -546,22 +546,47 @@ sub add_a_provider( ) {
     emit "\nadd_${table}_routing_rules";
     emit "add_${table}_routes";
 
-    emit qq(\nprogress_message "   Provider $table ($number) Added"\n);
+    emit( '',
+	  'if [ $COMMAND = enable ]; then'
+	);
+
+    my ( $tbl, $weight ); 
+    
+    if ( $balance || $default ) {
+	$tbl    = $default || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
+	$weight = $balance ? $balance : $default; 
+
+	push_indent;
+
+	if ( $gateway ) {
+	    emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
+	} else {
+	    emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
+	}
+
+	pop_indent;
+    }
+
+    emit ( qq(    progress_message "   Provider $table ($number) Started"),
+	  'else',
+	  qq(    progress_message2 "   Provider $table ($number) Started"),
+	  "fi\n"
+	);
 
     pop_indent;
     emit 'else';
 
     if ( $optional ) {
 	if ( $shared ) {
-	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Added\"" );	    
+	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Started\"" );	    
 	} else {
-	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Added\"" );
+	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Started\"" );
 	}
     } else {
 	if ( $shared ) {
-	    emit( "    fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Added\"" );
+	    emit( "    fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Started\"" );
 	} else {
-	    emit( "    fatal_error \"Interface $physical is not usable -- Provider $table ($number) Cannot be Added\"" );
+	    emit( "    fatal_error \"Interface $physical is not usable -- Provider $table ($number) Cannot be Started\"" );
 	}
     }
 
@@ -569,7 +594,48 @@ sub add_a_provider( ) {
 
     pop_indent;
 
-    emit "}\n";
+    emit "} # End of start_provider_$table()";
+
+    if ( $optional ) {
+	emit( '',
+	      '#',
+	      "# Stop provider $table",
+	      '#',
+	      "stop_provider_$table() {" );
+
+	push_indent;
+
+	my $undo = "\${VARDIR}/undo_${table}_routing";
+
+	emit( "if [ -f $undo ]; then",
+	      "    . $undo",
+	      "    > $undo" );
+
+	if ( $balance || $default ) {
+	    $tbl    = $fallback || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
+	    $weight = $balance ? $balance : $default;
+
+	    my $via = 'via';
+
+	    $via .= " $gateway"       if $gateway;
+	    $via .= " dev $physical";
+	    $via .= " weight $weight";
+	    $via .= " $realm"         if $realm;
+
+	    emit( qq(    delete_gateway "$via" ) . $tbl );
+	}
+		
+	    
+	emit( "    progress_message2 \"Provider $table stopped\"",
+              'else',
+	      "    startup_error \"$undo does not exist\"",
+	      'fi'
+	    );
+
+	pop_indent;
+
+	emit '}';
+    }
 
     push @providers, $table;
 
@@ -885,6 +951,80 @@ sub process_providers() {
 	pop_indent;
 	emit '}';
     }
+
+    emit << 'EOF';;
+
+#
+# Enable an optional provider
+#
+enable_provider() {
+    g_interface=$1;
+
+    case $g_interface in
+EOF
+
+    push_indent;
+    push_indent;
+
+    for my $provider (@providers ) {
+	my $providerref = $providers{$provider};
+
+	emit( "$providerref->{physical})",
+	      "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
+	      "        start_provider_$provider",
+	      '    else',
+	      '        startup_error "Interface $g_interface is already enabled"',
+	      '    fi',
+	      '    ;;'
+	    ) if $providerref->{optional};
+    }
+
+    pop_indent;
+    pop_indent;
+
+    emit << 'EOF';;
+        *)
+            startup_error "$g_interface is not an optional provider interface"
+            ;;
+    esac
+}
+
+#
+# Disable an optional provider
+#
+disable_provider() {
+    g_interface=$1;
+
+    case $g_interface in
+EOF
+
+    push_indent;
+    push_indent;
+
+    for my $provider (@providers ) {
+	my $providerref = $providers{$provider};
+
+	emit( "$providerref->{physical})",
+	      "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
+	      "        stop_provider_$provider",
+	      '    else',
+	      '        startup_error "Interface $g_interface is already disabled"',
+	      '    fi',
+	      '    ;;'
+	    ) if $providerref->{optional};
+    }
+
+    pop_indent;
+    pop_indent;
+
+    emit << 'EOF';;
+        *)
+            startup_error "$g_interface is not an optional provider interface"
+            ;;
+    esac
+}
+EOF
+
 }
 
 sub setup_providers() {

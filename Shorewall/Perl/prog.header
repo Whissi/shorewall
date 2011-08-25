@@ -112,6 +112,17 @@ find_device() {
 }
 
 #
+# Find the value 'weight' in the passed arguments then echo the next value
+#
+
+find_weight() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xweight ] && echo $2 && return
+	shift
+    done
+}
+
+#
 # Find the value 'via' in the passed arguments then echo the next value
 #
 
@@ -579,6 +590,71 @@ restore_default_route() # $1 = USE_DEFAULT_RT
     fi
 
     return $result
+}
+
+#
+# Add an additional gateway to the default route
+#
+add_gateway() # $1 = Delta $2 = Table Number
+{
+    local route
+    local weight
+    local delta
+    
+    route=`$IP -4 -o route ls table $2 | grep ^default | sed 's/default //'`
+
+    if [ -z "$route" ]; then
+	run_ip route add default scope global table $2 $1
+	find_weight $1 > ${VARDIR}/weight
+    else
+	delta=$1
+
+	if ! echo $route | fgrep -q ' nexthop '; then
+	    route=`echo $route | sed 's/via/nexthop via/'`
+	    if [ -f ${VARDIR}/weight ]; then
+		weight=`cat ${VARDIR}/weight`
+		route="$route weight $weight"
+		rm -f ${VARDIR}/weight
+	    fi
+	fi
+
+	run_ip route replace default scope global table $2 $route $delta
+    fi
+}
+
+#
+# Remove a gateway from the default route
+#
+delete_gateway() # $! = Description of the Gateway $2 = table number
+{
+    local route
+    local gateway
+    local newroute
+
+    route=`$IP -4 -o route ls table $2 | grep ^default`
+    gateway=$1
+  
+    if [ -n "$route" ]; then
+	if echo $route | fgrep -q ' nexthop '; then
+	    gateway="nexthop $gateway"
+	fi
+
+	eval route=\`echo $route \| sed \'s/$gateway/ /\'\`
+
+	if echo $route | fgrep -q ' via '; then
+	    run_ip route replace table $2 $route
+	else
+	    run_ip route delete default table $2
+	fi
+
+	newroute=`$IP -4 -o route ls table $2 | grep ^default`
+
+	if echo $newroute | fgrep -q ' nexthop '; then
+	    rm -f ${VARDIR}/weight
+	else
+	    find_weight $route > ${VARDIR}/weight
+	fi
+    fi
 }
 
 #

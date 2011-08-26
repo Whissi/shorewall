@@ -1938,7 +1938,7 @@ EOF
 	            logger -p kern.err "ERROR:$g_product refresh failed"
 	            ;;
                 enable)
-                    logger -p kern.err "ERROR: 'enable $g_interface' failed"
+                    logger -p kern.err "ERROR:$g_product 'enable $g_interface' failed"
                     ;;
             esac
 

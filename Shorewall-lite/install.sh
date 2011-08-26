@@ -232,13 +232,13 @@ echo "Shorewall Lite control program installed in ${DESTDIR}/sbin/shorewall-lite
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${DESTDIR}etc/init.d/shorewall-lite 0544
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-lite 0544
 elif [ -n "$FEDORA" ]; then
-    install_file init.fedora.sh ${DESTDIR}etc/init.d/shorewall-lite 0544
+    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
+    install_file init.archlinux.sh ${DESTDIR}/${DEST}/$INIT 0544
 else
-    install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
+    install_file init.sh ${DESTDIR}/${DEST}/$INIT 0544
 fi
 
 echo  "Shorewall Lite script installed in ${DESTDIR}${DEST}/$INIT"

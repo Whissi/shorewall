@@ -1381,32 +1381,6 @@ sub process_simple_traffic_shaping() {
 	$fn = find_file 'tcinterfaces';
     }
 
-    my $fn1 = open_file 'tcpri';
-
-    if ( $fn1 ) {
-	first_entry
-	    sub {
-		progress_message2 "$doing $fn1...";
-		warning_message "There are entries in $fn1 but $fn was empty" unless $interfaces || $family == F_IPV6;
-	    };
-
-	process_tc_priority while read_a_line;
-
-	clear_comment;
-
-	if ( $ipp2p ) {
-	    insert_irule( $mangle_table->{tcpost} ,
-			  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
-			  0 ,
-			  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
-			);
-
-	    add_ijump( $mangle_table->{tcpost} ,
-		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
-		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
-		     );
-	}
-    }
 }
 
 sub process_traffic_shaping() {
@@ -1620,11 +1594,12 @@ sub setup_traffic_shaping() {
     save_progress_message q("Setting up Traffic Control...");
 
     for my $device ( @tcdevices ) {
-	my $interfaceref = find_interface( $device );
-	my $dev          = chain_base $interfaceref->{physical};
+	my $interfaceref = known_interface( $device );
+	my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
 
 	emit "setup_${dev}_tc";
     }
+
 }
 
 #
@@ -1739,6 +1714,37 @@ sub setup_tc() {
 	save_progress_message q('Setting up Traffic Control...');
 	append_file $globals{TC_SCRIPT};
     } else {
+	if ( $config{TC_ENABLED} eq 'Simple' ) {
+	    my $fn  = find_file 'tcinterfaces';
+	    my $fn1 = open_file 'tcpri';
+
+	    if ( $fn1 ) {
+		first_entry
+		    sub {
+			progress_message2 "$doing $fn1...";
+			warning_message "There are entries in $fn1 but $fn was empty" unless @tcdevices || $family == F_IPV6;
+		    };
+
+		process_tc_priority while read_a_line;
+
+		clear_comment;
+
+		if ( $ipp2p ) {
+		    insert_irule( $mangle_table->{tcpost} ,
+				  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
+				  0 ,
+				  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
+				);
+
+		    add_ijump( $mangle_table->{tcpost} ,
+			       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
+			       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
+			     );
+		}
+
+	    }
+	}
+
 	setup_traffic_shaping;
     }
 

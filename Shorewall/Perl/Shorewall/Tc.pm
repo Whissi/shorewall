@@ -38,7 +38,7 @@ use Shorewall::Providers;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_tc );
+our @EXPORT = qw( process_tc setup_tc );
 our @EXPORT_OK = qw( process_tc_rule initialize );
 our $VERSION = 'MODULEVERSION';
 
@@ -151,8 +151,8 @@ my  $ipp2p;
 #                                                  leaf      => 0|1
 #                                                  guarantee => <sum of rates of sub-classes>
 #                                                  options   => { tos  => [ <value1> , <value2> , ... ];
-#                                                  tcp_ack => 1 ,
-#                                                  ...
+#                                                  tcp_ack   => 1 ,
+#                                                  filters   => [ filter list ]
 #                                                }
 #                                     }
 #             }
@@ -504,6 +504,8 @@ sub process_simple_device() {
     my $physical = physical_name $device;
     my $dev      = chain_base( $physical );
 
+    push @tcdevices, $device;
+
     if ( $type ne '-' ) {
 	if ( lc $type eq 'external' ) {
 	    $type = 'nfct-src';
@@ -529,6 +531,15 @@ sub process_simple_device() {
     } else {
 	$in_bandwidth = rate_to_kbit( $in_bandwidth );
     }
+
+    emit( '',
+	  '#',
+	  "# Setup Simple Traffic Shaping for $physical",
+	  '#',
+	  "setup_${dev}_tc() {"
+	);
+
+    push_indent;
 
     emit "if interface_is_up $physical; then";
 
@@ -607,7 +618,9 @@ sub process_simple_device() {
     emit qq(error_message "WARNING: Device $physical is not in the UP state -- traffic-shaping configuration skipped");
     emit "${dev}_exists=";
     pop_indent;
-    emit "fi\n";
+    emit 'fi';
+    pop_indent;
+    emit "}\n";
 
     progress_message "  Simple tcdevice \"$currentline\" $done.";
 }
@@ -711,7 +724,8 @@ sub validate_tc_device( ) {
 			    qdisc         => $qdisc,
 			    guarantee     => 0,
 			    name          => $device,
-			    physical      => physical_name $device
+			    physical      => physical_name $device,
+			    filters       => []
 			  } ,
 
     push @tcdevices, $device;
@@ -1018,6 +1032,8 @@ sub process_tc_filter() {
 
     my $tcref = $tcclasses{$device};
 
+    my $filtersref = $devref->{filters};
+
     fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
 
     my $classnum = hex_value $class;
@@ -1035,17 +1051,6 @@ sub process_tc_filter() {
     }
 
     my $have_rule = 0;
-
-    if ( $devref->{physical} ne $lastdevice ) {
-	if ( $lastdevice ) {
-	    pop_indent;
-	    emit "fi\n";
-	}
-
-	$lastdevice = $devref->{physical};
-	emit "if interface_is_up $lastdevice; then";
-	push_indent;
-    }
 
     my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio u32";
 
@@ -1101,9 +1106,9 @@ sub process_tc_filter() {
 
     if ( $portlist eq '-' && $sportlist eq '-' ) {
 	if ( $have_rule ) {
-	    emit( "\nrun_tc $rule\\" ,
-		  "   flowid $devnum:$class" ,
-		  '' );
+	    push @$filtersref , ( "\nrun_tc $rule\\" ,
+				  "   flowid $devnum:$class" ,
+				  '' );
 	} else {
 	    warning_message "Degenerate tcfilter ignored";
 	}
@@ -1129,17 +1134,17 @@ sub process_tc_filter() {
 	    $lasttnum = $tnum;
 	    $lastrule = $rule;
 
-	    emit( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol $ip prio $prio handle $tnum: u32 divisor 1" );
+	    push @$filtersref, ( "\nrun_tc filter add dev $devref->{physical} parent $devnum:0 protocol $ip prio $prio handle $tnum: u32 divisor 1" );
 	}
 	#
 	# And link to it using the current contents of $rule
 	#
 	if ( $family == F_IPV4 ) {
-	    emit( "\nrun_tc $rule\\" ,
-		  "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
+	    push @$filtersref, ( "\nrun_tc $rule\\" ,
+				 "   link $tnum:0 offset at 0 mask 0x0F00 shift 6 plus 0 eat" );
 	} else {
-	    emit( "\nrun_tc $rule\\" ,
-		  "   link $tnum:0 offset plus 40 eat" );
+	    push @$filtersref, ( "\nrun_tc $rule\\" ,
+				 "   link $tnum:0 offset plus 40 eat" );
 	}    
 	#
 	# The rule to match the port(s) will be inserted into the new table
@@ -1165,9 +1170,9 @@ sub process_tc_filter() {
 			$rule1 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0" ,
 		    }
 
-		    emit( "\nrun_tc $rule\\" ,
-			  "   $rule1\\" ,
-			  "   flowid $devnum:$class" );
+		    push @$filtersref, ( "\nrun_tc $rule\\" ,
+					 "   $rule1\\" ,
+					 "   flowid $devnum:$class" );
 		}
 	    }
 	} else {
@@ -1183,9 +1188,9 @@ sub process_tc_filter() {
 
 		    my $rule1 = "   match icmp type $icmptype 0xff";
 		    $rule1   .= "\\\n   match icmp code $icmpcode 0xff" if defined $icmpcode;
-		    emit( "\nrun_tc ${rule}\\" ,
-			  "$rule1\\" ,
-			  "   flowid $devnum:$class" );
+		    push @$filtersref, ( "\nrun_tc ${rule}\\" ,
+					 "$rule1\\" ,
+					 "   flowid $devnum:$class" );
 		} elsif ( $protonumber == IPv6_ICMP ) {
 		    fatal_error "IPv6 ICMP not allowed with IPv4" unless $family == F_IPV4;
 		    fatal_error "SOURCE PORT(S) are not allowed with IPv6 ICMP" if $sportlist ne '-';
@@ -1194,9 +1199,9 @@ sub process_tc_filter() {
 
 		    my $rule1 = "   match icmp6 type $icmptype 0xff";
 		    $rule1   .= "\\\n   match icmp6 code $icmpcode 0xff" if defined $icmpcode;
-		    emit( "\nrun_tc ${rule}\\" ,
-			  "$rule1\\" ,
-			  "   flowid $devnum:$class" );
+		    push @$filtersref, ( "\nrun_tc ${rule}\\" ,
+					 "$rule1\\" ,
+					 "   flowid $devnum:$class" );
 		} else {
 		    my @portlist = expand_port_range $protonumber , $portrange;
 
@@ -1214,9 +1219,9 @@ sub process_tc_filter() {
 			}
 
 			if ( $sportlist eq '-' ) {
-			    emit( "\nrun_tc ${rule}\\" ,
-				  "   $rule1\\" ,
-				  "   flowid $devnum:$class" );
+			    push @$filtersref, ( "\nrun_tc ${rule}\\" ,
+						 "   $rule1\\" ,
+						 "   flowid $devnum:$class" );
 			} else {
 			    for my $sportrange ( split_list $sportlist , 'port list' ) {
 				my @sportlist = expand_port_range $protonumber , $sportrange;
@@ -1234,10 +1239,10 @@ sub process_tc_filter() {
 					$rule2 = "match u32 0x${sport}0000 0x${smask}0000 at nexthdr+0" ,
 				    }
 
-				    emit( "\nrun_tc ${rule}\\",
-					  "   $rule1\\" ,
-					  "   $rule2\\" ,
-					  "   flowid $devnum:$class" );
+				    push @$filtersref, ( "\nrun_tc ${rule}\\",
+							 "   $rule1\\" ,
+							 "   $rule2\\" ,
+							 "   flowid $devnum:$class" );
 				}
 			    }
 			}
@@ -1272,8 +1277,6 @@ sub process_tcfilters() {
 
     my $fn = open_file 'tcfilters';
 
-    our $lastdevice = '';
-
     if ( $fn ) {
 	my @family = ( $family );
 	
@@ -1301,12 +1304,6 @@ sub process_tcfilters() {
 	}
 
 	Shorewall::IPAddrs::initialize( $family = pop @family );
-
-	if ( $lastdevice ) {
-	    pop_indent;
-	    emit "fi\n";
-	}
-
     }
 }
 
@@ -1371,10 +1368,9 @@ sub process_tc_priority() {
     }
 }
 
-sub setup_simple_traffic_shaping() {
-    my $interfaces;
+sub process_simple_traffic_shaping() {
 
-    save_progress_message q("Setting up Traffic Control...");
+    my $interfaces;
 
     my $fn = open_file 'tcinterfaces';
 
@@ -1413,10 +1409,7 @@ sub setup_simple_traffic_shaping() {
     }
 }
 
-sub setup_traffic_shaping() {
-    our $lastrule = '';
-
-    save_progress_message q("Setting up Traffic Control...");
+sub process_traffic_shaping() {
 
     my $fn = open_file 'tcdevices';
 
@@ -1425,9 +1418,6 @@ sub setup_traffic_shaping() {
 
 	validate_tc_device while read_a_line;
     }
-
-    my $sfq = 0;
-    my $sfqinhex;
 
     $devnum = $devnum > 10 ? 10 : 1;
 
@@ -1438,6 +1428,11 @@ sub setup_traffic_shaping() {
 
 	validate_tc_class while read_a_line;
     }
+
+    process_tcfilters;
+
+    my $sfq = 0;
+    my $sfqinhex;
 
     for my $device ( @tcdevices ) {
 	my $devref  = $tcdevices{$device};
@@ -1450,6 +1445,14 @@ sub setup_traffic_shaping() {
 	$device = physical_name $device;
 
 	my $dev = chain_base( $device );
+
+	emit( '',
+	      '#',
+	      "# Configure Traffic Shaping for $device",
+	      '#',
+	      "setup_${dev}_tc() {" );
+
+	push_indent;
 
 	unless ( $config{TC_ENABLED} eq 'Shared' ) {
 
@@ -1500,116 +1503,128 @@ sub setup_traffic_shaping() {
 		emit( "run_tc filter add dev $rdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
 	    }
 
-	    save_progress_message_short qq("   TC Device $device defined.");
+	    for my $class ( @tcclasses ) {
+		#
+		# The class number in the tcclasses array is expressed in decimal.
+		#
+		my ( $d, $decimalclassnum ) = split /:/, $class;
 
-	    pop_indent;
-	    emit 'else';
-	    push_indent;
+		next unless $d eq $device;
+		#
+		# For inclusion in 'tc' commands, we also need the hex representation
+		#
+		my $classnum = in_hexp $decimalclassnum;
+		#
+		# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
+		#
+		my $tcref    = $tcclasses{$device}{$decimalclassnum};
+		my $mark     = $tcref->{mark};
+		my $devicenumber  = in_hexp $devref->{number};
+		my $classid  = join( ':', $devicenumber, $classnum);
+		my $rate     = "$tcref->{rate}kbit";
+		my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 
-	    emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
-	    emit "${dev}_exists=";
-	    pop_indent;
-	    emit "fi\n";
-	}
-    }
+		$classids{$classid}=$device;
+		$device = physical_name $device;
 
-    my $lastdevice = '';
+		my $priority = $tcref->{priority} << 8;
+		my $parent   = in_hexp $tcref->{parent};
+		
+		emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
 
-    for my $class ( @tcclasses ) {
-	#
-	# The class number in the tcclasses array is expressed in decimal.
-	#
-	my ( $device, $decimalclassnum ) = split /:/, $class;
-	#
-	# For inclusion in 'tc' commands, we also need the hex representation
-	#
-	my $classnum = in_hexp $decimalclassnum;
-	my $devref   = $tcdevices{$device};
-	#
-	# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
-	#
-	my $tcref    = $tcclasses{$device}{$decimalclassnum};
-	my $mark     = $tcref->{mark};
-	my $devicenumber  = in_hexp $devref->{number};
-	my $classid  = join( ':', $devicenumber, $classnum);
-	my $rate     = "$tcref->{rate}kbit";
-	my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
-
-	$classids{$classid}=$device;
-	$device = physical_name $device;
-
-	unless ( $config{TC_ENABLED} eq 'Shared' ) {
-	    my $dev      = chain_base $device;
-	    my $priority = $tcref->{priority} << 8;
-	    my $parent   = in_hexp $tcref->{parent};
-
-	    if ( $lastdevice ne $device ) {
-		if ( $lastdevice ) {
-		    pop_indent;
-		    emit "fi\n";
-		}
-
-		emit qq(if [ -n "\$${dev}_exists" ]; then);
-		push_indent;
-		$lastdevice = $device;
-	    }
-
-	    emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
-
-	    if ( $devref->{qdisc} eq 'htb' ) {
-		emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
-	    } else {
-		my $dmax = $tcref->{dmax};
-
-		if ( $dmax ) {
-		    my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
-		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
-		} else {
-		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
-		}
-	    }
-
-	    if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
-		1 while $devnums[++$sfq];
-
-		$sfqinhex = in_hexp( $sfq);
 		if ( $devref->{qdisc} eq 'htb' ) {
-		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 		} else {
-		    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );
+		    my $dmax = $tcref->{dmax};
+
+		    if ( $dmax ) {
+			my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
+			emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
+		    } else {
+			emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
+		    }
 		}
+
+		if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
+		    1 while $devnums[++$sfq];
+
+		    $sfqinhex = in_hexp( $sfq);
+		    if ( $devref->{qdisc} eq 'htb' ) {
+			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+		    } else {
+			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );
+		    }
+		}
+		#
+		# add filters
+		#
+		unless ( $devref->{classify} ) {
+		    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
+		}
+
+		emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
+		#
+		# options
+		#
+		emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+
+		for my $tospair ( @{$tcref->{tos}} ) {
+		    my ( $tos, $mask ) = split q(/), $tospair;
+		    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
+		}
+		
+		save_progress_message_short qq("   TC Class $classid defined.");
+		emit '';
+
 	    }
-	    #
-	    # add filters
-	    #
-	    unless ( $devref->{classify} ) {
-		emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
-	    }
-
-	    emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
-	    #
-	    # options
-	    #
-	    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
-
-	    for my $tospair ( @{$tcref->{tos}} ) {
-		my ( $tos, $mask ) = split q(/), $tospair;
-		emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
-	    }
-
-	    save_progress_message_short qq("   TC Class $classid defined.");
-	    emit '';
-
 	}
 
-    }
+	emit '';
 
-    if ( $lastdevice ) {
+	emit "$_" for @{$devref->{filters}};
+	
+	save_progress_message_short qq("   TC Device $device defined.");
+
+	pop_indent;
+	emit 'else';
+	push_indent;
+
+	emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
+	emit "${dev}_exists=";
 	pop_indent;
 	emit "fi\n";
-    }
 
-    process_tcfilters;
+	pop_indent;
+	emit "}\n";
+    }
+}
+
+#
+# Validate the TC configuration storing basic information in %tcdevices
+#
+sub process_tc() {
+    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
+	process_traffic_shaping;
+    } elsif ( $config{TC_ENABLED} eq 'Simple' ) {
+	process_simple_traffic_shaping;
+    }
+    #
+    # The Providers module needs to know which devices are tc-enabled so that
+    # it can call the appropriate 'setup_x_tc" function when the device is
+    # enabled.
+
+    \%tcdevices;
+}
+
+sub setup_traffic_shaping() {
+    save_progress_message q("Setting up Traffic Control...");
+
+    for my $device ( @tcdevices ) {
+	my $interfaceref = find_interface( $device );
+	my $dev          = chain_base $interfaceref->{physical};
+
+	emit "setup_${dev}_tc";
+    }
 }
 
 #
@@ -1723,10 +1738,8 @@ sub setup_tc() {
     if ( $globals{TC_SCRIPT} ) {
 	save_progress_message q('Setting up Traffic Control...');
 	append_file $globals{TC_SCRIPT};
-    } elsif ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
+    } else {
 	setup_traffic_shaping;
-    } elsif ( $config{TC_ENABLED} eq 'Simple' ) {
-	setup_simple_traffic_shaping;
     }
 
     if ( $config{TC_ENABLED} ) {

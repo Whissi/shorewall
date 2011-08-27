@@ -38,6 +38,8 @@ use Shorewall::IPAddrs;
 use Shorewall::Raw;
 use Shorewall::Misc;
 
+use strict;
+
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
@@ -705,9 +707,13 @@ sub compiler {
     #
     enable_script;
     #
+    # Validate the TC files so that the providers will know what interfaces have TC
+    #
+    my $tcinterfaces = process_tc;
+    #
     # Generate a function to bring up each provider
     #
-    process_providers;
+    process_providers( $tcinterfaces );
     #
     # [Re-]establish Routing
     #

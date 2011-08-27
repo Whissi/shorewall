@@ -258,7 +258,9 @@ sub start_provider( $$$ ) {
     emit "echo \". \${VARDIR}/undo_${table}_routing\" >> \${VARDIR}/undo_routing";
 }
 
-sub add_a_provider( ) {
+sub add_a_provider( $ ) {
+
+    my $tcdevices = shift;
 
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
@@ -290,7 +292,8 @@ sub add_a_provider( ) {
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
     my $physical    = get_physical $interface;
-    my $base        = uc chain_base $physical;
+    my $dev         = chain_base $physical;
+    my $base        = uc $dev;
     my $gatewaycase = '';
 
     if ( $gateway eq 'detect' ) {
@@ -491,7 +494,7 @@ sub add_a_provider( ) {
 	}
    	
 	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $number $realm";
- }
+    }
 
     balance_default_route $balance , $gateway, $physical, $realm if $balance;
 
@@ -545,6 +548,7 @@ sub add_a_provider( ) {
 
     emit "\nadd_${table}_routing_rules";
     emit "add_${table}_routes";
+    emit "setup_${dev}_tc" if $tcdevices->{$interface};
 
     emit( '',
 	  'if [ $COMMAND = enable ]; then'
@@ -594,7 +598,7 @@ sub add_a_provider( ) {
 
     pop_indent;
 
-    emit "} # End of start_provider_$table()";
+    emit '}'; # End of start_provider_$table();
 
     if ( $optional ) {
 	emit( '',
@@ -894,14 +898,16 @@ sub finish_providers() {
     }
 }
 
-sub process_providers() {
+sub process_providers( $ ) {
+    my $tcdevices = shift;
+
     our $providers = 0;
 
     $lastmark = 0;
 
     if ( my $fn = open_file 'providers' ) {
 	first_entry "$doing $fn..."; 
-	add_a_provider, $providers++ while read_a_line;
+	add_a_provider( $tcdevices ), $providers++ while read_a_line;
     }
 
     if ( $providers ) {

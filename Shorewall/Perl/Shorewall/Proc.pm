@@ -40,7 +40,7 @@ our @EXPORT = qw(
 		 setup_source_routing
 		 setup_forwarding
 		 );
-our @EXPORT_OK = qw( );
+our @EXPORT_OK = qw( setup_interface_proc );
 our $VERSION = 'MODULEVERSION';
 
 #
@@ -276,5 +276,46 @@ sub setup_forwarding( $$ ) {
 	}
     }
 }
+
+sub setup_interface_proc( $ ) {
+    my $interface = shift;
+    my $physical  = get_physical $interface;
+    my $value;
+    my @emitted;
+
+    if ( interface_has_option( $interface, 'arp_filter' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/arp_filter";
+    }
+	 
+    if ( interface_has_option( $interface, 'arp_ignore' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/arp_ignore";
+    }
+
+    if ( interface_has_option( $interface, 'routefilter' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/rp_filter";
+    }
+
+    if ( interface_has_option( $interface, 'logmartians' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/log_martians";
+    }
+
+    if ( interface_has_option( $interface, 'sourceroute' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
+    }
+
+    if ( interface_has_option( $interface, 'sourceroute' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
+    }
+
+    if ( @emitted ) {
+	emit( '',
+	      'if [ $COMMAND = enable ]; then' );
+	push_indent;
+	emit "$_" for @emitted;
+	pop_indent;
+	emit "fi\n";
+    }
+}
+	 
 
 1;

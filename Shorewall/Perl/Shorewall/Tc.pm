@@ -1273,6 +1273,9 @@ sub process_tc_filter() {
 
 }
 
+#
+# Process the tcfilter file storing the compiled filters in the %tcdevices table
+#
 sub process_tcfilters() {
 
     my $fn = open_file 'tcfilters';
@@ -1307,6 +1310,9 @@ sub process_tcfilters() {
     }
 }
 
+#
+# Process a tcpri record
+#
 sub process_tc_priority() {
     my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line1 1, 6, 'tcpri';
 
@@ -1368,21 +1374,55 @@ sub process_tc_priority() {
     }
 }
 
-sub process_simple_traffic_shaping() {
-
-    my $interfaces;
+#
+# Process tcinterfaces
+#
+sub process_tcinterfaces() {
 
     my $fn = open_file 'tcinterfaces';
 
     if ( $fn ) {
 	first_entry "$doing $fn...";
-	process_simple_device, $interfaces++ while read_a_line;
-    } else {
-	$fn = find_file 'tcinterfaces';
+	process_simple_device while read_a_line;
     }
-
 }
 
+#
+# Process tcpri
+#
+sub process_tcpri() {
+    my $fn  = find_file 'tcinterfaces';
+    my $fn1 = open_file 'tcpri';
+
+    if ( $fn1 ) {
+	first_entry
+	    sub {
+		progress_message2 "$doing $fn1...";
+		warning_message "There are entries in $fn1 but $fn was empty" unless @tcdevices || $family == F_IPV6;
+	    };
+
+	process_tc_priority while read_a_line;
+
+	clear_comment;
+
+	if ( $ipp2p ) {
+	    insert_irule( $mangle_table->{tcpost} ,
+			  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
+			  0 ,
+			  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
+			);
+
+	    add_ijump( $mangle_table->{tcpost} ,
+		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
+		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
+		     );
+	}
+    }
+}
+
+#
+# Process the compilex traffic shaping files storing the configuration in %tcdevices and %tcclasses
+#
 sub process_traffic_shaping() {
 
     my $fn = open_file 'tcdevices';
@@ -1574,13 +1614,13 @@ sub process_traffic_shaping() {
 }
 
 #
-# Validate the TC configuration storing basic information in %tcdevices
+# Validate the TC configuration storing basic information in %tcdevices and %tcdevices
 #
 sub process_tc() {
     if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 	process_traffic_shaping;
     } elsif ( $config{TC_ENABLED} eq 'Simple' ) {
-	process_simple_traffic_shaping;
+	process_tcinterfaces;
     }
     #
     # The Providers module needs to know which devices are tc-enabled so that
@@ -1590,6 +1630,9 @@ sub process_tc() {
     \%tcdevices;
 }
 
+#
+# Call the setup_${dev}_tc functions
+#
 sub setup_traffic_shaping() {
     save_progress_message q("Setting up Traffic Control...");
 
@@ -1714,37 +1757,7 @@ sub setup_tc() {
 	save_progress_message q('Setting up Traffic Control...');
 	append_file $globals{TC_SCRIPT};
     } else {
-	if ( $config{TC_ENABLED} eq 'Simple' ) {
-	    my $fn  = find_file 'tcinterfaces';
-	    my $fn1 = open_file 'tcpri';
-
-	    if ( $fn1 ) {
-		first_entry
-		    sub {
-			progress_message2 "$doing $fn1...";
-			warning_message "There are entries in $fn1 but $fn was empty" unless @tcdevices || $family == F_IPV6;
-		    };
-
-		process_tc_priority while read_a_line;
-
-		clear_comment;
-
-		if ( $ipp2p ) {
-		    insert_irule( $mangle_table->{tcpost} ,
-				  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
-				  0 ,
-				  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
-				);
-
-		    add_ijump( $mangle_table->{tcpost} ,
-			       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
-			       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
-			     );
-		}
-
-	    }
-	}
-
+	process_tcpri if $config{TC_ENABLED} eq 'Simple';
 	setup_traffic_shaping;
     }
 

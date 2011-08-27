@@ -634,8 +634,11 @@ sub add_a_provider( $ ) {
 
 	    emit( qq(    delete_gateway "$via" ) . $tbl );
 	}
-		
-	    
+	
+	emit( '', 
+	      "    qt \$TC qdisc del dev $physical root",
+	      "    qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
+
 	emit( "    progress_message2 \"Provider $table stopped\"",
               'else',
 	      "    startup_error \"$undo does not exist\"",

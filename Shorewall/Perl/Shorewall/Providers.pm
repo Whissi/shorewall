@@ -29,6 +29,7 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
+use Shorewall::Proc qw( setup_interface_proc );
 
 use strict;
 
@@ -143,6 +144,8 @@ sub copy_table( $$$ ) {
     #
     my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
 
+    emit '';
+
     if ( $realm ) {
 	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
     } else {
@@ -174,6 +177,8 @@ sub copy_and_edit_table( $$$$ ) {
     # Shell and iptables use a different wildcard character
     #
     $copy =~ s/\+/*/;
+    
+    emit '';
 
     if ( $realm ) {
 	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | while read net route; do" )
@@ -441,7 +446,6 @@ sub add_a_provider( $ ) {
 	} else {
 	    start_provider( $table, $number, "if interface_is_usable $physical; then" );
 	}
-
 	$provider_interfaces{$interface} = $table;
 
 	if ( $gatewaycase eq 'none' ) {
@@ -452,6 +456,8 @@ sub add_a_provider( $ ) {
 	    }
 	}
     }
+
+    setup_interface_proc( $interface );
 
     if ( $mark ne '-' ) {
 	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '';

@@ -263,9 +263,10 @@ sub start_provider( $$$ ) {
     emit "echo \". \${VARDIR}/undo_${table}_routing\" >> \${VARDIR}/undo_routing";
 }
 
-sub add_a_provider( $ ) {
-
-    my $tcdevices = shift;
+#
+# Process a record in the providers file
+#
+sub process_a_provider() {
 
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
 
@@ -297,8 +298,6 @@ sub add_a_provider( $ ) {
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
     my $physical    = get_physical $interface;
-    my $dev         = chain_base $physical;
-    my $base        = uc $dev;
     my $gatewaycase = '';
 
     if ( $gateway eq 'detect' ) {
@@ -368,6 +367,13 @@ sub add_a_provider( $ ) {
 
     fatal_error q(The 'balance' and 'fallback' options are mutually exclusive) if $balance && $default;
 
+    if ( $local ) {
+	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
+	fatal_error "'track' not valid with 'local'"          if $track;
+	fatal_error "DUPLICATE not valid with 'local'"        if $duplicate ne '-';
+	fatal_error "MARK required with 'local'"              unless $mark;
+    }
+
     my $val = 0;
     my $pref;
 
@@ -402,8 +408,18 @@ sub add_a_provider( $ ) {
 
     $balance = $default_balance unless $balance;
 
+    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
+
+    if ( $duplicate ne '-' ) {
+	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
+    } elsif ( $copy ne '-' ) {
+	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
+	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column';
+    }
+
     $providers{$table} = { provider    => $table,
 			   number      => $number ,
+			   rawmark     => $mark ,
 			   mark        => $val ? in_hex($val) : $val ,
 			   interface   => $interface ,
 			   physical    => $physical ,
@@ -412,6 +428,15 @@ sub add_a_provider( $ ) {
 			   gatewaycase => $gatewaycase ,
 			   shared      => $shared ,
 			   default     => $default ,
+			   copy        => $copy ,
+			   balance     => $balance ,
+			   pref        => $pref ,
+			   mtu         => $mtu ,
+			   track       => $track ,
+			   loose       => $loose ,
+			   duplicate   => $duplicate ,
+			   address     => $address ,
+			   local       => $local ,
 			   rules       => [] ,
 			   routes      => [] ,
 			 };
@@ -430,9 +455,39 @@ sub add_a_provider( $ ) {
 	push @routemarked_providers, $providers{$table};
     }
 
-    my $realm = '';
+    push @providers, $table;
 
-    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
+}
+
+#
+# Generate the start_provider_...() function for the passed provider
+#
+sub add_a_provider( $$ ) {
+  
+    my ( $providerref, $tcdevices ) = @_;
+    
+    my $table       = $providerref->{provider};
+    my $number      = $providerref->{number};
+    my $mark        = $providerref->{rawmark};
+    my $interface   = $providerref->{interface};
+    my $physical    = $providerref->{physical};
+    my $optional    = $providerref->{optional};
+    my $gateway     = $providerref->{gateway};
+    my $gatewaycase = $providerref->{gatewaycase};
+    my $shared      = $providerref->{shared};
+    my $default     = $providerref->{default};
+    my $copy        = $providerref->{copy};
+    my $balance     = $providerref->{balance};
+    my $pref        = $providerref->{pref};
+    my $mtu         = $providerref->{mtu};
+    my $track       = $providerref->{track};
+    my $loose       = $providerref->{loose};
+    my $duplicate   = $providerref->{duplicate};
+    my $address     = $providerref->{address};
+    my $local       = $providerref->{local};
+    my $dev         = chain_base $physical;
+    my $base        = uc $dev;
+    my $realm = '';
 
     if ( $shared ) {
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
@@ -470,7 +525,6 @@ sub add_a_provider( $ ) {
     }
 
     if ( $duplicate ne '-' ) {
-	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	if ( $copy eq '-' ) {
 	    copy_table ( $duplicate, $number, $realm );
 	} else {
@@ -482,9 +536,6 @@ sub add_a_provider( $ ) {
 
 	    copy_and_edit_table( $duplicate, $number ,$copy , $realm);
 	}
-    } elsif ( $copy ne '-' ) {
-	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
-	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column';
     }
 
     if ( $gateway ) {
@@ -522,39 +573,42 @@ sub add_a_provider( $ ) {
 	}
     }
 
-    if ( $local ) {
-	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
-	fatal_error "'track' not valid with 'local'"          if $track;
-	fatal_error "DUPLICATE not valid with 'local'"        if $duplicate ne '-';
-	fatal_error "MARK required with 'local'"              unless $mark;
-    } elsif ( $loose ) {
-	if ( $config{DELETE_THEN_ADD} ) {
-	    emit ( "\nfind_interface_addresses $physical | while read address; do",
-		   "    qt \$IP -$family rule del from \$address",
-		   'done'
-		 );
+    unless ( $local ) {
+	if ( $loose ) {
+	    if ( $config{DELETE_THEN_ADD} ) {
+		emit ( "\nfind_interface_addresses $physical | while read address; do",
+		       "    qt \$IP -$family rule del from \$address",
+		       'done'
+		     );
+	    }
+	} elsif ( $shared ) {
+	    emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
+	    emit( "run_ip rule add from $address pref 20000 table $number" ,
+		  "echo \"qt \$IP -$family rule del from $address\" >> \${VARDIR}/undo_${table}_routing" );
+	} else {
+	    my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
+
+	    emit "\nrulenum=0\n";
+
+	    emit  ( "find_interface_addresses $physical | while read address; do" );
+	    emit  (	"    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
+	    emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
+			"    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_${table}_routing",
+			'    rulenum=$(($rulenum + 1))',
+			'done'
+		  );
 	}
-    } elsif ( $shared ) {
-	emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
-	emit( "run_ip rule add from $address pref 20000 table $number" ,
-	      "echo \"qt \$IP -$family rule del from $address\" >> \${VARDIR}/undo_${table}_routing" );
-    } else {
-	my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
-
-	emit "\nrulenum=0\n";
-
-	emit  ( "find_interface_addresses $physical | while read address; do" );
-	emit  (	"    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
-	emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
-		"    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_${table}_routing",
-		'    rulenum=$(($rulenum + 1))',
-		'done'
-	      );
     }
 
-    emit "\nadd_${table}_routing_rules";
-    emit "add_${table}_routes";
-    emit "setup_${dev}_tc" if $tcdevices->{$interface};
+    if ( @{$providerref->{rules}} ) {
+	emit '';
+	emit $_ for @{$providers{$table}->{rules}};
+    }
+    
+    if ( @{$providerref->{routes}} ) {
+	emit '';
+	emit $_ for @{$providers{$table}->{routes}};
+    }
 
     emit( '',
 	  'if [ $COMMAND = enable ]; then'
@@ -576,6 +630,8 @@ sub add_a_provider( $ ) {
 
 	pop_indent;
     }
+
+    emit "    setup_${dev}_tc" if $tcdevices->{$interface};
 
     emit ( qq(    progress_message "   Provider $table ($number) Started"),
 	  'else',
@@ -649,8 +705,6 @@ sub add_a_provider( $ ) {
 
 	emit '}';
     }
-
-    push @providers, $table;
 
     progress_message "   Provider \"$currentline\" $done";
 }
@@ -916,7 +970,7 @@ sub process_providers( $ ) {
 
     if ( my $fn = open_file 'providers' ) {
 	first_entry "$doing $fn..."; 
-	add_a_provider( $tcdevices ), $providers++ while read_a_line;
+	process_a_provider, $providers++ while read_a_line;
     }
 
     if ( $providers ) {
@@ -939,34 +993,8 @@ sub process_providers( $ ) {
 	}
     }
 
-    for my $provider ( @providers ) {
-	emit "\n#\n# Add ${provider}'s Routing Rules\n#\nadd_${provider}_routing_rules() {";
-	push_indent;
-	
-	if ( @{$providers{$provider}->{rules}} ) {
-	    emit $_ for @{$providers{$provider}->{rules}};
-	} else {
-	    emit 'true';
-	}
-	
-	pop_indent;
-	emit '}';
-    }
-
-    for  my $provider ( @providers ) {
-	emit "\n#\n# Add ${provider}'s Routes\n#\nadd_${provider}_routes() {";
-	push_indent;
-	
-	if ( @{$providers{$provider}->{rules}} ) {
-	    emit $_ for @{$providers{$provider}->{rules}};
-	} else {
-	    emit 'true';
-	}
-
-	pop_indent;
-	emit '}';
-    }
-
+    add_a_provider( $providers{$_}, $tcdevices ) for @providers;
+    
     emit << 'EOF';;
 
 #

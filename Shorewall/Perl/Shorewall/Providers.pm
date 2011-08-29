@@ -90,10 +90,10 @@ sub initialize( $ ) {
     $first_default_route  = 1;
     $first_fallback_route = 1;
 
-    %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 } ,
-		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 } ,
-		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 } ,
-		    unspec  => { number => UNSPEC_TABLE  , mark => 0 , optional => 0 } );
+    %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
+		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
+		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
+		    unspec  => { number => UNSPEC_TABLE  , mark => 0 , optional => 0 ,routes => [], rules => [] } );
     @providers = ();
 }
 
@@ -736,6 +736,7 @@ sub add_an_rtrule( ) {
 
     my $number = $providerref->{number};
 
+    fatal_error "You may not add rules for the $provider provider" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
     fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
 
     if ( $dest eq '-' ) {
@@ -778,7 +779,7 @@ sub add_an_rtrule( ) {
 
     push @{$providerref->{rules}}, "qt \$IP -$family rule del $source $dest $priority" if $config{DELETE_THEN_ADD};
     push @{$providerref->{rules}}, "run_ip rule add $source $dest $priority table $number";
-    push @{$providerref->{rules}},  "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_${provider}_routing";
+    push @{$providerref->{rules}}, "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_${provider}_routing";
 
     progress_message "   Routing rule \"$currentline\" $done";
 }
@@ -797,7 +798,6 @@ sub add_a_route( ) {
 	    for ( keys %providers ) {
 		if ( $providers{$_}{number} == $provider_number ) {
 		    $provider = $_;
-		    fatal_error "You may not add routes to the $provider table" if $provider_number == LOCAL_TABLE || $provider_number == UNSPEC_TABLE;
 		    $found = 1;
 		    last;
 		}
@@ -816,6 +816,8 @@ sub add_a_route( ) {
     my $physical = $device eq '-' ? $providers{$provider}{physical} : physical_name( $device );
     my $routes = $providerref->{routes};
 
+    fatal_error "You may not add routes to the $provider table" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
+    
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
 	    push @$routes, qq(run_ip route add $dest via $gateway dev $physical table $number);
@@ -874,6 +876,25 @@ sub start_providers() {
     emit 'DEFAULT_ROUTE=';
     emit 'FALLBACK_ROUTE=';
     emit '';
+    
+    emit '';
+    emit qq(> \${VARDIR}/undo_main_routing);
+    emit qq(echo ". \${VARDIR}/undo_main_routing" >> \${VARDIR}/undo_routing\n);
+    emit '';
+    emit $_ for @{$providers{main}{routes}};
+    emit '';
+    emit $_ for @{$providers{main}{rules}};
+
+    if ( @{$providers{default}{rules}} || @{$providers{default}{rules}} ) {
+	emit '';
+	emit qq(> \${VARDIR}/undo_default_routing);
+	emit qq(echo ". \${VARDIR}/undo_default_routing" >> \${VARDIR}/undo_routing\n);
+	emit '';
+	emit $_ for @{$providers{default}{routes}};
+	emit '';
+	emit $_ for @{$providers{default}{rules}};
+    }
+	
 }
 
 sub finish_providers() {
@@ -1079,7 +1100,9 @@ sub setup_providers() {
 	push_indent;
 
 	start_providers;
-		
+	
+	emit '';
+
 	emit "start_provider_$_" for @providers;
 
 	emit '';
@@ -1088,9 +1111,7 @@ sub setup_providers() {
 
 	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
-	#
-	# This completes the if-block begun in the first_entry closure above
-	#
+
 	pop_indent;
 	emit "fi\n";
 

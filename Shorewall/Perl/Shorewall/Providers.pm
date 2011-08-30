@@ -260,7 +260,6 @@ sub start_provider( $$$ ) {
 
     emit "qt ip -$family route flush table $number";
     emit "echo \"qt \$IP -$family route flush table $number\" > \${VARDIR}/undo_${table}_routing";
-    emit "echo \". \${VARDIR}/undo_${table}_routing\" >> \${VARDIR}/undo_routing";
 }
 
 #
@@ -319,6 +318,7 @@ sub process_a_provider() {
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
 	    if ( $option eq 'track' ) {
+		require_capability( 'MANGLE_ENABLED' , q(The 'track' option) , 's' );
 		$track = 1;
 	    } elsif ( $option eq 'notrack' ) {
 		$track = 0;
@@ -380,6 +380,8 @@ sub process_a_provider() {
     $mark = ( $lastmark += ( 1 << $config{PROVIDER_OFFSET} ) ) if $mark eq '-' && $track;
 
     if ( $mark ne '-' ) {
+
+	require_capability( 'MANGLE_ENABLED' , 'Provider marks' , '' );
 
 	$val = numeric_value $mark;
 
@@ -837,17 +839,16 @@ sub add_a_route( ) {
 
 sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
+    emit "> \${VARDIR}undo_rfc1918_routing\n";
     for ( rfc1918_networks ) {
 	emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
 	      qq(    run_ip route replace unreachable $_),
-	      qq(    echo "qt \$IP -4 route del unreachable $_" >> \${VARDIR}/undo_routing),
+	      qq(    echo "qt \$IP -4 route del unreachable $_" >> \${VARDIR}/undo_rfc1918_routing),
 	      qq(fi\n) );
     }
 }
 
 sub start_providers() {
-    require_capability( 'MANGLE_ENABLED' , 'a non-empty providers file' , 's' );
-
     emit  ( '#',
 	    '# Undo any changes made since the last time that we [re]started -- this will not restore the default route',
 	    '#',
@@ -865,11 +866,7 @@ sub start_providers() {
     emit  ( '#',
 	    '# Capture the default route(s) if we don\'t have it (them) already.',
 	    '#',
-	    "[ -f \${VARDIR}/default_route ] || \$IP -$family route list | save_default_route > \${VARDIR}/default_route",
-	    '#',
-	    '# Initialize the file that holds \'undo\' commands',
-	    '#',
-	    '> ${VARDIR}/undo_routing' );
+	    "[ -f \${VARDIR}/default_route ] || \$IP -$family route list | save_default_route > \${VARDIR}/default_route" );
 
     save_progress_message 'Adding Providers...';
 
@@ -877,24 +874,14 @@ sub start_providers() {
     emit 'FALLBACK_ROUTE=';
     emit '';
     
-    emit '';
-    emit qq(> \${VARDIR}/undo_main_routing);
-    emit qq(echo ". \${VARDIR}/undo_main_routing" >> \${VARDIR}/undo_routing\n);
-    emit '';
-    emit $_ for @{$providers{main}{routes}};
-    emit '';
-    emit $_ for @{$providers{main}{rules}};
-
-    if ( @{$providers{default}{rules}} || @{$providers{default}{rules}} ) {
+    for my $provider ( qw/main default/ ) {
 	emit '';
-	emit qq(> \${VARDIR}/undo_default_routing);
-	emit qq(echo ". \${VARDIR}/undo_default_routing" >> \${VARDIR}/undo_routing\n);
+	emit qq(> \${VARDIR}/undo_${provider}_routing );
 	emit '';
-	emit $_ for @{$providers{default}{routes}};
+	emit $_ for @{$providers{$provider}{routes}};
 	emit '';
-	emit $_ for @{$providers{default}{rules}};
+	emit $_ for @{$providers{$provider}{rules}};
     }
-	
 }
 
 sub finish_providers() {
@@ -904,8 +891,8 @@ sub finish_providers() {
 	if ( $config{USE_DEFAULT_RT} ) {
 	    emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE . ' pref 999',
 		   "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
-		   qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_routing',
-		   qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_routing',
+		   qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766" >> ${VARDIR}/undo_main_routing',
+		   qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE . ' pref 999" >> ${VARDIR}/undo_main_routing',
 		   '' );
 	    $table = DEFAULT_TABLE;
 	}
@@ -1125,10 +1112,6 @@ sub setup_providers() {
 	emit "restore_default_route $config{USE_DEFAULT_RT}";
 
 	if ( $config{NULL_ROUTE_RFC1918} ) {
-	    emit  ( '#',
-		    '# Initialize the file that holds \'undo\' commands',
-		    '#',
-		    '> ${VARDIR}/undo_routing' );
 	    setup_null_routing;
 	    emit "\nrun_ip route flush cache";
 	}

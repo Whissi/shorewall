@@ -1425,6 +1425,8 @@ sub process_tcpri() {
 #
 sub process_traffic_shaping() {
 
+    our $lastrule = '';
+
     my $fn = open_file 'tcdevices';
 
     if ( $fn ) {

@@ -1259,14 +1259,10 @@ sub process_tc_filter() {
 	progress_message "  IPv4 TC Filter \"$currentline\" $done";
 
 	$currentline =~ s/\s+/ /g;
-
-	save_progress_message_short qq('   IPv4 TC Filter \"$currentline\" defined.');
     } else {
 	progress_message "  IPv6 TC Filter \"$currentline\" $done";
 
 	$currentline =~ s/\s+/ /g;
-
-	save_progress_message_short qq('   IPv6 TC Filter \"$currentline\" defined.');
     }
 
     emit '';
@@ -1283,7 +1279,7 @@ sub process_tcfilters() {
     if ( $fn ) {
 	my @family = ( $family );
 	
-	first_entry( sub { progress_message2 "$doing $fn..."; save_progress_message q("Adding TC Filters"); } );
+	first_entry( "$doing $fn..." );
 	
 	while ( read_a_line ) {
 	    if ( $currentline =~ /^\s*IPV4\s*$/ ) {

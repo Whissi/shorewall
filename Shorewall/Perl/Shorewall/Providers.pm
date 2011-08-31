@@ -636,10 +636,10 @@ sub add_a_provider( $$ ) {
     emit "    setup_${dev}_tc" if $tcdevices->{$interface};
 
     emit ( qq(    progress_message2 "   Provider $table ($number) Started"),
-	  'else',
-	  qq(    progress_message "   Provider $table ($number) Started"),
-	  "fi\n"
-	);
+	   'else',
+	   qq(    progress_message "   Provider $table ($number) Started"),
+	   "fi\n"
+	 );
 
     pop_indent;
     emit 'else';

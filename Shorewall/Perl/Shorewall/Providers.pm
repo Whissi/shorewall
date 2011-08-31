@@ -513,7 +513,10 @@ sub add_a_provider( $$ ) {
 	    }
 	}
     }
-
+    
+    #
+    # /proc for this interface
+    #
     setup_interface_proc( $interface );
 
     if ( $mark ne '-' ) {
@@ -555,10 +558,10 @@ sub add_a_provider( $$ ) {
 	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $number $realm";
     }
 
-    balance_default_route $balance , $gateway, $physical, $realm if $balance;
+    balance_default_route( $balance , $gateway, $physical, $realm ) if $balance;
 
     if ( $default > 0 ) {
-	balance_fallback_route $default , $gateway, $physical, $realm;
+	balance_fallback_route( $default , $gateway, $physical, $realm );
     } elsif ( $default ) {
 	emit '';
 	if ( $gateway ) {
@@ -616,13 +619,13 @@ sub add_a_provider( $$ ) {
 	  'if [ $COMMAND = enable ]; then'
 	);
 
+    push_indent;
+
     my ( $tbl, $weight ); 
     
     if ( $balance || $default ) {
 	$tbl    = $default || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
 	$weight = $balance ? $balance : $default; 
-
-	push_indent;
 
 	if ( $gateway ) {
 	    emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
@@ -630,33 +633,40 @@ sub add_a_provider( $$ ) {
 	    emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
 	}
 
-	pop_indent;
     }
 
-    emit "    setup_${dev}_tc" if $tcdevices->{$interface};
+    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
 
-    emit ( qq(    progress_message2 "   Provider $table ($number) Started"),
-	   'else',
-	   qq(    progress_message "   Provider $table ($number) Started"),
-	   "fi\n"
-	 );
+    emit ( qq(progress_message2 "   Provider $table ($number) Started") );
 
     pop_indent;
+	  
+    emit( 'else',
+	  qq(    progress_message "   Provider $table ($number) Started"),
+	  "fi\n"
+	);
+
+    pop_indent;
+
     emit 'else';
+
+    push_indent;
 
     if ( $optional ) {
 	if ( $shared ) {
-	    emit ( "    error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Started\"" );	    
+	    emit ( "error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Started\"" );	    
 	} else {
-	    emit ( "    error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Started\"" );
+	    emit ( "error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Started\"" );
 	}
     } else {
 	if ( $shared ) {
-	    emit( "    fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Started\"" );
+	    emit( "fatal_error \"Gateway $gateway is not reachable -- Provider $table ($number) Cannot be Started\"" );
 	} else {
-	    emit( "    fatal_error \"Interface $physical is not usable -- Provider $table ($number) Cannot be Started\"" );
+	    emit( "fatal_error \"Interface $physical is not usable -- Provider $table ($number) Cannot be Started\"" );
 	}
     }
+
+    pop_indent;
 
     emit 'fi';
 

@@ -1507,6 +1507,7 @@ hits_command() {
 	$g_logread | grep  "${today}IN=.* OUT=" | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
 						t
 						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn | while read count address port; do
+	    [ -z "$port" ] && port=0
 	    printf '%7d %-15s %d\n' $count $address $port
 	done
 

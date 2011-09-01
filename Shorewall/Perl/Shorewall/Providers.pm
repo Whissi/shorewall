@@ -593,14 +593,14 @@ sub add_a_provider( $$ ) {
 	} else {
 	    my $rulebase = 20000 + ( 256 * ( $number - 1 ) );
 
-	    emit "\nrulenum=0\n";
+	    emit "\nrulenum=$rulebase\n";
 
 	    emit  ( "find_interface_addresses $physical | while read address; do" );
-	    emit  (	"    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
-	    emit  (	"    run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number",
-			"    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_${table}_routing",
-			'    rulenum=$(($rulenum + 1))',
-			'done'
+	    emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
+	    emit  ( "    run_ip rule add from \$address pref \$rulenum table $number",
+		    "    echo \"qt \$IP -$family rule del from \$address\" >> \${VARDIR}/undo_${table}_routing",
+		    '    rulenum=$(($rulenum + 1))',
+		    'done'
 		  );
 	}
     }

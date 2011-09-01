@@ -501,7 +501,10 @@ sub add_common_rules() {
     my $audit    = $policy =~ s/^A_//;
     my @ipsec    = have_ipsec ? ( policy => '--pol none --dir in' ) : ();
 
-    if ( $level || $audit || @ipsec ) {
+    if ( $level || $audit ) {
+	#
+	# Create a chain to log and/or audit
+	#
 	$chainref = new_standard_chain 'sfilter';
 
 	log_rule $level , $chainref , $policy , '' if $level ne '';
@@ -511,24 +514,32 @@ sub add_common_rules() {
 	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
 	
 	$target = 'sfilter';
-
-	if ( @ipsec ) {
-	    $chainref = new_standard_chain 'sfilter1';
-
-	    add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
-	    log_rule $level , $chainref , $policy , '' if $level ne '';
-	
-	    add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
-	
-	    add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
-	
-	    $target1 = 'sfilter1';
-	}
     } elsif ( ( $target = $policy ) eq 'REJECT' ) {
 	$target = 'reject';
     }
 
-    $target1 = $target unless $target1;
+    if ( @ipsec ) {
+	#
+	# sfilter1 will be used in the FORWARD chain where we allow traffic entering the interface
+	# to leave the interface encrypted. We need a separate chain because '--dir out' cannot be
+	# used in the input chain
+	#
+	$chainref = new_standard_chain 'sfilter1';
+
+	add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
+	log_rule $level , $chainref , $policy , '' if $level ne '';
+	
+	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
+	
+	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
+	
+	$target1 = 'sfilter1';
+    } else {
+	#
+	# No IPSEC -- use the same target in both INPUT and FORWARD
+	#
+	$target1 = $target;
+    }
 
     for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );

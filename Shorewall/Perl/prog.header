@@ -639,7 +639,7 @@ delete_gateway() # $! = Description of the Gateway $2 = table number
     local gateway
     local newroute
 
-    route=`$IP -4 -o route ls table $2 | grep ^default | sed 's/[\]//'`
+    route=`$IP -4 -o route ls table $2 | grep ^default | sed 's/[\]//g'`
     gateway=$1
   
     if [ -n "$route" ]; then

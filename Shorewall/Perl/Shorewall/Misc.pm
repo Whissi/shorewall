@@ -503,7 +503,7 @@ sub add_common_rules() {
 
     if ( $level || $audit ) {
 	#
-	# Create a chain to log and/or audit
+	# Create a chain to log and/or audit and apply the policy
 	#
 	$chainref = new_standard_chain 'sfilter';
 
@@ -514,8 +514,8 @@ sub add_common_rules() {
 	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
 	
 	$target = 'sfilter';
-    } elsif ( ( $target = $policy ) eq 'REJECT' ) {
-	$target = 'reject';
+    } else {
+	$target = $policy eq 'REJECT' ? 'reject' : $policy;
     }
 
     if ( @ipsec ) {

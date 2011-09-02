@@ -310,11 +310,11 @@ case "$COMMAND" in
 	status=0;
 	;;
     enable)
-	detect_configuration
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
+	    detect_configuration
 	    enable_provider $1
 	fi
 	status=0
@@ -324,6 +324,7 @@ case "$COMMAND" in
 	shift
 	[ $# -ne 1 ] && usage 2
 	if shorewall_is_started; then
+	    detect_configuration
 	    disable_provider $1
 	fi
 	status=0

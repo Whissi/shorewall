@@ -265,9 +265,9 @@ sub generate_script_2() {
 	push_indent;
 
 	if ( $global_variables & NOT_RESTORE ) {
-	    emit( 'start|restart|refresh|enable)' );
+	    emit( 'start|restart|refresh|disable|enable)' );
 	} else {
-	    emit( 'start|restart|refresh|enable|restore)' );
+	    emit( 'start|restart|refresh|disable|enable|restore)' );
 	}
 
 	push_indent;

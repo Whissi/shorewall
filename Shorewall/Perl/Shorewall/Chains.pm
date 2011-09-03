@@ -3138,7 +3138,7 @@ sub do_imac( $ ) {
 }
 
 #
-# Mark validatation functions
+# Mark validation functions
 #
 sub verify_mark( $ ) {
     my $mark  = $_[0];

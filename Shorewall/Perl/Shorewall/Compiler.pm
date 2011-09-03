@@ -615,7 +615,6 @@ sub compiler {
     # shorewall.conf has been processed and the capabilities have been determined.
     #
     initialize_chain_table(1);
-
     #
     # Allow user to load Perl modules
     #
@@ -697,7 +696,7 @@ sub compiler {
     if ( $scriptfilename || $debug ) {
 	emit 'return 0';
 	pop_indent;
-	emit '}';
+	emit '}'; # End of setup_common_rules()
     }
 
     disable_script;
@@ -735,7 +734,7 @@ sub compiler {
 
     if ( $scriptfilename || $debug ) {
 	pop_indent;
-	emit "}\n";
+	emit "}\n"; # End of setup_routing_and_traffic_shaping()
     }
 
     disable_script;

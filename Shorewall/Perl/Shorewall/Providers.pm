@@ -690,7 +690,7 @@ sub add_a_provider( $$ ) {
 	      "    > $undo" );
 
 	if ( $balance || $default ) {
-	    $tbl    = $fallback || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
+	    $tbl    = $fallback || ( $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE );
 	    $weight = $balance ? $balance : $default;
 
 	    my $via = 'via';

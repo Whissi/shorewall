@@ -225,7 +225,29 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulefile
     local suffix
 
-    if ! list_search $modulename $DONT_LOAD $MODULES; then
+    if [ -d /sys/module/ ]; then
+	if [ ! -d /sys/module/$modulename ]; then
+	    shift
+
+	    for suffix in $MODULE_SUFFIX ; do
+		for directory in $moduledirectories; do
+		    modulefile=$directory/${modulename}.${suffix}
+
+		    if [ -f $modulefile ]; then
+			case $moduleloader in
+			    insmod)
+				insmod $modulefile $*
+				;;
+			    *)
+				modprobe $modulename $*
+				;;
+			esac
+			break 2
+		    fi
+		done
+	    done
+	fi
+    elif ! list_search $modulename $DONT_LOAD $MODULES; then
 	shift
 
 	for suffix in $MODULE_SUFFIX ; do

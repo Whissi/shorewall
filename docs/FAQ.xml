@@ -2000,7 +2000,11 @@ Creating input Chains...
       <para>Beginning with Shorewall 4.4, when the Shorewall tarballs are
       installed on a Debian (or derivative) system, the
       <filename>/etc/init.d/shorewall</filename> file is the same as would be
-      installed by the .deb.</para>
+      installed by the .deb. The behavior of <command>/etc/init.d/shorewall
+      stop</command> is controlled by the setting of SAFESTOP in
+      <filename>/etc/default/shorewall</filename>. When set to 0 (the
+      default), the firewall is cleared; when set to 1, the firewall is placed
+      in a safe state.</para>
     </section>
 
     <section id="faq78">

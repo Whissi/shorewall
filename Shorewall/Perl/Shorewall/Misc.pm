@@ -554,9 +554,11 @@ sub add_common_rules() {
 	
 	    if ( @filters ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
+		$interfaceref->{options}{use_forward_chain} = 1;
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_dest_dev( $interface ), @ipsec ), $chainref->{filtered}++
 		    unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter} || $interfaceref->{physical} eq '+';
+		$interfaceref->{options}{use_forward_chain} = 1;
 	    }
 
 	    add_ijump( $chainref, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ), $chainref->{filtered}++ if $config{FASTACCEPT};
@@ -566,6 +568,7 @@ sub add_common_rules() {
 	
 	    if ( @filters ) {
 		add_ijump( $chainref , g => $target, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
+		$interfaceref->{options}{use_input_chain} = 1;
 	    }
 	
 	    add_ijump( $chainref, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ), $chainref->{filtered}++ if $config{FASTACCEPT};

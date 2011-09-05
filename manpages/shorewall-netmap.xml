@@ -62,9 +62,9 @@
           NET1 has its destination address rewritten to the corresponding
           address in NET2.</para>
 
-          <para>If SNAT:T, traffic leaving via INTERFACE with a source address
-          in NET1 has it's source address rewritten to the corresponding
-          address in NET2.</para>
+          <para>If SNAT:P, traffic entering via INTERFACE with a destination
+          address in NET1 has it's source address rewritten to the
+          corresponding address in NET2.</para>
 
           <para>If SNAT:O, traffic originating on the firewall and leaving via
           INTERFACE with a source address in NET1 has it's source address
@@ -116,6 +116,60 @@
           <para>Added in Shorewall 4.4.11. If specified, qualifies INTERFACE.
           It specifies a SOURCE network for DNAT rules and a DESTINATON
           network for SNAT rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO (Optional - Added in Shorewall
+        4.4.14)</emphasis> -
+        <emphasis>protocol-number-or-name</emphasis></term>
+
+        <listitem>
+          <para>Only packets specifying this protocol will have their IP
+          header modified.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.14)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Destination Ports. A comma-separated list of Port names (from
+          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
+          range</emphasis>s; if the protocol is <emphasis
+          role="bold">icmp</emphasis>, this column is interpreted as the
+          destination icmp-type(s). ICMP types may be specified as a numeric
+          type, a numberic type and code separated by a slash (e.g., 3/4), or
+          a typename. See <ulink
+          url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
+
+          <para>If the protocol is <emphasis role="bold">ipp2p</emphasis>,
+          this column is interpreted as an ipp2p option without the leading
+          "--" (example <emphasis role="bold">bit</emphasis> for bit-torrent).
+          If no PORT is given, <emphasis role="bold">ipp2p</emphasis> is
+          assumed.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          icmp (1), tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if
+          any of the following field is supplied.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.14)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Source port(s). If omitted, any source port is acceptable.
+          Specified as a comma-separated list of port names, port numbers or
+          port ranges.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
+          the following fields is supplied.</para>
         </listitem>
       </varlistentry>
     </variablelist>

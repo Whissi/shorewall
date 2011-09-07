@@ -625,7 +625,7 @@ sub add_a_provider( $$ ) {
     
     if ( $balance || $default ) {
 	$tbl    = $default || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
-	$weight = $balance ? $balance : $default; 
+	$weight = $balance ? $balance : $default;
 
 	if ( $gateway ) {
 	    emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
@@ -642,6 +642,7 @@ sub add_a_provider( $$ ) {
     pop_indent;
 	  
     emit( 'else',
+	  qq(    echo $weight > \${VARDIR}/${physical}_weight),
 	  qq(    progress_message "   Provider $table ($number) Started"),
 	  "fi\n"
 	);
@@ -700,7 +701,7 @@ sub add_a_provider( $$ ) {
 	    $via .= " weight $weight";
 	    $via .= " $realm"         if $realm;
 
-	    emit( qq(    delete_gateway "$via" ) . $tbl );
+	    emit( qq(    delete_gateway "$via" $tbl $physical) );
 	}
 	
 	emit( '', 

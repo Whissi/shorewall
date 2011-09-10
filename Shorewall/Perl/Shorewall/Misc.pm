@@ -557,7 +557,11 @@ sub add_common_rules() {
 		$interfaceref->{options}{use_forward_chain} = 1;
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_dest_dev( $interface ), @ipsec ), $chainref->{filtered}++
-		    unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter} || $interfaceref->{physical} eq '+';
+		    unless( $config{ROUTE_FILTER} eq 'on' ||
+			    $interfaceref->{options}{routeback} ||
+			    $interfaceref->{options}{routefilter} ||
+			    $interfaceref->{physical} eq '+' );
+
 		$interfaceref->{options}{use_forward_chain} = 1;
 	    }
 

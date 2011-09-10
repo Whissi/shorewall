@@ -3373,13 +3373,22 @@ sub export_params() {
 	#
 	# Don't export pairs from %ENV
 	#
-	if ( exists $ENV{$param} && defined $ENV{$param} ) {
+	if ( exists $ENV{$param} ) {
+	    next unless defined $ENV{$param};
 	    next if $value eq $ENV{$param};
+	    #
+	    # Don't export anything from %ENV that contains quotes. 
+	    # We don't know that $SHOREWALL_SHELL was used to
+	    # process the params file (may even be processed on a
+	    # different system) so we don't know $SHOREWALL_SHELL's
+	    # convention for escaping quotes 
+	    #
+	    next if $value =~ /[\n'"]/;	
 	}
 
 	emit "#\n# From the params file\n#" unless $count++;
 
-	if ( $value =~ /[\s()[]/ ) {
+	if ( $value =~ /[\s()[`]/ ) {
 	    emit "$param='$value'";
 	} else {
 	    emit "$param=$value";

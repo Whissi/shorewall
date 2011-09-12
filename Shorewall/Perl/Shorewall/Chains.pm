@@ -151,6 +151,7 @@ our %EXPORT_TAGS = (
 				       clearrule
 				       port_count
 				       do_proto
+				       do_iproto
 				       do_mac
 				       do_imac
 				       verify_mark
@@ -3123,6 +3124,181 @@ sub do_mac( $ ) {
     fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 
     "-m mac ${invert}--mac-source $mac ";
+}
+
+sub do_iproto( $$$ )
+{
+    my ($proto, $ports, $sports ) = @_;
+
+    my @output = ();
+
+    my $restricted = 1;
+
+    $proto  = '' if $proto  eq '-';
+    $ports  = '' if $ports  eq '-';
+    $sports = '' if $sports eq '-';
+
+    if ( $proto ne '' ) {
+
+	my $synonly  = ( $proto =~ s/:syn$//i );
+	my $invert   = ( $proto =~ s/^!// ? '! ' : '' );
+	my $protonum = resolve_proto $proto;
+
+	if ( defined $protonum ) {
+	    #
+	    # Protocol is numeric and <= 255 or is defined in /etc/protocols or NSS equivalent
+	    #
+	    fatal_error "'!0' not allowed in the PROTO column" if $invert && ! $protonum;
+
+	    my $pname = proto_name( $proto = $protonum );
+	    #
+	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol
+	    #
+	    unless ( $synonly ) {
+		@output = ( p => "${invert}${proto}" );
+	    } else {
+		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;
+		@output = ( p => "$proto --syn" );
+	    }
+
+	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO !$pname" if $invert && ($ports ne '' || $sports ne '');
+
+	  PROTO:
+	    {
+		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
+		    my $multiport = 0;
+
+		    if ( $ports ne '' ) {
+			$invert = $ports =~ s/^!// ? '! ' : '';
+			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
+			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
+			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
+
+			    if ( port_count ( $ports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
+			    $ports = validate_port_list $pname , $ports;
+			    push @output, multiport => "${invert}--dports ${ports}";
+			    $multiport = 1;
+			}  else {
+			    fatal_error "Missing DEST PORT" unless supplied $ports;
+			    $ports   = validate_portpair $pname , $ports;
+			    push @output, dport => "${invert}${ports}";
+			}
+		    } else {
+			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
+		    }
+
+		    if ( $sports ne '' ) {
+			$invert = $sports =~ s/^!// ? '! ' : '';
+			if ( $multiport ) {
+
+			    if ( port_count( $sports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
+			    $sports = validate_port_list $pname , $sports;
+			    push @output, multiport => "${invert}--sports ${sports}";
+			}  else {
+			    fatal_error "Missing SOURCE PORT" unless supplied $sports;
+			    $sports  = validate_portpair $pname , $sports;
+			    push @output, sport => "${invert}${sports}";
+			}
+		    }
+
+		    last PROTO;	}
+
+		if ( $proto == ICMP ) {
+		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
+		    if ( $ports ne '' ) {
+			$invert = $ports =~ s/^!// ? '! ' : '';
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    $types = '';
+			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
+				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp $ports;
+			}
+
+			push @output, 'icmp-type' => "${invert}${types}";
+		    }
+
+		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
+
+		    last PROTO; }
+
+		if ( $proto == IPv6_ICMP ) {
+		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
+		    if ( $ports ne '' ) {
+			$invert = $ports =~ s/^!// ? '! ' : '';
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    $types = '';
+			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
+				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp6 $ports;
+			}
+
+			push @output, 'icmpv6-type' => "${invert}${types}";
+		    }
+
+		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
+
+		    last PROTO; }
+
+
+		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname" if $ports ne '' || $sports ne '';
+
+	    } # PROTO
+
+	} else {
+	    fatal_error '":syn" is only allowed with tcp' if $synonly;
+
+	    if ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
+		my $p = $2 ? lc $3 : 'tcp';
+		require_capability( 'IPP2P_MATCH' , "PROTO = $proto" , 's' );
+		$proto = '-p ' . proto_name($p) . ' ';
+
+		my $options = '';
+
+		if ( $ports ne 'ipp2p' ) {
+		    $options .= " --$_" for split /,/, $ports;
+		}
+
+		$options = have_capability( 'OLD_IPP2P_MATCH' ) ? ' --ipp2p' : ' --edk --kazaa --gnu --dc' unless $options;
+
+		push @output, ipp2p => "${proto}${options}";
+	    } else {
+		fatal_error "Invalid/Unknown protocol ($proto)"
+	    }
+	}
+    } else {
+	#
+	# No protocol
+	#
+	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO" if $ports ne '' || $sports ne '';
+    }
+
+    @output;
 }
 
 sub do_imac( $ ) {

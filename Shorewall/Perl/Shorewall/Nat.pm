@@ -407,7 +407,7 @@ sub setup_netmap() {
 
 	while ( read_a_line ) {
 
-	    my ( $type, $net1, $interfacelist, $net2, $net3 ) = split_line 4, 5, 'netmap file';
+	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 4, 8, 'netmap file';
 
 	    validate_net $net1, 0;
 	    validate_net $net2, 0;
@@ -419,6 +419,8 @@ sub setup_netmap() {
 		my $iface = $interface;
 
 		fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
+
+		my @rule = do_iproto( $proto, $sport, $dport );
 
 		unless ( $type =~ /:/ ) {
 		    my @rulein;
@@ -465,6 +467,7 @@ sub setup_netmap() {
 				   targetopts => "--to-dest $net2",
 				   imatch_source_net( $net3 ) ,
 				   imatch_dest_net( $net1 ) ,
+				   @rule ,
 				   @match );
 		    } else {
 			add_ijump( ensure_chain( $table, $chain ) ,
@@ -472,6 +475,7 @@ sub setup_netmap() {
 				   targetopts => "--to-source $net2",
 				   imatch_dest_net( $net3 ) ,
 				   imatch_source_net( $net1 ) ,
+				   @rule ,
 				   @match );
 		    }
 		} else {

@@ -633,6 +633,8 @@ sub add_a_provider( $$ ) {
 	    emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
 	}
 
+    } else {
+	$weight = 1;
     }
 
     emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
@@ -641,9 +643,15 @@ sub add_a_provider( $$ ) {
 
     pop_indent;
 	  
-    emit( 'else',
-	  qq(    echo $weight > \${VARDIR}/${physical}_weight),
-	  qq(    progress_message "   Provider $table ($number) Started"),
+    emit( 'else' );
+
+    if ( $optional ) {
+	emit "    echo $weight > \${VARDIR}/${physical}_weight";
+    } else {
+	emit "    rm -f \${VARDIR}/${physical}_weight";
+    }
+
+    emit( "    progress_message "   Provider $table ($number) Started"",
 	  "fi\n"
 	);
 

@@ -615,46 +615,44 @@ sub add_a_provider( $$ ) {
 	emit $_ for @{$providers{$table}->{routes}};
     }
 
-    emit( '',
-	  'if [ $COMMAND = enable ]; then'
-	);
+    emit( '' );
 
-    push_indent;
-
-    my ( $tbl, $weight ); 
-    
-    if ( $balance || $default ) {
-	$tbl    = $default || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
-	$weight = $balance ? $balance : $default;
-
-	if ( $gateway ) {
-	    emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
-	} else {
-	    emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
-	}
-
-    } else {
-	$weight = 1;
-    }
-
-    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
-
-    emit ( qq(progress_message2 "   Provider $table ($number) Started") );
-
-    pop_indent;
-	  
-    emit( 'else' );
+    my ( $tbl, $weight );
 
     if ( $optional ) {
-	emit "    echo $weight > \${VARDIR}/${physical}_weight";
+	emit( 'if [ $COMMAND = enable ]; then' );
+
+	push_indent;
+
+	if ( $balance || $default ) {
+	    $tbl    = $default || $config{USE_DEFAULT_RT} ? DEFAULT_TABLE : MAIN_TABLE;
+	    $weight = $balance ? $balance : $default;
+
+	    if ( $gateway ) {
+		emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
+	    } else {
+		emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
+	    }
+
+	} else {
+	    $weight = 1;
+	}
+
+	emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
+
+	emit ( qq(progress_message2 "   Provider $table ($number) Started") );
+
+	pop_indent;
+ 
+	emit( 'else' ,
+	      qq(    echo $weight > \${VARDIR}/${physical}_weight) ,
+	      qq(    progress_message "   Provider $table ($number) Started"),
+	      qq(fi\n)
+	    );
     } else {
-	emit "    rm -f \${VARDIR}/${physical}_weight";
+	emit( qq(progress_message "Provider $table ($number) Started") );
     }
-
-    emit( "    progress_message "   Provider $table ($number) Started"",
-	  "fi\n"
-	);
-
+    
     pop_indent;
 
     emit 'else';

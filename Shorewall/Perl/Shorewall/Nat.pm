@@ -403,7 +403,7 @@ sub setup_netmap() {
 
     if ( my $fn = open_file 'netmap' ) {
 
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty netmap file' , 's'; } );
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
 
@@ -431,6 +431,8 @@ sub setup_netmap() {
 			@ruleout = imatch_dest_dev( $interface );
 			$interface = $interfaceref->{name};
 		    }
+
+		    require_capability 'NAT_ENABLED', 'Stateful NAT Entries', '';
 
 		    if ( $type eq 'DNAT' ) {
 			add_ijump ensure_chain( 'nat' , input_chain $interface ) ,  j => "NETMAP --to $net2", @rulein  , imatch_source_net( $net3 ), d => $net1;

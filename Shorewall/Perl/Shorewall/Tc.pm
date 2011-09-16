@@ -1456,17 +1456,17 @@ sub process_traffic_shaping() {
 
 	$device = physical_name $device;
 
-	my $dev = chain_base( $device );
-
-	emit( '',
-	      '#',
-	      "# Configure Traffic Shaping for $device",
-	      '#',
-	      "setup_${dev}_tc() {" );
-
-	push_indent;
-
 	unless ( $config{TC_ENABLED} eq 'Shared' ) {
+
+	    my $dev = chain_base( $device );
+
+	    emit( '',
+		  '#',
+		  "# Configure Traffic Shaping for $device",
+		  '#',
+		  "setup_${dev}_tc() {" );
+
+	    push_indent;
 
 	    emit "if interface_is_up $device; then";
 
@@ -1589,25 +1589,25 @@ sub process_traffic_shaping() {
 		emit '';
 
 	    }
-	}
 
-	emit '';
+	    emit '';
 
-	emit "$_" for @{$devref->{filters}};
+	    emit "$_" for @{$devref->{filters}};
 	
-	save_progress_message_short qq("   TC Device $device defined.");
+	    save_progress_message_short qq("   TC Device $device defined.");
 
-	pop_indent;
-	emit 'else';
-	push_indent;
+	    pop_indent;
+	    emit 'else';
+	    push_indent;
 
-	emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
-	emit "${dev}_exists=";
-	pop_indent;
-	emit "fi\n";
+	    emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
+	    emit "${dev}_exists=";
+	    pop_indent;
+	    emit "fi\n";
 
-	pop_indent;
-	emit "}\n";
+	    pop_indent;
+	    emit "}\n";
+	}
     }
 }
 
@@ -1625,7 +1625,9 @@ sub process_tc() {
     # it can call the appropriate 'setup_x_tc" function when the device is
     # enabled.
 
-    \%tcdevices;
+    my %empty;
+    
+    $config{TC_ENABLED} eq 'Shared' ? \%empty : \%tcdevices;
 }
 
 #
@@ -1640,7 +1642,6 @@ sub setup_traffic_shaping() {
 
 	emit "setup_${dev}_tc";
     }
-
 }
 
 #
@@ -1756,7 +1757,7 @@ sub setup_tc() {
 	append_file $globals{TC_SCRIPT};
     } else {
 	process_tcpri if $config{TC_ENABLED} eq 'Simple';
-	setup_traffic_shaping;
+	setup_traffic_shaping unless $config{TC_ENABLED} eq 'Shared';
     }
 
     if ( $config{TC_ENABLED} ) {

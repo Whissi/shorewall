@@ -409,9 +409,6 @@ sub setup_netmap() {
 
 	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 4, 8, 'netmap file';
 
-	    validate_net $net1, 0;
-	    validate_net $net2, 0;
-
 	    $net3 = ALLIP if $net3 eq '-';
 
 	    for my $interface ( split_list $interfacelist, 'interface' ) {
@@ -426,6 +423,9 @@ sub setup_netmap() {
 		    my @rulein;
 		    my @ruleout;
 		    
+		    validate_net $net1, 0;
+		    validate_net $net2, 0;
+
 		    unless ( $interfaceref->{root} ) {
 			@rulein  = imatch_source_dev( $interface );
 			@ruleout = imatch_dest_dev( $interface );
@@ -444,7 +444,8 @@ sub setup_netmap() {
 		} elsif ( $type =~ /^(DNAT|SNAT):([POT])$/ ) {
 		    my ( $target , $chain ) = ( $1, $2 );
 		    my $table = 'raw';
-		    my @match = ();
+		    my @match;
+		    my @net4;
 
 		    require_capability 'RAWPOST_TABLE', 'Stateless NAT Entries', '';
 
@@ -462,23 +463,74 @@ sub setup_netmap() {
 			$chain = postrouting_chain $interface;
 			$table = 'rawpost';
 		    }
+
+		    my $chainref = ensure_chain( $table, $chain );
+
+		    if ( $net1 =~ /^([^!]+)!([^!]+)$/ ) {
+			$net1 = $1;
+			@net4 = split_list1( $2 , 'exclusion' );
+		    }
 		    
-		    if ( $target eq 'DNAT' ) { 
-			add_ijump( ensure_chain( $table, $chain ) ,
-				   j          => 'RAWDNAT',
-				   targetopts => "--to-dest $net2",
-				   imatch_source_net( $net3 ) ,
-				   imatch_dest_net( $net1 ) ,
-				   @rule ,
-				   @match );
+		    if ( $target eq 'DNAT' ) {
+			if ( @net4 ) {
+			    my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+
+			    add_ijump( $chainref1,
+				       j => 'RETURN',
+				       imatch_dest_net( $_ )
+				     ) for @net4;
+
+			    add_ijump( $chainref1,
+				       j          => 'RAWDNAT',
+				       targetopts => "--to-dest $net2"
+				     );
+
+			    add_ijump( $chainref,
+				       j => $chainref1,
+				       imatch_source_net( $net3 ) ,
+				       imatch_dest_net( $net1 ) ,
+				       @rule ,
+				       @match
+				     );
+			} else {
+			    add_ijump( $chainref ,
+				       j          => 'RAWDNAT',
+				       targetopts => "--to-dest $net2",
+				       imatch_source_net( $net3 ) ,
+				       imatch_dest_net( $net1 ) ,
+				       @rule ,
+				       @match );
+			}
 		    } else {
-			add_ijump( ensure_chain( $table, $chain ) ,
-				   j          => 'RAWSNAT',
-				   targetopts => "--to-source $net2",
-				   imatch_dest_net( $net3 ) ,
-				   imatch_source_net( $net1 ) ,
-				   @rule ,
-				   @match );
+			if ( @net4 ) {
+			    my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+
+			    add_ijump( $chainref1,
+				       j => 'RETURN',
+				       imatch_dest_net( $_ )
+				     ) for @net4;
+
+			    add_ijump( $chainref1,
+				       j          => 'RAWSNAT',
+				       targetopts => "--to-source $net2"
+				     );
+
+			    add_ijump( $chainref,
+				       j => $chainref1,
+				       imatch_dest_net( $net3 ) ,
+				       imatch_source_net( $net1 ) ,
+				       @rule ,
+				       @match
+				     );
+			} else {
+			    add_ijump( $chainref ,
+				       j          => 'RAWSNAT',
+				       targetopts => "--to-source $net2",
+				       imatch_dest_net( $net3 ) ,
+				       imatch_source_net( $net1 ) ,
+				       @rule ,
+				       @match );
+			}
 		    }
 		} else {
 		    fatal_error "Invalid type ($type)";

@@ -757,12 +757,12 @@ sub compiler {
 	# Setup Nat
 	#
 	setup_nat;
-	#
-	# Setup NETMAP
-	#
-	setup_netmap;
     }
 
+    #
+    # Setup NETMAP
+    #
+    setup_netmap;
     #
     # MACLIST Filtration
     #

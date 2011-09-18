@@ -22,6 +22,8 @@
 
       <year>2007</year>
 
+      <year>2011</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -113,8 +115,10 @@
         <term>NET1</term>
 
         <listitem>
-          <para>Must be expressed in CIDR format (e.g.,
-          192.168.1.0/24).</para>
+          <para>Must be expressed in CIDR format (e.g., 192.168.1.0/24).
+          Beginning with Shorewall 4.4.24, <ulink
+          url="manpages/shorewall-exclusion.html">exclusion</ulink> is
+          supported.</para>
         </listitem>
       </varlistentry>
 
@@ -133,6 +137,71 @@
 
         <listitem>
           <para>A second network expressed in CIDR format.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">NET3 (Optional)</emphasis> -
+        <emphasis>network-address</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.11. If specified, qualifies INTERFACE.
+          It specifies a SOURCE network for DNAT rules and a DESTINATON
+          network for SNAT rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO (Optional - Added in Shorewall
+        4.4.23.2)</emphasis> -
+        <emphasis>protocol-number-or-name</emphasis></term>
+
+        <listitem>
+          <para>Only packets specifying this protocol will have their IP
+          header modified.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.23.2)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Destination Ports. A comma-separated list of Port names (from
+          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
+          range</emphasis>s; if the protocol is <emphasis
+          role="bold">icmp</emphasis>, this column is interpreted as the
+          destination icmp-type(s). ICMP types may be specified as a numeric
+          type, a numberic type and code separated by a slash (e.g., 3/4), or
+          a typename. See <ulink
+          url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
+
+          <para>If the protocol is <emphasis role="bold">ipp2p</emphasis>,
+          this column is interpreted as an ipp2p option without the leading
+          "--" (example <emphasis role="bold">bit</emphasis> for bit-torrent).
+          If no PORT is given, <emphasis role="bold">ipp2p</emphasis> is
+          assumed.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          icmp (1), tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if
+          any of the following field is supplied.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.23.2)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Source port(s). If omitted, any source port is acceptable.
+          Specified as a comma-separated list of port names, port numbers or
+          port ranges.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
+          the following fields is supplied.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -167,7 +236,7 @@
         </itemizedlist>
       </important></para>
 
-    <section id="Solution">
+    <section>
       <title>If you are running Shorewall 4.4.22 or Earlier</title>
 
       <para>The entries in
@@ -316,6 +385,64 @@ DNAT:T 10.10.10.0/24  vpn              192.168.1.0/24</emphasis></programlisting
       <ulink url="manpages/shorewall-netlink.html">shorewall-netmap</ulink>
       (5) for details.</para>
     </section>
+  </section>
+
+  <section>
+    <title>IPv6</title>
+
+    <para>Beginning with Shorewall6 4.4.24, IPv6 support for Netmap is
+    included. This provides a way to use site local IPv6 addresses internally
+    and still have access to the IPv6 internet.</para>
+
+    <warning>
+      <para>IPv6 netmap is <firstterm>stateless</firstterm> which means that
+      there are no helpers for applications that need them. As a consequence,
+      applications that require a Netfilter helper (FTP, IRC, etc.) may
+      experience issues.</para>
+    </warning>
+
+    <para>To use IPv6 Netmap, your kernel and iptables must include
+    <emphasis>Rawpost Table Support</emphasis>.</para>
+
+    <para>IPv6 Netmap has been verified at shorewall.net using the
+    configuration shown below.</para>
+
+    <graphic align="center" fileref="images/Network2011b.png" />
+
+    <para>IPv6 support is supplied from Hurricane Electric; the IPv6 address
+    block is 2001:470:b:227::/64.</para>
+
+    <para>Because of the limitations of IPv6 NETMAP, The servers in the DMZ
+    have public addresses in the block 2001:470:b:227::/112. The local LAN
+    uses the private network fec0:470:b:227::/64 with the hosts autoconfigured
+    using radvd.</para>
+
+    <para>The /etc/shorewall6/netmap file is as follows:</para>
+
+    <programlisting>#TYPE	NET1			INTERFACE	NET2		NET3		PROTO	DEST	SOURCE
+#												PORT(S)	PORT(S)
+SNAT:T	fec0:470:b:227::/64	HE_IF		2001:470:b:227::/64
+DNAT:P  2001:470:b:227::/64!2001:470:b:227::/112\
+				HE_IF		fec0:470:b:227::/64
+</programlisting>
+
+    <para>HE_IF is the logical name for interface sit1. On output, the private
+    address block is mapped to the public block. Because autoconfiguration is
+    used, none of the local addresses falls into the range
+    fec0:470:b:227::/112. That range can therefore be excluded from
+    DNAT.</para>
+
+    <note>
+      <para>While the site local network that was used is very similar to the
+      public network (only the first word is different), that isn't a
+      requirement. We could have just as well used
+      fec0:bad:dead:beef::/64</para>
+    </note>
+
+    <note>
+      <para>The MacBook Pro running OS X Lion refused to autoconfigure a
+      site-local address.</para>
+    </note>
   </section>
 
   <section id="Notes">

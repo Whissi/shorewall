@@ -147,7 +147,9 @@ our %EXPORT_TAGS = (
 				       newexclusionchain
 				       newnonatchain
 				       source_exclusion
+				       source_iexclusion
 				       dest_exclusion
+				       dest_iexclusion
 				       clearrule
 				       port_count
 				       do_proto
@@ -2898,6 +2900,42 @@ sub source_exclusion( $$ ) {
     reftype $target ? $chainref : $chainref->{name};
 }
 
+sub source_iexclusion( $$$$$;@ ) {
+    my $chainref   = shift;
+    my $jump       = shift;
+    my $target     = shift;
+    my $targetopts = shift;
+    my $source     = shift;
+    my $table      = $chainref->{table};
+
+    my @exclusion;
+
+    if ( $source =~ /^([^!]+)!([^!]+)$/ ) {
+	$source = $1;
+	@exclusion = mysplit( $2 );
+
+	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	
+	add_ijump( $chainref1 , j => 'RETURN', imatch_source_net( $_ ) ) for @exclusion;
+	
+	if ( $targetopts ) {
+	    add_ijump( $chainref1, $jump => $target, targetopts => $targetopts );
+	} else {
+	    add_ijump( $chainref1, $jump => $target );
+	}
+
+	add_ijump( $chainref , j => $chainref1, imatch_source_net( $source ),  @_ );
+    } elsif ( $targetopts ) {
+	add_ijump( $chainref,
+		   $jump      => $target,
+		   targetopts => $targetopts,
+		   imatch_source_net( $source ), 
+		   @_ );
+    } else {
+	add_ijump( $chainref, $jump => $target, imatch_source_net( $source ), @_ );
+    }
+}
+
 sub dest_exclusion( $$ ) {
     my ( $exclusions, $target ) = @_;
 
@@ -2911,6 +2949,38 @@ sub dest_exclusion( $$ ) {
     add_ijump( $chainref, g => $target );
 
     reftype $target ? $chainref : $chainref->{name};
+}
+
+sub dest_iexclusion( $$$$$;@ ) {
+    my $chainref   = shift;
+    my $jump       = shift;
+    my $target     = shift;
+    my $targetopts = shift;
+    my $dest       = shift;
+    my $table      = $chainref->{table};
+
+    my @exclusion;
+
+    if ( $dest =~ /^([^!]+)!([^!]+)$/ ) {
+	$dest = $1;
+	@exclusion = mysplit( $2 );
+
+	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	
+	add_ijump( $chainref1 , j => 'RETURN', imatch_dest_net( $_ ) ) for @exclusion;
+	
+	if ( $targetopts ) {
+	    add_ijump( $chainref1, $jump => $target, targetopts => $targetopts, @_ );
+	} else {
+	    add_ijump( $chainref1, $jump => $target, @_ );
+	}
+
+	add_ijump( $chainref , j => $chainref1, imatch_dest_net( $dest ), @_ );
+    } elsif ( $targetopts ) {
+	add_ijump( $chainref, $jump => $target, imatch_dest_net( $dest ), targetopts => $targetopts , @_ );
+    } else {
+	add_ijump( $chainref, $jump => $target, imatch_dest_net( $dest ), @_ );
+    }
 }
 
 sub clearrule() {

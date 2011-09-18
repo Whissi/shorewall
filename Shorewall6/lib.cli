@@ -575,6 +575,13 @@ show_command() {
 	    show_reset
 	    $IP6TABLES -t raw -L $g_ipt_options
 	    ;;
+	rawpost)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION rawpost Table at $g_hostname - $(date)"
+	    echo
+	    show_reset
+	    $IP6TABLES -t rawpost -L $g_ipt_options
+	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
 

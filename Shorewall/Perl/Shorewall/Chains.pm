@@ -3112,6 +3112,7 @@ sub do_proto( $$$;$ )
 
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
 			    $types = '';
 			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
@@ -3136,6 +3137,7 @@ sub do_proto( $$$;$ )
 
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
 			    $types = '';
 			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
@@ -3300,6 +3302,7 @@ sub do_iproto( $$$ )
 
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
 			    $types = '';
 			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
@@ -3324,8 +3327,9 @@ sub do_iproto( $$$ )
 
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
 			    $types = '';
-			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
+			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
 			    }
 			} else {

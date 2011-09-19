@@ -481,6 +481,7 @@ sub setup_netmap() {
 					 j => 'RAWDNAT' ,
 					 "--to-dest $net2" ,
 					 $net1 ,
+					 imatch_source_net( $net3 ) ,
 					 @rule ,
 					 @match
 				       );

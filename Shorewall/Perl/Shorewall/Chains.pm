@@ -446,31 +446,33 @@ use constant { UNIQUE      => 1,
 	       MATCH       => 8,
 	       CONTROL     => 16 };
 
-my %opttype = ( rule       => CONTROL,
-		cmd        => CONTROL,
+my %opttype = ( rule          => CONTROL,
+		cmd           => CONTROL,
 
-		dhcp       => UNIQUE,
+		dhcp          => UNIQUE,
 		
-	        mode       => CONTROL,
-		cmdlevel   => CONTROL,
-		simple     => CONTROL,
+	        mode          => CONTROL,
+		cmdlevel      => CONTROL,
+		simple        => CONTROL,
 
-	        i          => UNIQUE,
-		s          => UNIQUE,
-		o          => UNIQUE,
-		d          => UNIQUE,
-		p          => UNIQUE,
-		dport      => UNIQUE,
-		sport      => UNIQUE,
+	        i             => UNIQUE,
+		s             => UNIQUE,
+		o             => UNIQUE,
+		d             => UNIQUE,
+		p             => UNIQUE,
+		dport         => UNIQUE,
+		sport         => UNIQUE,
+		'icmp-type'   => UNIQUE,
+		'icmpv6-type' => UNIQUE,
 		
-		comment    => CONTROL,
+		comment       => CONTROL,
 
-		policy     => MATCH,
-		state      => EXCLUSIVE,
+		policy        => MATCH,
+		state         => EXCLUSIVE,
 		
-		jump       => TARGET,
-		target     => TARGET,
-		targetopts => TARGET,
+		jump          => TARGET,
+		target        => TARGET,
+		targetopts    => TARGET,
 	      );
 
 my %aliases = ( protocol        => 'p',
@@ -482,9 +484,11 @@ my %aliases = ( protocol        => 'p',
 		'out-interface' => 'o',
 		dport           => 'dport',
 		sport           => 'sport',
+		'icmp-type'     => 'icmp-type',
+		'icmpv6-type'   => 'icmpv6-type',
 	      );
 
-my @unique_options = ( qw/p dport sport s d i o/ );
+my @unique_options = ( qw/p dport sport icmp-type icmpv6-type s d i o/ );
 	     
 #
 # Rather than initializing globals in an INIT block or during declaration,

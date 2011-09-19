@@ -417,7 +417,7 @@ sub setup_netmap() {
 
 		fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
-		my @rule = do_iproto( $proto, $sport, $dport );
+		my @rule = do_iproto( $proto, $dport, $sport );
 
 		unless ( $type =~ /:/ ) {
 		    my @rulein;

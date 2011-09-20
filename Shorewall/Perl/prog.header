@@ -112,6 +112,17 @@ find_device() {
 }
 
 #
+# Find the value 'weight' in the passed arguments then echo the next value
+#
+
+find_weight() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xweight ] && echo $2 && return
+	shift
+    done
+}
+
+#
 # Find the value 'via' in the passed arguments then echo the next value
 #
 
@@ -481,6 +492,8 @@ get_device_mtu1() # $1 = device
 # Undo changes to routing
 #
 undo_routing() {
+    local undofiles
+    local f
 
     if [ -z "$g_noroutes"  ]; then
 	#
@@ -493,10 +506,16 @@ undo_routing() {
 	#
 	# Restore the rest of the routing table
 	#
-	if [ -f ${VARDIR}/undo_routing ]; then
-	    . ${VARDIR}/undo_routing
-	    progress_message "Shorewall-generated routing tables and routing rules removed"
-	    rm -f ${VARDIR}/undo_routing
+	undofiles="$(ls ${VARDIR}/undo_*routing 2> /dev/null)"
+
+	if [ -n "$undofiles" ]; then
+	    for f in $undofiles; do
+		. $f
+	    done
+
+	    rm -f $undofiles
+
+            progress_message "Shorewall-generated routing tables and routing rules removed"
 	fi
     fi
 
@@ -579,6 +598,60 @@ restore_default_route() # $1 = USE_DEFAULT_RT
     fi
 
     return $result
+}
+
+#
+# Add an additional gateway to the default route
+#
+add_gateway() # $1 = Delta $2 = Table Number
+{
+    local route
+    local weight
+    local delta
+    local dev
+    
+    route=`$IP -4 -o route ls table $2 | grep ^default | sed 's/default //; s/[\]//g'`
+
+    if [ -z "$route" ]; then
+	run_ip route add default scope global table $2 $1
+    else
+	delta=$1
+
+	if ! echo $route | fgrep -q ' nexthop '; then
+	    route=`echo $route | sed 's/via/nexthop via/'`
+	    dev=$(find_device $route)
+	    if [ -f ${VARDIR}/${dev}_weight ]; then
+		weight=`cat ${VARDIR}/${dev}_weight`
+		route="$route weight $weight"
+	    fi
+	fi
+
+	run_ip route replace default scope global table $2 $route $delta
+    fi
+}
+
+#
+# Remove a gateway from the default route
+#
+delete_gateway() # $! = Description of the Gateway $2 = table number $3 = device
+{
+    local route
+    local gateway
+    local dev
+
+    route=`$IP -4 -o route ls table $2 | grep ^default | sed 's/[\]//g'`
+    gateway=$1
+  
+    if [ -n "$route" ]; then
+	if echo $route | fgrep -q ' nexthop '; then
+	    gateway="nexthop $gateway"
+	    eval route=\`echo $route \| sed \'s/$gateway/ /\'\`
+	    run_ip route replace table $2 $route
+	else
+	    dev=$(find_device $route)
+	    [ "$dev" = "$3" ] && run_ip route delete default table $2
+	fi
+    fi
 }
 
 #
@@ -803,12 +876,16 @@ debug_restore_input() {
 	qt1 $IPTABLES -t mangle -P $chain ACCEPT
     done
 
-    qt1 $IPTABLES -t raw    -F
-    qt1 $IPTABLES -t raw    -X
+    qt1 $IPTABLES -t raw     -F
+    qt1 $IPTABLES -t raw     -X
+    qt1 $IPTABLES -t rawpost -F
+    qt1 $IPTABLES -t rawpost -X
 
     for chain in PREROUTING OUTPUT; do
 	qt1 $IPTABLES -t raw -P $chain ACCEPT
     done
+
+    qt1 $iptables -T rawpost -P POSTROUTING ACCEPT
 
     run_iptables -t nat -F
     run_iptables -t nat -X
@@ -858,6 +935,9 @@ debug_restore_input() {
 	    #
 	    '*'raw)
 		table=raw
+		;;
+	    '*'rawpost)
+		table=rawpost
 		;;
 	    '*'mangle)
 		table=mangle

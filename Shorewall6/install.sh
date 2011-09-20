@@ -107,7 +107,6 @@ if [ -z "$INIT" ] ; then
 fi
 
 ANNOTATED=
-DEBIAN=
 CYGWIN=
 MAC=
 MACHOST=
@@ -242,6 +241,9 @@ else
 	    echo "Installing Debian-specific configuration..."
 	    DEBIAN=yes
 	    SPARSE=yes
+        elif [ -f /etc/redhat-release ]; then
+	    echo "Installing Redhat/Fedora-specific configuration..."
+	    FEDORA=yes
 	elif [ -f /etc/slackware-version ] ; then
 	    echo "Installing Slackware-specific configuration..."
 	    DEST="/etc/rc.d"
@@ -254,6 +256,14 @@ else
 	    ARCHLINUX=yes
 	fi
     fi
+fi
+
+if [ -z "$DESTDIR" ]; then
+    if [ -f /lib/systemd/system ]; then
+	SYSTEMD=Yes
+    fi
+elif [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
 #
@@ -295,6 +305,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh /etc/init.d/shorewall6 0544 ${DESTDIR}/usr/share/shorewall6-${VERSION}.bkout
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh /etc/init.d/shorewall6 0544 ${DESTDIR}/usr/share/shorewall6-${VERSION}.bkout
 elif [ -n "$SLACKWARE" ]; then
     install_file init.slackware.shorewall6.sh ${DESTDIR}${DEST}/rc.shorewall6 0544 ${DESTDIR}/usr/share/shorewall6-${VERSION}.bkout
 elif [ -n "$ARCHLINUX" ]; then
@@ -321,6 +333,14 @@ chmod 755 ${DESTDIR}/usr/share/shorewall6/configfiles
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
+fi
+
+#
+# Install the .service file
+#
+if [ -n "$SYSTEMD" ]; then
+    run_install $OWNERSHIP -m 600 shorewall6.service ${DESTDIR}/lib/systemd/system/shorewall6.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall6.service"
 fi
 
 delete_file ${DESTDIR}/usr/share/shorewall6/compiler
@@ -874,7 +894,11 @@ if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
 	touch /var/log/shorewall6-init.log
 	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/shorewall6/shorewall6.conf
     else
-	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	if [ -n "$SYSTEMD" ]; then
+	    if systemctl enable shorewall6; then
+		echo "Shorewall6 will start automatically at boot"
+	    fi
+	elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewall6 ; then
 		echo "shorewall6 will start automatically at boot"
 		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall6/shorewall6.conf to enable"

@@ -1726,7 +1726,7 @@ defaults {
   min_successive_pkts_rcvd=10
   interval_ms=2000
   timeout_ms=2000
-  warn_email=teastep@shorewall.net
+  warn_email=you@yourdomain.com
   check_arp=0
   sourceip=
   ttl=0
@@ -1803,7 +1803,81 @@ echo $state &gt; ${VARDIR}/${DEVICE}.status
 
 exit 0
 
-#EOF</programlisting>:</para>
+#EOF</programlisting>Beginning with Shorewall 4.4.23, it is not necessary to
+        restart the firewall when an interface transitions between the usable
+        and unusable
+        states.<filename>/etc/lsm/script</filename><programlisting>#!/bin/sh
+#
+# (C) 2009 Mika Ilmaranta &lt;ilmis@nullnet.fi&gt;
+# (C) 2009 Tom Eastep &lt;teastep@shorewall.net&gt;
+#
+# License: GPLv2
+#
+
+STATE=${1}
+NAME=${2}
+CHECKIP=${3}
+DEVICE=${4}
+WARN_EMAIL=${5}
+REPLIED=${6}
+WAITING=${7}
+TIMEOUT=${8}
+REPLY_LATE=${9}
+CONS_RCVD=${10}
+CONS_WAIT=${11}
+CONS_MISS=${12}
+AVG_RTT=${13}
+
+if [ -f /usr/share/shorewall-lite/lib.base ]; then
+    VARDIR=/var/lib/shorewall-lite
+    STATEDIR=/etc/shorewall-lite
+else
+    VARDIR=/var/lib/shorewall
+    STATEDIR=/etc/shorewall
+fi
+
+[ -f ${STATEDIR}/vardir ] &amp;&amp; . ${STATEDIR}/vardir
+
+cat &lt;&lt;EOM | mail -s "${NAME} ${STATE}, DEV ${DEVICE}" ${WARN_EMAIL}
+
+Hi,
+
+Connection ${NAME} is now ${STATE}.
+
+Following parameters were passed:
+newstate     = ${STATE}
+name         = ${NAME}
+checkip      = ${CHECKIP}
+device       = ${DEVICE}
+warn_email   = ${WARN_EMAIL}
+
+Packet counters:
+replied      = ${REPLIED} packets replied
+waiting      = ${WAITING} packets waiting for reply
+timeout      = ${TIMEOUT} packets that have timed out (= packet loss)
+reply_late   = ${REPLY_LATE} packets that received a reply after timeout
+cons_rcvd    = ${CONS_RCVD} consecutively received replies in sequence
+cons_wait    = ${CONS_WAIT} consecutive packets waiting for reply
+cons_miss    = ${CONS_MISS} consecutive packets that have timed out
+avg_rtt      = ${AVG_RTT} average rtt, notice that waiting and timed out packets have rtt = 0 when calculating this
+
+Your LSM Daemon
+
+EOM
+
+<emphasis role="bold">if [ ${STATE} = up ]; then
+   echo 0 &gt; ${VARDIR}/${DEVICE}.status
+  ${VARDIR}/firewall enable ${DEVICE}
+else
+   echo 1 &gt; ${VARDIR}/${DEVICE}.status
+   ${VARDIR}/firewall disable ${DEVICE}
+fi
+</emphasis>
+/sbin/shorewall show routing &gt;&gt; /var/log/lsm
+
+exit 0
+
+#EOF</programlisting></para>
       </section>
     </section>
 

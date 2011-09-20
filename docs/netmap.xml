@@ -22,6 +22,8 @@
 
       <year>2007</year>
 
+      <year>2011</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -113,8 +115,10 @@
         <term>NET1</term>
 
         <listitem>
-          <para>Must be expressed in CIDR format (e.g.,
-          192.168.1.0/24).</para>
+          <para>Must be expressed in CIDR format (e.g., 192.168.1.0/24).
+          Beginning with Shorewall 4.4.24, <ulink
+          url="manpages/shorewall-exclusion.html">exclusion</ulink> is
+          supported.</para>
         </listitem>
       </varlistentry>
 
@@ -133,6 +137,71 @@
 
         <listitem>
           <para>A second network expressed in CIDR format.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">NET3 (Optional)</emphasis> -
+        <emphasis>network-address</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.11. If specified, qualifies INTERFACE.
+          It specifies a SOURCE network for DNAT rules and a DESTINATON
+          network for SNAT rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO (Optional - Added in Shorewall
+        4.4.23.2)</emphasis> -
+        <emphasis>protocol-number-or-name</emphasis></term>
+
+        <listitem>
+          <para>Only packets specifying this protocol will have their IP
+          header modified.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.23.2)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Destination Ports. A comma-separated list of Port names (from
+          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
+          range</emphasis>s; if the protocol is <emphasis
+          role="bold">icmp</emphasis>, this column is interpreted as the
+          destination icmp-type(s). ICMP types may be specified as a numeric
+          type, a numberic type and code separated by a slash (e.g., 3/4), or
+          a typename. See <ulink
+          url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
+
+          <para>If the protocol is <emphasis role="bold">ipp2p</emphasis>,
+          this column is interpreted as an ipp2p option without the leading
+          "--" (example <emphasis role="bold">bit</emphasis> for bit-torrent).
+          If no PORT is given, <emphasis role="bold">ipp2p</emphasis> is
+          assumed.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          icmp (1), tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if
+          any of the following field is supplied.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.23.2)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Source port(s). If omitted, any source port is acceptable.
+          Specified as a comma-separated list of port names, port numbers or
+          port ranges.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
+          the following fields is supplied.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -165,155 +234,234 @@
             firewall 1.</para>
           </listitem>
         </itemizedlist>
-      </important> The entries in
-    <filename><filename>/etc/shorewall/netmap</filename></filename> in
-    firewall1 would be as follows:</para>
+      </important></para>
 
-    <programlisting>#TYPE NET1           INTERFACE        NET2
+    <section>
+      <title>If you are running Shorewall 4.4.22 or Earlier</title>
+
+      <para>The entries in
+      <filename><filename>/etc/shorewall/netmap</filename></filename> in
+      firewall1 would be as follows:</para>
+
+      <programlisting>#TYPE NET1           INTERFACE        NET2
 SNAT  192.168.1.0/24 vpn              10.10.11.0/24        #RULE 1A
 DNAT  10.10.11.0/24  vpn              192.168.1.0/24       #RULE 1B</programlisting>
 
-    <para>The entry in <filename>/etc/shorewall/netmap</filename> in firewall2
-    would be:</para>
+      <para>The entry in <filename>/etc/shorewall/netmap</filename> in
+      firewall2 would be:</para>
 
-    <programlisting>#TYPE NET1           INTERFACE        NET2
+      <programlisting>#TYPE NET1           INTERFACE        NET2
 DNAT  10.10.10.0/24  vpn              192.168.1.0/24       #RULE 2A
 SNAT  192.168.1.0/24 vpn              10.10.10.0/24        #RULE 2B</programlisting>
 
-    <example id="Example1">
-      <title>192.168.1.4 in the top cloud connects to 192.168.1.27 in the
-      bottom cloud</title>
+      <example id="Example1">
+        <title>192.168.1.4 in the top cloud connects to 192.168.1.27 in the
+        bottom cloud</title>
 
-      <para>In order to make this connection, the client attempts a connection
-      to 10.10.10.27. The following table shows how the source and destination
-      IP addresses are modified as requests are sent and replies are returned.
-      The RULE column refers to the above
-      <filename>/etc/shorewall/netmap</filename> entries and gives the rule
-      which transforms the source and destination IP addresses to those shown
-      on the next line. <informaltable>
-          <tgroup cols="5">
-            <thead>
-              <row>
-                <entry>FROM</entry>
+        <para>In order to make this connection, the client attempts a
+        connection to 10.10.10.27. The following table shows how the source
+        and destination IP addresses are modified as requests are sent and
+        replies are returned. The RULE column refers to the above
+        <filename>/etc/shorewall/netmap</filename> entries and gives the rule
+        which transforms the source and destination IP addresses to those
+        shown on the next line. <informaltable>
+            <tgroup cols="5">
+              <thead>
+                <row>
+                  <entry>FROM</entry>
 
-                <entry>TO</entry>
+                  <entry>TO</entry>
 
-                <entry>SOURCE IP ADDRESS</entry>
+                  <entry>SOURCE IP ADDRESS</entry>
 
-                <entry>DESTINATION IP ADDRESS</entry>
+                  <entry>DESTINATION IP ADDRESS</entry>
 
-                <entry>RULE</entry>
-              </row>
-            </thead>
+                  <entry>RULE</entry>
+                </row>
+              </thead>
 
-            <tbody>
-              <row>
-                <entry>192.168.1.4 in upper cloud</entry>
+              <tbody>
+                <row>
+                  <entry>192.168.1.4 in upper cloud</entry>
 
-                <entry>Firewall 1</entry>
+                  <entry>Firewall 1</entry>
 
-                <entry>192.168.1.4</entry>
+                  <entry>192.168.1.4</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>1A</entry>
-              </row>
+                  <entry>1A</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 1</entry>
+                <row>
+                  <entry>Firewall 1</entry>
 
-                <entry>Firewall 2</entry>
+                  <entry>Firewall 2</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>2A</entry>
-              </row>
+                  <entry>2A</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 2</entry>
+                <row>
+                  <entry>Firewall 2</entry>
 
-                <entry>192.168.1.27 in lower cloud</entry>
+                  <entry>192.168.1.27 in lower cloud</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>192.168.1.27</entry>
+                  <entry>192.168.1.27</entry>
 
-                <entry></entry>
-              </row>
+                  <entry></entry>
+                </row>
 
-              <row>
-                <entry>192.168.1.27 in the lower cloud</entry>
+                <row>
+                  <entry>192.168.1.27 in the lower cloud</entry>
 
-                <entry>Firewall 2</entry>
+                  <entry>Firewall 2</entry>
 
-                <entry>192.168.1.27</entry>
+                  <entry>192.168.1.27</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>2B</entry>
-              </row>
+                  <entry>2B</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 2</entry>
+                <row>
+                  <entry>Firewall 2</entry>
 
-                <entry>Firewall 1</entry>
+                  <entry>Firewall 1</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>10.10.11.4</entry>
+                  <entry>10.10.11.4</entry>
 
-                <entry>1B</entry>
-              </row>
+                  <entry>1B</entry>
+                </row>
 
-              <row>
-                <entry>Firewall 1</entry>
+                <row>
+                  <entry>Firewall 1</entry>
 
-                <entry>192.168.1.4 in upper cloud</entry>
+                  <entry>192.168.1.4 in upper cloud</entry>
 
-                <entry>10.10.10.27</entry>
+                  <entry>10.10.10.27</entry>
 
-                <entry>192.168.1.4</entry>
+                  <entry>192.168.1.4</entry>
 
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable></para>
-    </example>
+                  <entry></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable></para>
+
+        <para>See the<ulink url="OPENVPN.html"> OpenVPN documentation</ulink>
+        for a solution contributed by Nicola Moretti for resolving duplicate
+        networks in a roadwarrior VPN environment.</para>
+      </example>
+    </section>
+
+    <section>
+      <title>If you are running Shorewall 4.4.23 or Later</title>
+
+      <para>Beginning with Shorewall 4.4.23, you <emphasis>can</emphasis>
+      bridge two duplicate networks with one router, provided that your kernel
+      and iptables include <emphasis>Rawpost Table Support</emphasis>. That
+      support is used to implement Stateless NAT which allows for performing
+      DNAT in the rawpost table POSTROUTING and OUTPUT chains and for
+      performing SNAT in the raw table PREROUTING chain. Using this support,
+      only firewall1 requires <filename>/etc/shorewall/netmap</filename>. Two
+      additional entries are added.</para>
+
+      <programlisting>#TYPE NET1            INTERFACE        NET2
+SNAT   192.168.1.0/24 vpn              10.10.11.0/24
+DNAT   10.10.11.0/24  vpn              192.168.1.0/24
+<emphasis role="bold">SNAT:P 192.168.1.0/24 vpn              10.10.10.0/24
+DNAT:T 10.10.10.0/24  vpn              192.168.1.0/24</emphasis></programlisting>
+
+      <para>The last two entries define <firstterm>Stateless NAT</firstterm>
+      by specifying a chain designator (:P for PREROUTING and :T for
+      POSTROUTING respectively). See <ulink
+      url="manpages/shorewall-netlink.html">shorewall-netmap</ulink> (5) for
+      details.</para>
+    </section>
   </section>
 
-  <section id="Notes">
-    <title>Author's Notes</title>
+  <section>
+    <title>IPv6</title>
 
-    <para>This could all be made a bit simpler by eliminating the TYPE field
-    and have Shorewall generate both the SNAT and DNAT rules from a single
-    entry. I have chosen to include the TYPE in order to make the
-    implementation a bit more flexible. If you find cases where you can use an
-    SNAT or DNAT entry by itself, please let <ulink
-    url="mailto:webmaster@shorewall.net">me</ulink> know and I'll add the
-    example to this page.</para>
+    <para>Beginning with Shorewall6 4.4.24, IPv6 support for Netmap is
+    included. This provides a way to use private IPv6 addresses internally and
+    still have access to the IPv6 internet.</para>
 
-    <para>In the previous section, the table in the example contains a bit of
-    a lie. Because of Netfilter's connection tracking, rules 2B and 1B aren't
-    needed to handle the replies. They ARE needed though for hosts in the
-    bottom cloud to be able to establish connections with the 192.168.1.0/24
-    network in the top cloud.</para>
-  </section>
+    <warning>
+      <para>IPv6 netmap is <firstterm>stateless</firstterm> which means that
+      there are no Netfilter helpers for applications that need them. As a
+      consequence, applications that require a helper (FTP, IRC, etc.) may
+      experience issues.</para>
+    </warning>
 
-  <section id="WhyTwo">
-    <title>Can't I do this with one router? Why do I need two?</title>
+    <para>For IPv6, the chain designator (:P for PREROUTING or :T for
+    POSTROUTING) is required in the TYPE column. Normally SNAT rules are
+    placed in the POSTROUTING chain while DNAT rules are placed in
+    PREROUTING.</para>
 
-    <para>I wrote this article before Shorewall included <ulink
-    url="MultiISP.html">multiple provider support</ulink>. You should be able
-    to accomplish the same thing with just one router through careful use of
-    /etc/shorewall/netmap and <ulink url="MultiISP.html">multiple
-    providers</ulink>. If you try it and get it working, please contribute an
-    update to this article.</para>
+    <para>To use IPv6 Netmap, your kernel and iptables must include
+    <emphasis>Rawpost Table Support</emphasis>.</para>
 
-    <para>See the<ulink url="OPENVPN.html"> OpenVPN documentation</ulink> for
-    a solution contributed by Nicola Moretti for resolving duplicate networks
-    in a roadwarrior VPN environment.</para>
+    <para>IPv6 Netmap has been verified at shorewall.net using the
+    configuration shown below.</para>
+
+    <graphic align="center" fileref="images/Network2011b.png" />
+
+    <para>IPv6 support is supplied from Hurricane Electric; the IPv6 address
+    block is 2001:470:b:227::/64.</para>
+
+    <para>Because of the limitations of IPv6 NETMAP (no Netfilter helpers),
+    the servers in the DMZ have public addresses in the block
+    2001:470:b:227::/112. The local LAN uses the private network
+    fd00:470:b:227::/64 with the hosts autoconfigured using radvd. This block
+    is allocated from the range (fc00::/7) reserved for<firstterm> <ulink
+    url="http://en.wikipedia.org/wiki/Unique_local_address">Unique Local
+    Addresses</ulink></firstterm>.</para>
+
+    <para>The /etc/shorewall6/netmap file is as follows:</para>
+
+    <programlisting>#TYPE	NET1			INTERFACE	NET2		NET3		PROTO	DEST	SOURCE
+#												PORT(S)	PORT(S)
+SNAT:T	fd00:470:b:227::/64	HE_IF		2001:470:b:227::/64
+DNAT:P  2001:470:b:227::/64!2001:470:b:227::/112\
+				HE_IF		fd00:470:b:227::/64
+</programlisting>
+
+    <para>HE_IF is the logical name for interface sit1. On output, the private
+    address block is mapped to the public block. Because autoconfiguration is
+    used, none of the local addresses falls into the range
+    fd00:470:b:227::/112. That range can therefore be excluded from
+    DNAT.</para>
+
+    <note>
+      <para>While the site local network that was used is very similar to the
+      public network (only the first word is different), that isn't a
+      requirement. We could have just as well used
+      fd00:bad:dead:beef::/64</para>
+    </note>
+
+    <note>
+      <para>The MacBook Pro running OS X Lion refused to autoconfigure when
+      radvd advertised a <ulink
+      url="http://tools.ietf.org/html/rfc3513">site-local</ulink> network
+      (fec0:470:b:227/64) but worked fine with the unique-local network
+      (fd00:470:b:227::/64). Note that site-local addresses were deprecated in
+      <ulink url="http://tools.ietf.org/html/rfc3879">RFC3879</ulink>.</para>
+    </note>
+
+    <note>
+      <para>This whole scheme isn't quite as useful as it might appear. Many
+      IPv6-enabled applications (web browsers, for example) are smart enough
+      to recognize unique local addresses and will only use IPv6 to
+      communicate with other such local addresses.</para>
+    </note>
   </section>
 </article>

@@ -73,6 +73,7 @@ our @EXPORT = qw( NOTHING
 		  find_interfaces_by_option
 		  find_interfaces_by_option1
 		  get_interface_option
+		  interface_has_option
 		  set_interface_option
 		  interface_zones
 		  verify_required_interfaces
@@ -1375,8 +1376,7 @@ sub find_interfaces_by_option1( $ ) {
     my @ints = ();
     my $wild = 0;
 
-    for my $interface ( sort { $interfaces{$a}->{number} <=> $interfaces{$b}->{number} }
-			( grep $interfaces{$_}{root}, keys %interfaces ) ) {
+    for my $interface ( sort { $interfaces{$a}->{number} <=> $interfaces{$b}->{number} } keys %interfaces ) {
 	my $interfaceref = $interfaces{$interface};
 
 	next unless defined $interfaceref->{physical};
@@ -1408,6 +1408,22 @@ sub get_interface_option( $$ ) {
 
     $ref->{options}{$option};
     
+}
+
+#
+# Return the value of an option for an interface
+#
+sub interface_has_option( $$\$ ) {
+    my ( $interface, $option, $value ) = @_;
+
+    my $ref = $interfaces{$interface};
+
+    $ref = known_interface( $interface ) unless $ref;
+
+    if ( exists $ref->{options}{$option} ) {
+	$$value = $ref->{options}{$option};
+	1;
+    }
 }
 
 #

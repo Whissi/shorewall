@@ -403,36 +403,101 @@ sub setup_netmap() {
 
     if ( my $fn = open_file 'netmap' ) {
 
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty netmap file' , 's'; } );
+	first_entry "$doing $fn...";
 
 	while ( read_a_line ) {
 
-	    my ( $type, $net1, $interfacelist, $net2, $net3 ) = split_line 4, 5, 'netmap file';
+	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 4, 8, 'netmap file';
 
 	    $net3 = ALLIP if $net3 eq '-';
 
 	    for my $interface ( split_list $interfacelist, 'interface' ) {
 
-		my @rulein;
-		my @ruleout;
 		my $iface = $interface;
 
 		fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
-		unless ( $interfaceref->{root} ) {
-		    @rulein  = imatch_source_dev( $interface );
-		    @ruleout = imatch_dest_dev( $interface );
-		    $interface = $interfaceref->{name};
-		}
+		my @rule = do_iproto( $proto, $dport, $sport );
 
-		if ( $type eq 'DNAT' ) {
-		    add_ijump ensure_chain( 'nat' , input_chain $interface ) ,  j => "NETMAP --to $net2", @rulein  , imatch_source_net( $net3 ), d => $net1;
-		} elsif ( $type eq 'SNAT' ) {
-		    add_ijump ensure_chain( 'nat' , output_chain $interface ) , j => "NETMAP --to $net2", @ruleout , imatch_dest_net( $net3 ) ,  s => $net1;
+		unless ( $type =~ /:/ ) {
+		    my @rulein;
+		    my @ruleout;
+		    
+		    validate_net $net1, 0;
+		    validate_net $net2, 0;
+
+		    unless ( $interfaceref->{root} ) {
+			@rulein  = imatch_source_dev( $interface );
+			@ruleout = imatch_dest_dev( $interface );
+			$interface = $interfaceref->{name};
+		    }
+
+		    require_capability 'NAT_ENABLED', 'Stateful NAT Entries', '';
+
+		    if ( $type eq 'DNAT' ) {
+			dest_iexclusion(  ensure_chain( 'nat' , input_chain $interface ) , 
+					  j => 'NETMAP' ,
+					  "--to $net2",
+					  $net1 ,
+					  @rulein  ,
+					  imatch_source_net( $net3 ) );
+		    } elsif ( $type eq 'SNAT' ) {
+			source_iexclusion( ensure_chain( 'nat' , output_chain $interface ) ,
+					   j => 'NETMAP' ,
+					   "--to $net2" ,
+					   $net1 ,
+					   @ruleout ,
+					   imatch_dest_net( $net3 ) );
+		    } else {
+			fatal_error "Invalid type ($type)";
+		    }
+		} elsif ( $type =~ /^(DNAT|SNAT):([POT])$/ ) {
+		    my ( $target , $chain ) = ( $1, $2 );
+		    my $table = 'raw';
+		    my @match;
+
+		    require_capability 'RAWPOST_TABLE', 'Stateless NAT Entries', '';
+
+		    unless ( $interfaceref->{root} ) {
+			@match = imatch_dest_dev(  $interface ); 
+			$interface = $interfaceref->{name};
+		    }
+			
+		    if ( $chain eq 'P' ) {
+			$chain = prerouting_chain $interface;
+			@match = imatch_source_dev( $iface ) unless $iface eq $interface;
+		    } elsif ( $chain eq 'O' ) {
+			$chain = output_chain $interface;
+		    } else {
+			$chain = postrouting_chain $interface;
+			$table = 'rawpost';
+		    }
+
+		    my $chainref = ensure_chain( $table, $chain );
+
+		    
+		    if ( $target eq 'DNAT' ) {
+			dest_iexclusion( $chainref ,
+					 j => 'RAWDNAT' ,
+					 "--to-dest $net2" ,
+					 $net1 ,
+					 imatch_source_net( $net3 ) ,
+					 @rule ,
+					 @match
+				       );
+		    } else {
+			source_iexclusion( $chainref ,
+					   j  => 'RAWSNAT' ,
+					   "--to-source $net2" ,
+					   $net1 ,
+					   imatch_dest_net( $net3 ) ,
+					   @rule ,
+					   @match );
+		    }
 		} else {
 		    fatal_error "Invalid type ($type)";
 		}
-
+		
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";
 	    }
 	}

@@ -247,7 +247,31 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulefile
     local suffix
 
-    if ! list_search $modulename $MODULES $DONT_LOAD ; then
+    if [ -d /sys/module/ ]; then
+	if ! list_search $modulename $DONT_LOAD; then
+	    if [ ! -d /sys/module/$modulename ]; then
+		shift
+
+		for suffix in $MODULE_SUFFIX ; do
+		    for directory in $moduledirectories; do
+			modulefile=$directory/${modulename}.${suffix}
+
+			if [ -f $modulefile ]; then
+			    case $moduleloader in
+				insmod)
+				    insmod $modulefile $*
+				    ;;
+				*)
+				    modprobe $modulename $*
+				    ;;
+			    esac
+			    break 2
+			fi
+		    done
+		done
+	    fi
+	fi
+    elif ! list_search $modulename $MODULES $DONT_LOAD ; then
 	shift
 
 	for suffix in $MODULE_SUFFIX ; do
@@ -290,7 +314,7 @@ reload_kernel_modules() {
     [ -n "${MODULE_SUFFIX:=ko ko.gz o o.gz gz}" ]
 
     [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv6/netfilter:/lib/modules/$(uname -r)/kernel/net/netfilter:/lib/modules/$(uname -r)/kernel/net/sched
-    MODULES=$(lsmod | cut -d ' ' -f1)
+    [ -d /sys/module/ ] || MODULES=$(lsmod | cut -d ' ' -f1)
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
@@ -334,7 +358,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     [ -n "$LOAD_HELPERS_ONLY" ] && modules=$(find_file helpers) || modules=$(find_file modules)
 
     if [ -f $modules -a -n "$moduledirectories" ]; then
-	MODULES=$(lsmod | cut -d ' ' -f1)
+	[ -d /sys/module/ ] || MODULES=$(lsmod | cut -d ' ' -f1)
 	progress_message "Loading Modules..."
 	. $modules
 	if [ $savemoduleinfo = Yes ]; then

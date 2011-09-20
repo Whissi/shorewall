@@ -136,7 +136,6 @@ esac
 #
 # Determine where to install the firewall script
 #
-DEBIAN=
 CYGWIN=
 INSTALLD='-D'
 T='-T'
@@ -173,6 +172,8 @@ if [ -n "$DESTDIR" ]; then
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
 elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
+elif [ -f /etc/redhat-release ]; then
+    FEDORA=yes
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
@@ -180,6 +181,14 @@ elif [ -f /etc/arch-release ] ; then
       DEST="/etc/rc.d"
       INIT="shorewall-lite"
       ARCHLINUX=yes
+fi
+
+if [ -z "$DESTDIR" ]; then
+    if [ -f /lib/systemd/system ]; then
+	SYSTEMD=Yes
+    fi
+elif [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
 #
@@ -223,12 +232,13 @@ echo "Shorewall Lite control program installed in ${DESTDIR}/sbin/shorewall-lite
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh /etc/init.d/shorewall-lite 0544
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-lite 0544
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-lite 0544
 elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
-
+    install_file init.archlinux.sh ${DESTDIR}/${DEST}/$INIT 0544
 else
-    install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
+    install_file init.sh ${DESTDIR}/${DEST}/$INIT 0544
 fi
 
 echo  "Shorewall Lite script installed in ${DESTDIR}${DEST}/$INIT"
@@ -247,6 +257,14 @@ chmod 755 ${DESTDIR}/usr/share/shorewall-lite
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
+fi
+
+#
+# Install the .service file
+#
+if [ -n "$SYSTEMD" ]; then
+    run_install $OWNERSHIP -m 600 shorewall-lite.service ${DESTDIR}/lib/systemd/system/shorewall-lite.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-lite.service"
 fi
 
 #
@@ -389,7 +407,11 @@ if [ -z "$DESTDIR" ]; then
 
 	    echo "Shorewall Lite will start automatically at boot"
 	else
-	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	    if [ -n "$SYSTEMD" ]; then
+		if systemctl enable shorewall-lite; then
+		    echo "Shorewall Lite will start automatically at boot"
+		fi
+	    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-lite ; then
 		    echo "Shorewall Lite will start automatically at boot"
 		else

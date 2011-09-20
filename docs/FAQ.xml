@@ -1596,7 +1596,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>filter</term>
+          <term>sfilter</term>
 
           <listitem>
             <para>On systems running Shorewall 4.4.20 or later, either the
@@ -1604,7 +1604,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
             url="manpages/shorewall-interfaces.html">interface option</ulink>
             or it is being routed out of the same interface on which it
             arrived and the interface does not have the
-            <option>routeback</option> <ulink
+            <option>routeback</option> or <option>routefilter</option> <ulink
             url="manpages/shorewall-interfaces.html">interface
             option</ulink>.</para>
           </listitem>
@@ -2000,7 +2000,11 @@ Creating input Chains...
       <para>Beginning with Shorewall 4.4, when the Shorewall tarballs are
       installed on a Debian (or derivative) system, the
       <filename>/etc/init.d/shorewall</filename> file is the same as would be
-      installed by the .deb.</para>
+      installed by the .deb. The behavior of <command>/etc/init.d/shorewall
+      stop</command> is controlled by the setting of SAFESTOP in
+      <filename>/etc/default/shorewall</filename>. When set to 0 (the
+      default), the firewall is cleared; when set to 1, the firewall is placed
+      in a safe state.</para>
     </section>
 
     <section id="faq78">
@@ -2187,6 +2191,47 @@ We have an error talking to the kernel
 
           <member>sch_sfq</member>
         </simplelist></para>
+    </section>
+
+    <section id="faq97">
+      <title>(FAQ 97) I enable Shorewall traffic shaping and now my upload
+      rate is way below what I specified</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: This is likely due to TCP
+      Segmentation Offload (TSO) and/or Generic Segmentation Offload (GSO)
+      being enabled in the network adapter. To verify, install the
+      <firstterm>ethtool</firstterm> package and use the -k command:</para>
+
+      <programlisting>root@gateway:~# ethtool -k eth1
+Offload parameters for eth1:
+rx-checksumming: on
+tx-checksumming: on
+scatter-gather: on
+tcp-segmentation-offload: <emphasis role="bold">on</emphasis>
+udp-fragmentation-offload: off
+generic-segmentation-offload: <emphasis role="bold">on</emphasis>
+generic-receive-offload: off
+large-receive-offload: off
+ntuple-filters: off
+receive-hashing: off
+root@gateway:~#</programlisting>
+
+      <para>If that is the case, you can correct the problem by adjusting the
+      <replaceable>minburst</replaceable> setting in
+      /etc/shorewall/tcinterfaces (complex traffic shaping) or
+      /etc/shorewall/tcdevices (simple traffic shaping). We suggest starting
+      at 10-12kb and adjust as necessary. Example (simple traffic
+      shaping):</para>
+
+      <programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
+eth0		External	50mbit:200kb			5.0mbit:100kb:200ms:100mbit:<emphasis
+          role="bold">10kb</emphasis>
+</programlisting>
+
+      <para>Alternatively, you can turn off TSO and GSO using this command in
+      <filename>/etc/shorewall/init</filename>:</para>
+
+      <programlisting><emphasis role="bold">ethtool -k eth<emphasis>N</emphasis> tso off gso off</emphasis></programlisting>
     </section>
   </section>
 

@@ -305,7 +305,7 @@ shorewall start</programlisting>
     <title>IPv6 - Proxy NDP</title>
 
     <para>The IPv6 analog of Proxy ARP is Proxy NDP (Neighbor Discovery
-    Protocol). Begiinning with Shorewall 4.4.16, Shorewall6 supports Proxy NDP
+    Protocol). Beginning with Shorewall 4.4.16, Shorewall6 supports Proxy NDP
     in a manner similar to Proxy ARP support in Shorewall:</para>
 
     <itemizedlist>
@@ -328,8 +328,8 @@ shorewall start</programlisting>
     discoverey requests for IPv6 addresses configured on the interface
     receiving the request. So if eth0 has address 2001:470:b:227::44/128 and
     eth1 has address 2001:470:b:227::1/64 then in order for eth1 to respond to
-    neighbor discovery requests for 2001:470:b:227::44, the following entry in
-    /etc/shorewall6/proxyndp is required:</para>
+    neighbor discoverey requests for 2001:470:b:227::44, the following entry
+    in /etc/shorewall6/proxyndp is required:</para>
 
     <programlisting>#ADDRESS	          INTERFACE    EXTERNAL    HAVEROUTE    PERSISTENT
 2001:470:b:227::44 -            eth1        Yes</programlisting>

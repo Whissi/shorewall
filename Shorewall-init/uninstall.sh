@@ -73,6 +73,8 @@ if [ -n "$INITSCRIPT" ]; then
         insserv -r $INITSCRIPT
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	chkconfig --del $(basename $INITSCRIPT)
+    elif [ -x /sbin/systemctl ]; then
+	systemctl disable shorewall-init
     else
 	rm -f /etc/rc*.d/*$(basename $INITSCRIPT)
     fi
@@ -93,6 +95,7 @@ remove_file /etc/network/if-down.d/shorewall
 
 remove_file /etc/sysconfig/network/if-up.d/shorewall
 remove_file /etc/sysconfig/network/if-down.d/shorewall
+remove_file /lib/systemd/system/shorewall.service
 
 if [ -d /etc/ppp ]; then
     for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do

@@ -63,6 +63,7 @@ our @EXPORT = qw(
 
 		    %chain_table
 		    $raw_table
+		    $rawpost_table
 		    $nat_table
 		    $mangle_table
 		    $filter_table
@@ -113,6 +114,8 @@ our %EXPORT_TAGS = (
 				       zone_input_chain
 				       use_input_chain
 				       output_chain
+				       prerouting_chain
+				       postrouting_chain
 				       zone_output_chain
 				       use_output_chain
 				       masq_chain
@@ -132,6 +135,7 @@ our %EXPORT_TAGS = (
 				       ensure_mangle_chain
 				       ensure_nat_chain
 				       ensure_raw_chain
+				       ensure_rawpost_chain
 				       new_standard_chain
 				       new_builtin_chain
 				       new_nat_chain
@@ -143,10 +147,13 @@ our %EXPORT_TAGS = (
 				       newexclusionchain
 				       newnonatchain
 				       source_exclusion
+				       source_iexclusion
 				       dest_exclusion
+				       dest_iexclusion
 				       clearrule
 				       port_count
 				       do_proto
+				       do_iproto
 				       do_mac
 				       do_imac
 				       verify_mark
@@ -262,6 +269,7 @@ our $VERSION = 'MODULEVERSION';
 #
 our %chain_table;
 our $raw_table;
+our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
@@ -438,31 +446,33 @@ use constant { UNIQUE      => 1,
 	       MATCH       => 8,
 	       CONTROL     => 16 };
 
-my %opttype = ( rule       => CONTROL,
-		cmd        => CONTROL,
+my %opttype = ( rule          => CONTROL,
+		cmd           => CONTROL,
 
-		dhcp       => UNIQUE,
+		dhcp          => UNIQUE,
 		
-	        mode       => CONTROL,
-		cmdlevel   => CONTROL,
-		simple     => CONTROL,
+	        mode          => CONTROL,
+		cmdlevel      => CONTROL,
+		simple        => CONTROL,
 
-	        i          => UNIQUE,
-		s          => UNIQUE,
-		o          => UNIQUE,
-		d          => UNIQUE,
-		p          => UNIQUE,
-		dport      => UNIQUE,
-		sport      => UNIQUE,
+	        i             => UNIQUE,
+		s             => UNIQUE,
+		o             => UNIQUE,
+		d             => UNIQUE,
+		p             => UNIQUE,
+		dport         => UNIQUE,
+		sport         => UNIQUE,
+		'icmp-type'   => UNIQUE,
+		'icmpv6-type' => UNIQUE,
 		
-		comment    => CONTROL,
+		comment       => CONTROL,
 
-		policy     => MATCH,
-		state      => EXCLUSIVE,
+		policy        => MATCH,
+		state         => EXCLUSIVE,
 		
-		jump       => TARGET,
-		target     => TARGET,
-		targetopts => TARGET,
+		jump          => TARGET,
+		target        => TARGET,
+		targetopts    => TARGET,
 	      );
 
 my %aliases = ( protocol        => 'p',
@@ -474,9 +484,11 @@ my %aliases = ( protocol        => 'p',
 		'out-interface' => 'o',
 		dport           => 'dport',
 		sport           => 'sport',
+		'icmp-type'     => 'icmp-type',
+		'icmpv6-type'   => 'icmpv6-type',
 	      );
 
-my @unique_options = ( qw/p dport sport s d i o/ );
+my @unique_options = ( qw/p dport sport icmp-type icmpv6-type s d i o/ );
 	     
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -491,16 +503,18 @@ my @unique_options = ( qw/p dport sport s d i o/ );
 sub initialize( $$$ ) {
     ( $family, my $hard, $export ) = @_;
 
-    %chain_table = ( raw    => {},
-		     mangle => {},
-		     nat    => {},
-		     filter => {} );
+    %chain_table = ( raw    =>  {},
+		     rawpost => {},
+		     mangle =>  {},
+		     nat    =>  {},
+		     filter =>  {} );
 
-    $raw_table    = $chain_table{raw};
-    $nat_table    = $chain_table{nat};
-    $mangle_table = $chain_table{mangle};
-    $filter_table = $chain_table{filter};
-    %renamed      = ();
+    $raw_table     = $chain_table{raw};
+    $rawpost_table = $chain_table{rawpost};
+    $nat_table     = $chain_table{nat};
+    $mangle_table  = $chain_table{mangle};
+    $filter_table  = $chain_table{filter};
+    %renamed       = ();
     #
     # Contents of last COMMENT line.
     #
@@ -1583,6 +1597,22 @@ sub output_chain($)
 }
 
 #
+# Prerouting Chain for an interface
+#
+sub prerouting_chain($) 
+{
+    $_[0] . '_pre';
+}
+	    
+#
+# Prerouting Chain for an interface
+#
+sub postrouting_chain($) 
+{
+    $_[0] . '_post';
+}
+	    
+#
 # Output Chain for a zone
 #
 sub zone_output_chain($) {
@@ -2044,6 +2074,14 @@ sub ensure_raw_chain($) {
     $chainref;
 }
 
+sub ensure_rawpost_chain($) {
+    my $chain = $_[0];
+
+    my $chainref = ensure_chain 'rawpost', $chain;
+    $chainref->{referenced} = 1;
+    $chainref;
+}
+
 #
 # Add a builtin chain
 #
@@ -2110,7 +2148,7 @@ sub ensure_audit_chain( $;$$ ) {
 
 	$tgt ||= $action;
 
-	add_ijump $ref, j => 'AUDIT --type ' . lc $action;
+	add_ijump $ref, j => 'AUDIT', targetopts => '--type ' . lc $action;
 	
 	if ( $tgt eq 'REJECT' ) {
 	    add_ijump $ref , g => 'reject';
@@ -2200,6 +2238,8 @@ sub initialize_chain_table($) {
 	    new_builtin_chain 'raw', $chain, 'ACCEPT';
 	}
 
+	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
+
 	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
 	}
@@ -2242,6 +2282,8 @@ sub initialize_chain_table($) {
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
 	    new_builtin_chain 'raw', $chain, 'ACCEPT';
 	}
+
+	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
 
 	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
@@ -2718,7 +2760,7 @@ sub optimize_level8( $$$ ) {
 }
 
 sub optimize_ruleset() {
-    for my $table ( qw/raw mangle nat filter/ ) {
+    for my $table ( qw/raw rawpost mangle nat filter/ ) {
 
 	next if $family == F_IPV6 && $table eq 'nat';
 
@@ -2862,6 +2904,42 @@ sub source_exclusion( $$ ) {
     reftype $target ? $chainref : $chainref->{name};
 }
 
+sub source_iexclusion( $$$$$;@ ) {
+    my $chainref   = shift;
+    my $jump       = shift;
+    my $target     = shift;
+    my $targetopts = shift;
+    my $source     = shift;
+    my $table      = $chainref->{table};
+
+    my @exclusion;
+
+    if ( $source =~ /^([^!]+)!([^!]+)$/ ) {
+	$source = $1;
+	@exclusion = mysplit( $2 );
+
+	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	
+	add_ijump( $chainref1 , j => 'RETURN', imatch_source_net( $_ ) ) for @exclusion;
+	
+	if ( $targetopts ) {
+	    add_ijump( $chainref1, $jump => $target, targetopts => $targetopts );
+	} else {
+	    add_ijump( $chainref1, $jump => $target );
+	}
+
+	add_ijump( $chainref , j => $chainref1, imatch_source_net( $source ),  @_ );
+    } elsif ( $targetopts ) {
+	add_ijump( $chainref,
+		   $jump      => $target,
+		   targetopts => $targetopts,
+		   imatch_source_net( $source ), 
+		   @_ );
+    } else {
+	add_ijump( $chainref, $jump => $target, imatch_source_net( $source ), @_ );
+    }
+}
+
 sub dest_exclusion( $$ ) {
     my ( $exclusions, $target ) = @_;
 
@@ -2875,6 +2953,38 @@ sub dest_exclusion( $$ ) {
     add_ijump( $chainref, g => $target );
 
     reftype $target ? $chainref : $chainref->{name};
+}
+
+sub dest_iexclusion( $$$$$;@ ) {
+    my $chainref   = shift;
+    my $jump       = shift;
+    my $target     = shift;
+    my $targetopts = shift;
+    my $dest       = shift;
+    my $table      = $chainref->{table};
+
+    my @exclusion;
+
+    if ( $dest =~ /^([^!]+)!([^!]+)$/ ) {
+	$dest = $1;
+	@exclusion = mysplit( $2 );
+
+	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	
+	add_ijump( $chainref1 , j => 'RETURN', imatch_dest_net( $_ ) ) for @exclusion;
+	
+	if ( $targetopts ) {
+	    add_ijump( $chainref1, $jump => $target, targetopts => $targetopts, @_ );
+	} else {
+	    add_ijump( $chainref1, $jump => $target, @_ );
+	}
+
+	add_ijump( $chainref , j => $chainref1, imatch_dest_net( $dest ), @_ );
+    } elsif ( $targetopts ) {
+	add_ijump( $chainref, $jump => $target, imatch_dest_net( $dest ), targetopts => $targetopts , @_ );
+    } else {
+	add_ijump( $chainref, $jump => $target, imatch_dest_net( $dest ), @_ );
+    }
 }
 
 sub clearrule() {
@@ -2894,7 +3004,9 @@ sub port_count( $ ) {
 sub state_imatch( $ ) {
     my $state = shift;
 
-    have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => $state );
+    unless ( $state eq 'ALL' ) {
+	have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => "--state $state" );
+    }
 }
 
 #
@@ -3000,6 +3112,7 @@ sub do_proto( $$$;$ )
 
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
 			    $types = '';
 			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
@@ -3024,6 +3137,7 @@ sub do_proto( $$$;$ )
 
 			if ( $ports =~ /,/ ) {
 			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
 			    $types = '';
 			    for my $type ( list_split( $ports, 'ICMP type list' ) ) {
 				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
@@ -3088,6 +3202,183 @@ sub do_mac( $ ) {
     "-m mac ${invert}--mac-source $mac ";
 }
 
+sub do_iproto( $$$ )
+{
+    my ($proto, $ports, $sports ) = @_;
+
+    my @output = ();
+
+    my $restricted = 1;
+
+    $proto  = '' if $proto  eq '-';
+    $ports  = '' if $ports  eq '-';
+    $sports = '' if $sports eq '-';
+
+    if ( $proto ne '' ) {
+
+	my $synonly  = ( $proto =~ s/:syn$//i );
+	my $invert   = ( $proto =~ s/^!// ? '! ' : '' );
+	my $protonum = resolve_proto $proto;
+
+	if ( defined $protonum ) {
+	    #
+	    # Protocol is numeric and <= 255 or is defined in /etc/protocols or NSS equivalent
+	    #
+	    fatal_error "'!0' not allowed in the PROTO column" if $invert && ! $protonum;
+
+	    my $pname = proto_name( $proto = $protonum );
+	    #
+	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol
+	    #
+	    unless ( $synonly ) {
+		@output = ( p => "${invert}${proto}" );
+	    } else {
+		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;
+		@output = ( p => "$proto --syn" );
+	    }
+
+	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO !$pname" if $invert && ($ports ne '' || $sports ne '');
+
+	  PROTO:
+	    {
+		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
+		    my $multiport = 0;
+
+		    if ( $ports ne '' ) {
+			$invert = $ports =~ s/^!// ? '! ' : '';
+			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
+			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
+			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
+
+			    if ( port_count ( $ports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
+			    $ports = validate_port_list $pname , $ports;
+			    push @output, multiport => "${invert}--dports ${ports}";
+			    $multiport = 1;
+			}  else {
+			    fatal_error "Missing DEST PORT" unless supplied $ports;
+			    $ports   = validate_portpair $pname , $ports;
+			    push @output, dport => "${invert}${ports}";
+			}
+		    } else {
+			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
+		    }
+
+		    if ( $sports ne '' ) {
+			$invert = $sports =~ s/^!// ? '! ' : '';
+			if ( $multiport ) {
+
+			    if ( port_count( $sports ) > 15 ) {
+				if ( $restricted ) {
+				    fatal_error "A port list in this file may only have up to 15 ports";
+				} elsif ( $invert ) {
+				    fatal_error "An inverted port list may only have up to 15 ports";
+				}
+			    }
+
+			    $sports = validate_port_list $pname , $sports;
+			    push @output, multiport => "${invert}--sports ${sports}";
+			}  else {
+			    fatal_error "Missing SOURCE PORT" unless supplied $sports;
+			    $sports  = validate_portpair $pname , $sports;
+			    push @output, sport => "${invert}${sports}";
+			}
+		    }
+
+		    last PROTO;	}
+
+		if ( $proto == ICMP ) {
+		    fatal_error "ICMP not permitted in an IPv6 configuration" if $family == F_IPV6; #User specified proto 1 rather than 'icmp'
+		    if ( $ports ne '' ) {
+			$invert = $ports =~ s/^!// ? '! ' : '';
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
+			    $types = '';
+			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
+				$types = $types ? join( ',', $types, validate_icmp( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp $ports;
+			}
+
+			push @output, 'icmp-type' => "${invert}${types}";
+		    }
+
+		    fatal_error 'SOURCE PORT(S) not permitted with ICMP' if $sports ne '';
+
+		    last PROTO; }
+
+		if ( $proto == IPv6_ICMP ) {
+		    fatal_error "IPv6_ICMP not permitted in an IPv4 configuration" if $family == F_IPV4;
+		    if ( $ports ne '' ) {
+			$invert = $ports =~ s/^!// ? '! ' : '';
+
+			my $types;
+
+			if ( $ports =~ /,/ ) {
+			    fatal_error "An inverted ICMP list may only contain a single type" if $invert;
+			    fatal_error "An ICMP type list is not allowed in this context"     if $restricted;
+			    $types = '';
+			    for my $type ( split_list( $ports, 'ICMP type list' ) ) {
+				$types = $types ? join( ',', $types, validate_icmp6( $type ) ) : $type;
+			    }
+			} else {
+			    $types = validate_icmp6 $ports;
+			}
+
+			push @output, 'icmpv6-type' => "${invert}${types}";
+		    }
+
+		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
+
+		    last PROTO; }
+
+
+		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname" if $ports ne '' || $sports ne '';
+
+	    } # PROTO
+
+	} else {
+	    fatal_error '":syn" is only allowed with tcp' if $synonly;
+
+	    if ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
+		my $p = $2 ? lc $3 : 'tcp';
+		require_capability( 'IPP2P_MATCH' , "PROTO = $proto" , 's' );
+		$proto = '-p ' . proto_name($p) . ' ';
+
+		my $options = '';
+
+		if ( $ports ne 'ipp2p' ) {
+		    $options .= " --$_" for split /,/, $ports;
+		}
+
+		$options = have_capability( 'OLD_IPP2P_MATCH' ) ? ' --ipp2p' : ' --edk --kazaa --gnu --dc' unless $options;
+
+		push @output, ipp2p => "${proto}${options}";
+	    } else {
+		fatal_error "Invalid/Unknown protocol ($proto)"
+	    }
+	}
+    } else {
+	#
+	# No protocol
+	#
+	fatal_error "SOURCE/DEST PORT(S) not allowed without PROTO" if $ports ne '' || $sports ne '';
+    }
+
+    @output;
+}
+
 sub do_imac( $ ) {
     my $mac = $_[0];
 
@@ -3101,7 +3392,7 @@ sub do_imac( $ ) {
 }
 
 #
-# Mark validatation functions
+# Mark validation functions
 #
 sub verify_mark( $ ) {
     my $mark  = $_[0];
@@ -4786,7 +5077,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     if ( $origdest ) {
 	if ( $origdest eq '-' || ! have_capability( 'CONNTRACK_MATCH' ) ) {
-	    $origdest = '';
+	    $onets = $oexcl = '';
 	} elsif ( $origdest =~ /^detect:(.*)$/ ) {
 	    #
 	    # Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
@@ -4816,7 +5107,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		$rule .= "-m conntrack --ctorigdst $variable ";
 	    }
 
-	    $origdest = '';
+	    $onets = $oexcl = '';
 	} else {
 	    fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/ || $origdest =~ /.*!.*!/;
 
@@ -4903,7 +5194,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    #
 	    # Clear the exclusion bit
 	    #
-	    add_ijump $chainref , j => 'MARK --and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
+	    add_ijump $chainref , j => 'MARK', targetopts => '--and-mark ' . in_hex( $globals{EXCLUSION_MASK} ^ 0xffffffff );
 	    #
 	    # Mark packet if it matches any of the exclusions
 	    #
@@ -5432,9 +5723,10 @@ sub create_netfilter_load( $ ) {
 
     my @table_list;
 
-    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
-    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
-    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
+    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
+    push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -5534,9 +5826,10 @@ sub preview_netfilter_load() {
 
     my @table_list;
 
-    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
-    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
-    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
+    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
+    push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     $mode = NULL_MODE;
@@ -5644,7 +5937,7 @@ sub create_chainlist_reload($) {
 	for my $chain ( @chains ) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 
-	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw)$/;
+	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw|rawpost)$/;
 
 	    $chains{$table} = {} unless $chains{$table};
 
@@ -5673,7 +5966,7 @@ sub create_chainlist_reload($) {
 
 	enter_cat_mode;
 
-	for $table ( qw(raw nat mangle filter) ) {
+	for $table ( qw(raw rawpost nat mangle filter) ) {
 	    my $tableref=$chains{$table};
 
 	    next unless $tableref;
@@ -5748,9 +6041,10 @@ sub create_stop_load( $ ) {
 
     my @table_list;
 
-    push @table_list, 'raw'    if have_capability( 'RAW_TABLE' );
-    push @table_list, 'nat'    if have_capability( 'NAT_ENABLED' );
-    push @table_list, 'mangle' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+    push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
+    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
+    push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
+    push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter';
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';

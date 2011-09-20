@@ -152,7 +152,10 @@ sub setup_ecn()
 
     if ( my $fn = open_file 'ecn' ) {
 
-	first_entry "$doing $fn...";
+	first_entry( sub { progress_message2 "$doing $fn...";
+			   require_capability 'MANGLE_ENABLED', 'Entries in the ecn file', '';
+			   warning_message 'ECN will not be applied to forwarded packets' unless have_capability 'MANGLE_FORWARD';
+		       } );
 
 	while ( read_a_line ) {
 
@@ -178,12 +181,12 @@ sub setup_ecn()
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
 
-		add_ijump $mangle_table->{POSTROUTING} , j => $chainref, p => 'tcp', imatch_dest_dev( $interface );
+		add_ijump $mangle_table->{POSTROUTING} , j => $chainref, p => 'tcp', imatch_dest_dev( $interface ) if have_capability 'MANGLE_FORWARD';
 		add_ijump $mangle_table->{OUTPUT},       j => $chainref, p => 'tcp', imatch_dest_dev( $interface );
 	    }
 
 	    for my $host ( @hosts ) {
-		add_ijump( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN --ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[1] ) );
+		add_ijump( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN', targetopts => '--ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[1] ) );
 	    }
 	}
     }
@@ -223,7 +226,7 @@ sub setup_blacklist() {
 
 	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
-	    add_ijump( $logchainref, j => 'AUDIT --type ' . lc $target ) if $audit;
+	    add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
 	    add_ijump( $logchainref, g => $target );
 
 	    $target = 'blacklog';
@@ -498,34 +501,45 @@ sub add_common_rules() {
     my $audit    = $policy =~ s/^A_//;
     my @ipsec    = have_ipsec ? ( policy => '--pol none --dir in' ) : ();
 
-    if ( $level || $audit || @ipsec ) {
+    if ( $level || $audit ) {
+	#
+	# Create a chain to log and/or audit and apply the policy
+	#
 	$chainref = new_standard_chain 'sfilter';
 
 	log_rule $level , $chainref , $policy , '' if $level ne '';
 	
-	add_ijump( $chainref, j => 'AUDIT --type ' . lc $policy ) if $audit;
+	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
 	
 	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
 	
 	$target = 'sfilter';
-
-	if ( @ipsec ) {
-	    $chainref = new_standard_chain 'sfilter1';
-
-	    add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
-	    log_rule $level , $chainref , $policy , '' if $level ne '';
-	
-	    add_ijump( $chainref, j => 'AUDIT --type ' . lc $policy ) if $audit;
-	
-	    add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
-	
-	    $target1 = 'sfilter1';
-	}
-    } elsif ( ( $target = $policy ) eq 'REJECT' ) {
-	$target = 'reject';
+    } else {
+	$target = $policy eq 'REJECT' ? 'reject' : $policy;
     }
 
-    $target1 = $target unless $target1;
+    if ( @ipsec ) {
+	#
+	# sfilter1 will be used in the FORWARD chain where we allow traffic entering the interface
+	# to leave the interface encrypted. We need a separate chain because '--dir out' cannot be
+	# used in the input chain
+	#
+	$chainref = new_standard_chain 'sfilter1';
+
+	add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
+	log_rule $level , $chainref , $policy , '' if $level ne '';
+	
+	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
+	
+	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
+	
+	$target1 = 'sfilter1';
+    } else {
+	#
+	# No IPSEC -- use the same target in both INPUT and FORWARD
+	#
+	$target1 = $target;
+    }
 
     for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
@@ -540,9 +554,15 @@ sub add_common_rules() {
 	
 	    if ( @filters ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
+		$interfaceref->{options}{use_forward_chain} = 1;
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_dest_dev( $interface ), @ipsec ), $chainref->{filtered}++
-		    unless $interfaceref->{options}{routeback} || $interfaceref->{options}{routefilter} || $interfaceref->{physical} eq '+';
+		    unless( $config{ROUTE_FILTER} eq 'on' ||
+			    $interfaceref->{options}{routeback} ||
+			    $interfaceref->{options}{routefilter} ||
+			    $interfaceref->{physical} eq '+' );
+
+		$interfaceref->{options}{use_forward_chain} = 1;
 	    }
 
 	    add_ijump( $chainref, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ), $chainref->{filtered}++ if $config{FASTACCEPT};
@@ -552,6 +572,7 @@ sub add_common_rules() {
 	
 	    if ( @filters ) {
 		add_ijump( $chainref , g => $target, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
+		$interfaceref->{options}{use_input_chain} = 1;
 	    }
 	
 	    add_ijump( $chainref, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ), $chainref->{filtered}++ if $config{FASTACCEPT};
@@ -592,7 +613,7 @@ sub add_common_rules() {
 			    '',
 			    'add',
 			    '' );
-	    add_ijump( $smurfref, j => 'AUDIT --type drop' ) if $smurfdest eq 'A_DROP';
+	    add_ijump( $smurfref, j => 'AUDIT', targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
 	    add_ijump( $smurfref, j => 'DROP' );
 
 	    $smurfdest = 'smurflog';
@@ -666,7 +687,7 @@ sub add_common_rules() {
     }
 
     add_ijump $rejectref , j => 'DROP', p => 2;
-    add_ijump $rejectref , j => 'REJECT --reject-with tcp-reset', p => 6;
+    add_ijump $rejectref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
 
     if ( have_capability( 'ENHANCED_REJECT' ) ) {
 	add_ijump $rejectref , j => 'REJECT', p => 17;
@@ -729,11 +750,11 @@ sub add_common_rules() {
 
 	    if ( $audit ) {
 		$disposition =~ s/^A_//;
-		add_ijump( $logflagsref, j => 'AUDIT --type ' . lc $disposition );
+		add_ijump( $logflagsref, j => 'AUDIT', targetopts => '--type ' . lc $disposition );
 	    }
 
 	    if ( $disposition eq 'REJECT' ) {
-		add_ijump $logflagsref , j => 'REJECT --reject-with tcp-reset', p => 6;
+		add_ijump $logflagsref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
 	    } else {
 		add_ijump $logflagsref , j => $disposition;
 	    }
@@ -906,14 +927,14 @@ sub setup_mac_lists( $ ) {
 			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
 				if supplied $level;
 			    
-			    add_ijump( $chainref , j => 'AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			    add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
 			    add_jump( $chainref , $targetref->{target}, 0, "${mac}${source}" );
 			}
 		    } else {
 			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			    if supplied $level;
 
-			add_ijump( $chainref , j => 'AUDIT --type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
 			add_jump ( $chainref , $targetref->{target}, 0, "$mac" );
 		    }
 
@@ -1163,6 +1184,12 @@ sub add_interface_jumps {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , imatch_dest_dev( $interface );
+	
+	if ( have_capability 'RAWPOST_TABLE' ) {
+	    insert_ijump ( $rawpost_table->{POSTROUTING}, j => postrouting_chain( $interface ), 0, imatch_dest_dev( $interface) )   if $rawpost_table->{postrouting_chain $interface};
+	    insert_ijump ( $raw_table->{PREROUTING},      j => prerouting_chain( $interface ),  0, imatch_source_dev( $interface) ) if $raw_table->{prerouting_chain $interface};
+	    insert_ijump ( $raw_table->{OUTPUT},          j => output_chain( $interface ),      0, imatch_dest_dev( $interface) )   if $raw_table->{output_chain $interface};
+	}
     }
     #
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
@@ -1821,10 +1848,10 @@ sub setup_mss( ) {
 
     if ( $clampmss ) {
 	if ( "\L$clampmss" eq 'yes' ) {
-	    $option = ' --clamp-mss-to-pmtu';
+	    $option = '--clamp-mss-to-pmtu';
 	} else {
 	    @match  = ( tcpmss => "--mss $clampmss:" ) if have_capability( 'TCPMSS_MATCH' );
-	    $option = " --set-mss $clampmss";
+	    $option = "--set-mss $clampmss";
 	}
 
 	push @match, ( policy => '--pol none --dir out' ) if have_ipsec;
@@ -1855,14 +1882,14 @@ sub setup_mss( ) {
 	    my @mssmatch = have_capability( 'TCPMSS_MATCH' ) ? ( tcpmss => "--mss $mss:" ) : ();
 	    my @source   = imatch_source_dev $_;
 	    my @dest     = imatch_dest_dev $_;
-	    add_ijump $chainref, j => "TCPMSS --set-mss $mss", @dest,   p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @out_match;
+	    add_ijump $chainref, j => 'TCPMSS', targetopts => "--set-mss $mss", @dest,   p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @out_match;
 	    add_ijump $chainref, j => 'RETURN', @dest if $clampmss;
-	    add_ijump $chainref, j => "TCPMSS --set-mss $mss", @source, p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @in_match;
+	    add_ijump $chainref, j => 'TCPMSS', targetopts => "--set-mss $mss", @source, p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @in_match;
 	    add_ijump $chainref, j => 'RETURN', @source if $clampmss;
 	}
     }
 
-    add_ijump $chainref , j => "TCPMSS${option}", p => 'tcp --tcp-flags SYN,RST SYN', @match if $clampmss;
+    add_ijump $chainref , j => 'TCPMSS', targetopts => $option, p => 'tcp --tcp-flags SYN,RST SYN', @match if $clampmss;
 }
 
 #
@@ -1928,6 +1955,9 @@ EOF
 	        refresh)
 	            logger -p kern.err "ERROR:$g_product refresh failed"
 	            ;;
+                enable)
+                    logger -p kern.err "ERROR:$g_product 'enable $g_interface' failed"
+                    ;;
             esac
 
             if [ "$RESTOREFILE" = NONE ]; then

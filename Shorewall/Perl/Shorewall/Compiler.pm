@@ -38,6 +38,8 @@ use Shorewall::IPAddrs;
 use Shorewall::Raw;
 use Shorewall::Misc;
 
+use strict;
+
 our @ISA = qw(Exporter);
 our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
@@ -263,9 +265,9 @@ sub generate_script_2() {
 	push_indent;
 
 	if ( $global_variables & NOT_RESTORE ) {
-	    emit( 'start|restart|refresh)' );
+	    emit( 'start|restart|refresh|disable|enable)' );
 	} else {
-	    emit( 'start|restart|refresh|restore)' );
+	    emit( 'start|restart|refresh|disable|enable|restore)' );
 	}
 
 	push_indent;
@@ -613,7 +615,6 @@ sub compiler {
     # shorewall.conf has been processed and the capabilities have been determined.
     #
     initialize_chain_table(1);
-
     #
     # Allow user to load Perl modules
     #
@@ -695,7 +696,7 @@ sub compiler {
     if ( $scriptfilename || $debug ) {
 	emit 'return 0';
 	pop_indent;
-	emit '}';
+	emit '}'; # End of setup_common_rules()
     }
 
     disable_script;
@@ -704,7 +705,17 @@ sub compiler {
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
     enable_script;
-
+    #
+    # Validate the TC files so that the providers will know what interfaces have TC
+    #
+    my $tcinterfaces = process_tc;
+    #
+    # Generate a function to bring up each provider
+    #
+    process_providers( $tcinterfaces );
+    #
+    # [Re-]establish Routing
+    #
     if ( $scriptfilename || $debug ) {
 	emit(  "\n#",
 	       '# Setup routing and traffic shaping',
@@ -714,9 +725,7 @@ sub compiler {
 
 	push_indent;
     }
-    #
-    # [Re-]establish Routing
-    #
+
     setup_providers;
     #
     # TCRules and Traffic Shaping
@@ -725,7 +734,7 @@ sub compiler {
 
     if ( $scriptfilename || $debug ) {
 	pop_indent;
-	emit "}\n";
+	emit "}\n"; # End of setup_routing_and_traffic_shaping()
     }
 
     disable_script;
@@ -748,12 +757,12 @@ sub compiler {
 	# Setup Nat
 	#
 	setup_nat;
-	#
-	# Setup NETMAP
-	#
-	setup_netmap;
     }
 
+    #
+    # Setup NETMAP
+    #
+    setup_netmap;
     #
     # MACLIST Filtration
     #

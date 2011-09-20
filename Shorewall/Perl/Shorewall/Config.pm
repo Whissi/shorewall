@@ -279,6 +279,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 HEADER_MATCH    => 'Header Match',
 		 ACCOUNT_TARGET  => 'ACCOUNT Target',
 		 AUDIT_TARGET    => 'AUDIT Target',
+		 RAWPOST_TABLE   => 'Rawpost Table',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -306,6 +307,7 @@ our %config_files = ( #accounting      => 1,
 		      refresh          => 1,
 		      refreshed        => 1,
 		      restored         => 1,
+		      rawnat           => 1,
 		      route_rules      => 1,
 		      routes           => 1,
 		      routestopped     => 1,
@@ -381,6 +383,12 @@ my $iptables;                # Path to iptables/ip6tables
 my $tc;                      # Path to tc
 my $ip;                      # Path to ip
 
+my $shell;                   # Type of shell that processed the params file
+
+use constant { BASH    => 1,
+	       OLDBASH => 2,
+	       ASH     => 3 };
+
 use constant { MIN_VERBOSITY => -1,
 	       MAX_VERBOSITY => 2 ,
 	       F_IPV4 => 4,
@@ -436,7 +444,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40421 ,
+		    CAPVERSION => 40423 ,
 		  );
     #
     # From shorewall.conf file
@@ -624,6 +632,7 @@ sub initialize( $ ) {
 	       CONNMARK_MATCH => undef,
 	       XCONNMARK_MATCH => undef,
 	       RAW_TABLE => undef,
+	       RAWPOST_TABLE => undef,
 	       IPP2P_MATCH => undef,
 	       OLD_IPP2P_MATCH => undef,
 	       CLASSIFY_TARGET => undef,
@@ -2525,6 +2534,10 @@ sub Raw_Table() {
     qt1( "$iptables -t raw -L -n" );
 }
 
+sub Rawpost_Table() {
+    qt1( "$iptables -t rawpost -L -n" );
+}
+
 sub Old_IPSet_Match() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
@@ -2707,6 +2720,7 @@ our %detect_capability =
       PHYSDEV_MATCH => \&Physdev_Match,
       POLICY_MATCH => \&Policy_Match,
       RAW_TABLE => \&Raw_Table,
+      RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
       RECENT_MATCH => \&Recent_Match,
       TCPMSS_MATCH => \&Tcpmss_Match,
@@ -2820,6 +2834,7 @@ sub determine_capabilities() {
 
 	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
 	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
+	$capabilities{RAWPOST_TABLE}   = detect_capability( 'RAWPOST_TABLE' );
 	$capabilities{IPSET_MATCH}     = detect_capability( 'IPSET_MATCH' );
 	$capabilities{USEPKTTYPE}      = detect_capability( 'USEPKTTYPE' );
 	$capabilities{ADDRTYPE}        = detect_capability( 'ADDRTYPE' );
@@ -3054,8 +3069,19 @@ EOF
 
 	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
 	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
+	
+	if ( system( "diff -q $configfile $configfile.bak > /dev/null" ) ) {
+	    progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
+	} else {
+	    if ( unlink "$configfile.bak" ) {
+		progress_message3 "No update required to configuration file $configfile; $configfile.bak not saved";
+	    } else {
+		warning_message "Unable to unlink $configfile.bak";
+		progress_message3 "No update required to configuration file $configfile; $configfile.b";
+	    }
 
-	progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
+	    exit 0;
+	}
     } else {
 	fatal_error "$fn does not exist";
     }
@@ -3249,6 +3275,8 @@ sub get_params() {
 	    # - Embedded double quotes are escaped with '\\'
 	    # - Valueless variables are supported (e.g., 'declare -x foo')
 	    #
+	    $shell = BASH;
+
 	    for ( @params ) {
 		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
@@ -3257,11 +3285,11 @@ sub get_params() {
 		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
+		    chomp;
 		    if ($variable) {
 			s/"$//;
 			$params{$variable} .= $_;
 		    } else {
-			chomp;
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}	
@@ -3275,6 +3303,8 @@ sub get_params() {
 	    # - Embedded single quotes are escaped with '\'
 	    # - Valueless variables ( e.g., 'export foo') are supported
 	    #
+	    $shell = OLDBASH;
+
 	    for ( @params ) {
 		if ( /^export (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
@@ -3283,11 +3313,11 @@ sub get_params() {
 		} elsif ( /^export ([^\s=]+)\s*$/ || /^export (.*)=""$/ ) {
 		    $params{$1} = '';
 		} else {
+		    chomp;
 		    if ($variable) {
 			s/"$//;
 			$params{$variable} .= $_;
 		    } else {
-			chomp;
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}	
@@ -3300,6 +3330,8 @@ sub get_params() {
 	    # - Param values are delimited by single quotes.
 	    # - Embedded single quotes are transformed to the five characters '"'"'
 	    #
+	    $shell = ASH;
+
 	    for ( @params ) {
 		if ( /^export (.*?)='(.*'"'"')$/ ) {
 		    $params{$variable=$1}="${2}\n";		    
@@ -3308,11 +3340,11 @@ sub get_params() {
 		} elsif ( /^export (.*?)='(.*)$/ ) {
 		    $params{$variable=$1}="${2}\n";
 		} else {
+		    chomp;
 		    if ($variable) {
 			s/'$//;
 			$params{$variable} .= $_;
 		    } else {
-			chomp;
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }				
 		}
@@ -3351,15 +3383,29 @@ sub export_params() {
 	#
 	next if exists $compiler_params{$param};
 	#
+	# Values in %params are generated from the output of 'export -p'.
+	# The different shells have different conventions for delimiting
+	# the value and for escaping embedded instances of the delimiter.
+	# The following logic removes the escape characters.
+	#
+	if ( $shell == BASH ) {
+	    $value =~ s/\\"/"/g;
+	} elsif ( $shell == OLDBASH ) {
+	    $value =~ s/\\'/'/g;
+	} else {
+	    $value =~ s/'"'"'/'/g;
+	}
+	#
 	# Don't export pairs from %ENV
 	#
-	if ( exists $ENV{$param} && defined $ENV{$param} ) {
-	    next if $value eq $ENV{$param};
-	}
+	next if defined $ENV{$param} && $value eq $ENV{$param};
 
 	emit "#\n# From the params file\n#" unless $count++;
-
-	if ( $value =~ /[\s()[]/ ) {
+	#
+	# We will use double quotes and escape embedded quotes with \.
+	#
+	if ( $value =~ /[\s()['"]/ ) {
+	    $value =~ s/"/\\"/g;
 	    emit "$param='$value'";
 	} else {
 	    emit "$param=$value";
@@ -3368,9 +3414,10 @@ sub export_params() {
 }
 
 #
+# - Process the params file
 # - Read the shorewall.conf file
 # - Read the capabilities file, if any
-# - establish global hashes %config , %globals and %capabilities
+# - establish global hashes %params, %config , %globals and %capabilities
 #
 sub get_configuration( $$$ ) {
 

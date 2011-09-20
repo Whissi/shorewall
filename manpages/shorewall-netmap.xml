@@ -36,19 +36,39 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">TYPE</emphasis> - <emphasis
-        role="bold">DNAT</emphasis>|<emphasis
-        role="bold">SNAT</emphasis></term>
+        role="bold">{DNAT</emphasis>|<emphasis
+        role="bold">SNAT}[:{P|O|T}</emphasis>]</term>
 
         <listitem>
-          <para>Must be DNAT or SNAT.</para>
+          <para>Must be DNAT or SNAT; beginning with Shorewall 4.4.23, may be
+          optionally followed by :P, :O or :T to perform <firstterm>stateless
+          NAT</firstterm>. Stateless NAT requires <firstterm>Rawpost Table
+          support</firstterm> in your kernel and iptables (see the output of
+          <command>shorewall show capabilities</command>).</para>
 
-          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
-          its destination address rewritten to the corresponding address in
-          NET2.</para>
+          <para>If DNAT or DNAT:P, traffic entering INTERFACE and addressed to
+          NET1 has its destination address rewritten to the corresponding
+          address in NET2.</para>
 
-          <para>If SNAT, traffic leaving INTERFACE with a source address in
-          NET1 has it's source address rewritten to the corresponding address
-          in NET2.</para>
+          <para>If SNAT or SNAT:T, traffic leaving INTERFACE with a source
+          address in NET1 has it's source address rewritten to the
+          corresponding address in NET2.</para>
+
+          <para>If DNAT:O, traffic originating on the firewall and leaving via
+          INTERFACE and addressed to NET1 has its destination address
+          rewritten to the corresponding address in NET2.</para>
+
+          <para>If DNAT:P, traffic entering via INTERFACE and addressed to
+          NET1 has its destination address rewritten to the corresponding
+          address in NET2.</para>
+
+          <para>If SNAT:P, traffic entering via INTERFACE with a destination
+          address in NET1 has it's source address rewritten to the
+          corresponding address in NET2.</para>
+
+          <para>If SNAT:O, traffic originating on the firewall and leaving via
+          INTERFACE with a source address in NET1 has it's source address
+          rewritten to the corresponding address in NET2.</para>
         </listitem>
       </varlistentry>
 
@@ -57,7 +77,10 @@
         <emphasis>network-address</emphasis></term>
 
         <listitem>
-          <para>Network in CIDR format (e.g., 192.168.1.0/24).</para>
+          <para>Network in CIDR format (e.g., 192.168.1.0/24). Beginning with
+          Shorewall 4.4.24, <ulink
+          url="shorewall-exclusion.html">exclusion</ulink> is
+          supported.</para>
         </listitem>
       </varlistentry>
 
@@ -98,6 +121,60 @@
           network for SNAT rules.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO (Optional - Added in Shorewall
+        4.4.23.2)</emphasis> -
+        <emphasis>protocol-number-or-name</emphasis></term>
+
+        <listitem>
+          <para>Only packets specifying this protocol will have their IP
+          header modified.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.23.2)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Destination Ports. A comma-separated list of Port names (from
+          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
+          range</emphasis>s; if the protocol is <emphasis
+          role="bold">icmp</emphasis>, this column is interpreted as the
+          destination icmp-type(s). ICMP types may be specified as a numeric
+          type, a numberic type and code separated by a slash (e.g., 3/4), or
+          a typename. See <ulink
+          url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
+
+          <para>If the protocol is <emphasis role="bold">ipp2p</emphasis>,
+          this column is interpreted as an ipp2p option without the leading
+          "--" (example <emphasis role="bold">bit</emphasis> for bit-torrent).
+          If no PORT is given, <emphasis role="bold">ipp2p</emphasis> is
+          assumed.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          icmp (1), tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if
+          any of the following field is supplied.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
+        Shorewall 4.4.23.2)</emphasis> -
+        <emphasis>port-number-or-name-list</emphasis></term>
+
+        <listitem>
+          <para>Source port(s). If omitted, any source port is acceptable.
+          Specified as a comma-separated list of port names, port numbers or
+          port ranges.</para>
+
+          <para>An entry in this field requires that the PROTO column specify
+          tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
+          the following fields is supplied.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -114,12 +191,13 @@
     url="http://shorewall.net/netmap.html">http://shorewall.net/netmap.html</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-route_rules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

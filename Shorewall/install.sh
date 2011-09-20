@@ -248,6 +248,9 @@ else
 	    echo "Installing Debian-specific configuration..."
 	    DEBIAN=yes
 	    SPARSE=yes
+	elif [ -f /etc/redhat-release ]; then
+	    echo "Installing Redhat/Fedora-specific configuration..."
+	    FEDORA=yes
 	elif [ -f /etc/slackware-version ] ; then
 	    echo "Installing Slackware-specific configuration..."
 	    DEST="/etc/rc.d"
@@ -260,6 +263,14 @@ else
 	    ARCHLINUX=yes
 	fi
     fi
+fi
+
+if [ -z "$DESTDIR" ]; then
+    if [ -f /lib/systemd/system ]; then
+	SYSTEMD=Yes
+    fi
+elif [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
 #
@@ -301,6 +312,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall 0544
+elif [ -n "$FEDORA" ]; then
+    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
 elif [ -n "$SLACKWARE" ]; then
@@ -331,6 +344,14 @@ run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf.annotated ${DESTDIR}/u
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
+fi
+
+#
+# Install the .service file
+#
+if [ -n "$SYSTEMD" ]; then
+    run_install $OWNERSHIP -m 600 shorewall.service ${DESTDIR}/lib/systemd/system/shorewall.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall.service"
 fi
 
 if [ -n "$ANNOTATED" ]; then
@@ -997,7 +1018,11 @@ if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
 	touch /var/log/shorewall-init.log
 	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/shorewall/shorewall.conf
     else
-	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	if [ -n "$SYSTEMD" ]; then
+	    if systemctl enable shorewall; then
+		echo "Shorewall will start automatically at boot"
+	    fi
+	elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewall ; then
 		echo "shorewall will start automatically at boot"
 		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"

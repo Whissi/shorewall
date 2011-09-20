@@ -160,6 +160,8 @@ elif [ -f /etc/debian_version ]; then
     DEBIAN=yes
 elif [ -f /etc/SuSE-release ]; then
     SUSE=Yes
+elif [ -f /etc/redhat-release ]; then
+    FEDORA=Yes
 elif [ -f /etc/slackware-version ] ; then
     echo "Shorewall-init is currently not supported on Slackware" >&2
     exit 1
@@ -179,6 +181,14 @@ elif [ -d /etc/sysconfig/network-scripts/ ]; then
 else
     echo "Unknown distribution: Shorewall-init support is not available" >&2
     exit 1
+fi
+
+if [ -z "$DESTDIR" ]; then
+    if [ -f /lib/systemd/system ]; then
+	SYSTEMD=Yes
+    fi
+elif [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
 #
@@ -202,6 +212,8 @@ fi
 #
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+elif [ -n "$FEDORA" ]; then
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 #elif [ -n "$ARCHLINUX" ]; then
 #    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
 else
@@ -209,6 +221,14 @@ else
 fi
 
 echo  "Shorewall Init script installed in ${DESTDIR}${DEST}/$INIT"
+
+#
+# Install the .service file
+#
+if [ -n "$SYSTEMD" ]; then
+    run_install $OWNERSHIP -m 600 shorewall-init.service ${DESTDIR}/lib/systemd/system/shorewall-init.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-init.service"
+fi
 
 #
 # Create /usr/share/shorewall-init if needed
@@ -297,7 +317,11 @@ if [ -z "$DESTDIR" ]; then
 
 	    echo "Shorewall Init will start automatically at boot"
 	else
-	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	    if [ -n "$SYSTEMD" ]; then
+		if systemctl enable shorewall-init; then
+		    echo "Shorewall Init will start automatically at boot"
+		fi
+	    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 		if insserv /etc/init.d/shorewall-init ; then
 		    echo "Shorewall Init will start automatically at boot"
 		else

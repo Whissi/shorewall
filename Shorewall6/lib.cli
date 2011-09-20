@@ -510,7 +510,7 @@ show_command() {
 			    [ $# -eq 1 ] && usage 1
 
 			    case $2 in
-				mangle|nat|filter|raw)
+				mangle|nat|filter|raw|rawpost)
 				    table=$2
 				    table_given=Yes
 				    ;;
@@ -574,6 +574,13 @@ show_command() {
 	    echo
 	    show_reset
 	    $IP6TABLES -t raw -L $g_ipt_options
+	    ;;
+	rawpost)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION rawpost Table at $g_hostname - $(date)"
+	    echo
+	    show_reset
+	    $IP6TABLES -t rawpost -L $g_ipt_options
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
@@ -1519,6 +1526,7 @@ determine_capabilities() {
     CONNMARK_MATCH=
     XCONNMARK_MATCH=
     RAW_TABLE=
+    RAWPOST_TABLE=
     IPP2P_MATCH=
     OLD_IPP2P_MATCH=
     LENGTH_MATCH=
@@ -1549,7 +1557,6 @@ determine_capabilities() {
     HEADER_MATCH=
     ACCOUNT_TARGET=
     AUDIT_TARGET=
-    QUOTA_MATCH=
     IPSET_V5=
 
     chain=fooX$$
@@ -1664,6 +1671,7 @@ determine_capabilities() {
     fi
 
     qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
+    qt $IP6TABLES -t rawpost	   -L -n && RAWPOST_TABLE=Yes
 
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
@@ -1701,7 +1709,6 @@ determine_capabilities() {
     qt $IP6TABLES -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
     qt $IP6TABLES -A $chain -j ACCOUNT --addr 1::/122 --tname $chain && ACCOUNT_TARGET=Yes
     qt $IP6TABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
-    qt $IP6TABLES -A $chain -m quota --quota 1000 && QUOTA_MATCH=Yes
     
 
     qt $IP6TABLES -F $chain
@@ -1764,6 +1771,7 @@ report_capabilities() {
 	report_capability "Connmark Match" $CONNMARK_MATCH
 	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
+	report_capability "Rawpost Table" $RAWPOST_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
 	[ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
@@ -1793,7 +1801,6 @@ report_capabilities() {
 	report_capability "Header Match" $HEADER_MATCH
 	report_capability "ACCOUNT Target" $ACCOUNT_TARGET
 	report_capability "AUDIT Target" $AUDIT_TARGET
-	report_capability "Quota Match" $QUOTA_MATCH
 	report_capability "ipset V5" $IPSET_V5
     fi
 
@@ -1831,6 +1838,7 @@ report_capabilities1() {
     report_capability1 CONNMARK_MATCH
     report_capability1 XCONNMARK_MATCH
     report_capability1 RAW_TABLE
+    report_capability1 RAWPOST_TABLE
     report_capability1 IPP2P_MATCH
     report_capability1 OLD_IPP2P_MATCH
     report_capability1 CLASSIFY_TARGET
@@ -1860,7 +1868,6 @@ report_capabilities1() {
     report_capability1 HEADER_MATCH
     report_capability1 ACCOUNT_TARGET
     report_capability1 AUDIT_TARGET
-    report_capability1 QUOTA_MATCH
     report_capability1 IPSET_V5
     
     echo CAPVERSION=$SHOREWALL_CAPVERSION

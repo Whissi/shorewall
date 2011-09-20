@@ -458,6 +458,8 @@ sub setup_netmap() {
 
 		    require_capability 'RAWPOST_TABLE', 'Stateless NAT Entries', '';
 
+		    validate_net $net2, 0;
+
 		    unless ( $interfaceref->{root} ) {
 			@match = imatch_dest_dev(  $interface ); 
 			$interface = $interfaceref->{name};

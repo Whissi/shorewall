@@ -169,6 +169,7 @@ our %EXPORT_TAGS = (
 				       do_connbytes
 				       do_helper
 				       do_headers
+				       do_condition
 				       have_ipset_rules
 				       record_runtime_address
 				       conditional_rule
@@ -3734,6 +3735,20 @@ sub do_headers( $ ) {
     }
 
     "-m ipv6header ${invert}--header ${headers} ${soft}";
+}
+
+#
+# Generate a -m condition match
+#
+sub do_condition( $ ) {
+    my $condition = shift;
+
+    return '' if $condition eq '-';
+
+    require_capability 'CONDITION_MATCH', 'A non-empty CONDITION column', 's';
+    fatal_error "Invalid condition name ($condition)" unless $condition =~ /^[a-zA-Z]\w*$/;
+
+    "-m condition --condition $condition"
 }
 
 #

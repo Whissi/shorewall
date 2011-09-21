@@ -1102,6 +1102,20 @@
           role="bold">!</emphasis> is omitted.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CONDITION -
+        [!]<replaceable>condition-name</replaceable></emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall6 4.4.24. Matches if the value stored in
+          <filename>/proc/net/nf_condition/<replaceable>condition-name</replaceable></filename>
+          is 1. Does not match if that file contains 0 (the default). If '!'
+          is supplied, the test is inverted such that there is a match if the
+          file contains 0. The condition-name must begin with a letter and be
+          composed of letters, decimal digits or underscores.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -1148,6 +1162,19 @@
         SSH(ACCEPT) net             all        -           -            -         -                s:1/min:3</programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Example 6:</term>
+
+        <listitem>
+          <para>Forward port 80 to dmz host $BACKUP if condition
+          'primary_down' is set.</para>
+
+          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    CONDITION
+        #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
+        DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down</programlisting>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -1162,8 +1189,8 @@
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-route_rules(5),
     shorewall6-routestopped(5), shorewall6.conf(5), shorewall6-secmarks(5),
     shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
     shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>

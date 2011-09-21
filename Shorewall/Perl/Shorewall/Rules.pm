@@ -1382,7 +1382,7 @@ sub process_actions() {
 
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1415,14 +1415,14 @@ sub process_action( $) {
 
 	while ( read_a_line ) {
 
-	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers );
+	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition );
 
 	    if ( $format == 1 ) {
 		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands;
-		$origdest = $connlimit = $time = $headers = '-';
+		$origdest = $connlimit = $time = $headers = $condition = '-';
 	    } else {
-		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers )
-		    = split_line1 1, 13, 'action file', $action_commands;
+		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition )
+		    = split_line1 1, 14, 'action file', $action_commands;
 	    }
 
 	    if ( $target eq 'COMMENT' ) {
@@ -1456,6 +1456,7 @@ sub process_action( $) {
 			   $connlimit,
 			   $time,
 			   $headers,
+			   $condition,
 			   0 );
 	}
 
@@ -1485,8 +1486,8 @@ sub use_policy_action( $ ) {
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
-    my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $wildcard ) = @_;
+sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
+    my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $wildcard ) = @_;
 
     my $nocomment = no_comment;
 
@@ -1504,13 +1505,13 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 
     while ( read_a_line ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders );
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition );
 
 	if ( $format == 1 ) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $rule_commands;
-	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders ) = qw/- - - - -/;
+	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = qw/- - - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders ) = split_line1 1, 13, 'macro file', $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = split_line1 1, 14, 'macro file', $rule_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {
@@ -1586,6 +1587,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$ ) {
 				    merge_macro_column( $mconnlimit, $connlimit) ,
 				    merge_macro_column( $mtime,      $time ),
 				    merge_macro_column( $mheaders,   $headers ),
+				    merge_macro_column( $mcondition, $condition ),
 				    $wildcard
 				   );
 
@@ -1618,7 +1620,7 @@ sub verify_audit($;$$) {
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action 
 # body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument.
 #
-sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
+sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $target, 
 	 $current_param,
@@ -1634,6 +1636,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 	 $connlimit,
 	 $time,
 	 $headers,
+	 $condition,
 	 $wildcard ) = @_;
 
     my ( $action, $loglevel) = split_action $target;
@@ -1685,6 +1688,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 				       $connlimit,
 				       $time,
 				       $headers,
+				       $condition,
 				       $wildcard );
 
 	$macro_nest_level--;
@@ -1925,6 +1929,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 		      do_connlimit( $connlimit ),
 		      do_time( $time ) ,
 		      do_headers( $headers ) ,
+		      do_condition( $condition ) ,
 		    );
     } else {
 	$rule = join( '',
@@ -1934,7 +1939,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ ) {
 		      do_test( $mark , $globals{TC_MASK} ) ,
 		      do_connlimit( $connlimit ),
 		      do_time( $time ) ,
-		      do_headers( $headers )
+		      do_headers( $headers ) ,
+		      do_condition( $condition ) ,
 		    );
     }
 
@@ -2313,8 +2319,8 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers )
-	= split_line1 1, 13, 'rules file', $rule_commands;
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition )
+	= split_line1 1, 14, 'rules file', $rule_commands;
 
     process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
@@ -2367,6 +2373,7 @@ sub process_rule ( ) {
 						 $connlimit,
 						 $time,
 						 $headers,
+						 $condition,
 						 $wild );
 		}
 	    }

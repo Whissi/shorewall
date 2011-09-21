@@ -280,6 +280,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 ACCOUNT_TARGET  => 'ACCOUNT Target',
 		 AUDIT_TARGET    => 'AUDIT Target',
 		 RAWPOST_TABLE   => 'Rawpost Table',
+		 CONDITION_MATCH => 'Condition Match',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -444,7 +445,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40423 ,
+		    CAPVERSION => 40424 ,
 		  );
     #
     # From shorewall.conf file
@@ -664,6 +665,7 @@ sub initialize( $ ) {
 	       HEADER_MATCH => undef,
 	       ACCOUNT_TARGET => undef,
 	       AUDIT_TARGET => undef,
+	       CONDITION_MATCH => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2671,6 +2673,10 @@ sub Account_Target() {
     }
 }
 
+sub Condition_Match() {
+    qt1( "$iptables -m condition --condition foo" );
+}
+
 sub Audit_Target() {
     qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
 }
@@ -2680,6 +2686,7 @@ our %detect_capability =
       AUDIT_TARGET => \&Audit_Target,
       ADDRTYPE => \&Addrtype,
       CLASSIFY_TARGET => \&Classify_Target,
+      CONDITION_MATCH => \&Condition_Match,
       COMMENTS => \&Comments,
       CONNLIMIT_MATCH => \&Connlimit_Match,
       CONNMARK => \&Connmark,
@@ -2853,6 +2860,7 @@ sub determine_capabilities() {
 	$capabilities{ACCOUNT_TARGET}  = detect_capability( 'ACCOUNT_TARGET' );
 	$capabilities{AUDIT_TARGET}    = detect_capability( 'AUDIT_TARGET' );
 	$capabilities{IPSET_V5}        = detect_capability( 'IPSET_V5' );
+	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
 
 
 	qt1( "$iptables -F $sillyname" );

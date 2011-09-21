@@ -1267,6 +1267,30 @@
           </variablelist>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">HEADERS</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.15. Not used in IPv4 configurations. If
+          you with to supply a value for one of the later columns, enter '-'
+          in this column.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">CONDITION -
+        [!]<replaceable>condition-name</replaceable></emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.24. Matches if the value stored in
+          <filename>/proc/net/nf_condition/<replaceable>condition-name</replaceable></filename>
+          is 1. Does not match if that file contains 0 (the default). If '!'
+          is supplied, the test is inverted such that there is a match if the
+          file contains 0. The condition-name must begin with a letter and be
+          composed of letters, decimal digits or underscores.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -1455,6 +1479,19 @@
           <programlisting>        #ACTION     SOURCE          DEST       PROTO       DEST         SOURCE    ORIGINAL         RATE
         #                                                  PORT(S)      PORT(S)   DEST             LIMIT
         SSH(ACCEPT) net             all        -           -            -         -                s:1/min:3</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 12:</term>
+
+        <listitem>
+          <para>Forward port 80 to dmz host $BACKUP if condition
+          'primary_down' is set.</para>
+
+          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    CONDITION
+        #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
+        DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -1731,6 +1731,7 @@ determine_capabilities() {
     HEADER_MATCH=
     ACCOUNT_TARGET=
     AUDIT_TARGET=
+    CONDITION_MATCH=
 
     chain=fooX$$
 
@@ -1881,6 +1882,7 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
     qt $IPTABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
+    qt $IPTABLES -A $chain -m condition --condition foo && CONDITION_MATCH=Yes
     qt $IPTABLES -F $chain
     qt $IPTABLES -X $chain
     qt $IPTABLES -F $chain1
@@ -1975,6 +1977,7 @@ report_capabilities() {
         report_capability "ACCOUNT Target" $ACCOUNT_TARGET
 	report_capability "AUDIT Target" $AUDIT_TARGET
 	report_capability "ipset V5" $IPSET_V5
+	report_capability "Condition Match" $CONDITION_MATCH
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -2045,6 +2048,7 @@ report_capabilities1() {
     report_capability1 ACCOUNT_TARGET
     report_capability1 AUDIT_TARGET
     report_capability1 IPSET_V5
+    report_capability1 CONDITION_MATCH
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

@@ -2087,8 +2087,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    $rule = join( '',
 			  do_proto( $proto, $ports, $sports ),
 			  do_ratelimit( $ratelimit, 'ACCEPT' ),
-			  do_user $user ,
-			  do_test( $mark , $globals{TC_MASK} ) );
+			  do_user $user,
+			  do_test( $mark , $globals{TC_MASK} ),
+			  do_condition( $condition )
+			);
 	    $loglevel = '';
 	    $dest     = $server;
 	    $action   = 'ACCEPT';

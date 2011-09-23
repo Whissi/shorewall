@@ -2674,7 +2674,7 @@ sub Account_Target() {
 }
 
 sub Condition_Match() {
-    qt1( "$iptables -m condition --condition foo" );
+    qt1( "$iptables -A $sillyname -m condition --condition foo" );
 }
 
 sub Audit_Target() {

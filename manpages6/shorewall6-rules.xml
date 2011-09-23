@@ -1184,10 +1184,10 @@
         <term>Example 6:</term>
 
         <listitem>
-          <para>Forward port 80 to dmz host $BACKUP if condition
-          'primary_down' is set.</para>
+          <para>Forward port 80 to dmz host $BACKUP if switch 'primary_down'
+          is set.</para>
 
-          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    CONDITION
+          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
         #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
         DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down</programlisting>
         </listitem>

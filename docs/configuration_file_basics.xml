@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2010</year>
+      <year>2001-2011</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -1624,7 +1624,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     above.</para>
   </section>
 
-  <section>
+  <section id="Switches">
     <title>Switches</title>
 
     <para>There are times when you would like to enable or disable one or more
@@ -1640,9 +1640,9 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     Support requires that you install xtables-addons.</para>
 
     <para>The SWITCH column contains the name of a
-    <firstterm>switch.</firstterm> Each switch that is normally initially in
-    the off position. You can turn on the switch condition named
-    <emphasis>switch1</emphasis> by:</para>
+    <firstterm>switch.</firstterm> Each switch that is initially in the
+    <emphasis role="bold">off</emphasis> position. You can turn on the switch
+    named <emphasis>switch1</emphasis> by:</para>
 
     <simplelist>
       <member><command>echo 1 &gt;
@@ -1657,9 +1657,10 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     </simplelist>
 
     <para>If you simply include the switch name in the SWITCH column, then the
-    rule is enabled only when the switch is on. If you precede the switch name
-    with ! (e.g., !switch1), then the rule is enabled only when the switch is
-    off. </para>
+    rule is enabled only when the switch is <emphasis
+    role="bold">on</emphasis>. If you precede the switch name with ! (e.g.,
+    !switch1), then the rule is enabled only when the switch is <emphasis
+    role="bold">off</emphasis>. </para>
 
     <warning>
       <para>The <command>shorewall restart</command> command resets all
@@ -1667,7 +1668,19 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     </warning>
 
     <para>Shorewall requires that switch names begin with a letter and be
-    composed of letters, digits, underscore ('_') or hyphen ('-').</para>
+    composed of letters, digits, underscore ('_') or hyphen ('-'). Multiple
+    rules can be controlled by the same switch.</para>
+
+    <para>Example:</para>
+
+    <blockquote>
+      <para>Forward port 80 to dmz host $BACKUP if switch 'primary_down' is
+      on.</para>
+
+      <programlisting>#ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
+#                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
+DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down  </programlisting>
+    </blockquote>
   </section>
 
   <section id="Logical">

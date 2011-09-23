@@ -3745,8 +3745,8 @@ sub do_condition( $ ) {
 
     return '' if $condition eq '-';
 
-    require_capability 'CONDITION_MATCH', 'A non-empty CONDITION column', 's';
-    fatal_error "Invalid condition name ($condition)" unless $condition =~ /^[a-zA-Z]\w*$/;
+    require_capability 'CONDITION_MATCH', 'A non-empty SWITCH column', 's';
+    fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/;
 
     "-m condition --condition $condition "
 }

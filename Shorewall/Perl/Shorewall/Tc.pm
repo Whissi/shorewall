@@ -390,8 +390,26 @@ sub process_tc_rule( ) {
 			}
 
 			$target .= ' --tproxy-mark';
-		    }
+		    } elsif ( $target eq 'TTL' ) {
+			fatal_error "Invalid TTL specification( $cmd/$rest )" if $rest;
+			fatal_error "Chain designator $designator not allowed with TTL" if $designator && ! ( $designator eq 'F' );
 
+			$chain = 'tcfor';
+
+			$cmd =~ /^TTL\(([-+]?\d+)\)$/;
+
+			my $param =  $1;
+
+			fatal_error "Invalid TTL specification( $cmd )" unless $param && ( $param = abs $param ) < 256;
+
+			if ( $1 =~ /^\+/ ) {
+			    $target .= " --ttl-inc $param";
+			} elsif ( $1 =~ /\-/ ) {
+			    $target .= " --ttl-dec $param";
+			} else {
+			    $target .= " --ttl-set $param";
+			}
+		    }
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($originalmark)" if $marktype == NOMARK;
@@ -1806,6 +1824,12 @@ sub setup_tc() {
 			  mark      => HIGHMARK,
 			  mask      => '',
 			  connmark  => '' },
+			{ match     => sub( $ ) { $_[0] =~ /^TTL/ },
+			  target    => 'TTL',
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			} 
 		      );
 
 	if ( my $fn = open_file 'tcrules' ) {

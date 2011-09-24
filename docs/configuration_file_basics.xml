@@ -1660,16 +1660,23 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     rule is enabled only when the switch is <emphasis
     role="bold">on</emphasis>. If you precede the switch name with ! (e.g.,
     !switch1), then the rule is enabled only when the switch is <emphasis
-    role="bold">off</emphasis>. </para>
+    role="bold">off</emphasis>. Switch settings are retained over
+    <command>shorewall restart</command>.</para>
 
-    <warning>
-      <para>The <command>shorewall restart</command> command resets all
-      switches to off.</para>
-    </warning>
+    <para>Shorewall requires that switch names:</para>
 
-    <para>Shorewall requires that switch names begin with a letter and be
-    composed of letters, digits, underscore ('_') or hyphen ('-'). Multiple
-    rules can be controlled by the same switch.</para>
+    <itemizedlist>
+      <listitem>
+        <para>begin with a letter and be composed of letters, digits,
+        underscore ('_') or hyphen ('-'); and</para>
+      </listitem>
+
+      <listitem>
+        <para>be 30 characters or less in length.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Multiple rules can be controlled by the same switch.</para>
 
     <para>Example:</para>
 

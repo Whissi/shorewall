@@ -3748,7 +3748,7 @@ sub do_condition( $ ) {
     my $invert = $condition =~ s/^!// ? '! ' : '';
 
     require_capability 'CONDITION_MATCH', 'A non-empty SWITCH column', 's';
-    fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/;
+    fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/ && length $condition <= 30;
 
     "-m condition ${invert}--condition $condition "
 }

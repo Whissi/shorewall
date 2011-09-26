@@ -267,7 +267,8 @@ sub start_provider( $$$ ) {
 #
 sub process_a_provider() {
 
-    my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) = split_line 6, 8, 'providers file';
+    my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) =
+	split_line 6, 8, 'providers file', { table => 0, number => 1, mark => 2, duplicate => 3, interface => 4, gateway => 5, options => 6, copy => 7 };
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
@@ -729,7 +730,7 @@ sub add_a_provider( $$ ) {
 }
 
 sub add_an_rtrule( ) {
-    my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file';
+    my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file', { source => 0, dest => 1, provider => 2, priority => 3 };
 
     our $current_if;
 
@@ -804,7 +805,7 @@ sub add_an_rtrule( ) {
 }
 
 sub add_a_route( ) {
-    my ( $provider, $dest, $gateway, $device ) = split_line 2, 4, 'routes file';
+    my ( $provider, $dest, $gateway, $device ) = split_line 2, 4, 'routes file', { provider => 0, dest => 1, gateway => 2, device => 3 };
 
     our $current_if;
 

@@ -1338,13 +1338,15 @@ sub supplied( $ ) {
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #
-sub split_line( $$$ ) {
-    my ( $mincolumns, $maxcolumns, $description ) = @_;
+sub split_line( $$$$ ) {
+    my ( $mincolumns, $maxcolumns, $description, $columnsref ) = @_;
 
-    fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $currentline =~ /["'`\\]/;
-    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
+    my ( $columns, $pairs ) = split( ';', $currentline );
 
-    my @line = split( ' ', $currentline );
+    fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $columns =~ /["'`\\]/;
+    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+
+    my @line = split( ' ', $columns );
 
     my $line = @line;
 
@@ -1352,9 +1354,20 @@ sub split_line( $$$ ) {
 
     $line-- while $line > 0 && $line[$line-1] eq '-';
 
-    fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
-
     push @line, '-' while @line < $maxcolumns;
+
+    if ( supplied $pairs ) {
+	my @pairs = split( ' ', $pairs );
+
+	for ( @pairs ) {
+	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.*)$/;
+	    my ( $column, $value ) = ( lc $1, $2 );
+	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
+	    $column = $columnsref->{$column};
+	    fatal_error "Column $1 already has a value" unless $line[$column] eq '-';
+	    $line[$column] = $value =~ /^"([^"]+)"$/ ? $1 : $value;
+	}
+    }  
 
     @line;
 }
@@ -1362,21 +1375,23 @@ sub split_line( $$$ ) {
 #
 # Version of 'split_line' used on files with exceptions
 #
-sub split_line1( $$$;$ ) {
-    my ( $mincolumns, $maxcolumns, $description, $nopad) = @_;
+sub split_line1( $$$$;$ ) {
+    my ( $mincolumns, $maxcolumns, $description, $columnsref, $nopad) = @_;
 
-    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $currentline =~ /["`\\]/;
-    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
+    my ( $columns, $pairs ) = split( ';', $currentline );
 
-    my @line = split( ' ', $currentline );
+    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
+    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+
+    my @line = split( ' ', $columns );
 
     $nopad = { COMMENT => 0 } unless $nopad;
 
-    my $first   = $line[0];
-    my $columns = $nopad->{$first};
+    my $first     = $line[0];
+    my $npcolumns = $nopad->{$first};
 
-    if ( defined $columns ) {
-	fatal_error "Invalid $first entry" if $columns && @line != $columns;
+    if ( defined $npcolumns ) {
+	fatal_error "Invalid $first entry" if $npcolumns && @line != $npcolumns;
 	return @line
     }
 
@@ -1391,6 +1406,19 @@ sub split_line1( $$$;$ ) {
     fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
     push @line, '-' while @line < $maxcolumns;
+
+    if ( supplied $pairs ) {
+	my @pairs = split( ' ', $pairs );
+
+	for ( @pairs ) {
+	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.*)$/;
+	    my ( $column, $value ) = ( lc $1, $2 );
+	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
+	    $column = $columnsref->{$column};
+	    fatal_error "Column $1 already has a value" unless $line[$column] eq '-';
+	    $line[$column] = $value =~ /^"([^"]+)"$/ ? $1 : $value;
+	}
+    }   
 
     @line;
 }

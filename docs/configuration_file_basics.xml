@@ -492,6 +492,269 @@ ACCEPT      net:\
     </example>
   </section>
 
+  <section id="Pairs">
+    <title>Alternate Specification of Column Values - Shorewall 4.4.24 and
+    Later</title>
+
+    <para>Some of the configuration files now have a large number of columns.
+    That makes it awkward to specify a value for one of the right-most columns
+    as you must have the correct number of intervening '-' columns.</para>
+
+    <para>This problem is addressed by allowing column values to be specified
+    as <replaceable>column-name</replaceable>/<replaceable>value</replaceable>
+    pairs.</para>
+
+    <para>Each file has both required and optional columns. The columns up to
+    the last required column must be specified in the normal way. After that,
+    at any point, you can enter a semicolon (':') followed by one or more
+    specifications of the form:</para>
+
+    <simplelist>
+      <member><replaceable>column-name</replaceable>=<replaceable>value</replaceable></member>
+    </simplelist>
+
+    <para>The value may optionally be enclosed in double quotes.</para>
+
+    <para>The following table shows the right-most required column and the
+    remaining column names for each of the table-oriented configuration
+    files.</para>
+
+    <note>
+      <para>Column names are case-insensitive.</para>
+    </note>
+
+    <informaltable>
+      <tgroup cols="3">
+        <tbody>
+          <row>
+            <entry><emphasis role="bold">File</emphasis></entry>
+
+            <entry><emphasis role="bold">Right-most required
+            Column</emphasis></entry>
+
+            <entry><emphasis role="bold">Remaining column
+            names</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>accounting</entry>
+
+            <entry>ACTION</entry>
+
+            <entry>chain, source, dest, proto, dport, sport, user, mark,
+            ipsec, headers</entry>
+          </row>
+
+          <row>
+            <entry>blacklist</entry>
+
+            <entry>ADDRESS/SUBNET</entry>
+
+            <entry>proto,port,options</entry>
+          </row>
+
+          <row>
+            <entry>ecn</entry>
+
+            <entry>INTERFACE</entry>
+
+            <entry>hosts</entry>
+          </row>
+
+          <row>
+            <entry>hosts</entry>
+
+            <entry>ZONE</entry>
+
+            <entry>hosts,options</entry>
+          </row>
+
+          <row>
+            <entry>interfaces</entry>
+
+            <entry>INTERFACE</entry>
+
+            <entry>broadcast,options</entry>
+          </row>
+
+          <row>
+            <entry>maclist</entry>
+
+            <entry>MAC</entry>
+
+            <entry>addresses</entry>
+          </row>
+
+          <row>
+            <entry>masq</entry>
+
+            <entry>SOURCE</entry>
+
+            <entry>address,proto,port,ipsec,mark,user</entry>
+          </row>
+
+          <row>
+            <entry>nat</entry>
+
+            <entry>EXTERNAL</entry>
+
+            <entry>interface,internal,allints,localnat</entry>
+          </row>
+
+          <row>
+            <entry>netmap</entry>
+
+            <entry>NET2</entry>
+
+            <entry>net3,proto,dport,sport</entry>
+          </row>
+
+          <row>
+            <entry>notrack</entry>
+
+            <entry>SOURCE</entry>
+
+            <entry>dest,proto,dport,sport,user</entry>
+          </row>
+
+          <row>
+            <entry>policy</entry>
+
+            <entry>POLICY</entry>
+
+            <entry>loglevel,limit,connlimit</entry>
+          </row>
+
+          <row>
+            <entry>providers</entry>
+
+            <entry>GATEWAY</entry>
+
+            <entry>options,copy</entry>
+          </row>
+
+          <row>
+            <entry>proxyarp</entry>
+
+            <entry>EXTERNAL</entry>
+
+            <entry>haveroute,persistent</entry>
+          </row>
+
+          <row>
+            <entry>route_rules</entry>
+
+            <entry>PRIORITY</entry>
+
+            <entry>N/A</entry>
+          </row>
+
+          <row>
+            <entry>routestopped</entry>
+
+            <entry>INTERFACE</entry>
+
+            <entry>hosts,options,proto,dport,sport</entry>
+          </row>
+
+          <row>
+            <entry>rules</entry>
+
+            <entry>ACTION</entry>
+
+            <entry>source,dest,proto,dport,sport,origdest,rate,user,mark,connlimit,time,headers,switch</entry>
+          </row>
+
+          <row>
+            <entry>secmarks</entry>
+
+            <entry>CHAIN</entry>
+
+            <entry>source,dest,proto,dport,sport,user,mark</entry>
+          </row>
+
+          <row>
+            <entry>tcclasses</entry>
+
+            <entry>CEIL</entry>
+
+            <entry>prio,options</entry>
+          </row>
+
+          <row>
+            <entry>tcdevices</entry>
+
+            <entry>OUT_BANDWIDTH</entry>
+
+            <entry>options,redirect</entry>
+          </row>
+
+          <row>
+            <entry>tcfilters</entry>
+
+            <entry>SOURCE</entry>
+
+            <entry>dest,proto,dport,sport,tos,length</entry>
+          </row>
+
+          <row>
+            <entry>tcinterfaces</entry>
+
+            <entry>DEVICE</entry>
+
+            <entry>type,in_bandwidth,out_bandwidth</entry>
+          </row>
+
+          <row>
+            <entry>tcpri</entry>
+
+            <entry>BAND</entry>
+
+            <entry>proto,port,address,interface,helper</entry>
+          </row>
+
+          <row>
+            <entry>tcrules</entry>
+
+            <entry>SOURCE</entry>
+
+            <entry>dest,proto,dport,sport,user,test,length,tos,connbytes,helper,headers</entry>
+          </row>
+
+          <row>
+            <entry>tos</entry>
+
+            <entry>TOS</entry>
+
+            <entry>mark</entry>
+          </row>
+
+          <row>
+            <entry>tunnels</entry>
+
+            <entry>ZONE</entry>
+
+            <entry>gateway,gateway_zone</entry>
+          </row>
+
+          <row>
+            <entry>zones</entry>
+
+            <entry>ZONE</entry>
+
+            <entry>type,options,in_options,out_options</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>Example (rules file):</para>
+
+    <programlisting>#ACTION         SOURCE            DEST            PROTO   DEST 
+#                                                         PORT(S)
+DNAT            net               loc:10.0.0.1    tcp     80    ;    mark="88"</programlisting>
+  </section>
+
   <section>
     <title>Addresses</title>
 

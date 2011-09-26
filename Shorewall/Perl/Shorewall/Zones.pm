@@ -402,7 +402,8 @@ sub process_zone( \$ ) {
 
     my @parents;
 
-    my ($zone, $type, $options, $in_options, $out_options ) = split_line 1, 5, 'zones file';
+    my ($zone, $type, $options, $in_options, $out_options ) =
+	split_line 1, 5, 'zones file', { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 };
 
     if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	$zone = $1;
@@ -871,7 +872,7 @@ sub process_interface( $$ ) {
     my ( $nextinum, $export ) = @_;
     my $netsref   = '';
     my $filterref = [];
-    my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file';
+    my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
     my $zoneref;
     my $bridge = '';
 
@@ -1727,7 +1728,7 @@ sub compile_updown() {
 #
 sub process_host( ) {
     my $ipsec = 0;
-    my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file';
+    my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file', { zone => 0, hosts => 1, options => 2 };
 
     my $zoneref = $zones{$zone};
     my $type    = $zoneref->{type};

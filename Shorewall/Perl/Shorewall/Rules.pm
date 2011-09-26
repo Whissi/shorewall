@@ -77,6 +77,21 @@ my $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
 my $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
 my $macro_commands  = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
 
+my %rulecolumns = ( action    =>   0,
+		    source    =>   1,
+		    dest      =>   2,
+		    proto     =>   3,
+		    dport     =>   4,
+		    sport     =>   5,
+		    origdest  =>   6,
+		    rate      =>   7,
+		    user      =>   8,
+		    mark      =>   9,
+		    connlimit =>  10,
+		    time      =>  11,
+		    headers   =>  12,
+		    switch    =>  13 );
+
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
 my $macro_nest_level;
@@ -297,7 +312,8 @@ sub process_a_policy() {
     our %validpolicies;
     our @zonelist;
 
-    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) = split_line 3, 6, 'policy file';
+    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) =
+	split_line 3, 6, 'policy file', { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, connlimit => 5 } ;
 
     $loglevel  = '' if $loglevel  eq '-';
     $synparams = '' if $synparams eq '-';
@@ -1354,7 +1370,7 @@ sub process_actions() {
 	open_file $file;
 
 	while ( read_a_line ) {
-	    my ( $action ) = split_line 1, 1, 'action file';
+	    my ( $action ) = split_line 1, 1, 'action file' , { action => 0 };
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1418,11 +1434,11 @@ sub process_action( $) {
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition );
 
 	    if ( $format == 1 ) {
-		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands;
+		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 1, 9, 'action file', $rule_commands, {};
 		$origdest = $connlimit = $time = $headers = $condition = '-';
 	    } else {
 		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition )
-		    = split_line1 1, 14, 'action file', $action_commands;
+		    = split_line1 1, 14, 'action file', \%rulecolumns, $action_commands;
 	    }
 
 	    if ( $target eq 'COMMENT' ) {
@@ -1508,10 +1524,10 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition );
 
 	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 1, 8, 'macro file', \%rulecolumns, $rule_commands;
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = qw/- - - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = split_line1 1, 14, 'macro file', $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = split_line1 1, 14, 'macro file', \%rulecolumns, $rule_commands;
 	}
 
 	if ( $mtarget eq 'COMMENT' ) {
@@ -2322,7 +2338,7 @@ sub build_zone_list( $$$\$\$ ) {
 #
 sub process_rule ( ) {
     my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition )
-	= split_line1 1, 14, 'rules file', $rule_commands;
+	= split_line1 1, 14, 'rules file', \%rulecolumns, $rule_commands;
 
     process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';

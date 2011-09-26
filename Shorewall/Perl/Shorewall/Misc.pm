@@ -82,7 +82,7 @@ sub process_tos() {
 
 	while ( read_a_line ) {
 
-	    my ($src, $dst, $proto, $sports, $ports , $tos, $mark ) = split_line 6, 7, 'tos file entry';
+	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) = split_line 6, 7, 'tos file entry', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } ;
 
 	    $first_entry = 0;
 
@@ -159,7 +159,7 @@ sub setup_ecn()
 
 	while ( read_a_line ) {
 
-	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file entry';
+	    my ($interface, $hosts ) = split_line 1, 2, 'ecn file entry', { interface => 0, hosts => 1 };
 
 	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
@@ -256,7 +256,7 @@ sub setup_blacklist() {
 		    $first_entry = 0;
 		}
 
-		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file';
+		my ( $networks, $protocol, $ports, $options ) = split_line 1, 4, 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
 
 		if ( $options eq '-' ) {
 		    $options = 'src';
@@ -358,7 +358,8 @@ sub process_routestopped() {
 
 	while ( read_a_line ) {
 
-	    my ($interface, $hosts, $options , $proto, $ports, $sports ) = split_line 1, 6, 'routestopped file';
+	    my ($interface, $hosts, $options , $proto, $ports, $sports ) =
+		split_line 1, 6, 'routestopped file', { interface => 1, hosts => 2, options => 3, proto => 4, dport => 5, sport => 6 };
 
 	    my $interfaceref;
 
@@ -897,7 +898,7 @@ sub setup_mac_lists( $ ) {
 
 	    while ( read_a_line ) {
 
-		my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file';
+		my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 3, 4, 'maclist file', { origdisposition => 0, interface => 1, mac => 2, addresses => 3 };
 
 		if ( $original_disposition eq 'COMMENT' ) {
 		    process_comment;

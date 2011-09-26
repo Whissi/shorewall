@@ -84,7 +84,7 @@ sub setup_notrack() {
 
 	while ( read_a_line ) {
 
-	    my ( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 1, 6, 'Notrack File';
+	    my ( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 1, 6, 'Notrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };
 
 	    if ( $source eq 'COMMENT' ) {
 		process_comment;

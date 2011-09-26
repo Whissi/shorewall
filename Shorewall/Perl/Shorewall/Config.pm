@@ -1341,8 +1341,9 @@ sub supplied( $ ) {
 sub split_line( $$$$ ) {
     my ( $mincolumns, $maxcolumns, $description, $columnsref ) = @_;
 
-    my ( $columns, $pairs ) = split( ';', $currentline );
+    my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 
+    fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
     fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $columns =~ /["'`\\]/;
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 
@@ -1378,8 +1379,9 @@ sub split_line( $$$$ ) {
 sub split_line1( $$$$;$ ) {
     my ( $mincolumns, $maxcolumns, $description, $columnsref, $nopad) = @_;
 
-    my ( $columns, $pairs ) = split( ';', $currentline );
+    my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 
+    fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 

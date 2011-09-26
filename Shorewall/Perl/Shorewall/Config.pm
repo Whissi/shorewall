@@ -1361,11 +1361,11 @@ sub split_line( $$$$ ) {
 	my @pairs = split( ' ', $pairs );
 
 	for ( @pairs ) {
-	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.*)$/;
+	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.+)$/;
 	    my ( $column, $value ) = ( lc $1, $2 );
 	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
 	    $column = $columnsref->{$column};
-	    fatal_error "Column $1 already has a value" unless $line[$column] eq '-';
+	    fatal_error "The $1 column already has a value" unless $line[$column] eq '-';
 	    $line[$column] = $value =~ /^"([^"]+)"$/ ? $1 : $value;
 	}
     }  
@@ -1413,11 +1413,11 @@ sub split_line1( $$$$;$ ) {
 	my @pairs = split( ' ', $pairs );
 
 	for ( @pairs ) {
-	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.*)$/;
+	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.+)$/;
 	    my ( $column, $value ) = ( lc $1, $2 );
 	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
 	    $column = $columnsref->{$column};
-	    fatal_error "Column $1 already has a value" unless $line[$column] eq '-';
+	    fatal_error "The $1 column already has a value" unless $line[$column] eq '-';
 	    $line[$column] = $value =~ /^"([^"]+)"$/ ? $1 : $value;
 	}
     }   

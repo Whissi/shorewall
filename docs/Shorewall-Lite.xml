@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall Lite</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2006-2010</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 4.3 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    4.3.5 then please see the documentation appropriate for your
+    version.</emphasis></para>
+  </caution>
+
+  <section id="Overview">
+    <title>Overview</title>
+
+    <para>Shorewall has the capability to compile a Shorewall configuration
+    and produce a runnable firewall program script. The script is a complete
+    program which can be placed on a system with <emphasis>Shorewall
+    Lite</emphasis> installed and can serve as the firewall creation script
+    for that system.</para>
+
+    <section id="Lite">
+      <title>Shorewall Lite</title>
+
+      <para>Shorewall Lite is a companion product to Shorewall and is designed
+      to allow you to maintain all Shorewall configuration information on a
+      single system within your network.</para>
+
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>You install the full Shorewall release on one system within
+          your network. You need not configure Shorewall there and you may
+          totally disable startup of Shorewall in your init scripts. For ease
+          of reference, we call this system the 'administrative
+          system'.</para>
+
+          <para>The administrative system may be a GNU/Linux system, a Windows
+          system running <ulink url="http://www.cygwin.com/">Cygwin</ulink> or
+          an <ulink url="http://www.apple.com/mac/">Apple MacIntosh</ulink>
+          running OS X. Install from a shell prompt <ulink
+          url="Install.htm">using the install.sh script</ulink>.</para>
+        </listitem>
+
+        <listitem>
+          <para>On each system where you wish to run a Shorewall-generated
+          firewall, you install Shorewall Lite. For ease of reference, we will
+          call these systems the 'firewall systems'.</para>
+
+          <note>
+            <para>The firewall systems do <emphasis role="bold">NOT</emphasis>
+            need to have the full Shorewall product installed but rather only
+            the Shorewall Lite product. Shorewall and Shorewall Lite may be
+            installed on the same system but that isn't encouraged.</para>
+          </note>
+        </listitem>
+
+        <listitem>
+          <para>On the administrative system you create a separate 'export
+          directory' for each firewall system. You copy the contents of
+          <filename
+          class="directory">/usr/share/shorewall/configfiles</filename> into
+          each export directory.</para>
+
+          <note>
+            <para>Users of Debian and derivatives that install the package
+            from their distribution will be disappointed to find that
+            <filename
+            class="directory">/usr/share/shorewall/configfiles</filename> does
+            not exist on their systems. They will instead need to
+            either:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Copy the files in
+                /usr/share/doc/shorewall/default-config/ into each export
+                directory.</para>
+              </listitem>
+
+              <listitem>
+                <para>Copy /etc/shorewall/shorewall.conf into each export
+                directory and remove /etc/shorewall from the CONFIG_PATH
+                setting in the copied files.</para>
+              </listitem>
+            </itemizedlist>
+
+            <para>or</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Download the Shorewall tarball corresponding to their
+                package version.</para>
+              </listitem>
+
+              <listitem>
+                <para>Untar and copy the files from the
+                <filename>configfiles</filename> sub-directory in the untarred
+                <filename>shorewall-...</filename> directory.</para>
+              </listitem>
+            </itemizedlist>
+          </note>
+
+          <para>After copying, you may need to change two setting in the copy
+          of shorewall.conf:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>CONFIG_PATH=/usr/share/shorewall</para>
+            </listitem>
+
+            <listitem>
+              <para>STARTUP_LOG=/var/log/shorewall-lite-init.log</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Older versions of Shorewall included copies of shorewall.conf
+          with these settings already modified. This practice was discontinued
+          in Shorewall 4.4.20.1.</para>
+        </listitem>
+
+        <listitem>
+          <para>The <filename>/etc/shorewall/shorewall.conf</filename> file is
+          used to determine the VERBOSITY setting which determines how much
+          output the compiler generates. All other settings are taken from the
+          <filename>shorewall.conf </filename>file in the remote systems
+          export directory.</para>
+
+          <caution>
+            <para>If you want to be able to allow non-root users to manage
+            remote firewall systems, then the files
+            <filename>/etc/shorewall/params</filename> and
+            <filename>/etc/shorewall/shorewall.conf</filename> must be
+            readable by all users on the administrative system. Not all
+            packages secure the files that way and you may have to change the
+            file permissions yourself.</para>
+          </caution>
+        </listitem>
+
+        <listitem id="Debian">
+          <para>On each firewall system, If you are running Debian or one of
+          its derivatives like Ubuntu then edit
+          <filename>/etc/default/shorewall-lite</filename> and set
+          startup=1.</para>
+        </listitem>
+
+        <listitem>
+          <para>On the administrative system, for each firewall system you do
+          the following (this may be done by a non-root user who has root ssh
+          access to the firewall system):</para>
+
+          <orderedlist>
+            <listitem>
+              <para>modify the files in the corresponding export directory
+              appropriately (i.e., <emphasis>just as you would if you were
+              configuring Shorewall on the firewall system itself</emphasis>).
+              It's a good idea to include the IP address of the administrative
+              system in the <ulink
+              url="manpages/shorewall-routestopped.html"><filename>routestopped</filename>
+              file</ulink>.</para>
+
+              <para>It is important to understand that with Shorewall Lite,
+              the firewall's export directory on the administrative system
+              acts as <filename class="directory">/etc/shorewall</filename>
+              for that firewall. So when the Shorewall documentation gives
+              instructions for placing entries in files in the firewall's
+              <filename class="directory">/etc/shorewall</filename>, when
+              using Shorewall Lite you make those changes in the firewall's
+              export directory on the administrative system.</para>
+
+              <para>The CONFIG_PATH variable is treated as follows:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>The value of CONFIG_PATH in
+                  <filename>/etc/shorewall/shorewall.conf</filename> is
+                  ignored when compiling for export (the -e option in given)
+                  and when the <command>load</command> or
+                  <command>reload</command> command is being executed (see
+                  below).</para>
+                </listitem>
+
+                <listitem>
+                  <para>The value of CONFIG_PATH in the
+                  <filename>shorewall.conf</filename> file in the export
+                  directory is used to search for configuration files during
+                  compilation of that configuration.</para>
+                </listitem>
+
+                <listitem>
+                  <para>The value of CONFIG_PATH used when the script is run
+                  on the firewall system is
+                  "/etc/shorewall-lite:/usr/share/shorewall-lite".</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <programlisting><command>cd &lt;export directory&gt;</command>
+<command>/sbin/shorewall load firewall</command></programlisting>
+
+              <para>The <ulink
+              url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+              command compiles a firewall script from the configuration files
+              in the current working directory (using <command>shorewall
+              compile -e</command>), copies that file to the remote system via
+              scp and starts Shorewall Lite on the remote system via
+              ssh.</para>
+
+              <para>Example (firewall's DNS name is 'gateway'):</para>
+
+              <para><command>/sbin/shorewall load gateway</command><note>
+                  <para>Although scp and ssh are used by default, you can use
+                  other utilities by setting RSH_COMMAND and RCP_COMMAND in
+                  <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+                </note></para>
+
+              <para>The first time that you issue a <command>load</command>
+              command, Shorewall will use ssh to run
+              <filename>/usr/share/shorewall-lite/shorecap</filename> on the
+              remote firewall to create a capabilities file in the firewall's
+              administrative direction. See <link
+              linkend="Shorecap">below</link>.</para>
+            </listitem>
+          </orderedlist>
+        </listitem>
+
+        <listitem>
+          <para>If you later need to change the firewall's configuration,
+          change the appropriate files in the firewall's export directory
+          then:</para>
+
+          <programlisting><command>cd &lt;export directory&gt;</command>
+<command>/sbin/shorewall reload firewall</command></programlisting>
+
+          <para>The <ulink
+          url="manpages/shorewall.html"><command>reload</command></ulink>
+          command compiles a firewall script from the configuration files in
+          the current working directory (using <command>shorewall compile
+          -e</command>), copies that file to the remote system via scp and
+          restarts Shorewall Lite on the remote system via ssh. The <emphasis
+          role="bold">reload</emphasis> command also supports the '-c'
+          option.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>There is a <filename>shorewall-lite.conf</filename> file installed
+      as part of Shorewall Lite
+      (<filename>/etc/shorewall-lite/shorewall-lite.conf</filename>). You can
+      use that file on the firewall system to override some of the settings
+      from the shorewall.conf file in the export directory.</para>
+
+      <para>Settings that you can override are:</para>
+
+      <blockquote>
+        <simplelist>
+          <member>VERBOSITY</member>
+
+          <member>LOGFILE</member>
+
+          <member>LOGFORMAT</member>
+
+          <member>IPTABLES</member>
+
+          <member>PATH</member>
+
+          <member>SHOREWALL_SHELL</member>
+
+          <member>SUBSYSLOCK</member>
+
+          <member>RESTOREFILE</member>
+        </simplelist>
+      </blockquote>
+
+      <para>You will normally never touch
+      <filename>/etc/shorewall-lite/shorewall-lite.conf</filename> unless you
+      run Debian or one of its derivatives (see <link
+      linkend="Debian">above</link>).</para>
+
+      <para>The <filename>/sbin/shorewall-lite</filename> program included
+      with Shorewall Lite supports the same set of commands as the
+      <filename>/sbin/shorewall</filename> program in a full Shorewall
+      installation with the following exceptions:</para>
+
+      <blockquote>
+        <simplelist>
+          <member>add</member>
+
+          <member>compile</member>
+
+          <member>delete</member>
+
+          <member>refresh</member>
+
+          <member>reload</member>
+
+          <member>try</member>
+
+          <member>safe-start</member>
+
+          <member>safe-restart</member>
+
+          <member>show actions</member>
+
+          <member>show macros</member>
+        </simplelist>
+      </blockquote>
+
+      <para>On systems with only Shorewall Lite installed, I recommend that
+      you create a symbolic link <filename>/sbin/shorewall</filename> and
+      point it at <filename>/sbin/shorewall-lite</filename>. That way, you can
+      use <command>shorewall</command> as the command regardless of which
+      product is installed.</para>
+
+      <blockquote>
+        <programlisting><command>ln -sf shorewall-lite /sbin/shorewall</command></programlisting>
+      </blockquote>
+
+      <section>
+        <title>Module Loading</title>
+
+        <para>As with a normal Shorewall configuration, the shorewall.conf
+        file can specify LOAD_HELPERS_ONLY which determines if the
+        <filename>modules</filename> file (LOAD_HELPERS_ONLY=No) or
+        <filename>helpers</filename> file (LOAD_HELPERS_ONLY=Yes) is used.
+        Normally, the file on the firewall system is used. If you want to
+        specify modules at compile time on the Administrative System, then you
+        must place a copy of the appropriate file
+        (<filename>modules</filename> or <filename>helpers</filename>) in the
+        firewall's configuration directory before compilation.</para>
+
+        <para>In Shorewall 4.4.17, the EXPORTMODULES option was added to
+        shorewall.conf (and shorewall6.conf). When EXPORTMODULES=Yes, any
+        <filename>modules</filename> or <filename>helpers</filename> file
+        found on the CONFIG_PATH on the Administrative System during
+        compilation will be used.</para>
+      </section>
+
+      <section id="Converting">
+        <title>Converting a system from Shorewall to Shorewall Lite</title>
+
+        <para>Converting a firewall system that is currently running Shorewall
+        to run Shorewall Lite instead is straight-forward.</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>On the administrative system, create an export directory for
+            the firewall system.</para>
+          </listitem>
+
+          <listitem>
+            <para>Copy the contents of <filename
+            class="directory">/etc/shorewall/</filename> from the firewall
+            system to the export directory on the administrative
+            system.</para>
+          </listitem>
+
+          <listitem>
+            <para>On the firewall system:</para>
+
+            <para>Be sure that the IP address of the administrative system is
+            included in the firewall's export directory
+            <filename>routestopped</filename> file.</para>
+
+            <programlisting><command>shorewall stop</command></programlisting>
+
+            <para><emphasis role="bold">We recommend that you uninstall
+            Shorewall at this point.</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Install Shorewall Lite on the firewall system.</para>
+
+            <para>If you are running Debian or one of its derivatives like
+            Ubuntu then edit <filename>/etc/default/shorewall-lite</filename>
+            and set startup=1.</para>
+          </listitem>
+
+          <listitem>
+            <para>On the administrative system:</para>
+
+            <para>It's a good idea to include the IP address of the
+            administrative system in the firewall system's <ulink
+            url="manpages/shorewall-routestopped.html"><filename>routestopped</filename>
+            file</ulink>.</para>
+
+            <para>Also, edit the <filename>shorewall.conf</filename> file in
+            the firewall's export directory and change the CONFIG_PATH setting
+            to remove <filename class="directory">/etc/shorewall</filename>.
+            You can replace it with <filename
+            class="directory">/usr/share/shorewall/configfiles</filename> if
+            you like.</para>
+
+            <para>Example:</para>
+
+            <blockquote>
+              <para>Before editing:</para>
+
+              <programlisting>CONFIG_PATH=<emphasis role="bold">/etc/shorewall</emphasis>:/usr/share/shorewall</programlisting>
+
+              <para>After editing:</para>
+
+              <programlisting>CONFIG_PATH=<emphasis role="bold">/usr/share/shorewall/configfiles</emphasis>:/usr/share/shorewall</programlisting>
+            </blockquote>
+
+            <para>Changing CONFIG_PATH will ensure that subsequent
+            compilations using the export directory will not include any files
+            from <filename class="directory">/etc/shorewall</filename> other
+            than <filename>shorewall.conf</filename> and
+            <filename>params</filename>.</para>
+
+            <para>If you set variables in the params file, there are a couple
+            of issues:</para>
+
+            <para>The <filename>params</filename> file is not processed at run
+            time if you set EXPORTPARAMS=No in
+            <filename>shorewall.conf</filename>. For run-time setting of shell
+            variables, use the <filename>init</filename> extension script.
+            Beginning with Shorewall 4.4.17, the variables set in the
+            <filename>params</filename> file are available in the firewall
+            script when EXPORTPARAMS=No.</para>
+
+            <para>If the <filename>params</filename> file needs to set shell
+            variables based on the configuration of the firewall system, you
+            can use this trick:</para>
+
+            <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
+
+            <para>The <command>shorewall-lite call</command> command allows
+            you to to call interactively any Shorewall function that you can
+            call in an extension script.</para>
+
+            <para>After having made the above changes to the firewall's export
+            directory, execute the following commands.</para>
+
+            <blockquote>
+              <programlisting><command>cd &lt;export directory&gt;</command>
+<command>/sbin/shorewall load &lt;firewall system&gt;</command>
+</programlisting>
+
+              <para>Example (firewall's DNS name is 'gateway'):</para>
+
+              <para><command>/sbin/shorewall load gateway</command></para>
+            </blockquote>
+
+            <para>The first time that you issue a <command>load</command>
+            command, Shorewall will use ssh to run
+            <filename>/usr/share/shorewall-lite/shorecap</filename> on the
+            remote firewall to create a capabilities file in the firewall's
+            administrative direction. See <link
+            linkend="Shorecap">below</link>.</para>
+
+            <para>The <ulink
+            url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+            command compiles a firewall script from the configuration files in
+            the current working directory (using <command>shorewall compile
+            -e</command>), copies that file to the remote system via
+            <command>scp</command> and starts Shorewall Lite on the remote
+            system via <command>ssh</command>.</para>
+          </listitem>
+
+          <listitem>
+            <para>If you later need to change the firewall's configuration,
+            change the appropriate files in the firewall's export directory
+            then:</para>
+
+            <programlisting><command>cd &lt;export directory&gt;</command>
+<command>/sbin/shorewall reload firewall</command></programlisting>
+
+            <para>The <ulink
+            url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
+            command compiles a firewall script from the configuration files in
+            the current working directory (using <command>shorewall compile
+            -e</command>), copies that file to the remote system via
+            <command>scp</command> and restarts Shorewall Lite on the remote
+            system via <command>ssh</command>.</para>
+          </listitem>
+
+          <listitem>
+            <para>If the kernel/iptables configuration on the firewall later
+            changes and you need to create a new
+            <filename>capabilities</filename> file, do the following on the
+            firewall system:</para>
+
+            <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
+<command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
+
+            <para>Or simply use the -c option the next time that you use the
+            <command>reload</command> command (e.g., <command>shorewall reload
+            -c gateway</command>).</para>
+          </listitem>
+        </orderedlist>
+      </section>
+    </section>
+
+    <section id="Restrictions">
+      <title>Restrictions</title>
+
+      <para>While compiled Shorewall programs (as are used in Shorewall Lite)
+      are useful in many cases, there are some important restrictions that you
+      should be aware of before attempting to use them.</para>
+
+      <orderedlist>
+        <listitem>
+          <para>All extension scripts used are copied into the program (with
+          the exception of <ulink url="shorewall_extension_scripts.htm">those
+          executed at compile-time by the compiler</ulink>). The ramifications
+          of this are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>If you update an extension script, the compiled program
+              will not use the updated script.</para>
+            </listitem>
+
+            <listitem>
+              <para>The <filename>params</filename> file is only processed at
+              compile time if you set EXPORTPARAMS=No in
+              <filename>shorewall.conf</filename>. For run-time setting of
+              shell variables, use the <filename>init</filename> extension
+              script. Although the default setting is EXPORTPARAMS=Yes for
+              compatibility, the recommended setting is EXPORTPARAMS=No.
+              Beginning with Shorewall 4.4.17, the variables set in the
+              <filename>params</filename> file are available in the firewall
+              script when EXPORTPARAMS=No.</para>
+
+              <para>If the <filename>params</filename> file needs to set shell
+              variables based on the configuration of the firewall system, you
+              can use this trick:</para>
+
+              <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
+
+              <para>The <command>shorewall-lite call</command> command allows
+              you to to call interactively any Shorewall function that you can
+              call in an extension script.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para>You must install Shorewall Lite on the system where you want
+          to run the script. You then install the compiled program in
+          /usr/share/shorewall-lite/firewall and use the /sbin/shorewall-lite
+          program included with Shorewall Lite to control the firewall just as
+          if the full Shorewall distribution was installed.</para>
+        </listitem>
+
+        <listitem>
+          <para>Beginning with Shorewall 4.4.9, the compiler detects bridges
+          and sets the <emphasis role="bold">bridge</emphasis> and <emphasis
+          role="bold">routeback</emphasis> options explicitly. That can't
+          happen when the compilation no longer occurs on the firewall
+          system.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+  </section>
+
+  <section id="Compile">
+    <title>The "shorewall compile" command</title>
+
+    <para>A compiled script is produced using the <command>compile</command>
+    command:</para>
+
+    <blockquote>
+      <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ] [
+      &lt;path name&gt; ]</command></para>
+    </blockquote>
+
+    <para>where</para>
+
+    <blockquote>
+      <variablelist>
+        <varlistentry>
+          <term>-e</term>
+
+          <listitem>
+            <para>Indicates that the program is to be "exported" to another
+            system. When this flag is set, neither the "detectnets" interface
+            option nor DYNAMIC_ZONES=Yes in shorewall.conf are allowed. The
+            created program may be run on a system that has only Shorewall
+            Lite installed</para>
+
+            <para>When this flag is given, Shorewall does not probe the
+            current system to determine the kernel/iptables features that it
+            supports. It rather reads those capabilities from
+            <filename>/etc/shorewall/capabilities</filename>. See below for
+            details.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>&lt;directory name&gt;</term>
+
+          <listitem>
+            <para>specifies a directory to be searched for configuration files
+            before those directories listed in the CONFIG_PATH variable in
+            <filename>shorewall.conf</filename>.</para>
+
+            <para>When -e &lt;directory-name&gt; is included, only the
+            SHOREWALL_SHELL and VERBOSITY settings from
+            <filename>/etc/shorewall/shorewall.conf</filename> are used and
+            these apply only to the compiler itself. The settings used by the
+            compiled firewall script are determined by the contents of
+            <filename>&lt;directory name&gt;/shorewall.conf</filename>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>&lt;path name&gt;</term>
+
+          <listitem>
+            <para>specifies the name of the script to be created. If not
+            given, ${VARDIR}/firewall is assumed (by default, ${VARDIR} is
+            <filename>/var/lib/shorewall/</filename>)</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </blockquote>
+  </section>
+
+  <section id="Shorecap">
+    <title>The /etc/shorewall/capabilities file and the shorecap
+    program</title>
+
+    <para>As mentioned above, the
+    <filename>/etc/shorewall/capabilities</filename> file specifies that
+    kernel/iptables capabilities of the target system. Here is a sample
+    file:</para>
+
+    <blockquote>
+      <programlisting>#
+# Shorewall detected the following iptables/netfilter capabilities - Tue Jul 15 07:28:12 PDT 2008
+#
+NAT_ENABLED=Yes
+MANGLE_ENABLED=Yes
+MULTIPORT=Yes
+XMULTIPORT=Yes
+CONNTRACK_MATCH=Yes
+USEPKTTYPE=Yes
+POLICY_MATCH=Yes
+PHYSDEV_MATCH=Yes
+PHYSDEV_BRIDGE=Yes
+LENGTH_MATCH=Yes
+IPRANGE_MATCH=Yes
+RECENT_MATCH=Yes
+OWNER_MATCH=Yes
+IPSET_MATCH=Yes
+CONNMARK=Yes
+XCONNMARK=Yes
+CONNMARK_MATCH=Yes
+XCONNMARK_MATCH=Yes
+RAW_TABLE=Yes
+IPP2P_MATCH=
+CLASSIFY_TARGET=Yes
+ENHANCED_REJECT=Yes
+KLUDGEFREE=Yes
+MARK=Yes
+XMARK=Yes
+MANGLE_FORWARD=Yes
+COMMENTS=Yes
+ADDRTYPE=Yes
+TCPMSS_MATCH=Yes
+HASHLIMIT_MATCH=Yes
+NFQUEUE_TARGET=Yes
+REALM_MATCH=Yes
+CAPVERSION=40190</programlisting>
+    </blockquote>
+
+    <para>As you can see, the file contains a simple list of shell variable
+    assignments — the variables correspond to the capabilities listed by the
+    <command>shorewall show capabilities</command> command and they appear in
+    the same order as the output of that command.</para>
+
+    <para>To aid in creating this file, Shorewall Lite includes a
+    <command>shorecap</command> program. The program is installed in the
+    <filename class="directory">/usr/share/shorewall-lite/</filename>
+    directory and may be run as follows:</para>
+
+    <blockquote>
+      <para><command>[ IPTABLES=&lt;iptables binary&gt; ] [
+      MODULESDIR=&lt;kernel modules directory&gt; ]
+      /usr/share/shorewall-lite/shorecap &gt; capabilities</command></para>
+    </blockquote>
+
+    <para>The IPTABLES and MODULESDIR options have their <ulink
+    url="manpages/shorewall.conf.html">usual Shorewall default
+    values</ulink>.</para>
+
+    <para>The <filename>capabilities</filename> file may then be copied to a
+    system with Shorewall installed and used when compiling firewall programs
+    to run on the remote system.</para>
+
+    <para>The <filename>capabilities</filename> file may also be creating
+    using <filename>/sbin/shorewall-lite</filename>:<blockquote>
+        <para><command>shorewall-lite show -f capabilities &gt;
+        capabilities</command></para>
+      </blockquote></para>
+
+    <para>Note that unlike the <command>shorecap</command> program, the
+    <command>show capabilities</command> command shows the kernel's current
+    capabilities; it does not attempt to load additional kernel
+    modules.</para>
+  </section>
+
+  <section id="Running">
+    <title>Running compiled programs directly</title>
+
+    <para>Compiled firewall programs are complete shell programs that support
+    the following command line forms:</para>
+
+    <blockquote>
+      <simplelist>
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        start</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        stop</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        clear</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        refresh</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        reset</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        restart</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        status</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        version</command></member>
+      </simplelist>
+    </blockquote>
+
+    <para>The options have the same meanings as when they are passed to
+    <filename>/sbin/shorewall</filename> itself. The default VERBOSITY level
+    is the level specified in the <filename>shorewall.conf</filename> file
+    used when the program was compiled.</para>
+  </section>
+</article>

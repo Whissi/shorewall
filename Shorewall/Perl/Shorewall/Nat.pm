@@ -55,12 +55,14 @@ sub initialize() {
 sub process_one_masq( )
 {
     my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user ) = 
-	split_line1 2, 8, 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7 };
+	split_line1 8, 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7 };
 
     if ( $interfacelist eq 'COMMENT' ) {
 	process_comment;
 	return 1;
     }
+
+    fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
 
     my $pre_nat;
     my $add_snat_aliases = $config{ADD_SNAT_ALIASES};
@@ -375,7 +377,7 @@ sub setup_nat() {
 
 	while ( read_a_line ) {
 
-	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 3, 5, 'nat file', { external => 1, interface => 1, internal => 2, allints => 3, localnat => 4 };
+	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 5, 'nat file', { external => 1, interface => 1, internal => 2, allints => 3, localnat => 4 };
 
 	    if ( $external eq 'COMMENT' ) {
 		process_comment;
@@ -383,6 +385,9 @@ sub setup_nat() {
 		( $interfacelist, my $digit ) = split /:/, $interfacelist;
 
 		$digit = defined $digit ? ":$digit" : '';
+
+		fatal_error 'EXTERNAL must be specified' if $external eq '-';
+		fatal_error 'INTERNAL must be specified' if $interfacelist eq '-';
 
 		for my $interface ( split_list $interfacelist , 'interface' ) {
 		    fatal_error "Invalid Interface List ($interfacelist)" unless supplied $interface;
@@ -408,7 +413,7 @@ sub setup_netmap() {
 
 	while ( read_a_line ) {
 
-	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 4, 8, 'netmap file', { type => 0, net1 => 1, interface => 2, net2 => 3, net3 => 4, proto => 4, dport => 5, sport => 6 };
+	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 8, 'netmap file', { type => 0, net1 => 1, interface => 2, net2 => 3, net3 => 4, proto => 4, dport => 5, sport => 6 };
 
 	    $net3 = ALLIP if $net3 eq '-';
 
@@ -498,7 +503,8 @@ sub setup_netmap() {
 					   @match );
 		    }
 		} else {
-		    fatal_error "Invalid type ($type)";
+		    fatal_error 'TYPE must be specified' if $type eq '-';
+		    fatal_error "Invalid TYPE ($type)";
 		}
 		
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";

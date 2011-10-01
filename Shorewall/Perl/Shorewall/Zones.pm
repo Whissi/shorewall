@@ -403,7 +403,9 @@ sub process_zone( \$ ) {
     my @parents;
 
     my ($zone, $type, $options, $in_options, $out_options ) =
-	split_line 1, 5, 'zones file', { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 };
+	split_line 5, 'zones file', { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 };
+
+    fatal_error 'ZONE must be specified' if $zone eq '-';
 
     if ( $zone =~ /(\w+):([\w,]+)/ ) {
 	$zone = $1;
@@ -872,7 +874,7 @@ sub process_interface( $$ ) {
     my ( $nextinum, $export ) = @_;
     my $netsref   = '';
     my $filterref = [];
-    my ($zone, $originalinterface, $bcasts, $options ) = split_line 2, 4, 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
+    my ($zone, $originalinterface, $bcasts, $options ) = split_line 4, 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
     my $zoneref;
     my $bridge = '';
 
@@ -884,6 +886,8 @@ sub process_interface( $$ ) {
 	fatal_error "Unknown zone ($zone)" unless $zoneref;
 	fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == FIREWALL;
     }
+
+    fatal_error 'INTERFACE must be specified' if $originalinterface eq '-';
 
     my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
 
@@ -1728,7 +1732,10 @@ sub compile_updown() {
 #
 sub process_host( ) {
     my $ipsec = 0;
-    my ($zone, $hosts, $options ) = split_line 2, 3, 'hosts file', { zone => 0, hosts => 1, options => 2 };
+    my ($zone, $hosts, $options ) = split_line 3, 'hosts file', { zone => 0, hosts => 1, options => 2 };
+
+    fatal_error 'ZONE must be specified'  if $zone eq '-';
+    fatal_error 'HOSTS must be specified' if $hosts eq '-';
 
     my $zoneref = $zones{$zone};
     my $type    = $zoneref->{type};

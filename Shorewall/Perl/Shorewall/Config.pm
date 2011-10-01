@@ -1338,8 +1338,8 @@ sub supplied( $ ) {
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #
-sub split_line( $$$$ ) {
-    my ( $mincolumns, $maxcolumns, $description, $columnsref ) = @_;
+sub split_line( $$$ ) {
+    my ( $maxcolumns, $description, $columnsref ) = @_;
 
     my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 
@@ -1376,8 +1376,8 @@ sub split_line( $$$$ ) {
 #
 # Version of 'split_line' used on files with exceptions
 #
-sub split_line1( $$$$;$ ) {
-    my ( $mincolumns, $maxcolumns, $description, $columnsref, $nopad) = @_;
+sub split_line1( $$$;$ ) {
+    my ( $maxcolumns, $description, $columnsref, $nopad) = @_;
 
     my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 
@@ -1404,8 +1404,6 @@ sub split_line1( $$$$;$ ) {
     fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
 
     $line-- while $line > 0 && $line[$line-1] eq '-';
-
-    fatal_error "Invalid $description entry (too few columns)"  if $line < $mincolumns;
 
     push @line, '-' while @line < $maxcolumns;
 

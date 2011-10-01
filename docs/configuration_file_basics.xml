@@ -504,10 +504,8 @@ ACCEPT      net:\
     as <replaceable>column-name</replaceable>/<replaceable>value</replaceable>
     pairs.</para>
 
-    <para>Each file has both required and optional columns. The columns up to
-    the last required column must be specified in the normal way. After that,
-    at any point, you can enter a semicolon (';') followed by one or more
-    specifications of the form:</para>
+    <para>At any point, you can enter a semicolon (';') followed by one or
+    more specifications of the form:</para>
 
     <simplelist>
       <member><replaceable>column-name</replaceable>=<replaceable>value</replaceable></member>
@@ -524,225 +522,169 @@ ACCEPT      net:\
     </note>
 
     <informaltable>
-      <tgroup cols="3">
+      <tgroup cols="2">
         <tbody>
           <row>
             <entry><emphasis role="bold">File</emphasis></entry>
 
-            <entry><emphasis role="bold">Right-most required
-            Column</emphasis></entry>
-
-            <entry><emphasis role="bold">Remaining column
-            names</emphasis></entry>
+            <entry><emphasis role="bold">Column names</emphasis></entry>
           </row>
 
           <row>
             <entry>accounting</entry>
 
-            <entry>ACTION</entry>
-
-            <entry>chain, source, dest, proto, dport, sport, user, mark,
-            ipsec, headers</entry>
+            <entry>action,chain, source, dest, proto, dport, sport, user,
+            mark, ipsec, headers</entry>
           </row>
 
           <row>
             <entry>blacklist</entry>
 
-            <entry>ADDRESS/SUBNET</entry>
-
-            <entry>proto,port,options</entry>
+            <entry>networks,proto,port,options</entry>
           </row>
 
           <row>
             <entry>ecn</entry>
 
-            <entry>INTERFACE</entry>
-
-            <entry>hosts</entry>
+            <entry>interface,hosts</entry>
           </row>
 
           <row>
             <entry>hosts</entry>
 
-            <entry>ZONE</entry>
-
-            <entry>hosts,options</entry>
+            <entry>zone,hosts,options</entry>
           </row>
 
           <row>
             <entry>interfaces</entry>
 
-            <entry>INTERFACE</entry>
-
-            <entry>broadcast,options</entry>
+            <entry>zone,interface,broadcast,options</entry>
           </row>
 
           <row>
             <entry>maclist</entry>
 
-            <entry>MAC</entry>
-
-            <entry>addresses</entry>
+            <entry>disposition,interface,mac,addresses</entry>
           </row>
 
           <row>
             <entry>masq</entry>
 
-            <entry>SOURCE</entry>
-
-            <entry>address,proto,port,ipsec,mark,user</entry>
+            <entry>interface,source,address,proto,port,ipsec,mark,user</entry>
           </row>
 
           <row>
             <entry>nat</entry>
 
-            <entry>EXTERNAL</entry>
-
-            <entry>interface,internal,allints,localnat</entry>
+            <entry>external,interface,internal,allints,localnat</entry>
           </row>
 
           <row>
             <entry>netmap</entry>
 
-            <entry>NET2</entry>
-
-            <entry>net3,proto,dport,sport</entry>
+            <entry>type,net1,interface,net2,net3,proto,dport,sport</entry>
           </row>
 
           <row>
             <entry>notrack</entry>
 
-            <entry>SOURCE</entry>
-
-            <entry>dest,proto,dport,sport,user</entry>
+            <entry>source,dest,proto,dport,sport,user</entry>
           </row>
 
           <row>
             <entry>policy</entry>
 
-            <entry>POLICY</entry>
-
-            <entry>loglevel,limit,connlimit</entry>
+            <entry>source,dest,policy,loglevel,limit,connlimit</entry>
           </row>
 
           <row>
             <entry>providers</entry>
 
-            <entry>GATEWAY</entry>
-
-            <entry>options,copy</entry>
+            <entry>table,number,mark,duplicate,interface,gateway,options,copy</entry>
           </row>
 
           <row>
             <entry>proxyarp</entry>
 
-            <entry>EXTERNAL</entry>
-
-            <entry>haveroute,persistent</entry>
+            <entry>address,interface,external,haveroute,persistent</entry>
           </row>
 
           <row>
             <entry>route_rules</entry>
 
-            <entry>PRIORITY</entry>
-
-            <entry>N/A</entry>
+            <entry>source,dest,provider,priority</entry>
           </row>
 
           <row>
             <entry>routestopped</entry>
 
-            <entry>INTERFACE</entry>
-
-            <entry>hosts,options,proto,dport,sport</entry>
+            <entry>interface,hosts,options,proto,dport,sport</entry>
           </row>
 
           <row>
             <entry>rules</entry>
 
-            <entry>ACTION</entry>
-
-            <entry>source,dest,proto,dport,sport,origdest,rate,user,mark,connlimit,time,headers,switch</entry>
+            <entry>action,source,dest,proto,dport,sport,origdest,rate,user,mark,connlimit,time,headers,switch</entry>
           </row>
 
           <row>
             <entry>secmarks</entry>
 
-            <entry>CHAIN</entry>
-
-            <entry>source,dest,proto,dport,sport,user,mark</entry>
+            <entry>secmark,source,dest,proto,dport,sport,user,mark</entry>
           </row>
 
           <row>
             <entry>tcclasses</entry>
 
-            <entry>CEIL</entry>
-
-            <entry>prio,options</entry>
+            <entry>interface,mark,rate,ceil,prio,options</entry>
           </row>
 
           <row>
             <entry>tcdevices</entry>
 
-            <entry>OUT_BANDWIDTH</entry>
-
-            <entry>options,redirect</entry>
+            <entry>interface,in_bandwidth,out_bandwidth,options,redirect</entry>
           </row>
 
           <row>
             <entry>tcfilters</entry>
 
-            <entry>SOURCE</entry>
-
-            <entry>dest,proto,dport,sport,tos,length</entry>
+            <entry>interface,source,dest,proto,dport,sport,tos,length</entry>
           </row>
 
           <row>
             <entry>tcinterfaces</entry>
 
-            <entry>DEVICE</entry>
-
-            <entry>type,in_bandwidth,out_bandwidth</entry>
+            <entry>interface,type,in_bandwidth,out_bandwidth</entry>
           </row>
 
           <row>
             <entry>tcpri</entry>
 
-            <entry>BAND</entry>
-
-            <entry>proto,port,address,interface,helper</entry>
+            <entry>band,proto,port,address,interface,helper</entry>
           </row>
 
           <row>
             <entry>tcrules</entry>
 
-            <entry>SOURCE</entry>
-
-            <entry>dest,proto,dport,sport,user,test,length,tos,connbytes,helper,headers</entry>
+            <entry>mark,source,dest,proto,dport,sport,user,test,length,tos,connbytes,helper,headers</entry>
           </row>
 
           <row>
             <entry>tos</entry>
 
-            <entry>TOS</entry>
-
-            <entry>mark</entry>
+            <entry>source,dest,proto,dport,sport,tos,mark</entry>
           </row>
 
           <row>
             <entry>tunnels</entry>
 
-            <entry>ZONE</entry>
-
-            <entry>gateway,gateway_zone</entry>
+            <entry>type,zone,gateway,gateway_zone</entry>
           </row>
 
           <row>
             <entry>zones</entry>
 
-            <entry>ZONE</entry>
-
-            <entry>type,options,in_options,out_options</entry>
+            <entry>zone,type,options,in_options,out_options</entry>
           </row>
         </tbody>
       </tgroup>
@@ -968,9 +910,9 @@ DNAT            net               loc:10.0.0.1    tcp     80    ;    mark="88"</
 
     <caution>
       <para>Prior to Shorewall 4.4.17, if you are using <ulink
-      url="Shorewall-Lite.html">Shorewall Lite</ulink> , it is not
-      advisable to use INCLUDE in the <filename>params</filename> file in an
-      export directory if you set EXPORTPARAMS=Yes in <ulink
+      url="Shorewall-Lite.html">Shorewall Lite</ulink> , it is not advisable
+      to use INCLUDE in the <filename>params</filename> file in an export
+      directory if you set EXPORTPARAMS=Yes in <ulink
       url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5). If you do
       that, you must ensure that the included file is also present on the
       firewall system's <filename
@@ -1235,11 +1177,10 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </listitem>
 
       <listitem>
-        <para>If you are using <ulink
-        url="Shorewall-Lite.html">Shorewall Lite</ulink> and if the
-        <filename>params</filename> script needs to set shell variables based
-        on the configuration of the firewall system, you can use this
-        trick:</para>
+        <para>If you are using <ulink url="Shorewall-Lite.html">Shorewall
+        Lite</ulink> and if the <filename>params</filename> script needs to
+        set shell variables based on the configuration of the firewall system,
+        you can use this trick:</para>
 
         <programlisting>EXT_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</programlisting>
 

@@ -123,13 +123,14 @@ sub setup_proxy_arp() {
 	while ( read_a_line ) {
 
 	    my ( $address, $interface, $external, $haveroute, $persistent ) =
-		split_line 3, 5, { address => 0, interface => 1, external => 2, haveroute => 3, persistent => 4 }, $file_opt;
+		split_line 5, { address => 0, interface => 1, external => 2, haveroute => 3, persistent => 4 }, $file_opt;
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";
 		$first_entry = 0;
 	    }
 
+	    fatal_error 'EXTERNAL must be specified' if $external eq '-';
 	    fatal_error "Unknown interface ($external)" unless known_interface $external;
 	    fatal_error "Wildcard interface ($external) not allowed" if $external =~ /\+$/;
 	    $reset{$external} = 1 unless $set{$external};

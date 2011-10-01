@@ -268,14 +268,16 @@ sub start_provider( $$$ ) {
 sub process_a_provider() {
 
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) =
-	split_line 6, 8, 'providers file', { table => 0, number => 1, mark => 2, duplicate => 3, interface => 4, gateway => 5, options => 6, copy => 7 };
+	split_line 8, 'providers file', { table => 0, number => 1, mark => 2, duplicate => 3, interface => 4, gateway => 5, options => 6, copy => 7 };
 
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
+    fatal_error 'NAME must be specified' if $table eq '-';
     fatal_error "Invalid Provider Name ($table)" unless $table =~ /^[\w]+$/;
 
     my $num = numeric_value $number;
 
+    fatal_error 'NUMBER must be specified' if $number eq '-';
     fatal_error "Invalid Provider number ($number)" unless defined $num;
 
     $number = $num;
@@ -283,6 +285,8 @@ sub process_a_provider() {
     for my $providerref ( values %providers  ) {
 	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
     }
+
+    fatal_error 'INTERFACE must be specified' if $interface eq '-';
 
     ( $interface, my $address ) = split /:/, $interface;
 
@@ -730,7 +734,7 @@ sub add_a_provider( $$ ) {
 }
 
 sub add_an_rtrule( ) {
-    my ( $source, $dest, $provider, $priority ) = split_line 4, 4, 'route_rules file', { source => 0, dest => 1, provider => 2, priority => 3 };
+    my ( $source, $dest, $provider, $priority ) = split_line 4, 'route_rules file', { source => 0, dest => 1, provider => 2, priority => 3 };
 
     our $current_if;
 
@@ -805,9 +809,11 @@ sub add_an_rtrule( ) {
 }
 
 sub add_a_route( ) {
-    my ( $provider, $dest, $gateway, $device ) = split_line 2, 4, 'routes file', { provider => 0, dest => 1, gateway => 2, device => 3 };
+    my ( $provider, $dest, $gateway, $device ) = split_line 4, 'routes file', { provider => 0, dest => 1, gateway => 2, device => 3 };
 
     our $current_if;
+
+    fatal_error 'PROVIDER must be specified' if $provider eq '-';
 
     unless ( $providers{$provider} ) {
 	my $found = 0;
@@ -827,6 +833,7 @@ sub add_a_route( ) {
 	fatal_error "Unknown provider ($provider)" unless $found;
     }
 
+    fatal_error 'DEST must be specified' if $dest eq '-';
     validate_net ( $dest, 1 );
 
     validate_address ( $gateway, 1 ) if $gateway ne '-';

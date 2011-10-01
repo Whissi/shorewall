@@ -1438,7 +1438,8 @@ sub process_action( $) {
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition );
 
 	    if ( $format == 1 ) {
-		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 'action file', $rule_commands;
+		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
+		    split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
 		$origdest = $connlimit = $time = $headers = $condition = '-';
 	    } else {
 		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition )

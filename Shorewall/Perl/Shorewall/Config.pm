@@ -281,6 +281,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 AUDIT_TARGET    => 'AUDIT Target',
 		 RAWPOST_TABLE   => 'Rawpost Table',
 		 CONDITION_MATCH => 'Condition Match',
+		 IPTABLES_S      => 'iptables -S',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -666,6 +667,7 @@ sub initialize( $ ) {
 	       ACCOUNT_TARGET => undef,
 	       AUDIT_TARGET => undef,
 	       CONDITION_MATCH => undef,
+	       IPTABLES_S => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2715,6 +2717,10 @@ sub Audit_Target() {
     qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
 }
 
+sub Iptables_S() {
+    qt1( "$iptables -S INPUT" )
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AUDIT_TARGET => \&Audit_Target,
@@ -2740,6 +2746,7 @@ our %detect_capability =
       IPSET_MATCH => \&IPSet_Match,
       OLD_IPSET_MATCH => \&Old_IPSet_Match,
       IPSET_V5 => \&IPSET_V5,
+      IPTABLES_S => \&Iptables_S,
       KLUDGEFREE => \&Kludgefree,
       LENGTH_MATCH => \&Length_Match,
       LOGMARK_TARGET => \&Logmark_Target,
@@ -2895,6 +2902,7 @@ sub determine_capabilities() {
 	$capabilities{AUDIT_TARGET}    = detect_capability( 'AUDIT_TARGET' );
 	$capabilities{IPSET_V5}        = detect_capability( 'IPSET_V5' );
 	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
+	$capabilities{IPTABLES_S}      = detect_capability( 'IPTABLES_S' );
 
 
 	qt1( "$iptables -F $sillyname" );

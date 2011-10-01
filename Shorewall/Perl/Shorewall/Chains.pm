@@ -5571,12 +5571,37 @@ sub emitr1( $$ ) {
 
 sub save_dynamic_chains() {
 
-    my $tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
+    my $tool;
 
     emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = refresh ]; then' );
     push_indent;
 
-emit <<"EOF";
+    if ( have_capability 'IPTABLES_S' ) {
+	$tool = $family == F_IPV4 ? '${IPTABLES}' : '${IP6TABLES}';
+
+	emit <<"EOF";
+if chain_exists 'UPnP -t nat'; then
+    $tool -t nat -S UPnP | tail -n +2 > \${VARDIR}/.UPnP
+else
+    rm -f \${VARDIR}/.UPnP
+fi
+
+if chain_exists forwardUPnP; then
+    $tool -S forwardUPnP | tail -n +2 > \${VARDIR}/.forwardUPnP
+else
+    rm -f \${VARDIR}/.forwardUPnP
+fi
+
+if chain_exists dynamic; then
+    $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic
+else
+    rm -f \${VARDIR}/.dynamic
+fi
+EOF
+    } else {
+	$tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
+
+	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
     $tool -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
 else
@@ -5595,6 +5620,7 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
+    }
 
     pop_indent;
     emit ( 'else' );
@@ -5603,13 +5629,23 @@ EOF
 emit <<"EOF";
 rm -f \${VARDIR}/.UPnP
 rm -f \${VARDIR}/.forwardUPnP
+EOF
 
-if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then
-    if chain_exists dynamic; then
-        $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
+    if ( have_capability 'IPTABLES_S' ) {
+	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
+	      qq(    if chain_exists dynamic; then),
+	      qq(        $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic) );
+    } else {
+	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
+	      qq(    if chain_exists dynamic; then),
+	      qq(        $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic) );
+    }
+
+emit <<"EOF";
     fi
 fi
 EOF
+
     pop_indent;
 
     emit ( 'fi' ,

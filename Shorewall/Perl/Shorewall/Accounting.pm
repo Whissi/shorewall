@@ -142,7 +142,7 @@ sub process_accounting_rule( ) {
     $jumpchainref = 0;
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) =
-	split_line1 11, 'Accounting File', { action => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8, ipsec => 9, headers => 10 }, $accounting_commands;
+	split_line1 'Accounting File', { action => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8, ipsec => 9, headers => 10 }, $accounting_commands;
 
     fatal_error 'ACTION must be specified' if $action eq '-';
 

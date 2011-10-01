@@ -313,7 +313,7 @@ sub process_a_policy() {
     our @zonelist;
 
     my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) =
-	split_line 6, 'policy file', { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, connlimit => 5 } ;
+	split_line 'policy file', { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, connlimit => 5 } ;
 
     $loglevel  = '' if $loglevel  eq '-';
     $synparams = '' if $synparams eq '-';
@@ -1374,7 +1374,7 @@ sub process_actions() {
 	open_file $file;
 
 	while ( read_a_line ) {
-	    my ( $action ) = split_line 1, 'action file' , { action => 0 };
+	    my ( $action ) = split_line 'action file' , { action => 0 };
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1438,11 +1438,11 @@ sub process_action( $) {
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition );
 
 	    if ( $format == 1 ) {
-		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 9, 'action file', $rule_commands, {};
+		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) = split_line1 'action file', $rule_commands;
 		$origdest = $connlimit = $time = $headers = $condition = '-';
 	    } else {
 		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition )
-		    = split_line1 14, 'action file', \%rulecolumns, $action_commands;
+		    = split_line1 'action file', \%rulecolumns, $action_commands;
 	    }
 
 	    fatal_error 'TARGET must be specified' if $target eq '-';
@@ -1530,10 +1530,10 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition );
 
 	if ( $format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 8, 'macro file', \%rulecolumns, $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = qw/- - - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = split_line1 14, 'macro file', \%rulecolumns, $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
@@ -2346,7 +2346,7 @@ sub build_zone_list( $$$\$\$ ) {
 #
 sub process_rule ( ) {
     my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition )
-	= split_line1 14, 'rules file', \%rulecolumns, $rule_commands;
+	= split_line1 'rules file', \%rulecolumns, $rule_commands;
 
     fatal_error 'ACTION must be specified' if $target eq '-';
 

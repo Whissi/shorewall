@@ -1338,8 +1338,11 @@ sub supplied( $ ) {
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #
-sub split_line( $$$ ) {
-    my ( $maxcolumns, $description, $columnsref ) = @_;
+sub split_line( $$ ) {
+    my ( $description, $columnsref ) = @_;
+
+    my @maxcolumns = ( keys %$columnsref );
+    my $maxcolumns = @maxcolumns;
 
     my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 
@@ -1376,8 +1379,11 @@ sub split_line( $$$ ) {
 #
 # Version of 'split_line' used on files with exceptions
 #
-sub split_line1( $$$;$ ) {
-    my ( $maxcolumns, $description, $columnsref, $nopad) = @_;
+sub split_line1( $$;$ ) {
+    my ( $description, $columnsref, $nopad) = @_;
+
+    my @maxcolumns = ( keys %$columnsref );
+    my $maxcolumns = @maxcolumns;
 
     my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 

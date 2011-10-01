@@ -192,7 +192,7 @@ sub initialize( $ ) {
 
 sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers ) = 
-	split_line1 13, 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12 };
+	split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12 };
 
     our @tccmd;
 
@@ -513,7 +513,7 @@ sub process_flow($) {
 }
 
 sub process_simple_device() {
-    my ( $device , $type , $in_bandwidth , $out_part ) = split_line 4, 'tcinterfaces', { interface => 0, type => 1, in_bandwidth => 2, out_bandwidth => 3 };
+    my ( $device , $type , $in_bandwidth , $out_part ) = split_line 'tcinterfaces', { interface => 0, type => 1, in_bandwidth => 2, out_bandwidth => 3 };
 
     fatal_error 'INTERFACE must be specified'      if $device eq '-';
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
@@ -648,7 +648,7 @@ sub process_simple_device() {
 }
 
 sub validate_tc_device( ) {
-    my ( $device, $inband, $outband , $options , $redirected ) = split_line 5, 'tcdevices', { interface => 0, in_bandwidth => 1, out_bandwidth => 2, options => 3, redirect => 4 };
+    my ( $device, $inband, $outband , $options , $redirected ) = split_line 'tcdevices', { interface => 0, in_bandwidth => 1, out_bandwidth => 2, options => 3, redirect => 4 };
 
     fatal_error 'INTERFACE must be specified' if $device eq '-';
     fatal_error "Invalid tcdevices entry"     if $outband eq '-';
@@ -813,7 +813,7 @@ sub dev_by_number( $ ) {
 
 sub validate_tc_class( ) {
     my ( $devclass, $mark, $rate, $ceil, $prio, $options ) =
-	split_line 6, 'tcclasses file', { interface => 0, mark => 1, rate => 2, ceil => 3, prio => 4, options => 5 };
+	split_line 'tcclasses file', { interface => 0, mark => 1, rate => 2, ceil => 3, prio => 4, options => 5 };
     my $classnumber = 0;
     my $devref;
     my $device = $devclass;
@@ -1037,7 +1037,7 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 #
 sub process_tc_filter() {
 
-    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 8, 'tcfilters file', { interface => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 };
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 'tcfilters file', { interface => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 };
 
     fatal_error 'CLASS must be specified' if $devclass eq '-';
 
@@ -1339,7 +1339,7 @@ sub process_tcfilters() {
 # Process a tcpri record
 #
 sub process_tc_priority() {
-    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line1 6, 'tcpri', { band => 0, proto => 1, port => 2, address => 3, interface => 4, helper => 5 };
+    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line1 'tcpri', { band => 0, proto => 1, port => 2, address => 3, interface => 4, helper => 5 };
 
     fatal_error 'BAND must be specified' if $band eq '-';
 
@@ -1680,7 +1680,7 @@ sub setup_traffic_shaping() {
 #
 sub process_secmark_rule() {
     my ( $secmark, $chainin, $source, $dest, $proto, $dport, $sport, $user, $mark ) =
-	split_line1( 9 , 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
+	split_line1( 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
 
     fatal_error 'SECMARK must be specified' if $secmark eq '-';
 

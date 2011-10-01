@@ -403,7 +403,7 @@ sub process_zone( \$ ) {
     my @parents;
 
     my ($zone, $type, $options, $in_options, $out_options ) =
-	split_line 5, 'zones file', { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 };
+	split_line 'zones file', { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 };
 
     fatal_error 'ZONE must be specified' if $zone eq '-';
 
@@ -874,7 +874,7 @@ sub process_interface( $$ ) {
     my ( $nextinum, $export ) = @_;
     my $netsref   = '';
     my $filterref = [];
-    my ($zone, $originalinterface, $bcasts, $options ) = split_line 4, 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
+    my ($zone, $originalinterface, $bcasts, $options ) = split_line 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
     my $zoneref;
     my $bridge = '';
 
@@ -1732,7 +1732,7 @@ sub compile_updown() {
 #
 sub process_host( ) {
     my $ipsec = 0;
-    my ($zone, $hosts, $options ) = split_line 3, 'hosts file', { zone => 0, hosts => 1, options => 2 };
+    my ($zone, $hosts, $options ) = split_line 'hosts file', { zone => 0, hosts => 1, options => 2 };
 
     fatal_error 'ZONE must be specified'  if $zone eq '-';
     fatal_error 'HOSTS must be specified' if $hosts eq '-';

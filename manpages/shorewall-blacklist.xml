@@ -26,12 +26,14 @@
     <para>The blacklist file is used to perform static blacklisting. You can
     blacklist by source address (IP or MAC), or by application.</para>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">ADDRESS/SUBNET</emphasis> - {<emphasis
-        role="bold">-</emphasis>|<emphasis
+        <term><emphasis role="bold">ADDRESS/SUBNET</emphasis> (networks) -
+        {<emphasis role="bold">-</emphasis>|<emphasis
         role="bold">~</emphasis><emphasis>mac-address</emphasis>|<emphasis>ip-address</emphasis>|<emphasis>address-range</emphasis>|<emphasis
         role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
 
@@ -55,34 +57,32 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTOCOL</emphasis> (Optional) -
-        {<emphasis
+        <term><emphasis role="bold">PROTOCOL</emphasis> (proto) - {<emphasis
         role="bold">-</emphasis>|[!]<emphasis>protocol-number</emphasis>|[!]<emphasis>protocol-name</emphasis>}</term>
 
         <listitem>
-          <para>If specified, must be a protocol number or a protocol name
-          from protocols(5).</para>
+          <para>Optional - If specified, must be a protocol number or a
+          protocol name from protocols(5).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORTS</emphasis> (Optional) - {<emphasis
+        <term><emphasis role="bold">PORTS</emphasis> - {<emphasis
         role="bold">-</emphasis>|[!]<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
         <listitem>
-          <para>May only be specified if the protocol is TCP (6) or UDP (17).
-          A comma-separated list of destination port numbers or service names
-          from services(5).</para>
+          <para>Optional - may only be specified if the protocol is TCP (6) or
+          UDP (17). A comma-separated list of destination port numbers or
+          service names from services(5).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>OPTIONS (Optional - Added in 4.4.12) -
-        {-|{dst|src|whitelist|audit}[,...]}</term>
+        <term>OPTIONS - {-|{dst|src|whitelist|audit}[,...]}</term>
 
         <listitem>
-          <para>If specified, indicates whether traffic
-          <emphasis>from</emphasis> ADDRESS/SUBNET (<emphasis
+          <para>Optional - added in 4.4.12. If specified, indicates whether
+          traffic <emphasis>from</emphasis> ADDRESS/SUBNET (<emphasis
           role="bold">src</emphasis>) or traffic <emphasis>to</emphasis>
           ADDRESS/SUBNET (<emphasis role="bold">dst</emphasis>) should be
           blacklisted. The default is <emphasis role="bold">src</emphasis>. If

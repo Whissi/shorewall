@@ -1037,7 +1037,7 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 #
 sub process_tc_filter() {
 
-    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 'tcfilters file', { interface => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 };
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 'tcfilters file', { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 };
 
     fatal_error 'CLASS must be specified' if $devclass eq '-';
 

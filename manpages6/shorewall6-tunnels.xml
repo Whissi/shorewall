@@ -30,7 +30,9 @@
     url="http://www.shorewall.net/VPNBasics.html">http://www.shorewall.net/VPNBasics.html</ulink>
     for details.</para>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -131,16 +133,17 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">GATEWAY ZONES</emphasis> (Optional) -
+        <term><emphasis role="bold">GATEWAY ZONES</emphasis> (gateway_zone) -
         [<emphasis>zone</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>zone</emphasis>]...]</term>
 
         <listitem>
-          <para>If the gateway system specified in the third column is a
-          standalone host then this column should contain a comma-separated
-          list of the names of the zones that the host might be in. This
-          column only applies to IPSEC tunnels where it enables ISAKMP traffic
-          to flow through the tunnel to the remote gateway.</para>
+          <para>Optional. If the gateway system specified in the third column
+          is a standalone host then this column should contain a
+          comma-separated list of the names of the zones that the host might
+          be in. This column only applies to IPSEC tunnels where it enables
+          ISAKMP traffic to flow through the tunnel to the remote
+          gateway.</para>
         </listitem>
       </varlistentry>
     </variablelist>

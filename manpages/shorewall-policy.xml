@@ -51,7 +51,9 @@
       in this file.</para>
     </important>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -204,14 +206,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">LOG LEVEL</emphasis> (Optional) -
+        <term><emphasis role="bold">LOG LEVEL</emphasis> (loglevel) -
         [<emphasis>log-level</emphasis>|<emphasis
         role="bold">ULOG|NFLOG</emphasis>]</term>
 
         <listitem>
-          <para>If supplied, each connection handled under the default POLICY
-          is logged at that level. If not supplied, no log message is
-          generated. See syslog.conf(5) for a description of log
+          <para>Optional - if supplied, each connection handled under the
+          default POLICY is logged at that level. If not supplied, no log
+          message is generated. See syslog.conf(5) for a description of log
           levels.</para>
 
           <para>You may also specify ULOG or NFLOG (must be in upper case).
@@ -225,7 +227,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">BURST:LIMIT</emphasis> -
+        <term><emphasis role="bold">BURST:LIMIT</emphasis> (limit) -
         [{<emphasis>s</emphasis>|<emphasis
         role="bold">d</emphasis>}:[[<replaceable>name</replaceable>]:]]]<emphasis>rate</emphasis><emphasis
         role="bold">/</emphasis>{<emphasis

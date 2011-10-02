@@ -32,7 +32,9 @@
       table support included.</para>
     </warning>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -113,13 +115,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">NET3 (Optional)</emphasis> -
+        <term><emphasis role="bold">NET3</emphasis> -
         <emphasis>network-address</emphasis></term>
 
         <listitem>
-          <para>Added in Shorewall 4.4.11. If specified, qualifies INTERFACE.
-          It specifies a SOURCE network for DNAT rules and a DESTINATON
-          network for SNAT rules.</para>
+          <para>Optional - added in Shorewall 4.4.11. If specified, qualifies
+          INTERFACE. It specifies a SOURCE network for DNAT rules and a
+          DESTINATON network for SNAT rules.</para>
         </listitem>
       </varlistentry>
 
@@ -134,13 +136,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S)</emphasis> -
+        <term><emphasis role="bold">DEST PORT(S)</emphasis> (dport) -
         <emphasis>port-number-or-name-list</emphasis></term>
 
         <listitem>
-          <para>Destination Ports. A comma-separated list of Port names (from
-          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
-          range</emphasis>s; if the protocol is <emphasis
+          <para>Destination Ports. An optional comma-separated list of Port
+          names (from services(5)), <emphasis>port number</emphasis>s or
+          <emphasis>port range</emphasis>s; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
           type, a numberic type and code separated by a slash (e.g., 3/4), or
@@ -160,13 +162,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S)</emphasis> -
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
         <emphasis>port-number-or-name-list</emphasis></term>
 
         <listitem>
-          <para>Source port(s). If omitted, any source port is acceptable.
-          Specified as a comma-separated list of port names, port numbers or
-          port ranges.</para>
+          <para>Optional source port(s). If omitted, any source port is
+          acceptable. Specified as a comma-separated list of port names, port
+          numbers or port ranges.</para>
 
           <para>An entry in this field requires that the PROTO column specify
           tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of

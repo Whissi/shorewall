@@ -33,7 +33,9 @@
       restart</command> command.</para>
     </warning>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -47,27 +49,27 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">HOST(S)</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">HOST(S)</emphasis> (hosts) - [<emphasis
         role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...]</term>
 
         <listitem>
-          <para>Comma-separated list of IP/subnet addresses. If your kernel
-          and iptables include iprange match support, IP address ranges are
-          also allowed.</para>
+          <para>Optional. Comma-separated list of IP/subnet addresses. If your
+          kernel and iptables include iprange match support, IP address ranges
+          are also allowed.</para>
 
           <para>If left empty or supplied as "-", 0.0.0.0/0 is assumed.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OPTIONS</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">OPTIONS</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>option</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
 
         <listitem>
-          <para>A comma-separated list of options. The order of the options is
-          not important but the list can contain no embedded whitespace. The
-          currently-supported options are:</para>
+          <para>Optional. A comma-separated list of options. The order of the
+          options is not important but the list can contain no embedded
+          whitespace. The currently-supported options are:</para>
 
           <variablelist>
             <varlistentry>
@@ -133,26 +135,26 @@
       </varlistentry>
 
       <varlistentry>
-        <term>DEST PORT(S) (Optional) ‒
+        <term>DEST PORT(S) (dport) ‒
         <replaceable>service-name/port-number-list</replaceable></term>
 
         <listitem>
-          <para>A comma-separated list of port numbers and/or service names
-          from <filename>/etc/services</filename>. May also include port
-          ranges of the form
+          <para>Optional. A comma-separated list of port numbers and/or
+          service names from <filename>/etc/services</filename>. May also
+          include port ranges of the form
           <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
           if your kernel and iptables include port range support.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>SOURCE PORT(S) (Optional) ‒
+        <term>SOURCE PORT(S) (sport) ‒
         <replaceable>service-name/port-number-list</replaceable></term>
 
         <listitem>
-          <para>A comma-separated list of port numbers and/or service names
-          from <filename>/etc/services</filename>. May also include port
-          ranges of the form
+          <para>Optional. A comma-separated list of port numbers and/or
+          service names from <filename>/etc/services</filename>. May also
+          include port ranges of the form
           <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
           if your kernel and iptables include port range support.</para>
         </listitem>

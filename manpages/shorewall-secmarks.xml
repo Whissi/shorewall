@@ -34,7 +34,9 @@
     <para>The secmarks file is used to associate an SELinux context with
     packets. It was added in Shorewall version 4.4.13.</para>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -89,7 +91,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CHAIN:STATE -
+        <term><emphasis role="bold">CHAIN:STATE (chain) -
         {P|I|F|O|T}[:{N|I|NI|E|ER}]</emphasis></term>
 
         <listitem>
@@ -216,14 +218,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORT(S)</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">PORT(S)</emphasis> (dport) - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
 
         <listitem>
-          <para>Destination Ports. A comma-separated list of Port names (from
-          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
-          range</emphasis>s; if the protocol is <emphasis
+          <para>Optional destination Ports. A comma-separated list of Port
+          names (from services(5)), <emphasis>port number</emphasis>s or
+          <emphasis>port range</emphasis>s; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
           type, a numberic type and code separated by a slash (e.g., 3/4), or
@@ -243,26 +245,26 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (Optional) -
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
         [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
 
         <listitem>
-          <para>Source port(s). If omitted, any source port is acceptable.
-          Specified as a comma-separated list of port names, port numbers or
-          port ranges.</para>
+          <para>Optional source port(s). If omitted, any source port is
+          acceptable. Specified as a comma-separated list of port names, port
+          numbers or port ranges.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">USER</emphasis> - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>]</term>
 
         <listitem>
-          <para>This column may only be non-empty if the SOURCE is the
-          firewall itself.</para>
+          <para>This optional column may only be non-empty if the SOURCE is
+          the firewall itself.</para>
 
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective

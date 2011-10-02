@@ -504,21 +504,51 @@ ACCEPT      net:\
     as <replaceable>column-name</replaceable>/<replaceable>value</replaceable>
     pairs.</para>
 
-    <para>At any point, you can enter a semicolon (';') followed by one or
-    more specifications of the form:</para>
+    <para>There is considerable flexibility in how you specify the
+    pairs:</para>
 
-    <simplelist>
-      <member><replaceable>column-name</replaceable>=<replaceable>value</replaceable></member>
-    </simplelist>
+    <itemizedlist>
+      <listitem>
+        <para>At any point, you can enter a semicolon (';') followed by one or
+        more specifications of the following forms:</para>
 
-    <para>The value may optionally be enclosed in double quotes.</para>
+        <simplelist>
+          <member><replaceable>column-name</replaceable>=<replaceable>value</replaceable></member>
 
-    <para>The following table shows the right-most required column and the
-    remaining column names for each of the table-oriented configuration
-    files.</para>
+          <member><replaceable>column-name</replaceable>=<replaceable>&gt;value</replaceable></member>
+
+          <member><replaceable>column-name</replaceable>:<replaceable>value</replaceable></member>
+        </simplelist>
+
+        <para>The value may optionally be enclosed in double quotes.</para>
+
+        <para>The pairs must be separated by white space, but you can add a
+        comma adjacent to the <replaceable>values</replaceable> for
+        readability as in:</para>
+
+        <simplelist>
+          <member><emphasis role="bold">; proto=&gt;udp,
+          port=1024</emphasis></member>
+        </simplelist>
+      </listitem>
+
+      <listitem>
+        <para>You can enclose the pairs in curly brackets ("{...}") rather
+        than separating them from columns by a semicolon:</para>
+
+        <simplelist>
+          <member><emphasis role="bold">{ proto:udp, port:1024
+          }</emphasis></member>
+        </simplelist>
+      </listitem>
+    </itemizedlist>
+
+    <para>The following table shows the column names for each of the
+    table-oriented configuration files.</para>
 
     <note>
-      <para>Column names are case-insensitive.</para>
+      <para>Column names are <emphasis
+      role="bold">case-insensitive</emphasis>.</para>
     </note>
 
     <informaltable>
@@ -576,7 +606,7 @@ ACCEPT      net:\
           <row>
             <entry>nat</entry>
 
-            <entry>external,interface,internal,allints,localnat</entry>
+            <entry>external,interface,internal,allints,local</entry>
           </row>
 
           <row>
@@ -630,7 +660,7 @@ ACCEPT      net:\
           <row>
             <entry>secmarks</entry>
 
-            <entry>secmark,source,dest,proto,dport,sport,user,mark</entry>
+            <entry>secmark,chain,source,dest,proto,dport,sport,user,mark</entry>
           </row>
 
           <row>
@@ -648,7 +678,7 @@ ACCEPT      net:\
           <row>
             <entry>tcfilters</entry>
 
-            <entry>interface,source,dest,proto,dport,sport,tos,length</entry>
+            <entry>class,source,dest,proto,dport,sport,tos,length</entry>
           </row>
 
           <row>
@@ -694,7 +724,13 @@ ACCEPT      net:\
 
     <programlisting>#ACTION         SOURCE            DEST            PROTO   DEST 
 #                                                         PORT(S)
-DNAT            net               loc:10.0.0.1    tcp     80    ;    mark="88"</programlisting>
+DNAT            net               loc:10.0.0.1    tcp     80    ; mark="88"</programlisting>
+
+    <para>Here's the same line in several equivalent formats:</para>
+
+    <programlisting>{ action=&gt;DNAT, source=&gt;net, dest=&gt;loc:10.0.0.1, proto=&gt;tcp, dport=&gt;80, mark=&gt;88 }
+; action:"DNAT" source:"net"  dest:"loc:10.0.0.1" proto:"tcp" dport:"80" mark:"88"
+DNAT { source=net dest=loc:10.0.0.1 proto=tcp dport=80 mark=88 }</programlisting>
   </section>
 
   <section>

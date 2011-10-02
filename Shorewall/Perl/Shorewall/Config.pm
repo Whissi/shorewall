@@ -1339,57 +1339,33 @@ sub supplied( $ ) {
 
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
-#
-sub split_line( $$ ) {
-    my ( $description, $columnsref ) = @_;
-
-    my @maxcolumns = ( keys %$columnsref );
-    my $maxcolumns = @maxcolumns;
-
-    my ( $columns, $pairs, $rest ) = split( ';', $currentline );
-
-    fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
-    fatal_error "Shorewall Configuration file entries may not contain single quotes, double quotes, single back quotes or backslashes" if $columns =~ /["'`\\]/;
-    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
-
-    my @line = split( ' ', $columns );
-
-    my $line = @line;
-
-    fatal_error "Invalid $description entry (too many columns)" if $line > $maxcolumns;
-
-    $line-- while $line > 0 && $line[$line-1] eq '-';
-
-    push @line, '-' while @line < $maxcolumns;
-
-    if ( supplied $pairs ) {
-	my @pairs = split( ' ', $pairs );
-
-	for ( @pairs ) {
-	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.+)$/;
-	    my ( $column, $value ) = ( lc $1, $2 );
-	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
-	    $column = $columnsref->{$column};
-	    fatal_error "The $1 column already has a value" unless $line[$column] eq '-';
-	    $line[$column] = $value =~ /^"([^"]+)"$/ ? $1 : $value;
-	}
-    }  
-
-    @line;
-}
-
-#
-# Version of 'split_line' used on files with exceptions
+#    Handles all of the supported forms of column/pair specification
 #
 sub split_line1( $$;$ ) {
     my ( $description, $columnsref, $nopad) = @_;
 
     my @maxcolumns = ( keys %$columnsref );
     my $maxcolumns = @maxcolumns;
-
+    #
+    # First see if there is a semicolon on the line; what follows will be column/value paris
+    #
     my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 
-    fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
+    if ( supplied $pairs ) {
+	#
+	# Found it -- be sure there wasn't more than one.
+	#
+	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
+    } elsif ( $currentline =~ /(.*){(.*)}$/ ) {
+	#
+	# Pairs are enclosed in curly brackets.
+	#
+	$columns = $1;
+	$pairs   = $2;
+    } else {
+	$pairs = '';
+    }
+
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 
@@ -1397,7 +1373,7 @@ sub split_line1( $$;$ ) {
 
     $nopad = { COMMENT => 0 } unless $nopad;
 
-    my $first     = $line[0];
+    my $first     = supplied $line[0] ? $line[0] : '-';
     my $npcolumns = $nopad->{$first};
 
     if ( defined $npcolumns ) {
@@ -1416,19 +1392,29 @@ sub split_line1( $$;$ ) {
     push @line, '-' while @line < $maxcolumns;
 
     if ( supplied $pairs ) {
-	my @pairs = split( ' ', $pairs );
+	$pairs =~ s/^\s*//;
+	$pairs =~ s/\s*$//;
+
+	my @pairs = split( /,?\s+/, $pairs );
 
 	for ( @pairs ) {
-	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)=(.+)$/;
+	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
 	    my ( $column, $value ) = ( lc $1, $2 );
 	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
 	    $column = $columnsref->{$column};
-	    fatal_error "The $1 column already has a value" unless $line[$column] eq '-';
-	    $line[$column] = $value =~ /^"([^"]+)"$/ ? $1 : $value;
+	    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+	    $value = $1 if $value =~ /^"([^"]+)"$/;
+	    fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
+	    fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
+	    $line[$column] = $value;
 	}
     }   
 
     @line;
+}
+
+sub split_line($$) {
+    &split_line1( @_, {} );
 }
 
 #

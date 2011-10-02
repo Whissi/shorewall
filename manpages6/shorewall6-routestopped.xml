@@ -29,7 +29,9 @@
     used, the file also determines those hosts that are accessible when the
     firewall is in the process of being [re]started.</para>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -43,27 +45,27 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">HOST(S)</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">HOST(S)</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...]</term>
 
         <listitem>
-          <para>Comma-separated list of IP/subnet addresses. If your kernel
-          and ip6tables include iprange match support, IP address ranges are
-          also allowed.</para>
+          <para>Optional comma-separated list of IP/subnet addresses. If your
+          kernel and ip6tables include iprange match support, IP address
+          ranges are also allowed.</para>
 
           <para>If left empty or supplied as "-", 0.0.0.0/0 is assumed.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">OPTIONS</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">OPTIONS</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>option</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
 
         <listitem>
-          <para>A comma-separated list of options. The order of the options is
-          not important but the list can contain no embedded whitespace. The
-          currently-supported options are:</para>
+          <para>An optional comma-separated list of options. The order of the
+          options is not important but the list can contain no embedded
+          whitespace. The currently-supported options are:</para>
 
           <variablelist>
             <varlistentry>

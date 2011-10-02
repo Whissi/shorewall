@@ -57,7 +57,9 @@
       </varlistentry>
     </variablelist>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -108,34 +110,33 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT</emphasis> (Optional) -
-        [<emphasis
+        <term><emphasis role="bold">DEST PORT</emphasis> (dport) - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-or-number</emphasis>]</term>
 
         <listitem>
-          <para>Destination Ports. A Port name (from services(5)) or a
-          <emphasis>port number</emphasis>; if the protocol is <emphasis
+          <para>Optional destination Ports. A Port name (from services(5)) or
+          a <emphasis>port number</emphasis>; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT</emphasis> (Optional) -
+        <term><emphasis role="bold">SOURCE PORT</emphasis> (sport) -
         [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-or-number</emphasis>]</term>
 
         <listitem>
-          <para>Source port.</para>
+          <para>Optional source port.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">TOS</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">TOS</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>tos</emphasis>]</term>
 
         <listitem>
-          <para>Specifies the value of the TOS field. The
+          <para>Optional - specifies the value of the TOS field. The
           <replaceable>tos</replaceable> value can be any of the
           following:</para>
 
@@ -175,12 +176,12 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">LENGTH</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">LENGTH</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>number</emphasis>]</term>
 
         <listitem>
-          <para>Must be a power of 2 between 32 and 8192 inclusive. Packets
-          with a total length that is strictly less than the specified
+          <para>Optional. Must be a power of 2 between 32 and 8192 inclusive.
+          Packets with a total length that is strictly less than the specified
           <replaceable>number</replaceable> will match the rule.</para>
         </listitem>
       </varlistentry>

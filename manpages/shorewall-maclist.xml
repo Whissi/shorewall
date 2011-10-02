@@ -31,7 +31,9 @@
     url="shorewall-hosts.html">shorewall-hosts</ulink>(5) configuration
     file.</para>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -73,17 +75,17 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">IP ADDRESSES</emphasis> (Optional) -
+        <term><emphasis role="bold">IP ADDRESSES</emphasis> (addresses) -
         [<emphasis>address</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>address</emphasis>]...]</term>
 
         <listitem>
-          <para>If specified, both the MAC and IP address must match. This
-          column can contain a comma-separated list of host and/or subnet
-          addresses. If your kernel and iptables have iprange match support
-          then IP address ranges are also allowed. Similarly, if your kernel
-          and iptables include ipset support than set names (prefixed by "+")
-          are also allowed.</para>
+          <para>Optional - if specified, both the MAC and IP address must
+          match. This column can contain a comma-separated list of host and/or
+          subnet addresses. If your kernel and iptables have iprange match
+          support then IP address ranges are also allowed. Similarly, if your
+          kernel and iptables include ipset support than set names (prefixed
+          by "+") are also allowed.</para>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -109,7 +109,9 @@
     appear in the file then all rules are assumed to be in the NEW
     section.</para>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -661,7 +663,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTO</emphasis> (Optional) - {<emphasis
+        <term><emphasis role="bold">PROTO</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">tcp:syn</emphasis>|<emphasis
         role="bold">ipp2p</emphasis>|<emphasis
@@ -670,8 +672,8 @@
         role="bold">all}</emphasis></term>
 
         <listitem>
-          <para>Protocol - <emphasis role="bold">ipp2p</emphasis>* requires
-          ipp2p match support in your kernel and ip6tables. <emphasis
+          <para>Optional protocol - <emphasis role="bold">ipp2p</emphasis>*
+          requires ipp2p match support in your kernel and ip6tables. <emphasis
           role="bold">tcp:syn</emphasis> implies <emphasis
           role="bold">tcp</emphasis> plus the SYN flag must be set and the
           RST,ACK and FIN flags must be reset.</para>
@@ -683,18 +685,18 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) </emphasis>(Optional) -
+        <term><emphasis role="bold">DEST PORT(S) </emphasis>(dport) -
         {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...}</term>
 
         <listitem>
-          <para>Destination Ports. A comma-separated list of Port names (from
-          services(5)), port numbers or port ranges; if the protocol is
-          <emphasis role="bold">icmp</emphasis>, this column is interpreted as
-          the destination icmp-type(s). ICMP types may be specified as a
-          numeric type, a numberic type and code separated by a slash (e.g.,
-          3/4), or a typename. See <ulink
+          <para>Optional destination Ports. A comma-separated list of Port
+          names (from services(5)), port numbers or port ranges; if the
+          protocol is <emphasis role="bold">icmp</emphasis>, this column is
+          interpreted as the destination icmp-type(s). ICMP types may be
+          specified as a numeric type, a numberic type and code separated by a
+          slash (e.g., 3/4), or a typename. See <ulink
           url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.
           Note that prior to Shorewall6 4.4.19, only a single ICMP type may be
           listsed.</para>
@@ -726,13 +728,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (Optional) -
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
         {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...}</term>
 
         <listitem>
-          <para>Port(s) used by the client. If omitted, any source port is
+          <para>Optional source port(s). If omitted, any source port is
           acceptable. Specified as a comma- separated list of port names, port
           numbers or port ranges.</para>
 
@@ -760,7 +762,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (Optional) -
+        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (origdest) -
         [<emphasis role="bold">-</emphasis>]</term>
 
         <listitem>
@@ -770,8 +772,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">RATE LIMIT</emphasis> (Optional) -
-        [<emphasis role="bold">-</emphasis>|[{<emphasis>s</emphasis>|<emphasis
+        <term><emphasis role="bold">RATE LIMIT</emphasis> (rate) - [<emphasis
+        role="bold">-</emphasis>|[{<emphasis>s</emphasis>|<emphasis
         role="bold">d</emphasis>}:[[<replaceable>name</replaceable>]:]]]<emphasis>rate</emphasis><emphasis
         role="bold">/</emphasis>{<emphasis
         role="bold">sec</emphasis>|<emphasis
@@ -780,8 +782,8 @@
         role="bold">day</emphasis>}[:<emphasis>burst</emphasis>]</term>
 
         <listitem>
-          <para>You may rate-limit the rule by placing a value in this
-          column:</para>
+          <para>You may optionally rate-limit the rule by placing a value in
+          this column:</para>
 
           <para><emphasis>rate</emphasis> is the number of connections per
           interval (<emphasis role="bold">sec</emphasis> or <emphasis
@@ -805,14 +807,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis> (Optional) -
-        [<emphasis
+        <term><emphasis role="bold">USER/GROUP</emphasis> (user) - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>]</term>
 
         <listitem>
-          <para>This column may only be non-empty if the SOURCE is the
-          firewall itself.</para>
+          <para>This optional column may only be non-empty if the SOURCE is
+          the firewall itself.</para>
 
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective

@@ -31,7 +31,9 @@
       support included.</para>
     </warning>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -123,24 +125,23 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTO (Optional - Added in Shorewall
-        4.4.23.2)</emphasis> -
+        <term><emphasis role="bold">PROTO</emphasis> -
         <emphasis>protocol-number-or-name</emphasis></term>
 
         <listitem>
-          <para>Only packets specifying this protocol will have their IP
-          header modified.</para>
+          <para>Optional -- added in Shorewall 4.4.23.2. Only packets
+          specifying this protocol will have their IP header modified.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
-        Shorewall 4.4.23.2)</emphasis> -
+        <term><emphasis role="bold">DEST PORT(S) (dport)</emphasis> -
         <emphasis>port-number-or-name-list</emphasis></term>
 
         <listitem>
-          <para>Destination Ports. A comma-separated list of Port names (from
-          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
+          <para>Optional - added in Shorewall 4.4.23.2. Destination Ports. A
+          comma-separated list of Port names (from services(5)),
+          <emphasis>port number</emphasis>s or <emphasis>port
           range</emphasis>s; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
@@ -161,14 +162,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) (Optional - Added in
-        Shorewall 4.4.23.2)</emphasis> -
+        <term><emphasis role="bold">SOURCE PORT(S) (sport)</emphasis> -
         <emphasis>port-number-or-name-list</emphasis></term>
 
         <listitem>
-          <para>Source port(s). If omitted, any source port is acceptable.
-          Specified as a comma-separated list of port names, port numbers or
-          port ranges.</para>
+          <para>Optional -- added in Shorewall 4.4.23.2. Source port(s). If
+          omitted, any source port is acceptable. Specified as a
+          comma-separated list of port names, port numbers or port
+          ranges.</para>
 
           <para>An entry in this field requires that the PROTO column specify
           tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of

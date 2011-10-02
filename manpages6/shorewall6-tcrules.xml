@@ -38,7 +38,9 @@
       url="http://shorewall.net/MultiISP.html">http://shorewall.net/MultiISP.html</ulink>.</para>
     </important>
 
-    <para>The columns in the file are as follows.</para>
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
 
     <variablelist>
       <varlistentry>
@@ -421,14 +423,14 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORT(S)</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">PORT(S)</emphasis> (dport) - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
 
         <listitem>
-          <para>Destination Ports. A comma-separated list of Port names (from
-          services(5)), <emphasis>port number</emphasis>s or <emphasis>port
-          range</emphasis>s; if the protocol is <emphasis
+          <para>Optional destination Ports. A comma-separated list of Port
+          names (from services(5)), <emphasis>port number</emphasis>s or
+          <emphasis>port range</emphasis>s; if the protocol is <emphasis
           role="bold">ipv6-icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
           type, a numberic type and code separated by a slash (e.g., 3/4), or
@@ -448,15 +450,15 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (Optional) -
+        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
         [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
 
         <listitem>
-          <para>Source port(s). If omitted, any source port is acceptable.
-          Specified as a comma-separated list of port names, port numbers or
-          port ranges.</para>
+          <para>Optional source port(s). If omitted, any source port is
+          acceptable. Specified as a comma-separated list of port names, port
+          numbers or port ranges.</para>
 
           <para>An entry in this field requires that the PROTO column specify
           tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
@@ -465,13 +467,13 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER</emphasis> (Optional) - [<emphasis
+        <term><emphasis role="bold">USER</emphasis> - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>]</term>
 
         <listitem>
-          <para>This column may only be non-empty if the SOURCE is the
-          firewall itself.</para>
+          <para>This optional column may only be non-empty if the SOURCE is
+          the firewall itself.</para>
 
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective
@@ -511,13 +513,13 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">TEST</emphasis>(Optional) - [<emphasis
+        <term><emphasis role="bold">TEST</emphasis> - [<emphasis
         role="bold">!</emphasis>]<emphasis>value</emphasis>[/<emphasis>mask</emphasis>][<emphasis
         role="bold">:C</emphasis>]</term>
 
         <listitem>
-          <para>Defines a test on the existing packet or connection mark. The
-          rule will match only if the test returns true.</para>
+          <para>Optional. Defines a test on the existing packet or connection
+          mark. The rule will match only if the test returns true.</para>
 
           <para>If you don't want to define a test but need to specify
           anything in the following columns, place a "-" in this field.</para>
@@ -560,15 +562,15 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">LENGTH</emphasis> (Optional) -
+        <term><emphasis role="bold">LENGTH</emphasis> -
         [<emphasis>length</emphasis>|[<emphasis>min</emphasis>]<emphasis
         role="bold">:</emphasis>[<emphasis>max</emphasis>]]</term>
 
         <listitem>
-          <para>Packet Length. This field, if present allow you to match the
-          length of a packet against a specific value or range of values. You
-          must have ip6tables length support for this to work. A range is
-          specified in the form
+          <para>Optional packet Length. This field, if present allow you to
+          match the length of a packet against a specific value or range of
+          values. You must have ip6tables length support for this to work. A
+          range is specified in the form
           <emphasis>min</emphasis>:<emphasis>max</emphasis> where either
           <emphasis>min</emphasis> or <emphasis>max</emphasis> (but not both)
           may be omitted. If <emphasis>min</emphasis> is omitted, then 0 is
@@ -594,7 +596,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CONNBYTES</emphasis> (Optional) -
+        <term><emphasis role="bold">CONNBYTES</emphasis> -
         [!]<emphasis>min</emphasis>:[<emphasis>max</emphasis>[:{<emphasis
         role="bold">O</emphasis>|<emphasis role="bold">R</emphasis>|<emphasis
         role="bold">B</emphasis>}[:{<emphasis
@@ -602,8 +604,9 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
         role="bold">A</emphasis>}]]]</term>
 
         <listitem>
-          <para>Connection Bytes; defines a byte or packet range that the
-          connection must fall within in order for the rule to match.</para>
+          <para>Optional connection Bytes; defines a byte or packet range that
+          the connection must fall within in order for the rule to
+          match.</para>
 
           <para>A packet matches if the the packet/byte count is within the
           range defined by <emphasis>min</emphasis> and
@@ -641,17 +644,17 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">HELPER (Optional) -
+        <term><emphasis role="bold">HELPER -
         </emphasis><emphasis>helper</emphasis></term>
 
         <listitem>
-          <para>Names a Netfiler protocol <firstterm>helper</firstterm> module
-          such as <option>ftp</option>, <option>sip</option>,
-          <option>amanda</option>, etc. A packet will match if it was accepted
-          by the named helper module. You can also append "-" and a port
-          number to the helper module name (e.g., <emphasis
-          role="bold">ftp-21</emphasis>) to specify the port number that the
-          original connection was made on.</para>
+          <para>Optional. Names a Netfiler protocol
+          <firstterm>helper</firstterm> module such as <option>ftp</option>,
+          <option>sip</option>, <option>amanda</option>, etc. A packet will
+          match if it was accepted by the named helper module. You can also
+          append "-" and a port number to the helper module name (e.g.,
+          <emphasis role="bold">ftp-21</emphasis>) to specify the port number
+          that the original connection was made on.</para>
 
           <para>Example: Mark all FTP data connections with mark
           4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER

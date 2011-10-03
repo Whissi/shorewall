@@ -110,6 +110,7 @@ our %EXPORT_TAGS = (
 				       pop_comment
 				       forward_chain
 				       rules_chain
+				       blacklist_chain
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -1479,6 +1480,13 @@ sub rules_chain ($$) {
 }
 
 #
+# Name of the blacklist chain between an ordered pair of zones
+#
+sub blacklist_chain($$) {
+    &rules_chain(@_) . '~';
+}
+
+#
 # Forward Chain for an interface
 #
 sub forward_chain($)
@@ -2234,6 +2242,7 @@ sub initialize_chain_table($) {
 		    'NFQUEUE!'        => STANDARD + NFQ,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
+		    'WHITELIST'       => STANDARD
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {

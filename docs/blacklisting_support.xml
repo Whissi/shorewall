@@ -48,9 +48,10 @@
   <section id="Intro">
     <title>Introduction</title>
 
-    <para>Shorewall supports two different forms of blacklisting; static and
-    dynamic. The BLACKLISTNEWONLY option in /etc/shorewall/shorewall.conf
-    controls the degree of blacklist filtering:</para>
+    <para>Shorewall supports two different types of blackliisting; rule-based,
+    static and dynamic. The BLACKLISTNEWONLY option in
+    /etc/shorewall/shorewall.conf controls the degree of blacklist
+    filtering:</para>
 
     <orderedlist>
       <listitem>
@@ -62,10 +63,28 @@
       <listitem>
         <para>BLACKLISTNEWONLY=Yes -- The blacklists are only consulted for
         new connection requests. Blacklists may not be used to terminate
-        existing connections. Only the source address is checked against the
-        blacklists.</para>
+        existing connections.</para>
       </listitem>
     </orderedlist>
+  </section>
+
+  <section>
+    <title>Rule-based Blacklisting</title>
+
+    <para>Beginning with Shorewall 4.4.25, the preferred method of
+    blacklisting and whitelisting is to use the BLACKLIST section of the rules
+    file. There you have access to the DROP, ACCEPT, REJECT and WHITELIST
+    actions, standard and custom macros as well as standard and custom
+    actions. See <ulink
+    url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5).</para>
+  </section>
+
+  <section>
+    <title>Legacy Blacklisting</title>
+
+    <para>Prior to 4.4.25, two forms of blacklisting were supported; static
+    and dynamic. The dynamic variety is still appropriate for on the fly
+    blacklisting; the static form is deprecated.</para>
 
     <important>
       <para><emphasis role="bold">By default, only the source address is
@@ -96,191 +115,197 @@
       load, and will have a very negative effect on firewall
       performance.</para>
     </important>
-  </section>
 
-  <section id="Static">
-    <title>Static Blacklisting</title>
+    <section id="Static">
+      <title>Static Blacklisting</title>
 
-    <para>Shorewall static blacklisting support has the following
-    configuration parameters:</para>
+      <para>Shorewall static blacklisting support has the following
+      configuration parameters:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>You specify whether you want packets from blacklisted hosts
-        dropped or rejected using the BLACKLIST_DISPOSITION setting in <ulink
-        url="manpages/shorewall.conf.html"><filename>shorewall.conf</filename>(5).</ulink></para>
-      </listitem>
+      <itemizedlist>
+        <listitem>
+          <para>You specify whether you want packets from blacklisted hosts
+          dropped or rejected using the BLACKLIST_DISPOSITION setting in
+          <ulink
+          url="manpages/shorewall.conf.html"><filename>shorewall.conf</filename>(5).</ulink></para>
+        </listitem>
 
-      <listitem>
-        <para>You specify whether you want packets from blacklisted hosts
-        logged and at what syslog level using the BLACKLIST_LOGLEVEL setting
-        in <ulink
-        url="manpages/shorewall.conf.html"><filename>shorewall.conf</filename></ulink>(5).</para>
-      </listitem>
+        <listitem>
+          <para>You specify whether you want packets from blacklisted hosts
+          logged and at what syslog level using the BLACKLIST_LOGLEVEL setting
+          in <ulink
+          url="manpages/shorewall.conf.html"><filename>shorewall.conf</filename></ulink>(5).</para>
+        </listitem>
 
-      <listitem>
-        <para>You list the IP addresses/subnets that you wish to blacklist in
-        <ulink
-        url="manpages/shorewall-blacklist.html"><filename>shorewall-blacklist</filename></ulink>
-        (5). You may also specify PROTOCOL and Port numbers/Service names in
-        the blacklist file.</para>
-      </listitem>
+        <listitem>
+          <para>You list the IP addresses/subnets that you wish to blacklist
+          in <ulink
+          url="manpages/shorewall-blacklist.html"><filename>shorewall-blacklist</filename></ulink>
+          (5). You may also specify PROTOCOL and Port numbers/Service names in
+          the blacklist file.</para>
+        </listitem>
 
-      <listitem>
-        <para>You specify the interfaces whose incoming packets you want
-        checked against the blacklist using the <quote>blacklist</quote>
-        option in <ulink
-        url="manpages/shorewall-interfaces.html"><filename>shorewall-interfaces</filename></ulink>(5)
-        (<ulink url="manpages/shorewall-zones.html">shorewall-zones</ulink>(5)
-        in Shorewall 4.4.12 and later).</para>
-      </listitem>
-    </itemizedlist>
+        <listitem>
+          <para>You specify the interfaces whose incoming packets you want
+          checked against the blacklist using the <quote>blacklist</quote>
+          option in <ulink
+          url="manpages/shorewall-interfaces.html"><filename>shorewall-interfaces</filename></ulink>(5)
+          (<ulink
+          url="manpages/shorewall-zones.html">shorewall-zones</ulink>(5) in
+          Shorewall 4.4.12 and later).</para>
+        </listitem>
+      </itemizedlist>
 
-    <para>Users with a large static black list may want to set the
-    DELAYBLACKLISTLOAD option in shorewall.conf (added in Shorewall version
-    2.2.0). When DELAYBLACKLISTLOAD=Yes, Shorewall will enable new connections
-    before loading the blacklist rules. While this may allow connections from
-    blacklisted hosts to slip by during construction of the blacklist, it can
-    substantially reduce the time that all new connections are disabled during
-    "shorewall [re]start".</para>
+      <para>Prior to Shorewall 4.4.20, only source-address static blacklisting
+      was supported.</para>
 
-    <para>Beginning with Shorewall 2.4.0, you can use <ulink
-    url="ipsets.html">ipsets</ulink> to define your static blacklist. Here's
-    an example:</para>
+      <para>Users with a large static black list may want to set the
+      DELAYBLACKLISTLOAD option in shorewall.conf (added in Shorewall version
+      2.2.0). When DELAYBLACKLISTLOAD=Yes, Shorewall will enable new
+      connections before loading the blacklist rules. While this may allow
+      connections from blacklisted hosts to slip by during construction of the
+      blacklist, it can substantially reduce the time that all new connections
+      are disabled during "shorewall [re]start".</para>
 
-    <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
+      <para>Beginning with Shorewall 2.4.0, you can use <ulink
+      url="ipsets.html">ipsets</ulink> to define your static blacklist. Here's
+      an example:</para>
+
+      <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
 +Blacklistports[dst]
 +Blacklistnets[src,dst]
 +Blacklist[src,dst]
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-    <para>In this example, there is a portmap ipset
-    <emphasis>Blacklistports</emphasis> that blacklists all traffic with
-    destination ports included in the ipset. There are also
-    <emphasis>Blacklistnets</emphasis> (type <emphasis>nethash</emphasis>) and
-    <emphasis>Blacklist</emphasis> (type <emphasis>iphash</emphasis>) ipsets
-    that allow blacklisting networks and individual IP addresses. Note that
-    [src,dst] is specified so that individual entries in the sets can be bound
-    to other portmap ipsets to allow blacklisting (<emphasis>source
-    address</emphasis>, <emphasis>destination port</emphasis>) combinations.
-    For example:</para>
+      <para>In this example, there is a portmap ipset
+      <emphasis>Blacklistports</emphasis> that blacklists all traffic with
+      destination ports included in the ipset. There are also
+      <emphasis>Blacklistnets</emphasis> (type <emphasis>nethash</emphasis>)
+      and <emphasis>Blacklist</emphasis> (type <emphasis>iphash</emphasis>)
+      ipsets that allow blacklisting networks and individual IP addresses.
+      Note that [src,dst] is specified so that individual entries in the sets
+      can be bound to other portmap ipsets to allow blacklisting
+      (<emphasis>source address</emphasis>, <emphasis>destination
+      port</emphasis>) combinations. For example:</para>
 
-    <programlisting>ipset -N SMTP portmap --from 1 --to 31
+      <programlisting>ipset -N SMTP portmap --from 1 --to 31
 ipset -A SMTP 25
 ipset -A Blacklist 206.124.146.177
 ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
 
-    <para>This will blacklist SMTP traffic from host 206.124.146.177.</para>
-  </section>
+      <para>This will blacklist SMTP traffic from host 206.124.146.177.</para>
+    </section>
 
-  <section id="whitelisting">
-    <title>Static Whitelisting</title>
+    <section id="whitelisting">
+      <title>Static Whitelisting</title>
 
-    <para>Beginning with Shorewall 4.4.20, you can create
-    <firstterm>whitelist</firstterm> entries in the blacklist file.
-    Connections/packets matching a whitelist entry are not matched against the
-    entries in the blacklist file that follow. Whitelist entries are created
-    using the <emphasis role="bold">whitelist</emphasis> option (OPTIONS
-    column). See <ulink
-    url="manpages/shorewall-blacklist.html"><filename>shorewall-blacklist</filename></ulink>
-    (5).</para>
-  </section>
+      <para>Beginning with Shorewall 4.4.20, you can create
+      <firstterm>whitelist</firstterm> entries in the blacklist file.
+      Connections/packets matching a whitelist entry are not matched against
+      the entries in the blacklist file that follow. Whitelist entries are
+      created using the <emphasis role="bold">whitelist</emphasis> option
+      (OPTIONS column). See <ulink
+      url="manpages/shorewall-blacklist.html"><filename>shorewall-blacklist</filename></ulink>
+      (5).</para>
+    </section>
 
-  <section id="Dynamic">
-    <title>Dynamic Blacklisting</title>
+    <section id="Dynamic">
+      <title>Dynamic Blacklisting</title>
 
-    <para>Beginning with Shorewall 4.4.7, dynamic blacklisting is enabled by
-    setting DYNAMIC_BLACKLIST=Yes in <filename>shorewall.conf</filename>.
-    Prior to that release, the feature is always enabled.</para>
+      <para>Beginning with Shorewall 4.4.7, dynamic blacklisting is enabled by
+      setting DYNAMIC_BLACKLIST=Yes in <filename>shorewall.conf</filename>.
+      Prior to that release, the feature is always enabled.</para>
 
-    <para>Once enabled, dynamic blacklisting doesn't use any configuration
-    parameters but is rather controlled using /sbin/shorewall[-lite] commands.
-    <emphasis role="bold">Note</emphasis> that <emphasis
-    role="bold">to</emphasis> and <emphasis role="bold">from</emphasis> may
-    only be specified when running <emphasis role="bold">Shorewall 4.4.12 or
-    later</emphasis>.</para>
+      <para>Once enabled, dynamic blacklisting doesn't use any configuration
+      parameters but is rather controlled using /sbin/shorewall[-lite]
+      commands. <emphasis role="bold">Note</emphasis> that <emphasis
+      role="bold">to</emphasis> and <emphasis role="bold">from</emphasis> may
+      only be specified when running <emphasis role="bold">Shorewall 4.4.12 or
+      later</emphasis>.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>drop [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
-        causes packets from the listed IP addresses to be silently dropped by
-        the firewall.</para>
-      </listitem>
+      <itemizedlist>
+        <listitem>
+          <para>drop [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
+          causes packets from the listed IP addresses to be silently dropped
+          by the firewall.</para>
+        </listitem>
 
-      <listitem>
-        <para>reject [to|from]<emphasis>&lt;ip address list&gt;</emphasis> -
-        causes packets from the listed IP addresses to be rejected by the
-        firewall.</para>
-      </listitem>
+        <listitem>
+          <para>reject [to|from]<emphasis>&lt;ip address list&gt;</emphasis> -
+          causes packets from the listed IP addresses to be rejected by the
+          firewall.</para>
+        </listitem>
 
-      <listitem>
-        <para>allow [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
-        re-enables receipt of packets from hosts previously blacklisted by a
-        <emphasis>drop</emphasis> or <emphasis>reject</emphasis>
-        command.</para>
-      </listitem>
+        <listitem>
+          <para>allow [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
+          re-enables receipt of packets from hosts previously blacklisted by a
+          <emphasis>drop</emphasis> or <emphasis>reject</emphasis>
+          command.</para>
+        </listitem>
 
-      <listitem>
-        <para>save - save the dynamic blacklisting configuration so that it
-        will be automatically restored the next time that the firewall is
-        restarted.</para>
+        <listitem>
+          <para>save - save the dynamic blacklisting configuration so that it
+          will be automatically restored the next time that the firewall is
+          restarted.</para>
 
-        <para><emphasis role="bold">Update:</emphasis> Beginning with
-        Shorewall 4.4.10, the dynamic blacklist is automatically retained over
-        <command>stop/start</command> sequences and over
-        <command>restart</command>.</para>
-      </listitem>
+          <para><emphasis role="bold">Update:</emphasis> Beginning with
+          Shorewall 4.4.10, the dynamic blacklist is automatically retained
+          over <command>stop/start</command> sequences and over
+          <command>restart</command>.</para>
+        </listitem>
 
-      <listitem>
-        <para>show dynamic - displays the dynamic blacklisting
-        configuration.</para>
-      </listitem>
+        <listitem>
+          <para>show dynamic - displays the dynamic blacklisting
+          configuration.</para>
+        </listitem>
 
-      <listitem>
-        <para>logdrop [to|from] <emphasis>&lt;ip address list&gt;</emphasis> -
-        causes packets from the listed IP addresses to be dropped and logged
-        by the firewall. Logging will occur at the level specified by the
-        BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be at
-        the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
-      </listitem>
+        <listitem>
+          <para>logdrop [to|from] <emphasis>&lt;ip address list&gt;</emphasis>
+          - causes packets from the listed IP addresses to be dropped and
+          logged by the firewall. Logging will occur at the level specified by
+          the BLACKLIST_LOGLEVEL setting at the last [re]start (logging will
+          be at the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
+        </listitem>
 
-      <listitem>
-        <para>logreject [to|from}<emphasis>&lt;ip address list&gt;</emphasis>
-        - causes packets from the listed IP addresses to be rejected and
-        logged by the firewall. Logging will occur at the level specified by
-        the BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be
-        at the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
-      </listitem>
-    </itemizedlist>
+        <listitem>
+          <para>logreject [to|from}<emphasis>&lt;ip address
+          list&gt;</emphasis> - causes packets from the listed IP addresses to
+          be rejected and logged by the firewall. Logging will occur at the
+          level specified by the BLACKLIST_LOGLEVEL setting at the last
+          [re]start (logging will be at the 'info' level if no
+          BLACKLIST_LOGLEVEL was given).</para>
+        </listitem>
+      </itemizedlist>
 
-    <para>Dynamic blacklisting is not dependent on the
-    <quote>blacklist</quote> option in
-    <filename>/etc/shorewall/interfaces</filename>.</para>
+      <para>Dynamic blacklisting is not dependent on the
+      <quote>blacklist</quote> option in
+      <filename>/etc/shorewall/interfaces</filename>.</para>
 
-    <example id="Ignore">
-      <title>Ignore packets from a pair of systems</title>
+      <example id="Ignore">
+        <title>Ignore packets from a pair of systems</title>
 
-      <programlisting>    <command>shorewall[-lite] drop 192.0.2.124 192.0.2.125</command></programlisting>
+        <programlisting>    <command>shorewall[-lite] drop 192.0.2.124 192.0.2.125</command></programlisting>
 
-      <para>Drops packets from hosts 192.0.2.124 and 192.0.2.125</para>
-    </example>
+        <para>Drops packets from hosts 192.0.2.124 and 192.0.2.125</para>
+      </example>
 
-    <example id="Allow">
-      <title>Re-enable packets from a system</title>
+      <example id="Allow">
+        <title>Re-enable packets from a system</title>
 
-      <programlisting>    <command>shorewall[-lite] allow 192.0.2.125</command></programlisting>
+        <programlisting>    <command>shorewall[-lite] allow 192.0.2.125</command></programlisting>
 
-      <para>Re-enables traffic from 192.0.2.125.</para>
-    </example>
+        <para>Re-enables traffic from 192.0.2.125.</para>
+      </example>
 
-    <example>
-      <title>Displaying the Dynamic Blacklist</title>
+      <example>
+        <title>Displaying the Dynamic Blacklist</title>
 
-      <programlisting>    <command>shorewall show dynamic</command></programlisting>
+        <programlisting>    <command>shorewall show dynamic</command></programlisting>
 
-      <para>Displays the 'dynamic' chain which contains rules for the dynamic
-      blacklist. The <firstterm>source</firstterm> column contains the set of
-      blacklisted addresses.</para>
-    </example>
+        <para>Displays the 'dynamic' chain which contains rules for the
+        dynamic blacklist. The <firstterm>source</firstterm> column contains
+        the set of blacklisted addresses.</para>
+      </example>
+    </section>
   </section>
 </article>

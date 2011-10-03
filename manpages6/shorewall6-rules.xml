@@ -40,6 +40,20 @@
 
     <variablelist>
       <varlistentry>
+        <term><emphasis role="bold">BLACKLIST</emphasis></term>
+
+        <listitem>
+          <para>This section was added in Shorewall 4.4.25. Rules in this
+          section are applied depending on the setting of BLACKLISTNEWONLY in
+          <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5). If
+          BLACKLISTNEWONLY=No, then they are applied regardless of the
+          connection tracking state of the packet. If BLACKLISTNEWONLY=Yes,
+          they are applied to connections in the NEW and INVALID
+          states.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">ALL</emphasis></term>
 
         <listitem>
@@ -157,7 +171,9 @@
               <listitem>
                 <para>like ACCEPT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
+                available in the <emphasis role="bold">BLACKLIST</emphasis>
+                section.</para>
               </listitem>
             </varlistentry>
 
@@ -167,7 +183,8 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT
                 and ACCEPT! respectively. Require AUDIT_TARGET support in the
-                kernel and ip6tables.</para>
+                kernel and ip6tables. A_ACCEPT! is not available in the
+                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
               </listitem>
             </varlistentry>
 
@@ -185,7 +202,9 @@
               <listitem>
                 <para>like DROP but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
+                available in the <emphasis role="bold">BLACKLIST</emphasis>
+                section.</para>
               </listitem>
             </varlistentry>
 
@@ -195,7 +214,8 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of DROP and
                 DROP! respectively. Require AUDIT_TARGET support in the kernel
-                and ip6tables.</para>
+                and ip6tables. A_DROP! is not available in the <emphasis
+                role="bold">BLACKLIST</emphasis> section.</para>
               </listitem>
             </varlistentry>
 
@@ -214,7 +234,9 @@
               <listitem>
                 <para>like REJECT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
+                available in the <emphasis role="bold">BLACKLIST</emphasis>
+                section.</para>
               </listitem>
             </varlistentry>
 
@@ -224,7 +246,8 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of REJECT
                 and REJECT! respectively. Require AUDIT_TARGET support in the
-                kernel and ip6tables.</para>
+                kernel and ip6tables. A_REJECT! is not available in the
+                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
               </listitem>
             </varlistentry>
 
@@ -252,7 +275,9 @@
               <listitem>
                 <para>like CONTINUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
+                available in the <emphasis role="bold">BLACKLIST</emphasis>
+                section.</para>
               </listitem>
             </varlistentry>
 
@@ -281,7 +306,9 @@
               <listitem>
                 <para>like QUEUE but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
+                available in the <emphasis role="bold">BLACKLIST</emphasis>
+                section.</para>
               </listitem>
             </varlistentry>
 
@@ -313,7 +340,9 @@
               <listitem>
                 <para>like NFQUEUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
+                available in the <emphasis role="bold">BLACKLIST</emphasis>
+                section.</para>
               </listitem>
             </varlistentry>
 

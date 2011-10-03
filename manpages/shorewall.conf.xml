@@ -330,6 +330,10 @@
           <para>A_DROP and A_REJECT are audited versions of DROP and REJECT
           respectively and were added in Shorewall 4.4.20. They require
           AUDIT_TARGET in the kernel and iptables.</para>
+
+          <para> The BLACKLIST_DISPOSITION setting has no effect on entries in
+          the BLACKLIST section of <ulink
+          url="shorewall-rules.html">shorewall-rules</ulink> (5).</para>
         </listitem>
       </varlistentry>
 
@@ -343,7 +347,9 @@
           logged at. Its value is a syslog level (Example:
           BLACKLIST_LOGLEVEL=debug). If you do not assign a value or if you
           assign an empty value then packets from blacklisted hosts are not
-          logged.</para>
+          logged. The BLACKLIST_LOGLEVEL setting has no effect on entries in
+          the BLACKLIST section of <ulink
+          url="shorewall-rules.html">shorewall-rules</ulink> (5).</para>
         </listitem>
       </varlistentry>
 
@@ -354,11 +360,15 @@
         <listitem>
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, blacklists are only consulted for new
-          connections. When set to <emphasis role="bold">No</emphasis> or
-          <emphasis role="bold">no</emphasis>, blacklists are consulted for
-          every packet (will slow down your firewall noticably if you have
-          large blacklists). If the BLACKLISTNEWONLY option is not set or is
-          set to the empty value then BLACKLISTNEWONLY=No is assumed.</para>
+          connections. That includes entries in the BLACKLIST section of
+          <ulink url="shorewall-rules.html">shorewall-rules</ulink> (5).
+          </para>
+
+          <para>When set to <emphasis role="bold">No</emphasis> or <emphasis
+          role="bold">no</emphasis>, blacklists are consulted for every packet
+          (will slow down your firewall noticably if you have large
+          blacklists). If the BLACKLISTNEWONLY option is not set or is set to
+          the empty value then BLACKLISTNEWONLY=No is assumed.</para>
 
           <note>
             <para>BLACKLISTNEWONLY=No is incompatible with

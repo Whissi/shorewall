@@ -1,0 +1,82 @@
+#
+# Shorewall version 4 - Drop Smurfs Action
+#
+# /usr/share/shorewall/action.DropSmurfs
+#
+#   Accepts a single optional parameter:
+#
+#          -     = Do not Audit
+#          audit = Audit dropped packets.
+#
+#################################################################################
+FORMAT 2
+
+DEFAULTS -
+
+BEGIN PERL;
+use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
+use Shorewall::Chains;
+use Shorewall::Rules;
+
+my ( $audit ) = get_action_params( 1 );
+
+my $chainref        = get_action_chain;
+my ( $level, $tag ) = get_action_logging;
+
+if ( $level ne '-' || $audit ne '-' ) {
+    my $logchainref = ensure_filter_chain newlogchain( $chainref->{table} ), 0;
+
+    log_rule_limit( $level,
+		    $logchainref,
+		    $chainref->{name},
+		    $disposition,
+		    '',
+		    $tag,
+		    'add',
+		    '' );
+
+    if ( supplied $audit ) {
+	fatal_error "Invalid argument ($audit) to DropSmurfs" if $audit ne 'audit';
+	require_capability 'AUDIT_TARGET', q(Passing 'audit' to the DropSmurfs action), 's';
+	add_ijump( $logchainref, j => 'AUDIT --type ' . lc $disposition );
+    } 
+	
+
+    add_ijump( $logchainref, j => 'DROP' );
+
+    $smurfdest = $logchainref;
+}
+		    
+if ( have_capability( 'ADDRTYPE' ) ) {
+    if ( $family == F_IPV4 ) {
+	add_ijump $chainref , j => 'RETURN', s => '0.0.0.0';         ;
+    } else {
+	add_ijump $chainref , j => 'RETURN', s => '::';
+    }
+
+    add_ijump( $chainref, g => $smurfdest, addrtype => '--src-type BROADCAST' ) ;
+} else {
+    if ( $family == F_IPV4 ) {
+	add_commands $chainref, 'for address in $ALL_BCASTS; do';
+    } else {
+	add_commands $chainref, 'for address in $ALL_ACASTS; do';
+    }
+    
+    incr_cmd_level $chainref;
+    add_ijump( $chainref, g => $smurfdest, s => '$address' );
+    decr_cmd_level $chainref;
+    add_commands $chainref, 'done';
+}
+
+if ( $family == F_IPV4 ) {
+    add_ijump( $chainref, g => $smurfdest, s => '224.0.0.0/4' );
+} else {
+    add_ijump( $chainref, g => $smurfdest, s => IPv6_MULTICAST );
+}
+
+END PERL;
+
+
+    
+
+

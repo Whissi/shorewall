@@ -52,9 +52,11 @@ our @EXPORT = qw(
 		    decr_cmd_level
 		    new_chain
 		    new_manual_chain
+		    ensure_filter_chain
 		    ensure_manual_chain
 		    ensure_audit_chain
 		    require_audit
+		    newlogchain
 		    log_rule_limit
 		    dont_optimize
 		    dont_delete
@@ -139,7 +141,6 @@ our %EXPORT_TAGS = (
 				       new_standard_chain
 				       new_builtin_chain
 				       new_nat_chain
-				       ensure_filter_chain
 				       optimize_chain
 				       check_optimization
 				       optimize_ruleset

@@ -110,6 +110,7 @@ our %EXPORT_TAGS = (
 				       pop_comment
 				       forward_chain
 				       rules_chain
+				       blacklist_chain
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -249,6 +250,8 @@ our $VERSION = 'MODULEVERSION';
 #                                               logchains    => { <key1> = <chainref1>, ... }
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
 #                                               blacklist    => <number of blacklist rules at the head of the rules array> ( 0 or 1 )
+#                                               blacklistsection
+#                                                            => Chain was created by entries in the BLACKLIST section of the rules file
 #                                               action       => <action tuple that generated this chain>
 #                                               restricted   => Logical OR of restrictions of rules in this chain.
 #                                               restriction  => Restrictions on further rules in this chain.
@@ -256,6 +259,7 @@ our $VERSION = 'MODULEVERSION';
 #                                               filtered     => Number of filter rules at the front of an interface forward chain
 #                                               digest       => string representation of the chain's rules for use in optimization
 #                                                               level 8.
+#                                               accepted     => A 'ESTABLISHED,RELATED' ACCEPT rule has been added to this chain.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -1479,6 +1483,13 @@ sub rules_chain ($$) {
 }
 
 #
+# Name of the blacklist chain between an ordered pair of zones
+#
+sub blacklist_chain($$) {
+    &rules_chain(@_) . '~';
+}
+
+#
 # Forward Chain for an interface
 #
 sub forward_chain($)
@@ -2234,6 +2245,7 @@ sub initialize_chain_table($) {
 		    'NFQUEUE!'        => STANDARD + NFQ,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
+		    'WHITELIST'       => STANDARD
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
@@ -2694,7 +2706,11 @@ sub optimize_level8( $$$ ) {
 	    if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		replace_references $chainref1, $chainref->{name}, undef;
-		$rename{ $chainref->{name} }    = 1 unless $chainref->{name} =~ /^~/;
+
+		unless ( $chainref->{name} =~ /^~/ ) {
+		    $rename{ $chainref->{name} } = $chainref->{blacklistsection} ? '~blacklist' : '~comb';
+		}
+
 		$combined{ $chainref1->{name} } = $chainref->{name};
 	    }
 	}
@@ -2707,7 +2723,7 @@ sub optimize_level8( $$$ ) {
 	# First create aliases for each renamed chain and change the {name} member.
 	#
 	for my $oldname ( @rename ) {
-	    my $newname = $renamed{ $oldname } = '~comb' . $chainseq++;
+	    my $newname = $renamed{ $oldname } = $rename{ $oldname } . $chainseq++;
 	    
 	    trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
 	    $tableref->{$newname} = $tableref->{$oldname};

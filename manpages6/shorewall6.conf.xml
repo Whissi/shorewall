@@ -261,7 +261,10 @@
           blacklisted hosts. It may have the value DROP if the packets are to
           be dropped or REJECT if the packets are to be replied with an ICMP
           port unreachable reply or a TCP RST (tcp only). If you do not assign
-          a value or if you assign an empty value then DROP is assumed.</para>
+          a value or if you assign an empty value then DROP is assumed. The
+          BLACKLIST_DISPOSITION setting has no effect on entries in the
+          BLACKLIST section of <ulink
+          url="shorewall6-rules.html">shorewall6-rules</ulink> (5).</para>
         </listitem>
       </varlistentry>
 
@@ -275,7 +278,9 @@
           logged at. Its value is a syslog level (Example:
           BLACKLIST_LOGLEVEL=debug). If you do not assign a value or if you
           assign an empty value then packets from blacklisted hosts are not
-          logged.</para>
+          logged. The BLACKLIST_LOGLEVEL setting has no effect on entries in
+          the BLACKLIST section of <ulink
+          url="shorewall6-rules.html">shorewall6-rules</ulink> (5).</para>
         </listitem>
       </varlistentry>
 
@@ -286,11 +291,15 @@
         <listitem>
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, blacklists are only consulted for new
-          connections. When set to <emphasis role="bold">No</emphasis> or
-          <emphasis role="bold">no</emphasis>, blacklists are consulted for
-          every packet (will slow down your firewall noticably if you have
-          large blacklists). If the BLACKLISTNEWONLY option is not set or is
-          set to the empty value then BLACKLISTNEWONLY=No is assumed.</para>
+          connections. This includes entries in the BLACKLIST section of
+          <ulink url="shorewall6-rules.html">shorewall6-rules</ulink>
+          (5).</para>
+
+          <para>When set to <emphasis role="bold">No</emphasis> or <emphasis
+          role="bold">no</emphasis>, blacklists are consulted for every packet
+          (will slow down your firewall noticably if you have large
+          blacklists). If the BLACKLISTNEWONLY option is not set or is set to
+          the empty value then BLACKLISTNEWONLY=No is assumed.</para>
 
           <note>
             <para>BLACKLISTNEWONLY=No is incompatible with
@@ -1691,8 +1700,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
     shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
-    shorewall6-nat(5), shorewall6-netmap(5), shoewall6-netmap(5),shorewall6-params(5),
-    shorewall6-policy(5), shorewall6-providers(5), shorewall6-proxyarp(5),
+    shorewall6-nat(5), shorewall6-netmap(5),
+    shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-proxyarp(5),
     shorewall6-route_rules(5), shorewall6-routestopped(5),
     shorewall6-rules(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
     shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),

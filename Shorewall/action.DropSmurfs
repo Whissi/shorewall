@@ -14,6 +14,7 @@ FORMAT 2
 DEFAULTS -
 
 BEGIN PERL;
+use strict;
 use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
 use Shorewall::Chains;
 use Shorewall::Rules;
@@ -22,6 +23,7 @@ my ( $audit ) = get_action_params( 1 );
 
 my $chainref        = get_action_chain;
 my ( $level, $tag ) = get_action_logging;
+my $target;
 
 if ( $level ne '-' || $audit ne '-' ) {
     my $logchainref = ensure_filter_chain newlogchain( $chainref->{table} ), 0;
@@ -29,7 +31,7 @@ if ( $level ne '-' || $audit ne '-' ) {
     log_rule_limit( $level,
 		    $logchainref,
 		    $chainref->{name},
-		    $disposition,
+		    'DROP',
 		    '',
 		    $tag,
 		    'add',
@@ -38,13 +40,14 @@ if ( $level ne '-' || $audit ne '-' ) {
     if ( supplied $audit ) {
 	fatal_error "Invalid argument ($audit) to DropSmurfs" if $audit ne 'audit';
 	require_capability 'AUDIT_TARGET', q(Passing 'audit' to the DropSmurfs action), 's';
-	add_ijump( $logchainref, j => 'AUDIT --type ' . lc $disposition );
+	add_ijump( $logchainref, j => 'AUDIT --type DROP' );
     } 
 	
-
     add_ijump( $logchainref, j => 'DROP' );
 
-    $smurfdest = $logchainref;
+    $target = $logchainref;
+} else {
+    $target = 'DROP';
 }
 		    
 if ( have_capability( 'ADDRTYPE' ) ) {
@@ -54,7 +57,7 @@ if ( have_capability( 'ADDRTYPE' ) ) {
 	add_ijump $chainref , j => 'RETURN', s => '::';
     }
 
-    add_ijump( $chainref, g => $smurfdest, addrtype => '--src-type BROADCAST' ) ;
+    add_ijump( $chainref, g => $target, addrtype => '--src-type BROADCAST' ) ;
 } else {
     if ( $family == F_IPV4 ) {
 	add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -63,15 +66,15 @@ if ( have_capability( 'ADDRTYPE' ) ) {
     }
     
     incr_cmd_level $chainref;
-    add_ijump( $chainref, g => $smurfdest, s => '$address' );
+    add_ijump( $chainref, g => $target, s => '$address' );
     decr_cmd_level $chainref;
     add_commands $chainref, 'done';
 }
 
 if ( $family == F_IPV4 ) {
-    add_ijump( $chainref, g => $smurfdest, s => '224.0.0.0/4' );
+    add_ijump( $chainref, g => $target, s => '224.0.0.0/4' );
 } else {
-    add_ijump( $chainref, g => $smurfdest, s => IPv6_MULTICAST );
+    add_ijump( $chainref, g => $target, s => IPv6_MULTICAST );
 }
 
 END PERL;

@@ -2708,6 +2708,11 @@ sub optimize_level8( $$$ ) {
 		replace_references $chainref1, $chainref->{name}, undef;
 
 		unless ( $chainref->{name} =~ /^~/ ) {
+		    #
+		    # For simple use of the BLACKLIST section, we can end up with many identical 
+		    # chains. To distinguish them from other renamed chains, we keep track of
+		    # these chains via the 'blacklistsection' member.
+		    #
 		    $rename{ $chainref->{name} } = $chainref->{blacklistsection} ? '~blacklist' : '~comb';
 		}
 

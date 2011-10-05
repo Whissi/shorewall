@@ -1,15 +1,12 @@
 #
-# Shorewall version 4 - Action to handle bad TCP flag combinations
+# Shorewall version 4 - Drop Smurfs Action
 #
-# /usr/share/shorewall/action.TCPFlags
+# /usr/share/shorewall/action.DropSmurfs
 #
-#   Accepts two optional parameters:
+#   Accepts a single optional parameter:
 #
-#      Parameter 1: Disposition (default DROP).
-#          Must be ACCEPT, REJECT or DROP
-#      Parameter 2: Auditing
 #          -     = Do not Audit
-#          audit = Audit ACCEPT, REJECT or DROP.
+#          audit = Audit dropped packets.
 #
 #################################################################################
 FORMAT 2
@@ -17,6 +14,7 @@ FORMAT 2
 DEFAULTS DROP,-
 
 BEGIN PERL;
+use strict;
 use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
 use Shorewall::Chains;
 
@@ -41,7 +39,7 @@ if ( $level ne '-' || $audit ne '-' ) {
 		    '' ) if $level;
 
     if ( supplied $audit ) {
-	fatal_error "Invalid argument ($audit) to DropSmurfs" if $audit ne 'audit';
+	fatal_error "Invalid argument ($audit) to TCPFlags" if $audit ne 'audit';
 	require_capability 'AUDIT_TARGET', q(Passing 'audit' to the TCPFlags action), 's';
 	add_ijump( $logchainref, j => 'AUDIT --type ' . lc $disposition );
     } 

@@ -1771,8 +1771,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	fatal_error "The $basictarget TARGET does not accept parameters" if $action =~ s/\(\)$//;
     }
 
-    if ( $inaction ) {
-	$targets{$inaction} |= NATRULE if $actiontype & (NATRULE | NONAT | NATONLY ) 
+    if ( $actiontype & (NATRULE | NONAT | NATONLY ) ) {
+	$targets{$inaction} |= NATRULE if $inaction;
+	fatal_error "NAT rules are only allowed in the NEW section" unless $section eq 'NEW';
     }
     #
     # Take care of irregular syntax and targets
@@ -1934,9 +1935,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    #
 	    $chainref = ensure_rules_chain $chain;
 	    #
-	    # Don't let the rules in this chain be moved elsewhere
-	    #
-	    dont_move $chainref;
+ 	    # Don't let the rules in this chain be moved elsewhere
+ 	    #
+ 	    dont_move $chainref;
 	}
     }
     #
@@ -2142,11 +2143,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	my $chn;
 
 	if ( $inaction ) {
-	    $nonat_chain = ensure_chain 'nat', $chain;
+	    $nonat_chain = ensure_chain( 'nat', $chain );
 	} elsif ( $sourceref->{type} == FIREWALL ) {
 	    $nonat_chain = $nat_table->{OUTPUT};
 	} else {
-	    $nonat_chain = ensure_chain 'nat', dnat_chain $sourcezone;
+	    $nonat_chain = ensure_chain( 'nat', dnat_chain( $sourcezone ) );
 
 	    my @interfaces = keys %{zone_interfaces $sourcezone};
 
@@ -2187,6 +2188,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    }
 	}
 
+	dont_move( dont_optimize( $nonat_chain ) ) if $tgt eq 'RETURN';
+
 	expand_rule( $nonat_chain ,
 		     PREROUTE_RESTRICT ,
 		     $rule ,
@@ -2198,19 +2201,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 		     $log_action ,
 		     '',
 		   );
-	#
-	# Possible optimization if the rule just generated was a simple jump to the nonat chain
-	#
-	if ( $chn && ${$nonat_chain->{rules}}[-1] eq "-A -j $tgt" ) {
-	    #
-	    # It was -- delete that rule
-	    #
-	    pop @{$nonat_chain->{rules}};
-	    #
-	    # And move the rules from the nonat chain to the zone dnat chain
-	    #
-	    move_rules ( $chn, $nonat_chain );
-	}
     }
 
     #
@@ -2221,6 +2211,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	if ( $actiontype & ACTION ) {
 	    $action = $usedactions{$normalized_target}{name};
 	    $loglevel = '';
+	} else {
+	    dont_move( dont_optimize ( $chainref ) ) if $action eq 'RETURN';
 	}
 
 	if ( $origdest ) {
@@ -2235,7 +2227,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 
 	verify_audit( $action ) if $actiontype & AUDIT;
 
-	expand_rule( ensure_chain( 'filter', $chain ) ,
+	expand_rule( $chainref ,
 		     $restriction ,
 		     $rule ,
 		     $source ,

@@ -581,6 +581,8 @@ sub add_a_provider( $$ ) {
 	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $physical metric $number);
 	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
+
+	$default = 0;
     }
 
     unless ( $local ) {

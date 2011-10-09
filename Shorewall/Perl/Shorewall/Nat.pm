@@ -377,7 +377,7 @@ sub setup_nat() {
 
 	while ( read_a_line ) {
 
-	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 'nat file', { external => 0, interface => 1, internal => 2, allints => 3, localnat => 4 };
+	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 'nat file', { external => 0, interface => 1, internal => 2, allints => 3, local => 4 };
 
 	    if ( $external eq 'COMMENT' ) {
 		process_comment;
@@ -413,7 +413,7 @@ sub setup_netmap() {
 
 	while ( read_a_line ) {
 
-	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 'netmap file', { type => 0, net1 => 1, interface => 2, net2 => 3, net3 => 4, proto => 4, dport => 5, sport => 6 };
+	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 'netmap file', { type => 0, net1 => 1, interface => 2, net2 => 3, net3 => 4, proto => 5, dport => 6, sport => 7 };
 
 	    $net3 = ALLIP if $net3 eq '-';
 

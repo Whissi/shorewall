@@ -360,7 +360,7 @@ sub process_routestopped() {
 	while ( read_a_line ) {
 
 	    my ($interface, $hosts, $options , $proto, $ports, $sports ) =
-		split_line 'routestopped file', { interface => 1, hosts => 2, options => 3, proto => 4, dport => 5, sport => 6 };
+		split_line 'routestopped file', { interface => 0, hosts => 1, options => 2, proto => 3, dport => 4, sport => 5 };
 
 	    my $interfaceref;
 

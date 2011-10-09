@@ -628,16 +628,11 @@ sub add_a_provider( $$ ) {
 
 	push_indent;
 
-	if ( $balance || $default ) {
+	if ( $balance || $default > 0 ) {
 	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
-	    $weight = $balance ? $balance : abs $default;
+	    $weight = $balance ? $balance : $default;
 
-	    if ( $default < 0 ) {
-		if ( $gateway ) {
-		    emit qq(run_ip -$family add default table $tbl via $gateway dev $physical weight $weight $realm metric $number);
-		} else {
-		    emit qq(run_ip -$family add default table $tbl via $gateway dev $physical weight $weight $realm);
-	    elsif ( $gateway ) {
+	    if ( $gateway ) {
 		emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
 	    } else {
 		emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
@@ -701,34 +696,40 @@ sub add_a_provider( $$ ) {
 
 	my $undo = "\${VARDIR}/undo_${table}_routing";
 
-	emit( "if [ -f $undo ]; then",
-	      "    . $undo",
-	      "    > $undo" );
+	emit( "if [ -f $undo ]; then" );
+
+	push_indent;
 
 	if ( $balance || $default ) {
 	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
 	    $weight = $balance ? $balance : $default;
 
-	    my $via = 'via';
+	    my $via;
 
-	    $via .= " $gateway"       if $gateway;
-	    $via .= " dev $physical";
-	    $via .= " weight $weight";
+	    if ( $gateway ) {
+		$via = "via $gateway dev $physical";
+	    } else {    
+		$via = "dev $physical";
+	    }
+
+	    $via .= " weight $weight" unless $weight < 0;
 	    $via .= " $realm"         if $realm;
 
-	    if ( $default < 0 ) {
-		emit( qq(    run_ip route del default $via metric $number) );
-	    } else {
-		emit( qq(    delete_gateway "$via" $tbl $physical) );
-	    }
+	    emit( qq(delete_gateway "$via" $tbl $physical) ) unless $default < 0;
 	}
-	
-	emit( '', 
-	      "    qt \$TC qdisc del dev $physical root",
-	      "    qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
 
-	emit( "    progress_message2 \"Provider $table stopped\"",
-              'else',
+	emit (". $undo",
+	      "> $undo" );
+
+	emit( '', 
+	      "qt \$TC qdisc del dev $physical root",
+	      "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
+
+	emit( "progress_message2 \"Provider $table stopped\"" );
+
+	pop_indent;
+
+	emit( 'else',
 	      "    startup_error \"$undo does not exist\"",
 	      'fi'
 	    );

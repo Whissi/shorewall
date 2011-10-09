@@ -377,7 +377,7 @@ sub setup_nat() {
 
 	while ( read_a_line ) {
 
-	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 'nat file', { external => 1, interface => 1, internal => 2, allints => 3, localnat => 4 };
+	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 'nat file', { external => 0, interface => 1, internal => 2, allints => 3, localnat => 4 };
 
 	    if ( $external eq 'COMMENT' ) {
 		process_comment;

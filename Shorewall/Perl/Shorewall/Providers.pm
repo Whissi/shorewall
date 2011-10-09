@@ -582,7 +582,7 @@ sub add_a_provider( $$ ) {
 	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
 
-	$default = 0;
+	$default = 1;
     }
 
     unless ( $local ) {

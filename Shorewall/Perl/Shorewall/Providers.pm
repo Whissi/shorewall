@@ -579,7 +579,7 @@ sub add_a_provider( $$ ) {
 	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
 	
-	$default = 1;
+	$fallback = 1;
     }
 
     unless ( $local ) {
@@ -630,9 +630,14 @@ sub add_a_provider( $$ ) {
 
 	if ( $balance || $default ) {
 	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
-	    $weight = $balance ? $balance : $default;
+	    $weight = $balance ? $balance : abs $default;
 
-	    if ( $gateway ) {
+	    if ( $default < 0 ) {
+		if ( $gateway ) {
+		    emit qq(run_ip -$family add default table $tbl via $gateway dev $physical weight $weight $realm metric $number);
+		} else {
+		    emit qq(run_ip -$family add default table $tbl via $gateway dev $physical weight $weight $realm);
+	    elsif ( $gateway ) {
 		emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
 	    } else {
 		emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
@@ -711,7 +716,11 @@ sub add_a_provider( $$ ) {
 	    $via .= " weight $weight";
 	    $via .= " $realm"         if $realm;
 
-	    emit( qq(    delete_gateway "$via" $tbl $physical) );
+	    if ( $default < 0 ) {
+		emit( qq(    run_ip route del default $via metric $number) );
+	    } else {
+		emit( qq(    delete_gateway "$via" $tbl $physical) );
+	    }
 	}
 	
 	emit( '', 

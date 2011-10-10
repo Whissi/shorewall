@@ -768,7 +768,7 @@ sub finish_chain_section ($$) {
     
     push_comment(''); #These rules should not have comments
 
-    add_ijump $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT} || $chainref->{accepted};
+    add_ijump $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
 
     if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {
@@ -1949,18 +1949,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 		
 		unless ( $blacklistref  ) {
 		    my @state;
-		    $blacklistref = dont_move( new_chain( 'filter', $blacklistchain ) );
+		    $blacklistref = new_chain 'filter', $blacklistchain;
 		    $blacklistref->{blacklistsection} = 1;
-
-		    if ( $config{BLACKLISTNEWONLY} ) {
-			#
-			# Rather than add a 'NEW,INVALID' state match, we want to 
-			# install the ACCEPT ESTABLISH,RELATED rule in the main chain
-			#
-			add_ijump( $chainref, j => 'ACCEPT', state_imatch( 'ESTABLISHED,RELATED' ) );
-			$chainref->{accepted} = 1;
-		    }
-
+		    @state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
 		    add_ijump( $chainref, j => $blacklistref, @state );
 		}
 		    

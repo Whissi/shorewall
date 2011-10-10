@@ -1108,7 +1108,25 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
       <orderedlist>
         <listitem>
           <para>The default gateway on each local system isn't set to the IP
-          address of the local firewall interface.</para>
+          address of the local firewall interface. You can test this
+          by:</para>
+
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>At a root shell prompt, type 'shorewall clear'.</para>
+            </listitem>
+
+            <listitem>
+              <para>From a local system, attempt to ping the IP address of the
+              Shorewall system's internet (external) interface. If that
+              doesn't work, then the default gateway on the system from which
+              you pinged is not set correctly.</para>
+            </listitem>
+
+            <listitem>
+              <para>Be sure to 'shorewall start' after the test.</para>
+            </listitem>
+          </orderedlist>
         </listitem>
 
         <listitem>
@@ -1121,7 +1139,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
           <para>The DNS settings on the local systems are wrong or the user is
           running a DNS server on the firewall and hasn't enabled UDP and TCP
           port 53 from the local net to the firewall or from the firewall to
-          the Internet.</para>
+          the Internet. </para>
         </listitem>
 
         <listitem>
@@ -2417,8 +2435,8 @@ etc...</programlisting>
       <para><emphasis role="bold">Answer:</emphasis> Shorewall Lite is a
       companion product to Shorewall and is designed to allow you to maintain
       all Shorewall configuration information on a single system within your
-      network. See the <ulink url="Shorewall-Lite.html">Compiled
-      Firewall script documentation</ulink> for details.</para>
+      network. See the <ulink url="Shorewall-Lite.html">Compiled Firewall
+      script documentation</ulink> for details.</para>
     </section>
 
     <section id="faq54">

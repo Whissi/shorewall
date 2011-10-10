@@ -253,6 +253,7 @@ sub setup_tunnels() {
 			    'ipip'          => { function => \&setup_one_other,          params   => [ \@source, \@dest , 4 ] } ,
 			    'gre'           => { function => \&setup_one_other,          params   => [ \@source, \@dest , 47 ] } ,
 			    '6to4'          => { function => \&setup_one_other,          params   => [ \@source, \@dest , 41 ] } ,
+			    '6in4'          => { function => \&setup_one_other,          params   => [ \@source, \@dest , 41 ] } ,
 			    'pptpclient'    => { function => \&setup_pptp_client,        params   => [ $kind, \@source, \@dest ] } ,
 			    'pptpserver'    => { function => \&setup_pptp_server,        params   => [ $kind, \@source, \@dest ] } ,
 			    'openvpn'       => { function => \&setup_one_openvpn,        params   => [ $kind, \@source, \@dest ] } ,
@@ -284,7 +285,7 @@ sub setup_tunnels() {
 
 	while ( read_a_line ) {
 
-	    my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 'tunnels file', { kind => 0, zone => 1, gateway => 2, gateway_zone => 3 };
+	    my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 'tunnels file', { type => 0, zone => 1, gateway => 2, gateway_zone => 3 };
 
 	    fatal_error 'TYPE must be specified' if $kind eq '-';
 	    fatal_error 'ZONE must be specified' if $zone eq '-';

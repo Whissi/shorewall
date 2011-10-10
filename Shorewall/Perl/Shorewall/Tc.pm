@@ -394,6 +394,7 @@ sub process_tc_rule( ) {
 
 			$target .= ' --tproxy-mark';
 		    } elsif ( $target eq 'TTL' ) {
+			fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
 			fatal_error "Invalid TTL specification( $cmd/$rest )" if $rest;
 			fatal_error "Chain designator $designator not allowed with TTL" if $designator && ! ( $designator eq 'F' );
 
@@ -411,6 +412,26 @@ sub process_tc_rule( ) {
 			    $target .= " --ttl-dec $param";
 			} else {
 			    $target .= " --ttl-set $param";
+			}
+		    } elsif ( $target eq 'HL' ) {
+			fatal_error "HL is not supported in IPv4 - use TTL instead" if $family == F_IPV4;
+			fatal_error "Invalid HL specification( $cmd/$rest )" if $rest;
+			fatal_error "Chain designator $designator not allowed with HL" if $designator && ! ( $designator eq 'F' );
+
+			$chain = 'tcfor';
+
+			$cmd =~ /^HL\(([-+]?\d+)\)$/;
+
+			my $param =  $1;
+
+			fatal_error "Invalid HL specification( $cmd )" unless $param && ( $param = abs $param ) < 256;
+
+			if ( $1 =~ /^\+/ ) {
+			    $target .= " --hl-inc $param";
+			} elsif ( $1 =~ /\-/ ) {
+			    $target .= " --hl-dec $param";
+			} else {
+			    $target .= " --hl-set $param";
 			}
 		    }
 
@@ -1842,6 +1863,12 @@ sub setup_tc() {
 			  connmark  => '' },
 			{ match     => sub( $ ) { $_[0] =~ /^TTL/ },
 			  target    => 'TTL',
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			},
+			{ match     => sub( $ ) { $_[0] =~ /^HL/ },
+			  target    => 'HL',
 			  mark      => NOMARK,
 			  mask      => '',
 			  connmark  => 0

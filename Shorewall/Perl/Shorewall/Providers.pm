@@ -40,7 +40,7 @@ our @EXPORT = qw( process_providers
 		  handle_stickiness
 		  handle_optional_interfaces );
 our @EXPORT_OK = qw( initialize lookup_provider );
-our $VERSION = 'MODULEVERSION';
+our $VERSION = '4.4_24';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,
@@ -700,7 +700,7 @@ sub add_a_provider( $$ ) {
 
 	push_indent;
 
-	if ( $balance || $default ) {
+	if ( $balance || $default > 0 ) {
 	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
 	    $weight = $balance ? $balance : $default;
 
@@ -715,7 +715,7 @@ sub add_a_provider( $$ ) {
 	    $via .= " weight $weight" unless $weight < 0;
 	    $via .= " $realm"         if $realm;
 
-	    emit( qq(delete_gateway "$via" $tbl $physical) ) unless $default < 0;
+	    emit( qq(delete_gateway "$via" $tbl $physical) );
 	}
 
 	emit (". $undo",

@@ -519,8 +519,13 @@ DNAT       net           net:66.249.93.111:993  tcp      80          -         2
         eth0:<programlisting>#ZONE      INTERFACE     BROADCAST            OPTIONS
 net        eth0          detect               <emphasis role="bold">routeback</emphasis></programlisting></para>
 
-        <para>And in <filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE          SOURCE      ADDRESS          PROTO        PORT
+        <para><filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE          SOURCE      ADDRESS          PROTO        PORT
 eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlisting></para>
+
+        <para>and in
+        <filename>/etc/shorewall/shorewall.conf</filename>:</para>
+
+        <programlisting>IP_FORWARDING=On</programlisting>
 
         <para>Like the hack in FAQ 2, this one results in all forwarded
         connections looking to the server (66.249.93.11) as if they originated
@@ -1139,7 +1144,7 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
           <para>The DNS settings on the local systems are wrong or the user is
           running a DNS server on the firewall and hasn't enabled UDP and TCP
           port 53 from the local net to the firewall or from the firewall to
-          the Internet. </para>
+          the Internet.</para>
         </listitem>
 
         <listitem>

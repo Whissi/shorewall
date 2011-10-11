@@ -588,14 +588,17 @@ sub process_simple_device() {
 
     push_indent;
 
-    emit ( "${dev}_exists=Yes",
-	   "qt \$TC qdisc del dev $physical root",
+    emit ( "qt \$TC qdisc del dev $physical root",
 	   "qt \$TC qdisc del dev $physical ingress\n"
 	 );
 
+    my $rate      = int ( ( $in_bandwidth * 21 ) / 20 );
+    $in_bandwidth = int ( ( $in_bandwidth * 9  ) / 10 ); 
+
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
-	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip src "  . ALLIPv4 . " police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n",
-	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 u32 match ip6 src " . ALLIPv6 . " police rate ${in_bandwidth}kbit burst $in_burst drop flowid :1\n"
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 " . 
+	   "\\\n    estimator 1sec 8sec basic" .
+	   "\\\n    police mpu 64 rate ${rate}kbit burst $in_burst avrate ${in_bandwidth}kbit action drop\n",
 	 ) if $in_bandwidth;
 
     if ( $out_part ne '-' ) {
@@ -649,8 +652,17 @@ sub process_simple_device() {
 	emit '';
     }
     
-    emit "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $number:1\n";
-    emit "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32 match ip6 protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $number:1\n";
+    emit( "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32" .
+	  "\\\n    match ip protocol 6 0xff" .
+	  "\\\n    match u8 0x05 0x0f at 0" .
+	  "\\\n    match u16 0x0000 0xffc0 at 2" .
+	  "\\\n    match u8 0x10 0xff at 33 flowid $number:1\n" );
+
+    emit( "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32" .
+	  "\\\n    match ip6 protocol 6 0xff" .
+	  "\\\n    match u8 0x05 0x0f at 0" .
+	  "\\\n    match u16 0x0000 0xffc0 at 2" .
+	  "\\\n    match u8 0x10 0xff at 33 flowid $number:1\n" );
 
     save_progress_message_short qq("   TC Device $physical defined.");
 
@@ -659,7 +671,6 @@ sub process_simple_device() {
     push_indent;
 
     emit qq(error_message "WARNING: Device $physical is not in the UP state -- traffic-shaping configuration skipped");
-    emit "${dev}_exists=";
     pop_indent;
     emit 'fi';
     pop_indent;
@@ -1555,9 +1566,15 @@ sub process_traffic_shaping() {
 		      qq(fi) );
 	    }
 
-	    if ( $devref->{in_bandwidth} ) {
+	    if ( my $in_bandwidth = $devref->{in_bandwidth} ) {
+		
+		my $rate      = int ( ( $in_bandwidth * 11 ) / 10 );
+		$in_bandwidth = int ( ( $in_bandwidth * 9  ) / 10 ); 
+		
 		emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		       "run_tc filter add dev $device parent ffff: protocol all prio 10 u32 match ip src 0.0.0.0/0 police rate $devref->{in_bandwidth}kbit burst $devref->{in_burst} drop flowid :1"
+		       "run_tc filter add dev $device parent ffff: protocol all prio 10 " . 
+		       "\\\n    estimator 1sec 8sec basic" .
+		       "\\\n    police mpu 64 rate ${rate}kbit burst $devref->{in_burst} avrate ${in_bandwidth}kbit action drop\n",
 		     );
 	    }
 
@@ -1628,7 +1645,11 @@ sub process_traffic_shaping() {
 		#
 		# options
 		#
-		emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) ." u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid" if $tcref->{tcp_ack};
+		emit( "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . ' u32' .
+		      "\\\n    match ip protocol 6 0xff" .
+		      "\\\n    match u8 0x05 0x0f at 0" .
+		      "\\\n    match u16 0x0000 0xffc0 at 2" .
+		      "\\\n    match u8 0x10 0xff at 33 flowid $classid" ) if $tcref->{tcp_ack};
 
 		for my $tospair ( @{$tcref->{tos}} ) {
 		    my ( $tos, $mask ) = split q(/), $tospair;

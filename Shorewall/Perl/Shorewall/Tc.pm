@@ -1498,15 +1498,15 @@ sub process_traffic_shaping() {
     my $sfq = 0;
     my $sfqinhex;
 
-    for my $device ( @tcdevices ) {
-	my $devref  = $tcdevices{$device};
+    for my $devname ( @tcdevices ) {
+	my $devref  = $tcdevices{$devname};
 	my $defmark = in_hexp ( $devref->{default} || 0 );
 	my $devnum  = in_hexp $devref->{number};
 	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
-	fatal_error "No default class defined for device $device" unless $devref->{default};
+	fatal_error "No default class defined for device $devname" unless $devref->{default};
 
-	$device = physical_name $device;
+	my $device = physical_name $devname;
 
 	unless ( $config{TC_ENABLED} eq 'Shared' ) {
 
@@ -1524,8 +1524,7 @@ sub process_traffic_shaping() {
 
 	    push_indent;
 
-	    emit ( "${dev}_exists=Yes",
-		   "qt \$TC qdisc del dev $device root",
+	    emit ( "qt \$TC qdisc del dev $device root",
 		   "qt \$TC qdisc del dev $device ingress",
 		   "${dev}_mtu=\$(get_device_mtu $device)",
 		   "${dev}_mtu1=\$(get_device_mtu1 $device)"
@@ -1573,7 +1572,7 @@ sub process_traffic_shaping() {
 		#
 		my ( $d, $decimalclassnum ) = split /:/, $class;
 
-		next unless $d eq $device;
+		next unless $d eq $devname;
 		#
 		# For inclusion in 'tc' commands, we also need the hex representation
 		#
@@ -1581,7 +1580,7 @@ sub process_traffic_shaping() {
 		#
 		# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
 		#
-		my $tcref    = $tcclasses{$device}{$decimalclassnum};
+		my $tcref    = $tcclasses{$devname}{$decimalclassnum};
 		my $mark     = $tcref->{mark};
 		my $devicenumber  = in_hexp $devref->{number};
 		my $classid  = join( ':', $devicenumber, $classnum);
@@ -1589,7 +1588,6 @@ sub process_traffic_shaping() {
 		my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 
 		$classids{$classid}=$device;
-		$device = physical_name $device;
 
 		my $priority = $tcref->{priority} << 8;
 		my $parent   = in_hexp $tcref->{parent};
@@ -1653,7 +1651,6 @@ sub process_traffic_shaping() {
 	    push_indent;
 
 	    emit qq(error_message "WARNING: Device $device is not in the UP state -- traffic-shaping configuration skipped");
-	    emit "${dev}_exists=";
 	    pop_indent;
 	    emit "fi\n";
 

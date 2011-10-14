@@ -2256,6 +2256,36 @@ eth0		External	50mbit:200kb			5.0mbit:100kb:200ms:100mbit:<emphasis
 
       <programlisting><emphasis role="bold">ethtool -k eth<emphasis>N</emphasis> tso off gso off</emphasis></programlisting>
     </section>
+
+    <section>
+      <title>(FAQ 97a) I enable Shorewall traffic shaping and now my download
+      rate is way below what I specified</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: This is likely due to
+      Generic Receive Offload (GRO) being enabled in the network adapter. To
+      verify, install the <firstterm>ethtool</firstterm> package and use the
+      -k command:</para>
+
+      <programlisting>root@gateway:/etc/shorewall# ethtool -k eth1
+Offload parameters for eth1:
+rx-checksumming: on
+tx-checksumming: on
+scatter-gather: on
+tcp-segmentation-offload: on
+udp-fragmentation-offload: off
+generic-segmentation-offload: on
+generic-receive-offload: <emphasis role="bold">on</emphasis>
+large-receive-offload: off
+ntuple-filters: off
+receive-hashing: off
+root@gateway:/etc/shorewall# 
+</programlisting>
+
+      <para>To work around the issue, use this command:</para>
+
+      <programlisting><emphasis role="bold">ethtool -k eth</emphasis>N <emphasis
+          role="bold">gro off</emphasis></programlisting>
+    </section>
   </section>
 
   <section id="About">

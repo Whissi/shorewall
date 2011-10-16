@@ -521,6 +521,52 @@ sub calculate_quantum( $$ ) {
     int( ( $rate * 125 ) / $r2q );
 }
 
+sub process_in_bandwidth( $ ) {
+    my $in_bandwidth = shift;
+    my $in_burst     = '10kb';
+    my $in_mtu       = 0;
+    
+    unless ( $in_bandwidth eq '-' ) {
+	if ( $in_bandwidth =~ /:/ ) {
+	    my ( $in_band, $burst, $in_mtu ) = split /:/, $in_bandwidth, 3;
+
+	    if ( supplied $burst ) {
+		fatal_error "Invalid burst ($burst)" unless $burst  =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+		$in_burst = $burst;
+	    }
+	
+	    if ( supplied $in_mtu ) {
+		fatal_error "Invalid IN-BANDWIDTH ($in_bandwidth)" if $in_mtu =~ /:/;
+		fatal_error "Invalid MTU ($in_mtu)"  unless $in_mtu =~ /^\d+$/ && $in_mtu;
+		$in_mtu += 16;
+	    }
+
+	    $in_bandwidth = rate_to_kbit( $in_band );
+	} else {
+	    $in_bandwidth = rate_to_kbit( $in_bandwidth );
+	}
+    }
+
+    ( $in_bandwidth, $in_burst, $in_mtu );
+}
+
+sub handle_in_bandwidth( $$$$ ) {
+    my ($physical, $in_bandwidth, $in_burst, $in_mtu ) = @_;
+
+    my $rate      = int ( ( $in_bandwidth * 21 ) / 20 );
+    $in_bandwidth = int ( ( $in_bandwidth * 9  ) / 10 );
+
+    emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
+	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 " . 
+	   "\\\n    estimator 1sec 8sec basic\\" );
+
+    if ( $in_mtu ) {
+	emit( "    police mpu 64 rate ${rate}kbit burst $in_burst mtu=${in_mtu} avrate ${in_bandwidth}kbit action drop\n" );
+    } else {
+	emit( "    police mpu 64 rate ${rate}kbit burst $in_burst avrate ${in_bandwidth}kbit action drop\n" );
+    }
+}
+	
 sub process_flow($) {
     my $flow = shift;
 
@@ -559,21 +605,8 @@ sub process_simple_device() {
 	}
     }
 
-    my $in_burst = '10kb';
+    ( $in_bandwidth , my ($in_burst, $in_mtu ) ) = process_in_bandwidth( $in_bandwidth );
 
-    if ( $in_bandwidth =~ /:/ ) {
-	my ( $in_band, $burst ) = split /:/, $in_bandwidth, 2;
-
-	if ( supplied $burst ) {
-	    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
-	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
-	    $in_burst = $burst;
-	}
-
-	$in_bandwidth = rate_to_kbit( $in_band );
-    } else {
-	$in_bandwidth = rate_to_kbit( $in_bandwidth );
-    }
 
     emit( '',
 	  '#',
@@ -592,14 +625,7 @@ sub process_simple_device() {
 	   "qt \$TC qdisc del dev $physical ingress\n"
 	 );
 
-    my $rate      = int ( ( $in_bandwidth * 21 ) / 20 );
-    $in_bandwidth = int ( ( $in_bandwidth * 9  ) / 10 ); 
-
-    emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
-	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 " . 
-	   "\\\n    estimator 1sec 8sec basic" .
-	   "\\\n    police mpu 64 rate ${rate}kbit burst $in_burst avrate ${in_bandwidth}kbit action drop\n",
-	 ) if $in_bandwidth;
+    handle_in_bandwidth( $physical, $in_bandwidth, $in_burst, $in_mtu ) unless $in_bandwidth eq '-';
 
     if ( $out_part ne '-' ) {
 	my ( $out_bandwidth, $burst, $latency, $peak, $minburst ) = split ':', $out_part;
@@ -751,22 +777,11 @@ sub validate_tc_device( ) {
 	}
     }
 
-    my $in_burst = '10kb';
-
-    if ( $inband =~ /:/ ) {
-	my ( $in_band, $burst ) = split /:/, $inband, 2;
-
-	if ( supplied $burst ) {
-	    fatal_error "Invalid IN-BANDWIDTH" if $burst =~ /:/;
-	    fatal_error "Invalid burst ($burst)" unless $burst =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
-	    $in_burst = $burst;
-	}
-
-	$inband = $in_band;
-    }
+    ( $inband , my ($in_burst, $in_mtu ) ) = process_in_bandwidth( $inband );
 
     $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ),
 			    in_burst      => $in_burst,
+			    in_mtu        => $in_mtu,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit',
 			    number        => $devnumber,
 			    classify      => $classify,
@@ -1566,17 +1581,7 @@ sub process_traffic_shaping() {
 		      qq(fi) );
 	    }
 
-	    if ( my $in_bandwidth = $devref->{in_bandwidth} ) {
-		
-		my $rate      = int ( ( $in_bandwidth * 11 ) / 10 );
-		$in_bandwidth = int ( ( $in_bandwidth * 9  ) / 10 ); 
-		
-		emit ( "run_tc qdisc add dev $device handle ffff: ingress",
-		       "run_tc filter add dev $device parent ffff: protocol all prio 10 " . 
-		       "\\\n    estimator 1sec 8sec basic" .
-		       "\\\n    police mpu 64 rate ${rate}kbit burst $devref->{in_burst} avrate ${in_bandwidth}kbit action drop\n",
-		     );
-	    }
+	    handle_in_bandwidth( $device, $devref->{in_bandwidth}, $devref->{in_burst}, $devref->{in_mtu}) if $devref->{in_bandwidth};
 
 	    for my $rdev ( @{$devref->{redirected}} ) {
 		emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );

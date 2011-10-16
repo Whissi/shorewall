@@ -522,48 +522,67 @@ sub calculate_quantum( $$ ) {
 }
 
 sub process_in_bandwidth( $ ) {
-    my $in_bandwidth = shift;
-    my $in_burst     = '10kb';
-    my $in_mtu       = 0;
+    my $in_rate     = shift;
     
-    unless ( $in_bandwidth eq '-' ) {
-	if ( $in_bandwidth =~ /:/ ) {
-	    my ( $in_band, $burst, $in_mtu ) = split /:/, $in_bandwidth, 3;
+    return 0 if $in_rate eq '-';
 
-	    if ( supplied $burst ) {
-		fatal_error "Invalid burst ($burst)" unless $burst  =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
-		$in_burst = $burst;
-	    }
-	
-	    if ( supplied $in_mtu ) {
-		fatal_error "Invalid IN-BANDWIDTH ($in_bandwidth)" if $in_mtu =~ /:/;
-		fatal_error "Invalid MTU ($in_mtu)"  unless $in_mtu =~ /^\d+$/ && $in_mtu;
-		$in_mtu += 16;
-	    }
+    my $in_burst    = '10kb';
+    my $in_avrate   = 0;
+    my $in_band     = $in_rate;
+    my $burst;
+    my $in_interval = '250ms';
+    my $in_decay    = '4sec';
 
-	    $in_bandwidth = rate_to_kbit( $in_band );
-	} else {
-	    $in_bandwidth = rate_to_kbit( $in_bandwidth );
+    if ( $in_rate =~ s/^~// ) {
+	if ( $in_rate =~ /:/ ) {
+	    ( $in_rate, $in_interval, $in_decay ) = split /:/, $in_rate, 3;
+	    fatal_error "Invalid IN-BANDWIDTH ($in_band)" unless supplied( $in_interval ) && supplied( $in_decay );
+	    fatal_error "Invalid Interval ($in_interval)" unless $in_interval =~ /^(?:(?:250|500)ms|(?:1|2|4|8)sec)$/;
+	    fatal_error "Invalid Decay ($in_decay)"       unless $in_decay    =~ /^(?:500ms|(?:1|2|4|8|16|32|64)sec)$/;
+	    
+	    if ( $in_decay =~ /ms/ ) {
+		fatal_error "Decay must be at least twice the interval" unless $in_interval eq '250ms';
+	    } else {
+		unless ( $in_interval =~ /ms/ ) {
+		    my ( $interval, $decay ) = ( $in_interval, $in_decay );
+		    $interval =~ s/sec//;
+		    $decay    =~ s/sec//;
+
+		    fatal_error "Decay must be at least twice the interval" unless $decay > $interval;
+		} 
+	    }
 	}
+	    
+	$in_avrate = rate_to_kbit( $in_rate );
+	$in_rate = 0; 
+    } else {
+	if ( $in_band =~ /:/ ) {
+	    ( $in_band, $burst ) = split /:/, $in_rate, 2;
+	    fatal_error "Invalid burst ($burst)" unless $burst  =~ /^\d+(k|kb|m|mb|mbit|kbit|b)?$/;
+	    $in_burst = $burst;
+	}
+
+	$in_rate = rate_to_kbit( $in_band );
+	
     }
 
-    ( $in_bandwidth, $in_burst, $in_mtu );
+    my @result = ( $in_rate, $in_burst, $in_avrate, $in_interval, $in_decay);
+
+    \@result;
 }
 
-sub handle_in_bandwidth( $$$$ ) {
-    my ($physical, $in_bandwidth, $in_burst, $in_mtu ) = @_;
-
-    my $rate      = int ( ( $in_bandwidth * 21 ) / 20 );
-    $in_bandwidth = int ( ( $in_bandwidth * 9  ) / 10 );
+sub handle_in_bandwidth( $$ ) {
+    my ($physical, $arrayref ) = @_;;
+    my ($in_rate, $in_burst, $in_avrate, $interval, $decay ) = @$arrayref;
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
 	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 " . 
-	   "\\\n    estimator 1sec 8sec basic\\" );
+	   "\\\n    estimator $interval $decay basic\\" );
 
-    if ( $in_mtu ) {
-	emit( "    police mpu 64 rate ${rate}kbit burst $in_burst mtu=${in_mtu} avrate ${in_bandwidth}kbit action drop\n" );
+    if ( $in_rate ) {
+	emit( "    police mpu 64 rate ${rate}kbit burst $in_burst action drop\n" );
     } else {
-	emit( "    police mpu 64 rate ${rate}kbit burst $in_burst avrate ${in_bandwidth}kbit action drop\n" );
+	emit( "    police avrate ${in_avrate}kbit action drop\n" );
     }
 }
 	
@@ -580,7 +599,7 @@ sub process_flow($) {
 }
 
 sub process_simple_device() {
-    my ( $device , $type , $in_bandwidth , $out_part ) = split_line 'tcinterfaces', { interface => 0, type => 1, in_bandwidth => 2, out_bandwidth => 3 };
+    my ( $device , $type , $in_rate , $out_part ) = split_line 'tcinterfaces', { interface => 0, type => 1, in_bandwidth => 2, out_bandwidth => 3 };
 
     fatal_error 'INTERFACE must be specified'      if $device eq '-';
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
@@ -605,7 +624,7 @@ sub process_simple_device() {
 	}
     }
 
-    ( $in_bandwidth , my ($in_burst, $in_mtu ) ) = process_in_bandwidth( $in_bandwidth );
+    $in_rate = process_in_bandwidth( $in_rate );
 
 
     emit( '',
@@ -625,7 +644,7 @@ sub process_simple_device() {
 	   "qt \$TC qdisc del dev $physical ingress\n"
 	 );
 
-    handle_in_bandwidth( $physical, $in_bandwidth, $in_burst, $in_mtu ) unless $in_bandwidth eq '-';
+    handle_in_bandwidth( $physical, $in_rate ) if $in_rate;
 
     if ( $out_part ne '-' ) {
 	my ( $out_bandwidth, $burst, $latency, $peak, $minburst ) = split ':', $out_part;
@@ -777,11 +796,9 @@ sub validate_tc_device( ) {
 	}
     }
 
-    ( $inband , my ($in_burst, $in_mtu ) ) = process_in_bandwidth( $inband );
+    $inband = process_in_bandwidth( $inband );
 
-    $tcdevices{$device} = { in_bandwidth  => rate_to_kbit( $inband ),
-			    in_burst      => $in_burst,
-			    in_mtu        => $in_mtu,
+    $tcdevices{$device} = { in_bandwidth  => $inband,
 			    out_bandwidth => rate_to_kbit( $outband ) . 'kbit',
 			    number        => $devnumber,
 			    classify      => $classify,
@@ -1581,7 +1598,7 @@ sub process_traffic_shaping() {
 		      qq(fi) );
 	    }
 
-	    handle_in_bandwidth( $device, $devref->{in_bandwidth}, $devref->{in_burst}, $devref->{in_mtu}) if $devref->{in_bandwidth};
+	    handle_in_bandwidth( $device, $devref->{in_bandwidth} ) if $devref->{in_bandwidth};
 
 	    for my $rdev ( @{$devref->{redirected}} ) {
 		emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );

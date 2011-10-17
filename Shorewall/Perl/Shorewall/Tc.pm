@@ -573,14 +573,14 @@ sub process_in_bandwidth( $ ) {
 
 sub handle_in_bandwidth( $$ ) {
     my ($physical, $arrayref ) = @_;;
-    my ($in_rate, $in_burst, $in_avrate, $interval, $decay ) = @$arrayref;
+    my ($in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ) = @$arrayref;
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress",
 	   "run_tc filter add dev $physical parent ffff: protocol all prio 10 " . 
-	   "\\\n    estimator $interval $decay basic\\" );
+	   "\\\n    estimator $in_interval $in_decay basic\\" );
 
     if ( $in_rate ) {
-	emit( "    police mpu 64 rate ${rate}kbit burst $in_burst action drop\n" );
+	emit( "    police mpu 64 rate ${in_rate}kbit burst $in_burst action drop\n" );
     } else {
 	emit( "    police avrate ${in_avrate}kbit action drop\n" );
     }

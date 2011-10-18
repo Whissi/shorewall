@@ -521,6 +521,9 @@ sub calculate_quantum( $$ ) {
     int( ( $rate * 125 ) / $r2q );
 }
 
+#
+# The next two function implement handling of the IN-BANDWIDTH column in both tcdevices and tcinterfaces
+#
 sub process_in_bandwidth( $ ) {
     my $in_rate     = shift;
     
@@ -566,9 +569,7 @@ sub process_in_bandwidth( $ ) {
 	
     }
 
-    my @result = ( $in_rate, $in_burst, $in_avrate, $in_interval, $in_decay);
-
-    \@result;
+    [ $in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ];
 }
 
 sub handle_in_bandwidth( $$ ) {

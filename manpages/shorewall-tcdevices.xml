@@ -123,7 +123,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">IN-BANDWIDTH (in_bandwidth)</emphasis> -
-        <replaceable>bandwidth</replaceable>[:<replaceable>burst</replaceable>]</term>
+        {-|<replaceable>bandwidth</replaceable>[:<replaceable>burst</replaceable>]|~<replaceable>bandwidth</replaceable>[:<replaceable>interval</replaceable>:<replaceable>decay_interval</replaceable>]}</term>
 
         <listitem>
           <para>The incoming <emphasis>bandwidth</emphasis> of that interface.
@@ -145,6 +145,21 @@
           <replaceable>bandwidth</replaceable> more accurate; often for fast
           lines, the enforced rate is well below the specified
           <replaceable>bandwidth</replaceable>.</para>
+
+          <para>What is described above creates a rate/burst policing filter.
+          Beginning with Shorewall 4.4.25, a rate-estimated policing filter
+          may be configured instead. Rate-estimated filters should be used
+          with ethernet adapters that have Generic Receive Offload enabled by
+          default. See <ulink
+          url="http://www.shorewall.net/FAQ.htm#faq97a">Shorewall FAQ
+          97a</ulink>.</para>
+
+          <para>To create a rate-estimated filter, precede the bandwidth with
+          a tilde ("~"). The optional interval and decay_interval determine
+          how often the rate is estimated and how many samples are retained
+          for estimating. Please see <ulink
+          url="http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt">http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt</ulink>
+          for details.</para>
         </listitem>
       </varlistentry>
 
@@ -230,6 +245,9 @@
 
     <para><ulink
     url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
+
+    <para><ulink
+    url="http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt">http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),

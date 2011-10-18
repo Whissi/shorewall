@@ -123,9 +123,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">IN-BANDWIDTH</emphasis> (in_bandwidth) -
-        <emphasis
-        role="bold"><replaceable>bandwidth</replaceable>[:<replaceable>burst</replaceable>]</emphasis></term>
+        <term><emphasis role="bold">IN-BANDWIDTH (in_bandwidth)</emphasis> -
+        {-|<replaceable>bandwidth</replaceable>[:<replaceable>burst</replaceable>]|~<replaceable>bandwidth</replaceable>[:<replaceable>interval</replaceable>:<replaceable>decay_interval</replaceable>]}</term>
 
         <listitem>
           <para>The incoming <emphasis>bandwidth</emphasis> of that interface.
@@ -137,16 +136,31 @@
           to avoid queuing at your providers side.</para>
 
           <para>If you don't want any traffic to be dropped, set this to a
-          value to zero in which case Shorewall6 will not create an ingress
+          value to zero in which case Shorewall will not create an ingress
           qdisc.Must be set to zero if the REDIRECTED INTERFACES column is
           non-empty.</para>
 
-          <para>The optional burst option was added in Shorewall6 4.4.18. The
+          <para>The optional burst option was added in Shorewall 4.4.18. The
           default <replaceable>burst</replaceable> is 10kb. A larger
           <replaceable>burst</replaceable> can help make the
           <replaceable>bandwidth</replaceable> more accurate; often for fast
           lines, the enforced rate is well below the specified
           <replaceable>bandwidth</replaceable>.</para>
+
+          <para>What is described above creates a rate/burst policing filter.
+          Beginning with Shorewall 4.4.25, a rate-estimated policing filter
+          may be configured instead. Rate-estimated filters should be used
+          with ethernet adapters that have Generic Receive Offload enabled by
+          default. See <ulink
+          url="http://www.shorewall.net/FAQ.htm#faq97a">Shorewall FAQ
+          97a</ulink>.</para>
+
+          <para>To create a rate-estimated filter, precede the bandwidth with
+          a tilde ("~"). The optional interval and decay_interval determine
+          how often the rate is estimated and how many samples are retained
+          for estimating. Please see <ulink
+          url="http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt">http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt</ulink>
+          for details.</para>
         </listitem>
       </varlistentry>
 
@@ -230,6 +244,9 @@
 
     <para><ulink
     url="http://shorewall.net/traffic_shaping.htm">http://shorewall.net/traffic_shaping.htm</ulink></para>
+
+    <para><ulink
+    url="http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt">http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt</ulink></para>
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),

@@ -149,9 +149,9 @@ sub copy_table( $$$ ) {
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//; s/ cache / /' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ cache / /' | ${filter}while read net route; do" )
     }
 
     emit ( '    case $net in',
@@ -183,9 +183,9 @@ sub copy_and_edit_table( $$$$ ) {
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//; s/ cache / /' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ cache / /' | ${filter}while read net route; do" )
     }
 
     emit (  '    case $net in',

@@ -469,6 +469,8 @@ get_device_mtu1() # $1 = device
 # Undo changes to routing
 #
 undo_routing() {
+    local undofiles
+    local f
 
     if [ -z "$g_noroutes"  ]; then
 	#
@@ -481,10 +483,16 @@ undo_routing() {
 	#
 	# Restore the rest of the routing table
 	#
-	if [ -f ${VARDIR}/undo_routing ]; then
-	    . ${VARDIR}/undo_routing
-	    progress_message "Shorewall-generated routing tables and routing rules removed"
-	    rm -f ${VARDIR}/undo_*routing
+	undofiles="$(ls ${VARDIR}/undo_*routing 2> /dev/null)"
+
+	if [ -n "$undofiles" ]; then
+	    for f in $undofiles; do
+		. $f
+	    done
+
+	    rm -f $undofiles
+
+            progress_message "Shorewall6-generated routing tables and routing rules removed"
 	fi
     fi
 

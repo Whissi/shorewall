@@ -149,9 +149,9 @@ sub copy_table( $$$ ) {
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//; s/ cache / /' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | fgrep -v ' cache ' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ cache / /' | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | fgrep -v ' cache ' | ${filter}while read net route; do" )
     }
 
     emit ( '    case $net in',
@@ -183,9 +183,9 @@ sub copy_and_edit_table( $$$$ ) {
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//; s/ cache / /' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | fgrep -v ' cache ' | while read net route; do" )
     } else {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ cache / /' | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | fgrep -v ' cache ' | ${filter}while read net route; do" )
     }
 
     emit (  '    case $net in',
@@ -210,14 +210,24 @@ sub balance_default_route( $$$$ ) {
     emit '';
 
     if ( $first_default_route ) {
-	if ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	if ( $family == F_IPV4 ) {
+	    if ( $gateway ) {
+		emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	    } else {
+		emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	    }
 	} else {
-	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	    if ( $gateway ) {
+		emit "DEFAULT_ROUTE=\"via $gateway dev $interface $realm\"";
+	    } else {
+		emit "DEFAULT_ROUTE=\"dev $interface $realm\"";
+	    }
 	}
 
 	$first_default_route = 0;
     } else {
+	fatal_error "Only one 'balance' provider is allowed with IPv6" if $family == F_IPV6;
+
 	if ( $gateway ) {
 	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight $realm\"";
 	} else {
@@ -234,14 +244,24 @@ sub balance_fallback_route( $$$$ ) {
     emit '';
 
     if ( $first_fallback_route ) {
-	if ( $gateway ) {
-	    emit "FALLBACK_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	if ( $family == F_IPV4 ) {
+	    if ( $gateway ) {
+		emit "FALLBACK_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	    } else {
+		emit "FALLBACK_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	    }
 	} else {
-	    emit "FALLBACK_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	    if ( $gateway ) {
+		emit "FALLBACK_ROUTE=\"via $gateway dev $interface $realm\"";
+	    } else {
+		emit "FALLBACK_ROUTE=\"dev $interface $realm\"";
+	    }
 	}
 
 	$first_fallback_route = 0;
     } else {
+	fatal_error "Only one 'fallback' provider is allowed with IPv6" if $family == F_IPV6;
+
 	if ( $gateway ) {
 	    emit "FALLBACK_ROUTE=\"\$FALLBACK_ROUTE nexthop via $gateway dev $interface weight $weight $realm\"";
 	} else {
@@ -330,10 +350,9 @@ sub process_a_provider() {
 	    } elsif ( $option eq 'notrack' ) {
 		$track = 0;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
-		fatal_error q('balance' is not available in IPv6) if $family == F_IPV6;
+		fatal_error q('balance=<weight>' is not available in IPv6) if $family == F_IPV6;
 		$balance = $1;
 	    } elsif ( $option eq 'balance' ) {
-		fatal_error q('balance' is not available in IPv6) if $family == F_IPV6;
 		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose   = 1;
@@ -348,12 +367,11 @@ sub process_a_provider() {
 	    } elsif ( $option =~ /^mtu=(\d+)$/ ) {
 		$mtu = "mtu $1 ";
 	    } elsif ( $option =~ /^fallback=(\d+)$/ ) {
-		fatal_error q('fallback' is not available in IPv6) if $family == F_IPV6;
+		fatal_error q('fallback=<weight>' is not available in IPv6) if $family == F_IPV6;
 		$default = $1;
 		$default_balance = 0;
 		fatal_error 'fallback must be non-zero' unless $default;
 	    } elsif ( $option eq 'fallback' ) {
-		fatal_error q('fallback' is not available in IPv6) if $family == F_IPV6;
 		$default = -1;
 		$default_balance = 0;
 	    } elsif ( $option eq 'local' ) {
@@ -632,12 +650,19 @@ sub add_a_provider( $$ ) {
 	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
 	    $weight = $balance ? $balance : $default;
 
-	    if ( $gateway ) {
-		emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
+	    if ( $family == F_IPV4 ) {
+		if ( $gateway ) {
+		    emit qq(add_gateway "nexthop via $gateway dev $physical weight $weight $realm" ) . $tbl;
+		} else {
+		    emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
+		}
 	    } else {
-		emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
+		if ( $gateway ) {
+		    emit qq(add_gateway "via $gateway dev $physical $realm" ) . $tbl;
+		} else {
+		    emit qq(add_gateway "nexthop dev $physical $realm" ) . $tbl;
+		}
 	    }
-
 	} else {
 	    $weight = 1;
 	}
@@ -712,7 +737,7 @@ sub add_a_provider( $$ ) {
 		$via = "dev $physical";
 	    }
 
-	    $via .= " weight $weight" unless $weight < 0;
+	    $via .= " weight $weight" unless $weight < 0 or $family == F_IPV6;
 	    $via .= " $realm"         if $realm;
 
 	    emit( qq(delete_gateway "$via" $tbl $physical) );

@@ -217,6 +217,9 @@ sub balance_default_route( $$$$ ) {
 		emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
 	    }
 	} else {
+	    #
+	    # IPv6 doesn't support multi-hop routes
+	    #
 	    if ( $gateway ) {
 		emit "DEFAULT_ROUTE=\"via $gateway dev $interface $realm\"";
 	    } else {
@@ -251,6 +254,9 @@ sub balance_fallback_route( $$$$ ) {
 		emit "FALLBACK_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
 	    }
 	} else {
+	    #
+	    # IPv6 doesn't support multi-hop routes
+	    #
 	    if ( $gateway ) {
 		emit "FALLBACK_ROUTE=\"via $gateway dev $interface $realm\"";
 	    } else {
@@ -657,6 +663,9 @@ sub add_a_provider( $$ ) {
 		    emit qq(add_gateway "nexthop dev $physical weight $weight $realm" ) . $tbl;
 		}
 	    } else {
+		#
+		# IPv6 doesn't support multi-hop routes
+		#
 		if ( $gateway ) {
 		    emit qq(add_gateway "via $gateway dev $physical $realm" ) . $tbl;
 		} else {
@@ -737,7 +746,7 @@ sub add_a_provider( $$ ) {
 		$via = "dev $physical";
 	    }
 
-	    $via .= " weight $weight" unless $weight < 0 or $family == F_IPV6;
+	    $via .= " weight $weight" unless $weight < 0 or $family == F_IPV6; # IPv6 doesn't support route weights
 	    $via .= " $realm"         if $realm;
 
 	    emit( qq(delete_gateway "$via" $tbl $physical) );

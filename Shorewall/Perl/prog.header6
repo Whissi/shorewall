@@ -197,6 +197,35 @@ find_interface_full_addresses() # $1 = interface
 }
 
 #
+# Add an additional gateway to the default route
+#
+add_gateway() # $1 = Delta $2 = Table Number
+{
+    local route
+    local weight
+    local delta
+    local dev
+    
+    run_ip route add default scope global table $2 $1
+}
+
+#
+# Remove a gateway from the default route
+#
+delete_gateway() # $! = Description of the Gateway $2 = table number $3 = device
+{
+    local route
+    local gateway
+    local dev
+
+    route=`$IP -6 -o route ls table $2 | grep ^default | sed 's/[\]//g'`
+    gateway=$1
+  
+    dev=$(find_device $route)
+    [ "$dev" = "$3" ] && run_ip route delete default table $2
+}
+
+#
 #  echo the list of networks routed out of a given interface
 #
 get_routed_networks() # $1 = interface name, $2-n = Fatal error message

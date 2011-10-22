@@ -5,7 +5,21 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ options ] [ start|stop|clear|down|reset|refresh|restart|status|up|version ]"
+    echo "Usage: $0 [ options ] <command>"
+    echo
+    echo "<command> is one of:"
+    echo "   start"
+    echo "   stop"
+    echo "   clear"
+    echo "   disable <interface>"
+    echo "   down <interface>"
+    echo "   enable <interface>"
+    echo "   reset"
+    echo "   refresh"
+    echo "   restart"
+    echo "   status"
+    echo "   up <interface>"
+    echo "   version"
     echo
     echo "Options are:"
     echo
@@ -328,6 +342,26 @@ case "$COMMAND" in
 	shift
 	[ $# -ne 1 ] && usage 2
 	updown $1
+	status=0
+	;;
+    enable)
+	[ $# -eq 1 ] && exit 0
+	shift
+	[ $# -ne 1 ] && usage 2
+	if shorewall6_is_started; then
+	    detect_configuration
+	    enable_provider $1
+	fi
+	status=0
+	;;
+    disable)
+	[ $# -eq 1 ] && exit 0
+	shift
+	[ $# -ne 1 ] && usage 2
+	if shorewall6_is_started; then
+	    detect_configuration
+	    disable_provider $1
+	fi
 	status=0
 	;;
     version)

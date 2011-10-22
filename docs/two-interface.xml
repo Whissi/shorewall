@@ -1202,12 +1202,25 @@ loc       wlan0           detect             maclist</programlisting>
       </listitem>
 
       <listitem>
-        <para>You need to add an entry to the
+        <para>You may need to add an entry to the
         <filename>/etc/shorewall/masq</filename> file to masquerade traffic
-        from the wireless network to the Internet. If your Internet interface
-        is <filename class="devicefile">eth0</filename> and your wireless
-        interface is <filename class="devicefile">wlan0</filename>, the entry
-        would be:</para>
+        from the wireless network to the Internet. If you file looks like
+        this:</para>
+
+        <programlisting>#INTERFACE		SOURCE		ADDRESS		PROTO	PORT(S)	IPSEC	MARK
+eth0			10.0.0.0/8,\
+			169.254.0.0/16,\
+			172.16.0.0/12,\
+			192.168.0.0/16
+</programlisting>
+
+        <para>then you do <emphasis role="bold">not</emphasis> need to change
+        the contents.</para>
+
+        <para>Otherwise, if your Internet interface is <filename
+        class="devicefile">eth0</filename> and your wireless interface is
+        <filename class="devicefile">wlan0</filename>, the entry would
+        be:</para>
 
         <programlisting>#INTERFACE           SOURCE             ADDRESS
 eth0                 10.10.11.0/24</programlisting>

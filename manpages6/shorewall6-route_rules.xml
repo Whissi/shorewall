@@ -113,6 +113,20 @@
           </variablelist>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MARK -
+        {-|<replaceable>mark</replaceable>[/<replaceable>mask</replaceable>]}</emphasis></term>
+
+        <listitem>
+          <para>Optional -- added in Shorewall 4.4.25. For this rule to be
+          applied to a packet, the packet's mark value must match the
+          <replaceable>mark</replaceable> when logically anded with the
+          <replaceable>mask</replaceable>. If a
+          <replaceable>mask</replaceable> is not supplied, Shorewall supplies
+          a suitable provider mask.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -127,7 +141,7 @@
           <para>You want all traffic coming in on eth1 to be routed to the
           ISP1 provider.</para>
 
-          <programlisting>        #SOURCE                 DEST            PROVIDER        PRIORITY
+          <programlisting>        #SOURCE                 DEST            PROVIDER        PRIORITY    MASK
         eth1                    -               ISP1            1000
 </programlisting>
         </listitem>
@@ -149,10 +163,10 @@
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-routestopped(5), shorewall6-rules(5),
-    shorewall6.conf(5), shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
-    shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),
-    shorewall6-zones(5)</para>
+    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-routestopped(5),
+    shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5),
+    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

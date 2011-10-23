@@ -113,6 +113,20 @@
           </variablelist>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MARK -
+        {-|<replaceable>mark</replaceable>[/<replaceable>mask</replaceable>]}</emphasis></term>
+
+        <listitem>
+          <para>Optional -- added in Shorewall 4.4.25. For this rule to be
+          applied to a packet, the packet's mark value must match the
+          <replaceable>mark</replaceable> when logically anded with the
+          <replaceable>mask</replaceable>. If a
+          <replaceable>mask</replaceable> is not supplied, Shorewall supplies
+          a suitable provider mask.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -127,7 +141,7 @@
           <para>You want all traffic coming in on eth1 to be routed to the
           ISP1 provider.</para>
 
-          <programlisting>        #SOURCE                 DEST            PROVIDER        PRIORITY
+          <programlisting>        #SOURCE                 DEST            PROVIDER        PRIORITY      MASK
         eth1                    -               ISP1            1000
 </programlisting>
         </listitem>
@@ -144,7 +158,7 @@
           is the subnet chosen in your OpenVPN configuration (server 10.8.0.0
           255.255.255.0).</para>
 
-          <programlisting>         #SOURCE                 DEST            PROVIDER        PRIORITY
+          <programlisting>         #SOURCE                 DEST            PROVIDER        PRIORITY     MASK
          -                       10.8.0.0/24     main            1000
 </programlisting>
         </listitem>

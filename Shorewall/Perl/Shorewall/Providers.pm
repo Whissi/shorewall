@@ -777,7 +777,7 @@ sub add_a_provider( $$ ) {
 }
 
 sub add_an_rtrule( ) {
-    my ( $source, $dest, $provider, $priority ) = split_line 'route_rules file', { source => 0, dest => 1, provider => 2, priority => 3 };
+    my ( $source, $dest, $provider, $priority, $originalmark ) = split_line 'route_rules file', { source => 0, dest => 1, provider => 2, priority => 3 , mark => 4 };
 
     our $current_if;
 
@@ -840,13 +840,25 @@ sub add_an_rtrule( ) {
 	$source = "iif $source";
     }
 
+    my $mark = '';
+    my $mask;
+
+    if ( $originalmark ne '-' ) {
+	validate_mark( $originalmark );
+
+	( $mark, $mask ) = split '/' , $originalmark;
+	$mask = $globals{PROVIDER_MASK} unless supplied $mask;
+
+	$mark = ' fwmark ' . in_hex( $mark ) . '/' . in_hex( $mask );
+    }
+
     fatal_error "Invalid priority ($priority)" unless $priority && $priority =~ /^\d{1,5}$/;
 
     $priority = "priority $priority";
 
-    push @{$providerref->{rules}}, "qt \$IP -$family rule del $source $dest $priority" if $config{DELETE_THEN_ADD};
-    push @{$providerref->{rules}}, "run_ip rule add $source $dest $priority table $number";
-    push @{$providerref->{rules}}, "echo \"qt \$IP -$family rule del $source $dest $priority\" >> \${VARDIR}/undo_${provider}_routing";
+    push @{$providerref->{rules}}, "qt \$IP -$family rule del $source ${dest}${mark} $priority" if $config{DELETE_THEN_ADD};
+    push @{$providerref->{rules}}, "run_ip rule add $source ${dest}${mark} $priority table $number";
+    push @{$providerref->{rules}}, "echo \"qt \$IP -$family rule del $source ${dest}${mark} $priority\" >> \${VARDIR}/undo_${provider}_routing";
 
     progress_message "   Routing rule \"$currentline\" $done";
 }

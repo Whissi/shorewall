@@ -819,10 +819,17 @@ sub compatible( $$ ) {
     for ( @unique_options ) {
 	if ( defined( $val1 = $ref1->{$_} ) && defined( $val2 = $ref2->{$_} ) ) {
 	    unless ( $val1 eq $val2 ) {
+		#
+		# Values are different -- be sure that $val1 is a leading subset of $val2;
+		#
 		my @val1 = split ' ', $val1;
 		my @val2 = split ' ', $val2;
+		
+		return 0 if @val1 > @val2; # $val1 is more specific than $val2
 
-		return 0 if @val1 > @val2 || $val1[0] ne $val2[0];
+		for ( my $i = 0; $i < @val1; $i++ ) {
+		    return 0 unless $val1[$i] eq $val2[$i];
+		}
 	    }
 	}
     }

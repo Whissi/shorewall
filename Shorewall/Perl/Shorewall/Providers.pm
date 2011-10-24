@@ -607,9 +607,11 @@ sub add_a_provider( $$ ) {
     }
 
     unless ( $local ) {
+	emit '';
+
 	if ( $loose ) {
 	    if ( $config{DELETE_THEN_ADD} ) {
-		emit ( "\nfind_interface_addresses $physical | while read address; do",
+		emit ( "find_interface_addresses $physical | while read address; do",
 		       "    qt \$IP -$family rule del from \$address",
 		       'done'
 		     );

@@ -141,17 +141,15 @@ sub setup_route_marking() {
 
 sub copy_table( $$$ ) {
     my ( $duplicate, $number, $realm ) = @_;
-    #
-    # Hack to work around problem in iproute
-    #
-    my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
+    
+    my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
 
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | fgrep -v ' cache ' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | ${filter}while read net route; do" )
     } else {
-	emit  ( "\$IP -$family -o route show table $duplicate | fgrep -v ' cache ' | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
     }
 
     emit ( '    case $net in',
@@ -167,10 +165,8 @@ sub copy_table( $$$ ) {
 
 sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
-    #
-    # Hack to work around problem in iproute
-    #
-    my $filter = $family == F_IPV6 ? q(sed 's/ via :: / /' | ) : '';
+
+    my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
     #
     # Map physical names in $copy to logical names
     #
@@ -183,9 +179,9 @@ sub copy_and_edit_table( $$$$ ) {
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | fgrep -v ' cache ' | while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | ${filter}while read net route; do" )
     } else {
-	emit  ( "\$IP -$family -o route show table $duplicate | fgrep -v ' cache ' | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
     }
 
     emit (  '    case $net in',

@@ -602,6 +602,8 @@ sub add_a_provider( $$ ) {
 	$fallback = 1;
     }
 
+    emit ( qq(\nqt \$IP rule add from all table ) . DEFAULT_TABLE . qq( prio 32767\n) ) if $family == F_IPV6;
+
     unless ( $local ) {
 	emit '';
 

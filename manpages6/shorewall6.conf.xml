@@ -1638,6 +1638,67 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">USE_DEFAULT_RT=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall6 4.4.25. When set to 'Yes', this option
+          causes the Shorewall6 multi-ISP feature to create a different set of
+          routing rules which are resilient to changes in the main routing
+          table. Such changes can occur for a number of reasons, VPNs going up
+          and down being an example. The idea is to send packets through the
+          main table prior to applying any of the Shorewall6-generated routing
+          rules. So changes to the main table will affect the routing of
+          packets by default.</para>
+
+          <para>When USE_DEFAULT_RT=Yes:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Both the DUPLICATE and the COPY columns in <ulink
+              url="shorewall6-providers.html">shorewall6-providers</ulink>(5)
+              file must remain empty (or contain "-").</para>
+            </listitem>
+
+            <listitem>
+              <para>The default route is added to the the 'default' table
+              rather than to the main table.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">balance</emphasis> is assumed unless
+              <emphasis role="bold">loose</emphasis> is specified.</para>
+            </listitem>
+
+            <listitem>
+              <para>Packets are sent through the main routing table by a rule
+              with priority 999. In <ulink
+              url="shorewall6-routing_rules.html">shorewall6-routing_rules</ulink>(5),
+              the range 1-998 may be used for inserting rules that bypass the
+              main table.</para>
+            </listitem>
+
+            <listitem>
+              <para>All provider gateways must be specified explicitly in the
+              GATEWAY column. <emphasis role="bold">detect</emphasis> may not
+              be specified.</para>
+            </listitem>
+
+            <listitem>
+              <para>You should disable all default route management outside of
+              Shorewall6. If a default route is added to the main table while
+              Shorewall is started, then all policy routing will stop working
+              (except for those routing rules in the priority range
+              1-998).</para>
+            </listitem>
+          </orderedlist>
+
+          <para>If USE_DEFAULT_RT is not set or if it is set to the empty
+          string then USE_DEFAULT_RT=No is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
 

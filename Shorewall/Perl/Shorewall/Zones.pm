@@ -1674,17 +1674,26 @@ sub compile_updown() {
     }
 
     if ( @$optional ) {
-	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$optional;
+	my @interfaces = map $interfaces{$_}->{physical}, @$optional;
+	my $interfaces = join '|', @interfaces; 
 
-	$interfaces =~ s/\+/*/;
+	if ( $interfaces =~ s/\+/*/ || @interfaces > 1 ) {
+	    emit( "$interfaces)",
+		  '    if [ "$COMMAND" = up ]; then',
+		  '        echo 0 > ${VARDIR}/${1}.state',
+		  '    else',
+		  '        echo 1 > ${VARDIR}/${1}.state',
+		  '    fi' );
+	} else {
+	    emit( "$interfaces)",
+		  '    if [ "$COMMAND" = up ]; then',
+		  "        echo 0 > \${VARDIR}/$interfaces.state",
+		  '    else',
+		  "        echo 1 > \${VARDIR}/$interfaces.state",
+		  '    fi' );
+	}
 
-	emit( "$interfaces)",
-	      '    if [ "$COMMAND" = up ]; then',
-	      '        echo 0 > ${VARDIR}/${1}.state',
-	      '    else',
-	      '        echo 1 > ${VARDIR}/${1}.state',
-	      '    fi',
-	      '',
+	emit( '',
 	      '    if [ "$state" = started ]; then',
 	      '        COMMAND=restart',
 	      '        progress_message3 "$g_product attempting restart"',

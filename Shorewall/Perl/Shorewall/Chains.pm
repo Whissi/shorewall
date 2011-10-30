@@ -1162,6 +1162,8 @@ sub add_reference ( $$ ) {
 
     assert($toref);
 
+    $toref->{blacklistsection} ||= $fromref->{blacklistsection};
+
     $toref->{references}{$fromref->{name}}++;
 }
 
@@ -6020,6 +6022,13 @@ sub create_chainlist_reload($) {
 	unless ( @chains ) {
 	    @chains = qw( blacklst ) if $filter_table->{blacklst};
 	    push @chains, 'blackout' if $filter_table->{blackout};
+	    
+	    unless ( @chains ) {
+		for ( grep $_->{blacklistsection} && $_->{referenced}, values %{$filter_table} ) {
+		    push @chains, $_->{name} if $_->{blacklistsection};
+		}
+	    }
+
 	    push @chains, 'mangle:' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
 	    $chains = join( ',', @chains ) if @chains;
 	}

@@ -581,13 +581,13 @@ sub handle_in_bandwidth( $$ ) {
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress" );
     
     if ( have_capability 'BASIC_FILTER' ) {
-	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 " . 
-	      "\\\n    estimator $in_interval $in_decay basic \\" );
+	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 " );
 
 	if ( $in_rate ) {
 	    emit( "    police mpu 64 rate ${in_rate}kbit burst $in_burst action drop\n" );
 	} else {
-	    emit( "    police avrate ${in_avrate}kbit action drop\n" );
+	    emit( "    estimator $in_interval $in_decay basic \\",
+		  "    police avrate ${in_avrate}kbit action drop\n" );
 	}
     } else {
 	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 " .

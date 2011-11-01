@@ -1061,8 +1061,30 @@
           <command>refresh</command> only recreates the chains specified in
           the command while <command>restart</command> recreates the entire
           Netfilter ruleset. If no <replaceable>chain</replaceable> is given,
-          the static blacklisting chain <emphasis
-          role="bold">blacklst</emphasis> is assumed.</para>
+          then a change list is constructed that includes:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>the static blacklisting chain <emphasis
+              role="bold">blacklst</emphasis>, if it exists.</para>
+            </listitem>
+
+            <listitem>
+              <para>the static blacklisting chain <emphasis
+              role="bold">blackout</emphasis>, if it exists.</para>
+            </listitem>
+
+            <listitem>
+              <para>chains created as a result of entries in the BLACKLIST
+              section of <ulink
+              url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5)
+              (Shorewall 4.4.25.1 and later).</para>
+            </listitem>
+
+            <listitem>
+              <para>all chains in the mangle table.</para>
+            </listitem>
+          </itemizedlist>
 
           <para>The listed chains are assumed to be in the filter table. You
           can refresh chains in other tables by prefixing the chain name with

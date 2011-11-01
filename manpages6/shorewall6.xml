@@ -928,11 +928,31 @@
           performed by <command>refresh</command> with the exception that
           <command>refresh</command> only recreates the chains specified in
           the command while <command>restart</command> recreates the entire
-          Netfilter ruleset.When no chain name is given to the <emphasis
-          role="bold">refresh</emphasis> command, the mangle table is
-          refreshed along with the blacklist chain (if any). This allows you
-          to modify <filename>/etc/shorewall6/tcrules</filename>and install
-          the changes using <emphasis role="bold">refresh</emphasis>.</para>
+          Netfilter ruleset. If no <replaceable>chain</replaceable> is given,
+          then a change list is constructed that includes:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>the static blacklisting chain <emphasis
+              role="bold">blacklst</emphasis>, if it exists.</para>
+            </listitem>
+
+            <listitem>
+              <para>the static blacklisting chain <emphasis
+              role="bold">blackout</emphasis>, if it exists.</para>
+            </listitem>
+
+            <listitem>
+              <para>chains created as a result of entries in the BLACKLIST
+              section of <ulink
+              url="manpages6/shorewall6-rules.html">shorewall6-rules</ulink>
+              (5) (Shorewall 4.4.25.1 and later).</para>
+            </listitem>
+
+            <listitem>
+              <para>all chains in the mangle table.</para>
+            </listitem>
+          </itemizedlist>
 
           <para>The listed chains are assumed to be in the filter table. You
           can refresh chains in other tables by prefixing the chain name with
@@ -1404,8 +1424,8 @@
 
     <para>shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-route_rules(5),
     shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
     shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
     shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),

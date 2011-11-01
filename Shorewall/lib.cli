@@ -1733,6 +1733,7 @@ determine_capabilities() {
     AUDIT_TARGET=
     CONDITION_MATCH=
     IPTABLES_S=
+    BASIC_FILTER=
 
     chain=fooX$$
 
@@ -1891,6 +1892,7 @@ determine_capabilities() {
     qt $IPTABLES -X $chain1
 
     [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+    [ -n "$TC" ] && $TC filter add basic help 2>&1 | grep -q ^Usage && BASIC_FILTER=Yes
     [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
 
     CAPVERSION=$SHOREWALL_CAPVERSION
@@ -1981,6 +1983,7 @@ report_capabilities() {
 	report_capability "ipset V5" $IPSET_V5
 	report_capability "Condition Match" $CONDITION_MATCH
 	report_capability "iptables -S" $IPTABLES_S
+	report_capability "Basic Filter" $BASIC_FILTER
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -2053,6 +2056,7 @@ report_capabilities1() {
     report_capability1 IPSET_V5
     report_capability1 CONDITION_MATCH
     report_capability1 IPTABLES_S
+    report_capability1 BASIC_FILTER
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

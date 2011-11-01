@@ -282,6 +282,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 RAWPOST_TABLE   => 'Rawpost Table',
 		 CONDITION_MATCH => 'Condition Match',
 		 IPTABLES_S      => 'iptables -S',
+		 BASIC_FILTER    => 'Basic Filter',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -446,7 +447,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40424 ,
+		    CAPVERSION => 40425 ,
 		  );
     #
     # From shorewall.conf file
@@ -668,6 +669,7 @@ sub initialize( $ ) {
 	       AUDIT_TARGET => undef,
 	       CONDITION_MATCH => undef,
 	       IPTABLES_S => undef,
+	       BASIC_FILTER => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2675,6 +2677,10 @@ sub Flow_Filter() {
     $tc && system( "$tc filter add flow help 2>&1 | grep -q ^Usage" ) == 0;
 }
 
+sub Basic_Filter() {
+    $tc && system( "$tc filter add basic help 2>&1 | grep -q ^Usage" ) == 0;
+}
+
 sub Fwmark_Rt_Mask() {
     $ip && system( "$ip rule add help 2>&1 | grep -q /MASK" ) == 0;
 }
@@ -2711,6 +2717,7 @@ our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AUDIT_TARGET => \&Audit_Target,
       ADDRTYPE => \&Addrtype,
+      BASIC_FILTER => \&Basic_Filter,
       CLASSIFY_TARGET => \&Classify_Target,
       CONDITION_MATCH => \&Condition_Match,
       COMMENTS => \&Comments,
@@ -2889,6 +2896,7 @@ sub determine_capabilities() {
 	$capabilities{IPSET_V5}        = detect_capability( 'IPSET_V5' );
 	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
 	$capabilities{IPTABLES_S}      = detect_capability( 'IPTABLES_S' );
+	$capabilities{BASIC_FILTER}    = detect_capability( 'BASIC_FILTER' );
 
 
 	qt1( "$iptables -F $sillyname" );

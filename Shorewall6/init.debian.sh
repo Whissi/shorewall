@@ -115,6 +115,11 @@ shorewall6_refresh () {
   return 0
 }
 
+# status of the firewall
+shorewall6_status () {
+  $SRWL $SRWL_OPTS status && exit 0 || exit $?
+}
+
 case "$1" in
   start)
      shorewall6_start
@@ -128,8 +133,11 @@ case "$1" in
   force-reload|restart)
      shorewall6_restart
      ;;
+  status)
+     shorewall6_status
+     ;;
   *)
-     echo "Usage: /etc/init.d/shorewall6 {start|stop|refresh|restart|force-reload}"
+     echo "Usage: /etc/init.d/shorewall6 {start|stop|refresh|restart|force-reload|status}"
      exit 1
 esac
 

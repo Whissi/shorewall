@@ -2672,7 +2672,7 @@ sub Logmark_Target() {
 }
 
 sub Flow_Filter() {
-    $tc && system( "$tc filter add flow add help 2>&1 | grep -q ^Usage" ) == 0;
+    $tc && system( "$tc filter add flow help 2>&1 | grep -q ^Usage" ) == 0;
 }
 
 sub Fwmark_Rt_Mask() {

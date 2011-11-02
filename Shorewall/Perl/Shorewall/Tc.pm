@@ -575,28 +575,31 @@ sub process_in_bandwidth( $ ) {
 }
 
 sub handle_in_bandwidth( $$ ) {
-    my ($physical, $arrayref ) = @_;;
+    my ($physical, $arrayref ) = @_;
+
+    return 1 unless $arrayref;
+
     my ($in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ) = @$arrayref;
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress" );
     
     if ( have_capability 'BASIC_FILTER' ) {
-	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 " );
-
 	if ( $in_rate ) {
-	    emit( "    police mpu 64 rate ${in_rate}kbit burst $in_burst action drop\n" );
+	    emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 basic \\",
+		  "    police mpu 64 rate ${in_rate}kbit burst $in_burst action drop\n" );
 	} else {
-	    emit( "    estimator $in_interval $in_decay basic \\",
+	    emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 \\",
+		  "    estimator $in_interval $in_decay basic \\",
 		  "    police avrate ${in_avrate}kbit action drop\n" );
 	}
     } else {
-	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 " .
-	      "\\\n    u32 match ip src "  . ALLIPv4 . ' ' .
-	      "\\\n    police rate ${in_rate}kbit burst $in_burst drop flowid :1",
+	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 \\" ,
+	      "    u32 match ip src "  . ALLIPv4 . ' \\' ,
+	      "    police rate ${in_rate}kbit burst $in_burst drop flowid :1",
 	      '',
-	      "run_tc filter add dev $physical parent ffff: protocol all prio 10 " .
-	      "\\\n    u32 match ip6 src " . ALLIPv6 . ' ' .
-	      "\\\n    police rate ${in_rate}kbit burst $in_burst drop flowid :1\n" );
+	      "run_tc filter add dev $physical parent ffff: protocol all prio 10 \\" ,
+	      "    u32 match ip6 src " . ALLIPv6 . ' \\' ,
+	      "    police rate ${in_rate}kbit burst $in_burst drop flowid :1\n" );
     }
 }
 	
@@ -658,7 +661,7 @@ sub process_simple_device() {
 	   "qt \$TC qdisc del dev $physical ingress\n"
 	 );
 
-    handle_in_bandwidth( $physical, $in_rate ) if $in_rate;
+    handle_in_bandwidth( $physical, $in_rate );
 
     if ( $out_part ne '-' ) {
 	my ( $out_bandwidth, $burst, $latency, $peak, $minburst ) = split ':', $out_part;
@@ -1612,7 +1615,7 @@ sub process_traffic_shaping() {
 		      qq(fi) );
 	    }
 
-	    handle_in_bandwidth( $device, $devref->{in_bandwidth} ) if $devref->{in_bandwidth};
+	    handle_in_bandwidth( $device, $devref->{in_bandwidth} );
 
 	    for my $rdev ( @{$devref->{redirected}} ) {
 		emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );

@@ -330,7 +330,7 @@ startup_error() {
 # Determine if there are config files newer than the passed object
 #
 uptodate() {
-    [ -f $1 ] || return 1
+    [ -x $1 ] || return 1
 
     local dir
     local ifs
@@ -425,11 +425,10 @@ start_command() {
     local finished
     finished=0
     local object
+    local rc
+    rc=0
 
     do_it() {
-	local rc
-	rc=0
-
 	if [ -n "$AUTOMAKE" ]; then
 	    [ -n "$nolock" ] || mutex_on
 	    run_it ${VARDIR}/firewall $g_debugging start
@@ -541,17 +540,15 @@ start_command() {
 	    AUTOMAKE=
 	fi
 
-	if [ -n "$g_fast" ]; then
-	    g_restorepath=${VARDIR}/$RESTOREFILE
-
-	    if [ -x $g_restorepath ]; then
-		echo Restoring Shorewall...
-		run_it $g_restorepath restore
-		date > ${VARDIR}/restarted
-		progress_message3 Shorewall restored from $g_restorepath
-	    else
-		do_it
-	    fi
+	if [ -n "$g_fast" -a $object = $RESTOREFILE ]; then
+	    g_restorepath=${VARDIR}/$object
+	    [ -n "$nolock" ] || mutex_on
+	    echo Restoring Shorewall...
+	    run_it $g_restorepath restore
+	    rc=$?
+	    [ -n "$nolock" ] || mutex_off
+	    [ $rc -eq 0 ] && progress_message3 "Shorewall restored from $g_restorepath"
+	    exit $rc
 	else
 	    do_it
 	fi

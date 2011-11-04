@@ -174,7 +174,7 @@ sub copy_and_edit_table( $$$$ ) {
     #
     # Shell and iptables use a different wildcard character
     #
-    $copy =~ s/\+/*/;
+    $copy =~ s/\+/*/g;
     
     emit '';
 

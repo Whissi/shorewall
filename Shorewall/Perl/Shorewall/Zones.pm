@@ -1623,7 +1623,7 @@ sub compile_updown() {
     if ( @$ignore ) {
 	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$ignore;
 
-	$interfaces =~ s/\+/*/;
+	$interfaces =~ s/\+/*/g;
 
 	emit( "$interfaces)",
 	      '    progress_message3 "$COMMAND on interface $1 ignored"',
@@ -1635,7 +1635,7 @@ sub compile_updown() {
     if ( @$required ) {
 	my $interfaces = join '|', map $interfaces{$_}->{physical}, @$required;
 
-	my $wildcard = ( $interfaces =~ s/\+/*/ );
+	my $wildcard = ( $interfaces =~ s/\+/*/g );
 
 	emit( "$interfaces)",
 	      '    if [ "$COMMAND" = up ]; then' );
@@ -1677,7 +1677,7 @@ sub compile_updown() {
 	my @interfaces = map $interfaces{$_}->{physical}, @$optional;
 	my $interfaces = join '|', @interfaces; 
 
-	if ( $interfaces =~ s/\+/*/ || @interfaces > 1 ) {
+	if ( $interfaces =~ s/\+/*/g || @interfaces > 1 ) {
 	    emit( "$interfaces)",
 		  '    if [ "$COMMAND" = up ]; then',
 		  '        echo 0 > ${VARDIR}/${1}.state',

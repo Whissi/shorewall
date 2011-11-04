@@ -927,6 +927,11 @@ do_dump_command() {
 	$IP6TABLES -t raw -L $g_ipt_options
     fi
 
+    if qt $IP6TABLES -t rawpost -L -n; then
+	heading "Rawpost Table"
+	$IP6TABLES -t rawpost -L $g_ipt_options
+    fi
+
     local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
     local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
 

@@ -1795,8 +1795,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 
 	$bt =~ s/[-+!]$//;
 
-	my %functions = (ACCEPT => sub() { $action = 'RETURN' if $blacklist; } ,
-			 REDIRECT => sub () {
+	my %functions = ( ACCEPT => sub() { $action = 'RETURN' if $blacklist; } ,
+
+			  REDIRECT => sub () {
 			      my $z = $actiontype & NATONLY ? '' : firewall_zone;
 			      if ( $dest eq '-' ) {
 				  $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
@@ -1806,8 +1807,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 				  $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
 			      }
 			  } ,
+
 			  REJECT => sub { $action = 'reject'; } ,
+
 			  CONTINUE => sub { $action = 'RETURN'; } ,
+
 			  WHITELIST => sub { 
 			      unless ( $blacklist ) { 
 				  if ( $config{BLACKLISTSECTION} ) {
@@ -1817,8 +1821,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 				  }
 			      }
 			      
-			      $action = 'RETURN'; } ,
+			      $action = 'RETURN';
+			  } ,
+
 			  COUNT => sub { $action = ''; } ,
+
 			  LOG => sub { fatal_error 'LOG requires a log level' unless supplied $loglevel; } ,
 		     );
 

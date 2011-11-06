@@ -616,6 +616,16 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/blacklist ]; then
     echo "Blacklist file installed as ${DESTDIR}/etc/shorewall/blacklist"
 fi
 #
+# Install the blacklist rules file
+#
+run_install $OWNERSHIP -m 0644 configfiles/blrules           ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 configfiles/blrules.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/blrules ]; then
+    run_install $OWNERSHIP -m 0600 configfiles/blrules${suffix} ${DESTDIR}/etc/shorewall/blrules
+    echo "Blacklist rules file installed as ${DESTDIR}/etc/shorewall/blrules"
+fi
+#
 # Install the findgw file
 #
 run_install $OWNERSHIP -m 0644 configfiles/findgw ${DESTDIR}/usr/share/shorewall/configfiles

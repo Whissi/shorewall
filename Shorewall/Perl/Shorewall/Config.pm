@@ -569,6 +569,7 @@ sub initialize( $ ) {
 	  COMPLETE => undef,
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
+	  BLACKLISTSECTION => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -3693,6 +3694,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'COMPLETE'                   , '';
     default_yes_no 'EXPORTMODULES'              , '';
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
+    default_yes_no 'BLACKLISTSECTION'           , 'Yes';
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

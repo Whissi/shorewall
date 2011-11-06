@@ -1741,7 +1741,13 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     #
     # We can now dispense with the postfix character
     #
-    fatal_error "The +, - and ! modifiers are not allowed in the BLACKLIST section" if $action =~ s/[\+\-!]$// && $blacklist;
+    if ( $action =~ s/[\+\-!]$// && $blacklist ) {
+	if ( $config{BLACKLISTSECTION} ) {
+	    fatal_error "The +, - and ! modifiers are not allowed in the BLACKLIST section";
+	} else {
+	    fatal_error "The +, - and ! modifiers are not allowed in the blrules file";
+	}
+    }
     #
     # Handle actions
     #
@@ -1789,7 +1795,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 
 	$bt =~ s/[-+!]$//;
 
-	my %functions = ( REDIRECT => sub () {
+	my %functions = (ACCEPT => sub() { $action = 'RETURN' if $blacklist; } ,
+			 REDIRECT => sub () {
 			      my $z = $actiontype & NATONLY ? '' : firewall_zone;
 			      if ( $dest eq '-' ) {
 				  $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
@@ -1801,8 +1808,16 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 			  } ,
 			  REJECT => sub { $action = 'reject'; } ,
 			  CONTINUE => sub { $action = 'RETURN'; } ,
-			  WHITELIST => sub { fatal_error "'WHITELIST' may only be used in the 'BLACKLIST' section" unless $blacklist;
-					     $action = 'RETURN'; } ,
+			  WHITELIST => sub { 
+			      unless ( $blacklist ) { 
+				  if ( $config{BLACKLISTSECTION} ) {
+				      fatal_error "'WHITELIST' may only be used in the 'BLACKLIST' section";
+				  } else {
+				      fatal_error "'WHITELIST' may only be used in the blrules file";
+				  }
+			      }
+			      
+			      $action = 'RETURN'; } ,
 			  COUNT => sub { $action = ''; } ,
 			  LOG => sub { fatal_error 'LOG requires a log level' unless supplied $loglevel; } ,
 		     );
@@ -2276,7 +2291,9 @@ sub process_section ($) {
     fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};
     $sections{$sect} = 1;
 
-    if ( $sect eq 'ALL' ) {
+    if ( $sect eq 'BLACKLIST' ) {
+	fatal_error "A BLACKLIST section is not allowed when BLACKLISTSECTION=No" unless $config{BLACKLISTSECTION};
+    } elsif ( $sect eq 'ALL' ) {
 	$sections{BLACKLIST} = 1;
     } elsif ( $sect eq 'ESTABLISHED' ) {
 	$sections{'BLACKLIST','ALL'} = ( 1, 1);
@@ -2432,6 +2449,20 @@ sub process_rule ( ) {
 # Process the Rules File
 #
 sub process_rules() {
+
+    unless ( $config{BLACKLISTSECTION} ) {
+	my $fn = open_file 'blrules';
+
+	if ( $fn ) {
+	    first_entry "$doing $fn...";
+	
+	    $section = 'BLACKLIST';
+
+	    process_rule while read_a_line;
+	    
+	    $section = '';
+	}
+    }
 
     my $fn = open_file 'rules';
 

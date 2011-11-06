@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-blrules</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>blrules</refname>
+
+    <refpurpose>shorewall Blacklist file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall6/blrules</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file is used to perform blacklisting and whitelisting when
+    BLACKLISTSECTION=No in <ulink
+    url="shorewall.conf.html">shorewall.conf</ulink>(5)l.</para>
+
+    <para>Rules in this file are applied depending on the setting of
+    BLACKLISTNEWONLY in <ulink
+    url="shorewall.conf.html">shorewall.conf</ulink>(5). If
+    BLACKLISTNEWONLY=No, then they are applied regardless of the connection
+    tracking state of the packet. If BLACKLISTNEWONLY=Yes, they are applied to
+    connections in the NEW and INVALID states.</para>
+
+    <para>The format of rules in this file is the same as the format of rules
+    in <ulink url="shorewall-rules.html">shorewall-rules (5)</ulink>. The
+    differece in the two files lies in the ACTION (first) column.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">ACTION- {<emphasis
+        role="bold">ACCEPT</emphasis>|CONTINUE|DROP|A_DROP|REJECT|A_REJECT|<emphasis
+        role="bold">WHITELIES</emphasis>|<emphasis
+        role="bold">LOG</emphasis>|<emphasis
+        role="bold">QUEUE</emphasis>|<emphasis
+        role="bold">NFQUEUE</emphasis>[<emphasis
+        role="bold">(</emphasis><emphasis>queuenumber</emphasis><emphasis
+        role="bold">)</emphasis>]<emphasis
+        role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
+        role="bold">(</emphasis><emphasis>target</emphasis><emphasis
+        role="bold">)</emphasis>]}<emphasis
+        role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
+        role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
+        role="bold">!</emphasis></emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>tag</emphasis>]]</emphasis></term>
+
+        <listitem>
+          <para>Specifies the action to be taken if the packet matches the
+          rule. Must be one of the following.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold">ACCEPT|CONTINUE|WHITELIST</emphasis></term>
+
+              <listitem>
+                <para>Exempt the packet from the remaining rules in this
+                file.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">DROP</emphasis></term>
+
+              <listitem>
+                <para>Ignore the packet.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>A_DROP and A_DROP!</term>
+
+              <listitem>
+                <para>Audited versions of DROP. Requires AUDIT_TARGET support
+                in the kernel and ip6tables.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">REJECT</emphasis></term>
+
+              <listitem>
+                <para>disallow the packet and return an icmp-unreachable or an
+                RST packet.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>A_REJECT</term>
+
+              <listitem>
+                <para>Audited versions of REJECT. Require AUDIT_TARGET support
+                in the kernel and ip6tables.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">LOG</emphasis></term>
+
+              <listitem>
+                <para>Simply log the packet and continue with the next
+                rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">QUEUE</emphasis></term>
+
+              <listitem>
+                <para>Queue the packet to a user-space application such as
+                ftwall (http://p2pwall.sf.net). The application may reinsert
+                the packet for further processing.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">NFLOG</emphasis>[(<replaceable>nflog-parameters</replaceable>)]</term>
+
+              <listitem>
+                <para>queues matching packets to a backend logging daemon via
+                a netlink socket then continues to the next rule. See <ulink
+                url="http://www.shorewall.net/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">NFQUEUE</emphasis></term>
+
+              <listitem>
+                <para>Queues the packet to a user-space application using the
+                nfnetlink_queue mechanism. If a
+                <replaceable>queuenumber</replaceable> is not specified, queue
+                zero (0) is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">COMMENT</emphasis></term>
+
+              <listitem>
+                <para>the rest of the line will be attached as a comment to
+                the Netfilter rule(s) generated by the following entries. The
+                comment will appear delimited by "/* ... */" in the output of
+                "shorewall6 show &lt;chain&gt;". To stop the comment from
+                being attached to further rules, simply include COMMENT on a
+                line by itself.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>action</emphasis></term>
+
+              <listitem>
+                <para>The name of an <emphasis>action</emphasis> declared in
+                <ulink
+                url="shorewall-actions.html">shorewall-actions</ulink>(5) or
+                in /usr/share/shorewall6/actions.std.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>macro</emphasis></term>
+
+              <listitem>
+                <para>The name of a macro defined in a file named
+                macro.<emphasis>macro</emphasis>. If the macro accepts an
+                action parameter (Look at the macro source to see if it has
+                PARAM in the TARGET column) then the
+                <emphasis>macro</emphasis> name is followed by the
+                parenthesized <emphasis>target</emphasis> (<emphasis
+                role="bold">ACCEPT</emphasis>, <emphasis
+                role="bold">DROP</emphasis>, <emphasis
+                role="bold">REJECT</emphasis>, ...) to be substituted for the
+                parameter.</para>
+
+                <para>Example: FTP(ACCEPT).</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>The <emphasis role="bold">ACTION</emphasis> may optionally be
+          followed by ":" and a syslog log level (e.g, REJECT:info or
+          Web(ACCEPT):debug). This causes the packet to be logged at the
+          specified level.</para>
+
+          <para>If the <emphasis role="bold">ACTION</emphasis> names an
+          <emphasis>action</emphasis> declared in <ulink
+          url="shorewall-actions.html">shorewall-actions</ulink>(5) or in
+          /usr/share/shorewall6/actions.std then:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>If the log level is followed by "!' then all rules in the
+              action are logged at the log level.</para>
+            </listitem>
+
+            <listitem>
+              <para>If the log level is not followed by "!" then only those
+              rules in the action that do not specify logging are logged at
+              the specified level.</para>
+            </listitem>
+
+            <listitem>
+              <para>The special log level <emphasis
+              role="bold">none!</emphasis> suppresses logging by the
+              action.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>You may also specify <emphasis role="bold">NFLOG</emphasis>
+          (must be in upper case) as a log level.This will log to the NFLOG
+          target for routing to a separate log through use of ulogd (<ulink
+          url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
+
+          <para>Actions specifying logging may be followed by a log tag (a
+          string of alphanumeric characters) which is appended to the string
+          generated by the LOGPREFIX (in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>For the remaining columns, see <ulink
+    url="shorewall6-rules.html">shorewall6-rules (5)</ulink>.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Example</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example 1:</term>
+
+        <listitem>
+          <para>Disallow SMTP from the local zone to the net zone.</para>
+
+          <programlisting>DROP          loc            net         tcp         25</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 2:</term>
+
+        <listitem>
+          <para>Don't subject packets from 192.0.2.0/24 to the remaining rules
+          in the file.</para>
+
+          <programlisting>WHITELIST     net:192.0.2.0/24        all</programlisting>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/blrules</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para><ulink
+    url="http://shorewall.net/blacklisting_support.htm">http://shorewall.net/blacklisting_support.htm</ulink></para>
+
+    <para><ulink
+    url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-hosts(5), shorewall-interfaces(5), shorewall-maclist(5),
+    shoewall6-netmap(5),shorewall-params(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

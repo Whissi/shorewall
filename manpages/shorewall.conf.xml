@@ -331,7 +331,7 @@
           respectively and were added in Shorewall 4.4.20. They require
           AUDIT_TARGET in the kernel and iptables.</para>
 
-          <para> The BLACKLIST_DISPOSITION setting has no effect on entries in
+          <para>The BLACKLIST_DISPOSITION setting has no effect on entries in
           the BLACKLIST section of <ulink
           url="shorewall-rules.html">shorewall-rules</ulink> (5).</para>
         </listitem>
@@ -361,8 +361,8 @@
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, blacklists are only consulted for new
           connections. That includes entries in the BLACKLIST section of
-          <ulink url="shorewall-rules.html">shorewall-rules</ulink> (5).
-          </para>
+          <ulink url="shorewall-rules.html">shorewall-rules</ulink>
+          (5).</para>
 
           <para>When set to <emphasis role="bold">No</emphasis> or <emphasis
           role="bold">no</emphasis>, blacklists are consulted for every packet
@@ -374,6 +374,19 @@
             <para>BLACKLISTNEWONLY=No is incompatible with
             FASTACCEPT=Yes.</para>
           </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">BLACKLISTSECTION=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. When omitted or set to Yes,
+          zone-specific blacklisting rules are placed in the BLACKLIST section
+          of <ulink url="shorewall-rules.html">shorewall-rules</ulink> (5).
+          When set to No, zone-specific blacklisting rules are place in <ulink
+          url="shorewall-blrules.html">shorewall-blrules</ulink> (5).</para>
         </listitem>
       </varlistentry>
 

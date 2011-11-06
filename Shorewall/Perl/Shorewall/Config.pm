@@ -569,7 +569,6 @@ sub initialize( $ ) {
 	  COMPLETE => undef,
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
-	  BLACKLISTSECTION => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -1570,6 +1569,8 @@ sub copy1( $ ) {
 			fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
 
 			my $filename = find_file $line[1];
+
+			warning_message "Reserved filename ($1) in INCLUDE directive" if $filename =~ '/(.*)' && $config_files{$1};
 
 			fatal_error "INCLUDE file $filename not found" unless -f $filename;
 			fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
@@ -3694,7 +3695,6 @@ sub get_configuration( $$$ ) {
     default_yes_no 'COMPLETE'                   , '';
     default_yes_no 'EXPORTMODULES'              , '';
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
-    default_yes_no 'BLACKLISTSECTION'           , 'Yes';
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

@@ -50,13 +50,19 @@
         <term><emphasis role="bold">BLACKLIST</emphasis></term>
 
         <listitem>
-          <para>This section was added in Shorewall 4.4.25. Rules in this
-          section are applied depending on the setting of BLACKLISTNEWONLY in
-          <ulink url="shorewall.conf.html">shorewall.conf</ulink>(5). If
+          <para>This section was added in Shorewall 4.4.25.</para>
+
+          <para>Rules in this section are applied depending on the setting of
+          BLACKLISTNEWONLY in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5). If
           BLACKLISTNEWONLY=No, then they are applied regardless of the
           connection tracking state of the packet. If BLACKLISTNEWONLY=Yes,
           they are applied to connections in the NEW and INVALID
           states.</para>
+
+          <para>When there are rules in this sectionas well as in
+          shorewall-blrules (5), those in this section are processed
+          last.</para>
         </listitem>
       </varlistentry>
 

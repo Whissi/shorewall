@@ -43,9 +43,7 @@
         <term><emphasis role="bold">BLACKLIST</emphasis></term>
 
         <listitem>
-          <para>This section was added in Shorewall 4.4.25 and is only
-          permitted when BLACKLISTSECTION=Yes in <ulink
-          url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+          <para>This section was added in Shorewall 4.4.25.</para>
 
           <para>Rules in this section are applied depending on the setting of
           BLACKLISTNEWONLY in <ulink
@@ -54,6 +52,10 @@
           connection tracking state of the packet. If BLACKLISTNEWONLY=Yes,
           they are applied to connections in the NEW and INVALID
           states.</para>
+
+          <para>When there are rules in this sectionas well as in
+          shorewall-blrules (5), those in this section are processed
+          last.</para>
         </listitem>
       </varlistentry>
 

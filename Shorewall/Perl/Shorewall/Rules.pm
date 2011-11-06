@@ -1741,13 +1741,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     #
     # We can now dispense with the postfix character
     #
-    if ( $action =~ s/[\+\-!]$// && $blacklist ) {
-	if ( $config{BLACKLISTSECTION} ) {
-	    fatal_error "The +, - and ! modifiers are not allowed in the BLACKLIST section";
-	} else {
-	    fatal_error "The +, - and ! modifiers are not allowed in the blrules file";
-	}
-    }
+    fatal_error "The +, - and ! modifiers are not allowed in the bllist file or in the BLACKLIST section" if $action =~ s/[\+\-!]$// && $blacklist;
     #
     # Handle actions
     #
@@ -1813,14 +1807,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 			  CONTINUE => sub { $action = 'RETURN'; } ,
 
 			  WHITELIST => sub { 
-			      unless ( $blacklist ) { 
-				  if ( $config{BLACKLISTSECTION} ) {
-				      fatal_error "'WHITELIST' may only be used in the 'BLACKLIST' section";
-				  } else {
-				      fatal_error "'WHITELIST' may only be used in the blrules file";
-				  }
-			      }
-			      
+			      fatal_error "'WHITELIST' may only be used in the blrules file and in the 'BLACKLIST' section" unless $blacklist; 
 			      $action = 'RETURN';
 			  } ,
 
@@ -2298,9 +2285,7 @@ sub process_section ($) {
     fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};
     $sections{$sect} = 1;
 
-    if ( $sect eq 'BLACKLIST' ) {
-	fatal_error "A BLACKLIST section is not allowed when BLACKLISTSECTION=No" unless $config{BLACKLISTSECTION};
-    } elsif ( $sect eq 'ALL' ) {
+    if ( $sect eq 'ALL' ) {
 	$sections{BLACKLIST} = 1;
     } elsif ( $sect eq 'ESTABLISHED' ) {
 	$sections{'BLACKLIST','ALL'} = ( 1, 1);
@@ -2457,21 +2442,19 @@ sub process_rule ( ) {
 #
 sub process_rules() {
 
-    unless ( $config{BLACKLISTSECTION} ) {
-	my $fn = open_file 'blrules';
+    my $fn = open_file 'blrules';
 
-	if ( $fn ) {
-	    first_entry "$doing $fn...";
+    if ( $fn ) {
+	first_entry "$doing $fn...";
 	
-	    $section = 'BLACKLIST';
+	$section = 'BLACKLIST';
 
-	    process_rule while read_a_line;
+	process_rule while read_a_line;
 	    
-	    $section = '';
-	}
+	$section = '';
     }
 
-    my $fn = open_file 'rules';
+    $fn = open_file 'rules';
 
     if ( $fn ) {
 

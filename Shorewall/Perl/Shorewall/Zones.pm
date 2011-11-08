@@ -177,6 +177,7 @@ my %physical;
 my %basemap;
 my %mapbase;
 my $family;
+my $upgrade;
 my $have_ipsec;
 my $baseseq;
 my $minroot;
@@ -221,8 +222,8 @@ my %validhostoptions;
 #   2. The compiler can run multiple times in the same process so it has to be
 #      able to re-initialize its dependent modules' state.
 #
-sub initialize( $ ) {
-    $family = shift;
+sub initialize( $$ ) {
+    ( $family , $upgrade ) = @_;
     @zones = ();
     %zones = ();
     $firewall_zone = '';

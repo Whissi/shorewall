@@ -348,6 +348,239 @@ sub setup_blacklist() {
     }
 }
 
+#
+# Remove instances of 'blacklist' from the passed file. 
+#
+sub remove_blacklist( $ ) {
+    my $file = shift;
+
+    my $fn = find_file $file;
+
+    assert( -f $fn );
+
+    my $oldfile = open_file $fn;
+    my $newfile;
+    my $changed;
+	
+    open $newfile, '>', "$fn.new" or fatal_error "Unable to open $fn.new for output: $!";
+
+    while ( read_a_line(1,1,0) ) {
+	my ( $rule, $comment ) = split '#', $currentline, 2;
+
+	if ( $rule =~ /blacklist/ ) {
+	    $changed = 1;
+
+	    if ( $comment ) {
+		$comment =~ s/^/          / while $rule =~ s/blacklist,//;
+		$rule =~ s/blacklist/         /g;
+		$currentline = join( '#', $rule, $comment );
+	    } else {
+		$currentline =~ s/blacklist/         /g;
+	    }	    
+	}
+   
+	print $newfile "$currentline\n";
+    }
+	
+    close $newfile;
+
+    if ( $changed ) {
+	rename $fn, "$fn.bak" or fatal_error "Unable to rename $fn to $fn.bak: $!";
+	rename "$fn.new", $fn or fatal_error "Unable to rename $fn.new to $fn: $!";
+	progress_message2 "\u$file file $fn saved in $fn.bak"
+    }
+}
+
+#
+# Convert a pre-4.4.25 blacklist to a 4.4.25 blacklist
+#
+sub convert_blacklist() {
+    my $zones  = find_zones_by_option 'blacklist', 'in';
+    my $zones1 = find_zones_by_option 'blacklist', 'out';
+    my $chainref;
+    my $chainref1;
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my $audit       = $disposition =~ /^A_/;
+    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my $orig_target = $target;
+    my @rules;
+    
+    if ( @$zones || @$zones1 ) {
+	if ( supplied $level ) {
+	    my $logchainref = new_standard_chain 'blacklog';
+
+	    $target =~ s/A_//;
+	    $target = 'reject' if $target eq 'REJECT';
+
+	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+
+	    add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
+	    add_ijump( $logchainref, g => $target );
+
+	    $target = 'blacklog';
+	} elsif ( $audit ) {
+	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
+	    $target = verify_audit( $disposition );
+	}
+
+	my $fn = open_file 'blacklist';
+
+	assert $fn;
+
+	first_entry "Converting $fn...";
+
+	while ( read_a_line ) {
+	    my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
+
+	    if ( $options eq '-' ) {
+		$options = 'src';
+	    } elsif ( $options eq 'audit' ) {
+		$options = 'audit,src';
+	    }
+
+	    my ( $to, $from, $whitelist, $auditone ) = ( 0, 0, 0, 0 );
+
+	    my @options = split_list $options, 'option';
+
+	    for ( @options ) {
+		$whitelist++ if $_ eq 'whitelist';
+		$auditone++  if $_ eq 'audit'; 
+	    }
+
+	    warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
+
+	    my $tgt = $whitelist ? 'RETURN' : $target;
+
+	    if ( $auditone ) {
+		fatal_error "'audit' not allowed in whitelist entries" if $whitelist;
+
+		if ( $audit ) {
+		    warning_message "Superfluous 'audit' option ignored";
+		} else {
+		    warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
+		}
+
+		$tgt = verify_audit( 'A_' . $target, $orig_target, $target );
+	    }
+
+	    for ( @options ) {
+		if ( $_ =~ /^(?:src|from)$/ ) {
+		    if ( $from++ ) {
+			warning_message "Duplicate 'src' ignored";
+		    } else {
+			if ( @$zones ) {
+			    push @rules, [ 'src', $tgt, $networks, $protocol, $ports ];
+			} else {
+			    warning_message '"src" entry ignored because there are no "blacklist in" zones';
+			}
+		    }
+		} elsif ( $_ =~ /^(?:dst|to)$/ ) {
+		    if ( $to++ ) {
+			warning_message "Duplicate 'dst' ignored";
+		    } else {
+			if ( @$zones1 ) {
+			    push @rules, [ 'dst', $tgt, $networks, $protocol, $ports ];
+			} else {
+			    warning_message '"dst" entry ignored because there are no "blacklist out" zones';
+			}
+		    }
+		} else {
+		    fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist' || $_ eq 'audit';
+		}
+	    }
+	}
+
+	if ( @rules ) {
+	    my $fn1 = find_file( 'blrules' );
+	    my $blrules;
+	    my $date = localtime;
+
+	    if ( -f $fn1 ) {
+		open $blrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
+	    } else {
+		open $blrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
+		print $blrules <<'EOF';
+#
+# Shorewall version 5 - Blacklist Rules File
+#
+# For information about entries in this file, type "man shorewall-blrules"
+#
+# Please see http://shorewall.net/blacklisting_support.htm for additional
+# information.
+#
+###################################################################################################################################################################################################
+#ACTION		SOURCE		        DEST		        PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH
+#							                PORT	PORT(S)		DEST		LIMIT		GROUP
+EOF
+	    }
+
+	    print( $blrules 
+		   "#\n" ,
+		   "# Rules generated from blacklist file $fn by Shorewall $globals{VERSION} - $date\n" ,
+		   "#\n" );
+
+	    for ( @rules ) {
+		my ( $srcdst, $tgt, $networks, $protocols, $ports ) = @$_;
+
+		if ( $level ) {
+		    $tgt .= ":$level\t";
+		} else {
+		    $tgt .= "\t\t";
+		}
+
+		my $list = $srcdst eq 'src' ? $zones : $zones1;
+
+		for my $zone ( @$list ) {
+		    my $rule = $tgt;
+
+		    if ( $srcdst eq 'src' ) {
+			if ( $networks ne '-' ) {
+			    $rule .= "$zone:$networks\tall\t\t";
+			} else {
+			    $rule .= "$zone\t\t\tall\t\t";
+			}
+		    } else {
+			if ( $networks ne '-' ) {
+			    $rule .= "all\t\t\t$zone:$networks\t";
+			} else {
+			    $rule .= "all\t\t\t$zone\t\t\t";
+			}
+		    }
+		
+		    $rule .= "\t$protocols" if $protocols ne '-';
+		    $rule .= "\t$ports"     if $ports     ne '-';
+		
+		    print $blrules "$rule\n";
+		}
+	    }
+
+	    close $blrules;
+	} else {
+	    warning_message q(There are interfaces or zones with the 'blacklist' option but the 'blacklist' file is empty) unless @rules;
+	}
+	
+	rename $fn, "$fn.bak";
+
+	progress_message2 "Blacklist file $fn saved in $fn.bak";
+
+	for my $file ( qw(zones interfaces hosts) ) {
+	    remove_blacklist $file;
+	}
+
+	progress_message2 "Blacklist successfully converted";
+
+	return 1;	    
+    } else {
+	my $fn = find_file 'blacklist';
+	if ( -f $fn ) {
+	    rename $fn, "$fn.bak" or fatal_error "Unable to rename $fn to $fn.bak: $!";
+	    warning_message "No zones have the blacklist option - the blacklist file was saved in $fn.bak";
+	}
+
+	return 0;
+    }
+}
+
 sub process_routestopped() {
 
     if ( my $fn = open_file 'routestopped' ) {
@@ -473,7 +706,8 @@ sub process_routestopped() {
 
 sub setup_mss();
 
-sub add_common_rules() {
+sub add_common_rules ( $ ) {
+    my $upgrade = shift;
     my $interface;
     my $chainref;
     my $target;
@@ -594,7 +828,11 @@ sub add_common_rules() {
 
     run_user_exit1 'initdone';
 
-    setup_blacklist;
+    if ( $upgrade ) {
+	exit 0 unless convert_blacklist;
+    } else {
+	setup_blacklist;
+    }
 
     $list = find_hosts_by_option 'nosmurfs';
 

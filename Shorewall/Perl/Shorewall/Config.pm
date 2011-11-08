@@ -1268,7 +1268,7 @@ sub set_debug( $$ ) {
 #
 sub find_file($)
 {
-    my $filename=$_[0];
+    my ( $filename, $nosearch ) = @_;
 
     return $filename if $filename =~ '/';
 
@@ -1279,7 +1279,7 @@ sub find_file($)
 	return $file if -f $file;
     }
 
-    "$globals{CONFDIR}/$filename";
+    "$config_path[0]$filename";
 }
 
 sub split_list( $$ ) {
@@ -1949,9 +1949,10 @@ sub expand_variables( \$ ) {
 #   - Handle INCLUDE <filename>
 #
 
-sub read_a_line(;$$) {
+sub read_a_line(;$$$) {
     my $embedded_enabled = defined $_[0] ? shift : 1;
     my $expand_variables = defined $_[0] ? shift : 1;
+    my $strip_comments   = defined $_[0] ? shift : 1;
 
     while ( $currentfile ) {
 
@@ -1971,7 +1972,7 @@ sub read_a_line(;$$) {
 	    # If this isn't a continued line, remove trailing comments. Note that
 	    # the result may now end in '\'.
 	    #
-	    s/\s*#.*$// unless /\\$/;
+	    s/\s*#.*$// if $strip_comments && ! /\\$/;
 	    #
 	    # Continuation
 	    #
@@ -1979,7 +1980,7 @@ sub read_a_line(;$$) {
 	    #
 	    # Now remove concatinated comments
 	    #
-	    $currentline =~ s/#.*$//;
+	    $currentline =~ s/#.*$// if $strip_comments;
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
@@ -3126,7 +3127,7 @@ EOF
 		progress_message3 "No update required to configuration file $configfile; $configfile.b";
 	    }
 
-	    exit 0;
+	    exit 0 unless -f find_file 'blacklist';
 	}
     } else {
 	fatal_error "$fn does not exist";

@@ -529,11 +529,9 @@
 
       <arg choice="plain"><option>update</option></arg>
 
-      <arg><option>-e</option></arg>
+      <arg><option>-b</option></arg>
 
       <arg><option>-d</option></arg>
-
-      <arg><option>-p</option></arg>
 
       <arg><option>-r</option></arg>
 
@@ -1373,6 +1371,17 @@
           <filename>shorewall6.conf</filename> file to be annotated with
           documentation.</para>
 
+          <para>The <option>-b</option> option was added in Shorewall 4.4.26
+          and causes legacy blacklisting rules (<ulink
+          url="shorewall6-blacklist.html">shorewall6-blacklist</ulink> (5) )
+          to be converted to entries in the blrules file (<ulink
+          url="shorewall6-blrules.html">shorewall6-blrules</ulink> (5) ). The
+          blacklist keyword is removed from <ulink
+          url="shorewall6-zones.html">shorewall6-zones</ulink> (5), <ulink
+          url="shorewall6-interfaces.html">shorewall-interfaces</ulink> (5)
+          and <ulink url="shorewall6-hosts.html">shorewall6-hosts</ulink> (5).
+          The unmodified files are saved with a .bak suffix.</para>
+
           <para>For a description of the other options, see the <emphasis
           role="bold">check</emphasis> command above.</para>
         </listitem>
@@ -1404,8 +1413,8 @@
 
     <para>shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-route_rules(5),
     shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
     shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
     shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),

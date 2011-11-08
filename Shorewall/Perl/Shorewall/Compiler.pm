@@ -54,10 +54,10 @@ my $family;
 #
 # Initilize the package-globals in the other modules
 #
-sub initialize_package_globals() {
+sub initialize_package_globals( $ ) {
     Shorewall::Config::initialize($family);
     Shorewall::Chains::initialize ($family, 1, $export );
-    Shorewall::Zones::initialize ($family);
+    Shorewall::Zones::initialize ($family, shift);
     Shorewall::Nat::initialize;
     Shorewall::Providers::initialize($family);
     Shorewall::Tc::initialize($family);
@@ -525,8 +525,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0 );
 
     $export = 0;
     $test   = 0;
@@ -561,6 +561,7 @@ sub compiler {
 		  preview       => { store => \$preview,       validate=> \&validate_boolean    } ,    
 		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
 		  update        => { store => \$update,        validate=> \&validate_boolean    } ,
+		  convert       => { store => \$convert,       validate=> \&validate_boolean    } ,
 		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,		  
 		);
     #
@@ -579,7 +580,7 @@ sub compiler {
     #
     # Now that we know the address family (IPv4/IPv6), we can initialize the other modules' globals
     #
-    initialize_package_globals;
+    initialize_package_globals( $update );
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;
@@ -673,7 +674,7 @@ sub compiler {
     #
     # Do all of the zone-independent stuff (mostly /proc)
     #
-    add_common_rules;
+    add_common_rules( $convert );
     #
     # More /proc
     #

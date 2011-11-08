@@ -398,6 +398,7 @@ compiler() {
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     [ -n "$g_confess" ] && options="$options --confess"
     [ -n "$g_update" ] && options="$options --update"
+    [ -n "$g_convert" ] && options="$options --convert"
     [ -n "$g_annotate" ] && options="$options --annotate"
     [ -x $pc ] || startup_error "Shorewall6 requires the shorewall package which is not installed"
 
@@ -725,6 +726,92 @@ check_command() {
     esac
 
     progress_message3 "Checking..."
+
+    compiler $g_debugging $nolock check
+}
+
+#
+# Update Command Executor
+#
+update_command() {
+    local finished
+    finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			e*)
+			    g_export=Yes
+			    option=${option#e}
+			    ;;
+			p*)
+			    g_profile=Yes
+			    option=${option#p}
+			    ;;
+			d*)
+			    g_debug=Yes;
+			    option=${option#d}
+			    ;;
+			r*)
+			    g_preview=Yes
+			    option=${option#r}
+			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
+			    ;;
+			a*)
+			    g_annotate=Yes
+			    option=${option#a}
+			    ;;
+			b*)
+			    g_convert=Yes
+			    option=${option#b}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$(resolve_file $1)
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    progress_message3 "Updating..."
 
     compiler $g_debugging $nolock check
 }
@@ -1428,6 +1515,8 @@ usage() # $1 = exit status
     echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ][ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
+    echo "   safe-restart [ <directory> ]"
+    echo "   safe-start [ <directory> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   show actions"
@@ -1447,13 +1536,11 @@ usage() # $1 = exit status
     echo "   show vardir"
     echo "   show zones"
     echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ <directory> ]"
-    echo "   stop"
     echo "   status"
+    echo "   stop"
     echo "   try <directory> [ <timeout> ]"
+    echo "   update [ -b ] [ -r ] [ -T ] [ <directory> ]"
     echo "   version [ -a ]"
-    echo "   safe-start [ <directory> ]"
-    echo "   safe-restart [ <directory> ]"
-    echo "   update [ -e ] [ -d ] [ -p ] [ -r ] [ -T ] [ -a ] [ <directory> ]"
     echo
     exit $1
 }
@@ -1537,6 +1624,7 @@ g_export=
 g_refreshchains=:none:
 g_confess=
 g_update=
+g_convert=
 g_annotate=
 
 #
@@ -1747,8 +1835,7 @@ case "$COMMAND" in
     update)
 	get_config Yes
 	shift
-	g_update=Yes
-	check_command $@
+	update_command $@
 	;;
     show|list)
 	get_config Yes No Yes

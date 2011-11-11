@@ -1469,7 +1469,7 @@ sub add_interface_jumps {
 	    add_ijump ( $filter_table->{FORWARD}, j => 'ACCEPT', imatch_source_dev( $interface) , imatch_dest_dev( $interface) ) unless $interfaceref->{nets} || ! $interfaceref->{options}{bridge};
 
 	    add_ijump( $filter_table->{FORWARD} , j => $forwardref , imatch_source_dev( $interface ) ) unless $forward_jump_added{$interface}++ || ! use_forward_chain $interface, $forwardref;
-	    add_ijump( $filter_table->{INPUT}   , j => $inputref ,   imatch_source_dev( $interface ) ) unless $input_jump_added{$interface} ++  || ! use_input_chain $interface, $inputref;
+	    add_ijump( $filter_table->{INPUT}   , j => $inputref ,   imatch_source_dev( $interface ) ) unless $input_jump_added{$interface}++   || ! use_input_chain $interface, $inputref;
 
 	    unless ( $output_jump_added{$interface}++ || ! use_output_chain $interface, $outputref ) {
 		add_ijump $filter_table->{OUTPUT} , j => $outputref , imatch_dest_dev( $interface ) unless get_interface_option( $interface, 'port' );

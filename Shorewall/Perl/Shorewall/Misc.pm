@@ -397,8 +397,6 @@ sub remove_blacklist( $ ) {
 sub convert_blacklist() {
     my $zones  = find_zones_by_option 'blacklist', 'in';
     my $zones1 = find_zones_by_option 'blacklist', 'out';
-    my $chainref;
-    my $chainref1;
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
     my $audit       = $disposition =~ /^A_/;
     my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;

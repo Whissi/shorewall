@@ -268,6 +268,8 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 TIME_MATCH      => 'Time Match',
 		 GOTO_TARGET     => 'Goto Support',
 		 LOG_TARGET      => 'LOG Target',
+		 ULOG_TARGET     => 'ULOG Target',
+		 NFLOG_TARGET    => 'NFLOG Target',
 		 LOGMARK_TARGET  => 'LOGMARK Target',
 		 IPMARK_TARGET   => 'IPMARK Target',
 		 PERSISTENT_SNAT => 'Persistent SNAT',
@@ -656,6 +658,8 @@ sub initialize( $ ) {
 	       TIME_MATCH => undef,
 	       GOTO_TARGET => undef,
 	       LOG_TARGET => 1,         # Assume that we have it.
+	       ULOG_TARGET => undef,
+	       NFLOG_TARGET => undef,
 	       LOGMARK_TARGET => undef,
 	       IPMARK_TARGET => undef,
 	       TPROXY_TARGET => undef,
@@ -2139,66 +2143,79 @@ sub validate_level( $ ) {
     my $level    = uc $rawlevel;
 
     if ( supplied ( $level ) ) {
-	$level =~ s/!$//;
-	my $value = $validlevels{$level};
+	my $value = $level;
+	my $qualifier;
 
-	if ( defined $value ) {
-	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' ) unless $value eq '';
+	$value =~ s/^!//;
+
+	unless ( $value =~ /^[0-7]$/ ) {
+	    level_error( $level ) unless $level =~ /^!?([A-Za-z0-7]+)(.*)$/ && defined( $value = $validlevels{$1} );
+	    $qualifier = $2;
+	}
+
+	if ( $value =~ /^[0-7]$/ ) {
+	    #
+	    # Syslog Level
+	    #
+	    level_error( $rawlevel ) if supplied $qualifier;
+
+	    require_capability ( 'LOG_TARGET' , "Log level $level", 's' ) unless $value eq '';
 	    return $value;
 	}
 
-	if ( $level =~ /^[0-7]$/ ) {
-	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
-	    return $level;
-	}
+	return '' unless $value;
 
-	if ( $level =~ /^(NFLOG|ULOG)[(](.*)[)]$/ ) {
-	    my $olevel  = $1;
-	    my @options = split /,/, $2;
-	    my $prefix  = lc $olevel;
-	    my $index   = $prefix eq 'ulog' ? 3 : 0;
+	require_capability( "${value}_TARGET", "Log level $level", 's' );
 
-	    level_error( $level ) if @options > 3;
+	if ( $value =~ /^(NFLOG|ULOG)$/ ) {
+	    my $olevel  = $value;
 
-	    for ( @options ) {
-		if ( supplied( $_ ) ) {
-		    level_error( $level ) unless /^\d+/;
-		    $olevel .= " --${prefix}-$suffixes[$index] $_";
+	    if ( $qualifier =~ /^[(](.*)[)]$/ ) {
+		my @options = split /,/, $1;
+		my $prefix  = lc $olevel;
+		my $index   = $prefix eq 'ulog' ? 3 : 0;
+
+		level_error( $rawlevel ) if @options > 3;
+
+		for ( @options ) {
+		    if ( supplied( $_ ) ) {
+			level_error( $rawlevel ) unless /^\d+/;
+			$olevel .= " --${prefix}-$suffixes[$index] $_";
+		    }
+
+		    $index++;
 		}
 
-		$index++;
+	    } elsif ( $qualifier =~ /^ --/ ) {
+		return $rawlevel;
 	    }
 
-	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
 	    return $olevel;
 	}
 
-	if ( $level =~ /^NFLOG --/ or $level =~ /^ULOG --/ ) {
-	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
+	#
+	# Must be LOGMARK
+	#
+	if ( $qualifier =~ /^ --/ ) {
 	    return $rawlevel;
 	}
 
-	if ( $level =~ /^LOGMARK --/ ) {
-	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
-	    return $rawlevel;
-	}
+	my $sublevel;
 
-	if ( $level =~ /LOGMARK([(](.+)[)])?$/ ) {
-	    my $sublevel = $2;
+	if ( supplied $qualifier ) {
+	    if ( $qualifier =~ /[(](.+)[)]?$/ ) {
+		$sublevel = $1;
 
-	    if ( $1 ) {	    
 		$sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;
-		level_error( $level ) unless defined $sublevel && $sublevel  =~ /^[0-7]$/;
+		level_error( $rawlevel ) unless defined $sublevel && $sublevel  =~ /^[0-7]$/;
 	    } else {
-		$sublevel = 6; # info
+		level_error( $rawlevel );
 	    }
-	    
-	    require_capability ( 'LOG_TARGET' , 'A log level other than NONE', 's' );
-	    require_capability( 'LOGMARK_TARGET' , 'LOGMARK', 's' );
-	    return "LOGMARK --log-level $sublevel";
+	} else {
+	    $sublevel = 6; # info
 	}
 
-	level_error( $rawlevel );
+	return "LOGMARK --log-level $sublevel";
     }
 
     '';
@@ -2672,6 +2689,14 @@ sub Log_Target() {
     qt1( "$iptables -A $sillyname -j LOG" );
 }
 
+sub Ulog_Target() {
+    qt1( "$iptables -A $sillyname -j ULOG" );
+}
+
+sub NFLog_Target() {
+    qt1( "$iptables -A $sillyname -j NFLOG" );
+}
+
 sub Logmark_Target() {
     qt1( "$iptables -A $sillyname -j LOGMARK" );
 }
@@ -2747,6 +2772,8 @@ our %detect_capability =
       LENGTH_MATCH => \&Length_Match,
       LOGMARK_TARGET => \&Logmark_Target,
       LOG_TARGET => \&Log_Target,
+      ULOG_TARGET => \&Ulog_Target,
+      NFLOG_TARGET => \&NFLog_Target,
       MANGLE_ENABLED => \&Mangle_Enabled,
       MANGLE_FORWARD => \&Mangle_Forward,
       MARK => \&Mark,
@@ -2890,6 +2917,8 @@ sub determine_capabilities() {
 	$capabilities{TIME_MATCH}      = detect_capability( 'TIME_MATCH' );
 	$capabilities{GOTO_TARGET}     = detect_capability( 'GOTO_TARGET' );
 	$capabilities{LOG_TARGET}      = detect_capability( 'LOG_TARGET' );
+	$capabilities{ULOG_TARGET}     = detect_capability( 'ULOG_TARGET' );
+	$capabilities{NFLOG_TARGET}    = detect_capability( 'NFLOG_TARGET' );
 	$capabilities{LOGMARK_TARGET}  = detect_capability( 'LOGMARK_TARGET' );
 	$capabilities{FLOW_FILTER}     = detect_capability( 'FLOW_FILTER' );
 	$capabilities{FWMARK_RT_MASK}  = detect_capability( 'FWMARK_RT_MASK' );

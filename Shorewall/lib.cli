@@ -1729,6 +1729,8 @@ determine_capabilities() {
     LOGMARK_TARGET=
     IPMARK_TARGET=
     LOG_TARGET=Yes
+    ULOG_TARGET=
+    NFLOG_TARGET=
     PERSISTENT_SNAT=
     FLOW_FILTER=
     FWMARK_RT_MASK=
@@ -1886,6 +1888,8 @@ determine_capabilities() {
     qt $IPTABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
     qt $IPTABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
     qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
+    qt $IPTABLES -A $chain -j ULOG && ULOG_TARGET=Yes
+    qt $IPTABLES -A $chain -j NFLOG && NFLOG_TARGET=Yes
     qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
     qt $IPTABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
@@ -1977,6 +1981,8 @@ report_capabilities() {
 	report_capability "LOGMARK Target" $LOGMARK_TARGET
 	report_capability "IPMARK Target" $IPMARK_TARGET
 	report_capability "LOG Target" $LOG_TARGET
+	report_capability "ULOG Target" $ULOG_TARGET
+	report_capability "NFLOG Target" $NFLOG_TARGET
 	report_capability "Persistent SNAT" $PERSISTENT_SNAT
 	report_capability "TPROXY Target" $TPROXY_TARGET
 	report_capability "FLOW Classifier" $FLOW_FILTER
@@ -2050,6 +2056,8 @@ report_capabilities1() {
     report_capability1 LOGMARK_TARGET
     report_capability1 IPMARK_TARGET
     report_capability1 LOG_TARGET
+    report_capability1 ULOG_TARGET
+    report_capability1 NFLOG_TARGET
     report_capability1 PERSISTENT_SNAT
     report_capability1 TPROXY_TARGET
     report_capability1 FLOW_FILTER

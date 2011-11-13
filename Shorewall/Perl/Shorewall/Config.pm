@@ -2198,11 +2198,11 @@ sub validate_level( $ ) {
 	#
 	# Must be LOGMARK
 	#
-	return $rawlevel if $qualifier =~ /^ --/;
-
 	my $sublevel;
 
 	if ( supplied $qualifier ) {
+	    return $rawlevel if $qualifier =~ /^ --/;
+
 	    if ( $qualifier =~ /[(](.+)[)]?$/ ) {
 		$sublevel = $1;
 

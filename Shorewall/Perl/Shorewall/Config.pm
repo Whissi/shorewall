@@ -2159,7 +2159,7 @@ sub validate_level( $ ) {
 	    #
 	    level_error( $rawlevel ) if supplied $qualifier;
 
-	    require_capability ( 'LOG_TARGET' , "Log level $level", 's' ) unless $value eq '';
+	    require_capability ( 'LOG_TARGET' , "Log level $level", 's' );
 	    return $value;
 	}
 
@@ -2188,6 +2188,8 @@ sub validate_level( $ ) {
 
 	    } elsif ( $qualifier =~ /^ --/ ) {
 		return $rawlevel;
+	    } else {
+		level_error( $rawlevel ) if $qualifier;
 	    }
 
 	    return $olevel;
@@ -2196,9 +2198,7 @@ sub validate_level( $ ) {
 	#
 	# Must be LOGMARK
 	#
-	if ( $qualifier =~ /^ --/ ) {
-	    return $rawlevel;
-	}
+	return $rawlevel if $qualifier =~ /^ --/;
 
 	my $sublevel;
 

@@ -2143,13 +2143,12 @@ sub validate_level( $ ) {
     my $level    = uc $rawlevel;
 
     if ( supplied ( $level ) ) {
+	$level =~ s/!$//;
 	my $value = $level;
 	my $qualifier;
 
-	$value =~ s/^!//;
-
 	unless ( $value =~ /^[0-7]$/ ) {
-	    level_error( $level ) unless $level =~ /^!?([A-Za-z0-7]+)(.*)$/ && defined( $value = $validlevels{$1} );
+	    level_error( $level ) unless $level =~ /^([A-Za-z0-7]+)(.*)$/ && defined( $value = $validlevels{$1} );
 	    $qualifier = $2;
 	}
 

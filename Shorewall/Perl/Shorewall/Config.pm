@@ -608,6 +608,7 @@ sub initialize( $ ) {
 		     PANIC   => 0,
 		     NONE    => '',
 		     NFLOG   => 'NFLOG',
+		     LOGMARK => 'LOGMARK',
 		   );
 
     #
@@ -2202,7 +2203,7 @@ sub validate_level( $ ) {
 	if ( supplied $qualifier ) {
 	    return $rawlevel if $qualifier =~ /^ --/;
 
-	    if ( $qualifier =~ /[(](.+)[)]?$/ ) {
+	    if ( $qualifier =~ /[(](.+)[)]$/ ) {
 		$sublevel = $1;
 
 		$sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;

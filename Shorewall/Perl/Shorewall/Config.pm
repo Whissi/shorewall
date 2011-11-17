@@ -585,7 +585,8 @@ sub initialize( $ ) {
 	  TC_BITS => undef,
 	  PROVIDER_BITS => undef,
 	  PROVIDER_OFFSET => undef,
-	  MASK_BITS => undef
+	  MASK_BITS => undef,
+	  ZONE_BITS => undef,
 	);
 
 
@@ -3044,7 +3045,7 @@ sub update_config_file( $ ) {
     #
     # Undocumented options -- won't be listed in the template
     #
-    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS ) );
+    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS ZONE_BITS ) );
 
     if ( -f $fn ) {
 	my ( $template, $output );
@@ -3732,21 +3733,31 @@ sub get_configuration( $$$ ) {
     numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
     numeric_option 'PROVIDER_BITS' ,   8, 0;
     numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
+    numeric_option 'ZONE_BITS'       , 0, 0;
 
     if ( $config{PROVIDER_OFFSET} ) {
-	$config{PROVIDER_OFFSET} = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
-	fatal_error 'PROVIDER_BITS + PROVIDER_OFFSET > 31' if $config{PROVIDER_BITS} + $config{PROVIDER_OFFSET} > 31;
-	$globals{EXCLUSION_MASK} = 1 << ( $config{PROVIDER_OFFSET} + $config{PROVIDER_BITS} );
+	$config{PROVIDER_OFFSET}  = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};
+	$globals{ZONE_OFFSET}     = $config{PROVIDER_OFFSET} + $config{PROVIDER_BITS};
     } elsif ( $config{MASK_BITS} >= $config{PROVIDER_BITS} ) {
-	$globals{EXCLUSION_MASK} = 1 << $config{MASK_BITS};
+	$globals{ZONE_OFFSET}     = $config{MASK_BITS};
     } else {
-	$globals{EXCLUSION_MASK} = 1 << $config{PROVIDER_BITS};
+	$globals{ZONE_OFFSET}     = $config{PROVIDER_BITS};
     }
 
-    $globals{TC_MAX}                 = make_mask( $config{TC_BITS} );
-    $globals{TC_MASK}                = make_mask( $config{MASK_BITS} );
-    $globals{PROVIDER_MIN}           = 1 << $config{PROVIDER_OFFSET};
-    $globals{PROVIDER_MASK}          = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
+    fatal_error 'Invalid mark geometry' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 31;
+    
+    $globals{EXCLUSION_MASK} = 1 << ( $globals{ZONE_OFFSET} + $config{ZONE_BITS} );
+    $globals{PROVIDER_MIN}   = 1 << $config{PROVIDER_OFFSET};
+
+    $globals{TC_MAX}         = make_mask( $config{TC_BITS} );
+    $globals{TC_MASK}        = make_mask( $config{MASK_BITS} );
+    $globals{PROVIDER_MASK}  = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
+
+    if ( $config{ZONE_BITS} ) {
+	$globals{ZONE_MASK} = make_mask( $config{ZONE_BITS} ) << $globals{ZONE_OFFSET};
+    } else {
+	$globals{ZONE_MASK} = 0;
+    }
 
     if ( ( my $userbits = $config{PROVIDER_OFFSET} - $config{TC_BITS} ) > 0 ) {
 	$globals{USER_MASK} = make_mask( $userbits ) << $config{TC_BITS};

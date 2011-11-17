@@ -1300,7 +1300,7 @@ sub generate_dest_rules( $$$;@ ) {
     my $z2ref            = find_zone( $z2 );
     my $type2            = $z2ref->{type};
 
-    if ( $type2 == VSERVER ) {
+    if ( $type2 & VSERVER ) {
 	for my $hostref ( @{$z2ref->{hosts}{ip}{'%vserver%'}} ) {
 	    my $exclusion = dest_exclusion( $hostref->{exclusions}, $chain);
 
@@ -1707,7 +1707,7 @@ sub generate_matrix() {
 		    for my $net ( @{$hostref->{hosts}} ) {
 			my @dest   = imatch_dest_net $net;
 
-			if ( $chain1 && zone_type ( $zone) != BPORT ) {
+			if ( $chain1 && ! ( zone_type( $zone) & BPORT ) ) {
 			    my $chain1ref = $filter_table->{$chain1};
 			    my $nextchain = dest_exclusion( $exclusions, $chain1 );
 			    my $outputref;
@@ -1891,7 +1891,7 @@ sub generate_matrix() {
 		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! $zoneref->{options}{in_out}{routeback};
 		}
 
-		if ( $zone1ref->{type} == BPORT ) {
+		if ( $zone1ref->{type} & BPORT ) {
 		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 		}
 
@@ -1941,7 +1941,7 @@ sub generate_matrix() {
 		next if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
 	    }
 
-	    if ( $zone1ref->{type} == BPORT ) {
+	    if ( $zone1ref->{type} & BPORT ) {
 		next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 	    }
 

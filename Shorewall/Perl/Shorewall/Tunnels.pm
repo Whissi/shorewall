@@ -238,7 +238,7 @@ sub setup_tunnels() {
 
 	my $zonetype = zone_type( $zone );
 
-	fatal_error "Invalid tunnel ZONE ($zone)" if $zonetype == FIREWALL || $zonetype == BPORT;
+	fatal_error "Invalid tunnel ZONE ($zone)" if $zonetype & ( FIREWALL | BPORT );
 
 	my $inchainref  = ensure_rules_chain( rules_chain( ${zone}, ${fw} ) );
 	my $outchainref = ensure_rules_chain( rules_chain( ${fw}, ${zone} ) );

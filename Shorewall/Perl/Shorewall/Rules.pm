@@ -379,7 +379,7 @@ sub process_a_policy() {
     }
 
     unless ( $clientwild || $serverwild ) {
-	if ( zone_type( $server ) == BPORT ) {
+	if ( zone_type( $server ) & BPORT ) {
 	    fatal_error "Invalid policy - DEST zone is a Bridge Port zone but the SOURCE zone is not associated with the same bridge"
 		unless find_zone( $client )->{bridge} eq find_zone( $server)->{bridge} || single_interface( $client ) eq find_zone( $server )->{bridge};
 	}
@@ -515,11 +515,11 @@ sub process_policies()
 
     for $zone ( all_zones ) {
 	push @policy_chains, ( new_policy_chain $zone,         $zone, 'ACCEPT', PROVISIONAL, 0 );
-	push @policy_chains, ( new_policy_chain firewall_zone, $zone, 'NONE',   PROVISIONAL, 0 ) if zone_type( $zone ) == BPORT;
+	push @policy_chains, ( new_policy_chain firewall_zone, $zone, 'NONE',   PROVISIONAL, 0 ) if zone_type( $zone ) & BPORT;
 
 	my $zoneref = find_zone( $zone );
 
-	if ( $config{IMPLICIT_CONTINUE} && ( @{$zoneref->{parents}} || $zoneref->{type} == VSERVER ) ) {
+	if ( $config{IMPLICIT_CONTINUE} && ( @{$zoneref->{parents}} || $zoneref->{type} & VSERVER ) ) {
 	    for my $zone1 ( all_zones ) {
 		unless( $zone eq $zone1 ) {
 		    add_or_modify_policy_chain( $zone, $zone1, 0 );
@@ -1889,10 +1889,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     my $restriction = NO_RESTRICT;
 
     unless ( $inaction ) {
-	if ( $sourceref && ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ) ) {
-	    $restriction = $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
+	if ( $sourceref && ( $sourceref->{type} & ( FIREWALL | VSERVER ) ) ) {
+	    $restriction = $destref && ( $destref->{type} & ( FIREWALL | VSERVER ) ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
 	} else {
-	    $restriction = INPUT_RESTRICT if $destref && ( $destref->{type} == FIREWALL || $destref->{type} == VSERVER );
+	    $restriction = INPUT_RESTRICT if $destref && ( $destref->{type} & ( FIREWALL | VSERVER ) );
 	}
     }
 
@@ -1916,7 +1916,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    #
 	    # Check for illegal bridge port rule
 	    #
-	    if ( $destref->{type} == BPORT ) {
+	    if ( $destref->{type} & BPORT ) {
 		unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
 		    return 0 if $wildcard;
 		    fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";

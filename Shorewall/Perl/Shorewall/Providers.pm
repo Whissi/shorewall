@@ -155,9 +155,22 @@ sub copy_table( $$$ ) {
     emit ( '    case $net in',
 	   '        default)',
 	   '            ;;',
-	   '        *)',
-	   "            run_ip route add table $number \$net \$route $realm",
-	   '            ;;',
+	   '        *)' );
+	   
+    if ( $family == F_IPV4 ) {
+	emit ( '            case $net in',
+	       '                255.255.255.255*)',
+	       '                    ;;',
+	       '                *)',
+	       "                    run_ip route add table $number \$net \$route $realm",
+	       '                    ;;',
+	       '            esac',
+	     );
+    } else {
+	emit ( "            run_ip route add table $number \$net \$route $realm" );
+    }
+
+    emit ( '            ;;',
 	   '    esac',
 	   "done\n"
 	 );
@@ -189,9 +202,21 @@ sub copy_and_edit_table( $$$$ ) {
 	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',
-	    "                $copy)",
-	    "                    run_ip route add table $number \$net \$route $realm",
-	    '                    ;;',
+	    "                $copy)" );
+    if ( $family == F_IPV4 ) {
+	emit (  '                    case $net in',
+		'                        255.255.255.255*)',
+		'                            ;;',
+		'                        *)',
+		"                            run_ip route add table $number \$net \$route $realm",
+		'                            ;;',
+		'                    esac',
+	     );
+    } else {
+	emit (  "                    run_ip route add table $number \$net \$route $realm" );
+    } 
+
+    emit (  '                    ;;',
 	    '            esac',
 	    '            ;;',
 	    '    esac',

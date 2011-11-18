@@ -3459,18 +3459,21 @@ sub do_imac( $ ) {
 #
 sub verify_mark( $ ) {
     my $mark  = $_[0];
-    my $limit = $globals{TC_MASK} | $globals{PROVIDER_MASK};
+    my $limit = $globals{EXCLUSION_MASK};
     my $mask  = $globals{TC_MASK};
     my $value = numeric_value( $mark );
 
     fatal_error "Invalid Mark or Mask value ($mark)"
-	unless defined( $value ) && $value <= $limit;
+	unless defined( $value ) && $value < $limit;
 
     if ( $value > $mask ) {
 	#
 	# Not a valid TC mark -- must be a provider mark or a user mark
 	#
-	fatal_error "Invalid Mark or Mask value ($mark)" unless ( $value & $globals{PROVIDER_MASK} ) == $value || ( $value & $globals{USER_MASK} ) == $value;
+	fatal_error "Invalid Mark or Mask value ($mark)"
+	    unless( ( $value & $globals{PROVIDER_MASK} ) == $value ||
+		    ( $value & $globals{USER_MASK} ) == $value ||
+		    ( $value & $globals{ZONE_MASK} ) == $value );
     }
 }
 
@@ -3507,6 +3510,11 @@ sub do_test ( $$ )
     $mask = '' unless defined $mask;
 
     my $invert = $testval =~ s/^!// ? '! ' : '';
+
+    if ( $config{ZONE_BITS} ) {
+	$testval = join( '/', in_hex( find_zone( $testval )->{mark} ), in_hex( $globals{ZONE_MASK} ) ) unless $testval =~ /^\d/ || $testval =~ /:/;
+    }
+
     my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";
 
     fatal_error "Invalid MARK value ($originaltestval)" if $testval eq '/';

@@ -3735,7 +3735,7 @@ sub get_configuration( $$$ ) {
     numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
     numeric_option 'ZONE_BITS'       , 0, 0;
 
-    require_capability 'MARK_ANYWHERE', 'A non-zero ZONE_BITS setting', 's';
+    require_capability 'MARK_ANYWHERE', 'A non-zero ZONE_BITS setting', 's' if $config{ZONE_BITS};
 
     if ( $config{PROVIDER_OFFSET} ) {
 	$config{PROVIDER_OFFSET}  = $config{MASK_BITS} if $config{PROVIDER_OFFSET} < $config{MASK_BITS};

@@ -182,6 +182,9 @@ my $upgrade;
 my $have_ipsec;
 my $baseseq;
 my $minroot;
+my $zonemark;
+my $zonemarkincr;
+my $zonemarklimit;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -480,6 +483,22 @@ sub process_zone( \$ ) {
 				    hosts      => {}
 				  };
 
+    if ( $config{ZONE_BITS} ) {
+	my $mark;
+
+	if ( $type == FIREWALL ) {
+	    $mark = 0;
+	} else {
+	    fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
+	    $mark      = $zonemark;
+	    $zonemark += $zonemarkincr;
+	    $zoneref->{options}{complex} = 1;
+	}
+
+	progress_message_nocompress "   Zone $zone:\tmark value " . in_hex( $zoneref->{mark} = $mark );
+    }
+	
+
     if ( $zoneref->{options}{in_out}{blacklist} ) {
 	for ( qw/in out/ ) {
 	    unless ( $zoneref->{options}{$_}{blacklist} ) {
@@ -500,6 +519,10 @@ sub determine_zones()
 {
     my @z;
     my $ip = 0;
+
+    $zonemark      = 1 << $globals{ZONE_OFFSET};
+    $zonemarkincr  = $zonemark;
+    $zonemarklimit = $zonemark << $config{ZONE_BITS};
 
     if ( my $fn = open_file 'zones' ) {
 	first_entry "$doing $fn...";

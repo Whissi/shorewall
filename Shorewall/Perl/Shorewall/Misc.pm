@@ -1563,7 +1563,9 @@ sub generate_matrix() {
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
-	insert_ijump $frwd_ref , j => $filter_table->{blacklst}, -1, @state if $zoneref->{options}{in}{blacklist};
+	insert_ijump( $frwd_ref , j => $filter_table->{blacklst}, -1, @state ) if $zoneref->{options}{in}{blacklist};
+
+	add_ijump( $frwd_ref , j => 'MARK --set-mark ' . in_hex( $zoneref->{mark} ) . '/' . in_hex( $globals{ZONE_MASK} ) ) if $zoneref->{mark};
 
 	if ( have_ipsec ) {
 	    #

@@ -356,7 +356,7 @@ sub remove_blacklist( $ ) {
 
     my $fn = find_file $file;
 
-    assert( -f $fn );
+    return 1 unless -f $file;
 
     my $oldfile = open_file $fn;
     my $newfile;

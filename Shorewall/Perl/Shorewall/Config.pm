@@ -3746,7 +3746,7 @@ sub get_configuration( $$$ ) {
 	$globals{ZONE_OFFSET}     = $config{PROVIDER_BITS};
     }
 
-    fatal_error 'Invalid mark geometry' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 31;
+    fatal_error 'Invalid Packet Mark layout' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 31;
     
     $globals{EXCLUSION_MASK} = 1 << ( $globals{ZONE_OFFSET} + $config{ZONE_BITS} );
     $globals{PROVIDER_MIN}   = 1 << $config{PROVIDER_OFFSET};

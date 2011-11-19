@@ -50,6 +50,7 @@ our @EXPORT = qw( NOTHING
 		  defined_zone
 		  zone_type
 		  zone_interfaces
+		  zone_mark
 		  all_zones
 		  all_parent_zones
 		  complex_zones
@@ -97,6 +98,14 @@ use constant { NOTHING    => 'NOTHING',
 	       IPSECPROTO => 'ah|esp|ipcomp',
 	       IPSECMODE  => 'tunnel|transport'
 	       };
+
+#
+# Option columns
+#
+use constant { IN_OUT     => 1,
+	       IN         => 2,
+	       OUT        => 3 };
+
 #
 # Zone Table.
 #
@@ -316,9 +325,10 @@ sub initialize( $$ ) {
 # => mss   = <MSS setting>
 # => ipsec = <-m policy arguments to match options>
 #
-sub parse_zone_option_list($$\$)
+sub parse_zone_option_list($$\$$)
 {
     my %validoptions = ( mss          => NUMERIC,
+			 nomark       => NOTHING,
 			 blacklist    => NOTHING,
 			 strict       => NOTHING,
 			 next         => NOTHING,
@@ -330,13 +340,13 @@ sub parse_zone_option_list($$\$)
 			 "tunnel-dst" => NETWORK,
 		       );
 
-    use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8 };
+    use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
     #
     # Hash of options that have their own key in the returned hash.
     #
-    my %key = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW );
+    my %key = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY );
 
-    my ( $list, $zonetype, $complexref ) = @_;
+    my ( $list, $zonetype, $complexref, $column ) = @_;
     my %h;
     my $options = '';
     my $fmt;
@@ -370,6 +380,7 @@ sub parse_zone_option_list($$\$)
 
 	    if ( $key ) {
 		fatal_error "Option '$e' not permitted with this zone type " if $key & NOFW && ($zonetype & ( FIREWALL | VSERVER) );
+		fatal_error "Opeion '$e' is only permitted in the OPTIONS columns" if $key & IN_OUT_ONLY && $column != IN_OUT;
 		$$complexref = 1 if $key & COMPLEX;
 		$h{$e} = $val || 1;
 	    } else {
@@ -471,9 +482,9 @@ sub process_zone( \$ ) {
     my $zoneref = $zones{$zone} = { type       => $type,
 				    parents    => \@parents,
 				    bridge     => '',
-				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex ) ,
-						    in      => parse_zone_option_list( $in_options , $type , $complex ) ,
-						    out     => parse_zone_option_list( $out_options , $type , $complex ) ,
+				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex , IN_OUT ) ,
+						    in      => parse_zone_option_list( $in_options , $type , $complex , IN ) ,
+						    out     => parse_zone_option_list( $out_options , $type , $complex , OUT ) ,
 						    complex => ( $type & IPSEC || $complex ) ,
 						    nested  => @parents > 0 ,
 						    super   => 0 ,
@@ -489,13 +500,19 @@ sub process_zone( \$ ) {
 	if ( $type == FIREWALL ) {
 	    $mark = 0;
 	} else {
-	    fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
-	    $mark      = $zonemark;
-	    $zonemark += $zonemarkincr;
-	    $zoneref->{options}{complex} = 1;
+	    unless ( $zoneref->{options}{in_out}{nomark} ) {
+		fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
+		$mark      = $zonemark;
+		$zonemark += $zonemarkincr;
+		$zoneref->{options}{complex} = 1;
+	    }
 	}
 
-	progress_message_nocompress "   Zone $zone:\tmark value " . in_hex( $zoneref->{mark} = $mark );
+	if ( $zoneref->{options}{in_out}{nomark} ) {
+	    progress_message_nocompress "   Zone $zone:\tmark value not assigned";
+	} else {
+	    progress_message_nocompress "   Zone $zone:\tmark value " . in_hex( $zoneref->{mark} = $mark );
+	}
     }
 	
 
@@ -782,6 +799,12 @@ sub zone_type( $ ) {
 
 sub zone_interfaces( $ ) {
     find_zone( $_[0] )->{interfaces};
+}
+
+sub zone_mark( $ ) {
+    my $zoneref = find_zone( $_[0] );
+    fatal_error "Zone $_[0] has no assigned mark" unless exists $zoneref->{mark};
+    $zoneref->{mark};
 }
 
 sub defined_zone( $ ) {

@@ -2441,11 +2441,23 @@ sub process_rule ( ) {
 # Process the Rules File
 #
 sub process_rules() {
-
     my $fn = open_file 'blrules';
 
     if ( $fn ) {
-	first_entry "$doing $fn...";
+	first_entry( sub () {
+			 my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+			 my $audit       = $disposition =~ /^A_/;
+			 my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+
+			 progress_message2 "$doing $fn...";
+
+			 if ( supplied $level ) {
+			     ensure_blacklog_chain( $target, $disposition, $level, $audit );
+			 } elsif ( $audit ) {
+			     require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
+			     verify_audit( $disposition );
+			 }
+		     } );
 	
 	$section = 'BLACKLIST';
 

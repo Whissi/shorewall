@@ -55,6 +55,7 @@ our @EXPORT = qw(
 		    ensure_filter_chain
 		    ensure_manual_chain
 		    ensure_audit_chain
+		    ensure_blacklog_chain
 		    require_audit
 		    newlogchain
 		    log_rule_limit
@@ -2168,6 +2169,24 @@ sub ensure_manual_chain($) {
     $chainref;
 }
 
+sub ensure_blacklog_chain( $$$$ ) {
+    my ( $target, $disposition, $level, $audit ) = @_;
+
+    unless ( $filter_table->{blacklog} ) {
+	my $logchainref = new_manual_chain 'blacklog';
+
+	$target =~ s/A_//;
+	$target = 'reject' if $target eq 'REJECT';
+
+	log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+
+	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
+	add_ijump( $logchainref, g => $target );
+    }
+
+    'blacklog';
+}
+
 #
 # Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
 #
@@ -3512,7 +3531,7 @@ sub do_test ( $$ )
     my $invert = $testval =~ s/^!// ? '! ' : '';
 
     if ( $config{ZONE_BITS} ) {
-	$testval = join( '/', in_hex( find_zone( $testval )->{mark} ), in_hex( $globals{ZONE_MASK} ) ) unless $testval =~ /^\d/ || $testval =~ /:/;
+	$testval = join( '/', in_hex( zone_mark( $testval ) ), in_hex( $globals{ZONE_MASK} ) ) unless $testval =~ /^\d/ || $testval =~ /:/;
     }
 
     my $match  = $testval =~ s/:C$// ? "-m connmark ${invert}--mark" : "-m mark ${invert}--mark";

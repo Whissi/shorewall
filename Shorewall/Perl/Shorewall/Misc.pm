@@ -220,17 +220,7 @@ sub setup_blacklist() {
 	$chainref1 = dont_delete new_standard_chain 'blackout' if @$zones1;
 
 	if ( supplied $level ) {
-	    my $logchainref = new_standard_chain 'blacklog';
-
-	    $target =~ s/A_//;
-	    $target = 'reject' if $target eq 'REJECT';
-
-	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
-
-	    add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
-	    add_ijump( $logchainref, g => $target );
-
-	    $target = 'blacklog';
+	    $target = ensure_blacklog_chain ( $target, $disposition, $level, $audit );
 	} elsif ( $audit ) {
 	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
 	    $target = verify_audit( $disposition );
@@ -405,16 +395,6 @@ sub convert_blacklist() {
     
     if ( @$zones || @$zones1 ) {
 	if ( supplied $level ) {
-	    my $logchainref = new_standard_chain 'blacklog';
-
-	    $target =~ s/A_//;
-	    $target = 'reject' if $target eq 'REJECT';
-
-	    log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
-
-	    add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
-	    add_ijump( $logchainref, g => $target );
-
 	    $target = 'blacklog';
 	} elsif ( $audit ) {
 	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
@@ -447,7 +427,7 @@ sub convert_blacklist() {
 
 	    warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
 
-	    my $tgt = $whitelist ? 'RETURN' : $target;
+	    my $tgt = $whitelist ? 'WHITELIST' : $target;
 
 	    if ( $auditone ) {
 		fatal_error "'audit' not allowed in whitelist entries" if $whitelist;
@@ -520,11 +500,7 @@ EOF
 	    for ( @rules ) {
 		my ( $srcdst, $tgt, $networks, $protocols, $ports ) = @$_;
 
-		if ( $level ) {
-		    $tgt .= ":$level\t";
-		} else {
-		    $tgt .= "\t\t";
-		}
+		$tgt .= "\t\t";
 
 		my $list = $srcdst eq 'src' ? $zones : $zones1;
 

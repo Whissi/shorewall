@@ -1261,6 +1261,55 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         </listitem>
       </varlistentry>
 
+      <varlistentry id="MASK_BITS">
+        <term><emphasis
+        role="bold">MASK_BITS</emphasis>=[<replaceable>number</replaceable>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. Number of bits on the right of the
+          32-bit packet mark to be masked when clearing the traffic shaping
+          mark. Must be &gt;= TC_BITS and &lt;= PROVIDER_OFFSET (if
+          PROVIDER_OFFSET &gt; 0). Default value and the default values of the
+          other mark layout options is determined as follows:</para>
+
+          <table frame="none">
+            <title>Default Packet Mark Layout</title>
+
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry>WIDE_TC_MARKS=No, HIGH_ROUTE_MARKS=No</entry>
+
+                  <entry>TC_BITS=8, PROVIDER_BITS=8, PROVIDER_OFFSET=0,
+                  MASK_BITS=8</entry>
+                </row>
+
+                <row>
+                  <entry>WIDE_TC_MARKS=No, HIGH_ROUTE_MARKS=Yes</entry>
+
+                  <entry>TC_BITS=8, PROVIDER_BITS=8, PROVIDER_OFFSET=8,
+                  MASK_BITS=8</entry>
+                </row>
+
+                <row>
+                  <entry>WIDE_TC_MARKS=Yes, HIGH_ROUTE_MARKS=No</entry>
+
+                  <entry>TC_BITS=14, PROVIDER_BITS=8, PROVIDER_OFFSET=0,
+                  MASK_BITS=16</entry>
+                </row>
+
+                <row>
+                  <entry>WIDE_TC_MARKS=Yes, HIGH_ROUTE_MARKS=Yes</entry>
+
+                  <entry>TC_BITS=14, PROVIDER_BITS=8, PROVIDER_OFFSET=16,
+                  MASK_BITS=16</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
         role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
@@ -1502,6 +1551,31 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           the pathname specified by this option does not exist or the named
           file is not executable, then Shorewall falls back to
           <filename>/usr/bin/perl/</filename></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">PROVIDER_BITS</emphasis>=[<replaceable>number</replaceable>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. The number of bits in the 32-bit
+          packet mark to be used for provider numbers. May be zero. See <link
+          linkend="MASK_BITS">MASK_BITS</link> above for default value.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">PROVIDER_OFFSET</emphasis>=[<replaceable>number</replaceable>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. The offset from the right
+          (low-order end) of the provider number field in the 32-bit packet
+          mark. If non-zero, must be &gt;= TC_BITS (Shorewall automatically
+          adjusts PROVIDER_OFFSET's value). PROVIDER_OFFSET + PROVIDER_BITS +
+          ZONE_BITS must be &lt; 32. See <link
+          linkend="MASK_BITS">MASK_BITS</link> above for default value.</para>
         </listitem>
       </varlistentry>
 
@@ -1793,6 +1867,17 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">TC_BITS</emphasis>=[<replaceable>number</replaceable>]</term>
+
+        <listitem>
+          <para>The number of bits at the low end of the 32-bit packet mark to
+          be used for traffic shaping marking. May be zero. See <link
+          linkend="MASK_BITS">MASK_BITS</link> above for default value.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis
@@ -2032,6 +2117,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           traffic shaping marks are 14 bytes wide (values 1-16383). The
           setting of WIDE_TC_MARKS also has an effect on the HIGH_ROUTE_MARKS
           option (see above).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">ZONE_BITS</emphasis>=[<replaceable>number</replaceable>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. When non-zero, enables automatic
+          packet marking by source zone and determines the number of bits in
+          the 32-bit packet mark to be used for the zone mark. Default value
+          is 0.</para>
         </listitem>
       </varlistentry>
 

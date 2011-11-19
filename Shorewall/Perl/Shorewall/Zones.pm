@@ -444,7 +444,7 @@ sub process_zone( \$ ) {
 	$type = IPSEC;
     } elsif ( $type =~ /^bport([46])?$/i ) {
 	fatal_error "Invalid zone type ($type)" if $1 && $1 != $family;
-	warning_message "Bridge Port zones should have a parent zone" unless @parents;
+	warning_message "Bridge Port zones should have a parent zone" unless @parents || $config{ZONE_BITS};
 	$type = BPORT;
 	push @bport_zones, $zone;
     } elsif ( $type eq 'firewall' ) {

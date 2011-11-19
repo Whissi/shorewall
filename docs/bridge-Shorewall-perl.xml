@@ -770,6 +770,224 @@ ACCEPT            $FW              $DMZ             tcp              53       </
     </orderedlist>
   </section>
 
+  <section id="veth">
+    <title>Using Back-to-back veth Devices to Interface with a Bridge</title>
+
+    <para>Beginning with Shorewall 4.4.26, Shorewall has limited support for
+    using back-to-back veth devices to interface with a bridge. This approach
+    has the advantage that traffic between any pair of zones can be filtered.
+    The disadvantage is the complexity of the approach.</para>
+
+    <para>This configuration is shown in the following diagram.</para>
+
+    <graphic align="center" fileref="images/veth1.png" />
+
+    <para>In this configuration, veth0 is assigned the internal IP address;
+    br0 does not have an IP address.</para>
+
+    <para>Traffic from the <emphasis role="bold">net</emphasis> and <emphasis
+    role="bold">fw</emphasis> zones to the <emphasis
+    role="bold">zone<emphasis>i</emphasis></emphasis> zones goes thru
+    veth0-&gt;veth1-&gt;ethN-&gt;. Traffic from the <emphasis
+    role="bold">zone<emphasis>i</emphasis></emphasis> zones to the <emphasis
+    role="bold">fw</emphasis> and <emphasis role="bold">net</emphasis> zones
+    takes the reverse path: ethN-&gt;veth1-&gt;veth0. As a consequence,
+    traffic between <emphasis role="bold">net</emphasis>,<emphasis
+    role="bold">fw</emphasis> and <emphasis
+    role="bold">zone<emphasis>i</emphasis></emphasis> goes through Netfilter
+    twice: once in the routed firewall (eth0,veth0) and once in the bridged
+    firewall (eth1,eth2,eth3,veth1).</para>
+
+    <para>The back-to-back veth devices (veth0 and veth1) are created using
+    this command:</para>
+
+    <programlisting>ip link add type veth</programlisting>
+
+    <para>If you have veth devices and want to assign specific names to the
+    created devices, use this format:</para>
+
+    <programlisting>ip link add name FOO type veth peer name BAR</programlisting>
+
+    <para>Here's an /etc/network/interfaces stanza that configures veth0,
+    veth1 and the bridge:</para>
+
+    <programlisting>auto veth0
+iface veth0 inet static
+      address 10.10.10.1
+      netmask 255.255.255.0
+      network 10.10.10.0
+      broadcast 10.10.10.255
+      
+      pre-up /sbin/ip link add name veth0 type veth peer name veth1
+      pre-up /sbin/ip link set eth1  up
+      pre-up /sbin/ip link set eth2  up
+
+      pre-up /sbin/ip link set eth3  up
+      pre-up /sbin/ip link set veth1 up
+      pre-up /usr/sbin/brctl addbr br0
+      pre-up /usr/sbin/brctl addif br0  eth1
+      pre-up /usr/sbin/brctl addif br0  eth2
+      pre-up /usr/sbin/brctl addif br0  eth3
+      pre-up /usr/sbin/brctl addif br0  veth1
+        
+      pre-down /usr/sbin/brctl delif br0 eth1
+      pre-down /sbin/ip link set eth2 down
+      pre-down /usr/sbin/brctl delif br0 eth2
+      pre-down /sbin/ip link set eth2 down
+      pre-down /usr/sbin/brctl delif br0 eth3
+      pre-down /sbin/ip link set eth3 down
+      pre-down /usr/sbin/brctl delif br0 veth1
+      pre-down /sbin/ip link set veth1 down
+        
+      post-down /usr/sbin/brctl delbr br0
+      post-down /sbin/ip link del veth0</programlisting>
+
+    <para>In <ulink url="manpages/shorewall.net.html">shorewall.conf</ulink>
+    (5), we need this:</para>
+
+    <programlisting>ZONE_BITS=3</programlisting>
+
+    <para>This does two things:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>It enables <firstterm>automatic packet
+        marking</firstterm>.</para>
+      </listitem>
+
+      <listitem>
+        <para>It allows up to 8 <replaceable>marked</replaceable> zones
+        (2**3). Zones are marked unless they have <option>nomark</option> in
+        the OPTIONS column of their entry in <ulink
+        url="manpages/shorewall-zones.html">shorewall-zones </ulink>(5).
+        Packets originating in a marked zone have a mark assigned
+        automatically by Shorewall.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>For this configuration, we need several additional zones as shown
+    here:</para>
+
+    <programlisting>#ZONE   TYPE    OPTIONS            IN                    OUT
+#                                  OPTIONS               OPTIONS
+fw      firewall
+net     ipv4
+zone1   bport
+zone2   bport
+zone3   bport
+<emphasis role="bold">loc     ipv4     nomark
+col     ipv4     nomark</emphasis></programlisting>
+
+    <note>
+      <para><emphasis role="bold">col</emphasis> is <emphasis
+      role="bold">loc</emphasis> spelled backward.</para>
+    </note>
+
+    <programlisting>#ZONE     INTERFACES        BROADCAST       OPTIONS
+net       eth0              ...
+-         br0               ...
+zone1     br0:eth1          ...
+zone2     br0:eth2          ...
+zone3     br0:eth3          ...
+loc       veth0             ...
+col       br0:veth1         ...</programlisting>
+
+    <para>Several things to note here</para>
+
+    <orderedlist>
+      <listitem>
+        <para>We have defined two unmarked zones: <emphasis
+        role="bold">loc</emphasis> and <emphasis role="bold">col</emphasis>.
+        This allows traffic from the <emphasis
+        role="bold">zone</emphasis><emphasis><emphasis
+        role="bold">i</emphasis></emphasis> zones to the fw and net zones to
+        retain the mark of their originating bport zones. It also allows
+        traffic from the <emphasis role="bold">fw</emphasis> and <emphasis
+        role="bold">net</emphasis> zones to the <emphasis
+        role="bold">zonei</emphasis> zones to retain the <emphasis
+        role="bold">fw</emphasis> and <emphasis role="bold">net</emphasis>
+        marks respectively.</para>
+      </listitem>
+
+      <listitem>
+        <para>That means that traffic entering the bridge on veth1 will have a
+        different mark value, depending on whether it originated in the
+        <emphasis role="bold">net</emphasis> zone or in the <emphasis
+        role="bold">fw</emphasis> zone.</para>
+      </listitem>
+
+      <listitem>
+        <para>Similarly, traffic arriving on the veth0 interface will have a
+        mark that indicates which of the <emphasis
+        role="bold">zonei</emphasis> zones each packet originated on.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>The basic idea here is that we want to filter traffic to the
+    <emphasis role="bold">zonei</emphasis> zones as it leaves veth1 and we
+    want to filter traffic from those zones as it leaves veth0. So we use this
+    type of polices:</para>
+
+    <programlisting>#SOURCE   DEST    POLICY
+fw        loc     ACCEPT
+net       loc     ACCEPT
+net       all     DROP:info
+zone1     col     ACCEPT
+zone2     col     ACCEPT
+zone3     col     ACCEPT
+all       all     REJECT:info</programlisting>
+
+    <para>Rules allowing traffic from the net to zone2 look like this:</para>
+
+    <programlisting>#ACTION     SOURCE       DEST         PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
+#                                            PORT(S) PORT(S)    DEST        LIMIT   GROUP
+ACCEPT      col          zone2        tcp    22      -          -           -       -       <emphasis
+        role="bold">net</emphasis></programlisting>
+
+    <para>or more compactly:</para>
+
+    <programlisting>#ACTION     SOURCE       DEST         PROTO  DEST
+#                                            PORT(S)
+ACCEPT      col          <emphasis role="bold">zone2</emphasis>        tcp    22      ; mark=<emphasis
+        role="bold">net</emphasis></programlisting>
+
+    <para>Similarly, rules allowing traffic from the firewall to zone3:</para>
+
+    <programlisting>#ACTION     SOURCE       DEST         PROTO  DEST
+#                                            PORT(S)
+ACCEPT      col          <emphasis role="bold">zone3</emphasis>        tcp    22      ; mark=<emphasis
+        role="bold">fw</emphasis></programlisting>
+
+    <para>The important point here is that, when ZONE_BITS is non-zero, you
+    are allowed to place zone names in the MARK column. Shorewall will
+    automatically replae the name with the zone's mark value.</para>
+
+    <para>Suppose that you want to forward tcp port 80 to 192.168.4.45 in
+    zone3:</para>
+
+    <programlisting>#ACTION     SOURCE       DEST               PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
+#                                                  PORT(S) PORT(S)    DEST        LIMIT   GROUP
+DNAT-       net          loc:172.168.4.45   tcp    80
+ACCEPT      col          zone3:172.168.4.45 tcp    80      -          -           -       -       <emphasis
+        role="bold">net</emphasis></programlisting>
+
+    <para>Rules allowing traffic from the <emphasis
+    role="bold">zonei</emphasis> zones to the <emphasis
+    role="bold">net</emphasis> zone look like this: </para>
+
+    <programlisting>#ACTION     SOURCE       DEST               PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
+#                                                  PORT(S) PORT(S)    DEST        LIMIT   GROUP
+ACCEPT      loc          net                tcp    21      -          -           -       -       <emphasis
+        role="bold">zone1</emphasis></programlisting>
+
+    <para>And to the firewall:</para>
+
+    <programlisting>#ACTION     SOURCE       DEST               PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
+#                                                  PORT(S) PORT(S)    DEST        LIMIT   GROUP
+ACCEPT      zone2        col                tcp          -          -           -       -       <emphasis
+        role="bold">zone2</emphasis></programlisting>
+  </section>
+
   <section id="Limitations">
     <title>Limitations</title>
 

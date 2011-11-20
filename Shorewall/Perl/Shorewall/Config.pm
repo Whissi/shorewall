@@ -3023,6 +3023,23 @@ sub conditional_quote( $ ) {
 sub update_config_file( $ ) {
     my $annotate = shift;
 
+    sub is_set( $ ) {
+	my $value = $config{$_[0]};
+	
+	defined( $value ) && lc( $value ) eq 'yes';
+    }
+
+    my $wide = is_set $config{WIDE_TC_MARKS};
+    my $high = is_set $config{HIGH_ROUTE_MARKS};
+
+    #
+    # Establish default values for the mark layout items
+    #
+    $config{TC_BITS}         = ( $wide ? 14 : 8 )             unless supplied $config{TC_BITS};
+    $config{MASK_BITS}       = ( $wide ? 16 : 8 )             unless supplied $config{MASK_BITS};
+    $config{PROVIDER_OFFSET} = ( $high ? $wide ? 16 : 8 : 0 ) unless supplied $config{PROVIDER_OFFSET};
+    $config{PROVIDER_BITS}   = 8                              unless supplied $config{PROVIDER_BITS};
+
     my $fn;
 
     unless ( -d "$globals{SHAREDIR}/configfiles/" ) {
@@ -3041,12 +3058,10 @@ sub update_config_file( $ ) {
     #
     my %deprecated = ( LOGRATE            => '' ,
 		       LOGBURST           => '' ,
-		       EXPORTPARAMS       => 'no' );
-    #
-    # Undocumented options -- won't be listed in the template
-    #
-    my @undocumented = ( qw( TC_BITS PROVIDER_BITS PROVIDER_OFFSET MASK_BITS ZONE_BITS ) );
-
+		       EXPORTPARAMS       => 'no',
+		       WIDE_TC_MARKS      => 'no',
+		       HIGH_ROUTE_MARKS   => 'no'
+		     );
     if ( -f $fn ) {
 	my ( $template, $output );
 
@@ -3094,29 +3109,6 @@ sub update_config_file( $ ) {
 	close $template;
 
 	my $heading_printed;
-
-	for ( @undocumented ) {
-	    if ( defined ( my $val = $config{$_} ) ) {
-
-		unless ( $heading_printed ) {
-		    print $output <<'EOF';
-
-#################################################################################
-#                          U N D O C U M E N T E D
-#                               O P T I O N S
-#################################################################################
-
-EOF
-		    $heading_printed = 1;
-		}
-
-		$val = conditional_quote $val;
-
-		print $output "$_=$val\n\n";
-	    }
-	}
-
-	$heading_printed = 0;
 
 	for ( keys %deprecated ) {
 	    if ( supplied( my $val = $config{$_} ) ) {

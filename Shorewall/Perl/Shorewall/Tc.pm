@@ -960,7 +960,7 @@ sub validate_tc_class( ) {
 	    if ( $classnumber ) {
 		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
 	    } else {
-		$classnumber = $config{WIDE_TC_MARKS} ? $devref->{nextclass}++ : hex_value( $devnum . $markval );
+		$classnumber = $config{TC_BITS} >= 14 ? $devref->{nextclass}++ : hex_value( $devnum . $markval );
 		fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	    }
 	}

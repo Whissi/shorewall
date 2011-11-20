@@ -226,19 +226,20 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
 
     <para>The mark value is held in a 32-bit field. Because packet marking is
     the Netfilter <emphasis>kludge of last resort</emphasis> for solving many
-    hard technical problems, Shorewall reserves half of this field (16 bits)
-    for future use. The remainder is split into two 8-bit values:</para>
+    hard technical problems, Shorewall originally reserved half of this field
+    (16 bits) for future use. The remainder was split into two 8-bit
+    values:</para>
 
     <itemizedlist>
       <listitem>
         <para>The low-order eight bits are used for traffic shaping marks.
-        These eight bits are also used for selecting among multiple providers
+        These eight bits were also used for selecting among multiple providers
         when HIGH_ROUTE_MARKS=No in <filename>shorewall.conf</filename>. Some
-        rules that deal with only these bits use a mask value of 0xff.</para>
+        rules that deal with only these bits used a mask value of 0xff.</para>
       </listitem>
 
       <listitem>
-        <para>The next 8 bits are used for selecting among multiple providers
+        <para>The next 8 bits were used for selecting among multiple providers
         when HIGH_ROUTE_MARKS=Yes in <filename>shorewall.conf</filename>.
         These bits are manipulated using a mask value of 0xff00.</para>
       </listitem>
@@ -268,9 +269,17 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
       </listitem>
     </itemizedlist>
 
+    <para>When WIDE_TC_MARKS was added, the number of bits reserved for TC
+    marks was increased to 14 when WIDE_TC_MARKS=Yes and the provider mark
+    field (when HIGH_ROUTE_MARKS=Yes) was offset 16 bits. Also, when
+    HIGH_ROUTE_MARKS=Yes, the mask used for setting/testing TC marks was
+    0xffff (16 bits).</para>
+
     <para>Shorewall actually allows you to have complete control over the
     layout of the 32-bit mark using the following options in <ulink
-    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5):</para>
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) (these
+    options were documents in the shorewall.conf manpage in Shorewall
+    4.4.26):</para>
 
     <variablelist>
       <varlistentry>
@@ -309,6 +318,20 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
           <para>Number of bits on the right of the mark to be masked when
           clearing the traffic shaping mark. Must be &gt;= TC_BITS and &lt;=
           PROVIDER_OFFSET (if PROVIDER_OFFSET &gt; 0)</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>In Shorewall 4.4.26, a new option was added:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>ZONE_BITS</term>
+
+        <listitem>
+          <para>Number of bits in the mark to use for automatic zone marking
+          (see the <ulink url="bridge-Shorewall-perl.html">Shorewall
+          Bridge/Firewall HOWTO</ulink>).</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -366,9 +389,15 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <para>Beginning with Shorewall 4.4.12, the field between MASK_BITS and
     PROVIDER_OFFSET can be used for any purpose you want.</para>
 
-    <para>Beginning with Shorewall 4.4.13, The first unused bit on the left is
+    <para>Beginning with Shorewall 4.4.13, the first unused bit on the left is
     used by Shorewall as an <firstterm>exclusion mark</firstterm>, allowing
     exclusion in CONTINUE, NONAT and ACCEPT+ rules.</para>
+
+    <para>Beginning with Shorewall 4.4.26, WIDE_TC_MARKS and HIGH_ROUTE_MARKS
+    are deprecated in favor of the options described above. The
+    <command>shorewall update</command> (<command>shorewall6 update</command>)
+    command will set the above options based on the settings of WIDE_TC_MARKS
+    and HIGH_ROUTE_MARKS.</para>
   </section>
 
   <section id="Shorewall">

@@ -187,10 +187,12 @@
         <filename>/etc/shorewall/tcrules</filename> file.</para>
 
         <note>
-          <para>In Shorewall 4.5.0, WIDE_TC_MARKS was superseded by TC_BITS
+          <para>In Shorewall 4.4.26, WIDE_TC_MARKS was superseded by TC_BITS
           which specifies the width in bits of the traffic shaping mark field.
           The default is based on the setting of WIDE_TC_MARKS so as to
-          provide upward compatibility.</para>
+          provide upward compatibility. See the <ulink
+          url="PacketMarking.html#Values">Packet Marking using
+          /etc/shorewall/tcrules</ulink> article.</para>
         </note>
       </listitem>
     </orderedlist>
@@ -489,7 +491,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
         <listitem>
           <para>MARK - The mark value which is an integer in the range 1-255
-          (1-16383 if you set WIDE_TC_MARKS=Yes in <ulink
+          (1-16383 if you set WIDE_TC_MARKS=Yes or set TC_BITS=14 in <ulink
           url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
           define these marks in the tcrules file, marking the traffic you want
           to go into the queuing classes defined in here. You can use the same
@@ -829,12 +831,12 @@ ppp0           6000kbit         500kbit</programlisting>
         <listitem>
           <para>MARK or CLASSIFY - MARK specifies the mark value is to be
           assigned in case of a match. This is an integer in the range 1-255
-          (1-16383 if you set WIDE_TC_MARKS=Yes in <ulink
+          (1-16383 if you set WIDE_TC_MARKS=Yes or TC_BITS=14 in <ulink
           url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)
           ).</para>
 
           <note>
-            <para>In Shorewall 4.5.0, WIDE_TC_MARKS was superseded by TC_BITS
+            <para>In Shorewall 4.4.26, WIDE_TC_MARKS was superseded by TC_BITS
             which specifies the width in bits of the traffic shaping mark
             field. The default is based on the setting of WIDE_TC_MARKS so as
             to provide upward compatibility.</para>
@@ -950,12 +952,13 @@ ppp0           6000kbit         500kbit</programlisting>
           <orderedlist>
             <listitem>
               <para>Constructed by Shorewall. The method of construction
-              depends on the setting of WIDE_TC_MARKS (<ulink
+              depends on the setting of WIDE_TC_MARKS (TC_BITS in shorewall
+              4.4.26 and later) in (<ulink
               url="manpages/shorewall.conf.html">shorewall.conf</ulink>
               (5)).</para>
 
-              <para>When WIDE_TC_MARKS=No (the default), the &lt;minor&gt;
-              class is:</para>
+              <para>When WIDE_TC_MARKS=No (the default) or TC_BITS &gt; 14,
+              the &lt;minor&gt; class is:</para>
 
               <itemizedlist>
                 <listitem>
@@ -967,8 +970,9 @@ ppp0           6000kbit         500kbit</programlisting>
                 </listitem>
               </itemizedlist>
 
-              <para>When WIDE_TC_MARKS=Yes, the &lt;minor&gt; class is
-              assigned sequentially beginning with 2.</para>
+              <para>When WIDE_TC_MARKS=Yes (TC_BITS &gt;= 14), the
+              &lt;minor&gt; class is assigned sequentially beginning with
+              2.</para>
             </listitem>
 
             <listitem>
@@ -1518,7 +1522,8 @@ IPMARK(src,0xff,0x10100):F 192.168.1.0/29 eth0</programlisting>
       assigned sequentially beginning with 2. The WIDE_TC_MARKS option in
       <filename>shorewall.conf</filename> selects which construction to use.
       WIDE_TC_MARKS=No (the default) produces pre-Shorewall 4.4 behavior.
-      WIDE_TC_MARKS=Yes produces the new behavior.</para>
+      WIDE_TC_MARKS=Yes (TC_BITS &gt;= 14 in Shorewall 4.4.26 and later)
+      produces the new behavior.</para>
     </section>
 
     <section id="Real">

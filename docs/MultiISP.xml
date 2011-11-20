@@ -171,13 +171,15 @@
 
           <listitem>
             <para>You may not use the SAVE or RESTORE options unless you also
-            set HIGH_ROUTE_MARKS=Yes in
+            set HIGH_ROUTE_MARKS=Yes (PROVIDER_OFFSET &gt; 0 with Shorewall
+            4.4.26 and later) in
             <filename>/etc/shorewall/shorewall.conf</filename>.</para>
           </listitem>
 
           <listitem>
             <para>You may not use connection marking unless you also set
-            HIGH_ROUTE_MARKS=Yes in
+            HIGH_ROUTE_MARKS=Yes (PROVIDER_OFFSET &gt; 0 with Shorewall 4.4.26
+            and later) in
             <filename>/etc/shorewall/shorewall.conf</filename>.</para>
           </listitem>
         </itemizedlist>
@@ -226,7 +228,8 @@
             value and will restore the packet mark in the PREROUTING CHAIN.
             Mark values must be in the range 1-255.</para>
 
-            <para>Alternatively, you may set HIGH_ROUTE_MARKS=Yes in
+            <para>Alternatively, you may set HIGH_ROUTE_MARKS=Yes
+            (PROVIDER_OFFSET &gt; 0 with Shorewall 4.4.26 and later) in
             <filename>/etc/shorewall/shorewall.conf</filename>. This allows
             you to:</para>
 

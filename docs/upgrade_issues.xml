@@ -200,6 +200,149 @@
         against the parent zone(s) rules. In 4.4.0, such traffic IS compared
         against the parent zone rules.</para>
       </listitem>
+
+      <listitem>
+        <para>The name <emphasis role="bold">any</emphasis> is now reserved
+        and may not be used as a zone name.</para>
+      </listitem>
+
+      <listitem>
+        <para>Perl module initialization has changed in Shorewall 4.4.1.
+        Previously, each Shorewall Perl package would initialize its global
+        variables for IPv4 in an INIT block. Then, if the compilation turned
+        out to be for IPv6, Shorewall::Compiler::compiler() would reinitialize
+        them for IPv6.</para>
+
+        <para>Beginning in Shorewall 4.4.1, the modules do not initialize
+        themselves in an INIT block. So if you use Shorewall modules outside
+        of the Shorewall compilation environment, then you must explicitly
+        call the module's 'initialize' function after the module has been
+        loaded.</para>
+      </listitem>
+
+      <listitem>
+        <para>Checking for zone membership has been tighened up. Previously, a
+        zone could contain &lt;interface&gt;:0.0.0.0/0 along with other hosts;
+        now, if the zone has &lt;interface&gt;:0.0.0.0/0 (even with
+        exclusions), then it may have no additional members in <ulink
+        url="manpages/shorewall-hosts.html">/etc/shorewall/hosts</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>ADD_IP_ALIASES=No is now the setting in the released<ulink
+        url="manpages/shorewall.conf.html"> shorewall.conf</ulink> and in all
+        of the samples. This will not affect you during upgrade unless you
+        choose to replace your current shorewall.conf with the one from the
+        release (not recommended).</para>
+      </listitem>
+
+      <listitem>
+        <para>The names of interface configuration variables in generated
+        scripts have been changed to ensure uniqueness. These names now begin
+        with SW_. This change will only affect you if your extension scripts
+        are using one or more of these variables.</para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>Old Variable Name</entry>
+
+                <entry>New Variable Name</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_address</entry>
+
+                <entry>SW_<replaceable>iface</replaceable>_ADDRESS</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_BCASTS</entry>
+
+                <entry>SW_<replaceable>iface</replaceable>_BCASTS</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_ACASTS</entry>
+
+                <entry>SW_<replaceable>iface</replaceable>_CASTS</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_GATEWAY</entry>
+
+                <entry>SW_<replaceable>iface</replaceable>_NETWORKS</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_ADDRESSES</entry>
+
+                <entry>SW_<literal>iface</literal>_ADDRESSES</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_NETWORKS</entry>
+
+                <entry>SW_<replaceable>iface</replaceable>_NETWORKS</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>iface</replaceable>_MAC</entry>
+
+                <entry>SW_<replaceable>iface</replaceable>_MAC</entry>
+              </row>
+
+              <row>
+                <entry><replaceable>provider</replaceable>_IS_USABLE</entry>
+
+                <entry>SW_<replaceable>provider</replaceable>_IS_USABLE</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>were <replaceable>iface</replaceable> is a capitalized interface
+        name (e.g., ETH0) and <replaceable>provider</replaceable> isthe
+        capitalized name of a provider.</para>
+      </listitem>
+
+      <listitem>
+        <para>If your <ulink
+        url="manpages/shorewall-params.html">/etc/shorewall/params</ulink> (or
+        <ulink
+        url="manpages6/shorewall6-params.html">/etc/shorewall6/params</ulink>)
+        file sends output to Standard Output, you need to be aware that the
+        output will be redirected to Standard Error beginning with Shorewall
+        4.4.16.</para>
+      </listitem>
+
+      <listitem>
+        <para> Beginning with Shorewall 4.4.17, the EXPORTPARAMS option is
+        deprecated. With EXPORTPARAMS=No, the variables set by <ulink
+        url="manpages/shorewall-params.html">/etc/shorewall/params</ulink>
+        (<ulink
+        url="manpages6/shorewall6-params.html">/etc/shorewall6/params</ulink>)
+        at compile time are now available in the compiled firewall
+        script.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <command>iprange</command> and <command>ipaddr</command>
+        commands require the 'bc' utility.</para>
+      </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall 4.4.26, the WIDE_TC_MARKS and
+        HIGH_ROUTE_MARKS options are deprecated in favor of TC_BITS,
+        MASK_BITS, PROVIDER_BITS and PROVIDER_OFFSET. See the <ulink
+        url="PacketMarking.html#Values">Packet Marking using
+        /etc/shorewall/tcrules</ulink> article. The <command>shorewall
+        update</command> (<command>shorewall6 update</command>) command will
+        automatically generate the correct values for these new options
+        depending on your settings of WIDE_TC_MARKS and
+        HIGH_ROUTE_MARKS.</para>
+      </listitem>
     </orderedlist>
 
     <para>Be sure to check the latest 4.4 Release Notes linked from the <ulink

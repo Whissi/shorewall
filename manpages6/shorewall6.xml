@@ -426,19 +426,7 @@
       <arg choice="plain"><option>show</option></arg>
 
       <arg
-      choice="req"><option>actions|classifiers|connections|config|filters|ip|macros|zones</option></arg>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall6</command>
-
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
-
-      <arg>-<replaceable>options</replaceable></arg>
-
-      <arg choice="plain"><option>show</option></arg>
-
-      <arg choice="plain"><option>policies</option></arg>
+      choice="req"><option>actions|classifiers|connections|config|filters|ip|macros|zones|policies|tc|marks</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -1220,6 +1208,16 @@
                 is passed directly through to ip6tables and causes actual
                 packet and byte counts to be displayed. Without this option,
                 those counts are abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">marks</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.26. Displays the various fields
+                in packet marks giving the min and max value (in both decimal
+                and hex) and the applicable mask (in hex).</para>
               </listitem>
             </varlistentry>
 

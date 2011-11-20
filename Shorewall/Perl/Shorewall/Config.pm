@@ -126,6 +126,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
+				       dump_mark_layout
 
 				       $product
 				       $Product
@@ -3754,6 +3755,7 @@ sub get_configuration( $$$ ) {
     }
 
     if ( ( my $userbits = $config{PROVIDER_OFFSET} - $config{TC_BITS} ) > 0 ) {
+	
 	$globals{USER_MASK} = make_mask( $userbits ) << $config{TC_BITS};
     } else {
 	$globals{USER_MASK} = 0;
@@ -4121,6 +4123,52 @@ sub generate_aux_config() {
 
     finalize_aux_config;
 }
+
+sub dump_mark_layout() {
+    sub dumpout( $$$$$ ) {
+	my ( $name, $bits, $min, $max, $mask ) = @_;
+
+	if ( $bits ) {
+	    if ( $min == $max ) {
+		emit_unindented "$name:" . $min . ' mask ' . in_hex( $mask );
+	    } else {
+		emit_unindented "$name:" . join('-', $min, $max ) . ' (' . join( '-', in_hex( $min ), in_hex( $max ) ) . ') mask ' . in_hex( $mask );
+	    }
+	} else {
+	    emit_unindented "$name: Not Enabled";
+	}
+    }
+
+    dumpout( "Traffic Shaping",
+	     $config{TC_BITS},
+	     0,
+	     $globals{TC_MAX},
+	     $globals{TC_MASK} );
+
+    dumpout( "User",
+	     $globals{USER_MASK},
+	     $globals{TC_MAX} + 1,
+	     $globals{USER_MASK},
+	     $globals{USER_MASK} );
+    
+    dumpout( "Provider",
+	     $config{PROVIDER_BITS},
+	     $globals{PROVIDER_MIN},
+	     $globals{PROVIDER_MASK},
+	     $globals{PROVIDER_MASK} );
+
+    dumpout( "Zone",
+	     $config{ZONE_BITS},
+	     1 << $globals{ZONE_OFFSET},
+	     $globals{ZONE_MASK},
+	     $globals{ZONE_MASK} );
+
+    dumpout( "Exclusion",
+	     1,
+	     $globals{EXCLUSION_MASK},
+	     $globals{EXCLUSION_MASK},
+	     $globals{EXCLUSION_MASK} );
+}	
 
 END {
     cleanup;

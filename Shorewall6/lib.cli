@@ -710,6 +710,12 @@ show_command() {
 	    echo
 	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
 	    ;;
+	marks)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION Mark Layout at $g_hostname - $(date)"
+	    echo
+	    [ -f ${VARDIR}/marks ] && cat ${VARDIR}/marks;
+	    ;;
 	*)
 	    if [ "$g_product" = Shorewall6 ]; then
 		case $1 in

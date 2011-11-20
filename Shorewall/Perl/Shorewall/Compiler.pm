@@ -432,6 +432,10 @@ sub generate_script_3($) {
     save_policies;
     emit_unindented '__EOF__';
 
+    emit 'cat > ${VARDIR}/marks << __EOF__';
+    dump_mark_layout;
+    emit_unindented '__EOF__';
+
     pop_indent;
 
     emit "fi\n";

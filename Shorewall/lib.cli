@@ -751,6 +751,12 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    perip_accounting
 	    ;;
+	marks)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION Mark Layout at $g_hostname - $(date)"
+	    echo
+	    [ -f ${VARDIR}/marks ] && cat ${VARDIR}/marks;
+	    ;;
 	*)
 	    if [ "$g_product" = Shorewall ]; then
 		case $1 in

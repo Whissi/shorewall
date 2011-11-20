@@ -651,6 +651,7 @@ sub dump_zone_contents() {
 	my $entry      =  "$zone $zonetypes{$type}";
 
 	$entry .= ":$zoneref->{bridge}" if $type & BPORT;
+	$entry .= ( " mark=" . in_hex( $zoneref->{mark} ) ) if exists $zoneref->{mark};
 
 	if ( $hostref ) {
 	    for my $type ( sort keys %$hostref ) {

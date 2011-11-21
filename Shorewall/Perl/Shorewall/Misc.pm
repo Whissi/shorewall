@@ -403,8 +403,6 @@ sub convert_blacklist() {
 
 	my $fn = open_file 'blacklist';
 
-	assert $fn;
-
 	first_entry "Converting $fn...";
 
 	while ( read_a_line ) {

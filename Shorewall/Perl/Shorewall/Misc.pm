@@ -528,13 +528,14 @@ EOF
 
 	    close $blrules;
 	} else {
-	    warning_message q(There are interfaces or zones with the 'blacklist' option but the 'blacklist' file is empty) unless @rules;
+	    warning_message q(There are interfaces or zones with the 'blacklist' option but the 'blacklist' file is empty or does not exist) unless @rules;
 	}
 	
-	rename $fn, "$fn.bak";
-
-	progress_message2 "Blacklist file $fn saved in $fn.bak";
-
+	if ( -f $fn ) {
+	    rename $fn, "$fn.bak";
+	    progress_message2 "Blacklist file $fn saved in $fn.bak";
+	}
+	
 	for my $file ( qw(zones interfaces hosts) ) {
 	    remove_blacklist $file;
 	}

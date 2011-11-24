@@ -3900,6 +3900,8 @@ sub get_configuration( $$$ ) {
 
     fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless supplied( $val ) && $val >= 0 && ( $val & ( 4096 ^ -1 ) ) <= 31;
 
+    require_capability 'XMULTIPORT', 'OPTIMIZE level 16', 's' if $val & 16;
+
     $globals{MARKING_CHAIN} = $config{MARK_IN_FORWARD_CHAIN} ? 'tcfor' : 'tcpre';
 
     if ( $val = $config{LOGFORMAT} ) {

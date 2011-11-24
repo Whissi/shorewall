@@ -2841,6 +2841,171 @@ sub optimize_level8( $$$ ) {
     $passes;
 }
 
+#
+# Returns a comma-separated list of destination ports from the passed rule
+#
+sub get_dports( $ ) {
+    my $ruleref = shift;
+
+    return $ruleref->{dport} if $ruleref->{dport};
+
+    my $multiref = $ruleref->{multiport};
+
+    return undef unless $multiref;
+
+    my $ports = '';
+
+    if ( reftype $multiref ) {
+	for ( @$multiref ) {
+	    $ports .= ",$1" if /^--dports (.*)/;
+	}
+    } else {
+	$ports = $1 if $multiref =~ /^--dports (.*)/;
+    }
+
+    $ports;
+}
+
+#
+# Returns a comma-separated list of multiport source ports from the passed rule
+#
+sub get_multi_sports( $ ) {
+    my $ruleref = shift;
+    my $ports = '';
+
+    if ( my $multiref = $ruleref->{multiport} ) {
+	if ( reftype $multiref ) {
+	    for ( @$multiref ) {
+		$ports .= ",$1" if /^--sports (.*)/;
+	    }
+	} else {
+	    $ports = $1 if $multiref =~ /^--sports (.*)/;
+	}
+    }
+
+    $ports;
+}
+
+#
+# The arguments are a list of rule references; returns a similar list with adjacent compatible rules combined
+#
+# Adjacent rules are compatible if:
+#
+#   - They all specify destination ports
+#   - All of the rest of their members are identical with the possible exception of 'comment'. 
+#
+#  Adjacent distinct comments are combined, separated by ', '. Redundant adjacent comments are dropped.
+#
+sub combine_dports {
+    my @rules;
+
+    if ( my $baseref = shift ) {
+      BASE:
+	{
+	    my $ruleref;
+	    my $ports1;
+	    
+	    if ( $ports1 = get_dports( $baseref ) ) {
+		my $proto       = $baseref->{p};
+		my @keys1       = sort grep $_ ne 'dport' && $_ ne 'comment', keys %$baseref;
+		my @ports       = ( split ',', $ports1 );
+		my $ports       = port_count( $ports1 );
+		my $origports   = @ports;
+		my $comment     = $baseref->{comment} || '';
+		my $lastcomment = $comment;
+		my $sourceports = get_multi_sports( $baseref );
+	      RULE:
+		while ( ( $ruleref = shift ) && $ports < 15 ) {
+		    my $ports2;
+
+		    if ( ( $ports2 = get_dports( $ruleref ) ) && $ruleref->{p} eq $proto ) {
+			#
+			# We have a candidate
+			#
+			my $comment2 = $ruleref->{comment} || '';
+
+			last if $comment2 ne $lastcomment && length( $comment ) + length( $comment2 ) > 253;
+
+			my @keys2 = sort grep $_ ne 'dport' && $_ ne 'comment',  keys %$ruleref;
+			    
+			last unless @keys1 == @keys2 ;
+
+			my $keynum = 0;
+			
+			for my $key ( @keys1 ) {
+			    last RULE unless $key eq $keys2[$keynum++];
+			    next if $baseref->{$key} eq $ruleref->{$key};
+			    last RULE unless $key eq 'multiport' && $sourceports eq get_multi_sports( $ruleref );
+			}
+			    
+			last if ( $ports += port_count( $ports2 ) ) > 15;
+
+			if ( $comment2 ) {
+			    if ( $comment ) {
+				$comment .= ", $comment2" unless $comment2 eq $lastcomment;
+			    } else {
+				$comment = 'Others and ';
+				last if length( $comment ) + length( $comment2 ) > 255;
+				$comment .= $comment2;
+			    }
+
+			    $lastcomment = $comment2;
+			} else {
+			    if ( $comment ) {
+				unless ( ( $comment2 = ' and others' ) eq $lastcomment ) {
+				    last if length( $comment ) + length( $comment2 ) > 255;
+				    $comment .= $comment2;
+				}
+			    }
+
+			    $lastcomment = $comment2;
+			}
+
+			push @ports, split ',', $ports2;
+		    } else {
+			last;
+		    }
+		}
+		    
+		if ( @ports > $origports ) {
+		    delete $baseref->{dport} if $baseref->{dport};
+
+		    if ( $sourceports ) {
+			$baseref->{multiport} = [ '--sports ' . $sourceports , '--dports ' . join(',', @ports ) ];
+		    } else {
+			$baseref->{'multiport'} = '--dports ' . join( ',' , @ports  );
+		    }
+
+		    $baseref->{comment} = $comment if $comment;
+		}
+	    } 
+	
+	    push @rules, $baseref;
+
+	    $baseref = $ruleref ? $ruleref : shift;
+
+	    redo BASE if $baseref;
+	}
+    }
+
+    \@rules;
+}
+	
+sub optimize_level16( $$$ ) {
+    my ( $table, $tableref , $passes ) = @_;
+    my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+    my @chains1  = @chains;
+    my $chains   = @chains;
+
+    progress_message "\n Table $table pass $passes, $chains referenced user chains, level 16...";
+
+    for my $chainref ( @chains ) {
+	$chainref->{rules} = combine_dports( @{$chainref->{rules}} );
+    }
+
+    $passes++;
+}
+
 sub optimize_ruleset() {
     for my $table ( qw/raw rawpost mangle nat filter/ ) {
 
@@ -2849,8 +3014,9 @@ sub optimize_ruleset() {
 	my $tableref = $chain_table{$table};
 	my $passes   = 0;
 
-	$passes =  optimize_level4( $table, $tableref )           if $config{OPTIMIZE} & 4;
-	$passes =  optimize_level8( $table, $tableref , $passes ) if $config{OPTIMIZE} & 8;
+	$passes =  optimize_level4(  $table, $tableref )           if $config{OPTIMIZE} & 4;
+	$passes =  optimize_level8(  $table, $tableref , $passes ) if $config{OPTIMIZE} & 8;
+	$passes =  optimize_level16( $table, $tableref , $passes ) if $config{OPTIMIZE} & 16;
 
 	progress_message "  Table $table Optimized -- Passes = $passes";
 	progress_message '';

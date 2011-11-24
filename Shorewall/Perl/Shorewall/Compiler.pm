@@ -522,7 +522,7 @@ EOF
 
 }
 
-#1
+#
 #  The Compiler.
 #
 #     Arguments are named -- see %parms below.
@@ -799,7 +799,7 @@ sub compiler {
 	#
 	generate_matrix;
 
-	if ( $config{OPTIMIZE} & 0xE ) {
+	if ( $config{OPTIMIZE} & 0x1E ) {
 	    progress_message2 'Optimizing Ruleset...';
 	    #
 	    # Optimize Policy Chains
@@ -808,7 +808,7 @@ sub compiler {
 	    #
 	    # More Optimization
 	    #
-	    optimize_ruleset if $config{OPTIMIZE} & 0xC;
+	    optimize_ruleset if $config{OPTIMIZE} & 0x1C;
 	}
 
 	enable_script;

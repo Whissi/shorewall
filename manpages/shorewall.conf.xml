@@ -1506,13 +1506,66 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
             <listitem>
               <para>Optimization category 8 - Added in Shorewall 4.4.9. When
-              set, causes chains with duplicate rules to be collapsed into a
+              set, causes chains with identical rules to be collapsed into a
               single chain.</para>
+            </listitem>
 
-              <caution>
-                <para>Optimization category 8 adds significantly to the time
-                required to compile a large ruleset.</para>
-              </caution>
+            <listitem>
+              <para>Optimization category 16 - Added in Shorewall 4.4.26. When
+              set, causes sequences of <firstterm>compatible</firstterm> rules
+              to be combined into a single rule. Rules are considered
+              compatible if they differ only in their destination ports and
+              comments.</para>
+
+              <para>A sequence of combatible rules is often generated when
+              macros are invoked in sequence.</para>
+
+              <para>The ability to combine adjacent rules is limited by two
+              factors:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>Destination port lists may only be combined up to a
+                  maximum of 15 ports, where a port-pair counts as two
+                  ports.</para>
+                </listitem>
+
+                <listitem>
+                  <para>Rules may only be combined until the length of their
+                  concatinated comment reaches 255 characters.</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>When either of these limits would be exceeded, the current
+              combined rule is emitted and the compiler attemts to combine
+              rules beginning with the one that would have exceeded the limit.
+              Adjacent combined comments are separated by ', '. Empty comments
+              at the front of a group of combined comments are replaced by
+              'Others and'. Empty comments at the end of a group of combined
+              comments are replaced by 'and others'.</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>Example 1:</term>
+
+                  <listitem>
+                    <para>Rules with comments "FOO", &lt;empty&gt; and "BAR"
+                    would result in the combined comment "FOO and others,
+                    BAR".</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>Example 2:</term>
+
+                  <listitem>
+                    <para>Rules with comments &lt;empty&gt;, "FOO" and "BAR"
+                    would reult in the combined comment "Others and FOO, BAR".
+                    Note: Optimize level 16 requires "Extended Multi-port
+                    Match" in your iptables and kernel.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
             </listitem>
           </itemizedlist>
 

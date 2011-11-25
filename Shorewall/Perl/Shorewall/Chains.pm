@@ -2847,20 +2847,18 @@ sub optimize_level8( $$$ ) {
 sub get_dports( $ ) {
     my $ruleref = shift;
 
-    return $ruleref->{dport} if $ruleref->{dport};
+    my $ports = $ruleref->{dport} || '';
 
-    my $multiref = $ruleref->{multiport};
-
-    return undef unless $multiref;
-
-    my $ports = '';
-
-    if ( reftype $multiref ) {
-	for ( @$multiref ) {
-	    $ports .= ",$1" if /^--dports (.*)/;
+    unless ( $ports ) {
+	if ( my $multiref = $ruleref->{multiport} ) {
+	    if ( reftype $multiref ) {
+		for ( @$multiref ) {
+		    $ports .= ",$1" if /^--dports (.*)/;
+		}
+	    } else {
+		$ports = $1 if $multiref =~ /^--dports (.*)/;
+	    }
 	}
-    } else {
-	$ports = $1 if $multiref =~ /^--dports (.*)/;
     }
 
     $ports;
@@ -2870,10 +2868,9 @@ sub get_dports( $ ) {
 # Returns a comma-separated list of multiport source ports from the passed rule
 #
 sub get_multi_sports( $ ) {
-    my $ruleref = shift;
     my $ports = '';
 
-    if ( my $multiref = $ruleref->{multiport} ) {
+    if ( my $multiref = $_[0]->{multiport} ) {
 	if ( reftype $multiref ) {
 	    for ( @$multiref ) {
 		$ports .= ",$1" if /^--sports (.*)/;
@@ -2887,7 +2884,7 @@ sub get_multi_sports( $ ) {
 }
 
 #
-# The arguments are a list of rule references; returns a similar list with adjacent compatible rules combined
+# The arguments are a list of rule references; function returns a similar list with adjacent compatible rules combined
 #
 # Adjacent rules are compatible if:
 #
@@ -2899,8 +2896,9 @@ sub get_multi_sports( $ ) {
 sub combine_dports {
     my @rules;
 
-    if ( my $baseref = shift ) {
-      BASE:
+    my $baseref = shift;
+
+    while ( $baseref ) {
 	{
 	    my $ruleref;
 	    my $ports1;
@@ -2914,7 +2912,9 @@ sub combine_dports {
 		my $comment     = $baseref->{comment} || '';
 		my $lastcomment = $comment;
 		my $sourceports = get_multi_sports( $baseref );
+
 	      RULE:
+
 		while ( ( $ruleref = shift ) && $ports < 15 ) {
 		    my $ports2;
 
@@ -2927,17 +2927,17 @@ sub combine_dports {
 			last if $comment2 ne $lastcomment && length( $comment ) + length( $comment2 ) > 253;
 
 			my @keys2 = sort grep $_ ne 'dport' && $_ ne 'comment',  keys %$ruleref;
-			    
+
 			last unless @keys1 == @keys2 ;
 
 			my $keynum = 0;
-			
+
 			for my $key ( @keys1 ) {
 			    last RULE unless $key eq $keys2[$keynum++];
 			    next if $baseref->{$key} eq $ruleref->{$key};
 			    last RULE unless $key eq 'multiport' && $sourceports eq get_multi_sports( $ruleref );
 			}
-			    
+   
 			last if ( $ports += port_count( $ports2 ) ) > 15;
 
 			if ( $comment2 ) {
@@ -2966,7 +2966,7 @@ sub combine_dports {
 			last;
 		    }
 		}
-		    
+
 		if ( @ports > $origports ) {
 		    delete $baseref->{dport} if $baseref->{dport};
 
@@ -2979,12 +2979,10 @@ sub combine_dports {
 		    $baseref->{comment} = $comment if $comment;
 		}
 	    } 
-	
+
 	    push @rules, $baseref;
 
 	    $baseref = $ruleref ? $ruleref : shift;
-
-	    redo BASE if $baseref;
 	}
     }
 
@@ -3014,9 +3012,9 @@ sub optimize_ruleset() {
 	my $tableref = $chain_table{$table};
 	my $passes   = 0;
 
-	$passes =  optimize_level4(  $table, $tableref )           if $config{OPTIMIZE} & 4;
-	$passes =  optimize_level8(  $table, $tableref , $passes ) if $config{OPTIMIZE} & 8;
-	$passes =  optimize_level16( $table, $tableref , $passes ) if $config{OPTIMIZE} & 16;
+	$passes = optimize_level4(  $table, $tableref )           if $config{OPTIMIZE} & 4;
+	$passes = optimize_level8(  $table, $tableref , $passes ) if $config{OPTIMIZE} & 8;
+	$passes = optimize_level16( $table, $tableref , $passes ) if $config{OPTIMIZE} & 16;
 
 	progress_message "  Table $table Optimized -- Passes = $passes";
 	progress_message '';

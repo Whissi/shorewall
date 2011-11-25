@@ -2884,6 +2884,13 @@ sub get_multi_sports( $ ) {
 }
 
 #
+# Return an array of keys for the passed rule. 'dport' and 'comment' are omitted;
+#
+sub get_keys( $ ) {
+    sort grep $_ ne 'dport' && $_ ne 'comment',  keys %{$_[0]};
+}
+
+#
 # The arguments are a list of rule references; function returns a similar list with adjacent compatible rules combined
 #
 # Adjacent rules are compatible if:
@@ -2904,14 +2911,14 @@ sub combine_dports {
 	    my $ports1;
 	    
 	    if ( $ports1 = get_dports( $baseref ) ) {
-		my $proto       = $baseref->{p};
-		my @keys1       = sort grep $_ ne 'dport' && $_ ne 'comment', keys %$baseref;
-		my @ports       = ( split ',', $ports1 );
-		my $ports       = port_count( $ports1 );
-		my $origports   = @ports;
-		my $comment     = $baseref->{comment} || '';
-		my $lastcomment = $comment;
-		my $sourceports = get_multi_sports( $baseref );
+		my $proto        = $baseref->{p};
+		my @keys1        = get_keys( $baseref );
+		my @ports        = ( split ',', $ports1 );
+		my $ports        = port_count( $ports1 );
+		my $origports    = @ports;
+		my $comment      = $baseref->{comment} || '';
+		my $lastcomment  = $comment;
+		my $multi_sports = get_multi_sports( $baseref );
 
 	      RULE:
 
@@ -2926,7 +2933,7 @@ sub combine_dports {
 
 			last if $comment2 ne $lastcomment && length( $comment ) + length( $comment2 ) > 253;
 
-			my @keys2 = sort grep $_ ne 'dport' && $_ ne 'comment',  keys %$ruleref;
+			my @keys2 = get_keys( $ruleref );
 
 			last unless @keys1 == @keys2 ;
 
@@ -2935,7 +2942,7 @@ sub combine_dports {
 			for my $key ( @keys1 ) {
 			    last RULE unless $key eq $keys2[$keynum++];
 			    next if $baseref->{$key} eq $ruleref->{$key};
-			    last RULE unless $key eq 'multiport' && $sourceports eq get_multi_sports( $ruleref );
+			    last RULE unless $key eq 'multiport' && $multi_sports eq get_multi_sports( $ruleref );
 			}
    
 			last if ( $ports += port_count( $ports2 ) ) > 15;
@@ -2970,8 +2977,8 @@ sub combine_dports {
 		if ( @ports > $origports ) {
 		    delete $baseref->{dport} if $baseref->{dport};
 
-		    if ( $sourceports ) {
-			$baseref->{multiport} = [ '--sports ' . $sourceports , '--dports ' . join(',', @ports ) ];
+		    if ( $multi_sports ) {
+			$baseref->{multiport} = [ '--sports ' . $multi_sports , '--dports ' . join(',', @ports ) ];
 		    } else {
 			$baseref->{'multiport'} = '--dports ' . join( ',' , @ports  );
 		    }
@@ -2991,7 +2998,7 @@ sub combine_dports {
 	
 sub optimize_level16( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
-    my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+    my @chains   = ( grep $_->{referenced}, values %{$tableref} );
     my @chains1  = @chains;
     my $chains   = @chains;
 

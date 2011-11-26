@@ -1406,17 +1406,29 @@ sub handle_stickiness( $ ) {
 
 		for my $chainref ( $stickyref, $setstickyref ) {
 		    if ( $chainref->{name} eq 'sticky' ) {
-			$rule1 = $_;
+			$rule1 = {};
+
+			while ( my ( $key, $value ) = each %$_ ) {
+			    $rule1->{$key} = $value;
+			}
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
 			set_rule_option( $rule1, 'recent', "--name $list --update --seconds 300" );
 
-			$rule2 = $_;
+			$rule2 = {};
+
+			while ( my ( $key, $value ) = each %$_ ) {
+			    $rule2->{$key} = $value;
+			}
 
 			clear_rule_target( $rule2 );
 			set_rule_option( $rule2, 'mark', "--mark 0/$mask -m recent --name $list --remove" );
 		    } else {
-			$rule1 = $_;
+			$rule1 = {};
+
+			while ( my ( $key, $value ) = each %$_ ) {
+			    $rule1->{$key} = $value;
+			}
 
 			clear_rule_target( $rule1 );
 			set_rule_option( $rule1, 'mark', "--mark $mark\/$mask -m recent --name $list --set" ); 
@@ -1439,17 +1451,29 @@ sub handle_stickiness( $ ) {
 
 		for my $chainref ( $stickoref, $setstickoref ) {
 		    if ( $chainref->{name} eq 'sticko' ) {
-			$rule1 = $_;
+			$rule1 = {};
+
+			while ( my ( $key, $value ) = each %$_ ) {
+			    $rule1->{$key} = $value;
+			}
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
-			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300 -j MARK --set-mark $mark" );
+			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300" );
 
-			$rule2 = $_;
+			$rule2 = {};
+
+			while ( my ( $key, $value ) = each %$_ ) {
+			    $rule2->{$key} = $value;
+			}
 			
 			clear_rule_target( $rule2 );
 			set_rule_option  ( $rule2, 'mark', "--mark 0\/$mask -m recent --name $list --rdest --remove" );
 		    } else {
-			$rule1 = $_;
+			$rule1 = {};
+
+			while ( my ( $key, $value ) = each %$_ ) {
+			    $rule1->{$key} = $value;
+			}
 
 			clear_rule_target( $rule1 );
 			set_rule_option  ( $rule1, 'mark', "--mark $mark -m recent --name $list --rdest --set" );

@@ -2944,6 +2944,8 @@ sub combine_dports {
 			    next if $baseref->{$key} eq $ruleref->{$key};
 			    last RULE unless $key eq 'multiport' && $multi_sports eq get_multi_sports( $ruleref );
 			}
+
+			next RULE if $ports1 eq $ports2;
    
 			last if ( $ports += port_count( $ports2 ) ) > 15;
 

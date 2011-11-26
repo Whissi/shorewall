@@ -868,7 +868,7 @@ sub compiler {
 	    #
 	    generate_matrix;
 
-	    if ( $config{OPTIMIZE} & 0xE ) {
+	    if ( $config{OPTIMIZE} & 0x1E ) {
 		progress_message2 'Optimizing Ruleset...';
 		#
 		# Optimize Policy Chains
@@ -877,7 +877,7 @@ sub compiler {
 		#
 		# Ruleset Optimization
 		#
-		optimize_ruleset if $config{OPTIMIZE} & 0xC;
+		optimize_ruleset if $config{OPTIMIZE} & 0x1C;
 	    }
 
 	    enable_script if $debug;

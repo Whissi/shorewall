@@ -2853,7 +2853,13 @@ sub get_dports( $ ) {
 	if ( my $multiref = $ruleref->{multiport} ) {
 	    if ( reftype $multiref ) {
 		for ( @$multiref ) {
-		    $ports .= ",$1" if /^--dports (.*)/;
+		    if ( /^--dports (.*)/ ) {
+			if ( $ports ) {
+			    $ports .= ",$1";
+			} else {
+			    $ports = $1;
+			}
+		    }
 		}
 	    } else {
 		$ports = $1 if $multiref =~ /^--dports (.*)/;
@@ -2873,7 +2879,13 @@ sub get_multi_sports( $ ) {
     if ( my $multiref = $_[0]->{multiport} ) {
 	if ( reftype $multiref ) {
 	    for ( @$multiref ) {
-		$ports .= ",$1" if /^--sports (.*)/;
+		if ( /^--sports (.*)/ ) {
+		    if ( $ports ) {
+			$ports .= ",$1";
+		    } else {
+			$ports = $1;
+		    }
+		}
 	    }
 	} else {
 	    $ports = $1 if $multiref =~ /^--sports (.*)/;

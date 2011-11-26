@@ -1146,6 +1146,24 @@ sub push_irule( $$$;@ ) {
     $ruleref;
 }
 
+#
+# Compare two rule hash values. If a value is a reference, then it will be an array reference
+#
+sub compare_values( $$ ) {
+    my ( $value1, $value2 ) = @_;
+
+    return $value1 eq $value2 unless reftype $value1;
+
+    if ( reftype $value2 && @$value1 == @$value2 ) {
+	my $offset = 0;
+	for ( @$value1 ) {
+	    return 0 unless $_ eq $value2->[$offset++];
+	}
+
+	1;
+    }
+}
+
 sub add_irule( $;@ ) {
     my ( $chainref, @matches ) = @_;
 
@@ -2953,7 +2971,7 @@ sub combine_dports {
 
 			for my $key ( @keys1 ) {
 			    last RULE unless $key eq $keys2[$keynum++];
-			    next if $baseref->{$key} eq $ruleref->{$key};
+			    next if compare_values( $baseref->{$key}, $ruleref->{$key} );
 			    last RULE unless $key eq 'multiport' && $multi_sports eq get_multi_sports( $ruleref );
 			}
 

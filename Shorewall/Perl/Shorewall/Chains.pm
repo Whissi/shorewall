@@ -41,6 +41,7 @@ our @EXPORT = qw(
 		    add_ijump
 		    insert_rule
 		    insert_irule
+		    clone_rule
 		    insert_ijump
 		    rule_target
 		    clear_rule_target
@@ -1281,6 +1282,20 @@ sub insert_irule( $$$$;@ ) {
 }
 
 #
+# Clone an existing rule. Only the rule hash itself is cloned; reference values are shared between the new rule
+# reference and the old.
+#
+sub clone_rule( $ ) {
+    my $oldruleref = $_[0];
+    my $newruleref = {};
+
+    while ( my ( $key, $value ) = each %$oldruleref ) {
+	$newruleref->{$key} = $value;
+    }
+
+    $newruleref;
+}
+
 # Do final work to 'delete' a chain. We leave it in the chain table but clear
 # the 'referenced', 'rules', 'references' and 'blacklist' members.
 #

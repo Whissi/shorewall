@@ -1406,29 +1406,17 @@ sub handle_stickiness( $ ) {
 
 		for my $chainref ( $stickyref, $setstickyref ) {
 		    if ( $chainref->{name} eq 'sticky' ) {
-			$rule1 = {};
-
-			while ( my ( $key, $value ) = each %$_ ) {
-			    $rule1->{$key} = $value;
-			}
+			$rule1 = clone_rule( $_ );
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
 			set_rule_option( $rule1, 'recent', "--name $list --update --seconds 300" );
 
-			$rule2 = {};
-
-			while ( my ( $key, $value ) = each %$_ ) {
-			    $rule2->{$key} = $value;
-			}
+			$rule2 = clone_rule( $_ );
 
 			clear_rule_target( $rule2 );
 			set_rule_option( $rule2, 'mark', "--mark 0/$mask -m recent --name $list --remove" );
 		    } else {
-			$rule1 = {};
-
-			while ( my ( $key, $value ) = each %$_ ) {
-			    $rule1->{$key} = $value;
-			}
+			$rule1 = clone_rule( $_ );
 
 			clear_rule_target( $rule1 );
 			set_rule_option( $rule1, 'mark', "--mark $mark\/$mask -m recent --name $list --set" ); 

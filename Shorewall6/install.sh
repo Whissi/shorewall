@@ -575,11 +575,6 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/tunnels ]; then
     run_install $OWNERSHIP -m 0600 tunnels${suffix} ${DESTDIR}/etc/shorewall6/tunnels
     echo "Tunnels file installed as ${DESTDIR}/etc/shorewall6/tunnels"
 fi
-#
-# Install the blacklist file
-#
-run_install $OWNERSHIP -m 0644 blacklist           ${DESTDIR}/usr/share/shorewall6/configfiles/
-run_install $OWNERSHIP -m 0644 blacklist.annotated ${DESTDIR}/usr/share/shorewall6/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall6/blacklist ]; then
     run_install $OWNERSHIP -m 0600 blacklist${suffix} ${DESTDIR}/etc/shorewall6/blacklist

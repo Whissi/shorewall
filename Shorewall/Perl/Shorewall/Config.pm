@@ -3025,13 +3025,8 @@ sub update_config_file( $ ) {
     my $annotate = shift;
 
     sub is_set( $ ) {
-	my $option = $_[0];
-
-	if ( defined $option ) {
-	    my $value = $config{$_[0]};
-	
-	    defined( $value ) && lc( $value ) eq 'yes';
-	}
+	my $value = $_[0];
+	defined( $value ) && lc( $value ) eq 'yes';
     }
 
     my $wide = is_set $config{WIDE_TC_MARKS};

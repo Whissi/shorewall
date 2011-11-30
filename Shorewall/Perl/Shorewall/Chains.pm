@@ -2947,13 +2947,15 @@ sub get_keys( $ ) {
 #
 sub combine_dports {
     my @rules;
-
-    my $baseref = shift;
+    my $rulenum  = 1;
+    my $chainref = shift;
+    my $baseref  = shift;
 
     while ( $baseref ) {
 	{
 	    my $ruleref;
 	    my $ports1;
+	    my $basenum = $rulenum;
 	    
 	    if ( $ports1 = get_dports( $baseref ) ) {
 		my $proto        = $baseref->{p};
@@ -2969,6 +2971,8 @@ sub combine_dports {
 
 		while ( ( $ruleref = shift ) && $ports < 15 ) {
 		    my $ports2;
+
+		    $rulenum++;
 
 		    if ( ( $ports2 = get_dports( $ruleref ) ) && $ruleref->{p} eq $proto ) {
 			#
@@ -3016,6 +3020,9 @@ sub combine_dports {
 			}
 
 			push @ports, split ',', $ports2;
+
+			trace( $chainref, 'D', $rulenum, $ruleref ) if $debug;
+			
 		    } else {
 			last;
 		    }
@@ -3031,6 +3038,8 @@ sub combine_dports {
 		    }
 
 		    $baseref->{comment} = $comment if $comment;
+
+		    trace ( $chainref, 'R', $basenum, $baseref ) if $debug;
 		}
 	    } 
 
@@ -3052,7 +3061,7 @@ sub optimize_level16( $$$ ) {
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 16...";
 
     for my $chainref ( @chains ) {
-	$chainref->{rules} = combine_dports( @{$chainref->{rules}} );
+	$chainref->{rules} = combine_dports( $chainref, @{$chainref->{rules}} );
     }
 
     $passes++;

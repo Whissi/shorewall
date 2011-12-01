@@ -697,7 +697,9 @@ sub add_a_provider( $$ ) {
 	    $weight = 1;
 	}
 
-	emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
+	unless ( $shared ) {
+	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
+	}
 
 	emit ( qq(progress_message2 "   Provider $table ($number) Started") );
 
@@ -776,9 +778,11 @@ sub add_a_provider( $$ ) {
 	emit (". $undo",
 	      "> $undo" );
 
-	emit( '', 
-	      "qt \$TC qdisc del dev $physical root",
-	      "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
+	unless ( $shared ) {
+	    emit( '', 
+		  "qt \$TC qdisc del dev $physical root",
+		  "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
+	}
 
 	emit( "progress_message2 \"   Provider $table ($number) stopped\"" );
 

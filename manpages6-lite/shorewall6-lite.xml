@@ -50,7 +50,8 @@
 
       <arg choice="plain"><option>disable</option></arg>
 
-      <arg choice="plain"><replaceable>interface</replaceable></arg>
+      <arg choice="plain">{ <replaceable>interface</replaceable> |
+      <replaceable>provider</replaceable> }</arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -90,7 +91,8 @@
 
       <arg choice="plain"><option>enable</option></arg>
 
-      <arg choice="plain"><replaceable>interface</replaceable></arg>
+      <arg choice="plain">{ <replaceable>interface</replaceable> |
+      <replaceable>provider</replaceable> }</arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -412,6 +414,18 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">disable</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. Disables the optional provider
+          associated with the specified <replaceable>interface</replaceable>
+          or <replaceable>provider</replaceable>. Where more than one provider
+          shares a single network interface, a
+          <replaceable>provider</replaceable> name must be given.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">drop</emphasis></term>
 
         <listitem>
@@ -432,6 +446,18 @@
           counts are abbreviated. The <emphasis role="bold">-m</emphasis>
           option causes any MAC addresses included in Shorewall6 Lite log
           messages to be displayed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">enable</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.26. Enables the optional provider
+          associated with the specified <replaceable>interface</replaceable>
+          or <replaceable>provider</replaceable>. Where more than one provider
+          shares a single network interface, a
+          <replaceable>provider</replaceable> name must be given.</para>
         </listitem>
       </varlistentry>
 

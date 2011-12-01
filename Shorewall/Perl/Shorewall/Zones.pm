@@ -76,6 +76,7 @@ our @EXPORT = qw( NOTHING
 		  get_interface_option
 		  interface_has_option
 		  set_interface_option
+		  set_interface_provider
 		  interface_zones
 		  verify_required_interfaces
 		  compile_updown

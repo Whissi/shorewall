@@ -385,8 +385,11 @@ sub process_a_provider() {
 		$loose   = 1;
 		$default_balance = 0;
 	    } elsif ( $option eq 'optional' ) {
-		warning_message q(The 'optional' provider option is deprecated - use the 'optional' interface option instead);
-		set_interface_option $interface, 'optional', 1;
+		unless ( $shared ) {
+		    warning_message q(The 'optional' provider option is deprecated - use the 'optional' interface option instead);
+		    set_interface_option $interface, 'optional', 1;
+		}
+
 		$optional = 1;
 	    } elsif ( $option =~ /^src=(.*)$/ ) {
 		fatal_error "OPTION 'src' not allowed on shared interface" if $shared;

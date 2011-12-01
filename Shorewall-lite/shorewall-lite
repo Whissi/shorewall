@@ -365,8 +365,10 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   clear"
     echo "   delete <interface>[:<host-list>] ... <zone>"
+    echo "   disable <interface>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
+    echo "   enable <interface>"
     echo "   forget [ <file name> ]"
     echo "   help"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
@@ -664,7 +666,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
+	[ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
 	echo "Shorewall Lite $SHOREWALL_VERSION Status at $g_hostname - $(date)"
 	echo
 	if shorewall_is_started ; then
@@ -753,6 +755,14 @@ case "$COMMAND" in
 	get_config
 	shift
 	add_command $@
+	;;
+    disable|enable)
+	get_config Yes
+	if shorewall_is_started; then
+	    run_it ${VARDIR}/firewall $g_debugging $@
+	else
+	    fatal_error "Shorewall is not running"
+	fi
 	;;
     save)
 	[ -n "$debugging" ] && set -x

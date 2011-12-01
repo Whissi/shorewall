@@ -1379,7 +1379,7 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message "Getting Capabilities on system $system..."
 	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $directory/capabilities; then
-	    fatal_error "ERROR: Capturing capabilities on system $system failed"
+	    fatal_error "Capturing capabilities on system $system failed"
 	fi
     fi
 
@@ -1460,7 +1460,7 @@ export_command() # $* = original arguments less the command.
 	    target=$2
 	    ;;
 	*)
-	    fatal_error "ERROR: Invalid command syntax (\"man shorewall\" for help)"
+	    fatal_error "Invalid command syntax (\"man shorewall\" for help)"
 	    ;;
     esac
 
@@ -1499,8 +1499,10 @@ usage() # $1 = exit status
     echo "   clear"
     echo "   compile [ -e ] [ -d ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"
+    echo "   disable <interface>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
+    echo "   enable <interface>"
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
@@ -1844,6 +1846,14 @@ case "$COMMAND" in
 	shift
 	update_command $@
 	;;
+    disable|enable)
+	get_config Yes
+	if shorewall_is_started; then
+	    run_it ${VARDIR}/firewall $g_debugging $@
+	else
+	    fatal_error "Shorewall is not running"
+	fi
+	;;
     show|list)
 	get_config Yes No Yes
     	shift
@@ -1861,7 +1871,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
+	[ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
 	get_config
 	echo "Shorewall-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
 	echo

@@ -361,8 +361,10 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   allow <address> ..."
     echo "   clear"
+    echo "   disable <interface>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
+    echo "   enable <interface>"
     echo "   forget [ <file name> ]"
     echo "   help"
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
@@ -648,7 +650,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	[ "$(id -u)" != 0 ] && fatal_error "ERROR: The status command may only be run by root"
+	[ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
 	echo "Shorewall6 Lite $SHOREWALL_VERSION Status at $g_hostname - $(date)"
 	echo
 	if shorewall6_is_started ; then
@@ -728,6 +730,14 @@ case "$COMMAND" in
     allow)
 	allow_command $@
 	;;
+    disable|enable)
+	get_config Yes
+	if shorewall6_is_started; then
+	    run_it ${VARDIR}/firewall $g_debugging $@
+	else
+	    fatal_error "Shorewall is not running"
+	fi
+	;;
     save)
 	[ -n "$debugging" ] && set -x
 
@@ -806,7 +816,6 @@ case "$COMMAND" in
 	temp=$(ip_network $address);       echo "   NETWORK=$temp"
 	temp=$(broadcastaddress $address); echo "   BROADCAST=$temp"
 	;;
-
     iprange)
 	[ -n "$debugging" ] && set -x
 	case $2 in

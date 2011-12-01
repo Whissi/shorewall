@@ -780,7 +780,7 @@ sub add_a_provider( $$ ) {
 	      "qt \$TC qdisc del dev $physical root",
 	      "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
 
-	emit( "progress_message2 \"Provider $table stopped\"" );
+	emit( "progress_message2 \"   Provider $table ($number) stopped\"" );
 
 	pop_indent;
 
@@ -1125,14 +1125,21 @@ EOF
     for my $provider (@providers ) {
 	my $providerref = $providers{$provider};
 
-	emit( "$providerref->{physical})",
-	      "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
-	      "        start_provider_$provider",
-	      '    else',
-	      '        startup_error "Interface $g_interface is already enabled"',
-	      '    fi',
-	      '    ;;'
-	    ) if $providerref->{optional};
+	if ( $providerref->{optional} ) {
+	    if ( $providerref->{shared} || $providerref->{physical} eq $provider) {
+		emit "$provider})";
+	    } else {
+		emit( "$providerref->{physical}|$provider)" );
+	    }
+
+	    emit ( "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
+		   "        start_provider_$provider",
+		   '    else',
+		   '        startup_error "Interface $g_interface is already enabled"',
+		   '    fi',
+		   '    ;;'
+		 );
+	}
     }
 
     pop_indent;
@@ -1140,7 +1147,7 @@ EOF
 
     emit << 'EOF';;
         *)
-            startup_error "$g_interface is not an optional provider interface"
+            startup_error "$g_interface is not an optional provider or provider interface"
             ;;
     esac
 }

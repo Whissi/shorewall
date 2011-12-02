@@ -529,8 +529,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , '');
 
     $export = 0;
     $test   = 0;
@@ -566,7 +566,8 @@ sub compiler {
 		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
 		  update        => { store => \$update,        validate=> \&validate_boolean    } ,
 		  convert       => { store => \$convert,       validate=> \&validate_boolean    } ,
-		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,		  
+		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,
+		  config_path   => { store => \$config_path } ,
 		);
     #
     #                               P A R A M E T E R    P R O C E S S I N G
@@ -585,6 +586,8 @@ sub compiler {
     # Now that we know the address family (IPv4/IPv6), we can initialize the other modules' globals
     #
     initialize_package_globals( $update );
+
+    set_config_path( $config_path ) if $config_path;
 
     if ( $directory ne '' ) {
 	fatal_error "$directory is not an existing directory" unless -d $directory;

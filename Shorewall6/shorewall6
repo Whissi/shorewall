@@ -366,6 +366,10 @@ compiler() {
     # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
     #
     ensure_config_path
+    #
+    # Get the config from $SHOREWALL_DIR
+    #
+    [ -n "$SHOREWALL_DIR" -a "$SHOREWALL_DIR" != /etc/shorewall6 ] && get_config
 
     case $COMMAND in
 	*start|try|refresh)
@@ -386,7 +390,7 @@ compiler() {
     [ "$1" = nolock ] && shift;
     shift
 
-    options="--verbose=$VERBOSITY --family=6"
+    options="--verbose=$VERBOSITY --family=6 --config_path=$CONFIG_PATH"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"

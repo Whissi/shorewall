@@ -37,6 +37,7 @@
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
 #         --family=<number>           # IP family; 4 = IPv4 (default), 6 = IPv6
 #         --preview                   # Preview the ruleset.
+#         --config_path=<path-list>   # Search path for config files
 #
 use strict;
 use FindBin;
@@ -64,6 +65,7 @@ sub usage( $ ) {
     [ --annotate ]
     [ --update ]
     [ --convert ]
+    [ --config_path=<path-list> ]
 ';
 
     exit shift @_;
@@ -88,6 +90,7 @@ my $preview       = 0;
 my $annotate      = 0;
 my $update        = 0;
 my $convert       = 0;
+my $config_path   = '';
 
 Getopt::Long::Configure ('bundling');
 
@@ -118,6 +121,7 @@ my $result = GetOptions('h'               => \$help,
 			'u'               => \$update,
 			'update'          => \$update,
 			'convert'         => \$convert,
+			'config_path=s'   => \$config_path,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -139,4 +143,5 @@ compiler( script          => $ARGV[0] || '',
 	  update          => $update,
 	  convert         => $convert,
 	  annotate        => $annotate,
+	  config_path     => $config_path,
 	);

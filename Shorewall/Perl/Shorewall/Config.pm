@@ -63,7 +63,7 @@ our @EXPORT = qw(
 		 require_capability
                 );
 
-our @EXPORT_OK = qw( $shorewall_dir initialize set_config_path shorewall);
+our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       finalize_script
@@ -87,6 +87,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       set_timestamp
 				       set_verbosity
 				       set_log
+				       set_config_path
 				       close_log
 				       set_command
 				       push_indent
@@ -484,16 +485,10 @@ sub initialize( $ ) {
 	  TC => undef,
 	  IPSET => undef,
 	  PERL => undef,
-	  #
-	  #PATH is inherited
-	  #
 	  PATH => undef,
 	  SHOREWALL_SHELL => undef,
 	  SUBSYSLOCK => undef,
 	  MODULESDIR => undef,
-	  #
-	  #CONFIG_PATH is inherited
-	  #
 	  CONFIG_PATH => undef,
 	  RESTOREFILE => undef,
 	  IPSECFILE => undef,

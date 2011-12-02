@@ -386,7 +386,7 @@ compiler() {
     [ "$1" = nolock ] && shift;
     shift
 
-    options="--verbose=$VERBOSITY --family=6"
+    options="--verbose=$VERBOSITY --family=6 --config_path=$CONFIG_PATH"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"

@@ -24,11 +24,11 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#       For a list of supported commands, type 'shorewall help'
+#       For a list of supported commands, type 'shorewall help' or 'shorewall6 help'
 #
 ################################################################################################
 #
-# Set the configuration variables from shorewall.conf
+# Set the configuration variables from the .conf file
 #
 #     $1 = Yes: read the params file
 #     $2 = Yes: check for STARTUP_ENABLED
@@ -47,7 +47,7 @@ get_config() {
 	fi
     fi
 
-    config=$(find_file shorewall.conf)
+    config=$(find_file $g_program.conf)
 
     if [ -f $config ]; then
 	if [ -r $config ]; then
@@ -80,17 +80,36 @@ get_config() {
 	    fi
 	fi
 
-	if [ -n "$IPTABLES" ]; then
-	    if [ ! -x "$IPTABLES" ]; then
-		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
-		exit 2
+	if [ $g_family -eq 4 ]; then
+	    if [ -n "$IPTABLES" ]; then
+		if [ ! -x "$IPTABLES" ]; then
+		    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+		    exit 2
+		fi
+	    else
+		IPTABLES=$(mywhich iptables 2> /dev/null)
+		if [ -z "$IPTABLES" ] ; then
+		    echo "   ERROR: Can't find iptables executable" >&2
+		    exit 2
+		fi
 	    fi
+	    
+	    g_tool=$IPTABLES
 	else
-	    IPTABLES=$(mywhich iptables 2> /dev/null)
-	    if [ -z "$IPTABLES" ] ; then
-		echo "   ERROR: Can't find iptables executable" >&2
-		exit 2
+	    if [ -n "$IP6TABLES" ]; then
+		if [ ! -x "$IP6TABLES" ]; then
+		    echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
+		    exit 2
+		fi
+	    else
+		IP6TABLES=$(mywhich ip6tables 2> /dev/null)
+		if [ -z "$IP6TABLES" ] ; then
+		    echo "   ERROR: Can't find ip6tables executable" >&2
+		    exit 2
+		fi
 	    fi
+
+	    g_tool=$IP6TABLES
 	fi
 
 	if [ -n "$IP" ]; then
@@ -165,7 +184,7 @@ get_config() {
 	if [ "$2" = Yes ]; then
 	    case $STARTUP_ENABLED in
 		No|no|NO)
-		    echo "   ERROR: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
+		    echo "   ERROR: $g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/${g_program}.conf" >&2
 		    exit 2
 		    ;;
 		Yes|yes|YES)
@@ -358,8 +377,8 @@ compiler() {
     pc=$g_libexec/shorewall/compiler.pl
 
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/shorewall ]; then
-	    startup_error "Ordinary users may not compile the /etc/shorewall configuration"
+	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/$g_program ]; then
+	    startup_error "Ordinary users may not compile the /etc/$g_program configuration"
 	fi
     fi
     #
@@ -369,7 +388,7 @@ compiler() {
     #
     # Get the config from $SHOREWALL_DIR
     #
-    [ -n "$SHOREWALL_DIR" -a "$SHOREWALL_DIR" != /etc/shorewall ] && get_config
+    [ -n "$SHOREWALL_DIR" -a "$SHOREWALL_DIR" != /etc/$g_program ] && get_config
 
     case $COMMAND in
 	*start|try|refresh)
@@ -390,7 +409,7 @@ compiler() {
     [ "$1" = nolock ] && shift;
     shift
 
-    options="--verbose=$VERBOSITY --config_path=$CONFIG_PATH"
+    options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"
@@ -424,6 +443,17 @@ compiler() {
 }
 
 #
+# Determine if the current product is in the started state
+#
+product_is_started() {
+    if [ $g_family -eq 4 ]; then
+	shorewall_is_started
+    else
+	shorewall6_is_started
+    fi
+}
+
+#
 # Start Command Executor
 #
 start_command() {
@@ -449,14 +479,14 @@ start_command() {
 		[ -n "$nolock" ] || mutex_off
 	    else
 		rc=$?
-		logger -p kern.err "ERROR:Shorewall start failed"
+		logger -p kern.err "ERROR:$g_product start failed"
 	    fi
 	fi
 
 	exit $rc
     }
 
-    if shorewall_is_started; then
+    if product_is_started; then
 	error_message "Shorewall is already running"
 	exit 0
     fi
@@ -552,7 +582,7 @@ start_command() {
 	    run_it $g_restorepath restore
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
-	    [ $rc -eq 0 ] && progress_message3 "Shorewall restored from $g_restorepath"
+	    [ $rc -eq 0 ] && progress_message3 "$g_product restored from $g_restorepath"
 	    exit $rc
 	else
 	    do_it
@@ -916,7 +946,7 @@ restart_command() {
 	    [ -n "$nolock" ] || mutex_off
 	else
 	    rc=$?
-	    logger -p kern.err "ERROR:Shorewall restart failed"
+	    logger -p kern.err "ERROR:$g_product restart failed"
 	fi
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
@@ -973,7 +1003,7 @@ refresh_command() {
 	g_refreshchains=:refresh:
     fi
 
-    shorewall_is_started || fatal_error "Shorewall is not running"
+    product_is_started || fatal_error "$g_product is not running"
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
@@ -1058,7 +1088,7 @@ safe_commands() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    if shorewall_is_started; then
+    if product_is_started; then
 	running=Yes
     else
 	running=
@@ -1071,7 +1101,7 @@ safe_commands() {
     fi
 
     if [ "$COMMAND" = "safe-start" -o -z "$running" ]; then
-	# the command is safe-start or shorewall is not started yet
+	# the command is safe-start or shorewall[6] is not started yet
 	command="start"
     else
 	# the command is safe-restart and the firewall is already running
@@ -1200,14 +1230,14 @@ try_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    if shorewall_is_started; then
+    if product_is_started; then
 	running=Yes
     else
 	running=
     fi
 
     if [ -z "$running" ]; then
-	# shorewall is not started yet
+	# shorewall[6] is not started yet
 	command="start"
     else
 	# the firewall is already running
@@ -1289,7 +1319,7 @@ reload_command() # $* = original arguments less the command.
     local libexec
     libexec=/usr/share
 
-    litedir=/var/lib/shorewall-lite
+    litedir=/var/lib/${g_program}-lite
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1344,11 +1374,11 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    temp=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+    temp=$(rsh_command /sbin/${g_program}-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
     [ -n "$temp" ] && litedir="$temp"
 
-    temp=$(rsh_command /sbin/shorewall-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
+    temp=$(rsh_command /sbin/${g_program}-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
 
     if [ -n "$temp" ]; then
 	case $temp in
@@ -1368,12 +1398,12 @@ reload_command() # $* = original arguments less the command.
 	[ -f $capabilities ] || getcaps=Yes
     fi
 
-    if [ -f $directory/shorewall.conf ]; then
+    if [ -f $directory/${g_program}.conf ]; then
 	if [ -f $directory/params ]; then
 	    . $directory/params
 	fi
 
-	. $directory/shorewall.conf
+	. $directory/$g_program.conf
 	
 	ensure_config_path
     fi
@@ -1382,7 +1412,11 @@ reload_command() # $* = original arguments less the command.
 	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
 
 	progress_message "Getting Capabilities on system $system..."
-	if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $directory/capabilities; then
+	if [ $g_family -eq 4 ]; then
+	    if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $directory/capabilities; then
+	        fatal_error "Capturing capabilities on system $system failed"
+	    fi
+	elif ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
 	    fatal_error "Capturing capabilities on system $system failed"
 	fi
     fi
@@ -1391,25 +1425,25 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$g_timestamp" ] && timestamp='-t' || timestamp=
 
-    if shorewall $g_debugging $verbose $timestamp compile -e $directory $directory/firewall && \
+    if $g_program $g_debugging $verbose $timestamp compile -e $directory $directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
 	rcp_command "$directory/firewall $directory/firewall.conf" ${litedir}
     then
 	save=$(find_file save);
 
-	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/shorewall-lite/" && rcp_command $save /etc/shorewall-lite/
+	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/${g_program}-lite/" && rcp_command $save /etc/shorewall-lite/
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp restart" && \
+	    rsh_command "/sbin/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp start" && \
+	    rsh_command "/sbin/${g_program}-lite $g_debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "/sbin/shorewall-lite $g_debugging $verbose $timestamp save" && \
+	    rsh_command "/sbin/${g_program}-lite $g_debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
@@ -1464,7 +1498,7 @@ export_command() # $* = original arguments less the command.
 	    target=$2
 	    ;;
 	*)
-	    fatal_error "Invalid command syntax (\"man shorewall\" for help)"
+	    fatal_error "Invalid command syntax (\"man $g_program\" for help)"
 	    ;;
     esac
 
@@ -1478,7 +1512,7 @@ export_command() # $* = original arguments less the command.
 
     file=$(resolve_file $directory/firewall)
 
-    if shorewall $g_debugging $verbose compile -e $directory $directory/firewall && \
+    if $g_program $g_debugging $verbose compile -e $directory $directory/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $directory/firewall $directory/firewall.conf $target
     then
@@ -1510,16 +1544,26 @@ usage() # $1 = exit status
     echo "   export [ <directory1> ] [<user>@]<system>[:<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help"
-    echo "   hits [ -t ]"
-    echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
-    echo "   ipdecimal { <address> | <integer> }"
-    echo "   iprange <address>-<address>"
+
+    if [ $g_family -eq 4 ]; then
+	echo "   hits [ -t ]"
+	echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
+	echo "   ipdecimal { <address> | <integer> }"
+	echo "   iprange <address>-<address>"
+    fi
+
     echo "   iptrace <iptables match expression>"
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
-    echo "   noiptrace <iptables match expression>"
+
+    if [ $g_family -eq 4 ]; then
+	echo "   noiptrace <iptables match expression>"
+    else
+	echo "   noiptrace <ip6tables match expression>"
+    fi
+
     echo "   refresh [ <chain>... ]"
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
@@ -1538,7 +1582,7 @@ usage() # $1 = exit status
     echo "   show dynamic <zone>"
     echo "   show filters"
     echo "   show ip"
-    echo "   show ipa"
+    [ $g_family -eq 4 ] && echo "   show ipa"
     echo "   show [ -m ] log [<regex>]"
     echo "   show macro <macro>"
     echo "   show macros"
@@ -1599,8 +1643,8 @@ version_command() {
     echo $SHOREWALL_VERSION
 
     if [ -n "$all" ]; then
-	for product in shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ -f /usr/share/$product/version ]; then
+	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
+	    if [ $product != $g_program -a -f /usr/share/$product/version ]; then
 		echo "$product: $(cat /usr/share/$product/version)"
 	    fi
 	done
@@ -1748,9 +1792,22 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHAREDIR=/usr/share/shorewall
-CONFDIR=/etc/shorewall
-g_product="Shorewall"
+g_program=$(basename $0)
+
+if [ $g_program = shorewall6 ]; then
+    SHAREDIR=/usr/share/shorewall6
+    CONFDIR=/etc/shorewall6
+    g_product="Shorewall6"
+    g_family=6
+    g_tool=
+else
+    g_program=shorewall
+    SHAREDIR=/usr/share/shorewall
+    CONFDIR=/etc/shorewall
+    g_product="Shorewall"
+    g_family=4
+fi
+
 g_recovering=
 g_timestamp=
 g_libexec=/usr/share
@@ -1758,7 +1815,7 @@ g_perllib=/usr/share/shorewall
 
 [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
 
-[ -n "${VARDIR:=/var/lib/shorewall}" ]
+[ -n "${VARDIR:=/var/lib/$g_program}" ]
 
 if [ ! -f ${VARDIR}/firewall ]; then
     [ -f ${VARDIR}/.restore ] && cp -f ${VARDIR}/.restore ${VARDIR}/firewall
@@ -1774,12 +1831,12 @@ version_file=$SHAREDIR/version
 if [ -f $version_file ]; then
     SHOREWALL_VERSION=$(cat $version_file)
 else
-    echo "   ERROR: Shorewall is not properly installed" >&2
+    echo "   ERROR: $g_product is not properly installed" >&2
     echo "	 The file $version_file does not exist"  >&2
     exit 1
 fi
 
-banner="Shorewall-$SHOREWALL_VERSION Status at $g_hostname -"
+banner="${g_product}-${SHOREWALL_VERSION} Status at $g_hostname -"
 
 case $(echo -e) in
     -e*)
@@ -1812,7 +1869,7 @@ case "$COMMAND" in
     stop|clear)
 	[ $# -ne 1 ] && usage 1
 	get_config
-	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
+	[ -x $g_firewall ] || fatal_error "$g_product has never been started"
 	[ -n "$nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging $COMMAND
 	[ -n "$nolock" ] || mutex_off
@@ -1821,7 +1878,7 @@ case "$COMMAND" in
 	get_config
 	shift
 	[ -n "$nolock" ] || mutex_on
-	[ -x $g_firewall ] || fatal_error "Shorewall has never been started"
+	[ -x $g_firewall ] || fatal_error "$g_product has never been started"
 	run_it $g_firewall $g_debugging reset $@
 	[ -n "$nolock" ] || mutex_off
 	;;
@@ -1852,7 +1909,7 @@ case "$COMMAND" in
 	;;
     disable|enable)
 	get_config Yes
-	if shorewall_is_started; then
+	if product_is_started; then
 	    run_it ${VARDIR}/firewall $g_debugging $@
 	else
 	    fatal_error "Shorewall is not running"
@@ -1877,13 +1934,13 @@ case "$COMMAND" in
 	[ $# -eq 1 ] || usage 1
 	[ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
 	get_config
-	echo "Shorewall-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
+	echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
 	echo
-	if shorewall_is_started ; then
-	    echo "Shorewall is running"
+	if product_is_started ; then
+	    echo "$g_product is running"
 	    status=0
 	else
-	    echo "Shorewall is stopped"
+	    echo "$g_product is stopped"
 	    status=4
 	fi
 
@@ -1907,6 +1964,7 @@ case "$COMMAND" in
     	dump_command $@
 	;;
     hits)
+	[ $g_family -eq 6 ] && usage 1
 	get_config Yes No Yes
 	[ -n "$g_debugging" ] && set -x
 	shift
@@ -1923,14 +1981,14 @@ case "$COMMAND" in
 	;;
     logwatch)
 	get_config Yes Yes Yes
-	banner="Shorewall-$SHOREWALL_VERSION Logwatch at $g_hostname -"
+	banner="${g_product}-$SHOREWALL_VERSION Logwatch at $g_hostname -"
 	logwatch_command $@
 	;;
     drop)
 	get_config
 	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if product_is_started ; then
 	    if ! chain_exists dynamic; then
 		echo "Dynamic blacklisting is not supported in the current $g_product configuration"
 		exit 2
@@ -1940,14 +1998,14 @@ case "$COMMAND" in
 	    block DROP Dropped $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "$g_product is not started"
 	fi
 	;;
     logdrop)
 	get_config
 	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if product_is_started ; then
 	    if ! chain_exists dynamic; then
 		echo "Dynamic blacklisting is not supported in the current $g_product configuration"
 		exit 2
@@ -1957,19 +2015,19 @@ case "$COMMAND" in
 	    block logdrop Dropped $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "$g_product is not started"
 	fi
 	;;
     reject|logreject)
 	get_config
 	[ -n "$g_debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if shorewall_is_started ; then
+	if product_is_started ; then
 	    [ -n "$nolock" ] || mutex_on
 	    block $COMMAND Rejected $*
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "$g_product is not started"
 	fi
 	;;
     allow)
@@ -2036,11 +2094,12 @@ case "$COMMAND" in
 	    rm -f ${g_restorepath}-ipsets
 	    echo "    $g_restorepath removed"
 	elif [ -f $g_restorepath ]; then
-	    echo "   $g_restorepath exists and is not a saved Shorewall configuration"
+	    echo "   $g_restorepath exists and is not a saved $g_product configuration"
 	fi
 	rm -f ${VARDIR}/save
 	;;
     ipcalc)
+	[ $g_family -eq 6 ] && usage 1
     	[ -n "$g_debugging" ] && set -x
 	if [ $# -eq 2 ]; then
 	    address=${2%/*}
@@ -2120,20 +2179,20 @@ case "$COMMAND" in
 	get_config
 	shift
 	if shorewall_is_started ; then
-	    $IPTABLES -t raw -A PREROUTING $@ -j TRACE
-	    $IPTABLES -t raw -A OUTPUT $@ -j TRACE
+	    $g_tool -t raw -A PREROUTING $@ -j TRACE
+	    $g_tool -t raw -A OUTPUT $@ -j TRACE
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "$g_product is not started"
 	fi
 	;;
      noiptrace)
 	get_config
 	shift
 	if shorewall_is_started ; then
-	    $IPTABLES -t raw -D PREROUTING $@ -j TRACE
-	    $IPTABLES -t raw -D OUTPUT $@ -j TRACE
+	    $g_tool -t raw -D PREROUTING $@ -j TRACE
+	    $g_tool -t raw -D OUTPUT $@ -j TRACE
 	else
-	    fatal_error "Shorewall is not started"
+	    fatal_error "$g_product is not started"
 	fi
 	;;
     *)

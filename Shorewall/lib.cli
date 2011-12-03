@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -20,8 +20,8 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# This library contains the command processing code common to /sbin/shorewall and
-# /sbin/shorewall-lite.
+# This library contains the command processing code common to /sbin/shorewall[6] and
+# /sbin/shorewall[6]-lite.
 #
 
 #
@@ -70,15 +70,18 @@ showchain() # $1 = name of chain
 
 iptablesbug()
 {
-    if qt mywhich awk ; then
-	awk 'BEGIN           { sline=""; };\
+    if [ $g_family -eq 4 ]; then
+	if qt mywhich awk ; then
+	    awk 'BEGIN           { sline=""; };\
              /^-j/           { print sline $0; next };\
              /-m policy.*-j/ { print $0; next };\
              /-m policy/     { sline=$0; next };\
              /--mask ff/     { sub( /--mask ff/, "--mask 0xff" ) };\
                              { print ; sline="" }'
+        else
+	    echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
+	    cat
     else
-	echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
 	cat
     fi
 }
@@ -152,18 +155,30 @@ syslog_circular_buffer() {
 packet_log() # $1 = number of messages
 {
     if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
-	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
-    else
+	if [ $g_family -eq 4 ]; then
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	else
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | head -n$1 | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	fi
+    elif [ $family -eq 4 ]; then
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
+    else
+	$g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' |  head -n$1 | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
     fi
 }
 
 search_log() # $1 = IP address to search for
 {
     if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
-	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
-    else
+        if [ $g_family -eq 4 ]; then
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	else
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	fi
+    elif [ $g_family -eq 4 ]; then
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
+    else
+	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
     fi
 }
 
@@ -239,7 +254,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     fi
 
     host=$(echo $g_hostname | sed 's/\..*$//')
-    oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
+    oldrejects=$($g_tool -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	timeout=$((- $1))
@@ -261,7 +276,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=$($IPTABLES -L -v -n | grep 'LOG')
+	rejects=$($g_tool -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -357,11 +372,11 @@ save_config() {
     local result
     result=1
 
-    iptables_save=${IPTABLES}-save
+    iptables_save=${g_tool}-save
 
     [ -x $iptables_save ] || echo "$iptables-save does not exist or is not executable" >&2
 
-    if shorewall_is_started ; then
+    if product_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
 	if [ -f $g_restorepath -a ! -x $g_restorepath ]; then
@@ -378,7 +393,7 @@ save_config() {
 	    esac
 	fi
     else
-	echo "Shorewall isn't started" >&2
+	echo "$g_product isn't started" >&2
     fi
 
     return 0
@@ -389,23 +404,23 @@ save_config() {
 # Show routing configuration
 #
 show_routing() {
-    if [ -n "$(ip rule list)" ]; then
+    if [ -n "$(ip -$g_family rule list)" ]; then
 	heading "Routing Rules"
-	ip rule list
-	ip rule list | while read rule; do
+	ip -$g_family rule list
+	ip -$g_family rule list | while read rule; do
 	    echo ${rule##* }
 	done | sort -u | while read table; do
 	    heading "Table $table:"
-	    ip route list table $table
+	    ip -$g_family route list table $table
 	done
 
 	if [ -n "$g_routecache" ]; then
 	    heading "Route Cache"
-	    ip -4 route list cache
+	    ip -$g_family route list cache
 	fi
     else
 	heading "Routing Table"
-	ip route list
+	ip -$g_family route list
     fi
 }
 
@@ -426,7 +441,11 @@ list_zone() {
 
     [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
 
-    sets=$(ipset -L -n | grep '^$1_');
+    if [ $g_family -eq 4 ]; then
+	sets=$(ipset -L -n | grep '^$1_');
+     else
+	sets=$(ipset -L -n | grep "^6_$1_")
+    fi
 
     [ -n "$sets" ] || sets=$(find_sets $1)
 
@@ -440,7 +459,7 @@ list_zone() {
 }
 
 #
-# Show Filter - For Shorewall-lite, if there was an scfilter file at compile-time,
+# Show Filter - For Shorewall[6]-lite, if there was an scfilter file at compile-time,
 #               then the compiler generated another version of this function and
 #               embedded it in the firewall.conf file. That version supersedes this
 #               one.
@@ -566,26 +585,38 @@ show_command() {
 	connections)
 	    [ $# -gt 1 ] && usage 1
 
-	    if [ -d /proc/sys/net/netfilter/ ]; then
-		local count
-		local max
-		count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-		max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-		echo "$g_product $SHOREWALL_VERSION Connections ($count out of $max) at $g_hostname - $(date)"
-	    else
-		echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
-	    fi
-
-	    echo
-
-	    if qt mywhich conntrack ; then
-		conntrack -f ipv4 -L | show_connections_filter
-	    else
-		if [ -f /proc/net/ip_conntrack ]; then
-		    cat /proc/net/ip_conntrack | show_connections_filter
+	    if [ $g_family -eq 4 ]; then
+		if [ -d /proc/sys/net/netfilter/ ]; then
+		    local count
+		    local max
+		    count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+		    max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+		    echo "$g_product $SHOREWALL_VERSION Connections ($count out of $max) at $g_hostname - $(date)"
 		else
-		    grep -v '^ipv6' /proc/net/nf_conntrack | show_connections_filter
+		    echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
 		fi
+
+		echo
+
+		if qt mywhich conntrack ; then
+		    conntrack -f ipv${g_family} -L | show_connections_filter
+		else
+		    if [ -f /proc/net/ip_conntrack ]; then
+			cat /proc/net/ip_conntrack | show_connections_filter
+		    else
+			grep -v '^ipv6' /proc/net/nf_conntrack | show_connections_filter
+		    fi
+	        fi
+	    elif qt mywhich conntrack ; then
+		echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
+		echo
+		conntrack -f ipv6 -L | show_connections_filter
+	    else
+		local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+		local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+		echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
+		echo
+		grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | show_connections_filter
 	    fi
 	    ;;
 	nat)
@@ -593,28 +624,28 @@ show_command() {
 	    echo "$g_product $SHOREWALL_VERSION NAT Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t nat -L $g_ipt_options
+	    $g_tool -t nat -L $g_ipt_options
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION RAW Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t raw -L $g_ipt_options
+	    $g_tool-t raw -L $g_ipt_options
 	    ;;
 	rawpost)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION RAWPOST Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t rawpost -L $g_ipt_options
+	    $g_tool -t rawpost -L $g_ipt_options
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION Mangle Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $IPTABLES -t mangle -L $g_ipt_options
+	    $g_tool -t mangle -L $g_ipt_options
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
@@ -650,7 +681,7 @@ show_command() {
 	    shift
 
 	    if [ -z "$1" ]; then
-		$IPTABLES -t mangle -L -n -v
+		$g_tool -t mangle -L -n -v
 		echo
 	    fi
 
@@ -700,7 +731,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION IP at $g_hostname - $(date)"
 	    echo
-	    ip -4 addr list
+	    ip -$g_family addr list
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
@@ -729,11 +760,11 @@ show_command() {
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    $IPTABLES -t $table -L $chain $g_ipt_options
+		    $g_tool -t $table -L $chain $g_ipt_options
 		    echo
 		done
 	    else
-		$IPTABLES -t $table -L $g_ipt_options
+		$g_tool -t $table -L $g_ipt_options
 	    fi
 	    ;;
 	vardir)
@@ -746,6 +777,7 @@ show_command() {
 	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
 	    ;;
 	ipa)
+	    [ $g_family -eq 4 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION per-IP Accounting at $g_hostname - $(date)"
 	    echo
 	    [ $# -gt 1 ] && usage 1
@@ -758,69 +790,72 @@ show_command() {
 	    [ -f ${VARDIR}/marks ] && cat ${VARDIR}/marks;
 	    ;;
 	*)
-	    if [ "$g_product" = Shorewall ]; then
-		case $1 in
-		    actions)
-			[ $# -gt 1 ] && usage 1
-			echo "A_ACCEPT            # Audit and accept the connection"
-			echo "A_DROP              # Audit and drop the connection"
-			echo "A_REJECT            # Audit and reject the connection "
-			echo "allowBcast          # Silently Allow Broadcast/multicast"
-			echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
-			echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
-			echo "allowoutUPnP        # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
-			echo "dropBcast           # Silently Drop Broadcast/multicast"
-			echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
-			echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
-			echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
-			echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
+	    case "$g_product" in
+		*lite)
+		    ;;
+	    	*)
+		    case $1 in
+			actions)
+			    [ $# -gt 1 ] && usage 1
+			    echo "A_ACCEPT            # Audit and accept the connection"
+			    echo "A_DROP              # Audit and drop the connection"
+			    echo "A_REJECT            # Audit and reject the connection "
+			    echo "allowBcast          # Silently Allow Broadcast/multicast"
+			    echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
+			    echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
+			    echo "allowoutUPnP        # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
+			    echo "dropBcast           # Silently Drop Broadcast/multicast"
+			    echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
+			    echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
+			    echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
+			    echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
 
-			if [ -f ${CONFDIR}/actions ]; then
-			    cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
-			else
-			    grep -Ev '^\#|^$' ${SHAREDIR}/actions.std
-			fi
-
-			return
-			;;
-		    macro)
-			[ $# -ne 2 ] && usage 1
-			for directory in $(split $CONFIG_PATH); do
-			    if [ -f ${directory}/macro.$2 ]; then
-				echo "Shorewall $SHOREWALL_VERSION Macro $2 at $g_hostname - $(date)"
-				cat ${directory}/macro.$2
-				return
+			    if [ -f ${CONFDIR}/actions ]; then
+				cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
+			    else
+				grep -Ev '^\#|^$' ${SHAREDIR}/actions.std
 			    fi
-			done
-			echo "   WARNING: Macro $2 not found" >&2
-			return
-			;;
-		    macros)
-			[ $# -gt 1 ] && usage 1
 
-			for directory in $(split $CONFIG_PATH); do
-			    temp=
-			    for macro in ${directory}/macro.*; do
-				case $macro in
-				    *\*)
-                                        ;;
-				    *)
-				        if [ -z "$temp" ]; then
-					    echo
-					    echo "Macros in $directory:"
-					    echo
-					    temp=Yes
-					fi
-					show_macro
-					;;
-				esac
+			    return
+			    ;;
+			macro)
+			    [ $# -ne 2 ] && usage 1
+			    for directory in $(split $CONFIG_PATH); do
+				if [ -f ${directory}/macro.$2 ]; then
+				    echo "Shorewall $SHOREWALL_VERSION Macro $2 at $g_hostname - $(date)"
+				    cat ${directory}/macro.$2
+				    return
+				fi
 			    done
-			done
-			return
-			;;
-		esac
-	    fi
+			    echo "   WARNING: Macro $2 not found" >&2
+			    return
+			    ;;
+			macros)
+			    [ $# -gt 1 ] && usage 1
 
+			    for directory in $(split $CONFIG_PATH); do
+				temp=
+				for macro in ${directory}/macro.*; do
+				    case $macro in
+					*\*)
+                                            ;;
+					*)
+				            if [ -z "$temp" ]; then
+						echo
+						echo "Macros in $directory:"
+						echo
+						temp=Yes
+					    fi
+					    show_macro
+					    ;;
+				    esac
+				done
+			    done
+			    return
+			    ;;
+		    esac
+		    ;;
+	    esac
 
 	    if [ $# -gt 0 ]; then
 		if [ $1 = dynamic -a $# -gt 1 ]; then
@@ -831,8 +866,8 @@ show_command() {
                 fi
 
 		[ -n "$table_given" ] || for chain in $*; do
-		    if ! qt $IPTABLES -t $table -L $chain $g_ipt_options; then
-			error_message "ERROR: Chain '$chain' is not recognized by $IPTABLES."
+		    if ! qt $g_tool -t $table -L $chain $g_ipt_options; then
+			error_message "ERROR: Chain '$chain' is not recognized by $g_tool."
 			exit 1
 		    fi
 		done
@@ -841,14 +876,14 @@ show_command() {
 		echo
 		show_reset
 		for chain in $*; do
-		    $IPTABLES -t $table -L $chain $g_ipt_options
+		    $g_tool -t $table -L $chain $g_ipt_options
 		    echo
 		done
 	    else
 		echo "$g_product $SHOREWALL_VERSION $table Table at $g_hostname - $(date)"
 		echo
 		show_reset
-		$IPTABLES -t $table -L $g_ipt_options
+		$g_tool -t $table -L $g_ipt_options
 	    fi
 	    ;;
     esac
@@ -976,41 +1011,51 @@ do_dump_command() {
     echo "$g_product $SHOREWALL_VERSION Dump at $g_hostname - $(date)"
     echo
 
+    if [ $g_family -eq 6 ] && [ -f /usr/share/shorewall/version ]; then
+	echo "   Shorewall $(cat /usr/share/shorewall/version)"
+	echo
+    fi
+    
     show_reset
     host=$(echo $g_hostname | sed 's/\..*$//')
-    $IPTABLES -L $g_ipt_options
+    $g_tool -L $g_ipt_options
 
     heading "Log ($LOGFILE)"
     packet_log 20
 
-    if qt $IPTABLES -t nat -L -n; then
+    if qt $g_tool -t nat -L -n; then
 	heading "NAT Table"
-	$IPTABLES -t nat -L $g_ipt_options
+	$g_tool -t nat -L $g_ipt_options
     fi
 
-    if qt $IPTABLES -t mangle -L -n; then
+    if qt $g_tool -t mangle -L -n; then
 	heading "Mangle Table"
-	$IPTABLES -t mangle -L $g_ipt_options
+	$g_tool -t mangle -L $g_ipt_options
     fi
 
-    if qt $IPTABLES -t raw -L -n; then
+    if qt $g_tool -t raw -L -n; then
 	heading "Raw Table"
-	$IPTABLES -t raw -L $g_ipt_options
+	$g_tool -t raw -L $g_ipt_options
     fi
 
-    if qt $IPTABLES -t rawpost -L -n; then
+    if qt $g_tool -t rawpost -L -n; then
 	heading "Rawpost Table"
-	$IPTABLES -t rawpost -L $g_ipt_options
+	$g_tool -t rawpost -L $g_ipt_options
     fi
 
     local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
     local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
 
     heading "Conntrack Table ($count out of $max)"
-    [ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
+
+    if [ $g_family -eq 4 ]; then
+    	[ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
+    else
+	grep '^ipv6' /proc/net/nf_conntrack
+    fi
 
     heading "IP Configuration"
-    ip -4 addr list
+    ip -$g_family addr list
 
     heading "IP Stats"
     ip -stat link list
@@ -1020,9 +1065,11 @@ do_dump_command() {
 	brctl show
     fi
 
-    heading "Per-IP Counters"
+    if [ $g_family -eq 4 ]; then
+	heading "Per-IP Counters"
 
-    perip_accounting
+	perip_accounting
+    fi
 
     if qt mywhich setkey; then
 	heading "PFKEY SPD"
@@ -1033,23 +1080,42 @@ do_dump_command() {
 
     heading "/proc"
     show_proc /proc/version
-    show_proc /proc/sys/net/ipv4/ip_forward
-    show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
 
-    for directory in /proc/sys/net/ipv4/conf/*; do
-	for file in proxy_arp arp_filter arp_ignore rp_filter log_martians; do
-	    show_proc $directory/$file
+    if [ $g_family -eq 4 ]; then
+	show_proc /proc/sys/net/ipv4/ip_forward
+	show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
+
+	for directory in /proc/sys/net/ipv4/conf/*; do
+	    for file in proxy_arp arp_filter arp_ignore rp_filter log_martians; do
+		show_proc $directory/$file
+	    done
 	done
-    done
+    else
+	for directory in /proc/sys/net/ipv6/conf/*; do
+	    for file in forwarding proxy_ra proxy_ndp; do
+		show_proc $directory/$file
+	    done
+	done
+    fi
 
     show_routing
 
-    heading "ARP"
-    arp -na
+    if [ $g_family -eq 4 ]; then
+	heading "ARP"
+	arp -na
+    else
+	heading "Neighbors"
+	ip -6 neigh ls
+    fi
 
     if qt mywhich lsmod; then
 	heading "Modules"
-	lsmod | grep -E '^(ip_|ipt_|iptable_|nf_|xt_)' | sort
+
+	if [ $g_family -eq 4 ]; then
+	    lsmod | grep -E '^(ip_|ipt_|iptable_|nf_|xt_)' | sort
+	else
+	    lsmod | grep -E '^(x_|ip6|nf_|xt_)' | sort
+	fi
     fi
 
     determine_capabilities
@@ -1057,7 +1123,7 @@ do_dump_command() {
     report_capabilities
 
     echo
-    netstat -tunap
+    netstat -${g_family}tunap
 
     if [ -n "$TC_ENABLED" ]; then
 	heading "Traffic Control"
@@ -1129,7 +1195,7 @@ restore_command() {
     [ -n "$nolock" ] || mutex_on
 
     if [ -x $g_restorepath ]; then
-	progress_message3 "Restoring Shorewall..."
+	progress_message3 "Restoring $g_product..."
 
 	run_it $g_restorepath restore && progress_message3 "$g_product restored from ${VARDIR}/$RESTOREFILE"
 
@@ -1253,18 +1319,18 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 		continue
 		;;
 	    *-*)
-		qt $IPTABLES -D dynamic -m iprange $range $1 -j reject
-		qt $IPTABLES -D dynamic -m iprange $range  $1 -j DROP
-		qt $IPTABLES -D dynamic -m iprange $range $1 -j logreject
-		qt $IPTABLES -D dynamic -m iprange $range $1 -j logdrop
-		$IPTABLES -A dynamic -m iprange $range $1 -j $chain || break 1
+		qt $g_tool -D dynamic -m iprange $range $1 -j reject
+		qt $g_tool -D dynamic -m iprange $range  $1 -j DROP
+		qt $g_tool -D dynamic -m iprange $range $1 -j logreject
+		qt $g_tool -D dynamic -m iprange $range $1 -j logdrop
+		$g_tool -A dynamic -m iprange $range $1 -j $chain || break 1
 		;;
 	    *)
-		qt $IPTABLES -D dynamic $which $1 -j reject
-		qt $IPTABLES -D dynamic $which $1 -j DROP
-		qt $IPTABLES -D dynamic $which $1 -j logreject
-		qt $IPTABLES -D dynamic $which $1 -j logdrop
-		$IPTABLES -A dynamic $which $1 -j $chain || break 1
+		qt $g_tool -D dynamic $which $1 -j reject
+		qt $g_tool -D dynamic $which $1 -j DROP
+		qt $g_tool -D dynamic $which $1 -j logreject
+		qt $g_tool -D dynamic $which $1 -j logdrop
+		$g_tool -A dynamic $which $1 -j $chain || break 1
 		;;
 	esac
 
@@ -1346,8 +1412,8 @@ separate_list() {
 #
 add_command() {
     local interface host hostlist zone ipset
-    if ! shorewall_is_started ; then
-	echo "Shorewall Not Started" >&2
+    if ! product_is_started ; then
+	echo "$g_product Not Started" >&2
 	exit 2
     fi
 
@@ -1367,7 +1433,11 @@ add_command() {
 	[ "$host" = "$1" ] && host=
 
 	if [ -z "$host" ]; then
-	    hostlist="$hostlist $interface:0.0.0.0/0"
+	    if [ $g_family -eq 4 ]; then
+	        hostlist="$hostlist $interface:0.0.0.0/0"
+	    else
+		hostlist="$hostlist $interface:::/0"
+	    fi
 	else
 	    for h in $(separate_list $host); do
 		hostlist="$hostlist $interface:$h"
@@ -1380,9 +1450,13 @@ add_command() {
     zone=$1
 
     for host in $hostlist; do
-	interface=${host%:*}
-
-	ipset=${zone}_${interface};
+	if [ $g_family -eq 4 ]; then
+	    interface=${host%:*}
+	    ipset=${zone}_${interface};
+	else
+	    interface=${host%%:*}
+	    ipset=6_${zone}_${interface};
+	fi
 
 	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
@@ -1404,8 +1478,8 @@ add_command() {
 #
 delete_command() {
     local interface host hostent hostlist zone ipset
-    if ! shorewall_is_started ; then
-	echo "Shorewall Not Started" >&2
+    if ! product_is_started ; then
+	echo "$g_product Not Started" >&2
 	exit 2;
     fi
 
@@ -1426,7 +1500,11 @@ delete_command() {
 	[ "$host" = "$1" ] && host=
 
 	if [ -z "$host" ]; then
-	    hostlist="$hostlist $interface:0.0.0.0/0"
+	    if [ $g_family -eq 4 ]; then
+		hostlist="$hostlist $interface:0.0.0.0/0"
+	    else
+		hostlist="$hostlist $interface:::/0"
+	    fi
 	else
 	    for h in $(separate_list $host); do
 		hostlist="$hostlist $interface:$h"
@@ -1439,9 +1517,13 @@ delete_command() {
     zone=$1
 
     for hostent in $hostlist; do
-	interface=${hostent%:*}
-
-	ipset=${zone}_${interface};
+	if [ $g_family -eq 4 ]; then
+	    interface=${hostent%:*}
+	    ipset=${zone}_${interface};
+	else
+	    interface=${hostent%%:*}
+	    ipset=6_${zone}_${interface};
+	fi
 
 	if ! qt $IPSET -L $ipset -n; then
 	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
@@ -1450,7 +1532,7 @@ delete_command() {
 	host=${hostent#*:}
 
 	if $IPSET -D $ipset $host; then
-	    echo "Host $hostend deleted from zone $zone"
+	    echo "Host $hostent deleted from zone $zone"
 	else
 	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
 	fi
@@ -1554,7 +1636,7 @@ hits_command() {
 allow_command() {
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 1 ] && usage 1
-    if shorewall_is_started ; then
+    if product_is_started ; then
 	local which
 	which='-s'
 	local range
@@ -1580,10 +1662,10 @@ allow_command() {
 		    continue
 		    ;;
 		*-*)
-		    if  qt $IPTABLES -D dynamic -m iprange $range $1 -j reject    ||\
-			qt $IPTABLES -D dynamic -m iprange $range $1 -j DROP      ||\
-			qt $IPTABLES -D dynamic -m iprange $range $1 -j logdrop   ||\
-			qt $IPTABLES -D dynamic -m iprange $range $1 -j logreject
+		    if  qt $g_tool -D dynamic -m iprange $range $1 -j reject    ||\
+			qt $g_tool -D dynamic -m iprange $range $1 -j DROP      ||\
+			qt $g_tool -D dynamic -m iprange $range $1 -j logdrop   ||\
+			qt $g_tool -D dynamic -m iprange $range $1 -j logreject
 			then
 			echo "$1 Allowed"
 		    else
@@ -1591,10 +1673,10 @@ allow_command() {
 		    fi
 		    ;;
 		*)
-		    if  qt $IPTABLES -D dynamic $which $1 -j reject    ||\
-			qt $IPTABLES -D dynamic $which $1 -j DROP      ||\
-			qt $IPTABLES -D dynamic $which $1 -j logdrop   ||\
-			qt $IPTABLES -D dynamic $which $1 -j logreject
+		    if  qt $g_tool -D dynamic $which $1 -j reject    ||\
+			qt $g_tool -D dynamic $which $1 -j DROP      ||\
+			qt $g_tool -D dynamic $which $1 -j logdrop   ||\
+			qt $g_tool -D dynamic $which $1 -j logreject
 			then
 			echo "$1 Allowed"
 		    else
@@ -1671,7 +1753,7 @@ logwatch_command() {
 #
 # Determine which optional facilities are supported by iptables/netfilter
 #
-determine_capabilities() {
+determine_4_capabilities() {
     [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
 
     if [ -z "$IPTABLES" ]; then
@@ -1924,6 +2006,253 @@ determine_capabilities() {
     esac
 }
 
+determine_6_capabilities() {
+    CONNTRACK_MATCH=
+    NEW_CONNTRACK_MATCH=
+    OLD_CONNTRACK_MATCH=
+    MULTIPORT=
+    XMULTIPORT=
+    POLICY_MATCH=
+    PHYSDEV_MATCH=
+    PHYSDEV_BRIDGE=
+    IPRANGE_MATCH=
+    RECENT_MATCH=
+    OWNER_MATCH=
+    IPSET_MATCH=
+    OLD_IPSET_MATCH=
+    IPSET_V5=
+    CONNMARK=
+    XCONNMARK=
+    CONNMARK_MATCH=
+    XCONNMARK_MATCH=
+    RAW_TABLE=
+    RAWPOST_TABLE=
+    IPP2P_MATCH=
+    OLD_IPP2P_MATCH=
+    LENGTH_MATCH=
+    CLASSIFY_TARGET=
+    ENHANCED_REJECT=
+    USEPKTTYPE=
+    KLUDGEFREE=
+    MARK=
+    XMARK=
+    EXMARK=
+    TPROXY_TARGET=
+    MANGLE_FORWARD=
+    COMMENTS=
+    ADDRTYPE=
+    TCPMSS_MATCH=
+    HASHLIMIT_MATCH=
+    NFQUEUE_TARGET=
+    REALM_MATCH=
+    HELPER_MATCH=
+    CONNLIMIT_MATCH=
+    TIME_MATCH=
+    GOTO_TARGET=
+    IPMARK_TARGET=
+    LOG_TARGET=Yes
+    ULOG_TARGET=
+    NFLOG_TARGET=
+    LOGMARK_TARGET=
+    FLOW_FILTER=
+    FWMARK_RT_MASK=
+    MARK_ANYWHERE=
+    HEADER_MATCH=
+    ACCOUNT_TARGET=
+    AUDIT_TARGET=
+    IPSET_V5=
+    CONDITION_MATCH=
+    IPTABLES_S=
+    BASIC_FILTER=
+
+    chain=fooX$$
+
+    [ -n "$IP6TABLES" ] || IP6TABLES=$(mywhich ip6tables)
+
+    if [ -z "$IP6TABLES" ]; then
+	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
+	exit 1
+    fi
+
+    [ -n "$IP" ] || IP=$(which ip)
+
+    [ -n "$IP" -a -x "$IP" ] || IP=
+
+    [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
+
+    [ -n "$TC" -a -x "$TC" ] || TC=
+
+    qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
+
+    qt $IP6TABLES -F $chain
+    qt $IP6TABLES -X $chain
+    if ! $IP6TABLES -N $chain; then
+	echo "   ERROR: The command \"$IP6TABLES -N $chain\" failed" >&2
+	exit 1
+    fi
+
+    chain1=${chain}1
+
+    qt $IP6TABLES -F $chain1
+    qt $IP6TABLES -X $chain1
+    if ! $IP6TABLES -N $chain1; then
+	echo "   ERROR: The command \"$IP6TABLES -N $chain1\" failed" >&2
+	exit 1
+    fi
+
+    if ! qt $IP6TABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
+       ! qt $IP6TABLES -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
+	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- Shorewall will not run on this system" >&2
+	exit 1
+    fi
+
+    qt $IP6TABLES -A $chain -m conntrack --ctorigdst ::1 -j ACCEPT && CONNTRACK_MATCH=Yes
+
+    if [ -n "$CONNTRACK_MATCH" ]; then
+	qt $IP6TABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m conntrack ! --ctorigdst ::1 || OLD_CONNTRACK_MATCH=Yes
+    fi
+
+    if qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
+	MULTIPORT=Yes
+	qt $IP6TABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
+    fi
+
+    qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $IP6TABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
+
+    if qt $IP6TABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
+	PHYSDEV_MATCH=Yes
+	qt $IP6TABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
+	if [ -z "${KLUDGEFREE}" ]; then
+	    qt $IP6TABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    if qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -j ACCEPT; then
+	IPRANGE_MATCH=Yes
+	if [ -z "${KLUDGEFREE}" ]; then
+	    qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -m iprange --dst-range ::1-::2 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    qt $IP6TABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $IP6TABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+
+    if qt $IP6TABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
+	CONNMARK_MATCH=Yes
+	qt $IP6TABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+    fi
+
+    qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
+    if [ -n "$IPP2P_MATCH" ]; then
+	qt $IP6TABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
+    fi
+
+   qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IP6TABLES -A $chain -j REJECT --reject-with icmp6-adm-prohibited && ENHANCED_REJECT=Yes
+
+    qt $IP6TABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
+
+    if [ -n "$MANGLE_ENABLED" ]; then
+	qt $IP6TABLES -t mangle -N $chain
+
+	if qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1; then
+	    MARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
+	fi
+
+	if qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark; then
+	    CONNMARK=Yes
+	    qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	fi
+
+	qt $IP6TABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IP6TABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
+	qt $IP6TABLES -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
+	qt $IP6TABLES -t mangle -F $chain
+	qt $IP6TABLES -t mangle -X $chain
+	qt $IP6TABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
+    fi
+
+    qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
+    qt $IP6TABLES -t rawpost	   -L -n && RAWPOST_TABLE=Yes
+
+    if qt mywhich ipset; then
+	qt ipset -X $chain # Just in case something went wrong the last time
+
+	if qt ipset -N $chain hash:ip family inet6; then
+	    IPSET_V5=Yes
+	    if qt $IP6TABLES -A $chain -m set --match-set $chain src -j ACCEPT; then
+		qt $IP6TABLES -D $chain -m set --match-set $chain src -j ACCEPT
+		IPSET_MATCH=Yes
+	    elif qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
+		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
+		IPSET_MATCH=Yes
+		OLD_IPSET_MATCH=Yes
+	    fi
+	    qt ipset -X $chain
+	fi
+    fi
+
+    qt $IP6TABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+    qt $IP6TABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
+    qt $IP6TABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
+    qt $IP6TABLES -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    if [ -z "$HASHLIMIT_MATCH" ]; then
+	qt $IP6TABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
+	HASHLIMIT_MATCH=$OLD_HL_MATCH
+    fi	
+    qt $IP6TABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+    qt $IP6TABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
+    qt $IP6TABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
+    qt $IP6TABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
+    qt $IP6TABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
+    qt $IP6TABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
+    qt $IP6TABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
+    qt $IP6TABLES -A $chain -j LOG || LOG_TARGET=
+    qt $IP6TABLES -A $chain -j ULOG && ULOG_TARGET=Yes
+    qt $IP6TABLES -A $chain -j NFLOG && NFLOG_TARGET=Yes
+    qt $IP6TABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
+    qt $IP6TABLES -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
+    qt $IP6TABLES -A $chain -j ACCOUNT --addr 1::/122 --tname $chain && ACCOUNT_TARGET=Yes
+    qt $IP6TABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
+    qt $IP6TABLES -A $chain -m condition --condition foo && CONDITION_MATCH=Yes
+    qt $IP6TABLES -S INPUT && IPTABLES_S=Yes
+    
+
+    qt $IP6TABLES -F $chain
+    qt $IP6TABLES -X $chain
+    qt $IP6TABLES -F $chain1
+    qt $IP6TABLES -X $chain1
+
+    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+    [ -n "$TC" ] && $TC filter add basic help 2>&1 | grep -q ^Usage && BASIC_FILTER=Yes
+    [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
+
+    CAPVERSION=$SHOREWALL_CAPVERSION
+
+    KERNELVERSION=$(uname -r 2> /dev/null | sed -e 's/-.*//')
+
+    case "$KERNELVERSION" in 
+	*.*.*)
+	    KERNELVERSION=$(printf "%d%02d%02d" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+	    ;;
+	*)
+	    KERNELVERSION=$(printf "%d%02d00" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
+	    ;;
+    esac
+}
+
+determine_capabilities() {
+    if [ $g_family -eq 4 ]; then
+	determine_4_capabilities
+    else
+	determine_6_capabilities;
+    fi
+}
+
 report_capabilities() {
     report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
     {
@@ -1936,7 +2265,7 @@ report_capabilities() {
     }
 
     if [ $VERBOSITY -gt 1 ]; then
-	echo "Shorewall has detected the following iptables/netfilter capabilities:"
+	echo "$g_product has detected the following iptables/netfilter capabilities:"
 	report_capability "NAT" $NAT_ENABLED
 	report_capability "Packet Mangling" $MANGLE_ENABLED
 	report_capability "Multi-port Match" $MULTIPORT
@@ -1999,7 +2328,13 @@ report_capabilities() {
 	report_capability "AUDIT Target" $AUDIT_TARGET
 	report_capability "ipset V5" $IPSET_V5
 	report_capability "Condition Match" $CONDITION_MATCH
-	report_capability "iptables -S" $IPTABLES_S
+	
+	if [ $g_family -eq 4 ]; then
+	    report_capability "iptables -S" $IPTABLES_S
+	else
+	    report_capability "ip6tables -S" $IPTABLES_S
+	fi
+
 	report_capability "Basic Filter" $BASIC_FILTER
     fi
 
@@ -2014,7 +2349,7 @@ report_capabilities1() {
     }
 
     echo "#"
-    echo "# Shorewall $SHOREWALL_VERSION detected the following iptables/netfilter capabilities - $(date)"
+    echo "# $g_product $SHOREWALL_VERSION detected the following iptables/netfilter capabilities - $(date)"
     echo "#"
     report_capability1 NAT_ENABLED
     report_capability1 MANGLE_ENABLED

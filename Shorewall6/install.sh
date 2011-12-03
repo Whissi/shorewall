@@ -354,6 +354,8 @@ delete_file ${DESTDIR}/usr/share/shorewall6/lib.proxyarp
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.tc
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.tcrules
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.tunnels
+delete_file ${DESTDIR}/usr/share/shorewall6/lib.base
+delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
 delete_file ${DESTDIR}/usr/share/shorewall6/prog.header6
 delete_file ${DESTDIR}/usr/share/shorewall6/prog.footer6
 

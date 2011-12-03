@@ -448,6 +448,25 @@ g_recovering=
 g_purge=
 g_logread=
 
+g_program=$(basename $0)
+
+if [ $g_program = shorewall6-lite ]; then
+    SHAREDIR=/usr/share/shorewall6-lite
+    CONFDIR=/etc/shorewall6-lite
+    g_product="Shorewall6 Lite"
+    g_family=6
+    g_base=shorewall6
+    g_tool=ip6tables
+else
+    g_program=shorewall-lite
+    SHAREDIR=/usr/share/shorewall-lite
+    CONFDIR=/etc/shorewall-lite
+    g_product="Shorewall Lite"
+    g_family=4
+    g_base=shorewall
+    g_tool=iptables
+fi
+
 #
 # Make sure that these variables are cleared
 #
@@ -538,25 +557,6 @@ fi
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
-
-g_program=$(basename $0)
-
-if [ $g_program = shorewall6-lite ]; then
-    SHAREDIR=/usr/share/shorewall6-lite
-    CONFDIR=/etc/shorewall6-lite
-    g_product="Shorewall6 Lite"
-    g_family=6
-    g_base=shorewall6
-    g_tool=ip6tables
-else
-    g_program=shorewall-lite
-    SHAREDIR=/usr/share/shorewall-lite
-    CONFDIR=/etc/shorewall-lite
-    g_product="Shorewall Lite"
-    g_family=4
-    g_base=shorewall
-    g_tool=iptables
-fi
 
 g_libexec=share
 

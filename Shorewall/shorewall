@@ -1690,6 +1690,22 @@ g_annotate=
 VERBOSE=
 VERBOSITY=
 
+g_program=$(basename $0)
+
+if [ $g_program = shorewall6 ]; then
+    SHAREDIR=/usr/share/shorewall6
+    CONFDIR=/etc/shorewall6
+    g_product="Shorewall6"
+    g_family=6
+    g_tool=
+else
+    g_program=shorewall
+    SHAREDIR=/usr/share/shorewall
+    CONFDIR=/etc/shorewall
+    g_product="Shorewall"
+    g_family=4
+fi
+
 finished=0
 
 while [ $finished -eq 0 ]; do
@@ -1791,22 +1807,6 @@ fi
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
-
-g_program=$(basename $0)
-
-if [ $g_program = shorewall6 ]; then
-    SHAREDIR=/usr/share/shorewall6
-    CONFDIR=/etc/shorewall6
-    g_product="Shorewall6"
-    g_family=6
-    g_tool=
-else
-    g_program=shorewall
-    SHAREDIR=/usr/share/shorewall
-    CONFDIR=/etc/shorewall
-    g_product="Shorewall"
-    g_family=4
-fi
 
 g_recovering=
 g_timestamp=

@@ -81,6 +81,7 @@ iptablesbug()
         else
 	    echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
 	    cat
+	fi
     else
 	cat
     fi
@@ -160,7 +161,7 @@ packet_log() # $1 = number of messages
 	else
 	    $g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | head -n$1 | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
 	fi
-    elif [ $family -eq 4 ]; then
+    elif [ $g_family -eq 4 ]; then
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
     else
 	$g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' |  head -n$1 | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/

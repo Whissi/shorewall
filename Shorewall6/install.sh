@@ -354,8 +354,8 @@ delete_file ${DESTDIR}/usr/share/shorewall6/lib.proxyarp
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.tc
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.tcrules
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.tunnels
-delete_file ${DESTDIR}/usr/share/shorewall6/lib.base
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
+delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
 delete_file ${DESTDIR}/usr/share/shorewall6/prog.header6
 delete_file ${DESTDIR}/usr/share/shorewall6/prog.footer6
 
@@ -838,10 +838,8 @@ done
 # Install the libraries
 #
 for f in lib.* ; do
-    if [ -f $f ]; then
-	install_file $f ${DESTDIR}/usr/share/shorewall6/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall6/$f"
-    fi
+    install_file $f ${DESTDIR}/usr/share/shorewall6/$f 0644
+    echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall6/$f"
 done
 #
 # Symbolically link 'functions' to lib.base

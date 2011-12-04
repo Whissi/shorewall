@@ -88,13 +88,15 @@ run_it() {
 	export TIMESTAMP=$g_timestamp
 	export RECOVERING=$g_recovering
 
-	if [ "$g_product" != Shorewall ]; then
-	    #
-	    # Shorewall Lite
-	    #
-	    export LOGFORMAT
-	    export IPTABLES
-	fi
+	case "$g_program" in
+	    *-lite)
+		#
+		# Shorewall Lite
+		#
+		export LOGFORMAT
+		export IPTABLES
+		;;
+	esac
     else
 	#
 	# 4.4.8 or later -- no additional exports required
@@ -125,6 +127,30 @@ run_it() {
 error_message() # $* = Error Message
 {
    echo "   $@" >&2
+}
+
+#
+# Undo the effect of 'split()'
+#
+join()
+{
+    local f
+    local o
+    o=
+
+    for f in $* ; do
+        o="${o:+$o:}$f"
+    done
+
+    echo $o
+}
+
+#
+# Return the number of elements in a list
+#
+list_count() # $* = list
+{
+    return $#
 }
 
 #
@@ -184,10 +210,18 @@ qt1()
 }
 
 #
-# Determine if Shorewall is "running"
+# Determine if Shorewall[6] is "running"
 #
+product_is_started() {
+    qt1 $g_tool -L shorewall -n
+}
+
 shorewall_is_started() {
     qt1 $IPTABLES -L shorewall -n
+}
+
+shorewall6_is_started() {
+    qt1 $IP6TABLES -L shorewall -n
 }
 
 #
@@ -294,7 +328,7 @@ reload_kernel_modules() {
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \
-	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv${g_family}/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
 
     [ -d /sys/module/ ] || MODULES=$(lsmod | cut -d ' ' -f1)
 
@@ -333,7 +367,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \
-	MODULESDIR=/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+	MODULESDIR=/lib/modules/$uname/kernel/net/ipv${g_family}/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"
@@ -466,37 +500,99 @@ in_network() # $1 = IP address, $2 = CIDR network
 }
 
 #
+# Query NetFilter about the existence of a filter chain
+#
+chain_exists() # $1 = chain name
+{
+    qt1 $IP6TABLES -L $1 -n
+}
+
+#
+# Find the interface with the passed MAC address
+#
+
+find_interface_by_mac() {
+    local mac
+    mac=$1
+    local first
+    local second
+    local rest
+    local dev
+
+    $IP link list | while read first second rest; do
+	case $first in
+	    *:)
+                dev=$second
+		;;
+	    *)
+	        if [ "$second" = $mac ]; then
+		    echo ${dev%:}
+		    return
+		fi
+	esac
+    done
+}
+
+#
 # Find interface address--returns the first IP address assigned to the passed
 # device
 #
 find_first_interface_address() # $1 = interface
 {
-    #
-    # get the line of output containing the first IP address
-    #
-    addr=$(${IP:-ip} -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
-    #
-    # If there wasn't one, bail out now
-    #
-    [ -n "$addr" ] || startup_error "Can't determine the IP address of $1"
-    #
-    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
-    # along with everything else on the line
-    #
-    echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    if [ $g_family -eq 4 ]; then
+	#
+	# get the line of output containing the first IP address
+	#
+	addr=$(${IP:-ip} -$g_family addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+	#
+	# If there wasn't one, bail out now
+	#
+	[ -n "$addr" ] || startup_error "Can't determine the IP address of $1"
+	#
+	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)	
+	# along with everything else on the line
+	#
+	echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    else
+	#
+	# get the line of output containing the first IP address
+	#
+	addr=$(${IP:-ip} -f inet6 addr show dev $1 2> /dev/null | fgrep 'inet6 ' | fgrep -v 'scope link' | head -n1)
+	#
+	# If there wasn't one, bail out now
+	#
+	[ -n "$addr" ] || startup_error "Can't determine the IPv6 address of $1"
+	#
+	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+	# along with everything else on the line
+	#
+	echo $addr | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
+    fi
 }
 
 find_first_interface_address_if_any() # $1 = interface
 {
-    #
-    # get the line of output containing the first IP address
-    #
-    addr=$(${IP:-ip} -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
-    #
-    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
-    # along with everything else on the line
-    #
-    [ -n "$addr" ] && echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+    if [ $g_family -eq 4 ]; then
+	#
+	# get the line of output containing the first IP address
+	#
+	addr=$(${IP:-ip} -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+	#
+	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+	# along with everything else on the line
+	#
+	[ -n "$addr" ] && echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+    else
+	#
+	# get the line of output containing the first IP address
+	#
+	addr=$(${IP:-ip} -f inet6 addr show dev $1 2> /dev/null | fgrep 'inet6 ' | fgrep -v 'scope link' | head -n1)
+	#
+	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+	# along with everything else on the line
+	#
+	[ -n "$addr" ] && echo $addr | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//' || echo ::
+    fi
 }
 
 #
@@ -513,14 +609,6 @@ mywhich() {
     done
 
     return 2
-}
-
-#
-# Query NetFilter about the existence of a filter chain
-#
-chain_exists() # $1 = chain name
-{
-    qt1 $IPTABLES -L $1 -n
 }
 
 #
@@ -552,7 +640,7 @@ find_file()
 #
 # Set the Shorewall state
 #
-set_state () # $1 = state $2
+set_state () # $1 = state
 {
     if [ $# -gt 1 ]; then
 	echo "$1 ($(date)) from $2" > ${VARDIR}/state

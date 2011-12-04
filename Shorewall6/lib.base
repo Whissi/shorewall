@@ -1,10 +1,9 @@
-#!/bin/sh
 #
-#     The Shoreline Firewall Packet Filtering Firewall Param File Helper - V4.4
+# Shorewall 4.4 -- /usr/share/shorewall6/lib.base
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2010,2011 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2011 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -21,38 +20,15 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#  Parameters:
-#
-#      $1 = Path name of params file
-#      $2 = $CONFIG_PATH
-#      $3 = Address family (4 o4 6)
-#
-if [ "$3" = 6 ]; then
-    SHAREDIR=/usr/share/shorewall6
-    CONFDIR=/etc/shorewall6
-    g_product="Shorewall6"
-    g_family=6
-    g_tool=
-    g_basedir=/usr/share/shorewall
-else
-    g_program=shorewall
-    SHAREDIR=/usr/share/shorewall
-    CONFDIR=/etc/shorewall
-    g_product="Shorewall"
-    g_family=4
-    g_tool=
-    g_basedir=/usr/share/shorewall
-fi
+# This library contains the code common to all Shorewall components.
+
+g_program=shorewall6
+g_family=6
+g_basedir=/usr/share/shorewall
+
+[ -n "${VARDIR:=/var/lib/$g_program}" ]
+[ -n "${SHAREDIR:=/usr/share/$g_program}" ]
+[ -n "${CONFDIR:=/etc/$g_program}" ]
 
 . /usr/share/shorewall/lib.base
-. /usr/share/shorewall/lib.cli
 
-CONFIG_PATH="$2"
-
-set -a
-
-. $1 >&2 # Avoid spurious output on STDOUT
-
-set +a
-
-export -p

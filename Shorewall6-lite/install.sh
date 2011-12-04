@@ -301,6 +301,9 @@ for f in lib.* ; do
     fi
 done
 
+eval sed -i \'s\|g_program:=shorewall\|g_program:=shorewall6-lite\|\' ${DESTDIR}/usr/share/shorewall6-lite/lib.base
+eval sed -i \'s\|g_family:=4\|g_family:=6\|\' ${DESTDIR}/usr/share/shorewall6-lite/lib.base
+
 ln -sf lib.base ${DESTDIR}/usr/share/shorewall6-lite/functions
 
 echo "Common functions linked through ${DESTDIR}/usr/share/shorewall6-lite/functions"

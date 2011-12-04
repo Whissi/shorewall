@@ -48,7 +48,10 @@
 SHAREDIR=/usr/share/shorewall6-lite
 VARDIR=/var/lib/shorewall6-lite
 CONFDIR=/etc/shorewall6-lite
-g_product="Shorewall Lite"
+g_product="Shorewall6 Lite"
+g_family=6
+g_base=shorewall6
+g_basedir=/usr/share/shorewall6-lite
 
 . /usr/share/shorewall6-lite/lib.base
 . /usr/share/shorewall6-lite/lib.cli
@@ -59,6 +62,8 @@ g_product="Shorewall Lite"
 SHOREWALL_VERSION=$(cat /usr/share/shorewall6-lite/version)
 
 [ -n "$IP6TABLES" ] || IP6TABLES=$(mywhich ip6tables)
+
+g_tool=$IP6TABLES
 
 VERBOSITY=0
 load_kernel_modules No

@@ -443,17 +443,6 @@ compiler() {
 }
 
 #
-# Determine if the current product is in the started state
-#
-product_is_started() {
-    if [ $g_family -eq 4 ]; then
-	shorewall_is_started
-    else
-	shorewall6_is_started
-    fi
-}
-
-#
 # Start Command Executor
 #
 start_command() {
@@ -1698,12 +1687,15 @@ if [ $g_program = shorewall6 ]; then
     g_product="Shorewall6"
     g_family=6
     g_tool=
+    g_basedir=/usr/share/shorewall
 else
     g_program=shorewall
     SHAREDIR=/usr/share/shorewall
     CONFDIR=/etc/shorewall
     g_product="Shorewall"
     g_family=4
+    g_tool=
+    g_basedir=/usr/share/shorewall
 fi
 
 finished=0

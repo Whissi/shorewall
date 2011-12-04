@@ -68,7 +68,7 @@ get_config() {
 	    fi
 	fi
 
-	g_tool=#$IPTABLES
+	g_tool=$IPTABLES
     else
 	if [ -n "$IP6TABLES" ]; then
 	    if [ ! -x "$IP6TABLES" ]; then
@@ -414,7 +414,7 @@ version_command() {
     
     if [ -n "$all" ]; then
 	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ $product ~= $g_program] && [ -f /usr/share/$product/version ]; then
+	    if [ $product != $g_program ] && [ -f /usr/share/$product/version ]; then
 		echo "$product: $(cat /usr/share/$product/version)"
 	    fi
 	done
@@ -457,6 +457,7 @@ if [ $g_program = shorewall6-lite ]; then
     g_family=6
     g_base=shorewall6
     g_tool=ip6tables
+    g_basedir=/usr/share/shorewall6-lite
 else
     g_program=shorewall-lite
     SHAREDIR=/usr/share/shorewall-lite
@@ -465,6 +466,7 @@ else
     g_family=4
     g_base=shorewall
     g_tool=iptables
+    g_basedir=/usr/share/shorewall-lite
 fi
 
 #
@@ -644,7 +646,7 @@ case "$COMMAND" in
 	;;
     restart)
 	shift
-	restart_command @
+	restart_command $@
 	;;
     show|list)
     	shift

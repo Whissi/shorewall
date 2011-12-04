@@ -95,7 +95,7 @@ sub generate_script_1( $ ) {
 		copy $globals{SHAREDIRPL} . 'prog.header6';
 	    }
 
-	    copy2 $globals{SHAREDIR} . '/lib.common', 0;
+	    copy2 $globals{SHAREDIRPL} . '/lib.common', 0;
 	}
 
     }
@@ -162,27 +162,39 @@ sub generate_script_2() {
     push_indent;
 
     if ( $family == F_IPV4 ) {
+	emit( 'g_family=4' );
+
 	if ( $export ) {
 	    emit ( 'SHAREDIR=/usr/share/shorewall-lite',
 		   'CONFDIR=/etc/shorewall-lite',
-		   'g_product="Shorewall Lite"'
+		   'g_product="Shorewall Lite"',
+		   'g_program=shorewall-lite',
+		   'g_basedir=/usr/share/shorewall-lite',
 		 );
 	} else {
 	    emit ( 'SHAREDIR=/usr/share/shorewall',
 		   'CONFDIR=/etc/shorewall',
-		   'g_product=\'Shorewall\'',
+		   'g_product=Shorewall',
+		   'g_program=shorewall',
+		   'g_basedir=/usr/share/shorewall',
 		 );
 	}
     } else {
+	emit( 'g_family=6' );
+
 	if ( $export ) {
 	    emit ( 'SHAREDIR=/usr/share/shorewall6-lite',
 		   'CONFDIR=/etc/shorewall6-lite',
-		   'g_product="Shorewall6 Lite"'
+		   'g_product="Shorewall6 Lite"',
+		   'g_program=shorewall6-lite',
+		   'g_basedir=/usr/share/shorewall6',
 		 );
 	} else {
 	    emit ( 'SHAREDIR=/usr/share/shorewall6',
 		   'CONFDIR=/etc/shorewall6',
-		   'g_product=\'Shorewall6\'',
+		   'g_product=Shorewall6',
+		   'g_program=shorewall6',
+		   'g_basedir=/usr/share/shorewall'
 		 );
 	}
     }

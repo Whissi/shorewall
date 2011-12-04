@@ -34,6 +34,7 @@ SHOREWALL_CAPVERSION=40426
 [ -n "${VARDIR:=/var/lib/$g_program}" ]
 [ -n "${SHAREDIR:=/usr/share/$g_program}" ]
 [ -n "${CONFDIR:=/etc/$g_program}" ]
+[ -n "${g_family:=4}" ]
 
 #
 # Conditionally produce message
@@ -176,7 +177,7 @@ find_interface_by_mac() {
     done
 }
 
-[ -z "$LEFTSHIFT" ] && . ${SHAREDIR}/lib.common
+[ -z "$LEFTSHIFT" ] && . ${g_basedir}/lib.common
 
 #
 # Validate an IP address

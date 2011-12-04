@@ -287,6 +287,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CONDITION_MATCH => 'Condition Match',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
+		 CT_TARGET       => 'CT Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -451,7 +452,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40425 ,
+		    CAPVERSION => 40427 ,
 		  );
     #
     # From shorewall.conf file
@@ -672,6 +673,7 @@ sub initialize( $ ) {
 	       CONDITION_MATCH => undef,
 	       IPTABLES_S => undef,
 	       BASIC_FILTER => undef,
+	       CT_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2738,6 +2740,19 @@ sub Iptables_S() {
     qt1( "$iptables -S INPUT" )
 }
 
+sub Ct_Target() {
+    my $ct_target;
+
+    if ( have_capability 'RAW_TABLE' ) {
+	qt1( "$iptables -t raw -N $sillyname" );
+	$ct_target = qt1( "$iptables -t raw -A $sillyname -j CT --notrack" );
+	qt1( "$iptables -t raw -F $sillyname" );
+	qt1( "$iptables -t raw -X $sillyname" );
+    }
+
+    $ct_target;
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AUDIT_TARGET => \&Audit_Target,
@@ -2750,6 +2765,7 @@ our %detect_capability =
       CONNMARK => \&Connmark,
       CONNMARK_MATCH => \&Connmark_Match,
       CONNTRACK_MATCH => \&Conntrack_Match,
+      CT_MATCH => \&Ct_Target,
       ENHANCED_REJECT => \&Enhanced_Reject,
       EXMARK => \&Exmark,
       FLOW_FILTER => \&Flow_Filter,

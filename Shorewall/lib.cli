@@ -1762,74 +1762,9 @@ determine_4_capabilities() {
 	exit 1
     fi
 
-    [ "$IP" = ip -o -z "$IP" ] && IP=$(which ip)
-
-    [ -n "$IP" -a -x "$IP" ] || IP=
-
-    [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
-
-    [ -n "$TC" -a -x "$TC" ] || TC=
-
     qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
     qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
-    CONNTRACK_MATCH=
-    NEW_CONNTRACK_MATCH=
-    OLD_CONNTRACK_MATCH=
-    MULTIPORT=
-    XMULTIPORT=
-    POLICY_MATCH=
-    PHYSDEV_MATCH=
-    PHYSDEV_BRIDGE=
-    IPRANGE_MATCH=
-    RECENT_MATCH=
-    OWNER_MATCH=
-    IPSET_MATCH=
-    OLD_IPSET_MATCH=
-    IPSET_V5=
-    CONNMARK=
-    XCONNMARK=
-    CONNMARK_MATCH=
-    XCONNMARK_MATCH=
-    RAW_TABLE=
-    RAWPOST_TABLE=
-    IPP2P_MATCH=
-    OLD_IPP2P_MATCH=
-    LENGTH_MATCH=
-    CLASSIFY_TARGET=
-    ENHANCED_REJECT=
-    USEPKTTYPE=
-    KLUDGEFREE=
-    MARK=
-    XMARK=
-    EXMARK=
-    TPROXY_TARGET=
-    MANGLE_FORWARD=
-    COMMENTS=
-    ADDRTYPE=
-    TCPMSS_MATCH=
-    HASHLIMIT_MATCH=
-    NFQUEUE_TARGET=
-    REALM_MATCH=
-    HELPER_MATCH=
-    CONNLIMIT_MATCH=
-    TIME_MATCH=
-    GOTO_TARGET=
-    LOGMARK_TARGET=
-    IPMARK_TARGET=
-    LOG_TARGET=Yes
-    ULOG_TARGET=
-    NFLOG_TARGET=
-    PERSISTENT_SNAT=
-    FLOW_FILTER=
-    FWMARK_RT_MASK=
-    MARK_ANYWHERE=
-    HEADER_MATCH=
-    ACCOUNT_TARGET=
-    AUDIT_TARGET=
-    CONDITION_MATCH=
-    IPTABLES_S=
-    BASIC_FILTER=
 
     chain=fooX$$
 
@@ -1936,6 +1871,14 @@ determine_4_capabilities() {
     qt $IPTABLES -t raw	    -L -n && RAW_TABLE=Yes
     qt $IPTABLES -t rawpost -L -n && RAWPOST_TABLE=Yes
 
+    if [ -n "$RAW_TABLE" ]; then
+	qt $IPTABLES -t raw -N $chain
+	qt $IPTABLES -t raw -A $chain -j CT --notrack && CT_TARGET=Yes
+	qt $IPTABLES -t raw -N $chain
+	qt $IPTABLES -t raw -F $chain
+	qt $IPTABLES -t raw -X $chain
+    fi
+
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
 
@@ -2008,63 +1951,6 @@ determine_4_capabilities() {
 }
 
 determine_6_capabilities() {
-    CONNTRACK_MATCH=
-    NEW_CONNTRACK_MATCH=
-    OLD_CONNTRACK_MATCH=
-    MULTIPORT=
-    XMULTIPORT=
-    POLICY_MATCH=
-    PHYSDEV_MATCH=
-    PHYSDEV_BRIDGE=
-    IPRANGE_MATCH=
-    RECENT_MATCH=
-    OWNER_MATCH=
-    IPSET_MATCH=
-    OLD_IPSET_MATCH=
-    IPSET_V5=
-    CONNMARK=
-    XCONNMARK=
-    CONNMARK_MATCH=
-    XCONNMARK_MATCH=
-    RAW_TABLE=
-    RAWPOST_TABLE=
-    IPP2P_MATCH=
-    OLD_IPP2P_MATCH=
-    LENGTH_MATCH=
-    CLASSIFY_TARGET=
-    ENHANCED_REJECT=
-    USEPKTTYPE=
-    KLUDGEFREE=
-    MARK=
-    XMARK=
-    EXMARK=
-    TPROXY_TARGET=
-    MANGLE_FORWARD=
-    COMMENTS=
-    ADDRTYPE=
-    TCPMSS_MATCH=
-    HASHLIMIT_MATCH=
-    NFQUEUE_TARGET=
-    REALM_MATCH=
-    HELPER_MATCH=
-    CONNLIMIT_MATCH=
-    TIME_MATCH=
-    GOTO_TARGET=
-    IPMARK_TARGET=
-    LOG_TARGET=Yes
-    ULOG_TARGET=
-    NFLOG_TARGET=
-    LOGMARK_TARGET=
-    FLOW_FILTER=
-    FWMARK_RT_MASK=
-    MARK_ANYWHERE=
-    HEADER_MATCH=
-    ACCOUNT_TARGET=
-    AUDIT_TARGET=
-    IPSET_V5=
-    CONDITION_MATCH=
-    IPTABLES_S=
-    BASIC_FILTER=
 
     chain=fooX$$
 
@@ -2074,14 +1960,6 @@ determine_6_capabilities() {
 	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
 	exit 1
     fi
-
-    [ -n "$IP" ] || IP=$(which ip)
-
-    [ -n "$IP" -a -x "$IP" ] || IP=
-
-    [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
-
-    [ -n "$TC" -a -x "$TC" ] || TC=
 
     qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
@@ -2180,6 +2058,14 @@ determine_6_capabilities() {
     qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
     qt $IP6TABLES -t rawpost	   -L -n && RAWPOST_TABLE=Yes
 
+    if [ -n "$RAW_TABLE" ]; then
+	qt $IP6TABLES -t raw -N $chain
+	qt $IP6TABLES -t raw -A $chain -j CT --notrack && CT_TARGET=Yes
+	qt $IP6TABLES -t raw -N $chain
+	qt $IP6TABLES -t raw -F $chain
+	qt $IP6TABLES -t raw -X $chain
+    fi
+
     if qt mywhich ipset; then
 	qt ipset -X $chain # Just in case something went wrong the last time
 
@@ -2247,6 +2133,74 @@ determine_6_capabilities() {
 }
 
 determine_capabilities() {
+
+    [ "$IP" = ip -o -z "$IP" ] && IP=$(which ip)
+
+    [ -n "$IP" -a -x "$IP" ] || IP=
+
+    [ "$TC" = tc -o -z "$TC" ] && TC=$(which tc)
+
+    [ -n "$TC" -a -x "$TC" ] || TC=
+
+    CONNTRACK_MATCH=
+    NEW_CONNTRACK_MATCH=
+    OLD_CONNTRACK_MATCH=
+    MULTIPORT=
+    XMULTIPORT=
+    POLICY_MATCH=
+    PHYSDEV_MATCH=
+    PHYSDEV_BRIDGE=
+    IPRANGE_MATCH=
+    RECENT_MATCH=
+    OWNER_MATCH=
+    IPSET_MATCH=
+    OLD_IPSET_MATCH=
+    IPSET_V5=
+    CONNMARK=
+    XCONNMARK=
+    CONNMARK_MATCH=
+    XCONNMARK_MATCH=
+    RAW_TABLE=
+    RAWPOST_TABLE=
+    IPP2P_MATCH=
+    OLD_IPP2P_MATCH=
+    LENGTH_MATCH=
+    CLASSIFY_TARGET=
+    ENHANCED_REJECT=
+    USEPKTTYPE=
+    KLUDGEFREE=
+    MARK=
+    XMARK=
+    EXMARK=
+    TPROXY_TARGET=
+    MANGLE_FORWARD=
+    COMMENTS=
+    ADDRTYPE=
+    TCPMSS_MATCH=
+    HASHLIMIT_MATCH=
+    NFQUEUE_TARGET=
+    REALM_MATCH=
+    HELPER_MATCH=
+    CONNLIMIT_MATCH=
+    TIME_MATCH=
+    GOTO_TARGET=
+    LOGMARK_TARGET=
+    IPMARK_TARGET=
+    LOG_TARGET=Yes
+    ULOG_TARGET=
+    NFLOG_TARGET=
+    PERSISTENT_SNAT=
+    FLOW_FILTER=
+    FWMARK_RT_MASK=
+    MARK_ANYWHERE=
+    HEADER_MATCH=
+    ACCOUNT_TARGET=
+    AUDIT_TARGET=
+    CONDITION_MATCH=
+    IPTABLES_S=
+    BASIC_FILTER=
+    CT_TARGET=
+
     if [ $g_family -eq 4 ]; then
 	determine_4_capabilities
     else
@@ -2337,6 +2291,7 @@ report_capabilities() {
 	fi
 
 	report_capability "Basic Filter" $BASIC_FILTER
+	report_capability "CT Target" $CT_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
@@ -2412,6 +2367,7 @@ report_capabilities1() {
     report_capability1 CONDITION_MATCH
     report_capability1 IPTABLES_S
     report_capability1 BASIC_FILTER
+    report_capability1 CT_TARGET
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

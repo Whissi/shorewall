@@ -451,7 +451,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40425 ,
+		    CAPVERSION => 40426 ,
 		  );
     #
     # From shorewall.conf file

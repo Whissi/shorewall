@@ -1754,385 +1754,23 @@ logwatch_command() {
 #
 # Determine which optional facilities are supported by iptables/netfilter
 #
-determine_4_capabilities() {
-    [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
-
-    if [ -z "$IPTABLES" ]; then
-	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
-	exit 1
-    fi
-
-    qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
-    qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
-
-
-    chain=fooX$$
-
-    if [ -n "$NAT_ENABLED" ]; then
-	if qt $IPTABLES -t nat -N $chain; then
-	    qt $IPTABLES -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
-	    qt $IPTABLES -t nat -F $chain
-	    qt $IPTABLES -t nat -X $chain
-	fi
-    fi
-
-    qt $IPTABLES -F $chain
-    qt $IPTABLES -X $chain
-    if ! $IPTABLES -N $chain; then
-	echo "   ERROR: The command \"$IPTABLES -N $chain\" failed" >&2
-	exit 1
-    fi
-
-    chain1=${chain}1
-
-    qt $IPTABLES -F $chain1
-    qt $IPTABLES -X $chain1
-    if ! $IPTABLES -N $chain1; then
-	echo "   ERROR: The command \"$IPTABLES -N $chain1\" failed" >&2
-	exit 1
-    fi
-
-    if ! qt $IPTABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
-       ! qt $IPTABLES -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
-	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- Shorewall will not run on this system" >&2
-	exit 1
-    fi
-
-    qt $IPTABLES -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
-
-    if [ -n "$CONNTRACK_MATCH" ]; then
-	qt $IPTABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
-	qt $IPTABLES -A $chain -m conntrack ! --ctorigdst 1.2.3.4 || OLD_CONNTRACK_MATCH=Yes
-    fi
-
-    if qt $IPTABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
-	MULTIPORT=Yes
-	qt $IPTABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
-    fi
-
-    qt $IPTABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
-    qt $IPTABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
-
-    if qt $IPTABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
-	PHYSDEV_MATCH=Yes
-	qt $IPTABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
-	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IPTABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
-	fi
-    fi
-
-    if qt $IPTABLES -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
-	IPRANGE_MATCH=Yes
-	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IPTABLES -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
-	fi
-    fi
-
-    qt $IPTABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
-    qt $IPTABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
-
-    if qt $IPTABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
-	CONNMARK_MATCH=Yes
-	qt $IPTABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
-    fi
-
-    qt $IPTABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
-    if [ -n "$IPP2P_MATCH" ]; then
-	qt $IPTABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
-    fi
-
-    qt $IPTABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
-    qt $IPTABLES -A $chain -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
-
-    qt $IPTABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
-
-    if [ -n "$MANGLE_ENABLED" ]; then
-	qt $IPTABLES -t mangle -N $chain
-
-	if qt $IPTABLES -t mangle -A $chain -j MARK --set-mark 1; then
-	    MARK=Yes
-	    qt $IPTABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
-	    qt $IPTABLES -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
-	fi
-
-	if qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark; then
-	    CONNMARK=Yes
-	    qt $IPTABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
-	fi
-
-	qt $IPTABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
-	qt $IPTABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
-	qt $IPTABLES -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
-	qt $IPTABLES -t mangle -F $chain
-	qt $IPTABLES -t mangle -X $chain
-	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
-    fi
-
-    qt $IPTABLES -t raw	    -L -n && RAW_TABLE=Yes
-    qt $IPTABLES -t rawpost -L -n && RAWPOST_TABLE=Yes
-
-    if [ -n "$RAW_TABLE" ]; then
-	qt $IPTABLES -t raw -N $chain
-	qt $IPTABLES -t raw -A $chain -j CT --notrack && CT_TARGET=Yes
-	qt $IPTABLES -t raw -N $chain
-	qt $IPTABLES -t raw -F $chain
-	qt $IPTABLES -t raw -X $chain
-    fi
-
-    if qt mywhich ipset; then
-	qt ipset -X $chain # Just in case something went wrong the last time
-
-	local have_ipset
-
-	if qt ipset -N $chain hash:ip family inet; then
-	    IPSET_V5=Yes
-	    have_ipset=Yes
-	elif qt ipset -N $chain iphash ; then
-	    have_ipset=Yes
-	fi
-
-	if [ -n "$have_ipset" ]; then
-	    if qt $IPTABLES -A $chain -m set --match-set $chain src -j ACCEPT; then
-		qt $IPTABLES -D $chain -m set --match-set $chain src -j ACCEPT
-		IPSET_MATCH=Yes
-	    elif qt $IPTABLES -A $chain -m set --set $chain src -j ACCEPT; then
-		qt $IPTABLES -D $chain -m set --set $chain src -j ACCEPT
-		IPSET_MATCH=Yes
-		OLD_IPSET_MATCH=Yes
-	    fi
-	    qt ipset -X $chain
-	fi
-    fi
-
-    qt $IPTABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
-    qt $IPTABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
-    qt $IPTABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
-    qt $IPTABLES -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
-    if [ -z "$HASHLIMIT_MATCH" ]; then
-	qt $IPTABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
-	HASHLIMIT_MATCH=$OLD_HL_MATCH
-    fi
-    qt $IPTABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
-    qt $IPTABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
-    qt $IPTABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
-    qt $IPTABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
-    qt $IPTABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
-    qt $IPTABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
-    qt $IPTABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
-    qt $IPTABLES -A $chain -j LOG || LOG_TARGET=
-    qt $IPTABLES -A $chain -j ULOG && ULOG_TARGET=Yes
-    qt $IPTABLES -A $chain -j NFLOG && NFLOG_TARGET=Yes
-    qt $IPTABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
-    qt $IPTABLES -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
-    qt $IPTABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
-    qt $IPTABLES -A $chain -m condition --condition foo && CONDITION_MATCH=Yes
-    qt $IPTABLES -S INPUT && IPTABLES_S=Yes
-    qt $IPTABLES -F $chain
-    qt $IPTABLES -X $chain
-    qt $IPTABLES -F $chain1
-    qt $IPTABLES -X $chain1
-
-    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
-    [ -n "$TC" ] && $TC filter add basic help 2>&1 | grep -q ^Usage && BASIC_FILTER=Yes
-    [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
-
-    CAPVERSION=$SHOREWALL_CAPVERSION
-   
-    KERNELVERSION=$(uname -r 2> /dev/null | sed -e 's/-.*//')
-
-    case "$KERNELVERSION" in 
-	*.*.*)
-	    KERNELVERSION=$(printf "%d%02d%02d" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
-	    ;;
-	*)
-	    KERNELVERSION=$(printf "%d%02d00" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
-	    ;;
-    esac
-}
-
-determine_6_capabilities() {
-
-    chain=fooX$$
-
-    [ -n "$IP6TABLES" ] || IP6TABLES=$(mywhich ip6tables)
-
-    if [ -z "$IP6TABLES" ]; then
-	echo "   ERROR: No executable iptables binary can be found on your PATH" >&2
-	exit 1
-    fi
-
-    qt $IP6TABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
-
-    qt $IP6TABLES -F $chain
-    qt $IP6TABLES -X $chain
-    if ! $IP6TABLES -N $chain; then
-	echo "   ERROR: The command \"$IP6TABLES -N $chain\" failed" >&2
-	exit 1
-    fi
-
-    chain1=${chain}1
-
-    qt $IP6TABLES -F $chain1
-    qt $IP6TABLES -X $chain1
-    if ! $IP6TABLES -N $chain1; then
-	echo "   ERROR: The command \"$IP6TABLES -N $chain1\" failed" >&2
-	exit 1
-    fi
-
-    if ! qt $IP6TABLES -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
-       ! qt $IP6TABLES -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
-	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- Shorewall will not run on this system" >&2
-	exit 1
-    fi
-
-    qt $IP6TABLES -A $chain -m conntrack --ctorigdst ::1 -j ACCEPT && CONNTRACK_MATCH=Yes
-
-    if [ -n "$CONNTRACK_MATCH" ]; then
-	qt $IP6TABLES -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
-	qt $IP6TABLES -A $chain -m conntrack ! --ctorigdst ::1 || OLD_CONNTRACK_MATCH=Yes
-    fi
-
-    if qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
-	MULTIPORT=Yes
-	qt $IP6TABLES -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
-    fi
-
-    qt $IP6TABLES -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
-    qt $IP6TABLES -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
-
-    if qt $IP6TABLES -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
-	PHYSDEV_MATCH=Yes
-	qt $IP6TABLES -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
-	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IP6TABLES -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
-	fi
-    fi
-
-    if qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -j ACCEPT; then
-	IPRANGE_MATCH=Yes
-	if [ -z "${KLUDGEFREE}" ]; then
-	    qt $IP6TABLES -A $chain -m iprange --src-range ::1-::2 -m iprange --dst-range ::1-::2 -j ACCEPT && KLUDGEFREE=Yes
-	fi
-    fi
-
-    qt $IP6TABLES -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
-    qt $IP6TABLES -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
-
-    if qt $IP6TABLES -A $chain -m connmark --mark 2  -j ACCEPT; then
-	CONNMARK_MATCH=Yes
-	qt $IP6TABLES -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
-    fi
-
-    qt $IP6TABLES -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
-    if [ -n "$IPP2P_MATCH" ]; then
-	qt $IP6TABLES -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
-    fi
-
-   qt $IP6TABLES -A $chain -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
-    qt $IP6TABLES -A $chain -j REJECT --reject-with icmp6-adm-prohibited && ENHANCED_REJECT=Yes
-
-    qt $IP6TABLES -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
-
-    if [ -n "$MANGLE_ENABLED" ]; then
-	qt $IP6TABLES -t mangle -N $chain
-
-	if qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1; then
-	    MARK=Yes
-	    qt $IP6TABLES -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
-	    qt $IP6TABLES -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
-	fi
-
-	if qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark; then
-	    CONNMARK=Yes
-	    qt $IP6TABLES -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
-	fi
-
-	qt $IP6TABLES -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
-	qt $IP6TABLES -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
-	qt $IP6TABLES -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
-	qt $IP6TABLES -t mangle -F $chain
-	qt $IP6TABLES -t mangle -X $chain
-	qt $IP6TABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
-    fi
-
-    qt $IP6TABLES -t raw	   -L -n && RAW_TABLE=Yes
-    qt $IP6TABLES -t rawpost	   -L -n && RAWPOST_TABLE=Yes
-
-    if [ -n "$RAW_TABLE" ]; then
-	qt $IP6TABLES -t raw -N $chain
-	qt $IP6TABLES -t raw -A $chain -j CT --notrack && CT_TARGET=Yes
-	qt $IP6TABLES -t raw -N $chain
-	qt $IP6TABLES -t raw -F $chain
-	qt $IP6TABLES -t raw -X $chain
-    fi
-
-    if qt mywhich ipset; then
-	qt ipset -X $chain # Just in case something went wrong the last time
-
-	if qt ipset -N $chain hash:ip family inet6; then
-	    IPSET_V5=Yes
-	    if qt $IP6TABLES -A $chain -m set --match-set $chain src -j ACCEPT; then
-		qt $IP6TABLES -D $chain -m set --match-set $chain src -j ACCEPT
-		IPSET_MATCH=Yes
-	    elif qt $IP6TABLES -A $chain -m set --set $chain src -j ACCEPT; then
-		qt $IP6TABLES -D $chain -m set --set $chain src -j ACCEPT
-		IPSET_MATCH=Yes
-		OLD_IPSET_MATCH=Yes
-	    fi
-	    qt ipset -X $chain
-	fi
-    fi
-
-    qt $IP6TABLES -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
-    qt $IP6TABLES -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
-    qt $IP6TABLES -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
-    qt $IP6TABLES -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
-    if [ -z "$HASHLIMIT_MATCH" ]; then
-	qt $IP6TABLES -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
-	HASHLIMIT_MATCH=$OLD_HL_MATCH
-    fi	
-    qt $IP6TABLES -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
-    qt $IP6TABLES -A $chain -m realm --realm 4 && REALM_MATCH=Yes
-    qt $IP6TABLES -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
-    qt $IP6TABLES -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
-    qt $IP6TABLES -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
-    qt $IP6TABLES -A $chain -g $chain1 && GOTO_TARGET=Yes
-    qt $IP6TABLES -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
-    qt $IP6TABLES -A $chain -j LOG || LOG_TARGET=
-    qt $IP6TABLES -A $chain -j ULOG && ULOG_TARGET=Yes
-    qt $IP6TABLES -A $chain -j NFLOG && NFLOG_TARGET=Yes
-    qt $IP6TABLES -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
-    qt $IP6TABLES -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
-    qt $IP6TABLES -A $chain -j ACCOUNT --addr 1::/122 --tname $chain && ACCOUNT_TARGET=Yes
-    qt $IP6TABLES -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
-    qt $IP6TABLES -A $chain -m condition --condition foo && CONDITION_MATCH=Yes
-    qt $IP6TABLES -S INPUT && IPTABLES_S=Yes
-    
-
-    qt $IP6TABLES -F $chain
-    qt $IP6TABLES -X $chain
-    qt $IP6TABLES -F $chain1
-    qt $IP6TABLES -X $chain1
-
-    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
-    [ -n "$TC" ] && $TC filter add basic help 2>&1 | grep -q ^Usage && BASIC_FILTER=Yes
-    [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
-
-    CAPVERSION=$SHOREWALL_CAPVERSION
-
-    KERNELVERSION=$(uname -r 2> /dev/null | sed -e 's/-.*//')
-
-    case "$KERNELVERSION" in 
-	*.*.*)
-	    KERNELVERSION=$(printf "%d%02d%02d" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
-	    ;;
-	*)
-	    KERNELVERSION=$(printf "%d%02d00" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
-	    ;;
-    esac
-}
-
 determine_capabilities() {
+
+    local tool
+    local chain
+    local chain1
+
+    [ $g_family -eq 4 ] && tool=iptables || tool=ip6tables
+
+    g_tool=$(mywhich $tool)
+
+    if [ -z "$g_tool" ]; then
+	echo "   ERROR: No executable $tool binary can be found on your PATH" >&2
+	exit 1
+    fi
+
+    qt $g_tool -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
+    qt $g_tool -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
     [ "$IP" = ip -o -z "$IP" ] && IP=$(which ip)
 
@@ -2201,11 +1839,229 @@ determine_capabilities() {
     BASIC_FILTER=
     CT_TARGET=
 
-    if [ $g_family -eq 4 ]; then
-	determine_4_capabilities
-    else
-	determine_6_capabilities;
+    chain=fooX$$
+
+    if [ -n "$NAT_ENABLED" ]; then
+	if qt $g_tool -t nat -N $chain; then
+	    qt $g_tool -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
+	    qt $g_tool -t nat -F $chain
+	    qt $g_tool -t nat -X $chain
+	fi
     fi
+
+    qt $g_tool -F $chain
+    qt $g_tool -X $chain
+    if ! $g_tool -N $chain; then
+	echo "   ERROR: The command \"$g_tool -N $chain\" failed" >&2
+	exit 1
+    fi
+
+    chain1=${chain}1
+
+    qt $g_tool -F $chain1
+    qt $g_tool -X $chain1
+    if ! $g_tool -N $chain1; then
+	echo "   ERROR: The command \"$g_tool -N $chain1\" failed" >&2
+	exit 1
+    fi
+
+    if ! qt $g_tool -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
+       ! qt $g_tool -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
+	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- $g_product will not run on this system" >&2
+	exit 1
+    fi
+
+    if [ $g_family -eq 4 ]; then
+	qt $g_tool -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
+    else
+	qt $g_tool -A $chain -m conntrack --ctorigdst ::1 -j ACCEPT && CONNTRACK_MATCH=Yes
+    fi	
+
+    if [ -n "$CONNTRACK_MATCH" ]; then
+	qt $g_tool -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
+	
+	if [ $g_family -eq 4 ]; then
+	    qt $g_tool -A $chain -m conntrack ! --ctorigdst 1.2.3.4 || OLD_CONNTRACK_MATCH=Yes
+	else
+	    qt $g_tool -A $chain -m conntrack ! --ctorigdst ::1 || OLD_CONNTRACK_MATCH=Yes
+	fi
+    fi
+
+    if qt $g_tool -A $chain -p tcp -m multiport --dports 21,22 -j ACCEPT; then
+	MULTIPORT=Yes
+	qt $g_tool -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
+    fi
+
+    qt $g_tool -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $g_tool -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
+
+    if qt $g_tool -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
+	PHYSDEV_MATCH=Yes
+	qt $g_tool -A $chain -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth0 -j ACCEPT && PHYSDEV_BRIDGE=Yes
+	if [ -z "${KLUDGEFREE}" ]; then
+	    qt $g_tool -A $chain -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    if [ $g_family -eq 4 ]; then
+	if qt $g_tool -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
+	    IPRANGE_MATCH=Yes
+	    if [ -z "${KLUDGEFREE}" ]; then
+		qt $g_tool -A $chain -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
+	    fi
+	fi
+    elif qt $g_tool -A $chain -m iprange --src-range ::1-::2 -j ACCEPT; then
+	IPRANGE_MATCH=Yes
+	if [ -z "${KLUDGEFREE}" ]; then
+	    qt $g_tool -A $chain -m iprange --src-range ::1-::2 -m iprange --dst-range ::1-::2 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    qt $g_tool -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $g_tool -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+
+    if qt $g_tool -A $chain -m connmark --mark 2  -j ACCEPT; then
+	CONNMARK_MATCH=Yes
+	qt $g_tool -A $chain -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+    fi
+
+    qt $g_tool -A $chain -p tcp -m ipp2p --edk -j ACCEPT       && IPP2P_MATCH=Yes
+    if [ -n "$IPP2P_MATCH" ]; then
+	qt $g_tool -A $chain -p tcp -m ipp2p --ipp2p -j ACCEPT && OLD_IPP2P_MATCH=Yes
+    fi
+
+    qt $g_tool -A $chain -m length --length 10:20 -j ACCEPT    && LENGTH_MATCH=Yes
+
+    if [ $g_family -eq 4 ]; then
+        qt $g_tool -A $chain -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
+    else
+	qt $g_tool -A $chain -j REJECT --reject-with icmp6-adm-prohibited && ENHANCED_REJECT=Yes
+    fi
+
+    qt $g_tool -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
+
+    if [ -n "$MANGLE_ENABLED" ]; then
+	qt $g_tool -t mangle -N $chain
+
+	if qt $g_tool -t mangle -A $chain -j MARK --set-mark 1; then
+	    MARK=Yes
+	    qt $g_tool -t mangle -A $chain -j MARK --and-mark 0xFF && XMARK=Yes
+	    qt $g_tool -t mangle -A $chain -j MARK --set-mark 1/0xFF && EXMARK=Yes
+	fi
+
+	if qt $g_tool -t mangle -A $chain -j CONNMARK --save-mark; then
+	    CONNMARK=Yes
+	    qt $g_tool -t mangle -A $chain -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	fi
+
+	qt $g_tool -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $g_tool -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
+	qt $g_tool -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
+	qt $g_tool -t mangle -F $chain
+	qt $g_tool -t mangle -X $chain
+	qt $g_tool -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
+    fi
+
+    qt $g_tool -t raw	    -L -n && RAW_TABLE=Yes
+    qt $g_tool -t rawpost -L -n && RAWPOST_TABLE=Yes
+
+    if [ -n "$RAW_TABLE" ]; then
+	qt $g_tool -t raw -N $chain
+	qt $g_tool -t raw -A $chain -j CT --notrack && CT_TARGET=Yes
+	qt $g_tool -t raw -N $chain
+	qt $g_tool -t raw -F $chain
+	qt $g_tool -t raw -X $chain
+    fi
+
+    if qt mywhich ipset; then
+	qt ipset -X $chain # Just in case something went wrong the last time
+
+	local have_ipset
+
+	if [ $g_family -eq 4 ]; then
+	    if qt ipset -N $chain hash:ip family inet; then
+		IPSET_V5=Yes
+		have_ipset=Yes
+	    elif qt ipset -N $chain iphash ; then
+		have_ipset=Yes
+	    fi
+
+	    if [ -n "$have_ipset" ]; then
+		if qt $g_tool -A $chain -m set --match-set $chain src -j ACCEPT; then
+		    qt $g_tool -D $chain -m set --match-set $chain src -j ACCEPT
+		    IPSET_MATCH=Yes
+		elif qt $g_tool -A $chain -m set --set $chain src -j ACCEPT; then
+		    qt $g_tool -D $chain -m set --set $chain src -j ACCEPT
+		    IPSET_MATCH=Yes
+		    OLD_IPSET_MATCH=Yes
+		fi
+		qt ipset -X $chain
+	    fi
+	elif qt ipset -N $chain hash:ip family inet6; then
+	    IPSET_V5=Yes
+	    if qt $g_tool -A $chain -m set --match-set $chain src -j ACCEPT; then
+		qt $g_tool -D $chain -m set --match-set $chain src -j ACCEPT
+		IPSET_MATCH=Yes
+	    elif qt $g_tool -A $chain -m set --set $chain src -j ACCEPT; then
+		qt $g_tool -D $chain -m set --set $chain src -j ACCEPT
+		IPSET_MATCH=Yes
+		OLD_IPSET_MATCH=Yes
+	    fi
+	    qt ipset -X $chain
+	fi
+    fi
+
+    qt $g_tool -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+    qt $g_tool -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
+    qt $g_tool -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
+    qt $g_tool -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
+    if [ -z "$HASHLIMIT_MATCH" ]; then
+	qt $g_tool -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
+	HASHLIMIT_MATCH=$OLD_HL_MATCH
+    fi
+    qt $g_tool -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+    qt $g_tool -A $chain -m realm --realm 4 && REALM_MATCH=Yes
+    qt $g_tool -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
+    qt $g_tool -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
+    qt $g_tool -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
+    qt $g_tool -A $chain -g $chain1 && GOTO_TARGET=Yes
+    qt $g_tool -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
+    qt $g_tool -A $chain -j LOG || LOG_TARGET=
+    qt $g_tool -A $chain -j ULOG && ULOG_TARGET=Yes
+    qt $g_tool -A $chain -j NFLOG && NFLOG_TARGET=Yes
+    qt $g_tool -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
+
+    if [ $g_family -eq 4 ]; then
+	qt $g_tool -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
+    else
+	qt $g_tool -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
+	qt $g_tool -A $chain -j ACCOUNT --addr 1::/122 --tname $chain && ACCOUNT_TARGET=Yes
+    fi
+
+    qt $g_tool -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
+    qt $g_tool -A $chain -m condition --condition foo && CONDITION_MATCH=Yes
+    qt $g_tool -S INPUT && IPTABLES_S=Yes
+    qt $g_tool -F $chain
+    qt $g_tool -X $chain
+    qt $g_tool -F $chain1
+    qt $g_tool -X $chain1
+
+    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+    [ -n "$TC" ] && $TC filter add basic help 2>&1 | grep -q ^Usage && BASIC_FILTER=Yes
+    [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
+
+    CAPVERSION=$SHOREWALL_CAPVERSION
+   
+    KERNELVERSION=$(uname -r 2> /dev/null | sed -e 's/-.*//')
+
+    case "$KERNELVERSION" in 
+	*.*.*)
+	    KERNELVERSION=$(printf "%d%02d%02d" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+	    ;;
+	*)
+	    KERNELVERSION=$(printf "%d%02d00" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
+	    ;;
+    esac
 }
 
 report_capabilities() {

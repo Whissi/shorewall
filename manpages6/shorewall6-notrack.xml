@@ -57,10 +57,60 @@
         <listitem>
           <para>This column is only present when FORMAT = 2. Values other than
           NOTRACK require <firstterm>CT Target </firstterm>support in your
-          iptables and kernel. Type <command>man iptables</command> and search
-          for the CT target extension. The text will describe the
-          <replaceable>option</replaceable>s and
-          <replaceable>args</replaceable> supported.</para>
+          iptables and kernel.</para>
+
+          <para>Possible values for <replaceable>option</replaceable> and
+          <replaceable>arg</replaceable>s are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><option>notrack</option> (no
+              <replaceable>arg</replaceable>)</para>
+
+              <para>Disables connection tracking for this packet, the same as
+              if NOTRACK has been specified in this column.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>helper</option>:<replaceable>name</replaceable></para>
+
+              <para>Use the helper identified by the name to this connection.
+              This is more flexible than loading the conntrack helper with
+              preset ports.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>ctevents</option>:<replaceable>event</replaceable>,...</para>
+
+              <para>Only generate the specified conntrack events for this
+              connection. Possible event types are: <emphasis
+              role="bold">new</emphasis>, <emphasis
+              role="bold">related</emphasis>, <emphasis
+              role="bold">destroy</emphasis>, <emphasis
+              role="bold">reply</emphasis>, <emphasis
+              role="bold">assured</emphasis>, <emphasis
+              role="bold">protoinfo</emphasis>, <emphasis
+              role="bold">helper</emphasis>, <emphasis
+              role="bold">mark</emphasis> (this is connection mark, not packet
+              mark), <emphasis role="bold">natseqinfo</emphasis>, and
+              <emphasis role="bold">secmark</emphasis>.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>expevents</option><option>:new</option></para>
+
+              <para>Only generate a new expectation events for this
+              connection.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>zone</option>:<replaceable>id</replaceable></para>
+
+              <para>Assign this packet to zone <replaceable>id</replaceable>
+              and only have lookups done in that zone. By default, packets
+              have zone 0.</para>
+            </listitem>
+          </itemizedlist>
 
           <para>When FORMAT = 1, this column is not present and the rule is
           processed as if NOTRACK had been entered in this column.</para>

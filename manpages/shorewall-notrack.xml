@@ -23,15 +23,51 @@
   <refsect1>
     <title>Description</title>
 
-    <para>The notrack file is used to exempt certain traffic from Netfilter
-    connection tracking. Traffic matching entries in this file will not be
-    tracked.</para>
+    <para>The original intent of the notrack file was to exempt certain
+    traffic from Netfilter connection tracking. Traffic matching entries in
+    this file were not to be tracked.</para>
+
+    <para>The role of the file was expanded in Shorewall 4.4.27 to include all
+    rules tht can be added in the Netfilter <emphasis
+    role="bold">raw</emphasis> table.</para>
+
+    <para>The file supports two different column layouts: FORMAT 1 and FORMAT
+    2, FORMAT 1 being the default. The two differ in that FORMAT 2 has an
+    additional leading ACTION column. When an entry in the file of this form
+    is encountered, the format of the following entries are assumed to be of
+    the specified <replaceable>format</replaceable>.</para>
+
+    <simplelist>
+      <member><emphasis role="bold">FORMAT</emphasis>
+      <replaceable>format</replaceable></member>
+    </simplelist>
+
+    <para>where <replaceable>format</replaceable> is either <emphasis
+    role="bold">1</emphasis> or <emphasis role="bold">2</emphasis>.</para>
 
     <para>The columns in the file are as follows (where the column name is
     followed by a different name in parentheses, the different name is used in
     the alternate specification syntax).</para>
 
     <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
+        role="bold">NOTRACK</emphasis>|<emphasis
+        role="bold">CT</emphasis>:<replaceable>option</replaceable>:<replaceable>args</replaceable>}</term>
+
+        <listitem>
+          <para>This column is only present when FORMAT = 2. Values other than
+          NOTRACK require <firstterm>CT Target </firstterm>support in your
+          iptables and kernel. Type <command>man iptables</command> and search
+          for the CT target extension. The text will describe the
+          <replaceable>option</replaceable>s and
+          <replaceable>args</replaceable> supported.</para>
+
+          <para>When FORMAT = 1, this column is not present and the rule is
+          processed as if NOTRACK had been entered in this column.</para>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term>SOURCE ‒
         {<emphasis>zone</emphasis>[:<emphasis>interface</emphasis>][:<emphasis>address-list</emphasis>]|COMMENT}</term>

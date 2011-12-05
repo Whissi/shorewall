@@ -1716,6 +1716,26 @@ sub process_traffic_shaping() {
 
 	    pop_indent;
 	    emit "}\n";
+	} else {
+	    for my $class ( @tcclasses ) {
+		#
+		# The class number in the tcclasses array is expressed in decimal.
+		#
+		my ( $d, $decimalclassnum ) = split /:/, $class;
+
+		next unless $d eq $devname;
+		#
+		# For inclusion in 'tc' commands, we also need the hex representation
+		#
+		my $classnum = in_hexp $decimalclassnum;
+		#
+		# The decimal value of the class number is also used as the key for the hash at $tcclasses{$device}
+		#
+		my $devicenumber  = in_hexp $devref->{number};
+		my $classid  = join( ':', $devicenumber, $classnum);
+
+		$classids{$classid}=$device;
+	    }
 	}
     }
 }

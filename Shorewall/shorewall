@@ -2118,13 +2118,19 @@ case "$COMMAND" in
 
     iprange)
 	[ -n "$g_debugging" ] && set -x
-	case $2 in
+	range=''	
+	while [ $# -gt 0 ]; do
+	    shift
+	    range="${range}${1}"
+	done
+
+	case $range in
 	    *.*.*.*-*.*.*.*)
-		for address in ${2%-*} ${2#*-}; do
+		for address in ${range%-*} ${range#*-}; do
 		    valid_address $address || fatal_error "Invalid IP address: $address"
 		done
 
-		ip_range $2
+		ip_range $range
 		;;
 	    *)
 		usage 1

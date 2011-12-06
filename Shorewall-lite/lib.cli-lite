@@ -1,14 +1,11 @@
-#!/bin/sh
 #
-#     Shorewall Lite Packet Filtering Firewall Control Program - V4.4
+# Shorewall 4.4 -- /usr/share/shorewall/lib.clix.
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2006,2007,2008,2009,2010,2011 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011 - Tom Eastep (teastep@shorewall.net)
 #
-#	This file should be placed in /sbin/shorewall-lite.
-#
-#	Shorewall documentation is available at http://shorewall.net
+#	Complete documentation is available at http://shorewall.net
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of Version 2 of the GNU General Public License
@@ -23,12 +20,33 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#     If an error occurs while starting or restarting the firewall, the
-#     firewall is automatically stopped.
+# This library contains the command processing code common to /sbin/shorewall and /sbin/shorewall6.
+#
+
 #
 # Set the configuration variables from shorewall-lite.conf
 #
 get_config() {
+
+    ensure_config_path
+
+    config=$(find_file ${g_base}-lite.conf)
+    
+    if [ -f $config ]; then
+	if [ -r $config ]; then
+	    . $config
+	else
+	    echo "Cannot read $config! (Hint: Are you root?)" >&2
+	    exit 1
+	fi
+    else
+	echo "$config does not exist!" >&2
+	exit 2
+    fi
+
+    ensure_config_path
+
+    [ -f ${VARDIR}/firewall.conf ] && . ${VARDIR}/firewall.conf
 
     [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
@@ -158,11 +176,11 @@ start_command() {
 	rc=0
 	[ -n "$nolock" ] || mutex_on
 
-	if [ -x ${LITEDIR}/firewall ]; then
-	    run_it ${LITEDIR}/firewall $debugging start
+	if [ -x ${VARDIR}/firewall ]; then
+	    run_it ${VARDIR}/firewall $debugging start
 	    rc=$?
 	else
-	    error_message "${LITEDIR}/firewall is missing or is not executable"
+	    error_message "${VARDIR}/firewall is missing or is not executable"
 	    logger -p kern.err "ERROR:$g_product start failed"
 	    rc=2
 	fi
@@ -306,11 +324,11 @@ restart_command() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if [ -x ${LITEDIR}/firewall ]; then
-	run_it ${LITEDIR}/firewall $debugging restart
+    if [ -x ${VARDIR}/firewall ]; then
+	run_it ${VARDIR}/firewall $debugging restart
 	rc=$?
     else
-	error_message "${LITEDIR}/firewall is missing or is not executable"
+	error_message "${VARDIR}/firewall is missing or is not executable"
 	logger -p kern.err "ERROR:$g_product restart failed"
 	rc=2
     fi
@@ -372,343 +390,3 @@ usage() # $1 = exit status
     exit $1
 }
 
-#
-# Execution begins here
-#
-debugging=
-
-if [ $# -gt 0 ] && [ "$1" = "debug" -o "$1" = "trace" ]; then
-    debugging=$1
-    shift
-fi
-
-nolock=
-
-if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
-    nolock=nolock
-    shift
-fi
-
-g_ipt_options="-nv"
-g_fast=
-g_verbose_offset=0
-g_use_verbosity=
-g_noroutes=
-g_timestamp=
-g_recovering=
-g_purge=
-g_logread=
-
-g_program=$(basename $0)
-
-if [ $g_program = shorewall6-lite ]; then
-    SHAREDIR=/usr/share/shorewall6-lite
-    CONFDIR=/etc/shorewall6-lite
-    g_product="Shorewall6 Lite"
-    g_family=6
-    g_base=shorewall6
-    g_tool=ip6tables
-    g_basedir=/usr/share/shorewall6-lite
-else
-    g_program=shorewall-lite
-    SHAREDIR=/usr/share/shorewall-lite
-    CONFDIR=/etc/shorewall-lite
-    g_product="Shorewall Lite"
-    g_family=4
-    g_base=shorewall
-    g_tool=iptables
-    g_basedir=/usr/share/shorewall-lite
-fi
-
-#
-# Make sure that these variables are cleared
-#
-VERBOSE=
-VERBOSITY=
-
-finished=0
-
-while [ $finished -eq 0 ]; do
-    [ $# -eq 0 ] && usage 1
-    option=$1
-    case $option in
-	-)
-	    finished=1
-	    ;;
-	-*)
-	    option=${option#-}
-
-	    [ -z "$option" ] && usage 1
-
-	    while [ -n "$option" ]; do
-		case $option in
-		    x*)
-			g_ipt_options="-xnv"
-			option=${option#x}
-			;;
-		    q*)
-			g_verbose_offset=$(($g_verbose_offset - 1 ))
-			option=${option#q}
-			;;
-		    f*)
-			g_fast=Yes
-			option=${option#f}
-			;;
-		    v*)
-			option=${option#v}
-			case $option in 
-			    -1*)
-				g_use_verbosity=-1
-				option=${option#-1}
-				;;
-			    0*)
-				g_use_verbosity=0
-				option=${option#0}
-				;;
-			    1*)
-				g_use_verbosity=1
-				option=${option#1}
-				;;
-			    2*)
-				g_use_verbosity=2
-				option=${option#2}
-				;;
-			    *)
-				g_verbose_offset=$(($g_verbose_offset + 1 ))
-				g_use_verbosity=
-				;;
-			esac
-			;;
-		    n*)
-			g_noroutes=Yes
-			option=${option#n}
-			;;
-		    t*)
-			g_timestamp=Yes
-			option=${option#t}
-			;;
-		    -)
-			finished=1
-			option=
-			;;
-		    *)
-			usage 1
-			;;
-		esac
-	    done
-	    shift
-	    ;;
-	*)
-	    finished=1
-            ;;
-    esac
-done
-
-if [ $# -eq 0 ]; then
-    usage 1
-fi
-
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-MUTEX_TIMEOUT=
-
-g_libexec=share
-
-[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir ]
-
-[ -n "${VARDIR:=/var/lib/${g_base}-lite}" ]
-
-[ -d $VARDIR ] || mkdir -p $VARDIR || fatal_error "Unable to create $VARDIR"
-
-version_file=$SHAREDIR/version
-
-for library in base cli; do
-    . ${SHAREDIR}/lib.$library
-done
-
-ensure_config_path
-
-config=$(find_file ${g_base}-lite.conf)
-
-if [ -f $config ]; then
-    if [ -r $config ]; then
-	. $config
-    else
-	echo "Cannot read $config! (Hint: Are you root?)" >&2
-	exit 1
-    fi
-else
-    echo "$config does not exist!" >&2
-    exit 2
-fi
-
-ensure_config_path
-
-LITEDIR=${VARDIR}
-
-[ -f ${LITEDIR}/firewall.conf ] && . ${LITEDIR}/firewall.conf
-
-get_config
-
-g_firewall=$LITEDIR/firewall
-
-if [ -f $version_file ]; then
-    SHOREWALL_VERSION=$(cat $version_file)
-else
-    echo "   ERROR: $g_product is not properly installed" >&2
-    echo "          The file $version_file does not exist" >&2
-    exit 1
-fi
-
-banner="$g_product $SHOREWALL_VERSION Status at $g_hostname -"
-
-case $(echo -e) in
-    -e*)
-	RING_BELL="echo \a"
-	ECHO_E="echo"
-	;;
-    *)
-	RING_BELL="echo -e \a"
-	ECHO_E="echo -e"
-	;;
-esac
-
-case $(echo -n "Testing") in
-    -n*)
-	ECHO_N=
-	;;
-    *)
-	ECHO_N=-n
-	;;
-esac
-
-COMMAND=$1
-
-case "$COMMAND" in
-    start)
-	shift
-	start_command $@
-	;;
-    stop|reset|clear)
-	[ $# -ne 1 ] && usage 1
-	verify_firewall_script
-	[ -n "$nolock" ] || mutex_on
-	run_it $g_firewall $debugging $COMMAND
-	[ -n "$nolock" ] || mutex_off
-	;;
-    restart)
-	shift
-	restart_command $@
-	;;
-    show|list)
-    	shift
-    	show_command $@
-	;;
-    status)
-	[ $# -eq 1 ] || usage 1
-	[ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
-	status_command
-	;;
-    dump)
-    	shift
-    	dump_command $@
-	;;
-    hits)
-	[ -n "$debugging" ] && set -x
-	shift
-	hits_command $@
-	;;
-    version)
-	shift
-	version_command $@
-	;;
-    logwatch)
-	logwatch_command $@
-	;;
-    drop)
-	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] && usage 1
-	drop_command $@
-	;;
-    logdrop)
-	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] && usage 1
-	logdrop_command $@
-	;;
-    reject|logreject)
-	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] && usage 1
-	reject_command $@
-	;;
-    allow)
-	allow_command $@
-	;;
-    add)
-	get_config
-	shift
-	add_command $@
-	;;
-    delete)
-	get_config
-	shift
-	add_command $@
-	;;
-    disable|enable)
-	get_config Yes
-	if product_is_started; then
-	    run_it ${VARDIR}/firewall $g_debugging $@
-	else
-	    fatal_error "Shorewall is not running"
-	fi
-	;;
-    save)
-	[ -n "$debugging" ] && set -x
-	save_command $@
-	;;
-    forget)
-	forget_command $@
-	;;
-    ipcalc)
-    	[ -n "$debugging" ] && set -x
-	ipcalc_command $@
-	;;
-
-    iprange)
-	[ -n "$g_debugging" ] && set -x
-	iprange_command $@
-	;;
-    ipdecimal)
-	[ -n "$debugging" ] && set -x
-	ipdecimal_command $@
-	;;
-    restore)
-	shift
-	STARTUP_ENABLED=Yes
-	restore_command $@
-        ;;
-    iptrace)
-	get_config
-	shift
-	iptrace_command $@
-	;;
-     noiptrace)
-	get_config
-	shift
-	noiptrace_command $@
-	;;
-    call)
-	[ -n "$debugging" ] && set -x
-	#
-	# Undocumented way to call functions in ${SHAREDIR}/functions directly
-	#
-	shift
-	$@
-	;;
-    help)
-	shift
-	usage
-	;;
-    *)
-	usage 1
-	;;
-
-esac

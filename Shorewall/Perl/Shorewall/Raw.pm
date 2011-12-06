@@ -127,7 +127,7 @@ sub setup_notrack() {
 	my $nonEmpty = 0;
 
 	while ( read_a_line ) {	    
-	    my ( $action, $source, $dest, $proto, $ports, $sports, $user );
+	    my ( $source, $dest, $proto, $ports, $sports, $user );
 
 	    if ( $format == 1 ) {
 		( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Notrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };

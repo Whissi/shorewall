@@ -372,55 +372,6 @@ usage() # $1 = exit status
     exit $1
 }
 
-version_command() {
-    local finished
-    finished=0
-    local all
-    all=
-    local product
-
-    while [ $finished -eq 0 -a $# -gt 0 ]; do
-	option=$1
-	case $option in
-	    -*)
-		option=${option#-}
-
-		while [ -n "$option" ]; do
-		    case $option in
-			-)
-			    finished=1
-			    option=
-			    ;;
-			a*)
-			    all=Yes
-			    option=${option#a}
-			    ;;
-			*)
-			    usage 1
-			    ;;
-		    esac
-		done
-		shift
-		;;
-	    *)
-		finished=1
-		;;
-	esac
-    done
-
-    [ $# -gt 0 ] && usage 1
-
-    echo $SHOREWALL_VERSION
-    
-    if [ -n "$all" ]; then
-	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ $product != $g_program ] && [ -f /usr/share/$product/version ]; then
-		echo "$product: $(cat /usr/share/$product/version)"
-	    fi
-	done
-    fi
-}
-
 #
 # Execution begins here
 #
@@ -655,29 +606,7 @@ case "$COMMAND" in
     status)
 	[ $# -eq 1 ] || usage 1
 	[ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
-	echo "$g_product $SHOREWALL_VERSION Status at $g_hostname - $(date)"
-	echo
-	if product_is_started ; then
-	    echo "$g_product is running"
-	    status=0
-	else
-	    echo "$g_product is stopped"
-	    status=4
-	fi
-
-	if [ -f ${VARDIR}/state ]; then
-	    state="$(cat ${VARDIR}/state)"
-	    case $state in
-		Stopped*|Closed*|Clear*)
-		    status=3
-		    ;;
-	    esac
-	else
-	    state=Unknown
-	fi
-	echo "State:$state"
-	echo
-	exit $status
+	status_command
 	;;
     dump)
     	shift
@@ -698,38 +627,17 @@ case "$COMMAND" in
     drop)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if product_is_started ; then
-	    [ -n "$nolock" ] || mutex_on
-	    block DROP Dropped $*
-	    [ -n "$nolock" ] || mutex_off
-	else
-	    error_message "ERROR: $g_product is not started"
-	    exit 2
-	fi
+	drop_command $@
 	;;
     logdrop)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if product_is_started ; then
-	    [ -n "$nolock" ] || mutex_on
-	    block logdrop Dropped $*
-	    [ -n "$nolock" ] || mutex_off
-	else
-	    error_message "ERROR: $g_product is not started"
-	    exit 2
-	fi
+	logdrop_command $@
 	;;
     reject|logreject)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
-	if product_is_started ; then
-	    [ -n "$nolock" ] || mutex_on
-	    block $COMMAND Rejected $*
-	    [ -n "$nolock" ] || mutex_off
-	else
-	    error_message "ERROR: $g_product is not started"
-	    exit 2
-	fi
+	reject_command $@
 	;;
     allow)
 	allow_command $@
@@ -754,117 +662,39 @@ case "$COMMAND" in
 	;;
     save)
 	[ -n "$debugging" ] && set -x
-
-	case $# in
-	1)
-	    ;;
-	2)
-	    RESTOREFILE="$2"
-	    validate_restorefile '<restore file>'
-	    ;;
-	*)
-	    usage 1
-	    ;;
-	esac
-
-	g_restorepath=${VARDIR}/$RESTOREFILE
-
-	[ "$nolock" ] || mutex_on
-
-	save_config
-
-	[ "$nolock" ] || mutex_off
+	save_command $@
 	;;
     forget)
-	case $# in
-	1)
-	    ;;
-	2)
-	    RESTOREFILE="$2"
-	    validate_restorefile '<restore file>'
-	    ;;
-	*)
-	    usage 1
-	    ;;
-	esac
-
-
-	g_restorepath=${VARDIR}/$RESTOREFILE
-
-	if [ -x $g_restorepath ]; then
-	    rm -f $g_restorepath
-	    rm -f ${g_restorepath}-iptables
-	    rm -f ${g_restorepath}-ipsets
-	    echo "    $g_restorepath removed"
-	elif [ -f $g_restorepath ]; then
-	    echo "   $g_restorepath exists and is not a saved Shorewall configuration"
-	fi
-	rm -f ${VARDIR}/save
+	forget_command $@
 	;;
     ipcalc)
     	[ -n "$debugging" ] && set -x
-	if [ $# -eq 2 ]; then
-	    address=${2%/*}
-	    vlsm=${2#*/}
-	elif [ $# -eq 3 ]; then
-	    address=$2
-	    vlsm=$(ip_vlsm $3)
-	else
-	    usage 1
-	fi
-
-	valid_address $address || fatal_error "Invalid IP address: $address"
-	[ -z "$vlsm" ] && exit 2
-	[ "x$address" = "x$vlsm" ] && usage 2
-	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
-
-	address=$address/$vlsm
-
-	                                   echo "   CIDR=$address"
-	temp=$(ip_netmask $address);       echo "   NETMASK=$(encodeaddr $temp)"
-	temp=$(ip_network $address);       echo "   NETWORK=$temp"
-	temp=$(broadcastaddress $address); echo "   BROADCAST=$temp"
+	ipcalc_command $@
 	;;
 
     iprange)
 	[ -n "$g_debugging" ] && set -x
-	range=''	
-	while [ $# -gt 0 ]; do
-	    shift
-	    range="${range}${1}"
-	done
-
-	case $range in
-	    *.*.*.*-*.*.*.*)
-		for address in ${range%-*} ${range#*-}; do
-		    valid_address $address || fatal_error "Invalid IP address: $address"
-		done
-
-		ip_range $range
-		;;
-	    *)
-		usage 1
-		;;
-	esac
+	iprange_command $@
 	;;
     ipdecimal)
 	[ -n "$debugging" ] && set -x
-	[ $# -eq 2 ] || usage 1
-	case $2 in
-	    *.*.*.*)
-		valid_address $2 || fatal_error "Invalid IP address: $2"
-		echo "   $(decodeaddr $2)"
-		;;
-	    *)
-		echo "   $(encodeaddr $2)"
-		;;
-	esac
+	ipdecimal_command $@
 	;;
     restore)
 	shift
 	STARTUP_ENABLED=Yes
 	restore_command $@
         ;;
+    iptrace)
+	get_config
+	shift
+	iptrace_command $@
+	;;
+     noiptrace)
+	get_config
+	shift
+	noiptrace_command $@
+	;;
     call)
 	[ -n "$debugging" ] && set -x
 	#

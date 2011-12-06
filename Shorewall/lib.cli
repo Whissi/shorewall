@@ -459,6 +459,55 @@ list_zone() {
     done
 }
 
+version_command() {
+    local finished
+    finished=0
+    local all
+    all=
+    local product
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			a*)
+			    all=Yes
+			    option=${option#a}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ $# -gt 0 ] && usage 1
+
+    echo $SHOREWALL_VERSION
+
+    if [ -n "$all" ]; then
+	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
+	    if [ $product != $g_program -a -f /usr/share/$product/version ]; then
+		echo "$product: $(cat /usr/share/$product/version)"
+	    fi
+	done
+    fi
+}
+
 #
 # Show Filter - For Shorewall[6]-lite, if there was an scfilter file at compile-time,
 #               then the compiler generated another version of this function and
@@ -2227,4 +2276,211 @@ report_capabilities1() {
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION
+}
+
+status_command() {
+    echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
+    echo
+    if product_is_started ; then
+	echo "$g_product is running"
+	status=0
+    else
+	echo "$g_product is stopped"
+	status=4
+    fi
+
+    if [ -f ${VARDIR}/state ]; then
+	state="$(cat ${VARDIR}/state)"
+	case $state in
+	    Stopped*|Closed*|Clear*)
+		status=3
+		;;
+	esac
+    else
+	state=Unknown
+    fi
+    echo "State:$state"
+    echo
+    exit $status
+}
+
+drop_command() {
+    if product_is_started ; then
+	if ! chain_exists dynamic; then
+	    echo "Dynamic blacklisting is not supported in the current $g_product configuration"
+	    exit 2
+	fi
+
+	[ -n "$nolock" ] || mutex_on
+	block DROP Dropped $*
+	[ -n "$nolock" ] || mutex_off
+    else
+	fatal_error "$g_product is not started"
+    fi
+}
+
+logdrop_command() {
+    if product_is_started ; then
+	if ! chain_exists dynamic; then
+	    echo "Dynamic blacklisting is not supported in the current $g_product configuration"
+	    exit 2
+	fi
+
+	[ -n "$nolock" ] || mutex_on
+	block logdrop Dropped $*
+	[ -n "$nolock" ] || mutex_off
+    else
+	fatal_error "$g_product is not started"
+    fi
+}
+
+reject_command() {
+    if product_is_started ; then
+	[ -n "$nolock" ] || mutex_on
+	block $1 Rejected $*
+	[ -n "$nolock" ] || mutex_off
+    else
+	fatal_error "$g_product is not started"
+    fi
+}
+
+save_command() {
+    case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+	esac
+
+    g_restorepath=${VARDIR}/$RESTOREFILE
+
+    [ -n "$nolock" ] || mutex_on
+
+    save_config
+
+    result=$?
+
+    [ -n "$nolock" ] || mutex_off
+
+    exit $result
+}
+
+forget_command() {
+    case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    g_restorepath=${VARDIR}/$RESTOREFILE
+
+    if [ -x $g_restorepath ]; then
+	rm -f $g_restorepath
+	rm -f ${g_restorepath}-iptables
+	rm -f ${g_restorepath}-ipsets
+	echo "    $g_restorepath removed"
+    elif [ -f $g_restorepath ]; then
+	echo "   $g_restorepath exists and is not a saved $g_product configuration"
+    fi
+    rm -f ${VARDIR}/save
+}
+
+ipcalc_command() {
+    local address
+    local vlsm
+    
+    [ $g_family -eq 6 ] && usage 1
+
+    if [ $# -eq 2 ]; then
+	address=${2%/*}
+	vlsm=${2#*/}
+    elif [ $# -eq 3 ]; then
+	address=$2
+	vlsm=$(ip_vlsm $3)
+    else
+	usage 1
+    fi
+
+    valid_address $address || fatal_error "Invalid IP address: $address"
+    [ -z "$vlsm" ] && usage 2
+    [ "x$address" = "x$vlsm" ] && usage 2
+    [ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
+
+    address=$address/$vlsm
+
+    echo "   CIDR=$address"
+    temp=$(ip_netmask $address);       echo "   NETMASK=$(encodeaddr $temp)"
+    temp=$(ip_network $address);       echo "   NETWORK=$temp"
+    temp=$(broadcastaddress $address); echo "   BROADCAST=$temp"
+}
+
+iprange_command() {
+    local range
+
+    [ $g_family -eq 6 ] && usage 1
+
+    range=''	
+
+    while [ $# -gt 0 ]; do
+	shift
+	range="${range}${1}"
+    done
+
+    case $range in
+	*.*.*.*-*.*.*.*)
+	    for address in ${range%-*} ${range#*-}; do
+		valid_address $address || fatal_error "Invalid IP address: $address"
+	    done
+
+	    ip_range $range
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+}
+
+ipdecimal_command() {
+    [ $# -eq 2 ] || usage 1
+
+    [ $g_family -eq 6 ] && usage 1
+
+    case $2 in
+	*.*.*.*)
+	    valid_address $2 || fatal_error "Invalid IP address: $2"
+	    echo "   $(decodeaddr $2)"
+	    ;;
+	*)
+	    echo "   $(encodeaddr $2)"
+	    ;;
+    esac
+}
+
+iptrace_command() {
+    if product_is_started ; then
+	$g_tool -t raw -A PREROUTING $@ -j TRACE
+	$g_tool -t raw -A OUTPUT $@ -j TRACE
+    else
+	fatal_error "$g_product is not started"
+    fi
+}
+
+noiptrace_command() {
+    if product_is_started ; then
+	$g_tool -t raw -D PREROUTING $@ -j TRACE
+	$g_tool -t raw -D OUTPUT $@ -j TRACE
+    else
+	fatal_error "$g_product is not started"
+    fi
 }

@@ -471,6 +471,7 @@ sub initialize( $ ) {
 	  LOGBURST => undef,
 	  LOGALLNEW => undef,
 	  BLACKLIST_LOGLEVEL => undef,
+	  RELATED_LOG_LEVEL => undef,
 	  RFC1918_LOG_LEVEL => undef,
 	  MACLIST_LOG_LEVEL => undef,
 	  TCP_FLAGS_LOG_LEVEL => undef,
@@ -576,6 +577,7 @@ sub initialize( $ ) {
 	  BLACKLIST_DISPOSITION => undef,
 	  SMURF_DISPOSITION => undef,
 	  SFILTER_DISPOSITION => undef,
+	  RELATED_DISPOSITION => undef,
 	  #
 	  # Mark Geometry
 	  #
@@ -3797,6 +3799,7 @@ sub get_configuration( $$$ ) {
     default_log_level 'MACLIST_LOG_LEVEL',   '';
     default_log_level 'TCP_FLAGS_LOG_LEVEL', '';
     default_log_level 'RFC1918_LOG_LEVEL',   '';
+    default_log_level 'RELATED_LOG_LEVEL',   '';
 
     warning_message "RFC1918_LOG_LEVEL=$config{RFC1918_LOG_LEVEL} ignored. The 'norfc1918' interface/host option is no longer supported" if $config{RFC1918_LOG_LEVEL};
 
@@ -3829,6 +3832,23 @@ sub get_configuration( $$$ ) {
     } else {
 	$config{MACLIST_DISPOSITION}  = 'REJECT';
 	$globals{MACLIST_TARGET}      = 'reject';
+    }
+
+    if ( $val = $config{RELATED_DISPOSITION} ) {
+	if ( $val =~ /^(?:A_)?(?:DROP|ACCEPT)$/ ) {
+	    $globals{RELATED_TARGET} = $val;
+	} elsif ( $val eq 'REJECT' ) {
+	    $globals{RELATED_TARGET} = 'reject';
+	} elsif ( $val eq 'A_REJECT' ) {
+	    $globals{RELATED_TARGET} = $val;
+	} else {
+	    fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
+	}
+
+	require_capability 'AUDIT_TARGET' , "MACLIST_DISPOSITION=$val", 's' if $val =~ /^A_/;
+    } else {
+	$config{RELATED_DISPOSITION}  =
+	$globals{RELATED_TARGET}      = 'ACCEPT';
     }
 
     if ( $val = $config{MACLIST_TABLE} ) {

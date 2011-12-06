@@ -764,11 +764,33 @@ sub ensure_rules_chain( $ )
 #
 sub finish_chain_section ($$) {
     my ($chainref, $state ) = @_;
-    my $chain = $chainref->{name};
+    my $chain               = $chainref->{name};
+    my $related_level       = $config{RELATED_LOG_LEVEL};
+    my $related_target      = $globals{RELATED_TARGET};
     
     push_comment(''); #These rules should not have comments
 
-    add_ijump $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
+    if ( $state =~ /RELATED/ && ( $related_level || $related_target ne 'ACCEPT' ) ) {
+
+	if ( $related_level ) {
+	    my $relatedref = new_chain( 'filter', "+$chainref->{name}" );
+	    log_rule( $related_level,
+		      $relatedref,
+		      $config{RELATED_DISPOSITION},
+		      '' );
+	    add_ijump( $relatedref, g => $related_target );
+		    
+	    $related_target = $relatedref->{name};
+	}
+
+	add_ijump $chainref, g => $related_target, state_imatch 'RELATED';
+
+	$state =~ s/,?RELATED//;
+    }
+
+    if ( $state ) {
+	add_ijump $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
+    }
 
     if ($sections{NEW} ) {
 	if ( $chainref->{is_policy} ) {

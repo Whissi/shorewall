@@ -704,7 +704,10 @@ sub add_common_rules ( $ ) {
 
     setup_mss;
 
-    add_ijump( $filter_table->{OUTPUT} , j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ) if ( $config{FASTACCEPT} );
+    if ( $config{FASTACCEPT} ) {
+	my $faststate = $config{RELATED_DISPOSITION} eq 'ACCEPT' && $config{RELATED_LOG_LEVEL} eq '' ? 'ESTABLISHED,RELATED' : 'ESTABLISHED';
+	add_ijump( $filter_table->{OUTPUT} , j => 'ACCEPT', state_imatch $faststate )
+    } 
 
     my $policy   = $config{SFILTER_DISPOSITION};
     $level       = $config{SFILTER_LOG_LEVEL};

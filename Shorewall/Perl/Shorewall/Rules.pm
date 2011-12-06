@@ -2022,7 +2022,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     }
 
     unless ( $section eq 'NEW' || $inaction ) {
-	fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" if $config{FASTACCEPT};
+	if ( $config{FASTACCEPT} ) {
+	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
+	}
+
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} $section " unless $section eq 'ALL' || $blacklist;
     }

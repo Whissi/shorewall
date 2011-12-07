@@ -691,6 +691,7 @@ sub add_common_rules ( $ ) {
     my $dynamicref;
 
     my @state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
+    my $faststate = $config{RELATED_DISPOSITION} eq 'ACCEPT' && $config{RELATED_LOG_LEVEL} eq '' ? 'ESTABLISHED,RELATED' : 'ESTABLISHED';
     my $level     = $config{BLACKLIST_LOGLEVEL};
     my $rejectref = $filter_table->{reject};
 
@@ -705,7 +706,6 @@ sub add_common_rules ( $ ) {
     setup_mss;
 
     if ( $config{FASTACCEPT} ) {
-	my $faststate = $config{RELATED_DISPOSITION} eq 'ACCEPT' && $config{RELATED_LOG_LEVEL} eq '' ? 'ESTABLISHED,RELATED' : 'ESTABLISHED';
 	add_ijump( $filter_table->{OUTPUT} , j => 'ACCEPT', state_imatch $faststate )
     } 
 
@@ -778,7 +778,7 @@ sub add_common_rules ( $ ) {
 		$interfaceref->{options}{use_forward_chain} = 1;
 	    }
 
-	    add_ijump( $chainref, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ), $chainref->{filtered}++ if $config{FASTACCEPT};
+	    add_ijump( $chainref, j => 'ACCEPT', state_imatch $faststate ), $chainref->{filtered}++ if $config{FASTACCEPT};
 	    add_ijump( $chainref, j => $dynamicref, @state ), $chainref->{filtered}++ if $dynamicref;
 
 	    $chainref = $filter_table->{input_chain $interface};
@@ -788,7 +788,7 @@ sub add_common_rules ( $ ) {
 		$interfaceref->{options}{use_input_chain} = 1;
 	    }
 	
-	    add_ijump( $chainref, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' ), $chainref->{filtered}++ if $config{FASTACCEPT};
+	    add_ijump( $chainref, j => 'ACCEPT', state_imatch $faststate ), $chainref->{filtered}++ if $config{FASTACCEPT};
 	    add_ijump( $chainref, j => $dynamicref, @state ), $chainref->{filtered}++ if $dynamicref;
 	}
     }

@@ -34,6 +34,15 @@ fatal_error() # $@ = Message
 }
 
 #
+# Issue an error message and die
+#
+startup_error() {
+    echo "   ERROR: $@" >&2
+    kill $$
+    exit 1
+}
+
+#
 # Display a chain if it exists
 #
 

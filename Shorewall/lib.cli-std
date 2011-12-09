@@ -332,15 +332,6 @@ get_config() {
 }
 
 #
-# Issue an error message and die
-#
-startup_error() {
-    echo "   ERROR: $@" >&2
-    kill $$
-    exit 1
-}
-
-#
 # Determine if there are config files newer than the passed object
 #
 uptodate() {
@@ -1596,7 +1587,7 @@ compiler_command() {
 	compile)
 	    get_config Yes
 	    shift
-	    compile_command $@1
+	    compile_command $@
 	    ;;
 	refresh)
 	    get_config Yes Yes

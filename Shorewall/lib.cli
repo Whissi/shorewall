@@ -2493,3 +2493,338 @@ noiptrace_command() {
 	fatal_error "$g_product is not started"
     fi
 }
+#
+# Set the configuration variables from shorewall-lite.conf
+#
+get_config() {
+
+    ensure_config_path
+
+    config=$(find_file ${g_base}-lite.conf)
+    
+    if [ -f $config ]; then
+	if [ -r $config ]; then
+	    . $config
+	else
+	    echo "Cannot read $config! (Hint: Are you root?)" >&2
+	    exit 1
+	fi
+    else
+	echo "$config does not exist!" >&2
+	exit 2
+    fi
+
+    ensure_config_path
+
+    [ -f ${VARDIR}/firewall.conf ] && . ${VARDIR}/firewall.conf
+
+    [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+
+    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
+
+    if ( ps ax 2> /dev/null | grep -v grep |  qt grep 'syslogd.*-C' ) ; then
+	g_logread="logread | tac"
+    elif [ -r $LOGFILE ]; then
+	g_logread="tac $LOGFILE"
+    else
+	echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	exit 2
+    fi
+    #
+    # See if we have a real version of "tail" -- use separate redirection so
+    # that ash (aka /bin/sh on LRP) doesn't crap
+    #
+    if ( tail -n5 /dev/null > /dev/null 2> /dev/null ) ; then
+	realtail="Yes"
+    else
+	realtail=""
+    fi
+
+    [ -n "$FW" ] || FW=fw
+
+    if [ $g_family -eq 4 ]; then
+	if [ -n "$IPTABLES" ]; then
+	    if [ ! -x "$IPTABLES" ]; then
+		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+		exit 2
+	    fi
+	else	 
+	    IPTABLES=$(mywhich iptables 2> /dev/null)
+	    if [ -z "$IPTABLES" ] ; then
+		echo "   ERROR: Can't find iptables executable" >&2
+		exit 2
+	    fi
+	fi
+
+	g_tool=$IPTABLES
+    else
+	if [ -n "$IP6TABLES" ]; then
+	    if [ ! -x "$IP6TABLES" ]; then
+		echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
+		exit 2
+	    fi
+	else	 
+	    IP6TABLES=$(mywhich ip6tables 2> /dev/null)
+	    if [ -z "$IP6TABLES" ] ; then
+		echo "   ERROR: Can't find ip6tables executable" >&2
+		exit 2
+	    fi
+	fi
+
+	g_tool=$IP6TABLES
+    fi
+
+    if [ -n "$SHOREWALL_SHELL" ]; then
+	if [ ! -x "$SHOREWALL_SHELL" ]; then
+	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
+	    SHOREWALL_SHELL=/bin/sh
+	fi
+    fi
+
+    [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
+
+    validate_restorefile RESTOREFILE
+
+    [ -n "${VERBOSITY:=2}" ]
+
+    [ -n "$g_use_verbosity" ] && VERBOSITY=$g_use_verbosity || VERBOSITY=$(($g_verbose_offset + $VERBOSITY))
+
+    if [ $VERBOSITY -lt -1 ]; then
+	VERBOSITY=-1
+    elif [ $VERBOSITY -gt 2 ]; then
+	VERBOSITY=2
+    fi
+
+    g_hostname=$(hostname 2> /dev/null)
+
+    IP=$(mywhich ip 2> /dev/null)
+    if [ -z "$IP" ] ; then
+	echo "   ERROR: Can't find ip executable" >&2
+	exit 2
+    fi
+
+    IPSET=ipset
+    TC=tc
+
+}
+
+#
+# Verify that we have a compiled firewall script
+#
+verify_firewall_script() {
+    if [ ! -f $g_firewall ]; then
+	echo "   ERROR: $g_product is not properly installed" >&2
+	if [ -L $g_firewall ]; then
+	    echo "          $g_firewall is a symbolic link to a" >&2
+	    echo "          non-existant file" >&2
+	else
+	    echo "          The file $g_firewall does not exist" >&2
+	fi
+	
+	exit 2
+    fi
+}
+
+################################################################################
+# The remaining functions are used by the Lite cli - they are overloaded by
+# the Standard CLI by loading lib.cli-std
+################################################################################
+#
+# Start Command Executor
+#
+start_command() {
+    local finished
+    finished=0
+
+    do_it() {
+	local rc
+	rc=0
+	[ -n "$nolock" ] || mutex_on
+
+	if [ -x ${VARDIR}/firewall ]; then
+	    run_it ${VARDIR}/firewall $debugging start
+	    rc=$?
+	else
+	    error_message "${VARDIR}/firewall is missing or is not executable"
+	    logger -p kern.err "ERROR:$g_product start failed"
+	    rc=2
+	fi
+
+	[ -n "$nolock" ] || mutex_off
+	exit $rc
+    }
+
+    verify_firewall_script
+
+    if product_is_started; then
+	if [ $g_family -eq 4 ]; then
+	    error_message "Shorewall is already running"
+	else
+	    error_message "Shorewall6 is already running"
+	fi
+
+	exit 0
+    fi
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    g_purge=Yes
+			    option=${option%p}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    do_it
+}
+
+#
+# Restart Command Executor
+#
+restart_command() {
+    local finished
+    finished=0
+    local rc
+    rc=0
+
+    verify_firewall_script
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			n*)
+			    g_noroutes=Yes
+			    option=${option#n}
+			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    g_purge=Yes
+			    option=${option%p}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    [ -n "$nolock" ] || mutex_on
+
+    if [ -x ${VARDIR}/firewall ]; then
+	run_it ${VARDIR}/firewall $debugging restart
+	rc=$?
+    else
+	error_message "${VARDIR}/firewall is missing or is not executable"
+	logger -p kern.err "ERROR:$g_product restart failed"
+	rc=2
+    fi
+
+    [ -n "$nolock" ] || mutex_off
+    return $rc
+}
+
+#
+# Give Usage Information
+#
+usage() # $1 = exit status
+{
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v[-1|{0-2}] ] [ -t ] <command>"
+    echo "where <command> is one of:"
+    echo "   add <interface>[:<host-list>] ... <zone>"
+    echo "   allow <address> ..."
+    echo "   clear"
+    echo "   delete <interface>[:<host-list>] ... <zone>"
+    echo "   disable <interface>"
+    echo "   drop <address> ..."
+    echo "   dump [ -x ]"
+    echo "   enable <interface>"
+    echo "   forget [ <file name> ]"
+    echo "   help"
+
+    if [ $g_family -eq 4 ]; then
+	echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
+	echo "   ipdecimal { <address> | <integer> }"
+	echo "   iprange <address>-<address>"
+    fi
+
+    echo "   logdrop <address> ..."
+    echo "   logreject <address> ..."
+    echo "   logwatch [<refresh interval>]"
+    echo "   reject <address> ..."
+    echo "   reset [ <chain> ... ]"
+    echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
+    echo "   restore [ -n ] [ <file name> ]"
+    echo "   save [ <file name> ]"
+    echo "   show [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   show [ -f ] capabilities"
+    echo "   show classifiers"
+    echo "   show config"
+    echo "   show connections"
+    echo "   show filters"
+    echo "   show ip"
+    echo "   show [ -m ] log [<regex>]"
+    echo "   show [ -x ] mangle|nat|raw|rawpost|routing"
+    echo "   show policies"
+    echo "   show tc [ device ]"
+    echo "   show vardir"
+    echo "   show zones"
+    echo "   start [ -f ] [ -p ] [ <directory> ]"
+    echo "   stop"
+    echo "   status"
+    echo "   version [ -a ]"
+    echo
+    exit $1
+}
+

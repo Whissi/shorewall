@@ -1818,13 +1818,15 @@ determine_capabilities() {
     local chain
     local chain1
 
-    [ $g_family -eq 4 ] && tool=iptables || tool=ip6tables
-
-    g_tool=$(mywhich $tool)
-
     if [ -z "$g_tool" ]; then
-	echo "   ERROR: No executable $tool binary can be found on your PATH" >&2
-	exit 1
+	[ $g_family -eq 4 ] && tool=iptables || tool=ip6tables
+
+	g_tool=$(mywhich $tool)
+
+	if [ -z "$g_tool" ]; then
+	    echo "   ERROR: No executable $tool binary can be found on your PATH" >&2
+	    exit 1
+	fi
     fi
 
     qt $g_tool -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=

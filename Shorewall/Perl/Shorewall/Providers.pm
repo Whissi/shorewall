@@ -508,6 +508,7 @@ sub process_a_provider() {
 
     push @providers, $table;
 
+    progress_message "   Provider \"$currentline\" $done";
 }
 
 #
@@ -800,8 +801,6 @@ sub add_a_provider( $$ ) {
 
 	emit '}';
     }
-
-    progress_message "   Provider \"$currentline\" $done";
 }
 
 sub add_an_rtrule( ) {

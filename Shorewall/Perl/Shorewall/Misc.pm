@@ -397,7 +397,6 @@ sub convert_blacklist() {
 	if ( supplied $level ) {
 	    $target = 'blacklog';
 	} elsif ( $audit ) {
-	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
 	    $target = verify_audit( $disposition );
 	}
 

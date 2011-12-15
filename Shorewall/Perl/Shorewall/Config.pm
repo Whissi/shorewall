@@ -1933,9 +1933,11 @@ sub expand_variables( \$ ) {
 	if ( $var =~ /^\d+$/ ) {
 	    fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
 	    $val = $actparms[$var];
-	} else {
-	    fatal_error "Undefined shell variable (\$$var)" unless exists $params{$var};
+	} elsif ( exists $params{$var} ) {
 	    $val = $params{$var};
+	} else {
+	    fatal_error "Undefined shell variable (\$$var)" unless exists $config{$var};
+	    $val = $config{$var};
 	}
 
 	$val = '' unless defined $val;

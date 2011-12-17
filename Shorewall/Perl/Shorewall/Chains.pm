@@ -66,6 +66,7 @@ our @EXPORT = qw(
 		    get_action_logging
 
 		    %chain_table
+		    %helpers
 		    $raw_table
 		    $rawpost_table
 		    $nat_table
@@ -281,6 +282,7 @@ our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
+our %helpers;
 my  $comment;
 my  @comments;
 my  $export;
@@ -554,7 +556,21 @@ sub initialize( $$$ ) {
     $hashlimitset       = 0;
     $ipset_rules        = 0 if $hard;
 
-    %ipset_exists       = ();
+    %ipset_exists       = ();   
+
+    %helpers = ( amanda          => 1,
+		 ftp             => 1,
+		 h323            => 1,
+		 irc             => 1,
+		 netbios_ns      => 1,
+		 netlink         => 1,
+		 proto_gre       => 1,
+		 proto_sctp      => 1,
+		 pptp            => 1,
+		 proto_udplite   => 1,
+		 sane            => 1,
+		 sip             => 1,
+		 tftp            => 1 );
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -3985,6 +4001,8 @@ sub do_helper( $ ) {
     my $helper = shift;
 
     return '' if $helper eq '-';
+
+    warning_message "Unrecognized helper ($helper)" unless $helpers{$helper};
 
     qq(-m helper --helper "$helper" );
 }

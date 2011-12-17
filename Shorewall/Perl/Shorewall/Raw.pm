@@ -74,7 +74,11 @@ sub process_notrack_rule( $$$$$$$ ) {
 	} else {
 	    fatal_error "Invalid or missing CT option and arguments" unless supplied $option && supplied $args;
 
-	    if ( $option eq 'ctevents' ) {
+	    if ( $option eq 'helper' ) {
+		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
+		warning_message "Unrecognized helper ($args)" unless $helpers{$args};
+		$action = "CT --helper $args";
+	    } elsif ( $option eq 'ctevents' ) {
 		for ( split ',', $args ) {
 		    fatal_error "Invalid 'ctevents' event ($_)" unless $valid_ctevent{$_};
 		}
@@ -85,7 +89,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 	    } elsif ( $option eq 'zone' ) {
 		fatal_error "Invalid zone id ($args)" unless $args =~ /^\d+$/;
 	    } else {
-		fatal_error "Invalid CT optio ($option)";
+		fatal_error "Invalid CT option ($option)";
 	    }
 	}
     }

@@ -1326,6 +1326,20 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     <para>For optional interfaces, if the interface is not usable at the time
     that the firewall starts the all-zero address will be used (0.0.0.0 in
     IPv4 and :: in IPv6), resulting in no packets matching the rule.</para>
+
+    <para>Beginning with Shorewall 4.4.27, you may also use options in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) (e.g.,
+    $BLACKLIST_LOGLEVEL).</para>
+
+    <note>
+      <para>When an option is set to 'No' in shorewall.conf, the corresponding
+      shell variable is will be empty.</para>
+    </note>
+
+    <note>
+      <para>Options that were not set in shorewall.conf will expand to their
+      default value.</para>
+    </note>
   </section>
 
   <section id="Embedded">
@@ -1370,7 +1384,7 @@ ACCEPT dmz fw tcp 22</programlisting></para>
     following:</para>
 
     <programlisting>package Shorewall::User;
-use Shorewall::Config qw/shorewall/;</programlisting>
+use Shorewall::Config ( qw/shorewall/ );</programlisting>
 
     <para>To produce output that will be processed by the compiler as if it
     were embedded in the file at the point of the script, pass that output to

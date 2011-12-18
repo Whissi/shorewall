@@ -57,8 +57,6 @@ sub process_notrack_rule( $$$$$$$ ) {
     fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
     require_capability 'RAW_TABLE', 'Notrack rules', '';
 
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );
-
     my $target = $action;
     my $exception_rule = '';
 
@@ -77,7 +75,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
 	    if ( $option eq 'helper' ) {
 		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
-		fatal_error "A protocol and destination port are required in CT:helper rules" if $ports eq '-'; 
+		fatal_error "A protocol protocol is required in CT:helper rules" if $proto eq '-'; 
 		do_helper( $args );
 		$action = "CT --helper $args";
 		$exception_rule = do_proto( $proto, '-', '-' );
@@ -97,18 +95,17 @@ sub process_notrack_rule( $$$$$$$ ) {
 	}
     }
 
-    expand_rule
-	$chainref ,
-	$restriction ,
-	$rule ,
-	$source ,
-	$dest ,
-	'' ,
-	$action ,
-	'' ,
-	$target ,
-	$exception_rule ;
-
+    expand_rule( $chainref ,
+		 $restriction ,
+		 do_proto( $proto, $ports, $sports ) . do_user ( $user ) ,
+		 $source ,
+		 $dest ,
+		 '' ,
+		 $action ,
+		 '' ,
+		 $target ,
+		 $exception_rule );
+    
     progress_message "  Notrack rule \"$currentline\" $done";
 
     $globals{UNTRACKED} = 1;

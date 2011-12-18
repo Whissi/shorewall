@@ -4002,9 +4002,13 @@ sub do_helper( $ ) {
 
     return '' if $helper eq '-';
 
-    warning_message "Unrecognized helper ($helper)" unless $helpers{$helper};
+    my $helper_base = $helper;
 
-    qq(-m helper --helper "$helper" );
+    $helper_base =~ s/-\d+$//;
+
+    warning_message "Unrecognized helper ($helper)" unless $helpers{$helper_base};
+
+    qq(-m helper --helper "$helper" ) if defined wantarray;
 }
 
 #

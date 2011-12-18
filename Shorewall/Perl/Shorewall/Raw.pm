@@ -76,7 +76,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
 	    if ( $option eq 'helper' ) {
 		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
-		warning_message "Unrecognized helper ($args)" unless $helpers{$args};
+		do_helper( $args );
 		$action = "CT --helper $args";
 	    } elsif ( $option eq 'ctevents' ) {
 		for ( split ',', $args ) {

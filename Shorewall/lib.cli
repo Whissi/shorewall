@@ -2830,3 +2830,307 @@ usage() # $1 = exit status
     exit $1
 }
 
+shorewall_cli() {
+    finished=0
+
+    while [ $finished -eq 0 ]; do
+	[ $# -eq 0 ] && usage 1
+	option=$1
+	case $option in
+	    -)
+		finished=1
+		;;
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			c)
+			    [ $# -eq 1 -o -n "$g_lite" ] && usage 1
+
+			    if [ ! -d $2 ]; then
+				if [ -e $2 ]; then
+				    echo "$2 is not a directory" >&2 && exit 2
+				else
+				    echo "Directory $2 does not exist" >&2 && exit 2
+				fi
+			    fi
+
+			    SHOREWALL_DIR=$(resolve_file $2)
+			    option=
+			    shift
+			    ;;
+			e*)
+			    [ -n "$g_lite" ] && usage 1
+			    g_export=Yes
+			    option=${option#e}
+			    ;;
+			x*)
+			    g_ipt_options="-xnv"
+			    option=${option#x}
+			    ;;
+			q*)
+			    g_verbose_offset=$(($g_verbose_offset - 1 ))
+			    option=${option#q}
+			    ;;
+			f*)
+			    g_fast=Yes
+			    option=${option#f}
+			    ;;
+			v*)
+			    option=${option#v}
+			    case $option in
+				-1*)
+				    g_use_verbosity=-1
+				    option=${option#-1}
+				    ;;
+				0*)
+				    g_use_verbosity=0
+				    option=${option#0}
+				    ;;
+				1*)
+				    g_use_verbosity=1
+				    option=${option#1}
+				    ;;
+				2*)
+				    g_use_verbosity=2
+				    option=${option#2}
+				    ;;
+				*)
+				    g_verbose_offset=$(($g_verbose_offset + 1 ))
+				    g_use_verbosity=
+				    ;;
+			    esac
+			    ;;
+			n*)
+			    g_noroutes=Yes
+			    option=${option#n}
+			    ;;
+			t*)
+			    g_timestamp=Yes
+			    option=${option#t}
+			    ;;
+			-)
+			    finished=1
+			    option=
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    if [ $# -eq 0 ]; then
+	usage 1
+    fi
+
+    PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+    MUTEX_TIMEOUT=
+
+    [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
+
+    [ -n "${VARDIR:=/var/lib/$g_program}" ]
+
+    if [ ! -f ${VARDIR}/firewall ]; then
+	[ -f ${VARDIR}/.restore ] && cp -f ${VARDIR}/.rstore ${VARDIR}/firewall
+    fi
+
+    g_firewall=${VARDIR}/firewall
+
+    version_file=$SHAREDIR/version
+    if [ -f $version_file ]; then
+	SHOREWALL_VERSION=$(cat $version_file)
+    else
+	echo "   ERROR: $g_product is not properly installed" >&2
+	echo "	 The file $version_file does not exist"  >&2
+	exit 1
+    fi
+
+    banner="${g_product}-${SHOREWALL_VERSION} Status at $g_hostname -"
+
+    case $(echo -e) in
+	-e*)
+	    g_ring_bell="echo \a"
+	    g_echo_e="echo"
+	    ;;
+	*)
+	    g_ring_bell="echo -e \a"
+	    g_echo_e="echo -e"
+	    ;;
+    esac
+
+    case $(echo -n "Testing") in
+	-n*)
+	    g_echo_n=
+	    ;;
+	*)
+	    g_echo_n=-n
+	    ;;
+    esac
+
+    COMMAND=$1
+
+    case "$COMMAND" in
+	start)
+	    get_config Yes Yes
+	    shift
+	    start_command $@
+	    ;;
+	stop|clear)
+	    [ $# -ne 1 ] && usage 1
+	    get_config
+	    [ -x $g_firewall ] || fatal_error "$g_product has never been started"
+	    [ -n "$g_nolock" ] || mutex_on
+	    run_it $g_firewall $g_debugging $COMMAND
+	    [ -n "$g_nolock" ] || mutex_off
+	    ;;
+	reset)
+	    get_config
+	    shift
+	    [ -n "$g_nolock" ] || mutex_on
+	    [ -x $g_firewall ] || fatal_error "$g_product has never been started"
+	    run_it $g_firewall $g_debugging reset $@
+	    [ -n "$g_nolock" ] || mutex_off
+	    ;;
+	restart)
+	    get_config Yes Yes
+	    shift
+	    restart_command $@
+	    ;;
+	disable|enable)
+	    get_config Yes
+	    if product_is_started; then
+		run_it ${VARDIR}/firewall $g_debugging $@
+	    else
+		fatal_error "Shorewall is not running"
+	    fi
+	    ;;
+	show|list)
+	    get_config Yes No Yes
+    	    shift
+    	    show_command $@
+	    ;;
+	status)
+	    [ $# -eq 1 ] || usage 1
+	    [ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
+	    get_config
+	    status_command 
+	    ;;
+	dump)
+	    get_config Yes No Yes
+    	    shift
+    	    dump_command $@
+	    ;;
+	hits)
+	    [ $g_family -eq 6 ] && usage 1
+	    get_config Yes No Yes
+	    [ -n "$g_debugging" ] && set -x
+	    shift
+	    hits_command $@
+	    ;;
+	version)
+	    shift
+	    version_command $@
+	    ;;
+	logwatch)
+	    get_config Yes Yes Yes
+	    banner="${g_product}-$SHOREWALL_VERSION Logwatch at $g_hostname -"
+	    logwatch_command $@
+	    ;;
+	drop)
+	    get_config
+	    [ -n "$g_debugging" ] && set -x
+	    [ $# -eq 1 ] && usage 1
+	    drop_command $@
+	    ;;
+	logdrop)
+	    get_config
+	    [ -n "$g_debugging" ] && set -x
+	    [ $# -eq 1 ] && usage 1
+	    logdrop_command $@
+	    ;;
+	reject|logreject)
+	    get_config
+	    [ -n "$g_debugging" ] && set -x
+	    [ $# -eq 1 ] && usage 1
+	    reject_command $@
+	    ;;
+	allow)
+	    get_config
+	    allow_command $@
+	    ;;
+	add)
+	    get_config
+	    shift
+	    add_command $@
+	    ;;
+	delete)
+	    get_config
+	    shift
+	    delete_command $@
+	    ;;
+	save)
+	    get_config
+	    [ -n "$g_debugging" ] && set -x
+	    save_command $@
+	    ;;
+	forget)
+	    get_config
+	    forget_command $@
+	    ;;
+	ipcalc)
+    	    [ -n "$g_debugging" ] && set -x
+	    ipcalc_command $@
+	    ;;
+	iprange)
+	    [ -n "$g_debugging" ] && set -x
+	    iprange_command $@
+	    ;;
+	ipdecimal)
+	    [ -n "$g_debugging" ] && set -x
+	    ipdecimal_command $@
+	    ;;
+	restore)
+	    get_config
+	    shift
+	    restore_command $@
+            ;;
+	call)
+	    get_config
+	    [ -n "$g_debugging" ] && set -x
+	    #
+	    # Undocumented way to call functions in the libraries directly
+	    #
+	    shift
+	    $@
+	    ;;
+	help)
+	    shift
+	    usage
+	    ;;
+	iptrace)
+	    get_config
+	    shift
+	    iptrace_command $@
+	    ;;
+	noiptrace)
+	    get_config
+	    shift
+	    noiptrace_command $@
+	    ;;
+	*)
+	    if [ -z "$g_lite" ]; then
+		compiler_command $@
+	    else
+		usage 1
+	    fi
+	    ;; 
+    esac
+}

@@ -1251,17 +1251,17 @@ restore_command() {
 
     g_restorepath=${VARDIR}/$RESTOREFILE
 
-    [ -n "$nolock" ] || mutex_on
+    [ -n "$g_nolock" ] || mutex_on
 
     if [ -x $g_restorepath ]; then
 	progress_message3 "Restoring $g_product..."
 
 	run_it $g_restorepath restore && progress_message3 "$g_product restored from ${VARDIR}/$RESTOREFILE"
 
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     else
 	echo "File $g_restorepath: file not found"
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
 	exit 2
     fi
 }
@@ -1357,7 +1357,7 @@ block() # $1 = command, $2 = Finished, $3 - $n addresses
 
     if ! chain_exists dynamic; then
 	echo "Dynamic blacklisting is not enabled in the current $g_product configuration" >&2
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
 	exit 2
     fi
 
@@ -1706,7 +1706,7 @@ allow_command() {
 	    exit 2
 	fi
 
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
 	    case $1 in
@@ -1744,7 +1744,7 @@ allow_command() {
 		    ;;
 	    esac
 	done
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     else
 	error_message "ERROR: $g_product is not started"
 	exit 2
@@ -2322,9 +2322,9 @@ drop_command() {
 	    exit 2
 	fi
 
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	block DROP Dropped $*
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     else
 	fatal_error "$g_product is not started"
     fi
@@ -2337,9 +2337,9 @@ logdrop_command() {
 	    exit 2
 	fi
 
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	block logdrop Dropped $*
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     else
 	fatal_error "$g_product is not started"
     fi
@@ -2347,9 +2347,9 @@ logdrop_command() {
 
 reject_command() {
     if product_is_started ; then
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	block $1 Rejected $*
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     else
 	fatal_error "$g_product is not started"
     fi
@@ -2370,13 +2370,13 @@ save_command() {
 
     g_restorepath=${VARDIR}/$RESTOREFILE
 
-    [ -n "$nolock" ] || mutex_on
+    [ -n "$g_nolock" ] || mutex_on
 
     save_config
 
     result=$?
 
-    [ -n "$nolock" ] || mutex_off
+    [ -n "$g_nolock" ] || mutex_off
 
     exit $result
 }
@@ -2641,7 +2641,7 @@ start_command() {
     do_it() {
 	local rc
 	rc=0
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 
 	if [ -x ${VARDIR}/firewall ]; then
 	    run_it ${VARDIR}/firewall $debugging start
@@ -2652,7 +2652,7 @@ start_command() {
 	    rc=2
 	fi
 
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
 	exit $rc
     }
 
@@ -2762,7 +2762,7 @@ restart_command() {
 	    ;;
     esac
 
-    [ -n "$nolock" ] || mutex_on
+    [ -n "$g_nolock" ] || mutex_on
 
     if [ -x ${VARDIR}/firewall ]; then
 	run_it ${VARDIR}/firewall $debugging restart
@@ -2773,7 +2773,7 @@ restart_command() {
 	rc=2
     fi
 
-    [ -n "$nolock" ] || mutex_off
+    [ -n "$g_nolock" ] || mutex_off
     return $rc
 }
 

@@ -25,7 +25,6 @@
 #       For a list of supported commands, type 'shorewall help' or 'shorewall6 help'
 #
 ################################################################################################
-
 g_debugging=
 
 if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
@@ -33,17 +32,16 @@ if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
     shift
 fi
 
-nolock=
+g_nolock=
 
 if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
-    nolock=nolock
+    g_nolock=nolock
     shift
 fi
 
 SHOREWALL_DIR=
 g_noroutes=
 g_purge=
-
 g_ipt_options="-nv"
 g_fast=
 g_verbose_offset=0
@@ -272,17 +270,17 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 1
 	get_config
 	[ -x $g_firewall ] || fatal_error "$g_product has never been started"
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging $COMMAND
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
 	;;
     reset)
 	get_config
 	shift
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	[ -x $g_firewall ] || fatal_error "$g_product has never been started"
 	run_it $g_firewall $g_debugging reset $@
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
 	;;
     restart)
 	get_config Yes Yes

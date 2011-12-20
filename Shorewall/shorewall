@@ -39,7 +39,6 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
     shift
 fi
 
-SHOREWALL_DIR=
 g_noroutes=
 g_purge=
 g_ipt_options="-nv"
@@ -57,9 +56,8 @@ g_recovering=
 g_timestamp=
 g_libexec=/usr/share
 g_perllib=/usr/share/shorewall
-#
-# Make sure that these variables are cleared
-#
+g_shorewalldir=
+
 VERBOSE=
 VERBOSITY=
 

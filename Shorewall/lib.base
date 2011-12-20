@@ -341,8 +341,8 @@ ensure_config_path() {
 	. $F
     fi
 
-    if [ -n "$SHOREWALL_DIR" ]; then
-	[ "${CONFIG_PATH%%:*}" = "$SHOREWALL_DIR" ] || CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
+    if [ -n "$g_shorewalldir" ]; then
+	[ "${CONFIG_PATH%%:*}" = "$g_shorewalldir" ] || CONFIG_PATH=$g_shorewalldir:$CONFIG_PATH
     fi
 }
 

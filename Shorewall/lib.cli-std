@@ -363,18 +363,18 @@ compiler() {
     pc=$g_libexec/shorewall/compiler.pl
 
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$SHOREWALL_DIR" -o "$SHOREWALL_DIR" = /etc/$g_program ]; then
+	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = /etc/$g_program ]; then
 	    startup_error "Ordinary users may not compile the /etc/$g_program configuration"
 	fi
     fi
     #
-    # We've now set SHOREWALL_DIR so recalculate CONFIG_PATH
+    # We've now set g_shorewalldir so recalculate CONFIG_PATH
     #
     ensure_config_path
     #
-    # Get the config from $SHOREWALL_DIR
+    # Get the config from $g_shorewalldir
     #
-    [ -n "$SHOREWALL_DIR" -a "$SHOREWALL_DIR" != /etc/$g_program ] && get_config
+    [ -n "$g_shorewalldir" -a "$g_shorewalldir" != /etc/$g_program ] && get_config
 
     case $COMMAND in
 	*start|try|refresh)
@@ -399,7 +399,7 @@ compiler() {
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"
-    [ -n "$SHOREWALL_DIR" ] && options="$options --directory=$SHOREWALL_DIR"
+    [ -n "$g_shorewalldir" ] && options="$options --directory=$g_shorewalldir"
     [ -n "$g_timestamp" ] && options="$options --timestamp"
     [ -n "$g_test" ] && options="$options --test"
     [ -n "$g_preview" ] && options="$options --preview"
@@ -514,7 +514,7 @@ start_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" -o -n "$g_fast" ] && usage 2
+	    [ -n "$g_shorewalldir" -o -n "$g_fast" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -524,7 +524,7 @@ start_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$(resolve_file $1)
+	    g_shorewalldir=$(resolve_file $1)
 	    AUTOMAKE=
 	    ;;
 	*)
@@ -633,7 +633,7 @@ compile_command() {
 	    [ -d $file ] && echo "   ERROR: $file is a directory" >&2 && exit 2;
 	    ;;
 	2)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
+	    [ -n "$g_shorewalldir" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -643,7 +643,7 @@ compile_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$(resolve_file $1)
+	    g_shorewalldir=$(resolve_file $1)
 	    file=$2
 	    ;;
 	*)
@@ -716,7 +716,7 @@ check_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
+	    [ -n "$g_shorewalldir" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -726,7 +726,7 @@ check_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$(resolve_file $1)
+	    g_shorewalldir=$(resolve_file $1)
 	    ;;
 	*)
 	    usage 1
@@ -804,7 +804,7 @@ update_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
+	    [ -n "$g_shorewalldir" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -814,7 +814,7 @@ update_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$(resolve_file $1)
+	    g_shorewalldir=$(resolve_file $1)
 	    ;;
 	*)
 	    usage 1
@@ -886,7 +886,7 @@ restart_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
+	    [ -n "$g_shorewalldir" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -896,7 +896,7 @@ restart_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$(resolve_file $1)
+	    g_shorewalldir=$(resolve_file $1)
 	    [ -n "$g_fast" ] && fatal_error "Directory may not be specified with the -f option"
 	    AUTOMAKE=
 	    ;;
@@ -1044,7 +1044,7 @@ safe_commands() {
 	0)
 	    ;;
 	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
+	    [ -n "$g_shorewalldir" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -1054,7 +1054,7 @@ safe_commands() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$(resolve_file $1)
+	    g_shorewalldir=$(resolve_file $1)
 	    ;;
 	*)
 	    usage 1
@@ -1139,7 +1139,7 @@ try_command() {
     timeout=
 
     handle_directory() {
-	[ -n "$SHOREWALL_DIR" ] && usage 2
+	[ -n "$g_shorewalldir" ] && usage 2
 
 	if [ ! -d $1 ]; then
 	    if [ -e $1 ]; then
@@ -1149,7 +1149,7 @@ try_command() {
 	    fi
 	fi
 
-	SHOREWALL_DIR=$(resolve_file $1)
+	g_shorewalldir=$(resolve_file $1)
     }
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
@@ -1367,7 +1367,7 @@ reload_command() # $* = original arguments less the command.
     fi
 
     if [ -z "$getcaps" ]; then
-	SHOREWALL_DIR=$(resolve_file $directory)
+	g_shorewalldir=$(resolve_file $directory)
 	ensure_config_path
 	capabilities=$(find_file capabilities)
 	[ -f $capabilities ] || getcaps=Yes

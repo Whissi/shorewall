@@ -631,7 +631,10 @@ sub add_a_provider( $$ ) {
 	$fallback = 1;
     }
 
-    emit ( qq(\nqt \$IP rule add from all table ) . DEFAULT_TABLE . qq( prio 32767\n) ) if $family == F_IPV6;
+    emit( qq(\n) ,
+	  qq(if ! \$IP -6 rule ls | egrep -q "32767:[[:space:]]+from all lookup (default|253)"; then) ,
+	  qq(    qt \$IP -6 rule add from all table ) . DEFAULT_TABLE . qq( prio 32767\n) ,
+	  qq(fi) ) if $family == F_IPV6;
 
     unless ( $local ) {
 	emit '';

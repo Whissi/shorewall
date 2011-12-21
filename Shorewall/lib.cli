@@ -836,7 +836,7 @@ show_command() {
 	    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies;
 	    ;;
 	ipa)
-	    [ $g_family -eq 4 ] && usage 1
+	    [ $g_family -eq 4 ] || usage 1
 	    echo "$g_product $SHOREWALL_VERSION per-IP Accounting at $g_hostname - $(date)"
 	    echo
 	    [ $# -gt 1 ] && usage 1

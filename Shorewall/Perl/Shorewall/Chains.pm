@@ -1572,7 +1572,8 @@ sub blacklist_chain($$) {
 #
 sub forward_chain($)
 {
-    $_[0] . '_fwd';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_fwd';
 }
 
 #
@@ -1623,7 +1624,8 @@ sub use_forward_chain($$) {
 #
 sub input_chain($)
 {
-    $_[0] . '_in';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_in';
 }
 
 #
@@ -1684,7 +1686,8 @@ sub use_input_chain($$) {
 #
 sub output_chain($)
 {
-    $_[0] . '_out';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_out';
 }
 
 #
@@ -1692,15 +1695,17 @@ sub output_chain($)
 #
 sub prerouting_chain($) 
 {
-    $_[0] . '_pre';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_pre';
 }
 	    
 #
-# Prerouting Chain for an interface
+# Postouting Chain for an interface
 #
 sub postrouting_chain($) 
 {
-    $_[0] . '_post';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_post';
 }
 	    
 #
@@ -1752,7 +1757,8 @@ sub use_output_chain($$) {
 #
 sub masq_chain($)
 {
-    $_[0] . '_masq';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_masq';
 }
 
 #
@@ -1767,7 +1773,8 @@ sub syn_flood_chain ( $ ) {
 #
 sub mac_chain( $ )
 {
-    $_[0] . '_mac';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_mac';
 }
 
 sub macrecent_target($)
@@ -1796,7 +1803,8 @@ sub notrack_chain( $ )
 #
 sub snat_chain( $ )
 {
-    $_[0] . '_snat';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_snat';
 }
 
 #
@@ -1804,7 +1812,8 @@ sub snat_chain( $ )
 #
 sub ecn_chain( $ )
 {
-    $_[0] . '_ecn';
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_ecn';
 }
 
 #
@@ -1814,7 +1823,7 @@ sub first_chains( $ ) #$1 = interface
 {
     my $c = $_[0];
 
-    ( $c . '_fwd', $c . '_in' );
+    ( forward_chain( $c ), input_chain( $c ) );
 }
 
 #

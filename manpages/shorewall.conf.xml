@@ -1715,7 +1715,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           do not match any rule in the RELATED section of <ulink
           url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5) are
           logged at this level. The default value is empty which means no
-          logging is performed. </para>
+          logging is performed.</para>
         </listitem>
       </varlistentry>
 
@@ -2165,6 +2165,21 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
           <para>If USE_DEFAULT_RT is not set or if it is set to the empty
           string then USE_DEFAULT_RT=No is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">USE_PHYSICAL_NAMES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.27. Normally, when Shorewall creates a
+          Netfilter chain that relates to an interface, it uses the
+          interfaces's logical name as the base of the chain name. For
+          example, if the logical name for an interface is OAKLAND, then the
+          input chain for traffic arriving on that interface would be
+          'OAKLAND_in'. If this option is set to Yes, then the physical name
+          of the interface will be used the base of the chain name.</para>
         </listitem>
       </varlistentry>
 

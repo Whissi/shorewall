@@ -569,6 +569,7 @@ sub initialize( $ ) {
 	  COMPLETE => undef,
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
+	  USE_PHYSICAL_NAMES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -3732,6 +3733,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'COMPLETE'                   , '';
     default_yes_no 'EXPORTMODULES'              , '';
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
+    default_yes_no 'USE_PHYSICAL_NAMES'         , '';
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

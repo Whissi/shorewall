@@ -1883,6 +1883,21 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">USE_PHYSICAL_NAMES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.4.27. Normally, when Shorewall creates a
+          Netfilter chain that relates to an interface, it uses the
+          interfaces's logical name as the base of the chain name. For
+          example, if the logical name for an interface is OAKLAND, then the
+          input chain for traffic arriving on that interface would be
+          'OAKLAND_in'. If this option is set to Yes, then the physical name
+          of the interface will be used the base of the chain name.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
 

@@ -1340,7 +1340,7 @@ sub physical_name( $ ) {
 
     $devref ? $devref->{physical} : $device;
 }
-
+    
 #
 # Returns true if there are bridge port zones defined in the config
 #

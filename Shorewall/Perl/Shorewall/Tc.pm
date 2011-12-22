@@ -104,6 +104,10 @@ my  %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
+my %designator = ( P => 'tcpre' ,
+		   F => 'tcfor' ,
+		   T => 'tcpost' );
+
 my  %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
 		    'tos-maximize-throughput'  => '0x08/0x08' ,
 		    'tos-maximize-reliability' => '0x04/0x04' ,
@@ -207,15 +211,20 @@ sub process_tc_rule( ) {
 
     fatal_error "Invalid MARK ($originalmark)" unless supplied $mark;
 
+    my $chain  = $globals{MARKING_CHAIN};
+
     if ( $remainder ) { 
 	if ( $originalmark =~ /^\w+\(?.*\)$/ ) {
 	    $mark = $originalmark; # Most likely, an IPv6 address is included in the parameter list
 	} else {
-	    fatal_error "Invalid MARK ($originalmark)";
+	    fatal_error "Invalid MARK ($originalmark)" 
+		unless ( $mark =~ /^([0-9a-fA-F]+)$/ &&
+			 $designator =~ /^([0-9a-fA-F]+)$/ && 
+			 ( $chain = $designator{$remainder} ) );
+	    $mark  = join( ':', $mark, $designator );
 	}
     }
 
-    my $chain  = $globals{MARKING_CHAIN};
     my $target = 'MARK --set-mark';
     my $tcsref;
     my $connmark = 0;
@@ -259,7 +268,8 @@ sub process_tc_rule( ) {
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
 	} else {
-	    fatal_error "Invalid MARK ($originalmark)"   unless $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/;
+	    fatal_error "Invalid MARK ($originalmark)"
+		unless $remainder || ( $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/ );
 
 	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
@@ -278,9 +288,12 @@ sub process_tc_rule( ) {
 		}
 	    }
 
-	    $chain   = 'tcpost';
+	    unless ( $remainder ) {
+		$chain = 'tcpost';
+		$mark  = $originalmark;
+	    }
+
 	    $classid = 1;
-	    $mark    = $originalmark;
 	    $target  = 'CLASSIFY --set-class';
 	}
     }

@@ -3845,7 +3845,7 @@ sub get_configuration( $$$ ) {
 	} elsif ( $val eq 'A_REJECT' ) {
 	    $globals{RELATED_TARGET} = $val;
 	} else {
-	    fatal_error "Invalid value ($config{MACLIST_DISPOSITION}) for MACLIST_DISPOSITION"
+	    fatal_error "Invalid value ($config{RELATED_DISPOSITION}) for RELATED_DISPOSITION"
 	}
 
 	require_capability 'AUDIT_TARGET' , "MACLIST_DISPOSITION=$val", 's' if $val =~ /^A_/;

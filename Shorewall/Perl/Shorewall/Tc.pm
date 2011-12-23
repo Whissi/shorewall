@@ -268,12 +268,15 @@ sub process_tc_rule( ) {
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
 	} else {
-	    fatal_error "Invalid MARK ($originalmark)"
-		unless $remainder || ( $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/ );
+	    unless ( $remainder ) {
+		fatal_error "Invalid MARK ($originalmark)" unless $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/;
+		$chain = 'tcpost';
+		$mark  = $originalmark;
+	    }
 
 	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
 		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
-		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$originalmark} );
+		fatal_error "Unknown Class ($originalmark)}" unless ( $device = $classids{$mark} );
 		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
 
 		unless ( $tcclasses{$device}{hex_value $designator}{leaf} ) {
@@ -286,11 +289,6 @@ sub process_tc_rule( ) {
 		} else {
 		    $dest = join( ':', $device, $dest ) unless $dest =~ /^[[:alpha:]]/;
 		}
-	    }
-
-	    unless ( $remainder ) {
-		$chain = 'tcpost';
-		$mark  = $originalmark;
 	    }
 
 	    $classid = 1;

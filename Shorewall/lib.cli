@@ -1903,7 +1903,9 @@ determine_capabilities() {
 
     if [ -n "$NAT_ENABLED" ]; then
 	if qt $g_tool -t nat -N $chain; then
-	    qt $g_tool -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
+	    if [ $g_family -eq 4 ]; then
+		qt $g_tool -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
+	    fi
 	    qt $g_tool -t nat -F $chain
 	    qt $g_tool -t nat -X $chain
 	fi
@@ -1921,12 +1923,15 @@ determine_capabilities() {
     qt $g_tool -F $chain1
     qt $g_tool -X $chain1
     if ! $g_tool -N $chain1; then
+	qt $g_tool -X $CHAIN
 	echo "   ERROR: The command \"$g_tool -N $chain1\" failed" >&2
 	exit 1
     fi
 
     if ! qt $g_tool -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
        ! qt $g_tool -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
+	qt $g_tool -x $chain
+	qt $g_tool -x $chain1
 	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- $g_product will not run on this system" >&2
 	exit 1
     fi
@@ -2095,7 +2100,7 @@ determine_capabilities() {
 	qt $g_tool -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
     else
 	qt $g_tool -A $chain -m ipv6header --header 255 && HEADER_MATCH=Yes
-	qt $g_tool -A $chain -j ACCOUNT --addr 1::/122 --tname $chain && ACCOUNT_TARGET=Yes
+	qt $g_tool -A $chain -j ACCOUNT --addr ::1/122 --tname $chain && ACCOUNT_TARGET=Yes
     fi
 
     qt $g_tool -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes

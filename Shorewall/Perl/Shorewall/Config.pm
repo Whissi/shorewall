@@ -2947,6 +2947,7 @@ sub determine_capabilities() {
 	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
 	$capabilities{IPTABLES_S}      = detect_capability( 'IPTABLES_S' );
 	$capabilities{BASIC_FILTER}    = detect_capability( 'BASIC_FILTER' );
+	$capabilities{CT_TARGET}       = detect_capability( 'CT_TARGET' );
 
 
 	qt1( "$iptables -F $sillyname" );

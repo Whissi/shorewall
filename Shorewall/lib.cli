@@ -1182,7 +1182,12 @@ do_dump_command() {
     report_capabilities
 
     echo
-    netstat -${g_family}tunap
+
+    if qt netstat -4; then
+	netstat -${g_family}tunap
+    else
+	netstat -tunap
+    fi	
 
     if [ -n "$TC_ENABLED" ]; then
 	heading "Traffic Control"

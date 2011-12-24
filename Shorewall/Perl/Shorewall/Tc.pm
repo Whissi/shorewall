@@ -488,7 +488,7 @@ sub process_tc_rule( ) {
 				     do_length( $length ) .
 				     do_tos( $tos ) .
 				     do_connbytes( $connbytes ) .
-				     do_helper( $helper ) .
+				     do_helper( $helper, $proto ) .
 				     do_headers( $headers ) ,
 				     $source ,
 				     $dest ,
@@ -1451,7 +1451,15 @@ sub process_tc_priority() {
 
     fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
 
-    my $rule = do_helper( $helper ) . "-j MARK --set-mark $band";
+    my $rule;
+
+    unless ( $helper eq '-' ) {
+	fatal_error( "A PROTO is required when a HELPER is specified" ) if $proto eq '-';
+	fatal_error( "Unknown protocol" ) unless defined resolve_protocol( $proto );
+	$rule = do_helper( $helper, $proto ) . "-j MARK --set-mark $band";
+    } else {
+	$rule = '';
+    }
 
     $rule .= join('', '/', in_hex( $globals{TC_MASK} ) ) if have_capability( 'EXMARK' );
 

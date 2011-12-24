@@ -173,6 +173,7 @@ our %EXPORT_TAGS = (
 				       do_tos
 				       do_connbytes
 				       do_helper
+				       validate_helper
 				       do_headers
 				       do_condition
 				       have_ipset_rules
@@ -558,19 +559,19 @@ sub initialize( $$$ ) {
 
     %ipset_exists       = ();   
 
-    %helpers = ( amanda          => 1,
-		 ftp             => 1,
-		 h323            => 1,
-		 irc             => 1,
-		 netbios_ns      => 1,
-		 netlink         => 1,
-		 proto_gre       => 1,
-		 proto_sctp      => 1,
-		 pptp            => 1,
-		 proto_udplite   => 1,
-		 sane            => 1,
-		 sip             => 1,
-		 tftp            => 1 );
+    %helpers = ( amanda          => TCP,
+		 ftp             => TCP,
+		 h323            => [UDP,TCP],
+		 irc             => TCP,
+		 netbios_ns      => [UDP,TCP],
+		 netlink         => -1,
+		 proto_gre       => GRE,
+		 proto_sctp      => SCTP,
+		 pptp            => TCP,
+		 proto_udplite   => UDPLITE,
+		 sane            => TCP,
+		 sip             => UDP,
+		 tftp            => UDP);
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -4004,21 +4005,55 @@ sub do_connbytes( $ ) {
 }
 
 #
-# Create a soft "-m helper" match for the passed argument
+# Validate a helper/protocol pair
 #
-sub do_helper( $ ) {
-    my $helper = shift;
+sub validate_helper( $$ ) {
+    my ( $helper, $proto ) = @_;
+    my $helper_base = $helper;
+    $helper_base =~ s/-\d+$//;
+    my $protos = $helpers{$helper_base};
+
+    if ( $protos) {
+	#
+	#  Recognized helper
+	#
+	my $protonum = resolve_proto( $proto );
+	#
+	# Caller should have called do_proto() before this function
+	#
+	assert( defined $protonum );
+	
+	my $found;
+
+	if ( reftype $protos ) {
+	    for ( @$protos ) {
+		$found |= ($_ == $protonum);
+	    }
+	} elsif ( $protos == -1 ) {
+	    $found = 1;
+	} else {
+	    $found = ( $protos == $protonum );
+	}
+
+	fatal_error "Protocol $proto is not appropriate for helper $helper_base" unless $found;
+    } else {
+	warning_message "Unrecognized helper ($helper_base)";
+    }
+}
+
+#
+# Create an "-m helper" match for the passed argument
+#
+sub do_helper( $$ ) {
+    my ( $helper, $proto ) = shift;
 
     return '' if $helper eq '-';
 
-    my $helper_base = $helper;
-
-    $helper_base =~ s/-\d+$//;
-
-    warning_message "Unrecognized helper ($helper)" unless $helpers{$helper_base};
+    validate_helper( $helper, $proto );
 
     qq(-m helper --helper "$helper" ) if defined wantarray;
 }
+
 
 #
 # Create a "-m length" match for the passed LENGTH

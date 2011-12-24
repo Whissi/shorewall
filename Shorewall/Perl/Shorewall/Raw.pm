@@ -59,6 +59,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
     my $target = $action;
     my $exception_rule = '';
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );
 
     unless ( $action eq 'NOTRACK' ) {
 	(  $target, my ( $option, $args, $junk ) ) = split ':', $action, 4;
@@ -76,7 +77,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 	    if ( $option eq 'helper' ) {
 		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
 		fatal_error "A protocol protocol is required in CT:helper rules" if $proto eq '-'; 
-		do_helper( $args );
+		validate_helper( $args, $proto );
 		$action = "CT --helper $args";
 		$exception_rule = do_proto( $proto, '-', '-' );
 	    } elsif ( $option eq 'ctevents' ) {
@@ -97,7 +98,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
     expand_rule( $chainref ,
 		 $restriction ,
-		 do_proto( $proto, $ports, $sports ) . do_user ( $user ) ,
+		 $rule,
 		 $source ,
 		 $dest ,
 		 '' ,

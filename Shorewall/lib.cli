@@ -421,7 +421,11 @@ show_routing() {
 	    echo ${rule##* }
 	done | sort -u | while read table; do
 	    heading "Table $table:"
-	    ip -$g_family route list table $table
+	    if [ $g_family -eq 6 ]; then
+		ip -$g_family -o route list table $table | fgrep -v cache
+	    else
+		ip -4 route list table $table
+	    fi
 	done
 
 	if [ -n "$g_routecache" ]; then

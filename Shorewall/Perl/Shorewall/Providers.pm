@@ -599,8 +599,7 @@ sub add_a_provider( $$ ) {
 	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
 	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $number $realm";
 	} else {
-	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}";
-	    emit "run_ip route add $gateway src $address dev $physical ${mtu}";
+	    emit "qt \$IP -6 route add $gateway src $address dev $physical ${mtu}";
 	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $number $realm";
 	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $number $realm";
 	}

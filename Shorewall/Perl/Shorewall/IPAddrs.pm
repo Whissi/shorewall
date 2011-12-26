@@ -55,6 +55,7 @@ our @EXPORT = qw( ALLIPv4
 		  DCCP
 		  IPv6_ICMP
 		  SCTP
+		  GRE
 
 		  validate_address
 		  validate_net
@@ -117,6 +118,7 @@ use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       TCP                 => 6,
 	       UDP                 => 17,
 	       DCCP                => 33,
+	       GRE                 => 47,
 	       IPv6_ICMP           => 58,
 	       SCTP                => 132,
 	       UDPLITE             => 136 };

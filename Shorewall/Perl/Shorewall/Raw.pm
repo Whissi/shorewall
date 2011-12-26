@@ -59,6 +59,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
     my $target = $action;
     my $exception_rule = '';
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );
 
     unless ( $action eq 'NOTRACK' ) {
 	(  $target, my ( $option, $args, $junk ) ) = split ':', $action, 4;
@@ -96,7 +97,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
     expand_rule( $chainref ,
 		 $restriction ,
-		 do_proto( $proto, $ports, $sports ) . do_user ( $user ) ,
+		 $rule,
 		 $source ,
 		 $dest ,
 		 '' ,

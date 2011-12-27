@@ -4018,9 +4018,7 @@ sub validate_helper( $;$ ) {
 	if ( supplied $proto ) {
 	    my $protonum = -1;
 
-	    unless ( $proto eq '-' ) {
-		fatal_error "Unknown PROTO ($protonum)" unless defined ( $protonum = resolve_proto( $proto ) );	
-	    }
+	    fatal_error "Unknown PROTO ($protonum)" unless defined ( $protonum = resolve_proto( $proto ) );	
 
 	    unless ( $protonum == $helper_proto ) {
 		fatal_error "The $helper_base helper requires PROTO=" . (proto_name $helper_proto );

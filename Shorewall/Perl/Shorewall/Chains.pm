@@ -116,6 +116,7 @@ our %EXPORT_TAGS = (
 				       blacklist_chain
 				       zone_forward_chain
 				       use_forward_chain
+				       filter_chain
 				       input_chain
 				       zone_input_chain
 				       use_input_chain
@@ -1615,6 +1616,14 @@ sub use_forward_chain($$) {
     #                                            the zone has  multiple interfaces
     #                                            and this interface has option rules
     $interfaceref->{options}{use_forward_chain} && keys %{ zone_interfaces( $zone ) } > 1;
+}
+
+#
+# Filter Chain for an interface
+#
+sub filter_chain($) {
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_flt';
 }
 
 #

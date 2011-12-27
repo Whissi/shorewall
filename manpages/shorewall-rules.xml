@@ -47,26 +47,6 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">BLACKLIST</emphasis></term>
-
-        <listitem>
-          <para>This section was added in Shorewall 4.4.25.</para>
-
-          <para>Rules in this section are applied depending on the setting of
-          BLACKLISTNEWONLY in <ulink
-          url="shorewall.conf.html">shorewall.conf</ulink>(5). If
-          BLACKLISTNEWONLY=No, then they are applied regardless of the
-          connection tracking state of the packet. If BLACKLISTNEWONLY=Yes,
-          they are applied to connections in the NEW and INVALID
-          states.</para>
-
-          <para>When there are rules in this sectionas well as in
-          shorewall-blrules (5), those in this section are processed
-          last.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">ALL</emphasis></term>
 
         <listitem>
@@ -129,7 +109,7 @@
     <warning>
       <para>If you specify FASTACCEPT=Yes in <ulink
       url="shorewall.conf.html">shorewall.conf</ulink>(5) then the <emphasis
-      role="bold">BLACKLIST, ALL, ESTABLISHED</emphasis> and <emphasis
+      role="bold">ALL, ESTABLISHED</emphasis> and <emphasis
       role="bold">RELATED</emphasis> sections must be empty.</para>
 
       <para>An except is made if you are running Shorewall 4.4.27 or later and
@@ -197,8 +177,7 @@
                 role="bold">DNAT</emphasis>[<emphasis
                 role="bold">-</emphasis>] or <emphasis
                 role="bold">REDIRECT</emphasis>[<emphasis
-                role="bold">-</emphasis>] rules. Not available in the
-                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
+                role="bold">-</emphasis>] rules.</para>
               </listitem>
             </varlistentry>
 
@@ -208,9 +187,7 @@
               <listitem>
                 <para>like ACCEPT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -220,9 +197,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT,
                 ACCEPT+ and ACCEPT! respectively. Require AUDIT_TARGET support
-                in the kernel and iptables. A_ACCEPT+ and A_ACCEPT! are not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                in the kernel and iptables.</para>
               </listitem>
             </varlistentry>
 
@@ -233,8 +208,7 @@
                 <para>Excludes the connection from any subsequent <emphasis
                 role="bold">DNAT</emphasis>[-] or <emphasis
                 role="bold">REDIRECT</emphasis>[-] rules but doesn't generate
-                a rule to accept the traffic. Not available in the <emphasis
-                role="bold">BLACKLIST</emphasis> section.</para>
+                a rule to accept the traffic.</para>
               </listitem>
             </varlistentry>
 
@@ -252,10 +226,7 @@
               <listitem>
                 <para>like DROP but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section. Not available in the <emphasis
-                role="bold">BLACKLIST</emphasis> section.</para>
+                url="shorewall.conf.html">shorewall.conf</ulink>(5). </para>
               </listitem>
             </varlistentry>
 
@@ -265,10 +236,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of DROP and
                 DROP! respectively. Require AUDIT_TARGET support in the kernel
-                and iptables. A_DROP! is not available in the <emphasis
-                role="bold">BLACKLIST</emphasis> section. A_DROP! is not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                and iptables.</para>
               </listitem>
             </varlistentry>
 
@@ -287,9 +255,7 @@
               <listitem>
                 <para>like REJECT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -299,8 +265,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of REJECT
                 and REJECT! respectively. Require AUDIT_TARGET support in the
-                kernel and iptables. A_REJECT! is not available in the
-                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
+                kernel and iptables.</para>
               </listitem>
             </varlistentry>
 
@@ -322,8 +287,7 @@
                 <para>Like <emphasis role="bold">DNAT</emphasis> but only
                 generates the <emphasis role="bold">DNAT</emphasis> iptables
                 rule and not the companion <emphasis
-                role="bold">ACCEPT</emphasis> rule. Not available in the
-                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
+                role="bold">ACCEPT</emphasis> rule.</para>
               </listitem>
             </varlistentry>
 
@@ -345,8 +309,7 @@
                 <para>Like <emphasis role="bold">REDIRECT</emphasis> but only
                 generates the <emphasis role="bold">REDIRECT</emphasis>
                 iptables rule and not the companion <emphasis
-                role="bold">ACCEPT</emphasis> rule. Not available in the
-                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
+                role="bold">ACCEPT</emphasis> rule.</para>
               </listitem>
             </varlistentry>
 
@@ -374,9 +337,7 @@
               <listitem>
                 <para>like CONTINUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -405,9 +366,7 @@
               <listitem>
                 <para>like QUEUE but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -542,16 +501,6 @@
 
                 <para>DEL is non-terminating. Even if a packet matches the
                 rule, it is passed on to the next rule.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">WHITELIST</emphasis></term>
-
-              <listitem>
-                <para>Added in Shorewall 4.4.25. May only appear in the
-                <emphasis role="bold">BLACKLIST</emphasis> section and exempts
-                the packet from following rules in that section.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1595,13 +1544,13 @@
     url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
-    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
-    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
-    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
-    shorewall-route_rules(5), shorewall-routestopped(5), shorewall.conf(5),
-    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorweall-blrules(5), shorewall-hosts(5),
+    shorewall_interfaces(5), shorewall-ipsets(5), shorewall-maclist(5),
+    shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
+    shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
+    shorewall-proxyarp(5), shorewall-route_rules(5),
+    shorewall-routestopped(5), shorewall.conf(5), shorewall-secmarks(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

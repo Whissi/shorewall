@@ -40,26 +40,6 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">BLACKLIST</emphasis></term>
-
-        <listitem>
-          <para>This section was added in Shorewall 4.4.25.</para>
-
-          <para>Rules in this section are applied depending on the setting of
-          BLACKLISTNEWONLY in <ulink
-          url="shorewall6.conf.html">shorewall6.conf</ulink>(5). If
-          BLACKLISTNEWONLY=No, then they are applied regardless of the
-          connection tracking state of the packet. If BLACKLISTNEWONLY=Yes,
-          they are applied to connections in the NEW and INVALID
-          states.</para>
-
-          <para>When there are rules in this sectionas well as in
-          shorewall-blrules (5), those in this section are processed
-          last.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">ALL</emphasis></term>
 
         <listitem>
@@ -182,9 +162,7 @@
               <listitem>
                 <para>like ACCEPT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -194,8 +172,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT
                 and ACCEPT! respectively. Require AUDIT_TARGET support in the
-                kernel and ip6tables. A_ACCEPT! is not available in the
-                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
+                kernel and ip6tables.</para>
               </listitem>
             </varlistentry>
 
@@ -213,9 +190,7 @@
               <listitem>
                 <para>like DROP but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -225,8 +200,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of DROP and
                 DROP! respectively. Require AUDIT_TARGET support in the kernel
-                and ip6tables. A_DROP! is not available in the <emphasis
-                role="bold">BLACKLIST</emphasis> section.</para>
+                and ip6tables.</para>
               </listitem>
             </varlistentry>
 
@@ -245,9 +219,7 @@
               <listitem>
                 <para>like REJECT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -257,8 +229,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of REJECT
                 and REJECT! respectively. Require AUDIT_TARGET support in the
-                kernel and ip6tables. A_REJECT! is not available in the
-                <emphasis role="bold">BLACKLIST</emphasis> section.</para>
+                kernel and ip6tables.</para>
               </listitem>
             </varlistentry>
 
@@ -286,9 +257,7 @@
               <listitem>
                 <para>like CONTINUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). </para>
               </listitem>
             </varlistentry>
 
@@ -317,9 +286,7 @@
               <listitem>
                 <para>like QUEUE but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -351,9 +318,7 @@
               <listitem>
                 <para>like NFQUEUE but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5). Not
-                available in the <emphasis role="bold">BLACKLIST</emphasis>
-                section.</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -1256,9 +1221,10 @@
     url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
-    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-maclist(5), shoewall6-netmap(5),shorewall6-params(5),
-    shorewall6-policy(5), shorewall6-providers(5), shorewall6-route_rules(5),
+    shorewall6-blacklist(5), shorewall6-blrules(5), shorewall6-hosts(5),
+    shorewall6-interfaces(5), shorewall6-maclist(5),
+    shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-route_rules(5),
     shorewall6-routestopped(5), shorewall6.conf(5), shorewall6-secmarks(5),
     shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-tcrules(5),
     shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>

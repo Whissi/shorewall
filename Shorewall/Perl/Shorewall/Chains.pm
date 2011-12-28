@@ -57,6 +57,7 @@ our @EXPORT = qw(
 		    ensure_manual_chain
 		    ensure_audit_chain
 		    ensure_blacklog_chain
+		    ensure_audit_blacklog_chain
 		    require_audit
 		    newlogchain
 		    log_rule_limit
@@ -2270,6 +2271,21 @@ sub ensure_blacklog_chain( $$$$ ) {
     }
 
     'blacklog';
+}
+
+sub ensure_audit_blacklog_chain( $$$ ) {
+    my ( $target, $disposition, $level ) = @_;
+
+    unless ( $filter_table->{A_blacklog} ) {
+	my $logchainref = new_manual_chain 'A_blacklog';
+
+	log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+
+	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target );
+	add_ijump( $logchainref, g => $target );
+    }
+
+    'A_blacklog';
 }
 
 #

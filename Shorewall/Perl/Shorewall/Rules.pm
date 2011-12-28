@@ -2478,9 +2478,12 @@ sub process_rules() {
 
 			 if ( supplied $level ) {
 			     ensure_blacklog_chain( $target, $disposition, $level, $audit );
+			     ensure_audit_blacklog_chain( $target, $disposition, $level ) if have_capability 'AUDIT_TARGET';
 			 } elsif ( $audit ) {
 			     require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
 			     verify_audit( $disposition );
+			 } elsif ( have_capability 'AUDIT_TARGET' ) {
+			     verify_audit( 'A_' . $disposition );
 			 }
 		     } );
 	
@@ -2489,6 +2492,10 @@ sub process_rules() {
 	process_rule while read_a_line;
 	    
 	$section = '';
+
+	if ( my $chainref = $filter_table->{A_blacklog} ) {
+	    $chainref->{referenced} = 0 unless @{$chainref->{references}};
+	}
     }
 
     $fn = open_file 'rules';

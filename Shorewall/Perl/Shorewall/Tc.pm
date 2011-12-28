@@ -104,8 +104,7 @@ my  %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
-my %designator = ( P => 'tcpre' ,
-		   F => 'tcfor' ,
+my %designator = ( F => 'tcfor' ,
 		   T => 'tcpost' );
 
 my  %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,

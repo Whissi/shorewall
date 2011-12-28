@@ -2023,7 +2023,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 
     unless ( $section eq 'NEW' || $inaction ) {
 	if ( $config{FASTACCEPT} ) {
-	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
+	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless 
+		$section eq 'BLACKLIST' ||
+		( $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} ) )
 	}
 
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
@@ -2462,41 +2464,188 @@ sub process_rule ( ) {
     progress_message qq(   Rule "$thisline" $done);
 }
 
+sub initiate_blacklist() {
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my $audit       = $disposition =~ /^A_/;
+    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+
+    progress_message2 "$doing $currentfilename...";
+
+    if ( supplied $level ) {
+	ensure_blacklog_chain( $target, $disposition, $level, $audit );
+	ensure_audit_blacklog_chain( $target, $disposition, $level ) if have_capability 'AUDIT_TARGET';
+    } elsif ( $audit ) {
+	require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
+	verify_audit( $disposition );
+    } elsif ( have_capability 'AUDIT_TARGET' ) {
+	verify_audit( 'A_' . $disposition );
+    }
+}
+
+#
+# Convert a pre-4.4.25 blacklist to the 4.4.25 format and process it
+#
+sub setup_blacklist() {
+    my $zones  = find_zones_by_option 'blacklist', 'in';
+    my $zones1 = find_zones_by_option 'blacklist', 'out';
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my $audit       = $disposition =~ /^A_/;
+    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my $orig_target = $target;
+    my @rules;
+    
+    if ( @$zones || @$zones1 ) {
+	if ( supplied $level ) {
+	    $target = 'blacklog';
+	} elsif ( $audit ) {
+	    $target = verify_audit( $disposition );
+	}
+
+	my $fn = open_file 'blacklist';
+
+	first_entry( \&initiate_blacklist );
+
+	while ( read_a_line ) {
+	    my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
+
+	    if ( $options eq '-' ) {
+		$options = 'src';
+	    } elsif ( $options eq 'audit' ) {
+		$options = 'audit,src';
+	    }
+
+	    my ( $to, $from, $whitelist, $auditone ) = ( 0, 0, 0, 0 );
+
+	    my @options = split_list $options, 'option';
+
+	    for ( @options ) {
+		$whitelist++ if $_ eq 'whitelist';
+		$auditone++  if $_ eq 'audit'; 
+	    }
+
+	    warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
+
+	    my $tgt = $whitelist ? 'WHITELIST' : $target;
+
+	    if ( $auditone ) {
+		fatal_error "'audit' not allowed in whitelist entries" if $whitelist;
+
+		if ( $audit ) {
+		    warning_message "Superfluous 'audit' option ignored";
+		} else {
+		    warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
+		}
+
+		$tgt = verify_audit( 'A_' . $target, $orig_target, $target );
+	    }
+
+	    for ( @options ) {
+		if ( $_ =~ /^(?:src|from)$/ ) {
+		    if ( $from++ ) {
+			warning_message "Duplicate 'src' ignored";
+		    } else {
+			if ( @$zones ) {
+			    push @rules, [ 'src', $tgt, $networks, $protocol, $ports ];
+			} else {
+			    warning_message '"src" entry ignored because there are no "blacklist in" zones';
+			}
+		    }
+		} elsif ( $_ =~ /^(?:dst|to)$/ ) {
+		    if ( $to++ ) {
+			warning_message "Duplicate 'dst' ignored";
+		    } else {
+			if ( @$zones1 ) {
+			    push @rules, [ 'dst', $tgt, $networks, $protocol, $ports ];
+			} else {
+			    warning_message '"dst" entry ignored because there are no "blacklist out" zones';
+			}
+		    }
+		} else {
+		    fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist' || $_ eq 'audit';
+		}
+	    }
+	}
+
+	if ( @rules ) {
+	    for ( @rules ) {
+		my ( $srcdst, $tgt, $networks, $protocols, $ports ) = @$_;
+
+		$tgt .= "\t\t";
+
+		my $list = $srcdst eq 'src' ? $zones : $zones1;
+
+		for my $zone ( @$list ) {
+		    $currentline = $tgt;
+
+		    if ( $srcdst eq 'src' ) {
+			if ( $networks ne '-' ) {
+			    $currentline .= "$zone:$networks\tall\t\t";
+			} else {
+			    $currentline .= "$zone\t\t\tall\t\t";
+			}
+		    } else {
+			if ( $networks ne '-' ) {
+			    $currentline .= "all\t\t\t$zone:$networks\t";
+			} else {
+			    $currentline .= "all\t\t\t$zone\t\t\t";
+			}
+		    }
+		
+		    $currentline .= "\t$protocols" if $protocols ne '-';
+		    $currentline .= "\t$ports"     if $ports     ne '-';
+		
+		    process_rule;
+		}
+	    }
+	} else {
+	    warning_message q(There are interfaces or zones with the 'blacklist' option but the 'blacklist' file is empty or does not exist) unless @rules;
+	}
+	return 0;
+    }
+}
+
 #
 # Process the Rules File
 #
 sub process_rules() {
+    $section = 'BLACKLIST';
+
+    setup_blacklist;
+    
     my $fn = open_file 'blrules';
 
     if ( $fn ) {
-	first_entry( sub () {
-			 my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-			 my $audit       = $disposition =~ /^A_/;
-			 my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
-
-			 progress_message2 "$doing $fn...";
-
-			 if ( supplied $level ) {
-			     ensure_blacklog_chain( $target, $disposition, $level, $audit );
-			     ensure_audit_blacklog_chain( $target, $disposition, $level ) if have_capability 'AUDIT_TARGET';
-			 } elsif ( $audit ) {
-			     require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
-			     verify_audit( $disposition );
-			 } elsif ( have_capability 'AUDIT_TARGET' ) {
-			     verify_audit( 'A_' . $disposition );
-			 }
-		     } );
-	
-	$section = 'BLACKLIST';
-
+	first_entry( \&initiate_blacklist );	
 	process_rule while read_a_line;
-	    
-	$section = '';
-
-	if ( my $chainref = $filter_table->{A_blacklog} ) {
-	    $chainref->{referenced} = 0 unless @{$chainref->{references}};
-	}
     }
+
+    $section = '';
+    
+    if ( my $chainref = $filter_table->{A_blacklog} ) {
+	$chainref->{referenced} = 0 unless %{$chainref->{references}};
+    }
+
+    for my $zone1 ( off_firewall_zones ) {
+	my @interfaces = keys %{zone_interfaces( $zone1 )};
+
+	for my $zone2 ( all_zones ) {
+	    my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+	    
+	    if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
+		for my $interface ( @interfaces ) {
+		    if ( my $chain1ref = $filter_table->{input_option_chain $interface} ) {
+			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+		    }
+		}
+	    } else {
+		for my $interface ( @interfaces ) {
+		    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+		    }
+		}
+	    }
+	}
+    }		
 
     $fn = open_file 'rules';
 

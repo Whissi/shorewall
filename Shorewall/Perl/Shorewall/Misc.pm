@@ -200,144 +200,6 @@ sub add_rule_pair( $$$$ ) {
     add_jump( $chainref , $target, 0, $predicate );
 }
 
-sub setup_blacklist() {
-
-    my $zones  = find_zones_by_option 'blacklist', 'in';
-    my $zones1 = find_zones_by_option 'blacklist', 'out';
-    my $chainref;
-    my $chainref1;
-    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit       = $disposition =~ /^A_/;
-    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
-    my $orig_target = $target;
-    
-    #
-    # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
-    # for 'refresh' to work properly.
-    #
-    if ( @$zones || @$zones1 ) {
-	$chainref  = dont_delete new_standard_chain 'blacklst' if @$zones;
-	$chainref1 = dont_delete new_standard_chain 'blackout' if @$zones1;
-
-	if ( supplied $level ) {
-	    $target = ensure_blacklog_chain ( $target, $disposition, $level, $audit );
-	} elsif ( $audit ) {
-	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
-	    $target = verify_audit( $disposition );
-	}	    
-    }
-
-  BLACKLIST:
-    {
-	if ( my $fn = open_file 'blacklist' ) {
-
-	    my $first_entry = 1;
-
-	    first_entry "$doing $fn...";
-
-	    while ( read_a_line ) {
-
-		if ( $first_entry ) {
-		    unless  ( @$zones || @$zones1 ) {
-			warning_message qq(The entries in $fn have been ignored because there are no 'blacklist' zones);
-			close_file;
-			last BLACKLIST;
-		    }
-
-		    $first_entry = 0;
-		}
-
-		my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
-
-		if ( $options eq '-' ) {
-		    $options = 'src';
-		} elsif ( $options eq 'audit' ) {
-		    $options = 'audit,src';
-		}
-
-		my ( $to, $from, $whitelist, $auditone ) = ( 0, 0, 0, 0 );
-
-		my @options = split_list $options, 'option';
-
-		for ( @options ) {
-		    $whitelist++ if $_ eq 'whitelist';
-		    $auditone++  if $_ eq 'audit'; 
-		}
-
-		warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
-
-		my $tgt = $whitelist ? 'RETURN' : $target;
-
-		if ( $auditone ) {
-		    fatal_error "'audit' not allowed in whitelist entries" if $whitelist;
-
-		    if ( $audit ) {
-			warning_message "Superfluous 'audit' option ignored";
-		    } else {
-			warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
-
-			
-
-			$tgt = verify_audit( 'A_' . $target, $orig_target, $target );
-		    }
-		}
-
-		for ( @options ) {
-		    if ( $_ =~ /^(?:src|from)$/ ) {
-			if ( $from++ ) {
-			    warning_message "Duplicate 'src' ignored";
-			} else {
-			    if ( @$zones ) {
-				expand_rule(
-					    $chainref ,
-					    NO_RESTRICT ,
-					    do_proto( $protocol , $ports, '' ) ,
-					    $networks,
-					    '',
-					    '' ,
-					    $tgt ,
-					    '' ,
-					    $tgt ,
-					    '' );
-			    } else {
-				warning_message '"src" entry ignored because there are no "blacklist in" zones';
-			    }
-			}
-		    } elsif ( $_ =~ /^(?:dst|to)$/ ) {
-			if ( $to++ ) {
-			    warning_message "Duplicate 'dst' ignored";
-			} else {
-			    if ( @$zones1 ) {
-				expand_rule(
-					    $chainref1 ,
-					    NO_RESTRICT ,
-					    do_proto( $protocol , $ports, '' ) ,
-					    '',
-					    $networks,
-					    '' ,
-					    $tgt ,
-					    '' ,
-					    $tgt ,
-					    '' );
-			    } else {
-				warning_message '"dst" entry ignored because there are no "blacklist out" zones';
-			    }
-			}
-		    } else {
-			fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist' || $_ eq 'audit';
-		    }
-		}
-
-		progress_message "  \"$currentline\" added to blacklist";
-	    }
-
-	    warning_message q(There are interfaces or zones with the 'blacklist' option but the 'blacklist' file is empty) if $first_entry && @$zones;
-	} elsif ( @$zones || @$zones1 ) {
-	    warning_message q(There are interfaces or zones with the 'blacklist' option, but the 'blacklist' file is either missing or has zero size);
-	}
-    }
-}
-
 #
 # Remove instances of 'blacklist' from the passed file. 
 #
@@ -777,20 +639,17 @@ sub add_common_rules ( $ ) {
 		$interfaceref->{options}{use_forward_chain} = 1;
 	    }
 
-	    add_ijump( $chainref, j => 'ACCEPT', state_imatch $faststate ), $chainref->{filtered}++ if $config{FASTACCEPT};
-	    add_ijump( $chainref, j => $dynamicref, @state ), $chainref->{filtered}++ if $dynamicref;
-	    add_ijump( $chainref, j => forward_option_chain( $interface ) );
-
-	    $chainref = $filter_table->{input_chain $interface};
 	
 	    if ( @filters ) {
+		$chainref = $filter_table->{input_chain $interface};
 		add_ijump( $chainref , g => $target, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
 		$interfaceref->{options}{use_input_chain} = 1;
 	    }
 	
-	    add_ijump( $chainref, j => 'ACCEPT', state_imatch $faststate ), $chainref->{filtered}++ if $config{FASTACCEPT};
-	    add_ijump( $chainref, j => $dynamicref, @state ), $chainref->{filtered}++ if $dynamicref;
-	    add_ijump( $chainref, j => input_option_chain( $interface ) );
+	    for ( option_chains( $interface ) ) {
+		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate ) if $config{FASTACCEPT};
+		add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
+	    }
 	}
     }
 
@@ -807,8 +666,6 @@ sub add_common_rules ( $ ) {
 
     if ( $upgrade ) {
 	exit 0 unless convert_blacklist;
-    } else {
-	setup_blacklist;
     }
 
     $list = find_hosts_by_option 'nosmurfs';
@@ -877,9 +734,6 @@ sub add_common_rules ( $ ) {
 	    for $chain ( option_chains $interface ) {
 		add_ijump( $filter_table->{$chain} , j => $target, @state, imatch_source_net( $hostref->[2] ), @policy );
 	    }
-
-	    set_interface_option $interface, 'use_input_chain', 1;
-	    set_interface_option $interface, 'use_forward_chain', 1;
 	}
     }
 
@@ -929,9 +783,6 @@ sub add_common_rules ( $ ) {
 	my $ports = $family == F_IPV4 ? '67:68' : '546:547';
 
 	for $interface ( @$list ) {
-	    set_interface_option $interface, 'use_input_chain', 1;
-	    set_interface_option $interface, 'use_forward_chain', 1;
-	    
 	    set_rule_option( add_ijump( $filter_table->{$_} , j => 'ACCEPT', p => "udp --dport $ports" ) ,
 			     'dhcp',
 			     1 ) for input_option_chain( $interface ), output_chain( $interface );
@@ -997,8 +848,6 @@ sub add_common_rules ( $ ) {
 	    for $chain ( option_chains $interface ) {
 		add_ijump( $filter_table->{$chain} , j => $target, p => 'tcp', imatch_source_net( $hostref->[2] ), @policy );
 	    }
-	    set_interface_option $interface, 'use_input_chain', 1;
-	    set_interface_option $interface, 'use_forward_chain', 1;
 	}
     }
 
@@ -1179,9 +1028,6 @@ sub setup_mac_lists( $ ) {
 		for my $chain ( first_chains $interface ) {
 		    add_ijump $filter_table->{$chain} , j => $chainref, @source, @state, @policy;
 		}
-
-		set_interface_option $interface, 'use_input_chain', 1;
-		set_interface_option $interface, 'use_forward_chain', 1;
 	    } else {
 		my $chainref = source_exclusion( $hostref->[3], $mangle_table->{mac_chain $interface} );
 		add_ijump $mangle_table->{PREROUTING}, j => $chainref, imatch_source_dev( $interface ), @source, @state, @policy;
@@ -1491,58 +1337,19 @@ sub generate_matrix() {
     my  %ipsec_jump_added   = ();
 
     progress_message2 'Generating Rule Matrix...';
-    progress_message  '  Handling blacklisting and complex zones...';
+    progress_message  '  Handling complex zones...';
 
     #
-    # Special processing for complex and/or blacklisting configurations
+    # Special processing for complex configurations
     #
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
-	my $simple  =  @zones <= 2 && ! $zoneref->{options}{complex};
-	#
-	# Handle blacklisting first
-	#
-	if ( $zoneref->{options}{in}{blacklist} ) {
-	    my $blackref = $filter_table->{blacklst};
-	    insert_ijump ensure_rules_chain( rules_chain( $zone, $_ ) ) , j => $blackref , -1, @state for firewall_zone, @vservers;
-
-	    if ( $simple ) {
-		#
-		# We won't create a zone forwarding chain for this zone so we must add blacklisting jumps to the rules chains
-		#
-		for my $zone1 ( @zones ) {
-		    my $ruleschain    = rules_chain( $zone, $zone1 );
-		    my $ruleschainref = $filter_table->{$ruleschain};
-
-		    if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
-			insert_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, -1, @state );
-		    }
-		}
-	    }
-	}
-
-	if ( $zoneref->{options}{out}{blacklist} ) {
-	    my $blackref = $filter_table->{blackout};
-	    insert_ijump ensure_rules_chain( rules_chain( firewall_zone, $zone ) ) , j => $blackref , -1, @state;
-
-	    for my $zone1 ( @zones, @vservers ) {
-		my $ruleschain    = rules_chain( $zone1, $zone );
-		my $ruleschainref = $filter_table->{$ruleschain};
-
-		if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
-		    insert_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, -1, @state );
-		}
-	    }
-	}
-
-	next if $simple;
-
+	
+	next if  @zones <= 2 && ! $zoneref->{options}{complex};
 	#
 	# Complex zone or we have more than one non-firewall zone -- create a zone forwarding chain
 	#
 	my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
-
-	insert_ijump( $frwd_ref , j => $filter_table->{blacklst}, -1, @state ) if $zoneref->{options}{in}{blacklist};
 
 	add_ijump( $frwd_ref , j => 'MARK --set-mark ' . in_hex( $zoneref->{mark} ) . '/' . in_hex( $globals{ZONE_MASK} ) ) if $zoneref->{mark};
 
@@ -1780,7 +1587,6 @@ sub generate_matrix() {
 			my $interfacechainref = $filter_table->{input_chain $interface};
 			my @interfacematch;
 			my $use_input;
-			my $blacklist = $zoneref->{options}{in}{blacklist};
 
 			if ( @vservers || use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
 			    $inputchainref = $interfacechainref;
@@ -2033,8 +1839,6 @@ sub generate_matrix() {
     progress_message '  Finishing matrix...';
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
-
-    promote_blacklist_rules;
 
     my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
 		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,

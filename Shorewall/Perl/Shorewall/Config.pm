@@ -136,6 +136,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $doing
 				       $done
 				       $currentline
+				       $currentfilename
 				       $debug
 				       %config
 				       %globals
@@ -367,7 +368,7 @@ my @actparms;
 
 our $currentline;            # Current config file line image
 my  $currentfile;            # File handle reference
-my  $currentfilename;        # File NAME
+our $currentfilename;        # File NAME
 my  $currentlinenumber;      # Line number
 my  $perlscript;             # File Handle Reference to current temporary file being written by an in-line Perl script
 my  $perlscriptname;         # Name of that file.

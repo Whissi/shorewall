@@ -754,7 +754,7 @@ sub add_common_rules ( $ ) {
     }
 
     for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
-	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface );
+	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface ), option_chains( $interface );
 
 	my $interfaceref = find_interface $interface;
 
@@ -779,6 +779,7 @@ sub add_common_rules ( $ ) {
 
 	    add_ijump( $chainref, j => 'ACCEPT', state_imatch $faststate ), $chainref->{filtered}++ if $config{FASTACCEPT};
 	    add_ijump( $chainref, j => $dynamicref, @state ), $chainref->{filtered}++ if $dynamicref;
+	    add_ijump( $chainref, j => forward_option_chain( $interface ) );
 
 	    $chainref = $filter_table->{input_chain $interface};
 	
@@ -789,6 +790,7 @@ sub add_common_rules ( $ ) {
 	
 	    add_ijump( $chainref, j => 'ACCEPT', state_imatch $faststate ), $chainref->{filtered}++ if $config{FASTACCEPT};
 	    add_ijump( $chainref, j => $dynamicref, @state ), $chainref->{filtered}++ if $dynamicref;
+	    add_ijump( $chainref, j => input_option_chain( $interface ) );
 	}
     }
 
@@ -872,7 +874,7 @@ sub add_common_rules ( $ ) {
 	    my @policy     = have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
-	    for $chain ( first_chains $interface ) {
+	    for $chain ( option_chains $interface ) {
 		add_ijump( $filter_table->{$chain} , j => $target, @state, imatch_source_net( $hostref->[2] ), @policy );
 	    }
 
@@ -932,7 +934,7 @@ sub add_common_rules ( $ ) {
 	    
 	    set_rule_option( add_ijump( $filter_table->{$_} , j => 'ACCEPT', p => "udp --dport $ports" ) ,
 			     'dhcp',
-			     1 ) for input_chain( $interface ), output_chain( $interface );
+			     1 ) for input_option_chain( $interface ), output_chain( $interface );
 
 	    add_ijump( $filter_table->{forward_chain $interface} ,
 		       j => 'ACCEPT', 
@@ -992,7 +994,7 @@ sub add_common_rules ( $ ) {
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 	    my @policy     = have_ipsec ? ( policy => "--pol $hostref->[1] --dir in" ) : ();
 
-	    for $chain ( first_chains $interface ) {
+	    for $chain ( option_chains $interface ) {
 		add_ijump( $filter_table->{$chain} , j => $target, p => 'tcp', imatch_source_net( $hostref->[2] ), @policy );
 	    }
 	    set_interface_option $interface, 'use_input_chain', 1;
@@ -1025,7 +1027,7 @@ sub add_common_rules ( $ ) {
 	    progress_message2 "$doing UPnP" unless $announced;
 
 	    for $interface ( @$list ) {
-		my $chainref = $filter_table->{input_chain $interface};
+		my $chainref = $filter_table->{input_option_chain $interface};
 		my $base     = uc chain_base get_physical $interface;
 		my $variable = get_interface_gateway $interface;
 

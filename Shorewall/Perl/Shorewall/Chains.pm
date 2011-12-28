@@ -112,12 +112,13 @@ our %EXPORT_TAGS = (
 				       push_comment
 				       pop_comment
 				       forward_chain
+				       forward_option_chain
 				       rules_chain
 				       blacklist_chain
 				       zone_forward_chain
 				       use_forward_chain
-				       filter_chain
 				       input_chain
+				       input_option_chain
 				       zone_input_chain
 				       use_input_chain
 				       output_chain
@@ -134,6 +135,7 @@ our %EXPORT_TAGS = (
 				       ecn_chain
 				       notrack_chain
 				       first_chains
+				       option_chains
 				       reserved_name
 				       find_chain
 				       ensure_chain
@@ -1619,11 +1621,19 @@ sub use_forward_chain($$) {
 }
 
 #
-# Filter Chain for an interface
+# Input Option Chain for an interface
 #
-sub filter_chain($) {
+sub input_option_chain($) {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_flt';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_iop';
+}
+
+#
+# Forward Option Chain for an interface
+#
+sub forward_option_chain($) {
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_fop';
 }
 
 #
@@ -1831,6 +1841,16 @@ sub first_chains( $ ) #$1 = interface
     my $c = $_[0];
 
     ( forward_chain( $c ), input_chain( $c ) );
+}
+
+#
+# Option chains for an interface
+#
+sub option_chains( $ ) #$1 = interface
+{
+    my $c = $_[0];
+
+    ( forward_option_chain( $c ), input_option_chain( $c ) );
 }
 
 #

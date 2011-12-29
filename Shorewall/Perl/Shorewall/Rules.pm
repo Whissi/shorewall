@@ -2620,11 +2620,9 @@ sub process_rules() {
     }
 
     $section = '';
-    
-    if ( my $chainref = $filter_table->{A_blacklog} ) {
-	$chainref->{referenced} = 0 unless %{$chainref->{references}};
-    }
-
+    #
+    # Now insert all interface option rules into the rules chains
+    #
     for my $zone1 ( off_firewall_zones ) {
 	my @interfaces = keys %{zone_interfaces( $zone1 )};
 
@@ -2657,7 +2655,26 @@ sub process_rules() {
 		}
 	    }
 	}
-    }		
+    }
+
+    for my $zone1 ( firewall_zone, vserver_zones ) {
+	for my $zone2 ( off_firewall_zones ) {
+	    my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+	    my @interfaces = keys %{zone_interfaces( $zone2 )};
+
+	    if ( @interfaces == 1 ) {
+		if ( my $chain1ref = $filter_table->{output_option_chain $interfaces[0]} ) {
+		    push( @{$chainref->{rules}}, @{$chain1ref->{rules}} );
+		}
+	    } else {
+		for my $interface ( @interfaces ) {
+		    if ( my $chain1ref = $filter_table->{output_option_chain $interface} ) {
+			add_ijump ( $chainref , j => $chain1ref->{name}, imatch_dest_dev( $interface ) );
+		    }
+		}
+	    }
+	}
+    }	    
 
     $fn = open_file 'rules';
 

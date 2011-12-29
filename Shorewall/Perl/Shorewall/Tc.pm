@@ -249,7 +249,7 @@ sub process_tc_rule( ) {
 
     if ( $dest ) {
 	if ( $dest eq $fw ) {
-	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classify;
+	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
 	    $chain = 'tcin';
 	    $dest  = '';
 	} else {

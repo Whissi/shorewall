@@ -615,7 +615,7 @@ sub add_common_rules ( $ ) {
     }
 
     for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
-	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface ), option_chains( $interface );
+	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface ), option_chains( $interface ), output_option_chain( $interface );
 
 	my $interfaceref = find_interface $interface;
 
@@ -784,7 +784,7 @@ sub add_common_rules ( $ ) {
 	for $interface ( @$list ) {
 	    set_rule_option( add_ijump( $filter_table->{$_} , j => 'ACCEPT', p => "udp --dport $ports" ) ,
 			     'dhcp',
-			     1 ) for input_option_chain( $interface ), output_chain( $interface );
+			     1 ) for input_option_chain( $interface ), output_option_chain( $interface );
 
 	    add_ijump( $filter_table->{forward_option_chain $interface} ,
 		       j => 'ACCEPT', 

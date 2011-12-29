@@ -123,6 +123,7 @@ our %EXPORT_TAGS = (
 				       zone_input_chain
 				       use_input_chain
 				       output_chain
+				       output_option_chain
 				       prerouting_chain
 				       postrouting_chain
 				       zone_output_chain
@@ -1574,6 +1575,14 @@ sub use_forward_chain($$) {
 sub input_option_chain($) {
     my $interface = shift;
     ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_iop';
+}
+
+#
+# Output Option Chain for an interface
+#
+sub output_option_chain($) {
+    my $interface = shift;
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_oop';
 }
 
 #

@@ -116,6 +116,10 @@ my %auditpolicies = ( ACCEPT => 1,
 		      DROP   => 1,
 		      REJECT => 1
 		    );
+#
+# Set to true if we have any entries in blacklist or blrules
+#
+my $blrules;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -185,6 +189,8 @@ sub initialize( $ ) {
     } else {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
     }
+
+    $blrules = 0;
 }
 
 ###############################################################################
@@ -2466,8 +2472,8 @@ sub process_rule ( ) {
 
 sub initiate_blacklist() {
     my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit       = $disposition =~ /^A_/;
-    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my  $audit       = $disposition =~ /^A_/;
+    my  $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
 
     progress_message2 "$doing $currentfilename...";
 
@@ -2480,6 +2486,8 @@ sub initiate_blacklist() {
     } elsif ( have_capability 'AUDIT_TARGET' ) {
 	verify_audit( 'A_' . $disposition );
     }
+
+    $blrules = 1;
 }
 
 #
@@ -2620,61 +2628,75 @@ sub process_rules() {
     }
 
     $section = '';
-    #
-    # Now insert all interface option rules into the rules chains
-    #
-    for my $zone1 ( off_firewall_zones ) {
-	my @interfaces = keys %{zone_interfaces( $zone1 )};
 
-	for my $zone2 ( all_zones ) {
-	    my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+    if ( $blrules ) {
+	#
+	# Insert all interface option rules into the rules chains
+	#
+	for my $zone1 ( off_firewall_zones ) {
+	    my @interfaces = keys %{zone_interfaces( $zone1 )};
+
+	    for my $zone2 ( all_zones ) {
+		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
 	    
-	    if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
-		if ( @interfaces ==1 ) {
-		    if ( my $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) {
-			push( @{$chainref->{rules}}, @{$chain1ref->{rules}} );
+		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
+		    if ( @interfaces == 1 ) {
+			if ( my $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) {
+			    push @{$chainref->{rules}} , @{$chain1ref->{rules}};
+			}
+		    } else {
+			for my $interface ( @interfaces ) {
+			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+			    }
+			}
 		    }
 		} else {
-		    for my $interface ( @interfaces ) {
-			if ( my $chain1ref = $filter_table->{input_option_chain $interface} ) {
-			    add_ijump ( $chainref , j => $chain1ref->{name}, imatch_source_dev( $interface ) );
+		    if ( @interfaces == 1 ) {
+			if ( my $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) {
+			    push @{$chainref->{rules}} , @{$chain1ref->{rules}};
+			}
+		    } else {
+			for my $interface ( @interfaces ) {
+			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+			    }
 			}
 		    }
 		}
-	    } else {
-		if ( @interfaces ==1 ) {
-		    if ( my $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) {
-			push( @{$chainref->{rules}}, @{$chain1ref->{rules}} );
-		    }
-		} else {
-		    for my $interface ( @interfaces ) {
-			if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
-			    add_ijump ( $chainref , j => $chain1ref->{name}, imatch_source_dev( $interface ) );
-			}
+	    }
+	}
+
+	for my $zone1 ( firewall_zone, vserver_zones ) {
+	    for my $zone2 ( off_firewall_zones ) {
+		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+		my @interfaces = keys %{zone_interfaces( $zone2 )};
+
+		for my $interface ( @interfaces ) {
+		    if ( my $chain1ref = $filter_table->{output_option_chain $interface} ) {
+			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_dest_dev( $interface ) : () );
 		    }
 		}
+	    }
+	}
+    } else {
+	#
+	# Simply copy the option chain rules into the interface chains
+	#
+	for my $interface ( grep $_ ne '%vserver%', all_interfaces ) {
+	    if ( my $chainref = $filter_table->{input_option_chain $interface} ) {
+		push @{$filter_table->{input_chain $interface}->{rules}}, @{$chainref->{rules}};
+	    }
+
+	    if ( my $chainref = $filter_table->{forward_option_chain $interface} ) {
+		push @{$filter_table->{forward_chain $interface}->{rules}}, @{$chainref->{rules}};
+	    }
+
+	    if ( my $chainref = $filter_table->{output_option_chain $interface} ) {
+		push @{$filter_table->{output_chain $interface}->{rules}}, @{$chainref->{rules}};
 	    }
 	}
     }
-
-    for my $zone1 ( firewall_zone, vserver_zones ) {
-	for my $zone2 ( off_firewall_zones ) {
-	    my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
-	    my @interfaces = keys %{zone_interfaces( $zone2 )};
-
-	    if ( @interfaces == 1 ) {
-		if ( my $chain1ref = $filter_table->{output_option_chain $interfaces[0]} ) {
-		    push( @{$chainref->{rules}}, @{$chain1ref->{rules}} );
-		}
-	    } else {
-		for my $interface ( @interfaces ) {
-		    if ( my $chain1ref = $filter_table->{output_option_chain $interface} ) {
-			add_ijump ( $chainref , j => $chain1ref->{name}, imatch_dest_dev( $interface ) );
-		    }
-		}
-	    }
-	}
-    }	    
 
     $fn = open_file 'rules';
 

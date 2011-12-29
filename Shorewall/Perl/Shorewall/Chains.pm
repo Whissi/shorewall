@@ -5818,29 +5818,30 @@ sub add_interface_options( $ ) {
 
 	    for my $zone2 ( all_zones ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+		my $chain1ref;
 	    
 		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
 		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
-			if ( my $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) {
+			if ( ( $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) && @{$chain1ref->{rules}}  ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
 			for my $interface ( @interfaces ) {
-			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+			    if ( ( $chain1ref = $filter_table->{forward_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
 				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}
 		    }
 		} else {
 		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
-			if ( my $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) {
+			if ( ( $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) && @{$chain1ref->{rules}} ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
 			for my $interface ( @interfaces ) {
-			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+			    if ( ( $chain1ref = $filter_table->{forward_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
 				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}
@@ -5853,9 +5854,11 @@ sub add_interface_options( $ ) {
 	    for my $zone2 ( off_firewall_zones ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
 		my @interfaces = keys %{zone_interfaces( $zone2 )};
+		my $chain1ref;
+		
 
 		for my $interface ( @interfaces ) {
-		    if ( my $chain1ref = $filter_table->{output_option_chain $interface} ) {
+		    if ( ( $chain1ref = $filter_table->{output_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
 			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_dest_dev( $interface ) : () );
 		    }
 		}

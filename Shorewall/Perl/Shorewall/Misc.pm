@@ -1164,7 +1164,7 @@ sub setup_mac_lists( $ ) {
 	    if ( $table eq 'filter' ) {
 		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );
 
-		for my $chain ( first_chains $interface ) {
+		for my $chain ( option_chains $interface ) {
 		    add_ijump $filter_table->{$chain} , j => $chainref, @source, @state, @policy;
 		}
 	    } else {

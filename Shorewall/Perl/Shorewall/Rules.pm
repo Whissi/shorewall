@@ -2632,15 +2632,27 @@ sub process_rules() {
 	    my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
 	    
 	    if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
-		for my $interface ( @interfaces ) {
-		    if ( my $chain1ref = $filter_table->{input_option_chain $interface} ) {
-			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+		if ( @interfaces ==1 ) {
+		    if ( my $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) {
+			push( @{$chainref->{rules}}, @{$chain1ref->{rules}} );
+		    }
+		} else {
+		    for my $interface ( @interfaces ) {
+			if ( my $chain1ref = $filter_table->{input_option_chain $interface} ) {
+			    add_ijump ( $chainref , j => $chain1ref->{name}, imatch_source_dev( $interface ) );
+			}
 		    }
 		}
 	    } else {
-		for my $interface ( @interfaces ) {
-		    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
-			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+		if ( @interfaces ==1 ) {
+		    if ( my $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) {
+			push( @{$chainref->{rules}}, @{$chain1ref->{rules}} );
+		    }
+		} else {
+		    for my $interface ( @interfaces ) {
+			if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+			    add_ijump ( $chainref , j => $chain1ref->{name}, imatch_source_dev( $interface ) );
+			}
 		    }
 		}
 	    }

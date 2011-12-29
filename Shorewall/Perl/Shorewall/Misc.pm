@@ -560,7 +560,6 @@ sub add_common_rules ( $ ) {
 	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   '' , 'DROP'   , $level ;
 	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), '' , 'reject' , $level ;
 	$dynamicref = dont_optimize( new_standard_chain( 'dynamic' ) );
-	add_ijump $filter_table->{INPUT}, j => $dynamicref, @state;
 	add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
     }
 
@@ -647,8 +646,8 @@ sub add_common_rules ( $ ) {
 	    }
 	
 	    for ( option_chains( $interface ) ) {
-		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate ) if $config{FASTACCEPT};
 		add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
+		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate ) if $config{FASTACCEPT};
 	    }
 	}
     }
@@ -787,7 +786,7 @@ sub add_common_rules ( $ ) {
 			     'dhcp',
 			     1 ) for input_option_chain( $interface ), output_chain( $interface );
 
-	    add_ijump( $filter_table->{forward_chain $interface} ,
+	    add_ijump( $filter_table->{forward_option_chain $interface} ,
 		       j => 'ACCEPT', 
 		       p =>  "udp --dport $ports" ,
 		       imatch_dest_dev( $interface ) )

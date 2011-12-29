@@ -814,6 +814,8 @@ sub compiler {
 	#
 	generate_matrix;
 
+	optimize_level0;
+
 	if ( $config{OPTIMIZE} & 0x1E ) {
 	    progress_message2 'Optimizing Ruleset...';
 	    #
@@ -882,6 +884,8 @@ sub compiler {
 	    # User wishes to preview the ruleset or we are tracing -- generate the rule matrix
 	    #
 	    generate_matrix;
+
+	    optimize_level0;
 
 	    if ( $config{OPTIMIZE} & 0x1E ) {
 		progress_message2 'Optimizing Ruleset...';

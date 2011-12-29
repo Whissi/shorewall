@@ -2490,125 +2490,59 @@ sub initiate_blacklist() {
     $blrules = 1;
 }
 
-#
-# Convert a pre-4.4.25 blacklist to the 4.4.25 format and process it
-#
-sub setup_blacklist() {
-    my $zones  = find_zones_by_option 'blacklist', 'in';
-    my $zones1 = find_zones_by_option 'blacklist', 'out';
-    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my $audit       = $disposition =~ /^A_/;
-    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
-    my $orig_target = $target;
-    my @rules;
-    
-    if ( @$zones || @$zones1 ) {
-	if ( supplied $level ) {
-	    $target = 'blacklog';
-	} elsif ( $audit ) {
-	    $target = verify_audit( $disposition );
-	}
+sub classic_blacklist() {
+    my $fw       = firewall_zone;
+    my @zones    = off_firewall_zones;
+    my @vservers = vserver_zones;
+    my @state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
+    #
+    # First take care of classic blacklisting
+    #
+    for my $zone ( @zones ) {
+	my $zoneref = find_zone( $zone );
+	my $simple  =  @zones <= 2 && ! $zoneref->{options}{complex};
+	
+	if ( $zoneref->{options}{in}{blacklist} ) {
+	    my $blackref = $filter_table->{blacklst};
+	    add_ijump ensure_rules_chain( rules_chain( $zone, $_ ) ) , j => $blackref , @state for firewall_zone, @vservers;
 
-	my $fn = open_file 'blacklist';
+	    if ( $simple ) {
+		#
+		# We won't create a zone forwarding chain for this zone so we must add blacklisting jumps to the rules chains
+		#
+		for my $zone1 ( @zones ) {
+		    my $ruleschain    = rules_chain( $zone, $zone1 );
+		    my $ruleschainref = $filter_table->{$ruleschain};
 
-	first_entry( \&initiate_blacklist );
-
-	while ( read_a_line ) {
-	    my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
-
-	    if ( $options eq '-' ) {
-		$options = 'src';
-	    } elsif ( $options eq 'audit' ) {
-		$options = 'audit,src';
-	    }
-
-	    my ( $to, $from, $whitelist, $auditone ) = ( 0, 0, 0, 0 );
-
-	    my @options = split_list $options, 'option';
-
-	    for ( @options ) {
-		$whitelist++ if $_ eq 'whitelist';
-		$auditone++  if $_ eq 'audit'; 
-	    }
-
-	    warning_message "Duplicate 'whitelist' option ignored" if $whitelist > 1;
-
-	    my $tgt = $whitelist ? 'WHITELIST' : $target;
-
-	    if ( $auditone ) {
-		fatal_error "'audit' not allowed in whitelist entries" if $whitelist;
-
-		if ( $audit ) {
-		    warning_message "Superfluous 'audit' option ignored";
-		} else {
-		    warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
-		}
-
-		$tgt = verify_audit( 'A_' . $target, $orig_target, $target );
-	    }
-
-	    for ( @options ) {
-		if ( $_ =~ /^(?:src|from)$/ ) {
-		    if ( $from++ ) {
-			warning_message "Duplicate 'src' ignored";
-		    } else {
-			if ( @$zones ) {
-			    push @rules, [ 'src', $tgt, $networks, $protocol, $ports ];
-			} else {
-			    warning_message '"src" entry ignored because there are no "blacklist in" zones';
-			}
+		    if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
+			add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
 		    }
-		} elsif ( $_ =~ /^(?:dst|to)$/ ) {
-		    if ( $to++ ) {
-			warning_message "Duplicate 'dst' ignored";
-		    } else {
-			if ( @$zones1 ) {
-			    push @rules, [ 'dst', $tgt, $networks, $protocol, $ports ];
-			} else {
-			    warning_message '"dst" entry ignored because there are no "blacklist out" zones';
-			}
-		    }
-		} else {
-		    fatal_error "Invalid blacklist option($_)" unless $_ eq 'whitelist' || $_ eq 'audit';
 		}
 	    }
 	}
 
-	if ( @rules ) {
-	    for ( @rules ) {
-		my ( $srcdst, $tgt, $networks, $protocols, $ports ) = @$_;
+	if ( $zoneref->{options}{out}{blacklist} ) {
+	    my $blackref = $filter_table->{blackout};
+	    add_ijump ensure_rules_chain( rules_chain( firewall_zone, $zone ) ) , j => $blackref , @state;
 
-		$tgt .= "\t\t";
+	    for my $zone1 ( @zones, @vservers ) {
+		my $ruleschain    = rules_chain( $zone1, $zone );
+		my $ruleschainref = $filter_table->{$ruleschain};
 
-		my $list = $srcdst eq 'src' ? $zones : $zones1;
-
-		for my $zone ( @$list ) {
-		    $currentline = $tgt;
-
-		    if ( $srcdst eq 'src' ) {
-			if ( $networks ne '-' ) {
-			    $currentline .= "$zone:$networks\tall\t\t";
-			} else {
-			    $currentline .= "$zone\t\t\tall\t\t";
-			}
-		    } else {
-			if ( $networks ne '-' ) {
-			    $currentline .= "all\t\t\t$zone:$networks\t";
-			} else {
-			    $currentline .= "all\t\t\t$zone\t\t\t";
-			}
-		    }
-		
-		    $currentline .= "\t$protocols" if $protocols ne '-';
-		    $currentline .= "\t$ports"     if $ports     ne '-';
-		
-		    process_rule;
+		if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
+		    add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
 		}
 	    }
-	} else {
-	    warning_message q(There are interfaces or zones with the 'blacklist' option but the 'blacklist' file is empty or does not exist) unless @rules;
 	}
-	return 0;
+
+	unless ( $simple ) {
+	    #
+	    # Complex zone or we have more than one non-firewall zone -- create a zone forwarding chain
+	    #
+	    my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
+
+	    add_ijump( $frwd_ref , j => $filter_table->{blacklst}, @state ) if $zoneref->{options}{in}{blacklist};
+	}
     }
 }
 
@@ -2616,10 +2550,10 @@ sub setup_blacklist() {
 # Process the Rules File
 #
 sub process_rules() {
+    classic_blacklist;
+
     $section = 'BLACKLIST';
 
-    setup_blacklist;
-    
     my $fn = open_file 'blrules';
 
     if ( $fn ) {
@@ -2629,74 +2563,7 @@ sub process_rules() {
 
     $section = '';
 
-    if ( $blrules ) {
-	#
-	# Insert all interface option rules into the rules chains
-	#
-	for my $zone1 ( off_firewall_zones ) {
-	    my @interfaces = keys %{zone_interfaces( $zone1 )};
-
-	    for my $zone2 ( all_zones ) {
-		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
-	    
-		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
-		    if ( @interfaces == 1 ) {
-			if ( my $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) {
-			    push @{$chainref->{rules}} , @{$chain1ref->{rules}};
-			}
-		    } else {
-			for my $interface ( @interfaces ) {
-			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
-				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
-			    }
-			}
-		    }
-		} else {
-		    if ( @interfaces == 1 ) {
-			if ( my $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) {
-			    push @{$chainref->{rules}} , @{$chain1ref->{rules}};
-			}
-		    } else {
-			for my $interface ( @interfaces ) {
-			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
-				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
-			    }
-			}
-		    }
-		}
-	    }
-	}
-
-	for my $zone1 ( firewall_zone, vserver_zones ) {
-	    for my $zone2 ( off_firewall_zones ) {
-		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
-		my @interfaces = keys %{zone_interfaces( $zone2 )};
-
-		for my $interface ( @interfaces ) {
-		    if ( my $chain1ref = $filter_table->{output_option_chain $interface} ) {
-			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_dest_dev( $interface ) : () );
-		    }
-		}
-	    }
-	}
-    } else {
-	#
-	# Simply copy the option chain rules into the interface chains
-	#
-	for my $interface ( grep $_ ne '%vserver%', all_interfaces ) {
-	    if ( my $chainref = $filter_table->{input_option_chain $interface} ) {
-		push @{$filter_table->{input_chain $interface}->{rules}}, @{$chainref->{rules}};
-	    }
-
-	    if ( my $chainref = $filter_table->{forward_option_chain $interface} ) {
-		push @{$filter_table->{forward_chain $interface}->{rules}}, @{$chainref->{rules}};
-	    }
-
-	    if ( my $chainref = $filter_table->{output_option_chain $interface} ) {
-		push @{$filter_table->{output_chain $interface}->{rules}}, @{$chainref->{rules}};
-	    }
-	}
-    }
+    add_interface_options( $blrules || $filter_table->{blacklst} );
 
     $fn = open_file 'rules';
 

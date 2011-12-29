@@ -65,6 +65,7 @@ our @EXPORT = qw(
 		    dont_delete
 		    dont_move
 		    get_action_logging
+		    add_interface_options
 
 		    %chain_table
 		    %helpers
@@ -1496,7 +1497,7 @@ sub copy_rules( $$;$ ) {
 
     progress_message "  $count rules from $chain1->{name} appended to $chain2->{name}" if $count;
 
-    unless ( --$chain1->{references}{$name2} ) {
+    unless ( $nojump || --$chain1->{references}{$name2} ) {
 	delete $chain1->{references}{$name2};
 	delete_chain_and_references( $chain1 ) unless keys %{$chain1->{references}};
     }
@@ -5799,6 +5800,91 @@ sub expand_rule( $$$$$$$$$$;$ )
     }
 
     $diface;
+}
+
+sub copy_options( $ ) {
+    keys %{interface_zones( shift )} == 1;
+}
+
+sub add_interface_options( $ ) {
+    my $blrules = shift;
+
+    if ( $blrules ) {
+	#
+	# Insert all interface option rules into the rules chains
+	#
+	for my $zone1 ( off_firewall_zones ) {
+	    my @interfaces = keys %{zone_interfaces( $zone1 )};
+
+	    for my $zone2 ( all_zones ) {
+		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+	    
+		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
+		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
+			if ( my $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) {
+			    copy_rules $chain1ref, $chainref, 1;
+			    $chainref->{referenced} = 1;
+			}
+		    } else {
+			for my $interface ( @interfaces ) {
+			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+			    }
+			}
+		    }
+		} else {
+		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
+			if ( my $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) {
+			    copy_rules $chain1ref, $chainref, 1;
+			    $chainref->{referenced} = 1;
+			}
+		    } else {
+			for my $interface ( @interfaces ) {
+			    if ( my $chain1ref = $filter_table->{forward_option_chain $interface} ) {
+				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+	for my $zone1 ( firewall_zone, vserver_zones ) {
+	    for my $zone2 ( off_firewall_zones ) {
+		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
+		my @interfaces = keys %{zone_interfaces( $zone2 )};
+
+		for my $interface ( @interfaces ) {
+		    if ( my $chain1ref = $filter_table->{output_option_chain $interface} ) {
+			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_dest_dev( $interface ) : () );
+		    }
+		}
+	    }
+	}
+    } else {
+	#
+	# Simply move the option chain rules to the interface chains
+	#
+	for my $interface ( grep $_ ne '%vserver%', all_interfaces ) {
+	    my $chainref;
+	    my $chain1ref;
+
+	    if ( ( $chainref = $filter_table->{input_option_chain $interface} ) && @{$chainref->{rules}} ) {
+		move_rules $chainref, $chain1ref = $filter_table->{input_chain $interface};
+		set_interface_option( $interface, 'use_input_chain', 1 );
+	    }
+
+	    if ( ( $chainref = $filter_table->{forward_option_chain $interface} ) && @{$chainref->{rules}} ) {
+		move_rules $chainref, $chain1ref = $filter_table->{forward_chain $interface};
+		set_interface_option( $interface, 'use_forward_chain' , 1 );
+	    }
+
+	    if ( ( $chainref = $filter_table->{output_option_chain $interface} ) && @{$chainref->{rules}} ) {
+		move_rules $chainref, $chain1ref = $filter_table->{output_chain $interface};
+		set_interface_option( $interface, 'use_output_chain' , 1 );
+	    }
+	}
+    }
 }
 
 #

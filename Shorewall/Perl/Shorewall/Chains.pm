@@ -28,6 +28,7 @@ package Shorewall::Chains;
 require Exporter;
 
 use Scalar::Util 'reftype';
+use Digest::SHA1 qw(sha1);
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::IPAddrs;
@@ -2821,7 +2822,7 @@ sub optimize_level8( $$$ ) {
 	    }
 	}
 
-	$chainref->{digest} = $digest;
+	$chainref->{digest} = sha1 $digest;
     }
 
     for my $chainref ( @chains ) {
@@ -5826,8 +5827,10 @@ sub add_interface_options( $ ) {
 	#
 	# Generate a digest for each chain
 	#
-	for my $chainref ( grep defined $_, values %input_chains, values %forward_chains ) {
+	for my $chainref ( values %input_chains, values %forward_chains ) {
 	    my $digest = '';
+
+	    assert( $chainref );
 
 	    for ( @{$chainref->{rules}} ) {
 		if ( $digest ) {
@@ -5837,7 +5840,7 @@ sub add_interface_options( $ ) {
 		}
 	    }
 	    
-	    $chainref->{digest} = $digest;
+	    $chainref->{digest} = sha1 $digest;
 	}
 	#
 	# Insert all interface option rules into the rules chains
@@ -5887,28 +5890,29 @@ sub add_interface_options( $ ) {
 	    
 		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
 		    if ( @input_interfaces == 1 && copy_options( $input_interfaces[0] ) ) {
-			if ( ( $chain1ref = $input_chains{$input_interfaces[0]} ) && @{$chain1ref->{rules}}  ) {
+			$chain1ref = $input_chains{$input_interfaces[0]};
+
+			if ( @{$chain1ref->{rules}}  ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
 			for my $interface ( @input_interfaces ) {
-			    if ( ( $chain1ref = $input_chains{$interface} ) && @{$chain1ref->{rules}} ) {
-				add_ijump ( $chainref , j => $chain1ref->{name}, @input_interfaces > 1 ? imatch_source_dev( $interface ) : () );
-			    }
+			    $chain1ref = $input_chains{$interface};
+			    add_ijump ( $chainref , j => $chain1ref->{name}, @input_interfaces > 1 ? imatch_source_dev( $interface ) : () ) if @{$chain1ref->{rules}};
 			}
 		    }
 		} else {
 		    if ( @forward_interfaces == 1 && copy_options( $forward_interfaces[0] ) ) {
-			if ( ( $chain1ref = $forward_chains{$forward_interfaces[0]} ) && @{$chain1ref->{rules}} ) {
+			$chain1ref = $forward_chains{$forward_interfaces[0]};
+			if ( @{$chain1ref->{rules}} ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
 			for my $interface ( @forward_interfaces ) {
-			    if ( ( $chain1ref = $forward_chains{$interface} ) && @{$chain1ref->{rules}} ) {
-				add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () );
-			    }
+			    $chain1ref = $forward_chains{$interface};
+			    add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () ) if  @{$chain1ref->{rules}};
 			}
 		    }
 		}
@@ -5922,7 +5926,9 @@ sub add_interface_options( $ ) {
 		my $chain1ref;
 
 		for my $interface ( @interfaces ) {
-		    if ( ( $chain1ref = $filter_table->{output_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
+		    $chain1ref = $filter_table->{output_option_chain $interface};
+
+		   if ( @{$chain1ref->{rules}} ) {
 			copy_rules( $chain1ref, $chainref, 1 );
 			$chainref->{referenced} = 1;
 		    }
@@ -5937,17 +5943,23 @@ sub add_interface_options( $ ) {
 	    my $chainref;
 	    my $chain1ref;
 
-	    if ( ( $chainref = $filter_table->{input_option_chain $interface} ) && @{$chainref->{rules}} ) {
+	    $chainref = $filter_table->{input_option_chain $interface};
+	   
+	    if( @{$chainref->{rules}} ) {
 		move_rules $chainref, $chain1ref = $filter_table->{input_chain $interface};
 		set_interface_option( $interface, 'use_input_chain', 1 );
 	    }
 
-	    if ( ( $chainref = $filter_table->{forward_option_chain $interface} ) && @{$chainref->{rules}} ) {
+	    $chainref = $filter_table->{forward_option_chain $interface};
+
+	    if ( @{$chainref->{rules}} ) {
 		move_rules $chainref, $chain1ref = $filter_table->{forward_chain $interface};
 		set_interface_option( $interface, 'use_forward_chain' , 1 );
 	    }
 
-	    if ( ( $chainref = $filter_table->{output_option_chain $interface} ) && @{$chainref->{rules}} ) {
+	    $chainref = $filter_table->{output_option_chain $interface};
+
+	   if ( @{$chainref->{rules}} ) {
 		move_rules $chainref, $chain1ref = $filter_table->{output_chain $interface};
 		set_interface_option( $interface, 'use_output_chain' , 1 );
 	    }

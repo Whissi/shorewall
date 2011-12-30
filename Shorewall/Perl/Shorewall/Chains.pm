@@ -2762,7 +2762,9 @@ sub optimize_level4( $$ ) {
 
     #
     # In this loop, we look for chains that end in an unconditional jump. If the target of the jump
-    # is subject to deletion (dont_delete = false), the jump is replaced by target's rules.
+    # is subject to deletion (dont_delete = false), the jump is replaced by target's rules. Note
+    # that the target chain must be short (< 4 rules) or it must only have one reference, in order
+    # to have it's rules copied. This prevents multiple copies of long chains being made.
     #
     $progress = 1;
 
@@ -2783,7 +2785,9 @@ sub optimize_level4( $$ ) {
 		# Last rule is a simple branch
 		my $targetref = $tableref->{$lastrule->{target}};
 
-		if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) && ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
+		if ( $targetref && 
+		     ! ( $targetref->{builtin} || $targetref->{dont_move} ) && 
+		     ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
 		    copy_rules( $targetref, $chainref );
 		    $progress = 1;
 		}
@@ -5802,10 +5806,18 @@ sub expand_rule( $$$$$$$$$$;$ )
     $diface;
 }
 
+#
+# Returns true if the passed interface is associated with exactly one zone
+#
 sub copy_options( $ ) {
     keys %{interface_zones( shift )} == 1;
 }
 
+#
+# This function is called after the blacklist rules have been added to the canonical chains. It 
+# either copies the relevant interface option rules into each canonocal chain, or it inserts one
+# or more jumps to the relevant option chains.
+#
 sub add_interface_options( $ ) {
 
     if ( $_[0] ) {
@@ -5817,38 +5829,90 @@ sub add_interface_options( $ ) {
 	    $forward_chains{$interface} = $filter_table->{forward_option_chain $interface};
 	}
 	#
+	# Generate a digest for each chain
+	#
+	for my $chainref ( grep defined $_, values %input_chains, values %forward_chains ) {
+	    my $digest = '';
+
+	    for ( @{$chainref->{rules}} ) {
+		if ( $digest ) {
+		    $digest .= ' |' . format_rule( $chainref, $_, 1 );
+		} else {
+		    $digest = format_rule( $chainref, $_, 1 );
+		}
+	    }
+	    
+	    $chainref->{digest} = $digest;
+	}
+	#
 	# Insert all interface option rules into the rules chains
 	#
 	for my $zone1 ( off_firewall_zones ) {
-	    my @interfaces = keys %{zone_interfaces( $zone1 )};
+	    my @input_interfaces   = keys %{zone_interfaces( $zone1 )};
+	    my @forward_interfaces = @input_interfaces;
+	    
+	    if ( @input_interfaces > 1 ) {
+		#
+		# This zone has multiple interfaces - discover if all of the interfaces have the same 
+		# input and/or forward options
+		#
+		my $digest;
+	      INPUT:
+		{
+		    for ( @input_interfaces ) {
+			if ( defined $digest ) {
+			    last INPUT unless $input_chains{$_}->{digest} eq $digest;
+			} else {
+			    $digest = $input_chains{$_}->{digest};
+			}
+		    }
 
+		    @input_interfaces = ( $input_interfaces[0] );
+		}
+
+		$digest = undef;
+
+	      FORWARD:
+		{
+		    for ( @forward_interfaces ) {
+			if ( defined $digest ) {
+			    last FORWARD unless $forward_chains{$_}->{digest} eq $digest;
+			} else {
+			    $digest = $forward_chains{$_}->{digest};
+			}
+		    }
+
+		    @forward_interfaces = ( $forward_interfaces[0] );
+		}
+	    }  
+	    
 	    for my $zone2 ( all_zones ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
 		my $chain1ref;
 	    
 		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
-		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
-			if ( ( $chain1ref = $input_chains{$interfaces[0]} ) && @{$chain1ref->{rules}}  ) {
+		    if ( @input_interfaces == 1 && copy_options( $input_interfaces[0] ) ) {
+			if ( ( $chain1ref = $input_chains{$input_interfaces[0]} ) && @{$chain1ref->{rules}}  ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
-			for my $interface ( @interfaces ) {
+			for my $interface ( @input_interfaces ) {
 			    if ( ( $chain1ref = $input_chains{$interface} ) && @{$chain1ref->{rules}} ) {
-				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+				add_ijump ( $chainref , j => $chain1ref->{name}, @input_interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}
 		    }
 		} else {
-		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
-			if ( ( $chain1ref = $forward_chains{$interfaces[0]} ) && @{$chain1ref->{rules}} ) {
+		    if ( @forward_interfaces == 1 && copy_options( $forward_interfaces[0] ) ) {
+			if ( ( $chain1ref = $forward_chains{$forward_interfaces[0]} ) && @{$chain1ref->{rules}} ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
-			for my $interface ( @interfaces ) {
+			for my $interface ( @forward_interfaces ) {
 			    if ( ( $chain1ref = $forward_chains{$interface} ) && @{$chain1ref->{rules}} ) {
-				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
+				add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}
 		    }

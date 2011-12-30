@@ -5859,7 +5859,8 @@ sub add_interface_options( $ ) {
 
 		for my $interface ( @interfaces ) {
 		    if ( ( $chain1ref = $filter_table->{output_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
-			add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_dest_dev( $interface ) : () );
+			copy_rules( $chain1ref, $chainref, 1 );
+			$chainref->{referenced} = 1;
 		    }
 		}
 	    }

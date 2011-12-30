@@ -5807,9 +5807,15 @@ sub copy_options( $ ) {
 }
 
 sub add_interface_options( $ ) {
-    my $blrules = shift;
 
-    if ( $blrules ) {
+    if ( $_[0] ) {
+	my %input_chains;
+	my %forward_chains;
+
+	for my $interface ( grep $_ ne '%vserver%', all_interfaces ) {
+	    $input_chains{$interface}   = $filter_table->{input_option_chain $interface};
+	    $forward_chains{$interface} = $filter_table->{forward_option_chain $interface};
+	}
 	#
 	# Insert all interface option rules into the rules chains
 	#
@@ -5822,26 +5828,26 @@ sub add_interface_options( $ ) {
 	    
 		if ( zone_type( $zone2 ) & (FIREWALL | VSERVER ) ) {
 		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
-			if ( ( $chain1ref = $filter_table->{input_option_chain $interfaces[0]} ) && @{$chain1ref->{rules}}  ) {
+			if ( ( $chain1ref = $input_chains{$interfaces[0]} ) && @{$chain1ref->{rules}}  ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
 			for my $interface ( @interfaces ) {
-			    if ( ( $chain1ref = $filter_table->{input_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
+			    if ( ( $chain1ref = $input_chains{$interface} ) && @{$chain1ref->{rules}} ) {
 				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}
 		    }
 		} else {
 		    if ( @interfaces == 1 && copy_options( $interfaces[0] ) ) {
-			if ( ( $chain1ref = $filter_table->{forward_option_chain $interfaces[0]} ) && @{$chain1ref->{rules}} ) {
+			if ( ( $chain1ref = $forward_chains{$interfaces[0]} ) && @{$chain1ref->{rules}} ) {
 			    copy_rules $chain1ref, $chainref, 1;
 			    $chainref->{referenced} = 1;
 			}
 		    } else {
 			for my $interface ( @interfaces ) {
-			    if ( ( $chain1ref = $filter_table->{forward_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
+			    if ( ( $chain1ref = $forward_chains{$interface} ) && @{$chain1ref->{rules}} ) {
 				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}
@@ -5855,7 +5861,6 @@ sub add_interface_options( $ ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
 		my @interfaces = keys %{zone_interfaces( $zone2 )};
 		my $chain1ref;
-		
 
 		for my $interface ( @interfaces ) {
 		    if ( ( $chain1ref = $filter_table->{output_option_chain $interface} ) && @{$chain1ref->{rules}} ) {

@@ -2563,7 +2563,7 @@ sub process_rules() {
 
     $section = '';
 
-    add_interface_options( $blrules || $filter_table->{blacklst} );
+    add_interface_options( $blrules || defined $filter_table->{blacklst} );
 
     $fn = open_file 'rules';
 

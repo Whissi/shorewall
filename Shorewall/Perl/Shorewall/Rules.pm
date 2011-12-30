@@ -750,7 +750,7 @@ sub ensure_rules_chain( $ )
 
     my $chainref = $filter_table->{$chain};
 
-    $chainref = dont_move( new_chain( 'filter', $chain ) ) unless $chainref;
+    $chainref = new_chain( 'filter', $chain ) unless $chainref;
 
     unless ( $chainref->{referenced} ) {
 	if ( $section =~/^(NEW|DONE)$/ ) {

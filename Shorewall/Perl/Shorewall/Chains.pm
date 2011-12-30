@@ -2178,7 +2178,6 @@ sub new_builtin_chain($$$)
     $chainref->{policy}      = $policy;
     $chainref->{builtin}     = 1;
     $chainref->{dont_delete} = 1;
-    $chainref->{dont_move}   = 1;
     $chainref;
 }
 
@@ -2420,7 +2419,7 @@ sub initialize_chain_table($) {
 	#
 	# Create this chain early in case it is needed by Policy actions
 	#
-	dont_move new_standard_chain 'reject';
+	new_standard_chain 'reject';
     }
 }
 
@@ -2752,7 +2751,6 @@ sub optimize_level4( $$ ) {
 			    # Replace references to this chain with the target and add the matches
 			    #
 			    $progress = 1 if replace_references1 $chainref, $firstrule;
-			    
 			}
 		    }
 		}
@@ -2761,10 +2759,9 @@ sub optimize_level4( $$ ) {
     }
 
     #
-    # In this loop, we look for chains that end in an unconditional jump. If the target of the jump
-    # is subject to deletion (dont_delete = false), the jump is replaced by target's rules. Note
-    # that the target chain must be short (< 4 rules) or it must only have one reference, in order
-    # to have it's rules copied. This prevents multiple copies of long chains being made.
+    # In this loop, we look for chains that end in an unconditional jump. The jump is replaced by
+    # the target's rules, provided that the target chain is short (< 4 rules) or has only one
+    # reference. This prevents multiple copies of long chains being created.
     #
     $progress = 1;
 
@@ -2785,9 +2782,7 @@ sub optimize_level4( $$ ) {
 		# Last rule is a simple branch
 		my $targetref = $tableref->{$lastrule->{target}};
 
-		if ( $targetref && 
-		     ! ( $targetref->{builtin} || $targetref->{dont_move} ) && 
-		     ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
+		if ( $targetref && ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
 		    copy_rules( $targetref, $chainref );
 		    $progress = 1;
 		}

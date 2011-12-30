@@ -242,8 +242,9 @@ sub process_tc_rule( ) {
 	    }
 
 	    $source = '';
-	} else {
-	    $chain = 'tcout' if $source =~ s/^($fw)://;
+	} elsif ( $source =~ s/^($fw):// ) {
+	    fatal_error ":F is not allowed when the SOURCE is the firewall" if $chain eq 'tcfor';
+	    $chain = 'tcout';
 	}
     }
 
@@ -252,8 +253,9 @@ sub process_tc_rule( ) {
 	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
 	    $chain = 'tcin';
 	    $dest  = '';
-	} else {
-	    $chain = 'tcin' if $dest =~ s/^($fw)://;
+	} elsif ( $dest =~ s/^($fw):// ) {
+	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
+	    $chain = 'tcin';
 	}
     }
 

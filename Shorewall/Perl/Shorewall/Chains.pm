@@ -5828,7 +5828,7 @@ sub add_interface_options( $ ) {
 			}
 		    } else {
 			for my $interface ( @interfaces ) {
-			    if ( ( $chain1ref = $filter_table->{forward_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
+			    if ( ( $chain1ref = $filter_table->{input_option_chain $interface} ) && @{$chain1ref->{rules}} ) {
 				add_ijump ( $chainref , j => $chain1ref->{name}, @interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			    }
 			}

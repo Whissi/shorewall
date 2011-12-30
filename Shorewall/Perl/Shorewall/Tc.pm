@@ -104,8 +104,7 @@ my  %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
-my %designator = ( P => 'tcpre' ,
-		   F => 'tcfor' ,
+my %designator = ( F => 'tcfor' ,
 		   T => 'tcpost' );
 
 my  %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
@@ -211,7 +210,8 @@ sub process_tc_rule( ) {
 
     fatal_error "Invalid MARK ($originalmark)" unless supplied $mark;
 
-    my $chain  = $globals{MARKING_CHAIN};
+    my $chain    = $globals{MARKING_CHAIN};
+    my $classid  = 0;
 
     if ( $remainder ) { 
 	if ( $originalmark =~ /^\w+\(?.*\)$/ ) {
@@ -221,33 +221,40 @@ sub process_tc_rule( ) {
 		unless ( $mark =~ /^([0-9a-fA-F]+)$/ &&
 			 $designator =~ /^([0-9a-fA-F]+)$/ && 
 			 ( $chain = $designator{$remainder} ) );
-	    $mark  = join( ':', $mark, $designator );
+	    $mark    = join( ':', $mark, $designator );
+	    $classid = 1;
 	}
     }
 
     my $target = 'MARK --set-mark';
     my $tcsref;
     my $connmark = 0;
-    my $classid  = 0;
     my $device   = '';
     my $fw       = firewall_zone;
     my $list;
 
     if ( $source ) {
 	if ( $source eq $fw ) {
-	    $chain = 'tcout';
+	    if ( $classid ) {
+		fatal_error ":F is not allowed when the SOURCE is the firewall" if $chain eq 'tcfor';
+	    } else {
+		$chain = 'tcout';
+	    }
 	    $source = '';
-	} else {
-	    $chain = 'tcout' if $source =~ s/^($fw)://;
+	} elsif ( $source =~ s/^($fw):// ) {
+	    fatal_error ":F is not allowed when the SOURCE is the firewall" if $chain eq 'tcfor';
+	    $chain = 'tcout';
 	}
     }
 
     if ( $dest ) {
 	if ( $dest eq $fw ) {
+	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
 	    $chain = 'tcin';
 	    $dest  = '';
-	} else {
-	    $chain = 'tcin' if $dest =~ s/^($fw)://;
+	} elsif ( $dest =~ s/^($fw):// ) {
+	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
+	    $chain = 'tcin';
 	}
     }
 
@@ -268,8 +275,9 @@ sub process_tc_rule( ) {
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
 	} else {
-	    unless ( $remainder ) {
+	    unless ( $classid ) {
 		fatal_error "Invalid MARK ($originalmark)" unless $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/;
+		fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $chain eq 'tcin';
 		$chain = 'tcpost';
 		$mark  = $originalmark;
 	    }

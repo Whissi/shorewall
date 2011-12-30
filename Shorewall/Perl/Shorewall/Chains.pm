@@ -2780,7 +2780,7 @@ sub optimize_level4( $$ ) {
 		# Last rule is a simple branch
 		my $targetref = $tableref->{$lastrule->{target}};
 
-		if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) ) {
+		if ( $targetref && ! ( $targetref->{builtin} || $targetref->{dont_move} ) && ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
 		    copy_rules( $targetref, $chainref );
 		    $progress = 1;
 		}

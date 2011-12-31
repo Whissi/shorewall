@@ -761,26 +761,22 @@ sub add_common_rules ( $ ) {
 
 	    my @filters = @{$interfaceref->{filter}};
 	
-	    $chainref = $filter_table->{forward_chain $interface};
+	    $chainref = $filter_table->{forward_option_chain $interface};
 	
 	    if ( @filters ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
-		$interfaceref->{options}{use_forward_chain} = 1;
 	    } elsif ( $interfaceref->{bridge} eq $interface ) {
 		add_ijump( $chainref , @ipsec ? 'j' : 'g' => $target1, imatch_dest_dev( $interface ), @ipsec ), $chainref->{filtered}++
 		    unless( $config{ROUTE_FILTER} eq 'on' ||
 			    $interfaceref->{options}{routeback} ||
 			    $interfaceref->{options}{routefilter} ||
 			    $interfaceref->{physical} eq '+' );
-
-		$interfaceref->{options}{use_forward_chain} = 1;
 	    }
 
 	
 	    if ( @filters ) {
-		$chainref = $filter_table->{input_chain $interface};
+		$chainref = $filter_table->{input_option_chain $interface};
 		add_ijump( $chainref , g => $target, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
-		$interfaceref->{options}{use_input_chain} = 1;
 	    }
 	
 	    for ( option_chains( $interface ) ) {

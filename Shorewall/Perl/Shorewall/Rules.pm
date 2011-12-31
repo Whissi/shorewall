@@ -1835,7 +1835,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 			  CONTINUE => sub { $action = 'RETURN'; } ,
 
 			  WHITELIST => sub { 
-			      fatal_error "'WHITELIST' may only be used in the blrules file and in the 'BLACKLIST' section" unless $blacklist; 
+			      fatal_error "'WHITELIST' may only be used in the blrules file" unless $blacklist; 
 			      $action = 'RETURN';
 			  } ,
 
@@ -2318,7 +2318,9 @@ sub process_section ($) {
     fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};
     $sections{$sect} = 1;
 
-    if ( $sect eq 'ALL' ) {
+    if ( $sect eq 'BLACKLIST' ) {
+	fatal_error "The BLACKLIST section has been eliminated. Please move your BLACKLIST rules to the 'blrules' file";
+    } elsif ( $sect eq 'ALL' ) {
 	$sections{BLACKLIST} = 1;
     } elsif ( $sect eq 'ESTABLISHED' ) {
 	$sections{'BLACKLIST','ALL'} = ( 1, 1);

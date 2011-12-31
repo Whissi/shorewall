@@ -117,11 +117,6 @@ my %auditpolicies = ( ACCEPT => 1,
 		      REJECT => 1
 		    );
 #
-# Set to true if we have any entries in blacklist or blrules
-#
-my $blrules;
-
-#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -189,8 +184,6 @@ sub initialize( $ ) {
     } else {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
     }
-
-    $blrules = 0;
 }
 
 ###############################################################################
@@ -2472,26 +2465,6 @@ sub process_rule ( ) {
     progress_message qq(   Rule "$thisline" $done);
 }
 
-sub initiate_blacklist() {
-    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
-    my  $audit       = $disposition =~ /^A_/;
-    my  $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
-
-    progress_message2 "$doing $currentfilename...";
-
-    if ( supplied $level ) {
-	ensure_blacklog_chain( $target, $disposition, $level, $audit );
-	ensure_audit_blacklog_chain( $target, $disposition, $level ) if have_capability 'AUDIT_TARGET';
-    } elsif ( $audit ) {
-	require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
-	verify_audit( $disposition );
-    } elsif ( have_capability 'AUDIT_TARGET' ) {
-	verify_audit( 'A_' . $disposition );
-    }
-
-    $blrules = 1;
-}
-
 #
 # Add jumps to the blacklst and blackout chains
 #
@@ -2500,6 +2473,7 @@ sub classic_blacklist() {
     my @zones    = off_firewall_zones;
     my @vservers = vserver_zones;
     my @state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
+    my $result;
     #
     # First take care of classic blacklisting
     #
@@ -2524,6 +2498,8 @@ sub classic_blacklist() {
 		    }
 		}
 	    }
+
+	    $result = 1;
 	}
 
 	if ( $zoneref->{options}{out}{blacklist} ) {
@@ -2538,6 +2514,8 @@ sub classic_blacklist() {
 		    add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
 		}
 	    }
+
+	    $result = 1;
 	}
 
 	unless ( $simple ) {
@@ -2549,20 +2527,42 @@ sub classic_blacklist() {
 	    add_ijump( $frwd_ref , j => $filter_table->{blacklst}, @state ) if $zoneref->{options}{in}{blacklist};
 	}
     }
+
+    $result;
 }
 
 #
 # Process the Rules File
 #
 sub process_rules() {
-    classic_blacklist;
+    my $blrules = classic_blacklist;
 
     $section = 'BLACKLIST';
 
     my $fn = open_file 'blrules';
 
     if ( $fn ) {
-	first_entry( \&initiate_blacklist );	
+	first_entry( sub () {
+			 my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+			 my  $audit       = $disposition =~ /^A_/;
+			 my  $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+
+			 progress_message2 "$doing $currentfilename...";
+
+			 if ( supplied $level ) {
+			     ensure_blacklog_chain( $target, $disposition, $level, $audit );
+			     ensure_audit_blacklog_chain( $target, $disposition, $level ) if have_capability 'AUDIT_TARGET';
+			 } elsif ( $audit ) {
+			     require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
+			     verify_audit( $disposition );
+			 } elsif ( have_capability 'AUDIT_TARGET' ) {
+			     verify_audit( 'A_' . $disposition );
+			 }
+
+			 $blrules = 1;
+		     }
+		   );
+
 	process_rule while read_a_line;
     }
 

@@ -1769,7 +1769,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     #
     # We can now dispense with the postfix character
     #
-    fatal_error "The +, - and ! modifiers are not allowed in the bllist file or in the BLACKLIST section" if $action =~ s/[\+\-!]$// && $blacklist;
+    fatal_error "The +, - and ! modifiers are not allowed in the blrules file" if $action =~ s/[\+\-!]$// && $blacklist;
     #
     # Handle actions
     #
@@ -2492,6 +2492,9 @@ sub initiate_blacklist() {
     $blrules = 1;
 }
 
+#
+# Add jumps to the blacklst and blackout chains
+#
 sub classic_blacklist() {
     my $fw       = firewall_zone;
     my @zones    = off_firewall_zones;

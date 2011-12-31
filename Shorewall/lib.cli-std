@@ -1003,6 +1003,8 @@ safe_commands() {
     local finished
     finished=0
     local command
+    local timeout
+    timeout=60
 
     # test is the shell supports timed read
     read -t 0 junk 2> /dev/null
@@ -1026,6 +1028,13 @@ safe_commands() {
 			n*)
 			    g_noroutes=Yes
 			    option=${option#n}
+			    ;;
+			t)
+			    [ $# -eq 1 ] && fatal_error "The -t option requires a timeout value"
+			    echo $2 | egrep -q '[[:digit:]]+[smh]' || fatal_error "The timeout value must be numeric, optionally followed by a suffix (s, m or h)"
+			    timeout=$2
+			    option=
+			    shift;
 			    ;;
 			*)
 			    usage 1
@@ -1109,7 +1118,7 @@ safe_commands() {
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 
-	if read_yesno_with_timeout; then
+	if read_yesno_with_timeout $timeout ; then
 	    echo "New configuration has been accepted"
 	else
 	    if [ "$command" = "restart" ]; then
@@ -1190,13 +1199,8 @@ try_command() {
 	    ;;
 	2)
 	    handle_directory $1
+	    echo $2 | egrep -q '[[:digit:]]+[smh]' || fatal_error "The timeout value must be numeric, optionally followed by a suffix (s, m or h)"
 	    timeout=$2
-	    case $timeout in
-		*[!0-9]*)
-                    echo "   ERROR: Invalid timeout ($timeout)" >&2;
-		    exit 1
-		    ;;
-	    esac
 	    ;;
 	*)
 	    usage 1
@@ -1545,8 +1549,8 @@ usage() # $1 = exit status
     echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ][ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
-    echo "   safe-restart [ <directory> ]"
-    echo "   safe-start [ <directory> ]"
+    echo "   safe-restart [ -t <timeout> ] [ <directory> ]"
+    echo "   safe-start [ -t <timeout> ] [ <directory> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -x ] [ -t {filter|mangle|nat|raw|rawpost} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   show actions"

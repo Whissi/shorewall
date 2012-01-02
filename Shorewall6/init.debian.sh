@@ -14,7 +14,7 @@
 
 SRWL=/sbin/shorewall6
 SRWL_OPTS="-tvv"
-WAIT_FOR_IFUP=/usr/share/shorewall6/wait4ifup
+WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
 test -n ${INITLOG:=/var/log/shorewall6-init.log}
 
 test -x $SRWL || exit 0

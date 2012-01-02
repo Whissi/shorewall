@@ -510,14 +510,16 @@ version_command() {
 
     [ $# -gt 0 ] && usage 1
 
-    echo $SHOREWALL_VERSION
-
     if [ -n "$all" ]; then
+	echo "shorewall-core: $(cat /usr/share/shorewall/coreversion)"
+
 	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ $product != $g_program -a -f /usr/share/$product/version ]; then
+	    if [ -f /usr/share/$product/version ]; then
 		echo "$product: $(cat /usr/share/$product/version)"
 	    fi
 	done
+    else
+	echo $SHOREWALL_VERSION
     fi
 }
 
@@ -2858,7 +2860,51 @@ usage() # $1 = exit status
     exit $1
 }
 
+#
+# This is the main entry point into the CLI. It directly handles all commands supported
+# by both the full and lite versions. Note, however, that functions such as start_command()
+# appear in both this library and it lib.cli-std. The ones in cli-std overload the ones
+# here if that lib is loaded below.
+#
 shorewall_cli() {
+    g_debugging=
+
+    if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
+	g_debugging=$1
+	shift
+    fi
+
+    g_nolock=
+
+    if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
+	g_nolock=nolock
+	shift
+    fi
+
+    g_noroutes=
+    g_purge=
+    g_ipt_options="-nv"
+    g_fast=
+    g_verbose_offset=0
+    g_use_verbosity=
+    g_debug=
+    g_export=
+    g_refreshchains=:none:
+    g_confess=
+    g_update=
+    g_convert=
+    g_annotate=
+    g_recovering=
+    g_timestamp=
+    g_libexec=/usr/share
+    g_perllib=/usr/share/shorewall
+    g_shorewalldir=
+
+    VERBOSE=
+    VERBOSITY=
+
+    [ -n "$g_lite" ] || . /usr/share/shorewall/lib.cli-std
+
     finished=0
 
     while [ $finished -eq 0 ]; do

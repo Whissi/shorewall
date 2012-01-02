@@ -357,15 +357,7 @@ delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
 delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
 delete_file ${DESTDIR}/usr/share/shorewall6/prog.header6
 delete_file ${DESTDIR}/usr/share/shorewall6/prog.footer6
-
-#
-# Install wait4ifup
-#
-
-install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall6/wait4ifup 0755
-
-echo
-echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall6/wait4ifup"
+delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
 
 #
 # Install the Modules file

@@ -183,6 +183,11 @@ elif [ -f /etc/arch-release ] ; then
 fi
 
 if [ -z "$DESTDIR" ]; then
+    if [ ! -f /usr/share/shorewall/coreversion ]; then
+	echo "Shorewall6-lite $VERSION requires Shorewall Core which does not appear to be installed" >&2
+	exit 1
+    fi
+
     if [ -f /lib/systemd/system ]; then
 	SYSTEMD=Yes
     fi
@@ -201,6 +206,11 @@ echo "Installing Shorewall6 Lite Version $VERSION"
 # Check for /etc/shorewall6-lite
 #
 if [ -z "$DESTDIR" -a -d /etc/shorewall6-lite ]; then
+    if [ ! -f /usr/share/shorewall/coreversion ]; then
+	echo "Shorewall6-lite $VERSION requires Shorewall Core which does not appear to be installed" >&2
+	exit 1
+    fi
+
     [ -f /etc/shorewall6-lite/shorewall.conf ] && \
 	mv -f /etc/shorewall6-lite/shorewall.conf /etc/shorewall6-lite/shorewall6-lite.conf
 else
@@ -315,17 +325,6 @@ echo
 echo "Capability file builder installed in ${DESTDIR}${LIBEXEC}/shorewall6-lite/shorecap"
 
 #
-# Install wait4ifup
-#
-
-if [ -f wait4ifup ]; then
-    install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall6-lite/wait4ifup 0755
-
-    echo
-    echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall6-lite/wait4ifup"
-fi
-
-#
 # Install the Modules files
 #
 
@@ -388,6 +387,10 @@ if [ -z "$DESTDIR" ]; then
     rm -f /usr/share/shorewall6-lite/init
     ln -s ${DEST}/${INIT} /usr/share/shorewall6-lite/init
 fi
+
+delete_file ${DESTDIR}/usr/share/shorewall6-lite/lib.common
+delete_file ${DESTDIR}/usr/share/shorewall6-lite/lib.cli
+delete_file ${DESTDIR}/usr/share/shorewall6-lite/wait4ifup
 
 if [ -z "$DESTDIR" ]; then
     touch /var/log/shorewall6-lite-init.log

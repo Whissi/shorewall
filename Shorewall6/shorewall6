@@ -1,12 +1,11 @@
 #!/bin/sh
 #
-#     Shorewall6 interface helper utility - V4.2
+#     Shorewall6 Packet Filtering Firewall Control Program - V4.4
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007 - Tom Eastep (teastep@shorewall.net)
-#
-#	This file is installed in /usr/share/shorewall/wait4ifup
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011 - 
+#         Tom Eastep (teastep@shorewall.net)
 #
 #	Shorewall documentation is available at http://www.shorewall.net
 #
@@ -23,38 +22,20 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#	If an error occurs while starting or restarting the firewall, the
-#	firewall is automatically stopped.
+#       For a list of supported commands, type 'shorewall help' or 'shorewall6 help'
 #
-#	The firewall uses configuration files in /etc/shorewall/ - skeleton
-#	files is included with the firewall.
-#
-#	wait4ifup <interface> [ <seconds to wait> ]
-#
+################################################################################################
+g_program=shorewall6
+SHAREDIR=/usr/share/shorewall6
+CONFDIR=/etc/shorewall6
+g_product="Shorewall6"
+g_family=6
+g_tool=
+g_basedir=/usr/share/shorewall
+g_lite=
 
-interface_is_up() {
-    [ -n "$(ip link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ] 
-}
-
-case $# in
-    1)
-	timeout=60
-	;;
-    2)
-	timeout=$2
-	;;
-    *)
-	echo "usage: $(basename $0) <interface> [ <timeout> ]"
-	exit 2
-	;;
-esac
-
-while [ $timeout -gt 0 ]; do
-    interface_is_up $1 && exit 0
-    sleep 1
-    timeout=$(( $timeout - 1 ))
+for library in base cli; do
+    . /usr/share/shorewall/lib.$library
 done
 
-exit 1
-
-    
+shorewall_cli $@

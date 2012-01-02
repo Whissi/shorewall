@@ -184,6 +184,11 @@ elif [ -f /etc/arch-release ] ; then
 fi
 
 if [ -z "$DESTDIR" ]; then
+    if [ ! -f /usr/share/shorewall/coreversion ]; then
+	echo "Shorewall-lite $VERSION requires Shorewall Core which does not appear to be installed" >&2
+	exit 1
+    fi
+
     if [ -f /lib/systemd/system ]; then
 	SYSTEMD=Yes
     fi
@@ -202,6 +207,11 @@ echo "Installing Shorewall Lite Version $VERSION"
 # Check for /etc/shorewall-lite
 #
 if [ -z "$DESTDIR" -a -d /etc/shorewall-lite ]; then
+    if [ ! -f /usr/share/shorewall/coreversion ]; then
+	echo "Shorewall-lite $VERSION requires Shorewall Core which does not appear to be installed" >&2
+	exit 1
+    fi
+
     [ -f /etc/shorewall-lite/shorewall.conf ] && \
 	mv -f /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall-lite.conf
 else
@@ -389,6 +399,10 @@ if [ -z "$DESTDIR" ]; then
     rm -f /usr/share/shorewall-lite/init
     ln -s ${DEST}/${INIT} /usr/share/shorewall-lite/init
 fi
+
+delete_file ${DESTDIR}/usr/share/shorewall-lite/lib.common
+delete_file ${DESTDIR}/usr/share/shorewall-lite/lib.cli
+delete_file ${DESTDIR}/usr/share/shorewall-lite/wait4ifup
 
 if [ -z "$DESTDIR" ]; then
     touch /var/log/shorewall-lite-init.log

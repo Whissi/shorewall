@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Control Program - V4.4
+#     Shorewall6 Lite Packet Filtering Firewall Control Program - V4.4
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011 - 
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011, 2012 - 
 #         Tom Eastep (teastep@shorewall.net)
 #
 #	Shorewall documentation is available at http://www.shorewall.net
@@ -25,14 +25,15 @@
 #       For a list of supported commands, type 'shorewall help' or 'shorewall6 help'
 #
 ################################################################################################
-g_program=shorewall
-SHAREDIR=/usr/share/shorewall
-CONFDIR=/etc/shorewall
-g_product="Shorewall"
-g_family=4
-g_tool=
-g_basedir=/usr/share/shorewall
-g_lite=
+g_program=shorewall6-lite
+SHAREDIR=/usr/share/shorewall6-lite
+CONFDIR=/etc/shorewall6-lite
+g_product="Shorewall6 Lite"
+g_family=6
+g_base=shorewall6
+g_tool=ip6tables
+g_basedir=/usr/share/shorewall6-lite
+g_lite=Yes
 
 for library in base cli; do
     . /usr/share/shorewall/lib.$library

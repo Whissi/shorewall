@@ -289,6 +289,11 @@ else
     first_install="Yes"
 fi
 
+if [ -z "${DESTDIR}" -a ! -f /usr/share/shorewall/coreversion ]; then
+    echo "Shorewall $VERSION requires Shorewall Core which does not appear to be installed"
+    exit 1
+fi
+
 if [ -z "$CYGWIN" ]; then
    install_file shorewall ${DESTDIR}/sbin/shorewall 0755
    echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
@@ -326,7 +331,7 @@ fi
 [ -n "$INIT" ] && echo  "Shorewall script installed in ${DESTDIR}${DEST}/$INIT"
 
 #
-# Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
+# Create /etc/shorewall and /var/shorewall if needed
 #
 mkdir -p ${DESTDIR}/etc/shorewall
 mkdir -p ${DESTDIR}${LIBEXEC}/shorewall
@@ -402,15 +407,6 @@ delete_file ${DESTDIR}/usr/share/shorewall/lib.tcrules
 delete_file ${DESTDIR}/usr/share/shorewall/lib.tunnels
 delete_file ${DESTDIR}/usr/share/shorewall/prog.header
 delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
-
-#
-# Install wait4ifup
-#
-
-install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup 0755
-
-echo
-echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup"
 
 #
 # Install the policy file
@@ -918,10 +914,6 @@ for f in lib.* ; do
 	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
     fi
 done
-#
-# Symbolically link 'functions' to lib.base
-#
-ln -sf lib.base ${DESTDIR}/usr/share/shorewall/functions
 #
 # /usr/share/shorewall/Shorewall if needed
 #

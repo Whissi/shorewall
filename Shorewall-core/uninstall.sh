@@ -60,77 +60,25 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall/version)"
+if [ -f /usr/share/shorewall/coreversion ]; then
+    INSTALLED_VERSION="$(cat /usr/share/shorewall/coreversion)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
+	echo "WARNING: Shorewall Core Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Version $VERSION is not installed"
+    echo "WARNING: Shorewall Core Version $VERSION is not installed"
     VERSION=""
 fi
 
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
-echo "Uninstalling shorewall $VERSION"
+echo "Uninstalling Shorewall Core $VERSION"
 
-if qt iptables -L shorewall -n && [ ! -f /sbin/shorewall-lite ]; then
-   /sbin/shorewall clear
-fi
+rm -rf /usr/share/shorewall
 
-if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(readlink -m -q /usr/share/shorewall/init)
-else
-    FIREWALL=/etc/init.d/shorewall
-fi
-
-if [ -n "$FIREWALL" ]; then
-    if [ -x /usr/sbin/updaterc.d ]; then
-	updaterc.d shorewall remove
-    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-        insserv -r $FIREWALL
-    elif [ -x /sbin/systemctl ]; then
-	systemctl disable shorewall
-    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	chkconfig --del $(basename $FIREWALL)
-    else
-	rm -f /etc/rc*.d/*$(basename $FIREWALL)
-    fi
-
-    remove_file $FIREWALL
-    rm -f ${FIREWALL}-*.bkout
-fi
-
-rm -f /sbin/shorewall
-rm -f /sbin/shorewall-*.bkout
-
-rm -rf /usr/share/shorewall/version
-rm -rf /etc/shorewall
-rm -rf /etc/shorewall-*.bkout
-rm -rf /var/lib/shorewall
-rm -rf /var/lib/shorewall-*.bkout
-rm -rf $PERLLIB}/Shorewall/*
-rm -rf ${LIBEXEC}/shorewall
-rm -rf /usr/share/shorewall/Macros
-rm -rf /usr/share/shorewall/configfiles/
-rm -rf /usr/share/shorewall/Samples/
-rm -rf /usr/share/shorewall/Shorewall/
-rm -f  /usr/share/shorewall/lib.cli-std
-rm -f  /usr/share/shorewall/compiler.pl
-rm -f  /usr/share/shorewall/prog.*
-rm -f  /usr/share/shorewall/module*
-rm -f  /usr/share/shorewall/helpers
-rm -f  /usr/share/shorewall/action*
-rm -f  /usr/share/shorewall/init
-rm -rf /usr/share/shorewall-*.bkout
-rm -rf /usr/share/man/man5/shorewall*
-rm -rf /usr/share/man/man8/shorewall*
-rm -f  /etc/logrotate.d/shorewall
-rm -f  /lib/systemd/system/shorewall.service
-
-echo "Shorewall Uninstalled"
+echo "Shorewall Core Uninstalled"
 
 

@@ -2658,7 +2658,7 @@ start_command() {
 	[ -n "$g_nolock" ] || mutex_on
 
 	if [ -x ${VARDIR}/firewall ]; then
-	    run_it ${VARDIR}/firewall $debugging start
+	    run_it ${VARDIR}/firewall $g_debugging start
 	    rc=$?
 	else
 	    error_message "${VARDIR}/firewall is missing or is not executable"
@@ -2779,7 +2779,7 @@ restart_command() {
     [ -n "$g_nolock" ] || mutex_on
 
     if [ -x ${VARDIR}/firewall ]; then
-	run_it ${VARDIR}/firewall $debugging restart
+	run_it ${VARDIR}/firewall $g_debugging restart
 	rc=$?
     else
 	error_message "${VARDIR}/firewall is missing or is not executable"

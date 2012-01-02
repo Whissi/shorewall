@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Anatomy of Shorewall 4.4</title>
+    <title>Anatomy of Shorewall 4.5</title>
 
     <authorgroup>
       <author>
@@ -21,6 +21,8 @@
       <year>2007</year>
 
       <year>2009</year>
+
+      <year>2012</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -39,9 +41,15 @@
   <section id="Products">
     <title>Products</title>
 
-    <para>Shorewall 4.4 consists of four packages.</para>
+    <para>Shorewall 4.5 consists of six packages.</para>
 
     <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Shorewall Core</emphasis>. This package
+        contains the core Shorewall shell libraries and is required to install
+        any of the other packages.</para>
+      </listitem>
+
       <listitem>
         <para><emphasis role="bold">Shorewall</emphasis>. This package must be
         installed on at least one system in your network. It contains
@@ -71,6 +79,14 @@
         generated. These scripts are copied to the firewall systems where they
         run under the control of Shorewall-lite.</para>
       </listitem>
+
+      <listitem>
+        <para>Shorewall-init. An add-on to any of the above packages that
+        allows the firewall state to be altered in reaction to interfaces
+        coming up and going down. Where Upstart is not being used, this
+        package can also be configured to place the firewall in a safe state
+        prior to bringing up the network interfaces.</para>
+      </listitem>
     </orderedlist>
   </section>
 
@@ -90,7 +106,7 @@
 
       <para>The <filename>/sbin/shorewall</filename> shell program is used to
       interact with Shorewall. See <ulink
-      url="manpages/shorewall.html">shorewall</ulink>(8).</para>
+      url="manpages/shorewall.html">shorewall</ulink>(8). </para>
     </section>
 
     <section id="share-shorewall">
@@ -158,13 +174,13 @@
         </listitem>
 
         <listitem>
-          <para><filename>macro.*</filename> - The standard Shorewall <ulink
+          <para><filename>Macros/*</filename> - The standard Shorewall <ulink
           url="Macros.html">macros</ulink>.</para>
         </listitem>
 
         <listitem>
-          <para><filename>modules</filename> - File that drives the loading of
-          Netfilter kernel modules. May be overridden by
+          <para><filename>modules.*</filename> - File that drives the loading
+          of Netfilter kernel modules. May be overridden by
           <filename>/etc/shorewall/modules</filename>.</para>
         </listitem>
 
@@ -365,6 +381,11 @@
         </listitem>
 
         <listitem>
+          <para><filename>Macros/*</filename> - The standard Shorewall6 <ulink
+          url="Macros.html">macros</ulink>.</para>
+        </listitem>
+
+        <listitem>
           <para><filename>modules</filename> - File that drives the loading of
           Netfilter kernel modules. May be overridden by
           <filename>/etc/shorewall/modules</filename>.</para>
@@ -521,14 +542,14 @@
         </listitem>
 
         <listitem>
-          <para><filename>lib.*</filename> - Shell function libraries used by
-          the other shell programs. These are copies of the corresponding
-          libraries in the Shorewall product.</para>
+          <para><filename>lib.base</filename> - Shell function librarie used
+          by the other shell programs. This is a thin wrapper around
+          <filename>/usr/share/shorewall/lib.base</filename>.</para>
         </listitem>
 
         <listitem>
-          <para><filename>modules</filename> - File that drives the loading of
-          Netfilter kernel modules. May be overridden by
+          <para><filename>modules</filename>* - Files that drive the loading
+          of Netfilter kernel modules. May be overridden by
           <filename>/etc/shorewall-lite/modules</filename>.</para>
         </listitem>
 
@@ -711,14 +732,14 @@
         </listitem>
 
         <listitem>
-          <para><filename>lib.*</filename> - Shell function libraries used by
-          the other shell programs. These are copies of the corresponding
-          libraries in the Shorewall product.</para>
+          <para><filename>lib.base</filename> - Shell function librarie used
+          by the other shell programs. This is a thin wrapper around
+          <filename>/usr/share/shorewall/lib.base</filename>.</para>
         </listitem>
 
         <listitem>
-          <para><filename>modules</filename> - File that drives the loading of
-          Netfilter kernel modules. May be overridden by
+          <para><filename>modules</filename>* - Files that drive the loading
+          of Netfilter kernel modules. May be overridden by
           <filename>/etc/shorewall-lite/modules</filename>.</para>
         </listitem>
 

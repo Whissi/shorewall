@@ -1175,7 +1175,7 @@ EOF
     for my $provider (@providers ) {
 	my $providerref = $providers{$provider};
 
-	emit( "$providerref->{physical})",
+	emit( "$providerref->{physical}|$provider)",
 	      "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
 	      "        stop_provider_$provider",
 	      '    else',

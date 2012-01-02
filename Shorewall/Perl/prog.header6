@@ -246,7 +246,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 		    ;;
 		multicast|broadcast|prohibit|nat|throw|nexthop)
 		    ;;
-		2*)
+		[2-9]*)
 		    [ "$address" = "${address%/*}" ] && address="${address}/128"
 		    echo $address
 		    ;;

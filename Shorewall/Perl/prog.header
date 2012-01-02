@@ -527,7 +527,7 @@ undo_routing() {
 save_default_route() {
     awk \
     'BEGIN        {defroute=0;};
-     /^default /  {deroute=1; print; next};
+     /^default /  {defroute=1; print; next};
      /nexthop/    {if (defroute == 1 ) {print ; next} };
                   { defroute=0; };'
 }

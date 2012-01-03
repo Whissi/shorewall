@@ -92,7 +92,7 @@ find_all_interfaces() {
 }
 
 #
-# Generate a list of all network interfaces on the system that have an ipv4 address
+# Generate a list of all network interfaces on the system that have an ipvX address
 #
 find_all_interfaces1() {
     ${IP:-ip} -$g_family addr list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed -r 's/(@.*)?:$//'
@@ -168,7 +168,7 @@ interface_is_up() {
 }
 
 #
-# Determine if interface is usable from a Netfilter prespective
+# Determine if interface is usable from a Netfilter perspective
 #
 interface_is_usable() # $1 = interface
 {
@@ -210,7 +210,7 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 		    ;;
 		multicast|broadcast|prohibit|nat|throw|nexthop)
 		    ;;
-		[2-9]*)
+		[2-3]*)
 		    [ "$address" = "${address%/*}" ] && address="${address}/128"
 		    echo $address
 		    ;;
@@ -403,7 +403,7 @@ conditionally_flush_conntrack() {
 
     if [ -n "$g_purge" ]; then
 	if [ -n $(mywhich conntrack) ]; then
-            conntrack -f ipv$_family -F
+            conntrack -f ipv$g_family -F
 	else
             error_message "WARNING: The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 	fi
@@ -411,7 +411,7 @@ conditionally_flush_conntrack() {
 }
 
 #
-# Issue a message and stop/restore the firewall
+# Issue a message and stop/restore the firewall -- In the CLI, this function is overloaded by the one in lib.cli.
 #
 fatal_error()
 {
@@ -472,7 +472,7 @@ startup_error() # $* = Error Message
 }
 
 #
-# Run iptables and if an error occurs, stop/restore the firewall
+# Run iptables/ip6tables and if an error occurs, stop/restore the firewall
 #
 run_iptables()
 {
@@ -492,7 +492,7 @@ run_iptables()
 }
 
 #
-# Run iptables retrying exit status 4
+# Run iptables/ip6tables retrying exit status 4
 #
 do_iptables()
 {
@@ -506,7 +506,7 @@ do_iptables()
 }
 
 #
-# Run iptables and if an error occurs, stop/restore the firewall
+# Run ip and if an error occurs, stop/restore the firewall
 #
 run_ip()
 {
@@ -526,6 +526,86 @@ run_tc() {
 	stop_firewall
 	exit 2
     fi
+}
+
+#
+# Run the .iptables_restore_input as a set of discrete iptables commands
+#
+debug_restore_input() {
+    local first second rest table chain
+    #
+    # Clear the ruleset
+    #
+    qt1 $g_tool -t mangle -F
+    qt1 $g_tool -t mangle -X
+
+    for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	qt1 $g_tool -t mangle -P $chain ACCEPT
+    done
+
+    qt1 $g_tool -t raw    -F
+    qt1 $g_tool -t raw    -X
+
+    for chain in PREROUTING OUTPUT; do
+	qt1 $g_tool -t raw -P $chain ACCEPT
+    done
+
+    qt1 $g_tool -t filter -F
+    qt1 $g_tool -t filter -X
+
+    for chain in INPUT FORWARD OUTPUT; do
+	qt1 $g_tool -t filter -P $chain -P ACCEPT
+    done
+
+    while read first second rest; do
+	case $first in
+	    -*)
+		#
+		# We can't call run_iptables() here because the rules may contain quoted strings
+		#
+		eval $g_tool -t $table $first $second $rest
+
+		if [ $? -ne 0 ]; then
+		    error_message "ERROR: Command \"$g_tool $first $second $rest\" Failed"
+		    stop_firewall
+		    exit 2
+		fi
+		;;
+	    :*)
+		chain=${first#:}
+
+		if [ "x$second" = x- ]; then
+		    do_iptables -t $table -N $chain
+		else
+		    do_iptables -t $table -P $chain $second
+		fi
+
+		if [ $? -ne 0 ]; then
+		    error_message "ERROR: Command \"$g_tool $first $second $rest\" Failed"
+		    stop_firewall
+		    exit 2
+		fi
+		;;
+	    #
+	    # This grotesque hack with the table names works around a bug/feature with ash
+	    #
+	    '*'raw)
+		table=raw
+		;;
+	    '*'rawpost)
+		table=rawpost
+		;;
+	    '*'mangle)
+		table=mangle
+		;;
+	    '*'nat)
+		table=nat
+		;;
+	    '*'filter)
+		table=filter
+		;;
+	esac
+    done
 }
 
 #
@@ -1046,7 +1126,7 @@ find_first_interface_address() # $1 = interface
 	#
 	# get the line of output containing the first IP address
 	#
-	addr=$(${IP:-ip} -$g_family addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+	addr=$(${IP:-ip} -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
 	#
 	# If there wasn't one, bail out now
 	#
@@ -1176,4 +1256,3 @@ truncate() # $1 = length
 {
     cut -b -${1}
 }
-

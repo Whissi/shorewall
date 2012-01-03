@@ -37,42 +37,6 @@ SHOREWALL_CAPVERSION=40427
 [ -n "${g_family:=4}" ]
 
 #
-# Conditionally produce message
-#
-progress_message() # $* = Message
-{
-    local timestamp
-    timestamp=
-
-    if [ $VERBOSITY -gt 1 ]; then
-	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
-	echo "${timestamp}$@"
-    fi
-}
-
-progress_message2() # $* = Message
-{
-    local timestamp
-    timestamp=
-
-    if [ $VERBOSITY -gt 0 ]; then
-	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
-	echo "${timestamp}$@"
-    fi
-}
-
-progress_message3() # $* = Message
-{
-    local timestamp
-    timestamp=
-
-    if [ $VERBOSITY -ge 0 ]; then
-	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
-	echo "${timestamp}$@"
-    fi
-}
-
-#
 # Undo the effect of 'separate_list()'
 #
 combine_list()
@@ -149,32 +113,6 @@ mutex_on()
 mutex_off()
 {
     rm -f ${LOCKFILE:=${VARDIR}/lock}
-}
-
-#
-# Find the interface with the passed MAC address
-#
-
-find_interface_by_mac() {
-    local mac
-    mac=$1
-    local first
-    local second
-    local rest
-    local dev
-
-    $IP link list | while read first second rest; do
-	case $first in
-	    *:)
-                dev=$second
-		;;
-	    *)
-	        if [ "$second" = $mac ]; then
-		    echo ${dev%:}
-		    return
-		fi
-	esac
-    done
 }
 
 [ -z "$LEFTSHIFT" ] && . /usr/share/shorewall/lib.common

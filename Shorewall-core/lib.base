@@ -37,6 +37,42 @@ SHOREWALL_CAPVERSION=40427
 [ -n "${g_family:=4}" ]
 
 #
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -gt 1 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+progress_message2() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -gt 0 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+progress_message3() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -ge 0 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+#
 # Undo the effect of 'separate_list()'
 #
 combine_list()

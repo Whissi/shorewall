@@ -1,0 +1,565 @@
+#
+# Shorewall 4.5 -- /usr/share/shorewall/lib.core.
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2010-2012 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# The purpose of this library is to hold those functions used by the generated
+# scripts (both IPv4 and IPv6 -- the functions that are specific to one or the other
+# are found in prog.header and prog.header6).
+#
+#########################################################################################
+#
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -gt 1 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSITY -gt 1 ]; then
+        timestamp="$(date +'%b %_d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
+}
+
+progress_message2() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -gt 0 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSITY -gt 0 ]; then
+        timestamp="$(date +'%b %_d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
+}
+
+progress_message3() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -ge 0 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+
+    if [ $LOG_VERBOSITY -ge 0 ]; then
+        timestamp="$(date +'%b %_d %T') "
+        echo "${timestamp}$@" >> $STARTUP_LOG
+    fi
+}
+
+#
+# Set a standard chain's policy
+#
+setpolicy() # $1 = name of chain, $2 = policy
+{
+    run_iptables -P $1 $2
+}
+
+#
+# Generate a list of all network interfaces on the system
+#
+find_all_interfaces() {
+    ${IP:-ip} link list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed -r 's/(@.*)?:$//'
+}
+
+#
+# Generate a list of all network interfaces on the system that have an ipvX address
+#
+find_all_interfaces1() {
+    ${IP:-ip} -$g_family addr list | egrep '^[[:digit:]]+:' | cut -d ' ' -f2 | sed -r 's/(@.*)?:$//'
+}
+
+#
+# Find the value 'dev' in the passed arguments then echo the next value
+#
+
+find_device() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xdev ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'via' in the passed arguments then echo the next value
+#
+
+find_gateway() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xvia ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'mtu' in the passed arguments then echo the next value
+#
+
+find_mtu() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xmtu ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'peer' in the passed arguments then echo the next value up to
+# "/"
+#
+
+find_peer() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xpeer ] && echo ${2%/*} && return
+	shift
+    done
+}
+
+#
+# Try to find the gateway through an interface looking for 'nexthop'
+
+find_nexthop() # $1 = interface
+{
+    echo $(find_gateway `$IP -$g_family route list | grep "[[:space:]]nexthop.* $1"`)
+}
+
+#
+# Find the default route's interface
+#
+find_default_interface() {
+    $IP -$g_family route list | while read first rest; do
+	[ "$first" = default ] && echo $(find_device $rest) && return
+    done
+}
+
+#
+# Determine if Interface is up
+#
+interface_is_up() {
+    [ -n "$($IP -$g_family link list dev $1 2> /dev/null | grep -e '[<,]UP[,>]')" ]
+}
+
+#
+# Determine if interface is usable from a Netfilter perspective
+#
+interface_is_usable() # $1 = interface
+{
+    [ "$1" = lo ] && return 0
+    interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ] && run_isusable_exit $1
+}
+
+#
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    if [ $g_family -eq 4 ]; then
+	$IP -f inet addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+    else
+	$IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 2' | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
+    fi
+}
+
+#
+#  echo the list of networks routed out of a given interface
+#
+get_routed_networks() # $1 = interface name, $2-n = Fatal error message
+{
+    local address
+    local rest
+
+    $IP -$g_family route show dev $1 2> /dev/null |
+	while read address rest; do
+	    case "$address" in
+		default)
+		    if [ $# -gt 1 ]; then
+			shift
+			fatal_error "$@"
+		    else
+			echo "WARNING: default route ignored on interface $1" >&2
+		    fi
+		    ;;
+		multicast|broadcast|prohibit|nat|throw|nexthop)
+		    ;;
+		[2-3]*)
+		    [ "$address" = "${address%/*}" ] && address="${address}/128"
+		    echo $address
+		    ;;
+		*)
+		    if [ $g_family -eq 4 ]; then
+			[ "$address" = "${address%/*}" ] && address="${address}/128"
+			echo $address
+		    fi
+		    ;;
+	    esac
+        done
+}
+
+#
+# Clear the current traffic shaping configuration
+#
+
+delete_tc1()
+{
+    clear_one_tc() {
+        $TC qdisc del dev $1 root 2> /dev/null
+        $TC qdisc del dev $1 ingress 2> /dev/null
+
+    }
+
+    run_tcclear_exit
+
+    run_ip link list | \
+    while read inx interface details; do
+        case $inx in
+            [0-9]*)
+                clear_one_tc ${interface%:}
+                ;;
+            *)
+                ;;
+        esac
+    done
+}
+
+#
+# Detect a device's MTU -- echos the passed device's MTU
+#
+get_device_mtu() # $1 = device
+{
+    local output
+    output="$($IP link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+
+    if [ -n "$output" ]; then
+	echo $(find_mtu $output)
+    else
+	echo 1500
+    fi
+}
+
+#
+# Version of the above that doesn't generate any output for MTU 1500.
+# Generates 'mtu <mtu+>' otherwise, where <mtu+> is the device's MTU + 100
+#
+get_device_mtu1() # $1 = device
+{
+    local output
+    output="$($IP link list dev $1 2> /dev/null)" # quotes required for /bin/ash
+    local mtu
+
+    if [ -n "$output" ]; then
+	mtu=$(find_mtu $output)
+	if [ -n "$mtu" ]; then
+	    [ $mtu = 1500 ] || echo mtu $(($mtu + 100))
+	fi
+    fi
+
+}
+
+#
+# Undo changes to routing
+#
+undo_routing() {
+    local undofiles
+    local f
+
+    if [ -z "$g_noroutes"  ]; then
+	#
+	# Restore rt_tables database
+	#
+	if [ -f ${VARDIR}/rt_tables ]; then
+	    [ -w /etc/iproute2/rt_table -a -z "$KEEP_RT_TABLES" ] && cp -f ${VARDIR}/rt_tables /etc/iproute2/ && progress_message "/etc/iproute2/rt_tables database restored"
+	    rm -f ${VARDIR}/rt_tables
+	fi
+	#
+	# Restore the rest of the routing table
+	#
+	undofiles="$(ls ${VARDIR}/undo_*routing 2> /dev/null)"
+
+	if [ -n "$undofiles" ]; then
+	    for f in $undofiles; do
+		. $f
+	    done
+
+	    rm -f $undofiles
+
+            progress_message "Shorewall-generated routing tables and routing rules removed"
+	fi
+    fi
+
+}
+
+#
+# Save the default route
+#
+save_default_route() {
+    awk \
+    'BEGIN        {defroute=0;};
+     /^default /  {defroute=1; print; next};
+     /nexthop/    {if (defroute == 1 ) {print ; next} };
+                  { defroute=0; };'
+}
+
+#
+# Restore the default route that was in place before the initial 'shorewall start'
+#
+replace_default_route() # $1 = USE_DEFAULT_RT
+{
+    #
+    # default_route and result are inherited from the caller
+    #
+    if [ -n "$default_route" ]; then
+	case "$default_route" in
+	    *metric*)
+	        #
+	        # Don't restore a default route with a metric unless USE_DEFAULT_RT=Yes. Otherwise, we only replace the one with metric 0
+	        #
+		[ -n "$1" ] && qt $IP -$g_family route replace $default_route && progress_message "Default Route (${default_route# }) restored"
+		default_route=
+		;;
+	    *)
+		qt $IP -$g_family route replace $default_route && progress_message "Default Route (${default_route# }) restored"
+		result=0
+		default_route=
+		;;
+	esac
+    fi
+}
+
+restore_default_route() # $1 = USE_DEFAULT_RT
+{
+    local result
+    result=1
+
+    if [ -z "$g_noroutes" -a -f ${VARDIR}/default_route ]; then
+	local default_route
+	default_route=
+	local route
+
+	while read route ; do
+	    case $route in
+		default*)
+		    replace_default_route $1
+		    default_route="$default_route $route"
+		    ;;
+		*)
+		    default_route="$default_route $route"
+		    ;;
+	    esac
+	done < ${VARDIR}/default_route
+
+	replace_default_route $1
+	
+	if [ $result = 1 ]; then
+	    #
+	    # We didn't restore a default route with metric 0
+	    #
+	    if $IP -$g_family -o route list 2> /dev/null | fgrep default | fgrep -qv metric; then
+	       #
+	       # But we added a default route with metric 0
+	       #
+	       qt $IP -$g_family route del default metric 0 && progress_message "Default route with metric 0 deleted"
+	    fi
+	fi
+
+	rm -f ${VARDIR}/default_route
+    fi
+
+    return $result
+}
+
+#
+# Flush the conntrack table if $g_purge is non-empty
+#
+conditionally_flush_conntrack() {
+
+    if [ -n "$g_purge" ]; then
+	if [ -n $(mywhich conntrack) ]; then
+            conntrack -f ipv$g_family -F
+	else
+            error_message "WARNING: The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+	fi
+    fi
+}
+
+#
+# Issue a message and stop/restore the firewall.
+#
+fatal_error()
+{
+    echo "   ERROR: $@" >&2
+
+    if [ $LOG_VERBOSITY -ge 0 ]; then
+        timestamp="$(date +'%_b %d %T') "
+        echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
+    fi
+
+    stop_firewall
+    [ -n "$TEMPFILE" ] && rm -f $TEMPFILE
+    exit 2
+}
+
+#
+# Run iptables/ip6tables and if an error occurs, stop/restore the firewall
+#
+run_iptables()
+{
+    local status
+
+    while [ 1 ]; do
+	$g_tool $@
+	status=$?
+	[ $status -ne 4 ] && break
+    done
+
+    if [ $status -ne 0 ]; then
+        error_message "ERROR: Command \"$g_tool $@\" Failed"
+	stop_firewall
+        exit 2
+    fi
+}
+
+#
+# Run iptables/ip6tables retrying exit status 4
+#
+do_iptables()
+{
+    local status
+
+    while [ 1 ]; do
+	$g_tool $@
+	status=$?
+	[ $status -ne 4 ] && return $status;
+    done
+}
+
+#
+# Run ip and if an error occurs, stop/restore the firewall
+#
+run_ip()
+{
+    if ! $IP -$g_family $@; then
+	error_message "ERROR: Command \"$IP -$g_family $@\" Failed"
+	stop_firewall
+	exit 2
+    fi
+}
+
+#
+# Run tc and if an error occurs, stop/restore the firewall
+#
+run_tc() {
+    if ! $TC $@ ; then
+	error_message "ERROR: Command \"$TC $@\" Failed"
+	stop_firewall
+	exit 2
+    fi
+}
+
+#
+# Run the .iptables_restore_input as a set of discrete iptables commands
+#
+debug_restore_input() {
+    local first second rest table chain
+    #
+    # Clear the ruleset
+    #
+    qt1 $g_tool -t mangle -F
+    qt1 $g_tool -t mangle -X
+
+    for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	qt1 $g_tool -t mangle -P $chain ACCEPT
+    done
+
+    qt1 $g_tool -t raw    -F
+    qt1 $g_tool -t raw    -X
+
+    for chain in PREROUTING OUTPUT; do
+	qt1 $g_tool -t raw -P $chain ACCEPT
+    done
+
+    qt1 $g_tool -t filter -F
+    qt1 $g_tool -t filter -X
+
+    for chain in INPUT FORWARD OUTPUT; do
+	qt1 $g_tool -t filter -P $chain -P ACCEPT
+    done
+
+    while read first second rest; do
+	case $first in
+	    -*)
+		#
+		# We can't call run_iptables() here because the rules may contain quoted strings
+		#
+		eval $g_tool -t $table $first $second $rest
+
+		if [ $? -ne 0 ]; then
+		    error_message "ERROR: Command \"$g_tool $first $second $rest\" Failed"
+		    stop_firewall
+		    exit 2
+		fi
+		;;
+	    :*)
+		chain=${first#:}
+
+		if [ "x$second" = x- ]; then
+		    do_iptables -t $table -N $chain
+		else
+		    do_iptables -t $table -P $chain $second
+		fi
+
+		if [ $? -ne 0 ]; then
+		    error_message "ERROR: Command \"$g_tool $first $second $rest\" Failed"
+		    stop_firewall
+		    exit 2
+		fi
+		;;
+	    #
+	    # This grotesque hack with the table names works around a bug/feature with ash
+	    #
+	    '*'raw)
+		table=raw
+		;;
+	    '*'rawpost)
+		table=rawpost
+		;;
+	    '*'mangle)
+		table=mangle
+		;;
+	    '*'nat)
+		table=nat
+		;;
+	    '*'filter)
+		table=filter
+		;;
+	esac
+    done
+}

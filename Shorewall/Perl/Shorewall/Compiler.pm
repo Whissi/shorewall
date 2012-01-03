@@ -71,7 +71,7 @@ sub initialize_package_globals( $ ) {
 #
 # First stage of script generation.
 #
-#    Copy prog.header and lib.common to the generated script.
+#    Copy prog.header, lib.core and lib.common to the generated script.
 #    Generate the various user-exit jacket functions.
 #
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
@@ -95,6 +95,7 @@ sub generate_script_1( $ ) {
 		copy $globals{SHAREDIRPL} . 'prog.header6';
 	    }
 
+	    copy2 $globals{SHAREDIRPL} . '/lib.core', 0;
 	    copy2 $globals{SHAREDIRPL} . '/lib.common', 0;
 	}
 

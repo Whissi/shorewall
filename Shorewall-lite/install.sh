@@ -105,10 +105,7 @@ fi
 #
 # DEST is the SysVInit script directory
 # INIT is the name of the script in the $DEST directory
-# ARGS is "yes" if we've already parsed an argument
 #
-ARGS=""
-
 if [ -z "$DEST" ] ; then
 	DEST="/etc/init.d"
 fi
@@ -131,7 +128,6 @@ while [ $# -gt 0 ] ; do
 	    ;;
     esac
     shift
-    ARGS="yes"
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin

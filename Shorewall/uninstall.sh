@@ -114,7 +114,6 @@ rm -rf /var/lib/shorewall
 rm -rf /var/lib/shorewall-*.bkout
 rm -rf $PERLLIB}/Shorewall/*
 rm -rf ${LIBEXEC}/shorewall
-rm -rf /usr/share/shorewall/Macros
 rm -rf /usr/share/shorewall/configfiles/
 rm -rf /usr/share/shorewall/Samples/
 rm -rf /usr/share/shorewall/Shorewall/
@@ -126,8 +125,17 @@ rm -f  /usr/share/shorewall/helpers
 rm -f  /usr/share/shorewall/action*
 rm -f  /usr/share/shorewall/init
 rm -rf /usr/share/shorewall-*.bkout
-rm -rf /usr/share/man/man5/shorewall*
-rm -rf /usr/share/man/man8/shorewall*
+
+for f in /usr/share/man/man5/shorewall* /usr/share/man/man8/shorewall*; do
+    case $f in
+	shorewall6*|shorewall-lite*)
+	    ;;
+	*)
+	    rm -f $f
+	    ;;
+    esac
+done
+
 rm -f  /etc/logrotate.d/shorewall
 rm -f  /lib/systemd/system/shorewall.service
 

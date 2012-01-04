@@ -72,7 +72,7 @@ run_install()
 cant_autostart()
 {
     echo
-    echo  "WARNING: Unable to configure shorewall to start automatically at boot" >&2
+    echo  "WARNING: Unable to configure $Product to start automatically at boot" >&2
 }
 
 delete_file() # $1 = file to delete
@@ -84,6 +84,19 @@ install_file() # $1 = source $2 = target $3 = mode
 {
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
+
+#
+# Change to the directory containing this script
+#
+cd "$(dirname $0)"
+
+if [ -f shorewall-lite ]; then
+    PRODUCT=shorewall-lite
+    Product="Shorewall Lite"
+else
+    PRODUCT=shorewall6-lite
+    Product="Shorewall6 Lite"
+fi
 
 [ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
 
@@ -101,7 +114,7 @@ if [ -z "$DEST" ] ; then
 fi
 
 if [ -z "$INIT" ] ; then
-	INIT="shorewall-lite"
+	INIT="$PRODUCT"
 fi
 
 while [ $# -gt 0 ] ; do
@@ -110,7 +123,7 @@ while [ $# -gt 0 ] ; do
 	    usage 0
 	    ;;
         -v)
-	    echo "Shorewall Lite Firewall Installer Version $VERSION"
+	    echo "$Product Firewall Installer Version $VERSION"
 	    exit 0
 	    ;;
 	*)
@@ -179,13 +192,13 @@ elif [ -f /etc/slackware-version ] ; then
     INIT="rc.firewall"
 elif [ -f /etc/arch-release ] ; then
       DEST="/etc/rc.d"
-      INIT="shorewall-lite"
+      INIT="$PRODUCT"
       ARCHLINUX=yes
 fi
 
 if [ -z "$DESTDIR" ]; then
     if [ ! -f /usr/share/shorewall/coreversion ]; then
-	echo "Shorewall-lite $VERSION requires Shorewall Core which does not appear to be installed" >&2
+	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
     fi
 
@@ -196,73 +209,68 @@ elif [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
-#
-# Change to the directory containing this script
-#
-cd "$(dirname $0)"
-
-echo "Installing Shorewall Lite Version $VERSION"
+echo "Installing $Product Version $VERSION"
 
 #
-# Check for /etc/shorewall-lite
+# Check for /etc/$PRODUCT
 #
-if [ -z "$DESTDIR" -a -d /etc/shorewall-lite ]; then
+if [ -z "$DESTDIR" -a -d /etc/$PRODUCT ]; then
     if [ ! -f /usr/share/shorewall/coreversion ]; then
-	echo "Shorewall-lite $VERSION requires Shorewall Core which does not appear to be installed" >&2
+	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
     fi
 
-    [ -f /etc/shorewall-lite/shorewall.conf ] && \
-	mv -f /etc/shorewall-lite/shorewall.conf /etc/shorewall-lite/shorewall-lite.conf
+    [ -f /etc/$PRODUCT/shorewall.conf ] && \
+	mv -f /etc/$PRODUCT/shorewall.conf /etc/$PRODUCT/$PRODUCT.conf
 else
-    rm -rf ${DESTDIR}/etc/shorewall-lite
-    rm -rf ${DESTDIR}/usr/share/shorewall-lite
-    rm -rf ${DESTDIR}/var/lib/shorewall-lite
-    [ "$LIBEXEC" = share ] || rm -rf /usr/share/shorewall-lite/shorecap /usr/share/shorecap
+    rm -rf ${DESTDIR}/etc/$PRODUCT
+    rm -rf ${DESTDIR}/usr/share/$PRODUCT
+    rm -rf ${DESTDIR}/var/lib/$PRODUCT
+    [ "$LIBEXEC" = /usr/share ] || rm -rf /usr/share/$PRODUCT/wait4ifup /usr/share/$PRODUCT/shorecap
 fi
 
 #
-# Check for /sbin/shorewall-lite
+# Check for /sbin/$PRODUCT
 #
-if [ -f ${DESTDIR}/sbin/shorewall-lite ]; then
+if [ -f ${DESTDIR}/sbin/$PRODUCT ]; then
     first_install=""
 else
     first_install="Yes"
 fi
 
-delete_file ${DESTDIR}/usr/share/shorewall-lite/xmodules
+delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
-install_file shorewall-lite ${DESTDIR}/sbin/shorewall-lite 0544
+install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0544
 
-eval sed -i \'``s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall-lite
+eval sed -i \'``s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
 
-echo "Shorewall Lite control program installed in ${DESTDIR}/sbin/shorewall-lite"
+echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
 
 #
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-lite 0544
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 elif [ -n "$FEDORA" ]; then
-    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-lite 0544
+    install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${DESTDIR}/${DEST}/$INIT 0544
 else
     install_file init.sh ${DESTDIR}/${DEST}/$INIT 0544
 fi
 
-echo  "Shorewall Lite script installed in ${DESTDIR}${DEST}/$INIT"
+echo  "$Product script installed in ${DESTDIR}${DEST}/$INIT"
 
 #
-# Create /etc/shorewall-lite, /usr/share/shorewall-lite and /var/lib/shorewall-lite if needed
+# Create /etc/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
 #
-mkdir -p ${DESTDIR}/etc/shorewall-lite
-mkdir -p ${DESTDIR}/usr/share/shorewall-lite
-mkdir -p ${DESTDIR}${LIBEXEC}/shorewall-lite
-mkdir -p ${DESTDIR}/var/lib/shorewall-lite
+mkdir -p ${DESTDIR}/etc/$PRODUCT
+mkdir -p ${DESTDIR}/usr/share/$PRODUCT
+mkdir -p ${DESTDIR}${LIBEXEC}/$PRODUCT
+mkdir -p ${DESTDIR}/var/lib/$PRODUCT
 
-chmod 755 ${DESTDIR}/etc/shorewall-lite
-chmod 755 ${DESTDIR}/usr/share/shorewall-lite
+chmod 755 ${DESTDIR}/etc/$PRODUCT
+chmod 755 ${DESTDIR}/usr/share/$PRODUCT
 
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
@@ -273,85 +281,74 @@ fi
 # Install the .service file
 #
 if [ -n "$SYSTEMD" ]; then
-    run_install $OWNERSHIP -m 600 shorewall-lite.service ${DESTDIR}/lib/systemd/system/shorewall-lite.service
-    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-lite.service"
+    run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/lib/systemd/system/$PRODUCT.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/$PRODUCT.service"
 fi
 
 #
 # Install the config file
 #
-if [ ! -f ${DESTDIR}/etc/shorewall-lite/shorewall-lite.conf ]; then
-   run_install $OWNERSHIP -m 0744 shorewall-lite.conf ${DESTDIR}/etc/shorewall-lite
-   echo "Config file installed as ${DESTDIR}/etc/shorewall-lite/shorewall-lite.conf"
+if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
+   install_file $PRODUCT.conf ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf 0744
+   echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
 fi
 
 if [ -n "$ARCHLINUX" ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall-lite/shorewall.conf
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/shorewall-lite
-echo "Makefile installed as ${DESTDIR}/etc/shorewall-lite/Makefile"
+run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/$PRODUCT
+echo "Makefile installed as ${DESTDIR}/etc/$PRODUCT/Makefile"
 
 #
 # Install the default config path file
 #
-install_file configpath ${DESTDIR}/usr/share/shorewall-lite/configpath 0644
-echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall-lite/configpath"
+install_file configpath ${DESTDIR}/usr/share/$PRODUCT/configpath 0644
+echo "Default config path file installed as ${DESTDIR}/usr/share/$PRODUCT/configpath"
 
 #
 # Install the libraries
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${DESTDIR}/usr/share/shorewall-lite/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall-lite/$f"
+	install_file $f ${DESTDIR}/usr/share/$PRODUCT/$f 0644
+	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
     fi
 done
 
-ln -sf lib.base ${DESTDIR}/usr/share/shorewall-lite/functions
+ln -sf lib.base ${DESTDIR}/usr/share/$PRODUCT/functions
 
-echo "Common functions linked through ${DESTDIR}/usr/share/shorewall-lite/functions"
+echo "Common functions linked through ${DESTDIR}/usr/share/$PRODUCT/functions"
 
 #
 # Install Shorecap
 #
 
-install_file shorecap ${DESTDIR}${LIBEXEC}/shorewall-lite/shorecap 0755
+install_file shorecap ${DESTDIR}${LIBEXEC}/$PRODUCT/shorecap 0755
 
 echo
-echo "Capability file builder installed in ${DESTDIR}${LIBEXEC}/shorewall-lite/shorecap"
-
-#
-# Install wait4ifup
-#
-
-if [ -f wait4ifup ]; then
-    install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall-lite/wait4ifup 0755
-
-    echo
-    echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall-lite/wait4ifup"
-fi
+echo "Capability file builder installed in ${DESTDIR}${LIBEXEC}/$PRODUCT/shorecap"
 
 #
 # Install the Modules files
 #
 
 if [ -f modules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${DESTDIR}/usr/share/shorewall-lite
-    echo "Modules file installed as ${DESTDIR}/usr/share/shorewall-lite/modules"
+    run_install $OWNERSHIP -m 0600 modules ${DESTDIR}/usr/share/$PRODUCT
+    echo "Modules file installed as ${DESTDIR}/usr/share/$PRODUCT/modules"
 fi
 
 if [ -f helpers ]; then
-    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}/usr/share/shorewall-lite
-    echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall-lite/helpers"
+    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}/usr/share/$PRODUCT
+    echo "Helper modules file installed as ${DESTDIR}/usr/share/$PRODUCT/helpers"
 fi
 
 for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall-lite/$f
-    echo "Module file $f installed as ${DESTDIR}/usr/share/shorewall-lite/$f"
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/$PRODUCT/$f
+    echo "Module file $f installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
 done
 
 #
@@ -381,66 +378,65 @@ if [ -d manpages ]; then
 fi
 
 if [ -d ${DESTDIR}/etc/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}/etc/logrotate.d/shorewall-lite
-    echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/shorewall-lite"
+    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}/etc/logrotate.d/$PRODUCT
+    echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/$PRODUCT"
 fi
-
 
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}/usr/share/shorewall-lite/version
-chmod 644 ${DESTDIR}/usr/share/shorewall-lite/version
+echo "$VERSION" > ${DESTDIR}/usr/share/$PRODUCT/version
+chmod 644 ${DESTDIR}/usr/share/$PRODUCT/version
 #
 # Remove and create the symbolic link to the init script
 #
 
 if [ -z "$DESTDIR" ]; then
-    rm -f /usr/share/shorewall-lite/init
-    ln -s ${DEST}/${INIT} /usr/share/shorewall-lite/init
+    rm -f /usr/share/$PRODUCT/init
+    ln -s ${DEST}/${INIT} /usr/share/$PRODUCT/init
 fi
 
-delete_file ${DESTDIR}/usr/share/shorewall-lite/lib.common
-delete_file ${DESTDIR}/usr/share/shorewall-lite/lib.cli
-delete_file ${DESTDIR}/usr/share/shorewall-lite/wait4ifup
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.common
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.cli
+delete_file ${DESTDIR}/usr/share/$PRODUCT/wait4ifup
 
 if [ -z "$DESTDIR" ]; then
-    touch /var/log/shorewall-lite-init.log
+    touch /var/log/$PRODUCT-init.log
 
     if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
-	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall-lite
+	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
-	    update-rc.d shorewall-lite defaults
+	    update-rc.d $PRODUCT defaults
 
 	    if [ -x /sbin/insserv ]; then
-		insserv /etc/init.d/shorewall-lite
+		insserv /etc/init.d/$PRODUCT
 	    else
-		ln -s ../init.d/shorewall-lite /etc/rcS.d/S40shorewall-lite
+		ln -s ../init.d/$PRODUCT /etc/rcS.d/S40$PRODUCT
 	    fi
 
-	    echo "Shorewall Lite will start automatically at boot"
+	    echo "$Product will start automatically at boot"
 	else
 	    if [ -n "$SYSTEMD" ]; then
-		if systemctl enable shorewall-lite; then
-		    echo "Shorewall Lite will start automatically at boot"
+		if systemctl enable $PRODUCT; then
+		    echo "$Product will start automatically at boot"
 		fi
 	    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-		if insserv /etc/init.d/shorewall-lite ; then
-		    echo "Shorewall Lite will start automatically at boot"
+		if insserv /etc/init.d/$PRODUCT ; then
+		    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
 		fi
 	    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-		if chkconfig --add shorewall-lite ; then
-		    echo "Shorewall Lite will start automatically in run levels as follows:"
-		    chkconfig --list shorewall-lite
+		if chkconfig --add $PRODUCT ; then
+		    echo "$Product will start automatically in run levels as follows:"
+		    chkconfig --list $PRODUCT
 		else
 		    cant_autostart
 		fi
 	    elif [ -x /sbin/rc-update ]; then
-		if rc-update add shorewall-lite default; then
-		    echo "Shorewall Lite will start automatically at boot"
+		if rc-update add $PRODUCT default; then
+		    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
 		fi
@@ -454,4 +450,4 @@ fi
 #
 #  Report Success
 #
-echo "shorewall Lite Version $VERSION Installed"
+echo "$Product Version $VERSION Installed"

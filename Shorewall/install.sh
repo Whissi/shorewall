@@ -380,8 +380,12 @@ delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.proxyarp
 delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tc
 delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tcrules
 delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tunnels
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.cli
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.common
+
+if [ $PRODUCT = shorewall6 ]; then
+    delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
+    delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
+fi
+
 delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
 delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
 delete_file ${DESTDIR}/usr/share/$PRODUCT/wait4ifup

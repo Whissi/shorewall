@@ -289,6 +289,8 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
 		 CT_TARGET       => 'CT Target',
+		 STATISTICS_MATCH => 
+		                    'Statistics Match',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -453,7 +455,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40427 ,
+		    CAPVERSION => 40500 ,
 		  );
     #
     # From shorewall.conf file
@@ -678,6 +680,7 @@ sub initialize( $ ) {
 	       IPTABLES_S => undef,
 	       BASIC_FILTER => undef,
 	       CT_TARGET => undef,
+	       STATISTICS_MATCH => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2759,6 +2762,10 @@ sub Ct_Target() {
     $ct_target;
 }
 
+sub Statistics_Match() {
+    qt1( "$iptables -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AUDIT_TARGET => \&Audit_Target,
@@ -2813,6 +2820,7 @@ our %detect_capability =
       RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
       RECENT_MATCH => \&Recent_Match,
+      STATISTICS_MATCH => \&Statistics_Match,
       TCPMSS_MATCH => \&Tcpmss_Match,
       TIME_MATCH => \&Time_Match,
       TPROXY_TARGET => \&Tproxy_Target,

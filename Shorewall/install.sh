@@ -22,8 +22,11 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=xxx #The Build script inserts the actual version
+VERSION=xxx       #The Build script inserts the actual version
 
+#
+# Change to the directory containing this script
+#
 usage() # $1 = exit status
 {
     ME=$(basename $0)
@@ -31,7 +34,7 @@ usage() # $1 = exit status
     echo "       $ME -v"
     echo "       $ME -h"
     echo "       $ME -s"
-    echo "       $ME -f"
+    echo "       $ME -a"
     exit $1
 }
 
@@ -74,7 +77,7 @@ run_install()
 cant_autostart()
 {
     echo
-    echo  "WARNING: Unable to configure shorewall to start automatically at boot" >&2
+    echo  "WARNING: Unable to configure $PRODUCT to start automatically at boot" >&2
 }
 
 delete_file() # $1 = file to delete
@@ -87,6 +90,16 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
+cd "$(dirname $0)"
+
+if [ -f shorewall ]; then
+    PRODUCT=shorewall
+    Product=Shorewall
+else
+    PRODUCT=shorewall6
+    Product=Shorewall6
+fi
+
 [ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
 
 #
@@ -94,7 +107,6 @@ install_file() # $1 = source $2 = target $3 = mode
 #
 # DEST is the SysVInit script directory
 # INIT is the name of the script in the $DEST directory
-# ARGS is "yes" if we've already parsed an argument
 #
 T="-T"
 
@@ -103,15 +115,18 @@ if [ -z "$DEST" ] ; then
 fi
 
 if [ -z "$INIT" ] ; then
-	INIT="shorewall"
+	INIT="$PRODUCT"
 fi
 
 ANNOTATED=
-SPARSE=
+CYGWIN=
+MAC=
+MACHOST=
 MANDIR=${MANDIR:-"/usr/share/man"}
+SPARSE=
+INSTALLD='-D'
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
-MACHOST=
 
 case "$LIBEXEC" in
     /*)
@@ -128,8 +143,6 @@ case "$PERLLIB" in
 	PERLLIB=/usr/${PERLLIB}
 	;;
 esac
-
-INSTALLD='-D'
 
 case $(uname) in
     CYGWIN*)
@@ -153,7 +166,7 @@ case $(uname) in
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	MAC=Yes
-        MACHOST=Yes
+	MACHOST=Yes
 	INSTALLD=
 	T=
 	;;
@@ -180,7 +193,7 @@ while [ $finished -eq 0 ]; do
 			usage 0
 			;;
 		    v)
-			echo "Shorewall Firewall Installer Version $VERSION"
+			echo "$Product Firewall Installer Version $VERSION"
 			exit 0
 			;;
 		    s*)
@@ -230,13 +243,18 @@ if [ -n "$DESTDIR" ]; then
     CYGWIN=
     MAC=
 else
-    #
-    # Verify that Perl is installed
-    #
-    if ! perl -c Perl/compiler.pl; then
-	echo "ERROR: Shorewall $VERSION requires Perl which either is not installed or is not able to compile the Shorewall perl code" >&2
-	echo "       Try perl -c $PWD/Perl/compiler.pl" >&2
-	exit 1
+    if [ $PRODUCT = shorewall ]; then
+        #
+        # Verify that Perl is installed
+        #
+	if ! perl -c Perl/compiler.pl; then
+	    echo "ERROR: $Product $VERSION requires Perl which either is not installed or is not able to compile the $Product perl code" >&2
+	    echo "       Try perl -c $PWD/Perl/compiler.pl" >&2
+	    exit 1
+	fi
+    else
+	[ -x /usr/share/shorewall/compiler.pl ] || \
+	    { echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
     fi
 
     if [ -n "$CYGWIN" ]; then
@@ -256,10 +274,11 @@ else
 	    DEST="/etc/rc.d"
 	    MANDIR="/usr/man"
 	    SLACKWARE=yes
+	    INIT="rc.firewall"
 	elif [ -f /etc/arch-release ] ; then
 	    echo "Installing ArchLinux-specific configuration..."
 	    DEST="/etc/rc.d"
-	    INIT="shorewall"
+	    INIT="$PRODUCT"
 	    ARCHLINUX=yes
 	fi
     fi
@@ -273,78 +292,69 @@ elif [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
-#
-# Change to the directory containing this script
-#
-cd "$(dirname $0)"
-
-echo "Installing Shorewall Version $VERSION"
+echo "Installing $Product Version $VERSION"
 
 #
-# Check for /sbin/shorewall
+# Check for /sbin/$PRODUCT
 #
-if [ -f ${DESTDIR}/sbin/shorewall ]; then
+if [ -f ${DESTDIR}/sbin/$PRODUCT ]; then
     first_install=""
 else
     first_install="Yes"
 fi
 
-if [ -z "${DESTDIR}" -a ! -f /usr/share/shorewall/coreversion ]; then
+if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f /usr/share/$PRODUCT/coreversion ]; then
     echo "Shorewall $VERSION requires Shorewall Core which does not appear to be installed"
     exit 1
 fi
 
 if [ -z "$CYGWIN" ]; then
-   install_file shorewall ${DESTDIR}/sbin/shorewall 0755
-   echo "shorewall control program installed in ${DESTDIR}/sbin/shorewall"
-
+   install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0755
    if [ -z "$MACHOST" ]; then
-       eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall
-       eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
+       eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
+       eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/$PRODUCT
    else
-       eval sed -i \'\' -e  \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/shorewall 
-       eval sed -i \'\' -e  \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/shorewall
+       eval sed -i \'\' -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
+       eval sed -i \'\' -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/$PRODUCT
    fi
+   echo "$PRODUCT control program installed in ${DESTDIR}/sbin/$PRODUCT"
 else
-   install_file shorewall ${DESTDIR}/bin/shorewall 0755
-   echo "shorewall control program installed in ${DESTDIR}/bin/shorewall"
-   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/bin/shorewall
-   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/bin/shorewall
+   install_file $PRODUCT ${DESTDIR}/bin/$PRODUCT 0755
+   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/bin/$PRODUCT
+   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/bin/$PRODUCT
+   echo "$PRODUCT control program installed in ${DESTDIR}/bin/$PRODUCT"
 fi
 
 #
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall 0544
+    install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 elif [ -n "$FEDORA" ]; then
-    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall 0544
+    install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 elif [ -n "$ARCHLINUX" ]; then
     install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
-elif [ -n "$SLACKWARE" ]; then
+elif [ -n "$SLACKWARE" -a $PRODUCT = shorewall ]; then
 	install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644
-	install_file init.slackware.shorewall.sh ${DESTDIR}${DEST}/rc.shorewall 0644
+	install_file init.slackware.$PRODUCT.sh ${DESTDIR}${DEST}/rc.$PRODUCT 0644
 elif [ -n "$INIT" ]; then
     install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
 fi
 
-[ -n "$INIT" ] && echo  "Shorewall script installed in ${DESTDIR}${DEST}/$INIT"
+[ -n "$INIT" ] && echo  "$Product script installed in ${DESTDIR}${DEST}/$INIT"
 
 #
-# Create /etc/shorewall and /var/shorewall if needed
+# Create /etc/$PRODUCT and /var/lib/$PRODUCT if needed
 #
-mkdir -p ${DESTDIR}/etc/shorewall
-mkdir -p ${DESTDIR}${LIBEXEC}/shorewall
+mkdir -p ${DESTDIR}/etc/$PRODUCT
+mkdir -p ${DESTDIR}${LIBEXEC}/$PRODUCT
 mkdir -p ${DESTDIR}${PERLLIB}/Shorewall
-mkdir -p ${DESTDIR}/usr/share/shorewall/configfiles
-mkdir -p ${DESTDIR}/var/lib/shorewall
+mkdir -p ${DESTDIR}/usr/share/$PRODUCT/configfiles
+mkdir -p ${DESTDIR}/var/lib/$PRODUCT
 
-chmod 755 ${DESTDIR}/etc/shorewall
-chmod 755 ${DESTDIR}/usr/share/shorewall
-chmod 755 ${DESTDIR}/usr/share/shorewall/configfiles
-
-run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+chmod 755 ${DESTDIR}/etc/$PRODUCT
+chmod 755 ${DESTDIR}/usr/share/$PRODUCT
+chmod 755 ${DESTDIR}/usr/share/$PRODUCT/configfiles
 
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
@@ -355,689 +365,757 @@ fi
 # Install the .service file
 #
 if [ -n "$SYSTEMD" ]; then
-    run_install $OWNERSHIP -m 600 shorewall.service ${DESTDIR}/lib/systemd/system/shorewall.service
-    echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall.service"
+    run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/lib/systemd/system/$PRODUCT.service
+    echo "Service file installed as ${DESTDIR}/lib/systemd/system/$PRODUCT.service"
 fi
+
+delete_file ${DESTDIR}/usr/share/$PRODUCT/compiler
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.accounting
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.actions
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.dynamiczones
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.maclist
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.nat
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.providers
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.proxyarp
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tc
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tcrules
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tunnels
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.cli
+delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.common
+delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
+delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
+delete_file ${DESTDIR}/usr/share/$PRODUCT/wait4ifup
+
+#
+# Install the Modules file
+#
+run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/$PRODUCT/modules
+echo "Modules file installed as ${DESTDIR}/usr/share/$PRODUCT/modules"
+
+for f in modules.*; do
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/$PRODUCT/$f
+    echo "Modules file $f installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
+done
+
+#
+# Install the Module Helpers file
+#
+run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}/usr/share/$PRODUCT/helpers
+echo "Helper modules file installed as ${DESTDIR}/usr/share/$PRODUCT/helpers"
+
+#
+# Install the default config path file
+#
+install_file configpath ${DESTDIR}/usr/share/$PRODUCT/configpath 0644
+echo "Default config path file installed as ${DESTDIR}/usr/share/$PRODUCT/configpath"
+#
+# Install the Standard Actions file
+#
+install_file actions.std ${DESTDIR}/usr/share/$PRODUCT/actions.std 0644
+echo "Standard actions file installed as ${DESTDIR}/usr/shared/$PRODUCT/actions.std"
+
+cd configfiles
 
 if [ -n "$ANNOTATED" ]; then
     suffix=.annotated
 else
     suffix=
 fi
+
 #
 # Install the config file
 #
-if [ ! -f ${DESTDIR}/etc/shorewall/shorewall.conf ]; then
-   run_install $OWNERSHIP -m 0644 configfiles/shorewall.conf${suffix} ${DESTDIR}/etc/shorewall/shorewall.conf
+run_install $OWNERSHIP -m 0644 $PRODUCT.conf           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 $PRODUCT.conf.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-   if [ -n "$DEBIAN" ]; then
+
+if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
+   run_install $OWNERSHIP -m 0644 $PRODUCT.conf${suffix} ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
+
+   if [ -n "$DEBIAN" ] && mywhich perl; then
        #
-       # Make a Debian-like shorewall.conf
+       # Make a Debian-like $PRODUCT.conf
        #
-       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}/etc/shorewall/shorewall.conf
+       perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
    fi
 
-   echo "Config file installed as ${DESTDIR}/etc/shorewall/shorewall.conf"
+   echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
 fi
 
+
 if [ -n "$ARCHLINUX" ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/shorewall/shorewall.conf
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
+
+#
+# Install the init file
+#
+run_install $OWNERSHIP -m 0644 init ${DESTDIR}/usr/share/$PRODUCT/configfiles/init
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/init ]; then
+    run_install $OWNERSHIP -m 0600 init ${DESTDIR}/etc/$PRODUCT/init
+    echo "Init file installed as ${DESTDIR}/etc/$PRODUCT/init"
+fi
+
 #
 # Install the zones file
 #
-run_install $OWNERSHIP -m 0644 configfiles/zones           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/zones.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 zones           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 zones.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/zones ]; then
-    run_install $OWNERSHIP -m 0644 configfiles/zones${suffix} ${DESTDIR}/etc/shorewall/zones
-    echo "Zones file installed as ${DESTDIR}/etc/shorewall/zones"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/zones ]; then
+    run_install $OWNERSHIP -m 0644 zones${suffix} ${DESTDIR}/etc/$PRODUCT/zones
+    echo "Zones file installed as ${DESTDIR}/etc/$PRODUCT/zones"
 fi
-
-delete_file ${DESTDIR}/usr/share/shorewall/compiler
-delete_file ${DESTDIR}/usr/share/shorewall/lib.accounting
-delete_file ${DESTDIR}/usr/share/shorewall/lib.actions
-delete_file ${DESTDIR}/usr/share/shorewall/lib.dynamiczones
-delete_file ${DESTDIR}/usr/share/shorewall/lib.maclist
-delete_file ${DESTDIR}/usr/share/shorewall/lib.nat
-delete_file ${DESTDIR}/usr/share/shorewall/lib.providers
-delete_file ${DESTDIR}/usr/share/shorewall/lib.proxyarp
-delete_file ${DESTDIR}/usr/share/shorewall/lib.tc
-delete_file ${DESTDIR}/usr/share/shorewall/lib.tcrules
-delete_file ${DESTDIR}/usr/share/shorewall/lib.tunnels
-delete_file ${DESTDIR}/usr/share/shorewall/prog.header
-delete_file ${DESTDIR}/usr/share/shorewall/prog.footer
 
 #
 # Install the policy file
 #
-run_install -m 0644 configfiles/policy           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install -m 0644 configfiles/policy.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 policy           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 policy.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/policy ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/policy${suffix} ${DESTDIR}/etc/shorewall/policy
-    echo "Policy file installed as ${DESTDIR}/etc/shorewall/policy"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/policy ]; then
+    run_install $OWNERSHIP -m 0600 policy${suffix} ${DESTDIR}/etc/$PRODUCT/policy
+    echo "Policy file installed as ${DESTDIR}/etc/$PRODUCT/policy"
 fi
 #
 # Install the interfaces file
 #
-run_install $OWNERSHIP -m 0644 configfiles/interfaces           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/interfaces.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 interfaces           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 interfaces.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/interfaces ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/interfaces${suffix} ${DESTDIR}/etc/shorewall/interfaces
-    echo "Interfaces file installed as ${DESTDIR}/etc/shorewall/interfaces"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/interfaces ]; then
+    run_install $OWNERSHIP -m 0600 interfaces${suffix} ${DESTDIR}/etc/$PRODUCT/interfaces
+    echo "Interfaces file installed as ${DESTDIR}/etc/$PRODUCT/interfaces"
 fi
 
 #
 # Install the hosts file
 #
-run_install $OWNERSHIP -m 0644 configfiles/hosts           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/hosts.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 hosts           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 hosts.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/hosts ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/hosts${suffix} ${DESTDIR}/etc/shorewall/hosts
-    echo "Hosts file installed as ${DESTDIR}/etc/shorewall/hosts"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/hosts ]; then
+    run_install $OWNERSHIP -m 0600 hosts${suffix} ${DESTDIR}/etc/$PRODUCT/hosts
+    echo "Hosts file installed as ${DESTDIR}/etc/$PRODUCT/hosts"
 fi
 #
 # Install the rules file
 #
-run_install $OWNERSHIP -m 0644 configfiles/rules           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/rules.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 rules           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/rules ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/rules${suffix} ${DESTDIR}/etc/shorewall/rules
-    echo "Rules file installed as ${DESTDIR}/etc/shorewall/rules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/rules ]; then
+    run_install $OWNERSHIP -m 0600 rules${suffix} ${DESTDIR}/etc/$PRODUCT/rules
+    echo "Rules file installed as ${DESTDIR}/etc/$PRODUCT/rules"
 fi
-#
-# Install the NAT file
-#
-run_install $OWNERSHIP -m 0644 configfiles/nat           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/nat.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/nat ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/nat${suffix} ${DESTDIR}/etc/shorewall/nat
-    echo "NAT file installed as ${DESTDIR}/etc/shorewall/nat"
+if [ -f nat ]; then
+    #
+    # Install the NAT file
+    #
+    run_install $OWNERSHIP -m 0644 nat           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 nat.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/nat ]; then
+	run_install $OWNERSHIP -m 0600 nat${suffix} ${DESTDIR}/etc/$PRODUCT/nat
+	echo "NAT file installed as ${DESTDIR}/etc/$PRODUCT/nat"
+    fi
 fi
+
 #
 # Install the NETMAP file
 #
-run_install $OWNERSHIP -m 0644 configfiles/netmap           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/netmap.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 netmap           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 netmap.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/netmap ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/netmap${suffix} ${DESTDIR}/etc/shorewall/netmap
-    echo "NETMAP file installed as ${DESTDIR}/etc/shorewall/netmap"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/netmap ]; then
+    run_install $OWNERSHIP -m 0600 netmap${suffix} ${DESTDIR}/etc/$PRODUCT/netmap
+    echo "NETMAP file installed as ${DESTDIR}/etc/$PRODUCT/netmap"
 fi
 #
 # Install the Parameters file
 #
-run_install $OWNERSHIP -m 0644 configfiles/params           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/params.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 params          ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 params.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -f ${DESTDIR}/etc/shorewall/params ]; then
-    chmod 0644 ${DESTDIR}/etc/shorewall/params
+if [ -f ${DESTDIR}/etc/$PRODUCT/params ]; then
+    chmod 0644 ${DESTDIR}/etc/$PRODUCT/params
 else
-    run_install $OWNERSHIP -m 0644 configfiles/params${suffix} ${DESTDIR}/etc/shorewall/params
-    echo "Parameter file installed as ${DESTDIR}/etc/shorewall/params"
+    run_install $OWNERSHIP -m 0644 params${suffix} ${DESTDIR}/etc/$PRODUCT/params
+    echo "Parameter file installed as ${DESTDIR}/etc/$PRODUCT/params"
 fi
-#
-# Install the proxy ARP file
-#
-run_install $OWNERSHIP -m 0644 configfiles/proxyarp           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/proxyarp.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/proxyarp ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/proxyarp${suffix} ${DESTDIR}/etc/shorewall/proxyarp
-    echo "Proxy ARP file installed as ${DESTDIR}/etc/shorewall/proxyarp"
+if [ $PRODUCT = shorewall ]; then
+    #
+    # Install the proxy ARP file
+    #
+    run_install $OWNERSHIP -m 0644 proxyarp           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 proxyarp.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/proxyarp ]; then
+	run_install $OWNERSHIP -m 0600 proxyarp${suffix} ${DESTDIR}/etc/$PRODUCT/proxyarp
+	echo "Proxy ARP file installed as ${DESTDIR}/etc/$PRODUCT/proxyarp"
+    fi
+else
+    #
+    # Install the Proxyndp file
+    #
+    run_install $OWNERSHIP -m 0644 proxyndp           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+    run_install $OWNERSHIP -m 0644 proxyndp.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/proxyndp ]; then
+	run_install $OWNERSHIP -m 0600 proxyndp${suffix} ${DESTDIR}/etc/$PRODUCT/proxyndp
+	echo "Proxyndp file installed as ${DESTDIR}/etc/$PRODUCT/proxyndp"
+    fi
 fi
 #
 # Install the Stopped Routing file
 #
-run_install $OWNERSHIP -m 0644 configfiles/routestopped           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/routestopped.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 routestopped           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 routestopped.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/routestopped ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/routestopped${suffix} ${DESTDIR}/etc/shorewall/routestopped
-    echo "Stopped Routing file installed as ${DESTDIR}/etc/shorewall/routestopped"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/routestopped ]; then
+    run_install $OWNERSHIP -m 0600 routestopped${suffix} ${DESTDIR}/etc/$PRODUCT/routestopped
+    echo "Stopped Routing file installed as ${DESTDIR}/etc/$PRODUCT/routestopped"
 fi
 #
 # Install the Mac List file
 #
-run_install $OWNERSHIP -m 0644 configfiles/maclist           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/maclist.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 maclist           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 maclist.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/maclist ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/maclist${suffix} ${DESTDIR}/etc/shorewall/maclist
-    echo "MAC list file installed as ${DESTDIR}/etc/shorewall/maclist"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/maclist ]; then
+    run_install $OWNERSHIP -m 0600 maclist${suffix} ${DESTDIR}/etc/$PRODUCT/maclist
+    echo "MAC list file installed as ${DESTDIR}/etc/$PRODUCT/maclist"
 fi
-#
-# Install the Masq file
-#
-run_install $OWNERSHIP -m 0644 configfiles/masq           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/masq.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/masq ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/masq${suffix} ${DESTDIR}/etc/shorewall/masq
-    echo "Masquerade file installed as ${DESTDIR}/etc/shorewall/masq"
+if [ -f masq ]; then
+    #
+    # Install the Masq file
+    #
+    run_install $OWNERSHIP -m 0644 masq           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 masq.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/masq ]; then
+	run_install $OWNERSHIP -m 0600 masq${suffix} ${DESTDIR}/etc/$PRODUCT/masq
+	echo "Masquerade file installed as ${DESTDIR}/etc/$PRODUCT/masq"
+    fi
 fi
 #
 # Install the Notrack file
 #
-run_install $OWNERSHIP -m 0644 configfiles/notrack           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/notrack.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 notrack           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 notrack.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/notrack ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/notrack${suffix} ${DESTDIR}/etc/shorewall/notrack
-    echo "Notrack file installed as ${DESTDIR}/etc/shorewall/notrack"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/notrack ]; then
+    run_install $OWNERSHIP -m 0600 notrack${suffix} ${DESTDIR}/etc/$PRODUCT/notrack
+    echo "Notrack file installed as ${DESTDIR}/etc/$PRODUCT/notrack"
 fi
-#
-# Install the Modules files
-#
-run_install $OWNERSHIP -m 0644 modules ${DESTDIR}/usr/share/shorewall
-echo "Modules file installed as ${DESTDIR}/usr/share/shorewall/modules"
-
-for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/shorewall/$f
-    echo "Module file $f installed as ${DESTDIR}/usr/share/shorewall/$f"
-done
-
-#
-# Install the Module Helpers file
-#
-run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}/usr/share/shorewall
-echo "Helper modules file installed as ${DESTDIR}/usr/share/shorewall/helpers"
 
 #
 # Install the TC Rules file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcrules           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tcrules.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcrules           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcrules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcrules ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcrules${suffix} ${DESTDIR}/etc/shorewall/tcrules
-    echo "TC Rules file installed as ${DESTDIR}/etc/shorewall/tcrules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcrules ]; then
+    run_install $OWNERSHIP -m 0600 tcrules${suffix} ${DESTDIR}/etc/$PRODUCT/tcrules
+    echo "TC Rules file installed as ${DESTDIR}/etc/$PRODUCT/tcrules"
 fi
 
 #
 # Install the TC Interfaces file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcinterfaces           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tcinterfaces.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcinterfaces           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcinterfaces.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcinterfaces ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcinterfaces${suffix} ${DESTDIR}/etc/shorewall/tcinterfaces
-    echo "TC Interfaces file installed as ${DESTDIR}/etc/shorewall/tcinterfaces"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcinterfaces ]; then
+    run_install $OWNERSHIP -m 0600 tcinterfaces${suffix} ${DESTDIR}/etc/$PRODUCT/tcinterfaces
+    echo "TC Interfaces file installed as ${DESTDIR}/etc/$PRODUCT/tcinterfaces"
 fi
 
 #
 # Install the TC Priority file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcpri           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tcpri.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcpri           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcpri.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcpri ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcpri${suffix} ${DESTDIR}/etc/shorewall/tcpri
-    echo "TC Priority file installed as ${DESTDIR}/etc/shorewall/tcpri"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcpri ]; then
+    run_install $OWNERSHIP -m 0600 tcpri${suffix} ${DESTDIR}/etc/$PRODUCT/tcpri
+    echo "TC Priority file installed as ${DESTDIR}/etc/$PRODUCT/tcpri"
 fi
 
 #
 # Install the TOS file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tos           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tos.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tos           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tos.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tos ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tos${suffix} ${DESTDIR}/etc/shorewall/tos
-    echo "TOS file installed as ${DESTDIR}/etc/shorewall/tos"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tos ]; then
+    run_install $OWNERSHIP -m 0600 tos${suffix} ${DESTDIR}/etc/$PRODUCT/tos
+    echo "TOS file installed as ${DESTDIR}/etc/$PRODUCT/tos"
 fi
 #
 # Install the Tunnels file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tunnels           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tunnels.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tunnels           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tunnels.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tunnels ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tunnels${suffix} ${DESTDIR}/etc/shorewall/tunnels
-    echo "Tunnels file installed as ${DESTDIR}/etc/shorewall/tunnels"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tunnels ]; then
+    run_install $OWNERSHIP -m 0600 tunnels${suffix} ${DESTDIR}/etc/$PRODUCT/tunnels
+    echo "Tunnels file installed as ${DESTDIR}/etc/$PRODUCT/tunnels"
 fi
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/blacklist ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/blacklist${suffix} ${DESTDIR}/etc/shorewall/blacklist
-    echo "Blacklist file installed as ${DESTDIR}/etc/shorewall/blacklist"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/blacklist ]; then
+    run_install $OWNERSHIP -m 0600 blacklist${suffix} ${DESTDIR}/etc/$PRODUCT/blacklist
+    echo "Blacklist file installed as ${DESTDIR}/etc/$PRODUCT/blacklist"
 fi
 #
 # Install the blacklist rules file
 #
-run_install $OWNERSHIP -m 0644 configfiles/blrules           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/blrules.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 blrules           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 blrules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/blrules ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/blrules${suffix} ${DESTDIR}/etc/shorewall/blrules
-    echo "Blacklist rules file installed as ${DESTDIR}/etc/shorewall/blrules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/blrules ]; then
+    run_install $OWNERSHIP -m 0600 blrules${suffix} ${DESTDIR}/etc/$PRODUCT/blrules
+    echo "Blrules file installed as ${DESTDIR}/etc/$PRODUCT/blrules"
 fi
-#
-# Install the findgw file
-#
-run_install $OWNERSHIP -m 0644 configfiles/findgw ${DESTDIR}/usr/share/shorewall/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/findgw ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/findgw ${DESTDIR}/etc/shorewall
-    echo "Find GW file installed as ${DESTDIR}/etc/shorewall/findgw"
+if [ -f findgw ]; then
+    #
+    # Install the findgw file
+    #
+    run_install $OWNERSHIP -m 0644 findgw ${DESTDIR}/usr/share/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/findgw ]; then
+	run_install $OWNERSHIP -m 0600 findgw ${DESTDIR}/etc/$PRODUCT
+	echo "Find GW file installed as ${DESTDIR}/etc/$PRODUCT/findgw"
+    fi
 fi
+
 #
 # Delete the Routes file
 #
-delete_file ${DESTDIR}/etc/shorewall/routes
+delete_file ${DESTDIR}/etc/$PRODUCT/routes
 #
 # Delete the tcstart file
 #
 
-delete_file ${DESTDIR}/usr/share/shorewall/tcstart
+delete_file ${DESTDIR}/usr/share/$PRODUCT/tcstart
 
 #
 # Delete the Limits Files
 #
-delete_file ${DESTDIR}/usr/share/shorewall/action.Limit
-delete_file ${DESTDIR}/usr/share/shorewall/Limit
+delete_file ${DESTDIR}/usr/share/$PRODUCT/action.Limit
+delete_file ${DESTDIR}/usr/share/$PRODUCT/Limit
 #
 # Delete the xmodules file
 #
-delete_file ${DESTDIR}/usr/share/shorewall/xmodules
+delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 #
 # Install the Providers file
 #
-run_install $OWNERSHIP -m 0644 configfiles/providers           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/providers.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 providers           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 providers.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/providers ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/providers${suffix} ${DESTDIR}/etc/shorewall/providers
-    echo "Providers file installed as ${DESTDIR}/etc/shorewall/providers"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/providers ]; then
+    run_install $OWNERSHIP -m 0600 providers${suffix} ${DESTDIR}/etc/$PRODUCT/providers
+    echo "Providers file installed as ${DESTDIR}/etc/$PRODUCT/providers"
 fi
 
 #
 # Install the Route Rules file
 #
-run_install $OWNERSHIP -m 0644 configfiles/route_rules           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/route_rules.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 route_rules           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 route_rules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/route_rules ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/route_rules${suffix} ${DESTDIR}/etc/shorewall/route_rules
-    echo "Routing rules file installed as ${DESTDIR}/etc/shorewall/route_rules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/route_rules ]; then
+    run_install $OWNERSHIP -m 0600 route_rules${suffix} ${DESTDIR}/etc/$PRODUCT/route_rules
+    echo "Routing rules file installed as ${DESTDIR}/etc/$PRODUCT/route_rules"
 fi
 
 #
 # Install the tcclasses file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcclasses           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tcclasses.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcclasses           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcclasses.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcclasses ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcclasses${suffix} ${DESTDIR}/etc/shorewall/tcclasses
-    echo "TC Classes file installed as ${DESTDIR}/etc/shorewall/tcclasses"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcclasses ]; then
+    run_install $OWNERSHIP -m 0600 tcclasses${suffix} ${DESTDIR}/etc/$PRODUCT/tcclasses
+    echo "TC Classes file installed as ${DESTDIR}/etc/$PRODUCT/tcclasses"
 fi
 
 #
 # Install the tcdevices file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcdevices           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tcdevices.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcdevices           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcdevices.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcdevices ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcdevices${suffix} ${DESTDIR}/etc/shorewall/tcdevices
-    echo "TC Devices file installed as ${DESTDIR}/etc/shorewall/tcdevices"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcdevices ]; then
+    run_install $OWNERSHIP -m 0600 tcdevices${suffix} ${DESTDIR}/etc/$PRODUCT/tcdevices
+    echo "TC Devices file installed as ${DESTDIR}/etc/$PRODUCT/tcdevices"
 fi
 
 #
 # Install the tcfilters file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcfilters           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/tcfilters.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcfilters           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcfilters.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcfilters ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcfilters${suffix} ${DESTDIR}/etc/shorewall/tcfilters
-    echo "TC Filters file installed as ${DESTDIR}/etc/shorewall/tcfilters"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcfilters ]; then
+    run_install $OWNERSHIP -m 0600 tcfilters${suffix} ${DESTDIR}/etc/$PRODUCT/tcfilters
+    echo "TC Filters file installed as ${DESTDIR}/etc/$PRODUCT/tcfilters"
 fi
 
 #
 # Install the secmarks file
 #
-run_install $OWNERSHIP -m 0644 configfiles/secmarks           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/secmarks.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 secmarks           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 secmarks.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/secmarks ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/secmarks${suffix} ${DESTDIR}/etc/shorewall/secmarks
-    echo "Secmarks file installed as ${DESTDIR}/etc/shorewall/secmarks"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/secmarks ]; then
+    run_install $OWNERSHIP -m 0600 secmarks${suffix} ${DESTDIR}/etc/$PRODUCT/secmarks
+    echo "Secmarks file installed as ${DESTDIR}/etc/$PRODUCT/secmarks"
 fi
 
-#
-# Install the default config path file
-#
-install_file configpath ${DESTDIR}/usr/share/shorewall/configpath 0644
-echo "Default config path file installed as ${DESTDIR}/usr/share/shorewall/configpath"
 #
 # Install the init file
 #
-run_install $OWNERSHIP -m 0644 configfiles/init ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 init ${DESTDIR}/usr/share/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/init ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/init ${DESTDIR}/etc/shorewall
-    echo "Init file installed as ${DESTDIR}/etc/shorewall/init"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/init ]; then
+    run_install $OWNERSHIP -m 0600 init ${DESTDIR}/etc/$PRODUCT
+    echo "Init file installed as ${DESTDIR}/etc/$PRODUCT/init"
 fi
-#
-# Install the initdone file
-#
-run_install $OWNERSHIP -m 0644 configfiles/initdone ${DESTDIR}/usr/share/shorewall/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/initdone ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/initdone ${DESTDIR}/etc/shorewall
-    echo "Initdone file installed as ${DESTDIR}/etc/shorewall/initdone"
+if [ -f initdone ]; then
+    #
+    # Install the initdone file
+    #
+    run_install $OWNERSHIP -m 0644 initdone ${DESTDIR}/usr/share/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/initdone ]; then
+	run_install $OWNERSHIP -m 0600 initdone ${DESTDIR}/etc/$PRODUCT
+	echo "Initdone file installed as ${DESTDIR}/etc/$PRODUCT/initdone"
+    fi
 fi
 #
 # Install the start file
 #
-run_install $OWNERSHIP -m 0644 configfiles/start ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 start ${DESTDIR}/usr/share/$PRODUCT/configfiles/start
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/start ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/start ${DESTDIR}/etc/shorewall
-    echo "Start file installed as ${DESTDIR}/etc/shorewall/start"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/start ]; then
+    run_install $OWNERSHIP -m 0600 start ${DESTDIR}/etc/$PRODUCT/start
+    echo "Start file installed as ${DESTDIR}/etc/$PRODUCT/start"
 fi
 #
 # Install the stop file
 #
-run_install $OWNERSHIP -m 0644 configfiles/stop ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 stop ${DESTDIR}/usr/share/$PRODUCT/configfiles/stop
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/stop ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/stop ${DESTDIR}/etc/shorewall
-    echo "Stop file installed as ${DESTDIR}/etc/shorewall/stop"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/stop ]; then
+    run_install $OWNERSHIP -m 0600 stop ${DESTDIR}/etc/$PRODUCT/stop
+    echo "Stop file installed as ${DESTDIR}/etc/$PRODUCT/stop"
 fi
 #
 # Install the stopped file
 #
-run_install $OWNERSHIP -m 0644 configfiles/stopped ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 stopped ${DESTDIR}/usr/share/$PRODUCT/configfiles/stopped
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/stopped ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/stopped ${DESTDIR}/etc/shorewall
-    echo "Stopped file installed as ${DESTDIR}/etc/shorewall/stopped"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/stopped ]; then
+    run_install $OWNERSHIP -m 0600 stopped ${DESTDIR}/etc/$PRODUCT/stopped
+    echo "Stopped file installed as ${DESTDIR}/etc/$PRODUCT/stopped"
 fi
-#
-# Install the ECN file
-#
-run_install $OWNERSHIP -m 0644 configfiles/ecn           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/ecn.annotated ${DESTDIR}/usr/share/shorewall/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/ecn ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/ecn${suffix} ${DESTDIR}/etc/shorewall/ecn
-    echo "ECN file installed as ${DESTDIR}/etc/shorewall/ecn"
+if [ -f ecn ]; then
+    #
+    # Install the ECN file
+    #
+    run_install $OWNERSHIP -m 0644 ecn           ${DESTDIR}/usr/share/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 ecn.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/ecn ]; then
+	run_install $OWNERSHIP -m 0600 ecn${suffix} ${DESTDIR}/etc/$PRODUCT/ecn
+	echo "ECN file installed as ${DESTDIR}/etc/$PRODUCT/ecn"
+    fi
 fi
 #
 # Install the Accounting file
 #
-run_install $OWNERSHIP -m 0644 configfiles/accounting           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/accounting.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 accounting           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 accounting.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/accounting ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/accounting${suffix} ${DESTDIR}/etc/shorewall/accounting
-    echo "Accounting file installed as ${DESTDIR}/etc/shorewall/accounting"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/accounting ]; then
+    run_install $OWNERSHIP -m 0600 accounting${suffix} ${DESTDIR}/etc/$PRODUCT/accounting
+    echo "Accounting file installed as ${DESTDIR}/etc/$PRODUCT/accounting"
 fi
 #
 # Install the private library file
 #
-run_install $OWNERSHIP -m 0644 configfiles/lib.private ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 lib.private ${DESTDIR}/usr/share/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/lib.private ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/lib.private ${DESTDIR}/etc/shorewall
-    echo "Private library file installed as ${DESTDIR}/etc/shorewall/lib.private"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/lib.private ]; then
+    run_install $OWNERSHIP -m 0600 lib.private ${DESTDIR}/etc/$PRODUCT
+    echo "Private library file installed as ${DESTDIR}/etc/$PRODUCT/lib.private"
 fi
 #
 # Install the Started file
 #
-run_install $OWNERSHIP -m 0644 configfiles/started ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 started ${DESTDIR}/usr/share/$PRODUCT/configfiles/started
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/started ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/started ${DESTDIR}/etc/shorewall
-    echo "Started file installed as ${DESTDIR}/etc/shorewall/started"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/started ]; then
+    run_install $OWNERSHIP -m 0600 started ${DESTDIR}/etc/$PRODUCT/started
+    echo "Started file installed as ${DESTDIR}/etc/$PRODUCT/started"
 fi
 #
 # Install the Restored file
 #
-run_install $OWNERSHIP -m 0644 configfiles/restored ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 restored ${DESTDIR}/usr/share/$PRODUCT/configfiles/restored
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/restored ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/restored ${DESTDIR}/etc/shorewall
-    echo "Restored file installed as ${DESTDIR}/etc/shorewall/restored"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/restored ]; then
+    run_install $OWNERSHIP -m 0600 restored ${DESTDIR}/etc/$PRODUCT/restored
+    echo "Restored file installed as ${DESTDIR}/etc/$PRODUCT/restored"
 fi
 #
 # Install the Clear file
 #
-run_install $OWNERSHIP -m 0644 configfiles/clear ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 clear ${DESTDIR}/usr/share/$PRODUCT/configfiles/clear
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/clear ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/clear ${DESTDIR}/etc/shorewall
-    echo "Clear file installed as ${DESTDIR}/etc/shorewall/clear"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/clear ]; then
+    run_install $OWNERSHIP -m 0600 clear ${DESTDIR}/etc/$PRODUCT/clear
+    echo "Clear file installed as ${DESTDIR}/etc/$PRODUCT/clear"
 fi
 #
 # Install the Isusable file
 #
-run_install $OWNERSHIP -m 0644 configfiles/isusable ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 isusable ${DESTDIR}/usr/share/$PRODUCT/configfiles/isusable
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/isusable ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/isusable ${DESTDIR}/etc/shorewall
-    echo "Isusable file installed as ${DESTDIR}/etc/shorewall/isusable"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/isusable ]; then
+    run_install $OWNERSHIP -m 0600 isusable ${DESTDIR}/etc/$PRODUCT/isusable
+    echo "Isusable file installed as ${DESTDIR}/etc/$PRODUCT/isusable"
 fi
 #
 # Install the Refresh file
 #
-run_install $OWNERSHIP -m 0644 configfiles/refresh ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 refresh ${DESTDIR}/usr/share/$PRODUCT/configfiles/refresh
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/refresh ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/refresh ${DESTDIR}/etc/shorewall
-    echo "Refresh file installed as ${DESTDIR}/etc/shorewall/refresh"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/refresh ]; then
+    run_install $OWNERSHIP -m 0600 refresh ${DESTDIR}/etc/$PRODUCT/refresh
+    echo "Refresh file installed as ${DESTDIR}/etc/$PRODUCT/refresh"
 fi
 #
 # Install the Refreshed file
 #
-run_install $OWNERSHIP -m 0644 configfiles/refreshed ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 refreshed ${DESTDIR}/usr/share/$PRODUCT/configfiles/refreshed
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/refreshed ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/refreshed ${DESTDIR}/etc/shorewall
-    echo "Refreshed file installed as ${DESTDIR}/etc/shorewall/refreshed"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/refreshed ]; then
+    run_install $OWNERSHIP -m 0600 refreshed ${DESTDIR}/etc/$PRODUCT/refreshed
+    echo "Refreshed file installed as ${DESTDIR}/etc/$PRODUCT/refreshed"
 fi
 #
 # Install the Tcclear file
 #
-run_install $OWNERSHIP -m 0644 configfiles/tcclear ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 tcclear           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/tcclear ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/tcclear ${DESTDIR}/etc/shorewall
-    echo "Tcclear file installed as ${DESTDIR}/etc/shorewall/tcclear"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/tcclear ]; then
+    run_install $OWNERSHIP -m 0600 tcclear ${DESTDIR}/etc/$PRODUCT/tcclear
+    echo "Tcclear file installed as ${DESTDIR}/etc/$PRODUCT/tcclear"
 fi
 #
 # Install the Scfilter file
 #
-run_install $OWNERSHIP -m 644 configfiles/scfilter ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 scfilter ${DESTDIR}/usr/share/$PRODUCT/configfiles/scfilter
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/scfilter ]; then
-    run_install $OWNERSHIP -m 0600 configfiles/scfilter ${DESTDIR}/etc/shorewall
-    echo "Scfilter file installed as ${DESTDIR}/etc/shorewall/scfilter"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/scfilter ]; then
+    run_install $OWNERSHIP -m 0600 scfilter ${DESTDIR}/etc/$PRODUCT/scfilter
+    echo "Scfilter file installed as ${DESTDIR}/etc/$PRODUCT/scfilter"
 fi
-#
-# Install the Standard Actions file
-#
-install_file actions.std ${DESTDIR}/usr/share/shorewall/actions.std 0644
-echo "Standard actions file installed as ${DESTDIR}/usr/shared/shorewall/actions.std"
 
 #
 # Install the Actions file
 #
-run_install $OWNERSHIP -m 0644 configfiles/actions           ${DESTDIR}/usr/share/shorewall/configfiles
-run_install $OWNERSHIP -m 0644 configfiles/actions.annotated ${DESTDIR}/usr/share/shorewall/configfiles
+run_install $OWNERSHIP -m 0644 actions           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 actions.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/shorewall/actions ]; then
-    run_install $OWNERSHIP -m 0644 configfiles/actions${suffix} ${DESTDIR}/etc/shorewall/actions
-    echo "Actions file installed as ${DESTDIR}/etc/shorewall/actions"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/actions ]; then
+    run_install $OWNERSHIP -m 0644 actions${suffix} ${DESTDIR}/etc/$PRODUCT/actions
+    echo "Actions file installed as ${DESTDIR}/etc/$PRODUCT/actions"
 fi
+
+cd ..
+
+#
+# Install the Standard Actions file
+#
+install_file actions.std ${DESTDIR}/usr/share/$PRODUCT/actions.std 0644
+echo "Standard actions file installed as ${DESTDIR}/usr/shared/$PRODUCT/actions.std"
 
 #
 # Install the  Makefiles
 #
-install_file Makefile-lite ${DESTDIR}/usr/share/shorewall/configfiles/Makefile 0644
+run_install $OWNERSHIP -m 0644 Makefile-lite ${DESTDIR}/usr/share/$PRODUCT/configfiles/Makefile
 
 if [ -z "$SPARSE" ]; then
-    run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/shorewall
-    echo "Makefile installed as ${DESTDIR}/etc/shorewall/Makefile"
+    run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/$PRODUCT
+    echo "Makefile installed as ${DESTDIR}/etc/$PRODUCT/Makefile"
 fi
 #
 # Install the Action files
 #
 for f in action.* ; do
-    install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
-    echo "Action ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
+    install_file $f ${DESTDIR}/usr/share/$PRODUCT/$f 0644
+    echo "Action ${f#*.} file installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
 done
 
-# Install the Macro files
-#
 cd Macros
 
 for f in macro.* ; do
-    install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
-    echo "Macro ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
+    install_file $f ${DESTDIR}/usr/share/$PRODUCT/$f 0644
+    echo "Macro ${f#*.} file installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
 done
 
 cd ..
+
 #
 # Install the libraries
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
+	install_file $f ${DESTDIR}/usr/share/$PRODUCT/$f 0644
+	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
     fi
 done
-#
-# /usr/share/shorewall/Shorewall if needed
-#
-mkdir -p ${DESTDIR}/usr/share/shorewall/Shorewall
-chmod 755 ${DESTDIR}/usr/share/shorewall/Shorewall
-#
-# Install the Compiler
-#
-cd Perl
 
-install_file compiler.pl ${DESTDIR}${LIBEXEC}/shorewall/compiler.pl 0755
+if [ $PRODUCT = shorewall6 ]; then
+    #
+    # Symbolically link 'functions' to lib.base
+    #
+    ln -sf lib.base ${DESTDIR}/usr/share/$PRODUCT/functions
+fi
 
-echo
-echo "Compiler installed in ${DESTDIR}${LIBEXEC}/shorewall/compiler.pl"
-#
-# Install the params file helper
-#
-install_file getparams ${DESTDIR}${LIBEXEC}/shorewall/getparams 0755
+if [ -d Perl ]; then
+    #
+    # /usr/share/$PRODUCT/$Product if needed
+    #
+    mkdir -p ${DESTDIR}/usr/share/$PRODUCT/$Product
+    chmod 755 ${DESTDIR}/usr/share/$PRODUCT/$Product
+    #
+    # Install the Compiler
+    #
+    cd Perl
 
-echo
-echo "Params file helper installed in ${DESTDIR}${LIBEXEC}/shorewall/getparams"
-#
-# Install the libraries
-#
-for f in Shorewall/*.pm ; do
-    install_file $f ${DESTDIR}${PERLLIB}/$f 0644
-    echo "Module ${f%.*} installed as ${DESTDIR}${PERLLIB}/$f"
-done
-#
-# Install the program skeleton files
-#
-for f in prog.* ; do
-    install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
-    echo "Program skeleton file ${f#*.} installed as ${DESTDIR}/usr/share/shorewall/$f"
-done
+    install_file compiler.pl ${DESTDIR}${LIBEXEC}/$PRODUCT/compiler.pl 0755
 
-cd ..
+    echo
+    echo "Compiler installed in ${DESTDIR}${LIBEXEC}/$PRODUCT/compiler.pl"
+    #
+    # Install the params file helper
+    #
+    install_file getparams ${DESTDIR}${LIBEXEC}/$PRODUCT/getparams 0755
+
+    echo
+    echo "Params file helper installed in ${DESTDIR}${LIBEXEC}/$PRODUCT/getparams"
+    #
+    # Install the Perl modules
+    #
+    for f in $Product/*.pm ; do
+	install_file $f ${DESTDIR}${PERLLIB}/$f 0644
+	echo "Module ${f%.*} installed as ${DESTDIR}${PERLLIB}/$f"
+    done
+    #
+    # Install the program skeleton files
+    #
+    for f in prog.* ; do
+        install_file $f ${DESTDIR}/usr/share/$PRODUCT/$f 0644
+        echo "Program skeleton file ${f#*.} installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
+    done
+
+    cd ..
+
+    if [ -z "$DESTDIR" ]; then
+	rm -rf /usr/share/$PRODUCT-perl
+	rm -rf /usr/share/$PRODUCT-shell
+	[ "$PERLLIB" != /usr/share/$PRODUCT ] && rm -rf /usr/share/$PRODUCT/$Product
+    fi
+fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}/usr/share/shorewall/version
-chmod 644 ${DESTDIR}/usr/share/shorewall/version
+echo "$VERSION" > ${DESTDIR}/usr/share/$PRODUCT/version
+chmod 644 ${DESTDIR}/usr/share/$PRODUCT/version
 #
 # Remove and create the symbolic link to the init script
 #
 
 if [ -z "$DESTDIR" ]; then
-    rm -f /usr/share/shorewall/init
-    ln -s ${DEST}/${INIT} /usr/share/shorewall/init
+    rm -f /usr/share/$PRODUCT/init
+    ln -s ${DEST}/${INIT} /usr/share/$PRODUCT/init
 fi
 
 #
 # Install the Man Pages
 #
 
-if [ -d manpages ]; then
+cd manpages
 
-    cd manpages
+[ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
 
-    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
+for f in *.5; do
+    gzip -c $f > $f.gz
+    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
+    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
+done
 
-    for f in *.5; do
-	gzip -c $f > $f.gz
-	run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
-    done
+for f in *.8; do
+    gzip -c $f > $f.gz
+    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
+    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
+done
 
-    for f in *.8; do
-	gzip -c $f > $f.gz
-	run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
-    done
+cd ..
 
-    cd ..
-
-    echo "Man Pages Installed"
-
-fi
+echo "Man Pages Installed"
 
 if [ -d ${DESTDIR}/etc/logrotate.d ]; then
-    install_file logrotate ${DESTDIR}/etc/logrotate.d/shorewall 0644
-    echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/shorewall"
-fi
-
-if [ -z "$DESTDIR" ]; then
-    rm -rf /usr/share/shorewall-perl
-    rm -rf /usr/share/shorewall-shell
-    [ "$PERLLIB" != /usr/share/shorewall ] && rm -rf /usr/share/shorewall/Shorewall
+    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}/etc/logrotate.d/$PRODUCT
+    echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/$PRODUCT"
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
     if [ -n "$DEBIAN" ]; then
-	install_file default.debian /etc/default/shorewall 0644
+	run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
-	update-rc.d shorewall defaults
+	update-rc.d $PRODUCT defaults
 
-	echo "shorewall will start automatically at boot"
-	echo "Set startup=1 in /etc/default/shorewall to enable"
-	touch /var/log/shorewall-init.log
-	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/shorewall/shorewall.conf
+	echo "$PRODUCT will start automatically at boot"
+	echo "Set startup=1 in /etc/default/$PRODUCT to enable"
+	touch /var/log/$PRODUCT-init.log
+	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/$PRODUCT/$PRODUCT.conf
     else
 	if [ -n "$SYSTEMD" ]; then
-	    if systemctl enable shorewall; then
-		echo "Shorewall will start automatically at boot"
+	    if systemctl enable $PRODUCT; then
+		echo "$Product will start automatically at boot"
 	    fi
 	elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-	    if insserv /etc/init.d/shorewall ; then
-		echo "shorewall will start automatically at boot"
-		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
+	    if insserv /etc/init.d/$PRODUCT ; then
+		echo "$PRODUCT will start automatically at boot"
+		echo "Set STARTUP_ENABLED=Yes in /etc/$PRODUCT/$PRODUCT.conf to enable"
 	    else
 		cant_autostart
 	    fi
 	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	    if chkconfig --add shorewall ; then
-		echo "shorewall will start automatically in run levels as follows:"
-		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
-		chkconfig --list shorewall
+	    if chkconfig --add $PRODUCT ; then
+		echo "$PRODUCT will start automatically in run levels as follows:"
+		echo "Set STARTUP_ENABLED=Yes in /etc/$PRODUCT/$PRODUCT.conf to enable"
+		chkconfig --list $PRODUCT
 	    else
 		cant_autostart
 	    fi
 	elif [ -x /sbin/rc-update ]; then
-	    if rc-update add shorewall default; then
-		echo "shorewall will start automatically at boot"
-		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
+	    if rc-update add $PRODUCT default; then
+		echo "$PRODUCT will start automatically at boot"
+		echo "Set STARTUP_ENABLED=Yes in /etc/$PRODUCT/$PRODUCT.conf to enable"
 	    else
 		cant_autostart
 	    fi
@@ -1050,4 +1128,4 @@ fi
 #
 #  Report Success
 #
-echo "shorewall Version $VERSION Installed"
+echo "$Product Version $VERSION Installed"

@@ -113,8 +113,16 @@ rm -rf /var/lib/shorewall6-*.bkout
 rm -rf ${LIBEXEC}/shorewall6
 rm -rf /usr/share/shorewall6
 rm -rf /usr/share/shorewall6-*.bkout
-rm -rf /usr/share/man/man5/shorewall6*
-rm -rf /usr/share/man/man8/shorewall6*
+
+for f in /usr/share/man/man5/shorewall6* /usr/share/man/man8/shorewall6*; do
+    case $f in
+	shorewall6-lite*)
+	    ;;
+	*)
+	    rm -f $f
+    esac
+done
+
 rm -f  /etc/logrotate.d/shorewall6
 rm -f  /lib/systemd/system/shorewall6.service
 

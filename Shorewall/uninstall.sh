@@ -118,6 +118,7 @@ rm -rf /usr/share/shorewall/configfiles/
 rm -rf /usr/share/shorewall/Samples/
 rm -rf /usr/share/shorewall/Shorewall/
 rm -f  /usr/share/shorewall/lib.cli-std
+rm -f  /usr/share/shorewall/lib.core
 rm -f  /usr/share/shorewall/compiler.pl
 rm -f  /usr/share/shorewall/prog.*
 rm -f  /usr/share/shorewall/module*

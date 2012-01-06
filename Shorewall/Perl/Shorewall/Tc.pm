@@ -194,8 +194,15 @@ sub initialize( $ ) {
 }
 
 sub process_tc_rule( ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers ) = 
-	split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12 };
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability );
+    if ( $family == F_IPV4 ) {
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability ) =
+	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 };
+	$headers = '-';
+    } else {
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability ) = 
+	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 };
+    }
 
     our @tccmd;
 
@@ -243,6 +250,7 @@ sub process_tc_rule( ) {
 
 	    $source = '';
 	} elsif ( $source =~ s/^($fw):// ) {
+	    fatal_error ":F is not allowed when the SOURCE is the firewall" if ( $designator || '' ) eq 'F';
 	    $chain = 'tcout';
 	}
     }
@@ -497,7 +505,8 @@ sub process_tc_rule( ) {
 				     do_tos( $tos ) .
 				     do_connbytes( $connbytes ) .
 				     do_helper( $helper ) .
-				     do_headers( $headers ) ,
+				     do_headers( $headers ) .
+				     do_probability( $probability ) ,
 				     $source ,
 				     $dest ,
 				     '' ,

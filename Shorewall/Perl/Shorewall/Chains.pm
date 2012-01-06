@@ -183,6 +183,7 @@ our %EXPORT_TAGS = (
 				       do_helper
 				       validate_helper
 				       do_headers
+				       do_probability
 				       do_condition
 				       have_ipset_rules
 				       record_runtime_address
@@ -4123,7 +4124,21 @@ sub do_headers( $ ) {
 	}
     }
 
-    "-m ipv6header ${invert}--header ${headers} ${soft}";
+    "-m ipv6header ${invert}--header ${headers} ${soft} ";
+}
+
+sub do_probability( $ ) {
+    my $probability = shift;
+
+    return '' if $probability eq '-';
+
+    require_capability 'STATISTIC_MATCH', 'A non-empty PROBABILITY column', 's';
+
+    my $invert = $probability =~ s/^!// ? '! ' : "";
+    
+    fatal_error "Invalid PROBABILITY ($probability)" unless $probability =~ /^0?\.\d{1,8}$/;
+
+    "-m statistic --mode random --probability $probability ";
 }
 
 #

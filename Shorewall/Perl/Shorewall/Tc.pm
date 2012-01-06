@@ -242,7 +242,6 @@ sub process_tc_rule( ) {
 	    }
 	    $source = '';
 	} elsif ( $source =~ s/^($fw):// ) {
-	    fatal_error ":F is not allowed when the SOURCE is the firewall" if $chain eq 'tcfor';
 	    $chain = 'tcout';
 	}
     }

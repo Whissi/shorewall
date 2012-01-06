@@ -289,7 +289,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
 		 CT_TARGET       => 'CT Target',
-		 STATISTICS_MATCH => 
+		 STATISTIC_MATCH => 
 		                    'Statistics Match',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
@@ -680,7 +680,7 @@ sub initialize( $ ) {
 	       IPTABLES_S => undef,
 	       BASIC_FILTER => undef,
 	       CT_TARGET => undef,
-	       STATISTICS_MATCH => undef,
+	       STATISTIC_MATCH => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2762,7 +2762,7 @@ sub Ct_Target() {
     $ct_target;
 }
 
-sub Statistics_Match() {
+sub Statistic_Match() {
     qt1( "$iptables -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
 }
 
@@ -2820,7 +2820,7 @@ our %detect_capability =
       RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
       RECENT_MATCH => \&Recent_Match,
-      STATISTICS_MATCH => \&Statistics_Match,
+      STATISTIC_MATCH => \&Statistic_Match,
       TCPMSS_MATCH => \&Tcpmss_Match,
       TIME_MATCH => \&Time_Match,
       TPROXY_TARGET => \&Tproxy_Target,
@@ -2957,6 +2957,7 @@ sub determine_capabilities() {
 	$capabilities{IPTABLES_S}      = detect_capability( 'IPTABLES_S' );
 	$capabilities{BASIC_FILTER}    = detect_capability( 'BASIC_FILTER' );
 	$capabilities{CT_TARGET}       = detect_capability( 'CT_TARGET' );
+	$capabilities{STATISTIC_MATCH} = detect_capability( 'STATISTIC_MATCH' );
 
 
 	qt1( "$iptables -F $sillyname" );

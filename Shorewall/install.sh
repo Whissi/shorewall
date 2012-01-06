@@ -384,11 +384,11 @@ delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tunnels
 if [ $PRODUCT = shorewall6 ]; then
     delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
     delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
+    delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
 fi
 
 delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
 delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
-delete_file ${DESTDIR}/usr/share/$PRODUCT/wait4ifup
 
 #
 # Install the Modules file

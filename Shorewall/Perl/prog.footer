@@ -6,7 +6,7 @@
 #
 usage() {
     echo "Usage: $0 [ options ] <command>"
-    echo 
+    echo
     echo "<command> is one of:"
     echo "   start"
     echo "   stop"
@@ -31,6 +31,31 @@ usage() {
     echo "   -R <file>        Override RESTOREFILE setting"
     exit $1
 }
+
+checkkernelversion() {
+    local kernel
+
+    if [ $g_family -eq 6 ]; then
+	kernel=$(uname -r 2> /dev/null | sed -e 's/-.*//')
+
+	case "$kernel" in 
+	    *.*.*)
+		kernel=$(printf "%d%02d%02d" $(echo $kernel | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
+		;;
+	    *)
+		kernel=$(printf "%d%02d00" $(echo $kernel | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2/g'))
+		;;
+	esac
+
+	if [ $kernel -lt 20624 ]; then
+	    error_message "ERROR: $g_product requires Linux kernel 2.6.24 or later"
+	    return 1
+	fi
+    fi
+
+    return 0
+}
+
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
@@ -47,7 +72,7 @@ if [ $# -gt 1 ]; then
     fi
 fi
 #
-# Map VERBOSE to VERBOSITY for compatibility with old Shorewall-lite installations
+# Map VERBOSE to VERBOSITY for compatibility with old Shorewall[6]-lite installations
 #
 [ -z "$VERBOSITY" ] && [ -n "$VERBOSE" ] && VERBOSITY=$VERBOSE
 #
@@ -175,61 +200,66 @@ COMMAND="$1"
 case "$COMMAND" in
     start)
 	[ $# -ne 1 ] && usage 2
-	if shorewall_is_started; then
+	if product_is_started; then
 	    error_message "$g_product is already Running"
 	    status=0
 	else
 	    progress_message3 "Starting $g_product...."
-	    detect_configuration
-	    define_firewall
-	    status=$?
-	    if [ $status -eq 0 ]; then
-		[ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
-		progress_message3 "done."
+	    if checkkernelversion; then
+		detect_configuration
+		define_firewall
+		status=$?
+		if [ $status -eq 0 ]; then
+		    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
+		    progress_message3 "done."
+		fi
 	    fi
 	fi
 	;;
     stop)
 	[ $# -ne 1 ] && usage 2
-	progress_message3 "Stopping $g_product...."
-	detect_configuration
-	stop_firewall
-	status=0
-	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
-	progress_message3 "done."
+	if checkkernelversion; then
+	    progress_message3 "Stopping $g_product...."
+	    detect_configuration
+	    stop_firewall
+	    status=0
+	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	    progress_message3 "done."
+	fi
 	;;
     reset)
-	if ! shorewall_is_started ; then
+	if ! product_is_started ; then
 	    error_message "$g_product is not running"
 	    status=2
-	elif [ $# -eq 1 ]; then
-	    $IPTABLES -Z
-	    $IPTABLES -t nat -Z
-	    $IPTABLES -t mangle -Z
-	    date > ${VARDIR}/restarted
-	    status=0
-	    progress_message3 "$g_product Counters Reset"
-	else
-	    shift
-	    status=0
-	    for chain in $@; do
-		if chain_exists $chain; then
-		    if qt $IPTABLES -Z $chain; then
-			progress_message3 "Filter $chain Counters Reset"
+	elif checkkernelversion; then
+	    if [ $# -eq 1 ]; then
+		$IP6TABLES -Z
+		$IP6TABLES -t mangle -Z
+		date > ${VARDIR}/restarted
+		status=0
+		progress_message3 "$g_product Counters Reset"
+	    else
+		shift
+		status=0
+		for chain in $@; do
+		    if chain_exists $chain; then
+			if qt $IP6TABLES -Z $chain; then
+			    progress_message3 "Filter $chain Counters Reset"
+			else
+			    error_message "ERROR: Reset of chain $chain failed"
+			    status=2
+			    break
+			fi
 		    else
-			error_message "ERROR: Reset of chain $chain failed"
-			status=2
-			break
+			error_message "WARNING: Filter Chain $chain does not exist"
 		    fi
-		else
-		    error_message "WARNING: Filter Chain $chain does not exist"
-		fi
-	    done
+		done
+	    fi
 	fi
 	;;
     restart)
 	[ $# -ne 1 ] && usage 2
-	if shorewall_is_started; then
+	if product_is_started; then
 	    progress_message3 "Restarting $g_product...."
 	else
 	    error_message "$g_product is not running"
@@ -237,22 +267,27 @@ case "$COMMAND" in
 	    COMMAND=start
 	fi
 
-	detect_configuration
-	define_firewall
-	status=$?
-	if [ -n "$SUBSYSLOCK" ]; then
-	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-	fi
-	[ $status -eq 0 ] && progress_message3 "done."
-	;;
-    refresh)
-	[ $# -ne 1 ] && usage 2
-	if shorewall_is_started; then
-	    progress_message3 "Refreshing $g_product...."
+	if checkkernelversion; then
 	    detect_configuration
 	    define_firewall
 	    status=$?
+	    if [ -n "$SUBSYSLOCK" ]; then
+ 		[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+            fi
+
 	    [ $status -eq 0 ] && progress_message3 "done."
+	fi
+	;;
+    refresh)
+	[ $# -ne 1 ] && usage 2
+	if product_is_started; then
+	    progress_message3 "Refreshing $g_product...."
+	    if checkkernelversion; then
+		detect_configuration
+		define_firewall
+		status=$?
+		[ $status -eq 0 ] && progress_message3 "done."
+	    fi
 	else
 	    echo "$g_product is not running" >&2
 	    status=2
@@ -260,20 +295,25 @@ case "$COMMAND" in
 	;;
     restore)
 	[ $# -ne 1 ] && usage 2
-	detect_configuration
-	define_firewall
-	status=$?
-	if [ -n "$SUBSYSLOCK" ]; then
- 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-        fi
+	if checkkernelversion; then
+	    detect_configuration
+	    define_firewall
+	    status=$?
+	    if [ -n "$SUBSYSLOCK" ]; then
+ 		[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+            fi
+	    [ $status -eq 0 ] && progress_message3 "done."
+	fi
 	;;
     clear)
 	[ $# -ne 1 ] && usage 2
 	progress_message3 "Clearing $g_product...."
-	clear_firewall
-	status=0
-	if [ $status -eq 0 ]; then
-	    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+	if checkkernelversion; then
+	    clear_firewall
+	    status=0
+	    if [ -n "$SUBSYSLOCK" ]; then
+		rm -f $SUBSYSLOCK
+	    fi
 	    progress_message3 "done."
 	fi
 	;;
@@ -281,7 +321,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 2
 	echo "$g_product-$SHOREWALL_VERSION Status at $(hostname) - $(date)"
 	echo
-	if shorewall_is_started; then
+	if product_is_started; then
 	    echo "$g_product is running"
 	    status=0
 	else
@@ -292,7 +332,7 @@ case "$COMMAND" in
 	if [ -f ${VARDIR}/state ]; then
 	    state="$(cat ${VARDIR}/state)"
 	    case $state in
-		Stopped*|lClear*)
+		Stopped*|Clear*)
 		    status=3
 		    ;;
 	    esac
@@ -306,14 +346,14 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
-	updown $@
-	status=0;
+	updown $1
+	status=0
 	;;
     enable)
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
-	if shorewall_is_started; then
+	if product_is_started; then
 	    detect_configuration
 	    enable_provider $1
 	fi
@@ -323,7 +363,7 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
-	if shorewall_is_started; then
+	if product_is_started; then
 	    detect_configuration
 	    disable_provider $1
 	fi

@@ -859,13 +859,7 @@ sub compiler {
 	#
 	# Copy the footer to the script
 	#
-	unless ( $test ) {
-	    if ( $family == F_IPV4 ) {
-		copy $globals{SHAREDIRPL} . 'prog.footer';
-	    } else {
-		copy $globals{SHAREDIRPL} . 'prog.footer6';
-	    }
-	}
+	copy $globals{SHAREDIRPL} . 'prog.footer' unless $test;
 
 	disable_script;
 	#

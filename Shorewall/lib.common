@@ -38,7 +38,7 @@ get_script_version() { # $1 = script
     verbosity="$VERBOSITY"
     VERBOSITY=0
 
-    temp=$( $SHOREWALL_SHELL $1 version | sed 's/-.*//' )
+    temp=$( $SHOREWALL_SHELL $1 version | tail -n 1 | sed 's/-.*//' )
 
     if [ $? -ne 0 ]; then
 	version=0

@@ -409,6 +409,15 @@ use constant { MIN_VERBOSITY => -1,
 my %validlevels;             # Valid log levels.
 
 #
+# Deprecated options with their default values
+#
+my %deprecated = ( LOGRATE            => '' ,
+		   LOGBURST           => '' ,
+		   EXPORTPARAMS       => 'no',
+		   WIDE_TC_MARKS      => 'no',
+		   HIGH_ROUTE_MARKS   => 'no'
+		 );
+#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -3080,16 +3089,7 @@ sub update_config_file( $ ) {
 	#
 	$fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
     }
-    #
-    # Deprecated options with their default values
-    #
-    my %deprecated = ( LOGRATE            => '' ,
-		       LOGBURST           => '' ,
-		       EXPORTPARAMS       => 'no',
-		       WIDE_TC_MARKS      => 'no',
-		       HIGH_ROUTE_MARKS   => 'no'
-		     );
-    if ( -f $fn ) {
+   if ( -f $fn ) {
 	my ( $template, $output );
 
 	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
@@ -3208,6 +3208,9 @@ sub process_shorewall_conf( $$ ) {
 		    warning_message "Unknown configuration option ($var) ignored", next unless exists $config{$var};
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
+		    
+		    warning_message "Option $var=$val is deprecated"
+			if $deprecated{$var} && supplied $val && lc $config{$var} ne $deprecated{$var};
 		} else {
 		    fatal_error "Unrecognized $product.conf entry";
 		}

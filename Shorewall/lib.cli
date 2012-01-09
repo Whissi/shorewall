@@ -82,11 +82,11 @@ iptablesbug()
     if [ $g_family -eq 4 ]; then
 	if qt mywhich awk ; then
 	    awk 'BEGIN           { sline=""; };\
-             /^-j/           { print sline $0; next };\
-             /-m policy.*-j/ { print $0; next };\
-             /-m policy/     { sline=$0; next };\
-             /--mask ff/     { sub( /--mask ff/, "--mask 0xff" ) };\
-                             { print ; sline="" }'
+             /^-[jg]/            { print sline $0; next };\
+             /-m policy.*-[jg] / { print $0; next };\
+             /-m policy/         { sline=$0; next };\
+             /--mask ff/         { sub( /--mask ff/, "--mask 0xff" ) };\
+                                 { print ; sline="" }'
         else
 	    echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
 	    cat

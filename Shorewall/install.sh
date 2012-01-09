@@ -731,12 +731,15 @@ fi
 #
 # Install the Route Rules file
 #
-run_install $OWNERSHIP -m 0644 route_rules           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 route_rules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rtrules          ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rrules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/route_rules ]; then
-    run_install $OWNERSHIP -m 0600 route_rules${suffix} ${DESTDIR}/etc/$PRODUCT/route_rules
-    echo "Routing rules file installed as ${DESTDIR}/etc/$PRODUCT/route_rules"
+if [ -f ${DESTDIR}/etc/$PRODUCT/route_rules -a ! ${DESTDIR}/etc/$PRODUCT/rtrules ]; then
+    mv -f ${DESTDIR}/etc/$PRODUCT/route_rules ${DESTDIR}/etc/$PRODUCT/rtrules
+    echo "${DESTDIR}/etc/$PRODUCT/route_rules has been renamed ${DESTDIR}/etc/$PRODUCT/rtrules"
+elif [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/rtrules ]; then
+    run_install $OWNERSHIP -m 0600 rtrules${suffix} ${DESTDIR}/etc/$PRODUCT/rtrules
+    echo "Routing rules file installed as ${DESTDIR}/etc/$PRODUCT/rtrules"
 fi
 
 #

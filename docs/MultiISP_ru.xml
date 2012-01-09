@@ -326,7 +326,7 @@
         </listitem>
       </orderedlist>
 
-      <para>Итак, если вы хотите направить трафик через определённого провайдера, то <emphasis>необходимо </emphasis>пометить этот трафик значением MARK провайдера в файле <filename>/etc/shorewall/tcrules</filename> и пометить пакет в цепочке PREROUTING; другим способом будет указание соответствующих правил в файле <filename>/etc/shorewall/route_rules</filename>.</para>
+      <para>Итак, если вы хотите направить трафик через определённого провайдера, то <emphasis>необходимо </emphasis>пометить этот трафик значением MARK провайдера в файле <filename>/etc/shorewall/tcrules</filename> и пометить пакет в цепочке PREROUTING; другим способом будет указание соответствующих правил в файле <filename>/etc/shorewall/rtrules</filename>.</para>
 
       <warning id="Undo">
         <para>В Shorewall версий ниже 3.4.0 записи из файла <filename>/etc/shorewall/providers</filename> необратимо изменяют маршрутизацию системы, то есть эти изменения не отменяются при вызове команды <command>shorewall stop</command> или <command>shorewall clear</command>. Для того чтобы восстановить исходные маршруты, может потребоваться перезапустить сеть. Обычно это делает команда <command>/etc/init.d/network restart</command> или <command>/etc/init.d/networking restart</command>. Обратитесь к документации по сети вашего дистрибутива.</para>
@@ -484,7 +484,7 @@ eth0             eth2              206.124.146.176
 eth1             eth2              130.252.99.27</programlisting>
 
       <warning>
-        <para>Записи в файле <filename>/etc/shorewall/masq</filename> никак не влияют на то, через какого провайдера пройдёт конкретное соединение. Для этого применяются правила в файле <filename>/etc/shorewall/tcrules</filename> или <filename>/etc/shorewall/route_rules</filename>.</para>
+        <para>Записи в файле <filename>/etc/shorewall/masq</filename> никак не влияют на то, через какого провайдера пройдёт конкретное соединение. Для этого применяются правила в файле <filename>/etc/shorewall/tcrules</filename> или <filename>/etc/shorewall/rtrules</filename>.</para>
       </warning>
 
       <para>Предположим, что требуется направить весь исходящий трафик SMTP из локальной сети через провайдера 2. В файле <ulink url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink> укажите следующее (и в версии Shorewall ниже 3.0.0 также задайте TC_ENABLED=Yes в файле <ulink url="???">/etc/shorewall/shorewall.conf</ulink>).</para>
@@ -546,13 +546,13 @@ eth3             eth2              16.105.78.4</programlisting></para>
       </itemizedlist>
     </section>
 
-    <section id="route_rules">
-      <title>/etc/shorewall/route_rules</title>
+    <section id="rtrules">
+      <title>/etc/shorewall/rtrules</title>
 
-      <para>Файл <filename>/etc/shorewall/route_rules</filename> добавлен в Shorewall в версии 3.2.0. Файл <filename>route_rules</filename> позволяет направлять определенный трафик через конкретного провайдера, как и записи из файла <filename>tcrules</filename> . Разница между этими двумя файлами состоит в том что записи в <filename>route_rules</filename> никак не связаны с Netfilter.</para>
+      <para>Файл <filename>/etc/shorewall/rtrules</filename> добавлен в Shorewall в версии 3.2.0. Файл <filename>rtrules</filename> позволяет направлять определенный трафик через конкретного провайдера, как и записи из файла <filename>tcrules</filename> . Разница между этими двумя файлами состоит в том что записи в <filename>rtrules</filename> никак не связаны с Netfilter.</para>
 
       <warning>
-        <para>В Shorewall версий ниже 3.4.0 записи из файла <filename>/etc/shorewall/route_rules</filename> необратимо изменяют маршрутизацию в системе, то есть эти изменения не отменяются при вызове команды <command>shorewall stop</command> или <command>shorewall clear</command>. Для того чтобы восстановить исходные маршруты, может потребоваться перезапустить сеть. Обычно это делает команда <command>/etc/init.d/network restart</command> или <command>/etc/init.d/networking restart</command>. Обратитесь к документации по сети вашего дистрибутива.</para>
+        <para>В Shorewall версий ниже 3.4.0 записи из файла <filename>/etc/shorewall/rtrules</filename> необратимо изменяют маршрутизацию в системе, то есть эти изменения не отменяются при вызове команды <command>shorewall stop</command> или <command>shorewall clear</command>. Для того чтобы восстановить исходные маршруты, может потребоваться перезапустить сеть. Обычно это делает команда <command>/etc/init.d/network restart</command> или <command>/etc/init.d/networking restart</command>. Обратитесь к документации по сети вашего дистрибутива.</para>
 
         <para>Также обратите внимание на <link linkend="Undo">предупреждение в разделе <emphasis>Какие функции выполняет запись в файле providers</emphasis></link>.</para>
       </warning>
@@ -575,8 +575,8 @@ gateway:~ #</programlisting>
         <para>В этом примере настроены два провайдера:  Blarg и Comcast, с метками MARK 1 и 2 соответственно.</para>
       </section>
 
-      <section id="route_rules_columns">
-        <title>Файл route_rules</title>
+      <section id="rtrules_columns">
+        <title>Файл rtrules</title>
 
         <para>Далее описаны столбцы файла:</para>
 

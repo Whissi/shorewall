@@ -159,7 +159,7 @@ vz       venet0             -              <emphasis role="bold">routeback,rp_fi
 
       <para>If you run Shorewall Multi-ISP support on the host, you should
       arrange for traffic to your containers to use the main routing table. In
-      the configuration shown here, this entry in /etc/shorewall/route_rules
+      the configuration shown here, this entry in /etc/shorewall/rtrules
       is appropriate:</para>
 
       <programlisting>#SOURCE            DEST              PROVIDER          PRIORITY
@@ -478,7 +478,7 @@ net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional
 loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
 <emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
 ...</programlisting>This is a multi-ISP configuration so entries are required
-      in <filename>/etc/shorewall/route_rules</filename>:</para>
+      in <filename>/etc/shorewall/rtrules</filename>:</para>
 
       <programlisting>#SOURCE   DEST                 PROVIDER  PRIORITY
 -         172.20.0.0/24        main      1000
@@ -796,7 +796,7 @@ dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets
 206.124.146.178 DMZ_IF        eth2       no          yes</emphasis></programlisting>
 
       <para>This is a multi-ISP configuration so entries are required in
-      <filename>/etc/shorewall/route_rules</filename>:</para>
+      <filename>/etc/shorewall/rtrules</filename>:</para>
 
       <programlisting>#SOURCE   DEST                 PROVIDER  PRIORITY
 -         172.20.0.0/24        main      1000

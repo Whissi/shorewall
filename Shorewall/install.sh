@@ -731,8 +731,8 @@ fi
 #
 # Install the Route Rules file
 #
-run_install $OWNERSHIP -m 0644 rtrules          ${DESTDIR}/usr/share/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 rrules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rtrules           ${DESTDIR}/usr/share/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rtrules.annotated ${DESTDIR}/usr/share/$PRODUCT/configfiles/
 
 if [ -f ${DESTDIR}/etc/$PRODUCT/route_rules -a ! ${DESTDIR}/etc/$PRODUCT/rtrules ]; then
     mv -f ${DESTDIR}/etc/$PRODUCT/route_rules ${DESTDIR}/etc/$PRODUCT/rtrules

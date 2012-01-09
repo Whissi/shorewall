@@ -21,7 +21,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MAS 02110-1301 USA.
 #
 #   This module deals with the /etc/shorewall/providers,
-#   /etc/shorewall/route_rules and /etc/shorewall/routes files.
+#   /etc/shorewall/rtrules and /etc/shorewall/routes files.
 #
 package Shorewall::Providers;
 require Exporter;
@@ -817,7 +817,7 @@ sub add_a_provider( $$ ) {
 }
 
 sub add_an_rtrule( ) {
-    my ( $source, $dest, $provider, $priority, $originalmark ) = split_line 'route_rules file', { source => 0, dest => 1, provider => 2, priority => 3 , mark => 4 };
+    my ( $source, $dest, $provider, $priority, $originalmark ) = split_line 'rtrules file', { source => 0, dest => 1, provider => 2, priority => 3 , mark => 4 };
 
     our $current_if;
 
@@ -844,7 +844,7 @@ sub add_an_rtrule( ) {
     my $number = $providerref->{number};
 
     fatal_error "You may not add rules for the $provider provider" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
-    fatal_error "You must specify either the source or destination in a route_rules entry" if $source eq '-' && $dest eq '-';
+    fatal_error "You must specify either the source or destination in a rtrules entry" if $source eq '-' && $dest eq '-';
 
     if ( $dest eq '-' ) {
 	$dest = 'to ' . ALLIP;
@@ -1108,7 +1108,7 @@ sub process_providers( $ ) {
     }
 
     if ( $providers ) {
-	my $fn = open_file 'route_rules';
+	my $fn = open_file( 'route_rules' ) || open_file( 'rtrules' );
 
 	if ( $fn ) {
 	    first_entry "$doing $fn...";

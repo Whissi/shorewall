@@ -144,7 +144,7 @@
       <para>Entries in <filename>/etc/shorewall/providers</filename> can
       specify that outgoing connections are to be load-balanced between the
       two ISPs. Entries in <filename>/etc/shorewall/tcrules</filename> and
-      <filename>/etc/shorewall/route_rules</filename> can be used to direct
+      <filename>/etc/shorewall/rtrules</filename> can be used to direct
       particular outgoing connections to one ISP or the other. Use of
       <filename>/etc/shorewall/tcrules</filename> is not required for
       <filename>/etc/shorewall/providers</filename> to work, but in most
@@ -973,7 +973,7 @@ eth3             0.0.0.0/0         16.105.78.4</programlisting></para>
 lo          -         shorewall       1000</programlisting>
     </section>
 
-    <section id="route_rules">
+    <section id="rtrules">
       <title>/etc/shorewall/rtrules (formerly
       /etc/shorewall/route_rules)</title>
 
@@ -1005,7 +1005,7 @@ gateway:~ #</programlisting>
         with MARK 1 going to Blarg and mark 2 going to Comcast.</para>
       </section>
 
-      <section id="route_rules_columns">
+      <section id="rtrules_columns">
         <title>Columns in the rtrules file</title>
 
         <para>Columns in the file are:</para>
@@ -1301,7 +1301,7 @@ lillycat: #</programlisting>
       USE_DEFAULT_RT=Yes, you can easily cause all traffic to use one provider
       except when you explicitly direct it to use the other provider via
       <ulink
-      url="manpages/shorewall-route_rules.html">shorewall-rtrules</ulink> (5)
+      url="manpages/shorewall-rtrules.html">shorewall-rtrules</ulink> (5)
       or <ulink
       url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>
       (5).</para>

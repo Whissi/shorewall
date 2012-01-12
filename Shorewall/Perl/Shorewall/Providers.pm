@@ -1097,7 +1097,15 @@ sub process_providers( $ ) {
     }
 
     if ( $providers ) {
-	my $fn = open_file( 'route_rules' ) || open_file( 'rtrules' );
+	my $fn = open_file( 'route_rules' );
+
+	if ( $fn ){
+	    if ( -f ( my $fn1 = find_file 'rtrules' ) ) {
+		warning_message "Both $fn and $fn1 exists: $fn1 will be ignored";
+	    }
+	} else {
+	    $fn = open_file( 'rtrules' );
+	}
 
 	if ( $fn ) {
 	    first_entry "$doing $fn...";

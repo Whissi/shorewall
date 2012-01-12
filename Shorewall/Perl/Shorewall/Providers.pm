@@ -53,7 +53,6 @@ my  @routemarked_providers;
 my  %routemarked_interfaces;
 our @routemarked_interfaces;
 my  %provider_interfaces;
-my  @stat_providers;
 
 my $balancing;
 my $fallback;
@@ -87,7 +86,6 @@ sub initialize( $ ) {
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
     %provider_interfaces    = ();
-    @stat_providers         = ();
     $balancing              = 0;
     $fallback               = 0;
     $first_default_route    = 1;
@@ -368,8 +366,8 @@ sub process_a_provider() {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local , $stat ) =
-	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0      , 0);
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local ) =
+	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0      );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -410,8 +408,6 @@ sub process_a_provider() {
 		$local = 1;
 		$track = 0           if $config{TRACK_PROVIDERS};
 		$default_balance = 0 if $config{USE_DEFAULT_RT};
-	    } elsif ( $option eq 'stat' ) {
-		$stat = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -492,7 +488,6 @@ sub process_a_provider() {
 			   duplicate   => $duplicate ,
 			   address     => $address ,
 			   local       => $local ,
-			   stat        => $stat ,
 			   rules       => [] ,
 			   routes      => [] ,
 			 };
@@ -509,12 +504,6 @@ sub process_a_provider() {
 	}
 
 	push @routemarked_providers, $providers{$table};
-    }
-
-    if ( $stat ) {
-	require_capability 'STATISTIC_MATCH', q(The 'stat' option), 's';
-	fatal_error q('stat' requires either 'balance' or 'fallback=<weight>') unless $balance || $default > 0;
-	push @stat_providers, $providers{$table};
     }
 
     push @providers, $table;

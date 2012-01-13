@@ -403,7 +403,7 @@ conditionally_flush_conntrack() {
 
     if [ -n "$g_purge" ]; then
 	if [ -n $(mywhich conntrack) ]; then
-            conntrack -f ipv$g_family -F
+            conntrack -F
 	else
             error_message "WARNING: The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 	fi

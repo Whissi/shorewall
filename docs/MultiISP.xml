@@ -1300,9 +1300,8 @@ lillycat: #</programlisting>
       <para>Although 'balance' is automatically assumed when
       USE_DEFAULT_RT=Yes, you can easily cause all traffic to use one provider
       except when you explicitly direct it to use the other provider via
-      <ulink
-      url="manpages/shorewall-rtrules.html">shorewall-rtrules</ulink> (5)
-      or <ulink
+      <ulink url="manpages/shorewall-rtrules.html">shorewall-rtrules</ulink>
+      (5) or <ulink
       url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>
       (5).</para>
 
@@ -1354,9 +1353,15 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       <ulink
       url="manpages/shorewall-providers.html">shorewall-providers</ulink> (5)
       is available in the form of a PROBABILITY column in <ulink
-      url="???">shorewall-tcrules</ulink> (5).</para>
+      url="???">shorewall-tcrules</ulink> (5). This feature requires the
+      <firstterm>Statistic Match</firstterm> capability in your iptables and
+      kernel.</para>
 
-      <para>Here's an example:</para>
+      <para>This method works when there are two links to the same ISP where
+      both links have the same default gateway.</para>
+
+      <para>Here's an example that sends 1/3 of the connections through
+      provider ComcastC and the rest through ComastB.</para>
 
       <para><filename>/etc/shorewall/shorewall.conf</filename>:</para>
 
@@ -1372,7 +1377,7 @@ ZONE_BITS=4
 </programlisting>
 
       <note>
-        <para> PROVIDER_OFFSET=16 and ZONE_BITS=4 means that the provider mask
+        <para>PROVIDER_OFFSET=16 and ZONE_BITS=4 means that the provider mask
         will be 0xf0000.</para>
       </note>
 
@@ -1380,11 +1385,10 @@ ZONE_BITS=4
 
       <programlisting>#NAME    NUMBER MARK DUPLICATE  INTERFACE GATEWAY       OPTIONS
 ComcastB 1      -    -          eth1      70.90.191.126 loose,balance
-ComcastC 2      -    -          eth0      detect        loose,balance
-</programlisting>
+ComcastC 2      -    -          eth0      detect        loose,fallback,load=0.33333333</programlisting>
 
       <note>
-        <para> The <option>loose</option> option is specified so that the
+        <para>The <option>loose</option> option is specified so that the
         compiler will not generate and rules based on interface IP addresses.
         That way we have complete control over the priority of such rules
         through entries in the rtrules file.</para>
@@ -1404,41 +1408,29 @@ ComcastC 2      -    -          eth0      detect        loose,balance
       </note>
 
       <note>
-        <para> Priority = 1000 means that these rules will come before rules
+        <para>Priority = 1000 means that these rules will come before rules
         that select a provider based on marks.</para>
       </note>
 
-      <para><filename>/etc/shorewall/tcrules</filename>:</para>
+      <para>As shown in the above example, this technique works best when
+      there are two providers.</para>
 
-      <programlisting>    #MARK		SOURCE	DEST	PROTO	DEST
-    #						PORT(S)
-    CONTINUE		-	70.90.191.120/29
-    CONTINUE		-	10.0.10.0/24
-    CONTINUE		-	-	tcp	80
+      <orderedlist>
+        <listitem>
+          <para>One is configured with <option>balance</option> and the other
+          with <option>fallback</option>.</para>
+        </listitem>
 
-    # 70.90.191.120/29 is the local public subnet. 10.0.10.0/24 is a 
-    # local network on eth1. We don't want to mark TCP 80, because
-    # we run a transparent proxy on the firewall.
-
-    0X10000/0xf0000	eth2	- ; probability=0.66666667
-    0x20000/0xf0000	eth2	- ; test=0/0x30000
-
-    #  The above two split traffic entering the firewall through eth2
-    #  (local LAN) between the two providers with 2/3 of the traffic
-    #  going to eth1 and 1/3 going to eth0.  
-
-    CONTINUE	fw:70.90.191.120/29
-    CONTINUE	fw		172.20.1.0/22
-    CONTINUE	fw		70.90.191.120/29
-    CONTINUE	fw		10.0.10.0/24
-    
-    # Similar to rules above
-
-    0X10000/0xf0000	fw	- ; probability=0.66666667
-    0x20000/0xf0000	fw	- ; test=0/0x30000
-
-    # Again, split traffic from the firewall 2:1 in favor of eth1.
-</programlisting>
+        <listitem>
+          <para>The provider with the <option>fallback</option> option is
+          configured whith load=<replaceable>number</replaceable> where the
+          <replaceable>number</replaceable> has a value in the range 0 &lt;
+          <replaceable>number</replaceable> &lt;= 1. This
+          <replaceable>number</replaceable> defines the probability that each
+          new connection will be sent to the fallback provider and may have up
+          to 8 digits to the right of the decimal point.</para>
+        </listitem>
+      </orderedlist>
     </section>
 
     <section id="LinkMonitor">

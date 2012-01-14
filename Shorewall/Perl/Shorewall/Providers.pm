@@ -53,6 +53,7 @@ my  @routemarked_providers;
 my  %routemarked_interfaces;
 our @routemarked_interfaces;
 my  %provider_interfaces;
+my  @load_providers;
 
 my $balancing;
 my $fallback;
@@ -86,6 +87,7 @@ sub initialize( $ ) {
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
     %provider_interfaces    = ();
+    @load_providers         = ();
     $balancing              = 0;
     $fallback               = 0;
     $first_default_route    = 1;
@@ -110,33 +112,72 @@ sub setup_route_marking() {
     add_ijump $mangle_table->{$_} , j => 'CONNMARK', targetopts => "--restore-mark --mask $mask", connmark => "! --mark 0/$mask" for qw/PREROUTING OUTPUT/;
 
     my $chainref  = new_chain 'mangle', 'routemark';
-    my $chainref1 = new_chain 'mangle', 'setsticky';
-    my $chainref2 = new_chain 'mangle', 'setsticko';
 
-    my %marked_interfaces;
+    if ( @routemarked_providers ) {
+	my $chainref1 = new_chain 'mangle', 'setsticky';
+	my $chainref2 = new_chain 'mangle', 'setsticko';
 
-    for my $providerref ( @routemarked_providers ) {
-	my $interface = $providerref->{interface};
-	my $physical  = $providerref->{physical};
-	my $mark      = $providerref->{mark};
+	my %marked_interfaces;
 
-	unless ( $marked_interfaces{$interface} ) {
-	    add_ijump $mangle_table->{PREROUTING} , j => $chainref,  i => $physical,     mark => "--mark 0/$mask";
-	    add_ijump $mangle_table->{PREROUTING} , j => $chainref1, i => "! $physical", mark => "--mark  $mark/$mask";
-	    add_ijump $mangle_table->{OUTPUT}     , j => $chainref2,                     mark => "--mark  $mark/$mask";
-	    $marked_interfaces{$interface} = 1;
+	for my $providerref ( @routemarked_providers ) {
+	    my $interface = $providerref->{interface};
+	    my $physical  = $providerref->{physical};
+	    my $mark      = $providerref->{mark};
+
+	    unless ( $marked_interfaces{$interface} ) {
+		add_ijump $mangle_table->{PREROUTING} , j => $chainref,  i => $physical,     mark => "--mark 0/$mask";
+		add_ijump $mangle_table->{PREROUTING} , j => $chainref1, i => "! $physical", mark => "--mark  $mark/$mask";
+		add_ijump $mangle_table->{OUTPUT}     , j => $chainref2,                     mark => "--mark  $mark/$mask";
+		$marked_interfaces{$interface} = 1;
+	    }
+
+	    if ( $providerref->{shared} ) {
+		add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
+		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
+		decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
+	    } else {
+		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}", imatch_source_dev( $interface );
+	    }
 	}
 
-	if ( $providerref->{shared} ) {
-	    add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-	    add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
-	    decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
-	} else {
-	    add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}", imatch_source_dev( $interface );
-	}
+	add_ijump $chainref, j => 'CONNMARK', targetopts => "--save-mark --mask $mask", mark => "! --mark 0/$mask";
     }
 
-    add_ijump $chainref, j => 'CONNMARK', targetopts => "--save-mark --mask $mask", mark => "! --mark 0/$mask";
+    if ( @load_providers ) {
+	my $chainref1 = new_chain 'mangle', 'balance';
+	my @match;
+
+	add_ijump $chainref,               g => $chainref1, mark => "--mark 0/$mask";
+	add_ijump $mangle_table->{OUTPUT}, j => $chainref1, state_imatch( 'NEW,RELATED' ), mark => "--mark 0/$mask";
+
+	for my $providerref ( @load_providers ) {
+
+	    my $chainref2 = new_chain( 'mangle', load_chain( $providerref->{provider} ) );
+
+	    dont_optimize $chainref2;
+	    dont_move     $chainref2;
+	    dont_delete   $chainref2;
+	
+	    if ( $providerref->{optional} ) {
+		my $dev  = chain_base $providerref->{physical};
+		my $base = uc $dev;
+
+		add_commands( $chainref2, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
+		incr_cmd_level $chainref2;
+	    }
+
+	    add_ijump( $chainref2, j => 'MARK', targetopts => "--set-mark $providerref->{mark}/$globals{PROVIDER_MASK}", statistic => "--mode random --probability $providerref->{load}" );
+
+	    if ( $providerref->{optional} ) {
+		add_commands( $chainref2 , 'fi' );
+		decr_cmd_level( $chainref2 );
+	    }
+
+  	    add_ijump ( $chainref1,
+			j => $chainref2 ,
+		        mark => "--mark 0/$mask" );
+	}
+    }
 }
 
 sub copy_table( $$$ ) {
@@ -366,8 +407,8 @@ sub process_a_provider() {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local ) =
-	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0      );
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local , $load ) =
+	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0      , 0 );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -408,6 +449,9 @@ sub process_a_provider() {
 		$local = 1;
 		$track = 0           if $config{TRACK_PROVIDERS};
 		$default_balance = 0 if $config{USE_DEFAULT_RT};
+	    } elsif ( $option =~ /^load=(0?\.\d{1,8})/ ) {
+		$load = $1;
+		require_capability 'STATISTIC_MATCH', "load=$load", 's';
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -415,6 +459,11 @@ sub process_a_provider() {
     }
 
     fatal_error q(The 'balance' and 'fallback' options are mutually exclusive) if $balance && $default;
+
+    if ( $load ) {
+	fatal_error q(The 'balance=<weight>' and 'load=<load-factor>' options are mutually exclusive) if $balance > 1;
+	fatal_error q(The 'fallback=<weight>' and 'load=<load-factor>' options are mutually exclusive) if $default > 1;
+    }
 
     if ( $local ) {
 	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
@@ -488,6 +537,7 @@ sub process_a_provider() {
 			   duplicate   => $duplicate ,
 			   address     => $address ,
 			   local       => $local ,
+			   load        => $load ,
 			   rules       => [] ,
 			   routes      => [] ,
 			 };
@@ -505,6 +555,8 @@ sub process_a_provider() {
 
 	push @routemarked_providers, $providers{$table};
     }
+
+    push @load_providers, $providers{$table} if $load;
 
     push @providers, $table;
 
@@ -537,6 +589,8 @@ sub add_a_provider( $$ ) {
     my $duplicate   = $providerref->{duplicate};
     my $address     = $providerref->{address};
     my $local       = $providerref->{local};
+    my $load        = $providerref->{load};
+
     my $dev         = chain_base $physical;
     my $base        = uc $dev;
     my $realm = '';
@@ -671,10 +725,10 @@ sub add_a_provider( $$ ) {
     }
 
     emit( '' );
-
+    
     my ( $tbl, $weight );
 
-    if ( $optional ) {
+    if ( $optional ) {	
 	emit( 'if [ $COMMAND = enable ]; then' );
 
 	push_indent;
@@ -702,6 +756,9 @@ sub add_a_provider( $$ ) {
 	} else {
 	    $weight = 1;
 	}
+
+	emit( 'run_iptables -t mangle -A ' . load_chain( $table ) . ' -m statistic --mode random --probability ' . $load,
+	      '' ) if $load;
 
 	unless ( $shared ) {
 	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
@@ -783,6 +840,9 @@ sub add_a_provider( $$ ) {
 
 	emit (". $undo",
 	      "> $undo" );
+
+	emit( '',
+	      'run_iptables -t mangle -X ' . load_chain( $table ) ) if $load;
 
 	unless ( $shared ) {
 	    emit( '', 
@@ -1232,7 +1292,7 @@ sub setup_providers() {
 	pop_indent;
 	emit "fi\n";
 
-	setup_route_marking if @routemarked_interfaces;
+	setup_route_marking if @routemarked_interfaces || @load_providers;
     } else {
 	emit "\nif [ -z \"\$g_noroutes\" ]; then";
 
@@ -1504,7 +1564,7 @@ sub handle_stickiness( $ ) {
 	}
     }
 
-    if ( @routemarked_providers ) {
+    if ( @routemarked_providers || @load_providers ) {
 	delete_jumps $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
 	delete_jumps $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
     }

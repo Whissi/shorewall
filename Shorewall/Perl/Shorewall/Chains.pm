@@ -138,6 +138,7 @@ our %EXPORT_TAGS = (
 				       snat_chain
 				       ecn_chain
 				       notrack_chain
+				       load_chain
 				       first_chains
 				       option_chains
 				       reserved_name
@@ -666,11 +667,19 @@ sub set_rule_option( $$$ ) {
     my $opttype = $opttype{$option} || MATCH;
 
     if ( exists $ruleref->{$option} ) {
-	assert( defined $ruleref->{$option} );
+	assert( defined( my $value1 = $ruleref->{$option} ) );
 
 	if ( $opttype == MATCH ) {
 	    assert( $globals{KLUDGEFREE} );
-	    $ruleref->{$option} = [ $ruleref->{$option} ] unless reftype $ruleref->{$option};
+
+	    unless ( reftype $value1 ) {
+		unless ( reftype $value ) {
+		    return if $value1 eq $value;
+		}
+
+		$ruleref->{$option} = [ $ruleref->{$option} ];
+	    }
+
 	    push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 	} elsif ( $opttype == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";
@@ -1773,6 +1782,13 @@ sub dnat_chain( $ )
 sub notrack_chain( $ )
 {
     $_[0] . '_notrk';
+}
+
+#
+# Load Chain for a provider
+#
+sub load_chain( $ ) {
+    '~' . $_[0];
 }
 
 #

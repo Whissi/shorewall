@@ -1788,7 +1788,7 @@ sub notrack_chain( $ )
 # Load Chain for a provider
 #
 sub load_chain( $ ) {
-    '~' . $_[0];
+    '~' . chain_base( $_[0] );
 }
 
 #

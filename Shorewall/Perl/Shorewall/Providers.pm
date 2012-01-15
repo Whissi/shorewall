@@ -152,7 +152,7 @@ sub setup_route_marking() {
 
 	for my $providerref ( @load_providers ) {
 
-	    my $chainref2 = new_chain( 'mangle', load_chain( $providerref->{provider} ) );
+	    my $chainref2 = new_chain( 'mangle', load_chain( $providerref->{physical} ) );
 
 	    dont_optimize $chainref2;
 	    dont_move     $chainref2;
@@ -617,7 +617,13 @@ sub add_a_provider( $$ ) {
 	    }
 	}
     }
-    
+
+    if ( $load ) {
+	emit( qq(echo $load > \${VARDIR}/${physical}_load) );
+	emit( qq(echo "rm -f \${VARDIR}/${physical}_load" >> \${VARDIR}/undo_${table}_routing) );
+    }
+
+    emit( qq(echo "rm -f \${VARDIR}/${physical}.status" >> \${VARDIR}/undo_${table}_routing) );
     #
     # /proc for this interface
     #
@@ -757,7 +763,7 @@ sub add_a_provider( $$ ) {
 	    $weight = 1;
 	}
 
-	emit( 'run_iptables -t mangle -A ' . load_chain( $table ) . ' -m statistic --mode random --probability ' . $load,
+	emit( 'run_iptables -t mangle -A ' . load_chain( $physical ) . ' -m statistic --mode random --probability ' . $load,
 	      '' ) if $load;
 
 	unless ( $shared ) {
@@ -768,12 +774,14 @@ sub add_a_provider( $$ ) {
 
 	pop_indent;
  
-	emit( 'else' ,
+	emit( 'else' );
+	emit( qq(    echo 0 > \${VARDIR}/${physical}.status) ,
 	      qq(    echo $weight > \${VARDIR}/${physical}_weight) ,
 	      qq(    progress_message "   Provider $table ($number) Started"),
 	      qq(fi\n)
 	    );
     } else {
+	emit( qq(echo 0 > \${VARDIR}/${physical}.status) );
 	emit( qq(progress_message "Provider $table ($number) Started") );
     }
     
@@ -782,6 +790,8 @@ sub add_a_provider( $$ ) {
     emit 'else';
 
     push_indent;
+    
+    emit( qq(echo 0 > \${VARDIR}/${physical}.status) );
 
     if ( $optional ) {
 	if ( $shared ) {
@@ -842,7 +852,7 @@ sub add_a_provider( $$ ) {
 	      "> $undo" );
 
 	emit( '',
-	      'run_iptables -t mangle -X ' . load_chain( $table ) ) if $load;
+	      'run_iptables -t mangle -X ' . load_chain( $physical ) ) if $load;
 
 	unless ( $shared ) {
 	    emit( '', 

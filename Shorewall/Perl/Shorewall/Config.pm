@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010,2011,2012 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -984,10 +984,10 @@ sub emitstd {
 #
 # Write passed message to the script with newline but no indentation.
 #
-sub emit_unindented( $ ) {
+sub emit_unindented( $;$ ) {
     assert( $script_enabled );
 
-    print $script "$_[0]\n" if $script;
+    print $script $_[1] ? "$_[0]" : "$_[0]\n" if $script;
 }
 
 #

@@ -38,7 +38,9 @@ our @EXPORT = qw( process_providers
 		  setup_providers
 		  @routemarked_interfaces
 		  handle_stickiness
-		  handle_optional_interfaces );
+		  handle_optional_interfaces
+		  setup_load_distribution
+	       );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = '4.4_24';
 
@@ -54,11 +56,13 @@ my  %routemarked_interfaces;
 our @routemarked_interfaces;
 my  %provider_interfaces;
 my  @load_providers;
+my  @load_interfaces;
 
 my $balancing;
 my $fallback;
 my $first_default_route;
 my $first_fallback_route;
+my $maxload;
 
 my %providers;
 
@@ -88,10 +92,12 @@ sub initialize( $ ) {
     @routemarked_interfaces = ();
     %provider_interfaces    = ();
     @load_providers         = ();
+    @load_interfaces        = ();
     $balancing              = 0;
     $fallback               = 0;
     $first_default_route    = 1;
     $first_fallback_route   = 1;
+    $maxload                = 0;
 
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
@@ -143,36 +149,21 @@ sub setup_route_marking() {
 	add_ijump $chainref, j => 'CONNMARK', targetopts => "--save-mark --mask $mask", mark => "! --mark 0/$mask";
     }
 
-    if ( @load_providers ) {
+    if ( @load_interfaces ) {
 	my $chainref1 = new_chain 'mangle', 'balance';
 	my @match;
 
 	add_ijump $chainref,               g => $chainref1, mark => "--mark 0/$mask";
 	add_ijump $mangle_table->{OUTPUT}, j => $chainref1, state_imatch( 'NEW,RELATED' ), mark => "--mark 0/$mask";
 
-	for my $providerref ( @load_providers ) {
+	for my $physical ( @load_interfaces ) {
 
-	    my $chainref2 = new_chain( 'mangle', load_chain( $providerref->{physical} ) );
+	    my $chainref2 = new_chain( 'mangle', load_chain( $physical ) );
 
 	    dont_optimize $chainref2;
 	    dont_move     $chainref2;
 	    dont_delete   $chainref2;
 	
-	    if ( $providerref->{optional} ) {
-		my $dev  = chain_base $providerref->{physical};
-		my $base = uc $dev;
-
-		add_commands( $chainref2, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
-		incr_cmd_level $chainref2;
-	    }
-
-	    add_ijump( $chainref2, j => 'MARK', targetopts => "--set-mark $providerref->{mark}/$globals{PROVIDER_MASK}", statistic => "--mode random --probability $providerref->{load}" );
-
-	    if ( $providerref->{optional} ) {
-		add_commands( $chainref2 , 'fi' );
-		decr_cmd_level( $chainref2 );
-	    }
-
   	    add_ijump ( $chainref1,
 			j => $chainref2 ,
 		        mark => "--mark 0/$mask" );
@@ -463,6 +454,7 @@ sub process_a_provider() {
     if ( $load ) {
 	fatal_error q(The 'balance=<weight>' and 'load=<load-factor>' options are mutually exclusive) if $balance > 1;
 	fatal_error q(The 'fallback=<weight>' and 'load=<load-factor>' options are mutually exclusive) if $default > 1;
+	$maxload += $load;
     }
 
     if ( $local ) {
@@ -556,7 +548,7 @@ sub process_a_provider() {
 	push @routemarked_providers, $providers{$table};
     }
 
-    push @load_providers, $providers{$table} if $load;
+    push @load_interfaces, $physical if $load;
 
     push @providers, $table;
 
@@ -618,12 +610,22 @@ sub add_a_provider( $$ ) {
 	}
     }
 
-    if ( $load ) {
-	emit( qq(echo $load > \${VARDIR}/${physical}_load) );
-	emit( qq(echo "rm -f \${VARDIR}/${physical}_load" >> \${VARDIR}/undo_${table}_routing) );
-    }
+    emit( qq(echo $load > \${VARDIR}/${physical}_load) ) if $load;
 
-    emit( qq(echo "rm -f \${VARDIR}/${physical}.status" >> \${VARDIR}/undo_${table}_routing) );
+    emit( '', 
+	  "cat <<EOF >> \${VARDIR}/undo_${table}_routing" );
+    
+    emit_unindented 'case \$COMMAND in';
+    emit_unindented '    enable|disable)';
+    emit_unindented '        ;;';
+    emit_unindented '    *)';
+    emit_unindented "        rm -f \${VARDIR}/${physical}_load" if $load;
+    emit_unindented <<"CEOF", 1;
+        rm -f \${VARDIR}/${physical}.status
+        ;;
+esac
+EOF
+CEOF
     #
     # /proc for this interface
     #
@@ -734,8 +736,11 @@ sub add_a_provider( $$ ) {
     
     my ( $tbl, $weight );
 
+    emit( qq(echo 0 > \${VARDIR}/${physical}.status) );
+
     if ( $optional ) {	
-	emit( 'if [ $COMMAND = enable ]; then' );
+	emit( '',
+	      'if [ $COMMAND = enable ]; then' );
 
 	push_indent;
 
@@ -759,12 +764,13 @@ sub add_a_provider( $$ ) {
 		    emit qq(add_gateway "nexthop dev $physical $realm" ) . $tbl;
 		}
 	    }
+	    
+	    emit '';
 	} else {
 	    $weight = 1;
 	}
 
-	emit( 'run_iptables -t mangle -A ' . load_chain( $physical ) . ' -m statistic --mode random --probability ' . $load,
-	      '' ) if $load;
+	emit ( "distribute_load $maxload @load_interfaces" ) if $load;
 
 	unless ( $shared ) {
 	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
@@ -775,8 +781,7 @@ sub add_a_provider( $$ ) {
 	pop_indent;
  
 	emit( 'else' );
-	emit( qq(    echo 0 > \${VARDIR}/${physical}.status) ,
-	      qq(    echo $weight > \${VARDIR}/${physical}_weight) ,
+	emit( qq(    echo $weight > \${VARDIR}/${physical}_weight) ,
 	      qq(    progress_message "   Provider $table ($number) Started"),
 	      qq(fi\n)
 	    );
@@ -791,7 +796,7 @@ sub add_a_provider( $$ ) {
 
     push_indent;
     
-    emit( qq(echo 0 > \${VARDIR}/${physical}.status) );
+    emit( qq(echo 1 > \${VARDIR}/${physical}.status) );
 
     if ( $optional ) {
 	if ( $shared ) {
@@ -851,8 +856,8 @@ sub add_a_provider( $$ ) {
 	emit (". $undo",
 	      "> $undo" );
 
-	emit( '',
-	      'run_iptables -t mangle -X ' . load_chain( $physical ) ) if $load;
+	emit ( '',
+	       "distribute_load $maxload @load_interfaces" ) if $load;
 
 	unless ( $shared ) {
 	    emit( '', 
@@ -1223,7 +1228,7 @@ EOF
 	    emit ( "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
 		   "        start_provider_$provider",
 		   '    else',
-		   '        startup_error "Interface $g_interface is already enabled"',
+		   "        startup_error \"Interface $providerref->{physical} is already enabled\"",
 		   '    fi',
 		   '    ;;'
 		 );
@@ -1259,7 +1264,7 @@ EOF
 	      "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then", 
 	      "        stop_provider_$provider",
 	      '    else',
-	      '        startup_error "Interface $g_interface is already disabled"',
+	      "        startup_error \"Interface $providerref->{physical} is already disabled\"",
 	      '    fi',
 	      '    ;;'
 	    ) if $providerref->{optional};
@@ -1302,7 +1307,7 @@ sub setup_providers() {
 	pop_indent;
 	emit "fi\n";
 
-	setup_route_marking if @routemarked_interfaces || @load_providers;
+	setup_route_marking if @routemarked_interfaces || @load_interfaces;
     } else {
 	emit "\nif [ -z \"\$g_noroutes\" ]; then";
 
@@ -1574,10 +1579,17 @@ sub handle_stickiness( $ ) {
 	}
     }
 
-    if ( @routemarked_providers || @load_providers ) {
+    if ( @routemarked_providers || @load_interfaces ) {
 	delete_jumps $mangle_table->{PREROUTING}, $setstickyref unless @{$setstickyref->{rules}};
 	delete_jumps $mangle_table->{OUTPUT},     $setstickoref unless @{$setstickoref->{rules}};
     }
+}
+
+sub setup_load_distribution() {
+    emit ( '',
+	   "        distribute_load $maxload @load_interfaces" ,
+	   '' 
+	 ) if @load_interfaces;
 }
 
 1;

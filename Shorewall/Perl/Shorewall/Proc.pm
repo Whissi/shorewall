@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010,2011,2012 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -308,8 +308,7 @@ sub setup_interface_proc( $ ) {
     }
 
     if ( @emitted ) {
-	emit( '',
-	      'if [ $COMMAND = enable ]; then' );
+	emit( 'if [ $COMMAND = enable ]; then' );
 	push_indent;
 	emit "$_" for @emitted;
 	pop_indent;

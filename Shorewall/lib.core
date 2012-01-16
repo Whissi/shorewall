@@ -563,3 +563,52 @@ debug_restore_input() {
 	esac
     done
 }
+
+interface_up() {
+    return $(cat ${VARDIR}/$1.status)
+}
+
+distribute_load() {
+    local interface
+    local totalload
+    local load
+    local maxload
+
+    maxload=$1
+    shift
+
+    totalload=0
+
+    for interface in $@; do
+	if interface_up $interface; then
+	    load=$(cat ${VARDIR}/${interface}_load)
+	    eval ${interface}_load=$load
+	    totalload=$( bc <<EOF
+scale=8
+$totalload + $load
+EOF
+)
+	fi
+    done
+
+    if [ $totalload ]; then
+	for interface in $@; do
+	    qt $g_tool -t mangle -F ~$interface
+	    eval load=\$${interface}_load
+	
+	    if [ -n "$load" ]; then
+		load=$(bc <<EOF
+scale=8
+( $load / $totalload ) * $maxload
+EOF
+)
+		totalload=$(bc <<EOF
+scale=8
+$totalload - $load
+EOF
+)
+		run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $load
+	    fi
+	done
+    fi
+}

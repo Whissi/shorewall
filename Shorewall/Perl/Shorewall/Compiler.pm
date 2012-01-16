@@ -474,6 +474,7 @@ sub generate_script_3($) {
     fi
 EOF
     pop_indent;
+    setup_load_distribution;
     setup_forwarding( $family , 1 );
     push_indent;
 
@@ -494,6 +495,10 @@ EOF
         set_state Started $config_dir
     else
         setup_netfilter
+EOF
+    setup_load_distribution;
+
+    emit<<"EOF";
         conditionally_flush_conntrack
 EOF
     setup_forwarding( $family , 0 );

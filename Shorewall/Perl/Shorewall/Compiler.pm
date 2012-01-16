@@ -487,6 +487,7 @@ else
     if [ \$COMMAND = refresh ]; then
         chainlist_reload
 EOF
+    setup_load_distribution;
     setup_forwarding( $family , 0 );
 
     emit<<"EOF";

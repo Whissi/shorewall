@@ -30,6 +30,8 @@
 
       <year>2009</year>
 
+      <year>2012</year>
+
       <holder>Eric de Thouars and Tom Eastep</holder>
     </copyright>
 
@@ -399,6 +401,7 @@ iface sit1 inet6 v4tunnel
       endpoint 192.88.99.1
       local 206.124.146.180
       gateway ::192.88.99.1
+      ttl 64
       post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding</emphasis></programlisting></para>
       </blockquote>
 
@@ -565,7 +568,7 @@ Ping(ACCEPT)     all             all
       <para>Client IPv4 address: 206.124.146.180 (Same as the 6to4
       tunnel)</para>
 
-      <para>Client IPv6 address: 2001:470:a:227::2/64 </para>
+      <para>Client IPv6 address: 2001:470:a:227::2/64</para>
     </blockquote>
 
     <para>I also took advantage of their offer for a /48 prefix routed via
@@ -596,6 +599,7 @@ iface sit1 inet6 v4tunnel
       endpoint <emphasis role="bold">216.218.226.238 </emphasis>
       local 206.124.146.180
       gateway <emphasis role="bold">2001:470:a:227::1</emphasis>
+      ttl 64
       post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding
 
 </programlisting>

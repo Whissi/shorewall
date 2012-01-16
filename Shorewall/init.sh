@@ -74,17 +74,17 @@ export SHOREWALL_INIT_SCRIPT=1
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
 command="$1"
+shift
 
 case "$command" in
-    start|restart|stop)
-	exec /sbin/shorewall $OPTIONS $@
+    start)
+	exec /sbin/shorewall $OPTIONS start $STARTOPTIONS $@
 	;;
-    stop|restart|status)
-	exec /sbin/shorewall $@
+    restart|reload)
+	exec /sbin/shorewall $OPTIONS restart $RESTARTOPTIONS $@
 	;;
-    reload)
-	shift
-	exec /sbin/shorewall $OPTIONS restart $@
+    status|stop)
+	exec /sbin/shorewall $OPTIONS $command $@
 	;;
     *)
 	usage

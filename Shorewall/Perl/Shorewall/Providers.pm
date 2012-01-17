@@ -1071,20 +1071,20 @@ sub start_providers() {
 }
 
 sub finish_providers() {
+    my $table = MAIN_TABLE;
+    
+    if ( $config{USE_DEFAULT_RT} ) {
+	emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE .    ' pref 999',
+	       'run_ip rule add from ' . ALLIP . ' table ' . BALANCE_TABLE . ' pref 32765',
+	       "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
+	       qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE .    ' pref 32766" >> ${VARDIR}/undo_main_routing',
+	       qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE .    ' pref 999" >> ${VARDIR}/undo_main_routing',
+	       qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . BALANCE_TABLE . ' pref 32765" >> ${VARDIR}/undo_balance_routing',
+	       '' );
+	$table = BALANCE_TABLE;
+    }
+
     if ( $balancing ) {
-	my $table = MAIN_TABLE;
-
-	if ( $config{USE_DEFAULT_RT} ) {
-	    emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE .    ' pref 999',
-		   'run_ip rule add from ' . ALLIP . ' table ' . BALANCE_TABLE . ' pref 32765',
-		   "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
-		   qq(echo "qt \$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE .    ' pref 32766" >> ${VARDIR}/undo_main_routing',
-		   qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE .    ' pref 999" >> ${VARDIR}/undo_main_routing',
-		   qq(echo "qt \$IP -$family rule del from ) . ALLIP . ' table ' . BALANCE_TABLE . ' pref 32765" >> ${VARDIR}/undo_balance_routing',
-		   '' );
-	    $table = BALANCE_TABLE;
-	}
-
 	emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
 	if ( $family == F_IPV4 ) {
 	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );

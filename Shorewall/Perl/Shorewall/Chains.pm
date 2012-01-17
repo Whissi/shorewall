@@ -100,6 +100,9 @@ our %EXPORT_TAGS = (
 				       ALL_RESTRICT
 				       ALL_COMMANDS
 				       NOT_RESTORE
+				       OPTIMIZE_POLICY_MASK
+				       OPTIMIZE_RULESET_MASK
+				       OPTIMIZE_MASK
 
 				       state_imatch
 				       initialize_chain_table
@@ -346,6 +349,16 @@ my $ipset_rules;
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
 #
 use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
+
+#
+# Optimization masks
+#
+use constant { 
+	       OPTIMIZE_POLICY_MASK  => 0x02 , # Call optimize_policy_chains()
+	       OPTIMIZE_RULESET_MASK => 0x1C , # Call optimize_ruleset()
+	     };
+
+use constant { OPTIMIZE_MASK => OPTIMIZE_POLICY_MASK | OPTIMIZE_RULESET_MASK };
 
 #
 # These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents

@@ -764,9 +764,7 @@ CEOF
 		    emit qq(add_gateway "nexthop dev $physical $realm" ) . $tbl;
 		}
 	    }
-	    
-	    emit '';
-	} else {
+	    	} else {
 	    $weight = 1;
 	}
 

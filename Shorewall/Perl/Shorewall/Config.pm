@@ -3982,6 +3982,13 @@ sub get_configuration( $$$ ) {
     } else {
 	$config{LOCKFILE} = '';
     }
+
+    report_capabilities unless $config{LOAD_HELPERS_ONLY};
+
+    require_capability( 'MULTIPORT'       , "Shorewall $globals{VERSION}" , 's' );
+    require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
+    require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{PROVIDER_OFFSET} > 0;
+    require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
 }
 
 #

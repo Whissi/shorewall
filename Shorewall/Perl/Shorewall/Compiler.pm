@@ -490,13 +490,12 @@ EOF
     setup_load_distribution;
     setup_forwarding( $family , 0 );
 
-    emit<<"EOF";
-        run_refreshed_exit
-        do_iptables -N shorewall
-        set_state Started $config_dir
-    else
-        setup_netfilter
-EOF
+    emit( '        run_refreshed_exit' ,
+	  '        do_iptables -N shorewall' ,
+	  "        set_state Started $config_dir" ,
+	  '    else' ,
+	  '        setup_netfilter' );
+    
     setup_load_distribution;
 
     emit<<"EOF";
@@ -623,14 +622,9 @@ sub compiler {
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #
     get_configuration( $export , $update , $annotate );
-
-    report_capabilities unless $config{LOAD_HELPERS_ONLY};
-
-    require_capability( 'MULTIPORT'       , "Shorewall $globals{VERSION}" , 's' );
-    require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
-    require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{PROVIDER_OFFSET} > 0;
-    require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
-
+    #
+    # Create a temp file to hold the script
+    #
     if ( $scriptfilename ) {
 	set_command( 'compile', 'Compiling', 'Compiled' );
 	create_temp_script( $scriptfilename , $export );
@@ -639,7 +633,7 @@ sub compiler {
     }
     #
     # Chain table initialization depends on shorewall.conf and capabilities. So it must be deferred until
-    # shorewall.conf has been processed and the capabilities have been determined.
+    # now when shorewall.conf has been processed and the capabilities have been determined.
     #
     initialize_chain_table(1);
     #
@@ -888,16 +882,16 @@ sub compiler {
 
 	    optimize_level0;
 
-	    if ( $config{OPTIMIZE} & 0x1E ) {
+	    if ( $config{OPTIMIZE} & OPTIMIZE_MASK ) {
 		progress_message2 'Optimizing Ruleset...';
 		#
 		# Optimize Policy Chains
 		#
-		optimize_policy_chains if $config{OPTIMIZE} & 2;
+		optimize_policy_chains if $config{OPTIMIZE} & OPTIMIZE_POLICY_MASK;
 		#
 		# Ruleset Optimization
 		#
-		optimize_ruleset if $config{OPTIMIZE} & 0x1C;
+		optimize_ruleset if $config{OPTIMIZE} & OPTIMIZE_RULESET_MASK;
 	    }
 
 	    enable_script if $debug;

@@ -80,7 +80,7 @@ fi
 # start the firewall
 shorewall_start () {
   echo -n "Starting \"Shorewall firewall\": "
-  $SRWL $SRWL_OPTS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS start $STARTOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
@@ -98,7 +98,7 @@ shorewall_stop () {
 # restart the firewall
 shorewall_restart () {
   echo -n "Restarting \"Shorewall firewall\": "
-  $SRWL $SRWL_OPTS restart >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $SRWL_OPTS restart $RESTARTOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 

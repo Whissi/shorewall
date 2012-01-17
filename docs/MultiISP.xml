@@ -49,9 +49,9 @@
   </articleinfo>
 
   <warning>
-    <para>This document describes the Multi-ISP facility in Shorewall 4.5.0
-    and later. If you are running an earlier release, please see the
-    documentation for that release.</para>
+    <para>This document describes the Multi-ISP facility in <emphasis
+    role="bold">Shorewall 4.5.0 and later</emphasis>. If you are running an
+    earlier release, please see the documentation for that release.</para>
   </warning>
 
   <warning>
@@ -1552,6 +1552,11 @@ DOWN_COUNT=2</programlisting>
             <filename><replaceable>interface</replaceable>.status</filename>
             where <replaceable>interface</replaceable> is the interface (e.g.,
             <filename>eth0.status</filename>).</para>
+
+            <important>
+              <para>Beginning with Shorewall 4.5.0, the generated script
+              automatically maintains this .status file.</para>
+            </important>
           </listitem>
 
           <listitem>
@@ -1911,9 +1916,10 @@ Your LSM Daemon
 
 EOM
 
-[ ${STATE} = up ] &amp;&amp; state=0 || state=1
+# Uncomment the next two lines if you are running Shorewall 4.4.x or earlier
 
-echo $state &gt; ${VARDIR}/${DEVICE}.status
+# [ ${STATE} = up ] &amp;&amp; state=0 || state=1
+# echo $state &gt; ${VARDIR}/${DEVICE}.status
 
 /sbin/shorewall restart -f &gt;&gt; /var/log/lsm 2&gt;&amp;1
 
@@ -1984,10 +1990,10 @@ Your LSM Daemon
 EOM
 
 <emphasis role="bold">if [ ${STATE} = up ]; then
-   echo 0 &gt; ${VARDIR}/${DEVICE}.status
+# echo 0 &gt; ${VARDIR}/${DEVICE}.status # Uncomment this line if you are running Shorewall 4.4.x or earlier
   ${VARDIR}/firewall enable ${DEVICE}
 else
-   echo 1 &gt; ${VARDIR}/${DEVICE}.status
+#  echo 1 &gt; ${VARDIR}/${DEVICE}.status # Uncomment this line if you are running Shorewall 4.4.x or earlier
    ${VARDIR}/firewall disable ${DEVICE}
 fi
 </emphasis>

@@ -22,6 +22,8 @@
 
       <year>2009</year>
 
+      <year>2012</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -683,8 +685,8 @@ DNAT-              net                192.168.1.3      tcp          21</programl
     <title>The Shorewall Perl Modules</title>
 
     <para>In Shorewall 4.4 and later, Shorewall's Perl modules are installed
-    in /usr/share/shorewall/Shorewall and the names of the packages are of the
-    form Shorewall::<firstterm>name</firstterm>. So by using this
+    by default in /usr/share/shorewall/Shorewall and the names of the packages
+    are of the form Shorewall::<firstterm>name</firstterm>. So by using this
     directive<programlisting>use lib '/usr/share/shorewall';</programlisting></para>
 
     <para>You can then load the modules via normal Perl use statements.</para>
@@ -822,9 +824,9 @@ DNAT-              net                192.168.1.3      tcp          21</programl
       <para>Example (compiles the configuration in the current directory
       generating a script named 'firewall' and using VERBOSITY
       2).<programlisting><emphasis role="bold">/usr/share/shorewall/compiler.pl -v 2 -d . firewall</emphasis></programlisting><note>
-          <para>The Perl-based compiler does not process
-          <filename>/etc/shorewall/params</filename>. To include definitions
-          in that file, you would need to do something like the
+          <para>Prior to Shorewall 4.4.19, the Perl-based compiler did not
+          process <filename>/etc/shorewall/params</filename>. To include
+          definitions in that file, you would need to do something like the
           following:<programlisting><command>. /usr/share/shorewall/lib.base  # In case /etc/shorewall/params does INCLUDE
 set -a                           # Export all variables set in /etc/shorewall/params
 . /etc/shorewall/params
@@ -928,33 +930,75 @@ set +a
           <term>preview</term>
 
           <listitem>
-            <para>Added in Shorewall 4.4.6.l Preview the ruleset on standard
-            output.</para>
+            <para>0 or 1. Added in Shorewall 4.4.6. A value of 1 causes the
+            generated ruleset to be printed to standard output.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>confess</term>
+
+          <listitem>
+            <para>0 or 1. Added in Shorewall 4.4.20. A value of 1 causes error
+            and warning messages to include a Perl stack trace. Useful for
+            finding the place in the code where the message is
+            generated.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>update</term>
+
+          <listitem>
+            <para>0 or 1. Added in Shorewall 4.4.21. A value of 1 causes the
+            .conf file to be updated (<command>shorewall update</command>
+            command).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>config_path</term>
+
+          <listitem>
+            <para>List of pathnames separated by ':' or ''. Added in Shorewall
+            4.4.26. The list of directories where the compiler is to search
+            for input files.</para>
           </listitem>
         </varlistentry>
       </variablelist>
 
       <para>Those parameters that are supplied must have defined values.
       Defaults are: <simplelist>
-          <member>script '' ('check' command)</member>
+          <member>script: '' ('check' command)</member>
 
-          <member>directory ''</member>
+          <member>directory: ''</member>
 
-          <member>verbosity 1</member>
+          <member>verbosity: 1</member>
 
-          <member>timestamp 0</member>
+          <member>timestamp: 0</member>
 
-          <member>debug 0</member>
+          <member>debug: 0</member>
 
-          <member>export 0</member>
+          <member>export: 0</member>
 
-          <member>chains ''</member>
+          <member>chains: ''</member>
 
-          <member>log ''</member>
+          <member>log: ''</member>
 
-          <member>log_verbosity -1</member>
+          <member>log_verbosity: -1</member>
 
-          <member>family 4</member>
+          <member>family: 4</member>
+
+          <member>preview: 0</member>
+
+          <member>confess: 0</member>
+
+          <member>update: 0</member>
+
+          <member>config_path: Contents of
+          <filename>/var/lib/shorewall/configpath</filename> or
+          <filename>/var/lib/shorewall6/configpath</filename> depending on the
+          setting of <emphasis role="bold">family</emphasis>. </member>
         </simplelist></para>
 
       <para>Example: <programlisting>use lib '/usr/share/shorewall/';

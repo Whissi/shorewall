@@ -31,10 +31,47 @@ SHOREWALL_LIBVERSION=40500
 SHOREWALL_CAPVERSION=40500
 
 [ -n "${g_program:=shorewall}" ]
-[ -n "${VARDIR:=/var/lib/$g_program}" ]
-[ -n "${SHAREDIR:=/usr/share/$g_program}" ]
-[ -n "${CONFDIR:=/etc/$g_program}" ]
-[ -n "${g_family:=4}" ]
+
+case $g_program in
+    shorewall)
+	SHAREDIR=/usr/share/shorewall
+	CONFDIR=/etc/shorewall
+	g_product="Shorewall"
+	g_family=4
+	g_tool=
+	g_basedir=/usr/share/shorewall
+	g_lite=
+	;;
+    shorewall6)
+	SHAREDIR=/usr/share/shorewall6
+	CONFDIR=/etc/shorewall6
+	g_product="Shorewall6"
+	g_family=6
+	g_tool=
+	g_basedir=/usr/share/shorewall
+	g_lite=
+	;;
+    shorewall-lite)
+	SHAREDIR=/usr/share/shorewall-lite
+	CONFDIR=/etc/shorewall-lite
+	g_product="Shorewall Lite"
+	g_family=4
+	g_base=shorewall
+	g_tool=iptables
+	g_basedir=/usr/share/shorewall-lite
+	g_lite=Yes
+	;;
+    shorewall6-lite)
+	SHAREDIR=/usr/share/shorewall6-lite
+	CONFDIR=/etc/shorewall6-lite
+	g_product="Shorewall6 Lite"
+	g_family=6
+	g_base=shorewall6
+	g_tool=ip6tables
+	g_basedir=/usr/share/shorewall6-lite
+	g_lite=Yes
+	;;
+esac
 
 #
 # Conditionally produce message

@@ -184,8 +184,52 @@ fi
 for PRODUCT in $PRODUCTS; do
     VARDIR=/var/lib/$PRODUCT
     [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
+
     if [ -x $VARDIR/firewall ]; then
-	  ( . /usr/share/$PRODUCT/lib.base
+	g_program=$PRODUCT
+
+	case $PRODUCT in
+	    shorewall)
+		SHAREDIR=/usr/share/shorewall
+		CONFDIR=/etc/shorewall
+		g_product="Shorewall"
+		g_family=4
+		g_tool=
+		g_basedir=/usr/share/shorewall
+		g_lite=
+		;;
+	    shorewall6)
+		SHAREDIR=/usr/share/shorewall6
+		CONFDIR=/etc/shorewall6
+		g_product="Shorewall6"
+		g_family=6
+		g_tool=
+		g_basedir=/usr/share/shorewall
+		g_lite=
+		;;
+	    shorewall-lite)
+		SHAREDIR=/usr/share/shorewall-lite
+		CONFDIR=/etc/shorewall-lite
+		g_product="Shorewall Lite"
+		g_family=4
+		g_base=shorewall
+		g_tool=iptables
+		g_basedir=/usr/share/shorewall-lite
+		g_lite=Yes
+		;;
+	    shorewall6-lite)
+		SHAREDIR=/usr/share/shorewall6-lite
+		CONFDIR=/etc/shorewall6-lite
+		g_product="Shorewall6 Lite"
+		g_family=6
+		g_base=shorewall6
+		g_tool=ip6tables
+		g_basedir=/usr/share/shorewall6-lite
+		g_lite=Yes
+		;;
+	esac
+
+	( . /usr/share/$PRODUCT/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
 	    mutex_off

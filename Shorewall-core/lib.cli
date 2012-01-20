@@ -411,6 +411,34 @@ save_config() {
 }
 
 #
+# Recent Linux systems seem to like to print a randomly-ordered
+# view of routing tables. This hack sorts the output into the
+# order we all know and love
+#
+sort_routes() {
+    local dest 
+    local rest
+    local crvsn
+
+    while read dest rest; do
+	if [ -n "$dest" ]; then
+	    case "$dest" in
+		default)
+		    echo "00 $dest $rest"
+		    ;;
+		*/*)
+		    crvsn=${dest#*/}
+		    printf "%02d %s\n" $crvsn "$dest $rest"
+		    ;;
+		*)
+		    echo "32 $dest $rest"
+		    ;;
+	    esac
+	fi
+    done | sort -r | while read dest rest; do echo $rest; done
+}
+
+#
 # Show routing configuration
 #
 show_routing() {
@@ -424,7 +452,7 @@ show_routing() {
 	    if [ $g_family -eq 6 ]; then
 		ip -$g_family -o route list table $table | fgrep -v cache
 	    else
-		ip -4 route list table $table
+		ip -4 -o route list table $table | sort_routes
 	    fi
 	done
 
@@ -434,7 +462,11 @@ show_routing() {
 	fi
     else
 	heading "Routing Table"
-	ip -$g_family route list
+	if [ $g_family -eq 6 ]; then
+	    ip -$g_family -o route list | fgrep -v cache
+	else
+	    ip -4 -o route list table $table | sort_routes
+	fi
     fi
 }
 

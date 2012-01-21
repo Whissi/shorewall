@@ -238,7 +238,7 @@
 
     <para>Suppose that we have the following situation:</para>
 
-    <graphic fileref="images/TwoNets1.png" />
+    <graphic fileref="images/TwoNets1.png"/>
 
     <para>We want systems in the 192.168.1.0/24 sub-network to be able to
     communicate with systems in the 10.0.0.0/8 network. We assume that on both
@@ -297,8 +297,8 @@ ipsec         net         206.162.148.9
 
       <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
-vpn            ipv4
 net            ipv4
+<emphasis role="bold">vpn            ipv4</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -481,7 +481,7 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
     when you travel and you want to be able to establish a secure connection
     back to your local network.</para>
 
-    <graphic fileref="images/Mobile.png" />
+    <graphic fileref="images/Mobile.png"/>
 
     <example id="roadWarrior">
       <title>Road Warrior VPN</title>
@@ -495,8 +495,8 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
 
         <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
-vpn            ipsec
 net            ipv4
+<emphasis role="bold">vpn            ipsec</emphasis>
 loc            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
@@ -718,9 +718,9 @@ RACOON=/usr/sbin/racoon</programlisting>
 
       <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
-vpn            ipsec
-l2tp           ipv4
 net            ipv4
+vpn            ipsec
+<emphasis role="bold">l2tp           ipv4</emphasis>
 loc            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
@@ -827,9 +827,9 @@ HTTPS(ACCEPT)   l2tp    $FW
     hosts in that network. In that case, IPSEC transport mode is an
     appropriate solution.</para>
 
-    <para><graphic fileref="images/TransportMode.png" />Here's an example
-    using the ipsec-tools package. The files shown are from host
-    192.168.20.10; the configuration of the other nodes is similar.</para>
+    <para><graphic fileref="images/TransportMode.png"/>Here's an example using
+    the ipsec-tools package. The files shown are from host 192.168.20.10; the
+    configuration of the other nodes is similar.</para>
 
     <blockquote>
       <para><filename>/etc/racoon/racoon.conf</filename>:</para>

@@ -84,7 +84,7 @@ sub setup_one_proxy_arp( $$$$$$$ ) {
 	    emit "[ -n \"\$g_noroutes\" ] || run_ip route replace $address/32 dev $physical";
 	} else {
 	    emit( 'if [ -z "$g_noroutes" ]; then',
-		  "    qt \$IP -6 route del $address/128 dev $physical".
+		  "    qt \$IP -6 route del $address/128 dev $physical",
 		  "    run_ip route add $address/128 dev $physical",
 		  'fi'
 		);

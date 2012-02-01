@@ -5864,7 +5864,7 @@ sub add_interface_options( $ ) {
 	my %input_chains;
 	my %forward_chains;
 
-	for my $interface ( grep $_ ne '%vserver%', all_interfaces ) {
+	for my $interface ( all_real_interfaces ) {
 	    $input_chains{$interface}   = $filter_table->{input_option_chain $interface};
 	    $forward_chains{$interface} = $filter_table->{forward_option_chain $interface};
 	}
@@ -5983,7 +5983,7 @@ sub add_interface_options( $ ) {
 	#
 	# Simply move the option chain rules to the interface chains
 	#
-	for my $interface ( grep $_ ne '%vserver%', all_interfaces ) {
+	for my $interface ( all_real_interfaces ) {
 	    my $chainref;
 	    my $chain1ref;
 

@@ -61,6 +61,7 @@ our @EXPORT = qw( NOTHING
 		  chain_base
 		  validate_interfaces_file
 		  all_interfaces
+		  all_real_interfaces
 		  all_bridges
 		  interface_number
 		  find_interface
@@ -1303,6 +1304,13 @@ sub interface_number( $ ) {
 #
 sub all_interfaces() {
     @interfaces;
+}
+
+#
+# Return all non-vserver interfaces
+#
+sub all_real_interfaces() {
+    grep $_ ne '%vserver%', @interfaces;
 }
 
 #

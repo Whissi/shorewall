@@ -752,7 +752,7 @@ sub add_common_rules ( $ ) {
 	$target1 = $target;
     }
 
-    for $interface ( grep $_ ne '%vserver%', all_interfaces ) {
+    for $interface ( all_real_interfaces ) {
 	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface ), option_chains( $interface ), output_option_chain( $interface );
 
 	my $interfaceref = find_interface $interface;
@@ -1367,6 +1367,7 @@ sub add_interface_jumps {
     our %output_jump_added;
     our %forward_jump_added;
     my  $lo_jump_added = 0;
+    my @interfaces = grep $_ ne '%vserver%', @_;
     #
     # Add Nat jumps
     #
@@ -1378,7 +1379,7 @@ sub add_interface_jumps {
     addnatjump 'POSTROUTING' , 'nat_out';
     addnatjump 'PREROUTING', 'dnat';
 
-    for my $interface ( grep $_ ne '%vserver%', @_ ) {
+    for my $interface ( @interfaces  ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
 	addnatjump 'POSTROUTING' , masq_chain( $interface ) , imatch_dest_dev( $interface );
@@ -1392,7 +1393,7 @@ sub add_interface_jumps {
     #
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT
     #
-    for my $interface ( grep $_ ne '%vserver%', @_ ) {
+    for my $interface ( @interfaces ) {
 	my $forwardref   = $filter_table->{forward_chain $interface};
 	my $inputref     = $filter_table->{input_chain $interface};
 	my $outputref    = $filter_table->{output_chain $interface};

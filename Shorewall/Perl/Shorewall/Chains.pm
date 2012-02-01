@@ -6012,7 +6012,7 @@ sub add_interface_options( $ ) {
 }
 
 #
-# The following code generates the input to iptables-restore from the contents of the
+# The following functions generate the input to iptables-restore from the contents of the
 # @rules arrays in the chain table entries.
 #
 # We always write the iptables-restore input into a file then pass the
@@ -6020,9 +6020,9 @@ sub add_interface_options( $ ) {
 # has (have) something to look at to determine the error
 #
 # We may have to generate part of the input at run-time. The rules array in each chain
-# table entry may contain both rules (begin with '-A') or shell source. We alternate between
-# writing the rules ('-A') into the temporary file to be passed to iptables-restore
-# (CAT_MODE) and and writing shell source into the generated script (CMD_MODE).
+# table entry may contain both rules or shell source, determined by the contents of the 'mode'
+# member. We alternate between writing the rules into the temporary file to be passed to 
+# iptables-restore (CAT_MODE) and and writing shell source into the generated script (CMD_MODE).
 #
 # The following two functions are responsible for the mode transitions.
 #

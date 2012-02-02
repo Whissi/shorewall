@@ -379,7 +379,7 @@ sub process_tc_rule( ) {
 				$val = numeric_value ($s);
 				fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val >= 0 && $val < 128;
 				$shift = $s;
-			    }
+			    }			    
 			} else {
 			    fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless $cmd eq 'IPMARK';
 			}
@@ -460,6 +460,10 @@ sub process_tc_rule( ) {
 			} else {
 			    $target .= " --hl-set $param";
 			}
+		    } elsif ( $target eq 'IMQ' ) {
+			assert( $cmd =~ /^IMQ\((\d+)\)$/ );
+			require_capability 'IMQ_TARGET', 'IMQ', 's';
+			$target .= " --todev $1";
 		    }
 
 		    if ( $rest ) {
@@ -1977,7 +1981,13 @@ sub setup_tc() {
 			  mark      => NOMARK,
 			  mask      => '',
 			  connmark  => 0
-			} 
+			},
+			{ match     => sub( $ ) { $_[0] =~ /^IMQ\(\d+\)$/ },
+			  target    => 'IMQ',
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			},
 		      );
 
 	if ( my $fn = open_file 'tcrules' ) {

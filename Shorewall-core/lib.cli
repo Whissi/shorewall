@@ -1956,6 +1956,7 @@ determine_capabilities() {
     BASIC_FILTER=
     CT_TARGET=
     STATISTIC_MATCH=
+    IMQ_TARGET=
 
     chain=fooX$$
 
@@ -2083,6 +2084,7 @@ determine_capabilities() {
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain
 	qt $g_tool -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
+	qt $g_tool -t mangle -A $chain -j IMQ --todev 0 && IMQ_TARGET=Yes
     fi
 
     qt $g_tool -t raw	    -L -n && RAW_TABLE=Yes
@@ -2264,6 +2266,7 @@ report_capabilities() {
 	report_capability "ipset V5" $IPSET_V5
 	report_capability "Condition Match" $CONDITION_MATCH
 	report_capability "Statistic Match" $STATISTIC_MATCH
+	report_capability "IMQ Target" $IMQ_TARGET
 	
 	if [ $g_family -eq 4 ]; then
 	    report_capability "iptables -S" $IPTABLES_S
@@ -2350,6 +2353,7 @@ report_capabilities1() {
     report_capability1 BASIC_FILTER
     report_capability1 CT_TARGET
     report_capability1 STATISTIC_MATCH
+    report_capability1 IMQ_TARGET
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

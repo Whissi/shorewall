@@ -291,6 +291,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CT_TARGET       => 'CT Target',
 		 STATISTIC_MATCH => 
 		                    'Statistics Match',
+		 IMQ_TARGET      => 'IMQ Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -464,7 +465,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40500 ,
+		    CAPVERSION => 40501 ,
 		  );
     #
     # From shorewall.conf file
@@ -690,6 +691,7 @@ sub initialize( $ ) {
 	       BASIC_FILTER => undef,
 	       CT_TARGET => undef,
 	       STATISTIC_MATCH => undef,
+	       IMQ_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2775,6 +2777,10 @@ sub Statistic_Match() {
     qt1( "$iptables -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
 }
 
+sub Imq_Target() {
+    qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AUDIT_TARGET => \&Audit_Target,
@@ -2796,6 +2802,7 @@ our %detect_capability =
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HEADER_MATCH => \&Header_Match,
       HELPER_MATCH => \&Helper_Match,
+      IMQ_TARGET => \&Imq_Target,
       IPMARK_TARGET => \&IPMark_Target,
       IPP2P_MATCH => \&Ipp2p_Match,
       IPRANGE_MATCH => \&IPRange_Match,
@@ -2967,6 +2974,7 @@ sub determine_capabilities() {
 	$capabilities{BASIC_FILTER}    = detect_capability( 'BASIC_FILTER' );
 	$capabilities{CT_TARGET}       = detect_capability( 'CT_TARGET' );
 	$capabilities{STATISTIC_MATCH} = detect_capability( 'STATISTIC_MATCH' );
+	$capabilities{IMQ_TARGET}      = detect_capability( 'IMQ_TARGET' );
 
 
 	qt1( "$iptables -F $sillyname" );

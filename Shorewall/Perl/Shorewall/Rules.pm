@@ -677,8 +677,6 @@ sub complete_standard_chain ( $$$$ ) {
     policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }
 
-sub require_audit($$;$);
-
 #
 # Create and populate the synflood chains corresponding to entries in /etc/shorewall/policy
 #

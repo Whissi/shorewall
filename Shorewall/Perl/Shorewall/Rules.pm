@@ -1428,7 +1428,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
-# the function will be called recursively by process_rules_common().
+# the function will be called recursively by process_rule1().
 #
 sub process_action( $) {
     my $chainref = shift;
@@ -1716,9 +1716,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	#
 	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
-	if ( $param ne '' ) {
-	    $current_param = $param unless $param eq 'PARAM';
-	}
+	$current_param = $param unless $param eq '' || $param eq 'PARAM';
 
 	my $generated = process_macro( $basictarget,
 				       $chainref,
@@ -2472,9 +2470,7 @@ sub classic_blacklist() {
     my @vservers = vserver_zones;
     my @state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
     my $result;
-    #
-    # First take care of classic blacklisting
-    #
+    
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
 	my $simple  =  @zones <= 2 && ! $zoneref->{options}{complex};
@@ -2530,7 +2526,7 @@ sub classic_blacklist() {
 }
 
 #
-# Process the Rules File
+# Process the BLRules and Rules Files
 #
 sub process_rules() {
     my $blrules = classic_blacklist;

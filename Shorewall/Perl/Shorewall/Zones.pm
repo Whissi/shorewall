@@ -611,11 +611,14 @@ sub zone_report()
 		for my $interface ( sort keys %$interfaceref ) {
 		    my $iref     = $interfaces{$interface};
 		    my $arrayref = $interfaceref->{$interface};
+
 		    for my $groupref ( @$arrayref ) {
 			my $hosts      = $groupref->{hosts};
+
 			if ( $hosts ) {
 			    my $grouplist  = join ',', ( @$hosts );
 			    my $exclusions = join ',', @{$groupref->{exclusions}};
+
 			    $grouplist = join '!', ( $grouplist, $exclusions) if $exclusions;
 
 			    if ( $family == F_IPV4 ) {
@@ -626,7 +629,6 @@ sub zone_report()
 			    $printed = 1;
 			}
 		    }
-
 		}
 	    }
 	}
@@ -662,6 +664,7 @@ sub dump_zone_contents() {
 		for my $interface ( sort keys %$interfaceref ) {
 		    my $iref     = $interfaces{$interface};
 		    my $arrayref = $interfaceref->{$interface};
+
 		    for my $groupref ( @$arrayref ) {
 			my $hosts     = $groupref->{hosts};
 

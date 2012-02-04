@@ -196,6 +196,10 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 {
     local address
     local rest
+    local mask
+
+    [ $g_family -eq 4 ] && mask=32 || mask=128
+    
 
     $IP -$g_family route show dev $1 2> /dev/null |
 	while read address rest; do
@@ -211,12 +215,12 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 		multicast|broadcast|prohibit|nat|throw|nexthop)
 		    ;;
 		[2-3]*)
-		    [ "$address" = "${address%/*}" ] && address="${address}/128"
+		    [ "$address" = "${address%/*}" ] && address="${address}/${mask}"
 		    echo $address
 		    ;;
 		*)
 		    if [ $g_family -eq 4 ]; then
-			[ "$address" = "${address%/*}" ] && address="${address}/128"
+			[ "$address" = "${address%/*}" ] && address="${address}/${mask}"
 			echo $address
 		    fi
 		    ;;

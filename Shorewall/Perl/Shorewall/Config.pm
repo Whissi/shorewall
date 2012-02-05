@@ -3484,11 +3484,13 @@ sub add_param( $$ ) {
 sub export_params() {
     my $count = 0;
 
-    while ( my ( $param, $value ) = each %params ) {
+    for my $param ( sort keys %params ) {
 	#
 	# Don't export params added by the compiler
 	#
 	next if exists $compiler_params{$param};
+
+	my $value = $params{$param};
 	#
 	# Values in %params are generated from the output of 'export -p'.
 	# The different shells have different conventions for delimiting

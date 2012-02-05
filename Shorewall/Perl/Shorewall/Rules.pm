@@ -144,8 +144,7 @@ sub initialize( $ ) {
     #
     # These are set to 1 as sections are encountered.
     #
-    %sections = ( BLACKLIST   => 0,
-		  ALL         => 0,
+    %sections = ( ALL         => 0,
 		  ESTABLISHED => 0,
 		  RELATED     => 0,
 		  NEW         => 0
@@ -2309,15 +2308,13 @@ sub process_section ($) {
 
     if ( $sect eq 'BLACKLIST' ) {
 	fatal_error "The BLACKLIST section has been eliminated. Please move your BLACKLIST rules to the 'blrules' file";
-    } elsif ( $sect eq 'ALL' ) {
-	$sections{BLACKLIST} = 1;
     } elsif ( $sect eq 'ESTABLISHED' ) {
-	$sections{'BLACKLIST','ALL'} = ( 1, 1);
+	$sections{ALL} = 1;
     } elsif ( $sect eq 'RELATED' ) {
-	@sections{'BLACKLIST','ALL','ESTABLISHED'} = ( 1, 1, 1);
+	@sections{'ALL','ESTABLISHED'} = ( 1, 1);
 	finish_section 'ESTABLISHED';
     } elsif ( $sect eq 'NEW' ) {
-	@sections{'BLACKLIST','ALL','ESTABLISHED','RELATED'} = ( 1, 1, 1, 1 );
+	@sections{'ALL','ESTABLISHED','RELATED'} = ( 1, 1, 1 );
 	finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
     }
 
@@ -2529,8 +2526,13 @@ sub classic_blacklist() {
 # Process the BLRules and Rules Files
 #
 sub process_rules() {
+    #
+    # Generate jumps to the classic blacklist chains
+    #
     my $blrules = classic_blacklist;
-
+    #
+    # Process the blrules file
+    #
     $section = 'BLACKLIST';
 
     my $fn = open_file 'blrules';

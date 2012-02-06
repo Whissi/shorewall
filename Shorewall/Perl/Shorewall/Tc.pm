@@ -855,7 +855,7 @@ sub validate_tc_device( ) {
 			    pfifo         => $pfifo,
 			    tablenumber   => 1 ,
 			    redirected    => \@redirected,
-			    default       => 0,
+			    default       => undef,
 			    nextclass     => 2,
 			    qdisc         => $qdisc,
 			    guarantee     => 0,
@@ -998,6 +998,7 @@ sub validate_tc_class( ) {
 	}
     } else {
 	fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
+	$markval = '-';
     }
 
     if ( $parentclass != 1 ) {
@@ -1114,8 +1115,10 @@ sub validate_tc_class( ) {
     }
 
     unless ( $devref->{classify} || $occurs > 1 ) {
-	fatal_error "Missing MARK" if $mark eq '-';
-	warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option"	if $devclass =~ /:/;
+	if ( $mark ne '-' ) {
+	    fatal_error "Missing MARK" if $mark eq '-';
+	    warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option"	if $devclass =~ /:/;
+	}
     }
 
     $tcref->{flow}  = $devref->{flow}  unless $tcref->{flow};
@@ -1596,7 +1599,7 @@ sub process_traffic_shaping() {
 	my $devnum  = in_hexp $devref->{number};
 	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
 
-	fatal_error "No default class defined for device $devname" unless $devref->{default};
+	fatal_error "No default class defined for device $devname" unless defined $devref->{default};
 
 	my $device = physical_name $devname;
 
@@ -1708,7 +1711,7 @@ sub process_traffic_shaping() {
 		#
 		# add filters
 		#
-		unless ( $devref->{classify} ) {
+		unless ( $mark eq '-' ) {
 		    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
 		}
 

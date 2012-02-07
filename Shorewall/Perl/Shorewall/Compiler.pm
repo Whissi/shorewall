@@ -791,7 +791,7 @@ sub compiler {
     #
     # Process the rules file.
     #
-    process_rules;
+    process_rules( $convert );
     #
     # Add Tunnel rules.
     #

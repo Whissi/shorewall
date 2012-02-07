@@ -2525,11 +2525,13 @@ sub classic_blacklist() {
 #
 # Process the BLRules and Rules Files
 #
-sub process_rules() {
+sub process_rules( $ ) {
+    my $convert = shift;
+    my $blrules = 0;
     #
     # Generate jumps to the classic blacklist chains
     #
-    my $blrules = classic_blacklist;
+    $blrules = classic_blacklist unless $convert;
     #
     # Process the blrules file
     #

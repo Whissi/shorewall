@@ -5856,11 +5856,14 @@ sub copy_options( $ ) {
 #
 # This function is called after the blacklist rules have been added to the canonical chains. It 
 # either copies the relevant interface option rules into each canonocal chain, or it inserts one
-# or more jumps to the relevant option chains.
+# or more jumps to the relevant option chains. The argument indicates whether blacklist rules are
+# present.
 #
 sub add_interface_options( $ ) {
 
     if ( $_[0] ) {
+	#
+	# We have blacklist rules.
 	my %input_chains;
 	my %forward_chains;
 
@@ -5887,7 +5890,7 @@ sub add_interface_options( $ ) {
 	    $chainref->{digest} = sha1 $digest;
 	}
 	#
-	# Insert all interface option rules into the rules chains
+	# Insert jumps to the interface chains into the rules chains
 	#
 	for my $zone1 ( off_firewall_zones ) {
 	    my @input_interfaces   = keys %{zone_interfaces( $zone1 )};
@@ -5927,7 +5930,9 @@ sub add_interface_options( $ ) {
 		    @forward_interfaces = ( $forward_interfaces[0] );
 		}
 	    }  
-	    
+	    #
+	    # Now insert the jumps
+	    #
 	    for my $zone2 ( all_zones ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
 		my $chain1ref;
@@ -5962,7 +5967,9 @@ sub add_interface_options( $ ) {
 		}
 	    }
 	}
-
+	#
+	# Now take care of jumps to the interface output option chains
+	#
 	for my $zone1 ( firewall_zone, vserver_zones ) {
 	    for my $zone2 ( off_firewall_zones ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
@@ -5981,7 +5988,7 @@ sub add_interface_options( $ ) {
 	}
     } else {
 	#
-	# Simply move the option chain rules to the interface chains
+	# No Blacklisting - simply move the option chain rules to the interface chains
 	#
 	for my $interface ( all_real_interfaces ) {
 	    my $chainref;

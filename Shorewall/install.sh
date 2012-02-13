@@ -310,18 +310,9 @@ fi
 
 if [ -z "$CYGWIN" ]; then
    install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0755
-   if [ -z "$MACHOST" ]; then
-       eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
-       eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/$PRODUCT
-   else
-       eval sed -i \'\' -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
-       eval sed -i \'\' -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/sbin/$PRODUCT
-   fi
    echo "$PRODUCT control program installed in ${DESTDIR}/sbin/$PRODUCT"
 else
    install_file $PRODUCT ${DESTDIR}/bin/$PRODUCT 0755
-   eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/bin/$PRODUCT
-   eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/bin/$PRODUCT
    echo "$PRODUCT control program installed in ${DESTDIR}/bin/$PRODUCT"
 fi
 

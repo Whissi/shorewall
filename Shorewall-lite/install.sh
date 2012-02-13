@@ -238,8 +238,6 @@ delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
 install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0544
 
-eval sed -i \'``s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
-
 echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
 
 #

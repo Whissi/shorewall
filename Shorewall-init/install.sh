@@ -213,7 +213,7 @@ fi
 if [ -n "$DEBIAN" ]; then
     install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 elif [ -n "$FEDORA" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+    install_file init.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 #elif [ -n "$ARCHLINUX" ]; then
 #    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
 else

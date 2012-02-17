@@ -4313,6 +4313,8 @@ sub get_set_flags( $$ ) {
     } elsif ( $setname =~ /^(.*)\[((src|dst)(,(src|dst))*)\]$/ ) {
 	$setname = $1;
 	$options = $2;
+	my @OPTIONS = split /,/, $options;
+	fatal_error "Invalid flags ($options) for a " . $option eq 'src' ? 'SOURCE' : 'DEST' . ' column';
     }
 
     $setname =~ s/^\+//;

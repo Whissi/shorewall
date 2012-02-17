@@ -149,7 +149,31 @@ CYGWIN=
 INSTALLD='-D'
 T='-T'
 
-case $(uname) in
+if [ -n "INSTALLSYS" ]; then
+    case $(uname) in
+	CYGWIN*)
+	    INSTALLSYS=CYGWIN
+	    ;;
+	Darwin)
+	    INSTALLSYS=MAC
+	    ;;
+	*)
+	    if [ -f /etc/debian_version ]; then
+		INSTALLSYS=DEBIAN
+	    elif [ -f /etc/redhat-release ]; then
+		INSTALLSYS=FEDORA
+	    elif [ -f /etc/slackware-version ] ; then
+		INSTALLSYS=SLACKWARE
+	    elif [ -f /etc/arch-release ] ; then
+		INSTALLSYS=ARCHLINUX
+	    else
+		INSTALLSYS=LINUX
+	    fi
+	    ;;
+    esac
+fi
+
+case $INSTALLSYS in
     CYGWIN*)
 	if [ -z "$DESTDIR" ]; then
 	    DEST=
@@ -159,10 +183,18 @@ case $(uname) in
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	;;
-    Darwin)
+    MAC)
+	if [ -z "$DESTDIR" ]; then
+	    DEST=
+	    INIT=
+	    SPARSE=Yes
+	fi
+
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=wheel
 	INSTALLD=
 	T=
-	;;	   
+	;;
     *)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=root
@@ -170,6 +202,41 @@ case $(uname) in
 esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
+
+[ -n "$TARGET" ] || TARGET=$INSTALLSYS
+
+case "$TARGET" in
+    CYGWIN)
+	echo "Installing Cygwin-specific configuration..."
+	;;
+    MAC)
+	echo "Installing Mac-specific configuration...";
+	;;
+    DEBIAN)
+	echo "Installing Debian-specific configuration..."
+	SPARSE=yes
+	;;
+    FEDORA)
+	echo "Installing Redhat/Fedora-specific configuration..."
+	;;
+    SLACKWARE)
+	echo "Installing Slackware-specific configuration..."
+	DEST="/etc/rc.d"
+	MANDIR="/usr/man"
+	INIT="rc.firewall"
+	;;
+    ARCHLINUX)
+	echo "Installing ArchLinux-specific configuration..."
+	DEST="/etc/rc.d"
+	INIT="$PRODUCT"
+	;;
+    LINUX)
+	;;
+    *)
+	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
+	exit 1;
+	;;
+esac
 
 if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then
@@ -179,20 +246,11 @@ if [ -n "$DESTDIR" ]; then
     
     install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
-elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
-    DEBIAN=yes
-elif [ -f /etc/redhat-release ]; then
-    FEDORA=yes
-elif [ -f /etc/slackware-version ] ; then
-    DEST="/etc/rc.d"
-    INIT="rc.firewall"
-elif [ -f /etc/arch-release ] ; then
-      DEST="/etc/rc.d"
-      INIT="$PRODUCT"
-      ARCHLINUX=yes
-fi
 
-if [ -z "$DESTDIR" ]; then
+    if [ -n "$SYSTEMD" ]; then
+	mkdir -p ${DESTDIR}/lib/systemd/system
+    fi
+else
     if [ ! -f /usr/share/shorewall/coreversion ]; then
 	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
@@ -201,8 +259,6 @@ if [ -z "$DESTDIR" ]; then
     if [ -f /lib/systemd/system ]; then
 	SYSTEMD=Yes
     fi
-elif [ -n "$SYSTEMD" ]; then
-    mkdir -p ${DESTDIR}/lib/systemd/system
 fi
 
 echo "Installing $Product Version $VERSION"
@@ -238,22 +294,25 @@ delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
 install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0544
 
-eval sed -i \'``s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/sbin/$PRODUCT
-
 echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
 
 #
 # Install the Firewall Script
 #
-if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
-elif [ -n "$FEDORA" ]; then
-    install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
-elif [ -n "$ARCHLINUX" ]; then
-    install_file init.archlinux.sh ${DESTDIR}/${DEST}/$INIT 0544
-else
-    install_file init.sh ${DESTDIR}/${DEST}/$INIT 0544
-fi
+case $TARGET in
+    DEBIAN)
+	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
+	;;
+    FEDORA)
+	install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
+	;;
+    ARCHLINUX)
+	install_file init.archlinux.sh ${DESTDIR}/${DEST}/$INIT 0544
+	;;
+    *)
+	install_file init.sh ${DESTDIR}/${DEST}/$INIT 0544
+	;;
+esac
 
 echo  "$Product script installed in ${DESTDIR}${DEST}/$INIT"
 
@@ -289,7 +348,7 @@ if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
    echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
 fi
 
-if [ -n "$ARCHLINUX" ] ; then
+if [ $TARGET = ARCHLINUX ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
@@ -400,7 +459,7 @@ if [ -z "$DESTDIR" ]; then
     touch /var/log/$PRODUCT-init.log
 
     if [ -n "$first_install" ]; then
-	if [ -n "$DEBIAN" ]; then
+	if [ $TARGET = DEBIAN ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
 	    update-rc.d $PRODUCT defaults

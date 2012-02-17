@@ -263,6 +263,15 @@ for f in lib.* ; do
     install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
     echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
 done
+
+if [ -z "$MACHOST" ]; then
+    eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
+    eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
+else
+    eval sed -i \'\' -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
+    eval sed -i \'\' -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
+fi
+
 #
 # Symbolically link 'functions' to lib.base
 #

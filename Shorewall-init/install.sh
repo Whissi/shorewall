@@ -131,16 +131,51 @@ case "$LIBEXEC" in
 	;;
 esac
 
-#
-# Determine where to install the firewall script
-#
+if [ -n "INSTALLSYS" ]; then
+    case $(uname) in
+	CYGWIN*)
+	    INSTALLSYS=CYGWIN
+	    ;;
+	Darwin)
+	    INSTALLSYS=MAC
+	    ;;
+	*)
+	    if [ -f /etc/debian_version ]; then
+		INSTALLSYS=DEBIAN
+	    elif [ -f /etc/redhat-release ]; then
+		if [ -d /etc/sysconfig/network-scripts/ ]; then
+		    INSTALLSYS=REDHAT
+		else
+		    INSTALLSYS=FEDORA
+		fi
+	    elif [ -f /etc/slackware-version ] ; then
+		INSTALLSYS=SLACKWARE
+	    elif [ -f /etc/arch-release ] ; then
+		INSTALLSYS=ARCHLINUX
+	    else
+		INSTALLSYS=
+	    fi
+	    ;;
+    esac
+fi
 
-case $(uname) in
-    Darwin)
+case $INSTALLSYS in
+    CYGWIN*)
+	OWNER=$(id -un)
+	GROUP=$(id -gn)
+	;;
+    MAC)
+	if [ -z "$DESTDIR" ]; then
+	    DEST=
+	    INIT=
+	    SPARSE=Yes
+	fi
+
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
+	INSTALLD=
 	T=
-	;;	
+	;;
     *)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=root
@@ -149,6 +184,39 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
+[ -n "$TARGET" ] || TARGET=$INSTALLSYS
+
+case "$TARGET" in
+    DEBIAN)
+	echo "Installing Debian-specific configuration..."
+	SPARSE=yes
+	;;
+    FEDORA)
+	echo "Installing Fedora-specific configuration..."
+	;;
+    REDHAT)
+	echo "Installing Redhat-specific configuration..."
+	;;
+    SLACKWARE)
+	echo "Shorewall-init is currently not supported on Slackware" >&2
+	exit 1
+	;;
+    ARCHLINUX)
+	echo "Shorewall-init is currently not supported on Arch Linux" >&2
+	exit 1
+	;;
+    SUSE)
+	echo "Installing SuSE-specific configuration..."
+	;;
+    LINUX)
+	echo "ERROR: Shorewall-init is not supported on this system" >&2
+	;;
+    *)
+	echo "ERROR: Unsupported TARGET distribution: \"$TARGET\"" >&2
+	exit 1;
+	;;
+esac
+
 if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then
 	echo "Not setting file owner/group permissions, not running as root."
@@ -156,31 +224,6 @@ if [ -n "$DESTDIR" ]; then
     fi
     
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
-elif [ -f /etc/debian_version ]; then
-    DEBIAN=yes
-elif [ -f /etc/SuSE-release ]; then
-    SUSE=Yes
-elif [ -f /etc/redhat-release ]; then
-    FEDORA=Yes
-elif [ -f /etc/slackware-version ] ; then
-    echo "Shorewall-init is currently not supported on Slackware" >&2
-    exit 1
-#   DEST="/etc/rc.d"
-#   INIT="rc.firewall"
-elif [ -f /etc/arch-release ] ; then
-    echo "Shorewall-init is currently not supported on Arch Linux" >&2
-    exit 1
-#   DEST="/etc/rc.d"
-#   INIT="shorewall-init"
-#   ARCHLINUX=yes
-elif [ -d /etc/sysconfig/network-scripts/ ]; then
-    #
-    # Assume RedHat-based
-    #
-    REDHAT=Yes
-else
-    echo "Unknown distribution: Shorewall-init support is not available" >&2
-    exit 1
 fi
 
 if [ -z "$DESTDIR" ]; then
@@ -210,15 +253,17 @@ fi
 #
 # Install the Init Script
 #
-if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
-elif [ -n "$FEDORA" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
-#elif [ -n "$ARCHLINUX" ]; then
-#    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
-else
-    install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
-fi
+case $TARGET in
+    DEBIAN)
+	install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+	;;
+    REDHAT|FEDORA)
+	install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+	;;
+    *)
+	install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
+	;;
+esac
 
 echo  "Shorewall Init script installed in ${DESTDIR}${DEST}/$INIT"
 
@@ -250,7 +295,7 @@ if [ -z "$DESTDIR" ]; then
     ln -s ${DEST}/${INIT} /usr/share/shorewall-init/init
 fi
 
-if [ -n "$DEBIAN" ]; then
+if [ $TARGET = DEBIAN ]; then
     if [ -n "${DESTDIR}" ]; then
 	mkdir -p ${DESTDIR}/etc/network/if-up.d/
 	mkdir -p ${DESTDIR}/etc/network/if-post-down.d/
@@ -268,7 +313,7 @@ else
 	mkdir -p ${DESTDIR}/etc/sysconfig
 
 	if [ -z "$RPM" ]; then
-	    if [ -n "$SUSE" ]; then
+	    if [ $TARGET = SUSE ]; then
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-down.d
 	    else
@@ -294,24 +339,30 @@ if [ -d ${DESTDIR}/etc/NetworkManager ]; then
     install_file ifupdown.sh ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
-if [ -n "$DEBIAN" ]; then
-    install_file ifupdown.sh ${DESTDIR}/etc/network/if-up.d/shorewall 0544
-    install_file ifupdown.sh ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
-elif [ -n "$SUSE" ]; then
-    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-up.d/shorewall 0544
-    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-down.d/shorewall 0544
-elif [ -n "$REDHAT" ]; then
-    if [ -f ${DESTDIR}/sbin/ifup-local -o -f ${DESTDIR}/sbin/ifdown-local ]; then
-	echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
-    else
-	install_file ifupdown.sh ${DESTDIR}/sbin/ifup-local 0544
-	install_file ifupdown.sh ${DESTDIR}/sbin/ifdown-local 0544
-    fi
-fi
+case $TARGET in
+    DEBIAN)
+	install_file ifupdown.sh ${DESTDIR}/etc/network/if-up.d/shorewall 0544
+	install_file ifupdown.sh ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
+	;;
+    SUSE)
+	if [ -z "$RPM" ]; then
+	    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-up.d/shorewall 0544
+	    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-down.d/shorewall 0544
+	fi
+	;;
+    REDHAT)
+	if [ -f ${DESTDIR}/sbin/ifup-local -o -f ${DESTDIR}/sbin/ifdown-local ]; then
+	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
+	else
+	    install_file ifupdown.sh ${DESTDIR}/sbin/ifup-local 0544
+	    install_file ifupdown.sh ${DESTDIR}/sbin/ifdown-local 0544
+	fi
+	;;
+esac
 
 if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
-	if [ -n "$DEBIAN" ]; then
+	if [ $TARGET = DEBIAN ]; then
 	    
 	    update-rc.d shorewall-init defaults
 
@@ -348,7 +399,7 @@ if [ -z "$DESTDIR" ]; then
     fi
 else
     if [ -n "$first_install" ]; then
-	if [ -n "$DEBIAN" ]; then
+	if [ $TARGET = DEBIAN ]; then
 	    if [ -n "${DESTDIR}" ]; then
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi
@@ -360,31 +411,33 @@ else
 fi
 
 if [ -f ${DESTDIR}/etc/ppp ]; then
-    if [ -n "$DEBIAN" ] -o -n "$SUSE" ]; then
-	for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-	    mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
-	    cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
-	done
-    elif [ -n "$REDHAT" ]; then
-	#
-	# Must use the dreaded ip_xxx.local file
-	#
-	for file in ip-up.local ip-down.local; do
-	    FILE=${DESTDIR}/etc/ppp/$file
-	    if [ -f $FILE ]; then
-		if fgrep -q Shorewall-based $FILE ; then
-		    cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown $FILE
+    case $TARGET in
+	DEBIAN|SUSE)
+	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
+		mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
+		cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
+	    done
+	    ;;
+	REDHAT)
+	    #
+	    # Must use the dreaded ip_xxx.local file
+	    #
+	    for file in ip-up.local ip-down.local; do
+		FILE=${DESTDIR}/etc/ppp/$file
+		if [ -f $FILE ]; then
+		    if fgrep -q Shorewall-based $FILE ; then
+			cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown $FILE
+		    else
+			echo "$FILE already exists -- ppp devices will not be handled"
+			break
+		    fi
 		else
-		    echo "$FILE already exists -- ppp devices will not be handled"
-		    break
+		    cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown $FILE
 		fi
-	    else
-		cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown $FILE
-	    fi
-	done
-    fi
+	    done
+	    ;;
+    esac
 fi
-
 #
 #  Report Success
 #

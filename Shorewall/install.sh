@@ -153,9 +153,15 @@ if [ -n "INSTALLSYS" ]; then
 	    if [ -f /etc/debian_version ]; then
 		INSTALLSYS=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		INSTALLSYS=FEDORA
+		if [ -d /etc/sysconfig/network-scripts/ ]; then
+		    INSTALLSYS=REDHAT
+		else
+		    INSTALLSYS=FEDORA
+		fi
 	    elif [ -f /etc/slackware-version ] ; then
 		INSTALLSYS=SLACKWARE
+	    elif [ -f /etc/SuSE-release ]; then
+		INSTALLSYS=SUSE
 	    elif [ -f /etc/arch-release ] ; then
 		INSTALLSYS=ARCHLINUX
 	    else
@@ -270,7 +276,7 @@ case "$TARGET" in
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    FEDORA)
+    FEDORA|REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
 	;;
     SLACKWARE)
@@ -346,7 +352,7 @@ case $TARGET in
     DEBIAN)
 	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 	;;
-    FEDORA)
+    FEDORA|REDHAT)
 	install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 	;;
     ARCHLINUX)

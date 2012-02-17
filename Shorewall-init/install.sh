@@ -148,6 +148,8 @@ if [ -n "INSTALLSYS" ]; then
 		else
 		    INSTALLSYS=FEDORA
 		fi
+	    elif [ -f /etc/SuSE-release ]; then
+		INSTALLSYS=SUSE
 	    elif [ -f /etc/slackware-version ] ; then
 		INSTALLSYS=SLACKWARE
 	    elif [ -f /etc/arch-release ] ; then

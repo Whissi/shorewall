@@ -118,7 +118,37 @@ esac
 
 INSTALLD='-D'
 
-case $(uname) in
+if [ -z "$INSTALLSYS" ]; then
+    case $(uname) in
+	CYGWIN*)
+	    INSTALLSYS=CYGWIN
+	    ;;
+	Darwin)
+	    INSTALLSYS=MAC
+	    ;;
+	*)
+	    if [ -f /etc/debian_version ]; then
+		INSTALLSYS=DEBIAN
+	    elif [ -f /etc/redhat-release ]; then
+		if [ -d /etc/sysconfig/network-scripts/ ]; then
+		    INSTALLSYS=REDHAT
+		else
+		    INSTALLSYS=FEDORA
+		fi
+	    elif [ -f /etc/slackware-version ] ; then
+		INSTALLSYS=SLACKWARE
+	    elif [ -f /etc/SuSE-release ]; then
+		INSTALLSYS=SUSE
+	    elif [ -f /etc/arch-release ] ; then
+		INSTALLSYS=ARCHLINUX
+	    else
+		INSTALLSYS=LINUX
+	    fi
+	    ;;
+    esac
+fi
+
+case $INSTALLSYS in
     CYGWIN*)
 	if [ -z "$DESTDIR" ]; then
 	    DEST=
@@ -127,18 +157,16 @@ case $(uname) in
 
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
-	CYGWIN=Yes
 	;;
-    Darwin)
+    MAC)
 	if [ -z "$DESTDIR" ]; then
 	    DEST=
 	    INIT=
+	    SPARSE=Yes
 	fi
 
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
-	MAC=Yes
-        MACHOST=Yes
 	INSTALLD=
 	T=
 	;;
@@ -197,41 +225,32 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 
+[ -n "$TARGET" ] || TARGET=$INSTALLSYS
+
+case "$TARGET" in
+    CYGWIN)
+	echo "Installing Cygwin-specific configuration..."
+	;;
+    MAC)
+	echo "Installing Mac-specific configuration...";
+	;;
+    DEBIAN)
+	echo "Installing Debian-specific configuration..."
+	SPARSE=yes
+	;;
+    FEDORA|REDHAT|SLACKWARE|ARCHLINUX|LINUX)
+	;;
+    *)
+	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
+	exit 1;
+	;;
+esac
+
 if [ -n "$DESTDIR" ]; then
-    if [ -z "$CYGWIN" ]; then
+    if [ $INSTALLSYS != CYGWIN ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
-	fi
-    fi
-
-    install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
-
-    CYGWIN=
-    MAC=
-else
-    if [ -n "$CYGWIN" ]; then
-	echo "Installing Cygwin-specific configuration..."
-    elif [ -n "$MAC" ]; then
-	echo "Installing Mac-specific configuration..."
-    else
-	if [ -f /etc/debian_version ]; then
-	    echo "Installing Debian-specific configuration..."
-	    DEBIAN=yes
-	elif [ -f /etc/redhat-release ]; then
-	    echo "Installing Redhat/Fedora-specific configuration..."
-	    FEDORA=yes
-	elif [ -f /etc/slackware-version ] ; then
-	    echo "Installing Slackware-specific configuration..."
-	    DEST="/etc/rc.d"
-	    MANDIR="/usr/man"
-	    SLACKWARE=yes
-	elif [ -f /etc/arch-release ] ; then
-	    echo "Installing ArchLinux-specific configuration..."
-	    DEST="/etc/rc.d"
-	    INIT="shorewall"
-	    ARCHLINUX=yes
 	fi
     fi
 fi

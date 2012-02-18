@@ -141,7 +141,7 @@ case "$PERLLIB" in
 	;;
 esac
 
-if [ -n "INSTALLSYS" ]; then
+if [ -z "$INSTALLSYS" ]; then
     case $(uname) in
 	CYGWIN*)
 	    INSTALLSYS=CYGWIN

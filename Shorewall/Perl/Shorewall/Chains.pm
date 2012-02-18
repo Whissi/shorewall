@@ -4313,8 +4313,13 @@ sub get_set_flags( $$ ) {
     } elsif ( $setname =~ /^(.*)\[((src|dst)(,(src|dst))*)\]$/ ) {
 	$setname = $1;
 	$options = $2;
-	my @OPTIONS = split /,/, $options;
-	fatal_error "Invalid flags ($options) for a " . $option eq 'src' ? 'SOURCE' : 'DEST' . ' column';
+
+	my @options = split /,/, $options;
+	my %typemap = ( src => 'Source', dst => 'Destination' );
+
+	for ( @options ) {
+	    warning_messsage( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
+	}
     }
 
     $setname =~ s/^\+//;

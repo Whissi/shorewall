@@ -35,8 +35,8 @@
       <para>If you have more than one ISP link, adding entries to this file
       will <emphasis role="bold">not</emphasis> force connections to go out
       through a particular link. You must use entries in <ulink
-      url="shorewall-rtrules.html">shorewall-rtrules</ulink>(5) or
-      PREROUTING entries in <ulink
+      url="shorewall-rtrules.html">shorewall-rtrules</ulink>(5) or PREROUTING
+      entries in <ulink
       url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) to do
       that.</para>
     </warning>
@@ -88,7 +88,8 @@
           addresses to indicate that you only want to change the source IP
           address for packets being sent to those particular destinations.
           Exclusion is allowed (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)) as
+          are ipset names preceded by a plus sign '+';</para>
 
           <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
           entry then include the ":" but omit the digit:</para>
@@ -149,6 +150,10 @@
 
           <para>In that example traffic from eth1 would be masqueraded unless
           it came from 192.168.1.4 or 196.168.32.0/27</para>
+
+          <para>The preferred way to specify the SOURCE is to supply one or
+          more host or network addresses separated by comma. You may use ipset
+          names preceded by a plus sign (+) to specify a set of hosts.</para>
         </listitem>
       </varlistentry>
 
@@ -467,6 +472,43 @@
           </variablelist>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SWITCH -
+        [!]<replaceable>switch-name</replaceable></emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.1 and allows enabling and disabling the
+          rule without requiring <command>shorewall restart</command>.</para>
+
+          <para>The rule is enabled if the value stored in
+          <filename>/proc/net/nf_condition/<replaceable>switch-name</replaceable></filename>
+          is 1. The rule is disabled if that file contains 0 (the default). If
+          '!' is supplied, the test is inverted such that the rule is enabled
+          if the file contains 0. <replaceable>switch-name</replaceable> must
+          begin with a letter and be composed of letters, decimal digits,
+          underscores or hyphens. Switch names must be 30 characters or less
+          in length.</para>
+
+          <para>Switches are normally <emphasis role="bold">off</emphasis>. To
+          turn a switch <emphasis role="bold">on</emphasis>:</para>
+
+          <simplelist>
+            <member><command>echo 1 &gt;
+            /proc/net/nf_condition/<replaceable>switch-name</replaceable></command></member>
+          </simplelist>
+
+          <para>To turn it <emphasis role="bold">off</emphasis> again:</para>
+
+          <simplelist>
+            <member><command>echo 0 &gt;
+            /proc/net/nf_condition/<replaceable>switch-name</replaceable></command></member>
+          </simplelist>
+
+          <para>Switch settings are retained over <command>shorewall
+          restart</command>.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -546,6 +588,19 @@
           <warning>
             <para>The order of the above two rules is significant!</para>
           </warning>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 6:</term>
+
+        <listitem>
+          <para>Connections leaving on eth0 and destined to any host defined
+          in the ipset <emphasis>myset</emphasis> should have the source IP
+          address changed to 206.124.146.177.</para>
+
+          <programlisting>        #INTERFACE              SOURCE          ADDRESS
+        eth0:+myset[dst]        -               206.124.146.177</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

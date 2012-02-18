@@ -1814,7 +1814,7 @@ sub process_host( ) {
 	$interface = $1;
 	$hosts = $2;
 
-	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface})->{root};
+	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts" 
     }

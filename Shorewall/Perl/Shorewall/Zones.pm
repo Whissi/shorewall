@@ -403,7 +403,7 @@ sub parse_zone_option_list($$\$$)
 #
 # Set the super option on the passed zoneref and propagate to its parents
 #
-sub set_super( $ );
+sub set_super( $ ); #required for recursion
 
 sub set_super( $ ) {
     my $zoneref = shift;
@@ -769,13 +769,13 @@ sub add_group_to_zone($$$$$)
 
     my $gtype = $type & IPSEC ? 'ipsec' : 'ip';
 
-    $hostsref     = ( $zoneref->{hosts}           || ( $zoneref->{hosts} = {} ) );
-    $typeref      = ( $hostsref->{$gtype}         || ( $hostsref->{$gtype} = {} ) );
-    $interfaceref = ( $typeref->{$interface}      || ( $typeref->{$interface} = [] ) );
+    $hostsref     = ( $zoneref->{hosts}      ||= {} );
+    $typeref      = ( $hostsref->{$gtype}    ||= {} );
+    $interfaceref = ( $typeref->{$interface} ||= [] );
 
     fatal_error "Duplicate Host Group ($interface:" . ALLIP . ") in zone $zone" if $allip && @$interfaceref;
 
-    $zoneref->{options}{complex} = 1 if @$interfaceref || ( @newnetworks > 1 ) || ( @exclusions ) || $options->{routeback};
+    $zoneref->{options}{complex} = 1 if @$interfaceref || @newnetworks > 1 || @exclusions || $options->{routeback};
 
     push @{$interfaceref}, { options => $options,
 			     hosts   => \@newnetworks,

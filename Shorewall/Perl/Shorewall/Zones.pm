@@ -227,6 +227,25 @@ my %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 );
 
 my %validhostoptions;
 
+my %validzoneoptions = ( mss          => NUMERIC,
+			 nomark       => NOTHING,
+			 blacklist    => NOTHING,
+			 strict       => NOTHING,
+			 next         => NOTHING,
+			 reqid        => NUMERIC,
+			 spi          => NUMERIC,
+			 proto        => IPSECPROTO,
+			 mode         => IPSECMODE,
+			 "tunnel-src" => NETWORK,
+			 "tunnel-dst" => NETWORK,
+		       );
+
+use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
+#
+# Hash of options that have their own key in the returned hash.
+#
+my %zonekey = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY );
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -329,25 +348,6 @@ sub initialize( $$ ) {
 #
 sub parse_zone_option_list($$\$$)
 {
-    my %validoptions = ( mss          => NUMERIC,
-			 nomark       => NOTHING,
-			 blacklist    => NOTHING,
-			 strict       => NOTHING,
-			 next         => NOTHING,
-			 reqid        => NUMERIC,
-			 spi          => NUMERIC,
-			 proto        => IPSECPROTO,
-			 mode         => IPSECMODE,
-			 "tunnel-src" => NETWORK,
-			 "tunnel-dst" => NETWORK,
-		       );
-
-    use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
-    #
-    # Hash of options that have their own key in the returned hash.
-    #
-    my %key = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY );
-
     my ( $list, $zonetype, $complexref, $column ) = @_;
     my %h;
     my $options = '';
@@ -367,7 +367,7 @@ sub parse_zone_option_list($$\$$)
 		$e   = $1;
 	    }
 
-	    $fmt = $validoptions{$e};
+	    $fmt = $validzoneoptions{$e};
 
 	    fatal_error "Invalid Option ($e)" unless $fmt;
 
@@ -378,7 +378,7 @@ sub parse_zone_option_list($$\$$)
 		fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
 	    }
 
-	    my $key = $key{$e};
+	    my $key = $zonekey{$e};
 
 	    if ( $key ) {
 		fatal_error "Option '$e' not permitted with this zone type " if $key & NOFW && ($zonetype & ( FIREWALL | VSERVER) );

@@ -963,7 +963,7 @@ sub createlogactionchain( $$$$$ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
-	dont_optimize $chainref;
+	set_optflags( $chainref, DONT_OPTIMIZE );
 
 	my $file = find_file $chain;
 
@@ -997,7 +997,7 @@ sub createsimpleactionchain( $ ) {
 
     unless ( $targets{$action} & BUILTIN ) {
 
-	dont_optimize $chainref;
+	set_optflags( $chainref, DONT_OPTIMIZE );
 
 	my $file = find_file $action;
 
@@ -1306,7 +1306,7 @@ sub allowInvalid ( $$$$ ) {
 }
 
 sub forwardUPnP ( $$$$ ) {
-    my $chainref = dont_optimize 'forwardUPnP';
+    my $chainref = set_optflags( 'forwardUPnP', DONT_OPTIMIZE );
 
     add_commands( $chainref , '[ -f ${VARDIR}/.forwardUPnP ] && cat ${VARDIR}/.forwardUPnP >&3' );
 }
@@ -2238,7 +2238,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    }
 	}
 
-	dont_move( dont_optimize( $nonat_chain ) ) if $tgt eq 'RETURN';
+	set_optflags( $nonat_chain, DONT_MOVE | DONT_OPTIMIZE ) if $tgt eq 'RETURN';
 
 	expand_rule( $nonat_chain ,
 		     PREROUTE_RESTRICT ,
@@ -2262,7 +2262,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    $action = $usedactions{$normalized_target}{name};
 	    $loglevel = '';
 	} else {
-	    dont_move( dont_optimize ( $chainref ) ) if $action eq 'RETURN';
+	    set_optflags( $chainref , DONT_MOVE | DONT_OPTIMIZE ) if $action eq 'RETURN';
 	}
 
 	if ( $origdest ) {

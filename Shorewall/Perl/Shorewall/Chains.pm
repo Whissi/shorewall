@@ -36,6 +36,10 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
+		    DONT_OPTIMIZE
+		    DONT_DELETE
+		    DONT_MOVE
+
 		    add_rule
 		    add_irule
 		    add_jump
@@ -62,6 +66,11 @@ our @EXPORT = qw(
 		    require_audit
 		    newlogchain
 		    log_rule_limit
+		    allow_optimize
+		    allow_delete
+		    allow_move
+		    set_optflags
+		    reset_optflags
 		    dont_optimize
 		    dont_delete
 		    dont_move
@@ -246,9 +255,7 @@ our $VERSION = 'MODULEVERSION';
 #                                               builtin      => undef|1 -- If 1, one of Netfilter's built-in chains.
 #                                               manual       => undef|1 -- If 1, a manual chain.
 #                                               accounting   => undef|1 -- If 1, an accounting chain
-#                                               dont_optimize=> undef|1 -- Don't optimize away if this chain is 'short'
-#                                               dont_delete  => undef|1 -- Don't delete if this chain is not referenced
-#                                               dont_move    => undef|1 -- Don't copy the rules of this chain somewhere else
+#                                               optflags     => <optimization flags>
 #                                               log          => <logging rule number for use when LOGRULENUMBERS>
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
@@ -359,6 +366,8 @@ use constant {
 	     };
 
 use constant { OPTIMIZE_MASK => OPTIMIZE_POLICY_MASK | OPTIMIZE_RULESET_MASK };
+
+use constant { DONT_OPTIMIZE => 1 , DONT_DELETE => 2, DONT_MOVE => 4 };
 
 #
 # These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents
@@ -1151,7 +1160,7 @@ sub push_matches {
 	}
     }
 
-    $dont_optimize;
+    DONT_OPTIMIZE if $dont_optimize;
 }
 
 sub push_irule( $$$;@ ) {
@@ -1180,7 +1189,7 @@ sub push_irule( $$$;@ ) {
     $chainref->{referenced} = 1;
 
     unless ( $ruleref->{simple} = ! @matches ) {
-	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
+	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
     push @{$chainref->{rules}}, $ruleref;
@@ -1294,7 +1303,7 @@ sub insert_irule( $$$$;@ ) {
     }
 
     unless ( $ruleref->{simple} = ! @matches ) {
-	$chainref->{dont_optimize} = 1 if push_matches( $ruleref, @matches );
+	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
     if ( $comment ) {
@@ -1867,7 +1876,8 @@ sub new_chain($$)
 		     log            => 1,
 		     cmdlevel       => 0,
 		     references     => {},
-		     filtered       => 0
+		     filtered       => 0,
+		     optflags       => 0,
 		   };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
@@ -1928,7 +1938,7 @@ sub add_jump( $$$;$$$ ) {
 
     my $param = $goto_ok && $toref && have_capability( 'GOTO_TARGET' ) ? 'g' : 'j';
 
-    $fromref->{dont_optimize} = 1 if $predicate =~ /! -[piosd] /;
+    $fromref->{optflags} |= DONT_OPTIMIZE if $predicate =~ /! -[piosd] /;
 
     if ( defined $index ) {
 	assert( ! $expandports );
@@ -2052,15 +2062,24 @@ sub delete_jumps ( $$ ) {
     }
 }
 
-#
-# Set the dont_optimize flag for a chain
-#
-sub dont_optimize( $ ) {
-    my $chain = shift;
+sub reset_optflags( $$ ) {
+    my ( $chain, $flags ) = @_;
 
     my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
 
-    $chainref->{dont_optimize} = 1;
+    $chainref->{optflags} ^= $flags;
+
+    trace( $chainref, '!O', undef, '' ) if $debug;
+
+    $chainref;
+}
+
+sub set_optflags( $$ ) {
+    my ( $chain, $flags ) = @_;
+
+    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
+
+    $chainref->{optflags} |= $flags;
 
     trace( $chainref, '!O', undef, '' ) if $debug;
 
@@ -2068,33 +2087,45 @@ sub dont_optimize( $ ) {
 }
 
 #
+# Reset the dont_optimize flag for a chain
+#
+sub allow_optimize( $ ) {
+    reset_optflags( shift, DONT_OPTIMIZE );
+}
+
+#
+# Reset the dont_delete flags for a chain
+#
+sub allow_delete( $ ) {
+    reset_optflags( shift, DONT_DELETE );
+}
+
+#
+# Reset the dont_move flag for a chain
+#
+sub allow_move( $ ) {
+    reset_optflags( shift, DONT_MOVE );
+}
+
+#
+# Set the dont_optimize flag for a chain
+#
+sub dont_optimize( $ ) {
+    set_optflags( shift, DONT_OPTIMIZE );
+}
+
+#
 # Set the dont_optimize and dont_delete flags for a chain
 #
 sub dont_delete( $ ) {
-    my $chain = shift;
-
-    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
-
-    $chainref->{dont_optimize} = $chainref->{dont_delete} = 1;
-
-    trace( $chainref, '!OD', undef, '' ) if $debug;
-
-    $chainref;
+    set_optflags( shift, DONT_OPTIMIZE | DONT_DELETE );
 }
 
 #
 # Set the dont_move flag for a chain
 #
 sub dont_move( $ ) {
-    my $chain = shift;
-
-    my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
-
-    $chainref->{dont_move} = 1;
-
-    trace( $chainref, '!M', undef, '' ) if $debug;
-
-    $chainref;
+    set_optflags( shift, DONT_MOVE );
 }
 
 #
@@ -2136,7 +2167,7 @@ sub ensure_accounting_chain( $$$ )
 	$chainref->{restriction} = $restriction;
 	$chainref->{restricted}  = NO_RESTRICT;
 	$chainref->{ipsec}       = $ipsec;
-	$chainref->{dont_optimize} = 1 unless $config{OPTIMIZE_ACCOUNTING};
+	$chainref->{optflags}   |= DONT_OPTIMIZE unless $config{OPTIMIZE_ACCOUNTING};
 
 	unless ( $chain eq 'accounting' ) {
 	    my $file = find_file $chain;
@@ -2208,7 +2239,7 @@ sub new_builtin_chain($$$)
     $chainref->{referenced}  = 1;
     $chainref->{policy}      = $policy;
     $chainref->{builtin}     = 1;
-    $chainref->{dont_delete} = 1;
+    $chainref->{optflags}    = DONT_DELETE;
     $chainref;
 }
 
@@ -2636,7 +2667,7 @@ sub conditionally_copy_rules( $$ ) {
 
     my $targetref = $chain_table{$chainref->{table}}{$basictarget};
 
-    if ( $targetref && ! $targetref->{dont_move} ) {
+    if ( $targetref && ! ( $targetref->{optflags} & DONT_MOVE ) ) {
 	#
 	# Move is safe -- start with an empty rule list
 	#
@@ -2678,7 +2709,7 @@ sub optimize_level0() {
 	    #
 	    # If the chain isn't branched to, then delete it
 	    #
-	    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
+	    unless ( $chainref->{optflags} & DONT_DELETE || keys %{$chainref->{references}} ) {
 		delete_chain $chainref if $chainref->{referenced};
 	    }
 	}
@@ -2696,7 +2727,7 @@ sub optimize_level4( $$ ) {
     # When a chain with a single entry is found, replace it's references by its contents
     #
     # The search continues until no short chains remain
-    # Chains with 'dont_optimize = 1' are exempted from optimization
+    # Chains with 'DONT_OPTIMIZE' are exempted from optimization
     #
     while ( $progress ) {
 	$progress = 0;
@@ -2708,15 +2739,16 @@ sub optimize_level4( $$ ) {
 	progress_message "\n Table $table pass $passes, $chains referenced chains, level 4a...";
 
 	for my $chainref ( @chains ) {
+	    my $optflags = $chainref->{optflags};
 	    #
 	    # If the chain isn't branched to, then delete it
 	    #
-	    unless ( $chainref->{dont_delete} || keys %{$chainref->{references}} ) {
+	    unless ( ( $optflags & DONT_DELETE ) || keys %{$chainref->{references}} ) {
 		delete_chain $chainref if $chainref->{referenced};
 		next;
 	    }
 
-	    unless ( $chainref->{dont_optimize} ) {
+	    unless ( $optflags & DONT_OPTIMIZE ) {
 		my $numrules = @{$chainref->{rules}};
 
 		if ( $numrules == 0 ) {
@@ -2727,7 +2759,7 @@ sub optimize_level4( $$ ) {
 			#
 			# Built-in -- mark it 'dont_optimize' so we ignore it in follow-on passes
 			#
-			$chainref->{dont_optimize} = 1;
+			$chainref->{optflags} |= DONT_OPTIMIZE;
 		    } else {
 			#
 			# Not a built-in -- we can delete it and it's references
@@ -2758,7 +2790,7 @@ sub optimize_level4( $$ ) {
 				#
 				# Target was a built-in. Ignore this chain in follow-on passes
 				#
-				$chainref->{dont_optimize} = 1;
+				$chainref->{optflags} |= DONT_OPTIMIZE;
 			    }
 			} else {
 			    #
@@ -2774,9 +2806,9 @@ sub optimize_level4( $$ ) {
 			if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} ) {
 			    #
 			    # This case requires a new rule merging algorithm. Ignore this chain for
-			    # now.
+			    # now on.
 			    #
-			    $chainref->{dont_optimize} = 1;
+			    $chainref->{optflags} |= DONT_OPTIMIZE;
 			} else {
 			    #
 			    # Replace references to this chain with the target and add the matches
@@ -2866,7 +2898,7 @@ sub optimize_level8( $$$ ) {
 	#
 	for my $chainref1 ( @chains1 ) {
 	    next unless @{$chainref1->{rules}};
-	    next if $chainref1->{dont_delete};
+	    next if $chainref1->{optflags} & DONT_DELETE;
 	    if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		replace_references $chainref1, $chainref->{name}, undef;

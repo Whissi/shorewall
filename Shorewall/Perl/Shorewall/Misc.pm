@@ -216,8 +216,8 @@ sub setup_blacklist() {
     # for 'refresh' to work properly.
     #
     if ( @$zones || @$zones1 ) {
-	$chainref  = dont_delete new_standard_chain 'blacklst' if @$zones;
-	$chainref1 = dont_delete new_standard_chain 'blackout' if @$zones1;
+	$chainref  = set_optflags( new_standard_chain( 'blacklst' ), DONT_OPTIMIZE | DONT_DELETE ) if @$zones;
+	$chainref1 = set_optflags( new_standard_chain( 'blackout' ), DONT_OPTIMIZE | DONT_DELETE ) if @$zones1;
 
 	if ( supplied $level ) {
 	    $target = ensure_blacklog_chain ( $target, $disposition, $level, $audit );
@@ -695,9 +695,9 @@ sub add_common_rules ( $ ) {
     my $rejectref = $filter_table->{reject};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
-	add_rule_pair dont_delete( new_standard_chain( 'logdrop' ) ),   '' , 'DROP'   , $level ;
-	add_rule_pair dont_delete( new_standard_chain( 'logreject' ) ), '' , 'reject' , $level ;
-	$dynamicref = dont_optimize( new_standard_chain( 'dynamic' ) );
+	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level );
+	add_rule_pair( set_optflags( new_standard_chain( 'logreject' ), DONT_OPTIMIZE | DONT_DELETE ), '' , 'reject' , $level );
+	$dynamicref =  set_optflags( new_standard_chain( 'dynamic' ) ,  DONT_OPTIMIZE );
 	add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
     }
 
@@ -994,7 +994,7 @@ sub add_common_rules ( $ ) {
 	if ( @$list ) {
 	    progress_message2 "$doing UPnP";
 
-	    $chainref = dont_optimize new_nat_chain( 'UPnP' );
+	    $chainref = set_optflags( new_nat_chain( 'UPnP' ), DONT_OPTIMIZE );
 
 	    add_commands( $chainref, '[ -s /${VARDIR}/.UPnP ] && cat ${VARDIR}/.UPnP >&3' );
 

@@ -322,7 +322,7 @@ sub process_accounting_rule( ) {
 	}
     }
 
-    dont_optimize( $chainref ) if $target eq 'RETURN';
+    set_optflags( $chainref, DONT_OPTIMIZE ) if $target eq 'RETURN';
 
     if ( $jumpchainref ) {
 	if ( $asection ) {
@@ -407,7 +407,7 @@ sub setup_accounting() {
 		}
 
 		if ( $tableref->{accounting} ) {
-		    dont_optimize( 'accounting' );
+		    set_optflags( 'accounting' , DONT_OPTIMIZE );
 		    for my $chain ( qw/INPUT FORWARD/ ) {
 			insert_ijump( $tableref->{$chain}, j => 'accounting', 0 );
 		    }
@@ -429,7 +429,7 @@ sub setup_accounting() {
 		    insert_ijump( $tableref->{POSTROUTING}, j => 'accountpost', 0 );
 		}
 	    } elsif ( $tableref->{accounting} ) {
-		dont_optimize( 'accounting' );
+		set_optflags( 'accounting' , DONT_OPTIMIZE );
 		for my $chain ( qw/INPUT FORWARD OUTPUT/ ) {
 		    insert_ijump( $tableref->{$chain}, j => 'accounting', 0 );
 		}

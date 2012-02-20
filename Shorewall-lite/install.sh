@@ -127,7 +127,8 @@ case "$LIBEXEC" in
     /*)
 	;;
     *)
-	LIBEXEC=/usr/${LIBEXEC}
+	echo "The LIBEXEC setting must be an absolute path name" >&2
+	exit 1
 	;;
 esac
 

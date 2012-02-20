@@ -292,6 +292,8 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 STATISTIC_MATCH => 
 		                    'Statistics Match',
 		 IMQ_TARGET      => 'IMQ Target',
+		 DSCP_MATCH      => 'DSCP Match',
+		 DSCP_TARGET     => 'DSCP Target',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -389,8 +391,8 @@ my  $toolNAME;               # Tool name in CAPS
 our $product;                # Name of product that will run the generated script
 our $Product;                # $product with initial cap.
 
-my $sillyname;               # Name of temporary filter chains for testing capabilities
-my $sillyname1;
+our $sillyname;              # Name of temporary filter chains for testing capabilities
+our $sillyname1;
 my $iptables;                # Path to iptables/ip6tables
 my $tc;                      # Path to tc
 my $ip;                      # Path to ip
@@ -692,6 +694,8 @@ sub initialize( $ ) {
 	       CT_TARGET => undef,
 	       STATISTIC_MATCH => undef,
 	       IMQ_TARGET => undef,
+	       DSCP_MATCH => undef,
+	       DSCP_TARGET => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -2778,7 +2782,15 @@ sub Statistic_Match() {
 }
 
 sub Imq_Target() {
-    qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
+}
+
+sub Dscp_Match() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -m dscp --dscp 0" );
+}
+
+sub Dscp_Target() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j DSCP --set-dscp 0" );
 }
 
 our %detect_capability =
@@ -2794,6 +2806,8 @@ our %detect_capability =
       CONNMARK_MATCH => \&Connmark_Match,
       CONNTRACK_MATCH => \&Conntrack_Match,
       CT_TARGET => \&Ct_Target,
+      DSCP_MATCH => \&Dscp_Match,
+      DSCP_TARGET => \&Dscp_Target,
       ENHANCED_REJECT => \&Enhanced_Reject,
       EXMARK => \&Exmark,
       FLOW_FILTER => \&Flow_Filter,
@@ -2941,11 +2955,6 @@ sub determine_capabilities() {
 	$capabilities{IPMARK_TARGET}   = detect_capability( 'IPMARK_TARGET' );
 	$capabilities{TPROXY_TARGET}   = detect_capability( 'TPROXY_TARGET' );
 
-	if ( $capabilities{MANGLE_ENABLED} ) {
-	    qt1( "$iptables -t mangle -F $sillyname" );
-	    qt1( "$iptables -t mangle -X $sillyname" );
-	}
-
 	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
 	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
 	$capabilities{RAWPOST_TABLE}   = detect_capability( 'RAWPOST_TABLE' );
@@ -2975,12 +2984,24 @@ sub determine_capabilities() {
 	$capabilities{CT_TARGET}       = detect_capability( 'CT_TARGET' );
 	$capabilities{STATISTIC_MATCH} = detect_capability( 'STATISTIC_MATCH' );
 	$capabilities{IMQ_TARGET}      = detect_capability( 'IMQ_TARGET' );
+	$capabilities{DSCP_MATCH}      = detect_capability( 'DSCP_MATCH' );
+	$capabilities{DSCP_TARGET}     = detect_capability( 'DSCP_TARGET' );
 
 
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );
 	qt1( "$iptables -F $sillyname1" );
 	qt1( "$iptables -X $sillyname1" );
+
+	if ( $capabilities{MANGLE_ENABLED} ) {
+	    qt1( "$iptables -t mangle -F $sillyname" );
+	    qt1( "$iptables -t mangle -X $sillyname" );
+	}
+
+	if ( $capabilities{NAT_ENABLED} ) {
+	    qt1( "$iptables -t nat -F $sillyname" );
+	    qt1( "$iptables -t nat -X $sillyname" );
+	}
 
 	$sillyname = $sillyname1 = undef;
     }

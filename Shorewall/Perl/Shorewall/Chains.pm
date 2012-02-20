@@ -198,6 +198,7 @@ our %EXPORT_TAGS = (
 				       do_headers
 				       do_probability
 				       do_condition
+				       do_dscp
 				       have_ipset_rules
 				       record_runtime_address
 				       conditional_rule
@@ -237,6 +238,7 @@ our %EXPORT_TAGS = (
 				       create_chainlist_reload
 				       create_stop_load
 				       %targets
+				       %dscpmap
 				     ) ],
 		   );
 
@@ -368,6 +370,30 @@ use constant {
 use constant { OPTIMIZE_MASK => OPTIMIZE_POLICY_MASK | OPTIMIZE_RULESET_MASK };
 
 use constant { DONT_OPTIMIZE => 1 , DONT_DELETE => 2, DONT_MOVE => 4 };
+
+our %dscpmap = ( CS0  => 0x00,
+		 CS1  => 0x08,
+		 CS2  => 0x10,
+		 CS3  => 0x18,
+		 CS4  => 0x20,
+		 CS5  => 0x28,
+		 CS6  => 0x30,
+		 CS7  => 0x38,
+		 BE   => 0x00,
+		 AF11 => 0x0a,
+		 AF12 => 0x0c,
+		 AF13 => 0x0e,
+		 AF21 => 0x12,
+		 AF22 => 0x14,
+		 AF23 => 0x16,
+		 AF31 => 0x1a,
+		 AF32 => 0x1c,
+		 AF33 => 0x1e,
+		 AF41 => 0x22,
+		 AF42 => 0x24,
+		 AF43 => 0x26,
+		 EF   => 0x2e,
+	       );
 
 #
 # These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents
@@ -4216,6 +4242,26 @@ sub do_condition( $ ) {
     fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/ && length $condition <= 30;
 
     "-m condition ${invert}--condition $condition "
+}
+
+#
+# Generate a -m dscp match
+#
+sub do_dscp( $ ) {
+    my $dscp = shift;
+
+    return '' if $dscp eq '-';
+
+    require_capability 'DSCP_MATCH', 'A non-empty DSCP column', 's';
+
+    my $invert = $dscp =~ s/^!// ? '! ' : '';
+    my $value  = numeric_value( $dscp );
+
+    $value = $dscpmap{$value} unless defined $value;
+
+    fatal_error( "Invalid DSCP ($dscp)" ) unless defined $value && $value < 0x2f && ! ( $value & 1 );
+
+    "-m dscp ${invert}--dscp $value ";
 }
 
 #

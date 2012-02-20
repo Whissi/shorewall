@@ -1957,6 +1957,8 @@ determine_capabilities() {
     CT_TARGET=
     STATISTIC_MATCH=
     IMQ_TARGET=
+    DSCP_MATCH=
+    DSCP_TARGET=
 
     chain=fooX$$
 
@@ -2081,10 +2083,14 @@ determine_capabilities() {
 	qt $g_tool -t mangle -A $chain -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
 	qt $g_tool -t mangle -A $chain -j IPMARK --addr src && IPMARK_TARGET=Yes
 	qt $g_tool -t mangle -A $chain -p tcp -j TPROXY --on-port 0 --tproxy-mark 1 && TPROXY_TARGET=Yes
+	qt $g_tool -t mangle -A $chain -j IMQ --todev 0 && IMQ_TARGET=Yes
+	qt $g_tool -t mangle -A $chain -m dscp --dscp 0 && DSCP_MATCH=Yes
+	qt $g_tool -t mangle -A $chain -j DSCP --set-dscp 0 && DSCP_TARGET=Yes
+
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain
+	
 	qt $g_tool -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
-	qt $g_tool -t mangle -A $chain -j IMQ --todev 0 && IMQ_TARGET=Yes
     fi
 
     qt $g_tool -t raw	    -L -n && RAW_TABLE=Yes
@@ -2267,6 +2273,8 @@ report_capabilities() {
 	report_capability "Condition Match" $CONDITION_MATCH
 	report_capability "Statistic Match" $STATISTIC_MATCH
 	report_capability "IMQ Target" $IMQ_TARGET
+	report_capability "DSCP Match" $DSCP_MATCH
+	report_capability "DSCP Target" $DSCP_TARGET
 	
 	if [ $g_family -eq 4 ]; then
 	    report_capability "iptables -S" $IPTABLES_S
@@ -2354,6 +2362,8 @@ report_capabilities1() {
     report_capability1 CT_TARGET
     report_capability1 STATISTIC_MATCH
     report_capability1 IMQ_TARGET
+    report_capability1 DSCP_MATCH
+    report_capability1 DSCP_TARGET
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

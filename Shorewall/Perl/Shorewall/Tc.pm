@@ -86,30 +86,6 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
-my %dscpmap = ( CS0  => 0x00,
-		CS1  => 0x08,
-		CS2  => 0x10,
-		CS3  => 0x18,
-		CS4  => 0x20,
-		CS5  => 0x28,
-		CS6  => 0x30,
-		CS7  => 0x38,
-		BE   => 0x00,
-		AF11 => 0x0a,
-		AF12 => 0x0c,
-		AF13 => 0x0e,
-		AF21 => 0x12,
-		AF22 => 0x14,
-		AF23 => 0x16,
-		AF31 => 0x1a,
-		AF32 => 0x1c,
-		AF33 => 0x1e,
-		AF41 => 0x22,
-		AF42 => 0x24,
-		AF43 => 0x26,
-		EF   => 0x2e,
-	      );
-
 my  %flow_keys = ( 'src'            => 1,
 		   'dst'            => 1,
 		   'proto'          => 1,
@@ -218,14 +194,14 @@ sub initialize( $ ) {
 }
 
 sub process_tc_rule( ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability );
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp );
     if ( $family == F_IPV4 ) {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability ) =
-	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 };
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp ) =
+	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13 };
 	$headers = '-';
     } else {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability ) = 
-	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 };
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp ) = 
+	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , $dscp };
     }
 
     our @tccmd;
@@ -403,6 +379,7 @@ sub process_tc_rule( ) {
 				      },
 		       DSCP => sub() {
 			                  assert( $cmd =~ /^DSCP\((\w+)\)$/ );
+					  require_capability 'DSCP_TARGET', 'The DSCP action', 's'; 
 					  my $dscp = numeric_value( $1);
 					  $dscp = $dscpmap{$1} unless defined $dscp;
 					  fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp < 0x2f && ! ( $dscp & 1 );
@@ -504,9 +481,9 @@ sub process_tc_rule( ) {
 			$mark =~ s/^[|&]//;
 		    }
 
-		    my $f = $processtcc{$target};
-
-		    $f->() if $f;
+		    if ( my $f = $processtcc{$target} ) {
+			$f->();
+		    }
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($originalmark)" if $marktype == NOMARK;
@@ -552,7 +529,8 @@ sub process_tc_rule( ) {
 				     do_connbytes( $connbytes ) .
 				     do_helper( $helper ) .
 				     do_headers( $headers ) .
-				     do_probability( $probability ) ,
+				     do_probability( $probability ) .
+				     do_dscp( $dscp ),
 				     $source ,
 				     $dest ,
 				     '' ,

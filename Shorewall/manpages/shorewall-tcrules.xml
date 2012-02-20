@@ -468,6 +468,41 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <replaceable>number</replaceable>. Requires IMQ Target support
               in your kernel and iptables.</para>
             </listitem>
+
+            <listitem>
+              <para><emphasis
+              role="bold">DSCP</emphasis>(<replaceable>dscp</replaceable>)</para>
+
+              <para>Added in Shorewall 4.5.1. Sets the
+              <firstterm>Differentiated Services Code Point</firstterm> field
+              in the IP header. The <replaceable>dscp</replaceable> value may
+              be given as an even number (hex or decimal) or as the name of a
+              DSCP class. Valid class names and their associated hex numeric
+              values are:</para>
+
+              <programlisting>    CS0  =&gt; 0x00
+    CS1  =&gt; 0x08
+    CS2  =&gt; 0x10
+    CS3  =&gt; 0x18
+    CS4  =&gt; 0x20
+    CS5  =&gt; 0x28
+    CS6  =&gt; 0x30
+    CS7  =&gt; 0x38
+    BE   =&gt; 0x00
+    AF11 =&gt; 0x0a
+    AF12 =&gt; 0x0c
+    AF13 =&gt; 0x0e
+    AF21 =&gt; 0x12
+    AF22 =&gt; 0x14
+    AF23 =&gt; 0x16
+    AF31 =&gt; 0x1a
+    AF32 =&gt; 0x1c
+    AF33 =&gt; 0x1e
+    AF41 =&gt; 0x22
+    AF42 =&gt; 0x24
+    AF43 =&gt; 0x26
+    EF   =&gt; 0x2e</programlisting>
+            </listitem>
           </orderedlist>
         </listitem>
       </varlistentry>
@@ -840,7 +875,7 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
       <varlistentry>
         <term><emphasis role="bold">PROBABILITY</emphasis> -
-        [probability]</term>
+        [<replaceable>probability</replaceable>]</term>
 
         <listitem>
           <para>Added in Shorewall 4.5.0. When non-empty, requires the
@@ -850,6 +885,44 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
           <replaceable>probability</replaceable> is a number 0 &lt;
           <replaceable>probability</replaceable> &lt;= 1 and may be expressed
           at up to 8 decimal points of precision.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DSCP -</emphasis>
+        [[!]<replaceable>dscp</replaceable>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.1. When non-empty, match packets whose
+          <firstterm>Differentiated Service Code Point</firstterm> field
+          matches the supplied value (when '!' is given, the rule matches
+          packets whose DSCP field does not match the supplied value). The
+          <replaceable>dscp</replaceable> value may be given as an even number
+          (hex or decimal) or as the name of a DSCP class. Valid class names
+          and their associated hex numeric values are:</para>
+
+          <programlisting>    CS0  =&gt; 0x00
+    CS1  =&gt; 0x08
+    CS2  =&gt; 0x10
+    CS3  =&gt; 0x18
+    CS4  =&gt; 0x20
+    CS5  =&gt; 0x28
+    CS6  =&gt; 0x30
+    CS7  =&gt; 0x38
+    BE   =&gt; 0x00
+    AF11 =&gt; 0x0a
+    AF12 =&gt; 0x0c
+    AF13 =&gt; 0x0e
+    AF21 =&gt; 0x12
+    AF22 =&gt; 0x14
+    AF23 =&gt; 0x16
+    AF31 =&gt; 0x1a
+    AF32 =&gt; 0x1c
+    AF33 =&gt; 0x1e
+    AF41 =&gt; 0x22
+    AF42 =&gt; 0x24
+    AF43 =&gt; 0x26
+    EF   =&gt; 0x2e</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -138,37 +138,37 @@ CYGWIN=
 INSTALLD='-D'
 T='-T'
 
-if [ -z "$INSTALLSYS" ]; then
+if [ -z "$BUILD" ]; then
     case $(uname) in
 	CYGWIN*)
-	    INSTALLSYS=CYGWIN
+	    BUILD=CYGWIN
 	    ;;
 	Darwin)
-	    INSTALLSYS=MAC
+	    BUILD=MAC
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		INSTALLSYS=DEBIAN
+		BUILD=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
 		if [ -d /etc/sysconfig/network-scripts/ ]; then
-		    INSTALLSYS=REDHAT
+		    BUILD=REDHAT
 		else
-		    INSTALLSYS=FEDORA
+		    BUILD=FEDORA
 		fi
 	    elif [ -f /etc/SuSE-release ]; then
-		INSTALLSYS=SUSE
+		BUILD=SUSE
 	    elif [ -f /etc/slackware-version ] ; then
-		INSTALLSYS=SLACKWARE
+		BUILD=SLACKWARE
 	    elif [ -f /etc/arch-release ] ; then
-		INSTALLSYS=ARCHLINUX
+		BUILD=ARCHLINUX
 	    else
-		INSTALLSYS=LINUX
+		BUILD=LINUX
 	    fi
 	    ;;
     esac
 fi
 
-case $INSTALLSYS in
+case $BUILD in
     CYGWIN*)
 	if [ -z "$DESTDIR" ]; then
 	    DEST=
@@ -198,9 +198,9 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-[ -n "$TARGET" ] || TARGET=$INSTALLSYS
+[ -n "$HOST" ] || HOST=$BUILD
 
-case "$TARGET" in
+case "$HOST" in
     CYGWIN)
 	echo "Installing Cygwin-specific configuration..."
 	;;
@@ -229,7 +229,7 @@ case "$TARGET" in
     LINUX|SUSE)
 	;;
     *)
-	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
+	echo "ERROR: Unknown HOST \"$HOST\"" >&2
 	exit 1;
 	;;
 esac
@@ -303,7 +303,7 @@ echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
 #
 # Install the Firewall Script
 #
-case $TARGET in
+case $HOST in
     DEBIAN)
 	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 	;;
@@ -352,7 +352,7 @@ if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
    echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
 fi
 
-if [ $TARGET = ARCHLINUX ] ; then
+if [ $HOST = ARCHLINUX ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
@@ -463,7 +463,7 @@ if [ -z "$DESTDIR" ]; then
     touch /var/log/$PRODUCT-init.log
 
     if [ -n "$first_install" ]; then
-	if [ $TARGET = DEBIAN ]; then
+	if [ $HOST = DEBIAN ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
 	    update-rc.d $PRODUCT defaults

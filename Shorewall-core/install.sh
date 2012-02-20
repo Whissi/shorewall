@@ -116,37 +116,37 @@ esac
 
 INSTALLD='-D'
 
-if [ -z "$INSTALLSYS" ]; then
+if [ -z "$BUILD" ]; then
     case $(uname) in
 	CYGWIN*)
-	    INSTALLSYS=CYGWIN
+	    BUILD=CYGWIN
 	    ;;
 	Darwin)
-	    INSTALLSYS=MAC
+	    BUILD=MAC
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		INSTALLSYS=DEBIAN
+		BUILD=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
 		if [ -d /etc/sysconfig/network-scripts/ ]; then
-		    INSTALLSYS=REDHAT
+		    BUILD=REDHAT
 		else
-		    INSTALLSYS=FEDORA
+		    BUILD=FEDORA
 		fi
 	    elif [ -f /etc/slackware-version ] ; then
-		INSTALLSYS=SLACKWARE
+		BUILD=SLACKWARE
 	    elif [ -f /etc/SuSE-release ]; then
-		INSTALLSYS=SUSE
+		BUILD=SUSE
 	    elif [ -f /etc/arch-release ] ; then
-		INSTALLSYS=ARCHLINUX
+		BUILD=ARCHLINUX
 	    else
-		INSTALLSYS=LINUX
+		BUILD=LINUX
 	    fi
 	    ;;
     esac
 fi
 
-case $INSTALLSYS in
+case $BUILD in
     CYGWIN*)
 	if [ -z "$DESTDIR" ]; then
 	    DEST=
@@ -215,9 +215,9 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 
-[ -n "$TARGET" ] || TARGET=$INSTALLSYS
+[ -n "$HOST" ] || HOST=$BUILD
 
-case "$TARGET" in
+case "$HOST" in
     CYGWIN)
 	echo "Installing Cygwin-specific configuration..."
 	;;
@@ -231,13 +231,13 @@ case "$TARGET" in
     FEDORA|REDHAT|SLACKWARE|ARCHLINUX|LINUX)
 	;;
     *)
-	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
+	echo "ERROR: Unknown HOST \"$HOST\"" >&2
 	exit 1;
 	;;
 esac
 
 if [ -n "$DESTDIR" ]; then
-    if [ $INSTALLSYS != CYGWIN ]; then
+    if [ $BUILD != CYGWIN ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""

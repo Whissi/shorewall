@@ -116,37 +116,37 @@ case "$LIBEXEC" in
 	;;
 esac
 
-if [ -z "$INSTALLSYS" ]; then
+if [ -z "$BUILD" ]; then
     case $(uname) in
 	CYGWIN*)
-	    INSTALLSYS=CYGWIN
+	    BUILD=CYGWIN
 	    ;;
 	Darwin)
-	    INSTALLSYS=MAC
+	    BUILD=MAC
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		INSTALLSYS=DEBIAN
+		BUILD=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
 		if [ -d /etc/sysconfig/network-scripts/ ]; then
-		    INSTALLSYS=REDHAT
+		    BUILD=REDHAT
 		else
-		    INSTALLSYS=FEDORA
+		    BUILD=FEDORA
 		fi
 	    elif [ -f /etc/SuSE-release ]; then
-		INSTALLSYS=SUSE
+		BUILD=SUSE
 	    elif [ -f /etc/slackware-version ] ; then
-		INSTALLSYS=SLACKWARE
+		BUILD=SLACKWARE
 	    elif [ -f /etc/arch-release ] ; then
-		INSTALLSYS=ARCHLINUX
+		BUILD=ARCHLINUX
 	    else
-		INSTALLSYS=
+		BUILD=
 	    fi
 	    ;;
     esac
 fi
 
-case $INSTALLSYS in
+case $BUILD in
     CYGWIN*)
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
@@ -171,9 +171,9 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-[ -n "$TARGET" ] || TARGET=$INSTALLSYS
+[ -n "$HOST" ] || HOST=$BUILD
 
-case "$TARGET" in
+case "$HOST" in
     DEBIAN)
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
@@ -201,7 +201,7 @@ case "$TARGET" in
 	echo "ERROR: Shorewall-init is not supported on this system" >&2
 	;;
     *)
-	echo "ERROR: Unsupported TARGET distribution: \"$TARGET\"" >&2
+	echo "ERROR: Unsupported HOST distribution: \"$HOST\"" >&2
 	exit 1;
 	;;
 esac
@@ -250,7 +250,7 @@ fi
 #
 # Install the Init Script
 #
-case $TARGET in
+case $HOST in
     DEBIAN)
 	install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 	;;
@@ -292,7 +292,7 @@ if [ -z "$DESTDIR" ]; then
     ln -s ${DEST}/${INIT} /usr/share/shorewall-init/init
 fi
 
-if [ $TARGET = DEBIAN ]; then
+if [ $HOST = DEBIAN ]; then
     if [ -n "${DESTDIR}" ]; then
 	mkdir -p ${DESTDIR}/etc/network/if-up.d/
 	mkdir -p ${DESTDIR}/etc/network/if-post-down.d/
@@ -310,7 +310,7 @@ else
 	mkdir -p ${DESTDIR}/etc/sysconfig
 
 	if [ -z "$RPM" ]; then
-	    if [ $TARGET = SUSE ]; then
+	    if [ $HOST = SUSE ]; then
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-down.d
 	    else
@@ -336,7 +336,7 @@ if [ -d ${DESTDIR}/etc/NetworkManager ]; then
     install_file ifupdown.sh ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
-case $TARGET in
+case $HOST in
     DEBIAN)
 	install_file ifupdown.sh ${DESTDIR}/etc/network/if-up.d/shorewall 0544
 	install_file ifupdown.sh ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
@@ -359,7 +359,7 @@ esac
 
 if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
-	if [ $TARGET = DEBIAN ]; then
+	if [ $HOST = DEBIAN ]; then
 	    
 	    update-rc.d shorewall-init defaults
 
@@ -396,7 +396,7 @@ if [ -z "$DESTDIR" ]; then
     fi
 else
     if [ -n "$first_install" ]; then
-	if [ $TARGET = DEBIAN ]; then
+	if [ $HOST = DEBIAN ]; then
 	    if [ -n "${DESTDIR}" ]; then
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi
@@ -408,7 +408,7 @@ else
 fi
 
 if [ -f ${DESTDIR}/etc/ppp ]; then
-    case $TARGET in
+    case $HOST in
 	DEBIAN|SUSE)
 	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 		mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories

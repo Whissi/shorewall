@@ -16,7 +16,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2003-2009</year>
+      <year>2003-2012</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -385,9 +385,14 @@ ACCEPT     net           $FW       tcp        22</programlisting>
   <section id="Packages">
     <title>Shorewall Packages</title>
 
-    <para>Shorewall 4.3 and later consists of four packages.</para>
+    <para>Shorewall 4.5 and later consists of six packages.</para>
 
     <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Shorewall-core</emphasis>. All of the
+        other packages depend on this one.</para>
+      </listitem>
+
       <listitem>
         <para><emphasis role="bold">Shorewall</emphasis>. This package must be
         installed on at least one system in your network. It contains
@@ -416,6 +421,13 @@ ACCEPT     net           $FW       tcp        22</programlisting>
         installed on a central administrative system where compiled Shorewall
         scripts are generated. These scripts are copied to the firewall
         systems where they run under the control of Shorewall6-lite.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall-init</emphasis>. May be
+        installed with any of the other firewall packages. Allows the firewall
+        to be close prior to bringing up network interfaces. It can also react
+        to interface up/down events.</para>
       </listitem>
     </orderedlist>
   </section>

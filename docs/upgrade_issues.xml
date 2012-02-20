@@ -31,9 +31,11 @@
 
       <year>2009</year>
 
+      <year>2012</year>
+
       <holder>Thomas M. Eastep</holder>
 
-      <holder></holder>
+      <holder/>
     </copyright>
 
     <legalnotice>
@@ -72,6 +74,39 @@
     <para>You can use the <command moreinfo="none">shorewall show
     zones</command> command to see the groups associated with each of your
     zones.</para>
+  </section>
+
+  <section>
+    <title>Versions &gt;= 4.5.0</title>
+
+    <para/>
+
+    <orderedlist>
+      <listitem>
+        <para>The BLACKLIST section of the rules file has been eliminated. If
+        you have entries in that file section, you must move them to the
+        blrules file. </para>
+      </listitem>
+
+      <listitem>
+        <para>This version of Shorewall requires the Digest::SHA1 Perl
+        module.</para>
+
+        <simplelist>
+          <member>Debian: libdigest-sha1-perl</member>
+
+          <member>Fedora: perl-Digest-SHA1</member>
+
+          <member>OpenSuSE: perl-Digest-SHA1 </member>
+        </simplelist>
+      </listitem>
+
+      <listitem>
+        <para>The generated firewall script now maintains the
+        /var/lib/shorewall[6][-lite]/interface.status files used by SWPING and
+        by LSM.</para>
+      </listitem>
+    </orderedlist>
   </section>
 
   <section>
@@ -318,7 +353,7 @@
       </listitem>
 
       <listitem>
-        <para> Beginning with Shorewall 4.4.17, the EXPORTPARAMS option is
+        <para>Beginning with Shorewall 4.4.17, the EXPORTPARAMS option is
         deprecated. With EXPORTPARAMS=No, the variables set by <ulink
         url="manpages/shorewall-params.html">/etc/shorewall/params</ulink>
         (<ulink

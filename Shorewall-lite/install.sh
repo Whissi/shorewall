@@ -103,17 +103,6 @@ fi
 #
 # Parse the run line
 #
-# DEST is the SysVInit script directory
-# INIT is the name of the script in the $DEST directory
-#
-if [ -z "$DEST" ] ; then
-	DEST="/etc/init.d"
-fi
-
-if [ -z "$INIT" ] ; then
-	INIT="$PRODUCT"
-fi
-
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
@@ -224,6 +213,7 @@ case "$TARGET" in
 	;;
     FEDORA|REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
+	DEST=/etc/rc.d/init.d
 	;;
     SLACKWARE)
 	echo "Installing Slackware-specific configuration..."
@@ -243,6 +233,14 @@ case "$TARGET" in
 	exit 1;
 	;;
 esac
+
+if [ -z "$DEST" ] ; then
+    DEST="/etc/init.d"
+fi
+
+if [ -z "$INIT" ] ; then
+    INIT="$PRODUCT"
+fi
 
 if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then

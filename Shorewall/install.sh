@@ -105,18 +105,8 @@ fi
 #
 # Parse the run line
 #
-# DEST is the SysVInit script directory
-# INIT is the name of the script in the $DEST directory
 #
 T="-T"
-
-if [ -z "$DEST" ] ; then
-	DEST="/etc/init.d"
-fi
-
-if [ -z "$INIT" ] ; then
-	INIT="$PRODUCT"
-fi
 
 ANNOTATED=
 MANDIR=${MANDIR:-"/usr/share/man"}
@@ -278,6 +268,7 @@ case "$TARGET" in
 	;;
     FEDORA|REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
+	DEST="/etc/rc.d/init.d"
 	;;
     SLACKWARE)
 	echo "Installing Slackware-specific configuration..."
@@ -298,6 +289,14 @@ case "$TARGET" in
 	;;
 esac
 
+if [ -z "$DEST" ] ; then
+    DEST="/etc/init.d"
+fi
+
+if [ -z "$INIT" ] ; then
+    INIT="$PRODUCT"
+fi
+
 if [ -n "$DESTDIR" ]; then
     if [ $INSTALLSYS != CYGWIN ]; then
 	if [ `id -u` != 0 ] ; then
@@ -308,7 +307,7 @@ if [ -n "$DESTDIR" ]; then
 
     install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
     install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
-elif [ -z "$DESTDIR" ]; then
+else
     [ -x /usr/share/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
 fi
@@ -353,7 +352,7 @@ case $TARGET in
 	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 	;;
     FEDORA|REDHAT)
-	install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
+	install_file init.fedora.sh ${DESTDIR}${DEST}/$PRODUCT 0544
 	;;
     ARCHLINUX)
 	install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544

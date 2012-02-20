@@ -88,20 +88,6 @@ install_file() # $1 = source $2 = target $3 = mode
 
 [ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
 
-# DEST is the SysVInit script directory
-# INIT is the name of the script in the $DEST directory
-# ARGS is "yes" if we've already parsed an argument
-#
-ARGS=""
-
-if [ -z "$DEST" ] ; then
-	DEST="/etc/init.d"
-fi
-
-if [ -z "$INIT" ] ; then
-	INIT="shorewall-init"
-fi
-
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
@@ -116,7 +102,6 @@ while [ $# -gt 0 ] ; do
 	    ;;
     esac
     shift
-    ARGS="yes"
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
@@ -195,9 +180,11 @@ case "$TARGET" in
 	;;
     FEDORA)
 	echo "Installing Fedora-specific configuration..."
+	DEST=/etc/rc.d/init.d
 	;;
     REDHAT)
 	echo "Installing Redhat-specific configuration..."
+	DEST=/etc/rc.d/init.d
 	;;
     SLACKWARE)
 	echo "Shorewall-init is currently not supported on Slackware" >&2
@@ -218,6 +205,14 @@ case "$TARGET" in
 	exit 1;
 	;;
 esac
+
+if [ -z "$DEST" ] ; then
+    DEST="/etc/init.d"
+fi
+
+if [ -z "$INIT" ] ; then
+    INIT="shorewall-init"
+fi
 
 if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then

@@ -30,8 +30,6 @@ usage() # $1 = exit status
     echo "usage: $ME"
     echo "       $ME -v"
     echo "       $ME -h"
-    echo "       $ME -s"
-    echo "       $ME -f"
     exit $1
 }
 
@@ -195,14 +193,6 @@ while [ $finished -eq 0 ]; do
 		    v)
 			echo "Shorewall Firewall Installer Version $VERSION"
 			exit 0
-			;;
-		    a*)
-			ANNOTATED=Yes
-			option=${option#a}
-			;;
-		    p*)
-			ANNOTATED=
-			option=${option#p}
 			;;
 		    *)
 			usage 1

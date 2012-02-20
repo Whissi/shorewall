@@ -112,7 +112,7 @@ rm -rf /etc/shorewall
 rm -rf /etc/shorewall-*.bkout
 rm -rf /var/lib/shorewall
 rm -rf /var/lib/shorewall-*.bkout
-rm -rf $PERLLIB}/Shorewall/*
+rm -rf ${PERLLIB}/Shorewall/*
 rm -rf ${LIBEXEC}/shorewall
 rm -rf /usr/share/shorewall/configfiles/
 rm -rf /usr/share/shorewall/Samples/

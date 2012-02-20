@@ -86,6 +86,30 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
+my %dscpmap = ( CS0  => 0x00,
+		CS1  => 0x08,
+		CS2  => 0x10,
+		CS3  => 0x18,
+		CS4  => 0x20,
+		CS5  => 0x28,
+		CS6  => 0x30,
+		CS7  => 0x38,
+		BE   => 0x00,
+		AF11 => 0x0a,
+		AF12 => 0x0c,
+		AF13 => 0x0e,
+		AF21 => 0x12,
+		AF22 => 0x14,
+		AF23 => 0x16,
+		AF31 => 0x1a,
+		AF32 => 0x1c,
+		AF33 => 0x1e,
+		AF41 => 0x22,
+		AF42 => 0x24,
+		AF43 => 0x26,
+		EF   => 0x2e,
+	      );
+
 my  %flow_keys = ( 'src'            => 1,
 		   'dst'            => 1,
 		   'proto'          => 1,
@@ -464,7 +488,13 @@ sub process_tc_rule( ) {
 			assert( $cmd =~ /^IMQ\((\d+)\)$/ );
 			require_capability 'IMQ_TARGET', 'IMQ', 's';
 			$target .= " --todev $1";
-		    }
+		    } elsif ( $target eq 'DSCP' ) {
+			assert( $cmd =~ /^DSCP\((\w+)\)$/ );
+			my $dscp = numeric_value( $1);
+			$dscp = $dscpmap{$1} unless defined $dscp;
+			fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp < 0x2f && ! ( $dscp & 1 );
+			$target .= ' --set-dscp ' . in_hex( $dscp );
+		    } 
 
 		    if ( $rest ) {
 			fatal_error "Invalid MARK ($originalmark)" if $marktype == NOMARK;
@@ -1987,6 +2017,12 @@ sub setup_tc() {
 			},
 			{ match     => sub( $ ) { $_[0] =~ /^IMQ\(\d+\)$/ },
 			  target    => 'IMQ',
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			},
+			{ match     => sub( $ ) { $_[0] =~ /^DSCP\(\w+\)$/ },
+			  target    => 'DSCP',
 			  mark      => NOMARK,
 			  mask      => '',
 			  connmark  => 0

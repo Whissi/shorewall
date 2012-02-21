@@ -76,10 +76,10 @@ command="$1"
 
 case "$command" in
     start)
-	exec /sbin/shorewall-lite $OPTIONS start $STARTOPTIONS $@
+	exec /sbin/shorewall-lite $OPTIONS start $STARTOPTIONS
 	;;
     restart|reload)
-	exec /sbin/shorewall-lite $OPTIONS restart $RESTARTOPTIONS $@
+	exec /sbin/shorewall-lite $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)
 	exec /sbin/shorewall-lite $OPTIONS $command $@

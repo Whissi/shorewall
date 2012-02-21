@@ -137,6 +137,7 @@ esac
 #
 CYGWIN=
 INSTALLD='-D'
+INITFILE=$PRODUCT
 T='-T'
 
 if [ -z "$BUILD" ]; then
@@ -167,21 +168,10 @@ fi
 
 case $BUILD in
     CYGWIN*)
-	if [ -z "$DESTDIR" ]; then
-	    DEST=
-	    INIT=
-	fi
-
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	;;
     MAC)
-	if [ -z "$DESTDIR" ]; then
-	    DEST=
-	    INIT=
-	    SPARSE=Yes
-	fi
-
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	INSTALLD=
@@ -199,10 +189,12 @@ OWNERSHIP="-o $OWNER -g $GROUP"
 
 case "$HOST" in
     CYGWIN)
-	echo "Installing Cygwin-specific configuration..."
+	echo "$PRODUCT is not supported on Cygwin" >&2
+	exit 1
 	;;
     MAC)
-	echo "Installing Mac-specific configuration...";
+	echo "$PRODUCT is not supported on OS X" >&2
+	exit 1
 	;;
     DEBIAN)
 	echo "Installing Debian-specific configuration..."
@@ -210,18 +202,18 @@ case "$HOST" in
 	;;
     REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	DEST=/etc/rc.d/init.d
+	INITDIR=/etc/rc.d/init.d
 	;;
     SLACKWARE)
 	echo "Installing Slackware-specific configuration..."
-	DEST="/etc/rc.d"
+	INITDIR="/etc/rc.d"
+	INITFILE="rc.firewall"
 	MANDIR="/usr/man"
-	INIT="rc.firewall"
 	;;
     ARCHLINUX)
 	echo "Installing ArchLinux-specific configuration..."
-	DEST="/etc/rc.d"
-	INIT="$PRODUCT"
+	INITDIR="/etc/rc.d"
+	INITFILE="$PRODUCT"
 	;;
     LINUX|SUSE)
 	;;
@@ -231,13 +223,7 @@ case "$HOST" in
 	;;
 esac
 
-if [ -z "$DEST" ] ; then
-    DEST="/etc/init.d"
-fi
-
-if [ -z "$INIT" ] ; then
-    INIT="$PRODUCT"
-fi
+[ -z "$INITDIR" ] && INITDIR="/etc/init.d"
 
 if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then
@@ -246,7 +232,7 @@ if [ -n "$DESTDIR" ]; then
     fi
     
     install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}${DESTFILE}
 
     if [ -n "$SYSTEMD" ]; then
 	mkdir -p ${DESTDIR}/lib/systemd/system
@@ -300,22 +286,8 @@ echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
 #
 # Install the Firewall Script
 #
-case $HOST in
-    DEBIAN)
-	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
-	;;
-    REDHAT)
-	install_file init.fedora.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
-	;;
-    ARCHLINUX)
-	install_file init.archlinux.sh ${DESTDIR}/${DEST}/$INIT 0544
-	;;
-    *)
-	install_file init.sh ${DESTDIR}/${DEST}/$INIT 0544
-	;;
-esac
-
-echo  "$Product script installed in ${DESTDIR}${DEST}/$INIT"
+install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
+echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
 
 #
 # Create /etc/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
@@ -449,7 +421,7 @@ chmod 644 ${DESTDIR}/usr/share/$PRODUCT/version
 
 if [ -z "$DESTDIR" ]; then
     rm -f /usr/share/$PRODUCT/init
-    ln -s ${DEST}/${INIT} /usr/share/$PRODUCT/init
+    ln -s ${INITDIR}/${INITFILE} /usr/share/$PRODUCT/init
 fi
 
 delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.common
@@ -496,7 +468,7 @@ if [ -z "$DESTDIR" ]; then
 		else
 		    cant_autostart
 		fi
-	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
+	    elif [ "$INITFILE" != rc.firewall ]; then #Slackware starts this automatically
 		cant_autostart
 	    fi
 	fi

@@ -112,6 +112,8 @@ ANNOTATED=
 MANDIR=${MANDIR:-"/usr/share/man"}
 SPARSE=
 INSTALLD='-D'
+INITFILE="$PRODUCT"
+
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
 
@@ -161,21 +163,10 @@ fi
 
 case $BUILD in
     CYGWIN*)
-	if [ -z "$DESTDIR" ]; then
-	    DEST=
-	    INIT=
-	fi
-
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	;;
     MAC)
-	if [ -z "$DESTDIR" ]; then
-	    DEST=
-	    INIT=
-	    SPARSE=Yes
-	fi
-
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	INSTALLD=
@@ -256,9 +247,11 @@ fi
 case "$HOST" in
     CYGWIN)
 	echo "Installing Cygwin-specific configuration..."
+	INITFILE=
 	;;
     MAC)
 	echo "Installing Mac-specific configuration...";
+	INITFILE=
 	;;
     DEBIAN)
 	echo "Installing Debian-specific configuration..."
@@ -266,18 +259,18 @@ case "$HOST" in
 	;;
     REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	DEST="/etc/rc.d/init.d"
+	INITDIR="/etc/rc.d/init.d"
 	;;
     SLACKWARE)
 	echo "Installing Slackware-specific configuration..."
-	DEST="/etc/rc.d"
+	INITDIR="/etc/rc.d"
 	MANDIR="/usr/man"
-	INIT="rc.firewall"
+	INITFILE="rc.firewall"
 	;;
     ARCHLINUX)
 	echo "Installing ArchLinux-specific configuration..."
-	DEST="/etc/rc.d"
-	INIT="$PRODUCT"
+	INITDIR="/etc/rc.d"
+	INITFILE="$PRODUCT"
 	;;
     LINUX)
 	;;
@@ -287,12 +280,8 @@ case "$HOST" in
 	;;
 esac
 
-if [ -z "$DEST" ] ; then
-    DEST="/etc/init.d"
-fi
-
-if [ -z "$INIT" ] ; then
-    INIT="$PRODUCT"
+if [ -z "$INITDIR" -a -n "$INITFILE" ] ; then
+    INITDIR="/etc/init.d"
 fi
 
 if [ -n "$DESTDIR" ]; then
@@ -304,7 +293,7 @@ if [ -n "$DESTDIR" ]; then
     fi
 
     install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
 else
     [ -x /usr/share/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
@@ -346,15 +335,6 @@ fi
 # Install the Firewall Script
 #
 case $HOST in
-    DEBIAN)
-	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
-	;;
-    REDHAT)
-	install_file init.fedora.sh ${DESTDIR}${DEST}/$PRODUCT 0544
-	;;
-    ARCHLINUX)
-	install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
-	;;
     SLACKWARE)
         if [ $PRODUCT = shorewall ]; then
 	    install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644
@@ -362,13 +342,13 @@ case $HOST in
 	fi
 	;;
     *)
-	if [ -n "$INIT" ]; then
-	    install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
+	if [ -n "$INITFILE" ]; then
+	    install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
 	fi
 	;;
 esac
 
-[ -n "$INIT" ] && echo  "$Product script installed in ${DESTDIR}${DEST}/$INIT"
+[ -n "$INITFILE" ] && echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
 
 #
 # Create /etc/$PRODUCT and /var/lib/$PRODUCT if needed
@@ -1084,7 +1064,7 @@ chmod 644 ${DESTDIR}/usr/share/$PRODUCT/version
 
 if [ -z "$DESTDIR" ]; then
     rm -f /usr/share/$PRODUCT/init
-    ln -s ${DEST}/${INIT} /usr/share/$PRODUCT/init
+    ln -s ${INITDIR}/${INITFILE} /usr/share/$PRODUCT/init
 fi
 
 #
@@ -1153,7 +1133,7 @@ if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
 	    else
 		cant_autostart
 	    fi
-	elif [ "$INIT" != rc.f ]; then #Slackware starts this automatically
+	elif [ "$INITFILE" != rc.f ]; then #Slackware starts this automatically
 	    cant_autostart
 	fi
     fi

@@ -117,6 +117,8 @@ case "$LIBEXEC" in
 	;;
 esac
 
+INITFILE="shorewall-init"
+
 if [ -z "$BUILD" ]; then
     case $(uname) in
 	CYGWIN*)
@@ -149,12 +151,6 @@ case $BUILD in
 	GROUP=$(id -gn)
 	;;
     MAC)
-	if [ -z "$DESTDIR" ]; then
-	    DEST=
-	    INIT=
-	    SPARSE=Yes
-	fi
-
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	INSTALLD=
@@ -177,7 +173,7 @@ case "$HOST" in
 	;;
     REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	DEST=/etc/rc.d/init.d
+	INITDIR=/etc/rc.d/init.d
 	;;
     SLACKWARE)
 	echo "Shorewall-init is currently not supported on Slackware" >&2
@@ -199,12 +195,8 @@ case "$HOST" in
 	;;
 esac
 
-if [ -z "$DEST" ] ; then
-    DEST="/etc/init.d"
-fi
-
-if [ -z "$INIT" ] ; then
-    INIT="shorewall-init"
+if [ -z "$INITDIR" -a -n "$INITFILE" ] ; then
+    INITDIR="/etc/init.d"
 fi
 
 if [ -n "$DESTDIR" ]; then
@@ -213,7 +205,7 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
     
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${DEST}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
 fi
 
 if [ -z "$DESTDIR" ]; then
@@ -243,19 +235,10 @@ fi
 #
 # Install the Init Script
 #
-case $HOST in
-    DEBIAN)
-	install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
-	;;
-    REDHAT)
-	install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
-	;;
-    *)
-	install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
-	;;
-esac
-
-echo  "Shorewall Init script installed in ${DESTDIR}${DEST}/$INIT"
+if [ -n "$INITFILE" ]; then
+    install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
+    echo  "Shorewall Init script installed in ${DESTDIR}${INITDIR}/$INITFILE"
+fi
 
 #
 # Install the .service file
@@ -282,7 +265,7 @@ chmod 644 ${DESTDIR}/usr/share/shorewall-init/version
 #
 if [ -z "$DESTDIR" ]; then
     rm -f /usr/share/shorewall-init/init
-    ln -s ${DEST}/${INIT} /usr/share/shorewall-init/init
+    ln -s ${INITDIR}/${INITFILE} /usr/share/shorewall-init/init
 fi
 
 if [ $HOST = DEBIAN ]; then
@@ -381,7 +364,7 @@ if [ -z "$DESTDIR" ]; then
 		else
 		    cant_autostart
 		fi
-	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
+	    else
 		cant_autostart
 	    fi
 

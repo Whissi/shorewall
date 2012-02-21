@@ -130,11 +130,7 @@ if [ -z "$BUILD" ]; then
 	    if [ -f /etc/debian_version ]; then
 		BUILD=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		if [ -d /etc/sysconfig/network-scripts/ ]; then
-		    BUILD=REDHAT
-		else
-		    BUILD=FEDORA
-		fi
+		BUILD=REDHAT
 	    elif [ -f /etc/slackware-version ] ; then
 		BUILD=SLACKWARE
 	    elif [ -f /etc/SuSE-release ]; then
@@ -230,7 +226,7 @@ case "$HOST" in
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    FEDORA|REDHAT|SLACKWARE|ARCHLINUX|LINUX)
+    REDHAT|SLACKWARE|ARCHLINUX|LINUX)
 	;;
     *)
 	echo "ERROR: Unknown HOST \"$HOST\"" >&2
@@ -258,7 +254,12 @@ echo "Installing Shorewall Core Version $VERSION"
 # Create /usr/share/shorewall
 #
 mkdir -p ${DESTDIR}${LIBEXEC}/shorewall
-chmod 755 ${DESTDIR}/usr/share/shorewall
+chmod 755 ${DESTDIR}${LIBEXEC}/shorewall
+
+if [ $LIBEXEC != /usr/shorewall/ ]; then
+    mkdir -p ${DESTDIR}/usr/share/shorewall
+    chmod 755 ${DESTDIR}/usr/share/shorewall
+fi
 #
 # Install wait4ifup
 #

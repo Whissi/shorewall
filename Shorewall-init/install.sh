@@ -112,7 +112,8 @@ case "$LIBEXEC" in
     /*)
 	;;
     *)
-	LIBEXEC=/usr/${LIBEXEC}
+	echo "The LIBEXEC setting must be an absolute path name" >&2
+	exit 1
 	;;
 esac
 
@@ -128,11 +129,7 @@ if [ -z "$BUILD" ]; then
 	    if [ -f /etc/debian_version ]; then
 		BUILD=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		if [ -d /etc/sysconfig/network-scripts/ ]; then
-		    BUILD=REDHAT
-		else
-		    BUILD=FEDORA
-		fi
+		BUILD=REDHAT
 	    elif [ -f /etc/SuSE-release ]; then
 		BUILD=SUSE
 	    elif [ -f /etc/slackware-version ] ; then
@@ -178,12 +175,8 @@ case "$HOST" in
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    FEDORA)
-	echo "Installing Fedora-specific configuration..."
-	DEST=/etc/rc.d/init.d
-	;;
     REDHAT)
-	echo "Installing Redhat-specific configuration..."
+	echo "Installing Redhat/Fedora-specific configuration..."
 	DEST=/etc/rc.d/init.d
 	;;
     SLACKWARE)
@@ -254,7 +247,7 @@ case $HOST in
     DEBIAN)
 	install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 	;;
-    REDHAT|FEDORA)
+    REDHAT)
 	install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
 	;;
     *)

@@ -145,11 +145,7 @@ if [ -z "$BUILD" ]; then
 	    if [ -f /etc/debian_version ]; then
 		BUILD=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		if [ -d /etc/sysconfig/network-scripts/ ]; then
-		    BUILD=REDHAT
-		else
-		    BUILD=FEDORA
-		fi
+		BUILD=REDHAT
 	    elif [ -f /etc/slackware-version ] ; then
 		BUILD=SLACKWARE
 	    elif [ -f /etc/SuSE-release ]; then
@@ -268,7 +264,7 @@ case "$HOST" in
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    FEDORA|REDHAT)
+    REDHAT)
 	echo "Installing Redhat/Fedora-specific configuration..."
 	DEST="/etc/rc.d/init.d"
 	;;
@@ -353,7 +349,7 @@ case $HOST in
     DEBIAN)
 	install_file init.debian.sh ${DESTDIR}/etc/init.d/$PRODUCT 0544
 	;;
-    FEDORA|REDHAT)
+    REDHAT)
 	install_file init.fedora.sh ${DESTDIR}${DEST}/$PRODUCT 0544
 	;;
     ARCHLINUX)

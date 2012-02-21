@@ -261,6 +261,9 @@ case "$TARGET" in
 	echo "Installing Redhat/Fedora-specific configuration..."
 	INITDIR="/etc/rc.d/init.d"
 	;;
+    SUSE)
+	echo "Installing SuSE-specific configuration...";
+	;;
     SLACKWARE)
 	echo "Installing Slackware-specific configuration..."
 	INITDIR="/etc/rc.d"

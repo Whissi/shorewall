@@ -265,7 +265,7 @@ else
     rm -rf ${DESTDIR}/etc/$PRODUCT
     rm -rf ${DESTDIR}/usr/share/$PRODUCT
     rm -rf ${DESTDIR}/var/lib/$PRODUCT
-    [ "$LIBEXEC" = /usr/share ] || rm -rf /usr/share/$PRODUCT/wait4ifup /usr/share/$PRODUCT/shorecap
+    [ "$LIBEXEC" = /usr/share ] || rm -rf ${DESTDIR}/usr/share/$PRODUCT/wait4ifup ${DESTDIR}/usr/share/$PRODUCT/shorecap
 fi
 
 #
@@ -284,12 +284,6 @@ install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0544
 echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
 
 #
-# Install the Firewall Script
-#
-install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
-echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
-
-#
 # Create /etc/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
 #
 mkdir -p ${DESTDIR}/etc/$PRODUCT
@@ -303,7 +297,15 @@ chmod 755 ${DESTDIR}/usr/share/$PRODUCT
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}/etc/logrotate.d
     chmod 755 ${DESTDIR}/etc/logrotate.d
+    mkdir -p ${DESTDIR}${INITDIR}
+    chmod 755 ${DESTDIR}${INITDIR}
 fi
+
+#
+# Install the Firewall Script
+#
+install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
+echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
 
 #
 # Install the .service file

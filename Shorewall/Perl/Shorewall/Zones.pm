@@ -912,10 +912,27 @@ sub process_interface( $$ ) {
     my ( $nextinum, $export ) = @_;
     my $netsref   = '';
     my $filterref = [];
-    my ($zone, $originalinterface, $bcasts, $options ) = split_line 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
+    my ($zone, $originalinterface, $bcasts, $options );
     my $zoneref;
     my $bridge = '';
+    our $format;
 
+    if ( $format == 1 ) {
+	($zone, $originalinterface, $bcasts, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 }, { COMMENT => 0, FORMAT => 2 };
+    } else {
+	($zone, $originalinterface, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, options => 2 }, { COMMENT => 0, FORMAT => 2 };
+	$bcasts = '-';
+    }
+
+    if ( $zone eq 'FORMAT' ) {
+	if ( $originalinterface =~ /^[12]$/ ) {
+	    $format = $1;
+	    return;
+	}
+
+	fatal_error "Invalid FORMAT ($1)";
+    }
+	
     if ( $zone eq '-' ) {
 	$zone = '';
     } else {
@@ -1185,7 +1202,8 @@ sub process_interface( $$ ) {
 # Parse the interfaces file.
 #
 sub validate_interfaces_file( $ ) {
-    my $export = shift;
+    my  $export = shift;
+    our $format = 1;
     
     my @ifaces;
     my $nextinum = 1;

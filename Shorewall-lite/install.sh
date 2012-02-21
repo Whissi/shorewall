@@ -140,33 +140,33 @@ INSTALLD='-D'
 INITFILE=$PRODUCT
 T='-T'
 
-if [ -z "$BUILD" ]; then
+if [ -z "$HOST" ]; then
     case $(uname) in
 	CYGWIN*)
-	    BUILD=CYGWIN
+	    HOST=CYGWIN
 	    ;;
 	Darwin)
-	    BUILD=MAC
+	    HOST=MAC
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		BUILD=DEBIAN
+		HOST=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		BUILD=REDHAT
+		HOST=REDHAT
 	    elif [ -f /etc/SuSE-release ]; then
-		BUILD=SUSE
+		HOST=SUSE
 	    elif [ -f /etc/slackware-version ] ; then
-		BUILD=SLACKWARE
+		HOST=SLACKWARE
 	    elif [ -f /etc/arch-release ] ; then
-		BUILD=ARCHLINUX
+		HOST=ARCHLINUX
 	    else
-		BUILD=LINUX
+		HOST=LINUX
 	    fi
 	    ;;
     esac
 fi
 
-case $BUILD in
+case $HOST in
     CYGWIN*)
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
@@ -185,9 +185,9 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-[ -n "$HOST" ] || HOST=$BUILD
+[ -n "$TARGET" ] || TARGET=$HOST
 
-case "$HOST" in
+case "$TARGET" in
     CYGWIN)
 	echo "$PRODUCT is not supported on Cygwin" >&2
 	exit 1
@@ -218,7 +218,7 @@ case "$HOST" in
     LINUX|SUSE)
 	;;
     *)
-	echo "ERROR: Unknown HOST \"$HOST\"" >&2
+	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
 	exit 1;
 	;;
 esac
@@ -321,7 +321,7 @@ if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
    echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
 fi
 
-if [ $HOST = ARCHLINUX ] ; then
+if [ $TARGET = ARCHLINUX ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
@@ -432,7 +432,7 @@ if [ -z "$DESTDIR" ]; then
     touch /var/log/$PRODUCT-init.log
 
     if [ -n "$first_install" ]; then
-	if [ $HOST = DEBIAN ]; then
+	if [ $TARGET = DEBIAN ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
 	    update-rc.d $PRODUCT defaults

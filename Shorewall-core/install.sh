@@ -96,7 +96,6 @@ T="-T"
 
 [ -n "${LIBEXEC:=/usr/share}" ]
 [ -n "${PERLLIB:=/usr/share/shorewall}" ]
-MACHOST=
 
 case "$LIBEXEC" in
     /*)
@@ -118,33 +117,33 @@ esac
 
 INSTALLD='-D'
 
-if [ -z "$BUILD" ]; then
+if [ -z "$HOST" ]; then
     case $(uname) in
 	CYGWIN*)
-	    BUILD=CYGWIN
+	    HOST=CYGWIN
 	    ;;
 	Darwin)
-	    BUILD=MAC
+	    HOST=MAC
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		BUILD=DEBIAN
+		HOST=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		BUILD=REDHAT
+		HOST=REDHAT
 	    elif [ -f /etc/slackware-version ] ; then
-		BUILD=SLACKWARE
+		HOST=SLACKWARE
 	    elif [ -f /etc/SuSE-release ]; then
-		BUILD=SUSE
+		HOST=SUSE
 	    elif [ -f /etc/arch-release ] ; then
-		BUILD=ARCHLINUX
+		HOST=ARCHLINUX
 	    else
-		BUILD=LINUX
+		HOST=LINUX
 	    fi
 	    ;;
     esac
 fi
 
-case $BUILD in
+case $HOST in
     CYGWIN*)
 	if [ -z "$DESTDIR" ]; then
 	    DEST=
@@ -213,29 +212,25 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 
-[ -n "$HOST" ] || HOST=$BUILD
+[ -n "$TARGET" ] || TARGET=$HOST
 
-case "$HOST" in
+case "$TARGET" in
     CYGWIN)
 	echo "Installing Cygwin-specific configuration..."
 	;;
     MAC)
 	echo "Installing Mac-specific configuration...";
 	;;
-    DEBIAN)
-	echo "Installing Debian-specific configuration..."
-	SPARSE=yes
-	;;
-    REDHAT|SLACKWARE|ARCHLINUX|LINUX)
+    DEBIAN|REDHAT|SLACKWARE|ARCHLINUX|LINUX|SUSE)
 	;;
     *)
-	echo "ERROR: Unknown HOST \"$HOST\"" >&2
+	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
 	exit 1;
 	;;
 esac
 
 if [ -n "$DESTDIR" ]; then
-    if [ $BUILD != CYGWIN ]; then
+    if [ $HOST != CYGWIN ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
@@ -276,7 +271,7 @@ for f in lib.* ; do
     echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
 done
 
-if [ -z "$MACHOST" ]; then
+if [ $HOST = MAC ]; then
     eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
     eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
 else

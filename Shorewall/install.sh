@@ -135,33 +135,33 @@ case "$PERLLIB" in
 	;;
 esac
 
-if [ -z "$BUILD" ]; then
+if [ -z "$HOST" ]; then
     case $(uname) in
 	CYGWIN*)
-	    BUILD=CYGWIN
+	    HOST=CYGWIN
 	    ;;
 	Darwin)
-	    BUILD=MAC
+	    HOST=MAC
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		BUILD=DEBIAN
+		HOST=DEBIAN
 	    elif [ -f /etc/redhat-release ]; then
-		BUILD=REDHAT
+		HOST=REDHAT
 	    elif [ -f /etc/slackware-version ] ; then
-		BUILD=SLACKWARE
+		HOST=SLACKWARE
 	    elif [ -f /etc/SuSE-release ]; then
-		BUILD=SUSE
+		HOST=SUSE
 	    elif [ -f /etc/arch-release ] ; then
-		BUILD=ARCHLINUX
+		HOST=ARCHLINUX
 	    else
-		BUILD=LINUX
+		HOST=LINUX
 	    fi
 	    ;;
     esac
 fi
 
-case $BUILD in
+case $HOST in
     CYGWIN*)
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
@@ -242,9 +242,9 @@ if [ $PRODUCT = shorewall ]; then
     fi
 fi
 
-[ -n "$HOST" ] || HOST=$BUILD
+[ -n "$TARGET" ] || TARGET=$HOST
 
-case "$HOST" in
+case "$TARGET" in
     CYGWIN)
 	echo "Installing Cygwin-specific configuration..."
 	INITFILE=
@@ -275,7 +275,7 @@ case "$HOST" in
     LINUX)
 	;;
     *)
-	echo "ERROR: Unknown HOST \"$HOST\"" >&2
+	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
 	exit 1;
 	;;
 esac
@@ -285,7 +285,7 @@ if [ -z "$INITDIR" -a -n "$INITFILE" ] ; then
 fi
 
 if [ -n "$DESTDIR" ]; then
-    if [ $BUILD != CYGWIN ]; then
+    if [ $HOST != CYGWIN ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
@@ -323,7 +323,7 @@ if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f /usr/share/$PRODUCT/corever
     exit 1
 fi
 
-if [ $HOST != CYGWIN ]; then
+if [ $TARGET != CYGWIN ]; then
    install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0755
    echo "$PRODUCT control program installed in ${DESTDIR}/sbin/$PRODUCT"
 else
@@ -334,7 +334,7 @@ fi
 #
 # Install the Firewall Script
 #
-case $HOST in
+case $TARGET in
     SLACKWARE)
         if [ $PRODUCT = shorewall ]; then
 	    install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644
@@ -443,7 +443,7 @@ run_install $OWNERSHIP -m 0644 $PRODUCT.conf.annotated ${DESTDIR}/usr/share/$PRO
 if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
    run_install $OWNERSHIP -m 0644 $PRODUCT.conf${suffix} ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 
-   if [ $HOST = DEBIAN ] && mywhich perl; then
+   if [ $TARGET = DEBIAN ] && mywhich perl; then
        #
        # Make a Debian-like $PRODUCT.conf
        #
@@ -454,7 +454,7 @@ if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
 fi
 
 
-if [ $HOST = ARCHLINUX ] ; then
+if [ $TARGET = ARCHLINUX ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
@@ -1097,7 +1097,7 @@ if [ -d ${DESTDIR}/etc/logrotate.d ]; then
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
-    if [ $HOST = DEBIAN ]; then
+    if [ $TARGET = DEBIAN ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
 	update-rc.d $PRODUCT defaults

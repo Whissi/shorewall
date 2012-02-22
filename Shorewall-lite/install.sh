@@ -135,43 +135,43 @@ esac
 #
 # Determine where to install the firewall script
 #
-CYGWIN=
+cygwin=
 INSTALLD='-D'
 INITFILE=$PRODUCT
 T='-T'
 
-if [ -z "$HOST" ]; then
+if [ -z "$BUILD" ]; then
     case $(uname) in
-	CYGWIN*)
-	    HOST=CYGWIN
+	cygwin*)
+	    BUILD=cygwin
 	    ;;
 	Darwin)
-	    HOST=MAC
+	    BUILD=apple
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		HOST=DEBIAN
+		BUILD=debian
 	    elif [ -f /etc/redhat-release ]; then
-		HOST=REDHAT
+		BUILD=redhat
 	    elif [ -f /etc/SuSE-release ]; then
-		HOST=SUSE
+		BUILD=suse
 	    elif [ -f /etc/slackware-version ] ; then
-		HOST=SLACKWARE
+		BUILD=slackware
 	    elif [ -f /etc/arch-release ] ; then
-		HOST=ARCHLINUX
+		BUILD=archlinux
 	    else
-		HOST=LINUX
+		BUILD=linux
 	    fi
 	    ;;
     esac
 fi
 
-case $HOST in
-    CYGWIN*)
+case $BUILD in
+    cygwin*)
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	;;
-    MAC)
+    apple)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	INSTALLD=
@@ -185,40 +185,39 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-[ -n "$TARGET" ] || TARGET=$HOST
+[ -n "$HOST" ] || HOST=$BUILD
 
-case "$TARGET" in
-    CYGWIN)
+case "$HOST" in
+    cygwin)
 	echo "$PRODUCT is not supported on Cygwin" >&2
 	exit 1
 	;;
-    MAC)
+    apple)
 	echo "$PRODUCT is not supported on OS X" >&2
 	exit 1
 	;;
-    DEBIAN)
+    debian)
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    REDHAT)
+    redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	INITDIR=/etc/rc.d/init.d
+	[ -n "$INITDIR" ]  || INITDIR=/etc/rc.d/init.d
 	;;
-    SLACKWARE)
+    slackware)
 	echo "Installing Slackware-specific configuration..."
-	INITDIR="/etc/rc.d"
-	INITFILE="rc.firewall"
-	MANDIR="/usr/man"
+	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d"
+	[ -n "$INITFILE" ] || INITFILE="rc.firewall"
+	[ -n "$MANDIR=" ]  || MANDIR=/usr/man
 	;;
-    ARCHLINUX)
+    archlinux)
 	echo "Installing ArchLinux-specific configuration..."
-	INITDIR="/etc/rc.d"
-	INITFILE="$PRODUCT"
+	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d"
 	;;
-    LINUX|SUSE)
+    linux|suse)
 	;;
     *)
-	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
+	echo "ERROR: Unknown HOST \"$HOST\"" >&2
 	exit 1;
 	;;
 esac
@@ -323,7 +322,7 @@ if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
    echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
 fi
 
-if [ $TARGET = ARCHLINUX ] ; then
+if [ $HOST = archlinux ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
@@ -434,7 +433,7 @@ if [ -z "$DESTDIR" ]; then
     touch /var/log/$PRODUCT-init.log
 
     if [ -n "$first_install" ]; then
-	if [ $TARGET = DEBIAN ]; then
+	if [ $HOST = debian ]; then
 	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
 	    update-rc.d $PRODUCT defaults

@@ -119,78 +119,76 @@ esac
 
 INITFILE="shorewall-init"
 
-if [ -z "$HOST" ]; then
+if [ -z "$BUILD" ]; then
     case $(uname) in
-	CYGWIN*)
-	    HOST=CYGWIN
+	cygwin*)
+	    BUILD=cygwin
 	    ;;
 	Darwin)
-	    HOST=MAC
+	    BUILD=apple
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		HOST=DEBIAN
+		BUILD=debian
 	    elif [ -f /etc/redhat-release ]; then
-		HOST=REDHAT
+		BUILD=redhat
 	    elif [ -f /etc/SuSE-release ]; then
-		HOST=SUSE
+		BUILD=suse
 	    elif [ -f /etc/slackware-version ] ; then
-		HOST=SLACKWARE
+		BUILD=slackware
 	    elif [ -f /etc/arch-release ] ; then
-		HOST=ARCHLINUX
+		BUILD=archlinux
 	    else
-		HOST=
+		BUILD=linux
 	    fi
 	    ;;
     esac
 fi
 
-case $HOST in
-    CYGWIN*)
-	OWNER=$(id -un)
-	GROUP=$(id -gn)
-	;;
-    MAC)
-	[ -z "$OWNER" ] && OWNER=root
-	[ -z "$GROUP" ] && GROUP=wheel
-	INSTALLD=
+[ -n "$OWNER" ] || OWNER=$(id -un)
+[ -n "$GROUP" ] || GROUP=$(id -gn)
+
+case $BUILD in
+    apple)
 	T=
 	;;
+    debian|redhat|suse|slackware|archlinux)
+	;;
     *)
-	[ -z "$OWNER" ] && OWNER=root
-	[ -z "$GROUP" ] && GROUP=root
+	[ -n "$BUILD" ] && echo "ERROR: Unknown BUILD environment ($BUILD)" >&2 || echo "ERROR: Unknown BUILD environment"
+	exit 1
 	;;
 esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-[ -n "$TARGET" ] || TARGET=$HOST
+[ -n "$HOST" ] || HOST=$BUILD
 
-case "$TARGET" in
-    DEBIAN)
+case "$HOST" in
+    debian)
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    REDHAT)
+    redhat|redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	INITDIR=/etc/rc.d/init.d
+	[ -n "$INITDIR" ] || INITDIR=/etc/rc.d/init.d
 	;;
-    SLACKWARE)
+    slackware)
 	echo "Shorewall-init is currently not supported on Slackware" >&2
 	exit 1
 	;;
-    ARCHLINUX)
+    archlinux)
 	echo "Shorewall-init is currently not supported on Arch Linux" >&2
 	exit 1
 	;;
-    SUSE)
+    suse|suse)
 	echo "Installing SuSE-specific configuration..."
 	;;
-    LINUX)
+    linux)
 	echo "ERROR: Shorewall-init is not supported on this system" >&2
 	;;
     *)
-	echo "ERROR: Unsupported TARGET distribution: \"$TARGET\"" >&2
+	echo "ERROR: Unsupported HOST distribution: \"$HOST\"" >&2
 	exit 1;
 	;;
 esac
@@ -268,7 +266,7 @@ if [ -z "$DESTDIR" ]; then
     ln -s ${INITDIR}/${INITFILE} /usr/share/shorewall-init/init
 fi
 
-if [ $TARGET = DEBIAN ]; then
+if [ $HOST = debian ]; then
     if [ -n "${DESTDIR}" ]; then
 	mkdir -p ${DESTDIR}/etc/network/if-up.d/
 	mkdir -p ${DESTDIR}/etc/network/if-post-down.d/
@@ -286,7 +284,7 @@ else
 	mkdir -p ${DESTDIR}/etc/sysconfig
 
 	if [ -z "$RPM" ]; then
-	    if [ $TARGET = SUSE ]; then
+	    if [ $HOST = suse ]; then
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-down.d
 	    else
@@ -312,21 +310,21 @@ if [ -d ${DESTDIR}/etc/NetworkManager ]; then
     install_file ifupdown.sh ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
-case $TARGET in
-    DEBIAN)
+case $HOST in
+    debian)
 	install_file ifupdown.sh ${DESTDIR}/etc/network/if-up.d/shorewall 0544
 	install_file ifupdown.sh ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
 	;;
-    SUSE)
+    suse)
 	if [ -z "$RPM" ]; then
 	    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-up.d/shorewall 0544
 	    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-down.d/shorewall 0544
 	fi
 	;;
-    REDHAT)
+    redhat)
 	if [ -f ${DESTDIR}/sbin/ifup-local -o -f ${DESTDIR}/sbin/ifdown-local ]; then
 	    echo "WARNING: /sbin/ifup-local and/or /sbin/ifdown-local already exist; up/down events will not be handled"
-	else
+	elif [ -z "$DESTDIR" ]; then
 	    install_file ifupdown.sh ${DESTDIR}/sbin/ifup-local 0544
 	    install_file ifupdown.sh ${DESTDIR}/sbin/ifdown-local 0544
 	fi
@@ -335,7 +333,7 @@ esac
 
 if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
-	if [ $TARGET = DEBIAN ]; then
+	if [ $HOST = debian ]; then
 	    
 	    update-rc.d shorewall-init defaults
 
@@ -372,7 +370,7 @@ if [ -z "$DESTDIR" ]; then
     fi
 else
     if [ -n "$first_install" ]; then
-	if [ $TARGET = DEBIAN ]; then
+	if [ $HOST = debian ]; then
 	    if [ -n "${DESTDIR}" ]; then
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi
@@ -384,14 +382,14 @@ else
 fi
 
 if [ -f ${DESTDIR}/etc/ppp ]; then
-    case $TARGET in
-	DEBIAN|SUSE)
+    case $HOST in
+	debian|suse)
 	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 		mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
 		cp -fp ${DESTDIR}${LIBEXEC}/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
 	    done
 	    ;;
-	REDHAT)
+	redhat)
 	    #
 	    # Must use the dreaded ip_xxx.local file
 	    #

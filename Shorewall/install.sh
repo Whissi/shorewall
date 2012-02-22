@@ -135,38 +135,38 @@ case "$PERLLIB" in
 	;;
 esac
 
-if [ -z "$HOST" ]; then
+if [ -z "$BUILD" ]; then
     case $(uname) in
-	CYGWIN*)
-	    HOST=CYGWIN
+	cygwin*)
+	    BUILD=cygwin
 	    ;;
 	Darwin)
-	    HOST=MAC
+	    BUILD=apple
 	    ;;
 	*)
 	    if [ -f /etc/debian_version ]; then
-		HOST=DEBIAN
+		BUILD=debian
 	    elif [ -f /etc/redhat-release ]; then
-		HOST=REDHAT
+		BUILD=redhat
 	    elif [ -f /etc/slackware-version ] ; then
-		HOST=SLACKWARE
+		BUILD=slackware
 	    elif [ -f /etc/SuSE-release ]; then
-		HOST=SUSE
+		BUILD=suse
 	    elif [ -f /etc/arch-release ] ; then
-		HOST=ARCHLINUX
+		BUILD=archlinux
 	    else
-		HOST=LINUX
+		BUILD=linux
 	    fi
 	    ;;
     esac
 fi
 
-case $HOST in
-    CYGWIN*)
+case $BUILD in
+    cygwin*)
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	;;
-    MAC)
+    apple)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
 	INSTALLD=
@@ -242,43 +242,43 @@ if [ $PRODUCT = shorewall ]; then
     fi
 fi
 
-[ -n "$TARGET" ] || TARGET=$HOST
+[ -n "$HOST" ] || HOST=$BUILD
 
-case "$TARGET" in
-    CYGWIN)
+case "$HOST" in
+    cygwin)
 	echo "Installing Cygwin-specific configuration..."
 	INITFILE=
 	;;
-    MAC)
+    apple)
 	echo "Installing Mac-specific configuration...";
 	INITFILE=
 	;;
-    DEBIAN)
+    debian)
 	echo "Installing Debian-specific configuration..."
 	SPARSE=yes
 	;;
-    REDHAT)
+    redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	INITDIR="/etc/rc.d/init.d"
+	[ -n "$INITDIR" ] || INITDIR="/etc/rc.d/init.d"
 	;;
-    SUSE)
+    suse)
 	echo "Installing SuSE-specific configuration...";
 	;;
-    SLACKWARE)
+    slackware)
 	echo "Installing Slackware-specific configuration..."
-	INITDIR="/etc/rc.d"
-	MANDIR="/usr/man"
-	INITFILE="rc.firewall"
+	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d"
+	[ -n "$MANDIR" ]   || MANDIR="/usr/man"
+	[ -n "$INITFILE" ] || INITFILE="rc.firewall"
 	;;
-    ARCHLINUX)
+    archlinux)
 	echo "Installing ArchLinux-specific configuration..."
-	INITDIR="/etc/rc.d"
-	INITFILE="$PRODUCT"
+	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d"
+	[ -n "$INITFILE" ] || INITFILE="$PRODUCT"
 	;;
-    LINUX)
+    linux)
 	;;
     *)
-	echo "ERROR: Unknown TARGET \"$TARGET\"" >&2
+	echo "ERROR: Unknown HOST \"$HOST\"" >&2
 	exit 1;
 	;;
 esac
@@ -288,7 +288,7 @@ if [ -z "$INITDIR" -a -n "$INITFILE" ] ; then
 fi
 
 if [ -n "$DESTDIR" ]; then
-    if [ $HOST != CYGWIN ]; then
+    if [ $BUILD != cygwin ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
 	    OWNERSHIP=""
@@ -326,7 +326,7 @@ if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f /usr/share/$PRODUCT/corever
     exit 1
 fi
 
-if [ $TARGET != CYGWIN ]; then
+if [ $HOST != cygwin ]; then
    install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0755
    echo "$PRODUCT control program installed in ${DESTDIR}/sbin/$PRODUCT"
 else
@@ -337,8 +337,8 @@ fi
 #
 # Install the Firewall Script
 #
-case $TARGET in
-    SLACKWARE)
+case $HOST in
+    slackware)
         if [ $PRODUCT = shorewall ]; then
 	    install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644
 	    install_file init.slackware.$PRODUCT.sh ${DESTDIR}${DEST}/rc.$PRODUCT 0644
@@ -446,7 +446,7 @@ run_install $OWNERSHIP -m 0644 $PRODUCT.conf.annotated ${DESTDIR}/usr/share/$PRO
 if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
    run_install $OWNERSHIP -m 0644 $PRODUCT.conf${suffix} ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 
-   if [ $TARGET = DEBIAN ] && mywhich perl; then
+   if [ $HOST = debian ] && mywhich perl; then
        #
        # Make a Debian-like $PRODUCT.conf
        #
@@ -457,7 +457,7 @@ if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
 fi
 
 
-if [ $TARGET = ARCHLINUX ] ; then
+if [ $HOST = archlinux ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
 fi
 
@@ -601,7 +601,7 @@ run_install $OWNERSHIP -m 0644 maclist.annotated ${DESTDIR}/usr/share/$PRODUCT/c
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/maclist ]; then
     run_install $OWNERSHIP -m 0600 maclist${suffix} ${DESTDIR}/etc/$PRODUCT/maclist
-    echo "MAC list file installed as ${DESTDIR}/etc/$PRODUCT/maclist"
+    echo "mac list file installed as ${DESTDIR}/etc/$PRODUCT/maclist"
 fi
 
 if [ -f masq ]; then
@@ -1099,8 +1099,8 @@ if [ -d ${DESTDIR}/etc/logrotate.d ]; then
     echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/$PRODUCT"
 fi
 
-if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${CYGWIN}${MAC}" ]; then
-    if [ $TARGET = DEBIAN ]; then
+if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
+    if [ $HOST = debian ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
 
 	update-rc.d $PRODUCT defaults

@@ -271,7 +271,7 @@ for f in lib.* ; do
     echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
 done
 
-if [ $BUILD = apple ]; then
+if [ $BUILD != apple ]; then
     eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
     eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
 else

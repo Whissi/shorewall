@@ -263,6 +263,9 @@
             <para>Beginning with Shorewall 4.4.20, you can specify an absolute
             path name for LIBEXEC, in which case the listed executables will
             be installed in ${LIBEXEC}/shorewall*.</para>
+
+            <para>Beginning with Shorewall 4.5.1, you must specify an absolute
+            pathname for LIBEXEC.</para>
           </listitem>
         </varlistentry>
 
@@ -280,9 +283,301 @@
             <para>Beginning with Shorewall 4.4.20, you can specify an absolute
             path name for PERLLIB, in which case the Shorewall Perl modules
             will be installed in ${PERLLIB}/Shorewall/.</para>
+
+            <para>Beginning with Shorewall 4.5.1, you must specify an absolute
+            pathname for PERLLIB.</para>
           </listitem>
         </varlistentry>
       </variablelist>
+    </section>
+
+    <section>
+      <title>Default Install Locations</title>
+
+      <para>The default install locations are distribution dependent as shown
+      in the following sections. These are the locations that are chosen by
+      the install.sh scripts.</para>
+
+      <section>
+        <title>All Distributions</title>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                <entry><emphasis role="bold">LOCATION</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>man pages</entry>
+
+                <entry>/usr/share/man/ (may ve overridden using
+                MANDIR)</entry>
+              </row>
+
+              <row>
+                <entry>Shorewall Perl Modules</entry>
+
+                <entry>/usr/share/shorewall/ (may be overridden using
+                PERLLIB)</entry>
+              </row>
+
+              <row>
+                <entry>Executable helper scripts (compiler.pl, getparams,
+                wait4ifup)</entry>
+
+                <entry>/usr/share/shorewall/ (may be overridden using
+                LIBEXEC)</entry>
+              </row>
+
+              <row>
+                <entry>ifupdown.sh (from Shorewall-init)</entry>
+
+                <entry>/usr/share/shorewall-init/ (may be overridden using
+                LIBEXEC)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title>Debian</title>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                <entry><emphasis role="bold">LOCATION</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>CLI programs</entry>
+
+                <entry>/sbin/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Distribution-specific configuration file</entry>
+
+                <entry>/etc/default/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Init Scripts</entry>
+
+                <entry>/etc/init.d/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>ifupdown scripts from Shorewall-init</entry>
+
+                <entry>/etc/network/if-up.d/shorewall,
+                /etc/network/if-post-down.d/shorewall</entry>
+              </row>
+
+              <row>
+                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+
+                <entry>/etc/ppp/ip-up.d/shorewall,
+                /etc/ppp/ip-down.d/shorewall /etc/ppp/ipv6-up.d/shorewall
+                /etc/ppp/ipv6-down.d/shorewall</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title>Redhat and Derivatives</title>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                <entry><emphasis role="bold">LOCATION</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>CLI programs</entry>
+
+                <entry>/sbin/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Distribution-specific configuration file</entry>
+
+                <entry>/etc/sysconfig/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Init Scripts</entry>
+
+                <entry>/etc/rc.d/init.d/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>ifupdown scripts from Shorewall-init</entry>
+
+                <entry>/sbin/ifup-local, /sbin/ifdown-local</entry>
+              </row>
+
+              <row>
+                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+
+                <entry>/etc/ppp/ip-up.local, /etc/ppp/ip-down.local</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title>SuSE</title>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                <entry><emphasis role="bold">LOCATION</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>CLI programs</entry>
+
+                <entry>/sbin/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Distribution-specific configuration file</entry>
+
+                <entry>/etc/sysconfig/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Init Scripts</entry>
+
+                <entry>/etc/init.d/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>ifupdown scripts from Shorewall-init</entry>
+
+                <entry>/etc/sysconfig/network/if-up.d/shorewall,
+                /etc/sysconfig/network/if-down.d/shorewall</entry>
+              </row>
+
+              <row>
+                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+
+                <entry>/etc/ppp/ip-up.d/shorewall,
+                /etc/ppp/ip-down.d/shorewall /etc/ppp/ipv6-up.d/shorewall
+                /etc/ppp/ipv6-down.d/shorewall</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title>Cygwin</title>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                <entry><emphasis role="bold">LOCATION</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>CLI programs</entry>
+
+                <entry>/bin/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Distribution-specific configuration file</entry>
+
+                <entry>N/A</entry>
+              </row>
+
+              <row>
+                <entry>Init Scripts</entry>
+
+                <entry>N/A</entry>
+              </row>
+
+              <row>
+                <entry>ifupdown scripts from Shorewall-init</entry>
+
+                <entry>N/A</entry>
+              </row>
+
+              <row>
+                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+
+                <entry>N/A</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title>OS X</title>
+
+        <informaltable>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                <entry><emphasis role="bold">LOCATION</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>CLI programs</entry>
+
+                <entry>/sbin/<replaceable>product</replaceable></entry>
+              </row>
+
+              <row>
+                <entry>Distribution-specific configuration file</entry>
+
+                <entry>N/A</entry>
+              </row>
+
+              <row>
+                <entry>Init Scripts</entry>
+
+                <entry>N/A</entry>
+              </row>
+
+              <row>
+                <entry>ifupdown scripts from Shorewall-init</entry>
+
+                <entry>N/A</entry>
+              </row>
+
+              <row>
+                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+
+                <entry>N/A</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
   </section>
 

@@ -233,11 +233,19 @@ fi
 #
 # Install the Init Script
 #
-if [ -n "$INITFILE" ]; then
-    install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
-    echo  "Shorewall Init script installed in ${DESTDIR}${INITDIR}/$INITFILE"
-fi
+case $TARGET in
+    debian)
+	install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	;;
+    redhat)
+	install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	;;
+    *)
+	install_file init.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	;;
+esac
 
+echo  "$Product script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
 #
 # Install the .service file
 #

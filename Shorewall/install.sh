@@ -259,7 +259,7 @@ case "$HOST" in
 	;;
     redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	[ -n "$INITDIR" ] || INITDIR="/etc/rc.d/init.d"
+	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d/init.d"
 	;;
     suse)
 	echo "Installing SuSE-specific configuration...";
@@ -338,6 +338,12 @@ fi
 # Install the Firewall Script
 #
 case $HOST in
+    debian)
+	install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	;;
+    redhat)
+	install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	;;
     slackware)
         if [ $PRODUCT = shorewall ]; then
 	    install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644

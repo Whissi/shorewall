@@ -925,7 +925,7 @@ sub process_interface( $$ ) {
     }
 
     if ( $zone eq 'FORMAT' ) {
-	if ( $originalinterface =~ /^[12]$/ ) {
+	if ( $originalinterface =~ /^([12])$/ ) {
 	    $format = $1;
 	    return;
 	}

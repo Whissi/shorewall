@@ -315,7 +315,7 @@ if [ -z "$DESTDIR" ]; then
 elif [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}/lib/systemd/system
     INITFILE=
-fI
+fi
 
 echo "Installing $Product Version $VERSION"
 

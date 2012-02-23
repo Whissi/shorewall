@@ -916,7 +916,7 @@ sub add_an_rtrule( ) {
     if ( $source eq '-' ) {
 	$source = 'from ' . ALLIP;
     } elsif ( $source =~ s/^&// ) {
-	$source = 'from ' . record_runtime_address $source;
+	$source = 'from ' . record_runtime_address '&', $source;
     } elsif ( $family == F_IPV4 ) {
 	if ( $source =~ /:/ ) {
 	    ( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );

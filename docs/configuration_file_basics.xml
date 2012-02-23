@@ -190,9 +190,9 @@
         </listitem>
 
         <listitem>
-          <para><filename>/etc/shorewall/rtrules</filename> - Defines
-          routing rules to be used in conjunction with the routing tables
-          defined in <filename>/etc/shorewall/providers</filename>.</para>
+          <para><filename>/etc/shorewall/rtrules</filename> - Defines routing
+          rules to be used in conjunction with the routing tables defined in
+          <filename>/etc/shorewall/providers</filename>.</para>
         </listitem>
 
         <listitem>
@@ -1289,6 +1289,11 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
       <listitem>
         <para><ulink
+        url="manpages/shorewall-nat.html">shorewall-nat</ulink>(5)</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
         url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5)</para>
       </listitem>
 
@@ -1324,8 +1329,72 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     </itemizedlist>
 
     <para>For optional interfaces, if the interface is not usable at the time
-    that the firewall starts the all-zero address will be used (0.0.0.0 in
+    that the firewall starts, the all-zero address will be used (0.0.0.0 in
     IPv4 and :: in IPv6), resulting in no packets matching the rule.</para>
+
+    <para>Beginning with Shorewall 4.5.1, <firstterm>Run-time Gateway
+    Variables</firstterm> in the form of a percent sign ('%') followed by a
+    logical interface name are also supported. These are expanded at run-time
+    to the gateway through the named interface. For optional interfaces, if
+    the interface is not usable at the time that the firewall starts, the
+    all-zero address will be used (0.0.0.0 in IPv4 and :: in IPv6), resulting
+    in no packets matching the rule. Run-time gateway variables may be used in
+    the SOURCE and DEST columns of the following configuration files:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink
+        url="manapges/shorewall-accounting.html">shorewall-accounting</ulink>
+        (5)</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="Actions.html">Action</ulink> files</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="manpages/shorewall-accounting.html">shorewall-blacklist</ulink>
+        (5)</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="Macros.html">Macro</ulink> files</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="manpages/shorewall-nat.html">shorewall-nat</ulink>(5) (As a
+        qualifier to the INTERFACE).</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5)</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>
+        (5)</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="manpages/shorewall-tos.html">shorewall-tos</ulink>
+        (5)</para>
+      </listitem>
+    </itemizedlist>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example:</term>
+
+        <listitem>
+          <para><emphasis role="bold">%eth0</emphasis> would represent the IP
+          address of the gateway out of eth0.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
 
     <para>Beginning with Shorewall 4.4.27, you may also use options in <ulink
     url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) (e.g.,
@@ -1333,7 +1402,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <note>
       <para>When an option is set to 'No' in shorewall.conf, the corresponding
-      shell variable is will be empty.</para>
+      shell variable will be empty.</para>
     </note>
 
     <note>

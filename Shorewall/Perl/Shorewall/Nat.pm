@@ -88,7 +88,7 @@ sub process_one_masq( )
 	$interfacelist = $1;
     } elsif ( $interfacelist =~ /^([^:]+):([^:]*)$/ ) {
 	my ( $one, $two ) = ( $1, $2 );
-	if ( $2 =~ /\./ ) {
+	if ( $2 =~ /\./ || $2 =~ /^%/ ) {
 	    $interfacelist = $one;
 	    $destnets = $two;
 	}
@@ -195,7 +195,7 @@ sub process_one_masq( )
 			    if ( $conditional = conditional_rule( $chainref, $addr ) ) {
 				$addrlist .= '--to-source ' . get_interface_address $1;
 			    } else {
-				$addrlist .= '--to-source ' . record_runtime_address $1;
+				$addrlist .= '--to-source ' . record_runtime_address( '&', $1 );
 			    }
 			} elsif ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = 'SNAT ';

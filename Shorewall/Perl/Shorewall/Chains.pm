@@ -4409,7 +4409,6 @@ sub get_set_flags( $$ ) {
 
 	$ipset_exists{$setname} = 1; # Suppress subsequent checks/warnings
     }
-
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z]\w*/;
 
     have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
@@ -4422,11 +4421,26 @@ sub have_ipset_rules() {
 
 sub get_interface_address( $ );
 
-sub record_runtime_address( $ ) {
-    my $interface = shift;
+sub record_runtime_address( $$;$ ) {
+    my ( $addrtype, $interface, $protect ) = @_;
     fatal_error "Unknown interface address variable (&$interface)" unless known_interface( $interface );
     fatal_error "Invalid interface address variable (&$interface)" if $interface =~ /\+$/;
-    get_interface_address( $interface ) . ' ';
+
+    my $addr;
+
+    if ( $addrtype eq '&' ) {
+	$addr = get_interface_address( $interface );
+    } else {
+	$addr = get_interface_gateway( $interface );
+
+	if ( $protect ) {
+	    $addr =~ s/\$/\${/;
+	    $addr .= ( NILIP . '}' );
+	}
+    }
+
+    $addr . ' ';
+   
 }
 
 #
@@ -4438,12 +4452,19 @@ sub record_runtime_address( $ ) {
 sub conditional_rule( $$ ) {
     my ( $chainref, $address ) = @_;
 
-    if ( $address =~ /^!?&(.+)$/ ) {
-	my $interface = $1;
+    if ( $address =~ /^!?([&%])(.+)$/ ) {
+	my ($type, $interface) = ($1, $2);
 	if ( my $ref = known_interface $interface ) {
 	    if ( $ref->{options}{optional} ) {
-		my $variable = get_interface_address( $interface );
-		add_commands( $chainref , "if [ $variable != " . NILIP . ' ]; then' );
+		my $variable;
+		if ( $type eq '&' ) {
+		    $variable = get_interface_address( $interface );
+		    add_commands( $chainref , "if [ $variable != " . NILIP . ' ]; then' );
+		} else {
+		    $variable = get_interface_gateway( $interface );
+		    add_commands( $chainref , qq(if [ -n "$variable" ]; then) );
+		}
+
 		incr_cmd_level $chainref;
 		return 1;
 	    }
@@ -4507,16 +4528,16 @@ sub match_source_net( $;$\$ ) {
     }
 
     if ( $net =~ s/^!// ) {
-	if ( $net =~ /^&(.+)/ ) {
-	    return '! -s ' . record_runtime_address $1;
+	if ( $net =~ /^([&%])(.+)/ ) {
+	    return '! -s ' . record_runtime_address $1, $2;
 	}
 
 	validate_net $net, 1;
 	return "! -s $net ";
     }
 
-    if ( $net =~ /^&(.+)/ ) {
-	return '-s ' . record_runtime_address $1;
+    if ( $net =~ /^([&%])(.+)/ ) {
+	return '-s ' . record_runtime_address $1, $2;
     }
 
     validate_net $net, 1;
@@ -4561,16 +4582,16 @@ sub imatch_source_net( $;$\$ ) {
     }
 
     if ( $net =~ s/^!// ) {
-	if ( $net =~ /^&(.+)/ ) {
-	    return  ( s => '! ' . record_runtime_address $1 );
+	if ( $net =~ /^([&%])(.+)/ ) {
+	    return  ( s => '! ' . record_runtime_address( $1, $2, 1 ) );
 	}
 
 	validate_net $net, 1;
 	return ( s => "! $net " );
     }
 
-    if ( $net =~ /^&(.+)/ ) {
-	return ( s =>  record_runtime_address $1 );
+    if ( $net =~ /^([&%])(.+)/ ) {
+	return ( s =>  record_runtime_address( $1, $2, 1 ) );
     }
 
     validate_net $net, 1;
@@ -4610,16 +4631,16 @@ sub match_dest_net( $ ) {
     }
 
     if ( $net =~ s/^!// ) {
-	if ( $net =~ /^&(.+)/ ) {
-	    return '! -d ' . record_runtime_address $1;
+	if ( $net =~ /^([&%])(.+)/ ) {
+	    return '! -d ' . record_runtime_address $1, $2;
 	}
 	
 	validate_net $net, 1;
 	return "! -d $net ";
     }
 
-    if ( $net =~ /^&(.+)/ ) {
-	return '-d ' . record_runtime_address $1;
+    if ( $net =~ /^([&%])(.+)/ ) {
+	return '-d ' . record_runtime_address $1, $2;
     }
 
     validate_net $net, 1;
@@ -4657,16 +4678,16 @@ sub imatch_dest_net( $ ) {
     }
 
     if ( $net =~ s/^!// ) {
-	if ( $net =~ /^&(.+)/ ) {
-	    return ( d => '! ' . record_runtime_address $1 );
+	if ( $net =~ /^([&%])(.+)/ ) {
+	    return ( d => '! ' . record_runtime_address( $1, $2, 1 ) );
 	}
 	
 	validate_net $net, 1;
 	return ( d => "! $net " );
     }
 
-    if ( $net =~ /^&(.+)/ ) {
-	return ( d => record_runtime_address $1 );
+    if ( $net =~ /^([&%])(.+)/ ) {
+	return ( d => record_runtime_address( $1, $2, 1 ) );
     }
 
     validate_net $net, 1;
@@ -4684,7 +4705,7 @@ sub match_orig_dest ( $ ) {
 
     if ( $net =~ s/^!// ) {
 	if ( $net =~ /^&(.+)/ ) {
-	    $net = record_runtime_address $1;
+	    $net = record_runtime_address '&', $1;
 	} else {
 	    validate_net $net, 1;
 	}
@@ -4692,7 +4713,7 @@ sub match_orig_dest ( $ ) {
 	have_capability( 'OLD_CONNTRACK_MATCH' ) ? "-m conntrack --ctorigdst ! $net " : "-m conntrack ! --ctorigdst $net ";
     } else {
 	if ( $net =~ /^&(.+)/ ) {
-	    $net = record_runtime_address $1;
+	    $net = record_runtime_address '&', $1;
 	} else {
 	    validate_net $net, 1;
 	}
@@ -5468,7 +5489,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$inets = $source;
 	    }
-	} elsif ( $source =~ /(?:\+|&|~|\..*\.)/ ) {
+	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ ) {
 	    $inets = $source;
 	} else {
 	    $iiface = $source;
@@ -5553,7 +5574,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
-	    } elsif ( $dest =~ /\+|&|~|\..*\./ ) {
+	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ ) {
 		$dnets = $dest;
 	    } else {
 		$diface = $dest;

@@ -310,10 +310,12 @@ fi
 if [ -z "$DESTDIR" ]; then
     if [ -f /lib/systemd/system ]; then
 	SYSTEMD=Yes
+	INITFILE=
     fi
 elif [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}/lib/systemd/system
-fi
+    INITFILE=
+fI
 
 echo "Installing $Product Version $VERSION"
 
@@ -342,27 +344,27 @@ fi
 #
 # Install the Firewall Script
 #
-case $HOST in
-    debian)
-	install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    redhat)
-	install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    slackware)
-        if [ $PRODUCT = shorewall ]; then
-	    install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644
-	    install_file init.slackware.$PRODUCT.sh ${DESTDIR}${DEST}/rc.$PRODUCT 0644
-	fi
-	;;
-    *)
-	if [ -n "$INITFILE" ]; then
+if [ -n "$INITFILE" ]; then
+    case $HOST in
+	debian)
+	    install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	redhat)
+	    install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	slackware)
+            if [ $PRODUCT = shorewall ]; then
+		install_file init.slackware.firewall.sh ${DESTDIR}${DEST}/rc.firewall 0644
+		install_file init.slackware.$PRODUCT.sh ${DESTDIR}${DEST}/rc.$PRODUCT 0644
+	    fi
+	    ;;
+	*)
 	    install_file init.sh ${DESTDIR}${INITDIR}/$INITFILE 0544
-	fi
-	;;
-esac
+	    ;;
+    esac
 
-[ -n "$INITFILE" ] && echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
+    echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
+fi
 
 #
 # Create /etc/$PRODUCT and /var/lib/$PRODUCT if needed

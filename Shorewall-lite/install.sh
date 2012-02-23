@@ -240,6 +240,7 @@ if [ -n "$DESTDIR" ]; then
 
     if [ -n "$SYSTEMD" ]; then
 	mkdir -p ${DESTDIR}/lib/systemd/system
+	INITFILE=
     fi
 else
     if [ ! -f /usr/share/shorewall/coreversion ]; then
@@ -249,6 +250,7 @@ else
 
     if [ -f /lib/systemd/system ]; then
 	SYSTEMD=Yes
+	INITFILE=
     fi
 fi
 
@@ -305,23 +307,24 @@ if [ -n "$DESTDIR" ]; then
     chmod 755 ${DESTDIR}${INITDIR}
 fi
 
-case $TARGET in
-    debian)
-	install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    redhat)
-	install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    archlinux)
-	install_file init.archlinux.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    *)
-	install_file init.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-esac
+if [ -n "$INITFILE" ]; then
+    case $TARGET in
+	debian)
+	    install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	redhat)
+	    install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	archlinux)
+	    install_file init.archlinux.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	*)
+	    install_file init.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+    esac
 
-echo  "$Product script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
-
+    echo  "$Product init script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
+fi
 #
 # Install the .service file
 #

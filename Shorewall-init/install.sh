@@ -216,9 +216,11 @@ fi
 if [ -z "$DESTDIR" ]; then
     if [ -f /lib/systemd/system ]; then
 	SYSTEMD=Yes
+	INITFILE=
     fi
 elif [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}/lib/systemd/system
+    INITFILE=
 fi
 
 #
@@ -237,22 +239,24 @@ else
     first_install="Yes"
 fi
 
-#
-# Install the Init Script
-#
-case $TARGET in
-    debian)
-	install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    redhat)
-	install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-    *)
-	install_file init.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
-	;;
-esac
+if [ -n "$INITFILE" ]; then
+    #
+    # Install the Init Script
+    #
+    case $TARGET in
+	debian)
+	    install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	redhat)
+	    install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+	*)
+	    install_file init.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    ;;
+    esac
 
-echo  "$Product script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
+    echo  "$Product script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
+fi
 #
 # Install the .service file
 #

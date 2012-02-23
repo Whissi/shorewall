@@ -85,6 +85,13 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
+cd "$(dirname $0)"
+
+#
+# Load packager's settings if any
+#
+[ -f ../shorewall-pkg.config ] && . ../shorewall-pkg.config
+
 [ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
 
 #

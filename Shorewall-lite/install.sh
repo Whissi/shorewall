@@ -90,6 +90,11 @@ install_file() # $1 = source $2 = target $3 = mode
 #
 cd "$(dirname $0)"
 
+#
+# Load packager's settings if any
+#
+[ -f ../shorewall-pkg.config ] && . ../shorewall-pkg.config
+
 if [ -f shorewall-lite ]; then
     PRODUCT=shorewall-lite
     Product="Shorewall Lite"

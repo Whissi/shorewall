@@ -1329,17 +1329,29 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     </itemizedlist>
 
     <para>For optional interfaces, if the interface is not usable at the time
-    that the firewall starts, the all-zero address will be used (0.0.0.0 in
-    IPv4 and :: in IPv6), resulting in no packets matching the rule.</para>
+    that the firewall starts, one of two approaches are taken, depending on
+    the context:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the all-zero address will be used (0.0.0.0 in IPv4 and :: in
+        IPv6), resulting in no packets matching the rule (or all packets if
+        used with exclusion).</para>
+      </listitem>
+
+      <listitem>
+        <para>the entire rule is omitted from the ruleset.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>Beginning with Shorewall 4.5.1, <firstterm>Run-time Gateway
     Variables</firstterm> in the form of a percent sign ('%') followed by a
     logical interface name are also supported. These are expanded at run-time
     to the gateway through the named interface. For optional interfaces, if
-    the interface is not usable at the time that the firewall starts, the
-    all-zero address will be used (0.0.0.0 in IPv4 and :: in IPv6), resulting
-    in no packets matching the rule. Run-time gateway variables may be used in
-    the SOURCE and DEST columns of the following configuration files:</para>
+    the interface is not usable at the time that the firewall starts, the nil
+    address will be used (0.0.0.0 in IPv4 and :: in IPv6), resulting in no
+    packets matching the rule. Run-time gateway variables may be used in the
+    SOURCE and DEST columns of the following configuration files:</para>
 
     <itemizedlist>
       <listitem>
@@ -1395,6 +1407,10 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
         </listitem>
       </varlistentry>
     </variablelist>
+
+    <para>If there is no gateway out of the named interface, the nil IP
+    address is used (0.0.0.0 in IPv4 and :: in IPv6). That way, the generated
+    rule will match no packets (or all packets if used with exclusion).</para>
 
     <para>Beginning with Shorewall 4.4.27, you may also use options in <ulink
     url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) (e.g.,

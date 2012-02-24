@@ -1013,9 +1013,10 @@ sub add_common_rules ( $ ) {
 	    for $interface ( @$list ) {
 		my $chainref = $filter_table->{input_option_chain $interface};
 		my $base     = uc chain_base get_physical $interface;
-		my $variable = get_interface_gateway $interface;
+		my $optional = interface_is_optional( $interface );
+		my $variable = get_interface_gateway( $interface, ! $optional );
 
-		if ( interface_is_optional $interface ) {
+		if ( $optional ) {
 		    add_commands( $chainref,
 				  qq(if [ -n "SW_\$${base}_IS_USABLE" -a -n "$variable" ]; then) );
 		    incr_cmd_level( $chainref );

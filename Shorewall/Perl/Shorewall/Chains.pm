@@ -4431,12 +4431,7 @@ sub record_runtime_address( $$;$ ) {
     if ( $addrtype eq '&' ) {
 	$addr = get_interface_address( $interface );
     } else {
-	$addr = get_interface_gateway( $interface );
-
-	if ( $protect ) {
-	    $addr =~ s/\$/\${/;
-	    $addr .= ( NILIP . '}' );
-	}
+	$addr = get_interface_gateway( $interface, $protect );
     }
 
     $addr . ' ';
@@ -5161,8 +5156,8 @@ sub interface_gateway( $ ) {
 #
 # Record that the ruleset requires the gateway address on the passed interface
 #
-sub get_interface_gateway ( $ ) {
-    my ( $logical ) = $_[0];
+sub get_interface_gateway ( $;$ ) {
+    my ( $logical, $protect ) = @_;
 
     my $interface = get_physical $logical;
     my $variable = interface_gateway( $interface );
@@ -5179,7 +5174,7 @@ sub get_interface_gateway ( $ ) {
 );
     }
 
-    "\$$variable";
+    $protect ? "\${$variable:-" . NILIP . '}' : "\$$variable";
 }
 
 #

@@ -32,6 +32,8 @@
 
       <year>2010</year>
 
+      <year>2012</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -52,81 +54,64 @@
     <orderedlist>
       <listitem>
         <para>Releases have a three-level identification
-        <firstterm>x.y.z</firstterm> (e.g., 2.0.3).</para>
+        <firstterm>x.y.z</firstterm> (e.g., 4.5.0).</para>
       </listitem>
 
       <listitem>
         <para>The first two levels (<emphasis>x.y</emphasis>) designate the
-        <firstterm>Major Release Number</firstterm> (e.g., 2.0).</para>
+        <firstterm>major release number</firstterm> (e.g., 4.5).</para>
       </listitem>
 
       <listitem>
-        <para>The third level (<emphasis>z</emphasis>) designates the
-        <firstterm>Minor Release Number</firstterm>.</para>
+        <para>The third level (<emphasis>y</emphasis>) designates the
+        <firstterm>minor release Number</firstterm>.</para>
       </listitem>
 
       <listitem>
-        <para>Even numbered major releases (e.g., 1.4, 2.0, 2.2, ...) are
-        <firstterm>Stable Releases</firstterm>. No major new features are
-        added to stable releases and new minor releases of a stable release
-        will only contain bug fixes and simple low-risk enhancements.
-        Installing a new minor release for the major release that you are
-        currently running involves no migration issues unless you want to take
-        advantage of an enhancement (for example, if you are running 1.4.10
-        and I release 1.4.11, your current configuration is 100% compatible
-        with the new release).</para>
+        <para>Installing a new minor release involves no migration issues
+        unless you want to take advantage of an enhancement. For example, if
+        you are running 4.5.0 and I release 4.5.1, your current configuration
+        is 100% compatible with the new release.</para>
+      </listitem>
+
+      <listitem>
+        <para>A major release may have migration issues. These are listed in
+        the release notes and on the <ulink url="upgrade_issues.htm">upgrade
+        issues page</ulink>.</para>
       </listitem>
 
       <listitem>
         <para>Support is available through the <ulink
         url="http://sourceforge.net/mail/?group_id=22587">Mailing List</ulink>
-        for the two or three most recent Stable Releases. Three releases are
-        supported when the Shorewall release in the Stable Debian distribution
-        is two releases behind the current Shorewall development. In that
-        case, only the minor release in Stable is supported.</para>
+        for the two most recent Major Releases. Fixes will only be provided
+        for the last minor release in the previous Major Release. For example,
+        only 4.5.0 was released, the only fixes for major issues with 4.4.27
+        would be released for the 4.4 series.</para>
       </listitem>
 
       <listitem>
-        <para>Odd numbered major releases (e.g., 2.1, 2.3, ...) are
-        <firstterm>Development Releases</firstterm>. Development releases are
-        where new functionality is introduced. Documentation for new features
-        will be available but it may not be up to the standards of the stable
-        release documentation. Sites running Development Releases should be
-        prepared to play an active role in testing new features. Bug fixes and
-        problem resolution for the development release take a back seat to
-        support of the stable releases. Problem reports for the current
-        development release should be sent to the <ulink
-        url="mailto:shorewall-devel@lists.shorewall.net">Shorewall Development
-        Mailing List</ulink>.</para>
+        <para>Once a minor release has been announced, work begins on the next
+        minor release. Periodic Beta releases are made available through
+        announcements on the Shorewall Development and Shorewall User mailing
+        lists. Those Beta releases are numberd w.x.y-Beta1, ...Beta2, etc.
+        Support for the Beta releases is offered through the Shorewall
+        Development mailing list in the form of emailed patches. There is no
+        guarantee of compatability between one Beta release and the next as
+        features are tweaked.</para>
       </listitem>
 
       <listitem>
-        <para>When the level of functionality of the current development
-        release is judged adequate, the <firstterm>Beta period</firstterm> for
-        a new Stable release will begin. Beta releases have identifications of
-        the form <emphasis>x.y.0-BetaN</emphasis> where
-        <emphasis>x.y</emphasis> is the number of the next Stable Release and
-        <emphasis>N</emphasis>=1,2,3... . Betas are expected to occur roughly
-        once per year. Beta releases may contain new functionality not present
-        in the previous beta release (e.g., 2.2.0-Beta4 may contain
-        functionality not present in 2.2.0-Beta3). When I'm confident that the
-        current Beta release is stable, I will release the first
-        <firstterm>Release Candidate</firstterm>. Release candidates have
-        identifications of the form <emphasis>x.y.0-RCn</emphasis> where
-        <emphasis>x.y</emphasis> is the number of the next Stable Release and
-        <emphasis>n</emphasis>=1,2,3... . Release candidates contain no new
-        functionality -- they only contain bug fixes. When the stability of
-        the current release candidate is judged to be sufficient then that
-        release candidate will be released as the new stable release (e.g.,
-        2.2.0). At that time, the new stable release and the prior stable
-        release are those that are supported.</para>
+        <para>When the next minor release is functionally complete, one or
+        more <firstterm>release candidates</firstterm> are announced on the
+        Shorewall Development and Shorewall User mailing lists. These release
+        candidates are numbered w.x.y-RC1, ...-RC2, etc.</para>
       </listitem>
 
       <listitem>
         <para>What does it mean for a major release to be
-        <firstterm>supported</firstterm>? It means that I will answer
-        questions about the release and that if a bug is found, I will fix the
-        bug and include the fix in the next minor release.</para>
+        <firstterm>supported</firstterm>? It means that that if a bug is
+        found, we will fix the bug and include the fix in the next minor
+        release.</para>
       </listitem>
 
       <listitem>
@@ -135,16 +120,8 @@
         four-level identification <emphasis>x.y.z.N</emphasis> where x.y.z is
         the minor release being fixed and N = 1.2.3...</para>
       </listitem>
-
-      <listitem>
-        <para>Additionally, bug fixes may be made available in the form of a
-        <firstterm>patch release</firstterm>. Patch releases have four-level
-        identifications (e.g., 4.0.6.1); the first three identify the minor
-        release and the fourth identifies the patch level.</para>
-      </listitem>
     </orderedlist>
 
-    <para>The currently-supported major releases are and 4.0.10., 4.2.x. and
-    4.4.x.</para>
+    <para>The currently-supported major releases are 4.4 and 4.5.</para>
   </section>
 </article>

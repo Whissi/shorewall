@@ -302,9 +302,9 @@ if [ -n "$DESTDIR" ]; then
 
     install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
     install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
-else
-    [ -x /usr/share/shorewall/compiler.pl ] || \
-	{ echo "   ERROR: Shorewall >= 4.3.5 is not installed" >&2; exit 1; }
+elif [ $PRODUCT != shorewall ]; then
+    [ -x ${LIBEXEC}/shorewall/compiler.pl ] || \
+	{ echo "   ERROR: Shorewall >= 4.5.0 is not installed" >&2; exit 1; }
 fi
 
 if [ -z "$DESTDIR" ]; then

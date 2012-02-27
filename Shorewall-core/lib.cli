@@ -1112,7 +1112,7 @@ do_dump_command() {
 	echo "   Shorewall $(cat /usr/share/shorewall/version)"
 	echo
     fi
-    
+    show_status
     show_reset
     host=$(echo $g_hostname | sed 's/\..*$//')
     $g_tool -L $g_ipt_options
@@ -2369,9 +2369,7 @@ report_capabilities1() {
     echo KERNELVERSION=$KERNELVERSION
 }
 
-status_command() {
-    echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
-    echo
+show_status() {
     if product_is_started ; then
 	echo "$g_product is running"
 	status=0
@@ -2391,6 +2389,12 @@ status_command() {
 	state=Unknown
     fi
     echo "State:$state"
+}
+
+status_command() {
+    echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
+    echo
+    show_status
     echo
     exit $status
 }

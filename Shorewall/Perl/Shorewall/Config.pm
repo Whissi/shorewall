@@ -421,6 +421,11 @@ my %deprecated = ( LOGRATE            => '' ,
 		   HIGH_ROUTE_MARKS   => 'no'
 		 );
 #
+# Deprecated options that are eliminated via update
+#
+my %converted = ( WIDE_TC_MARKS => 1,
+		  HIGH_ROUTE_MARKS => 1 );
+#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -3166,7 +3171,7 @@ sub update_config_file( $ ) {
 
 	my $heading_printed;
 
-	for ( keys %deprecated ) {
+	for ( grep ! $converted{$_} , keys %deprecated ) {
 	    if ( supplied( my $val = $config{$_} ) ) {
 		if ( lc $val ne $deprecated{$_} ) {
 		    unless ( $heading_printed ) {
@@ -3202,7 +3207,7 @@ EOF
 		progress_message3 "No update required to configuration file $configfile; $configfile.bak not saved";
 	    } else {
 		warning_message "Unable to unlink $configfile.bak";
-		progress_message3 "No update required to configuration file $configfile; $configfile.b";
+		progress_message3 "No update required to configuration file $configfile";
 	    }
 
 	    exit 0 unless -f find_file 'blacklist';

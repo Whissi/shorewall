@@ -210,24 +210,30 @@ fi
 #
 # Install the Init Script
 #
-if [ -n "$DEBIAN" ]; then
-    install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
-elif [ -n "$FEDORA" ]; then
-    install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
-#elif [ -n "$ARCHLINUX" ]; then
-#    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
+if [ -z "$SYSTEMD" ]; then
+    if [ -n "$DEBIAN" ]; then
+	install_file init.debian.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+    elif [ -n "$FEDORA" ]; then
+	install_file init.fedora.sh ${DESTDIR}/etc/init.d/shorewall-init 0544
+    #elif [ -n "$ARCHLINUX" ]; then
+    #    install_file init.archlinux.sh ${DESTDIR}${DEST}/$INIT 0544
+    else
+	install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
+    fi
+
+    echo  "Shorewall Init script installed in ${DESTDIR}${DEST}/$INIT"
 else
-    install_file init.sh ${DESTDIR}${DEST}/$INIT 0544
-fi
-
-echo  "Shorewall Init script installed in ${DESTDIR}${DEST}/$INIT"
-
-#
-# Install the .service file
-#
-if [ -n "$SYSTEMD" ]; then
+    #
+    # Install the .service file
+    #
     run_install $OWNERSHIP -m 600 shorewall-init.service ${DESTDIR}/lib/systemd/system/shorewall-init.service
     echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-init.service"
+    if [ -n "$DESTDIR" ]; then
+	mkdir -p ${DESTDIR}/sbin/
+	chmod 755 ${DESTDIR}/sbin/
+	run_install $OWNERSHIP -m 600 shorewall-init ${DESTDIR}/sbin/shorewall-init
+	echo "CLI installed as ${DESTDIR}/lib/systemd/system/shorewall-init.service"
+    fi
 fi
 
 #

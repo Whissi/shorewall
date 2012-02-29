@@ -200,6 +200,8 @@ case "$HOST" in
 	;;
 esac
 
+[ -z "$TARGET" ] && TARGET=$HOST
+
 if [ -z "$INITDIR" -a -n "$INITFILE" ] ; then
     INITDIR="/etc/init.d"
 fi
@@ -214,7 +216,7 @@ if [ -n "$DESTDIR" ]; then
 fi
 
 if [ -z "$DESTDIR" ]; then
-    if [ -f /lib/systemd/system ]; then
+    if [ -d /lib/systemd/system ]; then
 	SYSTEMD=Yes
 	INITFILE=
     fi
@@ -222,11 +224,6 @@ elif [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}/lib/systemd/system
     INITFILE=
 fi
-
-#
-# Change to the directory containing this script
-#
-cd "$(dirname $0)"
 
 echo "Installing Shorewall Init Version $VERSION"
 
@@ -263,6 +260,11 @@ fi
 if [ -n "$SYSTEMD" ]; then
     run_install $OWNERSHIP -m 600 shorewall-init.service ${DESTDIR}/lib/systemd/system/shorewall-init.service
     echo "Service file installed as ${DESTDIR}/lib/systemd/system/shorewall-init.service"
+    if [ -n "$DESTDIR" ]; then
+	mkdir -p ${DESTDIR}/sbin/
+        chmod 755 ${DESTDIR}/sbin
+    fi
+    run_install $OWNERSHIP -m 700 shorewall-init ${DESTDIR}/sbin/shorewall-init
 fi
 
 #

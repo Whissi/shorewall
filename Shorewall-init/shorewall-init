@@ -30,17 +30,15 @@ then
 fi
 
 # check if shorewall-init is configured or not
-if [ -f "/etc/sysconfig/shorewall-init" ]
-then
-	. /etc/sysconfig/shorewall-init
-	if [ -z "$PRODUCTS" ]
-	then
-                echo "ERROR: No products configured" >&2
-		exit 1
-	fi
-else
-        echo "ERROR: /etc/sysconfig/shorewall-init not found" >&2
+if [ -f "/etc/sysconfig/shorewall-init" ]; then
+    . /etc/sysconfig/shorewall-init
+    if [ -z "$PRODUCTS" ]; then
+        echo "ERROR: No products configured" >&2
 	exit 1
+    fi
+else
+    echo "ERROR: /etc/sysconfig/shorewall-init not found" >&2
+    exit 1
 fi
 
 # Initialize the firewall
@@ -59,10 +57,6 @@ shorewall_start () {
       fi
   done
 
-  if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
-      ipset -R < "$SAVE_IPSETS"
-  fi
-
   return 0
 }
 
@@ -79,13 +73,6 @@ shorewall_stop () {
 	  ${VARDIR}/firewall clear || exit 1
       fi
   done
-
-  if [ -n "$SAVE_IPSETS" ]; then
-      mkdir -p $(dirname "$SAVE_IPSETS")
-      if ipset -S > "${SAVE_IPSETS}.tmp"; then
-	  grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
-      fi
-  fi
 
   return 0
 }

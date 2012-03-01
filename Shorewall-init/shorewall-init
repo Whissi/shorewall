@@ -51,6 +51,10 @@ shorewall_start () {
       fi
   done
 
+  if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
+      ipset -R < "$SAVE_IPSETS"
+  fi
+
   return 0
 }
 
@@ -67,6 +71,13 @@ shorewall_stop () {
 	  ${VARDIR}/firewall clear || exit 1
       fi
   done
+
+  if [ -n "$SAVE_IPSETS" ]; then
+      mkdir -p $(dirname "$SAVE_IPSETS")
+      if ipset -S > "${SAVE_IPSETS}.tmp"; then
+	  grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
+      fi
+  fi
 
   return 0
 }

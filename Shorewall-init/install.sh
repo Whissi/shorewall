@@ -252,7 +252,7 @@ if [ -n "$INITFILE" ]; then
 	    ;;
     esac
 
-    echo  "$Product script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
+    echo  "Shorewall-init script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
 fi
 #
 # Install the .service file
@@ -265,6 +265,7 @@ if [ -n "$SYSTEMD" ]; then
         chmod 755 ${DESTDIR}/sbin
     fi
     run_install $OWNERSHIP -m 700 shorewall-init ${DESTDIR}/sbin/shorewall-init
+    echo "CLI installed as ${DESTDIR}/sbin/shorewall-init"
 fi
 
 #

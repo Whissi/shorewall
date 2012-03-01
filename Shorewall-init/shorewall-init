@@ -23,12 +23,6 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #########################################################################################
-if [ "$(id -u)" != "0" ]
-then
-  echo "You must be root to start, stop or restart \"Shorewall \"."
-  exit 1
-fi
-
 # check if shorewall-init is configured or not
 if [ -f "/etc/sysconfig/shorewall-init" ]; then
     . /etc/sysconfig/shorewall-init

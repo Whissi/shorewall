@@ -3381,6 +3381,8 @@ sub unsupported_yes_no_warning( $ ) {
 sub get_params() {
     my $fn = find_file 'params';
 
+    my %reserved = ( COMMAND => 1, CONFDIR => 1, SHAREDIR => 1, VARDIR => 1 );
+
     if ( -f $fn ) {
 	progress_message2 "Processing $fn ...";
 
@@ -3482,6 +3484,11 @@ sub get_params() {
 		    }				
 		}
 	    }
+	}
+
+	for ( keys %params ) {
+	    fatal_error "The variable name $_ is reserved and may not be set in the params file"
+		if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
 	}
 
 	if ( $debug ) {

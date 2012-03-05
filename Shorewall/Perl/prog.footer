@@ -62,12 +62,14 @@ checkkernelversion() {
 #
 # Start trace if first arg is "debug" or "trace"
 #
+g_debug_iptables=
+
 if [ $# -gt 1 ]; then
     if [ "x$1" = "xtrace" ]; then
 	set -x
 	shift
     elif [ "x$1" = "xdebug" ]; then
-	DEBUG=Yes
+	g_debug_iptables=Yes
 	shift
     fi
 fi

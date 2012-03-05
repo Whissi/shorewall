@@ -6413,7 +6413,7 @@ sub create_netfilter_load( $ ) {
     #
     emit(  'exec 3>&-',
 	   '',
-	   '[ -n "$DEBUG" ] && command=debug_restore_input || command=$' . $UTILITY,
+	   '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY,
 	   '',
 	   'progress_message2 "Running $command..."',
 	   '',

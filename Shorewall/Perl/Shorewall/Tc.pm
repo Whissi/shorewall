@@ -382,7 +382,7 @@ sub process_tc_rule( ) {
 					  require_capability 'DSCP_TARGET', 'The DSCP action', 's'; 
 					  my $dscp = numeric_value( $1);
 					  $dscp = $dscpmap{$1} unless defined $dscp;
-					  fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp < 0x2f && ! ( $dscp & 1 );
+					  fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp <= 0x38 && ! ( $dscp & 1 );
 					  $target .= ' --set-dscp ' . in_hex( $dscp );
 				      }
 		     );

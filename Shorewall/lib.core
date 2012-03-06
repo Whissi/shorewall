@@ -522,6 +522,7 @@ debug_restore_input() {
 
     for chain in PREROUTING POSTROUTING; do
         qt1 $g_tool -t nat -P $chain ACCEPT
+    done
 
     qt1 $g_tool -t filter -F
     qt1 $g_tool -t filter -X

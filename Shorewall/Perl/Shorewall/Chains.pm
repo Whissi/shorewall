@@ -4156,8 +4156,17 @@ sub do_helper( $ ) {
 sub do_length( $ ) {
     my $length = $_[0];
 
+    return '' if $length eq '-';
+
     require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
-    $length ne '-' ? "-m length --length $length " : '';
+
+    fatal_error "Invalid LENGTH ($length)" unless $length =~/^(\d+)(:(\d+))$/;
+
+    if ( supplied $3 ) {
+	fatal_error "First length must be < second length" unless $1 < $2;
+    }
+
+    "-m length --length $length ";
 }
 
 #

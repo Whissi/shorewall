@@ -917,15 +917,6 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/clear ]; then
     echo "Clear file installed as ${DESTDIR}/etc/$PRODUCT/clear"
 fi
 #
-# Install the Isusable file
-#
-run_install $OWNERSHIP -m 0644 isusable ${DESTDIR}/usr/share/$PRODUCT/configfiles/isusable
-
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/isusable ]; then
-    run_install $OWNERSHIP -m 0600 isusable ${DESTDIR}/etc/$PRODUCT/isusable
-    echo "Isusable file installed as ${DESTDIR}/etc/$PRODUCT/isusable"
-fi
-#
 # Install the Refresh file
 #
 run_install $OWNERSHIP -m 0644 refresh ${DESTDIR}/usr/share/$PRODUCT/configfiles/refresh

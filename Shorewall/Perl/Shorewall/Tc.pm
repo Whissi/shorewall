@@ -380,11 +380,15 @@ sub process_tc_rule( ) {
 		       DSCP => sub() {
 			                  assert( $cmd =~ /^DSCP\((\w+)\)$/ );
 					  require_capability 'DSCP_TARGET', 'The DSCP action', 's'; 
-					  my $dscp = numeric_value( $1);
+					  my $dscp = numeric_value( $1 );
 					  $dscp = $dscpmap{$1} unless defined $dscp;
 					  fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp <= 0x38 && ! ( $dscp & 1 );
 					  $target .= ' --set-dscp ' . in_hex( $dscp );
-				      }
+				      },
+		       TOS => sub() {
+			                  assert( $cmd =~ /^TOS\((.+)\)$/ );
+					  $target .= decode_tos( $1 , 2 );
+				      },
 		     );
 
     if ( $source ) {
@@ -2013,6 +2017,12 @@ sub setup_tc() {
 			},
 			{ match     => sub( $ ) { $_[0] =~ /^DSCP\(\w+\)$/ },
 			  target    => 'DSCP',
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0
+			},
+			{ match     => sub( $ ) { $_[0] =~ /^TOS\(.+\)$/ },
+			  target    => 'TOS',
 			  mark      => NOMARK,
 			  mask      => '',
 			  connmark  => 0

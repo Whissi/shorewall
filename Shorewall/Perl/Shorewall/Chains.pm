@@ -191,6 +191,7 @@ our %EXPORT_TAGS = (
 				       do_time
 				       do_user
 				       do_length
+				       decode_tos
 				       do_tos
 				       do_connbytes
 				       do_helper
@@ -395,6 +396,11 @@ our %dscpmap = ( CS0  => 0x00,
 		 EF   => 0x2e,
 	       );
 
+our %tosmap = ( 'Minimize-Delay'       => 0x10,
+		'Maximize-Throughput'  => 0x08,
+		'Maximize-Reliability' => 0x04,
+		'Minimize-Cost'        => 0x02,
+		'Normal-Service'       => 0x00 );
 #
 # These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents
 #
@@ -4069,13 +4075,53 @@ sub do_user( $ ) {
     $rule;
 }
 
+
+
 #
 # Create a "-m tos" match for the passed TOS
 #
-sub do_tos( $ ) {
-    my $tos = $_[0];
+# This helper is also used during tos file processing
+#
+sub decode_tos( $$ ) {
+    my ( $tos, $set ) = @_;
 
-    $tos ne '-' ? "-m tos --tos $tos " : '';
+    if ( $tos eq '-' ) {
+	fatal_error [ '',                                            # 0
+		      'A value must be supplied in the TOS column',  # 1
+		      'Invalid TOS() parameter (-)',                 # 2
+		    ]->[$set] if $set;
+	return '';
+    }
+
+    my $mask = 0xff;
+    my $value;
+
+    if ( $tos =~ m"^(.+)/(.+)$" ) {
+	$value = numeric_value $1;
+	$mask  = numeric_value $2;
+    } elsif ( ! defined ( $value = numeric_value( $tos ) ) ) {
+	$value = $tosmap{$tos};
+	$mask  = 0x3f;
+    }
+
+    fatal_error( [ 'Invalid TOS column value',
+		   'Invalid TOS column value',
+		   'Invalid TOS() parameter', ]->[$set] . " ($tos)" )
+	unless ( defined $value &&
+		 $value <= 0xff &&
+		 defined $mask  &&
+		 $mask <= 0xff );
+
+    warning_message "Unmatchable TOS ($tos)" unless $set || $value & $mask;
+
+    $tos = in_hex( $value) . '/' . in_hex( $mask ) . ' ';
+
+    $set ? " --set-tos $tos" : "-m tos --tos $tos ";
+
+}
+
+sub do_tos( $ ) {
+    decode_tos( $_[0], 0 );
 }
 
 my %dir = ( O => 'original' ,

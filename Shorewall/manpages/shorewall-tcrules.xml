@@ -503,6 +503,35 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
     AF43 =&gt; 0x26
     EF   =&gt; 0x2e</programlisting>
             </listitem>
+
+            <listitem>
+              <para><emphasis
+              role="bold">TOS</emphasis>(<replaceable>tos</replaceable>[/<replaceable>mask</replaceable>])</para>
+
+              <para>Added in Shorewall 4.5.1. Sets the <firstterm>Type of
+              Service</firstterm> field in the IP header. The
+              <replaceable>tos</replaceable> value may be given as an number
+              (hex or decimal) or as the name of a TOS type. Valid type names
+              and their associated hex numeric values are:</para>
+
+              <programlisting>Minimize-Delay       =&gt; 0x10,
+Maximize-Throughput  =&gt; 0x08,
+Maximize-Reliability =&gt; 0x04,
+Minimize-Cost        =&gt; 0x02,
+Normal-Service       =&gt; 0x00</programlisting>
+
+              <para>When <replaceable>tos</replaceable> is given as a number,
+              it may be optionally followed by '/' and a
+              <replaceable>mask</replaceable>. When no
+              <replaceable>mask</replaceable> is given, the value 0xff is
+              assumed. When <replaceable>tos</replaceable> is given as a type
+              name, the <replaceable>mask</replaceable> 0x3f is
+              assumed.</para>
+
+              <para>The action performed is to zero out the bits specified by
+              the <replaceable>mask</replaceable>, then set the bits specified
+              by <replaceable>tos</replaceable>.</para>
+            </listitem>
           </orderedlist>
         </listitem>
       </varlistentry>

@@ -67,18 +67,17 @@ sub process_tos() {
     my $chain    = have_capability( 'MANGLE_FORWARD' ) ? 'fortos'  : 'pretos';
     my $stdchain = have_capability( 'MANGLE_FORWARD' ) ? 'FORWARD' : 'PREROUTING';
 
-    my %tosoptions = ( 'minimize-delay'       => 0x10 ,
-		       'maximize-throughput'  => 0x08 ,
-		       'maximize-reliability' => 0x04 ,
-		       'minimize-cost'        => 0x02 ,
-		       'normal-service'       => 0x00 );
-
-    if ( my $fn = open_file 'tos' ) {
+   if ( my $fn = open_file 'tos' ) {
 	my $first_entry = 1;
 
 	my ( $pretosref, $outtosref );
 
-	first_entry( sub { progress_message2 "$doing $fn..."; $pretosref = ensure_chain 'mangle' , $chain; $outtosref = ensure_chain 'mangle' , 'outtos'; } );
+	first_entry( sub { progress_message2 "$doing $fn..."; 
+			   warning_message "Use of the tos file is deprecated in favor of the TOS target in tcrules";
+			   $pretosref = ensure_chain 'mangle' , $chain; 
+			   $outtosref = ensure_chain 'mangle' , 'outtos';
+		       }
+		   );
 
 	while ( read_a_line ) {
 
@@ -86,14 +85,7 @@ sub process_tos() {
 
 	    $first_entry = 0;
 
-	    fatal_error 'A value must be supplied in the TOS column' if $tos eq '-';
-
-	    if ( defined ( my $tosval = $tosoptions{"\L$tos"} ) ) {
-		$tos = $tosval;
-	    } else {
-		my $val = numeric_value( $tos );
-		fatal_error "Invalid TOS value ($tos)" unless defined( $val ) && $val < 0x1f;
-	    }
+	    $tos = decode_tos( $tos , 1 );
 
 	    my $chainref;
 
@@ -129,7 +121,7 @@ sub process_tos() {
 		$src ,
 		$dst ,
 		'' ,
-		"TOS --set-tos $tos" ,
+		'TOS' . $tos ,
 		'' ,
 		'TOS' ,
 		'';

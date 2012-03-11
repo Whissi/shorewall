@@ -236,7 +236,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 # Determine where to install the firewall script
 #
 
-if [ $PRODUCT = shorewall ]; then
+if [ $PRODUCT = shorewall -a -z "${DESTDIR}" ]; then
     #
     # Verify that Perl is installed
     #

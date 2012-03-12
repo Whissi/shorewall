@@ -709,10 +709,6 @@ sub compiler {
     # Proxy Arp/Ndp
     #
     setup_proxy_arp;
-    #
-    # Handle MSS settings in the zones file
-    #
-    setup_zone_mss;
 
     if ( $scriptfilename || $debug ) {
 	emit 'return 0';

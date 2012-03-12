@@ -2458,6 +2458,13 @@ sub process_rule ( ) {
     progress_message qq(   Rule "$thisline" $done);
 }
 
+sub intrazone_allowed( $$ ) {
+    my ( $zone, $zoneref ) = @_;
+
+    $zoneref->{options}{complex} && 
+	$filter_table->{rules_chain( $zone, $zone )}{policy} ne 'NONE';
+}
+
 #
 # Add jumps to the blacklst and blackout chains
 #
@@ -2484,7 +2491,7 @@ sub classic_blacklist() {
 		    my $ruleschain    = rules_chain( $zone, $zone1 );
 		    my $ruleschainref = $filter_table->{$ruleschain};
 
-		    if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
+		    if ( $zone ne $zone1 || intrazone_allowed( $zone, $zoneref ) ) {
 			add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
 		    }
 		}
@@ -2501,7 +2508,7 @@ sub classic_blacklist() {
 		my $ruleschain    = rules_chain( $zone1, $zone );
 		my $ruleschainref = $filter_table->{$ruleschain};
 
-		if ( ( $zone ne $zone1 || $ruleschainref->{referenced} ) && $ruleschainref->{policy} ne 'NONE' ) {
+		if ( ( $zone ne $zone1 || intrazone_allowed( $zone, $zoneref ) ) ) {
 		    add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
 		}
 	    }
@@ -2567,6 +2574,11 @@ sub process_rules( $ ) {
     $section = '';
 
     add_interface_options( $blrules );
+
+    #
+    # Handle MSS settings in the zones file
+    #
+    setup_zone_mss;
 
     $fn = open_file 'rules';
 

@@ -917,6 +917,10 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}/etc/$PRODUCT/clear ]; then
     echo "Clear file installed as ${DESTDIR}/etc/$PRODUCT/clear"
 fi
 #
+# Install the Isusable file
+#
+run_install $OWNERSHIP -m 0644 isusable ${DESTDIR}/usr/share/$PRODUCT/configfiles/isusable
+#
 # Install the Refresh file
 #
 run_install $OWNERSHIP -m 0644 refresh ${DESTDIR}/usr/share/$PRODUCT/configfiles/refresh

@@ -121,37 +121,12 @@
 
           <variablelist>
             <varlistentry>
-              <term><emphasis role="bold">routeback</emphasis></term>
-
-              <listitem>
-                <para>shorewall6 should set up the infrastructure to pass
-                packets from this/these address(es) back to themselves. This
-                is necessary if hosts in this group use the services of a
-                transparent proxy that is a member of the group or if DNAT is
-                used to send requests originating from this group to a server
-                in the group.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
               <term><emphasis role="bold">blacklist</emphasis></term>
 
               <listitem>
                 <para>Check packets arriving on this port against the <ulink
                 url="shorewall-blacklist.html">shorewall6-blacklist</ulink>(5)
                 file.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">tcpflags</emphasis></term>
-
-              <listitem>
-                <para>Packets arriving from these hosts are checked for
-                certain illegal combinations of TCP flags. Packets found to
-                have such a combination of flags are handled according to the
-                setting of TCP_FLAGS_DISPOSITION after having been logged
-                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
               </listitem>
             </varlistentry>
 
@@ -165,6 +140,43 @@
                 url="shorewall-zones.html">shorewall6-zones</ulink>(5) file
                 then you do NOT need to specify the 'ipsec' option
                 here.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">mss</emphasis>=<replaceable>mss</replaceable></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.2. When present, causes the TCP
+                mss for new connections to/from the hosts given in the HOST(S)
+                column to be clamped at the specified
+                <replaceable>mss</replaceable>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">routeback</emphasis></term>
+
+              <listitem>
+                <para>shorewall6 should set up the infrastructure to pass
+                packets from this/these address(es) back to themselves. This
+                is necessary if hosts in this group use the services of a
+                transparent proxy that is a member of the group or if DNAT is
+                used to send requests originating from this group to a server
+                in the group.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">tcpflags</emphasis></term>
+
+              <listitem>
+                <para>Packets arriving from these hosts are checked for
+                certain illegal combinations of TCP flags. Packets found to
+                have such a combination of flags are handled according to the
+                setting of TCP_FLAGS_DISPOSITION after having been logged
+                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
               </listitem>
             </varlistentry>
           </variablelist>

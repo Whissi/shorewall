@@ -119,80 +119,12 @@
 
           <variablelist>
             <varlistentry>
-              <term><emphasis role="bold">maclist</emphasis></term>
-
-              <listitem>
-                <para>Connection requests from these hosts are compared
-                against the contents of <ulink
-                url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
-                this option is specified, the interface must be an ethernet
-                NIC or equivalent and must be up before Shorewall is
-                started.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">routeback</emphasis></term>
-
-              <listitem>
-                <para>Shorewall should set up the infrastructure to pass
-                packets from this/these address(es) back to themselves. This
-                is necessary if hosts in this group use the services of a
-                transparent proxy that is a member of the group or if DNAT is
-                used to send requests originating from this group to a server
-                in the group.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
               <term><emphasis role="bold">blacklist</emphasis></term>
 
               <listitem>
                 <para>Check packets arriving on this port against the <ulink
                 url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
                 file.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">tcpflags</emphasis></term>
-
-              <listitem>
-                <para>Packets arriving from these hosts are checked for
-                certain illegal combinations of TCP flags. Packets found to
-                have such a combination of flags are handled according to the
-                setting of TCP_FLAGS_DISPOSITION after having been logged
-                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">nosmurfs</emphasis></term>
-
-              <listitem>
-                <para>This option only makes sense for ports on a
-                bridge.</para>
-
-                <para>Filter packets for smurfs (packets with a broadcast
-                address as the source).</para>
-
-                <para>Smurfs will be optionally logged based on the setting of
-                SMURF_LOG_LEVEL in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). After
-                logging, the packets are dropped.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">ipsec</emphasis></term>
-
-              <listitem>
-                <para>The zone is accessed via a kernel 2.6 ipsec SA. Note
-                that if the zone named in the ZONE column is specified as an
-                IPSEC zone in the <ulink
-                url="shorewall-zones.html">shorewall-zones</ulink>(5) file
-                then you do NOT need to specify the 'ipsec' option
-                here.</para>
               </listitem>
             </varlistentry>
 
@@ -227,6 +159,86 @@
                 (224.0.0.0/4). Specifies that traffic will be sent to the
                 specified net(s) but that no traffic will be received from the
                 net(s).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">ipsec</emphasis></term>
+
+              <listitem>
+                <para>The zone is accessed via a kernel 2.6 ipsec SA. Note
+                that if the zone named in the ZONE column is specified as an
+                IPSEC zone in the <ulink
+                url="shorewall-zones.html">shorewall-zones</ulink>(5) file
+                then you do NOT need to specify the 'ipsec' option
+                here.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">maclist</emphasis></term>
+
+              <listitem>
+                <para>Connection requests from these hosts are compared
+                against the contents of <ulink
+                url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
+                this option is specified, the interface must be an ethernet
+                NIC or equivalent and must be up before Shorewall is
+                started.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">mss</emphasis>=<replaceable>mss</replaceable></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.2. When present, causes the TCP
+                mss for new connections to/from the hosts given in the HOST(S)
+                column to be clamped at the specified
+                <replaceable>mss</replaceable>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">nosmurfs</emphasis></term>
+
+              <listitem>
+                <para>This option only makes sense for ports on a
+                bridge.</para>
+
+                <para>Filter packets for smurfs (packets with a broadcast
+                address as the source).</para>
+
+                <para>Smurfs will be optionally logged based on the setting of
+                SMURF_LOG_LEVEL in <ulink
+                url="shorewall.conf.html">shorewall.conf</ulink>(5). After
+                logging, the packets are dropped.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">routeback</emphasis></term>
+
+              <listitem>
+                <para>Shorewall should set up the infrastructure to pass
+                packets from this/these address(es) back to themselves. This
+                is necessary if hosts in this group use the services of a
+                transparent proxy that is a member of the group or if DNAT is
+                used to send requests originating from this group to a server
+                in the group.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">tcpflags</emphasis></term>
+
+              <listitem>
+                <para>Packets arriving from these hosts are checked for
+                certain illegal combinations of TCP flags. Packets found to
+                have such a combination of flags are handled according to the
+                setting of TCP_FLAGS_DISPOSITION after having been logged
+                according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
               </listitem>
             </varlistentry>
           </variablelist>

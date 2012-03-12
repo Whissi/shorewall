@@ -83,6 +83,7 @@ our @EXPORT = qw( NOTHING
 		  compile_updown
 		  validate_hosts_file
 		  find_hosts_by_option
+		  find_zone_hosts_by_option
 		  find_zones_by_option
 		  all_ipsets
 		  have_ipsec
@@ -309,6 +310,7 @@ sub initialize( $$ ) {
 			     broadcast => 1,
 			     destonly => 1,
 			     sourceonly => 1,
+			     mss => 1,
 			    );
 	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver' );
     } else {
@@ -335,6 +337,7 @@ sub initialize( $$ ) {
 			     maclist => 1,
 			     routeback => 1,
 			     tcpflags => 1,
+			     mss => 1,
 			    );
 	%zonetypes = ( 1 => 'firewall', 2 => 'ipv6', 4 => 'bport6', 8 => 'ipsec4', 16 => 'vserver' );
     }
@@ -1868,6 +1871,10 @@ sub process_host( ) {
 		warning_message "The 'norfc1918' host option is no longer supported"
 	    } elsif ( $option eq 'blacklist' ) {
 		$zoneref->{options}{in}{blacklist} = 1;
+	    } elsif ( $option =~ /^mss=(\d+)$/ ) {
+		fatal_error "Invalid mss ($1)" unless $1 >= 500;
+		$options{mss} = $1;
+		$zoneref->{options}{complex} = 1;
 	    } elsif ( $validhostoptions{$option}) {
 		fatal_error qq(The "$option" option is not allowed with Vserver zones) if $type & VSERVER && ! ( $validhostoptions{$option} & IF_OPTION_VSERVER );
 		$options{$option} = 1;
@@ -1944,7 +1951,7 @@ sub have_ipsec() {
 
 #
 # Returns a reference to a array of host entries. Each entry is a
-# reference to an array containing ( interface , polciy match type {ipsec|none} , network , exclusions );
+# reference to an array containing ( interface , polciy match type {ipsec|none} , network , exclusions, value );
 #
 sub find_hosts_by_option( $ ) {
     my $option = $_[0];
@@ -1954,9 +1961,9 @@ sub find_hosts_by_option( $ ) {
 	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {
-		    if ( $host->{options}{$option} ) {
+		    if ( my $value = $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}];
+			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}, $value ];
 			}
 		    }
 		}
@@ -1967,6 +1974,30 @@ sub find_hosts_by_option( $ ) {
     for my $interface ( @interfaces ) {
 	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
 	    push @hosts, [ $interface, 'none', ALLIP , [] ];
+	}
+    }
+
+    \@hosts;
+}
+
+#
+# As above but for a single zone
+#
+sub find_zone_hosts_by_option( $$ ) {
+    my ($zone, $option ) = @_;
+    my @hosts;
+
+    unless ( $zones{$zone}{type} & FIREWALL ) {
+	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
+	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
+		for my $host ( @{$arrayref} ) {
+		    if ( my $value = $host->{options}{$option} ) {
+			for my $net ( @{$host->{hosts}} ) {
+			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}, $value ];
+			}
+		    }
+		}
+	    }
 	}
     }
 

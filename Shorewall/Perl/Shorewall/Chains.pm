@@ -3254,6 +3254,16 @@ sub set_mss( $$$ ) {
 #
 # Interate over all zones with 'mss=' settings adding TCPMSS rules as appropriate.
 #
+sub imatch_source_dev( $;$ );
+sub imatch_dest_dev( $;$ );
+sub imatch_source_net( $;$\$ );
+sub imatch_dest_net( $ );
+
+sub newmsschain( ) {
+    my $seq = $chainseq{filter}++;
+    "~mss${seq}";
+}
+
 sub setup_zone_mss() {
     for my $zone ( all_zones ) {
 	my $zoneref = find_zone( $zone );
@@ -3261,6 +3271,29 @@ sub setup_zone_mss() {
 	set_mss( $zone, $zoneref->{options}{in_out}{mss}, ''     ) if $zoneref->{options}{in_out}{mss};
 	set_mss( $zone, $zoneref->{options}{in}{mss},     '_in'  ) if $zoneref->{options}{in}{mss};
 	set_mss( $zone, $zoneref->{options}{out}{mss},    '_out' ) if $zoneref->{options}{out}{mss};
+
+	my $hosts = find_zone_hosts_by_option( $zone, 'mss' );
+
+	for my $hostref ( @$hosts ) {
+	    my $mss         = $hostref->[4];
+	    my @mssmatch    = have_capability( 'TCPMSS_MATCH' ) ? ( tcpmss => "--mss $mss:" ) : ();
+	    my @sourcedev   = imatch_source_dev $hostref->[0];
+	    my @destdev     = imatch_dest_dev   $hostref->[0];
+	    my @source      = imatch_source_net $hostref->[2];
+	    my @dest        = imatch_dest_net   $hostref->[2];
+	    my @ipsecin     = (have_ipsec ? ( policy => "--pol $hostref->[1] --dir in"  ) : () );
+	    my @ipsecout    = (have_ipsec ? ( policy => "--pol $hostref->[1] --dir out" ) : () );
+
+	    my $chainref = new_chain 'filter', newmsschain;
+	    my $target   = source_exclusion( $hostref->[3], $chainref );
+
+	    add_ijump $chainref, j => 'TCPMSS', targetopts => "--set-mss $mss", p => 'tcp --tcp-flags SYN,RST SYN';
+
+	    for my $zone1 ( all_zones ) {
+		add_ijump ensure_chain( 'filter', rules_chain( $zone, $zone1 ) ),  j => $target , @sourcedev, @source, p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @ipsecin ;
+		add_ijump ensure_chain( 'filter', rules_chain( $zone1, $zone ) ),  j => $target , @destdev,   @dest,   p => 'tcp --tcp-flags SYN,RST SYN', @mssmatch, @ipsecout ;	    
+	    }
+	}
     }
 }
 

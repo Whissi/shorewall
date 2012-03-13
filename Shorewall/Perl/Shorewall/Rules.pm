@@ -2461,8 +2461,7 @@ sub process_rule ( ) {
 sub intrazone_allowed( $$ ) {
     my ( $zone, $zoneref ) = @_;
 
-    $zoneref->{options}{complex} && 
-	$filter_table->{rules_chain( $zone, $zone )}{policy} ne 'NONE';
+    $zoneref->{complex} && $filter_table->{rules_chain( $zone, $zone )}{policy} ne 'NONE';
 }
 
 #
@@ -2477,7 +2476,7 @@ sub classic_blacklist() {
     
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
-	my $simple  =  @zones <= 2 && ! $zoneref->{options}{complex};
+	my $simple  =  @zones <= 2 && ! $zoneref->{complex};
 	
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};

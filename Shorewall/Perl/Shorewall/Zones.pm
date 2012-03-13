@@ -114,9 +114,9 @@ use constant { IN_OUT     => 1,
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type = >      <zone type>       FIREWALL, IP, IPSEC, BPORT;
-#                        options =>    { complex => 0|1
-#                                        nested  => 0|1
+#     %zones{<zone1> => {type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
+#                        complex =>    0|1
+#                        options =>    { nested  => 0|1
 #                                        super   => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
@@ -490,10 +490,10 @@ sub process_zone( \$ ) {
 				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex , IN_OUT ) ,
 						    in      => parse_zone_option_list( $in_options , $type , $complex , IN ) ,
 						    out     => parse_zone_option_list( $out_options , $type , $complex , OUT ) ,
-						    complex => ( $type & IPSEC || $complex ) ,
 						    nested  => @parents > 0 ,
 						    super   => 0 ,
 						  } ,
+				    complex => ( $type & IPSEC || $complex ) ,
 				    interfaces => {} ,
 				    children   => [] ,
 				    hosts      => {}
@@ -509,7 +509,7 @@ sub process_zone( \$ ) {
 		fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
 		$mark      = $zonemark;
 		$zonemark += $zonemarkincr;
-		$zoneref->{options}{complex} = 1;
+		$zoneref->{complex} = 1;
 	    }
 	}
 
@@ -778,7 +778,7 @@ sub add_group_to_zone($$$$$)
 
     fatal_error "Duplicate Host Group ($interface:" . ALLIP . ") in zone $zone" if $allip && @$interfaceref;
 
-    $zoneref->{options}{complex} = 1 if @$interfaceref || @newnetworks > 1 || @exclusions || $options->{routeback};
+    $zoneref->{complex} = 1 if @$interfaceref || @newnetworks > 1 || @exclusions || $options->{routeback};
 
     push @{$interfaceref}, { options => $options,
 			     hosts   => \@newnetworks,
@@ -841,7 +841,7 @@ sub all_parent_zones() {
 }
 
 sub complex_zones() {
-    grep( $zones{$_}{options}{complex} , @zones );
+    grep( $zones{$_}{complex} , @zones );
 }
 
 sub vserver_zones() {
@@ -1841,7 +1841,7 @@ sub process_host( ) {
     }
 
     if ( $hosts =~ /^!?\+/ ) {
-	$zoneref->{options}{complex} = 1;
+	$zoneref->{complex} = 1;
 	fatal_error "ipset name qualification is disallowed in this file" if $hosts =~ /[\[\]]/;
 	fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^!?\+[a-zA-Z][-\w]*$/;
     }
@@ -1865,7 +1865,7 @@ sub process_host( ) {
 	    if ( $option eq 'ipsec' ) {
 		require_capability 'POLICY_MATCH' , q(The 'ipsec' option), 's';
 		$type = IPSEC;
-		$zoneref->{options}{complex} = 1;
+		$zoneref->{complex} = 1;
 		$ipsec = $interfaceref->{ipsec} = 1;
 	    } elsif ( $option eq 'norfc1918' ) {
 		warning_message "The 'norfc1918' host option is no longer supported"
@@ -1939,7 +1939,7 @@ sub validate_hosts_file()
 
     $have_ipsec = $ipsec || haveipseczones;
 
-    $_->{options}{complex} ||= ( keys %{$_->{interfaces}} > 1 ) for values %zones;
+    $_->{complex} ||= ( keys %{$_->{interfaces}} > 1 ) for values %zones;
 }
 
 #

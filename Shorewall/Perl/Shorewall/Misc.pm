@@ -1474,7 +1474,7 @@ sub generate_matrix() {
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
 	
-	next if  @zones <= 2 && ! $zoneref->{options}{complex};
+	next if  @zones <= 2 && ! $zoneref->{complex};
 	#
 	# Complex zone or we have more than one non-firewall zone -- process_rules created a zone forwarding chain
 	#
@@ -1553,7 +1553,6 @@ sub generate_matrix() {
 	my $source_hosts_ref = $zoneref->{hosts};
 	my $chain1           = rules_target firewall_zone , $zone;
 	my $chain2           = rules_target $zone, firewall_zone;
-	my $complex          = $zoneref->{options}{complex} || 0;
 	my $type             = $zoneref->{type};
 	my $frwd_ref         = $filter_table->{zone_forward_chain $zone};
 	my $chain            = 0;

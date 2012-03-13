@@ -116,8 +116,7 @@ use constant { IN_OUT     => 1,
 #
 #     %zones{<zone1> => {type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
 #                        complex =>    0|1
-#                        options =>    { nested  => 0|1
-#                                        super   => 0|1
+#                        options =>    { super   => 0|1
 #                                        in_out  => < policy match string >
 #                                        in      => < policy match string >
 #                                        out     => < policy match string >
@@ -490,7 +489,6 @@ sub process_zone( \$ ) {
 				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex , IN_OUT ) ,
 						    in      => parse_zone_option_list( $in_options , $type , $complex , IN ) ,
 						    out     => parse_zone_option_list( $out_options , $type , $complex , OUT ) ,
-						    nested  => @parents > 0 ,
 						    super   => 0 ,
 						  } ,
 				    complex => ( $type & IPSEC || $complex ) ,
@@ -519,7 +517,6 @@ sub process_zone( \$ ) {
 	    progress_message_nocompress "   Zone $zone:\tmark value " . in_hex( $zoneref->{mark} = $mark );
 	}
     }
-	
 
     if ( $zoneref->{options}{in_out}{blacklist} ) {
 	for ( qw/in out/ ) {

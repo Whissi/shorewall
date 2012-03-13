@@ -1558,7 +1558,7 @@ sub generate_matrix() {
 	my $chain            = 0;
 	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
 	my $notrackref       = ensure_chain 'raw' , notrack_chain( $zone );
-	my $nested           = $zoneref->{options}{nested};
+	my $nested           = @{$zoneref->{parents}};
 	my $parenthasnat     = 0;
 	my $parenthasnotrack = 0;
 

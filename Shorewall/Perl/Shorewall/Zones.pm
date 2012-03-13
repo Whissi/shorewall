@@ -116,8 +116,8 @@ use constant { IN_OUT     => 1,
 #
 #     %zones{<zone1> => {type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
 #                        complex =>    0|1
-#                        options =>    { super   => 0|1
-#                                        in_out  => < policy match string >
+#                        super   =>    0|1
+#                        options =>    { in_out  => < policy match string >
 #                                        in      => < policy match string >
 #                                        out     => < policy match string >
 #                                      }
@@ -410,8 +410,8 @@ sub set_super( $ ); #required for recursion
 sub set_super( $ ) {
     my $zoneref = shift;
 
-    unless ( $zoneref->{options}{super} ) {
-	$zoneref->{options}{super} = 1;
+    unless ( $zoneref->{super} ) {
+	$zoneref->{super} = 1;
 	set_super( $zones{$_} ) for @{$zoneref->{parents}};
     }
 }
@@ -489,9 +489,9 @@ sub process_zone( \$ ) {
 				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex , IN_OUT ) ,
 						    in      => parse_zone_option_list( $in_options , $type , $complex , IN ) ,
 						    out     => parse_zone_option_list( $out_options , $type , $complex , OUT ) ,
-						    super   => 0 ,
 						  } ,
-				    complex => ( $type & IPSEC || $complex ) ,
+				    super      => 0 ,
+				    complex    => ( $type & IPSEC || $complex ) ,
 				    interfaces => {} ,
 				    children   => [] ,
 				    hosts      => {}

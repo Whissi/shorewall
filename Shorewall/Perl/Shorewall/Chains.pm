@@ -4812,10 +4812,10 @@ sub match_ipsec_in( $$ ) {
     my ( $zone , $hostref ) = @_;
     my @match;
     my $zoneref    = find_zone( $zone );
-    my $optionsref = $zoneref->{options};
 
-    unless ( $optionsref->{super} || $zoneref->{type} == VSERVER ) {
+    unless ( $zoneref->{super} || $zoneref->{type} == VSERVER ) {
 	my $match = '--dir in --pol ';
+	my $optionsref = $zoneref->{options};
 
 	if ( $zoneref->{type} & IPSEC ) {
 	    $match .= "ipsec $optionsref->{in_out}{ipsec}$optionsref->{in}{ipsec}";

@@ -399,6 +399,27 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
     AF42 =&gt; 0x24
     AF43 =&gt; 0x26
     EF   =&gt; 0x2e</programlisting>
+
+              <para>May be optionally followed by ':' and a capital letter
+              designating the chain where classification is to occur.</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>F</term>
+
+                  <listitem>
+                    <para>FORWARD chain.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>T</term>
+
+                  <listitem>
+                    <para>POSTROUTING chain (default).</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
             </listitem>
 
             <listitem>
@@ -428,6 +449,27 @@ Normal-Service       =&gt; 0x00</programlisting>
               <para>The action performed is to zero out the bits specified by
               the <replaceable>mask</replaceable>, then set the bits specified
               by <replaceable>tos</replaceable>.</para>
+
+              <para>May be optionally followed by ':' and a capital letter
+              designating the chain where classification is to occur.</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>F</term>
+
+                  <listitem>
+                    <para>FORWARD chain.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>T</term>
+
+                  <listitem>
+                    <para>POSTROUTING chain (default).</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
             </listitem>
           </orderedlist>
         </listitem>

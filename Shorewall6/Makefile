@@ -2,6 +2,7 @@
 VARDIR=$(shell /sbin/shorewall6 show vardir)
 CONFDIR=/etc/shorewall6
 RESTOREFILE?=firewall
+
 all: $(VARDIR)/${RESTOREFILE}
 
 $(VARDIR)/${RESTOREFILE}: $(CONFDIR)/*
@@ -11,11 +12,12 @@ $(VARDIR)/${RESTOREFILE}: $(CONFDIR)/*
 	then \
 	    /sbin/shorewall6 -q save >/dev/null; \
 	else \
-	    /sbin/shorewall6 -q restart 2>&1 | tail >&2; \
+	    /sbin/shorewall6 -q restart 2>&1 | tail >&2; exit 1; \
 	fi
 
 clean:
 	@rm -f $(CONFDIR)/*~ $(CONFDIR)/.*~
+
 .PHONY: clean
 
 # EOF

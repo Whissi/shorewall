@@ -12,7 +12,7 @@ $(VARDIR)/${RESTOREFILE}: $(VARDIR)/firewall
 	then \
 	    /sbin/shorewall-lite -q save >/dev/null; \
 	else \
-	    /sbin/shorewall-lite -q restart 2>&1 | tail >&2; \
+	    /sbin/shorewall-lite -q restart 2>&1 | tail >&2; exit 1; \
 	fi
 
 # EOF

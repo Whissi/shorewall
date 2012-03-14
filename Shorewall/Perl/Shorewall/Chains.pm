@@ -4239,10 +4239,10 @@ sub do_length( $ ) {
 
     require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
 
-    fatal_error "Invalid LENGTH ($length)" unless $length =~/^(\d+)(:(\d+))$/;
+    fatal_error "Invalid LENGTH ($length)" unless $length =~/^(\d+)(:(\d+))?$/;
 
-    if ( supplied $3 ) {
-	fatal_error "First length must be < second length" unless $1 < $2;
+    if ( supplied $2 ) {
+	fatal_error "First length must be < second length" unless $1 < $3;
     }
 
     "-m length --length $length ";
@@ -4484,7 +4484,7 @@ sub get_set_flags( $$ ) {
 	my %typemap = ( src => 'Source', dst => 'Destination' );
 
 	for ( @options ) {
-	    warning_messsage( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
+	    warning_message( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
 	}
     }
 

@@ -4451,7 +4451,7 @@ sub get_set_flags( $$ ) {
 	my %typemap = ( src => 'Source', dst => 'Destination' );
 
 	for ( @options ) {
-	    warning_messsage( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
+	    warning_message( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
 	}
     }
 

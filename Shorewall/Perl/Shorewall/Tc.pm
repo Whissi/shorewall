@@ -463,7 +463,12 @@ sub process_tc_rule( ) {
 	}
     }
 
-    ($cmd, $rest) = split( '/', $mark, 2 );
+    if ( $mark =~ /^TOS/ ) {
+	$cmd = $mark;
+	$rest = '';
+    } else {
+	($cmd, $rest) = split( '/', $mark, 2 );
+    }
 
     $list = '';
 

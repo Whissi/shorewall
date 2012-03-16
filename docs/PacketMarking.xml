@@ -117,7 +117,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
         <para>PREROUTING program — If MARK_IN_FORWARD_CHAIN=No in
         <filename>shorewall.conf</filename>, then by default entries in
         <filename>/etc/shorewall/tcrules</filename> are part of the PREROUTING
-        program. Entries specifying the ":P" suffix in the MARK column are
+        program. Entries specifying the ":P" suffix in the ACTION column are
         also part of the PREROUTING program. The PREROUTING program gets
         executed for each packet entering the firewall.</para>
       </listitem>
@@ -126,7 +126,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
         <para>FORWARD program — If MARK_IN_FORWARD_CHAIN=Yes in
         <filename>shorewall.conf</filename>, then by default entries in
         <filename>/etc/shorewall/tcrules</filename> are part of the FORWARD
-        program. Entries specifying the ":F" suffix in the MARK column are
+        program. Entries specifying the ":F" suffix in the ACTION column are
         also part of the FORWARD program. The FORWARD program gets executed
         for each packet forwarded by the firewall.</para>
       </listitem>
@@ -138,12 +138,12 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
       </listitem>
 
       <listitem>
-        <para>POSTROUTING program — Entries with a class-id in the MARK column
-        (and that don't specify $FW in the SOURCE column) are part of the
-        POSTROUTING program. These rules are executed for each packet leaving
-        the firewall. Entries specifying the ":T" suffix in the MARK column
-        are also part of the POSTROUTING program (Shorewall version 3.4.0 and
-        later).</para>
+        <para>POSTROUTING program — Entries with a class-id in the ACTION
+        column (and that don't specify $FW in the SOURCE column) are part of
+        the POSTROUTING program. These rules are executed for each packet
+        leaving the firewall. Entries specifying the ":T" suffix in the ACTION
+        column are also part of the POSTROUTING program (Shorewall version
+        3.4.0 and later).</para>
       </listitem>
 
       <listitem>
@@ -180,25 +180,25 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
 
           <listitem>
             <para>the connection to which the current packet belongs receives
-            a new mark value (":C", ":CF" or ":CP" suffix in the MARK column);
-            or</para>
+            a new mark value (":C", ":CF" or ":CP" suffix in the ACTION
+            column); or</para>
           </listitem>
 
           <listitem>
             <para>the packet is classified for traffic shaping (class-id in
-            the MARK column); or</para>
+            the ACTION column); or</para>
           </listitem>
 
           <listitem>
             <para>the packet mark in the current packet is moved to the
             connection mark for the connection that the current packet is part
-            of ("SAVE" in the MARK column); or</para>
+            of ("SAVE" in the ACTION column); or</para>
           </listitem>
 
           <listitem>
             <para>the connection mark value for the connection that the
             current packet is part of is moved to the current packet's mark
-            ("RESTORE" in the MARK column); or</para>
+            ("RESTORE" in the ACTION column); or</para>
           </listitem>
 
           <listitem>
@@ -207,7 +207,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
           </listitem>
 
           <listitem>
-            <para>exit the current subroutine ("CONTINUE" in the MARK
+            <para>exit the current subroutine ("CONTINUE" in the ACTION
             column).</para>
           </listitem>
         </orderedlist>
@@ -339,9 +339,9 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <para>The relationship between these options is shown in this
     diagram.</para>
 
-    <graphic align="left" fileref="images/MarkGeometry.png" valign="top" />
+    <graphic align="left" fileref="images/MarkGeometry.png" valign="top"/>
 
-    <para></para>
+    <para/>
 
     <para>The default values of these options are determined by the settings
     of other options as follows:</para>
@@ -455,7 +455,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <para>Here's the example (slightly expanded) from the comments at the top
     of the <filename>/etc/shorewall/tcrules</filename> file.</para>
 
-    <programlisting>#MARK    SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST    LENGTH  TOS
+    <programlisting>#ACTION  SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST    LENGTH  TOS
 #                                                        PORT(S)
 1        0.0.0.0/0       0.0.0.0/0       icmp    echo-request                 #Rule 1
 1        0.0.0.0/0       0.0.0.0/0       icmp    echo-reply                   #Rule 2
@@ -539,7 +539,7 @@ Blarg   1       0x100   main            eth3            206.124.146.254 track,ba
 
     <para>Here is <filename>/etc/shorewall/tcrules</filename>:</para>
 
-    <programlisting>#MARK   SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+    <programlisting>#ACTION SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                       PORT(S)
 1:110   192.168.0.0/22  eth3                                            #Our internal nets get priority
                                                                         #over the server

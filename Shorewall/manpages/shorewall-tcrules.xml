@@ -44,7 +44,7 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">MARK/CLASSIFY</emphasis> (mark) -
+        <term><emphasis role="bold">ACTION</emphasis> (mark) -
         <replaceable>mark</replaceable></term>
 
         <listitem>
@@ -271,8 +271,8 @@
               target allows you to work around that problem. SAME may be used
               in the PREROUTING and OUTPUT chains. When used in PREROUTING, it
               causes matching connections from an individual local system to
-              all use the same provider. For example: <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
-#CLASSIFY                                                PORT(S)
+              all use the same provider. For example: <programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
+#                                                        PORT(S)
 SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
               If a host in 192.168.1.0/24 attempts a connection on TCP port 80
               or 443 and it has sent a packet on either of those ports in the
@@ -282,8 +282,8 @@ SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
 
               <para>When used in the OUTPUT chain, it causes all matching
               connections to an individual remote system to all use the same
-              provider. For example:<programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
-#CLASSIFY                                                PORT(S)
+              provider. For example:<programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
+#                                                        PORT(S)
 SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               If the firewall attempts a connection on TCP port 80 or 443 and
               it has sent a packet on either of those ports in the last five
@@ -600,7 +600,7 @@ Normal-Service       =&gt; 0x00</programlisting>
               MAC addresses. <emphasis role="bold">This form will not match
               traffic that originates on the firewall itself unless either
               &lt;major&gt;&lt;minor&gt; or the :T chain qualifier is used in
-              the MARK column.</emphasis></para>
+              the ACTION column.</emphasis></para>
 
               <para>Examples:<simplelist>
                   <member>0.0.0.0/0</member>
@@ -622,7 +622,7 @@ Normal-Service       =&gt; 0x00</programlisting>
               <para>$FW optionally followed by a colon (":") and a
               comma-separated list of host or network IP addresses. Matches
               packets originating on the firewall. May not be used with a
-              chain qualifier (:P, :F, etc.) in the MARK column.</para>
+              chain qualifier (:P, :F, etc.) in the ACTION column.</para>
             </listitem>
           </orderedlist>
 
@@ -938,8 +938,8 @@ Normal-Service       =&gt; 0x00</programlisting>
           original connection was made on.</para>
 
           <para>Example: Mark all FTP data connections with mark
-          4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
-#CLASSIFY                                        PORT(S)
+          4:<programlisting>#ACTION   SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
+#                                                PORT(S)
 4:T       0.0.0.0/0 0.0.0.0/0 TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
@@ -1017,8 +1017,8 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <para>We assume packet/connection mark 0 means unclassified.</para>
 
-          <programlisting>       #MARK/     SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #CLASSIFY                                               PORT(S)
+          <programlisting>       #ACTION    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
+       #                                                       PORT(S)
        1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-request
        1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
        RESTORE:T  0.0.0.0/0 0.0.0.0/0    all     -             -       -       0

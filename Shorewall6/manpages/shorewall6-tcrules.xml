@@ -44,11 +44,11 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">MARK/CLASSIFY</emphasis> -
-        <replaceable>mark</replaceable></term>
+        <term><emphasis role="bold">ACTION</emphasis> -
+        <replaceable>action</replaceable></term>
 
         <listitem>
-          <para><replaceable>mark</replaceable> may assume one of the
+          <para><replaceable>action</replaceable> may assume one of the
           following values.</para>
 
           <orderedlist numeration="arabic">
@@ -272,8 +272,8 @@
               SAME may be used in the PREROUTING and OUTPUT chains. When used
               in PREROUTING, it causes matching connections from an individual
               local system to all use the same provider. For example:
-              <programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
-#CLASSIFY                                                PORT(S)
+              <programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
+#                                                        PORT(S)
 SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
               If a host in 192.168.1.0/24 attempts a connection on TCP port 80
               or 443 and it has sent a packet on either of those ports in the
@@ -283,8 +283,8 @@ SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
 
               <para>When used in the OUTPUT chain, it causes all matching
               connections to an individual remote system to all use the same
-              provider. For example:<programlisting>#MARK/            SOURCE         DEST         PROTO      DEST
-#CLASSIFY                                                PORT(S)
+              provider. For example:<programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
+#                                                        PORT(S)
 SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               If the firewall attempts a connection on TCP port 80 or 443 and
               it has sent a packet on either of those ports in the last five
@@ -495,7 +495,7 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <para>Accordingly, use $<emphasis role="bold">FW</emphasis> in its
           own separate rule for packets originating on the firewall. In such a
-          rule, the MARK column may NOT specify either <emphasis
+          rule, the ACTION column may NOT specify either <emphasis
           role="bold">:P</emphasis> or <emphasis role="bold">:F</emphasis>
           because marking for firewall-originated packets always occurs in the
           OUTPUT chain.</para>
@@ -526,7 +526,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           iprange match support, IP address ranges are also allowed. List
           elements may also consist of an interface name followed by ":" and
           an address (e.g., eth1:&lt;2002:ce7c:92b4::/48&gt;). If the
-          <emphasis role="bold">MARK</emphasis> column specificies a
+          <emphasis role="bold">ACTION</emphasis> column specificies a
           classification of the form
           <emphasis>major</emphasis>:<emphasis>minor</emphasis> then this
           column may also contain an interface name.</para>
@@ -795,8 +795,8 @@ Normal-Service       =&gt; 0x00</programlisting>
           that the original connection was made on.</para>
 
           <para>Example: Mark all FTP data connections with mark
-          4:<programlisting>#MARK/    SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
-#CLASSIFY                                        PORT(S)
+          4:<programlisting>#ACTION   SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
+#                                                PORT(S)
 4         ::/0      ::/0      TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
@@ -930,8 +930,8 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <para>We assume packet/connection mark 0 means unclassified.</para>
 
-          <programlisting>       #MARK/    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #CLASSIFY                                              PORT(S)
+          <programlisting>       #ACTION   SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
+       #                                                      PORT(S)
        1         ::/0      ::/0         icmp    echo-request
        1         ::/0      ::/0         icmp    echo-reply
        RESTORE   ::/0      ::/0         all     -             -       -       0

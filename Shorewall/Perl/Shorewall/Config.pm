@@ -426,6 +426,13 @@ my %deprecated = ( LOGRATE            => '' ,
 my %converted = ( WIDE_TC_MARKS => 1,
 		  HIGH_ROUTE_MARKS => 1 );
 #
+# Variables involved in ?IF, ?ELSE ?ENDIF processing
+#
+my $omitting;
+my @ifstack;
+my $ifstack;
+
+#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -458,6 +465,9 @@ sub initialize( $ ) {
     $tempfile       = '';      # Temporary File Name
     $sillyname      = 
     $sillyname1     = '';      # Temporary ipchains
+    $omitting       = 0;
+    $ifstack        = 0;
+    @ifstack        = ();
 
     #
     # Misc Globals
@@ -756,7 +766,7 @@ my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 sub warning_message
 {
     my $linenumber = $currentlinenumber || 1;
-    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
+    my $currentlineinfo = $currentfile ?  " : $currentfilename " . ( $linenumber eq 'EOF' ? '(EOF)' : "(line $linenumber)" ) : '';
     our @localtime;
 
     $| = 1; #Reset output buffering (flush any partially filled buffers).
@@ -812,7 +822,7 @@ sub cleanup() {
 #
 sub fatal_error	{
     my $linenumber = $currentlinenumber || 1;
-    my $currentlineinfo = $currentfile ?  " : $currentfilename (line $linenumber)" : '';
+    my $currentlineinfo = $currentfile ?  " : $currentfilename " . ( $linenumber eq 'EOF' ? '(EOF)' : "(line $linenumber)" ) : '';
 
     $| = 1; #Reset output buffering (flush any partially filled buffers).
 
@@ -1481,10 +1491,17 @@ sub open_file( $ ) {
 sub pop_include() {
     my $arrayref = pop @includestack;
 
+    unless ( $ifstack == @ifstack ) {
+	my $lastref = $ifstack[-1];
+	$currentlinenumber = 'EOF';
+	fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+    }
+
     if ( $arrayref ) {
-	( $currentfile, $currentfilename, $currentlinenumber ) = @$arrayref;
+	( $currentfile, $currentfilename, $currentlinenumber, $ifstack ) = @$arrayref;
     } else {
-	$currentfile = undef;
+	$currentfile       = undef;
+	$currentlinenumber = 'EOF';
     }
 }
 
@@ -1607,7 +1624,7 @@ sub copy1( $ ) {
 			fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 			if ( -s _ ) {
-			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
 			    $currentfile = undef;
 			    do_open_file $filename;
 			} else {
@@ -1723,7 +1740,7 @@ EOF
 #
 sub push_open( $ ) {
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
@@ -1798,7 +1815,7 @@ sub embedded_shell( $ ) {
 
 	while ( <$currentfile> ) {
 	    $currentlinenumber++;
-	    last if $last = s/^\s*END(\s+SHELL)?\s*;?//;
+	    last if $last = s/^\s*\??END(\s+SHELL)?\s*;?//;
 	    $command .= $_;
 	}
 
@@ -1808,7 +1825,7 @@ sub embedded_shell( $ ) {
 
     $command .= q(');
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
     $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
@@ -1832,7 +1849,7 @@ sub embedded_perl( $ ) {
 
 	while ( <$currentfile> ) {
 	    $currentlinenumber++;
-	    last if $last = s/^\s*END(\s+PERL)?\s*;?//;
+	    last if $last = s/^\s*\??END(\s+PERL)?\s*;?//;
 	    $command .= $_;
 	}
 
@@ -1864,7 +1881,7 @@ sub embedded_perl( $ ) {
 
 	$perlscript = undef;
 
-	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack = @ifstack ];
 	$currentfile = undef;
 
 	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
@@ -1980,6 +1997,7 @@ sub expand_variables( \$ ) {
 #   - Handle embedded SHELL and PERL scripts
 #   - Expand shell variables from %params and %ENV.
 #   - Handle INCLUDE <filename>
+#   - Handle ?IF, ?ELSE, ?ENDIF
 #
 
 sub read_a_line(;$$$) {
@@ -2019,6 +2037,52 @@ sub read_a_line(;$$$) {
 	    #
 	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
 	    #
+	    # Line not blank -- Handle conditionals
+	    #
+	    if ( $currentline =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/ ) {
+		my $rest = $2;
+
+		$rest = '' unless supplied $rest;
+
+		if ( $1 =~ /^IF/ ) {
+		    fatal_error "Missing IF variable" unless $rest;
+		    my $invert = $rest =~ s/^!\s*//;
+
+		    fatal_error "Invalid IF variable ($rest)" unless $rest =~ s/^\$// && $rest =~ /^\w+$/;
+
+		    push @ifstack, [ 'IF', $omitting, $currentlinenumber ];
+
+		    if ( $rest eq '__IPV6' ) {
+			$omitting = $family == F_IPV4;
+		    } elsif ( $rest eq '__IPV4' ) {
+			$omitting = $family == F_IPV6;
+		    } else {
+			$omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
+					exists $params{$rest} ? $params{$rest} : 
+					exists $config{$rest} ? $config{$rest} : 0 );
+		    }
+
+		    $omitting = ! $omitting if $invert;
+		} elsif ( $1 eq 'ELSE' ) {
+		    fatal_error "Invalid ?ELSE" unless $rest eq '';
+		    my ( $last, $omit, $lineno ) = @{pop @ifstack};
+		    fatal_error q(Unexpected "?ELSE" without matching ?IF) unless defined $last && $last eq 'IF';
+		    push @ifstack, [ 'ELSE', $omitting = ! $omit, $lineno ];
+		} else {
+		    fatal_error "Invalid ?END" unless $rest eq '';
+		    fatal_error q(Unexpected "?END" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
+		    (my $last, $omitting ) = @{pop @ifstack};
+		}
+
+		$currentline='', next;
+	    }   
+
+	    if ( $omitting ) {
+		progress_message "  OMITTED: $currentline";
+		$currentline='';
+		next;
+	    }
+	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
 	    if ( $first_entry ) {
@@ -2033,12 +2097,12 @@ sub read_a_line(;$$$) {
 	    # Must check for shell/perl before doing variable expansion
 	    #
 	    if ( $embedded_enabled ) {
-		if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
+		if ( $currentline =~ s/^\s*\??(BEGIN\s+)?SHELL\s*;?// ) {
 		    embedded_shell( $1 );
 		    next;
 		}
 
-		if ( $currentline =~ s/^\s*(BEGIN\s+)?PERL\s*\;?// ) {
+		if ( $currentline =~ s/^\s*\??(BEGIN\s+)?PERL\s*\;?// ) {
 		    embedded_perl( $1 );
 		    next;
 		}
@@ -2050,7 +2114,7 @@ sub read_a_line(;$$$) {
 	    #
 	    expand_variables( $currentline ) if $expand_variables;
 
-	    if ( $currentline =~ /^\s*INCLUDE\s/ ) {
+	    if ( $currentline =~ /^\s*\??INCLUDE\s/ ) {
 
 		my @line = split ' ', $currentline;
 
@@ -2063,7 +2127,7 @@ sub read_a_line(;$$$) {
 		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
-		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber ];
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
 		    $currentfile = undef;
 		    do_open_file $filename;
 		} else {
@@ -2367,7 +2431,7 @@ sub load_kernel_modules( ) {
 
 	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
 
-	while ( read_a_line ) {
+	while ( read_a_line1 ) {
 	    fatal_error "Invalid modules file entry" unless ( $currentline =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {
@@ -3235,7 +3299,7 @@ sub process_shorewall_conf( $$ ) {
 	    #
 	    # Don't expand shell variables or allow embedded scripting
 	    #
-	    while ( read_a_line( 0, 0 ) ) {
+	    while ( read_a_line1 ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 

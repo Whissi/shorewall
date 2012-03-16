@@ -23,7 +23,11 @@
   <refsect1>
     <title>Description</title>
 
-    <para>Assign any shell variables that you need in this file.</para>
+    <para>Assign any shell variables that you need in this file. The file is
+    always processed by <filename>/bin/sh</filename> or by the shell specified
+    through SHOREWALL_SHELL in <ulink
+    url="shorewall.conf.html">shorewall.conf</ulink> (5) so the full range of
+    shell capabilities may be used.</para>
 
     <para>It is suggested that variable names begin with an upper case letter
     to distinguish them from variables used internally within the Shorewall
@@ -128,12 +132,13 @@ net     eth0            130.252.100.255 routefilter,norfc1918</programlisting>
     url="http://www.shorewall.net/configuration_file_basics.htm#Variables?">http://www.shorewall.net/configuration_file_basics.htm#Variables</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-rtrules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-policy(5),
+    shorewall-providers(5), shorewall-proxyarp(5), shorewall-rtrules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
   </refsect1>
 </refentry>

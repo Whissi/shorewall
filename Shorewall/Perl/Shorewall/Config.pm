@@ -1494,7 +1494,7 @@ sub pop_include() {
     unless ( $ifstack == @ifstack ) {
 	my $lastref = $ifstack[-1];
 	$currentlinenumber = 'EOF';
-	fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+	fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
     }
 
     if ( $arrayref ) {
@@ -1523,7 +1523,7 @@ sub close_file() {
 }
 
 #
-# Process an ?IF, ?ELSE, or ?END 
+# Process an ?IF, ?ELSE, or ?ENDIF 
 #
 sub process_conditional($$$) {
     my ( $omitting, $keyword, $rest ) = @_;
@@ -1605,7 +1605,7 @@ sub copy( $ ) {
 	    my $lastref = $ifstack[-1];
 	    $currentlinenumber = 'EOF';
 	    $currentfilename   = $file;
-	    fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+	    fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
 	}
 
 	$ifstack = $save_ifstack;
@@ -1726,7 +1726,7 @@ sub copy1( $ ) {
 		my $lastref = $ifstack[-1];
 		$currentlinenumber = 'EOF';
 		$currentfilename   = $_[0];
-		fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+		fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
 	    }
 
 	    $ifstack = $save_ifstack;
@@ -1810,7 +1810,7 @@ EOF
 		my $lastref = $ifstack[-1];
 		$currentlinenumber = 'EOF';
 		$currentfilename   = $file;
-		fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+		fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
 	    }
 
 	    $ifstack = $save_ifstack;

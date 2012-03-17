@@ -1574,6 +1574,8 @@ sub copy( $ ) {
 	my $file = $_[0];
 	my $save_ifstack = $ifstack;
 
+	$ifstack = @ifstack;
+
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
@@ -1601,7 +1603,7 @@ sub copy( $ ) {
 	    }
 	}
 
-	unless( $save_ifstack == @ifstack ) {
+	unless( $ifstack == @ifstack ) {
 	    my $lastref = $ifstack[-1];
 	    $currentlinenumber = 'EOF';
 	    $currentfilename   = $file;
@@ -1625,6 +1627,9 @@ sub copy1( $ ) {
     if ( $script || $debug ) {
 	my ( $do_indent, $here_documents ) = ( 1, '');
 	my $save_ifstack = $ifstack;
+
+	$ifstack = @ifstack;
+
 	open_file( $_[0] );
 	
 	while ( $currentfile ) {
@@ -1722,7 +1727,7 @@ sub copy1( $ ) {
 		}
 	    }
 
-	    unless( $save_ifstack == @ifstack ) {
+	    unless( $ifstack == @ifstack ) {
 		my $lastref = $ifstack[-1];
 		$currentlinenumber = 'EOF';
 		$currentfilename   = $_[0];
@@ -1760,6 +1765,8 @@ sub copy2( $$ ) {
 
 	unless ( $empty ) {
 	    my $save_ifstack = $ifstack;
+
+	    $ifstack = @ifstack;
 
 	    emit <<EOF;
 ################################################################################
@@ -1806,7 +1813,7 @@ EOF
 		}
 	    }
 
-	    unless( $save_ifstack == @ifstack ) {
+	    unless( $ifstack == @ifstack ) {
 		my $lastref = $ifstack[-1];
 		$currentlinenumber = 'EOF';
 		$currentfilename   = $file;
@@ -1835,7 +1842,8 @@ EOF
 #
 sub push_open( $ ) {
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
+    $ifstack = @ifstack;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();

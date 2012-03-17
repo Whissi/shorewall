@@ -1449,7 +1449,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <para>The general form is:</para>
 
-    <programlisting>?IF <replaceable>$variable
+    <programlisting>?IF [!] <replaceable>$variable
 
 </replaceable>&lt;lines to be included if $variable is non-empty and non-zero&gt;
 
@@ -1487,7 +1487,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     and in options set in <filename>/etc/shorewall/shorewall.conf</filename>
     in that order. If it is not found in any of those places, the
     <replaceable>variable</replaceable> is assumed to have a value of 0
-    (false).</para>
+    (false). If "!" is present, the result of the test is inverted.</para>
 
     <para>The setting in <filename>/etc/shorewall/params</filename> by be
     overridden at runtime, provided the setting in

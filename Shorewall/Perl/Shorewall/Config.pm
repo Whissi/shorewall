@@ -1601,6 +1601,15 @@ sub copy( $ ) {
 	    }
 	}
 
+	unless( $save_ifstack == @ifstack ) {
+	    my $lastref = $ifstack[-1];
+	    $currentlinenumber = 'EOF';
+	    $currentfilename   = $file;
+	    fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+	}
+
+	$ifstack = $save_ifstack;
+
 	close IF;
     }
 }
@@ -1615,7 +1624,7 @@ sub copy1( $ ) {
 
     if ( $script || $debug ) {
 	my ( $do_indent, $here_documents ) = ( 1, '');
-
+	my $save_ifstack = $ifstack;
 	open_file( $_[0] );
 	
 	while ( $currentfile ) {
@@ -1623,6 +1632,13 @@ sub copy1( $ ) {
 		$currentlinenumber++;
 
 		chomp;
+
+		if ( /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/ ) {
+		    $omitting = process_conditional( $omitting, $1, $2 );
+		    next;
+		}
+
+		next if $omitting;
 
 		if ( /^${here_documents}\s*$/ ) {
 		    if ( $script ) {
@@ -1706,6 +1722,15 @@ sub copy1( $ ) {
 		}
 	    }
 
+	    unless( $save_ifstack == @ifstack ) {
+		my $lastref = $ifstack[-1];
+		$currentlinenumber = 'EOF';
+		$currentfilename   = $_[0];
+		fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+	    }
+
+	    $ifstack = $save_ifstack;
+	    
 	    close_file;
 	}
     }
@@ -1734,6 +1759,8 @@ sub copy2( $$ ) {
 	}
 
 	unless ( $empty ) {
+	    my $save_ifstack = $ifstack;
+
 	    emit <<EOF;
 ################################################################################
 #   Functions imported from $file
@@ -1743,7 +1770,15 @@ EOF
 	    emit( $_ ) unless /^\s*$/;
 
 	    while ( <IF> ) {
+		if ( /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/ ) {
+		    $omitting = process_conditional( $omitting, $1, $2 );
+		    next;
+		}
+
+		next if $omitting;
+
 		chomp;
+
 		if ( /^\s*$/ ) {
 		    unless ( $lastlineblank ) {
 			print $script "\n" if $script;
@@ -1770,6 +1805,15 @@ EOF
 		    $lastlineblank = 0;
 		}
 	    }
+
+	    unless( $save_ifstack == @ifstack ) {
+		my $lastref = $ifstack[-1];
+		$currentlinenumber = 'EOF';
+		$currentfilename   = $file;
+		fatal_error qq(Missing "?END" to match ?IF at line number $lastref->[2])
+	    }
+
+	    $ifstack = $save_ifstack;
 
 	    close IF;
 

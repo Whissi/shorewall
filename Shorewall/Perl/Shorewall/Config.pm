@@ -568,6 +568,7 @@ sub initialize( $ ) {
 	  MAPOLDACTIONS => undef,
 	  FASTACCEPT => undef,
 	  IMPLICIT_CONTINUE => undef,
+	  IPSET_WARNINGS => undef,
 	  HIGH_ROUTE_MARKS => undef,
 	  USE_ACTIONS=> undef,
 	  OPTIMIZE => undef,
@@ -3866,6 +3867,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'EXPORTMODULES'              , '';
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
     default_yes_no 'USE_PHYSICAL_NAMES'         , '';
+    default_yes_no 'IPSET_WARNINGS'             , 'Yes';
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

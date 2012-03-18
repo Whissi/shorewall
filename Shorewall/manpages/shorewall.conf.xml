@@ -849,6 +849,29 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">IPSET_WARNINGS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.2. Default is Yes. When set, causes the
+          rules compiler to issue a warning when:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>The compiler is being run by root and an ipset specified
+              in the configuration does not exists. Only one warning is issued
+              for each missing ipset.</para>
+            </listitem>
+
+            <listitem>
+              <para>When [src] is specified in a destination column and when
+              [dst] is specified in a source column.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">IPTABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
@@ -2092,14 +2115,14 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           tcrules. This was done so that tcrules could reset the packet mark
           to zero, thus allowing the packet to be routed using the 'main'
           routing table. Using the main table allowed dynamic routes (such as
-          those added for VPNs) to be effective. The rtrules file was
-          created to provide a better alternative to clearing the packet mark.
-          As a consequence, passing these packets to PREROUTING complicates
-          things without providing any real benefit. Beginning with Shorewall
-          4.4.6, when TRACK_PROVIDERS=Yes and TC_EXPERT=No, packets arriving
-          through 'tracked' interfaces will not be passed to the PREROUTING
-          rules. Since TRACK_PROVIDERS was just introduced in 4.4.3, this
-          change should be transparent to most, if not all, users.</para>
+          those added for VPNs) to be effective. The rtrules file was created
+          to provide a better alternative to clearing the packet mark. As a
+          consequence, passing these packets to PREROUTING complicates things
+          without providing any real benefit. Beginning with Shorewall 4.4.6,
+          when TRACK_PROVIDERS=Yes and TC_EXPERT=No, packets arriving through
+          'tracked' interfaces will not be passed to the PREROUTING rules.
+          Since TRACK_PROVIDERS was just introduced in 4.4.3, this change
+          should be transparent to most, if not all, users.</para>
         </listitem>
       </varlistentry>
 

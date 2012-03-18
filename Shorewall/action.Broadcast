@@ -46,7 +46,7 @@ my $chainref           = get_action_chain;
 my ( $level, $tag )    = get_action_logging;
 my $target             = require_audit ( $action , $audit );
 
-if ( have_capability( 'ADDRTYPE' ) ) {
+?IF __ADDRTYPE
     if ( $level ne '' ) {
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type MULTICAST ';
@@ -56,14 +56,14 @@ if ( have_capability( 'ADDRTYPE' ) ) {
     add_jump $chainref, $target, 0, '-m addrtype --dst-type BROADCAST ';
     add_jump $chainref, $target, 0, '-m addrtype --dst-type MULTICAST ';
     add_jump $chainref, $target, 0, '-m addrtype --dst-type ANYCAST ';
-} else {
+?ELSE #Begin no Addrtype support
     add_commands $chainref, 'for address in $ALL_BCASTS; do';
     incr_cmd_level $chainref;
     log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -d $address ' if $level ne '';
     add_jump $chainref, $target, 0, "-d \$address ";
     decr_cmd_level $chainref;
     add_commands $chainref, 'done';
-}
+?END #No Addrtype support
     
 log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
 add_jump $chainref, $target, 0, '-d 224.0.0.0/4 ';

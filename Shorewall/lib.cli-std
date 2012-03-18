@@ -239,7 +239,7 @@ get_config() {
 	LOG_VERBOSITY=-1
     fi
 
-    if [ -n "$SHOREWALL_SHELL" ]; then
+    if [ -n "$SHOREWALL_SHELL" -a -z "$g_export" ]; then
 	if [ ! -x "$SHOREWALL_SHELL" ]; then
 	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
 	    SHOREWALL_SHELL=/bin/sh

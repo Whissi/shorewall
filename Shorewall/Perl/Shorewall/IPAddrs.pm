@@ -76,6 +76,7 @@ our @EXPORT = qw( ALLIPv4
 		  proto_name
 		  validate_port
 		  validate_portpair
+		  validate_portpair1
 		  validate_port_list
 		  validate_icmp
 		  validate_icmp6
@@ -371,6 +372,7 @@ sub validate_port( $$ ) {
 
 sub validate_portpair( $$ ) {
     my ($proto, $portpair) = @_;
+    my $what;
 
     fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/:/:/ > 1;
 
@@ -379,13 +381,54 @@ sub validate_portpair( $$ ) {
 
     my @ports = split /:/, $portpair, 2;
 
-    $_ = validate_port( $proto, $_) for ( grep $_, @ports );
+    my $protonum = resolve_proto( $proto ) || 0;
+
+    $_ = validate_port( $protonum, $_) for grep $_, @ports;
 
     if ( @ports == 2 ) {
+	$what = 'port range';
 	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+    } else {
+	$what = 'port';
     }
 
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless 
+	defined $protonum && ( $protonum == TCP  ||
+			       $protonum == UDP  ||
+			       $protonum == SCTP ||
+			       $protonum == DCCP );
     join ':', @ports;
+
+}
+
+sub validate_portpair1( $$ ) {
+    my ($proto, $portpair) = @_;
+    my $what;
+
+    fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/-/-/ > 1;
+
+    $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
+    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
+
+    my @ports = split /-/, $portpair, 2;
+
+    my $protonum = resolve_proto( $proto ) || 0;
+
+    $_ = validate_port( $protonum, $_) for grep $_, @ports;
+
+    if ( @ports == 2 ) {
+	$what = 'port range';
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+    } else {
+	$what = 'port';
+    }
+
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless 
+	defined $protonum && ( $protonum == TCP  ||
+			       $protonum == UDP  ||
+			       $protonum == SCTP ||
+			       $protonum == DCCP );
+    join '-', @ports;
 
 }
 

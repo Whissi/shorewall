@@ -488,6 +488,8 @@ my  %builtin_target = ( ACCEPT      => 1,
 			ULOG        => 1,
 		        );
 
+my %ipset_exists;
+
 #
 # Rules are stored in an internal form
 #
@@ -616,6 +618,8 @@ sub initialize( $$$ ) {
     $warningcount       = 0;
     $hashlimitset       = 0;
     $ipset_rules        = 0 if $hard;
+
+    %ipset_exists       = ();   
 
     %helpers = ( amanda          => TCP,
 		 ftp             => TCP,

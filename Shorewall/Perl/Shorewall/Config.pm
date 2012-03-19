@@ -1525,8 +1525,10 @@ sub close_file() {
     }
 }
 
-sub process_conditional( $$ ) {
-    my ( $omitting, $line ) = @_;
+sub process_conditional( $$$ ) {
+    my ( $omitting, $line, $linenumber ) = @_;
+
+    print "CD===> $currentline\n" if $debug;
 
     fatal_error "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/;
     
@@ -1542,7 +1544,7 @@ sub process_conditional( $$ ) {
 
 	fatal_error "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
 
-	push @ifstack, [ 'IF', $lastomit, $omitting, $currentlinenumber ];
+	push @ifstack, [ 'IF', $lastomit, $omitting, $linenumber ];
 
 	if ( $rest eq '__IPV6' ) {
 	    $omitting = $family == F_IPV4;
@@ -2094,20 +2096,6 @@ sub read_a_line(;$$$) {
 	    #
 	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
 	    #
-	    # Line not blank -- Handle conditionals
-	    #
-	    if ( $currentline =~ /^\s*\?/ ) {
-		$omitting = process_conditional( $omitting, $currentline);
-		$currentline='';
-		next;
-	    }		
-		    
-	    if ( $omitting ) {
-		progress_message "  OMITTED: $currentline";
-		$currentline='';
-		next;
-	    }
-	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
 	    if ( $first_entry ) {
@@ -2117,6 +2105,20 @@ sub read_a_line(;$$$) {
 		#
 		reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
 		$first_entry = 0;
+	    }
+	    #
+	    # Handle conditionals
+	    #
+	    if ( $currentline =~ /^\s*\?/ ) {
+		$omitting = process_conditional( $omitting, $currentline, $currentlinenumber );
+		$currentline='';
+		next;
+	    }		
+		    
+	    if ( $omitting ) {
+		print "OMIT=> $currentline\n" if $debug;
+		$currentline='';
+		next;
 	    }
 	    #
 	    # Must check for shell/perl before doing variable expansion

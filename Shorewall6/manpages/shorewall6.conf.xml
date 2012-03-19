@@ -757,6 +757,29 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">IPSET_WARNINGS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.2. Default is Yes. When set, causes the
+          rules compiler to issue a warning when:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>The compiler is being run by root and an ipset specified
+              in the configuration does not exists. Only one warning is issued
+              for each missing ipset.</para>
+            </listitem>
+
+            <listitem>
+              <para>When [src] is specified in a destination column and when
+              [dst] is specified in a source column.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">KEEP_RT_TABLES=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
@@ -1809,15 +1832,14 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           to zero, thus allowing the packet to be routed using the 'main'
           routing table. Using the main table allowed dynamic routes (such as
           those added for VPNs) to be effective. The <ulink
-          url="shorewall6-rtrules.html">shorewall6-rtrules</ulink>(5)
-          file was created to provide a better alternative to clearing the
-          packet mark. As a consequence, passing these packets to PREROUTING
-          complicates things without providing any real benefit. Beginning
-          with Shorewall 4.4.6, when TRACK_PROVIDERS=Yes and TC_EXPERT=No,
-          packets arriving through 'tracked' interfaces will not be passed to
-          the PREROUTING rules. Since TRACK_PROVIDERS was just introduced in
-          4.4.3, this change should be transparent to most, if not all,
-          users.</para>
+          url="shorewall6-rtrules.html">shorewall6-rtrules</ulink>(5) file was
+          created to provide a better alternative to clearing the packet mark.
+          As a consequence, passing these packets to PREROUTING complicates
+          things without providing any real benefit. Beginning with Shorewall
+          4.4.6, when TRACK_PROVIDERS=Yes and TC_EXPERT=No, packets arriving
+          through 'tracked' interfaces will not be passed to the PREROUTING
+          rules. Since TRACK_PROVIDERS was just introduced in 4.4.3, this
+          change should be transparent to most, if not all, users.</para>
         </listitem>
       </varlistentry>
 
@@ -1977,10 +1999,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
     shorewall6-ipsec(5), shorewall6-maclist(5), shorewall6-masq(5),
     shorewall6-nat(5), shorewall6-netmap(5),
     shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-proxyarp(5),
-    shorewall6-rtrules(5), shorewall6-routestopped(5),
-    shorewall6-rules(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
-    shorewall6-tcrules(5), shorewall6-tos(5), shorewall6-tunnels(5),
-    shorewall6-zones(5)</para>
+    shorewall6-providers(5), shorewall6-proxyarp(5), shorewall6-rtrules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

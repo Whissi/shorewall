@@ -4479,9 +4479,24 @@ sub get_set_flags( $$ ) {
 	my @options = split /,/, $options;
 	my %typemap = ( src => 'Source', dst => 'Destination' );
 
+	if ( $config{IPSET_WARNINGS} ) {
+	    for ( @options ) {
+		warning_message( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
+	    }
+	}
     }
 
     $setname =~ s/^\+//;
+
+    if ( $config{IPSET_WARNINGS} ) {
+	unless ( $export || $> != 0 ) {
+	    unless ( $ipset_exists{$setname} ) {
+		warning_message "Ipset $setname does not exist" unless qt "ipset -L $setname";
+	    }
+
+	    $ipset_exists{$setname} = 1; # Suppress subsequent checks/warnings
+	}
+    }
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z]\w*/;
 

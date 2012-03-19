@@ -1535,6 +1535,7 @@ sub process_conditional( $$$ ) {
     my ($keyword, $rest) = ( $1, $2 );
 
     $rest = '' unless supplied $rest;
+    $rest =~ s/\s*$//;
 
     my ( $lastkeyword, $prioromit, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 

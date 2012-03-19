@@ -1523,48 +1523,6 @@ sub close_file() {
 }
 
 #
-# Process an ?IF, ?ELSE, or ?END 
-#
-sub process_conditional($$$) {
-    my ( $omitting, $keyword, $rest ) = @_;
-
-    $rest = '' unless supplied $rest;
-
-    if ( $keyword =~ /^IF/ ) {
-	fatal_error "Missing IF variable" unless $rest;
-	my $invert = $rest =~ s/^!\s*//;
-
-	fatal_error "Invalid IF variable ($rest)" unless $rest =~ s/^\$// && $rest =~ /^\w+$/;
-
-	push @ifstack, [ 'IF', $omitting, $currentlinenumber ];
-
-	if ( $rest eq '__IPV6' ) {
-	    $omitting = $family == F_IPV4;
-	} elsif ( $rest eq '__IPV4' ) {
-	    $omitting = $family == F_IPV6;
-	} else {
-	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
-			    exists $params{$rest} ? $params{$rest} : 
-			    exists $config{$rest} ? $config{$rest} : 0 );
-	}
-
-	$omitting = ! $omitting if $invert;
-    } elsif ( $keyword eq 'ELSE' ) {
-	fatal_error "Invalid ?ELSE" unless $rest eq '';
-	my ( $last, $omit, $lineno ) = @{pop @ifstack};
-	fatal_error q(Unexpected "?ELSE" without matching ?IF) unless defined $last && $last eq 'IF';
-	push @ifstack, [ 'ELSE', $omit, $lineno ];
-	$omitting = ! $omitting;
-    } else {
-	fatal_error "Invalid ?ENDIF" unless $rest eq '';
-	fatal_error q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
-	(undef, $omitting ) = @{pop @ifstack};
-    }
-
-    $omitting;
-}
-
-#
 # Functions for copying a file into the script
 #
 sub copy( $ ) {
@@ -1572,20 +1530,11 @@ sub copy( $ ) {
 
     if ( $script ) {
 	my $file = $_[0];
-	my $save_ifstack = $ifstack;
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
 	    chomp;
-
-	    if ( /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/ ) {
-		$omitting = process_conditional( $omitting, $1, $2 );
-		next;
-	    }
-
-	    next if $omitting;
-
 	    if ( /^\s*$/ ) {
 		print $script "\n" unless $lastlineblank;
 		$lastlineblank = 1;
@@ -2091,9 +2040,41 @@ sub read_a_line(;$$$) {
 	    # Line not blank -- Handle conditionals
 	    #
 	    if ( $currentline =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/ ) {
-		$omitting = process_conditional( $omitting, $1, $2 );
-		$currentline='';
-		next;
+		my $rest = $2;
+
+		$rest = '' unless supplied $rest;
+
+		if ( $1 =~ /^IF/ ) {
+		    fatal_error "Missing IF variable" unless $rest;
+		    my $invert = $rest =~ s/^!\s*//;
+
+		    fatal_error "Invalid IF variable ($rest)" unless $rest =~ s/^\$// && $rest =~ /^\w+$/;
+
+		    push @ifstack, [ 'IF', $omitting, $currentlinenumber ];
+
+		    if ( $rest eq '__IPV6' ) {
+			$omitting = $family == F_IPV4;
+		    } elsif ( $rest eq '__IPV4' ) {
+			$omitting = $family == F_IPV6;
+		    } else {
+			$omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
+					exists $params{$rest} ? $params{$rest} : 
+					exists $config{$rest} ? $config{$rest} : 0 );
+		    }
+
+		    $omitting = ! $omitting if $invert;
+		} elsif ( $1 eq 'ELSE' ) {
+		    fatal_error "Invalid ?ELSE" unless $rest eq '';
+		    my ( $last, $omit, $lineno ) = @{pop @ifstack};
+		    fatal_error q(Unexpected "?ELSE" without matching ?IF) unless defined $last && $last eq 'IF';
+		    push @ifstack, [ 'ELSE', $omitting = ! $omit, $lineno ];
+		} else {
+		    fatal_error "Invalid ?END" unless $rest eq '';
+		    fatal_error q(Unexpected "?END" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
+		    (my $last, $omitting ) = @{pop @ifstack};
+		}
+
+		$currentline='', next;
 	    }   
 
 	    if ( $omitting ) {

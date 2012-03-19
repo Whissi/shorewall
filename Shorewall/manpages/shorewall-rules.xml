@@ -226,7 +226,7 @@
               <listitem>
                 <para>like DROP but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). </para>
+                url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -782,7 +782,7 @@
             </orderedlist></para>
 
           <blockquote>
-            <para></para>
+            <para/>
 
             <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
             role="bold">+]|[-</emphasis>] is specified, the server may be
@@ -1230,8 +1230,18 @@
               <term>localtz</term>
 
               <listitem>
-                <para>Times are expressed in Local Civil Time
-                (default).</para>
+                <para>Deprecated by the Netfilter team in favor of <emphasis
+                role="bold">kerneltz</emphasis>. Times are expressed in Local
+                Civil Time (default).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>kerneltz</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.2. Times are expressed in Local
+                Kernel Time (requires iptables 1.4.12 or later).</para>
               </listitem>
             </varlistentry>
 
@@ -1548,9 +1558,9 @@
     shorewall_interfaces(5), shorewall-ipsets(5), shorewall-maclist(5),
     shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
     shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-rtrules(5),
-    shorewall-routestopped(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-proxyarp(5), shorewall-rtrules(5), shorewall-routestopped(5),
+    shorewall.conf(5), shorewall-secmarks(5), shorewall-tcclasses(5),
+    shorewall-tcdevices(5), shorewall-tcrules(5), shorewall-tos(5),
+    shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

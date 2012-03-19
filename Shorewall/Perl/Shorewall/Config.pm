@@ -3487,8 +3487,10 @@ sub get_params() {
 	}
 
 	for ( keys %params ) {
-	    fatal_error "The variable name $_ is reserved and may not be set in the params file"
-		if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
+	    unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' ) {
+		fatal_error "The variable name $_ is reserved and may not be set in the params file"
+		    if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
+	    }
 	}
 
 	if ( $debug ) {

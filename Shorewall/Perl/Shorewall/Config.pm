@@ -1470,6 +1470,7 @@ sub do_open_file( $ ) {
     my $fname = $_[0];
     open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
     $currentlinenumber = 0;
+    $ifstack           = @ifstack;
     $currentfilename   = $fname;
 }
 
@@ -1482,6 +1483,7 @@ sub open_file( $ ) {
 	$first_entry = 0;
 	do_open_file $fname;;
     } else {
+	$ifstack = @ifstack;
 	'';
     }
 }
@@ -1532,6 +1534,8 @@ sub process_conditional( $$ ) {
 
     $rest = '' unless supplied $rest;
 
+    my ( $lastkeyword, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0 );
+
     if ( $keyword =~ /^IF/ ) {
 	fatal_error "Missing IF variable" unless $rest;
 	my $invert = $rest =~ s/^!\s*//;
@@ -1551,16 +1555,17 @@ sub process_conditional( $$ ) {
 	}
 
 	$omitting = ! $omitting if $invert;
+
+	$omitting ||= $lastomit; #?IF cannot transition from omitting -> not omitting
     } elsif ( $keyword eq 'ELSE' ) {
 	fatal_error "Invalid ?ELSE" unless $rest eq '';
-	my ( $last, $omit, $lineno );
-	( $last, $omit, $lineno ) = @{pop @ifstack} if @ifstack > $ifstack;
-	fatal_error q(Unexpected "?ELSE" without matching ?IF) unless defined $last && $last eq 'IF';
-	push @ifstack, [ 'ELSE', $omitting = ! $omit, $lineno ];
+	fatal_error "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword eq 'IF';
+	$omitting = ! $omitting unless $lastomit;
     } else {
 	fatal_error "Invalid ?ENDIF" unless $rest eq '';
 	fatal_error q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
-	(my $last, $omitting ) = @{pop @ifstack};
+	$omitting = $lastomitting;
+	@{pop @ifstack};
     }
 
     $omitting;
@@ -1784,7 +1789,7 @@ EOF
 #
 sub push_open( $ ) {
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
@@ -1869,12 +1874,13 @@ sub embedded_shell( $ ) {
 
     $command .= q(');
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
     $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
     $currentline = '';
     $currentlinenumber = 0;
+    $ifstack = @ifstack;
 }
 
 sub embedded_perl( $ ) {
@@ -1925,7 +1931,7 @@ sub embedded_perl( $ ) {
 
 	$perlscript = undef;
 
-	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack = @ifstack ];
+	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack ];
 	$currentfile = undef;
 
 	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
@@ -1937,6 +1943,7 @@ sub embedded_perl( $ ) {
 	$currentfilename = "PERL\@$currentfilename:$linenumber";
 	$currentline = '';
 	$currentlinenumber = 0;
+	$ifstack = @ifstack;
     }
 }
 
@@ -2139,7 +2146,7 @@ sub read_a_line(;$$$) {
 		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
-		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
 		    $currentfile = undef;
 		    do_open_file $filename;
 		} else {

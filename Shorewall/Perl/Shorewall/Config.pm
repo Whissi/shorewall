@@ -1470,10 +1470,7 @@ sub do_open_file( $ ) {
     open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
     $currentlinenumber = 0;
     $ifstack           = @ifstack;
-    #
-    # Must be last
-    #
-    $currentfilename = $fname;
+    $currentfilename   = $fname;
 }
 
 sub open_file( $ ) {
@@ -1527,7 +1524,7 @@ sub close_file() {
 }
 
 #
-# Process an ?IF, ?ELSE, or ?ENDIF. Returns the new $omitting setting.
+# Process an ?IF, ?ELSE, or ?ENDIF 
 #
 sub process_conditional($$$) {
     my ( $omitting, $keyword, $rest ) = @_;
@@ -1538,23 +1535,18 @@ sub process_conditional($$$) {
 	fatal_error "Missing IF variable" unless $rest;
 	my $invert = $rest =~ s/^!\s*//;
 
-	fatal_error "Invalid IF variable ($rest)" unless ( $rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
+	fatal_error "Invalid IF variable ($rest)" unless $rest =~ s/^\$// && $rest =~ /^\w+$/;
 
 	push @ifstack, [ 'IF', $omitting, $currentlinenumber ];
 
-	if ( $rest eq '__IPV4' ) {
-	    $omitting = $family == F_IPV6;
-	} elsif ( $rest eq '__IPV6' ) {
+	if ( $rest eq '__IPV6' ) {
 	    $omitting = $family == F_IPV4;
+	} elsif ( $rest eq '__IPV4' ) {
+	    $omitting = $family == F_IPV6;
 	} else {
-	    my $cap;
-
-	    ($cap = $rest) =~ s/^__//;
-
-	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    :
-			    exists $params{$rest} ? $params{$rest} :
-			    exists $config{$rest} ? $config{$rest} :
-			    exists $capdesc{$cap} ? have_capability( $cap ) : 0 );
+	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
+			    exists $params{$rest} ? $params{$rest} : 
+			    exists $config{$rest} ? $config{$rest} : 0 );
 	}
 
 	$omitting = ! $omitting if $invert;

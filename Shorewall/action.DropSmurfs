@@ -50,32 +50,32 @@ if ( $level ne '-' || $audit ne '-' ) {
     $target = 'DROP';
 }
 		    
-?IF __ADDRTYPE
-?IF __IPV4
-    add_ijump $chainref , j => 'RETURN', s => '0.0.0.0';         ;
-?ELSE    
-    add_ijump $chainref , j => 'RETURN', s => '::';
-?END
+if ( have_capability( 'ADDRTYPE' ) ) {
+    if ( $family == F_IPV4 ) {
+	add_ijump $chainref , j => 'RETURN', s => '0.0.0.0';         ;
+    } else {
+	add_ijump $chainref , j => 'RETURN', s => '::';
+    }
 
     add_ijump( $chainref, g => $target, addrtype => '--src-type BROADCAST' ) ;
-?ELSE # Begin no Addrtype support
-?IF __IPV4
-    add_commands $chainref, 'for address in $ALL_BCASTS; do';
-?ELSE
-    add_commands $chainref, 'for address in $ALL_ACASTS; do';
-?END
+} else {
+    if ( $family == F_IPV4 ) {
+	add_commands $chainref, 'for address in $ALL_BCASTS; do';
+    } else {
+	add_commands $chainref, 'for address in $ALL_ACASTS; do';
+    }
     
     incr_cmd_level $chainref;
     add_ijump( $chainref, g => $target, s => '$address' );
     decr_cmd_level $chainref;
     add_commands $chainref, 'done';
-?END # No Addrtype support
+}
 
-?IF __IPV4
+if ( $family == F_IPV4 ) {
     add_ijump( $chainref, g => $target, s => '224.0.0.0/4' );
-?ELSE
+} else {
     add_ijump( $chainref, g => $target, s => IPv6_MULTICAST );
-?END
+}
 
 END PERL;
 

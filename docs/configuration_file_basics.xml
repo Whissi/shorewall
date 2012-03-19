@@ -1485,18 +1485,9 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     pre-defined ones, it is searched for in the compiler's environmental
     variables, in variables set in <filename>/etc/shorewall/params</filename>,
     and in options set in <filename>/etc/shorewall/shorewall.conf</filename>
-    in that order. If the <replaceable>variable</replaceable> is still not
-    found and it begins with '__', then those leading characters are stripped
-    off and the result is searched for in the defined
-    <firstterm>capabilities</firstterm>. The current set of capabilities may
-    be obtained by the command <command>shorewall show capabilities</command>
-    (the capability names are in parentheses).</para>
-
-    <para>If it is not found in any of those places, the
+    in that order. If it is not found in any of those places, the
     <replaceable>variable</replaceable> is assumed to have a value of 0
-    (false).</para>
-
-    <para>If "!" is present, the result value is inverted.</para>
+    (false). If "!" is present, the result of the test is inverted.</para>
 
     <para>The setting in <filename>/etc/shorewall/params</filename> by be
     overridden at runtime, provided the setting in

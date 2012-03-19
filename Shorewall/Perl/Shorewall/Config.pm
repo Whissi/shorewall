@@ -1565,7 +1565,7 @@ sub process_conditional( $$ ) {
 	fatal_error "Invalid ?ENDIF" unless $rest eq '';
 	fatal_error q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
 	$omitting = $lastomit;
-	@{pop @ifstack};
+	pop @ifstack;
     }
 
     $omitting;

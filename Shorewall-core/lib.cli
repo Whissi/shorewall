@@ -2209,81 +2209,81 @@ report_capabilities() {
 
     if [ $VERBOSITY -gt 1 ]; then
 	echo "$g_product has detected the following iptables/netfilter capabilities:"
-	report_capability "NAT" $NAT_ENABLED
-	report_capability "Packet Mangling" $MANGLE_ENABLED
-	report_capability "Multi-port Match" $MULTIPORT
-	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
-	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+	report_capability "NAT (NAT_ENABLED)" $NAT_ENABLED
+	report_capability "Packet Mangling (MANGLE_ENABLED)" $MANGLE_ENABLED
+	report_capability "Multi-port Match (MULTIPORT)" $MULTIPORT
+	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match (XMULIPORT)" $XMULTIPORT
+	report_capability "Connection Tracking Match (CONNTRACK_MATCH)" $CONNTRACK_MATCH
 	if [ -n "$CONNTRACK_MATCH" ]; then
-	    report_capability "Extended Connection Tracking Match Support" $NEW_CONNTRACK_MATCH
-	    [ -n "$OLD_CONNTRACK_MATCH" ] && report_capability "Old Connection Tracking Match Syntax" $OLD_CONNTRACK_MATCH
+	    report_capability "Extended Connection Tracking Match Support (NEW_CONNTRACK_MATCH)" $NEW_CONNTRACK_MATCH
+	    [ -n "$OLD_CONNTRACK_MATCH" ] && report_capability "Old Connection Tracking Match Syntax (OLD_CONNTRACK_MATCH)" $OLD_CONNTRACK_MATCH
 	fi
-	report_capability "Packet Type Match" $USEPKTTYPE
-	report_capability "Policy Match" $POLICY_MATCH
-	report_capability "Physdev Match" $PHYSDEV_MATCH
-	report_capability "Physdev-is-bridged Support" $PHYSDEV_BRIDGE
-	report_capability "Packet length Match" $LENGTH_MATCH
-	report_capability "IP range Match" $IPRANGE_MATCH
-	report_capability "Recent Match" $RECENT_MATCH
-	report_capability "Owner Match" $OWNER_MATCH
+	report_capability "Packet Type Match (USEPKTTYPE)" $USEPKTTYPE
+	report_capability "Policy Match (POLICY_MATCH)" $POLICY_MATCH
+	report_capability "Physdev Match (PHYSDEV_MATCH)" $PHYSDEV_MATCH
+	report_capability "Physdev-is-bridged Support (PHYSDEV_BRIDGE)" $PHYSDEV_BRIDGE
+	report_capability "Packet length Match (LENGTH_MATCH)" $LENGTH_MATCH
+	report_capability "IP range Match(IPRANGE_MATCH)" $IPRANGE_MATCH
+	report_capability "Recent Match (RECENT_MATCH)" $RECENT_MATCH
+	report_capability "Owner Match (OWNER_MATCH)" $OWNER_MATCH
 	if [ -n "$IPSET_MATCH" ]; then
-	    report_capability "Ipset Match" $IPSET_MATCH
-	    [ -n "$OLD_IPSET_MATCH" ] && report_capability "OLD_Ipset Match" $OLD_IPSET_MATCH
+	    report_capability "Ipset Match (IPSET_MATCH)" $IPSET_MATCH
+	    [ -n "$OLD_IPSET_MATCH" ] && report_capability "OLD_Ipset Match (OLD_IPSET_MATCH)" $OLD_IPSET_MATCH
 	fi
-	report_capability "CONNMARK Target" $CONNMARK
-	[ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target" $XCONNMARK
-	report_capability "Connmark Match" $CONNMARK_MATCH
-	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
-	report_capability "Raw Table" $RAW_TABLE
-	report_capability "Rawpost Table" $RAWPOST_TABLE
-	report_capability "IPP2P Match" $IPP2P_MATCH
-	[ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax" $OLD_IPP2P_MATCH
-	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
-	report_capability "Extended REJECT" $ENHANCED_REJECT
-	report_capability "Repeat match" $KLUDGEFREE
-	report_capability "MARK Target" $MARK
-	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
-	[ -n "$XMARK" ] && report_capability "Extended MARK Target 2" $EXMARK
-	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
-	report_capability "Comments" $COMMENTS
-	report_capability "Address Type Match" $ADDRTYPE
-	report_capability "TCPMSS Match" $TCPMSS_MATCH
-	report_capability "Hashlimit Match" $HASHLIMIT_MATCH
-	[ -n "$OLD_HL_MATCH" ] && report_capability "Old Hashlimit Match" $OLD_HL_MATCH
-	report_capability "NFQUEUE Target" $NFQUEUE_TARGET
-	report_capability "Realm Match" $REALM_MATCH
-	report_capability "Helper Match" $HELPER_MATCH
-	report_capability "Connlimit Match" $CONNLIMIT_MATCH
-	report_capability "Time Match" $TIME_MATCH
-	report_capability "Goto Support" $GOTO_TARGET
-	report_capability "LOGMARK Target" $LOGMARK_TARGET
-	report_capability "IPMARK Target" $IPMARK_TARGET
-	report_capability "LOG Target" $LOG_TARGET
-	report_capability "ULOG Target" $ULOG_TARGET
-	report_capability "NFLOG Target" $NFLOG_TARGET
-	report_capability "Persistent SNAT" $PERSISTENT_SNAT
-	report_capability "TPROXY Target" $TPROXY_TARGET
-	report_capability "FLOW Classifier" $FLOW_FILTER
-	report_capability "fwmark route mask" $FWMARK_RT_MASK
-	report_capability "Mark in any table" $MARK_ANYWHERE
-	report_capability "Header Match" $HEADER_MATCH
-        report_capability "ACCOUNT Target" $ACCOUNT_TARGET
-	report_capability "AUDIT Target" $AUDIT_TARGET
-	report_capability "ipset V5" $IPSET_V5
-	report_capability "Condition Match" $CONDITION_MATCH
-	report_capability "Statistic Match" $STATISTIC_MATCH
-	report_capability "IMQ Target" $IMQ_TARGET
-	report_capability "DSCP Match" $DSCP_MATCH
-	report_capability "DSCP Target" $DSCP_TARGET
+	report_capability "CONNMARK Target (CONNMARK)" $CONNMARK
+	[ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target (XCONNMARK)" $XCONNMARK
+	report_capability "Connmark Match (CONNMARK_MATCH)" $CONNMARK_MATCH
+	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match (XCONNMARK_MATCH)" $XCONNMARK_MATCH
+	report_capability "Raw Table (RAW_TABLE)" $RAW_TABLE
+	report_capability "Rawpost Table (RAWPOST_TABLE)" $RAWPOST_TABLE
+	report_capability "IPP2P Match (IPP2P_MATCH)" $IPP2P_MATCH
+	[ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax (OLD_IPP2P_MATCH)" $OLD_IPP2P_MATCH
+	report_capability "CLASSIFY Target (CLASSIFY_TARGET)" $CLASSIFY_TARGET
+	report_capability "Extended REJECT (ENHANCED_REJECT)" $ENHANCED_REJECT
+	report_capability "Repeat match (KLUDGEFREE)" $KLUDGEFREE
+	report_capability "MARK Target (MARK)" $MARK
+	[ -n "$MARK" ] && report_capability "Extended MARK Target (XMARK)" $XMARK
+	[ -n "$XMARK" ] && report_capability "Extended MARK Target 2 (EXMARK)" $EXMARK
+	report_capability "Mangle FORWARD Chain (MANGLE_FORWARD)" $MANGLE_FORWARD
+	report_capability "Comments (COMMENTS)" $COMMENTS
+	report_capability "Address Type Match (ADDRTYPE)" $ADDRTYPE
+	report_capability "TCPMSS Match (TCPMSS_MATCH)" $TCPMSS_MATCH
+	report_capability "Hashlimit Match (HASHLIMIT_MATCH)" $HASHLIMIT_MATCH
+	[ -n "$OLD_HL_MATCH" ] && report_capability "Old Hashlimit Match (OLD_HL_MATCH)" $OLD_HL_MATCH
+	report_capability "NFQUEUE Target (NFQUEUE_TARGET)" $NFQUEUE_TARGET
+	report_capability "Realm Match (REALM_MATCH)" $REALM_MATCH
+	report_capability "Helper Match (HELPER_MATCH)" $HELPER_MATCH
+	report_capability "Connlimit Match (CONNLIMIT_MATCH)" $CONNLIMIT_MATCH
+	report_capability "Time Match (TIME_MATCH)" $TIME_MATCH
+	report_capability "Goto Support (GOTO_TARGET)" $GOTO_TARGET
+	report_capability "LOGMARK Target (LOGMARK_TARGET)" $LOGMARK_TARGET
+	report_capability "IPMARK Target (IPMARK_TARGET)" $IPMARK_TARGET
+	report_capability "LOG Target (LOG_TARGET)" $LOG_TARGET
+	report_capability "ULOG Target (ULOG_TARGET)" $ULOG_TARGET
+	report_capability "NFLOG Target (NFLOG_TARGET)" $NFLOG_TARGET
+	report_capability "Persistent SNAT (PERSISTENT_SNAT)" $PERSISTENT_SNAT
+	report_capability "TPROXY Target (TPROXY_TARGET)" $TPROXY_TARGET
+	report_capability "FLOW Classifier (FLOW_FILTER)" $FLOW_FILTER
+	report_capability "fwmark route mask (FWMARK_RT_MASK)" $FWMARK_RT_MASK
+	report_capability "Mark in any table (MARK_ANYWHERE)" $MARK_ANYWHERE
+	report_capability "Header Match (HEADER_MATCH)" $HEADER_MATCH
+        report_capability "ACCOUNT Target (ACCOUNT_TARGET)" $ACCOUNT_TARGET
+	report_capability "AUDIT Target (AUDIT_TARGET)" $AUDIT_TARGET
+	report_capability "ipset V5 (IPSET_V5)" $IPSET_V5
+	report_capability "Condition Match (CONDITION_MATCH)" $CONDITION_MATCH
+	report_capability "Statistic Match (STATISTIC_MATCH)" $STATISTIC_MATCH
+	report_capability "IMQ Target (IMQ_TARGET)" $IMQ_TARGET
+	report_capability "DSCP Match (DSCP_MATCH)" $DSCP_MATCH
+	report_capability "DSCP Target (DSCP_TARGET)" $DSCP_TARGET
 	
 	if [ $g_family -eq 4 ]; then
-	    report_capability "iptables -S" $IPTABLES_S
+	    report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
 	else
-	    report_capability "ip6tables -S" $IPTABLES_S
+	    report_capability "ip6tables -S (IPTABLES_S)" $IPTABLES_S
 	fi
 
-	report_capability "Basic Filter" $BASIC_FILTER
-	report_capability "CT Target" $CT_TARGET
+	report_capability "Basic Filter (BASIC_FILTER)" $BASIC_FILTER
+	report_capability "CT Target (CT_TARGET)" $CT_TARGET
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=

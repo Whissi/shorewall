@@ -1539,8 +1539,8 @@ sub process_conditional( $$ ) {
     if ( $keyword =~ /^IF/ ) {
 	fatal_error "Missing IF variable" unless $rest;
 	my $invert = $rest =~ s/^!\s*//;
-	
-	fatal_error "Invalid IF variable ($rest)" unless $rest =~ s/^\$// && $rest =~ /^\w+$/;
+
+	fatal_error "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
 
 	push @ifstack, [ 'IF', $lastomit, $omitting, $currentlinenumber ];
 
@@ -1549,9 +1549,14 @@ sub process_conditional( $$ ) {
 	} elsif ( $rest eq '__IPV4' ) {
 	    $omitting = $family == F_IPV6;
 	} else {
+	    my $cap = $rest;
+
+	    $cap =~ s/^__//;
+
 	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
 			    exists $params{$rest} ? $params{$rest} : 
-			    exists $config{$rest} ? $config{$rest} : 0 );
+			    exists $config{$rest} ? $config{$rest} :
+			    exists $capdesc{$cap} ? have_capability $cap : 0 );
 	}
 
 	$omitting = ! $omitting if $invert;

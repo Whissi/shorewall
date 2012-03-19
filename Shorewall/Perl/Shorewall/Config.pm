@@ -1469,7 +1469,6 @@ sub do_open_file( $ ) {
     my $fname = $_[0];
     open $currentfile, '<', $fname or fatal_error "Unable to open $fname: $!";
     $currentlinenumber = 0;
-    $ifstack           = @ifstack;
     $currentfilename   = $fname;
 }
 
@@ -1565,20 +1564,6 @@ sub process_conditional($$$) {
     $omitting;
 }
 
-sub end_conditional( $$ ) {
-    my ( $save_ifstack, $file ) = @_;
-
-    unless( $ifstack == @ifstack ) {
-	my $lastref = $ifstack[-1];
-	$currentlinenumber = 'EOF';
-	$currentfilename   = $file;
-	fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
-    }
-
-    $ifstack = $save_ifstack;
-
-}
-
 #
 # Functions for copying a file into the script
 #
@@ -1618,7 +1603,14 @@ sub copy( $ ) {
 	    }
 	}
 
-	end_conditional( $save_ifstack , $file );
+	unless( $ifstack == @ifstack ) {
+	    my $lastref = $ifstack[-1];
+	    $currentlinenumber = 'EOF';
+	    $currentfilename   = $file;
+	    fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
+	}
+
+	$ifstack = $save_ifstack;
 
 	close IF;
     }
@@ -1635,6 +1627,8 @@ sub copy1( $ ) {
     if ( $script || $debug ) {
 	my ( $do_indent, $here_documents ) = ( 1, '');
 	my $save_ifstack = $ifstack;
+
+	$ifstack = @ifstack;
 
 	open_file( $_[0] );
 	
@@ -1733,7 +1727,14 @@ sub copy1( $ ) {
 		}
 	    }
 
-	    end_conditional( $save_ifstack, $currentfilename );
+	    unless( $ifstack == @ifstack ) {
+		my $lastref = $ifstack[-1];
+		$currentlinenumber = 'EOF';
+		$currentfilename   = $_[0];
+		fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
+	    }
+
+	    $ifstack = $save_ifstack;
 	    
 	    close_file;
 	}
@@ -1812,7 +1813,14 @@ EOF
 		}
 	    }
 
-	    end_conditional( $save_ifstack, $file );
+	    unless( $ifstack == @ifstack ) {
+		my $lastref = $ifstack[-1];
+		$currentlinenumber = 'EOF';
+		$currentfilename   = $file;
+		fatal_error qq(Missing "?ENDIF" to match ?IF at line number $lastref->[2])
+	    }
+
+	    $ifstack = $save_ifstack;
 
 	    close IF;
 
@@ -1835,6 +1843,7 @@ EOF
 sub push_open( $ ) {
 
     push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
+    $ifstack = @ifstack;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
@@ -1919,13 +1928,12 @@ sub embedded_shell( $ ) {
 
     $command .= q(');
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
     $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
     $currentline = '';
     $currentlinenumber = 0;
-    $ifstack = @ifstack;
 }
 
 sub embedded_perl( $ ) {
@@ -1976,7 +1984,7 @@ sub embedded_perl( $ ) {
 
 	$perlscript = undef;
 
-	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack ];
+	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack = @ifstack ];
 	$currentfile = undef;
 
 	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
@@ -1988,7 +1996,6 @@ sub embedded_perl( $ ) {
 	$currentfilename = "PERL\@$currentfilename:$linenumber";
 	$currentline = '';
 	$currentlinenumber = 0;
-	$ifstack = @ifstack;
     }
 }
 
@@ -2191,7 +2198,7 @@ sub read_a_line(;$$$) {
 		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
-		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack = @ifstack ];
 		    $currentfile = undef;
 		    do_open_file $filename;
 		} else {

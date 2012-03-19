@@ -1534,7 +1534,7 @@ sub process_conditional( $$ ) {
 
     $rest = '' unless supplied $rest;
 
-    my ( $lastkeyword, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0 );
+    my ( $lastkeyword, $prioromit, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
     if ( $keyword =~ /^IF/ ) {
 	fatal_error "Missing IF variable" unless $rest;
@@ -1542,7 +1542,7 @@ sub process_conditional( $$ ) {
 	
 	fatal_error "Invalid IF variable ($rest)" unless $rest =~ s/^\$// && $rest =~ /^\w+$/;
 
-	push @ifstack, [ 'IF', $omitting, $currentlinenumber ];
+	push @ifstack, [ 'IF', $lastomit, $omitting, $currentlinenumber ];
 
 	if ( $rest eq '__IPV6' ) {
 	    $omitting = $family == F_IPV4;
@@ -1561,10 +1561,11 @@ sub process_conditional( $$ ) {
 	fatal_error "Invalid ?ELSE" unless $rest eq '';
 	fatal_error "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword eq 'IF';
 	$omitting = ! $omitting unless $lastomit;
+	$ifstack[-1] = [ 'ELSE', $prioromit, $omitting, $lastlinenumber ];
     } else {
 	fatal_error "Invalid ?ENDIF" unless $rest eq '';
 	fatal_error q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
-	$omitting = $lastomit;
+	$omitting = $prioromit;
 	pop @ifstack;
     }
 

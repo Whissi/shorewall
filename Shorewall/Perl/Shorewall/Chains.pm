@@ -4134,7 +4134,7 @@ sub decode_tos( $$ ) {
 	$mask  = numeric_value $2;
     } elsif ( ! defined ( $value = numeric_value( $tos ) ) ) {
 	$value = $tosmap{$tos};
-	$mask  = 0x3f;
+	$mask  = '';
     }
 
     fatal_error( [ 'Invalid TOS column value',
@@ -4142,12 +4142,15 @@ sub decode_tos( $$ ) {
 		   'Invalid TOS() parameter', ]->[$set] . " ($tos)" )
 	unless ( defined $value &&
 		 $value <= 0xff &&
-		 defined $mask  &&
-		 $mask <= 0xff );
+		 ( $mask eq '' ||
+		   ( defined $mask &&
+		     $mask <= 0xff ) ) );
 
-    warning_message "Unmatchable TOS ($tos)" unless $set || $value & $mask;
+    unless ( $mask eq '' ) {
+	warning_message "Unmatchable TOS ($tos)" unless $set || $value & $mask;
+    }
 
-    $tos = in_hex( $value) . '/' . in_hex( $mask ) . ' ';
+    $tos = $mask ? in_hex( $value) . '/' . in_hex( $mask ) . ' ' : in_hex( $value ) . ' ';
 
     $set ? " --set-tos $tos" : "-m tos --tos $tos ";
 

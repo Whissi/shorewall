@@ -1586,12 +1586,27 @@ sub copy( $ ) {
     assert( $script_enabled );
 
     if ( $script ) {
-	my $file = $_[0];
+	my $file         = $_[0];
+	my $omitting     = 0;
+	my $save_ifstack = $ifstack;
+	my $lineno       = 0;
+
+	$ifstack = @ifstack;
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
 	    chomp;
+
+	    $lineno++;
+
+	    if ( /^\s*\?/ ) {
+		$omitting = process_conditional( $omitting, $_, $lineno );
+		next;
+	    }
+
+	    next if $omitting;
+
 	    if ( /^\s*$/ ) {
 		print $script "\n" unless $lastlineblank;
 		$lastlineblank = 1;
@@ -1605,6 +1620,14 @@ sub copy( $ ) {
 		print $script "\n";
 		$lastlineblank = 0;
 	    }
+	}
+
+	if ( $ifstack < @ifstack ) {
+	    $currentlinenumber = 'EOF';
+	    $currentfilename   = $file;
+	    fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
+	} else {
+	    $ifstack = $save_ifstack;
 	}
 
 	close IF;
@@ -1621,6 +1644,7 @@ sub copy1( $ ) {
 
     if ( $script || $debug ) {
 	my ( $do_indent, $here_documents ) = ( 1, '');
+	my $save_ifstack = $ifstack;
 
 	open_file( $_[0] );
 	
@@ -1629,6 +1653,11 @@ sub copy1( $ ) {
 		$currentlinenumber++;
 
 		chomp;
+
+		if ( /^\s*\?/ ) {
+		    $omitting = process_conditional( $omitting, $_, $currentlinenumber );
+		    next;
+		}
 
 		if ( /^${here_documents}\s*$/ ) {
 		    if ( $script ) {
@@ -1712,6 +1741,13 @@ sub copy1( $ ) {
 		}
 	    }
 
+	    if ( $ifstack < @ifstack ) {
+		$currentlinenumber = 'EOF';
+		fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
+	    } else {
+		$ifstack = $save_ifstack;
+	    }
+
 	    close_file;
 	}
     }
@@ -1732,10 +1768,14 @@ sub copy2( $$ ) {
 
     if ( $script || $trace ) {
 	my $file = $_[0];
+	my $omitting     = 0;
+	my $save_ifstack = $ifstack;
+	my $lineno       = 0;
 
 	open IF , $file or fatal_error "Unable to open $file: $!";
 
 	while ( <IF> ) {
+	    $lineno++;
 	    $empty = 0, last unless /^#/;
 	}
 
@@ -1749,7 +1789,16 @@ EOF
 	    emit( $_ ) unless /^\s*$/;
 
 	    while ( <IF> ) {
+		$lineno++;
 		chomp;
+
+		if ( /^\s*\?/ ) {
+		    $omitting = process_conditional( $omitting, $_, $lineno );
+		    next;
+		}
+
+		next if $omitting;
+
 		if ( /^\s*$/ ) {
 		    unless ( $lastlineblank ) {
 			print $script "\n" if $script;
@@ -1777,8 +1826,6 @@ EOF
 		}
 	    }
 
-	    close IF;
-
 	    unless ( $lastlineblank ) {
 		print $script "\n" if $script;
 		print "GS----->\n" if $trace;
@@ -1788,6 +1835,17 @@ EOF
 		  "#   End of imports from $file",
 		  '################################################################################' );
 	}
+
+	if ( $ifstack < @ifstack ) {
+	    $currentfilename   = $file;
+	    $currentlinenumber = 'EOF';
+	    fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
+	} else {
+	    $ifstack = $save_ifstack;
+	}
+
+	close IF;
+
     }
 }
 
@@ -2166,6 +2224,11 @@ sub read_a_line(;$$$) {
 		print "IN===> $currentline\n" if $debug;
 		return 1;
 	    }
+	}
+
+	if ( @ifstack ) {
+	    $currentlinenumber = 'EOF';
+	    fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
 	}
 
 	close_file;

@@ -2522,7 +2522,7 @@ sub load_kernel_modules( ) {
 
 	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
 
-	while ( read_a_line1 ) {
+	while ( read_a_line ) {
 	    fatal_error "Invalid modules file entry" unless ( $currentline =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {

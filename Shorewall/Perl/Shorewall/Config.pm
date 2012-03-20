@@ -4226,8 +4226,9 @@ sub append_file( $;$$ ) {
 		#
 		# Include progress message -- Pretend progress_message call was in the file
 		#
+		my $name = $globals{EXPORT} ? "$file user exit" : $user_exit;
 		$result = 1;
-		save_progress_message "Processing $user_exit ...";
+		save_progress_message "Processing $name ...";
 		copy1 $user_exit;
 	    }
 	}

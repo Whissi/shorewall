@@ -724,17 +724,19 @@ sub set_rule_option( $$$ ) {
 	assert( defined( my $value1 = $ruleref->{$option} ) );
 
 	if ( $opttype == MATCH ) {
-	    assert( $globals{KLUDGEFREE} );
+	    if ( $globals{KLUDGEFREE} ) {
+		unless ( reftype $value1 ) {
+		    unless ( reftype $value ) {
+			return if $value1 eq $value;
+		    }
 
-	    unless ( reftype $value1 ) {
-		unless ( reftype $value ) {
-		    return if $value1 eq $value;
+		    $ruleref->{$option} = [ $ruleref->{$option} ];
 		}
 
-		$ruleref->{$option} = [ $ruleref->{$option} ];
+		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
+	    } else {
+		$ruleref->{$option} = join(' ', $value1, $value );
 	    }
-
-	    push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 	} elsif ( $opttype == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";
 	} elsif ( $opttype == UNIQUE ) {

@@ -4211,10 +4211,26 @@ sub do_length( $ ) {
 
     require_capability( 'LENGTH_MATCH' , 'A Non-empty LENGTH' , 's' );
 
-    fatal_error "Invalid LENGTH ($length)" unless $length =~/^(\d+)(:(\d+))?$/;
+    my ( $max, $min );
 
-    if ( supplied $2 ) {
-	fatal_error "First length must be < second length" unless $1 < $3;
+    if ( $length =~ /^\d+$/ ) {
+	fatal_error "Invalid LENGTH ($length)" unless $length < 65536;
+	$min = $max = $1;
+    } else {
+	if ( $length =~ /^:(\d+)$/ ) {
+	    $min = 0;
+	    $max = $1;
+	} elsif ( $length =~ /^(\d+):$/ ) {
+	    $min = $1;
+	    $max = 65535;
+	} elsif ( $length =~ /^(\d+):(\d+)$/ ) {
+	    $min = $1;
+	    $max = $2;
+	} else {
+	    fatal_error "Invalid LENGTH ($length)";
+	}
+
+	fatal_error "First length must be < second length" unless $min < $max;
     }
 
     "-m length --length $length ";

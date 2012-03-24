@@ -11,7 +11,6 @@
 ### END INIT INFO
 
 
-
 SRWL=/sbin/shorewall
 SRWL_OPTS="-tvv"
 WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
@@ -54,10 +53,18 @@ not_configured () {
 	exit 0
 }
 
+#determine where the files were installed
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+    SRWL=${SBIN}/shorewall
+else
+    SYSCONFDIR=/etc/default
+fi
+
 # check if shorewall is configured or not
-if [ -f "/etc/default/shorewall" ]
+if [ -f "${SYSCONFDIR}/shorewall" ]
 then
-	. /etc/default/shorewall
+	. ${SYSCONFDIR}/shorewall
 	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then

@@ -141,6 +141,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %config
 				       %globals
 				       %config_files
+				       %shorewallrc
 
 				       @auditoptions
 
@@ -431,7 +432,12 @@ my %converted = ( WIDE_TC_MARKS => 1,
 my $omitting;
 my @ifstack;
 my $ifstack;
+#
+# From .shorewallrc
+#
+our %shorewallrc;
 
+sub process_shorewallrc();
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -472,9 +478,9 @@ sub initialize( $ ) {
     #
     # Misc Globals
     #
-    %globals  =   ( SHAREDIRPL => '/usr/share/shorewall/' ,
-		    CONFDIR    => '/etc/shorewall',     # Run-time configuration directory
-		    CONFIGDIR  => '',                  # Compile-time configuration directory (location of $product.conf)
+    %globals  =   ( SHAREDIRPL => '' ,
+		    CONFDIR    => '',         # Run-time configuration directory
+		    CONFIGDIR  => '',         # Compile-time configuration directory (location of $product.conf)
 		    LOGPARMS   => '',
 		    TC_SCRIPT  => '',
 		    EXPORT     => 0,
@@ -745,15 +751,24 @@ sub initialize( $ ) {
 
     @actparms = ();
 
+    %shorewallrc = (
+		    SHAREDIR => '/usr/share/',
+		    CONFDIR  => '/etc/',
+		    );
+
+    process_shorewallrc;
+
+    $globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
+
     if ( $family == F_IPV4 ) {
-	$globals{SHAREDIR}      = '/usr/share/shorewall';
-	$globals{CONFDIR}       = '/etc/shorewall';
+	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall";
+	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
 	$globals{PRODUCT}       = 'shorewall';
 	$config{IPTABLES}       = undef;
 	$validlevels{ULOG}      = 'ULOG';
     } else {
-	$globals{SHAREDIR}      = '/usr/share/shorewall6';
-	$globals{CONFDIR}       = '/etc/shorewall6';
+	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
+	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
 	$globals{PRODUCT}       = 'shorewall6';
 	$config{IP6TABLES}      = undef;
     }
@@ -2256,6 +2271,21 @@ sub read_a_line1() {
     }
 }
 
+sub process_shorewallrc() {
+    my $home = $ENV{HOME} || `echo ~`;
+
+    if ( $home && open_file "$home/.shorewallrc" ) {
+	while ( read_a_line1 ) {
+	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
+		my ($var, $val) = ($1, $2);
+		$shorewallrc{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
+	    } else {
+		fatal_error "Unrecognized shorewallrc entry";
+	    }
+	}
+    }
+}
+
 #
 # Provide the passed default value for the passed configuration variable
 #
@@ -3183,7 +3213,7 @@ sub ensure_config_path() {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = "/usr/share/$product/configfiles/" if $> != 0;
+    $globals{CONFDIR} = "$shorewallrc{SHAREDIR}/$product/configfiles/" if $> != 0;
 
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;

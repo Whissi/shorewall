@@ -32,41 +32,57 @@ SHOREWALL_CAPVERSION=40501
 
 [ -n "${g_program:=shorewall}" ]
 
+if [ -z "$g_readrc" ]; then
+    if [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+    else
+	SHAREDIR=/usr/share
+	CONFDIR=/etc
+	SBINDIR=/sbin
+	LIBEXECDIR=/usr/share
+    fi
+
+    g_libexec="$LIBEXECDIR"
+    g_sharedir="$SHAREDIR"
+    g_sbindir="$SBINDIR"
+    g_readrc=1
+fi
+
 case $g_program in
     shorewall)
-	SHAREDIR=/usr/share/shorewall
-	CONFDIR=/etc/shorewall
+	SHAREDIR=${SHAREDIR}/shorewall
+	CONFDIR=${CONFDIR}/shorewall
 	g_product="Shorewall"
 	g_family=4
 	g_tool=
-	g_basedir=/usr/share/shorewall
+	g_basedir=${SHAREDIR}/shorewall
 	g_lite=
 	;;
     shorewall6)
-	SHAREDIR=/usr/share/shorewall6
-	CONFDIR=/etc/shorewall6
+	SHAREDIR=${SHAREDIR}/shorewall6
+	CONFDIR=${CONFDIR}/shorewall6
 	g_product="Shorewall6"
 	g_family=6
 	g_tool=
-	g_basedir=/usr/share/shorewall
+	g_basedir=${SHAREDIR}/shorewall
 	g_lite=
 	;;
     shorewall-lite)
-	SHAREDIR=/usr/share/shorewall-lite
-	CONFDIR=/etc/shorewall-lite
+	SHAREDIR=${SHAREDIR}/shorewall-lite
+	CONFDIR=${CONFDIR}/shorewall-lite
 	g_product="Shorewall Lite"
 	g_family=4
 	g_tool=iptables
-	g_basedir=/usr/share/shorewall-lite
+	g_basedir=${SHAREDIR}/shorewall-lite
 	g_lite=Yes
 	;;
     shorewall6-lite)
-	SHAREDIR=/usr/share/shorewall6-lite
-	CONFDIR=/etc/shorewall6-lite
+	SHAREDIR=${SHAREDIR}/shorewall6-lite
+	CONFDIR=${CONFDIR}/shorewall6-lite
 	g_product="Shorewall6 Lite"
 	g_family=6
 	g_tool=ip6tables
-	g_basedir=/usr/share/shorewall6-lite
+	g_basedir=${SHAREDIR}/shorewall6-lite
 	g_lite=Yes
 	;;
 esac
@@ -186,7 +202,7 @@ mutex_off()
     rm -f ${LOCKFILE:=${VARDIR}/lock}
 }
 
-[ -z "$LEFTSHIFT" ] && . /usr/share/shorewall/lib.common
+[ -z "$LEFTSHIFT" ] && . ${g_sharedir}/shorewall/lib.common
 
 #
 # Validate an IP address

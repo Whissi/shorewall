@@ -40,16 +40,25 @@ qt()
     "$@" >/dev/null 2>&1
 }
 
-restore_file() # $1 = file to restore
-{
-    if [ -f ${1}-shorewall.bkout ]; then
-	if (mv -f ${1}-shorewall.bkout $1); then
-	    echo
-	    echo "$1 restored"
-        else
-	    exit 1
-        fi
-    fi
+split() {
+    local ifs
+    ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
+
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    return 0
+	fi
+    done
+
+    return 2
 }
 
 remove_file() # $1 = file to restore
@@ -60,7 +69,30 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall6/version ]; then
+if [ -f ~/.shorewallrc ]; then
+    . ~/shorewallrc || exit 1
+else
+    [ -n "${LIBEXEC:=/usr/share}" ]
+    [ -n "${PERLLIB:=/usr/share/shorewall}" ]
+    [ -n "${CONFDIR:=/etc}" ]
+    
+    if [ -z "$SYSCONFDIR" ]; then
+	if [ -d /etc/default ]; then
+	    SYSCONFDIR=/etc/default
+	else
+	    SYSCONFDIR=/etc/sysconfig
+	fi
+    fi
+
+    [ -n "${SBINDIR:=/sbin}" ]
+    [ -n "${SHAREDIR:=/usr/share}" ]
+    [ -n "${VARDIR:=/var/lib}" ]
+    [ -n "${INITFILE:=shorewall}" ]
+    [ -n "${INITDIR:=/etc/init.d}" ]
+    [ -n "${MANDIR:=/usr/share/man}" ]
+fi
+
+if [ -f ${SHARDIR}/shorewall6/version ]; then
     INSTALLED_VERSION="$(cat /usr/share/shorewall6/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall6 Version $INSTALLED_VERSION is installed"
@@ -72,49 +104,39 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=/usr/share}" ]
-
 echo "Uninstalling shorewall6 $VERSION"
 
-if qt ip6tables -L shorewall6 -n && [ ! -f /sbin/shorewall6-lite ]; then
-   /sbin/shorewall6 clear
+if qt ip6tables -L shorewall6 -n && [ ! -f ${SBINDIR}/shorewall6-lite ]; then
+   ${SBINDIR}/shorewall6 clear
 fi
 
-if [ -L /usr/share/shorewall6/init ]; then
-    FIREWALL=$(readlink -m -q /usr/share/shorewall6/init)
-else
-    FIREWALL=/etc/init.d/shorewall6
+if [ -L ${SHAREDIR}/shorewall6/init ]; then
+    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6/init)
+elif [ -n "$INITFILE" ]; then
+    FIREWALL=${INITDIR}/${INITFILE}
 fi
 
-if [ -n "$FIREWALL" ]; then
-    if [ -x /usr/sbin/updaterc.d ]; then
+if [ -f "$FIREWALL" ]; then
+    if mywhich updaterc.d ; then
 	updaterc.d shorewall6 remove
-    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+    elif mywhich insserv ; then
         insserv -r $FIREWALL
-    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
+    elif mywhich chkconfig ; then
 	chkconfig --del $(basename $FIREWALL)
-    elif [ -x /sbin/systemctl ]; then
+    elif mywhich systemctl ; then
 	systemctl disable shorewall6
-    else
-	rm -f /etc/rc*.d/*$(basename $FIREWALL)
     fi
 
     remove_file $FIREWALL
-    rm -f ${FIREWALL}-*.bkout
 fi
 
-rm -f /sbin/shorewall6
-rm -f /sbin/shorewall6-*.bkout
-
-rm -rf /etc/shorewall6
-rm -rf /etc/shorewall6-*.bkout
-rm -rf /var/lib/shorewall6
-rm -rf /var/lib/shorewall6-*.bkout
+rm -f ${SBINDIR}/shorewall6
+rm -rf ${CONFDIR}/shorewall6
+rm -rf ${VARDIR}/shorewall6
 rm -rf ${LIBEXEC}/shorewall6
-rm -rf /usr/share/shorewall6
-rm -rf /usr/share/shorewall6-*.bkout
+rm -rf ${SHAREDIR}/shorewall6
 
-for f in /usr/share/man/man5/shorewall6* /usr/share/man/man8/shorewall6*; do
+for f in ${MANDIR}/man5/shorewall6* ${SHAREDIR}/man/man8/shorewall6*; do
     case $f in
 	shorewall6-lite*)
 	    ;;
@@ -123,8 +145,8 @@ for f in /usr/share/man/man5/shorewall6* /usr/share/man/man8/shorewall6*; do
     esac
 done
 
-rm -f  /etc/logrotate.d/shorewall6
-rm -f  /lib/systemd/system/shorewall6.service
+rm -f  ${CONFDIR}/logrotate.d/shorewall6
+[ -n "$SYSTEMD" ] && rm -f ${SYSTEMD}/shorewall6.service
 
 echo "Shorewall6 Uninstalled"
 

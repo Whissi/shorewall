@@ -40,6 +40,27 @@ qt()
     "$@" >/dev/null 2>&1
 }
 
+split() {
+    local ifs
+    ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
+
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    return 0
+	fi
+    done
+
+    return 2
+}
+
 remove_file() # $1 = file to restore
 {
     if [ -f $1 -o -L $1 ] ; then
@@ -48,8 +69,31 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall-init/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall-init/version)"
+if [ -f ~/.shorewallrc ]; then
+    . ~/shorewallrc || exit 1
+else
+    [ -n "${LIBEXEC:=/usr/share}" ]
+    [ -n "${PERLLIB:=/usr/share/shorewall}" ]
+    [ -n "${CONFDIR:=/etc}" ]
+    
+    if [ -z "$SYSCONFDIR" ]; then
+	if [ -d /etc/default ]; then
+	    SYSCONFDIR=/etc/default
+	else
+	    SYSCONFDIR=/etc/sysconfig
+	fi
+    fi
+
+    [ -n "${SBINDIR:=/sbin}" ]
+    [ -n "${SHAREDIR:=/usr/share}" ]
+    [ -n "${VARDIR:=/var/lib}" ]
+    [ -n "${INITFILE:=shorewall}" ]
+    [ -n "${INITDIR:=/etc/init.d}" ]
+    [ -n "${MANDIR:=/usr/share/man}" ]
+fi
+
+if [ -f ${SHAREDIR}/shorewall-init/version ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall-init/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Init Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -60,56 +104,55 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=/usr/share}" ]
+[ -n "${LIBEXEC:=${SHAREDIR}}" ]
 
 echo "Uninstalling Shorewall Init $VERSION"
 
-INITSCRIPT=/etc/init.d/shorewall-init
+INITSCRIPT=${CONFDIR}/init.d/shorewall-init
 
-if [ -n "$INITSCRIPT" ]; then
-    if [ -x /usr/sbin/updaterc.d ]; then
+if [ -f "$INITSCRIPT" ]; then
+    if mywhich updaterc.d ; then
 	updaterc.d shorewall-init remove
-    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+    elif mywhich insserv ; then
         insserv -r $INITSCRIPT
-    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
+    elif mywhich chkconfig ; then
 	chkconfig --del $(basename $INITSCRIPT)
-    elif [ -x /sbin/systemctl ]; then
+    elif mywhich systemctl ; then
 	systemctl disable shorewall-init
-    else
-	rm -f /etc/rc*.d/*$(basename $INITSCRIPT)
     fi
 
     remove_file $INITSCRIPT
 fi
 
-[ "$(readlink -m -q /sbin/ifup-local)"   = /usr/share/shorewall-init ] && remove_file /sbin/ifup-local
-[ "$(readlink -m -q /sbin/ifdown-local)" = /usr/share/shorewall-init ] && remove_file /sbin/ifdown-local
+[ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
+[ "$(readlink -m -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifdown-local
 
-remove_file /etc/default/shorewall-init
-remove_file /etc/sysconfig/shorewall-init
+remove_file ${CONFDIR}/default/shorewall-init
+remove_file ${CONFDIR}/sysconfig/shorewall-init
 
-remove_file /etc/NetworkManager/dispatcher.d/01-shorewall
+remove_file ${CONFDIR}/NetworkManager/dispatcher.d/01-shorewall
 
-remove_file /etc/network/if-up.d/shorewall
-remove_file /etc/network/if-down.d/shorewall
+remove_file ${CONFDIR}/network/if-up.d/shorewall
+remove_file ${CONFDIR}/network/if-down.d/shorewall
 
-remove_file /etc/sysconfig/network/if-up.d/shorewall
-remove_file /etc/sysconfig/network/if-down.d/shorewall
-remove_file /lib/systemd/system/shorewall.service
+remove_file ${CONFDIR}/sysconfig/network/if-up.d/shorewall
+remove_file ${CONFDIR}/sysconfig/network/if-down.d/shorewall
 
-if [ -d /etc/ppp ]; then
+[ -n "$SYSTEMD" ] && remove_file ${SYSTEMD}/shorewall.service
+
+if [ -d ${CONFDIR}/ppp ]; then
     for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-	remove_file /etc/ppp/$directory/shorewall
+	remove_file ${CONFDIR}/ppp/$directory/shorewall
     done
 
     for file in if-up.local if-down.local; do
-	if fgrep -q Shorewall-based /etc/ppp/$FILE; then
-	    remove_file /etc/ppp/$FILE
+	if fgrep -q Shorewall-based ${CONFDIR}/ppp/$FILE; then
+	    remove_file ${CONFDIR}/ppp/$FILE
 	fi
     done
 fi
 
-rm -rf /usr/share/shorewall-init
+rm -rf ${SHAREDIR}/shorewall-init
 rm -rf ${LIBEXEC}/shorewall-init
 
 echo "Shorewall Init Uninstalled"

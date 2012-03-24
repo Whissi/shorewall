@@ -23,7 +23,25 @@
 # This library contains the command processing code common to /sbin/shorewall[6] and
 # /sbin/shorewall[6]-lite.
 #
-. /usr/share/shorewall/lib.base
+
+if [ -z "$g_readrc" ]; then
+    if [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+    else
+	SHAREDIR=/usr/share
+	CONFDIR=${CONFDIR}
+	SBINDIR=/sbin
+	LIBEXECDIR=/usr/share
+    fi
+
+    g_libexec="$LIBEXECDIR"
+    g_sharedir="$SHAREDIR"
+    g_sbindir="$SBINDIR"
+    g_readrc=1
+fi
+
+. ${SHAREDIR}/shorewall/lib.base
+
 #
 # Fatal Error
 #
@@ -842,11 +860,13 @@ show_command() {
 		echo "CONFIG_PATH=$CONFIG_PATH"
 		echo "VARDIR=$VARDIR"
 		echo "LIBEXEC=$g_libexec"
+		echo "SBINDIR=$g_sbindir"
 		[ -n "$g_lite" ] && ${VARDIR} ne /var/lib/$program && echo "LITEDIR=${VARDIR}"
 	    else
 		echo "Default CONFIG_PATH is $CONFIG_PATH"
 		echo "Default VARDIR is /var/lib/$g_program"
 		echo "LIBEXEC is $g_libexec"
+		echo "SBINDIR is $g_sbindir"
 		[ -n "$g_lite" ] && [ ${VARDIR} != /var/lib/$g_program ] && echo "LITEDIR is ${VARDIR}"
 	    fi
 	    ;;
@@ -2950,14 +2970,12 @@ shorewall_cli() {
     g_annotate=
     g_recovering=
     g_timestamp=
-    g_libexec=/usr/share
-    g_perllib=/usr/share/shorewall
     g_shorewalldir=
 
     VERBOSE=
     VERBOSITY=
 
-    [ -n "$g_lite" ] || . /usr/share/shorewall/lib.cli-std
+    [ -n "$g_lite" ] || . ${g_sharedir}/shorewall/lib.cli-std
 
     finished=0
 

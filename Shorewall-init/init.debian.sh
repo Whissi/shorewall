@@ -62,10 +62,19 @@ not_configured () {
 	exit 0
 }
 
+#determine where the files were installed
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+    SRWL=${SBIN}/shorewall-init
+else
+    CONFDIR=/etc
+    SYSCONFDIR=/etc/default
+fi
+
 # check if shorewall-init is configured or not
-if [ -f "/etc/default/shorewall-init" ]
+if [ -f "$SYSCONFDIR/shorewall-init" ]
 then
-	. /etc/default/shorewall-init
+	. $SYSCONFDIR/shorewall-init
 	if [ -z "$PRODUCTS" ]
 	then
 		not_configured

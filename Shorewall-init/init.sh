@@ -53,6 +53,12 @@ else
 	exit 0
 fi
 
+if [ ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    VARDIR=/var/lib
+fi
+
 # Initialize the firewall
 shorewall_start () {
   local PRODUCT
@@ -60,10 +66,8 @@ shorewall_start () {
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      VARDIR=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
       if [ -x ${VARDIR}/firewall ]; then
-	  if ! /sbin/$PRODUCT status > /dev/null 2>&1; then
+	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
 	      ${VARDIR}/firewall stop || echo_notdone
 	  fi
       fi
@@ -83,8 +87,6 @@ shorewall_stop () {
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      VARDIR=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
       if [ -x ${VARDIR}/firewall ]; then
 	  ${VARDIR}/firewall clear || exit 1
       fi

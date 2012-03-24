@@ -182,10 +182,8 @@ else
 fi
 
 for PRODUCT in $PRODUCTS; do
-    VARDIR=/var/lib/$PRODUCT
-    [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
     if [ -x $VARDIR/firewall ]; then
-	  ( . /usr/share/$PRODUCT/lib.base
+	  ( . ${SHAREDIR}/shorewall/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
 	    mutex_off

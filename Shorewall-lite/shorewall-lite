@@ -27,6 +27,22 @@
 ################################################################################################
 g_program=shorewall-lite
 
-. /usr/share/shorewall/lib.cli
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    SHAREDIR=/usr/share
+    CONFDIR=${CONFDIR}
+    SBINDIR=/sbin
+    VARDIR=/var/lib
+    LIBEXECDIR=/usr/share
+
+fi
+
+g_libexec="$LIBEXECDIR"
+g_sharedir="$SHAREDIR"
+g_sbindir="$SBINDIR"
+g_readrc=1
+
+. $g_sharedir/shorewall/lib.cli
 
 shorewall_cli $@

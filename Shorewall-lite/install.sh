@@ -33,6 +33,12 @@ usage() # $1 = exit status
     exit $1
 }
 
+fatal_error() 
+{
+    echo "   ERROR: $@" >&2
+    exit 1
+}
+
 split() {
     local ifs
     ifs=$IFS
@@ -85,15 +91,15 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
+require() 
+{
+    eval [ -n "\$$1" ] || fatal_error "Required option $1 not set"
+}
+
 #
 # Change to the directory containing this script
 #
 cd "$(dirname $0)"
-
-#
-# Load packager's settings if any
-#
-[ -f ../shorewall-pkg.config ] && . ../shorewall-pkg.config
 
 if [ -f shorewall-lite ]; then
     PRODUCT=shorewall-lite
@@ -108,34 +114,72 @@ fi
 #
 # Parse the run line
 #
-while [ $# -gt 0 ] ; do
+finished=0
+
+while [ $finished -eq 0 ] ; do
     case "$1" in
-	-h|help|?)
-	    usage 0
-	    ;;
-        -v)
-	    echo "$Product Firewall Installer Version $VERSION"
-	    exit 0
+	-*)
+	    option=${option#-}
+	    
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "$Product Firewall Installer Version $VERSION"
+			exit 0
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
 	    ;;
 	*)
-	    usage 1
+	    finished=1
 	    ;;
     esac
-    shift
 done
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+local file
+#
+# Read the RC file
+#
+if [ $# -eq 0 ]; then
+    #
+    # Load packager's settings if any
+    #
+    if [ -n "${DESTDIR}" -a -f ../shorewall-pkg.config ]; then
+	. ../shorewall-pkg.config || exit 1
+    elif [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+	file=~/.shorewallrc
+    else
+	fatal_error "No rcfile specified and ~/.shorewallrc not found"
+    fi
+elif [ $# -eq 1 ]; then
+    file=$1
+    case $file in
+	/*|.*)
+	    ;;
+	*)
+	    file=./$file
+	    ;;
+    esac
 
-[ -n "${LIBEXEC:=/usr/share}" ]
+    . $file
+else
+    usage 1
+fi
 
-case "$LIBEXEC" in
-    /*)
-	;;
-    *)
-	echo "The LIBEXEC setting must be an absolute path name" >&2
-	exit 1
-	;;
-esac
+for var in SHAREDIR LIBEXECDIRDIRDIR CONFDIR SBINDIR VARDIR; do
+    require $var
+done
+
+PATH=${SBINDIR}:/bin:/usr${SBINDIR}:/usr/bin:/usr/local/bin:/usr/local${SBINDIR}
 
 #
 # Determine where to install the firewall script
@@ -154,15 +198,15 @@ if [ -z "$BUILD" ]; then
 	    BUILD=apple
 	    ;;
 	*)
-	    if [ -f /etc/debian_version ]; then
+	    if [ -f ${CONFDIR}/debian_version ]; then
 		BUILD=debian
-	    elif [ -f /etc/redhat-release ]; then
+	    elif [ -f ${CONFDIR}/redhat-release ]; then
 		BUILD=redhat
-	    elif [ -f /etc/SuSE-release ]; then
+	    elif [ -f ${CONFDIR}/SuSE-release ]; then
 		BUILD=suse
-	    elif [ -f /etc/slackware-version ] ; then
+	    elif [ -f ${CONFDIR}/slackware-version ] ; then
 		BUILD=slackware
-	    elif [ -f /etc/arch-release ] ; then
+	    elif [ -f ${CONFDIR}/arch-release ] ; then
 		BUILD=archlinux
 	    else
 		BUILD=linux
@@ -203,21 +247,15 @@ case "$HOST" in
 	;;
     debian)
 	echo "Installing Debian-specific configuration..."
-	SPARSE=yes
 	;;
     redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
-	[ -n "$INITDIR" ]  || INITDIR=/etc/rc.d/init.d
 	;;
     slackware)
 	echo "Installing Slackware-specific configuration..."
-	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d"
-	[ -n "$INITFILE" ] || INITFILE="rc.firewall"
-	[ -n "$MANDIR=" ]  || MANDIR=/usr/man
 	;;
     archlinux)
 	echo "Installing ArchLinux-specific configuration..."
-	[ -n "$INITDIR" ]  || INITDIR="/etc/rc.d"
 	;;
     linux|suse)
 	;;
@@ -227,7 +265,7 @@ case "$HOST" in
 	;;
 esac
 
-[ -z "$INITDIR" ] && INITDIR="/etc/init.d"
+[ -z "$INITDIR" ] && INITDIR="${CONFDIR}/init.d"
 
 if [ -n "$DESTDIR" ]; then
     if [ `id -u` != 0 ] ; then
@@ -235,8 +273,8 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
     
-    install -d $OWNERSHIP -m 755 ${DESTDIR}/sbin
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${DESTFILE}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}/${SBINDIR}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
 
     if [ -n "$SYSTEMD" ]; then
 	mkdir -p ${DESTDIR}/lib/systemd/system
@@ -257,27 +295,27 @@ fi
 echo "Installing $Product Version $VERSION"
 
 #
-# Check for /etc/$PRODUCT
+# Check for ${CONFDIR}/$PRODUCT
 #
-if [ -z "$DESTDIR" -a -d /etc/$PRODUCT ]; then
+if [ -z "$DESTDIR" -a -d ${CONFDIR}/$PRODUCT ]; then
     if [ ! -f /usr/share/shorewall/coreversion ]; then
 	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
     fi
 
-    [ -f /etc/$PRODUCT/shorewall.conf ] && \
-	mv -f /etc/$PRODUCT/shorewall.conf /etc/$PRODUCT/$PRODUCT.conf
+    [ -f ${CONFDIR}/$PRODUCT/shorewall.conf ] && \
+	mv -f ${CONFDIR}/$PRODUCT/shorewall.conf ${CONFDIR}/$PRODUCT/$PRODUCT.conf
 else
-    rm -rf ${DESTDIR}/etc/$PRODUCT
+    rm -rf ${DESTDIR}${CONFDIR}/$PRODUCT
     rm -rf ${DESTDIR}/usr/share/$PRODUCT
     rm -rf ${DESTDIR}/var/lib/$PRODUCT
-    [ "$LIBEXEC" = /usr/share ] || rm -rf ${DESTDIR}/usr/share/$PRODUCT/wait4ifup ${DESTDIR}/usr/share/$PRODUCT/shorecap
+    [ "$LIBEXECDIR" = /usr/share ] || rm -rf ${DESTDIR}/usr/share/$PRODUCT/wait4ifup ${DESTDIR}/usr/share/$PRODUCT/shorecap
 fi
 
 #
-# Check for /sbin/$PRODUCT
+# Check for ${SBINDIR}/$PRODUCT
 #
-if [ -f ${DESTDIR}/sbin/$PRODUCT ]; then
+if [ -f ${DESTDIR}${SBINDIR}/$PRODUCT ]; then
     first_install=""
 else
     first_install="Yes"
@@ -285,24 +323,24 @@ fi
 
 delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
-install_file $PRODUCT ${DESTDIR}/sbin/$PRODUCT 0544
+install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0544
 
-echo "$Product control program installed in ${DESTDIR}/sbin/$PRODUCT"
+echo "$Product control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
 #
-# Create /etc/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
+# Create ${CONFDIR}/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
 #
-mkdir -p ${DESTDIR}/etc/$PRODUCT
+mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
 mkdir -p ${DESTDIR}/usr/share/$PRODUCT
-mkdir -p ${DESTDIR}${LIBEXEC}/$PRODUCT
+mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 mkdir -p ${DESTDIR}/var/lib/$PRODUCT
 
-chmod 755 ${DESTDIR}/etc/$PRODUCT
+chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
 chmod 755 ${DESTDIR}/usr/share/$PRODUCT
 
 if [ -n "$DESTDIR" ]; then
-    mkdir -p ${DESTDIR}/etc/logrotate.d
-    chmod 755 ${DESTDIR}/etc/logrotate.d
+    mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d
+    chmod 755 ${DESTDIR}${CONFDIR}/logrotate.d
     mkdir -p ${DESTDIR}${INITDIR}
     chmod 755 ${DESTDIR}${INITDIR}
 fi
@@ -329,74 +367,74 @@ fi
 # Install the .service file
 #
 if [ -n "$SYSTEMD" ]; then
-    run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/lib/systemd/system/$PRODUCT.service
+    run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/${SYSTEMD}/$PRODUCT.service
     echo "Service file installed as ${DESTDIR}/lib/systemd/system/$PRODUCT.service"
 fi
 
 #
 # Install the config file
 #
-if [ ! -f ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf ]; then
-   install_file $PRODUCT.conf ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf 0744
-   echo "Config file installed as ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf"
+if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
+   install_file $PRODUCT.conf ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf 0744
+   echo "Config file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf"
 fi
 
 if [ $HOST = archlinux ] ; then
-   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}/etc/$PRODUCT/$PRODUCT.conf
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 fi
 
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}/etc/$PRODUCT
-echo "Makefile installed as ${DESTDIR}/etc/$PRODUCT/Makefile"
+run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
+echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 
 #
 # Install the default config path file
 #
-install_file configpath ${DESTDIR}/usr/share/$PRODUCT/configpath 0644
-echo "Default config path file installed as ${DESTDIR}/usr/share/$PRODUCT/configpath"
+install_file configpath ${DESTDIR}${SHAREDIR}/$PRODUCT/configpath 0644
+echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/configpath"
 
 #
 # Install the libraries
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${DESTDIR}/usr/share/$PRODUCT/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
+	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
+	echo "Library ${f#*.} file installed as ${DESTDIR}/${SHAREDIR}/$PRODUCT/$f"
     fi
 done
 
-ln -sf lib.base ${DESTDIR}/usr/share/$PRODUCT/functions
+ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
 
-echo "Common functions linked through ${DESTDIR}/usr/share/$PRODUCT/functions"
+echo "Common functions linked through ${DESTDIR}${SHAREDIR}/$PRODUCT/functions"
 
 #
 # Install Shorecap
 #
 
-install_file shorecap ${DESTDIR}${LIBEXEC}/$PRODUCT/shorecap 0755
+install_file shorecap ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap 0755
 
 echo
-echo "Capability file builder installed in ${DESTDIR}${LIBEXEC}/$PRODUCT/shorecap"
+echo "Capability file builder installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap"
 
 #
 # Install the Modules files
 #
 
 if [ -f modules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${DESTDIR}/usr/share/$PRODUCT
-    echo "Modules file installed as ${DESTDIR}/usr/share/$PRODUCT/modules"
+    run_install $OWNERSHIP -m 0600 modules ${DESTDIR}${SHAREDIR}/$PRODUCT
+    echo "Modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/modules"
 fi
 
 if [ -f helpers ]; then
-    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}/usr/share/$PRODUCT
-    echo "Helper modules file installed as ${DESTDIR}/usr/share/$PRODUCT/helpers"
+    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}${SHAREDIR}/$PRODUCT
+    echo "Helper modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers"
 fi
 
 for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}/usr/share/$PRODUCT/$f
-    echo "Module file $f installed as ${DESTDIR}/usr/share/$PRODUCT/$f"
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f
+    echo "Module file $f installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
 done
 
 #
@@ -406,18 +444,18 @@ done
 if [ -d manpages ]; then
     cd manpages
 
-    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}/usr/share/man/man5/ ${DESTDIR}/usr/share/man/man8/
+    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${SHAREDIR}/man/man5/ ${DESTDIR}${SHAREDIR}/man/man8/
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}/usr/share/man/man5/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}/usr/share/man/man5/$f.gz"
+	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${SHAREDIR}/man/man5/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}${SHAREDIR}/man/man5/$f.gz"
     done
 
     for f in *.8; do
 	gzip -c $f > $f.gz
-	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}/usr/share/man/man8/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}/usr/share/man/man8/$f.gz"
+	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${SHAREDIR}/man/man8/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}${SHAREDIR}/man/man8/$f.gz"
     done
 
     cd ..
@@ -425,73 +463,73 @@ if [ -d manpages ]; then
     echo "Man Pages Installed"
 fi
 
-if [ -d ${DESTDIR}/etc/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}/etc/logrotate.d/$PRODUCT
-    echo "Logrotate file installed as ${DESTDIR}/etc/logrotate.d/$PRODUCT"
+if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
+    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT
+    echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
 fi
 
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}/usr/share/$PRODUCT/version
-chmod 644 ${DESTDIR}/usr/share/$PRODUCT/version
+echo "$VERSION" > ${DESTDIR}${SHAREDIR}/$PRODUCT/version
+chmod 644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
 #
 # Remove and create the symbolic link to the init script
 #
 
 if [ -z "$DESTDIR" ]; then
-    rm -f /usr/share/$PRODUCT/init
-    ln -s ${INITDIR}/${INITFILE} /usr/share/$PRODUCT/init
+    rm -f ${SHAREDIR}/$PRODUCT/init
+    ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/$PRODUCT/init
 fi
 
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.common
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.cli
-delete_file ${DESTDIR}/usr/share/$PRODUCT/wait4ifup
+delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.common
+delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.cli
+delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/wait4ifup
 
-if [ -z "$DESTDIR" ]; then
-    touch /var/log/$PRODUCT-init.log
+if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
+    if [ ${DESTDIR} ]; then
+	mkdir -p ${DESTDIR}${SYSCONFDIR}
+	chmod 755 ${DESTDIR}${SYSCONFDIR}
+    fi
 
-    if [ -n "$first_install" ]; then
-	if [ $HOST = debian ]; then
-	    run_install $OWNERSHIP -m 0644 default.debian /etc/default/$PRODUCT
+    run_install $OWNERSHIP -m 0644 default.debian ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
+    echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
+fi
 
-	    update-rc.d $PRODUCT defaults
-
-	    if [ -x /sbin/insserv ]; then
-		insserv /etc/init.d/$PRODUCT
-	    else
-		ln -s ../init.d/$PRODUCT /etc/rcS.d/S40$PRODUCT
-	    fi
-
+if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
+    if mywhich update-rc.d ; then
+	echo "$PRODUCT will start automatically at boot"
+	echo "Set startup=1 in ${SYSCONFDIR}/$PRODUCT to enable"
+	touch /var/log/$PRODUCT-init.log
+	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
+    elif [ -n "$SYSTEMD" ]; then
+	if systemctl enable $PRODUCT; then
 	    echo "$Product will start automatically at boot"
-	else
-	    if [ -n "$SYSTEMD" ]; then
-		if systemctl enable $PRODUCT; then
-		    echo "$Product will start automatically at boot"
-		fi
-	    elif [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-		if insserv /etc/init.d/$PRODUCT ; then
-		    echo "$Product will start automatically at boot"
-		else
-		    cant_autostart
-		fi
-	    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-		if chkconfig --add $PRODUCT ; then
-		    echo "$Product will start automatically in run levels as follows:"
-		    chkconfig --list $PRODUCT
-		else
-		    cant_autostart
-		fi
-	    elif [ -x /sbin/rc-update ]; then
-		if rc-update add $PRODUCT default; then
-		    echo "$Product will start automatically at boot"
-		else
-		    cant_autostart
-		fi
-	    elif [ "$INITFILE" != rc.firewall ]; then #Slackware starts this automatically
-		cant_autostart
-	    fi
 	fi
+    elif mywhich insserv; then
+	if insserv ${INITDIR}/${INITFILE} ; then
+	    echo "$PRODUCT will start automatically at boot"
+	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/${PRODUCT}.conf to enable"
+	else
+	    cant_autostart
+	fi
+    elif mywhich chkconfig; then
+	if chkconfig --add $PRODUCT ; then
+	    echo "$PRODUCT will start automatically in run levels as follows:"
+	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/${PRODUCT}.conf to enable"
+	    chkconfig --list $PRODUCT
+	else
+	    cant_autostart
+	fi
+    elif mywhich rc-update ; then
+	if rc-update add $PRODUCT default; then
+	    echo "$PRODUCT will start automatically at boot"
+	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
+	else
+	    cant_autostart
+	fi
+    elif [ "$INITFILE" != rc.${PRODUCT} ]; then #Slackware starts this automatically
+	cant_autostart
     fi
 fi
 

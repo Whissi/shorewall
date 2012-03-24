@@ -60,6 +60,10 @@ remove_file() # $1 = file to restore
     fi
 }
 
+if [ -f ~/.shorewallrc ]; then
+    . ~/shorewallrc || exit 1
+fi
+
 if [ -f /usr/share/shorewall/coreversion ]; then
     INSTALLED_VERSION="$(cat /usr/share/shorewall/coreversion)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
@@ -72,12 +76,9 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=/usr/share}" ]
-[ -n "${PERLLIB:=/usr/share/shorewall}" ]
-
 echo "Uninstalling Shorewall Core $VERSION"
 
-rm -rf /usr/share/shorewall
+rm -rf ${SHAREDIR}/shorewall
 
 echo "Shorewall Core Uninstalled"
 

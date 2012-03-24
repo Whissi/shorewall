@@ -85,6 +85,14 @@ g_noroutes=$NOROUTES
 g_timestamp=$TIMESTAMP
 g_recovering=$RECOVERING
 
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    CONFDIR=/etc
+    SHAREDIR=/usr/share
+    VARDIR=/var/lib
+fi
+
 initialize
 
 if [ -n "$STARTUP_LOG" ]; then

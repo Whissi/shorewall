@@ -23,9 +23,15 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #########################################################################################
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    echo "ERROR: ./.shorewallrc not found" >&2
+fi
+
 # check if shorewall-init is configured or not
-if [ -f "/etc/sysconfig/shorewall-init" ]; then
-    . /etc/sysconfig/shorewall-init
+if [ -f "$SYSCONFDIR/shorewall-init" ]; then
+    . $SYSCONFDIR/shorewall-init
     if [ -z "$PRODUCTS" ]; then
         echo "ERROR: No products configured" >&2
 	exit 1

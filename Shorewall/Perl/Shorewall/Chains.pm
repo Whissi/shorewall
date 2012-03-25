@@ -6428,15 +6428,23 @@ sub ensure_ipset( $ ) {
 
     if ( $family == F_IPV4 ) {
 	if ( have_capability 'IPSET_V5' ) {
-	    emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ hash:ip family inet" );
+	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
+		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:ip set") ,
+		   qq(        \$IPSET -N $set hash:ip family inet") ,
+		   qq(    fi) );
 	} else {
-	    emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ iphash" );
+	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
+		   qq(        error_message "WARNING: ipset $1 does not exist; creating it as an iphash set") ,
+		   qq(        \$IPSET -N $set iphash") ,
+		   qq(    fi) );
 	}
     } else {
-	emit ( "    qt \$IPSET -L $set -n || \$IPSET -N $_ hash:ip family inet6" );
+	emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
+	       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:ip set") ,
+	       qq(        \$IPSET -N $set hash:ip family inet6) ,
+	       qq(    fi) );
     }
 }
-    
 
 sub load_ipsets() {
 
@@ -6496,7 +6504,7 @@ sub load_ipsets() {
 	} else {
 	    ensure_ipset( $_ ) for @ipsets;
 	}
-	
+
 	if ( @ipsets ) {
 	    emit ( 'elif [ "$COMMAND" = restart ]; then' );
 	    ensure_ipset( $_ ) for @ipsets;
@@ -6508,7 +6516,7 @@ sub load_ipsets() {
 	    ensure_ipset( $_ ) for @ipsets;
 	    emit( '' );
 	}
-	
+
 	if ( $family == F_IPV4 ) {
 	    emit ( '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
 		   '        #',

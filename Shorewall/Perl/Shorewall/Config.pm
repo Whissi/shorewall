@@ -2276,19 +2276,14 @@ sub read_a_line1() {
 sub process_shorewallrc() {
     my $home = $ENV{HOME} || `echo ~`;
 
+    $shorewallrc{PRODUCT} = $family == F_IPV4 ? 'shorewall' : 'shorewall6';
+
     if ( $home && open_file "$home/.shorewallrc" ) {
 	while ( read_a_line1 ) {
 	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		my ($var, $val) = ($1, $2);
-
 		$val = $1 if $val =~ /^\"([^\"]*)\"$/;
-
-		if ( $var eq 'PRODUCT' ) {
-		    $val = $globals{PRODUCT};
-		} elsif ( supplied $val ) {
-		    expand_variables($val, 1 );
-		}
-
+		expand_variables($val, 1 ) if supplied $val;
 		$shorewallrc{$var} = $val;
 	    } else {
 		fatal_error "Unrecognized shorewallrc entry";

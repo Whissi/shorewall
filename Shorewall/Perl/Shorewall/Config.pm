@@ -2096,7 +2096,7 @@ sub set_action_param( $$ ) {
 #
 # Expand Shell Variables in the passed buffer using %params and @actparms
 #
-sub expand_variables( \$ ) {
+sub expand_variables( \$;$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
     #                    $1      $2   $3      -     $4
     while ( $$lineref =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
@@ -2110,6 +2110,8 @@ sub expand_variables( \$ ) {
 	    $val = $actparms[$var];
 	} elsif ( exists $params{$var} ) {
 	    $val = $params{$var};
+	} elsif ( $_[1] && exists $shorewallrc{$var} ) {
+	    $val = $shorewallrc{$var}
 	} else {
 	    fatal_error "Undefined shell variable (\$$var)" unless exists $config{$var};
 	    $val = $config{$var};
@@ -2278,11 +2280,14 @@ sub process_shorewallrc() {
 	while ( read_a_line1 ) {
 	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		my ($var, $val) = ($1, $2);
-		$shorewallrc{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
+		$val = $1 if $val =~ /^\"([^\"]*)\"$/;
+		expand_variables( $val, 1 ) if supplied $val;
+		$shorewallrc{$var} = $val;
 	    } else {
 		fatal_error "Unrecognized shorewallrc entry";
 	    }
 	}
+    
     }
 }
 

@@ -2280,8 +2280,15 @@ sub process_shorewallrc() {
 	while ( read_a_line1 ) {
 	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		my ($var, $val) = ($1, $2);
+
 		$val = $1 if $val =~ /^\"([^\"]*)\"$/;
-		expand_variables( $val, 1 ) if supplied $val && $var ne 'PRODUCT';
+
+		if ( $var eq 'PRODUCT' ) {
+		    $val = $globals{PRODUCT};
+		} elsif ( supplied $val ) {
+		    expand_variables($val, 1 );
+		}
+
 		$shorewallrc{$var} = $val;
 	    } else {
 		fatal_error "Unrecognized shorewallrc entry";

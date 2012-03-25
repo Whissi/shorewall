@@ -27,7 +27,7 @@ VERSION=xxx #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME"
+    echo "usage: $ME [ <configuration-file> ]"
     echo "       $ME -v"
     echo "       $ME -h"
     exit $1
@@ -158,7 +158,7 @@ if [ $# -eq 0 ]; then
 	. ~/.shorewallrc || exit 1
 	file=~/.shorewallrc
     else
-	fatal_error "No rcfile specified and ~/.shorewallrc not found"
+	fatal_error "No configuration file specified and ~/.shorewallrc not found"
     fi
 elif [ $# -eq 1 ]; then
     file=$1

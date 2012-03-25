@@ -27,7 +27,7 @@ VERSION=xxx #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <rcfile> ] "
+    echo "usage: $ME [ <configuration-file> ] "
     echo "       $ME -v"
     echo "       $ME -h"
     exit $1
@@ -148,9 +148,6 @@ if [ $# -eq 0 ]; then
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
 	file=~/.shorewallrc
-    else
-	file=./shorewallrc.default
-	. $file
     fi
 elif [ $# -eq 1 ]; then
     file=$1
@@ -253,6 +250,23 @@ case "$HOST" in
 	exit 1;
 	;;
 esac
+
+if [ -z "$file" ]; then
+    if $HOST = linux; then
+	file=shorewallrc.default
+    else
+	file=$shorewallrc.${HOST}
+    fi
+
+    echo "You have not specified a configuration file and ~/.shorewallrc does not exist" >&2
+    echo "Shorewall-core $VERSION has determined that the $file configuration is appropriate for your system" >&2
+    echo "Please review the settings in that file. If you wish to change them, make a copy and modify the copy" >&2
+    echo "Then re-run install.sh passing either $file or the name of your modified copy" >&2
+    echo "" >&2
+    echo "Example:" >&2
+    echo "" >&2
+    echo "   ./install.sh $file" &>2
+fi
 
 if [ -n "$DESTDIR" ]; then
     if [ $BUILD != cygwin ]; then

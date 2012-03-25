@@ -2281,13 +2281,12 @@ sub process_shorewallrc() {
 	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		my ($var, $val) = ($1, $2);
 		$val = $1 if $val =~ /^\"([^\"]*)\"$/;
-		expand_variables( $val, 1 ) if supplied $val;
+		expand_variables( $val, 1 ) if supplied $val && $var ne 'PRODUCT';
 		$shorewallrc{$var} = $val;
 	    } else {
 		fatal_error "Unrecognized shorewallrc entry";
 	    }
 	}
-    
     }
 }
 

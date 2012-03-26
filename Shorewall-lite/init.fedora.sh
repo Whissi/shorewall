@@ -20,16 +20,24 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
+#determine where the files were installed
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    SBINDIR=/sbin
+    SYSCONFDIR=/etc/default
+fi
+
 prog="shorewall-lite"
-shorewall="/sbin/$prog"
+shorewall="${SBINDIR}/$prog"
 logger="logger -i -t $prog"
 lockfile="/var/lock/subsys/$prog"
 
 # Get startup options (override default)
 OPTIONS=
 
-if [ -f /etc/sysconfig/$prog ]; then
-    . /etc/sysconfig/$prog
+if [ -f ${SYSCONFDIR}/$prog ]; then
+    . ${SYSCONFDIR}/$prog
 fi
 
 start() {

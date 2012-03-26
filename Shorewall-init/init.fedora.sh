@@ -13,6 +13,15 @@
 # Description:       Place the firewall in a safe state at boot time
 #                    prior to bringing up the network.  
 ### END INIT INFO
+#determine where the files were installed
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    SBINDIR=/sbin
+    SYSCONFDIR=/etc/default
+    VARDIR=/var/lib
+fi
+
 prog="shorewall-init"
 logger="logger -i -t $prog"
 lockfile="/var/lock/subsys/shorewall-init"
@@ -44,10 +53,8 @@ start () {
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
     for product in $PRODUCTS; do
-	vardir=/var/lib/$product
-	[ -f /etc/$product/vardir ] && . /etc/$product/vardir 
-	if [ -x ${vardir}/firewall ]; then
-	    ${vardir}/firewall stop 2>&1 | $logger
+	if [ -x ${VARDIR}/$product/firewall ]; then
+	    ${VARDIR}/$product/firewall stop 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
 	    [ retval -ne 0 ] && break
 	fi
@@ -70,10 +77,8 @@ stop () {
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
     for product in $PRODUCTS; do
-	vardir=/var/lib/$product
-	[ -f /etc/$product/vardir ] && . /etc/$product/vardir 
-	if [ -x ${vardir}/firewall ]; then
-	    ${vardir}/firewall clear 2>&1 | $logger
+	if [ -x ${VARDIR}/$product/firewall ]; then
+	    ${VARDIR}/$product/firewall clear 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
 	    [ retval -ne 0 ] && break
 	fi

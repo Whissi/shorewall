@@ -4066,6 +4066,21 @@ sub do_time( $ ) {
     $result;
 }
 
+sub resolve_id( $$ ) {
+    my ( $id, $type ) = @_;
+
+    if ( $globals{EXPORT} ) {
+	require_capability 'OWNER_NAME_MATCH', "Specifying a $type name", 's';
+    } else {
+	my $num = $type eq 'user' ? getpwnam( $id ) : getgrnam( $id );
+	fatal_error "Unknown $type ($id)" unless supplied $num;
+	$id = $num;
+    }
+
+    $id;
+}
+    
+
 #
 # Create a "-m owner" match for the passed USER/GROUP
 #
@@ -4074,6 +4089,8 @@ sub do_user( $ ) {
     my $rule = '-m owner ';
 
     return '' unless defined $user and $user ne '-';
+
+    require_capability 'OWNER_MATCH', 'A non-empty USER column', 's';
 
     if ( $user =~ /^(!)?(.*)\+(.*)$/ ) {
 	$rule .= "! --cmd-owner $2 " if supplied $2;
@@ -4086,24 +4103,26 @@ sub do_user( $ ) {
     if ( $user =~ /^(!)?(.*):(.*)$/ ) {
 	my $invert = $1 ? '! ' : '';
 	my $group  = defined $3 ? $3 : '';
+
 	if ( supplied $2 ) {
-	    $user = $2;
-	    fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
+	    $user  = $2;
+	    $user  = resolve_id( $user, 'user' ) unless $user =~ /\d+$/;
 	    $rule .= "${invert}--uid-owner $user ";
 	}
 
 	if ( $group ne '' ) {
-	    fatal_error "Unknown group ($group)" unless $group =~ /\d+$/ || $globals{EXPORT} || defined getgrnam( $group );
+	    $group = resolve_id( $group, 'group' ) unless $group =~ /^\d+$/;
 	    $rule .= "${invert}--gid-owner $group ";
 	}
     } elsif ( $user =~ /^(!)?(.*)$/ ) {
 	my $invert = $1 ? '! ' : '';
 	$user   = $2;
+
 	fatal_error "Invalid USER/GROUP (!)" if $user eq '';
-	fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
+	$user = resolve_id ($user, 'user' ) unless $user =~ /\d+$/;
 	$rule .= "${invert}--uid-owner $user ";
     } else {
-	fatal_error "Unknown user ($user)" unless $user =~ /^\d+$/ || $globals{EXPORT} || defined getpwnam( $user );
+	$user  = resolve_id( $user, 'user' ) unless $user =~ /\d+$/;
 	$rule .= "--uid-owner $user ";
     }
 

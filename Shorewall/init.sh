@@ -54,7 +54,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 # Give Usage Information						       #
 ################################################################################
 usage() {
-    echo "Usage: $0 start|stop|reload|restart|status" > &2
+    echo "Usage: $0 start|stop|reload|restart|status" >&2
     exit 1
 }
 

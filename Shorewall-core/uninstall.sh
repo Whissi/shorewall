@@ -60,12 +60,22 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f ~/.shorewallrc ]; then
-    . ~/shorewallrc || exit 1
+if [ -f ./.shorewallrc ]; then
+    . ./.shorewallrc || exit 1
+elif [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+elif [ -r /root/.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif [ -r /.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
+    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
+else
+    SHAREDIR=/usr/share
 fi
 
-if [ -f /usr/share/shorewall/coreversion ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall/coreversion)"
+if [ -f ${SHAREDIR}/shorewall/coreversion ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall/coreversion)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Core Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."

@@ -69,8 +69,16 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f ~/.shorewallrc ]; then
-    . ~/shorewallrc || exit 1
+if [ -f ./.shorewallrc ]; then
+    . ./.shorewallrc || exit 1
+elif [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+elif [ -r /root/.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif [ -r /.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
+    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
 else
     [ -n "${LIBEXEC:=/usr/share}" ]
     [ -n "${PERLLIB:=/usr/share/shorewall}" ]

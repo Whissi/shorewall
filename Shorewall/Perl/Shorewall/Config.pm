@@ -243,6 +243,8 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IPRANGE_MATCH   => 'IP Range Match',
 		 RECENT_MATCH    => 'Recent Match',
 		 OWNER_MATCH     => 'Owner Match',
+		 OWNER_NAME_MATCH
+		                 => 'Owner Name Match',
 		 IPSET_MATCH     => 'Ipset Match',
 		 OLD_IPSET_MATCH => 'Old Ipset Match',
 		 IPSET_V5        => 'Version 5 ipsets',
@@ -482,7 +484,7 @@ sub initialize( $ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40501 ,
+		    CAPVERSION => 40502 ,
 		  );
     #
     # From shorewall.conf file
@@ -662,6 +664,7 @@ sub initialize( $ ) {
 	       IPRANGE_MATCH => undef,
 	       RECENT_MATCH => undef,
 	       OWNER_MATCH => undef,
+	       OWNER_NAME_MATCH => undef,
 	       IPSET_MATCH => undef,
 	       OLD_IPSET_MATCH => undef,
 	       IPSET_V5 => undef,
@@ -2679,6 +2682,12 @@ sub Owner_Match() {
     qt1( "$iptables -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
 }
 
+sub Owner_Name_Match() {
+    if ( my $name = `id -un 2> /dev/null` ) {
+	qt1( "$iptables -A $sillyname -m owner --uid-owner $name -j ACCEPT" );
+    }
+}
+
 sub Connmark_Match() {
     qt1( "$iptables -A $sillyname -m connmark --mark 2  -j ACCEPT" );
 }
@@ -3002,6 +3011,7 @@ our %detect_capability =
       OLD_HL_MATCH => \&Old_Hashlimit_Match,
       OLD_IPP2P_MATCH => \&Old_Ipp2p_Match,
       OWNER_MATCH => \&Owner_Match,
+      OWNER_NAME_MATCH => \&Owner_Name_Match,
       PERSISTENT_SNAT => \&Persistent_Snat,
       PHYSDEV_BRIDGE => \&Physdev_Bridge,
       PHYSDEV_MATCH => \&Physdev_Match,
@@ -3097,6 +3107,8 @@ sub determine_capabilities() {
 	$capabilities{IPRANGE_MATCH}   = detect_capability( 'IPRANGE_MATCH' );
 	$capabilities{RECENT_MATCH}    = detect_capability( 'RECENT_MATCH' );
 	$capabilities{OWNER_MATCH}     = detect_capability( 'OWNER_MATCH' );
+	$capabilities{OWNER_NAME_MATCH}
+                                       = detect_capability( 'OWNER_NAME_MATCH' );
 	$capabilities{CONNMARK_MATCH}  = detect_capability( 'CONNMARK_MATCH' );
 	$capabilities{XCONNMARK_MATCH} = detect_capability( 'XCONNMARK_MATCH' );
 	$capabilities{IPP2P_MATCH}     = detect_capability( 'IPP2P_MATCH' );

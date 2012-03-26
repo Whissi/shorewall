@@ -1908,6 +1908,7 @@ determine_capabilities() {
     IPRANGE_MATCH=
     RECENT_MATCH=
     OWNER_MATCH=
+    OWNER_NAME_MATCH=
     IPSET_MATCH=
     OLD_IPSET_MATCH=
     IPSET_V5=
@@ -2045,6 +2046,11 @@ determine_capabilities() {
 
     qt $g_tool -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
     qt $g_tool -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+
+    local name
+    name=$(id -un 2> /dev/null)
+
+    [ -n "$name" ] && qt $g_tool -A $chain -m owner --uid-owner $name -j ACCEPT && OWNER_NAME_MATCH=Yes
 
     if qt $g_tool -A $chain -m connmark --mark 2  -j ACCEPT; then
 	CONNMARK_MATCH=Yes
@@ -2226,6 +2232,7 @@ report_capabilities() {
 	report_capability "IP range Match(IPRANGE_MATCH)" $IPRANGE_MATCH
 	report_capability "Recent Match (RECENT_MATCH)" $RECENT_MATCH
 	report_capability "Owner Match (OWNER_MATCH)" $OWNER_MATCH
+	report_capability "Owner Name Match (OWNER_NAME_MATCH)" $OWNER_NAME_MATCH
 	if [ -n "$IPSET_MATCH" ]; then
 	    report_capability "Ipset Match (IPSET_MATCH)" $IPSET_MATCH
 	    [ -n "$OLD_IPSET_MATCH" ] && report_capability "OLD_Ipset Match (OLD_IPSET_MATCH)" $OLD_IPSET_MATCH
@@ -2314,6 +2321,7 @@ report_capabilities1() {
     report_capability1 IPRANGE_MATCH
     report_capability1 RECENT_MATCH
     report_capability1 OWNER_MATCH
+    report_capability1 OWNER_NAME_MATCH
     report_capability1 IPSET_MATCH
     report_capability1 OLD_IPSET_MATCH
     report_capability1 CONNMARK

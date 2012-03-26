@@ -85,13 +85,23 @@ g_noroutes=$NOROUTES
 g_timestamp=$TIMESTAMP
 g_recovering=$RECOVERING
 
-if [ -f ~/.shorewallrc ]; then
+if [ -f ./.shorewallrc ]; then
+    . ./.shorewallrc || exit 1
+elif [ -f ~/.shorewallrc ]; then
     . ~/.shorewallrc || exit 1
+elif [ -r /root/.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif [ -r /.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
+    . ${SHOREAWLLRC_HOME}/.shorewallrc || exit 1
 else
     CONFDIR=/etc
     SHAREDIR=/usr/share
     VARDIR=/var/lib
 fi
+
+[ -n "$TMPDIR" ] && export TMPDIR
 
 initialize
 

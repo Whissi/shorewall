@@ -65,7 +65,7 @@ OPTIONS=
 if [ ~/.shorewallrc ]; then
     . ~/.shorewallrc || exit 1
 else
-    SBIN=/sbin
+    SBINDIR=/sbin
     SYSCONFDIR=/etc/sysconfig
 fi
 
@@ -82,13 +82,13 @@ command="$1"
 
 case "$command" in
     start)
-	exec ${SBIN}/shorewall-lite $OPTIONS start $STARTOPTIONS
+	exec ${SBINDIR}/shorewall-lite $OPTIONS start $STARTOPTIONS
 	;;
     restart|reload)
-	exec ${SBIN}/shorewall-lite $OPTIONS restart $RESTARTOPTIONS
+	exec ${SBINDIR}/shorewall-lite $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)
-	exec ${SBIN}/shorewall-lite $OPTIONS $command $@
+	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $@
 	;;
     *)
 	usage

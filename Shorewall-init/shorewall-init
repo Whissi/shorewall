@@ -23,10 +23,20 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #########################################################################################
-if [ -f ~/.shorewallrc ]; then
+if [ -f ./.shorewallrc ]; then
+    . ./.shorewallrc || exit 1
+elif [ -f ~/.shorewallrc ]; then
     . ~/.shorewallrc || exit 1
+elif [ -r /root/.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif [ -r /.shorewallrc ]; then
+    . /root/.shorewallrc || exit 1
+elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
+    . ${SHOREAWLLRC_HOME}/.shorewallrc || exit 1
 else
-    echo "ERROR: ./.shorewallrc not found" >&2
+    VARDIR=/var/lib
+    LIBEXECDIR=/usr/share
+    SYSCONFDIR=/etc/sysconfig
 fi
 
 # check if shorewall-init is configured or not
@@ -48,8 +58,6 @@ shorewall_start () {
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      VARDIR=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
       if [ -x ${VARDIR}/firewall ]; then
 	  if ! /sbin/$PRODUCT status > /dev/null 2>&1; then
 	      ${VARDIR}/firewall stop || exit 1

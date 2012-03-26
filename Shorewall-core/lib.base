@@ -33,8 +33,17 @@ SHOREWALL_CAPVERSION=40502
 [ -n "${g_program:=shorewall}" ]
 
 if [ -z "$g_readrc" ]; then
-    if [ -f ~/.shorewallrc ]; then
+  
+    if [ -f ./.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
+    elif [ -r /root/.shorewallrc ]; then
+	. /root/.shorewallrc || exit 1
+    elif [ -r /.shorewallrc ]; then
+	. /root/.shorewallrc || exit 1
+    elif [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+    elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
+	. ${SHOREAWLLRC_HOME}/.shorewallrc || exit 1
     else
 	SHAREDIR=/usr/share
 	CONFDIR=/etc
@@ -471,14 +480,14 @@ mktempfile() {
     else
 	case "$MKTEMP" in
 	    BSD)
-		mktemp /tmp/shorewall.XXXXXX
+		mktemp ${TMPDIR:-/tmp}/shorewall.XXXXXX
 		;;
 	    STD)
 		mktemp -t shorewall.XXXXXX
 		;;
 	    None)
-		rm -f /tmp/shorewall-$$
-		> /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+		rm -f ${TMPDIR:-/tmp}/shorewall-$$
+		> ${TMPDIR:-}/shorewall-$$ && echo ${TMPDIR:-/tmp}/shorewall-$$
 		;;
 	    *)
 		error_message "ERROR:Internal error in mktempfile"

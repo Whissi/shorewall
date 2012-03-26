@@ -315,8 +315,8 @@ chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 
 cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
 
-if [ -z "${DESTDIR}" ]; then
-    [ -f ~/.shorewallrc ] || cp $file ~/.shorewallrc
+if [ -z "${DESTDIR}" -n ${HOME} ]; then
+    [ -f ${HOME}/.shorewallrc ] || cp $file ${HOME}/.shorewallrc
 fi
 #
 #  Report Success

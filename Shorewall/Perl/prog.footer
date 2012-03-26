@@ -101,7 +101,10 @@ else
     VARDIR=/var/lib
 fi
 
-[ -n "$TMPDIR" ] && export TMPDIR
+if [ -n "$TEMPDIR" ]; then
+    TMPDIR="$TEMPDIR"
+    export TMPDIR
+fi
 
 initialize
 

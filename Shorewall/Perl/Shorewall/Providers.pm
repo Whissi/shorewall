@@ -1021,7 +1021,7 @@ sub add_a_route( ) {
 
 sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
-    emit "> \${VARDIR}undo_rfc1918_routing\n";
+    emit "> \${VARDIR}/undo_rfc1918_routing\n";
     for ( rfc1918_networks ) {
 	emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
 	      qq(    run_ip route replace unreachable $_),

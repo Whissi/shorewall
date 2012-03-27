@@ -137,11 +137,21 @@ if [ $# -eq 0 ]; then
     #
     # Load packager's settings if any
     #
-    if [ -n "${DESTDIR}" -a -f ../shorewall-pkg.config ]; then
-	. ../shorewall-pkg.config || exit 1
+    if [ -f ./.shorewallrc ]; then
+	. ./.shorewallrc || exit 1
+	file=./.shorewallrc
+    elif [ -r /root/.shorewallrc ]; then
+	. /root/.shorewallrc || exit 1
+	file=/root/.shoreallrc
+    elif [ -r /.shorewallrc ]; then
+	. /.shorewallrc || exit 1
+	file =/.shoreallrc 
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
 	file=~/.shorewallrc
+    elif - -f ${SHOREWALLRC_HOME}/.shorewallrc; then
+	. ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
+	file=${SHOREWALLRC_HOME}/.shorewallrc
     else
 	fatal_error "No configuration file specified and ~/.shorewallrc not found"
     fi

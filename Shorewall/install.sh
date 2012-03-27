@@ -115,8 +115,6 @@ else
     Product=Shorewall6
 fi
 
-[ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
-
 #
 # Parse the run line
 #

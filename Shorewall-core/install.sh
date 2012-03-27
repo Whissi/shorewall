@@ -98,8 +98,6 @@ require()
 
 cd "$(dirname $0)"
 
-[ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
-
 #
 # Parse the run line
 #

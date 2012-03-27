@@ -138,9 +138,6 @@ local file
 # Read the RC file
 #
 if [ $# -eq 0 ]; then
-    #
-    # Load packager's settings if any
-    #
     if [ -f ./.shorewallrc ]; then
 	. ./.shorewallrc || exit 1
 	file=./.shorewallrc
@@ -163,11 +160,20 @@ elif [ $# -eq 1 ]; then
 	/*|.*)
 	    ;;
 	*)
-	    file=./$file || 1
+	    file=./$file || exit 1
 	    ;;
     esac
 
     . $file
+
+    if [ -n "$RPM" -a -f config ]; then
+	. $config || exit 1
+	> shorewallrc
+	for var in HOST SHAREDIR LIBEXECDIR PERLLIBDIR CONFDIR SBINDIR MANDIR INITDIR INITSOURCE INITFILE AUXINITSOURCE AUXINITFILE SYSTEMD SYSCONFFILE SYSCONFDIR ANNOTATED VARDIR; do
+	    eval echo $var=\$$var >> shorewallrc
+	done
+	file=shorewallrc
+    fi	
 else
     usage 1
 fi

@@ -142,10 +142,10 @@ if [ $# -eq 0 ]; then
 	file=./.shorewallrc
     elif [ -r /root/.shorewallrc ]; then
 	. /root/.shorewallrc || exit 1
-	file=/root/.shoreallrc
+	file=/root/.shorewallrc
     elif [ -r /.shorewallrc ]; then
 	. /.shorewallrc || exit 1
-	file =/.shoreallrc 
+	file =/.shorewallrc 
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
 	file=~/.shorewallrc

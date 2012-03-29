@@ -53,9 +53,11 @@ fi
 
 for p in $@; do
   p=${p#--}
+
   [ -n "${p}" ] && {
     pn=${p%=*}
     pv=${p#*=}
+
     if [ -n ${pn} ]; then
 	case ${pn} in
 	    VENDOR)
@@ -67,10 +69,13 @@ for p in $@; do
 	    DATADIR)
 		pn=SHAREDIR
 		;;
+	    SYSCONFDIR)
+		pn=CONFDIR
+		;;
 	esac
 	    
 	params[${pn}]="${pv}"
-  }
+    fi
 done
 
 vendor=${params[HOST]}

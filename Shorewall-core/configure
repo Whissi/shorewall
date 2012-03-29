@@ -27,12 +27,6 @@
 ################################################################################################
 declare -A params
 declare -A options
-declare -u pn
-
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <var>=<val> ..." >&2
-    exit 1
-fi
 
 getfileparams() {
     while read option; do
@@ -52,16 +46,35 @@ getfileparams() {
     return 0
 }
 
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <var>=<val> ..." >&2
+    exit 1
+fi
+
 for p in $@; do
   p=${p#--}
   [ -n "${p}" ] && {
     pn=${p%=*}
     pv=${p#*=}
-    [ -n ${pn} ] && params[${pn}]="${pv}"
+    if [ -n ${pn} ]; then
+	case ${pn} in
+	    VENDOR)
+		pn=HOST
+		;;
+	    SHAREDSTATEDIR)
+		pn=VARDIR
+		;;
+	    DATADIR)
+		pn=SHAREDIR
+		;;
+	esac
+	    
+	params[${pn}]="${pv}"
   }
 done
 
 vendor=${params[HOST]}
+
 if [ -z "$vendor" ]; then
     rcfile=shorewallrc.default
     vendor=linux

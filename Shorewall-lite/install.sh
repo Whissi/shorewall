@@ -142,7 +142,6 @@ while [ $finished -eq 0 ] ; do
     esac
 done
 
-local file
 #
 # Read the RC file
 #

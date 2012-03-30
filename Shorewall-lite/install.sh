@@ -389,16 +389,12 @@ install_file configpath ${DESTDIR}${SHAREDIR}/$PRODUCT/configpath 0644
 echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/configpath"
 
 #
-# Install the libraries
+# Install the library symlinks
 #
-for f in lib.* ; do
-    if [ -f $f ]; then
-	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/${SHAREDIR}/$PRODUCT/$f"
-    fi
-done
 
-ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
+for f in functions lib.base; do
+    ln -sf ../shorewall/lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/$f
+done
 
 echo "Common functions linked through ${DESTDIR}${SHAREDIR}/$PRODUCT/functions"
 

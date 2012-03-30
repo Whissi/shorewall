@@ -41,6 +41,7 @@ if [ -z "$g_readrc" ]; then
     g_libexec="$LIBEXECDIR"
     g_sharedir="$SHAREDIR"
     g_sbindir="$SBINDIR"
+    g_vardir="$VARDIR"
     g_readrc=1
 fi
 
@@ -82,6 +83,8 @@ case $g_program in
 	g_lite=Yes
 	;;
 esac
+
+VARDIR=${VARDIR}/${g_program}
 
 #
 # Conditionally produce message

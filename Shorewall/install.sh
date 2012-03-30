@@ -355,6 +355,7 @@ fi
 # Install the .service file
 #
 if [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}${SYSTEMD}
     run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}${SYSTEMD}/$PRODUCT.service
     echo "Service file installed as ${DESTDIR}${SYSTEMD}/$PRODUCT.service"
 fi

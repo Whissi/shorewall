@@ -54,7 +54,7 @@ fi
 for p in $@; do
   p=${p#--}
 
-  [ -n "${p}" ] && {
+  if [ -n "${p}" ]; then
     pn=${p%=*}
     pv=${p#*=}
 

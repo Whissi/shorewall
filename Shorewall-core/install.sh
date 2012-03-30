@@ -139,8 +139,10 @@ done
 if [ $# -eq 0 ]; then
     if [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc
+	file=~/.shorewallrc
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
 	. /usr/share/shorewall/shorewallrc
+	file=/usr/share/shorewall/shorewallrc
     else
 	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
@@ -155,15 +157,6 @@ elif [ $# -eq 1 ]; then
     esac
 
     . $file
-
-    if [ -n "$RPM" -a -f config ]; then
-	. $config || exit 1
-	> shorewallrc
-	for var in HOST SHAREDIR LIBEXECDIR PERLLIBDIR CONFDIR SBINDIR MANDIR INITDIR INITSOURCE INITFILE AUXINITSOURCE AUXINITFILE SYSTEMD SYSCONFFILE SYSCONFDIR ANNOTATED VARDIR; do
-	    eval echo $var=\$$var >> shorewallrc
-	done
-	file=shorewallrc
-    fi	
 else
     usage 1
 fi
@@ -259,7 +252,7 @@ if [ -z "$file" ]; then
     if $HOST = linux; then
 	file=shorewallrc.default
     else
-	file=$shorewallrc.${HOST}
+	file=shorewallrc.${HOST}
     fi
 
     echo "You have not specified a configuration file and ~/.shorewallrc does not exist" >&2
@@ -317,7 +310,7 @@ ln -sf lib.base ${DESTDIR}${SHAREDIR}/shorewall/functions
 echo "$VERSION" > ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 
-cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
+[ $file != "${SHAREDIR}/shorewall/shorewallrc" ] && cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
 
 [ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
 

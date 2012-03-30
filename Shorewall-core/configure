@@ -52,29 +52,30 @@ if [ $# -eq 0 ]; then
 fi
 
 for p in $@; do
-  p=${p#--}
+    p=${p#--}
 
-  if [ -n "${p}" ]; then
-    pn=${p%=*}
-    pv=${p#*=}
+    if [ -n "${p}" ]; then
+	pn=${p%=*}
+	pv=${p#*=}
 
-    if [ -n "${pn}" ]; then
-	case ${pn} in
-	    VENDOR)
-		pn=HOST
-		;;
-	    SHAREDSTATEDIR)
-		pn=VARDIR
-		;;
-	    DATADIR)
-		pn=SHAREDIR
-		;;
-	    SYSCONFDIR)
-		pn=CONFDIR
-		;;
-	esac
+	if [ -n "${pn}" ]; then
+	    case ${pn} in
+		VENDOR)
+		    pn=HOST
+		    ;;
+		SHAREDSTATEDIR)
+		    pn=VARDIR
+		    ;;
+		DATADIR)
+		    pn=SHAREDIR
+		    ;;
+		SYSCONFDIR)
+		    pn=CONFDIR
+		    ;;
+	    esac
     
-	params[${pn}]="${pv}"
+	    params[${pn}]="${pv}"
+	fi
     fi
 done
 

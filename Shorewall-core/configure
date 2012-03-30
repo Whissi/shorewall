@@ -55,6 +55,8 @@ for p in $@; do
     p=${p#--}
 
     if [ -n "${p}" ]; then
+	declare -u pn
+
 	pn=${p%=*}
 	pv=${p#*=}
 

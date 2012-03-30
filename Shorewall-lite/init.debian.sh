@@ -57,14 +57,10 @@ not_configured () {
 	exit 0
 }
 
-#determine where the files were installed
-if [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-    SRWL=${SBIN}/shorewall-lite
-else
-    CONFDIR=/etc
-    SYSCONFDIR=/etc/default
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 # parse the shorewall params file in order to use params in
 # /etc/default/shorewall

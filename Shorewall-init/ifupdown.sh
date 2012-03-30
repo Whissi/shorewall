@@ -71,6 +71,11 @@ Debian_SuSE_ppp() {
 IFUPDOWN=0
 PRODUCTS=
 
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
 if [ -f /etc/default/shorewall-init ]; then
     . /etc/default/shorewall-init
 elif [ -f /etc/sysconfig/shorewall-init ]; then

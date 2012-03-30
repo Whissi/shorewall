@@ -78,11 +78,10 @@ else
 	not_configured
 fi
 
-#determine where the files were installed
-if [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-    [ -n "$SBIN" ] && SRWL=${SBIN}/shorewall6-lite
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 # start the firewall
 shorewall6_start () {

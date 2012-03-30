@@ -295,7 +295,6 @@ fi
 
 install -d $OWNERSHIP -m 755 ${DESTDIR}${SBINDIR}
 [ -n "${INITFILE}" ] && install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
-
 if [ -z "$DESTDIR" -a $PRODUCT != shorewall ]; then
     [ -x ${LIBEXECDIR}/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.5.0 is not installed" >&2; exit 1; }
@@ -325,7 +324,8 @@ echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 #
 if [ -n "$INITFILE" ]; then
     install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
-    
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}${INITDIR}/$INITFILE
+  
     if [ -n "${AUXINITSOURCE}" ]; then
 	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
     fi

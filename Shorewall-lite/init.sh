@@ -62,12 +62,10 @@ usage() {
 ################################################################################
 OPTIONS=
 
-if [ ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    SBINDIR=/sbin
-    SYSCONFDIR=/etc/sysconfig
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 if [ -f ${SYSCONFDIR}/shorewall-lite ]; then
     . ${SYSCONFDIR}/shorewall-lite

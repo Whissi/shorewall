@@ -53,11 +53,10 @@ else
 	exit 0
 fi
 
-if [ ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    VARDIR=/var/lib
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 # Initialize the firewall
 shorewall_start () {

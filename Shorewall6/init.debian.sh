@@ -54,13 +54,10 @@ not_configured () {
 	exit 0
 }
 
-#determine where the files were installed
-if [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-    [ -n "$SBIN" ] && SRWL=${SBIN}/shorewall6
-else
-    SYSCONFDIR=/etc/default
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 # check if shorewall is configured or not
 if [ -f "${SYSCONFDIR}/shorewall6" ]

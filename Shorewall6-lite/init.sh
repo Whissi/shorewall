@@ -62,16 +62,10 @@ usage() {
 ################################################################################
 OPTIONS=
 
-if [ ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    SBINDIR=/sbin
-    SYSCONFDIR=/etc/sysconfig
-fi
-
-if [ -f ${SYSCONFDIR}/shorewall6-lite ]; then
-    . ${SYSCONFDIR}/shorewall6-lite
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 export SHOREWALL_INIT_SCRIPT=1
 

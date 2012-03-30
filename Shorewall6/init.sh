@@ -63,18 +63,10 @@ usage() {
 ################################################################################
 OPTIONS="-v0"
 
-if [ ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    SBINDIR=/sbin
-    SYSCONFDIR=/etc/sysconfig
-fi
-
-if [ -f /etc/sysconfig/shorewall6 ]; then
-    . /etc/sysconfig/shorewall6
-elif [ -f /etc/default/shorewall6 ] ; then
-    . /etc/default/shorewall6
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 export SHOREWALL_INIT_SCRIPT=1
 

@@ -20,13 +20,10 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-#determine where the files were installed
-if [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    SBINDIR=/sbin
-    SYSCONFDIR=/etc/default
-fi
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 prog="shorewall6-lite"
 shorewall="${SBINDIR}/$prog"

@@ -339,20 +339,25 @@ if [ -n "$DESTDIR" ]; then
 fi
 
 if [ -n "$INITFILE" ]; then
+
+    initfile="${DESTDIR}/${INITDIR}/${INITFILE}"
+
     case $TARGET in
 	debian)
-	    install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    install_file init.debian.sh "$initfile" 0544
 	    ;;
 	redhat)
-	    install_file init.fedora.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    install_file init.fedora.sh "$initfile" 0544
 	    ;;
 	archlinux)
-	    install_file init.archlinux.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    install_file init.archlinux.sh "$initfile" 0544
 	    ;;
 	*)
-	    install_file init.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
+	    install_file init.sh "$initfile" 0544
 	    ;;
     esac
+
+    [ "${SHAREDIR} = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' "$initfile"
 
     echo  "$Product init script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
 fi

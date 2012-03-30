@@ -105,8 +105,6 @@ cd "$(dirname $0)"
 #
 # Load packager's settings if any
 #
-[ -f ../shorewall-pkg.config ] && . ../shorewall-pkg.config
-
 if [ -f shorewall ]; then
     PRODUCT=shorewall
     Product=Shorewall
@@ -170,26 +168,12 @@ done
 # Read the RC file
 #
 if [ $# -eq 0 ]; then
-    #
-    # Load packager's settings if any
-    #
-    if [ -f ./.shorewallrc ]; then
-	. ./.shorewallrc || exit 1
-	file=./.shorewallrc
-    elif [ -r /root/.shorewallrc ]; then
-	. /root/.shorewallrc || exit 1
-	file=/root/.shorewallrc
-    elif [ -r /.shorewallrc ]; then
-	. /.shorewallrc || exit 1
-	file =/.shorewallrc 
-    elif [ -f ~/.shorewallrc ]; then
-	. ~/.shorewallrc || exit 1
-	file=~/.shorewallrc
-    elif - -f ${SHOREWALLRC_HOME}/.shorewallrc; then
-	. ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
-	file=${SHOREWALLRC_HOME}/.shorewallrc
+    if [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc
+    elif [ -f /usr/share/shorewall/shorewallrc ]; then
+	. /usr/share/shorewall/shorewallrc
     else
-	fatal_error "No configuration file specified and .shorewallrc not found"
+	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
 elif [ $# -eq 1 ]; then
     file=$1

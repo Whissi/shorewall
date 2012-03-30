@@ -23,21 +23,10 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #########################################################################################
-if [ -f ./.shorewallrc ]; then
-    . ./.shorewallrc || exit 1
-elif [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-elif [ -r /root/.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif [ -r /.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif - -f ${SHOREWALLRC_HOME}/.shorewallrc; then
-    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
-else
-    VARDIR=/var/lib
-    LIBEXECDIR=/usr/share
-    SYSCONFDIR=/etc/sysconfig
-fi
+#
+# This is modified by the installer when ${SHAREDIR} <> /usr/share
+#
+. /usr/share/shorewall/shorewallrc
 
 # check if shorewall-init is configured or not
 if [ -f "$SYSCONFDIR/shorewall-init" ]; then

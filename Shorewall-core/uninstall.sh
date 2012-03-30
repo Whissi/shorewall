@@ -31,7 +31,7 @@ VERSION=xxx #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME"
+    echo "usage: $ME [ <shorewallrc file> ]"
     exit $1
 }
 
@@ -60,19 +60,22 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f ./.shorewallrc ]; then
-    . ./.shorewallrc || exit 1
-elif [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-elif [ -r /root/.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif [ -r /.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
-    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
+if [ $# -eq 0 ]; then
+    file=/usr/share/shorewall/shorewallrc
+elif [ $# -eq 1 ]; then
+    file=$1
 else
-    SHAREDIR=/usr/share
+    usage 1
 fi
+
+if [ -f "$file" ]; then
+    . "$file"
+else
+    echo "File $file not found" >&2
+    exit 1
+fi
+
+. $file || exit 1
 
 if [ -f ${SHAREDIR}/shorewall/coreversion ]; then
     INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall/coreversion)"

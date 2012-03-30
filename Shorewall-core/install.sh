@@ -137,21 +137,12 @@ done
 # Read the RC file
 #
 if [ $# -eq 0 ]; then
-    if [ -f ./.shorewallrc ]; then
-	. ./.shorewallrc || exit 1
-	file=./.shorewallrc
-    elif [ -r /root/.shorewallrc ]; then
-	. /root/.shorewallrc || exit 1
-	file=/root/.shorewallrc
-    elif [ -r /.shorewallrc ]; then
-	. /.shorewallrc || exit 1
-	file =/.shorewallrc 
-    elif [ -f ~/.shorewallrc ]; then
-	. ~/.shorewallrc || exit 1
-	file=~/.shorewallrc
-    elif - -f ${SHOREWALLRC_HOME}/.shorewallrc; then
-	. ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
-	file=${SHOREWALLRC_HOME}/.shorewallrc
+    if [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc
+    elif [ -f /usr/share/shorewall/shorewallrc ]; then
+	. /usr/share/shorewall/shorewallrc
+    else
+	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
 elif [ $# -eq 1 ]; then
     file=$1
@@ -328,8 +319,16 @@ chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 
 cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
 
-if [ -z "${DESTDIR}" -a -n ${HOME} ]; then
-    [ -f ${HOME}/.shorewallrc ] || cp $file ${HOME}/.shorewallrc
+[ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
+
+if [ ${SHAREDIR} != /usr/share ]; then
+    for f in lib.*; do
+	if [ $BUILD != apple ]; then
+	    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/$f
+	else
+	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/$f
+	fi
+    done
 fi
 #
 #  Report Success

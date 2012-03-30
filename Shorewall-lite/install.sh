@@ -146,26 +146,12 @@ done
 # Read the RC file
 #
 if [ $# -eq 0 ]; then
-    #
-    # Load packager's settings if any
-    #
-    if [ -f ./.shorewallrc ]; then
-	. ./.shorewallrc || exit 1
-	file=./.shorewallrc
-    elif [ -r /root/.shorewallrc ]; then
-	. /root/.shorewallrc || exit 1
-	file=/root/.shorewallrc
-    elif [ -r /.shorewallrc ]; then
-	. /.shorewallrc || exit 1
-	file =/.shorewallrc 
-    elif [ -f ~/.shorewallrc ]; then
-	. ~/.shorewallrc || exit 1
-	file=~/.shorewallrc
-    elif - -f ${SHOREWALLRC_HOME}/.shorewallrc; then
-	. ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
-	file=${SHOREWALLRC_HOME}/.shorewallrc
+    if [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc
+    elif [ -f /usr/share/shorewall/shorewallrc ]; then
+	. /usr/share/shorewall/shorewallrc
     else
-	fatal_error "No configuration file specified and ~/.shorewallrc not found"
+	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
 elif [ $# -eq 1 ]; then
     file=$1
@@ -501,6 +487,11 @@ if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
 
     run_install $OWNERSHIP -m 0644 default.debian ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
     echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
+fi
+
+if [ ${SHAREDIR} != /usr/share ]; then
+    [ $PRODUCT = shorewall ] && eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/lib.base
+    sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then

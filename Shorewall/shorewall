@@ -27,24 +27,10 @@
 ################################################################################################
 g_program=shorewall
 
-if [ -f ./.shorewallrc ]; then
-    . ./.shorewallrc || exit 1
-elif [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-elif [ -r /root/.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif [ -r /.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
-    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
-else
-    SHAREDIR=/usr/share
-    CONFDIR=/etc
-    SBINDIR=/sbin
-    VARDIR=/var/lib
-    LIBEXECDIR=/usr/share
-    PERLLIBDIR=/usr/share/shorewall
-fi
+#
+# This is modified by the installer when ${SHAREDIR} <> /usr/share
+#
+. /usr/share/shorewall/shorewallrc
 
 g_libexec="$LIBEXECDIR"
 g_sharedir="$SHAREDIR"

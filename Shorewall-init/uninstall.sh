@@ -31,7 +31,7 @@ VERSION=xxx  #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME"
+    echo "usage: $ME [ <shorewallrc file> ]"
     exit $1
 }
 
@@ -69,36 +69,22 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f ./.shorewallrc ]; then
-    . ./.shorewallrc || exit 1
-elif [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-elif [ -r /root/.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif [ -r /.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
-    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
+if [ $# -eq 0 ]; then
+    file=/usr/share/shorewall/shorewallrc
+elif [ $# -eq 1 ]; then
+    file=$1
 else
-    [ -n "${LIBEXEC:=/usr/share}" ]
-    [ -n "${PERLLIB:=/usr/share/shorewall}" ]
-    [ -n "${CONFDIR:=/etc}" ]
-    
-    if [ -z "$SYSCONFDIR" ]; then
-	if [ -d /etc/default ]; then
-	    SYSCONFDIR=/etc/default
-	else
-	    SYSCONFDIR=/etc/sysconfig
-	fi
-    fi
-
-    [ -n "${SBINDIR:=/sbin}" ]
-    [ -n "${SHAREDIR:=/usr/share}" ]
-    [ -n "${VARDIR:=/var/lib}" ]
-    [ -n "${INITFILE:=shorewall}" ]
-    [ -n "${INITDIR:=/etc/init.d}" ]
-    [ -n "${MANDIR:=/usr/share/man}" ]
+    usage 1
 fi
+
+if [ -f "$file" ]; then
+    . "$file"
+else
+    echo "File $file not found" >&2
+    exit 1
+fi
+
+. $file || exit 1
 
 if [ -f ${SHAREDIR}/shorewall-init/version ]; then
     INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall-init/version)"

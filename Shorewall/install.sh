@@ -978,15 +978,11 @@ cd ..
 #
 # Install the libraries
 #
-if [ $PRODUCT = shorewall ]; then
-    for f in lib.* ; do
-	if [ -f $f ]; then
-	    install_file $f ${DESTDIR}${SHAREDIR}/shorewall/$f 0644
-	    echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/shorewall/$f"
-	fi
-    done
-else
-    ln -sf ../shorewall/lib.base ${DESTDIR}${SHAREDIR}/lib.base
+for f in lib.* ; do
+    if [ -f $f ]; then
+	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
+	echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+    fi
 done
 
 if [ $PRODUCT = shorewall6 ]; then

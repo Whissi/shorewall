@@ -919,6 +919,13 @@ sub add_common_rules ( $ ) {
 		       p =>  "udp --dport $ports" ,
 		       imatch_dest_dev( $interface ) )
 		if get_interface_option( $interface, 'bridge' );
+
+	    unless ( $family == F_IPV6 || get_interface_option( $interface, 'allip' ) ) {
+		add_ijump( $filter_table->{input_chain( $interface ) } , 
+			   j => 'ACCEPT' ,
+			   p => "udp --dport $ports" ,
+			   s => NILIPv4 . '/32' );
+	    }
 	}
     }
 

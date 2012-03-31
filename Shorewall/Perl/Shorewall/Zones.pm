@@ -782,7 +782,11 @@ sub add_group_to_zone($$$$$)
 			     ipsec   => $type & IPSEC ? 'ipsec' : 'none' ,
 			     exclusions => \@exclusions };
 
-    $interfaces{$interface}{options}{routeback} ||= ( $type != IPSEC && $options->{routeback} );
+    if ( $type != IPSEC ) {
+	my $optref = $interfaces{$interface}{options};
+	$optref->{routeback} ||= $options->{routeback};
+	$optref->{allip}     ||= $allip;
+    }
 }
 
 #

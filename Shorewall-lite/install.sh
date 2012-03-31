@@ -360,7 +360,7 @@ if [ -n "$INITFILE" ]; then
 	    ;;
     esac
 
-    [ "${SHAREDIR} = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' "$initfile"
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' "$initfile"
 
     echo  "$Product init script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
 fi

@@ -139,7 +139,10 @@ if [ $# -eq 0 ]; then
     if [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
 	file=~/.shorewallrc
-    else
+    elif [ -f ./.shorewallrc ]; then
+	. ./.shorewallrc || exit 1
+	file=./.shorewallrc
+     else
 	fatal_error "No configuration file specified and ~/.shorewallrc not found"
     fi
 elif [ $# -eq 1 ]; then
@@ -321,20 +324,20 @@ if [ $HOST = debian ]; then
     fi
 else
     if [ -n "$DESTDIR" ]; then
-	mkdir -p ${DESTDIR}/etc/sysconfig
+	mkdir -p ${DESTDIR}${SYSCONFDIR}
 
 	if [ -z "$RPM" ]; then
 	    if [ $HOST = suse ]; then
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
-		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-down.d
+		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-down.d
 	    else
 		mkdir -p ${DESTDIR}/etc/NetworkManager/dispatcher.d
 	    fi
 	fi
     fi
 
-    if [ -d ${DESTDIR}/etc/sysconfig -a ! -f ${DESTDIR}/etc/sysconfig/shorewall-init ]; then
-	install_file sysconfig ${DESTDIR}/etc/sysconfig/shorewall-init 0644
+    if [ -d ${DESTDIR}${SYSCONFDIR} -a ! -f ${DESTDIR}${SYSCONFDIR}/shorewall-init ]; then
+	install_file sysconfig ${DESTDIR}${SYSCONFDIR}/shorewall-init 0644
     fi 
 fi
 
@@ -342,31 +345,35 @@ fi
 # Install the ifupdown script
 #
 
+cp ifupdown.sh ifupdown
+
+d[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ifupdown
+
 mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
 
-install_file ifupdown.sh ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
+install_file ifupdown ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
-    install_file ifupdown.sh ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
+    install_file ifupdown ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
 case $HOST in
     debian)
-	install_file ifupdown.sh ${DESTDIR}/etc/network/if-up.d/shorewall 0544
-	install_file ifupdown.sh ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
+	install_file ifupdown ${DESTDIR}/etc/network/if-up.d/shorewall 0544
+	install_file ifupdown ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
 	;;
     suse)
 	if [ -z "$RPM" ]; then
-	    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-up.d/shorewall 0544
-	    install_file ifupdown.sh ${DESTDIR}/etc/sysconfig/network/if-down.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${SYSCONFDIR}/network/if-up.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${SYSCONFDIR}/network/if-down.d/shorewall 0544
 	fi
 	;;
     redhat)
 	if [ -f ${DESTDIR}${SBINDIR}/ifup-local -o -f ${DESTDIR}${SBINDIR}/ifdown-local ]; then
 	    echo "WARNING: ${SBINDIR}/ifup-local and/or ${SBINDIR}/ifdown-local already exist; up/down events will not be handled"
 	elif [ -z "$DESTDIR" ]; then
-	    install_file ifupdown.sh ${DESTDIR}${SBINDIR}/ifup-local 0544
-	    install_file ifupdown.sh ${DESTDIR}${SBINDIR}/ifdown-local 0544
+	    install_file ifupdown ${DESTDIR}${SBINDIR}/ifup-local 0544
+	    install_file ifupdown ${DESTDIR}${SBINDIR}/ifdown-local 0544
 	fi
 	;;
 esac
@@ -384,7 +391,7 @@ if [ -z "$DESTDIR" ]; then
 		    echo "Shorewall Init will start automatically at boot"
 		fi
 	    elif [ -x ${SBINDIR}/insserv -o -x /usr${SBINDIR}/insserv ]; then
-		if insserv /etc/init.d/shorewall-init ; then
+		if insserv ${INITDIR}/shorewall-init ; then
 		    echo "Shorewall Init will start automatically at boot"
 		else
 		    cant_autostart
@@ -414,7 +421,7 @@ else
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi
 
-	    ln -sf ../init.d/shorewall-init ${DESTDIR}/etc/rcS.d/S38shorewall-init
+	    ln -sf ../init.d/shorewall-init ${DESTDIR}${CONFDIR}/rcS.d/S38shorewall-init
 	    echo "Shorewall Init will start automatically at boot"
 	fi
     fi
@@ -427,7 +434,7 @@ if [ -f ${DESTDIR}/etc/ppp ]; then
 	debian|suse)
 	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 		mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
-		cp -fp ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown ${DESTDIR}/etc/ppp/$directory/shorewall
+		cp -fp ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown ${DESTDIR}${CONFDIR}/ppp/$directory/shorewall
 	    done
 	    ;;
 	redhat)

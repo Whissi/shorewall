@@ -265,7 +265,7 @@ fi
 #
 if [ -n "$INITFILE" ]; then
     install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
-    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}${INITDIR}/$INITFILE
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
     
     if [ -n "${AUXINITSOURCE}" ]; then
 	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
@@ -347,7 +347,7 @@ fi
 
 cp ifupdown.sh ifupdown
 
-d[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ifupdown
+d[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
 
 mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
 

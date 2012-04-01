@@ -360,7 +360,7 @@ if [ -n "$INITFILE" ]; then
 	    ;;
     esac
 
-    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' "$initfile"
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' "$initfile"
 
     echo  "$Product init script installed in $initfile"
 fi
@@ -498,8 +498,8 @@ if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
 fi
 
 if [ ${SHAREDIR} != /usr/share ]; then
-    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
-    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then

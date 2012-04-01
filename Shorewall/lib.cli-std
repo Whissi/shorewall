@@ -31,8 +31,11 @@
 #
 get_config() {
     local prog
+    local confdir
 
     ensure_config_path
+
+    
 
     if [ "$1" = Yes ]; then
 	params=$(find_file params)
@@ -46,7 +49,10 @@ get_config() {
 
     if [ -f $config ]; then
 	if [ -r $config ]; then
+	    confdir=${CONFDIR}
+	    CONFDIR=${g_confdir}
 	    . $config
+	    CONFDIR=${confdir}
 	else
 	    echo "Cannot read $config! (Hint: Are you root?)" >&2
 	    exit 1
@@ -395,7 +401,7 @@ compiler() {
     [ "$1" = nolock ] && shift;
     shift
 
-    options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH"
+    options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH --shorewallrc=${g_sharedir}/shorewall/shorewallrc"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"

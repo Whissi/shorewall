@@ -65,6 +65,7 @@ sub usage( $ ) {
     [ --annotate ]
     [ --update ]
     [ --convert ]
+    [ --shorewallrc ]
     [ --config_path=<path-list> ]
 ';
 
@@ -91,6 +92,7 @@ my $annotate      = 0;
 my $update        = 0;
 my $convert       = 0;
 my $config_path   = '';
+my $shorewallrc   = '';
 
 Getopt::Long::Configure ('bundling');
 
@@ -122,6 +124,7 @@ my $result = GetOptions('h'               => \$help,
 			'update'          => \$update,
 			'convert'         => \$convert,
 			'config_path=s'   => \$config_path,
+			'shorewallrc=s'   => \$shorewallrc,
 		       );
 
 usage(1) unless $result && @ARGV < 2;
@@ -144,4 +147,5 @@ compiler( script          => $ARGV[0] || '',
 	  convert         => $convert,
 	  annotate        => $annotate,
 	  config_path     => $config_path,
+	  shorewallrc     => $shorewallrc
 	);

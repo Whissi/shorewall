@@ -320,6 +320,7 @@ if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/$PRODUCT/coreve
 fi
 
 install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0755
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/${PRODUCT}
 echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
 #
@@ -327,7 +328,7 @@ echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 #
 if [ -n "$INITFILE" ]; then
     install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
-    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}${INITDIR}/$INITFILE
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
   
     if [ -n "${AUXINITSOURCE}" ]; then
 	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
@@ -993,7 +994,7 @@ if [ $PRODUCT = shorewall6 ]; then
     # Symbolically link 'functions' to lib.base
     #
     ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
-    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
+    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
 fi
 
 if [ -d Perl ]; then

@@ -139,8 +139,8 @@ done
 if [ $# -eq 0 ]; then
     if [ -f ./shorewallrc ]; then
 	. ./shorewallrc
-	file=~/.shorewallrc
-    elif [ -f ./.shorewallrc ]; then
+	file=./shorewallrc
+    elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
 	file=~/.shorewallrc
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
@@ -343,9 +343,9 @@ chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 if [ ${SHAREDIR} != /usr/share ]; then
     for f in lib.*; do
 	if [ $BUILD != apple ]; then
-	    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/$f
+	    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/shorewall/$f
 	else
-	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/$f
+	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/shorewall/$f
 	fi
     done
 fi

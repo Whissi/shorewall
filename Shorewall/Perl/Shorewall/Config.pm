@@ -439,7 +439,7 @@ my $ifstack;
 #
 our %shorewallrc;
 
-sub process_shorewallrc();
+sub process_shorewallrc($);
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -450,8 +450,8 @@ sub process_shorewallrc();
 #   2. The compiler can run multiple times in the same process so it has to be
 #      able to re-initialize its dependent modules' state.
 #
-sub initialize( $ ) {
-    $family = shift;
+sub initialize( $;$ ) {
+    ( $family, my $shorewallrc ) = @_;
 
     if ( $family == F_IPV4 ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall  Shorewall iptables  IPTABLES );
@@ -759,21 +759,23 @@ sub initialize( $ ) {
 		    CONFDIR  => '/etc/',
 		    );
 
-    process_shorewallrc;
+    if ( $shorewallrc ) {
+	process_shorewallrc( $shorewallrc );
 
-    $globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
+	$globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
 
-    if ( $family == F_IPV4 ) {
-	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall";
-	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
-	$globals{PRODUCT}       = 'shorewall';
-	$config{IPTABLES}       = undef;
-	$validlevels{ULOG}      = 'ULOG';
-    } else {
-	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
-	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
-	$globals{PRODUCT}       = 'shorewall6';
-	$config{IP6TABLES}      = undef;
+	if ( $family == F_IPV4 ) {
+	    $globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall";
+	    $globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
+	    $globals{PRODUCT}       = 'shorewall';
+	    $config{IPTABLES}       = undef;
+	    $validlevels{ULOG}      = 'ULOG';
+	} else {
+	    $globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
+	    $globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
+	    $globals{PRODUCT}       = 'shorewall6';
+	    $config{IP6TABLES}      = undef;
+	}
     }
 }
 
@@ -2276,12 +2278,12 @@ sub read_a_line1() {
     }
 }
 
-sub process_shorewallrc() {
-    my $home = $ENV{HOME} || `echo ~`;
+sub process_shorewallrc( $ ) {
+    my $shorewallrc = shift;
 
     $shorewallrc{PRODUCT} = $family == F_IPV4 ? 'shorewall' : 'shorewall6';
 
-    if ( $home && open_file "$home/.shorewallrc" ) {
+    if ( open_file $shorewallrc ) {
 	while ( read_a_line1 ) {
 	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		my ($var, $val) = ($1, $2);
@@ -2292,6 +2294,8 @@ sub process_shorewallrc() {
 		fatal_error "Unrecognized shorewallrc entry";
 	    }
 	}
+    } else {
+	fatal_error "Failed to open $shorewallrc: $!";
     }
 }
 
@@ -3469,7 +3473,7 @@ sub process_shorewall_conf( $$ ) {
     #
     for ( values  %config ) {
 	if ( supplied $_ ) {
-	    expand_variables( $_ ) unless /^'(.+)'$/;
+	    expand_variables( $_, 1) unless /^'(.+)'$/;
 	}
     }
 }

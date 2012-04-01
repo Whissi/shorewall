@@ -136,11 +136,11 @@ if [ $# -eq 0 ]; then
     #
     # Load packager's settings if any
     #
-    if [ -f ~/.shorewallrc ]; then
-	. ~/.shorewallrc || exit 1
+    if [ -f ./shorewallrc ]; then
+	. ./shorewallrc || exit 1
 	file=~/.shorewallrc
-    elif [ -f ./.shorewallrc ]; then
-	. ./.shorewallrc || exit 1
+    elif [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
 	file=./.shorewallrc
      else
 	fatal_error "No configuration file specified and ~/.shorewallrc not found"

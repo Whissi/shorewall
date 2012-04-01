@@ -146,11 +146,11 @@ done
 # Read the RC file
 #
 if [ $# -eq 0 ]; then
-    if [ -f ~/.shorewallrc ]; then
+    if [ -f ./shorewallrc ]; then
+	. ./shorewallrc || exit 1
+	file=./shorewallrc
+    elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc
-    elif [ -f ./.shorewallrc ]; then
-	. ./.shorewallrc || exit 1
-	file=./.shorewallrc
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
 	. /usr/share/shorewall/shorewallrc
     else
@@ -362,7 +362,7 @@ if [ -n "$INITFILE" ]; then
 
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' "$initfile"
 
-    echo  "$Product init script installed in ${DESTDIR}${INITDIR}/${INITFILE}"
+    echo  "$Product init script installed in $initfile"
 fi
 #
 # Install the .service file

@@ -280,13 +280,36 @@ fi
 echo "Installing Shorewall Core Version $VERSION"
 
 #
-# Create /usr/share/shorewall
+# Create directories
 #
 mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall
 chmod 755 ${DESTDIR}${LIBEXECDIR}/shorewall
 
 mkdir -p ${DESTDIR}${SHAREDIR}/shorewall
 chmod 755 ${DESTDIR}${SHAREDIR}/shorewall
+
+mkdir -p ${DESTDIR}${CONFDIR}
+chmod 755 ${DESTDIR}${CONFDIR}
+
+if [ -n "${SYSCONFDIR}" ]; then
+    mkdir -p ${DESTDIR}${SYSCONFDIR}
+    chmod 755 ${DESTDIR}${SYSCONFDIR}
+fi
+
+if [ -n "${SYSTEMD}" ]; then
+    mkdir -p ${DESTDIR}${SYSTEMD}
+    chmod 755 ${DESTDIR}${SYSTEMD}
+fi
+
+mkdir -p ${DESTDIR}${SBINDIR}
+chmod 755 ${DESTDIR}${SBINDIR}
+
+mkdir -p ${DESTDIR}${MANDIR}
+chmod 755 ${DESTDIR}${MANDIR}
+
+#
+# Note: ${VARDIR} is created at run-time since it has always been
+#       a relocatable directory on a per-product basis
 #
 # Install wait4ifup
 #

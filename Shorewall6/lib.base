@@ -24,11 +24,10 @@
 
 g_program=shorewall6
 g_family=6
+#
+# This may be altered by the installer
+#
 g_basedir=/usr/share/shorewall
 
-[ -n "${VARDIR:=/var/lib/$g_program}" ]
-[ -n "${SHAREDIR:=/usr/share/$g_program}" ]
-[ -n "${CONFDIR:=/etc/$g_program}" ]
-
-. /usr/share/shorewall/lib.base
+. ${g_basedir}/lib.base
 

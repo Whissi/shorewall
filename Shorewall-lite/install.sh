@@ -498,8 +498,8 @@ if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
 fi
 
 if [ ${SHAREDIR} != /usr/share ]; then
-    [ $PRODUCT = shorewall ] && eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/lib.base
-    sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
+    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
+    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then

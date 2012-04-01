@@ -61,11 +61,11 @@ usage() {
 # Get startup options (override default)
 ################################################################################
 OPTIONS=
-if [ -f /etc/sysconfig/shorewall6-lite ]; then
-    . /etc/sysconfig/shorewall6-lite
-elif [ -f /etc/default/shorewall6-lite ] ; then
-    . /etc/default/shorewall6-lite
-fi
+
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
 
 export SHOREWALL_INIT_SCRIPT=1
 
@@ -76,13 +76,13 @@ command="$1"
 
 case "$command" in
     start)
-	exec /sbin/shorewall6-lite $OPTIONS start $STARTOPTIONS
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS start $STARTOPTIONS
 	;;
     restart|reload)
-	exec /sbin/shorewall6-lite $OPTIONS restart $RESTARTOPTIONS
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)
-	exec /sbin/shorewall6-lite $OPTIONS $command $@
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $@
 	;;
     *)
 	usage

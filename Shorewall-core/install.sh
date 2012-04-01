@@ -27,10 +27,16 @@ VERSION=xxx #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME"
+    echo "usage: $ME [ <configuration-file> ] "
     echo "       $ME -v"
     echo "       $ME -h"
     exit $1
+}
+
+fatal_error() 
+{
+    echo "   ERROR: $@" >&2
+    exit 1
 }
 
 split() {
@@ -85,42 +91,86 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
+require() 
+{
+    eval [ -n "\$$1" ] || fatal_error "Required option $1 not set"
+}
+
 cd "$(dirname $0)"
-
-#
-# Load packager's settings if any
-#
-[ -f ../shorewall-pkg.config ] && . ../shorewall-pkg.config
-
-[ -n "$DESTDIR" ] || DESTDIR="$PREFIX"
 
 #
 # Parse the run line
 #
-# ARGS is "yes" if we've already parsed an argument
+finished=0
+
+while [ $finished -eq 0 ]; do
+    option=$1
+
+    case "$option" in
+	-*)
+	    option=${option#-}
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "Shorewall Firewall Installer Version $VERSION"
+			exit 0
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
+	    ;;
+	*)
+	    finished=1
+	    ;;
+    esac
+done
+
 #
+# Read the RC file
+#
+if [ $# -eq 0 ]; then
+    if [ -f ./shorewallrc ]; then
+	. ./shorewallrc
+	file=~/.shorewallrc
+    elif [ -f ./.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+	file=~/.shorewallrc
+    elif [ -f /usr/share/shorewall/shorewallrc ]; then
+	. /usr/share/shorewall/shorewallrc
+	file=/usr/share/shorewall/shorewallrc
+    else
+	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
+    fi
+elif [ $# -eq 1 ]; then
+    file=$1
+    case $file in
+	/*|.*)
+	    ;;
+	*)
+	    file=./$file || exit 1
+	    ;;
+    esac
+
+    . $file
+else
+    usage 1
+fi
+
+for var in SHAREDIR LIBEXECDIR PERLLIBDIR CONFDIR SBINDIR VARDIR; do
+    require $var
+done
+
+[ "${INITFILE}" != 'none/' ] && require INITSOURCE && require INITDIR
+
 T="-T"
-
-[ -n "${LIBEXEC:=/usr/share}" ]
-[ -n "${PERLLIB:=/usr/share/shorewall}" ]
-
-case "$LIBEXEC" in
-    /*)
-	;;
-    *)
-	echo "The LIBEXEC setting must be an absolute path name" >&2
-	exit 1
-	;;
-esac
-
-case "$PERLLIB" in
-    /*)
-	;;
-    *)
-	echo "The PERLLIB setting must be an absolute path name" >&2
-	exit 1
-	;;
-esac
 
 INSTALLD='-D'
 
@@ -180,41 +230,6 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-finished=0
-
-while [ $finished -eq 0 ]; do
-    option=$1
-
-    case "$option" in
-	-*)
-	    option=${option#-}
-	    
-	    while [ -n "$option" ]; do
-		case $option in
-		    h)
-			usage 0
-			;;
-		    v)
-			echo "Shorewall Firewall Installer Version $VERSION"
-			exit 0
-			;;
-		    *)
-			usage 1
-			;;
-		esac
-	    done
-
-	    shift
-	    ;;
-	*)
-	    [ -n "$option" ] && usage 1
-	    finished=1
-	    ;;
-    esac
-done
-
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-
 #
 # Determine where to install the firewall script
 #
@@ -236,6 +251,23 @@ case "$HOST" in
 	;;
 esac
 
+if [ -z "$file" ]; then
+    if $HOST = linux; then
+	file=shorewallrc.default
+    else
+	file=shorewallrc.${HOST}
+    fi
+
+    echo "You have not specified a configuration file and ~/.shorewallrc does not exist" >&2
+    echo "Shorewall-core $VERSION has determined that the $file configuration is appropriate for your system" >&2
+    echo "Please review the settings in that file. If you wish to change them, make a copy and modify the copy" >&2
+    echo "Then re-run install.sh passing either $file or the name of your modified copy" >&2
+    echo "" >&2
+    echo "Example:" >&2
+    echo "" >&2
+    echo "   ./install.sh $file" &>2
+fi
+
 if [ -n "$DESTDIR" ]; then
     if [ $BUILD != cygwin ]; then
 	if [ `id -u` != 0 ] ; then
@@ -245,56 +277,55 @@ if [ -n "$DESTDIR" ]; then
     fi
 fi
 
-#
-# Change to the directory containing this script
-#
-cd "$(dirname $0)"
-
 echo "Installing Shorewall Core Version $VERSION"
 
 #
 # Create /usr/share/shorewall
 #
-mkdir -p ${DESTDIR}${LIBEXEC}/shorewall
-chmod 755 ${DESTDIR}${LIBEXEC}/shorewall
+mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall
+chmod 755 ${DESTDIR}${LIBEXECDIR}/shorewall
 
-if [ $LIBEXEC != /usr/shorewall/ ]; then
-    mkdir -p ${DESTDIR}/usr/share/shorewall
-    chmod 755 ${DESTDIR}/usr/share/shorewall
-fi
+mkdir -p ${DESTDIR}${SHAREDIR}/shorewall
+chmod 755 ${DESTDIR}${SHAREDIR}/shorewall
 #
 # Install wait4ifup
 #
-install_file wait4ifup ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup 0755
+install_file wait4ifup ${DESTDIR}${LIBEXECDIR}/shorewall/wait4ifup 0755
 
 echo
-echo "wait4ifup installed in ${DESTDIR}${LIBEXEC}/shorewall/wait4ifup"
+echo "wait4ifup installed in ${DESTDIR}${LIBEXECDIR}/shorewall/wait4ifup"
 
 #
 # Install the libraries
 #
 for f in lib.* ; do
-    install_file $f ${DESTDIR}/usr/share/shorewall/$f 0644
-    echo "Library ${f#*.} file installed as ${DESTDIR}/usr/share/shorewall/$f"
+    install_file $f ${DESTDIR}${SHAREDIR}/shorewall/$f 0644
+    echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/shorewall/$f"
 done
-
-if [ $BUILD != apple ]; then
-    eval sed -i \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
-    eval sed -i \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
-else
-    eval sed -i \'\' -e \'s\|g_libexec=.\*\|g_libexec=$LIBEXEC\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
-    eval sed -i \'\' -e \'s\|g_perllib=.\*\|g_perllib=$PERLLIB\|\' ${DESTDIR}/usr/share/shorewall/lib.cli
-fi
 
 #
 # Symbolically link 'functions' to lib.base
 #
-ln -sf lib.base ${DESTDIR}/usr/share/shorewall/functions
+ln -sf lib.base ${DESTDIR}${SHAREDIR}/shorewall/functions
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}/usr/share/shorewall/coreversion
-chmod 644 ${DESTDIR}/usr/share/shorewall/coreversion
+echo "$VERSION" > ${DESTDIR}${SHAREDIR}/shorewall/coreversion
+chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
+
+[ $file != "${SHAREDIR}/shorewall/shorewallrc" ] && cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
+
+[ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
+
+if [ ${SHAREDIR} != /usr/share ]; then
+    for f in lib.*; do
+	if [ $BUILD != apple ]; then
+	    eval sed -i \'s\|/usr/share/|${SHAREDIR}/|\' ${DESTDIR}/${SHAREDIR}/$f
+	else
+	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/$f
+	fi
+    done
+fi
 #
 #  Report Success
 #

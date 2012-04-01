@@ -1,0 +1,127 @@
+#!/bin/bash
+#
+#     Shorewall Packet Filtering Firewall RPM configuration program - V4.5
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2012 - Tom Eastep (teastep@shorewall.net)
+#
+#	Shorewall documentation is available at http://www.shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#       Usage: ./configure <vendor> [ <option>=<setting> ] ...
+#
+#
+################################################################################################
+declare -A params
+declare -A options
+
+getfileparams() {
+    while read option; do
+	case $option in
+	    \#*)
+		;;
+	    *)
+		on=${option%=*}
+		ov=${option#*=}
+		ov=${ov%#*}
+		[ -n "$on" ] && options[${on}]="${ov}"
+		;;
+	esac
+
+    done
+    
+    return 0
+}
+
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <var>=<val> ..." >&2
+    exit 1
+fi
+
+for p in $@; do
+    p=${p#--}
+
+    if [ -n "${p}" ]; then
+	declare -u pn
+
+	pn=${p%=*}
+	pv=${p#*=}
+
+	if [ -n "${pn}" ]; then
+	    case ${pn} in
+		VENDOR)
+		    pn=HOST
+		    ;;
+		SHAREDSTATEDIR)
+		    pn=VARDIR
+		    ;;
+		DATADIR)
+		    pn=SHAREDIR
+		    ;;
+		SYSCONFDIR)
+		    pn=CONFDIR
+		    ;;
+	    esac
+    
+	    params[${pn}]="${pv}"
+	fi
+    fi
+done
+
+vendor=${params[HOST]}
+
+if [ -z "$vendor" ]; then
+    rcfile=shorewallrc.default
+    vendor=linux
+else
+    rcfile=shorewallrc.$vendor
+fi
+
+getfileparams < $rcfile || exit 1
+
+for p in ${!params[@]}; do
+    options[${p}]="${params[${p}]}"
+    options[${p}]="${params[${p}]}"
+done
+
+echo "HOST=$vendor" > shorewallrc
+
+for on in \
+    PREFIX \
+    SHAREDIR \
+    LIBEXECDIR \
+    PERLLIBDIR \
+    CONFDIR \
+    SBINDIR \
+    MANDIR \
+    INITDIR \
+    INITSOURCE \
+    INITFILE \
+    AUXINITSOURCE \
+    AUXINITFILE \
+    SYSTEMD \
+    SYSCONFILE \
+    SYSCONFDIR \
+    ANNOTATED \
+    VARDIR
+do
+    echo "$on=${options[${on}]}" >> shorewallrc
+done
+
+cat shorewallrc
+
+
+    

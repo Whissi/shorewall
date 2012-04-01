@@ -31,7 +31,7 @@ VERSION=xxx #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME"
+    echo "usage: $ME [ <shorewallrc file> ]"
     exit $1
 }
 
@@ -60,8 +60,25 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall/coreversion ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall/coreversion)"
+if [ $# -eq 0 ]; then
+    file=/usr/share/shorewall/shorewallrc
+elif [ $# -eq 1 ]; then
+    file=$1
+else
+    usage 1
+fi
+
+if [ -f "$file" ]; then
+    . "$file"
+else
+    echo "File $file not found" >&2
+    exit 1
+fi
+
+. $file || exit 1
+
+if [ -f ${SHAREDIR}/shorewall/coreversion ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall/coreversion)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Core Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -72,12 +89,9 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=/usr/share}" ]
-[ -n "${PERLLIB:=/usr/share/shorewall}" ]
-
 echo "Uninstalling Shorewall Core $VERSION"
 
-rm -rf /usr/share/shorewall
+rm -rf ${SHAREDIR}/shorewall
 
 echo "Shorewall Core Uninstalled"
 

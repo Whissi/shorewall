@@ -27,6 +27,16 @@
 ################################################################################################
 g_program=shorewall-lite
 
-. /usr/share/shorewall/lib.cli
+#
+# This is modified by the installer when ${SHAREDIR} <> /usr/share
+#
+. /usr/share/shorewall/shorewallrc
+
+g_libexec="$LIBEXECDIR"
+g_sharedir="$SHAREDIR"
+g_sbindir="$SBINDIR"
+g_readrc=1
+
+. $g_sharedir/shorewall/lib.cli
 
 shorewall_cli $@

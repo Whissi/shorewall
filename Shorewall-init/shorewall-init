@@ -23,9 +23,14 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #########################################################################################
+#
+# This is modified by the installer when ${SHAREDIR} <> /usr/share
+#
+. /usr/share/shorewall/shorewallrc
+
 # check if shorewall-init is configured or not
-if [ -f "/etc/sysconfig/shorewall-init" ]; then
-    . /etc/sysconfig/shorewall-init
+if [ -f "$SYSCONFDIR/shorewall-init" ]; then
+    . $SYSCONFDIR/shorewall-init
     if [ -z "$PRODUCTS" ]; then
         echo "ERROR: No products configured" >&2
 	exit 1
@@ -42,8 +47,6 @@ shorewall_start () {
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      VARDIR=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
       if [ -x ${VARDIR}/firewall ]; then
 	  if ! /sbin/$PRODUCT status > /dev/null 2>&1; then
 	      ${VARDIR}/firewall stop || exit 1

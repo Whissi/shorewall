@@ -78,6 +78,11 @@ else
 	not_configured
 fi
 
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
 # start the firewall
 shorewall6_start () {
   echo -n "Starting \"Shorewall6 Lite firewall\": "

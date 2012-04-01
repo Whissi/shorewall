@@ -137,455 +137,950 @@
   <section id="Install_Tarball">
     <title>Install using tarball</title>
 
-    <para>Beginning with Shorewall-4.5.0, the Shorewall packages depend on
-    Shorewall-core. So the first step is to install that package:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-core-4.5.0.tar.bz2</command></programlisting></para>
-      </listitem>
-
-      <listitem>
-        <para>cd to the shorewall directory (the version is encoded in the
-        directory name as in <quote>shorewall-core-4.5.0</quote>).</para>
-      </listitem>
-
-      <listitem>
-        <para>Type:</para>
-
-        <programlisting><command>./install.sh </command></programlisting>
-      </listitem>
-    </orderedlist>
-
-    <para>To install Shorewall using the tarball and install script:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-4.5.0.tar.bz2</command></programlisting></para>
-      </listitem>
-
-      <listitem>
-        <para>cd to the shorewall directory (the version is encoded in the
-        directory name as in <quote>shorewall-4.3.5</quote>).</para>
-      </listitem>
-
-      <listitem>
-        <para>Type:</para>
-
-        <programlisting><command>./install.sh </command></programlisting>
-
-        <para>or if you are installing Shorewall or Shorewall6 version 4.4.8
-        or later, you may type:</para>
-
-        <programlisting><command>./install.sh -s</command></programlisting>
-
-        <para>The <emphasis role="bold">-s</emphasis> option supresses
-        installation of all files in <filename
-        class="directory">/etc/shorewall</filename> except
-        <filename>shorewall.conf</filename>. You can copy any other files you
-        need from one of the <ulink url="GettingStarted.html">Samples</ulink>
-        or from <filename
-        class="directory">/usr/share/shorewall/configfiles/</filename>.</para>
-      </listitem>
-
-      <listitem>
-        <para>If the install script was unable to configure Shorewall to be
-        started automatically at boot, see <ulink
-        url="starting_and_stopping_shorewall.htm">these
-        instructions</ulink>.</para>
-      </listitem>
-    </orderedlist>
-
-    <para>Beginning with shorewall 4.4.20.1, the installer also supports a
-    <option>-a</option> (annotated) option. Beginning with that release, the
-    standard configuration files (including samples) may be annotated with the
-    contents of the associated manpage. The <option>-a</option> option enables
-    that behavior. The default remains that the configuration files do not
-    include documentation.</para>
-
     <section>
-      <title>Executables in /usr and Perl Modules</title>
+      <title>Versions 4.5.2 and Later</title>
 
-      <para>Distributions have different philosophies about the proper file
-      hierarchy. Two issures are particularly contentious:</para>
+      <para>Shorewall 4.5.2 introduced a change in the philosopy used by the
+      Shorewall installers. 4.5.2 introduced the concept of
+      <firstterm>shorewallrc files</firstterm>. These files define the
+      parameters to the install process. During the first installation using
+      <emphasis role="bold">Shorewall-core</emphasis> 4.5.2 or later, a
+      shorewallrc file named ${HOME}/.shorewallrc will be installed. That file
+      will provide the default parameters for installing other Shorewall
+      components of the same or later verion.</para>
+
+      <para>Note that <emphasis role="bold">you must install Shorewall-core
+      before installing any other Shorewall package</emphasis>.</para>
+
+      <para>Each of the Shorewall packages contains a set of
+      distribution-specific shorewallrc files:</para>
 
       <itemizedlist>
         <listitem>
-          <para>Executable files in
-          <filename>/usr/share/shorewall*</filename>. These include;</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>getparams</para>
-            </listitem>
-
-            <listitem>
-              <para>compiler.pl</para>
-            </listitem>
-
-            <listitem>
-              <para>wait4ifup</para>
-            </listitem>
-
-            <listitem>
-              <para>shorecap</para>
-            </listitem>
-
-            <listitem>
-              <para>ifupdown</para>
-            </listitem>
-          </itemizedlist>
+          <para>shorewallrc.apple (OS X)</para>
         </listitem>
 
         <listitem>
-          <para>Perl Modules in
-          <filename>/usr/share/shorewall/Shorewall</filename>.</para>
+          <para>shorewallrc.archlinux</para>
+        </listitem>
+
+        <listitem>
+          <para>shorewallrc.cygwin (Cygwin running on Windows)</para>
+        </listitem>
+
+        <listitem>
+          <para>shorewallrc.debian (Debian and derivatives)</para>
+        </listitem>
+
+        <listitem>
+          <para>shoreallrc.default (Generic Linux)</para>
+        </listitem>
+
+        <listitem>
+          <para>shorewallrc.redhat (Fedora, RHEL and derivatives)</para>
+        </listitem>
+
+        <listitem>
+          <para>shorewallrc.slackware</para>
+        </listitem>
+
+        <listitem>
+          <para>shorewallrc.suse (SLES and OpenSuSE)</para>
         </listitem>
       </itemizedlist>
 
-      <para>To allow distributions to designate alternate locations for these
-      files, the installers (install.sh) from 4.4.19 onward support the
-      following environmental variables:</para>
+      <para>When installing 4.5.2 or later for the first time, a special
+      procedure must be followed:</para>
 
-      <variablelist>
-        <varlistentry>
-          <term>LIBEXEC</term>
+      <orderedlist>
+        <listitem>
+          <para>Select the shorewallrc file that is closest to your
+          needs.</para>
+        </listitem>
 
-          <listitem>
-            <para>Determines where in /usr getparams, compiler.pl, wait4ifup,
-            shorecap and ifupdown are installed. Shorewall and Shorewall6 must
-            be installed with the same value of LIBEXEC. The listed
-            executables are installed in
-            <filename>/usr/${LIBEXEC}/shorewall*</filename>. The default value
-            of LIBEXEC is 'share'. LIBEXEC is recognized by all installers and
-            uninstallers.</para>
+        <listitem>
+          <para>Review the settings in the file.</para>
+        </listitem>
 
-            <para>Beginning with Shorewall 4.4.20, you can specify an absolute
-            path name for LIBEXEC, in which case the listed executables will
-            be installed in ${LIBEXEC}/shorewall*.</para>
+        <listitem>
+          <para>If you want to change something then you have two
+          choices:</para>
 
-            <para>Beginning with Shorewall 4.5.1, you must specify an absolute
-            pathname for LIBEXEC.</para>
-          </listitem>
-        </varlistentry>
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>Copy the file to shorewallrc and edit the copy to meet
+              your needs; or</para>
+            </listitem>
 
-        <varlistentry>
-          <term>PERLLIB</term>
+            <listitem>
+              <para>If the system has bash (/bin/bash) installed, you can run
+              ./configure (see below)</para>
+            </listitem>
 
-          <listitem>
-            <para>Determines where in <filename>/usr </filename>the Shorewall
-            Perl modules are installed. Shorewall and Shorewall6 must be
-            installed with the same value of PERLLIB. The modules are
-            installed in <filename>/usr/${PERLLIB}/Shorewall</filename>. The
-            default value of PERLLIB is 'share/shorewall'. PERLLIB is only
-            recognized by the Shorewall and Shorewall6 installers.</para>
+            <listitem>
+              <para>./install.sh</para>
+            </listitem>
+          </orderedlist>
+        </listitem>
 
-            <para>Beginning with Shorewall 4.4.20, you can specify an absolute
-            path name for PERLLIB, in which case the Shorewall Perl modules
-            will be installed in ${PERLLIB}/Shorewall/.</para>
+        <listitem>
+          <para>If you don't need to change the file, then simply:</para>
 
-            <para>Beginning with Shorewall 4.5.1, you must specify an absolute
-            pathname for PERLLIB.</para>
-          </listitem>
-        </varlistentry>
+          <simplelist>
+            <member>./install.sh
+            <replaceable>shorewallrcfile-that-meets-your-needs</replaceable></member>
 
-        <varlistentry>
-          <term>MANDIR</term>
+            <member></member>
 
-          <listitem>
-            <para>Determines where the man pages are installed. Default is
-            distribution-dependent as shown below.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
+            <member>Example: <command>./install
+            shorewallrc.debian</command></member>
+          </simplelist>
+        </listitem>
+      </orderedlist>
+
+      <para>The shorewall-core install.sh script will store the shorewallrc
+      file in ~/.shorewallrc where it will provide the defaults for future
+      installations of all Shorewall products. Other packages/versions can be
+      installed by simply typing</para>
+
+      <simplelist>
+        <member><command>./install.sh</command></member>
+      </simplelist>
+
+      <section>
+        <title>Settings in a shorewallrc file</title>
+
+        <para>A shorewallrc file contains a number of lines of the form
+        <replaceable>option</replaceable>=<replaceable>value.</replaceable>
+        Because some of the installers are shared between Shorewall products,
+        the files assume the definition of the symbol PRODUCT. $PRODUCT will
+        contain the name of a Shorewall product (shorewall-core, shorewall,
+        shorewall6, shorewall-lite, shorewall6-lite or shorewall-init).</para>
+
+        <para>Valid values for <replaceable>option</replaceable> are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>HOST</term>
+
+            <listitem>
+              <para>Selects the shorewallrc file to use for default settings.
+              Valid values are:</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>apple</term>
+
+                  <listitem>
+                    <para>OS X</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>archlinux</term>
+
+                  <listitem>
+                    <para>Archlinux</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>cygwin</term>
+
+                  <listitem>
+                    <para>Cygwin running under Windows</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>debian</term>
+
+                  <listitem>
+                    <para>Debian and derivatives (Ubuntu, Kbuntu, etc)</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>default</term>
+
+                  <listitem>
+                    <para>Generic Linux</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>redhat</term>
+
+                  <listitem>
+                    <para>Fedora, RHEL and derivatives (CentOS, Foobar,
+                    etc)</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>slackware</term>
+
+                  <listitem>
+                    <para>Slackware Linux</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>suse</term>
+
+                  <listitem>
+                    <para>SLES and OpenSuSe</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PREFIX</term>
+
+            <listitem>
+              <para>Top-level directory under which most Shorewall components
+              are installed. All standard shorewallrc files define this as
+              <emphasis role="bold">\usr</emphasis>. </para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SHAREDIR</term>
+
+            <listitem>
+              <para>The directory where most Shorewall components are
+              installed. In all of the standard shorewallrc file, this option
+              has the value <emphasis
+              role="bold">${PREFIX}/share</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>LIBEXECDIR</term>
+
+            <listitem>
+              <para>Directory where internal executables are stored. In the
+              standard shorewallrc files, the default is either <emphasis
+              role="bold">${PREFIX}/share</emphasis> or <emphasis
+              role="bold">${PREFIX}/libexec</emphasis></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PERLLIBDIR</term>
+
+            <listitem>
+              <para>Directory where the Shorewall Perl modules are installed.
+              Then will be installed in this directory under the sub-directory
+              Shorewall. Default is distribution-specific.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>CONFDIR</term>
+
+            <listitem>
+              <para>Directory where subsystem configuration data is stored.
+              Default is <emphasis role="bold">/etc</emphasis> in all
+              shorewallrc file.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SBINDIR</term>
+
+            <listitem>
+              <para>Directory where CLI programs will be installed. Default in
+              all shorewallrc files is /<emphasis
+              role="bold">sbin</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>MANDIR</term>
+
+            <listitem>
+              <para>Directory under which manpages are to be installed.
+              Default is distribution dependent.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>INITDIR</term>
+
+            <listitem>
+              <para>Directory under which SysV init scripts are installed.
+              Default is distribution dependent.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>INITSOURCE</term>
+
+            <listitem>
+              <para>File in the package that is to be installed as the SysV
+              init script for the product.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>INITFILE</term>
+
+            <listitem>
+              <para>The name of the SysV init script when installed under
+              $INITDIR. May be empty, in which case no SysV init script will
+              be installed. This is usually the case on systems that run
+              systemd and on systems like Cygwin or OS X where Shorewall can't
+              act as a firewall.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>AUXINITSOURCE and AUXINITFILE</term>
+
+            <listitem>
+              <para>Analogs of INITSOURCE and INITFILE for distributions, like
+              Slackware, that have a master SysV init script and multiple
+              subordinate scripts.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SYSTEMD</term>
+
+            <listitem>
+              <para>The directory under which the product's .service file is
+              to be installed. Should only be specified on systems running
+              systemd.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SYSCONFDIR</term>
+
+            <listitem>
+              <para>The directory where package SysV init configuration files
+              are to be installed. <emphasis
+              role="bold">/etc/default</emphasis> on Debian and derivatives
+              and <emphasis role="bold">/etc/sysconfig</emphasis>
+              otherwise</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SYSCONFFILE</term>
+
+            <listitem>
+              <para>The file in the Shorewall package that should be installed
+              as ${SYSCONFDIR}/$PRODUCT</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>ANNOTATED</term>
+
+            <listitem>
+              <para>Value is either empty or non-empty. Non-empty indicates
+              that files in ${CONFDIR}/${PRODUCT} should be annotated with
+              manpage documentation.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SPARSE</term>
+
+            <listitem>
+              <para>Value is either empty or non-empty. When non-empty, only
+              ${PRODUCT}.conf will be installed in
+              ${CONFDIR}/${PRODUCT}</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>VARDIR</term>
+
+            <listitem>
+              <para>Directory where subsystem state data is to be stored.
+              Default is <emphasis role="bold">/var/lib</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+
+      <section>
+        <title>configure Script</title>
+
+        <para>The configure script creates a file named
+        <filename>shorewallrc</filename> in the current working directory.
+        This file is the default input file to the
+        i<command>nstall.sh</command> scripts. It is run as follows:</para>
+
+        <simplelist>
+          <member><command>./configure</command> [
+          <replaceable>option</replaceable>=<replaceable>value</replaceable> ]
+          ...</member>
+        </simplelist>
+
+        <para>The possible values for option are the same as those shone above
+        in the shorewallrc file. They may be specified in either upper or
+        lower case and may optionally be prefixed by '--'. To facilitate use
+        with the rpm %configure script, the following options are
+        supported:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>vendor</term>
+
+            <listitem>
+              <para>Alias for <emphasis role="bold">host</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>sharedstatedir</term>
+
+            <listitem>
+              <para>Alias for <emphasis role="bold">vardir</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>datadir</term>
+
+            <listitem>
+              <para>Alias for <emphasis
+              role="bold">sharedir</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>sysconfdir</term>
+
+            <listitem>
+              <para>Alias for <emphasis role="bold">confdir</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Note that %configure may dsgenerate option/value pairs that are
+        incompatible with the <command>configure</command> script. The current
+        %configure macro is:</para>
+
+        <programlisting>%configure \
+  CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ; \
+  CXXFLAGS="${CXXFLAGS:-%optflags}" ; export CXXFLAGS ; \
+  FFLAGS="${FFLAGS:-%optflags}" ; export FFLAGS ; \
+  ./configure --host=%{_host} --build=%{_build} \\\
+        --target=%{_target_platform} \\\
+        --program-prefix=%{?_program_prefix} \\\
+        --prefix=%{_prefix} \\\
+        --exec-prefix=%{_exec_prefix} \\\
+        --bindir=%{_bindir} \\\
+        --sbindir=%{_sbindir} \\\
+        --sysconfdir=%{_sysconfdir} \\\
+        --datadir=%{_datadir} \\\
+        --includedir=%{_includedir} \\\
+        --libdir=%{_libdir} \\\
+        --libexecdir=%{_libexecdir} \\\
+        --localstatedir=%{_localstatedir} \\\
+        --sharedstatedir=%{_sharedstatedir} \\\
+        --mandir=%{_mandir} \\\
+        --infodir=%{_infodir}
+</programlisting>
+
+        <para>On Fedora 16, this expands to:</para>
+
+        <programlisting>  CFLAGS="${CFLAGS:--O2 -g -march=i386 -mtune=i686}" ; export CFLAGS ; 
+  CXXFLAGS="${CXXFLAGS:--O2 -g -march=i386 -mtune=i686}" ; export CXXFLAGS ; 
+  FFLAGS="${FFLAGS:--O2 -g -march=i386 -mtune=i686}" ; export FFLAGS ; 
+  ./configure <emphasis role="bold">--host=i686-pc-linux-gnu</emphasis> --build=i686-pc-linux-gnu \
+        --program-prefix= \
+        --prefix=/usr \
+        --exec-prefix=/usr \
+        --bindir=/usr/bin \
+        --sbindir=/usr/sbin \
+        --sysconfdir=/etc \
+        --datadir=/usr/share \
+        --includedir=/usr/include \
+        --libdir=/usr/lib \
+        --libexecdir=/usr/libexec \
+        --localstatedir=/var \
+        --sharedstatedir=/var/lib \
+        --mandir=/usr/share/man \
+        --infodir=/usr/share/info
+</programlisting>
+
+        <para>The value of <emphasis role="bold">--host </emphasis>does not
+        map to any of the valid HOST values in shorewallrc. So to use
+        %configure on a Fedora system, you want to invoke it as
+        follows:</para>
+
+        <programlisting><command>%configure --vendor=redhat</command></programlisting>
+
+        <para>To reset the value of a setting in shorewallrc.$host, give it a
+        null value. For example, if you are installing on a RHEL derivative
+        that doesn't run systemd, use this command:</para>
+
+        <programlisting><command>./configure --vendor=redhat --systemd=</command></programlisting>
+      </section>
     </section>
 
-    <section id="Locations">
-      <title>Default Install Locations</title>
+    <section>
+      <title>Versions 4.5.1 and Earlier</title>
 
-      <para>The default install locations are distribution dependent as shown
-      in the following sections. These are the locations that are chosen by
-      the install.sh scripts.</para>
+      <para>Beginning with Shorewall-4.5.0, the Shorewall packages depend on
+      Shorewall-core. So the first step is to install that package:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-core-4.5.0.tar.bz2</command></programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>cd to the shorewall directory (the version is encoded in the
+          directory name as in <quote>shorewall-core-4.5.0</quote>).</para>
+        </listitem>
+
+        <listitem>
+          <para>Type:</para>
+
+          <programlisting><command>./install.sh </command></programlisting>
+        </listitem>
+      </orderedlist>
+
+      <para>To install Shorewall using the tarball and install script:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>unpack the tarballs:<programlisting><command>tar -jxf shorewall-4.5.0.tar.bz2</command></programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>cd to the shorewall directory (the version is encoded in the
+          directory name as in <quote>shorewall-4.3.5</quote>).</para>
+        </listitem>
+
+        <listitem>
+          <para>Type:</para>
+
+          <programlisting><command>./install.sh </command></programlisting>
+
+          <para>or if you are installing Shorewall or Shorewall6 version 4.4.8
+          or later, you may type:</para>
+
+          <programlisting><command>./install.sh -s</command></programlisting>
+
+          <para>The <emphasis role="bold">-s</emphasis> option supresses
+          installation of all files in <filename
+          class="directory">/etc/shorewall</filename> except
+          <filename>shorewall.conf</filename>. You can copy any other files
+          you need from one of the <ulink
+          url="GettingStarted.html">Samples</ulink> or from <filename
+          class="directory">/usr/share/shorewall/configfiles/</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>If the install script was unable to configure Shorewall to be
+          started automatically at boot, see <ulink
+          url="starting_and_stopping_shorewall.htm">these
+          instructions</ulink>.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Beginning with shorewall 4.4.20.1, the installer also supports a
+      <option>-a</option> (annotated) option. Beginning with that release, the
+      standard configuration files (including samples) may be annotated with
+      the contents of the associated manpage. The <option>-a</option> option
+      enables that behavior. The default remains that the configuration files
+      do not include documentation.</para>
 
       <section>
-        <title>All Distributions</title>
+        <title>Executables in /usr and Perl Modules</title>
 
-        <informaltable>
-          <tgroup cols="2">
-            <tbody>
-              <row>
-                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+        <para>Distributions have different philosophies about the proper file
+        hierarchy. Two issures are particularly contentious:</para>
 
-                <entry><emphasis role="bold">LOCATION</emphasis></entry>
-              </row>
+        <itemizedlist>
+          <listitem>
+            <para>Executable files in
+            <filename>/usr/share/shorewall*</filename>. These include;</para>
 
-              <row>
-                <entry>man pages</entry>
+            <itemizedlist>
+              <listitem>
+                <para>getparams</para>
+              </listitem>
 
-                <entry>/usr/share/man/ (may ve overridden using
-                MANDIR)</entry>
-              </row>
+              <listitem>
+                <para>compiler.pl</para>
+              </listitem>
 
-              <row>
-                <entry>Shorewall Perl Modules</entry>
+              <listitem>
+                <para>wait4ifup</para>
+              </listitem>
 
-                <entry>/usr/share/shorewall/ (may be overridden using
-                PERLLIB)</entry>
-              </row>
+              <listitem>
+                <para>shorecap</para>
+              </listitem>
 
-              <row>
-                <entry>Executable helper scripts (compiler.pl, getparams,
-                wait4ifup)</entry>
+              <listitem>
+                <para>ifupdown</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
 
-                <entry>/usr/share/shorewall/ (may be overridden using
-                LIBEXEC)</entry>
-              </row>
+          <listitem>
+            <para>Perl Modules in
+            <filename>/usr/share/shorewall/Shorewall</filename>.</para>
+          </listitem>
+        </itemizedlist>
 
-              <row>
-                <entry>ifupdown.sh (from Shorewall-init)</entry>
+        <para>To allow distributions to designate alternate locations for
+        these files, the installers (install.sh) from 4.4.19 onward support
+        the following environmental variables:</para>
 
-                <entry>/usr/share/shorewall-init/ (may be overridden using
-                LIBEXEC)</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
+        <variablelist>
+          <varlistentry>
+            <term>LIBEXEC</term>
+
+            <listitem>
+              <para>Determines where in /usr getparams, compiler.pl,
+              wait4ifup, shorecap and ifupdown are installed. Shorewall and
+              Shorewall6 must be installed with the same value of LIBEXEC. The
+              listed executables are installed in
+              <filename>/usr/${LIBEXEC}/shorewall*</filename>. The default
+              value of LIBEXEC is 'share'. LIBEXEC is recognized by all
+              installers and uninstallers.</para>
+
+              <para>Beginning with Shorewall 4.4.20, you can specify an
+              absolute path name for LIBEXEC, in which case the listed
+              executables will be installed in ${LIBEXEC}/shorewall*.</para>
+
+              <para>Beginning with Shorewall 4.5.1, you must specify an
+              absolute pathname for LIBEXEC.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PERLLIB</term>
+
+            <listitem>
+              <para>Determines where in <filename>/usr </filename>the
+              Shorewall Perl modules are installed. Shorewall and Shorewall6
+              must be installed with the same value of PERLLIB. The modules
+              are installed in <filename>/usr/${PERLLIB}/Shorewall</filename>.
+              The default value of PERLLIB is 'share/shorewall'. PERLLIB is
+              only recognized by the Shorewall and Shorewall6
+              installers.</para>
+
+              <para>Beginning with Shorewall 4.4.20, you can specify an
+              absolute path name for PERLLIB, in which case the Shorewall Perl
+              modules will be installed in ${PERLLIB}/Shorewall/.</para>
+
+              <para>Beginning with Shorewall 4.5.1, you must specify an
+              absolute pathname for PERLLIB.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>MANDIR</term>
+
+            <listitem>
+              <para>Determines where the man pages are installed. Default is
+              distribution-dependent as shown below.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
       </section>
 
-      <section>
-        <title>Debian</title>
+      <section id="Locations">
+        <title>Default Install Locations</title>
 
-        <informaltable>
-          <tgroup cols="2">
-            <tbody>
-              <row>
-                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+        <para>The default install locations are distribution dependent as
+        shown in the following sections. These are the locations that are
+        chosen by the install.sh scripts.</para>
 
-                <entry><emphasis role="bold">LOCATION</emphasis></entry>
-              </row>
+        <section>
+          <title>All Distributions</title>
+
+          <informaltable>
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">COMPONENT</emphasis></entry>
 
-              <row>
-                <entry>CLI programs</entry>
+                  <entry><emphasis role="bold">LOCATION</emphasis></entry>
+                </row>
 
-                <entry>/sbin/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>man pages</entry>
 
-              <row>
-                <entry>Distribution-specific configuration file</entry>
+                  <entry>/usr/share/man/ (may ve overridden using
+                  MANDIR)</entry>
+                </row>
 
-                <entry>/etc/default/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Shorewall Perl Modules</entry>
 
-              <row>
-                <entry>Init Scripts</entry>
+                  <entry>/usr/share/shorewall/ (may be overridden using
+                  PERLLIB)</entry>
+                </row>
 
-                <entry>/etc/init.d/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Executable helper scripts (compiler.pl, getparams,
+                  wait4ifup)</entry>
 
-              <row>
-                <entry>ifupdown scripts from Shorewall-init</entry>
+                  <entry>/usr/share/shorewall/ (may be overridden using
+                  LIBEXEC)</entry>
+                </row>
 
-                <entry>/etc/network/if-up.d/shorewall,
-                /etc/network/if-post-down.d/shorewall</entry>
-              </row>
+                <row>
+                  <entry>ifupdown.sh (from Shorewall-init)</entry>
 
-              <row>
-                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+                  <entry>/usr/share/shorewall-init/ (may be overridden using
+                  LIBEXEC)</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </section>
 
-                <entry>/etc/ppp/ip-up.d/shorewall,
-                /etc/ppp/ip-down.d/shorewall /etc/ppp/ipv6-up.d/shorewall
-                /etc/ppp/ipv6-down.d/shorewall</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
+        <section>
+          <title>Debian</title>
 
-      <section>
-        <title>Redhat and Derivatives</title>
+          <informaltable>
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">COMPONENT</emphasis></entry>
 
-        <informaltable>
-          <tgroup cols="2">
-            <tbody>
-              <row>
-                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+                  <entry><emphasis role="bold">LOCATION</emphasis></entry>
+                </row>
 
-                <entry><emphasis role="bold">LOCATION</emphasis></entry>
-              </row>
+                <row>
+                  <entry>CLI programs</entry>
 
-              <row>
-                <entry>CLI programs</entry>
+                  <entry>/sbin/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/sbin/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Distribution-specific configuration file</entry>
 
-              <row>
-                <entry>Distribution-specific configuration file</entry>
+                  <entry>/etc/default/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/etc/sysconfig/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Init Scripts</entry>
 
-              <row>
-                <entry>Init Scripts</entry>
+                  <entry>/etc/init.d/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/etc/rc.d/init.d/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ifupdown scripts from Shorewall-init</entry>
+                  <entry>/etc/network/if-up.d/shorewall,
+                  /etc/network/if-post-down.d/shorewall</entry>
+                </row>
 
-                <entry>/sbin/ifup-local, /sbin/ifdown-local</entry>
-              </row>
+                <row>
+                  <entry>ppp ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+                  <entry>/etc/ppp/ip-up.d/shorewall,
+                  /etc/ppp/ip-down.d/shorewall /etc/ppp/ipv6-up.d/shorewall
+                  /etc/ppp/ipv6-down.d/shorewall</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </section>
 
-                <entry>/etc/ppp/ip-up.local, /etc/ppp/ip-down.local</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
+        <section>
+          <title>Redhat and Derivatives</title>
 
-      <section>
-        <title>SuSE</title>
+          <informaltable>
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">COMPONENT</emphasis></entry>
 
-        <informaltable>
-          <tgroup cols="2">
-            <tbody>
-              <row>
-                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+                  <entry><emphasis role="bold">LOCATION</emphasis></entry>
+                </row>
 
-                <entry><emphasis role="bold">LOCATION</emphasis></entry>
-              </row>
+                <row>
+                  <entry>CLI programs</entry>
 
-              <row>
-                <entry>CLI programs</entry>
+                  <entry>/sbin/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/sbin/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Distribution-specific configuration file</entry>
 
-              <row>
-                <entry>Distribution-specific configuration file</entry>
+                  <entry>/etc/sysconfig/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/etc/sysconfig/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Init Scripts</entry>
 
-              <row>
-                <entry>Init Scripts</entry>
+                  <entry>/etc/rc.d/init.d/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/etc/init.d/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ifupdown scripts from Shorewall-init</entry>
+                  <entry>/sbin/ifup-local, /sbin/ifdown-local</entry>
+                </row>
 
-                <entry>/etc/sysconfig/network/if-up.d/shorewall,
-                /etc/sysconfig/network/if-down.d/shorewall</entry>
-              </row>
+                <row>
+                  <entry>ppp ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+                  <entry>/etc/ppp/ip-up.local, /etc/ppp/ip-down.local</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </section>
 
-                <entry>/etc/ppp/ip-up.d/shorewall,
-                /etc/ppp/ip-down.d/shorewall /etc/ppp/ipv6-up.d/shorewall
-                /etc/ppp/ipv6-down.d/shorewall</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
+        <section>
+          <title>SuSE</title>
 
-      <section>
-        <title>Cygwin</title>
+          <informaltable>
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">COMPONENT</emphasis></entry>
 
-        <informaltable>
-          <tgroup cols="2">
-            <tbody>
-              <row>
-                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+                  <entry><emphasis role="bold">LOCATION</emphasis></entry>
+                </row>
 
-                <entry><emphasis role="bold">LOCATION</emphasis></entry>
-              </row>
+                <row>
+                  <entry>CLI programs</entry>
 
-              <row>
-                <entry>CLI programs</entry>
+                  <entry>/sbin/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/bin/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Distribution-specific configuration file</entry>
 
-              <row>
-                <entry>Distribution-specific configuration file</entry>
+                  <entry>/etc/sysconfig/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>N/A</entry>
-              </row>
+                <row>
+                  <entry>Init Scripts</entry>
 
-              <row>
-                <entry>Init Scripts</entry>
+                  <entry>/etc/init.d/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>N/A</entry>
-              </row>
+                <row>
+                  <entry>ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ifupdown scripts from Shorewall-init</entry>
+                  <entry>/etc/sysconfig/network/if-up.d/shorewall,
+                  /etc/sysconfig/network/if-down.d/shorewall</entry>
+                </row>
 
-                <entry>N/A</entry>
-              </row>
+                <row>
+                  <entry>ppp ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+                  <entry>/etc/ppp/ip-up.d/shorewall,
+                  /etc/ppp/ip-down.d/shorewall /etc/ppp/ipv6-up.d/shorewall
+                  /etc/ppp/ipv6-down.d/shorewall</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </section>
 
-                <entry>N/A</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
+        <section>
+          <title>Cygwin</title>
 
-      <section>
-        <title>OS X</title>
+          <informaltable>
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">COMPONENT</emphasis></entry>
 
-        <informaltable>
-          <tgroup cols="2">
-            <tbody>
-              <row>
-                <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+                  <entry><emphasis role="bold">LOCATION</emphasis></entry>
+                </row>
 
-                <entry><emphasis role="bold">LOCATION</emphasis></entry>
-              </row>
+                <row>
+                  <entry>CLI programs</entry>
 
-              <row>
-                <entry>CLI programs</entry>
+                  <entry>/bin/<replaceable>product</replaceable></entry>
+                </row>
 
-                <entry>/sbin/<replaceable>product</replaceable></entry>
-              </row>
+                <row>
+                  <entry>Distribution-specific configuration file</entry>
 
-              <row>
-                <entry>Distribution-specific configuration file</entry>
+                  <entry>N/A</entry>
+                </row>
 
-                <entry>N/A</entry>
-              </row>
+                <row>
+                  <entry>Init Scripts</entry>
 
-              <row>
-                <entry>Init Scripts</entry>
+                  <entry>N/A</entry>
+                </row>
 
-                <entry>N/A</entry>
-              </row>
+                <row>
+                  <entry>ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ifupdown scripts from Shorewall-init</entry>
+                  <entry>N/A</entry>
+                </row>
 
-                <entry>N/A</entry>
-              </row>
+                <row>
+                  <entry>ppp ifupdown scripts from Shorewall-init</entry>
 
-              <row>
-                <entry>ppp ifupdown scripts from Shorewall-init</entry>
+                  <entry>N/A</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </section>
 
-                <entry>N/A</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
+        <section>
+          <title>OS X</title>
+
+          <informaltable>
+            <tgroup cols="2">
+              <tbody>
+                <row>
+                  <entry><emphasis role="bold">COMPONENT</emphasis></entry>
+
+                  <entry><emphasis role="bold">LOCATION</emphasis></entry>
+                </row>
+
+                <row>
+                  <entry>CLI programs</entry>
+
+                  <entry>/sbin/<replaceable>product</replaceable></entry>
+                </row>
+
+                <row>
+                  <entry>Distribution-specific configuration file</entry>
+
+                  <entry>N/A</entry>
+                </row>
+
+                <row>
+                  <entry>Init Scripts</entry>
+
+                  <entry>N/A</entry>
+                </row>
+
+                <row>
+                  <entry>ifupdown scripts from Shorewall-init</entry>
+
+                  <entry>N/A</entry>
+                </row>
+
+                <row>
+                  <entry>ppp ifupdown scripts from Shorewall-init</entry>
+
+                  <entry>N/A</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </section>
       </section>
     </section>
   </section>

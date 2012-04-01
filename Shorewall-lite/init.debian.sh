@@ -57,17 +57,23 @@ not_configured () {
 	exit 0
 }
 
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
 # parse the shorewall params file in order to use params in
 # /etc/default/shorewall
-if [ -f "/etc/shorewall-lite/params" ]
+
+if [ -f "$CONFDIR/shorewall-lite/params" ]
 then
-	. /etc/shorewall-lite/params
+	. $CONFDIR/shorewall-lite/params
 fi
 
 # check if shorewall is configured or not
-if [ -f "/etc/default/shorewall-lite" ]
+if [ -f "$SYSCONFDIR/shorewall-lite" ]
 then
-	. /etc/default/shorewall-lite
+	. $SYSCONFDIR/shorewall-lite
 	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then

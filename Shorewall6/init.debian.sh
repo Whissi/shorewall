@@ -54,10 +54,15 @@ not_configured () {
 	exit 0
 }
 
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
 # check if shorewall is configured or not
-if [ -f "/etc/default/shorewall6" ]
+if [ -f "${SYSCONFDIR}/shorewall6" ]
 then
-	. /etc/default/shorewall6
+	. ${SYSCONFDIR}/shorewall6
 	SRWL_OPTS="$SRWL_OPTS $OPTIONS"
 	if [ "$startup" != "1" ]
 	then

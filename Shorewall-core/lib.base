@@ -32,44 +32,59 @@ SHOREWALL_CAPVERSION=40502
 
 [ -n "${g_program:=shorewall}" ]
 
+if [ -z "$g_readrc" ]; then
+    #
+    # This is modified by the installer when ${SHAREDIR} <> /usr/share
+    #
+    . /usr/share/shorewall/shorewallrc
+
+    g_libexec="$LIBEXECDIR"
+    g_sharedir="$SHAREDIR"
+    g_sbindir="$SBINDIR"
+    g_vardir="$VARDIR"
+    g_readrc=1
+fi
+
 case $g_program in
     shorewall)
-	SHAREDIR=/usr/share/shorewall
-	CONFDIR=/etc/shorewall
+	SHAREDIR=${SHAREDIR}/shorewall
+	CONFDIR=${CONFDIR}/shorewall
 	g_product="Shorewall"
 	g_family=4
 	g_tool=
-	g_basedir=/usr/share/shorewall
+	g_basedir=${SHAREDIR}/shorewall
 	g_lite=
 	;;
     shorewall6)
-	SHAREDIR=/usr/share/shorewall6
-	CONFDIR=/etc/shorewall6
+	SHAREDIR=${SHAREDIR}/shorewall6
+	CONFDIR=${CONFDIR}/shorewall6
 	g_product="Shorewall6"
 	g_family=6
 	g_tool=
-	g_basedir=/usr/share/shorewall
+	g_basedir=${SHAREDIR}/shorewall
 	g_lite=
 	;;
     shorewall-lite)
-	SHAREDIR=/usr/share/shorewall-lite
-	CONFDIR=/etc/shorewall-lite
+	SHAREDIR=${SHAREDIR}/shorewall-lite
+	CONFDIR=${CONFDIR}/shorewall-lite
 	g_product="Shorewall Lite"
 	g_family=4
 	g_tool=iptables
-	g_basedir=/usr/share/shorewall-lite
+	g_basedir=${SHAREDIR}/shorewall-lite
 	g_lite=Yes
 	;;
     shorewall6-lite)
-	SHAREDIR=/usr/share/shorewall6-lite
-	CONFDIR=/etc/shorewall6-lite
+	SHAREDIR=${SHAREDIR}/shorewall6-lite
+	CONFDIR=${CONFDIR}/shorewall6-lite
 	g_product="Shorewall6 Lite"
 	g_family=6
 	g_tool=ip6tables
-	g_basedir=/usr/share/shorewall6-lite
+	g_basedir=${SHAREDIR}/shorewall6-lite
 	g_lite=Yes
 	;;
 esac
+
+VARDIR=${VARDIR}/${g_program}
 
 #
 # Conditionally produce message
@@ -186,7 +201,7 @@ mutex_off()
     rm -f ${LOCKFILE:=${VARDIR}/lock}
 }
 
-[ -z "$LEFTSHIFT" ] && . /usr/share/shorewall/lib.common
+[ -z "$LEFTSHIFT" ] && . ${g_sharedir}/shorewall/lib.common
 
 #
 # Validate an IP address
@@ -455,14 +470,14 @@ mktempfile() {
     else
 	case "$MKTEMP" in
 	    BSD)
-		mktemp /tmp/shorewall.XXXXXX
+		mktemp ${TMPDIR:-/tmp}/shorewall.XXXXXX
 		;;
 	    STD)
 		mktemp -t shorewall.XXXXXX
 		;;
 	    None)
-		rm -f /tmp/shorewall-$$
-		> /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+		rm -f ${TMPDIR:-/tmp}/shorewall-$$
+		> ${TMPDIR:-}/shorewall-$$ && echo ${TMPDIR:-/tmp}/shorewall-$$
 		;;
 	    *)
 		error_message "ERROR:Internal error in mktempfile"

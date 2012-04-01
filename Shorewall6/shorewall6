@@ -27,6 +27,24 @@
 ################################################################################################
 g_program=shorewall6
 
-. /usr/share/shorewall/lib.cli
+if [ -f ~/.shorewallrc ]; then
+    . ~/.shorewallrc || exit 1
+else
+    SHAREDIR=/usr/share
+    CONFDIR=/etc
+    SBINDIR=/sbin
+    VARDIR=/var/lib
+    LIBEXECDIR=/usr/share
+    PERLLIBDIR=/usr/share/shorewall
+
+fi
+
+g_libexec="$LIBEXECDIR"
+g_sharedir="$SHAREDIR"
+g_sbindir="$SBINDIR"
+g_perllib="$PERLLIBDIR"
+g_readrc=1
+
+. $g_sharedir/shorewall/lib.cli
 
 shorewall_cli $@

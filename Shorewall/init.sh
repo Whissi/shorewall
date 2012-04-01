@@ -54,7 +54,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 # Give Usage Information						       #
 ################################################################################
 usage() {
-    echo "Usage: $0 start|stop|reload|restart|status"
+    echo "Usage: $0 start|stop|reload|restart|status" >&2
     exit 1
 }
 
@@ -62,10 +62,14 @@ usage() {
 # Get startup options (override default)
 ################################################################################
 OPTIONS="-v0"
-if [ -f /etc/sysconfig/shorewall ]; then
-    . /etc/sysconfig/shorewall
-elif [ -f /etc/default/shorewall ] ; then
-    . /etc/default/shorewall
+
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
+if [ -f ${SYSCONFDIR}/shorewall ]; then
+    . ${SYSCONFDIR}/shorewall
 fi
 
 export SHOREWALL_INIT_SCRIPT=1
@@ -78,13 +82,13 @@ shift
 
 case "$command" in
     start)
-	exec /sbin/shorewall $OPTIONS start $STARTOPTIONS
+	exec $SBINDIR/shorewall $OPTIONS start $STARTOPTIONS
 	;;
     restart|reload)
-	exec /sbin/shorewall $OPTIONS restart $RESTARTOPTIONS
+	exec $SBINDIR/shorewall $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)
-	exec /sbin/shorewall $OPTIONS $command
+	exec $SBINDIR/shorewall $OPTIONS $command
 	;;
     *)
 	usage

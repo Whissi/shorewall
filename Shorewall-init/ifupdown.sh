@@ -71,6 +71,11 @@ Debian_SuSE_ppp() {
 IFUPDOWN=0
 PRODUCTS=
 
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
 if [ -f /etc/default/shorewall-init ]; then
     . /etc/default/shorewall-init
 elif [ -f /etc/sysconfig/shorewall-init ]; then
@@ -182,10 +187,8 @@ else
 fi
 
 for PRODUCT in $PRODUCTS; do
-    VARDIR=/var/lib/$PRODUCT
-    [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir
     if [ -x $VARDIR/firewall ]; then
-	  ( . /usr/share/$PRODUCT/lib.base
+	  ( . ${SHAREDIR}/shorewall/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
 	    mutex_off

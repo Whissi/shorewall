@@ -160,15 +160,17 @@ sub generate_script_2() {
 	emit( 'g_family=4' );
 
 	if ( $export ) {
-	    emit ( 'SHAREDIR=/usr/share/shorewall-lite',
-		   'CONFDIR=/etc/shorewall-lite',
+	    emit ( 'SHAREDIR=$SHAREDIR/shorewall-lite',
+		   'CONFDIR=$CONFDIR/shorewall-lite',
+		   'VARDIR=$VARDIR/shorewall-lite',
 		   'g_product="Shorewall Lite"',
 		   'g_program=shorewall-lite',
 		   'g_basedir=/usr/share/shorewall-lite',
 		 );
 	} else {
-	    emit ( 'SHAREDIR=/usr/share/shorewall',
-		   'CONFDIR=/etc/shorewall',
+	    emit ( 'SHAREDIR=$SHAREDIR/shorewall',
+		   'CONFDIR=$CONFDIR/shorewall',
+		   'VARDIR=$VARDIR/shorewall',
 		   'g_product=Shorewall',
 		   'g_program=shorewall',
 		   'g_basedir=/usr/share/shorewall',
@@ -178,8 +180,9 @@ sub generate_script_2() {
 	emit( 'g_family=6' );
 
 	if ( $export ) {
-	    emit ( 'SHAREDIR=/usr/share/shorewall6-lite',
-		   'CONFDIR=/etc/shorewall6-lite',
+	    emit ( 'SHAREDIR=/$SHAREDIR/shorewall6-lite',
+		   'CONFDIR=$CONFDIR/shorewall6-lite',
+		   'VARDIR=$VARDIR/shorewall6-lite',
 		   'g_product="Shorewall6 Lite"',
 		   'g_program=shorewall6-lite',
 		   'g_basedir=/usr/share/shorewall6',
@@ -187,6 +190,7 @@ sub generate_script_2() {
 	} else {
 	    emit ( 'SHAREDIR=/usr/share/shorewall6',
 		   'CONFDIR=/etc/shorewall6',
+		   'VARDIR=$VARDIR/shorewall6',
 		   'g_product=Shorewall6',
 		   'g_program=shorewall6',
 		   'g_basedir=/usr/share/shorewall'

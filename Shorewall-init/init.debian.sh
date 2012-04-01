@@ -62,10 +62,15 @@ not_configured () {
 	exit 0
 }
 
+#
+# The installer may alter this
+#
+. /usr/share/shorewall/shorewallrc
+
 # check if shorewall-init is configured or not
-if [ -f "/etc/default/shorewall-init" ]
+if [ -f "$SYSCONFDIR/shorewall-init" ]
 then
-	. /etc/default/shorewall-init
+	. $SYSCONFDIR/shorewall-init
 	if [ -z "$PRODUCTS" ]
 	then
 		not_configured

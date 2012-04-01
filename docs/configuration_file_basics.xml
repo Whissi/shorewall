@@ -1252,11 +1252,15 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </listitem>
     </orderedlist>
 
-    <para id="Rvariables">Given that shell variables are expanded at compile
-    time, there is no way to cause such variables to be expended at run time.
-    Prior to Shorewall 4.4.17, this made it difficult (to impossible) to
-    include dynamic IP addresses in a <ulink
-    url="Shorewall-Lite.html">Shorewall-lite</ulink> configuration.</para>
+    <para id="Rvariables">Beginning with Shorewall 4.5.2, configuration files
+    can access variables defined in the <ulink
+    url="Install.htm#shorewallrc">shorewallrc file</ulink>.</para>
+
+    <para>Given that shell variables are expanded at compile time, there is no
+    way to cause such variables to be expended at run time. Prior to Shorewall
+    4.4.17, this made it difficult (to impossible) to include dynamic IP
+    addresses in a <ulink url="Shorewall-Lite.html">Shorewall-lite</ulink>
+    configuration.</para>
 
     <para>Version 4.4.17 implemented <firstterm>Run-time address
     variables</firstterm>. In configuration files, these variables are

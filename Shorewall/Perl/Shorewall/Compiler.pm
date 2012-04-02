@@ -168,61 +168,53 @@ sub generate_script_2() {
 	emit( 'g_family=4' );
 
 	if ( $export ) {
-	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall-lite),
-		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall-lite),
-		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall-lite),
+	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall-lite),
 		   'g_product="Shorewall Lite"',
 		   'g_program=shorewall-lite',
 		   'g_basedir=/usr/share/shorewall-lite',
+		   qq(CONFIG_PATH="$shorewallrc{CONFDIR}/shorewall-lite:$shorewallrc{SHAREDIR}/shorewall-lite") ,
 		 );
 	} else {
-	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall),
-		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall),
-		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall),
+	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall),
 		   'g_product=Shorewall',
 		   'g_program=shorewall',
 		   'g_basedir=/usr/share/shorewall',
+		   qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
 		 );
 	}
     } else {
 	emit( 'g_family=6' );
 
 	if ( $export ) {
-	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall6-lite),
-		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall6-lite),
-		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall6-lite),
+	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall6-lite),
 		   'g_product="Shorewall6 Lite"',
 		   'g_program=shorewall6-lite',
 		   'g_basedir=/usr/share/shorewall6',
+		   qq(CONFIG_PATH="$shorewallrc{CONFDIR}/shorewall6-lite:$shorewallrc{SHAREDIR}/shorewall6-lite") ,
 		 );
 	} else {
-	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall6),
-		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall6),
-		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall6}),
+	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall6),
 		   'g_product=Shorewall6',
 		   'g_program=shorewall6',
-		   'g_basedir=/usr/share/shorewall'
+		   'g_basedir=/usr/share/shorewall',
+		   qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
 		 );
 	}
     }
 
-    emit( '[ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir' );
+    emit( '[ -f ${g_confdir}/vardir ] && . ${g_confdir}/vardir' );
 
     if ( $family == F_IPV4 ) {
 	if ( $export ) {
-	    emit ( 'CONFIG_PATH="/etc/shorewall-lite:/usr/share/shorewall-lite"' ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall-lite}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall-lite}" ]' );
 	} else {
-	    emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall}" ]' );
 	}
     } else {
 	if ( $export ) {
-	    emit ( 'CONFIG_PATH="/etc/shorewall6-lite:/usr/share/shorewall6-lite"' ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall6-lite}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall6-lite}" ]' );
 	} else {
-	    emit ( qq(CONFIG_PATH="$config{CONFIG_PATH}") ,
-		   '[ -n "${VARDIR:=/var/lib/shorewall6}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall6}" ]' );
 	}
     }
 

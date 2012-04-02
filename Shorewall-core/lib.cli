@@ -31,13 +31,13 @@ if [ -z "$g_readrc" ]; then
     . /usr/share/shorewall/shorewallrc
 
     g_libexec="$LIBEXECDIR"
-    g_sharedir="$SHAREDIR"
     g_sbindir="$SBINDIR"
-    g_confdir="$CONFDIR"
+    g_confdir="$CONFDIR"/$g_program
+    g_sharedir="$SHAREDIR"/$g_program
     g_readrc=1
 fi
 
-. ${g_sharedir}/shorewall/lib.base
+. ${SHAREDIR}/shorewall/lib.base
 
 
 #
@@ -559,11 +559,11 @@ version_command() {
     [ $# -gt 0 ] && usage 1
 
     if [ -n "$all" ]; then
-	echo "shorewall-core: $(cat $g_sharedir/shorewall/coreversion)"
+	echo "shorewall-core: $(cat $g_sharedir/coreversion)"
 
 	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ -f $g_sharedir/$product/version ]; then
-		echo "$product: $(cat $g_sharedir/$product/version)"
+	    if [ -f $g_sharedir/version ]; then
+		echo "$product: $(cat $g_sharedir/version)"
 	    fi
 	done
     else
@@ -853,7 +853,7 @@ show_command() {
 	    show_routing
 	    ;;
 	config)
-	    . ${SHAREDIR}/configpath
+	    . ${g_sharedir}/configpath
 	    if [ -n "$g_filemode" ]; then
 		echo "CONFIG_PATH=$CONFIG_PATH"
 		echo "VARDIR=$VARDIR"
@@ -925,10 +925,10 @@ show_command() {
 			    echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
 			    echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
 
-			    if [ -f ${CONFDIR}/actions ]; then
-				cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
+			    if [ -f ${g_confdir}/actions ]; then
+				cat ${g_sharedir}/actions.std ${g_confdir}/actions | grep -Ev '^\#|^$'
 			    else
-				grep -Ev '^\#|^$' ${SHAREDIR}/actions.std
+				grep -Ev '^\#|^$' ${g_sharedir}/actions.std
 			    fi
 
 			    return
@@ -2981,7 +2981,7 @@ shorewall_cli() {
     VERBOSE=
     VERBOSITY=
 
-    [ -n "$g_lite" ] || . ${g_sharedir}/shorewall/lib.cli-std
+    [ -n "$g_lite" ] || . ${g_basedir}/lib.cli-std
 
     finished=0
 
@@ -3086,7 +3086,7 @@ shorewall_cli() {
     PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
     MUTEX_TIMEOUT=
 
-    [ -f ${CONFDIR}/vardir ] && . ${CONFDIR}/vardir
+    [ -f ${g_confdir}/vardir ] && . ${g_confdir}/vardir
 
     [ -n "${VARDIR:=/var/lib/$g_program}" ]
 
@@ -3096,7 +3096,7 @@ shorewall_cli() {
 
     g_firewall=${VARDIR}/firewall
 
-    version_file=$SHAREDIR/version
+    version_file=${g_sharedir}/version
     if [ -f $version_file ]; then
 	SHOREWALL_VERSION=$(cat $version_file)
     else

@@ -39,10 +39,10 @@ if [ -z "$g_readrc" ]; then
     . /usr/share/shorewall/shorewallrc
 
     g_libexec="$LIBEXECDIR"
-    g_sharedir="$SHAREDIR"
+    g_sharedir="$SHAREDIR"/$g_program
     g_sbindir="$SBINDIR"
     g_vardir="$VARDIR"
-    g_confdir="$CONFDIR"
+    g_confdir="$CONFDIR"/$g_program
     g_readrc=1
 fi
 
@@ -50,39 +50,27 @@ g_basedir=${SHAREDIR}/shorewall
 
 case $g_program in
     shorewall)
-	SHAREDIR=${SHAREDIR}/shorewall
-	CONFDIR=${CONFDIR}/shorewall
 	g_product="Shorewall"
 	g_family=4
 	g_tool=
-	g_basedir=${SHAREDIR}/shorewall
 	g_lite=
 	;;
     shorewall6)
-	SHAREDIR=${SHAREDIR}/shorewall6
-	CONFDIR=${CONFDIR}/shorewall6
 	g_product="Shorewall6"
 	g_family=6
 	g_tool=
-	g_basedir=${SHAREDIR}/shorewall
 	g_lite=
 	;;
     shorewall-lite)
-	SHAREDIR=${SHAREDIR}/shorewall-lite
-	CONFDIR=${CONFDIR}/shorewall-lite
 	g_product="Shorewall Lite"
 	g_family=4
 	g_tool=iptables
-	g_basedir=${SHAREDIR}/shorewall-lite
 	g_lite=Yes
 	;;
     shorewall6-lite)
-	SHAREDIR=${SHAREDIR}/shorewall6-lite
-	CONFDIR=${CONFDIR}/shorewall6-lite
 	g_product="Shorewall6 Lite"
 	g_family=6
 	g_tool=ip6tables
-	g_basedir=${SHAREDIR}/shorewall6-lite
 	g_lite=Yes
 	;;
 esac
@@ -204,7 +192,7 @@ mutex_off()
     rm -f ${LOCKFILE:=${VARDIR}/lock}
 }
 
-[ -z "$LEFTSHIFT" ] && . ${g_sharedir}/shorewall/lib.common
+[ -z "$LEFTSHIFT" ] && . ${g_basedir}/lib.common
 
 #
 # Validate an IP address
@@ -362,7 +350,7 @@ ip_vlsm() {
 #
 ensure_config_path() {
     local F
-    F=${SHAREDIR}/configpath
+    F=${g_sharedir}/configpath
     if [ -z "$CONFIG_PATH" ]; then
 	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
 	. $F

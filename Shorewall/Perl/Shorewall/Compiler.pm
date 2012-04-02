@@ -148,7 +148,9 @@ sub generate_script_2() {
 	   '    #',
 	   '    # Be sure that umask is sane',
 	   '    #',
-	   '    umask 077',
+	   '    umask 077' );
+
+    emit ( '',
 	   '    #',
 	   '    # These variables are required by the library functions called in this script',
 	   '    #'
@@ -156,21 +158,27 @@ sub generate_script_2() {
 
     push_indent;
 
+    if ( $shorewallrc{TEMPDIR} ) {
+	emit( '',
+	      qq(TMPDIR="$shorewallrc{TEMPDIR}") ,
+	      q(export TMPDIR) );
+    }
+
     if ( $family == F_IPV4 ) {
 	emit( 'g_family=4' );
 
 	if ( $export ) {
-	    emit ( 'SHAREDIR=$SHAREDIR/shorewall-lite',
-		   'CONFDIR=$CONFDIR/shorewall-lite',
-		   'VARDIR=$VARDIR/shorewall-lite',
+	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall-lite),
+		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall-lite),
+		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall-lite),
 		   'g_product="Shorewall Lite"',
 		   'g_program=shorewall-lite',
 		   'g_basedir=/usr/share/shorewall-lite',
 		 );
 	} else {
-	    emit ( 'SHAREDIR=$SHAREDIR/shorewall',
-		   'CONFDIR=$CONFDIR/shorewall',
-		   'VARDIR=$VARDIR/shorewall',
+	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall),
+		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall),
+		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall),
 		   'g_product=Shorewall',
 		   'g_program=shorewall',
 		   'g_basedir=/usr/share/shorewall',
@@ -180,17 +188,17 @@ sub generate_script_2() {
 	emit( 'g_family=6' );
 
 	if ( $export ) {
-	    emit ( 'SHAREDIR=/$SHAREDIR/shorewall6-lite',
-		   'CONFDIR=$CONFDIR/shorewall6-lite',
-		   'VARDIR=$VARDIR/shorewall6-lite',
+	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall6-lite),
+		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall6-lite),
+		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall6-lite),
 		   'g_product="Shorewall6 Lite"',
 		   'g_program=shorewall6-lite',
 		   'g_basedir=/usr/share/shorewall6',
 		 );
 	} else {
-	    emit ( 'SHAREDIR=/usr/share/shorewall6',
-		   'CONFDIR=/etc/shorewall6',
-		   'VARDIR=$VARDIR/shorewall6',
+	    emit ( qq(SHAREDIR=$shorewallrc{SHAREDIR}/shorewall6),
+		   qq(CONFDIR=$shorewallrc{CONFDIR}/shorewall6),
+		   qq(VARDIR=$shorewallrc{VARDIR}/shorewall6}),
 		   'g_product=Shorewall6',
 		   'g_program=shorewall6',
 		   'g_basedir=/usr/share/shorewall'

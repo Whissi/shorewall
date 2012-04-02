@@ -31,7 +31,7 @@ VERSION=xxx  #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME"
+    echo "usage: $ME [ <shorewallrc file> ]"
     exit $1
 }
 
@@ -69,35 +69,33 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f ./.shorewallrc ]; then
-    . ./.shorewallrc || exit 1
-elif [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-elif [ -r /root/.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif [ -r /.shorewallrc ]; then
-    . /root/.shorewallrc || exit 1
-elif - -f ${SHOREAWLLRC_HOME}/.shorewallrc; then
-    . ${SHOREWALLRC_HOME}/.shorewallrc || exit 1
-else
-    [ -n "${LIBEXEC:=/usr/share}" ]
-    [ -n "${PERLLIB:=/usr/share/shorewall}" ]
-    [ -n "${CONFDIR:=/etc}" ]
-    
-    if [ -z "$SYSCONFDIR" ]; then
-	if [ -d /etc/default ]; then
-	    SYSCONFDIR=/etc/default
-	else
-	    SYSCONFDIR=/etc/sysconfig
-	fi
+#
+# Read the RC file
+#
+if [ $# -eq 0 ]; then
+    if [ -f ./shorewallrc ]; then
+	. ./shorewallrc
+    elif [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+	file=./.shorewallrc
+    elif [ -f /usr/share/shorewall/shorewallrc ]; then
+	. /usr/share/shorewall/shorewallrc
+    else
+	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
+elif [ $# -eq 1 ]; then
+    file=$1
+    case $file in
+	/*|.*)
+	    ;;
+	*)
+	    file=./$file
+	    ;;
+    esac
 
-    [ -n "${SBINDIR:=/sbin}" ]
-    [ -n "${SHAREDIR:=/usr/share}" ]
-    [ -n "${VARDIR:=/var/lib}" ]
-    [ -n "${INITFILE:=shorewall}" ]
-    [ -n "${INITDIR:=/etc/init.d}" ]
-    [ -n "${MANDIR:=/usr/share/man}" ]
+    . $file
+else
+    usage 1
 fi
 
 if [ -f ${SHAREDIR}/shorewall6-lite/version ]; then

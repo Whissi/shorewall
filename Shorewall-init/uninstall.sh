@@ -69,22 +69,34 @@ remove_file() # $1 = file to restore
     fi
 }
 
+#
+# Read the RC file
+#
 if [ $# -eq 0 ]; then
-    file=/usr/share/shorewall/shorewallrc
+    if [ -f ./shorewallrc ]; then
+	. ./shorewallrc
+    elif [ -f ~/.shorewallrc ]; then
+	. ~/.shorewallrc || exit 1
+	file=./.shorewallrc
+    elif [ -f /usr/share/shorewall/shorewallrc ]; then
+	. /usr/share/shorewall/shorewallrc
+    else
+	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
+    fi
 elif [ $# -eq 1 ]; then
     file=$1
+    case $file in
+	/*|.*)
+	    ;;
+	*)
+	    file=./$file
+	    ;;
+    esac
+
+    . $file || exit 1
 else
     usage 1
 fi
-
-if [ -f "$file" ]; then
-    . "$file"
-else
-    echo "File $file not found" >&2
-    exit 1
-fi
-
-. $file || exit 1
 
 if [ -f ${SHAREDIR}/shorewall-init/version ]; then
     INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall-init/version)"

@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.4
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.5
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2010 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2010,2012 - Tom Eastep (teastep@shorewall.net)
 #
 #       On most distributions, this file should be called /etc/init.d/shorewall.
 #

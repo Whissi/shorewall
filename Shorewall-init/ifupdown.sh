@@ -1,4 +1,4 @@
-#!/bin/sh
+2#!/bin/sh
 #
 # ifupdown script for Shorewall-based products
 #
@@ -187,13 +187,19 @@ else
 fi
 
 for PRODUCT in $PRODUCTS; do
-    if [ -x $VARDIR/firewall ]; then
+    #
+    # For backward compatibility, lib.base appends the product name to VARDIR
+    # Save it here and restore it below
+    #
+    save_vardir=${VARDIR}
+    if [ -x $VARDIR/$PRODUCT/firewall ]; then
 	  ( . ${SHAREDIR}/shorewall/lib.base
 	    mutex_on
 	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
 	    mutex_off
 	  )
     fi
+    VARDIR=${save_vardir}
 done
 
 exit 0

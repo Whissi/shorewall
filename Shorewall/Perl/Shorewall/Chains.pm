@@ -6449,12 +6449,12 @@ sub ensure_ipset( $ ) {
 	if ( have_capability 'IPSET_V5' ) {
 	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
 		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:ip set") ,
-		   qq(        \$IPSET -N $set hash:ip family inet") ,
+		   qq(        \$IPSET -N $set hash:ip family inet) ,
 		   qq(    fi) );
 	} else {
 	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
 		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an iphash set") ,
-		   qq(        \$IPSET -N $set iphash") ,
+		   qq(        \$IPSET -N $set iphash) ,
 		   qq(    fi) );
 	}
     } else {

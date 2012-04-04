@@ -1364,13 +1364,11 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    config=$(rsh_command ${g_program}-lite show config 2> /dev/null)
-
-    temp=$(echo $config | grep ^LITEDIR | sed 's/LITEDIR is //')
+    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
 
     [ -n "$temp" ] && litedir="$temp"
 
-    temp=$(echo $config | grep ^LIBEXEC | sed 's/LIBEXEC is //')
+    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
 
     if [ -n "$temp" ]; then
 	case $temp in
@@ -1383,7 +1381,7 @@ reload_command() # $* = original arguments less the command.
 	esac
     fi
 
-    temp=$(echo $config | grep ^SBINDIR | sed 's/SBINDIR is //')
+    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^SBINDIR | sed 's/SBINDIR is //')
 
     if [ -n "$temp" ]; then
 	sbindir="$temp"
@@ -1435,15 +1433,15 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    rsh_command "${sbin}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
+	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    rsh_command "${sbin}/${g_program}-lite $g_debugging $verbose $timestamp start" && \
+	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp start" && \
 	    progress_message3 "System $system loaded" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
-	    rsh_command "${sbin}/${g_program}-lite $g_debugging $verbose $timestamp save" && \
+	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp save" && \
 	    progress_message3 "Configuration on system $system saved"
 	fi
     fi

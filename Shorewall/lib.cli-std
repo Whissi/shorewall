@@ -1310,6 +1310,8 @@ reload_command() # $* = original arguments less the command.
     libexec=/usr/share
     local confdir
     confdir=/etc
+    local sbindir
+    sbindir=/sbin
 
     litedir=/var/lib/${g_program}-lite
 
@@ -1385,11 +1387,7 @@ reload_command() # $* = original arguments less the command.
 
     temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^SBINDIR | sed 's/SBINDIR is //')
 
-    if [ -n "$temp" ]; then
-	sbindir="$temp"
-    else
-	sbindir=/sbin
-    fi
+    [ -n "$temp" ] && sbindir="$temp"
 
     temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^CONFDIR | sed 's/CONFDIR is //')
 

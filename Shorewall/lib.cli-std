@@ -1435,7 +1435,7 @@ reload_command() # $* = original arguments less the command.
     then
 	save=$(find_file save);
 
-	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/${g_program}-lite/" && rcp_command $save /etc/shorewall-lite/
+	[ -f $save ] && progress_message3 "Copying $save to ${system}:${confdir}/${g_program}-lite/" && rcp_command $save ${confdir}/shorewall-lite/
 
 	if [ $COMMAND = reload ]; then
 	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \

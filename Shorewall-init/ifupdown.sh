@@ -1,4 +1,4 @@
-2#!/bin/sh
+#!/bin/sh
 #
 # ifupdown script for Shorewall-based products
 #

@@ -859,12 +859,14 @@ show_command() {
 		echo "VARDIR=$VARDIR"
 		echo "LIBEXEC=$g_libexec"
 		echo "SBINDIR=$g_sbindir"
+		echo "CONFDIR=${CONFDIR}"
 		[ -n "$g_lite" ] && [ ${VARDIR} != /var/lib/$g_program ] && echo "LITEDIR=${VARDIR}"
 	    else
 		echo "Default CONFIG_PATH is $CONFIG_PATH"
 		echo "Default VARDIR is /var/lib/$g_program"
 		echo "LIBEXEC is $g_libexec"
 		echo "SBINDIR is $g_sbindir"
+		echo "CONFDIR is ${CONFDIR}"
 		[ -n "$g_lite" ] && [ ${VARDIR} != /var/lib/$g_program ] && echo "LITEDIR is ${VARDIR}"
 	    fi
 	    ;;
@@ -1126,8 +1128,8 @@ do_dump_command() {
     echo "$g_product $SHOREWALL_VERSION Dump at $g_hostname - $(date)"
     echo
 
-    if [ $g_family -eq 6 ] && [ -f /usr/share/shorewall/version ]; then
-	echo "   Shorewall $(cat /usr/share/shorewall/version)"
+    if [ $g_family -eq 6 ] && [ -f ${SHAREDIR}/shorewall/version ]; then
+	echo "   Shorewall $(cat ${SHAREDIR}/shorewall/version)"
 	echo
     fi
     show_status

@@ -1308,6 +1308,8 @@ reload_command() # $* = original arguments less the command.
     root=root
     local libexec
     libexec=/usr/share
+    local confdir
+    confdir=/etc
 
     litedir=/var/lib/${g_program}-lite
 
@@ -1389,6 +1391,10 @@ reload_command() # $* = original arguments less the command.
 	sbindir=/sbin
     fi
 
+    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^CONFDIR | sed 's/CONFDIR is //')
+
+    [ -n "$temp" ] && confdir="$temp"
+
     if [ -z "$getcaps" ]; then
 	g_shorewalldir=$(resolve_file $directory)
 	ensure_config_path
@@ -1431,7 +1437,6 @@ reload_command() # $* = original arguments less the command.
 
 	[ -f $save ] && progress_message3 "Copying $save to ${system}:/etc/${g_program}-lite/" && rcp_command $save /etc/shorewall-lite/
 
-	progress_message3 "Copy complete"
 	if [ $COMMAND = reload ]; then
 	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=

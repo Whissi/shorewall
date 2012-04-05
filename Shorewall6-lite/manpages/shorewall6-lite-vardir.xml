@@ -36,6 +36,29 @@
     directory. If you add this file, you should copy the files from
     <filename>/var/lib/shorewall6-lite</filename> to the new directory before
     performing a <command>shorewall6-lite restart</command>.</para>
+
+    <note>
+      <para>Beginning with Shorewall 4.5.2, use of this file is deprecated in
+      favor of specifying VARDIR in the <filename>shorewallrc</filename> file
+      used during installation of Shorewall Core. While the name of the
+      variable remains VARDIR, the meaning is slightly different. When set in
+      shorewallrc, Shorewall6 Lite will create a directory under the specified
+      path name to hold state information.</para>
+
+      <para>Example:</para>
+
+      <blockquote>
+        <para>VARDIR=<filename>/opt/var/lib/</filename></para>
+
+        <para>The state directory for Shorewall Lite will be
+        <filename>/opt/var/lib/shorewall6-lite</filename>.</para>
+      </blockquote>
+
+      <para>When VARDIR is set in
+      <filename>/etc/shorewall6-lite/vardir</filename>, Shorewall Lite will
+      save its state in the <replaceable>directory</replaceable>
+      specified.</para>
+    </note>
   </refsect1>
 
   <refsect1>

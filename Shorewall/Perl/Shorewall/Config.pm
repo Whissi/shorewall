@@ -2193,7 +2193,7 @@ sub read_a_line(;$$$) {
 	    #
 	    # Handle conditionals
 	    #
-	    if ( $currentline =~ /^\s*\?/ ) {
+	    if ( $currentline =~ /^\s*\?(?:IF|ELSE|ENDIF)/ ) {
 		$omitting = process_conditional( $omitting, $currentline, $currentlinenumber );
 		$currentline='';
 		next;

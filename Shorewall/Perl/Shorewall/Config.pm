@@ -1995,10 +1995,10 @@ sub embedded_perl( $ ) {
     }
 
     unless (my $return = eval $command ) {
+	#
+	# Perl found the script offensive or the script itself died
+	#
 	if ( $@ ) {
-	    #
-	    # Perl found the script offensive or the script itself died
-	    #
 	    $@ =~ s/, <\$currentfile> line \d+//g;
 	    fatal_error1 "$@";
 	}

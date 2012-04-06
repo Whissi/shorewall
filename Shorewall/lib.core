@@ -757,7 +757,7 @@ add_ip_aliases() # $* = List of addresses
 	# decoration on these IP addresses that they see when their
 	# distro's net config tool adds them. In an attempt to reduce
 	# the anxiety level, we have the following code which sets
-	# the VLSM and BRD from an existing address in the same networks
+	# the VLSM and BRD from an existing address in the same network
 	#
 	# Get all of the lines that contain inet addresses with broadcast
 	#
@@ -1010,7 +1010,7 @@ get_all_bcasts()
 
 ?ELSE
 #################################################################################
-#                        IPv4-specific Functions
+#                        IPv6-specific Functions
 #################################################################################
 #
 # Get all interface addresses with VLSMs
@@ -1232,25 +1232,6 @@ delete_gateway() # $! = Description of the Gateway $2 = table number $3 = device
   
     dev=$(find_device $route)
     [ "$dev" = "$3" ] && run_ip route delete default table $2
-}
-
-#
-# Determine how to do "echo -e"
-#
-
-find_echo() {
-    local result
-
-    result=$(echo "a\tb")
-    [ ${#result} -eq 3 ] && { echo echo; return; }
-
-    result=$(echo -e "a\tb")
-    [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
-
-    result=$(which echo)
-    [ -n "$result" ] && { echo "$result -e"; return; }
-
-    echo echo
 }
 
 #

@@ -1545,13 +1545,16 @@ sub close_file() {
     }
 }
 
+#
+# Process an ?IF, ?ELSE or ?END directive
+#
 sub process_conditional( $$$ ) {
     my ( $omitting, $line, $linenumber ) = @_;
 
     print "CD===> $currentline\n" if $debug;
 
     fatal_error "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/;
-    
+
     my ($keyword, $rest) = ( $1, $2 );
 
     $rest = '' unless supplied $rest;

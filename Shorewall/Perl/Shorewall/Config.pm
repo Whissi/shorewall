@@ -1953,7 +1953,7 @@ sub embedded_shell( $ ) {
 	my $last = 0;
 
 	while ( read_a_line( 0, 0, 1 ) ) {
-	    last if $last = $currentline =~ s/^\s*\??END(\s+SHELL)?\s*;?//;
+	    last if $last = $currentline =~ s/^\s*END(\s+SHELL)?\s*;?//;
 	    $command .= $currentline;
 	}
 
@@ -1989,7 +1989,7 @@ sub embedded_perl( $ ) {
 	my $last = 0;
 
 	while ( read_a_line( 0, 0, 1 ) ) {
-	    last if $last = $currentline =~ s/^\s*\??END(\s+PERL)?\s*;?//;
+	    last if $last = $currentline =~ s/^\s*END(\s+PERL)?\s*;?//;
 	    $command .= $currentline;
 	}
 
@@ -2208,12 +2208,12 @@ sub read_a_line(;$$$) {
 	    # Must check for shell/perl before doing variable expansion
 	    #
 	    if ( $embedded_enabled ) {
-		if ( $currentline =~ s/^\s*\??(BEGIN\s+)?SHELL\s*;?// ) {
+		if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
 		    embedded_shell( $1 );
 		    next;
 		}
 
-		if ( $currentline =~ s/^\s*\??(BEGIN\s+)?PERL\s*\;?// ) {
+		if ( $currentline =~ s/^\s*(BEGIN\s+)?PERL\s*\;?// ) {
 		    embedded_perl( $1 );
 		    next;
 		}

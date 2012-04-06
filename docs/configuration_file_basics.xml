@@ -1601,18 +1601,15 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <itemizedlist>
       <listitem>
-        <para><emphasis role="bold">[?]PERL</emphasis> &lt;<emphasis>perl
+        <para><emphasis role="bold">PERL</emphasis> &lt;<emphasis>perl
         script</emphasis>&gt;</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">[?]SHELL</emphasis> &lt;<emphasis>shell
+        <para><emphasis role="bold">SHELL</emphasis> &lt;<emphasis>shell
         script</emphasis>&gt;</para>
       </listitem>
     </itemizedlist>
-
-    <para>The optional '?' is allowed in Shorewall versions 4.5.2 and
-    later.</para>
 
     <para>Shell scripts run in a child shell process and their output is piped
     back to the compiler which processes that output as if it were embedded at
@@ -1658,14 +1655,13 @@ use Shorewall::Config ( qw/shorewall/ );</programlisting>
     </orderedlist>
 
     <para>Multi-line scripts use one of the following forms:<programlisting><emphasis
-          role="bold">[?]BEGIN SHELL</emphasis>
+          role="bold">BEGIN SHELL</emphasis>
 &lt;<emphasis>shell script</emphasis>&gt;
-<emphasis role="bold">[?]END</emphasis> [ <emphasis role="bold">SHELL</emphasis> ]</programlisting><programlisting><emphasis
-          role="bold">[?]BEGIN PERL</emphasis> [;]
+<emphasis role="bold">END</emphasis> [ <emphasis role="bold">SHELL</emphasis> ]</programlisting><programlisting><emphasis
+          role="bold">BEGIN PERL</emphasis> [;]
 &lt;<emphasis>perl script</emphasis>&gt;
-<emphasis role="bold">[?]END</emphasis> [ <emphasis role="bold">PERL</emphasis> ] [<emphasis
-          role="bold">;</emphasis>]</programlisting>As above, the optional
-    leading '?' is allowed in Shorewall versions 4.5.2 and later.</para>
+<emphasis role="bold">END</emphasis> [ <emphasis role="bold">PERL</emphasis> ] [<emphasis
+          role="bold">;</emphasis>]</programlisting></para>
   </section>
 
   <section id="dnsnames">

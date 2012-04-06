@@ -1952,10 +1952,9 @@ sub embedded_shell( $ ) {
 
 	my $last = 0;
 
-	while ( <$currentfile> ) {
-	    $currentlinenumber++;
-	    last if $last = s/^\s*\??END(\s+SHELL)?\s*;?//;
-	    $command .= $_;
+	while ( read_a_line( 0, 0, 1 ) ) {
+	    last if $last = $currentline =~ s/^\s*\??END(\s+SHELL)?\s*;?//;
+	    $command .= $currentline;
 	}
 
 	fatal_error ( "Missing END SHELL" ) unless $last;
@@ -1973,6 +1972,8 @@ sub embedded_shell( $ ) {
     $ifstack = @ifstack;
 }
 
+sub read_a_line(;$$$);
+
 sub embedded_perl( $ ) {
     my $multiline = shift;
 
@@ -1987,10 +1988,9 @@ sub embedded_perl( $ ) {
 
 	my $last = 0;
 
-	while ( <$currentfile> ) {
-	    $currentlinenumber++;
-	    last if $last = s/^\s*\??END(\s+PERL)?\s*;?//;
-	    $command .= $_;
+	while ( read_a_line( 0, 0, 1 ) ) {
+	    last if $last = $currentline =~ s/^\s*\??END(\s+PERL)?\s*;?//;
+	    $command .= $currentline;
 	}
 
 	fatal_error ( "Missing END PERL" ) unless $last;

@@ -1435,6 +1435,8 @@ reload_command() # $* = original arguments less the command.
 
 	[ -f $save ] && progress_message3 "Copying $save to ${system}:${confdir}/${g_program}-lite/" && rcp_command $save ${confdir}/shorewall-lite/
 
+	progress_message3 "Copy complete"
+
 	if [ $COMMAND = reload ]; then
 	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
 	    progress_message3 "System $system reloaded" || saveit=

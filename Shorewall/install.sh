@@ -1016,6 +1016,7 @@ if [ -d Perl ]; then
     # Install the params file helper
     #
     install_file getparams ${DESTDIR}${LIBEXECDIR}/$PRODUCT/getparams 0755
+    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${LIBEXECDIR}/$PRODUCT/getparams
 
     echo
     echo "Params file helper installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/getparams"

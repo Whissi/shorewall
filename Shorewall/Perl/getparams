@@ -33,22 +33,19 @@ else
     g_program=shorewall
 fi
 
-if [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    SHAREDIR=/usr/share
-    CONFDIR=${CONFDIR}
-    SBINDIR=/sbin
-    VARDIR=/var/lib
-    LIBEXECDIR=/usr/share
-fi
+#
+# This is modified by the installer when ${SHAREDIR} != /usr/share
+#
+. /usr/share/shorewall/shorewallrc
 
 g_libexec="$LIBEXECDIR"
-g_sharedir="$SHAREDIR"
+g_sharedir="$SHAREDIR"/shorewall
 g_sbindir="$SBINDIR"
+g_perllib="$PERLLIBDIR"
+g_confdir="$CONFDIR"/shorewall
 g_readrc=1
 
-. $g_sharedir/shorewall/lib.cli
+. $g_sharedir/lib.cli
 
 CONFIG_PATH="$2"
 

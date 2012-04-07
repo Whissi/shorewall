@@ -1601,18 +1601,15 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <itemizedlist>
       <listitem>
-        <para><emphasis role="bold">[?]PERL</emphasis> &lt;<emphasis>perl
+        <para><emphasis role="bold">PERL</emphasis> &lt;<emphasis>perl
         script</emphasis>&gt;</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">[?]SHELL</emphasis> &lt;<emphasis>shell
+        <para><emphasis role="bold">SHELL</emphasis> &lt;<emphasis>shell
         script</emphasis>&gt;</para>
       </listitem>
     </itemizedlist>
-
-    <para>The optional '?' is allowed in Shorewall versions 4.5.2 and
-    later.</para>
 
     <para>Shell scripts run in a child shell process and their output is piped
     back to the compiler which processes that output as if it were embedded at
@@ -1658,14 +1655,13 @@ use Shorewall::Config ( qw/shorewall/ );</programlisting>
     </orderedlist>
 
     <para>Multi-line scripts use one of the following forms:<programlisting><emphasis
-          role="bold">[?]BEGIN SHELL</emphasis>
+          role="bold">BEGIN SHELL</emphasis>
 &lt;<emphasis>shell script</emphasis>&gt;
-<emphasis role="bold">[?]END</emphasis> [ <emphasis role="bold">SHELL</emphasis> ]</programlisting><programlisting><emphasis
-          role="bold">[?]BEGIN PERL</emphasis> [;]
+<emphasis role="bold">END</emphasis> [ <emphasis role="bold">SHELL</emphasis> ]</programlisting><programlisting><emphasis
+          role="bold">BEGIN PERL</emphasis> [;]
 &lt;<emphasis>perl script</emphasis>&gt;
-<emphasis role="bold">[?]END</emphasis> [ <emphasis role="bold">PERL</emphasis> ] [<emphasis
-          role="bold">;</emphasis>]</programlisting>As above, the optional
-    leading '?' is allowed in Shorewall versions 4.5.2 and later.</para>
+<emphasis role="bold">END</emphasis> [ <emphasis role="bold">PERL</emphasis> ] [<emphasis
+          role="bold">;</emphasis>]</programlisting></para>
   </section>
 
   <section id="dnsnames">
@@ -2004,7 +2000,7 @@ redirect                      =&gt; 137</programlisting>
     192.168.1.3, the entry in /etc/shorewall/rules is:</para>
 
     <programlisting>#ACTION    SOURCE     DESTINATION     PROTO     DEST PORTS(S)
-DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
+DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100</emphasis></programlisting>
 
     <para>If you omit the low port number, a value of zero is assumed; if you
     omit the high port number, a value of 65535 is assumed.</para>
@@ -2140,9 +2136,9 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     Support requires that you install xtables-addons.</para>
 
     <para>The SWITCH column contains the name of a
-    <firstterm>switch.</firstterm> Each switch that is initially in the
-    <emphasis role="bold">off</emphasis> position. You can turn on the switch
-    named <emphasis>switch1</emphasis> by:</para>
+    <firstterm>switch.</firstterm> Each switch is initially in the <emphasis
+    role="bold">off</emphasis> position. You can turn on the switch named
+    <emphasis>switch1</emphasis> by:</para>
 
     <simplelist>
       <member><command>echo 1 &gt;
@@ -2186,7 +2182,8 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
 
       <programlisting>#ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
 #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
-DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down  </programlisting>
+DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          <emphasis
+          role="bold">primary_down</emphasis>  </programlisting>
     </blockquote>
   </section>
 
@@ -2216,11 +2213,16 @@ DNAT        net             dmz:$BACKUP tcp         80           -         -    
     <para>Here is an example:</para>
 
     <programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
-net    COM_IF     detect    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0,physical=eth0
-net    EXT_IF     detect    dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartians=0,proxyarp=1,physical=eth2
-loc    INT_IF     detect    dhcp,logmartians=1,routefilter=1,tcpflags,nets=172.20.1.0/24,physical=eth1
-dmz    VPS_IF     detect    logmartians=1,routefilter=0,routeback,physical=venet0
-loc    TUN_IF     detect    physical=tun+</programlisting>
+net    <emphasis role="bold">COM_IF </emphasis>    detect    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0,<emphasis
+        role="bold">physical=eth0</emphasis>
+net    <emphasis role="bold">EXT_IF</emphasis>     detect    dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartians=0,proxyarp=1,<emphasis
+        role="bold">physical=eth2</emphasis>
+loc    <emphasis role="bold">INT_IF </emphasis>    detect    dhcp,logmartians=1,routefilter=1,tcpflags,nets=172.20.1.0/24,<emphasis
+        role="bold">physical=eth1</emphasis>
+dmz    <emphasis role="bold">VPS_IF </emphasis>    detect    logmartians=1,routefilter=0,routeback,<emphasis
+        role="bold">physical=venet0</emphasis>
+loc    <emphasis role="bold">TUN_IF</emphasis>     detect    <emphasis
+        role="bold">physical=tun+</emphasis></programlisting>
 
     <para>In this example, COM_IF is a logical interface name that refers to
     Ethernet interface <filename class="devicefile">eth0</filename>, EXT_IF is
@@ -2235,16 +2237,18 @@ loc    TUN_IF     detect    physical=tun+</programlisting>
     <programlisting>#INTERFACE SOURCE                    ADDRESS
 
 COMMENT Masquerade Local Network
-COM_IF     0.0.0.0/0
-EXT_IF     !206.124.146.0/24         206.124.146.179:persistent</programlisting>
+<emphasis role="bold">COM_IF</emphasis>     0.0.0.0/0
+<emphasis role="bold">EXT_IF </emphasis>    !206.124.146.0/24         206.124.146.179:persistent</programlisting>
 
     <para><ulink
     url="manpages/shorewall-providers.html">shorewall-providers</ulink>
     (5)</para>
 
     <programlisting>#NAME   NUMBER   MARK    DUPLICATE  INTERFACE  GATEWAY         OPTIONS               COPY
-Avvanta 1        0x10000 main       EXT_IF     206.124.146.254 loose,fallback        INT_IF,VPS_IF,TUN_IF
-Comcast 2        0x20000 main       COM_IF     detect          balance               INT_IF,VPS_IF,TUN_IF</programlisting>
+Avvanta 1        0x10000 main       <emphasis role="bold">EXT_IF </emphasis>    206.124.146.254 loose,fallback        <emphasis
+        role="bold">INT_IF,VPS_IF,TUN_IF</emphasis>
+Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     detect          balance               <emphasis
+        role="bold">INT_IF,VPS_IF,TUN_IF</emphasis></programlisting>
 
     <para>Note in particular that Shorewall translates TUN_IF to <filename
     class="devicefile">tun*</filename> in the COPY column.</para>

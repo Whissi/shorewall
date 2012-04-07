@@ -1039,7 +1039,7 @@ sub validate_tc_class( ) {
 	fatal_error "Unknown Parent class ($parentnum)" unless $parentref && $parentref->{occurs} == 1;
 	fatal_error "The class ($parentnum) specifies UMAX and/or DMAX; it cannot serve as a parent" if $parentref->{dmax};
 	fatal_error "The class ($parentnum) specifies flow; it cannot serve as a parent"             if $parentref->{flow};
-	fatal_error "The default class ($parentnum) may not have sub-classes"                        if $devref->{default} == $parentclass;
+	fatal_error "The default class ($parentnum) may not have sub-classes"                        if defined $devref->{default} && $devref->{default} == $parentclass;
 	$parentref->{leaf} = 0;
 	$ratemax  = $parentref->{rate};
 	$ratename = q(the parent class's RATE);

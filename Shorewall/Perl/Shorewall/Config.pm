@@ -1548,6 +1548,8 @@ sub close_file() {
 #
 # Process an ?IF, ?ELSE or ?END directive
 #
+sub have_capability( $ );
+
 sub process_conditional( $$$ ) {
     my ( $omitting, $line, $linenumber ) = @_;
 
@@ -1582,7 +1584,7 @@ sub process_conditional( $$$ ) {
 	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
 			    exists $params{$rest} ? $params{$rest} : 
 			    exists $config{$rest} ? $config{$rest} :
-			    exists $capdesc{$cap} ? have_capability $cap : 0 );
+			    exists $capdesc{$cap} ? have_capability( $cap ) : 0 );
 	}
 
 	$omitting = ! $omitting if $invert;
@@ -1958,7 +1960,7 @@ sub embedded_shell( $ ) {
 	}
 
 	fatal_error ( "Missing END SHELL" ) unless $last;
-	fatal_error ( "Invalid END SHELL directive" ) unless /^\s*$/;
+	fatal_error ( "Invalid END SHELL directive" ) unless $currentline =~ /^\s*$/;
     }
 
     $command .= q(');
@@ -1994,7 +1996,7 @@ sub embedded_perl( $ ) {
 	}
 
 	fatal_error ( "Missing END PERL" ) unless $last;
-	fatal_error ( "Invalid END PERL directive" ) unless /^\s*$/;
+	fatal_error ( "Invalid END PERL directive" ) unless $currentline =~ /^\s*$/;
     }
 
     unless (my $return = eval $command ) {
@@ -2626,8 +2628,6 @@ sub determine_kernelversion() {
 #
 # Capability Reporting and detection.
 #
-sub have_capability( $ );
-
 sub Nat_Enabled() {
     $family == F_IPV4 ? qt1( "$iptables -t nat -L -n" ) : '';
 }

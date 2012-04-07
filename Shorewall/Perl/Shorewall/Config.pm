@@ -1939,6 +1939,8 @@ sub first_entry( $ ) {
     }
 }
 
+sub read_a_line(;$$$);
+
 sub embedded_shell( $ ) {
     my $multiline = shift;
 
@@ -1973,8 +1975,6 @@ sub embedded_shell( $ ) {
     $currentlinenumber = 0;
     $ifstack = @ifstack;
 }
-
-sub read_a_line(;$$$);
 
 sub embedded_perl( $ ) {
     my $multiline = shift;

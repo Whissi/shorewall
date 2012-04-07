@@ -308,7 +308,7 @@ if [ -n "$DESTDIR" ]; then
 fi
 
 if [ -n "$INITFILE" ]; then
-    case $TARGET in
+    case $HOST in
 	debian)
 	    install_file init.debian.sh ${DESTDIR}${INITDIR}/${INITFILE} 0544
 	    ;;

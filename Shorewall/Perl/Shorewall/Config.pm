@@ -1958,7 +1958,7 @@ sub embedded_shell( $ ) {
 
 	while ( read_a_line( 0, 0, 0, 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+SHELL)?\s*;?//;
-	    $command .= $currentline;
+	    $command .= "$currentline\n";
 	}
 
 	fatal_error ( "Missing END SHELL" ) unless $last;
@@ -1992,7 +1992,7 @@ sub embedded_perl( $ ) {
 
 	while ( read_a_line( 0, 0, 0, 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+PERL)?\s*;?//;
-	    $command .= $currentline;
+	    $command .= "$currentline\n";
 	}
 
 	fatal_error ( "Missing END PERL" ) unless $last;

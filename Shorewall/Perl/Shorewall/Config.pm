@@ -1939,7 +1939,7 @@ sub first_entry( $ ) {
     }
 }
 
-sub read_a_line(;$$$);
+sub read_a_line(;$$$$);
 
 sub embedded_shell( $ ) {
     my $multiline = shift;
@@ -1956,7 +1956,7 @@ sub embedded_shell( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0, 0, 0 ) ) {
+	while ( read_a_line( 0, 0, 0, 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+SHELL)?\s*;?//;
 	    $command .= $currentline;
 	}
@@ -1990,7 +1990,7 @@ sub embedded_perl( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0, 0, 0 ) ) {
+	while ( read_a_line( 0, 0, 0, 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+PERL)?\s*;?//;
 	    $command .= $currentline;
 	}
@@ -2145,10 +2145,11 @@ sub expand_variables( \$ ) {
 #   - Handle ?IF, ?ELSE, ?ENDIF
 #
 
-sub read_a_line(;$$$) {
-    my $embedded_enabled = defined $_[0] ? shift : 1;
-    my $expand_variables = defined $_[0] ? shift : 1;
-    my $strip_comments   = defined $_[0] ? shift : 1;
+sub read_a_line(;$$$$) {
+    my $embedded_enabled    = defined $_[0] ? shift : 1;
+    my $expand_variables    = defined $_[0] ? shift : 1;
+    my $strip_comments      = defined $_[0] ? shift : 1;
+    my $suppress_whitespace = defined $_[0] ? shift : 1;
 
     while ( $currentfile ) {
 
@@ -2163,7 +2164,7 @@ sub read_a_line(;$$$) {
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #
-	    s/^\s*// if $currentline =~ /[,:]$/;
+	    s/^\s*// if $currentline =~ /[,:]$/ && $suppress_whitespace;
 	    #
 	    # If this isn't a continued line, remove trailing comments. Note that
 	    # the result may now end in '\'.
@@ -2180,7 +2181,7 @@ sub read_a_line(;$$$) {
 	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
-	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
+	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && $suppress_whitespace;
 	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #

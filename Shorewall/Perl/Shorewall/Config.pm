@@ -1956,7 +1956,7 @@ sub embedded_shell( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0, 0, 1 ) ) {
+	while ( read_a_line( 0, 0, 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+SHELL)?\s*;?//;
 	    $command .= $currentline;
 	}
@@ -1990,7 +1990,7 @@ sub embedded_perl( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0, 0, 1 ) ) {
+	while ( read_a_line( 0, 0, 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+PERL)?\s*;?//;
 	    $command .= $currentline;
 	}

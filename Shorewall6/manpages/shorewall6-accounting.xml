@@ -57,6 +57,17 @@
     of them may be omitted). The first non-commentary record in the accounting
     file must be a section header when sectioning is used.</para>
 
+    <warning>
+      <para>If sections are not used, the Shorewall rules compiler cannot
+      detect certain violations of netfilter restrictions. These violations
+      can result in run-time errors such as the following:</para>
+
+      <blockquote>
+        <para><emphasis role="bold">ip6tables-restore v1.4.13: Can't use -o
+        with INPUT</emphasis></para>
+      </blockquote>
+    </warning>
+
     <para>Beginning with Shorewall 4.4.20, the ACCOUNTING_TABLE setting was
     added to shorewall.conf and shorewall6.conf. That setting determines the
     Netfilter table (filter or mangle) where the accounting rules are added.

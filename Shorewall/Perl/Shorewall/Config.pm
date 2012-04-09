@@ -2182,18 +2182,14 @@ sub read_a_line(;$$$$) {
 	    #
 	    s/^\s*// if $currentline =~ /[,:]$/ && $suppress_whitespace;
 	    #
-	    # If this isn't a continued line, remove trailing comments. Note that
-	    # the result may now end in '\'.
+	    # If this is a continued line with a trailing comment, remove comment. Note that
+	    # the result will now end in '\'.
 	    #
 	    s/\s*#.*$// if $strip_comments && /[\\]\s*#.*$/;
 	    #
 	    # Continuation
 	    #
-	    chop $currentline, next if substr( ( $currentline .= $_ ), -1, 1 ) eq '\\';
-	    #
-	    # Ignore ( concatenated ) Blank Lines
-	    #
-	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && $suppress_whitespace;
+	    chop $currentline, next if ($currentline .= $_) =~ /\\$/;
 	    #
 	    # Handle conditionals
 	    #
@@ -2237,8 +2233,6 @@ sub read_a_line(;$$$$) {
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
 	    handle_first_entry if $first_entry;
-
-	    my $count = 0;
 	    #
 	    # Expand Shell Variables using %params and @actparms
 	    #

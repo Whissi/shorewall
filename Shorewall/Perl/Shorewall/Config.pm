@@ -1559,8 +1559,12 @@ sub process_conditional( $$$ ) {
 
     my ($keyword, $rest) = ( $1, $2 );
 
-    $rest = '' unless supplied $rest;
-    $rest =~ s/\s*$//;
+    if ( supplied $rest ) {
+	$rest =~ s/#.*//;
+	$rest =~ s/\s*$//;
+    } else {
+	$rest = '';
+    }
 
     my ( $lastkeyword, $prioromit, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
@@ -2134,6 +2138,18 @@ sub expand_variables( \$ ) {
 }
 
 #
+# Handle first-entry processing
+#
+sub handle_first_entry() {
+    #
+    # $first_entry can contain either a function reference or a message. If it
+    # contains a reference, call the function -- otherwise issue the message
+    #
+    reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
+    $first_entry = 0;
+}
+
+#
 # Read a line from the current include stack.
 #
 #   - Ignore blank or comment-only lines.
@@ -2169,30 +2185,15 @@ sub read_a_line(;$$$$) {
 	    # If this isn't a continued line, remove trailing comments. Note that
 	    # the result may now end in '\'.
 	    #
-	    s/\s*#.*$// if $strip_comments && ! /\\$/;
+	    s/\s*#.*$// if $strip_comments && /[\\]\s*#.*$/;
 	    #
 	    # Continuation
 	    #
 	    chop $currentline, next if substr( ( $currentline .= $_ ), -1, 1 ) eq '\\';
 	    #
-	    # Now remove concatinated comments
-	    #
-	    $currentline =~ s/#.*$// if $strip_comments;
-	    #
 	    # Ignore ( concatenated ) Blank Lines
 	    #
 	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && $suppress_whitespace;
-	    #
-	    # Line not blank -- Handle any first-entry message/capabilities check
-	    #
-	    if ( $first_entry ) {
-		#
-		# $first_entry can contain either a function reference or a message. If it
-		# contains a reference, call the function -- otherwise issue the message
-		#
-		reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
-		$first_entry = 0;
-	    }
 	    #
 	    # Handle conditionals
 	    #
@@ -2205,6 +2206,7 @@ sub read_a_line(;$$$$) {
 	    if ( $omitting ) {
 		print "OMIT=> $currentline\n" if $debug;
 		$currentline='';
+		$currentlinenumber = 0;
 		next;
 	    }
 	    #
@@ -2212,15 +2214,29 @@ sub read_a_line(;$$$$) {
 	    #
 	    if ( $embedded_enabled ) {
 		if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
+		    handle_first_entry if $first_entry;
 		    embedded_shell( $1 );
 		    next;
 		}
 
 		if ( $currentline =~ s/^\s*(BEGIN\s+)?PERL\s*\;?// ) {
+		    handle_first_entry if $first_entry;
 		    embedded_perl( $1 );
 		    next;
 		}
 	    }
+	    #
+	    # Now remove concatinated comments
+	    #
+	    $currentline =~ s/\s*#.*$// if $strip_comments;
+	    #
+	    # Ignore ( concatenated ) Blank Lines after comments are removed.
+	    #
+	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && $suppress_whitespace;
+	    #
+	    # Line not blank -- Handle any first-entry message/capabilities check
+	    #
+	    handle_first_entry if $first_entry;
 
 	    my $count = 0;
 	    #

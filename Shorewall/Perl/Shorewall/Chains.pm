@@ -2201,7 +2201,7 @@ sub ensure_accounting_chain( $$$ )
 	$chainref->{restriction} = $restriction;
 	$chainref->{restricted}  = NO_RESTRICT;
 	$chainref->{ipsec}       = $ipsec;
-	$chainref->{optflags}   |= DONT_OPTIMIZE unless $config{OPTIMIZE_ACCOUNTING};
+	$chainref->{optflags}   |= ( DONT_OPTIMIZE | DONT_MOVE | DONT_DELETE ) unless $config{OPTIMIZE_ACCOUNTING};
 
 	unless ( $chain eq 'accounting' ) {
 	    my $file = find_file $chain;
@@ -2879,7 +2879,9 @@ sub optimize_level4( $$ ) {
 		# Last rule is a simple branch
 		my $targetref = $tableref->{$lastrule->{target}};
 
-		if ( $targetref && ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
+		if ( $targetref && 
+		     ($targetref->{optflags} & DONT_MOVE) == 0 && 
+		     ( keys %{$targetref->{references}} < 2 || @{$targetref->{rules}} < 4 ) ) {
 		    copy_rules( $targetref, $chainref );
 		    $progress = 1;
 		}

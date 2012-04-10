@@ -150,6 +150,11 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 				       MIN_VERBOSITY
 				       MAX_VERBOSITY
+
+				       EMBEDDED_ENABLED
+				       EXPAND_VARIABLES
+				       STRIP_COMMENTS
+				       SUPPRESS_WHITESPACE
 				     ) ] );
 
 Exporter::export_ok_tags('internal');
@@ -438,6 +443,13 @@ my $ifstack;
 # From .shorewallrc
 #
 our %shorewallrc;
+#
+# read_a_line flags
+#
+use constant { EMBEDDED_ENABLED    => 1,
+	       EXPAND_VARIABLES    => 2,
+	       STRIP_COMMENTS      => 4,
+	       SUPPRESS_WHITESPACE => 8 };
 
 sub process_shorewallrc($);
 #
@@ -1943,7 +1955,7 @@ sub first_entry( $ ) {
     }
 }
 
-sub read_a_line(;$$$$);
+sub read_a_line(;$);
 
 sub embedded_shell( $ ) {
     my $multiline = shift;
@@ -1960,7 +1972,7 @@ sub embedded_shell( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0, 0, 0, 0 ) ) {
+	while ( read_a_line( 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+SHELL)?\s*;?//;
 	    $command .= "$currentline\n";
 	}
@@ -1994,7 +2006,7 @@ sub embedded_perl( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0, 0, 0, 0 ) ) {
+	while ( read_a_line( 0 ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+PERL)?\s*;?//;
 	    $command .= "$currentline\n";
 	}
@@ -2161,11 +2173,12 @@ sub handle_first_entry() {
 #   - Handle ?IF, ?ELSE, ?ENDIF
 #
 
-sub read_a_line(;$$$$) {
-    my $embedded_enabled    = defined $_[0] ? shift : 1;
-    my $expand_variables    = defined $_[0] ? shift : 1;
-    my $strip_comments      = defined $_[0] ? shift : 1;
-    my $suppress_whitespace = defined $_[0] ? shift : 1;
+sub read_a_line(;$) {
+    my $flags               = defined $_[0] ? $_[0] : 0xffff;
+    my $embedded_enabled    = $flags & EMBEDDED_ENABLED;
+    my $expand_variables    = $flags & EXPAND_VARIABLES;
+    my $strip_comments      = $flags & STRIP_COMMENTS;
+    my $suppress_whitespace = $flags & SUPPRESS_WHITESPACE;
 
     while ( $currentfile ) {
 

@@ -346,7 +346,7 @@ sub remove_blacklist( $ ) {
 	
     open $newfile, '>', "$fn.new" or fatal_error "Unable to open $fn.new for output: $!";
 
-    while ( read_a_line(1,1,0) ) {
+    while ( read_a_line( EMBEDDED_ENABLED + EXPAND_VARIABLES ) ) {
 	my ( $rule, $comment ) = split '#', $currentline, 2;
 
 	if ( $rule =~ /blacklist/ ) {

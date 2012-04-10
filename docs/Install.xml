@@ -213,8 +213,10 @@
             </listitem>
 
             <listitem>
-              <para>If the system has bash (/bin/bash) installed, you can run
-              ./configure (see below)</para>
+              <para>If the system has Bash (/bin/bash) 4.0 or later installed,
+              you can run ./configure (see below). If you are installing
+              4.5.2.1 or later and your system has Perl installed, you can use
+              the Perl version (./configure.pl).</para>
             </listitem>
 
             <listitem>
@@ -230,7 +232,7 @@
             <member>./install.sh
             <replaceable>shorewallrcfile-that-meets-your-needs</replaceable></member>
 
-            <member></member>
+            <member/>
 
             <member>Example: <command>./install
             shorewallrc.debian</command></member>
@@ -512,13 +514,21 @@
       <section>
         <title>configure Script</title>
 
+        <warning>
+          <para>The configure script requires Bash 4.0 or later. Beginning
+          with Shorewall 4.5.2.1, a Perl version (configure.pl) of the script
+          is included for use by packagers that have to deal with systems with
+          earlier versions of Bash. The configure.pl script works identically
+          to the Bash version.</para>
+        </warning>
+
         <para>The configure script creates a file named
         <filename>shorewallrc</filename> in the current working directory.
         This file is the default input file to the
         i<command>nstall.sh</command> scripts. It is run as follows:</para>
 
         <simplelist>
-          <member><command>./configure</command> [
+          <member><command>./configure</command>[.pl] [
           <replaceable>option</replaceable>=<replaceable>value</replaceable> ]
           ...</member>
         </simplelist>

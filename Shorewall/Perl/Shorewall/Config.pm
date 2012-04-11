@@ -1950,9 +1950,7 @@ sub shorewall {
 sub first_entry( $ ) {
     $first_entry = $_[0];
     my $reftype = reftype $first_entry;
-    if ( $reftype ) {
-	fatal_error "Invalid argument to first_entry()" unless $reftype eq 'CODE';
-    }
+    assert( $reftype eq 'CODE' ) if $reftype;
 }
 
 sub read_a_line(;$);

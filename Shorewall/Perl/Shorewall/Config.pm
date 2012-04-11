@@ -1694,7 +1694,6 @@ sub copy1( $ ) {
 
     if ( $script || $debug ) {
 	my ( $do_indent, $here_documents ) = ( 1, '');
-	my $save_ifstack = $ifstack;
 
 	open_file( $_[0] );
 	
@@ -1789,13 +1788,6 @@ sub copy1( $ ) {
 		    s/\n/\nGS-----> /g;
 		    print "GS-----> $_\n";
 		}
-	    }
-
-	    if ( $ifstack < @ifstack ) {
-		$currentlinenumber = 'EOF';
-		fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
-	    } else {
-		$ifstack = $save_ifstack;
 	    }
 
 	    close_file;
@@ -2288,11 +2280,6 @@ sub read_a_line(;$) {
 		print "IN===> $currentline\n" if $debug;
 		return 1;
 	    }
-	}
-
-	if ( @ifstack > $ifstack ) {
-	    $currentlinenumber = 'EOF';
-	    fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
 	}
 
 	close_file;

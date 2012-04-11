@@ -2214,7 +2214,7 @@ sub read_a_line(;$) {
 		$currentline='';
 		next;
 	    }		
-		    
+
 	    if ( $omitting ) {
 		print "OMIT=> $currentline\n" if $debug;
 		$currentline='';

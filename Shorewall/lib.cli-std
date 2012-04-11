@@ -508,6 +508,10 @@ start_command() {
 			    AUTOMAKE=
 			    option=${option#c}
 			    ;;			    
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -879,6 +883,10 @@ restart_command() {
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 			    g_purge=Yes
 			    option=${option%p}
+			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
 			    ;;
 			*)
 			    usage 1
@@ -1341,6 +1349,10 @@ reload_command() # $* = original arguments less the command.
 			    option=
 			    shift
 			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1556,7 +1568,7 @@ usage() # $1 = exit status
     fi
 
     echo "   iptrace <iptables match expression>"
-    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
+    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
@@ -1569,9 +1581,9 @@ usage() # $1 = exit status
 
     echo "   refresh [ <chain>... ]"
     echo "   reject <address> ..."
-    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ <directory> ] <system>"
+    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ][ <directory> ]"
+    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ] [ -T ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   safe-restart [ -t <timeout> ] [ <directory> ]"
     echo "   safe-start [ -t <timeout> ] [ <directory> ]"
@@ -1599,7 +1611,7 @@ usage() # $1 = exit status
     echo "   show tc [ device ]"
     echo "   show vardir"
     echo "   show zones"
-    echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ -T ] [ <directory> ]"
     echo "   status"
     echo "   stop"
     echo "   try <directory> [ <timeout> ]"

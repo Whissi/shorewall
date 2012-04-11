@@ -59,8 +59,8 @@ my $rcfilename;
 if ( defined $vendor ) {
     $rcfilename = 'shorewallrc.' . $vendor;
 } else {
-    $rcfilename = 'shorewallrc.default';
-    $vendor     = 'linux';
+    $rcfilename   = 'shorewallrc.default';
+    $params{HOST} = 'linux';
 }
 
 open $rcfile, '<', $rcfilename or die "Unable to open $rcfilename for input: $!";
@@ -83,10 +83,8 @@ my $outfile;
 
 open $outfile, '>', 'shorewallrc' or die "Can't open 'shorewallrc' for output: $!";
 
-print          "HOST=$vendor\n";
-print $outfile "HOST=$vendor\n";
-
-for ( qw/ PREFIX
+for ( qw/ HOST
+	  PREFIX
 	  SHAREDIR
 	  LIBEXECDIR
 	  PERLLIBDIR
@@ -113,18 +111,3 @@ for ( qw/ PREFIX
 close $outfile;
 
 1;
-
-
-    
-
-    
-
-    
-
-
-    
-	
-    
-
-    
-    

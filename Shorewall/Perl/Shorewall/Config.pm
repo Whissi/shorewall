@@ -151,10 +151,13 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       MIN_VERBOSITY
 				       MAX_VERBOSITY
 
+				       PLAIN_READ
 				       EMBEDDED_ENABLED
 				       EXPAND_VARIABLES
 				       STRIP_COMMENTS
 				       SUPPRESS_WHITESPACE
+				       CONFIG_CONTINUATION
+				       DO_INCLUDE
 				     ) ] );
 
 Exporter::export_ok_tags('internal');
@@ -446,10 +449,15 @@ our %shorewallrc;
 #
 # read_a_line flags
 #
-use constant { EMBEDDED_ENABLED    => 1,
+use constant { PLAIN_READ          => 0,
+               EMBEDDED_ENABLED    => 1,
 	       EXPAND_VARIABLES    => 2,
 	       STRIP_COMMENTS      => 4,
-	       SUPPRESS_WHITESPACE => 8 };
+	       SUPPRESS_WHITESPACE => 8,
+	       CHECK_GUNK          => 16,
+	       CONFIG_CONTINUATION => 32,
+	       DO_INCLUDE          => 64,
+	   };
 
 sub process_shorewallrc($);
 #
@@ -1972,7 +1980,7 @@ sub embedded_shell( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0 ) ) {
+	while ( read_a_line( PLAIN_READ ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+SHELL)?\s*;?//;
 	    $command .= "$currentline\n";
 	}
@@ -2006,7 +2014,7 @@ sub embedded_perl( $ ) {
 
 	my $last = 0;
 
-	while ( read_a_line( 0 ) ) {
+	while ( read_a_line( PLAIN_READ ) ) {
 	    last if $last = $currentline =~ s/^\s*END(\s+PERL)?\s*;?//;
 	    $command .= "$currentline\n";
 	}
@@ -2174,11 +2182,14 @@ sub handle_first_entry() {
 #
 
 sub read_a_line(;$) {
-    my $flags               = defined $_[0] ? $_[0] : 0xffff;
+    my $flags               = defined $_[0] ? $_[0] : -1;
     my $embedded_enabled    = $flags & EMBEDDED_ENABLED;
     my $expand_variables    = $flags & EXPAND_VARIABLES;
     my $strip_comments      = $flags & STRIP_COMMENTS;
     my $suppress_whitespace = $flags & SUPPRESS_WHITESPACE;
+    my $check_gunk          = $flags & CHECK_GUNK;
+    my $config_continuation = $flags & CONFIG_CONTINUATION;
+    my $do_include          = $flags & DO_INCLUDE;
 
     while ( $currentfile ) {
 
@@ -2193,7 +2204,7 @@ sub read_a_line(;$) {
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #
-	    s/^\s*// if $currentline =~ /[,:]$/ && $suppress_whitespace;
+	    s/^\s*// if $currentline =~ /[,:]$/ && $config_continuation;
 	    #
 	    # If this is a continued line with a trailing comment, remove comment. Note that
 	    # the result will now end in '\'.
@@ -2251,7 +2262,7 @@ sub read_a_line(;$) {
 	    #
 	    expand_variables( $currentline ) if $expand_variables;
 
-	    if ( $currentline =~ /^\s*\??INCLUDE\s/ ) {
+	    if ( $do_include && $currentline =~ /^\s*\??INCLUDE\s/ ) {
 
 		my @line = split ' ', $currentline;
 
@@ -2273,6 +2284,7 @@ sub read_a_line(;$) {
 
 		$currentline = '';
 	    } else {
+		fatal_error "Non-ASCII gunk in file" if $check_gunk && $currentline =~ /[^\s[:print:]]/;
 		print "IN===> $currentline\n" if $debug;
 		return 1;
 	    }
@@ -2287,33 +2299,13 @@ sub read_a_line(;$) {
     }
 }
 
-#
-# Simple version of the above. Doesn't do line concatenation, shell variable expansion or INCLUDE processing
-#
-sub read_a_line1() {
-    while ( $currentfile ) {
-	while ( $currentline = <$currentfile> ) {
-	    next if $currentline =~ /^\s*#/;
-	    chomp $currentline;
-	    next if $currentline =~ /^\s*$/;
-	    $currentline =~ s/#.*$//;       # Remove Trailing Comments
-	    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
-	    $currentlinenumber = $.;
-	    print "IN===> $currentline\n" if $debug;
-	    return 1;
-	}
-
-	close_file;
-    }
-}
-
 sub process_shorewallrc( $ ) {
     my $shorewallrc = shift;
 
     $shorewallrc{PRODUCT} = $family == F_IPV4 ? 'shorewall' : 'shorewall6';
 
     if ( open_file $shorewallrc ) {
-	while ( read_a_line1 ) {
+	while ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE | CHECK_GUNK ) ) {
 	    if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 		my ($var, $val) = ($1, $2);
 		$val = $1 if $val =~ /^\"([^\"]*)\"$/;
@@ -3469,7 +3461,7 @@ sub process_shorewall_conf( $$ ) {
 	    #
 	    # Don't expand shell variables or allow embedded scripting
 	    #
-	    while ( read_a_line1 ) {
+	    while ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 
@@ -3509,7 +3501,7 @@ sub process_shorewall_conf( $$ ) {
 # Process the records in the capabilities file
 #
 sub read_capabilities() {
-    while ( read_a_line1 ) {
+    while ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
 	if ( $currentline =~ /^([a-zA-Z]\w*)=(.*)$/ ) {
 	    my ($var, $val) = ($1, $2);
 	    unless ( exists $capabilities{$var} ) {
@@ -4353,7 +4345,7 @@ sub run_user_exit1( $ ) {
 	#
 	push_open $file;
 
-	if ( read_a_line1 ) {
+	if ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
 	    close_file;
 
 	    my $command = qq(package Shorewall::User;\n# line 1 "$file"\n) . `cat $file`;
@@ -4384,7 +4376,7 @@ sub run_user_exit2( $$ ) {
 	#
 	push_open $file;
 
-	if ( read_a_line1 ) {
+	if ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
 	    close_file;
 
 	    unless (my $return = eval `cat $file` ) {

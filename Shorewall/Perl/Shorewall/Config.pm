@@ -2265,7 +2265,7 @@ sub read_a_line(;$$$$) {
 	    }
 	}
 
-	if ( @ifstack ) {
+	if ( @ifstack > $ifstack ) {
 	    $currentlinenumber = 'EOF';
 	    fatal_error "Missing ?ENDIF to match the ?IF at line $ifstack[-1]->[3]";
 	}

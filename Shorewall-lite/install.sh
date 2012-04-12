@@ -374,6 +374,8 @@ fi
 # Install the  Makefile
 #
 run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
+[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
 echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 
 #

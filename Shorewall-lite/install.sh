@@ -373,8 +373,8 @@ fi
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${SHAREDIR}/$PRODUCT
-echo "Makefile installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/Makefile"
+run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
+echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 
 #
 # Install the default config path file

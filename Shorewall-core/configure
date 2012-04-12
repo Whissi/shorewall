@@ -21,10 +21,24 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#       Usage: ./configure <option>=<setting> ...
+#       Usage: ./configure [ <option>=<setting> ] ...
 #
 #
 ################################################################################################
+#
+# Build updates this
+#
+VERSION=4.5.2.1
+
+case "$BASH_VERSION" in
+    [4-9].*)
+	;;
+    *)
+	echo "ERROR: This program requires Bash 4.0 or later" >&2
+	exit 1
+	;;
+esac
+
 declare -A params
 declare -A options
 
@@ -46,21 +60,17 @@ getfileparams() {
     return 0
 }
 
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <var>=<val> ..." >&2
-    exit 1
-fi
-
 for p in $@; do
-    p=${p#--}
 
     if [ -n "${p}" ]; then
 	declare -u pn
 
 	pn=${p%=*}
+	pn=${pn#--}
 	pv=${p#*=}
 
 	if [ -n "${pn}" ]; then
+	    
 	    case ${pn} in
 		VENDOR)
 		    pn=HOST
@@ -77,6 +87,9 @@ for p in $@; do
 	    esac
     
 	    params[${pn}]="${pv}"
+	else
+	    echo "ERROR: Invalid option ($p)" >&2
+	    exit 1
 	fi
     fi
 done
@@ -84,22 +97,75 @@ done
 vendor=${params[HOST]}
 
 if [ -z "$vendor" ]; then
-    rcfile=shorewallrc.default
-    vendor=linux
+    case `uname` in
+	Darwin)
+	    $params[HOST]=apple
+	    rcfile=shorewallrc.apple
+	    ;;
+	
+	cygwin*)
+	    $params[HOST]=cygwin
+	    rcfile=shorewallrc.cygwin
+	    ;;
+	*)
+	    if [ -f /etc/debian_version ]; then
+		params[HOST]=debian
+		rcfile=shorewallrc.debian
+	    elif [ -f /etc/redhat-release ]; then
+		params[HOST]=redhat
+		rcfile=shorewallrc.redhat
+	    elif [ -f /etc/slackware-version ] ; then
+		params[HOST]=slackware
+		rcfile=shorewallrc.slackware
+	    elif [ -f /etc/SuSE-release ]; then
+		params[HOST]=suse
+		rcfile=shorewallrc.suse
+	    elif [ -f /etc/arch-release ] ; then
+		params[HOST]=archlinux
+		rcfile=shorewallrc.archlinux
+	    else
+		params[HOST]=linux
+		rcfile=shorewallrc.default
+	    fi
+	    ;;
+    esac
+
+    vendor=${params[HOST]}
+elif [ $vendor = linux ]; then
+    rcfile=$shorewallrc.default;
 else
     rcfile=shorewallrc.$vendor
+    if [ ! -f $rcfile ]; then
+	echo "ERROR: $vendor is not a recognized host type" >&2
+	exit 1
+    fi
 fi
+
+if [ $vendor = linux ]; then
+    echo "INFO: Creating a generic Linux installation - " `date`;
+else
+    echo "INFO: Creating a ${vendor}-specific installation - " `date`;
+fi
+
+echo
 
 getfileparams < $rcfile || exit 1
 
 for p in ${!params[@]}; do
     options[${p}]="${params[${p}]}"
-    options[${p}]="${params[${p}]}"
 done
 
-echo "HOST=$vendor" > shorewallrc
+echo '#'                                                                 > shorewallrc
+echo "# Created by Shorewall Core version $VERSION configure - " `date` >> shorewallrc
+echo '#'                                                                >> shorewallrc
+
+if [ -n "$@" ]; then
+    echo "# Input: $@" >> shorewallrc
+    echo '#'           >> shorewallrc
+fi
 
 for on in \
+    HOST \
     PREFIX \
     SHAREDIR \
     LIBEXECDIR \
@@ -118,7 +184,6 @@ for on in \
     ANNOTATED \
     VARDIR
 do
+    echo "$on=${options[${on}]}"
     echo "$on=${options[${on}]}" >> shorewallrc
 done
-
-cat shorewallrc

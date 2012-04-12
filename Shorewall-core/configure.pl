@@ -27,22 +27,23 @@
 ################################################################################################
 use strict;
 
+#
+# Build updates this
+#
+use constant { 
+    VERSION => '4.5.2.1'
+};
+
 my %params;
 my %options;
 
-my %aliases = ( VENDOR => 'HOST',
+my %aliases = ( VENDOR         => 'HOST',
 		SHAREDSTATEDIR => 'VARDIR',
-		DATADIR => 'SHAREDIR',
-		SYSCONFDIR => 'CONFDIR' );
+		DATADIR        => 'SHAREDIR',
+		SYSCONFDIR     => 'CONFDIR' );
 
-die "Usage: $0 <var>=<val> ..." unless @ARGV;
-
-for ( @ARGV) {
-    s/^--//;
-
-    next unless defined $_ && $_ ne '';
-
-    die "Invalid option specification ( $_ )" unless /^(\w+)=(.*)$/;
+for ( @ARGV ) {
+    die "ERROR: Invalid option specification ( $_ )" unless /^(?:--)?(\w+)=(.*)$/;
 
     my $pn = uc $1;
     my $pv = $2 || '';
@@ -57,21 +58,56 @@ my $rcfile;
 my $rcfilename;
 
 if ( defined $vendor ) {
-    $rcfilename = 'shorewallrc.' . $vendor;
+    $rcfilename = $vendor eq 'linux' ? 'shorewallrc.default' : 'shorewallrc.' . $vendor;
+    die qq("ERROR: $vendor" is not a recognized host type) unless -f $rcfilename;
 } else {
-    $rcfilename   = 'shorewallrc.default';
-    $params{HOST} = 'linux';
+    if ( -f '/etc/debian_version' ) {
+	$vendor = 'debian';
+	$rcfilename = 'shorewallrc.debian';
+    } elsif ( -f '/etc/redhat-release' ){
+	$vendor = 'redhat';
+	$rcfilename = 'shorewallrc.redhat';
+    } elsif ( -f '/etc/slackware-version' ) {
+	$vendor = 'slackware';
+	$rcfilename = 'shorewallrc.slackware';
+    } elsif ( -f '/etc/SuSE-release' ) {
+	$vendor = 'suse';
+	$rcfilename = 'shorewallrc.suse';
+    } elsif ( -f '/etc/arch-release' ) {
+	$vendor = 'archlinux';
+	$rcfilename = 'shorewallrc.archlinux';
+    } elsif ( `uname` =~ '^Darwin' ) {
+	$vendor = 'apple';
+	$rcfilename = 'shorewallrc.apple';
+    } elsif ( `uname` =~ '^Cygwin' ) {
+	$vendor = 'cygwin';
+	$rcfilename = 'shorewallrc.cygwin';
+    } else {
+	$vendor = 'linux';
+	$rcfilename = 'shorewallrc.default';
+    }
+
+    $params{HOST} = $vendor;
+}
+
+my @localtime = localtime;
+my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+
+if ( $vendor eq 'linux' ) {
+    printf "INFO: Creating a generic Linux installation - %s %2d %04d %02d:%02d:%02d\n\n", $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];;
+} else {
+    printf "INFO: Creating a %s-specific installation - %s %2d %04d %02d:%02d:%02d\n\n", $vendor, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];;
 }
 
 open $rcfile, '<', $rcfilename or die "Unable to open $rcfilename for input: $!";
 
 while ( <$rcfile> ) {
-    next if /^\s*#/;
     s/\s*#.*//;
-    next if /^\s*$/;
-    chomp;
-    die "Invalid entry ($_) in $rcfilename, line $." unless /\s*(\w+)=(.*)/;
-    $options{$1} = $2;
+    unless ( /^\s*$/ ) {
+	chomp;
+	die "ERROR: Invalid entry ($_) in $rcfilename, line $." unless /\s*(\w+)=(.*)/;
+	$options{$1} = $2;
+    }
 }
 
 close $rcfile;
@@ -83,6 +119,10 @@ while ( my ( $p, $v ) = each %params ) {
 my $outfile;
 
 open $outfile, '>', 'shorewallrc' or die "Can't open 'shorewallrc' for output: $!";
+
+printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s %2d %04d %02d:%02d:%02d\n#\n", VERSION, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];
+
+print  $outfile "# Input: @ARGV\n#\n" if @ARGV;
 
 for ( qw/ HOST
 	  PREFIX

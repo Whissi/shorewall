@@ -66,10 +66,11 @@ if ( defined $vendor ) {
 open $rcfile, '<', $rcfilename or die "Unable to open $rcfilename for input: $!";
 
 while ( <$rcfile> ) {
-    next if /\s*#/;
-    
-    die "Invalid entry ($_) in $rcfile, line $." unless /\s*(\w+)=(.*)/;
-
+    next if /^\s*#/;
+    s/\s*#.*//;
+    next if /^\s*$/;
+    chomp;
+    die "Invalid entry ($_) in $rcfilename, line $." unless /\s*(\w+)=(.*)/;
     $options{$1} = $2;
 }
 

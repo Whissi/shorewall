@@ -562,8 +562,8 @@ version_command() {
 	echo "shorewall-core: $(cat $g_sharedir/coreversion)"
 
 	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
-	    if [ -f $g_sharedir/version ]; then
-		echo "$product: $(cat $g_sharedir/version)"
+	    if [ -f ${SHAREDIR}/$product/version ]; then
+		echo "$product: $(cat ${SHAREDIR}/$product/version)"
 	    fi
 	done
     else

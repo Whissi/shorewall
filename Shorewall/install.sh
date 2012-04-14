@@ -961,7 +961,9 @@ run_install $OWNERSHIP -m 0644 Makefile-lite ${DESTDIR}${SHAREDIR}/$PRODUCT/conf
 [ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/Makefile
 
 if [ -z "$SPARSE" ]; then
-    run_install $OWNERSHIP -m 0600 ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
+    run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
+    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
+    [ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
     echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 fi
 #

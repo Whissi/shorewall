@@ -2269,8 +2269,9 @@ sub read_a_line1() {
 	while ( $currentline = <$currentfile> ) {
 	    next if $currentline =~ /^\s*#/;
 	    chomp $currentline;
-	    next if $currentline =~ /^\s*$/;
 	    $currentline =~ s/#.*$//;       # Remove Trailing Comments
+	    $currentline =~ s/\s*$//;       # Remove Trailing Whitespace
+	    next if $currentline =~ /^\s*$/;
 	    fatal_error "Non-ASCII gunk in file" if $currentline =~ /[^\s[:print:]]/;
 	    $currentlinenumber = $.;
 	    print "IN===> $currentline\n" if $debug;

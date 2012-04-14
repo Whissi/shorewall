@@ -3,9 +3,9 @@ VARDIR=$(shell /sbin/shorewall6 show vardir)
 CONFDIR=/etc/shorewall6
 RESTOREFILE?=firewall
 
-all: $(VARDIR)/${RESTOREFILE}
+all: $(VARDIR)/$(RESTOREFILE)
 
-$(VARDIR)/${RESTOREFILE}: $(CONFDIR)/*
+$(VARDIR)/$(RESTOREFILE): $(CONFDIR)/*
 	@/sbin/shorewall6 -q save >/dev/null; \
 	if \
 	    /sbin/shorewall6 -q restart >/dev/null 2>&1; \

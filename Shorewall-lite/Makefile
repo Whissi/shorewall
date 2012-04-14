@@ -3,9 +3,9 @@ VARDIR=$(shell /sbin/shorewall-lite show vardir)
 SHAREDIR=/usr/share/shorewall-lite
 RESTOREFILE?=.restore
 
-all: $(VARDIR)/${RESTOREFILE}
+all: $(VARDIR)/$(RESTOREFILE)
 
-$(VARDIR)/${RESTOREFILE}: $(VARDIR)/firewall
+$(VARDIR)/$(RESTOREFILE): $(VARDIR)/firewall
 	@/sbin/shorewall-lite -q save >/dev/null; \
 	if \
 	    /sbin/shorewall-lite -q restart >/dev/null 2>&1; \

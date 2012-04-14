@@ -957,13 +957,9 @@ echo "Standard actions file installed as ${DESTDIR}${SHAREDIR}d/$PRODUCT/actions
 # Install the  Makefiles
 #
 run_install $OWNERSHIP -m 0644 Makefile-lite ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/Makefile
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/Makefile
-[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/Makefile
 
 if [ -z "$SPARSE" ]; then
     run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
-    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
-    [ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
     echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 fi
 #

@@ -2230,13 +2230,20 @@ sub read_a_line($) {
 		}
 	    }
 	    #
-	    # Now remove concatinated comments
+	    # Now remove concatinated comments if asked
 	    #
 	    $currentline =~ s/\s*#.*$// if $options & STRIP_COMMENTS;
-	    #
-	    # Ignore ( concatenated ) Blank Lines after comments are removed.
-	    #
-	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && ( $options & SUPPRESS_WHITESPACE );
+
+	    if ( $options & SUPPRESS_WHITESPACE ) {
+		#
+		# Ignore (concatinated) blank lines
+		#
+		$currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
+		#
+		# Eliminate trailing whitespace
+		#
+		$currentline =~ s/\s*$//;
+	    }
 	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #

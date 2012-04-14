@@ -529,7 +529,7 @@ sub process_policies()
 
     if ( my $fn = open_file 'policy' ) {
 	first_entry "$doing $fn...";
-	process_a_policy while read_a_line;
+	process_a_policy while read_a_line( NORMAL_READ );
     } else {
 	fatal_error q(The 'policy' file does not exist or has zero size);
     }
@@ -1394,7 +1394,7 @@ sub process_actions() {
     for my $file ( qw/actions.std actions/ ) {
 	open_file $file;
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 	    my ( $action ) = split_line 'action file' , { action => 0 };
 
 	    if ( $action =~ /:/ ) {
@@ -1454,7 +1454,7 @@ sub process_action( $) {
 
 	push_comment( '' );
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition );
 
@@ -1547,7 +1547,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 
     push_open $macrofile;
 
-    while ( read_a_line ) {
+    while ( read_a_line( NORMAL_READ ) ) {
 
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition );
 
@@ -2567,7 +2567,7 @@ sub process_rules( $ ) {
 		     }
 		   );
 
-	process_rule while read_a_line;
+	process_rule while read_a_line( NORMAL_READ );
     }
 
     $section = '';
@@ -2585,7 +2585,7 @@ sub process_rules( $ ) {
 
 	first_entry "$doing $fn...";
 
-	process_rule while read_a_line;
+	process_rule while read_a_line( NORMAL_READ );
 
 	clear_comment;
     }

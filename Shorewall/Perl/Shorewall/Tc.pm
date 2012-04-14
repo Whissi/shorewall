@@ -1455,7 +1455,7 @@ sub process_tcfilters() {
 	
 	first_entry( "$doing $fn..." );
 	
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 	    if ( $currentline =~ /^\s*IPV4\s*$/ ) {
 		Shorewall::IPAddrs::initialize( $family = F_IPV4 ) unless $family == F_IPV4;
 	    } elsif ( $currentline =~ /^\s*IPV6\s*$/ ) {
@@ -1555,7 +1555,7 @@ sub process_tcinterfaces() {
 
     if ( $fn ) {
 	first_entry "$doing $fn...";
-	process_simple_device while read_a_line;
+	process_simple_device while read_a_line( NORMAL_READ );
     }
 }
 
@@ -1573,7 +1573,7 @@ sub process_tcpri() {
 		warning_message "There are entries in $fn1 but $fn was empty" unless @tcdevices || $family == F_IPV6;
 	    };
 
-	process_tc_priority while read_a_line;
+	process_tc_priority while read_a_line( NORMAL_READ );
 
 	clear_comment;
 
@@ -1604,7 +1604,7 @@ sub process_traffic_shaping() {
     if ( $fn ) {
 	first_entry "$doing $fn...";
 
-	validate_tc_device while read_a_line;
+	validate_tc_device while read_a_line( NORMAL_READ );
     }
 
     $devnum = $devnum > 10 ? 10 : 1;
@@ -1614,7 +1614,7 @@ sub process_traffic_shaping() {
     if ( $fn ) {
 	first_entry "$doing $fn...";
 
-	validate_tc_class while read_a_line;
+	validate_tc_class while read_a_line( NORMAL_READ );
     }
 
     process_tcfilters;
@@ -2038,7 +2038,7 @@ sub setup_tc() {
 
 	    first_entry "$doing $fn...";
 
-	    process_tc_rule while read_a_line;
+	    process_tc_rule while read_a_line( NORMAL_READ );
 
 	    clear_comment;
 	}
@@ -2049,7 +2049,7 @@ sub setup_tc() {
 
 	    first_entry "$doing $fn...";
 
-	    process_secmark_rule while read_a_line;
+	    process_secmark_rule while read_a_line( NORMAL_READ );
 
 	    clear_comment;
 	}

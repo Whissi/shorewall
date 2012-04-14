@@ -394,7 +394,7 @@ sub setup_accounting() {
 
 	my $nonEmpty = 0;
 
-	$nonEmpty |= process_accounting_rule while read_a_line;
+	$nonEmpty |= process_accounting_rule while read_a_line( NORMAL_READ );
 
 	clear_comment;
 

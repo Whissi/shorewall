@@ -1164,7 +1164,7 @@ sub process_providers( $ ) {
 
     if ( my $fn = open_file 'providers' ) {
 	first_entry "$doing $fn..."; 
-	process_a_provider, $providers++ while read_a_line;
+	process_a_provider, $providers++ while read_a_line( NORMAL_READ );
     }
 
     if ( $providers ) {
@@ -1183,7 +1183,7 @@ sub process_providers( $ ) {
 	    
 	    emit '';
 
-	    add_an_rtrule while read_a_line;
+	    add_an_rtrule while read_a_line( NORMAL_READ );
 	}
 
 	$fn = open_file 'routes';
@@ -1191,7 +1191,7 @@ sub process_providers( $ ) {
 	if ( $fn ) {
 	    first_entry "$doing $fn...";
 	    emit '';
-	    add_a_route while read_a_line;
+	    add_a_route while read_a_line( NORMAL_READ );
 	}
     }
 

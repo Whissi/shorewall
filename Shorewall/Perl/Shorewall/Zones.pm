@@ -545,7 +545,7 @@ sub determine_zones()
 
     if ( my $fn = open_file 'zones' ) {
 	first_entry "$doing $fn...";
-	push @z, process_zone( $ip ) while read_a_line;
+	push @z, process_zone( $ip ) while read_a_line( NORMAL_READ );
     } else {
 	fatal_error q(The 'zones' file does not exist or has zero size);
     }
@@ -1214,7 +1214,7 @@ sub validate_interfaces_file( $ ) {
 
     if ( my $fn = open_file 'interfaces' ) {
 	first_entry "$doing $fn...";
-	push @ifaces, process_interface( $nextinum++, $export ) while read_a_line;
+	push @ifaces, process_interface( $nextinum++, $export ) while read_a_line( NORMAL_READ );
     } else {
 	fatal_error q(The 'interfaces' file does not exist or has zero size);
     }
@@ -1935,7 +1935,7 @@ sub validate_hosts_file()
 
     if ( my $fn = open_file 'hosts' ) {
 	first_entry "$doing $fn...";
-	$ipsec |= process_host while read_a_line;
+	$ipsec |= process_host while read_a_line( NORMAL_READ );
     }
 
     $have_ipsec = $ipsec || haveipseczones;

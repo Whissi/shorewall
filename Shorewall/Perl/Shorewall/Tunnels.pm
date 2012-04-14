@@ -283,7 +283,7 @@ sub setup_tunnels() {
 
 	first_entry "$doing $fn...";
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 'tunnels file', { type => 0, zone => 1, gateway => 2, gateway_zone => 3 };
 

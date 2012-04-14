@@ -79,7 +79,7 @@ sub process_tos() {
 		       }
 		   );
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) = split_line 'tos file entry', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } ;
 
@@ -149,7 +149,7 @@ sub setup_ecn()
 			   warning_message 'ECN will not be applied to forwarded packets' unless have_capability 'MANGLE_FORWARD';
 		       } );
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ($interface, $hosts ) = split_line 'ecn file entry', { interface => 0, hosts => 1 };
 
@@ -227,7 +227,7 @@ sub setup_blacklist() {
 
 	    first_entry "$doing $fn...";
 
-	    while ( read_a_line ) {
+	    while ( read_a_line ( NORMAL_READ ) ) {
 
 		if ( $first_entry ) {
 		    unless  ( @$zones || @$zones1 ) {
@@ -396,7 +396,7 @@ sub convert_blacklist() {
 
 	first_entry "Converting $fn...";
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 	    my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
 
 	    if ( $options eq '-' ) {
@@ -554,7 +554,7 @@ sub process_routestopped() {
 
 	first_entry "$doing $fn...";
 
-	while ( read_a_line ) {
+	while ( read_a_line ( NORMAL_READ ) ) {
 
 	    my ($interface, $hosts, $options , $proto, $ports, $sports ) =
 		split_line 'routestopped file', { interface => 0, hosts => 1, options => 2, proto => 3, dport => 4, sport => 5 };
@@ -1097,7 +1097,7 @@ sub setup_mac_lists( $ ) {
 
 	    first_entry "$doing $fn...";
 
-	    while ( read_a_line ) {
+	    while ( read_a_line( NORMAL_READ ) ) {
 
 		my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 'maclist file', { disposition => 0, interface => 1, mac => 2, addresses => 3 };
 

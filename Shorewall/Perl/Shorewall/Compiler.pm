@@ -354,7 +354,7 @@ sub generate_script_3($) {
 	    emit 'cat > ${VARDIR}/.modules << EOF';
 	    open_file $fn;
 
-	    emit_unindented $currentline while read_a_line;
+	    emit_unindented $currentline while read_a_line( NORMAL_READ );
 
 	    emit_unindented 'EOF';
 	    emit '', 'reload_kernel_modules < ${VARDIR}/.modules';

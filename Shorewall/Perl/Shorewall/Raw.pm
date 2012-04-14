@@ -130,7 +130,7 @@ sub setup_notrack() {
 
 	my $nonEmpty = 0;
 
-	while ( read_a_line ) {	    
+	while ( read_a_line( NORMAL_READ ) ) {	    
 	    my ( $source, $dest, $proto, $ports, $sports, $user );
 
 	    if ( $format == 1 ) {

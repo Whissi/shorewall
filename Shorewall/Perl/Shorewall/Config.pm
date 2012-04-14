@@ -158,6 +158,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       SUPPRESS_WHITESPACE
 				       CONFIG_CONTINUATION
 				       DO_INCLUDE
+				       NORMAL_READ
 				     ) ] );
 
 Exporter::export_ok_tags('internal');
@@ -447,16 +448,18 @@ my $ifstack;
 #
 our %shorewallrc;
 #
-# read_a_line flags
+# read_a_line options
 #
-use constant { PLAIN_READ          => 0,
-               EMBEDDED_ENABLED    => 1,
-	       EXPAND_VARIABLES    => 2,
-	       STRIP_COMMENTS      => 4,
-	       SUPPRESS_WHITESPACE => 8,
-	       CHECK_GUNK          => 16,
-	       CONFIG_CONTINUATION => 32,
-	       DO_INCLUDE          => 64,
+use constant { PLAIN_READ          => 0,     # No read_a_line options
+               EMBEDDED_ENABLED    => 1,     # Look for embedded Shell and Perl
+	       EXPAND_VARIABLES    => 2,     # Expand Shell variables
+	       STRIP_COMMENTS      => 4,     # Remove comments
+	       SUPPRESS_WHITESPACE => 8,     # Ignore blank lines
+	       CHECK_GUNK          => 16,    # Look for unprintable characters
+	       CONFIG_CONTINUATION => 32,    # Suppress leading whitespace if 
+                                             # continued line ends in ',' or ':'
+	       DO_INCLUDE          => 64,    # Look for INCLUDE <filename>
+               NORMAL_READ         => -1     # All options
 	   };
 
 sub process_shorewallrc($);
@@ -1354,9 +1357,7 @@ sub find_file($)
 
     return $filename if $filename =~ '/';
 
-    my $directory;
-
-    for $directory ( @config_path ) {
+    for my $directory ( @config_path ) {
 	my $file = "$directory$filename";
 	return $file if -f $file;
     }
@@ -1953,7 +1954,7 @@ sub first_entry( $ ) {
     assert( $reftype eq 'CODE' ) if $reftype;
 }
 
-sub read_a_line(;$);
+sub read_a_line($);
 
 sub embedded_shell( $ ) {
     my $multiline = shift;
@@ -2171,15 +2172,8 @@ sub handle_first_entry() {
 #   - Handle ?IF, ?ELSE, ?ENDIF
 #
 
-sub read_a_line(;$) {
-    my $flags               = defined $_[0] ? $_[0] : -1;
-    my $embedded_enabled    = $flags & EMBEDDED_ENABLED;
-    my $expand_variables    = $flags & EXPAND_VARIABLES;
-    my $strip_comments      = $flags & STRIP_COMMENTS;
-    my $suppress_whitespace = $flags & SUPPRESS_WHITESPACE;
-    my $check_gunk          = $flags & CHECK_GUNK;
-    my $config_continuation = $flags & CONFIG_CONTINUATION;
-    my $do_include          = $flags & DO_INCLUDE;
+sub read_a_line($) {
+    my $options = $_[0];
 
     while ( $currentfile ) {
 
@@ -2194,12 +2188,12 @@ sub read_a_line(;$) {
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #
-	    s/^\s*// if $currentline =~ /[,:]$/ && $config_continuation;
+	    s/^\s*// if $currentline =~ /[,:]$/ && $options & CONFIG_CONTINUATION;
 	    #
 	    # If this is a continued line with a trailing comment, remove comment. Note that
 	    # the result will now end in '\'.
 	    #
-	    s/\s*#.*$// if $strip_comments && /[\\]\s*#.*$/;
+	    s/\s*#.*$// if ($options & STRIP_COMMENTS) && /[\\]\s*#.*$/;
 	    #
 	    # Continuation
 	    #
@@ -2222,7 +2216,7 @@ sub read_a_line(;$) {
 	    #
 	    # Must check for shell/perl before doing variable expansion
 	    #
-	    if ( $embedded_enabled ) {
+	    if ( $options & EMBEDDED_ENABLED ) {
 		if ( $currentline =~ s/^\s*(BEGIN\s+)?SHELL\s*;?// ) {
 		    handle_first_entry if $first_entry;
 		    embedded_shell( $1 );
@@ -2238,11 +2232,11 @@ sub read_a_line(;$) {
 	    #
 	    # Now remove concatinated comments
 	    #
-	    $currentline =~ s/\s*#.*$// if $strip_comments;
+	    $currentline =~ s/\s*#.*$// if $options & STRIP_COMMENTS;
 	    #
 	    # Ignore ( concatenated ) Blank Lines after comments are removed.
 	    #
-	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && $suppress_whitespace;
+	    $currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/ && ( $options & SUPPRESS_WHITESPACE );
 	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
@@ -2250,9 +2244,9 @@ sub read_a_line(;$) {
 	    #
 	    # Expand Shell Variables using %params and @actparms
 	    #
-	    expand_variables( $currentline ) if $expand_variables;
+	    expand_variables( $currentline ) if $options & EXPAND_VARIABLES;
 
-	    if ( $do_include && $currentline =~ /^\s*\??INCLUDE\s/ ) {
+	    if ( ( $options & DO_INCLUDE ) && $currentline =~ /^\s*\??INCLUDE\s/ ) {
 
 		my @line = split ' ', $currentline;
 
@@ -2274,7 +2268,7 @@ sub read_a_line(;$) {
 
 		$currentline = '';
 	    } else {
-		fatal_error "Non-ASCII gunk in file" if $check_gunk && $currentline =~ /[^\s[:print:]]/;
+		fatal_error "Non-ASCII gunk in file" if ( $options && CHECK_GUNK ) && $currentline =~ /[^\s[:print:]]/;
 		print "IN===> $currentline\n" if $debug;
 		return 1;
 	    }
@@ -2571,7 +2565,7 @@ sub load_kernel_modules( ) {
 
 	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 	    fatal_error "Invalid modules file entry" unless ( $currentline =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {
@@ -3248,7 +3242,7 @@ sub ensure_config_path() {
 
 	add_param( CONFDIR => $globals{CONFDIR} );
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 	    if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		my ($var, $val) = ($1, $2);
 		$config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val ) if exists $config{$var};

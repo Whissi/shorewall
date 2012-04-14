@@ -276,7 +276,7 @@ sub setup_masq()
 
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
 
-	process_one_masq while read_a_line;
+	process_one_masq while read_a_line( NORMAL_READ );
 
 	clear_comment;
     }
@@ -373,7 +373,7 @@ sub setup_nat() {
 
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty nat file' , 's'; } );
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 'nat file', { external => 0, interface => 1, internal => 2, allints => 3, local => 4 };
 
@@ -409,7 +409,7 @@ sub setup_netmap() {
 
 	first_entry "$doing $fn...";
 
-	while ( read_a_line ) {
+	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ( $type, $net1, $interfacelist, $net2, $net3, $proto, $dport, $sport ) = split_line 'netmap file', { type => 0, net1 => 1, interface => 2, net2 => 3, net3 => 4, proto => 5, dport => 6, sport => 7 };
 

@@ -699,7 +699,7 @@ sub incr_cmd_level( $ ) {
 }
 
 sub decr_cmd_level( $ ) {
-    assert( --$_[0]->{cmdlevel} >= 0);
+    assert( --$_[0]->{cmdlevel} >= 0, $_[0] );
 }
 
 #
@@ -714,14 +714,14 @@ sub decr_cmd_level( $ ) {
 sub set_rule_option( $$$ ) {
     my ( $ruleref, $option, $value ) = @_;
 
-    assert( defined $value && reftype $ruleref );
+    assert( defined $value && reftype $ruleref , $value, $ruleref );
 
     $ruleref->{simple} = 0;
     
     my $opttype = $opttype{$option} || MATCH;
 
     if ( exists $ruleref->{$option} ) {
-	assert( defined( my $value1 = $ruleref->{$option} ) );
+	assert( defined( my $value1 = $ruleref->{$option} ) , $ruleref );
 
 	if ( $opttype == MATCH ) {
 	    if ( $globals{KLUDGEFREE} ) {
@@ -742,7 +742,7 @@ sub set_rule_option( $$$ ) {
 	} elsif ( $opttype == UNIQUE ) {
 	    fatal_error "Multiple $option settings in one rule is prohibited";
 	} else {
-	    assert(0);
+	    assert(0, $opttype );
 	}
     } else {
 	$ruleref->{$option} = $value;
@@ -823,7 +823,7 @@ sub rule_target( $ ) {
 sub clear_rule_target( $ ) {
     my $ruleref = shift;
 
-    assert( reftype $ruleref );
+    assert( reftype $ruleref , $ruleref );
 
     delete $ruleref->{jump};
     delete $ruleref->{targetopts};
@@ -835,7 +835,7 @@ sub clear_rule_target( $ ) {
 sub set_rule_target( $$$ ) {
     my ( $ruleref, $target, $opts) = @_;
 
-    assert( reftype $ruleref );
+    assert( reftype $ruleref , $ruleref );
 
     $ruleref->{jump}     = 'j';
     $ruleref->{target}   = $target;
@@ -1033,7 +1033,7 @@ sub push_rule( $$ ) {
 sub add_trule( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
-    assert( reftype $ruleref );
+    assert( reftype $ruleref , $ruleref );
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
 
@@ -1129,7 +1129,7 @@ sub add_rule($$;$) {
 
     our $splitcount;
 
-    assert( ! reftype $rule );
+    assert( ! reftype $rule , $rule );
 
     $iprangematch = 0;
     #
@@ -1180,7 +1180,7 @@ sub push_matches {
     my $dont_optimize = 0;
 
     while ( @_ ) {
-	my ( $option, $value ) = ( shift , shift );
+	my ( $option, $value ) = @_;
 
 	assert( defined $value );
 
@@ -1301,7 +1301,7 @@ sub insert_rule1($$$)
     my $ruleref = transform_rule( $rule );
 
     $ruleref->{comment}  = "$comment" if $comment;
-    assert( ! ( $ruleref->{cmdlevel} = $chainref->{cmdlevel}) );
+    assert( ! ( $ruleref->{cmdlevel} = $chainref->{cmdlevel}) , $chainref->{name} );
     $ruleref->{mode} = CAT_MODE;
 
     splice( @{$chainref->{rules}}, $number, 0, $ruleref );
@@ -1435,7 +1435,7 @@ sub decrement_reference_count( $$ ) {
     my ($toref, $chain) = @_;
 
     if ( $toref && $toref->{referenced} ) {
-	assert($toref->{references}{$chain} > 0 );
+	assert($toref->{references}{$chain} > 0 , $toref, $chain );
 	delete $toref->{references}{$chain} unless --$toref->{references}{$chain};
 	delete_chain( $toref )              unless ( keys %{$toref->{references}} );
     }
@@ -2085,7 +2085,7 @@ sub delete_jumps ( $$ ) {
 	    }
 	}
 
-	assert( ! $refs );
+	assert( ! $refs , $from, $to );
     }
 
     delete $toref->{references}{$from};
@@ -2588,7 +2588,7 @@ sub delete_references( $ ) {
     #
     # Make sure the above loop found all references
     #
-    assert ( ! $toref->{referenced} );
+    assert ( ! $toref->{referenced}, $toref->{name} );
 
     $count;
 }
@@ -6622,7 +6622,7 @@ sub create_netfilter_load( $ ) {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		assert( $chainref->{cmdlevel} == 0 );
+		assert( $chainref->{cmdlevel} == 0, $chainref->{name} );
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
@@ -6633,7 +6633,7 @@ sub create_netfilter_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 );
+		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
 		emit_unindented ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }
@@ -6705,7 +6705,7 @@ sub preview_netfilter_load() {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		assert( $chainref->{cmdlevel} == 0 );
+		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
 		print ":$chain $chainref->{policy} [0:0]\n";
 		push @chains, $chainref;
 	    }
@@ -6716,7 +6716,7 @@ sub preview_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 );
+		assert( $chainref->{cmdlevel} == 0, $chainref->{name} );
 		print ":$chainref->{name} - [0:0]\n";
 		push @chains, $chainref;
 	    }
@@ -6935,7 +6935,7 @@ sub create_stop_load( $ ) {
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
 	    if ( $chainref ) {
-		assert( $chainref->{cmdlevel} == 0 );
+		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
 		emit_unindented ":$chain $chainref->{policy} [0:0]";
 		push @chains, $chainref;
 	    }
@@ -6946,7 +6946,7 @@ sub create_stop_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 );
+		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
 		emit_unindented ":$chainref->{name} - [0:0]";
 		push @chains, $chainref;
 	    }

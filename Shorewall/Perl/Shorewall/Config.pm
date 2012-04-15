@@ -912,12 +912,15 @@ sub fatal_error1 {
 }
 
 #
-# C/C++-like assertion checker
+# C/C++-like assertion checker -- the optional arguments are not used but will
+#                                 appear in the stack trace
 #
-sub assert( $;$ ) {
+sub assert( $;@ ) {
     unless ( $_[0] ) {
 	my @caller0 = caller 0; # Where assert() was called
 	my @caller1 = caller 1; # Who called assert()
+
+	$confess = 1;
 
 	fatal_error "Internal error in $caller1[3] at $caller0[1] line $caller0[2]";
     }

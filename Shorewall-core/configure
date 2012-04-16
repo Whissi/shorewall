@@ -159,7 +159,7 @@ echo '#'                                                                 > shore
 echo "# Created by Shorewall Core version $VERSION configure - " `date` >> shorewallrc
 echo '#'                                                                >> shorewallrc
 
-if [ -n "$@" ]; then
+if [ $# -gt 0 ]; then
     echo "# Input: $@" >> shorewallrc
     echo '#'           >> shorewallrc
 fi

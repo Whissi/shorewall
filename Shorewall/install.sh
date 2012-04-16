@@ -250,6 +250,12 @@ OWNERSHIP="-o $OWNER -g $GROUP"
 
 if [ $PRODUCT = shorewall -a -z "${DESTDIR}" ]; then
     #
+    # Fix up 'use Digest::' if SHA is installed
+    #
+    if perl -e 'use Digest::SHA;' 2> /dev/null ; then
+	sed -i 's/Digest::SHA1/Digest::SHA/' Perl/Shorewall/Chains.pm
+    fi
+    #
     # Verify that Perl is installed
     #
     if ! perl -c Perl/compiler.pl; then

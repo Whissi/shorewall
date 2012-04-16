@@ -31,9 +31,11 @@ if [ -z "$g_readrc" ]; then
     . /usr/share/shorewall/shorewallrc
 
     g_libexec="$LIBEXECDIR"
-    g_sbindir="$SBINDIR"
-    g_confdir="$CONFDIR"/$g_program
     g_sharedir="$SHAREDIR"/$g_program
+    g_sbindir="$SBINDIR"
+    g_perllib="$PERLLIBDIR"
+    g_vardir="$VARDIR"
+    g_confdir="$CONFDIR"/$g_program
     g_readrc=1
 fi
 
@@ -455,24 +457,11 @@ sort_routes() {
 }
 
 #
-# Find the table name in the passed routing rule
-#
-find_table() {
-    local word
-
-    while [ $# -gt 1 ]; do
-	word=$1
-	shift
-	[ $word = lookup ] && echo $1 && break
-    done
-}
-
-#
 # Isolate the table in the routing rules being read from stdin
 #
 find_tables() {
-    while read rule; do
-	find_table $rule
+    sed -r 's/[[:space:]]+$//' | while read rule; do
+	echo ${rule##* }
     done
 }
 

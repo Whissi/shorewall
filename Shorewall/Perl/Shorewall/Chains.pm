@@ -735,7 +735,7 @@ sub set_rule_option( $$$ ) {
 
 		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 	    } else {
-		$ruleref->{$option} = join(' ', $value1, $value );
+		$ruleref->{$option} = join(' ', $value1, $value ) unless $value1 eq $value;
 	    }
 	} elsif ( $opttype == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";

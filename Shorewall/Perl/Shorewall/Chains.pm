@@ -1180,7 +1180,7 @@ sub push_matches {
     my $dont_optimize = 0;
 
     while ( @_ ) {
-	my ( $option, $value ) = @_;
+	my ( $option, $value ) = ( shift, shift );
 
 	assert( defined $value );
 

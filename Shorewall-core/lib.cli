@@ -457,7 +457,9 @@ sort_routes() {
 }
 
 #
-# Isolate the table in the routing rules being read from stdin
+# Isolate the table in the routing rules being read from stdin.
+# Piping through sed to remove trailing whitespace works around
+# recent 'features' in dash and ip.
 #
 find_tables() {
     sed -r 's/[[:space:]]+$//' | while read rule; do

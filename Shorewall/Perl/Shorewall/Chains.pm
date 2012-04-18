@@ -219,6 +219,7 @@ our %EXPORT_TAGS = (
 				       do_ipsec_options
 				       do_ipsec
 				       log_rule
+				       handle_network_list
 				       expand_rule
 				       addnatjump
 				       set_chain_variables

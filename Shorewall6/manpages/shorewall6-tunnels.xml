@@ -101,10 +101,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term></term>
+        <term/>
 
         <listitem>
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 
@@ -120,8 +120,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">GATEWAY</emphasis> -
-        <emphasis>address-or-range</emphasis></term>
+        <term><emphasis role="bold">GATEWAY</emphasis>S -
+        <emphasis>address-or-range</emphasis> <emphasis role="bold">[ , ...
+        ]</emphasis></term>
 
         <listitem>
           <para>The IP address of the remote tunnel gateway. If the remote
@@ -129,6 +130,11 @@
           as <emphasis role="bold">::/0</emphasis>. May be specified as a
           network address and if your kernel and ip6tables include iprange
           match support then IP address ranges are also allowed.</para>
+
+          <para>Beginning with Shorewall 4.5.3, a list of addresses or ranges
+          may be given. Exclusion (<ulink
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink> (5) )
+          is not supported.</para>
         </listitem>
       </varlistentry>
 
@@ -143,7 +149,7 @@
           comma-separated list of the names of the zones that the host might
           be in. This column only applies to IPSEC tunnels where it enables
           ISAKMP traffic to flow through the tunnel to the remote
-          gateway.</para>
+          gateway(s).</para>
         </listitem>
       </varlistentry>
     </variablelist>

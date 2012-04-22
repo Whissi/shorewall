@@ -1072,13 +1072,13 @@ cd manpages
 [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
 
 for f in *.5; do
-    gzip -c $f > $f.gz
+    gzip -9c $f > $f.gz
     run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
     echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
 done
 
 for f in *.8; do
-    gzip -c $f > $f.gz
+    gzip -9c $f > $f.gz
     run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
     echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
 done

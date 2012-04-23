@@ -1959,13 +1959,13 @@ sub setup_tc() {
     if ( $config{TC_ENABLED} ) {
 	our  @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 			  target    => 'CONNMARK --save-mark --mask' ,
-			  mark      => SMALLMARK ,
+			  mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK,
 			  mask      => in_hex( $globals{TC_MASK} ) ,
 			  connmark  => 1
 			} ,
 			{ match     => sub ( $ ) { $_[0] eq 'RESTORE' },
 			  target    => 'CONNMARK --restore-mark --mask' ,
-			  mark      => SMALLMARK ,
+			  mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK ,
 			  mask      => in_hex( $globals{TC_MASK} ) ,
 			  connmark  => 1
 			} ,

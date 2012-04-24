@@ -248,7 +248,7 @@ OWNERSHIP="-o $OWNER -g $GROUP"
 # Determine where to install the firewall script
 #
 
-if [ $PRODUCT = shorewall -a -z "${DESTDIR}" ]; then
+if [ $PRODUCT = shorewall -a "$BUILD" = "$HOST" ]; then
     #
     # Fix up 'use Digest::' if SHA is installed
     #
@@ -259,7 +259,7 @@ if [ $PRODUCT = shorewall -a -z "${DESTDIR}" ]; then
     # Verify that Perl is installed
     #
     if ! perl -c Perl/compiler.pl; then
-	echo "ERROR: $Product $VERSION requires Perl which either is not installed or is not able to compile the $Product Perl code" >&2
+	echo "ERROR: $Product $VERSION requires Perl which either is not installed or is not able to compile the Shorewall Perl code" >&2
 	echo "       Try perl -c $PWD/Perl/compiler.pl" >&2
 	exit 1
     fi

@@ -1491,7 +1491,7 @@ sub generate_matrix() {
 
 	if ( have_ipsec ) {
 	    #
-	    # Because policy match only matches an 'in' or an 'out' policy (but not both), we have to place the
+	    # Prior to KLUDGEFREE, policy match could only match an 'in' or an 'out' policy (but not both), so we place the
 	    # '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
 	    # can match '--pol none --dir out' rules and send the packets down the wrong rules chain.
 	    #

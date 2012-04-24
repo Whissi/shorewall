@@ -711,7 +711,7 @@ sub add_group_to_zone($$$$$)
     my $interfaceref;
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
-    
+
 
     $zoneref->{interfaces}{$interface} = 1;
 
@@ -936,7 +936,7 @@ sub process_interface( $$ ) {
 
 	fatal_error "Invalid FORMAT ($1)";
     }
-	
+
     if ( $zone eq '-' ) {
 	$zone = '';
     } else {
@@ -992,7 +992,7 @@ sub process_interface( $$ ) {
 	$root = substr( $interface, 0, -1 );
 	$roots{$root} = $interface;
 	my $len = length $root;
-	
+
 	if ( $minroot ) {
 	    $minroot = $len if $minroot > $len;
 	} else {
@@ -1090,7 +1090,7 @@ sub process_interface( $$ ) {
 		    assert( 0 );
 		}
 	    } elsif ( $type == NUMERIC_IF_OPTION ) {
-		fatal_error "The '$option' option may not be specified on a wildcard interface" if $wildcard && ! $type && IF_OPTION_WILDOK; 
+		fatal_error "The '$option' option may not be specified on a wildcard interface" if $wildcard && ! $type && IF_OPTION_WILDOK;
 		$value = $defaultinterfaceoptions{$option} unless defined $value;
 		fatal_error "The '$option' option requires a value" unless defined $value;
 		my $numval = numeric_value $value;
@@ -1208,7 +1208,7 @@ sub process_interface( $$ ) {
 sub validate_interfaces_file( $ ) {
     my  $export = shift;
     our $format = 1;
-    
+
     my @ifaces;
     my $nextinum = 1;
 
@@ -1297,7 +1297,7 @@ sub known_interface($)
     if ( $minroot ) {
 	while ( length $iface > $minroot ) {
 	    chop $iface;
-	
+
 	    if ( my $i = $roots{$iface} ) {
 		$interfaceref = $interfaces{$i};
 
@@ -1373,7 +1373,7 @@ sub physical_name( $ ) {
 
     $devref ? $devref->{physical} : $device;
 }
-    
+
 #
 # Returns true if there are bridge port zones defined in the config
 #
@@ -1479,7 +1479,7 @@ sub get_interface_option( $$ ) {
     assert( $ref = known_interface( $interface ) );
 
     $ref->{options}{$option};
-    
+
 }
 
 #
@@ -1742,7 +1742,7 @@ sub compile_updown() {
 
     if ( @$optional ) {
 	my @interfaces = map $interfaces{$_}->{physical}, @$optional;
-	my $interfaces = join '|', @interfaces; 
+	my $interfaces = join '|', @interfaces;
 
 	if ( $interfaces =~ s/\+/*/g || @interfaces > 1 ) {
 	    emit( "$interfaces)",
@@ -1838,7 +1838,7 @@ sub process_host( ) {
 
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
     } else {
-	fatal_error "Invalid HOST(S) column contents: $hosts" 
+	fatal_error "Invalid HOST(S) column contents: $hosts"
     }
 
     if ( $hosts =~ /^!?\+/ ) {

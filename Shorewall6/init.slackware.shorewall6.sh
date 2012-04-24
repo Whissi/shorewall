@@ -6,7 +6,7 @@
 # This script only affect the IPv6 rules and configuration located
 # in /etc/shorewall6
 #
-# http://rafb.net/p/1gsyye11.html 
+# http://rafb.net/p/1gsyye11.html
 
 OPTIONS=""
 

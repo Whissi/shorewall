@@ -30,7 +30,7 @@ use strict;
 #
 # Build updates this
 #
-use constant { 
+use constant {
     VERSION => '4.5.2.1'
 };
 
@@ -131,7 +131,7 @@ for ( qw/ HOST
 	  PERLLIBDIR
 	  CONFDIR
 	  SBINDIR
-	  MANDIR 
+	  MANDIR
 	  INITDIR
 	  INITSOURCE
 	  INITFILE

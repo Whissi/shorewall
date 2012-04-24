@@ -22,7 +22,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   Broadcast[([<action>|-[,{audit|-}])] 
+#   Broadcast[([<action>|-[,{audit|-}])]
 #
 #       Default action is DROP
 #
@@ -49,7 +49,7 @@ if ( have_capability( 'ADDRTYPE' ) ) {
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type MULTICAST ';
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type ANYCAST ';
-    }	
+    }
 
     add_jump $chainref, $target, 0, '-m addrtype --dst-type BROADCAST ';
     add_jump $chainref, $target, 0, '-m addrtype --dst-type MULTICAST ';
@@ -62,7 +62,7 @@ if ( have_capability( 'ADDRTYPE' ) ) {
     decr_cmd_level $chainref;
     add_commands $chainref, 'done';
 }
-  
+
 log_rule_limit( $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', join( ' ', '-d', IPv6_MULTICAST . ' ' ) )  if $level ne '';
 add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
 

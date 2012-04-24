@@ -434,7 +434,7 @@ save_config() {
 # order we all know and love
 #
 sort_routes() {
-    local dest 
+    local dest
     local rest
     local crvsn
 
@@ -472,7 +472,7 @@ find_tables() {
 #
 show_routing() {
     local rule
-    local table 
+    local table
 
     if [ -n "$(ip -$g_family rule list)" ]; then
 	heading "Routing Rules"
@@ -1029,12 +1029,12 @@ perip_accounting() {
 
 	if [ -n "$hnames" ]; then
 	    for hname in $hnames; do
-		iptaccount -l $hname | egrep '^IP:|^Show' 
+		iptaccount -l $hname | egrep '^IP:|^Show'
 		echo
 	    done
 	else
 	    echo "   No IP Accounting Tables Defined"
-	    echo 
+	    echo
 	fi
     else
 	echo "   iptaccount is not installed"
@@ -1259,7 +1259,7 @@ do_dump_command() {
 	netstat -${g_family}tunap
     else
 	netstat -tunap
-    fi	
+    fi
 
     if [ -n "$TC_ENABLED" ]; then
 	heading "Traffic Control"
@@ -2036,11 +2036,11 @@ determine_capabilities() {
 	qt $g_tool -A $chain -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
     else
 	qt $g_tool -A $chain -m conntrack --ctorigdst ::1 -j ACCEPT && CONNTRACK_MATCH=Yes
-    fi	
+    fi
 
     if [ -n "$CONNTRACK_MATCH" ]; then
 	qt $g_tool -A $chain -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT && NEW_CONNTRACK_MATCH=Yes
-	
+
 	if [ $g_family -eq 4 ]; then
 	    qt $g_tool -A $chain -m conntrack ! --ctorigdst 1.2.3.4 || OLD_CONNTRACK_MATCH=Yes
 	else
@@ -2129,7 +2129,7 @@ determine_capabilities() {
 
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain
-	
+
 	qt $g_tool -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
     fi
 
@@ -2223,10 +2223,10 @@ determine_capabilities() {
     [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
 
     CAPVERSION=$SHOREWALL_CAPVERSION
-   
+
     KERNELVERSION=$(uname -r 2> /dev/null | sed -e 's/-.*//')
 
-    case "$KERNELVERSION" in 
+    case "$KERNELVERSION" in
 	*.*.*)
 	    KERNELVERSION=$(printf "%d%02d%02d" $(echo $KERNELVERSION | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
 	    ;;
@@ -2316,7 +2316,7 @@ report_capabilities() {
 	report_capability "IMQ Target (IMQ_TARGET)" $IMQ_TARGET
 	report_capability "DSCP Match (DSCP_MATCH)" $DSCP_MATCH
 	report_capability "DSCP Target (DSCP_TARGET)" $DSCP_TARGET
-	
+
 	if [ $g_family -eq 4 ]; then
 	    report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
 	else
@@ -2536,7 +2536,7 @@ forget_command() {
 ipcalc_command() {
     local address
     local vlsm
-    
+
     [ $g_family -eq 6 ] && usage 1
 
     if [ $# -eq 2 ]; then
@@ -2567,7 +2567,7 @@ iprange_command() {
 
     [ $g_family -eq 6 ] && usage 1
 
-    range=''	
+    range=''
 
     while [ $# -gt 0 ]; do
 	shift
@@ -2629,7 +2629,7 @@ get_config() {
     ensure_config_path
 
     config=$(find_file ${g_program}.conf)
-    
+
     if [ -f $config ]; then
 	if [ -r $config ]; then
 	    . $config
@@ -2676,7 +2676,7 @@ get_config() {
 		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
 		exit 2
 	    fi
-	else	 
+	else
 	    IPTABLES=$(mywhich iptables 2> /dev/null)
 	    if [ -z "$IPTABLES" ] ; then
 		echo "   ERROR: Can't find iptables executable" >&2
@@ -2691,7 +2691,7 @@ get_config() {
 		echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
 		exit 2
 	    fi
-	else	 
+	else
 	    IP6TABLES=$(mywhich ip6tables 2> /dev/null)
 	    if [ -z "$IP6TABLES" ] ; then
 		echo "   ERROR: Can't find ip6tables executable" >&2
@@ -2748,7 +2748,7 @@ verify_firewall_script() {
 	else
 	    echo "          The file $g_firewall does not exist" >&2
 	fi
-	
+
 	exit 2
     fi
 }
@@ -3189,7 +3189,7 @@ shorewall_cli() {
 	    [ $# -eq 1 ] || usage 1
 	    [ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
 	    get_config
-	    status_command 
+	    status_command
 	    ;;
 	dump)
 	    get_config Yes No Yes
@@ -3299,6 +3299,6 @@ shorewall_cli() {
 	    else
 		usage 1
 	    fi
-	    ;; 
+	    ;;
     esac
 }

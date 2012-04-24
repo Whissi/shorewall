@@ -23,10 +23,10 @@
 # to the name of the remote firewall corresponding to the directory.
 #
 #	To make the 'firewall' script, type "make".
-# 
+#
 #	Once the script is compiling correctly, you can install it by
 #	typing "make install".
-#  
+#
 ################################################################################
 #                             V A R I A B L E S
 #
@@ -55,7 +55,7 @@ all: firewall
 #
 # Only generate the capabilities file if it doesn't already exist
 #
-capabilities: 
+capabilities:
 	ssh root@$(HOST) "MODULESDIR=$(MODULESDIR) /usr/share/shorewall6-lite/shorecap > $(LITEDIR)/capabilities"
 	scp root@$(HOST):$(LITEDIR)/capabilities .
 #
@@ -78,5 +78,5 @@ save:
 #
 # Remove generated files
 #
-clean: 
+clean:
 	rm -f capabilities firewall firewall.conf reload

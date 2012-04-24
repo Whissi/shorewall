@@ -54,7 +54,7 @@ sub initialize() {
 #
 sub process_one_masq( )
 {
-    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition ) = 
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition ) =
 	split_line1 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8 };
 
     if ( $interfacelist eq 'COMMENT' ) {
@@ -208,7 +208,7 @@ sub process_one_masq( )
 			    $addrlist .= "--to-source $addr ";
 			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {
-			    my $ports = $addr; 
+			    my $ports = $addr;
 			    $ports =~ s/^://;
 			    validate_portpair1( $proto, $ports );
 			    $addrlist .= "--to-ports $ports ";
@@ -426,7 +426,7 @@ sub setup_netmap() {
 		unless ( $type =~ /:/ ) {
 		    my @rulein;
 		    my @ruleout;
-		    
+
 		    validate_net $net1, 0;
 		    validate_net $net2, 0;
 
@@ -439,7 +439,7 @@ sub setup_netmap() {
 		    require_capability 'NAT_ENABLED', 'Stateful NAT Entries', '';
 
 		    if ( $type eq 'DNAT' ) {
-			dest_iexclusion(  ensure_chain( 'nat' , input_chain $interface ) , 
+			dest_iexclusion(  ensure_chain( 'nat' , input_chain $interface ) ,
 					  j => 'NETMAP' ,
 					  "--to $net2",
 					  $net1 ,
@@ -465,10 +465,10 @@ sub setup_netmap() {
 		    validate_net $net2, 0;
 
 		    unless ( $interfaceref->{root} ) {
-			@match = imatch_dest_dev(  $interface ); 
+			@match = imatch_dest_dev(  $interface );
 			$interface = $interfaceref->{name};
 		    }
-			
+
 		    if ( $chain eq 'P' ) {
 			$chain = prerouting_chain $interface;
 			@match = imatch_source_dev( $iface ) unless $iface eq $interface;
@@ -481,7 +481,7 @@ sub setup_netmap() {
 
 		    my $chainref = ensure_chain( $table, $chain );
 
-		    
+
 		    if ( $target eq 'DNAT' ) {
 			dest_iexclusion( $chainref ,
 					 j => 'RAWDNAT' ,
@@ -504,7 +504,7 @@ sub setup_netmap() {
 		    fatal_error 'TYPE must be specified' if $type eq '-';
 		    fatal_error "Invalid TYPE ($type)";
 		}
-		
+
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";
 	    }
 	}

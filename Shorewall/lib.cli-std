@@ -34,7 +34,7 @@ get_config() {
 
     ensure_config_path
 
-    
+
 
     if [ "$1" = Yes ]; then
 	params=$(find_file params)
@@ -90,7 +90,7 @@ get_config() {
 		    exit 2
 		fi
 	    fi
-	    
+
 	    g_tool=$IPTABLES
 	else
 	    if [ -n "$IP6TABLES" ]; then
@@ -507,7 +507,7 @@ start_command() {
 			c*)
 			    AUTOMAKE=
 			    option=${option#c}
-			    ;;			    
+			    ;;
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
@@ -874,7 +874,7 @@ restart_command() {
 			c*)
 			    AUTOMAKE=
 			    option=${option#c}
-			    ;;			    
+			    ;;
 			n*)
 			    g_noroutes=Yes
 			    option=${option#n}
@@ -1418,7 +1418,7 @@ reload_command() # $* = original arguments less the command.
 	fi
 
 	. $directory/$g_program.conf
-	
+
 	ensure_config_path
     fi
 
@@ -1597,7 +1597,7 @@ usage() # $1 = exit status
     echo "   show dynamic <zone>"
     echo "   show filters"
     echo "   show ip"
-    
+
     if [ $g_family -eq 4 ]; then
 	echo "   show ipa"
     fi

@@ -85,7 +85,7 @@ sub initialize() {
     # The section number is initialized to a value less thatn LEGACY. It will be set to LEGACY if a
     # the first non-commentary line in the accounting file isn't a section header
     #
-    # This allows the section header processor to quickly check for correct order 
+    # This allows the section header processor to quickly check for correct order
     #
     $asection           = -1;
     #
@@ -194,7 +194,7 @@ sub process_accounting_rule( ) {
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
-    fatal_error "USER/GROUP may only be specified in the OUTPUT section" unless $user eq '-' || $asection == OUTPUT; 
+    fatal_error "USER/GROUP may only be specified in the OUTPUT section" unless $user eq '-' || $asection == OUTPUT;
 
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} ) . do_headers( $headers );
     my $rule2 = 0;
@@ -250,7 +250,7 @@ sub process_accounting_rule( ) {
 
     if ( $source eq 'any' || $source eq 'all' ) {
         $source = ALLIP;
-    } else { 
+    } else {
 	fatal_error "MAC addresses only allowed in the INPUT and FORWARD sections" if $source =~ /~/ && ( $asection == OUTPUT || ! $asection );
     }
 
@@ -289,7 +289,7 @@ sub process_accounting_rule( ) {
 
     if ( ! $chainref ) {
 	if ( reserved_chain_name( $chain ) ) {
-	    fatal_error "May not use chain $chain in the $sectionname section" if $asection && $chain ne $defaultchain; 
+	    fatal_error "May not use chain $chain in the $sectionname section" if $asection && $chain ne $defaultchain;
 	    $chainref = ensure_accounting_chain $chain, 0 , $restriction;
 	} elsif ( $asection ) {
 	    fatal_error "Unknown accounting chain ($chain)";
@@ -312,7 +312,7 @@ sub process_accounting_rule( ) {
 	}
     } else {
 	fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
-    
+
 	if ( $ipsec ne '-' ) {
 	    $dir = $chainref->{ipsec};
 	    fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
@@ -338,7 +338,7 @@ sub process_accounting_rule( ) {
     }
 
     fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
-    
+
     $restriction = $dir eq 'in' ? INPUT_RESTRICT : OUTPUT_RESTRICT if $dir;
 
     expand_rule

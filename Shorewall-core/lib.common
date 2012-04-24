@@ -593,7 +593,7 @@ find_first_interface_address() # $1 = interface
 	#
 	[ -n "$addr" ] || startup_error "Can't determine the IP address of $1"
 	#
-	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)	
+	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
 	# along with everything else on the line
 	#
 	echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'

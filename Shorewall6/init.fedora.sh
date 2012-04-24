@@ -41,10 +41,10 @@ start() {
     echo -n $"Starting Shorewall: "
     $shorewall $OPTIONS start 2>&1 | $logger
     retval=${PIPESTATUS[0]}
-    if [[ $retval == 0 ]]; then 
+    if [[ $retval == 0 ]]; then
 	touch $lockfile
 	success
-    else 
+    else
 	failure
     fi
     echo
@@ -55,10 +55,10 @@ stop() {
     echo -n $"Stopping Shorewall: "
     $shorewall $OPTIONS stop 2>&1 | $logger
     retval=${PIPESTATUS[0]}
-    if [[ $retval == 0 ]]; then 
+    if [[ $retval == 0 ]]; then
 	rm -f $lockfile
 	success
-    else 
+    else
 	failure
     fi
     echo
@@ -71,7 +71,7 @@ restart() {
     echo -n $"Restarting Shorewall: "
     $shorewall $OPTIONS restart 2>&1 | $logger
     retval=${PIPESTATUS[0]}
-    if [[ $retval == 0 ]]; then 
+    if [[ $retval == 0 ]]; then
 	touch $lockfile
 	success
     else # Failed to start, clean up lock file if present

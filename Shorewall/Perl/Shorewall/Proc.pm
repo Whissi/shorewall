@@ -286,7 +286,7 @@ sub setup_interface_proc( $ ) {
     if ( interface_has_option( $interface, 'arp_filter' , $value ) ) {
 	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/arp_filter";
     }
-	 
+
     if ( interface_has_option( $interface, 'arp_ignore' , $value ) ) {
 	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/arp_ignore";
     }
@@ -315,6 +315,6 @@ sub setup_interface_proc( $ ) {
 	emit "fi\n";
     }
 }
-	 
+
 
 1;

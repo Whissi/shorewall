@@ -24,7 +24,7 @@ my ( $disposition, $audit ) = get_action_params( 2 );
 my $chainref        = get_action_chain;
 my ( $level, $tag ) = get_action_logging;
 
-fatal_error q(The first argument to 'TCPFlags' must be ACCEPT, REJECT, or DROP) unless $disposition =~ /^(ACCEPT|REJECT|DROP)$/; 
+fatal_error q(The first argument to 'TCPFlags' must be ACCEPT, REJECT, or DROP) unless $disposition =~ /^(ACCEPT|REJECT|DROP)$/;
 
 if ( $level ne '-' || $audit ne '-' ) {
     my $logchainref = ensure_filter_chain newlogchain( $chainref->{table} ), 0;
@@ -42,13 +42,13 @@ if ( $level ne '-' || $audit ne '-' ) {
 	fatal_error "Invalid argument ($audit) to TCPFlags" if $audit ne 'audit';
 	require_capability 'AUDIT_TARGET', q(Passing 'audit' to the TCPFlags action), 's';
 	add_ijump( $logchainref, j => 'AUDIT --type ' . lc $disposition );
-    } 
+    }
 
     add_ijump( $logchainref, g => $disposition );
 
     $disposition = $logchainref;
 }
-		    
+
 add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags ALL FIN,URG,PSH';
 add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags ALL NONE';
 add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,RST SYN,RST';
@@ -58,6 +58,6 @@ add_ijump $chainref , g => $disposition, p => 'tcp --syn --sport 0';
 END PERL;
 
 
-    
+
 
 

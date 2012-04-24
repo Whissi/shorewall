@@ -341,7 +341,7 @@ sub process_a_policy() {
     fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
 
     ( $policy , my $queue ) = get_target_param $policy;
-    
+
     fatal_error "Invalid policy ($policy)" unless exists $validpolicies{$policy};
 
     if ( $audit ) {
@@ -492,7 +492,7 @@ sub process_policies()
 
     for my $option ( qw( DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) ) {
 	my $action = $config{$option};
-	
+
 	unless ( $action eq 'none' ) {
 	    my ( $act, $param ) = get_target_param( $action );
 
@@ -552,7 +552,7 @@ sub policy_rules( $$$$$ ) {
 	add_ijump $chainref, j => $default if $default && $default ne 'none';
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
-	
+
 	add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $target ) if $chainref->{audit};
 	add_ijump( $chainref , g => $target eq 'REJECT' ? 'reject' : $target ) unless $target eq 'CONTINUE';
     }
@@ -685,7 +685,7 @@ sub setup_syn_flood_chains() {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};
-	    my $synchainref = @zones > 1 ? 
+	    my $synchainref = @zones > 1 ?
 		    new_chain 'filter' , syn_flood_chain $chainref :
 		    new_chain( 'filter' , '@' . $chainref->{name} );
 	    add_rule $synchainref , "${limit}-j RETURN";
@@ -763,7 +763,7 @@ sub finish_chain_section ($$) {
     my $chain               = $chainref->{name};
     my $related_level       = $config{RELATED_LOG_LEVEL};
     my $related_target      = $globals{RELATED_TARGET};
-    
+
     push_comment(''); #These rules should not have comments
 
     if ( $state =~ /RELATED/ && ( $related_level || $related_target ne 'ACCEPT' ) ) {
@@ -775,7 +775,7 @@ sub finish_chain_section ($$) {
 		      $config{RELATED_DISPOSITION},
 		      '' );
 	    add_ijump( $relatedref, g => $related_target );
-		    
+
 	    $related_target = $relatedref->{name};
 	}
 
@@ -863,9 +863,9 @@ sub split_action ( $ ) {
 #
 # Create a normalized action name from the passed pieces.
 #
-# Internally, action invocations are uniquely identified by a 4-tuple that 
+# Internally, action invocations are uniquely identified by a 4-tuple that
 # includes the action name, log level, log tag and params. The pieces of the tuple
-# are separated by ":". 
+# are separated by ":".
 #
 sub normalize_action( $$$ ) {
     my $action = shift;
@@ -904,7 +904,7 @@ sub externalize( $ ) {
     $target .= ":$tag"   if $tag;
     $target;
 }
-    
+
 #
 # Define an Action
 #
@@ -988,7 +988,7 @@ sub createsimpleactionchain( $ ) {
     my $normalized = normalize_action_name( $action );
 
     return createlogactionchain( $normalized, $action, 'none', '', '' ) if $filter_table->{$action} || $nat_table->{$action};
-	
+
     my $chainref = new_standard_chain $action;
 
     $usedactions{$normalized} = $chainref;
@@ -1205,7 +1205,7 @@ sub dropBcast( $$$$ ) {
 		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST , '-j DROP ' );
 	    }
 	}
-	
+
 	add_ijump $chainref, j => $target, addrtype => '--dst-type BROADCAST';
     } else {
 	if ( $family == F_IPV4 ) {
@@ -1482,8 +1482,8 @@ sub process_action( $) {
 
 	    if ( $target eq 'DEFAULTS' ) {
 		default_action_params( $action, split_list $source, 'defaults' ), next if $format == 2;
-		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions'; 
-	    }	      
+		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
+	    }
 
 	    process_rule1( $chainref,
 			   merge_levels( "$action:$level:$tag", $target ),
@@ -1520,7 +1520,7 @@ sub process_action( $) {
 #
 sub use_policy_action( $ ) {
     my $ref = use_action( $_[0] );
-    
+
     process_action( $ref ) if $ref;
 }
 
@@ -1559,7 +1559,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
-	
+
 	if ( $mtarget eq 'COMMENT' ) {
 	    process_comment unless $nocomment;
 	    next;
@@ -1663,12 +1663,12 @@ sub verify_audit($;$$) {
 #
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
-# Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action 
+# Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action
 # body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument.
 #
 sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
-	 $target, 
+	 $target,
 	 $current_param,
 	 $source,
 	 $dest,
@@ -1693,7 +1693,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
     my $normalized_target;
     my $normalized_action;
     my $blacklist = ( $section eq 'BLACKLIST' );
- 
+
     ( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if defined $chainref;
 
     $param = '' unless defined $param;
@@ -1822,8 +1822,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 
 			  CONTINUE => sub { $action = 'RETURN'; } ,
 
-			  WHITELIST => sub { 
-			      fatal_error "'WHITELIST' may only be used in the blrules file" unless $blacklist; 
+			  WHITELIST => sub {
+			      fatal_error "'WHITELIST' may only be used in the blrules file" unless $blacklist;
 			      $action = 'RETURN';
 			  } ,
 
@@ -1838,7 +1838,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    $function->();
 	} elsif ( $actiontype & SET ) {
 	    my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
-	    
+
 	    my ( $setname, $flags, $rest ) = split ':', $param, 3;
 	    fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
 	    fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^[a-zA-Z]\w*$/;
@@ -1864,7 +1864,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    $sourcezone = $source;
 	    $source = ALLIP;
 	}
-   
+
 	if ( $dest =~ /^(.*?):(.*)/ ) {
 	    fatal_error "Missing DEST Qualifier ($dest)" if $2 eq '';
 	    $destzone = $1;
@@ -1927,7 +1927,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
         # We are generating rules in an action chain -- the chain name is the name of that action chain
         #
 	$chain = $chainref->{name};
-    } else { 
+    } else {
 	unless ( $actiontype & NATONLY ) {
 	    #
 	    # Check for illegal bridge port rule
@@ -1971,7 +1971,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    if ( $blacklist ) {
 		my $blacklistchain = blacklist_chain( ${sourcezone}, ${destzone} );
 		my $blacklistref = $filter_table->{$blacklistchain};
-		
+
 		unless ( $blacklistref  ) {
 		    my @state;
 		    $blacklistref = new_chain 'filter', $blacklistchain;
@@ -1979,7 +1979,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 		    @state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
 		    add_ijump( $chainref, j => $blacklistref, @state );
 		}
-		    
+
 		$chain = $blacklistchain;
 		$chainref = $blacklistref;
 	    }
@@ -2017,7 +2017,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 
     unless ( $section eq 'NEW' || $inaction ) {
 	if ( $config{FASTACCEPT} ) {
-	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless 
+	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
 		$section eq 'BLACKLIST' ||
 		( $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} ) )
 	}
@@ -2407,7 +2407,7 @@ sub process_rule ( ) {
 	progress_message "Rule \"$currentline\" ignored.";
 	return 1;
     }
-    
+
     my $intrazone = 0;
     my $wild      = 0;
     my $thisline  = $currentline; #We must save $currentline because it is overwritten by macro expansion
@@ -2473,11 +2473,11 @@ sub classic_blacklist() {
     my @vservers = vserver_zones;
     my @state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
     my $result;
-    
+
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
 	my $simple  =  @zones <= 2 && ! $zoneref->{complex};
-	
+
 	if ( $zoneref->{options}{in}{blacklist} ) {
 	    my $blackref = $filter_table->{blacklst};
 	    add_ijump ensure_rules_chain( rules_chain( $zone, $_ ) ) , j => $blackref , @state for firewall_zone, @vservers;

@@ -41,15 +41,15 @@ if ( $level ne '-' || $audit ne '-' ) {
 	fatal_error "Invalid argument ($audit) to DropSmurfs" if $audit ne 'audit';
 	require_capability 'AUDIT_TARGET', q(Passing 'audit' to the DropSmurfs action), 's';
 	add_ijump( $logchainref, j => 'AUDIT --type DROP' );
-    } 
-	
+    }
+
     add_ijump( $logchainref, j => 'DROP' );
 
     $target = $logchainref;
 } else {
     $target = 'DROP';
 }
-		    
+
 if ( have_capability( 'ADDRTYPE' ) ) {
     if ( $family == F_IPV4 ) {
 	add_ijump $chainref , j => 'RETURN', s => '0.0.0.0';         ;
@@ -64,7 +64,7 @@ if ( have_capability( 'ADDRTYPE' ) ) {
     } else {
 	add_commands $chainref, 'for address in $ALL_ACASTS; do';
     }
-    
+
     incr_cmd_level $chainref;
     add_ijump( $chainref, g => $target, s => '$address' );
     decr_cmd_level $chainref;
@@ -80,6 +80,6 @@ if ( $family == F_IPV4 ) {
 END PERL;
 
 
-    
+
 
 

@@ -23,7 +23,7 @@ export SHOREWALL_INIT_SCRIPT
 test -x $SRWL || exit 0
 test -x $WAIT_FOR_IFUP || exit 0
 test -n "$INITLOG" || {
-	echo "INITLOG cannot be empty, please configure $0" ; 
+	echo "INITLOG cannot be empty, please configure $0" ;
 	exit 1;
 }
 
@@ -35,9 +35,9 @@ fi
 
 echo_notdone () {
 
-  if [ "$INITLOG" = "/dev/null" ] ; then 
+  if [ "$INITLOG" = "/dev/null" ] ; then
 	  echo "not done."
-  else 
+  else
 	  echo "not done (check $INITLOG)."
   fi
 

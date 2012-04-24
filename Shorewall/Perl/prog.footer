@@ -38,7 +38,7 @@ checkkernelversion() {
     if [ $g_family -eq 6 ]; then
 	kernel=$(uname -r 2> /dev/null | sed -e 's/-.*//')
 
-	case "$kernel" in 
+	case "$kernel" in
 	    *.*.*)
 		kernel=$(printf "%d%02d%02d" $(echo $kernel | sed -e 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*$/\1 \2 \3/g'))
 		;;

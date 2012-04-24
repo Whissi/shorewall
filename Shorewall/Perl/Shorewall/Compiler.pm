@@ -425,7 +425,7 @@ sub generate_script_3($) {
 	emit 'cat > ${VARDIR}/proxyarp << __EOF__';
     } else {
 	emit 'cat > ${VARDIR}/proxyndp << __EOF__';
-    } 
+    }
 
     dump_proxy_arp;
     emit_unindented '__EOF__';
@@ -493,7 +493,7 @@ EOF
 	  "        set_state Started $config_dir" ,
 	  '    else' ,
 	  '        setup_netfilter' );
-    
+
     setup_load_distribution;
 
     emit<<"EOF";
@@ -578,7 +578,7 @@ sub compiler {
 		  log           => { store => \$log },
 		  log_verbosity => { store => \$log_verbosity, validate => \&validate_verbosity } ,
 		  test          => { store => \$test },
-		  preview       => { store => \$preview,       validate=> \&validate_boolean    } ,    
+		  preview       => { store => \$preview,       validate=> \&validate_boolean    } ,
 		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
 		  update        => { store => \$update,        validate=> \&validate_boolean    } ,
 		  convert       => { store => \$convert,       validate=> \&validate_boolean    } ,

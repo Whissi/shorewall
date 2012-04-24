@@ -38,7 +38,7 @@ usage() # $1 = exit status
     exit $1
 }
 
-fatal_error() 
+fatal_error()
 {
     echo "   ERROR: $@" >&2
     exit 1
@@ -95,7 +95,7 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
-require() 
+require()
 {
     eval [ -n "\$$1" ] || fatal_error "Required option $1 not set"
 }
@@ -335,7 +335,7 @@ echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 if [ -n "$INITFILE" ]; then
     install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
-  
+
     if [ -n "${AUXINITSOURCE}" ]; then
 	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
     fi
@@ -439,7 +439,7 @@ run_install $OWNERSHIP -m 0644 $PRODUCT.conf.annotated ${DESTDIR}${SHAREDIR}/$PR
 
 if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
     run_install $OWNERSHIP -m 0644 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-    
+
     if [ "$SHAREDIR" != /usr/share -o "$CONFDIR" != /etc ]; then
 	if [ $PRODUCT = shorewall ]; then
 	    perl -p -w -i -e "s|^CONFIG_PATH=.*|CONFIG_PATH=${CONFDIR}/shorewall:${SHAREDIR}/shorewall|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf

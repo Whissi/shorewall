@@ -29,7 +29,7 @@
 ###############################################################################
 FORMAT 2
 #
-# The following magic provides different defaults for $2 thru $5, when $1 is 
+# The following magic provides different defaults for $2 thru $5, when $1 is
 # 'audit'.
 #
 BEGIN PERL;
@@ -37,7 +37,7 @@ use Shorewall::Config;
 
 my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
 
-if ( defined $p1 ) { 
+if ( defined $p1 ) {
     if ( $p1 eq 'audit' ) {
 	set_action_param( 2, 'A_REJECT')  unless supplied $p2;
 	set_action_param( 3, 'A_REJECT')  unless supplied $p3;

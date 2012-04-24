@@ -47,18 +47,18 @@ our @EXPORT = qw(
 		 warning_message
 		 fatal_error
 		 assert
-		 
+
 		 progress_message
 		 progress_message_nocompress
 		 progress_message2
 		 progress_message3
-		 
+
 		 supplied
-		 
+
 		 get_action_params
 		 get_action_chain
 		 set_action_param
-		 
+
 		 have_capability
 		 require_capability
                 );
@@ -301,7 +301,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
 		 CT_TARGET       => 'CT Target',
-		 STATISTIC_MATCH => 
+		 STATISTIC_MATCH =>
 		                    'Statistics Match',
 		 IMQ_TARGET      => 'IMQ Target',
 		 DSCP_MATCH      => 'DSCP Match',
@@ -395,7 +395,7 @@ my  $first_entry;            # Message to output or function to call on first no
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
 our $debug;                  # Global debugging flag
-my  $confess;                # If true, use Carp to report errors with stack trace.   
+my  $confess;                # If true, use Carp to report errors with stack trace.
 
 our $family;                 # Protocol family (4 or 6)
 our $toolname;               # Name of the tool to use (iptables or iptables6)
@@ -456,7 +456,7 @@ use constant { PLAIN_READ          => 0,     # No read_a_line options
 	       STRIP_COMMENTS      => 4,     # Remove comments
 	       SUPPRESS_WHITESPACE => 8,     # Ignore blank lines
 	       CHECK_GUNK          => 16,    # Look for unprintable characters
-	       CONFIG_CONTINUATION => 32,    # Suppress leading whitespace if 
+	       CONFIG_CONTINUATION => 32,    # Suppress leading whitespace if
                                              # continued line ends in ',' or ':'
 	       DO_INCLUDE          => 64,    # Look for INCLUDE <filename>
                NORMAL_READ         => -1     # All options
@@ -494,7 +494,7 @@ sub initialize( $;$ ) {
     $indent         = '';      # Current total indentation
     ( $dir, $file ) = ('',''); # Script's Directory and Filename
     $tempfile       = '';      # Temporary File Name
-    $sillyname      = 
+    $sillyname      =
     $sillyname1     = '';      # Temporary ipchains
     $omitting       = 0;
     $ifstack        = 0;
@@ -770,7 +770,7 @@ sub initialize( $;$ ) {
 
     $debug = 0;
     $confess = 0;
-    
+
     %params = ();
 
     %compiler_params = ();
@@ -1496,7 +1496,7 @@ sub split_line1( $$;$ ) {
 	    fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
 	    $line[$column] = $value;
 	}
-    }   
+    }
 
     @line;
 }
@@ -1609,8 +1609,8 @@ sub process_conditional( $$$ ) {
 
 	    $cap =~ s/^__//;
 
-	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    : 
-			    exists $params{$rest} ? $params{$rest} : 
+	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    :
+			    exists $params{$rest} ? $params{$rest} :
 			    exists $config{$rest} ? $config{$rest} :
 			    exists $capdesc{$cap} ? have_capability( $cap ) : 0 );
 	}
@@ -1631,7 +1631,7 @@ sub process_conditional( $$$ ) {
     }
 
     $omitting;
-}   
+}
 
 #
 # Functions for copying a file into the script
@@ -1700,7 +1700,7 @@ sub copy1( $ ) {
 	my ( $do_indent, $here_documents ) = ( 1, '');
 
 	open_file( $_[0] );
-	
+
 	while ( $currentfile ) {
 	    while ( <$currentfile> ) {
 		$currentlinenumber++;
@@ -1772,7 +1772,7 @@ sub copy1( $ ) {
 
 			next;
 		    }
-			
+
 		    if ( $indent ) {
 			s/^(\s*)/$indent1$1$indent2/;
 			s/        /\t/ if $indent2;
@@ -2208,7 +2208,7 @@ sub read_a_line($) {
 		$omitting = process_conditional( $omitting, $currentline, $currentlinenumber );
 		$currentline='';
 		next;
-	    }		
+	    }
 
 	    if ( $omitting ) {
 		print "OMIT=> $currentline\n" if $debug;
@@ -2549,7 +2549,7 @@ sub load_kernel_modules( ) {
 	$modulesdir = "/lib/modules/$uname/kernel/net/ipv4/netfilter:/lib/modules/$uname/kernel/net/ipv6/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset";
     }
 
-    my @moduledirectories; 
+    my @moduledirectories;
 
     for ( split /:/, $modulesdir ) {
 	push @moduledirectories, $_ if -d $_;
@@ -2588,7 +2588,7 @@ sub load_kernel_modules( ) {
 			    } else {
 				system( "modprobe $module $arguments" );
 			    }
-				    
+
 			    $loadedmodules{ $module } = 1;
 			}
 		    }
@@ -3343,7 +3343,7 @@ sub update_config_file( $ ) {
 
 	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
 
-	unless ( open $output, '>', "$configfile.updated" ) { 
+	unless ( open $output, '>', "$configfile.updated" ) {
 	    close $template;
 	    fatal_error "Unable to open $configfile.updated for output: $!";
 	}
@@ -3414,7 +3414,7 @@ EOF
 
 	fatal_error "Can't rename $configfile to $configfile.bak: $!"     unless rename $configfile, "$configfile.bak";
 	fatal_error "Can't rename $configfile.updated to $configfile: $!" unless rename "$configfile.updated", $configfile;
-	
+
 	if ( system( "diff -q $configfile $configfile.bak > /dev/null" ) ) {
 	    progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
 	} else {
@@ -3457,7 +3457,7 @@ sub process_shorewall_conf( $$ ) {
 		    warning_message "Unknown configuration option ($var) ignored", next unless exists $config{$var};
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
-		    
+
 		    warning_message "Option $var=$val is deprecated"
 			if $deprecated{$var} && supplied $val && lc $config{$var} ne $deprecated{$var};
 		} else {
@@ -3613,7 +3613,7 @@ sub get_params() {
 	    print "Params:\n";
 	    print $_ for @params;
 	}
-	
+
 	my ( $variable , $bug );
 
 	if ( $params[0] =~ /^declare/ ) {
@@ -3642,7 +3642,7 @@ sub get_params() {
 		    } else {
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
-		}	
+		}
 	    }
 	} elsif ( $params[0] =~ /^export .*?="/ || $params[0] =~ /^export [^\s=]+\s*$/ ) {
 	    #
@@ -3670,7 +3670,7 @@ sub get_params() {
 		    } else {
 			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
-		}	
+		}
 	    }
 	} else {
 	    #
@@ -3684,7 +3684,7 @@ sub get_params() {
 
 	    for ( @params ) {
 		if ( /^export (.*?)='(.*'"'"')$/ ) {
-		    $params{$variable=$1}="${2}\n";		    
+		    $params{$variable=$1}="${2}\n";
 		} elsif ( /^export (.*?)='(.*)'$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^export (.*?)='(.*)$/ ) {
@@ -3696,7 +3696,7 @@ sub get_params() {
 			$params{$variable} .= $_;
 		    } else {
 			warning_message "Param line ($_) ignored" unless $bug++;
-		    }				
+		    }
 		}
 	    }
 	}
@@ -3993,7 +3993,7 @@ sub get_configuration( $$$ ) {
 
     default_yes_no 'ACCOUNTING'                 , 'Yes';
     default_yes_no 'OPTIMIZE_ACCOUNTING'        , '';
-    
+
     if ( supplied $config{ACCOUNTING_TABLE} ) {
 	my $value = $config{ACCOUNTING_TABLE};
 	fatal_error "Invalid ACCOUNTING_TABLE setting ($value)" unless $value eq 'filter' || $value eq 'mangle';
@@ -4030,7 +4030,7 @@ sub get_configuration( $$$ ) {
     }
 
     fatal_error 'Invalid Packet Mark layout' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 31;
-    
+
     $globals{EXCLUSION_MASK} = 1 << ( $globals{ZONE_OFFSET} + $config{ZONE_BITS} );
     $globals{PROVIDER_MIN}   = 1 << $config{PROVIDER_OFFSET};
 
@@ -4045,7 +4045,7 @@ sub get_configuration( $$$ ) {
     }
 
     if ( ( my $userbits = $config{PROVIDER_OFFSET} - $config{TC_BITS} ) > 0 ) {
-	
+
 	$globals{USER_MASK} = make_mask( $userbits ) << $config{TC_BITS};
     } else {
 	$globals{USER_MASK} = 0;
@@ -4085,7 +4085,7 @@ sub get_configuration( $$$ ) {
     default_log_level 'LOGALLNEW',           '';
 
     default_log_level 'SFILTER_LOG_LEVEL', 'info';
-    
+
     if ( $val = $config{SFILTER_DISPOSITION} ) {
 	fatal_error "Invalid SFILTER_DISPOSITION setting ($val)" unless $val =~ /^(A_)?(DROP|REJECT)$/;
 	require_capability 'AUDIT_TARGET' , "SFILTER_DISPOSITION=$val", 's' if $1;
@@ -4272,7 +4272,7 @@ sub append_file( $;$$ ) {
     my $user_exit = find_file $file;
     my $result = 0;
     my $save_indent = $indent;
-    
+
     $indent = '' if $unindented;
 
     unless ( $user_exit =~ m(^/usr/share/shorewall6?/) ) {
@@ -4468,7 +4468,7 @@ sub dump_mark_layout() {
 	     $globals{TC_MAX} + 1,
 	     $globals{USER_MASK},
 	     $globals{USER_MASK} );
-    
+
     dumpout( "Provider",
 	     $config{PROVIDER_BITS},
 	     $globals{PROVIDER_MIN},
@@ -4486,7 +4486,7 @@ sub dump_mark_layout() {
 	     $globals{EXCLUSION_MASK},
 	     $globals{EXCLUSION_MASK},
 	     $globals{EXCLUSION_MASK} );
-}	
+}
 
 END {
     cleanup;

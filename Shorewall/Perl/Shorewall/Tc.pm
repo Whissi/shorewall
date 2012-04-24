@@ -200,7 +200,7 @@ sub process_tc_rule( ) {
 	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13 };
 	$headers = '-';
     } else {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp ) = 
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp ) =
 	    split_line1 'tcrules file', { mark => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 };
     }
 
@@ -220,13 +220,13 @@ sub process_tc_rule( ) {
     my $chain    = $globals{MARKING_CHAIN};
     my $classid  = 0;
 
-    if ( $remainder ) { 
+    if ( $remainder ) {
 	if ( $originalmark =~ /^\w+\(?.*\)$/ ) {
 	    $mark = $originalmark; # Most likely, an IPv6 address is included in the parameter list
 	} else {
-	    fatal_error "Invalid MARK ($originalmark)" 
+	    fatal_error "Invalid MARK ($originalmark)"
 		unless ( $mark =~ /^([0-9a-fA-F]+)$/ &&
-			 $designator =~ /^([0-9a-fA-F]+)$/ && 
+			 $designator =~ /^([0-9a-fA-F]+)$/ &&
 			 ( $chain = $designator{$remainder} ) );
 	    $mark    = join( ':', $mark, $designator );
 	    $classid = 1;
@@ -287,7 +287,7 @@ sub process_tc_rule( ) {
 						  $val = numeric_value ($s);
 						  fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val >= 0 && $val < 128;
 						  $shift = $s;
-					      }			    
+					      }
 					  } else {
 					      fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless $cmd eq 'IPMARK';
 					  }
@@ -379,7 +379,7 @@ sub process_tc_rule( ) {
 				      },
 		       DSCP => sub() {
 			                  assert( $cmd =~ /^DSCP\((\w+)\)$/ );
-					  require_capability 'DSCP_TARGET', 'The DSCP action', 's'; 
+					  require_capability 'DSCP_TARGET', 'The DSCP action', 's';
 					  my $dscp = numeric_value( $1 );
 					  $dscp = $dscpmap{$1} unless defined $dscp;
 					  fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp <= 0x38 && ! ( $dscp & 1 );
@@ -526,7 +526,7 @@ sub process_tc_rule( ) {
 	}
     }
 
-    fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || ( $chain eq 'tcout' || $chain eq 'tcpost' ) ); 
+    fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || ( $chain eq 'tcout' || $chain eq 'tcpost' ) );
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} | $restriction,
@@ -587,7 +587,7 @@ sub calculate_quantum( $$ ) {
 #
 sub process_in_bandwidth( $ ) {
     my $in_rate     = shift;
-    
+
     return 0 if $in_rate eq '-' or $in_rate eq '0';
 
     my $in_burst    = '10kb';
@@ -605,7 +605,7 @@ sub process_in_bandwidth( $ ) {
 	    fatal_error "Invalid IN-BANDWIDTH ($in_band)" unless supplied( $in_interval ) && supplied( $in_decay );
 	    fatal_error "Invalid Interval ($in_interval)" unless $in_interval =~ /^(?:(?:250|500)ms|(?:1|2|4|8)sec)$/;
 	    fatal_error "Invalid Decay ($in_decay)"       unless $in_decay    =~ /^(?:500ms|(?:1|2|4|8|16|32|64)sec)$/;
-	    
+
 	    if ( $in_decay =~ /ms/ ) {
 		fatal_error "Decay must be at least twice the interval" unless $in_interval eq '250ms';
 	    } else {
@@ -615,12 +615,12 @@ sub process_in_bandwidth( $ ) {
 		    $decay    =~ s/sec//;
 
 		    fatal_error "Decay must be at least twice the interval" unless $decay > $interval;
-		} 
+		}
 	    }
 	}
-	    
+
 	$in_avrate = rate_to_kbit( $in_rate );
-	$in_rate = 0; 
+	$in_rate = 0;
     } else {
 	if ( $in_band =~ /:/ ) {
 	    ( $in_band, $burst ) = split /:/, $in_rate, 2;
@@ -629,7 +629,7 @@ sub process_in_bandwidth( $ ) {
 	}
 
 	$in_rate = rate_to_kbit( $in_band );
-	
+
     }
 
     [ $in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ];
@@ -643,7 +643,7 @@ sub handle_in_bandwidth( $$ ) {
     my ($in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ) = @$arrayref;
 
     emit ( "run_tc qdisc add dev $physical handle ffff: ingress" );
-    
+
     if ( have_capability 'BASIC_FILTER' ) {
 	if ( $in_rate ) {
 	    emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 basic \\",
@@ -663,7 +663,7 @@ sub handle_in_bandwidth( $$ ) {
 	      "    police rate ${in_rate}kbit burst $in_burst drop flowid :1\n" );
     }
 }
-	
+
 sub process_flow($) {
     my $flow = shift;
 
@@ -774,7 +774,7 @@ sub process_simple_device() {
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
 	emit '';
     }
-    
+
     emit( "run_tc filter add dev $physical parent $number:0 protocol all prio 1 u32" .
 	  "\\\n    match ip protocol 6 0xff" .
 	  "\\\n    match u8 0x05 0x0f at 0" .
@@ -1319,7 +1319,7 @@ sub process_tc_filter() {
 	} else {
 	    push @$filtersref, ( "\nrun_tc $rule\\" ,
 				 "   link $tnum:0 offset plus 40 eat" );
-	}    
+	}
 	#
 	# The rule to match the port(s) will be inserted into the new table
 	#
@@ -1452,9 +1452,9 @@ sub process_tcfilters() {
 
     if ( $fn ) {
 	my @family = ( $family );
-	
+
 	first_entry( "$doing $fn..." );
-	
+
 	while ( read_a_line( NORMAL_READ ) ) {
 	    if ( $currentline =~ /^\s*IPV4\s*$/ ) {
 		Shorewall::IPAddrs::initialize( $family = F_IPV4 ) unless $family == F_IPV4;
@@ -1586,7 +1586,7 @@ sub process_tcpri() {
 
 	    add_ijump( $mangle_table->{tcpost} ,
 		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
-		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) 
+		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} )
 		     );
 	}
     }
@@ -1711,7 +1711,7 @@ sub process_traffic_shaping() {
 
 		my $priority = $tcref->{priority} << 8;
 		my $parent   = in_hexp $tcref->{parent};
-		
+
 		emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
 
 		if ( $devref->{qdisc} eq 'htb' ) {
@@ -1758,7 +1758,7 @@ sub process_traffic_shaping() {
 		    my ( $tos, $mask ) = split q(/), $tospair;
 		    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
 		}
-		
+
 		save_progress_message_short qq("   TC Class $classid defined.");
 		emit '';
 
@@ -1767,7 +1767,7 @@ sub process_traffic_shaping() {
 	    emit '';
 
 	    emit "$_" for @{$devref->{filters}};
-	
+
 	    save_progress_message_short qq("   TC Device $device defined.");
 
 	    pop_indent;
@@ -1819,7 +1819,7 @@ sub process_tc() {
     # enabled.
 
     my %empty;
-    
+
     $config{TC_ENABLED} eq 'Shared' ? \%empty : \%tcdevices;
 }
 

@@ -293,9 +293,9 @@ sub compare_nets( $$ ) {
 
     @net1 = decompose_net( $_[0] );
     @net2 = decompose_net( $_[1] );
-    
+
     $net1[0] eq $net2[0] && $net1[1] == $net2[1];
-}			    
+}
 
 sub allipv4() {
     @allipv4;
@@ -392,7 +392,7 @@ sub validate_portpair( $$ ) {
 	$what = 'port';
     }
 
-    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless 
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless
 	defined $protonum && ( $protonum == TCP  ||
 			       $protonum == UDP  ||
 			       $protonum == SCTP ||
@@ -423,7 +423,7 @@ sub validate_portpair1( $$ ) {
 	$what = 'port';
     }
 
-    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless 
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless
 	defined $protonum && ( $protonum == TCP  ||
 			       $protonum == UDP  ||
 			       $protonum == SCTP ||

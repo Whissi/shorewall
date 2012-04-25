@@ -1486,8 +1486,11 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
 
       <variablelist>
         <varlistentry id="all2all">
-          <term>all2<emphasis>zone</emphasis>, <emphasis>zone</emphasis>2all
-          or all2all</term>
+          <term><emphasis role="bold"><replaceable>zone</replaceable>2all,
+          <replaceable>zone</replaceable>-all,
+          all2<replaceable>zone</replaceable>,
+          all-<replaceable>zone</replaceable>, all2all or
+          all-all</emphasis></term>
 
           <listitem>
             <para>You have a <filename><ulink
@@ -1506,7 +1509,9 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term><emphasis>zone</emphasis>12<emphasis>zone2</emphasis></term>
+          <term><emphasis
+          role="bold"><replaceable>zone1</replaceable>2<replaceable>zone2</replaceable>
+          or <replaceable>zone1-zone2</replaceable></emphasis></term>
 
           <listitem>
             <para>Either you have a <ulink
@@ -1520,23 +1525,39 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>@<emphasis>source</emphasis>2<emphasis>dest</emphasis></term>
+          <term><emphasis
+          role="bold">@<replaceable>zone1</replaceable>2<replaceable>zone2</replaceable>
+          or
+          @<replaceable>zone1</replaceable>-<replaceable>zone2</replaceable></emphasis></term>
 
           <listitem>
             <para>You have a policy for traffic from
-            <emphasis>source</emphasis> to <emphasis>dest</emphasis> that
-            specifies TCP connection rate limiting (value in the LIMIT:BURST
-            column). The logged packet exceeds that limit and was dropped.
-            Note that these log messages themselves are severely rate-limited
-            so that a syn-flood won't generate a secondary DOS because of
-            excessive log message. These log messages were added in Shorewall
-            2.2.0 Beta 7.</para>
+            <replaceable>zone1</replaceable> to
+            <replaceable>zone2</replaceable> that specifies TCP connection
+            rate limiting (value in the LIMIT:BURST column). The logged packet
+            exceeds that limit and was dropped. Note that these log messages
+            themselves are severely rate-limited so that a syn-flood won't
+            generate a secondary DOS because of excessive log message. These
+            log messages were added in Shorewall 2.2.0 Beta 7.</para>
           </listitem>
         </varlistentry>
 
         <varlistentry>
-          <term><emphasis>interface</emphasis>_mac or
-          <emphasis>interface</emphasis>_rec</term>
+          <term><emphasis
+          role="bold"><replaceable>zone1</replaceable>2<replaceable>zone2</replaceable>~,
+          <replaceable>zone1</replaceable>-<replaceable>zone2</replaceable>~
+          or ~blacklist<replaceable>nn</replaceable></emphasis></term>
+
+          <listitem>
+            <para>These are the result of entries in the <ulink
+            url="manpages/shorewall-blrules.html">/etc/shorewall/blrules</ulink>
+            file.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold"><emphasis>interface</emphasis>_mac or
+          <emphasis>interface</emphasis>_rec</emphasis></term>
 
           <listitem>
             <para>The packet is being logged under the <emphasis
@@ -1547,7 +1568,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>blacklist</term>
+          <term><emphasis role="bold">blacklist</emphasis></term>
 
           <listitem>
             <para>The packet is being logged because the source IP is
@@ -1558,7 +1579,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>INPUT or FORWARD</term>
+          <term><emphasis role="bold">INPUT or FORWARD</emphasis></term>
 
           <listitem>
             <para>The packet has a source IP address that isn't in any of your
@@ -1585,7 +1606,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>OUTPUT</term>
+          <term><emphasis role="bold">OUTPUT</emphasis></term>
 
           <listitem>
             <para>The packet has a destination IP address that isn't in any of
@@ -1600,7 +1621,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>logflags</term>
+          <term><emphasis role="bold">logflags</emphasis></term>
 
           <listitem>
             <para>The packet is being logged because it failed the checks
@@ -1611,7 +1632,7 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
         </varlistentry>
 
         <varlistentry>
-          <term>sfilter</term>
+          <term><emphasis role="bold">sfilter</emphasis></term>
 
           <listitem>
             <para>On systems running Shorewall 4.4.20 or later, either the

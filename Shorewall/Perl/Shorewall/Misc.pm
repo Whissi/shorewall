@@ -1483,7 +1483,7 @@ sub generate_matrix() {
 
 	next if  @zones <= 2 && ! $zoneref->{complex};
 	#
-	# Complex zone or we have more than one non-firewall zone -- process_rules created a zone forwarding chain
+	# Complex zone or we have more than one non-firewall zone -- Shorewall::Rules::classic_blacklist created a zone forwarding chain
 	#
 	my $frwd_ref = $filter_table->{zone_forward_chain( $zone )};
 
@@ -1509,6 +1509,9 @@ sub generate_matrix() {
 			copy_rules( $sourcechainref, $frwd_ref, 1 ) unless $ipsec_jump_added{$zone}++;
 			$sourcechainref = $filter_table->{FORWARD};
 		    } elsif ( $interfaceref->{options}{port} ) {
+			#
+			# The forwarding chain for a bridge with ports is always used
+			#
 			add_ijump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
 				   j => $sourcechainref ,
 				   imatch_source_dev( $interface , 1 ) )
@@ -1518,6 +1521,9 @@ sub generate_matrix() {
 		    }
 		} else {
 		    if ( $interfaceref->{options}{port} ) {
+			#
+			# The forwarding chain for a bridge with ports is always used
+			#
 			$sourcechainref = $filter_table->{ forward_chain $interfaceref->{bridge} };
 			@interfacematch = imatch_source_dev $interface, 1;
 		    } else {

@@ -2122,11 +2122,11 @@ sub set_action_param( $$ ) {
 }
 
 #
-# Expand Shell Variables in the passed buffer using %params and @actparms
+# Expand Shell Variables in the passed buffer using @actparms, %params, %shorewallrc and %config, 
 #
 sub expand_variables( \$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
-    #                    $1      $2   $3      -     $4
+    #                         $1      $2   $3      -     $4
     while ( $$lineref =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
@@ -2164,7 +2164,7 @@ sub handle_first_entry() {
 }
 
 #
-# Read a line from the current include stack.
+# Read a line from the current include stack. Based on the passed options, it will conditionally:
 #
 #   - Ignore blank or comment-only lines.
 #   - Remove trailing comments.

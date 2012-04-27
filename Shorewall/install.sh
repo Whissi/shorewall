@@ -333,14 +333,18 @@ echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 # Install the Firewall Script
 #
 if [ -n "$INITFILE" ]; then
-    install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
-    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
-  
-    if [ -n "${AUXINITSOURCE}" ]; then
+    if [ -f "$INITSOURCE" ]; then
 	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
+	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
+	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
     fi
 
-    echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
+    if [ -n "$AUXINITSOURCE" -a -f "$AUXINITSOURCE" ]; then
+	install_file $AUXINITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
+	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$AUXINITFILE
+	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$AUXINITFILE"
+    fi
+
 fi
 
 #

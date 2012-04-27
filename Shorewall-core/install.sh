@@ -307,6 +307,16 @@ chmod 755 ${DESTDIR}${SBINDIR}
 mkdir -p ${DESTDIR}${MANDIR}
 chmod 755 ${DESTDIR}${MANDIR}
 
+if [ -n "${INITFILE}" ]; then
+    mkdir -p ${DESTDIR}${INITDIR}
+    chmod 755 ${DESTDIR}${INITDIR}
+
+    if [ -n "$AUXINITSOURCE" -a -f "$AUXINITSOURCE" ]; then
+	install_file $AUXINITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
+	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$AUXINITFILE
+	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$AUXINITFILE"
+    fi
+fi
 #
 # Note: ${VARDIR} is created at run-time since it has always been
 #       a relocatable directory on a per-product basis

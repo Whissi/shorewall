@@ -338,13 +338,6 @@ if [ -n "$INITFILE" ]; then
 	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
 	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
     fi
-
-    if [ -n "${AUXINITSOURCE}" ]; then
-	install_file $AUXINITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
-	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$AUXINITFILE
-	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$AUXINITFILE"
-    fi
-
 fi
 
 #

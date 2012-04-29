@@ -468,7 +468,7 @@ sub convert_blacklist() {
 		open $blrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
 		print $blrules <<'EOF';
 #
-# Shorewall version 5 - Blacklist Rules File
+# Shorewall version 4.55 - Blacklist Rules File
 #
 # For information about entries in this file, type "man shorewall-blrules"
 #
@@ -1476,17 +1476,21 @@ sub generate_matrix() {
     progress_message  '  Handling complex zones...';
 
     #
-    # Special processing for complex configurations
+    # Special processing for configurations with more than 2 off-firewall zones or with other special considerations like IPSEC.
     #
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
 
 	next if  @zones <= 2 && ! $zoneref->{complex};
 	#
-	# Complex zone or we have more than one non-firewall zone -- Shorewall::Rules::classic_blacklist created a zone forwarding chain
+	# Complex zone or we have more than two off-firewall zones -- Shorewall::Rules::classic_blacklist created a zone forwarding chain
 	#
 	my $frwd_ref = $filter_table->{zone_forward_chain( $zone )};
 
+	assert( $frwd_ref, $zone );
+	#
+	# Add Zone mark if any
+	#
 	add_ijump( $frwd_ref , j => 'MARK --set-mark ' . in_hex( $zoneref->{mark} ) . '/' . in_hex( $globals{ZONE_MASK} ) ) if $zoneref->{mark};
 
 	if ( have_ipsec ) {

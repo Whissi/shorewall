@@ -1403,11 +1403,12 @@ sub add_interface_jumps {
 
 	if ( $interfaceref->{options}{port} ) {
 	    my $bridge = $interfaceref->{bridge};
+
 	    add_ijump ( $filter_table->{forward_chain $bridge},
 			j => 'ACCEPT',
 			imatch_source_dev( $interface, 1),
 			imatch_dest_dev( $interface, 1)
-		     ) unless $interfaceref->{nets} || ! $interfaceref->{options}{bridge};
+		     ) unless $interfaceref->{nets};
 
 	    add_ijump( $filter_table->{forward_chain $bridge} ,
 		       j => $forwardref ,

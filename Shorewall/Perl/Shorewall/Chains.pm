@@ -3970,7 +3970,7 @@ sub do_ratelimit( $$ ) {
 	if ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
 	    fatal_error "Invalid Rate ($3)" unless $4;
 	    fatal_error "Invalid Burst ($7)" unless $7;
-	    $limit .= "--hashlimit $3 --hashlimit-burst $7 --hashlimit-name ";
+	    $limit .= "--$match $3 --hashlimit-burst $7 --hashlimit-name ";
 	    $limit .= $2 ? $2 : 'shorewall' . $hashlimitset++;
 	    $limit .= ' --hashlimit-mode ';
 	    $units = $6;

@@ -235,8 +235,8 @@ case "$COMMAND" in
 	    status=2
 	elif checkkernelversion; then
 	    if [ $# -eq 1 ]; then
-		$IP6TABLES -Z
-		$IP6TABLES -t mangle -Z
+		$g_tool -Z
+		$g_tool -t mangle -Z
 		date > ${VARDIR}/restarted
 		status=0
 		progress_message3 "$g_product Counters Reset"
@@ -245,7 +245,7 @@ case "$COMMAND" in
 		status=0
 		for chain in $@; do
 		    if chain_exists $chain; then
-			if qt $IP6TABLES -Z $chain; then
+			if qt $g_tool-Z $chain; then
 			    progress_message3 "Filter $chain Counters Reset"
 			else
 			    error_message "ERROR: Reset of chain $chain failed"

@@ -50,7 +50,7 @@
 
   <warning>
     <para>This document describes the Multi-ISP facility in <emphasis
-    role="bold">Shorewall 4.5.0 and later</emphasis>. If you are running an
+    role="bold">Shorewall 4.4.26 and later</emphasis>. If you are running an
     earlier release, please see the documentation for that release.</para>
   </warning>
 
@@ -251,25 +251,25 @@
 
                 <itemizedlist>
                   <listitem>
-                    <para>These mark values must be a multiple of 256 in the
-                    range 256-65280 (hex equivalent 0x100 - 0xFF00 with the
+                    <para>With HIGH_ROUTE_MARKS=Yes (PROVIDER_OFFSET=8), these
+                    mark values must be a multiple of 256 in the range
+                    256-65280 (hex equivalent 0x100 - 0xFF00 with the
                     low-order 8 bits being zero); or</para>
                   </listitem>
 
                   <listitem>
                     <para>Set WIDE_TC_MARKS=Yes in <ulink
                     url="manpages/shorewall.conf.html">shorewall.conf
-                    </ulink>(5) and use mark values in the range 0x10000 -
-                    0xFF0000 with the low-order 16 bits being zero.</para>
+                    </ulink>(5) (PROVIDER_OFFSET=16), and use mark values in
+                    the range 0x10000 - 0xFF0000 with the low-order 16 bits
+                    being zero.</para>
                   </listitem>
                 </itemizedlist>
               </listitem>
             </itemizedlist>
 
             <para>This column may be omitted if you don´t use packet marking
-            to direct connections to a particular provider and you don´t
-            specify <emphasis role="bold">track</emphasis> in the OPTIONS
-            column.</para>
+            to direct connections to a particular provider.</para>
           </listitem>
         </varlistentry>
 
@@ -416,27 +416,6 @@
                         url="FAQ.htm#faq57">FAQ 57</ulink> and <ulink
                         url="FAQ.htm#faq58">FAQ 58</ulink>.</para>
                       </note></para>
-                  </important>
-
-                  <important>
-                    <para>If you specify <emphasis
-                    role="bold">balance</emphasis> and still find that all
-                    traffic is going out through only one provider, you may
-                    need to install a kernel built with
-                    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n. Several users have
-                    reported that this change has corrected similar
-                    problems.</para>
-
-                    <para>The SuSE 10.0 kernel is subject to this problem, and
-                    <ulink
-                    url="https://bugzilla.novell.com/show_bug.cgi?id=190908">
-                    a kernel oops may result in this circumstance.</ulink>
-                    SUSE 10.1 and SLES 10 have
-                    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n set by default. The
-                    source of the problem seems to be <ulink
-                    url="http://news.gmane.org/find-root.php?message_id=%3c00da01c5b35a%24b12b9860%241b00a8c0%40cruncher%3e">an
-                    incompatibility between the LARTC patches and
-                    CONFIG_IP_ROUTE_MULTIPATH_CACHED.</ulink></para>
                   </important>
                 </listitem>
               </varlistentry>

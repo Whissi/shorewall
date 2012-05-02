@@ -972,6 +972,27 @@ refresh_command() {
 			    finished=1
 			    option=
 			    ;;
+			d*)
+			    g_debug=Yes
+			    option=${option#d}
+			    ;;
+			n*)
+			    g_noroutes=Yes
+			    option=${option#n}
+			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
+			    ;;
+			D)
+			    if [ $# -gt 1 ]; then
+				g_shorewalldir="$2"
+				option=
+				shift
+			    else
+				fatal_error "ERROR: the -D option requires a directory name"
+			    fi
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1579,7 +1600,7 @@ usage() # $1 = exit status
 	echo "   noiptrace <ip6tables match expression>"
     fi
 
-    echo "   refresh [ <chain>... ]"
+    echo "   refresh [ -d ] [ -n ] [ -T ] [ -D <directory> ] [ <chain>... ]"
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"

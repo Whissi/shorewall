@@ -27,6 +27,34 @@
     interfaces to Shorewall. The order of entries in this file is not
     significant in determining zone composition.</para>
 
+    <para>Beginning with Shorewall 4.5.3, the interfaces file supports two
+    different formats:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>FORMAT 1 (default - deprecated)</term>
+
+        <listitem>
+          <para>There is a BROADCAST column which can be used to specify the
+          broadcast address associated with the interface.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>FORMAT 2</term>
+
+        <listitem>
+          <para>The BROADCAST column is omitted.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The format is specified by a line as follows:</para>
+
+    <blockquote>
+      <para><emphasis role="bold">FORMAT {1|2}</emphasis></para>
+    </blockquote>
+
     <para>The columns in the file are as follows.</para>
 
     <variablelist>
@@ -128,6 +156,8 @@ loc     eth2            -</programlisting>
         role="bold">detect</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...}</term>
 
         <listitem>
+          <para>Only available if FORMAT 1.</para>
+
           <para>If you use the special value <emphasis
           role="bold">detect</emphasis>, Shorewall will detect the broadcast
           address(es) for you if your iptables and kernel include Address Type
@@ -172,7 +202,7 @@ loc     eth2            -</programlisting>
                 changed; the value assigned to the setting will be the value
                 specified (if any) or 1 if no value is given.</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -206,7 +236,7 @@ loc     eth2            -</programlisting>
 
                 <para>8 - do not reply for all local addresses</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -214,7 +244,7 @@ loc     eth2            -</programlisting>
                   the INTERFACE column.</para>
                 </note>
 
-                <para></para>
+                <para/>
 
                 <warning>
                   <para>Do not specify <emphasis
@@ -355,7 +385,7 @@ loc     eth2            -</programlisting>
         1
         teastep@lists:~$ </programlisting>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -629,7 +659,7 @@ loc     eth2            -</programlisting>
                 changed; the value assigned to the setting will be the value
                 specified (if any) or 1 if no value is given.</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -705,11 +735,14 @@ loc     eth2            -</programlisting>
           connected to your local network and that your local subnet is
           192.168.1.0/24. The interface gets its IP address via DHCP from
           subnet 206.191.149.192/27. You have a DMZ with subnet 192.168.2.0/24
-          using eth2.</para>
+          using eth2. Your iptables and/or kernel do not support "Address Type
+          Match" and you prefer to specify broadcast addresses explicitly
+          rather than having Shorewall detect them.</para>
 
           <para>Your entries for this setup would look like:</para>
 
-          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
+          <programlisting>FORMAT 1
+#ZONE   INTERFACE BROADCAST        OPTIONS
 net     eth0      206.191.149.223  dhcp
 loc     eth1      192.168.1.255
 dmz     eth2      192.168.2.255</programlisting>
@@ -723,10 +756,11 @@ dmz     eth2      192.168.2.255</programlisting>
           <para>The same configuration without specifying broadcast addresses
           is:</para>
 
-          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
-net     eth0      detect           dhcp
-loc     eth1      detect
-dmz     eth2      detect</programlisting>
+          <programlisting>FORMAT 2
+#ZONE   INTERFACE OPTIONS
+net     eth0      dhcp
+loc     eth1      
+dmz     eth2</programlisting>
         </listitem>
       </varlistentry>
 
@@ -737,7 +771,8 @@ dmz     eth2      detect</programlisting>
           <para>You have a simple dial-in system with no ethernet
           connections.</para>
 
-          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
+          <programlisting>FORMAT 2
+#ZONE   INTERFACE OPTIONS
 net     ppp0      -</programlisting>
         </listitem>
       </varlistentry>
@@ -749,8 +784,9 @@ net     ppp0      -</programlisting>
           <para>You have a bridge with no IP address and you want to allow
           traffic through the bridge.</para>
 
-          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
--       br0       -                routeback</programlisting>
+          <programlisting>FORMAT 2
+#ZONE   INTERFACE OPTIONS
+-       br0       routeback</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -772,10 +808,9 @@ net     ppp0      -</programlisting>
     shorewall-blacklist(5), shorewall-hosts(5), shorewall-maclist(5),
     shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
     shorewall-params(5), shorewall-policy(5), shorewall-providers(5),
-    shorewall-proxyarp(5), shorewall-rtrules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    shorewall-proxyarp(5), shorewall-rtrules(5), shorewall-routestopped(5),
+    shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
+    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-tcrules(5),
+    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

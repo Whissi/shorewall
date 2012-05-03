@@ -27,6 +27,34 @@
     interfaces to shorewall6. The order of entries in this file is not
     significant in determining zone composition.</para>
 
+    <para>Beginning with Shorewall 4.5.3, the interfaces file supports two
+    different formats:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>FORMAT 1 (default - deprecated)</term>
+
+        <listitem>
+          <para>There is a ANYCAST column which provides compatibility with
+          older versions of Shorewall..</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>FORMAT 2</term>
+
+        <listitem>
+          <para>The BROADCAST column is omitted.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The format is specified by a line as follows:</para>
+
+    <blockquote>
+      <para><emphasis role="bold">FORMAT {1|2}</emphasis></para>
+    </blockquote>
+
     <para>The columns in the file are as follows.</para>
 
     <variablelist>
@@ -101,7 +129,8 @@ loc     eth2            -</programlisting>
 
         <listitem>
           <para>Enter '<emphasis role="bold">-'</emphasis> in this column. It
-          is here for compatibility between Shorewall6 and Shorewall.</para>
+          is here for compatibility between Shorewall6 and Shorewall and is
+          omitted if FORMAT is 2.</para>
         </listitem>
       </varlistentry>
 
@@ -438,7 +467,8 @@ loc     eth2            -</programlisting>
 
           <para>Your entries for this setup would look like:</para>
 
-          <programlisting>#ZONE   INTERFACE UNICAST        OPTIONS
+          <programlisting>FORMAT 2
+#ZONE   INTERFACE OPTIONS
 net     eth0      -
 loc     eth1      -
 dmz     eth2      -</programlisting>
@@ -452,8 +482,9 @@ dmz     eth2      -</programlisting>
           <para>You have a bridge with no IP address and you want to allow
           traffic through the bridge.</para>
 
-          <programlisting>#ZONE   INTERFACE BROADCAST        OPTIONS
--       br0       -                routeback</programlisting>
+          <programlisting>FORMAT 2
+#ZONE   INTERFACE        OPTIONS
+-       br0              routeback</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -805,12 +805,41 @@ sub initialize( $;$ ) {
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 
 #
+# Create 'currentlineinfo'
+#
+sub currentlineinfo() {
+    if ( $currentfile ) {
+	my $lineinfo = " $currentfilename ";
+	
+	if ( $currentlinenumber eq 'EOF' ) {
+	    $lineinfo .= '(EOF)'
+	} else {
+	    $currentlinenumber ||= 1;
+	    $lineinfo .= "(line $currentlinenumber)";
+
+	    for ( my $i = @openstack - 1; $i >= 0; $i-- ) {
+		my $istack = $openstack[$i];
+	    
+		for ( my $j = ( @$istack - 1 ); $j >= 0; $j-- ) {
+		    my $info = $istack->[$j];
+		    $lineinfo .= "\n   from $info->[1] (line $info->[2])";
+		}
+	    }
+	}
+
+	$lineinfo;
+
+    } else {
+	'';
+    }
+}
+
+#
 # Issue a Warning Message
 #
 sub warning_message
 {
-    my $linenumber = $currentlinenumber || 1;
-    my $currentlineinfo = $currentfile ?  " : $currentfilename " . ( $linenumber eq 'EOF' ? '(EOF)' : "(line $linenumber)" ) : '';
+    my $currentlineinfo = currentlineinfo;
     our @localtime;
 
     $| = 1; #Reset output buffering (flush any partially filled buffers).
@@ -866,7 +895,7 @@ sub cleanup() {
 #
 sub fatal_error	{
     my $linenumber = $currentlinenumber || 1;
-    my $currentlineinfo = $currentfile ?  " : $currentfilename " . ( $linenumber eq 'EOF' ? '(EOF)' : "(line $linenumber)" ) : '';
+    my $currentlineinfo = currentlineinfo;
 
     $| = 1; #Reset output buffering (flush any partially filled buffers).
 
@@ -1901,7 +1930,7 @@ EOF
 #
 sub push_open( $ ) {
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();

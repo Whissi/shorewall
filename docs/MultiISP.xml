@@ -1322,6 +1322,133 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
 999:    from all lookup main 
 10000:  from all fwmark 0x100 lookup ISP1 
 10001:  from all fwmark 0x200 lookup ISP2</programlisting>
+
+      <section>
+        <title>DHCP with USE_DEFAULT_RT</title>
+
+        <para>When USE_DEFAULT_RT=Yes, you don't want your DHCP client
+        inserting a default route into the main routing table.</para>
+
+        <section>
+          <title>Debian</title>
+
+          <para>In this Debian-specific example, eth0 is managed by
+          dhcpcd.</para>
+
+          <para><filename>/etc/default/dhcpcd</filename>:</para>
+
+          <programlisting># Config file for dhcpcd. Note that you have to edit the interface
+# name below, or duplicate the configuration for different interfaces.
+# If you are editing this file just to get DNS servers set by DHCP,
+# then you should consider installing the resolvconf package instead.
+
+case ${INTERFACE} in
+<emphasis role="bold">eth0</emphasis>) 
+
+# Uncomment this to allow dhcpcd to set the DNS servers in /etc/resolv.conf
+# If you are using resolvconf then you can leave this commented out.
+#SET_DNS='yes'
+
+# Uncomment this to allow dhcpcd to set hostname of the host to the
+# hostname option supplied by DHCP server.
+#SET_HOSTNAME='yes'
+
+# Uncomment this to allow dhcpcd to set the NTP servers in /etc/ntp.conf
+#SET_NTP='yes'
+
+# Uncomment this to allow dhcpcd to set the YP servers in /etc/yp.conf
+#SET_YP='yes'
+
+# Add other options here, see man 8 dhcpcd-bin for details.
+OPTIONS=(<emphasis role="bold">--nogateway</emphasis> --nodns --nontp <emphasis
+              role="bold">--script /etc/shorewall/dhcpcd.sh</emphasis>)
+;;
+
+# Add other interfaces here
+*)
+;;
+
+esac
+</programlisting>
+
+          <para><filename>/etc/shorewall/start</filename>:</para>
+
+          <programlisting>cat &lt;&lt;EOF &gt; /var/lib/shorewall/eth0.info
+ETH0_GATEWAY=$SW_ETH0_GATEWAY
+ETH0_ADDRESS=$SW_ETH0_ADDRESS
+EOF</programlisting>
+
+          <para><filename>/etc/shorewall/dhcpd.sh</filename>:</para>
+
+          <programlisting>#!/bin/sh
+
+if [ $2 != down ]; then
+    if [ -f /var/lib/dhcpcd/dhcpcd-eth0.info ]; then
+        . /var/lib/dhcpcd/dhcpcd-eth0.info
+    else
+        logger -p daemon.err "/var/lib/dhcpcd/dhcpcd-eth0.info does not exist!"
+        exit 1
+    fi
+
+    logger -p daemon.info "DHCP-assigned address/gateway for eth0 is $IPADDR/$GATEWAYS"
+
+    [ -f /var/lib/shorewall/eth0.info ] &amp;&amp; . /var/lib/shorewall/eth0.info
+    
+    if [ "$GATEWAYS" != "$ETH0_GATEWAY" -o "$IPADDR" != "$ETH0_ADDRESS" ]; then
+        logger -p daemon.info "eth0 IP configuration changed - restarting lsm and Shorewall"
+        killall lsm
+        /sbin/shorewall restart
+    fi
+fi
+</programlisting>
+
+          <para>A couple of things to notice about
+          <filename>/etc/shorewall/dhcpcd.sh</filename>:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>It is hard-coded for eth0</para>
+            </listitem>
+
+            <listitem>
+              <para>It assumes the use of <link linkend="lsm">LSM</link>; If
+              you aren't using lSM, you can change the log message and remove
+              the 'killall lsm'</para>
+            </listitem>
+
+            <listitem>
+              <para>It restarts Shorewall if the current IPv4 address of eth0
+              and the gateway through eth0 are not the same as they were when
+              Shorewall was last started.</para>
+            </listitem>
+          </itemizedlist>
+        </section>
+
+        <section>
+          <title>RedHat and Derivatives</title>
+
+          <para>On Redhat-based systems, specify DEFROUTE=No in the device's
+          ifcfg file.</para>
+
+          <para><filename>/etc/sysconfig/networking/network-scripts/ifcfg-eth2</filename>:</para>
+
+          <programlisting>BOOTPROTO=dhcp
+<emphasis role="bold">PERSISTENT_DHCLIENT=yes</emphasis>
+PEERDNS=no
+PEERNTP=no
+<emphasis role="bold">DEFROUTE=no</emphasis>
+DHCLIENTARGS="-nc"
+DEVICE=eth2
+ONBOOT=yes</programlisting>
+        </section>
+
+        <section>
+          <title>SuSE and Derivatives</title>
+
+          <para>On these systems, set DHCLIENT_SET_DEFAULT_ROUTE=No in the
+          device's ifcfg file.</para>
+        </section>
+      </section>
     </section>
 
     <section id="load">

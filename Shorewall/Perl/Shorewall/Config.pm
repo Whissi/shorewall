@@ -808,22 +808,33 @@ my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 # Create 'currentlineinfo'
 #
 sub currentlineinfo() {
+    my $linenumber = $currentlinenumber || 1;
+
     if ( $currentfile ) {
-	my $lineinfo = " $currentfilename ";
+	my $lineinfo = @includestack || @openstack ? "\n      $currentfilename " : " $currentfilename ";
 	
-	if ( $currentlinenumber eq 'EOF' ) {
+	if ( $linenumber eq 'EOF' ) {
 	    $lineinfo .= '(EOF)'
 	} else {
-	    $currentlinenumber ||= 1;
-	    $lineinfo .= "(line $currentlinenumber)";
-
-	    for ( my $i = @openstack - 1; $i >= 0; $i-- ) {
-		my $istack = $openstack[$i];
-	    
-		for ( my $j = ( @$istack - 1 ); $j >= 0; $j-- ) {
-		    my $info = $istack->[$j];
-		    $lineinfo .= "\n   from $info->[1] (line $info->[2])";
-		}
+	    $lineinfo .= "(line $linenumber)";
+	}
+	#
+	# Unwind the current include stack
+	#
+	for ( my $i = @includestack - 1; $i >= 0; $i-- ) {
+	    my $info = $includestack[$i];
+	    $linenumber = $info->[2] || 1;
+	    $lineinfo .= "\n      from $info->[1] (line $linenumber)";
+	}
+	#
+	# Now unwind the open stack; each element is an include stack
+	#
+	for ( my $i = @openstack - 1; $i >= 0; $i-- ) {
+	    my $istack = $openstack[$i];
+	    for ( my $j = ( @$istack - 1 ); $j >= 0; $j-- ) {
+		my $info = $istack->[$j];
+		$linenumber = $info->[2] || 1;
+		$lineinfo .= "\n      from $info->[1] (line $linenumber)";
 	    }
 	}
 
@@ -894,7 +905,6 @@ sub cleanup() {
 # Issue fatal error message and die
 #
 sub fatal_error	{
-    my $linenumber = $currentlinenumber || 1;
     my $currentlineinfo = currentlineinfo;
 
     $| = 1; #Reset output buffering (flush any partially filled buffers).

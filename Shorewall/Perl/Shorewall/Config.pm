@@ -4375,6 +4375,7 @@ sub run_user_exit1( $ ) {
 
 	if ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
 	    close_file;
+	    pop_open;
 
 	    my $command = qq(package Shorewall::User;\n# line 1 "$file"\n) . `cat $file`;
 
@@ -4406,6 +4407,7 @@ sub run_user_exit2( $$ ) {
 
 	if ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
 	    close_file;
+	    pop_open;
 
 	    unless (my $return = eval `cat $file` ) {
 		fatal_error "Couldn't parse $file: $@" if $@;

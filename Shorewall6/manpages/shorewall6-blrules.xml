@@ -61,7 +61,31 @@
 
           <variablelist>
             <varlistentry>
-              <term>blacklog</term>
+              <term><emphasis role="bold">BLACKLIST</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.3. This is actually a macro that
+                expands as follows:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>If BLACKLIST_LOGLEVEL is specified in <ulink
+                    url="shorewall6.conf.html">shorewall6.conf</ulink>(5),
+                    then the macro expands to <emphasis
+                    role="bold">blacklog</emphasis>.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Otherwise it expands to the action specified for
+                    BLACKLIST_DISPOSITION in <ulink
+                    url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">blacklog</emphasis></term>
 
               <listitem>
                 <para>May only be used if BLACKLIST_LOGLEVEL is specified in

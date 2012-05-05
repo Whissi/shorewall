@@ -8,4 +8,8 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-$BLACKLIST_DISPOSITION:$BLACKLIST_LOGLEVEL
+?IF $BLACKLIST_LOGLEVEL
+blacklog
+?ELSE
+$BLACKLIST_DISPOSITION
+?ENDIF

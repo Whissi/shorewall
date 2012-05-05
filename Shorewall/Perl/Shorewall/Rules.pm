@@ -1589,7 +1589,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE +  MACRO );
+	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO + CHAIN );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {

@@ -300,6 +300,7 @@ sub setup_tunnels() {
 	    if ( $kind eq 'COMMENT' ) {
 		process_comment;
 	    } else {
+		fatal_error 'ZONE must be specified' if $zone eq '-';
 		setup_one_tunnel $kind, $zone, $gateway, $gatewayzones;
 	    }
 	}

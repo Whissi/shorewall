@@ -782,23 +782,21 @@ sub initialize( $;$ ) {
 		    CONFDIR  => '/etc/',
 		    );
 
-    if ( $shorewallrc ) {
-	process_shorewallrc( $shorewallrc );
+    process_shorewallrc( $shorewallrc ) if $shorewallrc;
 
-	$globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
+    $globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
 
-	if ( $family == F_IPV4 ) {
-	    $globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall";
-	    $globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
-	    $globals{PRODUCT}       = 'shorewall';
-	    $config{IPTABLES}       = undef;
-	    $validlevels{ULOG}      = 'ULOG';
-	} else {
-	    $globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
-	    $globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
-	    $globals{PRODUCT}       = 'shorewall6';
-	    $config{IP6TABLES}      = undef;
-	}
+    if ( $family == F_IPV4 ) {
+	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall";
+	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
+	$globals{PRODUCT}       = 'shorewall';
+	$config{IPTABLES}       = undef;
+	$validlevels{ULOG}      = 'ULOG';
+    } else {
+	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
+	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
+	$globals{PRODUCT}       = 'shorewall6';
+	$config{IP6TABLES}      = undef;
     }
 }
 

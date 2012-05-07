@@ -934,7 +934,7 @@ sub process_interface( $$ ) {
 	    return;
 	}
 
-	fatal_error "Invalid FORMAT ($1)";
+	fatal_error "Invalid FORMAT ($originalinterface)";
     }
 
     if ( $zone eq '-' ) {

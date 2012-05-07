@@ -37,6 +37,7 @@
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
 #         --family=<number>           # IP family; 4 = IPv4 (default), 6 = IPv6
 #         --preview                   # Preview the ruleset.
+#         --
 #         --config_path=<path-list>   # Search path for config files
 #
 use strict;
@@ -65,7 +66,7 @@ sub usage( $ ) {
     [ --annotate ]
     [ --update ]
     [ --convert ]
-    [ --shorewallrc ]
+    [ --shorewallrc=<pathname> ]
     [ --config_path=<path-list> ]
 ';
 

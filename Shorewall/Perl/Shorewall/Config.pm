@@ -1468,11 +1468,13 @@ sub supplied( $ ) {
 #    supply '-' in omitted trailing columns.
 #    Handles all of the supported forms of column/pair specification
 #
-sub split_line1( $$;$ ) {
-    my ( $description, $columnsref, $nopad) = @_;
+sub split_line1( $$;$$ ) {
+    my ( $description, $columnsref, $nopad, $maxcolumns ) = @_;
 
-    my @maxcolumns = ( sort { $a <=> $b } values %$columnsref );
-    my $maxcolumns = ( $maxcolumns[-1] || 0 ) + 1;
+    unless ( defined $maxcolumns ) {
+	my @maxcolumns = ( keys %$columnsref );
+	$maxcolumns = @maxcolumns;
+    }
     #
     # First see if there is a semicolon on the line; what follows will be column/value paris
     #

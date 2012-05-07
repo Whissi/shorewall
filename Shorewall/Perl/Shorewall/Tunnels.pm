@@ -292,10 +292,9 @@ sub setup_tunnels() {
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
-	    my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 'tunnels file', { type => 0, zone => 1, gateway => 2, gateways => 2, gateway_zone => 3 };
+	    my ( $kind, $zone, $gateway, $gatewayzones ) = split_line1 'tunnels file', { type => 0, zone => 1, gateway => 2, gateways => 2, gateway_zone => 3 }, undef, 4;
 
 	    fatal_error 'TYPE must be specified' if $kind eq '-';
-	    fatal_error 'ZONE must be specified' if $zone eq '-';
 
 	    if ( $kind eq 'COMMENT' ) {
 		process_comment;

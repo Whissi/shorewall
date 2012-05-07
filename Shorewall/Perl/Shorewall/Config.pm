@@ -1471,8 +1471,8 @@ sub supplied( $ ) {
 sub split_line1( $$;$ ) {
     my ( $description, $columnsref, $nopad) = @_;
 
-    my @maxcolumns = ( keys %$columnsref );
-    my $maxcolumns = @maxcolumns;
+    my @maxcolumns = ( sort { $a <=> $b } values %$columnsref );
+    my $maxcolumns = ( $maxcolumns[-1] || 0 ) + 1;
     #
     # First see if there is a semicolon on the line; what follows will be column/value paris
     #

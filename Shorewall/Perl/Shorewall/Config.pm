@@ -3370,7 +3370,7 @@ sub update_config_file( $ ) {
 	#
 	# Debian or derivative
 	#
-	$fn = $annotate ? "/usr/share/doc/${product}/default-config/${product}.conf.annotated" : "/usr/share/doc/${product}/default-config/${product}.conf";
+	$fn = $annotate ? "$shorewallrc{SHAREDIR}/doc/${product}/default-config/${product}.conf.annotated" : "$shorewallrc{SHAREDIR}/doc/${product}/default-config/${product}.conf";
     } else {
 	#
 	# The rest of the World
@@ -4314,7 +4314,7 @@ sub append_file( $;$$ ) {
 
     $indent = '' if $unindented;
 
-    unless ( $user_exit =~ m(^/usr/share/shorewall6?/) ) {
+    unless ( $user_exit =~ m(^$shorewallrc{SHAREDIR}/shorewall6?/) ) {
 	if ( -f $user_exit ) {
 	    if ( $nomsg ) {
 		#

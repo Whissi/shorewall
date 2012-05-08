@@ -37,7 +37,7 @@
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
 #         --family=<number>           # IP family; 4 = IPv4 (default), 6 = IPv6
 #         --preview                   # Preview the ruleset.
-#         --
+#         --shorewallrc=<path>        # Path to shorewallrc file.
 #         --config_path=<path-list>   # Search path for config files
 #
 use strict;

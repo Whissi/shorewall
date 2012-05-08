@@ -930,7 +930,7 @@ sub add_an_rtrule( ) {
 	    validate_net ( $source, 0 );
 	    $source = "from $source";
 	} else {
-	    $source = "iif $source";
+	    $source = 'iif ' . physical_name $source;
 	}
     } elsif ( $source =~  /^(.+?):<(.+)>\s*$/ ||  $source =~  /^(.+?):\[(.+)\]\s*$/ ) {
 	my ($interface, $source ) = ($1, $2);
@@ -941,7 +941,7 @@ sub add_an_rtrule( ) {
 	validate_net ( $source, 0 );
 	$source = "from $source";
     } else {
-	$source = "iif $source";
+	$source = 'iif ' . physical_name $source;
     }
 
     my $mark = '';

@@ -594,6 +594,7 @@ distribute_load() {
     local interface
     local totalload
     local load
+    local mark
     local maxload
 
     maxload=$1
@@ -605,6 +606,8 @@ distribute_load() {
 	if interface_up $interface; then
 	    load=$(cat ${VARDIR}/${interface}_load)
 	    eval ${interface}_load=$load
+	    mark=$(cat ${VARDIR}/${interface}_mark)
+	    eval ${interface}_mark=$mark
 	    totalload=$( bc <<EOF
 scale=8
 $totalload + $load
@@ -617,6 +620,7 @@ EOF
 	for interface in $@; do
 	    qt $g_tool -t mangle -F ~$interface
 	    eval load=\$${interface}_load
+	    eval mark=\$${interface}_mark
 
 	    if [ -n "$load" ]; then
 		load=$(bc <<EOF
@@ -629,7 +633,7 @@ scale=8
 $totalload - $load
 EOF
 )
-		run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $load
+		run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $load -j MARK --set-mark $mark
 	    fi
 	done
     fi

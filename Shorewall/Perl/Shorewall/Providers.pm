@@ -608,7 +608,8 @@ sub add_a_provider( $$ ) {
 	}
     }
 
-    emit( qq(echo $load > \${VARDIR}/${physical}_load) ) if $load;
+    emit( "echo $load > \${VARDIR}/${physical}_load",
+	  'echo ' . in_hex( $mark ) . '/' . in_hex( $globals{PROVIDER_MASK} ) . " > \${VARDIR}/${physical}_mark" ) if $load;
 
     emit( '',
 	  "cat <<EOF >> \${VARDIR}/undo_${table}_routing" );
@@ -618,6 +619,7 @@ sub add_a_provider( $$ ) {
     emit_unindented '        ;;';
     emit_unindented '    *)';
     emit_unindented "        rm -f \${VARDIR}/${physical}_load" if $load;
+    emit_unindented "        rm -f \${VARDIR}/${physical}_mark" if $load;
     emit_unindented <<"CEOF", 1;
         rm -f \${VARDIR}/${physical}.status
         ;;

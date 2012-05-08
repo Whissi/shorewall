@@ -876,6 +876,30 @@ sub cleanup() {
     close  $script, $script = undef         if $script;
     close  $perlscript, $perlscript = undef if $perlscript;
     close  $log, $log = undef               if $log;
+
+    if ( $currentfile ) {
+	#
+	# We have a current input file; close it
+	#
+	close $currentfile;
+	#
+	# Unwind the current include stack
+	#
+	for ( my $i = @includestack - 1; $i >= 0; $i-- ) {
+	    my $info = $includestack[$i];
+	    close $info->[0];
+	}
+	#
+	# Now unwind the open stack; each element is an include stack
+	#
+	for ( my $i = @openstack - 1; $i >= 0; $i-- ) {
+	    my $istack = $openstack[$i];
+	    for ( my $j = ( @$istack - 1 ); $j >= 0; $j-- ) {
+		my $info = $istack->[$j];
+		close $info->[0];
+	    }
+	}
+    }
     #
     # Unlink temporary files
     #

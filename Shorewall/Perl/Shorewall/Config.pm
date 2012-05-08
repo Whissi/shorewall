@@ -809,7 +809,7 @@ sub currentlineinfo() {
     my $linenumber = $currentlinenumber || 1;
 
     if ( $currentfile ) {
-	my $lineinfo = @includestack || @openstack ? "\n      $currentfilename " : " $currentfilename ";
+	my $lineinfo = " $currentfilename ";
 	
 	if ( $linenumber eq 'EOF' ) {
 	    $lineinfo .= '(EOF)'

@@ -358,6 +358,8 @@ sub process_tc_rule( ) {
 					  }
 
 					  $target .= ' --tproxy-mark';
+
+					  $mark = "$mark/" . in_hex( $globals{PROVIDER_MASK} );
 				      },
 		       TTL => sub() {
 			                  fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;

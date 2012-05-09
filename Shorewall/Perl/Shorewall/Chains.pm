@@ -806,7 +806,7 @@ sub transform_rule( $ ) {
 	    }
 	}
 
-	set_rule_option( $ruleref, $option, $params ) unless $params eq '';
+	set_rule_option( $ruleref, $option, $params );
     }
 
     $ruleref->{simple} = $simple;

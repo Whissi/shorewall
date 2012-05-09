@@ -169,6 +169,7 @@ my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT );
 
 my $family;
+my $divert;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -191,6 +192,7 @@ sub initialize( $ ) {
     $devnum = 0;
     $sticky = 0;
     $ipp2p  = 0;
+    $divert = 0;
 }
 
 sub process_tc_rule( ) {
@@ -242,6 +244,7 @@ sub process_tc_rule( ) {
     my $restriction = 0;
     my $cmd;
     my $rest;
+    my $matches = '';
 
     my %processtcc = ( sticky => sub() {
 			                  if ( $chain eq 'tcout' ) {
@@ -294,6 +297,32 @@ sub process_tc_rule( ) {
 
 					  $target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 				      },
+		       DIVERT => sub() {
+			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
+
+					  $chain = 'tcpre';
+
+					  $cmd =~ /DIVERT\((.+?)\)$/;
+
+					  $mark = $1;
+
+					  fatal_error "Invalid DIVERT specification( $cmd )" unless defined $mark;
+
+					  my $val = numeric_value( $mark );
+
+					  validate_mark $val . '/' . in_hex( $globals{PROVIDER_MASK} );
+
+					  my $divertref = new_chain( 'mangle', 'DIVERT' . ( $divert ? $divert : '' ) );
+
+					  $divert++;
+					      
+					  add_ijump( $divertref , j => 'MARK', targetopts => '--set-mark ' . in_hex( $val ) . '/' . in_hex( $globals{PROVIDER_MASK} ) );
+					  add_ijump( $divertref , j => 'ACCEPT' );
+
+					  $target = $divertref->{name};
+
+					  $matches = '-m socket ';
+				      },					      
 		       TPROXY => sub() {
 			                  require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
 
@@ -539,7 +568,8 @@ sub process_tc_rule( ) {
 				     do_helper( $helper ) .
 				     do_headers( $headers ) .
 				     do_probability( $probability ) .
-				     do_dscp( $dscp ),
+				     do_dscp( $dscp ) . 
+				     $matches ,
 				     $source ,
 				     $dest ,
 				     '' ,
@@ -1999,6 +2029,11 @@ sub setup_tc() {
 			} ,
 			{ match     => sub ( $ ) { $_[0] =~ /^TPROXY/ },
 			  target    => 'TPROXY',
+			  mark      => HIGHMARK,
+			  mask      => '',
+			  connmark  => '' },
+			{ match     => sub( $ ) { $_[0] =~ /^DIVERT/ },
+			  target    => 'DIVERT',
 			  mark      => HIGHMARK,
 			  mask      => '',
 			  connmark  => '' },

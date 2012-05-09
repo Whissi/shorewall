@@ -336,7 +336,15 @@ Tproxy    1        1        -           lo        -            local</programlis
     eth1):</para>
 
     <programlisting>MARK            SOURCE      DEST        PROTO      PORT(S)
+DIVERT(1)       eth1        0.0.0.0/0   tcp        80
 TPROXY(1,3128)  eth1        0.0.0.0/0   tcp        80</programlisting>
+
+    <note>
+      <para>The DIVERT action was added in Shorewall 4.5.3; user's running
+      earlier versions of Shorewall will need to use the <ulink
+      url="extension_scripts.htm">start extension script</ulink> to add the
+      DIVERT logic mentioned in the Squid article linked above.</para>
+    </note>
 
     <para>/etc/shorewall/rules:</para>
 

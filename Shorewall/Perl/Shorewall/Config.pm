@@ -1030,7 +1030,9 @@ sub normalize_hex( $ ) {
 # Return the argument expressed in Hex
 #
 sub in_hex( $ ) {
-    sprintf '0x%x', $_[0];
+    my $value = $_[0];
+
+    $value =~ /^0x/ ? $value : sprintf '0x%x', $_[0];
 }
 
 sub in_hex2( $ ) {

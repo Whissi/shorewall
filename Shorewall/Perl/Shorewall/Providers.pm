@@ -632,12 +632,13 @@ CEOF
     setup_interface_proc( $interface );
 
     if ( $mark ne '-' ) {
+	my $hexmark = in_hex( $mark );
 	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '';
 
-	emit ( "qt \$IP -$family rule del fwmark ${mark}${mask}" ) if $config{DELETE_THEN_ADD};
+	emit ( "qt \$IP -$family rule del fwmark ${hexmark}${mask}" ) if $config{DELETE_THEN_ADD};
 
-	emit ( "run_ip rule add fwmark ${mark}${mask} pref $pref table $number",
-	       "echo \"qt \$IP -$family rule del fwmark ${mark}${mask}\" >> \${VARDIR}/undo_${table}_routing"
+	emit ( "run_ip rule add fwmark ${hexmark}${mask} pref $pref table $number",
+	       "echo \"qt \$IP -$family rule del fwmark ${hexmark}${mask}\" >> \${VARDIR}/undo_${table}_routing"
 	     );
     }
 

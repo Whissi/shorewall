@@ -305,39 +305,6 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis
-              role="bold">TPROXY</emphasis>(<replaceable>mark</replaceable>[/<replaceable>mask</replaceable>][,[<replaceable>port</replaceable>][,[<replaceable>address</replaceable>]]])</para>
-
-              <para>Transparently redirects a packet without altering the IP
-              header. Requires a local provider to be defined in <ulink
-              url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
-
-              <para>There are three parameters to TPROXY - only the first
-              (mark) is required:</para>
-
-              <itemizedlist>
-                <listitem>
-                  <para><replaceable>mark</replaceable> - the MARK value
-                  corresponding to the local provider in <ulink
-                  url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
-                </listitem>
-
-                <listitem>
-                  <para><replaceable>port</replaceable> - the port on which
-                  the proxy server is listening. If omitted, the original
-                  destination port.</para>
-                </listitem>
-
-                <listitem>
-                  <para><replaceable>address</replaceable> - a local (to the
-                  firewall) IP address on which the proxy server is listening.
-                  If omitted, the IP address of the interface on which the
-                  request arrives.</para>
-                </listitem>
-              </itemizedlist>
-            </listitem>
-
-            <listitem>
               <para><emphasis role="bold">HL</emphasis>([<emphasis
               role="bold">-</emphasis>|<emphasis
               role="bold">+</emphasis>]<replaceable>number</replaceable>)</para>

@@ -308,40 +308,4 @@ ACCEPT    loc      $FW    tcp      8080
 ACCEPT    $FW      net    tcp      80,443</programlisting></para>
     </example>
   </section>
-
-  <section id="TPROXY">
-    <title>Transparent with TPROXY</title>
-
-    <para>Shorewall 4.4.7 contains support for TPROXY. TPROXY differs from
-    REDIRECT in that it does not modify the IP header. Because the IP header
-    stays intact, TPROXY requires policy routing to direct the packets to the
-    proxy server running on the firewall. This approach requires TPROXY
-    support in your kernel and iptables and Squid 3. See <ulink
-    url="http://wiki.squid-cache.org/Features/Tproxy4">http://wiki.squid-cache.org/Features/Tproxy4</ulink>.</para>
-
-    <para>The following configuration works with Squid running on the firewall
-    itself (assume that Squid is listening on port 3128).</para>
-
-    <para><filename>/etc/shorewall/interfaces:</filename></para>
-
-    <programlisting>#ZONE        INTERFACE        BROADCAST         OPTIONS
--            lo               -                 -</programlisting>
-
-    <para><filename>/etc/shorewall/providers</filename>:</para>
-
-    <programlisting>#NAME   NUMBER   MARK    DUPLICATE  INTERFACE  GATEWAY         OPTIONS               COPY
-Tproxy    1        1        -           lo        -            local</programlisting>
-
-    <para><filename>/etc/shorewall/tcrules</filename> (assume loc interface is
-    eth1):</para>
-
-    <programlisting>MARK            SOURCE      DEST        PROTO      PORT(S)
-TPROXY(1,3128)  eth1        0.0.0.0/0   tcp        80</programlisting>
-
-    <para>/etc/shorewall/rules:</para>
-
-    <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
-ACCEPT    loc      $FW    tcp     80
-ACCEPT    $FW      net    tcp     80</programlisting>
-  </section>
 </article>

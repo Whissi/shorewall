@@ -169,7 +169,12 @@ my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT );
 
 my $family;
-my $divert;
+
+#
+# Variables supporting DIVERT
+#
+my $divert;          #Next chain sequence number
+my %diversions;      #Map of marks -> chains. We use a hash rather than an array because mark values can be huge
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -182,13 +187,14 @@ my $divert;
 #      able to re-initialize its dependent modules' state.
 #
 sub initialize( $ ) {
-    $family   = shift;
-    %classids = ();
-    @tcdevices = ();
-    %tcdevices = ();
-    @tcclasses = ();
-    %tcclasses = ();
-    @devnums   = ();
+    $family     = shift;
+    %classids   = ();
+    @tcdevices  = ();
+    %tcdevices  = ();
+    @tcclasses  = ();
+    %tcclasses  = ();
+    %diversions = ();
+    @devnums    = ();
     $devnum = 0;
     $sticky = 0;
     $ipp2p  = 0;
@@ -299,6 +305,7 @@ sub process_tc_rule( ) {
 				      },
 		       DIVERT => sub() {
 			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
+					  fatal_error "DIVERT requires TC_EXPERT=Yes" unless $config{TC_EXPERT};
 
 					  $chain = 'tcpre';
 
@@ -312,16 +319,18 @@ sub process_tc_rule( ) {
 
 					  validate_mark $val . '/' . in_hex( $globals{PROVIDER_MASK} );
 
-					  my $divertref = new_chain( 'mangle', 'DIVERT' . ( $divert ? $divert : '' ) );
-
-					  $divert++;
-					      
-					  add_ijump( $divertref , j => 'MARK', targetopts => '--set-mark ' . in_hex( $val ) . '/' . in_hex( $globals{PROVIDER_MASK} ) );
-					  add_ijump( $divertref , j => 'ACCEPT' );
+					  my $divertref = $diversions{$val};
+					  
+					  unless ( $divertref ) {
+					      $divertref = $diversions{$val} = new_chain( 'mangle', 'DIVERT' . ( $divert ? $divert : '' ) );
+					      $divert++;
+					      add_ijump( $divertref , j => 'MARK', targetopts => '--set-mark ' . in_hex( $val ) . '/' . in_hex( $globals{PROVIDER_MASK} ) );
+					      add_ijump( $divertref , j => 'ACCEPT' );
+					  }
 
 					  $target = $divertref->{name};
 
-					  $matches = '-m socket ';
+					  $matches = '! --tcp-flags FIN,SYN,RST,ACK SYN  -m socket --transparent ';
 				      },					      
 		       TPROXY => sub() {
 			                  require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
@@ -561,7 +570,7 @@ sub process_tc_rule( ) {
 
     if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 				     $restrictions{$chain} | $restriction,
-				     do_proto( $proto, $ports, $sports) .
+				     do_proto( $proto, $ports, $sports) . $matches .
 				     do_user( $user ) .
 				     do_test( $testval, $globals{TC_MASK} ) .
 				     do_length( $length ) .
@@ -570,8 +579,7 @@ sub process_tc_rule( ) {
 				     do_helper( $helper ) .
 				     do_headers( $headers ) .
 				     do_probability( $probability ) .
-				     do_dscp( $dscp ) . 
-				     $matches ,
+				     do_dscp( $dscp ) ,
 				     $source ,
 				     $dest ,
 				     '' ,

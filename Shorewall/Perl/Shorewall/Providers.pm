@@ -396,8 +396,8 @@ sub process_a_provider() {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $load ) =
-	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0 );
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load ) =
+	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0 );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -434,6 +434,11 @@ sub process_a_provider() {
 	    } elsif ( $option eq 'fallback' ) {
 		$default = -1;
 		$default_balance = 0;
+	    } elsif ( $option eq 'local' ) {
+		warning_message q(The 'local' provider option is deprecated in favor of 'tproxy');
+		$local = $tproxy = 1;
+		$track  = 0           if $config{TRACK_PROVIDERS};
+		$default_balance = 0  if $config{USE_DEFAULT_RT};
 	    } elsif ( $option eq 'tproxy' ) {
 		$tproxy = 1;
 		$track  = 0           if $config{TRACK_PROVIDERS};
@@ -455,7 +460,11 @@ sub process_a_provider() {
 	$maxload += $load;
     }
 
-    if ( $tproxy ) {
+    if ( $local ) {
+	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
+	fatal_error "'track' not valid with 'local'"          if $track;
+	fatal_error "DUPLICATE not valid with 'local'"        if $duplicate ne '-';
+    } elsif ( $tproxy ) {
 	fatal_error "GATEWAY not valid with 'tproxy' provider" unless $gatewaycase eq 'none';
 	fatal_error "'track' not valid with 'tproxy'"          if $track;
 	fatal_error "DUPLICATE not valid with 'tproxy'"        if $duplicate ne '-';
@@ -472,7 +481,7 @@ sub process_a_provider() {
 
 	require_capability( 'MANGLE_ENABLED' , 'Provider marks' , '' );
 
-	if ( $tproxy ) {
+	if ( $tproxy && ! $local ) {
 	    $val = $globals{TPROXY_MARK};
 	    $pref = 1;
 	} else {
@@ -532,6 +541,7 @@ sub process_a_provider() {
 			   loose       => $loose ,
 			   duplicate   => $duplicate ,
 			   address     => $address ,
+			   local       => $local ,
 			   tproxy      => $tproxy ,
 			   load        => $load ,
 			   rules       => [] ,
@@ -584,6 +594,7 @@ sub add_a_provider( $$ ) {
     my $loose       = $providerref->{loose};
     my $duplicate   = $providerref->{duplicate};
     my $address     = $providerref->{address};
+    my $local       = $providerref->{local};
     my $tproxy      = $providerref->{tproxy};
     my $load        = $providerref->{load};
 
@@ -639,7 +650,7 @@ CEOF
 
     if ( $mark ne '-' ) {
 	my $hexmark = in_hex( $mark );
-	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex( $globals{ $tproxy ? 'TPROXY_MARK' : 'PROVIDER_MASK' } ) : '';
+	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex( $globals{ $tproxy && ! $local ? 'TPROXY_MARK' : 'PROVIDER_MASK' } ) : '';
 
 	emit ( "qt \$IP -$family rule del fwmark ${hexmark}${mask}" ) if $config{DELETE_THEN_ADD};
 

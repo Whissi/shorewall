@@ -202,20 +202,31 @@ sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp );
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13 }, undef , 14;
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13 }, { COMMENT => 0, FORMAT => 2 } , 14;
 	$headers = '-';
     } else {
 	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 }, undef, 15;
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 },  { COMMENT => 0, FORMAT => 2 }, 15;
     }
 
     our @tccmd;
+
+    our $format;
 
     fatal_error 'MARK must be specified' if $originalmark eq '-';
 
     if ( $originalmark eq 'COMMENT' ) {
 	process_comment;
 	return;
+    }
+
+    if ( $originalmark eq 'FORMAT' ) {
+	if ( $source =~ /^([12])$/ ) {
+	    $format = $1;
+	    return;
+	}
+
+	fatal_error "Invalid FORMAT ($source)";
     }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
@@ -301,6 +312,7 @@ sub process_tc_rule( ) {
 					  $target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 				      },
 		       DIVERT => sub() {
+			                  fatal_error "Invalid MARK ($originalmark)"               unless $format == 2;
 			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
 
 					  $chain = 'tproxy';
@@ -327,12 +339,28 @@ sub process_tc_rule( ) {
 					  $cmd =~ /TPROXY\((.+?)\)$/;
 
 					  my $params = $1;
+					  my ( $port, $ip, $bad );
 
-					  fatal_error "Invalid TPROXY specification( $cmd )" unless defined $params;
+					  if ( $format == 1 ) {
+					      fatal_error "Invalid TPROXY specification( $cmd )" unless defined $params;
 
-					  ( my $port, my $ip, my $bad ) = split ',', $params;
+					      ( $mark, $port, $ip, $bad ) = split_list $params, 'Parameter';
 
-					  fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
+					      fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
+
+					      warning_message "TPROXY is deprecated in a format-1 tcrules file";
+					  } else {
+					      if ( $params ) {
+						  ( $port, $ip, $bad ) = split_list $params, 'Parameter';
+
+						  fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
+					      
+					      } else {
+						  fatal_error "Invalid TPROXY specification ($cmd)" unless $cmd eq 'TPROXY' || $cmd eq 'TPROXY()';
+					      }
+
+					      $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
+					  }
 
 					  if ( $port ) {
 					      $port = validate_port( 'tcp', $port );
@@ -352,8 +380,6 @@ sub process_tc_rule( ) {
 					  }
 
 					  $target .= ' --tproxy-mark';
-
-					  $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
 				      },
 		       TTL => sub() {
 			                  fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
@@ -1938,12 +1964,12 @@ sub setup_tc() {
     if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
+	ensure_mangle_chain 'tproxy';
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    ensure_mangle_chain 'tcfor';
 	    ensure_mangle_chain 'tcpost';
 	    ensure_mangle_chain 'tcin';
-	    ensure_mangle_chain 'tproxy';
 	}
 
 	my @mark_part;
@@ -1961,7 +1987,7 @@ sub setup_tc() {
 	    }
 	}
 
-	add_ijump $mangle_table->{PREROUTING} , j => 'tproxy' if $mangle_table->{tproxy}{referenced};
+	add_ijump $mangle_table->{PREROUTING} , j => 'tproxy';
 	add_ijump $mangle_table->{PREROUTING} , j => 'tcpre', @mark_part;
 	add_ijump $mangle_table->{OUTPUT} ,     j => 'tcout', @mark_part;
 
@@ -2073,7 +2099,10 @@ sub setup_tc() {
 	    process_tc_rule while read_a_line( NORMAL_READ );
 
 	    clear_comment;
+
 	}
+	
+	delete_jumps( $mangle_table->{PREROUTING}, $mangle_table->{tproxy} ) unless @{$mangle_table->{tproxy}{rules}};
     }
 
     if ( $config{MANGLE_ENABLED} ) {

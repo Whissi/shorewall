@@ -38,6 +38,34 @@
       url="http://shorewall.net/MultiISP.html">http://shorewall.net/MultiISP.html</ulink>.</para>
     </important>
 
+    <para>Beginning with Shorewall 4.5.4, the tcrules file supports two
+    different formats:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>FORMAT 1 (default - deprecated)</term>
+
+        <listitem>
+          <para>The older limited-function version of TPROXY is
+          supported.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>FORMAT 2</term>
+
+        <listitem>
+          <para>The newer version of TPROXY is supported.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The format is specified by a line as follows:</para>
+
+    <blockquote>
+      <para><emphasis role="bold">FORMAT {1|2}</emphasis></para>
+    </blockquote>
+
     <para>The columns in the file are as follows (where the column name is
     followed by a different name in parentheses, the different name is used in
     the alternate specification syntax).</para>
@@ -410,18 +438,54 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             <listitem>
               <para><emphasis role="bold">DIVERT</emphasis></para>
 
-              <para>Added in Shorewall 4.5.3. Two DIVERT rule should preceed
-              the TPROXY rule and should select DEST PORT tcp 80 and SOURCE
-              PORT tcp 80 respectively (assuming that tcp port 80 is being
-              proxied). DIVERT avoids sending packets to the TPROXY target
-              once a socket connection to Squid3 has been established by
-              TPROXY. DIVERT marks the packet with a unique mark and exempts
-              it from any rules that follow.</para>
+              <para>Added in Shorewall 4.5.4 and only available when FORMAT is
+              2. Two DIVERT rule should preceed the TPROXY rule and should
+              select DEST PORT tcp 80 and SOURCE PORT tcp 80 respectively
+              (assuming that tcp port 80 is being proxied). DIVERT avoids
+              sending packets to the TPROXY target once a socket connection to
+              Squid3 has been established by TPROXY. DIVERT marks the packet
+              with a unique mark and exempts it from any rules that
+              follow.</para>
             </listitem>
 
             <listitem>
               <para><emphasis
-              role="bold">TPROXY</emphasis>([<replaceable>port</replaceable>][,<replaceable>address</replaceable>])</para>
+              role="bold">TPROXY</emphasis>(<replaceable>mark</replaceable>[,[<replaceable>port</replaceable>][,[<replaceable>address</replaceable>]]])
+              -- FORMAT 1</para>
+
+              <para>Transparently redirects a packet without altering the IP
+              header. Requires a local provider to be defined in <ulink
+              url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+
+              <para>There are three parameters to TPROXY - only the first
+              (mark) is required:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><replaceable>mark</replaceable> - the MARK value
+                  corresponding to the local provider in <ulink
+                  url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+                </listitem>
+
+                <listitem>
+                  <para><replaceable>port</replaceable> - the port on which
+                  the proxy server is listening. If omitted, the original
+                  destination port.</para>
+                </listitem>
+
+                <listitem>
+                  <para><replaceable>address</replaceable> - a local (to the
+                  firewall) IP address on which the proxy server is listening.
+                  If omitted, the IP address of the interface on which the
+                  request arrives.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><emphasis
+              role="bold">TPROXY</emphasis>([<replaceable>port</replaceable>][,<replaceable>address</replaceable>])
+              -- FORMAT 2</para>
 
               <para>Transparently redirects a packet without altering the IP
               header. Requires a tproxy provider to be defined in <ulink

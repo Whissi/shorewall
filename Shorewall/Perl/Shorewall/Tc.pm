@@ -163,18 +163,16 @@ my  @tcclasses;
 my  %tcclasses;
 
 my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
+		      tproxy     => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
 		      tcin       => INPUT_RESTRICT ,
-		      tcout      => OUTPUT_RESTRICT );
+		      tcout      => OUTPUT_RESTRICT ,
+		    );
 
 my $family;
 
-#
-# Variables supporting DIVERT
-#
-my $divert;          #Next chain sequence number
-my %diversions;      #Map of marks -> chains. We use a hash rather than an array because mark values can be huge
+my $divertref; # DIVERT chain
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -187,18 +185,17 @@ my %diversions;      #Map of marks -> chains. We use a hash rather than an array
 #      able to re-initialize its dependent modules' state.
 #
 sub initialize( $ ) {
-    $family     = shift;
-    %classids   = ();
-    @tcdevices  = ();
-    %tcdevices  = ();
-    @tcclasses  = ();
-    %tcclasses  = ();
-    %diversions = ();
-    @devnums    = ();
-    $devnum = 0;
-    $sticky = 0;
-    $ipp2p  = 0;
-    $divert = 0;
+    $family    = shift;
+    %classids  = ();
+    @tcdevices = ();
+    %tcdevices = ();
+    @tcclasses = ();
+    %tcclasses = ();
+    @devnums   = ();
+    $devnum    = 0;
+    $sticky    = 0;
+    $ipp2p     = 0;
+    $divertref = 0;
 }
 
 sub process_tc_rule( ) {
@@ -305,30 +302,18 @@ sub process_tc_rule( ) {
 				      },
 		       DIVERT => sub() {
 			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
-					  fatal_error "DIVERT requires TC_EXPERT=Yes" unless $config{TC_EXPERT};
 
-					  $chain = 'tcpre';
+					  $chain = 'tproxy';
 
-					  $cmd =~ /DIVERT\((.+?)\)$/;
+					  $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
 
-					  $mark = $1;
-
-					  fatal_error "Invalid DIVERT specification( $cmd )" unless defined $mark;
-
-					  my $val = numeric_value( $mark );
-
-					  validate_mark $val . '/' . in_hex( $globals{PROVIDER_MASK} );
-
-					  my $divertref = $diversions{$val};
-					  
 					  unless ( $divertref ) {
-					      $divertref = $diversions{$val} = new_chain( 'mangle', 'DIVERT' . ( $divert ? $divert : '' ) );
-					      $divert++;
-					      add_ijump( $divertref , j => 'MARK', targetopts => '--set-mark ' . in_hex( $val ) . '/' . in_hex( $globals{PROVIDER_MASK} ) );
+					      $divertref = new_chain( 'mangle', 'divert' );
+					      add_ijump( $divertref , j => 'MARK', targetopts => "--set-mark $mark"  );
 					      add_ijump( $divertref , j => 'ACCEPT' );
 					  }
 
-					  $target = $divertref->{name};
+					  $target = 'divert';
 
 					  $matches = '! --tcp-flags FIN,SYN,RST,ACK SYN  -m socket --transparent ';
 				      },					      
@@ -337,7 +322,7 @@ sub process_tc_rule( ) {
 
 			                  fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
 
-					  $chain = 'tcpre';
+					  $chain = 'tproxy';
 
 					  $cmd =~ /TPROXY\((.+?)\)$/;
 
@@ -345,7 +330,7 @@ sub process_tc_rule( ) {
 
 					  fatal_error "Invalid TPROXY specification( $cmd )" unless defined $params;
 
-					  ( $mark, my $port, my $ip, my $bad ) = split ',', $params;
+					  ( my $port, my $ip, my $bad ) = split ',', $params;
 
 					  fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
 
@@ -368,7 +353,7 @@ sub process_tc_rule( ) {
 
 					  $target .= ' --tproxy-mark';
 
-					  $mark = "$mark/" . in_hex( $globals{PROVIDER_MASK} );
+					  $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
 				      },
 		       TTL => sub() {
 			                  fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
@@ -1958,6 +1943,7 @@ sub setup_tc() {
 	    ensure_mangle_chain 'tcfor';
 	    ensure_mangle_chain 'tcpost';
 	    ensure_mangle_chain 'tcin';
+	    ensure_mangle_chain 'tproxy';
 	}
 
 	my @mark_part;
@@ -1975,6 +1961,7 @@ sub setup_tc() {
 	    }
 	}
 
+	add_ijump $mangle_table->{PREROUTING} , j => 'tproxy' if $mangle_table->{tproxy}{referenced};
 	add_ijump $mangle_table->{PREROUTING} , j => 'tcpre', @mark_part;
 	add_ijump $mangle_table->{OUTPUT} ,     j => 'tcout', @mark_part;
 

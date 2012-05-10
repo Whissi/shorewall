@@ -312,15 +312,25 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
   <section id="TPROXY">
     <title>Transparent with TPROXY</title>
 
-    <para>Shorewall 4.4.7 contains support for TPROXY. TPROXY differs from
-    REDIRECT in that it does not modify the IP header. Because the IP header
-    stays intact, TPROXY requires policy routing to direct the packets to the
-    proxy server running on the firewall. This approach requires TPROXY
-    support in your kernel and iptables and Squid 3. See <ulink
+    <para>Shorewall 4.5.4 contains support for TPROXY. TPROXY differs from
+    REDIRECT in that it does not modify the IP header and requires Squid 3 or
+    later. Because the IP header stays intact, TPROXY requires policy routing
+    to direct the packets to the proxy server running on the firewall. This
+    approach requires TPROXY support in your kernel and iptables and Squid 3.
+    See <ulink
     url="http://wiki.squid-cache.org/Features/Tproxy4">http://wiki.squid-cache.org/Features/Tproxy4</ulink>.</para>
 
+    <note>
+      <para>Support for the TPROXY action in shorewall-tcrules(5) and the
+      <option>local</option> option in shorewall-providers(5) has been
+      available since Shoreall 4.4.7. That support required additional rules
+      to be added in the 'start' extention script to make it work
+      reliable.</para>
+    </note>
+
     <para>The following configuration works with Squid running on the firewall
-    itself (assume that Squid is listening on port 3128).</para>
+    itself (assume that Squid is listening on port 3129 for TPROXY
+    connections).</para>
 
     <para><filename>/etc/shorewall/interfaces:</filename></para>
 
@@ -330,21 +340,25 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
     <para><filename>/etc/shorewall/providers</filename>:</para>
 
     <programlisting>#NAME   NUMBER   MARK    DUPLICATE  INTERFACE  GATEWAY         OPTIONS               COPY
-Tproxy    1        1        -           lo        -            local</programlisting>
+Tproxy    1        -        -           lo        -            tproxy</programlisting>
+
+    <note>
+      <para>Notice that the MARK, DUPLICATE and GATEWAY columns are empty and
+      that the only option is <option>tproxy</option>.</para>
+    </note>
 
     <para><filename>/etc/shorewall/tcrules</filename> (assume loc interface is
     eth1):</para>
 
-    <programlisting>MARK            SOURCE      DEST        PROTO      PORT(S)
-DIVERT(1)       eth1        0.0.0.0/0   tcp        80
-TPROXY(1,3128)  eth1        0.0.0.0/0   tcp        80</programlisting>
+    <programlisting>MARK            SOURCE      DEST        PROTO      DEST        SOURCE
+                                                   PORT(S)     PORT(S)
+DIVERT          -           0.0.0.0/0   tcp        80
+DIVERT          -           0.0.0.0/0   tcp        -           80
+TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
 
-    <note>
-      <para>The DIVERT action was added in Shorewall 4.5.3; user's running
-      earlier versions of Shorewall will need to use the <ulink
-      url="extension_scripts.htm">start extension script</ulink> to add the
-      DIVERT logic mentioned in the Squid article linked above.</para>
-    </note>
+    <para>The DIVERT rules are used to avoid unnecessary invocation of TPROXY
+    for request packets after the connection is established and to direct
+    response packets back to Squid3.</para>
 
     <para>/etc/shorewall/rules:</para>
 

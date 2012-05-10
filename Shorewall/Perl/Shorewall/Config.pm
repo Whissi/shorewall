@@ -4097,7 +4097,7 @@ sub get_configuration( $$$ ) {
     fatal_error 'Invalid Packet Mark layout' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 30;
 
     $globals{EXCLUSION_MASK} = 1 << ( $globals{ZONE_OFFSET} + $config{ZONE_BITS} );
-    $globals{TPROXY_MASK}    = $globals{EXCLUSION_MASK} << 1;
+    $globals{TPROXY_MARK}    = $globals{EXCLUSION_MASK} << 1;
     $globals{PROVIDER_MIN}   = 1 << $config{PROVIDER_OFFSET};
 
     $globals{TC_MAX}         = make_mask( $config{TC_BITS} );

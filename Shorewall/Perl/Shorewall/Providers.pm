@@ -396,8 +396,8 @@ sub process_a_provider() {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $local , $load ) =
-	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0      , 0 );
+    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $load ) =
+	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0 );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -434,10 +434,10 @@ sub process_a_provider() {
 	    } elsif ( $option eq 'fallback' ) {
 		$default = -1;
 		$default_balance = 0;
-	    } elsif ( $option eq 'local' ) {
-		$local = 1;
-		$track = 0           if $config{TRACK_PROVIDERS};
-		$default_balance = 0 if $config{USE_DEFAULT_RT};
+	    } elsif ( $option eq 'tproxy' ) {
+		$tproxy = 1;
+		$track  = 0           if $config{TRACK_PROVIDERS};
+		$default_balance = 0  if $config{USE_DEFAULT_RT};
 	    } elsif ( $option =~ /^load=(0?\.\d{1,8})/ ) {
 		$load = $1;
 		require_capability 'STATISTIC_MATCH', "load=$load", 's';
@@ -455,11 +455,12 @@ sub process_a_provider() {
 	$maxload += $load;
     }
 
-    if ( $local ) {
-	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
-	fatal_error "'track' not valid with 'local'"          if $track;
-	fatal_error "DUPLICATE not valid with 'local'"        if $duplicate ne '-';
-	fatal_error "MARK required with 'local'"              unless $mark;
+    if ( $tproxy ) {
+	fatal_error "GATEWAY not valid with 'tproxy' provider" unless $gatewaycase eq 'none';
+	fatal_error "'track' not valid with 'tproxy'"          if $track;
+	fatal_error "DUPLICATE not valid with 'tproxy'"        if $duplicate ne '-';
+	fatal_error "MARK not allowed with 'tproxy'"           if $mark ne '-';
+	$mark = $globals{TPROXY_MARK};
     }
 
     my $val = 0;
@@ -471,23 +472,28 @@ sub process_a_provider() {
 
 	require_capability( 'MANGLE_ENABLED' , 'Provider marks' , '' );
 
-	$val = numeric_value $mark;
+	if ( $tproxy ) {
+	    $val = $globals{TPROXY_MARK};
+	    $pref = 1;
+	} else {
+	    $val = numeric_value $mark;
 
-	fatal_error "Invalid Mark Value ($mark)" unless defined $val && $val;
+	    fatal_error "Invalid Mark Value ($mark)" unless defined $val && $val;
 
-	verify_mark $mark;
+	    verify_mark $mark;
 
-	fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
+	    fatal_error "Invalid Mark Value ($mark)" unless ( $val & $globals{PROVIDER_MASK} ) == $val;
 
-	fatal_error "Provider MARK may not be specified when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
+	    fatal_error "Provider MARK may not be specified when PROVIDER_BITS=0" unless $config{PROVIDER_BITS};
 
-	for my $providerref ( values %providers  ) {
-	    fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
+	    for my $providerref ( values %providers  ) {
+		fatal_error "Duplicate mark value ($mark)" if numeric_value( $providerref->{mark} ) == $val;
+	    }
+
+	    $lastmark = $val;
+	    
+	    $pref = 10000 + $number - 1;
 	}
-
-	$pref = 10000 + $number - 1;
-
-	$lastmark = $val;
 
     }
 
@@ -526,7 +532,7 @@ sub process_a_provider() {
 			   loose       => $loose ,
 			   duplicate   => $duplicate ,
 			   address     => $address ,
-			   local       => $local ,
+			   tproxy      => $tproxy ,
 			   load        => $load ,
 			   rules       => [] ,
 			   routes      => [] ,
@@ -578,7 +584,7 @@ sub add_a_provider( $$ ) {
     my $loose       = $providerref->{loose};
     my $duplicate   = $providerref->{duplicate};
     my $address     = $providerref->{address};
-    my $local       = $providerref->{local};
+    my $tproxy      = $providerref->{tproxy};
     my $load        = $providerref->{load};
 
     my $dev         = chain_base $physical;
@@ -600,7 +606,7 @@ sub add_a_provider( $$ ) {
 	$provider_interfaces{$interface} = $table;
 
 	if ( $gatewaycase eq 'none' ) {
-	    if ( $local ) {
+	    if ( $tproxy ) {
 		emit 'run_ip route add local ' . ALLIP . " dev $physical table $number";
 	    } else {
 		emit "run_ip route add default dev $physical table $number";
@@ -632,12 +638,13 @@ CEOF
     setup_interface_proc( $interface );
 
     if ( $mark ne '-' ) {
-	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '';
+	my $hexmark = in_hex( $mark );
+	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex( $globals{ $tproxy ? 'TPROXY_MARK' : 'PROVIDER_MASK' } ) : '';
 
-	emit ( "qt \$IP -$family rule del fwmark ${mark}${mask}" ) if $config{DELETE_THEN_ADD};
+	emit ( "qt \$IP -$family rule del fwmark ${hexmark}${mask}" ) if $config{DELETE_THEN_ADD};
 
-	emit ( "run_ip rule add fwmark ${mark}${mask} pref $pref table $number",
-	       "echo \"qt \$IP -$family rule del fwmark ${mark}${mask}\" >> \${VARDIR}/undo_${table}_routing"
+	emit ( "run_ip rule add fwmark ${hexmark}${mask} pref $pref table $number",
+	       "echo \"qt \$IP -$family rule del fwmark ${hexmark}${mask}\" >> \${VARDIR}/undo_${table}_routing"
 	     );
     }
 
@@ -697,7 +704,7 @@ CEOF
 	  qq(    qt \$IP -6 rule add from all table ) . DEFAULT_TABLE . qq( prio 32767\n) ,
 	  qq(fi) ) if $family == F_IPV6;
 
-    unless ( $local ) {
+    unless ( $tproxy ) {
 	emit '';
 
 	if ( $loose ) {

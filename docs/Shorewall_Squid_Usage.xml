@@ -348,12 +348,12 @@ Tproxy    1        -        -           lo        -            tproxy</programli
     </note>
 
     <para><filename>/etc/shorewall/tcrules</filename> (assume loc interface is
-    eth1):</para>
+    eth1 and net interface is eth0):</para>
 
-    <programlisting>MARK            SOURCE      DEST        PROTO      DEST        SOURCE
-                                                   PORT(S)     PORT(S)
-DIVERT          -           0.0.0.0/0   tcp        80
-DIVERT          -           0.0.0.0/0   tcp        -           80
+    <programlisting><emphasis role="bold">FORMAT 2</emphasis>
+#MARK           SOURCE      DEST        PROTO      DEST        SOURCE
+#                                                  PORT(S)     PORT(S)
+DIVERT          eth0        0.0.0.0/0   tcp        -           80
 TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
 
     <para>The DIVERT rules are used to avoid unnecessary invocation of TPROXY
@@ -365,5 +365,11 @@ TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
     <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
 ACCEPT    loc      $FW    tcp     80
 ACCEPT    $FW      net    tcp     80</programlisting>
+
+    <para><filename>/etc/squid3/squid.conf</filename>:</para>
+
+    <programlisting>...
+http_port 3129 tproxy
+...</programlisting>
   </section>
 </article>

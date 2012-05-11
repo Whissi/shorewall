@@ -2094,6 +2094,8 @@ sub setup_tc() {
 
 	if ( my $fn = open_file 'tcrules' ) {
 
+	    our $format = 1;
+
 	    first_entry "$doing $fn...";
 
 	    process_tc_rule while read_a_line( NORMAL_READ );
@@ -2101,7 +2103,7 @@ sub setup_tc() {
 	    clear_comment;
 
 	}
-	
+
 	delete_jumps( $mangle_table->{PREROUTING}, $mangle_table->{tproxy} ) unless @{$mangle_table->{tproxy}{rules}};
     }
 

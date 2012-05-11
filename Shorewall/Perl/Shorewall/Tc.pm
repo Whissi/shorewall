@@ -1986,7 +1986,6 @@ sub setup_tc() {
 	    }
 	}
 
-	add_ijump $mangle_table->{PREROUTING} , j => 'tproxy';
 	add_ijump $mangle_table->{PREROUTING} , j => 'tcpre', @mark_part;
 	add_ijump $mangle_table->{OUTPUT} ,     j => 'tcout', @mark_part;
 

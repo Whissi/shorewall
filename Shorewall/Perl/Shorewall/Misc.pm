@@ -151,7 +151,7 @@ sub setup_ecn()
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
-	    my ($interface, $hosts ) = split_line 'ecn file entry', { interface => 0, hosts => 1 };
+	    my ($interface, $hosts ) = split_line1 'ecn file entry', { interface => 0, host => 1, hosts => 1 }, {}, 2;
 
 	    fatal_error 'INTERFACE must be specified' if $interface eq '-';
 	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;

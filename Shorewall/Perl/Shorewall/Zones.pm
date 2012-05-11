@@ -1808,7 +1808,7 @@ sub compile_updown() {
 #
 sub process_host( ) {
     my $ipsec = 0;
-    my ($zone, $hosts, $options ) = split_line 'hosts file', { zone => 0, hosts => 1, options => 2 };
+    my ($zone, $hosts, $options ) = split_line1 'hosts file', { zone => 0, host => 1, hosts => 1, options => 2 }, {}, 3;
 
     fatal_error 'ZONE must be specified'  if $zone eq '-';
     fatal_error 'HOSTS must be specified' if $hosts eq '-';

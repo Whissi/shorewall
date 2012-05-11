@@ -1663,7 +1663,7 @@ sub process_conditional( $$$ ) {
 
 	fatal_error "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
 
-	push @ifstack, [ 'IF', $lastomit, $omitting, $linenumber ];
+	push @ifstack, [ 'IF', $omitting, $omitting, $linenumber ];
 
 	if ( $rest eq '__IPV6' ) {
 	    $omitting = $family == F_IPV4;

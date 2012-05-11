@@ -163,7 +163,7 @@ my  @tcclasses;
 my  %tcclasses;
 
 my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
-		      tproxy     => PREROUTE_RESTRICT ,
+		      PREROUTING => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
 		      tcin       => INPUT_RESTRICT ,
@@ -315,7 +315,7 @@ sub process_tc_rule( ) {
 			                  fatal_error "Invalid MARK ($originalmark)"               unless $format == 2;
 			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
 
-					  $chain = 'tproxy';
+					  $chain = 'PREROUTING';
 
 					  $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
 
@@ -334,7 +334,7 @@ sub process_tc_rule( ) {
 
 			                  fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
 
-					  $chain = 'tproxy';
+					  $chain = 'PREROUTING';
 
 					  $cmd =~ /TPROXY\((.+?)\)$/;
 
@@ -1964,7 +1964,6 @@ sub setup_tc() {
     if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
 	ensure_mangle_chain 'tcout';
-	ensure_mangle_chain 'tproxy';
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
 	    ensure_mangle_chain 'tcfor';
@@ -2103,8 +2102,6 @@ sub setup_tc() {
 	    clear_comment;
 
 	}
-
-	delete_jumps( $mangle_table->{PREROUTING}, $mangle_table->{tproxy} ) unless @{$mangle_table->{tproxy}{rules}};
     }
 
     if ( $config{MANGLE_ENABLED} ) {

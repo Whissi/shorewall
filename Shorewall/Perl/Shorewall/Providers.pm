@@ -1134,6 +1134,10 @@ sub finish_providers() {
 	       '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
 	       '#',
 	       "restore_default_route $config{USE_DEFAULT_RT}" ,
+	       '#',
+	       '# And delete any routes in the \'balance\' table',
+	       '#',
+	       "qt \$IP -$family route del default table " . BALANCE_TABLE,
 	       '' );
     }
 

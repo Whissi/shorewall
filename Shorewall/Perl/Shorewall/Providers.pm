@@ -762,7 +762,7 @@ CEOF
 		if ( $gateway ) {
 		    emit qq(add_gateway "via $gateway dev $physical $realm" ) . $tbl;
 		} else {
-		    emit qq(add_gateway "nexthop dev $physical $realm" ) . $tbl;
+		    emit qq(add_gateway "dev $physical $realm" ) . $tbl;
 		}
 	    }
 	    	} else {

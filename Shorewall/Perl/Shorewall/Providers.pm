@@ -881,7 +881,8 @@ CEOF
 		  "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
 	}
 
-	emit( "progress_message2 \"   Provider $table ($number) stopped\"" );
+	emit( "echo 1 > \${VARDIR}/${physical}.status",
+	      "progress_message2 \"   Provider $table ($number) stopped\"" );
 
 	pop_indent;
 

@@ -172,44 +172,6 @@ interface_is_up() {
 }
 
 #
-# Determine if interface is usable from a Netfilter perspective
-#
-interface_is_usable() # $1 = interface
-{
-    local status;
-    status=0
-
-    if [ "$1" != lo -a "$COMMAND" != enable ]; then
-	if [ $g_family -eq 4 ]; then
-	    if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]; then
-		run_isusable_exit $1
-		status=$?
-	    fi
-	else
-	    if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ]; then
-		run_isusable_exit $1
-		status=$?
-	    fi
-	fi
-    fi
-
-    return $status
-}
-
-#
-# Find interface addresses--returns the set of addresses assigned to the passed
-# device
-#
-find_interface_addresses() # $1 = interface
-{
-    if [ $g_family -eq 4 ]; then
-	$IP -f inet addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
-    else
-	$IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 2' | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
-    fi
-}
-
-#
 #  echo the list of networks routed out of a given interface
 #
 get_routed_networks() # $1 = interface name, $2-n = Fatal error message
@@ -659,9 +621,35 @@ EOF
 #################################################################################
 #                        IPv4-specific Functions
 #################################################################################
+#
+# Determine if interface is usable from a Netfilter perspective
+#
+interface_is_usable() # $1 = interface
+{
+    local status;
+    status=0
+
+    if [ "$1" != lo -a "$COMMAND" != enable ]; then
+	if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]; then
+	    run_isusable_exit $1
+	    status=$?
+	fi
+    fi
+
+    return $status
+}
+
+#
+# Find interface addresses--returns the set of addresses assigned to the passed device
+#
+find_interface_addresses() # $1 = interface
+{
+    $IP -f inet addr show $1 2> /dev/null | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
 # Find the value 'weight' in the passed arguments then echo the next value
 #
-
 find_weight() {
     while [ $# -gt 1 ]; do
 	[ "x$1" = xweight ] && echo $2 && return
@@ -1032,6 +1020,32 @@ get_all_bcasts()
 #################################################################################
 #                        IPv6-specific Functions
 #################################################################################
+#
+# Determine if interface is usable from a Netfilter perspective
+#
+interface_is_usable() # $1 = interface
+{
+    local status;
+    status=0
+
+    if [ "$1" != lo -a "$COMMAND" != enable ]; then
+	if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ]; then
+	    run_isusable_exit $1
+	    status=$?
+	fi
+    fi
+
+    return $status
+}
+
+#
+# Find interface addresses--returns the set of addresses assigned to the passed device
+#
+find_interface_addresses() # $1 = interface
+{
+    $IP -f inet6 addr show $1 2> /dev/null | grep 'inet6 2' | sed 's/\s*inet6 //;s/\/.*//;s/ peer.*//'
+}
+
 #
 # Get all interface addresses with VLSMs
 #

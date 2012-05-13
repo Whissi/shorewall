@@ -179,14 +179,14 @@ interface_is_usable() # $1 = interface
     local status;
     status=0
 
-    if [ "$1" != lo ]; then
+    if [ "$1" != lo -a "$COMMAND" != enable ]; then
 	if [ $g_family -eq 4 ]; then
-	    if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 -a "$COMMAND" != enable ]; then
+	    if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]; then
 		run_isusable_exit $1
 		status=$?
 	    fi
 	else
-	    if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: -a "$COMMAND" != enable ]; then
+	    if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ]; then
 		run_isusable_exit $1
 		status=$?
 	    fi

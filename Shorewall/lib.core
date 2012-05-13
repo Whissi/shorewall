@@ -176,7 +176,7 @@ interface_is_up() {
 #
 interface_is_usable() # $1 = interface
 {
-    [ "$1" = lo ] && return 0
+    [ "$1" = lo -o $COMMAND = enable ] && return 0
     interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != :: ] && run_isusable_exit $1
 }
 

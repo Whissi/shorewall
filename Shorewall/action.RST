@@ -5,7 +5,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2011 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2012 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -33,14 +33,13 @@ DEFAULTS DROP,-
 
 BEGIN PERL;
 
-use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
 
 my ( $action, $audit ) = get_action_params( 2 );
 
 fatal_error "Invalid parameter ($audit) to action NotSyn"   if supplied $audit && $audit ne 'audit';
-fatal_error "Invalid parameter ($action) to action NotSyn"  unless $action =~ /^(?:ACCEPT|DROP|REJECT)$/;
+fatal_error "Invalid parameter ($action) to action NotSyn"  unless $action =~ /^(?:ACCEPT|DROP)$/;
 
 my $chainref         = get_action_chain;
 my ( $level, $tag )  = get_action_logging;

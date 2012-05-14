@@ -1635,6 +1635,12 @@ sub process_tcpri() {
 			  mark => '--mark 0/'   . in_hex( $globals{TC_MASK} )
 			);
 
+	    insert_irule( $mangle_table->{tcpost} ,
+			  j => 'RETURN', 
+			  1 ,
+			  mark => '! --mark 0/' . in_hex( $globals{TC_MASK} ) ,
+			);
+
 	    add_ijump( $mangle_table->{tcpost} ,
 		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
 		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} )

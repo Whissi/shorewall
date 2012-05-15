@@ -140,6 +140,7 @@ for ( qw/ HOST
 	  SYSTEMD
 	  SYSCONFFILE
 	  SYSCONFDIR
+	  SPARSE
 	  ANNOTATED
 	  VARDIR / ) {
 

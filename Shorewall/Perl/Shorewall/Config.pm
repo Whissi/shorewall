@@ -391,6 +391,7 @@ our $currentfilename;        # File NAME
 my  $currentlinenumber;      # Line number
 my  $perlscript;             # File Handle Reference to current temporary file being written by an in-line Perl script
 my  $perlscriptname;         # Name of that file.
+my  $embedded;               # True if we're in an embedded perl script
 my  @tempfiles;              # Files that need unlinking at END
 my  $first_entry;            # Message to output or function to call on first non-blank line of a file
 
@@ -501,7 +502,7 @@ sub initialize( $;$ ) {
     $omitting       = 0;
     $ifstack        = 0;
     @ifstack        = ();
-
+    $embedded       = 0;
     #
     # Misc Globals
     #
@@ -949,8 +950,13 @@ sub fatal_error	{
     }
 
     cleanup;
-    confess "   ERROR: @_$currentlineinfo" if $confess;
-    die "   ERROR: @_$currentlineinfo\n";
+    if ( $embedded ) {
+	confess "@_$currentlineinfo" if $confess;
+	die "@_$currentlineinfo\n";
+    }  else {
+	confess "   ERROR: @_$currentlineinfo" if $confess;
+	die "   ERROR: @_$currentlineinfo\n";
+    }
 }
 
 sub fatal_error1 {
@@ -2085,6 +2091,8 @@ sub embedded_perl( $ ) {
 	fatal_error ( "Invalid END PERL directive" ) unless $currentline =~ /^\s*$/;
     }
 
+    $embedded++;
+
     unless (my $return = eval $command ) {
 	#
 	# Perl found the script offensive or the script itself died
@@ -2101,6 +2109,8 @@ sub embedded_perl( $ ) {
 
 	fatal_error "Perl Script Returned False";
     }
+
+    $embedded--;
 
     if ( $perlscript ) {
 	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;

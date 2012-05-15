@@ -54,6 +54,7 @@ our @EXPORT = qw(
 		 progress_message3
 
 		 supplied
+		 split_list
 
 		 get_action_params
 		 get_action_chain
@@ -306,6 +307,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IMQ_TARGET      => 'IMQ Target',
 		 DSCP_MATCH      => 'DSCP Match',
 		 DSCP_TARGET     => 'DSCP Target',
+		 GEOIP_MATCH     => 'GeoIP Match' ,
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -513,7 +515,7 @@ sub initialize( $;$ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.4.22.1",
-		    CAPVERSION => 40502 ,
+		    CAPVERSION => 40504 ,
 		  );
     #
     # From shorewall.conf file
@@ -744,6 +746,7 @@ sub initialize( $;$ ) {
 	       IMQ_TARGET => undef,
 	       DSCP_MATCH => undef,
 	       DSCP_TARGET => undef,
+	       GEOIP_MATCH => undef,
 	       CAPVERSION => undef,
 	       KERNELVERSION => undef,
 	       );
@@ -3075,6 +3078,10 @@ sub Dscp_Target() {
     have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j DSCP --set-dscp 0" );
 }
 
+sub GeoIP_Match() {
+    qt1( "$iptables -A $sillyname -m geoip --src-cc US" );
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AUDIT_TARGET => \&Audit_Target,
@@ -3094,6 +3101,7 @@ our %detect_capability =
       EXMARK => \&Exmark,
       FLOW_FILTER => \&Flow_Filter,
       FWMARK_RT_MASK => \&Fwmark_Rt_Mask,
+      GEOIP_MATCH => \&GeoIP_Match,
       GOTO_TARGET => \&Goto_Target,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HEADER_MATCH => \&Header_Match,
@@ -3271,7 +3279,7 @@ sub determine_capabilities() {
 	$capabilities{IMQ_TARGET}      = detect_capability( 'IMQ_TARGET' );
 	$capabilities{DSCP_MATCH}      = detect_capability( 'DSCP_MATCH' );
 	$capabilities{DSCP_TARGET}     = detect_capability( 'DSCP_TARGET' );
-
+	$capabilities{GEOIP_MATCH}     = detect_capability( 'GEOIP_MATCH' );
 
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );

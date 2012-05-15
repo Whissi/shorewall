@@ -79,6 +79,7 @@ our @EXPORT = qw(
 
 		    %chain_table
 		    %helpers
+		    %targets
 		    $raw_table
 		    $rawpost_table
 		    $nat_table

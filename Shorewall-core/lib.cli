@@ -1994,6 +1994,7 @@ determine_capabilities() {
     IMQ_TARGET=
     DSCP_MATCH=
     DSCP_TARGET=
+    GEOIP_MATCH=
 
     chain=fooX$$
 
@@ -2202,6 +2203,7 @@ determine_capabilities() {
     qt $g_tool -A $chain -j NFLOG && NFLOG_TARGET=Yes
     qt $g_tool -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $g_tool -A $chain -m statistic --mode nth --every 2 --packet 1 && STATISTIC_MATCH=Yes
+    qt $g_tool -A $chain -m geoip --src-cc US && GEOIP_MATCH=Yes
 
     if [ $g_family -eq 4 ]; then
 	qt $g_tool -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
@@ -2316,6 +2318,7 @@ report_capabilities() {
 	report_capability "IMQ Target (IMQ_TARGET)" $IMQ_TARGET
 	report_capability "DSCP Match (DSCP_MATCH)" $DSCP_MATCH
 	report_capability "DSCP Target (DSCP_TARGET)" $DSCP_TARGET
+	report_capability "Geo IP match" $GEOIP_MATCH
 
 	if [ $g_family -eq 4 ]; then
 	    report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
@@ -2406,6 +2409,7 @@ report_capabilities1() {
     report_capability1 IMQ_TARGET
     report_capability1 DSCP_MATCH
     report_capability1 DSCP_TARGET
+    report_capability1 GEOIP_MATCH
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

@@ -38,7 +38,8 @@ DEFAULTS -,-,src,-
 
 BEGIN PERL;
 
-use Shorewall::Chains;
+use strict;
+use Shorewall::Chains qw(:DEFAULT :internal);
 
 my ( $countries, $action, $srcdst, $audit ) = get_action_params( 4 );
 
@@ -300,21 +301,32 @@ my $chainref         = get_action_chain;
 my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
 
-fatal_error "Either an action or a log level must be specified" unless $target || $level ne '';
-
 $countries =~ s/\|/,/g;
+my @countries = split_list $countries, 'cc';
 
-for ( split_list $countries, 'cc' ) {
+for ( @countries ) {
     fatal_error "Unknown ISO 3661 Country Code ($_)" unless $isocodes{$_};
 }
 
-log_rule_limit $level, $chainref, 'GeoIP' , $target ? $target : 'LOG' , '', $tag, 'add', "-m geoip --${srcdst}-cc $countries" if $level ne '';
+$tag = $countries[0] unless $tag || @countries > 1;
 
 if ( $target ne '' ) {
     my $targettype = $targets{$target} || 0;
     fatal_error "Unknown ACTION ($target)" unless $targettype;
-    fatal_error "The $target action may not be passed to GeoIP" unless $targettype | (STANDARD | CHAIN );
+    fatal_error "The $target action may not be passed to GeoIP" if ( ! $targettype & (STANDARD | CHAIN | ACTION ) ) || ( $targettype & ( NATRULE | NONAT ) );
+
+    if ( $level ne '' ) {
+	my $chain1ref = ensure_filter_chain( newlogchain('filter' ), 0 );
+	log_rule_limit $level, $chain1ref, $chainref->{name}, $target ? $target : 'LOG' , '', $tag, 'add', '';
+	add_ijump( $chain1ref, j => $target );
+	$target = $chain1ref->{name};
+    }
+
     add_ijump $chainref , j => $target, geoip => "--${srcdst}-cc $countries";
+} elsif ( $level ne '' ) {
+    log_rule_limit $level, $chainref, 'GeoIP' , $target ? $target : 'LOG' , '', $tag, 'add', "-m geoip --${srcdst}-cc $countries";
+} else {
+    fatal_error "Either an action or a log level must be specified";
 }
 
 allow_optimize( $chainref );

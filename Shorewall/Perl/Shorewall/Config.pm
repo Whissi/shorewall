@@ -950,6 +950,7 @@ sub fatal_error	{
     }
 
     cleanup;
+
     if ( $embedded ) {
 	confess "@_$currentlineinfo" if $confess;
 	die "@_$currentlineinfo\n";

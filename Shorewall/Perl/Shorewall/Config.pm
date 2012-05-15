@@ -1440,10 +1440,10 @@ sub find_file($)
     "$config_path[0]$filename";
 }
 
-sub split_list( $$ ) {
-    my ($list, $type ) = @_;
+sub split_list( $$;$ ) {
+    my ($list, $type, $origlist ) = @_;
 
-    fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
+    fatal_error( "Invalid $type list (" . ( $origlist ? $origlist : $list ) . ')' ) if $list =~ /^,|,$|,,|!,|,!$/;
 
     split /,/, $list;
 }

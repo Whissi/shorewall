@@ -300,9 +300,11 @@ fatal_error "Invalid SRC/DST ($srcdst)"                    if supplied $srcdst &
 my $chainref         = get_action_chain;
 my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
+my $origcountries    = $countries;
 
 $countries =~ s/\|/,/g;
-my @countries = split_list $countries, 'cc';
+
+my @countries = split_list $countries, 'cc', $origcountries;
 
 for ( @countries ) {
     fatal_error "Unknown ISO 3661 Country Code ($_)" unless $isocodes{$_};

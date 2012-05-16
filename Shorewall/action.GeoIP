@@ -294,6 +294,7 @@ our %isocodes = (
 
 require_capability 'GEOIP_MATCH', 'The GeoIP action', 's';
 
+fatal_error "Missing Country Code(s)" unless $countries;
 fatal_error "Invalid parameter ($audit) to action GeoIP"   if supplied $audit  && $audit ne 'audit';
 fatal_error "Invalid SRC/DST ($srcdst)"                    if supplied $srcdst && $srcdst !~ /^(src|dst)$/;
 
@@ -315,7 +316,7 @@ $tag = $countries[0] unless $tag || @countries > 1;
 if ( $target ne '' ) {
     my $targettype = $targets{$target} || 0;
     fatal_error "Unknown ACTION ($target)" unless $targettype;
-    fatal_error "The $target action may not be passed to GeoIP" if ( ! $targettype & (STANDARD | CHAIN | ACTION ) ) || ( $targettype & ( NATRULE | NONAT ) );
+    fatal_error "The $target action may not be passed to GeoIP" unless ( $targettype & (STANDARD | CHAIN | ACTION ) ) && ! ( $targettype & ( NATRULE | NONAT ) );
 
     if ( $level ne '' ) {
 	my $chain1ref = ensure_filter_chain( newlogchain('filter' ), 0 );

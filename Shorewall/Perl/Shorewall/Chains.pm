@@ -28,7 +28,7 @@ package Shorewall::Chains;
 require Exporter;
 
 use Scalar::Util 'reftype';
-use Digest::SHA1 qw(sha1);
+use Digest::SHA qw(sha1);
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::IPAddrs;
@@ -565,6 +565,7 @@ my %aliases = ( protocol        => 'p',
 
 my @unique_options = ( qw/p dport sport icmp-type icmpv6-type s d i o/ );
 
+our %isocodes;
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -633,6 +634,455 @@ sub initialize( $$$ ) {
 		 sip             => UDP,
 		 snmp            => UDP,
 		 tftp            => UDP);
+
+    if ( $family == F_IPV4 ) {
+	%isocodes = (
+		     A1 => "Anonymous Proxy" ,
+		     A2 => "Satellite Provider" ,
+		     AD => "Andorra" ,
+		     AE => "United Arab Emirates" ,
+		     AF => "Afghanistan" ,
+		     AG => "Antigua and Barbuda" ,
+		     AI => "Anguilla" ,
+		     AL => "Albania" ,
+		     AM => "Armenia" ,
+		     AN => "Netherlands Antilles" ,
+		     AO => "Angola" ,
+		     AP => "Asia/Pacific Region" ,
+		     AQ => "Antarctica" ,
+		     AR => "Argentina" ,
+		     AS => "American Samoa" ,
+		     AT => "Austria" ,
+		     AU => "Australia" ,
+		     AW => "Aruba" ,
+		     AX => "Aland Islands" ,
+		     AZ => "Azerbaijan" ,
+		     BA => "Bosnia and Herzegovina" ,
+		     BB => "Barbados" ,
+		     BD => "Bangladesh" ,
+		     BE => "Belgium" ,
+		     BF => "Burkina Faso" ,
+		     BG => "Bulgaria" ,
+		     BH => "Bahrain" ,
+		     BI => "Burundi" ,
+		     BJ => "Benin" ,
+		     BM => "Bermuda" ,
+		     BN => "Brunei Darussalam" ,
+		     BO => "Bolivia" ,
+		     BR => "Brazil" ,
+		     BS => "Bahamas" ,
+		     BT => "Bhutan" ,
+		     BV => "Bouvet Island" ,
+		     BW => "Botswana" ,
+		     BY => "Belarus" ,
+		     BZ => "Belize" ,
+		     CA => "Canada" ,
+		     CC => "Cocos (Keeling) Islands" ,
+		     CD => "Congo, The Democratic Republic of the" ,
+		     CF => "Central African Republic" ,
+		     CG => "Congo" ,
+		     CH => "Switzerland" ,
+		     CI => "Cote D'Ivoire" ,
+		     CK => "Cook Islands" ,
+		     CL => "Chile" ,
+		     CM => "Cameroon" ,
+		     CN => "China" ,
+		     CO => "Colombia" ,
+		     CR => "Costa Rica" ,
+		     CU => "Cuba" ,
+		     CV => "Cape Verde" ,
+		     CX => "Christmas Island" ,
+		     CY => "Cyprus" ,
+		     CZ => "Czech Republic" ,
+		     DE => "Germany" ,
+		     DJ => "Djibouti" ,
+		     DK => "Denmark" ,
+		     DM => "Dominica" ,
+		     DO => "Dominican Republic" ,
+		     DZ => "Algeria" ,
+		     EC => "Ecuador" ,
+		     EE => "Estonia" ,
+		     EG => "Egypt" ,
+		     EH => "Western Sahara" ,
+		     ER => "Eritrea" ,
+		     ES => "Spain" ,
+		     ET => "Ethiopia" ,
+		     EU => "Europe" ,
+		     FI => "Finland" ,
+		     FJ => "Fiji" ,
+		     FK => "Falkland Islands (Malvinas)" ,
+		     FM => "Micronesia, Federated States of" ,
+		     FO => "Faroe Islands" ,
+		     FR => "France" ,
+		     GA => "Gabon" ,
+		     GB => "United Kingdom" ,
+		     GD => "Grenada" ,
+		     GE => "Georgia" ,
+		     GF => "French Guiana" ,
+		     GG => "Guernsey" ,
+		     GH => "Ghana" ,
+		     GI => "Gibraltar" ,
+		     GL => "Greenland" ,
+		     GM => "Gambia" ,
+		     GN => "Guinea" ,
+		     GP => "Guadeloupe" ,
+		     GQ => "Equatorial Guinea" ,
+		     GR => "Greece" ,
+		     GS => "South Georgia and the South Sandwich Islands" ,
+		     GT => "Guatemala" ,
+		     GU => "Guam" ,
+		     GW => "Guinea-Bissau" ,
+		     GY => "Guyana" ,
+		     HK => "Hong Kong" ,
+		     HN => "Honduras" ,
+		     HR => "Croatia" ,
+		     HT => "Haiti" ,
+		     HU => "Hungary" ,
+		     ID => "Indonesia" ,
+		     IE => "Ireland" ,
+		     IL => "Israel" ,
+		     IM => "Isle of Man" ,
+		     IN => "India" ,
+		     IO => "British Indian Ocean Territory" ,
+		     IQ => "Iraq" ,
+		     IR => "Iran, Islamic Republic of" ,
+		     IS => "Iceland" ,
+		     IT => "Italy" ,
+		     JE => "Jersey" ,
+		     JM => "Jamaica" ,
+		     JO => "Jordan" ,
+		     JP => "Japan" ,
+		     KE => "Kenya" ,
+		     KG => "Kyrgyzstan" ,
+		     KH => "Cambodia" ,
+		     KI => "Kiribati" ,
+		     KM => "Comoros" ,
+		     KN => "Saint Kitts and Nevis" ,
+		     KP => "Korea, Democratic People's Republic of" ,
+		     KR => "Korea, Republic of" ,
+		     KW => "Kuwait" ,
+		     KY => "Cayman Islands" ,
+		     KZ => "Kazakhstan" ,
+		     LA => "Lao People's Democratic Republic" ,
+		     LB => "Lebanon" ,
+		     LC => "Saint Lucia" ,
+		     LI => "Liechtenstein" ,
+		     LK => "Sri Lanka" ,
+		     LR => "Liberia" ,
+		     LS => "Lesotho" ,
+		     LT => "Lithuania" ,
+		     LU => "Luxembourg" ,
+		     LV => "Latvia" ,
+		     LY => "Libyan Arab Jamahiriya" ,
+		     MA => "Morocco" ,
+		     MC => "Monaco" ,
+		     MD => "Moldova, Republic of" ,
+		     ME => "Montenegro" ,
+		     MG => "Madagascar" ,
+		     MH => "Marshall Islands" ,
+		     MK => "Macedonia" ,
+		     ML => "Mali" ,
+		     MM => "Myanmar" ,
+		     MN => "Mongolia" ,
+		     MO => "Macau" ,
+		     MP => "Northern Mariana Islands" ,
+		     MQ => "Martinique" ,
+		     MR => "Mauritania" ,
+		     MS => "Montserrat" ,
+		     MT => "Malta" ,
+		     MU => "Mauritius" ,
+		     MV => "Maldives" ,
+		     MW => "Malawi" ,
+		     MX => "Mexico" ,
+		     MY => "Malaysia" ,
+		     MZ => "Mozambique" ,
+		     NA => "Namibia" ,
+		     NC => "New Caledonia" ,
+		     NE => "Niger" ,
+		     NF => "Norfolk Island" ,
+		     NG => "Nigeria" ,
+		     NI => "Nicaragua" ,
+		     NL => "Netherlands" ,
+		     NO => "Norway" ,
+		     NP => "Nepal" ,
+		     NR => "Nauru" ,
+		     NU => "Niue" ,
+		     NZ => "New Zealand" ,
+		     OM => "Oman" ,
+		     PA => "Panama" ,
+		     PE => "Peru" ,
+		     PF => "French Polynesia" ,
+		     PG => "Papua New Guinea" ,
+		     PH => "Philippines" ,
+		     PK => "Pakistan" ,
+		     PL => "Poland" ,
+		     PM => "Saint Pierre and Miquelon" ,
+		     PR => "Puerto Rico" ,
+		     PS => "Palestinian Territory, Occupied" ,
+		     PT => "Portugal" ,
+		     PW => "Palau" ,
+		     PY => "Paraguay" ,
+		     QA => "Qatar" ,
+		     RE => "Reunion" ,
+		     RO => "Romania" ,
+		     RS => "Serbia" ,
+		     RU => "Russian Federation" ,
+		     RW => "Rwanda" ,
+		     SA => "Saudi Arabia" ,
+		     SB => "Solomon Islands" ,
+		     SC => "Seychelles" ,
+		     SD => "Sudan" ,
+		     SE => "Sweden" ,
+		     SG => "Singapore" ,
+		     SH => "Saint Helena" ,
+		     SI => "Slovenia" ,
+		     SJ => "Svalbard and Jan Mayen" ,
+		     SK => "Slovakia" ,
+		     SL => "Sierra Leone" ,
+		     SM => "San Marino" ,
+		     SN => "Senegal" ,
+		     SO => "Somalia" ,
+		     SR => "Suriname" ,
+		     ST => "Sao Tome and Principe" ,
+		     SV => "El Salvador" ,
+		     SY => "Syrian Arab Republic" ,
+		     SZ => "Swaziland" ,
+		     TC => "Turks and Caicos Islands" ,
+		     TD => "Chad" ,
+		     TF => "French Southern Territories" ,
+		     TG => "Togo" ,
+		     TH => "Thailand" ,
+		     TJ => "Tajikistan" ,
+		     TK => "Tokelau" ,
+		     TL => "Timor-Leste" ,
+		     TM => "Turkmenistan" ,
+		     TN => "Tunisia" ,
+		     TO => "Tonga" ,
+		     TR => "Turkey" ,
+		     TT => "Trinidad and Tobago" ,
+		     TV => "Tuvalu" ,
+		     TW => "Taiwan" ,
+		     TZ => "Tanzania, United Republic of" ,
+		     UA => "Ukraine" ,
+		     UG => "Uganda" ,
+		     UM => "United States Minor Outlying Islands" ,
+		     US => "United States" ,
+		     UY => "Uruguay" ,
+		     UZ => "Uzbekistan" ,
+		     VA => "Holy See (Vatican City State)" ,
+		     VC => "Saint Vincent and the Grenadines" ,
+		     VE => "Venezuela" ,
+		     VG => "Virgin Islands, British" ,
+		     VI => "Virgin Islands, U.S." ,
+		     VN => "Vietnam" ,
+		     VU => "Vanuatu" ,
+		     WF => "Wallis and Futuna" ,
+		     WS => "Samoa" ,
+		     YE => "Yemen" ,
+		     YT => "Mayotte" ,
+		     ZA => "South Africa" ,
+		     ZM => "Zambia" ,
+		     ZW => "Zimbabwe" ,
+		    )
+    } else {
+	%isocodes = (
+		     AD =>  "Andorra" ,
+		     AE =>  "United Arab Emirates" ,
+		     AF =>  "Afghanistan" ,
+		     AL =>  "Albania" ,
+		     AM =>  "Armenia" ,
+		     AO =>  "Angola" ,
+		     AP =>  "Asia/Pacific Region" ,
+		     AR =>  "Argentina" ,
+		     AS =>  "American Samoa" ,
+		     AT =>  "Austria" ,
+		     AU =>  "Australia" ,
+		     AW =>  "Aruba" ,
+		     AZ =>  "Azerbaijan" ,
+		     BA =>  "Bosnia and Herzegovina" ,
+		     BD =>  "Bangladesh" ,
+		     BE =>  "Belgium" ,
+		     BF =>  "Burkina Faso" ,
+		     BG =>  "Bulgaria" ,
+		     BH =>  "Bahrain" ,
+		     BI =>  "Burundi" ,
+		     BJ =>  "Benin" ,
+		     BM =>  "Bermuda" ,
+		     BN =>  "Brunei Darussalam" ,
+		     BO =>  "Bolivia" ,
+		     BR =>  "Brazil" ,
+		     BS =>  "Bahamas" ,
+		     BT =>  "Bhutan" ,
+		     BW =>  "Botswana" ,
+		     BY =>  "Belarus" ,
+		     BZ =>  "Belize" ,
+		     CA =>  "Canada" ,
+		     CD =>  "Congo, The Democratic Republic of the" ,
+		     CH =>  "Switzerland" ,
+		     CI =>  "Cote D'Ivoire" ,
+		     CK =>  "Cook Islands" ,
+		     CL =>  "Chile" ,
+		     CM =>  "Cameroon" ,
+		     CN =>  "China" ,
+		     CO =>  "Colombia" ,
+		     CR =>  "Costa Rica" ,
+		     CU =>  "Cuba" ,
+		     CW =>  "" ,
+		     CY =>  "Cyprus" ,
+		     CZ =>  "Czech Republic" ,
+		     DE =>  "Germany" ,
+		     DJ =>  "Djibouti" ,
+		     DK =>  "Denmark" ,
+		     DO =>  "Dominican Republic" ,
+		     DZ =>  "Algeria" ,
+		     EC =>  "Ecuador" ,
+		     EE =>  "Estonia" ,
+		     EG =>  "Egypt" ,
+		     ES =>  "Spain" ,
+		     EU =>  "Europe" ,
+		     FI =>  "Finland" ,
+		     FJ =>  "Fiji" ,
+		     FM =>  "Micronesia, Federated States of" ,
+		     FO =>  "Faroe Islands" ,
+		     FR =>  "France" ,
+		     GB =>  "United Kingdom" ,
+		     GD =>  "Grenada" ,
+		     GE =>  "Georgia" ,
+		     GG =>  "Guernsey" ,
+		     GH =>  "Ghana" ,
+		     GI =>  "Gibraltar" ,
+		     GL =>  "Greenland" ,
+		     GM =>  "Gambia" ,
+		     GP =>  "Guadeloupe" ,
+		     GR =>  "Greece" ,
+		     GT =>  "Guatemala" ,
+		     GU =>  "Guam" ,
+		     GY =>  "Guyana" ,
+		     HK =>  "Hong Kong" ,
+		     HN =>  "Honduras" ,
+		     HR =>  "Croatia" ,
+		     HT =>  "Haiti" ,
+		     HU =>  "Hungary" ,
+		     ID =>  "Indonesia" ,
+		     IE =>  "Ireland" ,
+		     IL =>  "Israel" ,
+		     IM =>  "Isle of Man" ,
+		     IN =>  "India" ,
+		     IQ =>  "Iraq" ,
+		     IR =>  "Iran, Islamic Republic of" ,
+		     IS =>  "Iceland" ,
+		     IT =>  "Italy" ,
+		     JE =>  "Jersey" ,
+		     JM =>  "Jamaica" ,
+		     JO =>  "Jordan" ,
+		     JP =>  "Japan" ,
+		     KE =>  "Kenya" ,
+		     KG =>  "Kyrgyzstan" ,
+		     KH =>  "Cambodia" ,
+		     KN =>  "Saint Kitts and Nevis" ,
+		     KR =>  "Korea, Republic of" ,
+		     KW =>  "Kuwait" ,
+		     KY =>  "Cayman Islands" ,
+		     KZ =>  "Kazakhstan" ,
+		     LA =>  "Lao People's Democratic Republic" ,
+		     LB =>  "Lebanon" ,
+		     LI =>  "Liechtenstein" ,
+		     LK =>  "Sri Lanka" ,
+		     LS =>  "Lesotho" ,
+		     LT =>  "Lithuania" ,
+		     LU =>  "Luxembourg" ,
+		     LV =>  "Latvia" ,
+		     LY =>  "Libyan Arab Jamahiriya" ,
+		     MA =>  "Morocco" ,
+		     MC =>  "Monaco" ,
+		     MD =>  "Moldova, Republic of" ,
+		     ME =>  "Montenegro" ,
+		     MG =>  "Madagascar" ,
+		     MH =>  "Marshall Islands" ,
+		     MK =>  "Macedonia" ,
+		     ML =>  "Mali" ,
+		     MM =>  "Myanmar" ,
+		     MN =>  "Mongolia" ,
+		     MO =>  "Macau" ,
+		     MT =>  "Malta" ,
+		     MU =>  "Mauritius" ,
+		     MV =>  "Maldives" ,
+		     MW =>  "Malawi" ,
+		     MX =>  "Mexico" ,
+		     MY =>  "Malaysia" ,
+		     MZ =>  "Mozambique" ,
+		     NA =>  "Namibia" ,
+		     NC =>  "New Caledonia" ,
+		     NF =>  "Norfolk Island" ,
+		     NG =>  "Nigeria" ,
+		     NI =>  "Nicaragua" ,
+		     NL =>  "Netherlands" ,
+		     NO =>  "Norway" ,
+		     NP =>  "Nepal" ,
+		     NR =>  "Nauru" ,
+		     NU =>  "Niue" ,
+		     NZ =>  "New Zealand" ,
+		     OM =>  "Oman" ,
+		     PA =>  "Panama" ,
+		     PE =>  "Peru" ,
+		     PF =>  "French Polynesia" ,
+		     PG =>  "Papua New Guinea" ,
+		     PH =>  "Philippines" ,
+		     PK =>  "Pakistan" ,
+		     PL =>  "Poland" ,
+		     PR =>  "Puerto Rico" ,
+		     PS =>  "Palestinian Territory" ,
+		     PT =>  "Portugal" ,
+		     PW =>  "Palau" ,
+		     PY =>  "Paraguay" ,
+		     QA =>  "Qatar" ,
+		     RO =>  "Romania" ,
+		     RS =>  "Serbia" ,
+		     RU =>  "Russian Federation" ,
+		     RW =>  "Rwanda" ,
+		     SA =>  "Saudi Arabia" ,
+		     SB =>  "Solomon Islands" ,
+		     SC =>  "Seychelles" ,
+		     SD =>  "Sudan" ,
+		     SE =>  "Sweden" ,
+		     SG =>  "Singapore" ,
+		     SI =>  "Slovenia" ,
+		     SK =>  "Slovakia" ,
+		     SL =>  "Sierra Leone" ,
+		     SM =>  "San Marino" ,
+		     SN =>  "Senegal" ,
+		     SO =>  "Somalia" ,
+		     ST =>  "Sao Tome and Principe" ,
+		     SV =>  "El Salvador" ,
+		     SY =>  "Syrian Arab Republic" ,
+		     SZ =>  "Swaziland" ,
+		     TH =>  "Thailand" ,
+		     TK =>  "Tokelau" ,
+		     TN =>  "Tunisia" ,
+		     TO =>  "Tonga" ,
+		     TR =>  "Turkey" ,
+		     TT =>  "Trinidad and Tobago" ,
+		     TV =>  "Tuvalu" ,
+		     TW =>  "Taiwan" ,
+		     TZ =>  "Tanzania, United Republic of" ,
+		     UA =>  "Ukraine" ,
+		     UG =>  "Uganda" ,
+		     US =>  "United States" ,
+		     UY =>  "Uruguay" ,
+		     UZ =>  "Uzbekistan" ,
+		     VA =>  "Holy See (Vatican City State)" ,
+		     VE =>  "Venezuela" ,
+		     VI =>  "Virgin Islands, U.S." ,
+		     VN =>  "Vietnam" ,
+		     VU =>  "Vanuatu" ,
+		     WS =>  "Samoa" ,
+		     YE =>  "Yemen" ,
+		     ZA =>  "South Africa" ,
+		     ZM =>  "Zambia" ,
+		     ZW =>  "Zimbabwe" ,
+		    );
+    }
+
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -4659,6 +5109,16 @@ sub match_source_net( $;$\$ ) {
 	return $result;
     }
 
+    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	require_capability 'GEOIP_MATCH', 'A country-code', '';
+ 
+	for ( split_list $2, 'cc' ) {
+	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	}
+
+	return join( '', '-m geoip ', $1 ? '! ' : '', '--src-cc ', $2 , ' ');
+    }
+
     if ( $net =~ s/^!// ) {
 	if ( $net =~ /^([&%])(.+)/ ) {
 	    return '! -s ' . record_runtime_address $1, $2;
@@ -4713,6 +5173,16 @@ sub imatch_source_net( $;$\$ ) {
 	return \@result;
     }
 
+    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	require_capability 'GEOIP_MATCH', 'A country-code', '';
+
+	for ( split_list $2, 'cc' ) {
+	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	}
+
+	return ( geoip => , join( '', $1 ? '! ' : '', '--src-cc ', $2 ) );
+    }
+
     if ( $net =~ s/^!// ) {
 	if ( $net =~ /^([&%])(.+)/ ) {
 	    return  ( s => '! ' . record_runtime_address( $1, $2, 1 ) );
@@ -4762,6 +5232,16 @@ sub match_dest_net( $ ) {
 	return $result;
     }
 
+    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	require_capability 'GEOIP_MATCH', 'A country-code', '';
+
+	for ( split_list $2, 'cc' ) {
+	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	}
+
+	return join( '', '-m geoip ', $1 ? '! ' : '', '--dst-cc ', $2, ' ' );
+    }
+
     if ( $net =~ s/^!// ) {
 	if ( $net =~ /^([&%])(.+)/ ) {
 	    return '! -d ' . record_runtime_address $1, $2;
@@ -4807,6 +5287,16 @@ sub imatch_dest_net( $ ) {
 	}
 
 	return \@result;
+    }
+
+    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	require_capability 'GEOIP_MATCH', 'A country-code', '';
+
+	for ( split_list $2, 'cc' ) {
+	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	}
+
+	return ( geoip => , join( '', $1 ? '! ' : '', '--dst-cc ', $2 ) );
     }
 
     if ( $net =~ s/^!// ) {
@@ -5607,7 +6097,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } elsif ( $source =~ /^(.+?):(.+)$/ ) {
 		$iiface = $1;
 		$inets  = $2;
-	    } elsif ( $source =~ /\+|&|~|\..*\./ ) {
+	    } elsif ( $source =~ /\+|&|~|\..*\./ || 
+		      ( ! ( $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT ) ) && $source =~ /^!?{/ ) ) {
 		$inets = $source;
 	    } else {
 		$iiface = $source;
@@ -5621,7 +6112,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$inets = $source;
 	    }
-	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ ) {
+	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || 
+		  ( ! ( $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT ) ) && $source =~ /^!?{/ ) ) {
 	    $inets = $source;
 	} else {
 	    $iiface = $source;
@@ -5706,7 +6198,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
-	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ ) {
+	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ || 
+		      ( ! ( $restriction & ( PREROUTE_RESTRICT | INPUT_RESTRICT ) ) && $dest =~ /^!?{/ ) ) {
 		$dnets = $dest;
 	    } else {
 		$diface = $dest;
@@ -5720,7 +6213,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$dnets = $dest;
 	    }
-	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ ) {
+	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ || 
+		  ( ! ( $restriction & ( PREROUTE_RESTRICT | INPUT_RESTRICT ) ) && $dest =~ /^!?{/ ) ) {
 	    $dnets = $dest;
 	} else {
 	    $diface = $dest;

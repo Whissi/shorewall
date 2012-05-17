@@ -422,7 +422,7 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|<replaceable>countrycode-list</replaceable>}</term>
 
         <listitem>
           <para>Source hosts to which the rule applies. May be a zone declared
@@ -489,6 +489,16 @@
           INTERFACE column of <ulink
           url="shorewall-interfaces.html">shorewall6-interfaces</ulink>
           (5).</para>
+
+          <para>Beginning with Shorewall 4.5.4, A
+          <replaceable>countrycode-list</replaceable> may be specified. A
+          countrycode-list is a comma-separated list of two-character ISO-3661
+          country codes enclosed in curly braces ('{...}'). A list of country
+          codes supported by Shorewall may be found at <ulink
+          url="http://www.shorewall.net/ISO-3661.html">http://www.shorewall.net/ISO-3661.html</ulink>.
+          Specifying a <replaceable>countrycode-list</replaceable> requires
+          <firstterm>GeoIP Match</firstterm> support in your ip6tables and
+          Kernel.</para>
 
           <para>When an <replaceable>interface</replaceable> is not specified,
           you may omit the angled brackets ('&lt;' and '&gt;') around the
@@ -586,7 +596,7 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}</emphasis></term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|<emphasis>countrycode-list</emphasis>}</emphasis></term>
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
@@ -611,6 +621,16 @@
           INTERFACE column of <ulink
           url="shorewall-interfaces.html">shorewall6-interfaces</ulink>
           (5).</para>
+
+          <para>Beginning with Shorewall 4.5.4, A
+          <replaceable>countrycode-list</replaceable> may be specified. A
+          countrycode-list is a comma-separated list of two-character ISO-3661
+          country codes enclosed in curly braces ('{...}'). A list of country
+          codes supported by Shorewall may be found at <ulink
+          url="http://www.shorewall.net/ISO-3661.html">http://www.shorewall.net/ISO-3661.html</ulink>.
+          Specifying a <replaceable>countrycode-list</replaceable> requires
+          <firstterm>GeoIP Match</firstterm> support in your ip6tables and
+          Kernel.</para>
 
           <para>When <emphasis role="bold">none</emphasis> is used either in
           the <emphasis role="bold">SOURCE</emphasis> or <emphasis
@@ -1213,6 +1233,19 @@
           <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
         #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
         DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 7:</term>
+
+        <listitem>
+          <para>Drop all email from IP addresses in the country whose ISO-3661
+          country code is ZZ.</para>
+
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
+        #                                                                         PORT(S)
+        DROP                          net:{ZZ}         fw             tcp         22</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

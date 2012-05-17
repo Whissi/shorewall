@@ -252,11 +252,16 @@ if [ $PRODUCT = shorewall -a "$BUILD" = "$HOST" ]; then
     #
     # Fix up 'use Digest::' if SHA is installed
     #
-    if perl -e 'use Digest::SHA;' 2> /dev/null ; then
-	sed -i 's/Digest::SHA1/Digest::SHA/' Perl/Shorewall/Chains.pm
+    if ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
+	if perl -e 'use Digest::SHA1;' 2> /dev/null ; then
+	    sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Chains.pm
+	else
+	    echo "ERROR: Shorewall $VERSION requires either Digest::SHA or Digest::SHA1" >&2
+	    exit 1
+	fi
     fi
     #
-    # Verify that Perl is installed
+    # Verify that Perl and all required modules are installed
     #
     if ! perl -c Perl/compiler.pl; then
 	echo "ERROR: $Product $VERSION requires Perl which either is not installed or is not able to compile the Shorewall Perl code" >&2

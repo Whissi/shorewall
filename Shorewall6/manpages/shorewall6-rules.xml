@@ -422,7 +422,7 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>|<replaceable>countrycode-list</replaceable>}</term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|<replaceable>^countrycode-list</replaceable>}</term>
 
         <listitem>
           <para>Source hosts to which the rule applies. May be a zone declared
@@ -493,8 +493,8 @@
           <para>Beginning with Shorewall 4.5.4, A
           <replaceable>countrycode-list</replaceable> may be specified. A
           countrycode-list is a comma-separated list of two-character ISO-3661
-          country codes enclosed in curly braces ('{...}'). A list of country
-          codes supported by Shorewall may be found at <ulink
+          country codes preceded by a caret ('^'). A list of country codes
+          supported by Shorewall may be found at <ulink
           url="http://www.shorewall.net/ISO-3661.html">http://www.shorewall.net/ISO-3661.html</ulink>.
           Specifying a <replaceable>countrycode-list</replaceable> requires
           <firstterm>GeoIP Match</firstterm> support in your ip6tables and
@@ -596,7 +596,7 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>|<emphasis>countrycode-list</emphasis>}</emphasis></term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|^<emphasis>countrycode-list</emphasis>}</emphasis></term>
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
@@ -625,8 +625,8 @@
           <para>Beginning with Shorewall 4.5.4, A
           <replaceable>countrycode-list</replaceable> may be specified. A
           countrycode-list is a comma-separated list of two-character ISO-3661
-          country codes enclosed in curly braces ('{...}'). A list of country
-          codes supported by Shorewall may be found at <ulink
+          country codes preceded by a caret ('^'). A list of country codes
+          supported by Shorewall may be found at <ulink
           url="http://www.shorewall.net/ISO-3661.html">http://www.shorewall.net/ISO-3661.html</ulink>.
           Specifying a <replaceable>countrycode-list</replaceable> requires
           <firstterm>GeoIP Match</firstterm> support in your ip6tables and
@@ -1245,7 +1245,7 @@
 
           <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
         #                                                                         PORT(S)
-        DROP                          net:{ZZ}         fw             tcp         22</programlisting>
+        DROP                          net:^ZZ          fw             tcp         22</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

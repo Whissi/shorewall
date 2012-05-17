@@ -5109,7 +5109,7 @@ sub match_source_net( $;$\$ ) {
 	return $result;
     }
 
-    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -5175,7 +5175,7 @@ sub imatch_source_net( $;$\$ ) {
 	return \@result;
     }
 
-    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -5238,7 +5238,7 @@ sub match_dest_net( $;$ ) {
 	return $result;
     }
 
-    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & (PREROUTE_RESTRICT | INPUT_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -5299,7 +5299,7 @@ sub imatch_dest_net( $;$ ) {
 	return \@result;
     }
 
-    if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & (PREROUTE_RESTRICT | INPUT_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -6109,7 +6109,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } elsif ( $source =~ /^(.+?):(.+)$/ ) {
 		$iiface = $1;
 		$inets  = $2;
-	    } elsif ( $source =~ /\+|&|~|\..*\./ || $source =~ /^!?{/ ) {
+	    } elsif ( $source =~ /\+|&|~|\..*\./ || $source =~ /^!?\^/ ) {
 		$inets = $source;
 	    } else {
 		$iiface = $source;
@@ -6123,7 +6123,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$inets = $source;
 	    }
-	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || $source =~ /^!?{/ ) {
+	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || $source =~ /^!?\^/ ) {
 	    $inets = $source;
 	} else {
 	    $iiface = $source;
@@ -6208,7 +6208,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
-	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ || $dest =~ /^!?{/ ) {
+	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ || $dest =~ /^!?\^/ ) {
 		$dnets = $dest;
 	    } else {
 		$diface = $dest;
@@ -6222,7 +6222,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$dnets = $dest;
 	    }
-	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ || $dest =~ /^!?{/ ) {
+	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ || $dest =~ /^!?\^/ ) {
 	    $dnets = $dest;
 	} else {
 	    $diface = $dest;

@@ -4707,10 +4707,10 @@ sub imatch_source_net( $;$\$ ) {
 
 	for $net ( @sets ) {
 	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
-	    push @result, join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) ) );
 	}
 
-	return ( s => \@result );
+	return \@result;
     }
 
     if ( $net =~ s/^!// ) {
@@ -4806,7 +4806,7 @@ sub imatch_dest_net( $ ) {
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) ) );
 	}
 
-	return ( set => \@result );
+	return \@result;
     }
 
     if ( $net =~ s/^!// ) {

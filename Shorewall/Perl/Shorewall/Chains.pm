@@ -3713,7 +3713,7 @@ sub set_mss( $$$ ) {
 sub imatch_source_dev( $;$ );
 sub imatch_dest_dev( $;$ );
 sub imatch_source_net( $;$\$ );
-sub imatch_dest_net( $ );
+sub imatch_dest_net( $;$ );
 
 sub newmsschain( ) {
     my $seq = $chainseq{filter}++;
@@ -5110,6 +5110,8 @@ sub match_source_net( $;$\$ ) {
     }
 
     if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
+
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
  
 	for ( split_list $2, 'cc' ) {
@@ -5174,6 +5176,8 @@ sub imatch_source_net( $;$\$ ) {
     }
 
     if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
+
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
 
 	for ( split_list $2, 'cc' ) {
@@ -5203,8 +5207,10 @@ sub imatch_source_net( $;$\$ ) {
 #
 # Match a Destination.
 #
-sub match_dest_net( $ ) {
-    my $net = $_[0];
+sub match_dest_net( $;$ ) {
+    my ( $net, $restriction ) = @_;
+
+    $restriction |= 0;
 
     if ( ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) ||
 	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
@@ -5233,6 +5239,8 @@ sub match_dest_net( $ ) {
     }
 
     if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	fatal_error "A countrycode list may not be used in this context" if $restriction & (PREROUTE_RESTRICT | INPUT_RESTRICT );
+
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
 
 	for ( split_list $2, 'cc' ) {
@@ -5259,8 +5267,10 @@ sub match_dest_net( $ ) {
     $net eq ALLIP ? '' : "-d $net ";
 }
 
-sub imatch_dest_net( $ ) {
-    my $net = $_[0];
+sub imatch_dest_net( $;$ ) {
+    my ( $net, $restriction ) = @_;
+
+    $restriction |= NO_RESTRICT;
 
     if ( ( $family == F_IPV4 && $net =~ /^(!?)(\d+\.\d+\.\d+\.\d+)-(\d+\.\d+\.\d+\.\d+)$/ ) ||
 	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
@@ -5290,6 +5300,8 @@ sub imatch_dest_net( $ ) {
     }
 
     if ( $net =~ /^(!?){([A-Z,\d]+)}$/ ) {
+	fatal_error "A countrycode list may not be used in this context" if $restriction & (PREROUTE_RESTRICT | INPUT_RESTRICT );
+
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
 
 	for ( split_list $2, 'cc' ) {
@@ -6097,8 +6109,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } elsif ( $source =~ /^(.+?):(.+)$/ ) {
 		$iiface = $1;
 		$inets  = $2;
-	    } elsif ( $source =~ /\+|&|~|\..*\./ || 
-		      ( ! ( $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT ) ) && $source =~ /^!?{/ ) ) {
+	    } elsif ( $source =~ /\+|&|~|\..*\./ || $source =~ /^!?{/ ) {
 		$inets = $source;
 	    } else {
 		$iiface = $source;
@@ -6112,8 +6123,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$inets = $source;
 	    }
-	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || 
-		  ( ! ( $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT ) ) && $source =~ /^!?{/ ) ) {
+	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || $source =~ /^!?{/ ) {
 	    $inets = $source;
 	} else {
 	    $iiface = $source;
@@ -6198,8 +6208,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    if ( $dest =~ /^(.+?):(.+)$/ ) {
 		$diface = $1;
 		$dnets  = $2;
-	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ || 
-		      ( ! ( $restriction & ( PREROUTE_RESTRICT | INPUT_RESTRICT ) ) && $dest =~ /^!?{/ ) ) {
+	    } elsif ( $dest =~ /\+|&|%|~|\..*\./ || $dest =~ /^!?{/ ) {
 		$dnets = $dest;
 	    } else {
 		$diface = $dest;
@@ -6213,8 +6222,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	    } else {
 		$dnets = $dest;
 	    }
-	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ || 
-		  ( ! ( $restriction & ( PREROUTE_RESTRICT | INPUT_RESTRICT ) ) && $dest =~ /^!?{/ ) ) {
+	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ || $dest =~ /^!?{/ ) {
 	    $dnets = $dest;
 	} else {
 	    $diface = $dest;
@@ -6347,7 +6355,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	unless ( $dnets || $dexcl =~ /^\+\[/ ) {
 	    my @dexcl = mysplit $dexcl, 1;
 	    if ( @dexcl == 1 ) {
-		$rule .= match_dest_net "!$dexcl";
+		$rule .= match_dest_net "!$dexcl", $restriction;
 		$dexcl = '';
 		$trivialdexcl = 1;
 	    }
@@ -6394,7 +6402,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 	    for ( mysplit $dexcl ) {
 		my $cond = conditional_rule( $chainref, $_ );
-		add_rule $chainref, ( match_dest_net $_ ) . $exclude;
+		add_rule $chainref, ( match_dest_net $_, $restriction ) . $exclude;
 		conditional_rule_end( $chainref ) if $cond;
 	    }
 
@@ -6431,7 +6439,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		    for my $dnet ( mysplit $dnets ) {
 			$source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
-			add_expanded_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet ), $onet ) );
+			add_expanded_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet, $restriction ), $onet ) );
 		    }
 
 		    conditional_rule_end( $chainref ) if $cond;
@@ -6451,7 +6459,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 	    for ( mysplit $dexcl ) {
 		my $cond = conditional_rule( $echainref, $_ );
-		add_rule $echainref, ( match_dest_net $_ ) . '-j RETURN';
+		add_rule $echainref, ( match_dest_net $_, $restriction ) . '-j RETURN';
 		conditional_rule_end( $echainref ) if $cond;
 	    }
 
@@ -6503,7 +6511,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
 		for my $dnet ( mysplit $dnets ) {
 		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
-		    my $dest_match = match_dest_net( $dnet );
+		    my $dest_match = match_dest_net( $dnet, $restriction );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
 
 		    my $cond = conditional_rule( $chainref, $dnet );

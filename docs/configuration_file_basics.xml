@@ -834,7 +834,7 @@ DNAT { source=net dest=loc:10.0.0.1 proto=tcp dport=80 mark=88 }</programlisting
       <listitem>
         <para>ADDRESS LIST — A list of one or more addresses (host or network)
         or address ranges, separated by commas. In an IPv6 configuration, this
-        list must be includef in square or angled brackets ("[...]" or
+        list must be included in square or angled brackets ("[...]" or
         "&lt;...&gt;"). The list may have <link
         linkend="Exclusion">exclusion</link>.</para>
       </listitem>
@@ -875,13 +875,19 @@ DNAT { source=net dest=loc:10.0.0.1 proto=tcp dport=80 mark=88 }</programlisting
       <listitem>
         <para>Host 2002:ce7c:92b4:1:a00:27ff:feb1:46a9 in the <emphasis
         role="bold">loc</emphasis> zone — <emphasis
-        role="bold">loc:[2002:ce7c:92b4:1:a00:27ff:feb1:46a9]</emphasis></para>
+        role="bold">loc::[2002:ce7c:92b4:1:a00:27ff:feb1:46a9]</emphasis></para>
       </listitem>
 
       <listitem>
         <para>The primary IP address of eth0 in the $FW zone - <emphasis
         role="bold">$FW:&amp;eth0</emphasis> (see <link
         linkend="Rvariables">Run-time Address Variables</link> below)</para>
+      </listitem>
+
+      <listitem>
+        <para>All hosts in Vatican City - <emphasis
+        role="bold">net:^VA</emphasis> (Shorwall 4.5.4 and later - See <ulink
+        url="ISO-3661.html">this article</ulink>).</para>
       </listitem>
     </orderedlist>
   </section>
@@ -1517,12 +1523,23 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </listitem>
     </itemizedlist>
 
-    <para>If the <replaceable>variable</replaceable> is still not found and it
-    begins with '__', then those leading characters are stripped off and the
-    result is searched for in the defined <firstterm>capabilities</firstterm>.
-    The current set of capabilities may be obtained by the command
-    <command>shorewall show capabilities</command> (the capability names are
-    in parentheses).</para>
+    <para>If the <replaceable>variable</replaceable> is still not
+    found:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>it begins with '__', then those leading characters are stripped
+        off.</para>
+      </listitem>
+
+      <listitem>
+        <para>the variable is then searched for in the defined
+        <firstterm>capabilities</firstterm>. The current set of capabilities
+        may be obtained by the command <command>shorewall show
+        capabilities</command> (the capability names are in
+        parentheses).</para>
+      </listitem>
+    </itemizedlist>
 
     <para>If it is not found in any of those places, the
     <replaceable>variable</replaceable> is assumed to have a value of 0

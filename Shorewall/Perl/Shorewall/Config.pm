@@ -3404,10 +3404,10 @@ sub update_config_file( $ ) {
     #
     # Establish default values for the mark layout items
     #
-    $config{TC_BITS}         = ( $wide ? 14 : 8 )             unless supplied $config{TC_BITS};
-    $config{MASK_BITS}       = ( $wide ? 16 : 8 )             unless supplied $config{MASK_BITS};
-    $config{PROVIDER_OFFSET} = ( $high ? $wide ? 16 : 8 : 0 ) unless supplied $config{PROVIDER_OFFSET};
-    $config{PROVIDER_BITS}   = 8                              unless supplied $config{PROVIDER_BITS};
+    $config{TC_BITS}         = ( $wide ? 14 : 8 )             unless defined $config{TC_BITS};
+    $config{MASK_BITS}       = ( $wide ? 16 : 8 )             unless defined $config{MASK_BITS};
+    $config{PROVIDER_OFFSET} = ( $high ? $wide ? 16 : 8 : 0 ) unless defined $config{PROVIDER_OFFSET};
+    $config{PROVIDER_BITS}   = 8                              unless defined $config{PROVIDER_BITS};
 
     my $fn;
 

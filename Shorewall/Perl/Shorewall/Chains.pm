@@ -3302,6 +3302,30 @@ sub optimize_level4( $$ ) {
 			    $progress = 1 if replace_references1 $chainref, $firstrule;
 			}
 		    }
+		} else {
+		    #
+		    # Chain has more than one rule. If the last rule is a simple jump, then delete
+		    # all preceding rules that have the same target
+		    #
+		    my $rulesref = $chainref->{rules};
+		    my $lastref = $rulesref->[-1];
+
+		    if ( $lastref->{simple} && $lastref->{target} && ! $lastref->{targetopts} ) {
+			my $target = $lastref->{target};
+
+			pop @$rulesref; #Pop the last simple rule
+
+			while ( @$rulesref ) {
+			    my $rule1ref = $rulesref->[-1];
+
+			    last unless ( $rule1ref->{target} || '' ) eq $target && ! $rule1ref->{targetopts};
+
+			    pop @$rulesref;
+			    $progress = 1;
+			}
+
+			push @$rulesref, $lastref; #Now restore the last simple rule
+		    }
 		}
 	    }
 	}

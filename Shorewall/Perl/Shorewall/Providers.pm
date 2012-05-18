@@ -1045,8 +1045,8 @@ sub setup_null_routing() {
     emit "> \${VARDIR}/undo_rfc1918_routing\n";
     for ( rfc1918_networks ) {
 	emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
-	      qq(    run_ip route replace unreachable $_),
-	      qq(    echo "qt \$IP -4 route del unreachable $_" >> \${VARDIR}/undo_rfc1918_routing),
+	      qq(    run_ip route replace blackhole $_),
+	      qq(    echo "qt \$IP -4 route del blackhole $_" >> \${VARDIR}/undo_rfc1918_routing),
 	      qq(fi\n) );
     }
 }

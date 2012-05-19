@@ -2978,15 +2978,22 @@ sub optimize_chain( $ ) {
     my $chainref = shift;
 
     if ( $chainref->{referenced} ) {
-	my $rules    = $chainref->{rules};
-	my $count    = 0;
+	my $rules     = $chainref->{rules};
+	my $count     = 0;
+	my $rulecount = @$rules - 1;
 
-	pop @$rules; # Pop the plain -j ACCEPT rule at the end of the chain
+	my $lastrule = pop @$rules; # Pop the plain -j ACCEPT rule at the end of the chain
 
-	pop @$rules, $count++ while @$rules && $rules->[-1]->{target} eq 'ACCEPT';
+	while ( @$rules && $rules->[-1]->{target} eq 'ACCEPT' ) {
+	    my $rule = pop @$rules;
+
+	    trace( $chainref, 'D', $rulecount , $rule ) if $debug;
+	    $count++;
+	    $rulecount--;
+	}
 
 	if ( @${rules} ) {
-	    add_ijump $chainref, j => 'ACCEPT';
+	    push @$rules, $lastrule;
 	    my $type = $chainref->{builtin} ? 'builtin' : 'policy';
 	    progress_message "  $count ACCEPT rules deleted from $type chain $chainref->{name}" if $count;
 	} elsif ( $chainref->{builtin} ) {
@@ -3312,6 +3319,8 @@ sub optimize_level4( $$ ) {
 
 		    if ( $lastref->{simple} && $lastref->{target} && ! $lastref->{targetopts} ) {
 			my $target = $lastref->{target};
+			my $count  = 0;
+			my $rule   = @$rulesref - 1;
 
 			pop @$rulesref; #Pop the last simple rule
 
@@ -3320,11 +3329,17 @@ sub optimize_level4( $$ ) {
 
 			    last unless ( $rule1ref->{target} || '' ) eq $target && ! $rule1ref->{targetopts};
 
+			    trace ( $chainref, 'D', $rule, $rule1ref ) if $debug;
+
 			    pop @$rulesref;
 			    $progress = 1;
+			    $count++;
+			    $rule--;
 			}
 
 			push @$rulesref, $lastref; #Now restore the last simple rule
+
+			progress_message "   $count $target rules deleted from chain $chainref->{name}" if $count;
 		    }
 		}
 	    }

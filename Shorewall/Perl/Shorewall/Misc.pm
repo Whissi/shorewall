@@ -1854,8 +1854,6 @@ sub generate_matrix() {
 	    @dest_zones =  @zones ;
 	}
 	#
-	# Here it is -- THE BIG UGLY!!!!!!!!!!!!
-	#
 	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
 	# @dest_zones is the list of destination zones that we need to handle from this source zone
 	#

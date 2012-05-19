@@ -812,12 +812,12 @@ sub compiler {
 
 	optimize_level0;
 
-	if ( $config{OPTIMIZE} & 0x1E ) {
+	if ( ( my $optimize = $config{OPTIMIZE} ) & 0x1E ) {
 	    progress_message2 'Optimizing Ruleset...';
 	    #
 	    # Optimize Policy Chains
 	    #
-	    optimize_policy_chains if $config{OPTIMIZE} & 2;
+	    optimize_policy_chains if $optimize & 6 == 2; # Level 2 but not 4
 	    #
 	    # More Optimization
 	    #

@@ -3312,7 +3312,7 @@ sub optimize_level4( $$ ) {
 		} else {
 		    #
 		    # Chain has more than one rule. If the last rule is a simple jump, then delete
-		    # all preceding rules that have the same target
+		    # all immediately preceding rules that have the same target
 		    #
 		    my $rulesref = $chainref->{rules};
 		    my $lastref = $rulesref->[-1];
@@ -3337,7 +3337,16 @@ sub optimize_level4( $$ ) {
 			    $rule--;
 			}
 
-			push @$rulesref, $lastref; #Now restore the last simple rule
+			if ( @$rulesref || ! $chainref->{builtin} || $target !~ /^(ACCEPT|DROP|REJECT)$/ ) {
+			    push @$rulesref, $lastref; # Restore the last simple rule
+			} else {
+			    #
+			    #empty builtin chain -- change it's policy
+			    #
+			    $chainref->{policy} = $target;
+			    trace( $chainref, 'P', undef, 'ACCEPT' ) if $debug;
+			    $count++;
+			}
 
 			progress_message "   $count $target rules deleted from chain $chainref->{name}" if $count;
 		    }

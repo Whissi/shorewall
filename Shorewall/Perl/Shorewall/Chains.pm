@@ -5176,9 +5176,13 @@ sub match_source_net( $;$\$ ) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
+
+	my @countries = split_list $2, 'cc';
+
+	fatal_error "Too many Country Codes ($2)" if @countries > 15;
  
-	for ( split_list $2, 'cc' ) {
-	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	for ( @countries ) {
+	    fatal_error "Unknown or invalid Country Code ($_)" unless $isocodes{$_};
 	}
 
 	return join( '', '-m geoip ', $1 ? '! ' : '', '--src-cc ', $2 , ' ');
@@ -5243,8 +5247,12 @@ sub imatch_source_net( $;$\$ ) {
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
 
-	for ( split_list $2, 'cc' ) {
-	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	my @countries = split_list $2, 'cc';
+
+	fatal_error "Too many Country Codes ($2)" if @countries > 15;
+ 
+	for ( @countries ) {
+	    fatal_error "Unknown or invalid Country Code ($_)" unless $isocodes{$_};
 	}
 
 	return ( geoip => , join( '', $1 ? '! ' : '', '--src-cc ', $2 ) );
@@ -5306,8 +5314,12 @@ sub match_dest_net( $;$ ) {
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
 
-	for ( split_list $2, 'cc' ) {
-	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	my @countries = split_list $2, 'cc';
+
+	fatal_error "Too many Country Codes ($2)" if @countries > 15;
+ 
+	for ( @countries ) {
+	    fatal_error "Unknown or invalid Country Code ($_)" unless $isocodes{$_};
 	}
 
 	return join( '', '-m geoip ', $1 ? '! ' : '', '--dst-cc ', $2, ' ' );
@@ -5367,8 +5379,12 @@ sub imatch_dest_net( $;$ ) {
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
 
-	for ( split_list $2, 'cc' ) {
-	    fatal_error "Unknown or invalid Country Code" unless $isocodes{$_};
+	my @countries = split_list $2, 'cc';
+
+	fatal_error "Too many Country Codes ($2)" if @countries > 15;
+ 
+	for ( @countries ) {
+	    fatal_error "Unknown or invalid Country Code ($_)" unless $isocodes{$_};
 	}
 
 	return ( geoip => , join( '', $1 ? '! ' : '', '--dst-cc ', $2 ) );

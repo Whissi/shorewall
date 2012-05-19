@@ -40,7 +40,9 @@
     <para>Beginning with Shorewall 4.5.4, Shorewall allows matching packet
     SOURCE and/or DEST IP addresses by their corresponding country. That is
     done by specifying a comma-separated list of ISO-3661 2-character Country
-    Codes prefixed by a caret ('^').</para>
+    Codes enclosed in square brackets ('[...]') and prefixed by a caret ('^').
+    When a single country code is given, the square brackets can be
+    omitted.</para>
 
     <para>Example - Drop email from the Anonymous Proxy and Satellite Provider
     networks.</para>
@@ -49,7 +51,7 @@
 
     <programlisting>    #ACTION   	   SOURCE	 	DEST	PROTO	DEST
     #		   					PORT(S)
-    DROP:info	   net:^A1,A2		dmz	tcp	25
+    DROP:info	   net:^[A1,A2]		dmz	tcp	25
 </programlisting>
 
     <para>The country codes recognized by Shorewall as of Shorewall 4.5.4 are

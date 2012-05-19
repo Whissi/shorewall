@@ -5172,7 +5172,7 @@ sub match_source_net( $;$\$ ) {
 	return $result;
     }
 
-    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z\d]{2})$/ || $net =~ /^(!?)\^\[([A-Z,\d]+)\]$/) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -5238,7 +5238,7 @@ sub imatch_source_net( $;$\$ ) {
 	return \@result;
     }
 
-    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z\d]{2})$/ || $net =~ /^(!?)\^\[([A-Z,\d]+)\]$/) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & ( OUTPUT_RESTRICT | POSTROUTE_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -5301,7 +5301,7 @@ sub match_dest_net( $;$ ) {
 	return $result;
     }
 
-    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z\d]{2})$/ || $net =~ /^(!?)\^\[([A-Z,\d]+)\]$/) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & (PREROUTE_RESTRICT | INPUT_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';
@@ -5362,7 +5362,7 @@ sub imatch_dest_net( $;$ ) {
 	return \@result;
     }
 
-    if ( $net =~ /^(!?)\^([A-Z,\d]+)$/ ) {
+    if ( $net =~ /^(!?)\^([A-Z\d]{2})$/ || $net =~ /^(!?)\^\[([A-Z,\d]+)\]$/) {
 	fatal_error "A countrycode list may not be used in this context" if $restriction & (PREROUTE_RESTRICT | INPUT_RESTRICT );
 
 	require_capability 'GEOIP_MATCH', 'A country-code', '';

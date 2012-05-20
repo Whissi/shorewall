@@ -4688,6 +4688,9 @@ sub conditional_rule_end( $ ) {
     add_commands( $chainref , "fi\n" );
 }
 
+#
+# Populate %isocodes from the GeoIP database directory
+#
 sub load_isocodes() {
     my $isodir = $config{GEOIPDIR} || ISODIR;
 

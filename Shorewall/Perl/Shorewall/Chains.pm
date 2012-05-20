@@ -1297,7 +1297,7 @@ sub set_rule_target( $$$ ) {
 }
 
 #
-# Convert an trule into iptables input
+# Convert an irule into iptables input
 #
 # First, a helper function that formats a single option
 #
@@ -3337,7 +3337,7 @@ sub optimize_level4( $$ ) {
 			    $rule--;
 			}
 
-			if ( @$rulesref || ! $chainref->{builtin} || $target !~ /^(ACCEPT|DROP|REJECT)$/ ) {
+			if ( @$rulesref || ! $chainref->{builtin} || $target !~ /^(?:ACCEPT|DROP|REJECT)$/ ) {
 			    push @$rulesref, $lastref; # Restore the last simple rule
 			} else {
 			    #

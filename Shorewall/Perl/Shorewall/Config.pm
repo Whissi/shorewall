@@ -559,6 +559,7 @@ sub initialize( $;$ ) {
 	  RESTOREFILE => undef,
 	  IPSECFILE => undef,
 	  LOCKFILE => undef,
+	  GEOIPDIR => undef,
 	  #
 	  # Default Actions/Macros
 	  #

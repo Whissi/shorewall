@@ -57,12 +57,37 @@
     <para>Using this feature requires the <firstterm>GeoIP Match</firstterm>
     capability in your iptables and kernel. As of this writing, that
     capability requires installing <ulink
-    url="http://xtables-addons.sourceforge.net/">xtables-addons</ulink> and
-    <ulink url="http://xtables-addons.sourceforge.net/geoip.php">building a
+    url="http://xtables-addons.sourceforge.net/">xtables-addons</ulink> 1.33
+    or later and <ulink
+    url="http://xtables-addons.sourceforge.net/geoip.php">creating a
     country-code database</ulink>.</para>
 
-    <para>The country codes recognized by Shorewall as of Shorewall 4.5.4 are
-    shown in the following two sections.</para>
+    <para>The Shorewall compiler uses the geoip country-code database to
+    determine the valid set of two-character alphanumeric country codes. The
+    location of that database is currently hard-coded in xtables-addons as
+    <filename>/usr/share/xt_geoip/</filename>. Within that directory are two
+    sub-directories:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>LE -- contains the little-endian database</para>
+      </listitem>
+
+      <listitem>
+        <para>BE -- contains the big-endian database</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>To accomodate both big-endian and little-endian machines as well as
+    any future ability to install the database at another location, Shorewall
+    supports a GEOIPDIR option in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) and <ulink
+    url="manpages6/shorewall6.conf.html">shorewall6.conf</ulink> (5). The
+    default value of that option is
+    <filename>/usr/share/xt_geoip/LE</filename>.</para>
+
+    <para>The country codes at the time of this writing are shown in the
+    following two sections.</para>
   </section>
 
   <section>

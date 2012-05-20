@@ -1152,10 +1152,15 @@ sub finish_providers() {
 	}
 
 	emit( "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
+	      'else',
+	      '#',
+	      '# We don\'t have any \'fallback\' providers so we delete any default routes in the default table',
+	      '#',
+	      "    while qt \$IP -$family route del default table " . DEFAULT_TABLE . '; do true; done',
 	      'fi',
 	      '' );
     } elsif ( $config{USE_DEFAULT_RT} ) {
-	emit "qt \$IP -$family route del default table " . DEFAULT_TABLE;
+	emit "while qt \$IP -$family route del default table " . DEFAULT_TABLE . '; do true; done';
     }
 
     unless ( $config{KEEP_RT_TABLES} ) {

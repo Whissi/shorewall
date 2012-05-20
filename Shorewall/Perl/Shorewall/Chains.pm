@@ -4698,7 +4698,7 @@ sub load_isocodes() {
 
     my @codes = `ls $isodir/*$family 2>/dev/null`;
 
-    fatal_error "$isodir does not exist or is empty" unless @codes;
+    fatal_error "$isodir contains no IPv${family} entries" unless @codes;
 
     $isocodes{substr(basename($_),0,2)} = 1 for @codes;
 }

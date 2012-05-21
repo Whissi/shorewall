@@ -4752,7 +4752,7 @@ sub match_source_net( $;$\$ ) {
 
 	load_isocodes unless %isocodes;
 
-	my @countries = split_list $2, 'cc';
+	my @countries = split_list $2, 'country-code';
 
 	fatal_error "Too many Country Codes ($2)" if @countries > 15;
  
@@ -4824,7 +4824,7 @@ sub imatch_source_net( $;$\$ ) {
 
 	load_isocodes unless %isocodes;
 
-	my @countries = split_list $2, 'cc';
+	my @countries = split_list $2, 'country-code';
 
 	fatal_error "Too many Country Codes ($2)" if @countries > 15;
  
@@ -4893,7 +4893,7 @@ sub match_dest_net( $;$ ) {
 
 	load_isocodes unless %isocodes;
 
-	my @countries = split_list $2, 'cc';
+	my @countries = split_list $2, 'country-code';
 
 	fatal_error "Too many Country Codes ($2)" if @countries > 15;
  
@@ -4960,7 +4960,7 @@ sub imatch_dest_net( $;$ ) {
 
 	load_isocodes unless %isocodes;
 
-	my @countries = split_list $2, 'cc';
+	my @countries = split_list $2, 'country-code';
 
 	fatal_error "Too many Country Codes ($2)" if @countries > 15;
  

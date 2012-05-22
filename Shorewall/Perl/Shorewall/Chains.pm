@@ -759,9 +759,9 @@ sub set_rule_option( $$$ ) {
     }
 }
 
-sub transform_rule( $ ) {
-    my $input    = shift;
-    my $ruleref  = { mode => CAT_MODE, target => '' };
+sub transform_rule( $;$ ) {
+    my ( $input, $partial ) = @_;
+    my $ruleref  = $partial ? {} : { mode => CAT_MODE, target => '' };
     my $simple   = 1;
 
     $input =~ s/^\s*//;
@@ -818,7 +818,11 @@ sub transform_rule( $ ) {
 	set_rule_option( $ruleref, $option, $params );
     }
 
-    $ruleref->{simple} = $simple;
+    if ( $partial ) {
+	delete $ruleref->{simple};
+    } else {
+	$ruleref->{simple} = $simple unless $partial;
+    }
 
     $ruleref;
 }
@@ -851,7 +855,7 @@ sub set_rule_target( $$$ ) {
     $ruleref->{target}   = $target;
     $ruleref->{targetopts} = $opts if defined $opts;
 
-    1
+    1;
 }
 
 #
@@ -2316,6 +2320,8 @@ sub ensure_manual_chain($) {
     $chainref;
 }
 
+sub log_rule_limit( $$$$$$$$ );
+
 sub ensure_blacklog_chain( $$$$ ) {
     my ( $target, $disposition, $level, $audit ) = @_;
 
@@ -2527,6 +2533,12 @@ sub initialize_chain_table($) {
 	#
 	new_standard_chain 'reject';
     }
+
+    my $ruleref = transform_rule( $globals{LOGLIMIT}, 1 );
+
+    $globals{iLOGLIMIT} =
+	( $ruleref->{hashlimit} ? [ hashlimit => $ruleref->{hashlimit} ] :
+	  $ruleref->{limit}     ? [ limit     => $ruleref->{limit}     ] : [] );
 }
 
 #

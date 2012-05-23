@@ -1666,7 +1666,7 @@ sub verify_audit($;$$) {
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action
 # body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument.
 #
-sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
+sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $target,
 	 $current_param,

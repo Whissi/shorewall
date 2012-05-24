@@ -2455,6 +2455,22 @@ sub level_error( $ ) {
     fatal_error "Invalid log level ($_[0])";
 }
 
+my %logoptions = ( tcp_sequence         => '--log-tcp-sequence',
+		   ip_options           => '--log-ip-options',
+		   tcp_options          => '--log-tcp-options',
+		   uid                  => '--log-uid',
+		   macdecode            => '--log-macdecode',
+		   #
+		   # Because a level can pass through validate_level() more than once,
+		   # the full option names are also included here.
+		   #
+		   '--log-tcp-sequence' => '--log-tcp-sequence',
+		   '--log-ip-options'   => '--log-ip-options',
+		   '--log-tcp-options'  => '--log-tcp-options',
+		   '--log-uid'          => '--log-uid',
+		   '--log-macdecode'    => '--log-macdecode',
+		 );
+
 sub validate_level( $ ) {
     my $rawlevel = $_[0];
     my $level    = uc $rawlevel;
@@ -2465,17 +2481,44 @@ sub validate_level( $ ) {
 	my $qualifier;
 
 	unless ( $value =~ /^[0-7]$/ ) {
-	    level_error( $level ) unless $level =~ /^([A-Za-z0-7]+)(.*)$/ && defined( $value = $validlevels{$1} );
-	    $qualifier = $2;
+	    } if ( $value =~ /^([0-7])(.*)$/ ) {
+		$value = $1;
+		$qualifier = $2;
+	    } elsif ( $value =~ /^([A-Za-z0-7]+)(.*)$/ ) {
+	        level_error( $level) unless defined( $value = $validlevels{$1} );
+		$qualifier = $2;
 	}
 
 	if ( $value =~ /^[0-7]$/ ) {
 	    #
 	    # Syslog Level
 	    #
-	    level_error( $rawlevel ) if supplied $qualifier;
+	    if ( supplied $qualifier ) {
+		my $options = '';
+		my %options;
+
+		level_error ( $rawlevel ) unless $qualifier =~ /^\((.*)\)$/;
+
+		for ( split_list lc $1, "log options" ) {
+		    my $option = $logoptions{$_};
+		    fatal_error "Unknown LOG option ($_)" unless $option;
+
+		    unless ( $options{$option} ) {
+			if ( $options ) {
+			    $options = join( ',', $options, $option );
+			} else {
+			    $options = $option;
+			}
+
+			$options{$option} = 1;
+		    }
+		}
+
+		$value .= "($options)" if $options;
+	    }
 
 	    require_capability ( 'LOG_TARGET' , "Log level $level", 's' );
+
 	    return $value;
 	}
 

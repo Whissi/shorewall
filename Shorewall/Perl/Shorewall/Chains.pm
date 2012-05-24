@@ -759,9 +759,9 @@ sub set_rule_option( $$$ ) {
     }
 }
 
-sub transform_rule( $;$ ) {
-    my ( $input, $partial ) = @_;
-    my $ruleref  = $partial ? {} : { mode => CAT_MODE, target => '' };
+sub transform_rule( $ ) {
+    my $input = $_[0];
+    my $ruleref  = { mode => CAT_MODE, target => '' };
     my $simple   = 1;
 
     $input =~ s/^\s*//;
@@ -818,11 +818,7 @@ sub transform_rule( $;$ ) {
 	set_rule_option( $ruleref, $option, $params );
     }
 
-    if ( $partial ) {
-	delete $ruleref->{simple};
-    } else {
-	$ruleref->{simple} = $simple unless $partial;
-    }
+    $ruleref->{simple} = $simple;
 
     $ruleref;
 }
@@ -2534,7 +2530,7 @@ sub initialize_chain_table($) {
 	new_standard_chain 'reject';
     }
 
-    my $ruleref = transform_rule( $globals{LOGLIMIT}, 1 );
+    my $ruleref = transform_rule( $globals{LOGLIMIT} );
 
     $globals{iLOGLIMIT} =
 	( $ruleref->{hashlimit} ? [ hashlimit => $ruleref->{hashlimit} ] :
@@ -5179,7 +5175,15 @@ sub log_rule_limit( $$$$$$$$ ) {
 	} elsif  ( $level =~ /^NFLOG/ ) {
 	    $prefix = "-j $level ";
 	} else {
-	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level ";
+	    my $flags = $globals{LOGPARMS};
+
+	    if ( $level =~ /^(.+)\((.*)\)$/ ) {
+		$level = $1;
+		$flags = join( ' ', $flags, $2 ) . ' ';
+		$flags =~ s/,/ /g;
+	    }
+
+	    $prefix = "-j LOG ${flags}--log-level $level ";
 	}
     } else {
 	if ( $tag ) {
@@ -5214,7 +5218,15 @@ sub log_rule_limit( $$$$$$$$ ) {
 	    $prefix = join( '', substr( $prefix, 0, 12 ) , ':' ) if length $prefix > 13;
 	    $prefix = "-j $level --log-prefix \"$prefix\" ";
 	} else {
-	    $prefix = "-j LOG $globals{LOGPARMS}--log-level $level --log-prefix \"$prefix\" ";
+	    my $options = $globals{LOGPARMS};
+
+	    if ( $level =~ /^(.+)\((.*)\)$/ ) {
+		$level   = $1;
+		$options = join( ' ', $options, $2 ) . ' ';
+		$options =~ s/,/ /g;
+	    }
+
+	    $prefix = "-j LOG ${options}--log-level $level --log-prefix \"$prefix\" ";
 	}
     }
 

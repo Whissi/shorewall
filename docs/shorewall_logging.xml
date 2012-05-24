@@ -155,6 +155,61 @@
       If you are unsure of the level to choose, 6 (info) is a safe bet. You
       may specify levels by name or by number.</para>
 
+      <para>Beginning with Shorewall 4.5.5, the
+      <replaceable>level</replaceable> name or number may be optionally
+      followed by a comma-separated list of one or more<replaceable> log
+      options</replaceable>. The list is enclosed in parentheses. Log options
+      cause additional information to be included in each log message.</para>
+
+      <para>Valid log options are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><emphasis role="bold">ip_options</emphasis></term>
+
+          <listitem>
+            <para>Log messages will include the option settings from the IP
+            header.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">macdecode</emphasis></term>
+
+          <listitem>
+            <para>Decode the MAC address and protocol.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">tcp_sequence</emphasis></term>
+
+          <listitem>
+            <para>Include TCP sequence numbers.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">tcp_options</emphasis></term>
+
+          <listitem>
+            <para>Include options from the TCP header.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><emphasis role="bold">uid</emphasis></term>
+
+          <listitem>
+            <para>Include the UID of the sending program; only valid for
+            packets originating on the firewall itself.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Example: <emphasis
+      role="bold">info(tcp_options,tcp_sequence)</emphasis></para>
+
       <para>Syslogd writes log messages to files (typically in <filename
       class="directory">/var/log/</filename>*) based on their facility and
       level. The mapping of these facility/level pairs to log files is done in
@@ -278,10 +333,11 @@ ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlis
 
   <section id="Contents">
     <title>Understanding the Contents of Shorewall Log Messages</title>
-	
+
     <para>For general information on the contents of Netfilter log messages,
     see <ulink
-		url="http://www.net.co.at/doc/howto/docs/iptables_netfilter_howto_de/docs/netfilter_log_format/index.html">http://www.net.co.at/doc/howto/docs/iptables_netfilter_howto_de/docs/netfilter_log_format/index.html</ulink>.</para>
+    url="http://www.net.co.at/doc/howto/docs/iptables_netfilter_howto_de/docs/netfilter_log_format/index.html">http://www.net.co.at/doc/howto/docs/iptables_netfilter_howto_de/docs/netfilter_log_format/index.html</ulink>.</para>
+
     <para>For Shorewall-specific information, see <ulink
     url="FAQ.htm#faq17">FAQ #17</ulink>.</para>
   </section>

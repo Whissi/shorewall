@@ -1688,7 +1688,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
     my ( $action, $loglevel) = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
-    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 1 ) : 0;
+    my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 5 ) : 0;
     my $inaction = '';
     my $normalized_target;
     my $normalized_action;
@@ -1953,7 +1953,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Handle Optimization
 	    #
-	    if ( $optimize > 0 && $section eq 'NEW' ) {
+	    if ( $optimize == 1 && $section eq 'NEW' ) {
 		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 		if ( $loglevel ne '' ) {
 		    return 0 if $target eq "${policy}:$loglevel}";

@@ -2,7 +2,6 @@
 # Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Tunnels.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
-#
 #     (c) 2007,2008,2009,2010,2011 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
@@ -126,9 +125,9 @@ sub setup_tunnels() {
     sub setup_pptp_server {
 	my ($inchainref, $outchainref, $kind, $source, $dest ) = @_;
 
-	add_tunnel_rule $inchainref,  p => 47, @$dest;
-	add_tunnel_rule $outchainref, p => 47, @$source;
-	add_tunnel_rule $inchainref,  p => 'tcp --dport 1723', @$dest
+	add_tunnel_rule $inchainref,  p => 47, @$source;
+	add_tunnel_rule $outchainref, p => 47, @$dest;
+	add_tunnel_rule $inchainref,  p => 'tcp --dport 1723', @$source
 	}
 
     sub setup_one_openvpn {

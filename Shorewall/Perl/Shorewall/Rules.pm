@@ -2107,7 +2107,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$ $) {
 	    } elsif ( $server =~ /^(.+)-(.+)$/ ) {
 		validate_range( $1, $2 );
 	    } else {
-		unless ( ( $actiontype & ACTION ) && $server eq ALLIP ) {
+		unless ( $server eq ALLIP ) {
 		    my @servers = validate_address $server, 1;
 		    $server = join ',', @servers;
 		}

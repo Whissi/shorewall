@@ -35,7 +35,11 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
+our %EXPORT_TAGS = ( rules => [ qw ( handle_nat_rule handle_nonat_rule ) ] );
 our @EXPORT_OK = ();
+
+Exporter::export_ok_tags('rules');
+
 our $VERSION = 'MODULEVERSION';
 
 my @addresses_to_add;
@@ -512,6 +516,233 @@ sub setup_netmap() {
 	clear_comment;
     }
 
+}
+
+#
+# Called from process_rule1 to add a rule to the NAT table
+#
+sub handle_nat_rule( $$$$$$$$$$$$$ ) {
+    my ( $dest,           # <server>[:port]
+	 $proto,          # Protocol
+	 $ports,          # Destination port list
+	 $origdest,       # Original Destination
+	 $action_target,  # If the target is an action, the name of the log action chain to jump to
+	 $action,         # The Action
+	 $sourcezone,     # The Source Zone name
+	 $sourceref,      # Reference to the Soruce Zone's table entry in the Zones module
+	 $chain,          # Name of the action chain if the rule is in an action
+	 $rule,           # Matches 
+	 $source,         # Source Address
+	 $loglevel,       # [ <level>[:<tag>]]
+	 $log_action,     # Action name to include in the log message
+       ) = @_;
+
+    my ( $server, $serverport , $origdstports );
+    my $randomize = $dest =~ s/:random$// ? ' --random' : '';
+
+    #
+    # Isolate server port
+    #
+    if ( $dest =~ /^(.*)(:(.+))$/ ) {
+	#
+	# Server IP and Port
+	#
+	$server = $1;      # May be empty
+	$serverport = $3;  # Not Empty due to RE
+	$origdstports = $ports;
+
+	if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
+	    $origdstports = validate_port( $proto, $origdstports );
+	} else {
+	    $origdstports = '';
+	}
+
+	if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
+	    #
+	    # Server Port Range
+	    #
+	    fatal_error "Invalid port range ($serverport)" unless $1 < $2;
+	    my @ports = ( $1, $2 );
+	    $_ = validate_port( proto_name( $proto ), $_) for ( @ports );
+	    ( $ports = $serverport ) =~ tr/-/:/;
+	} else {
+	    $serverport = $ports = validate_port( proto_name( $proto ), $serverport );
+	}
+    } elsif ( $dest eq ':' ) {
+	#
+	# Rule with no server IP or port ( zone:: )
+	#
+	$server = $serverport = '';
+    } else {
+	#
+	# Simple server IP address (may be empty or "-")
+	#
+	$server = $dest;
+	$serverport = '';
+    }
+    #
+    # Generate the target
+    #
+    my $target = '';
+
+    if ( $action eq 'REDIRECT' ) {
+	fatal_error "A server IP address ($server) may not be specified in a REDIRECT rule" if $server;
+	$target  = 'REDIRECT';
+	$target .= " --to-port $serverport" if $serverport;
+	if ( $origdest eq '' || $origdest eq '-' ) {
+	    $origdest = ALLIP;
+	} elsif ( $origdest eq 'detect' ) {
+	    fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $chain;
+
+	    if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		my $interfacesref = $sourceref->{interfaces};
+		my @interfaces = keys %$interfacesref;
+		$origdest = @interfaces ? "detect:@interfaces" : ALLIP;
+	    } else {
+		$origdest = ALLIP;
+	    }
+	}
+    } elsif ( $action_target ) {
+	fatal_error "A server port ($serverport) is not allowed in $action rule" if $serverport;
+	$target = $action_target;
+	$loglevel = '';
+    } else {
+	if ( $server eq '' ) {
+	    fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
+	} elsif ( $server =~ /^(.+)-(.+)$/ ) {
+	    validate_range( $1, $2 );
+	} else {
+	    unless ( $action_target && $server eq ALLIP ) {
+		my @servers = validate_address $server, 1;
+		$server = join ',', @servers;
+	    }
+	}
+
+	if ( $action eq 'DNAT' ) {
+	    $target = 'DNAT';
+	    if ( $server ) {
+		$serverport = ":$serverport" if $serverport;
+		for my $serv ( split /,/, $server ) {
+		    $target .= " --to-destination ${serv}${serverport}";
+		}
+	    } else {
+		$target .= " --to-destination :$serverport";
+	    }
+	}
+
+	unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
+	    if ( ! $chain && $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+		my $interfacesref = $sourceref->{interfaces};
+		my @interfaces = keys %$interfacesref;
+		$origdest = @interfaces ? "detect:@interfaces" : ALLIP;
+	    } else {
+		$origdest = ALLIP;
+	    }
+	}
+    }
+
+    $target .= $randomize;
+    #
+    # And generate the nat table rule(s)
+    #
+    expand_rule ( ensure_chain ('nat' , $chain ? $chain : $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
+		  PREROUTE_RESTRICT ,
+		  $rule ,
+		  $source ,
+		  $origdest ,
+		  '' ,
+		  $target ,
+		  $loglevel ,
+		  $log_action ,
+		  $serverport ? do_proto( $proto, '', '' ) : '',
+		);
+
+    ( $ports, $origdstports, $server );
+}
+
+#
+# Called from process_rule1() to handle the nat table part of the NONAT and ACCEPT+ actions
+#
+sub handle_nonat_rule( $$$$$$$$$$$ ) {
+    my ( $action, $source, $dest, $origdest, $sourcezone, $sourceref, $inaction, $chain, $loglevel, $log_action, $rule ) = @_;
+    #
+    # NONAT or ACCEPT+ may not specify a destination interface
+    #
+    fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
+
+    $origdest = '' unless $origdest and $origdest ne '-';
+
+    if ( $origdest eq 'detect' ) {
+	my $interfacesref = $sourceref->{interfaces};
+	my $interfaces = [ ( keys %$interfacesref ) ];
+	$origdest = $interfaces ? "detect:@$interfaces" : ALLIP;
+    }
+
+    my $tgt = 'RETURN';
+
+    my $nonat_chain;
+
+    my $chn;
+
+    if ( $inaction ) {
+	$nonat_chain = ensure_chain( 'nat', $chain );
+    } elsif ( $sourceref->{type} == FIREWALL ) {
+	$nonat_chain = $nat_table->{OUTPUT};
+    } else {
+	$nonat_chain = ensure_chain( 'nat', dnat_chain( $sourcezone ) );
+
+	my @interfaces = keys %{zone_interfaces $sourcezone};
+
+	for ( @interfaces ) {
+	    my $ichain = input_chain $_;
+
+	    if ( $nat_table->{$ichain} ) {
+		#
+		# Static NAT is defined on this interface
+		#
+		$chn = new_chain( 'nat', newnonatchain ) unless $chn;
+		add_ijump $chn, j => $nat_table->{$ichain}, @interfaces > 1 ? imatch_source_dev( $_ )  : ();
+	    }
+	}
+
+	if ( $chn ) {
+	    #
+	    # Call expand_rule() to correctly handle logging. Because
+	    # the 'logname' argument is passed, expand_rule() will
+	    # not create a separate logging chain but will rather emit
+	    # any logging rule in-line.
+	    #
+	    expand_rule( $chn,
+			 PREROUTE_RESTRICT,
+			 '', # Rule
+			 '', # Source
+			 '', # Dest
+			 '', # Original dest
+			 'ACCEPT',
+			 $loglevel,
+			 $log_action,
+			 '',
+			 dnat_chain( $sourcezone  ) );
+	    $loglevel = '';
+	    $tgt = $chn->{name};
+	} else {
+	    $tgt = 'ACCEPT';
+	}
+    }
+
+    set_optflags( $nonat_chain, DONT_MOVE | DONT_OPTIMIZE ) if $tgt eq 'RETURN';
+
+    expand_rule( $nonat_chain ,
+		 PREROUTE_RESTRICT ,
+		 $rule ,
+		 $source ,
+		 $dest ,
+		 $origdest ,
+		 $tgt,
+		 $loglevel ,
+		 $log_action ,
+		 '',
+	       );
 }
 
 sub add_addresses () {

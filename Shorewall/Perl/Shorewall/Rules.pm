@@ -33,6 +33,7 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
+use Shorewall::Nat qw(:rules);
 use Scalar::Util 'reftype';
 
 use strict;
@@ -1685,7 +1686,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	 $condition,
 	 $wildcard ) = @_;
 
-    my ( $action, $loglevel) = split_action $target;
+    my ( $action, $loglevel)    = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 5 ) : 0;
@@ -1757,7 +1758,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
     #
     # We can now dispense with the postfix character
     #
-    fatal_error "The +, - and ! modifiers are not allowed in the blrules file" if $action =~ s/[\+\-!]$// && $blacklist;
+    fatal_error "The +, - and ! modifiers are not allowed in the blrules file" if $action =~ s/[-+!]$// && $blacklist;
     #
     # Handle actions
     #
@@ -1920,7 +1921,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
     #
     # Take care of chain
     #
-    my ( $chain, $policy );
+    my $chain;
 
     if ( $inaction ) {
         #
@@ -1943,8 +1944,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Ensure that the chain exists but don't mark it as referenced until after optimization is checked
 	    #
-	    $chainref = ensure_chain 'filter', $chain;
-	    $policy   = $chainref->{policy};
+	    $chainref  = ensure_chain 'filter', $chain;
+	    my $policy = $chainref->{policy};
 
 	    if ( $policy eq 'NONE' ) {
 		return 0 if $wildcard;
@@ -1956,7 +1957,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	    if ( $optimize == 1 && $section eq 'NEW' ) {
 		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 		if ( $loglevel ne '' ) {
-		    return 0 if $target eq "${policy}:$loglevel}";
+		    return 0 if $target eq "${policy}:${loglevel}";
 		} else {
 		    return 0 if $basictarget eq $policy;
 		}
@@ -2030,132 +2031,28 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
     # Generate NAT rule(s), if any
     #
     if ( $actiontype & NATRULE ) {
-	my ( $server, $serverport );
-	my $randomize = $dest =~ s/:random$// ? ' --random' : '';
-
 	require_capability( 'NAT_ENABLED' , "$basictarget rules", '' );
 	#
-	# Isolate server port
+	# Add the appropriate rule to the nat table
 	#
-	if ( $dest =~ /^(.*)(:(.+))$/ ) {
-	    #
-	    # Server IP and Port
-	    #
-	    $server = $1;      # May be empty
-	    $serverport = $3;  # Not Empty due to RE
-	    $origdstports = $ports;
-
-	    if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
-		$origdstports = validate_port( $proto, $origdstports );
-	    } else {
-		$origdstports = '';
-	    }
-
-	    if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
-		#
-		# Server Port Range
-		#
-		fatal_error "Invalid port range ($serverport)" unless $1 < $2;
-		my @ports = ( $1, $2 );
-		$_ = validate_port( proto_name( $proto ), $_) for ( @ports );
-		( $ports = $serverport ) =~ tr/-/:/;
-	    } else {
-		$serverport = $ports = validate_port( proto_name( $proto ), $serverport );
-	    }
-	} elsif ( $dest eq ':' ) {
-	    #
-	    # Rule with no server IP or port ( zone:: )
-	    #
-	    $server = $serverport = '';
-	} else {
-	    #
-	    # Simple server IP address (may be empty or "-")
-	    #
-	    $server = $dest;
-	    $serverport = '';
-	}
-
-	#
-	# Generate the target
-	#
-	my $target = '';
-
-	if ( $actiontype  & REDIRECT ) {
-	    fatal_error "A server IP address ($server) may not be specified in a REDIRECT rule" if $server;
-	    $target  = 'REDIRECT';
-	    $target .= " --to-port $serverport" if $serverport;
-	    if ( $origdest eq '' || $origdest eq '-' ) {
-		$origdest = ALLIP;
-	    } elsif ( $origdest eq 'detect' ) {
-		fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $inaction;
-
-		if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
-		    my $interfacesref = $sourceref->{interfaces};
-		    my @interfaces = keys %$interfacesref;
-		    $origdest = @interfaces ? "detect:@interfaces" : ALLIP;
- 		} else {
-		    $origdest = ALLIP;
-		}
-	    }
-	} elsif ( $actiontype & ACTION ) {
-	    fatal_error "A server port ($serverport) is not allowed in $action rule" if $serverport;
-	    $target = $usedactions{$normalized_target}->{name};
-	    $loglevel = '';
-	} else {
-	    if ( $server eq '' ) {
-		fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
-	    } elsif ( $server =~ /^(.+)-(.+)$/ ) {
-		validate_range( $1, $2 );
-	    } else {
-		unless ( ( $actiontype & ACTION ) && $server eq ALLIP ) {
-		    my @servers = validate_address $server, 1;
-		    $server = join ',', @servers;
-		}
-	    }
-
-	    if ( $action eq 'DNAT' ) {
-		$target = 'DNAT';
-		if ( $server ) {
-		    $serverport = ":$serverport" if $serverport;
-		    for my $serv ( split /,/, $server ) {
-			$target .= " --to-destination ${serv}${serverport}";
-		    }
-		} else {
-		    $target .= " --to-destination :$serverport";
-		}
-	    }
-
-	    unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-		if ( ! $inaction && $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
-		    my $interfacesref = $sourceref->{interfaces};
-		    my @interfaces = keys %$interfacesref;
-		    $origdest = @interfaces ? "detect:@interfaces" : ALLIP;
-		} else {
-		    $origdest = ALLIP;
-		}
-	    }
-	}
-
-	$target .= $randomize;
-
-	#
-	# And generate the nat table rule(s)
-	#
-	expand_rule ( ensure_chain ('nat' , $inaction ? $chain : $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
-		      PREROUTE_RESTRICT ,
-		      $rule ,
-		      $source ,
-		      $origdest ,
-		      '' ,
-		      $target ,
-		      $loglevel ,
-		      $log_action ,
-		      $serverport ? do_proto( $proto, '', '' ) : '',
-		    );
+	( $ports, $origdstports, $dest ) = handle_nat_rule( $dest,
+							    $proto,
+							    $ports,
+							    $origdest,
+							    ($actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
+							    $action,
+							    $sourcezone,
+							    $sourceref,
+							    $inaction ? $chain : '',
+							    $rule,
+							    $source,
+							    $loglevel,
+							    $log_action
+							  );		 
 	#
 	# After NAT:
 	#   - the destination port will be the server port ($ports) -- we did that above
-	#   - the destination IP   will be the server IP   ($dest)
+	#   - the destination IP   will be the server IP   ($dest)  -- also done above
 	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
 	#   - the target will be ACCEPT.
 	#
@@ -2168,89 +2065,25 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 			  do_condition( $condition )
 			);
 	    $loglevel = '';
-	    $dest     = $server;
 	    $action   = 'ACCEPT';
 	    $origdest = ALLIP if  $origdest =~ /[+]/;
 	}
     } elsif ( $actiontype & NONAT ) {
 	#
-	# NONAT or ACCEPT+ -- May not specify a destination interface
+	# NONAT or ACCEPT+
 	#
-	fatal_error "Invalid DEST ($dest) in $action rule" if $dest =~ /:/;
-
-	$origdest = '' unless $origdest and $origdest ne '-';
-
-	if ( $origdest eq 'detect' ) {
-	    my $interfacesref = $sourceref->{interfaces};
-	    my $interfaces = [ ( keys %$interfacesref ) ];
-	    $origdest = $interfaces ? "detect:@$interfaces" : ALLIP;
-	}
-
-	my $tgt = 'RETURN';
-
-	my $nonat_chain;
-
-	my $chn;
-
-	if ( $inaction ) {
-	    $nonat_chain = ensure_chain( 'nat', $chain );
-	} elsif ( $sourceref->{type} == FIREWALL ) {
-	    $nonat_chain = $nat_table->{OUTPUT};
-	} else {
-	    $nonat_chain = ensure_chain( 'nat', dnat_chain( $sourcezone ) );
-
-	    my @interfaces = keys %{zone_interfaces $sourcezone};
-
-	    for ( @interfaces ) {
-		my $ichain = input_chain $_;
-
-		if ( $nat_table->{$ichain} ) {
-		    #
-		    # Static NAT is defined on this interface
-		    #
-		    $chn = new_chain( 'nat', newnonatchain ) unless $chn;
-		    add_ijump $chn, j => $nat_table->{$ichain}, @interfaces > 1 ? imatch_source_dev( $_ )  : ();
-		}
-	    }
-
-	    if ( $chn ) {
-		#
-		# Call expand_rule() to correctly handle logging. Because
-		# the 'logname' argument is passed, expand_rule() will
-		# not create a separate logging chain but will rather emit
-		# any logging rule in-line.
-		#
-		expand_rule( $chn,
-			     PREROUTE_RESTRICT,
-			     '', # Rule
-			     '', # Source
-			     '', # Dest
-			     '', # Original dest
-			     'ACCEPT',
-			     $loglevel,
-			     $log_action,
-			     '',
-			     dnat_chain( $sourcezone  ) );
-		$loglevel = '';
-		$tgt = $chn->{name};
-	    } else {
-		$tgt = 'ACCEPT';
-	    }
-	}
-
-	set_optflags( $nonat_chain, DONT_MOVE | DONT_OPTIMIZE ) if $tgt eq 'RETURN';
-
-	expand_rule( $nonat_chain ,
-		     PREROUTE_RESTRICT ,
-		     $rule ,
-		     $source ,
-		     $dest ,
-		     $origdest ,
-		     $tgt,
-		     $loglevel ,
-		     $log_action ,
-		     '',
-		   );
+	handle_nonat_rule( $action,
+			   $source,
+			   $dest,
+			   $origdest,
+			   $sourcezone,
+			   $sourceref,
+			   $inaction,
+			   $chain,
+			   $loglevel,
+			   $log_action,
+			   $rule
+			 );
     }
 
     #

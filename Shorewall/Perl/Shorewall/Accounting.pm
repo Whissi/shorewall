@@ -46,6 +46,7 @@ my $jumpchainref;
 my %accountingjumps;
 my $asection;
 my $defaultchain;
+my $ipsecdir;
 my $defaultrestriction;
 my $restriction;
 my $accounting_commands = { COMMENT => 0, SECTION => 2 };
@@ -92,6 +93,7 @@ sub initialize() {
     # These are the legacy values
     #
     $defaultchain       = 'accounting';
+    $ipsecdir           = '';
     $defaultrestriction = NO_RESTRICT;
     $sectionname        = '';
 }
@@ -111,20 +113,25 @@ sub process_section ($) {
 
     if ( $sectionname eq 'INPUT' ) {
 	$defaultchain = 'accountin';
+	$ipsecdir     = 'in';
 	$defaultrestriction = INPUT_RESTRICT;
     } elsif ( $sectionname eq 'OUTPUT' ) {
 	$defaultchain = 'accountout';
+	$ipsecdir     = 'out';
 	$defaultrestriction = OUTPUT_RESTRICT;
     } elsif ( $sectionname eq 'FORWARD' ) {
 	$defaultchain = 'accountfwd';
+	$ipsecdir     = '';
 	$defaultrestriction = NO_RESTRICT;
      } else {
 	 fatal_error "The $sectionname SECTION is not allowed when ACCOUNTING_TABLE=filter" unless $acctable eq 'mangle';
 	 if ( $sectionname eq 'PREROUTING' ) {
 	     $defaultchain = 'accountpre';
+	     $ipsecdir     = 'in';
 	     $defaultrestriction = PREROUTE_RESTRICT;
 	 } else {
 	     $defaultchain = 'accountpost';
+	     $ipsecdir     = 'out';
 	     $defaultrestriction = POSTROUTE_RESTRICT;
 	 }
      }
@@ -285,7 +292,21 @@ sub process_accounting_rule( ) {
     }
 
     my $chainref = $chain_table{$config{ACCOUNTING_TABLE}}{$chain};
-    my $dir;
+    my $dir = $ipsecdir;
+
+    if ( $asection && $ipsec ne '-' ) {
+	if ( $ipsecdir ) {
+	    fatal_error "Invalid IPSEC ($ipsec)" if $ipsec =~ /^(?:in|out)\b/;
+	} else {
+	    if ( $ipsec =~ s/^(?:(in|out)\b)// ) {
+		$dir = $1;
+	    } else {
+		fatal_error q(IPSEC rules in the $asection section require that the value begin with 'in' or 'out');
+	    }
+	}
+
+	$rule .= do_ipsec( $dir, $ipsec );
+    }
 
     if ( ! $chainref ) {
 	if ( reserved_chain_name( $chain ) ) {
@@ -297,28 +318,32 @@ sub process_accounting_rule( ) {
 	    $chainref = ensure_accounting_chain $chain, 0 , $restriction;
 	}
 
-	$dir      = ipsec_chain_name( $chain );
+	unless ( $asection ) {
+	    $dir = ipsec_chain_name( $chain );
 
-	if ( $ipsec ne '-' ) {
-	    if ( $dir ) {
-		$rule .= do_ipsec( $dir, $ipsec );
-		$chainref->{ipsec} = $dir;
+	    if ( $ipsec ne '-' ) {
+		if ( $dir ) {
+		    $rule .= do_ipsec( $dir, $ipsec );
+		    $chainref->{ipsec} = $dir;
+		} else {
+		    fatal_error "Adding an IPSEC rule to an unreferenced accounting chain is not allowed";
+		}
 	    } else {
-		fatal_error "Adding an IPSEC rule to an unreferenced accounting chain is not allowed";
+		warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );
+		$chainref->{ipsec} = $dir;
 	    }
-	} else {
-	    warning_message "Adding rule to unreferenced accounting chain $chain" unless reserved_chain_name( $chain );
-	    $chainref->{ipsec} = $dir;
 	}
     } else {
 	fatal_error "$chain is not an accounting chain" unless $chainref->{accounting};
 
-	if ( $ipsec ne '-' ) {
-	    $dir = $chainref->{ipsec};
-	    fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
-	    $rule .= do_ipsec( $dir , $ipsec );
-	} elsif ( $asection ) {
-	    $restriction |= $chainref->{restriction};
+	unless ( $asection ) {
+	    if ( $ipsec ne '-' ) {
+		$dir = $chainref->{ipsec};
+		fatal_error "Adding an IPSEC rule into a non-IPSEC chain is not allowed" unless $dir;
+		$rule .= do_ipsec( $dir , $ipsec );
+	    } elsif ( $asection ) {
+		$restriction |= $chainref->{restriction};
+	    }
 	}
     }
 
@@ -366,7 +391,6 @@ sub process_accounting_rule( ) {
 	} else {
 	    $jumpchainref->{ipsec} = $chainref->{ipsec};
 	}
-
     }
 
     if ( $rule2 ) {

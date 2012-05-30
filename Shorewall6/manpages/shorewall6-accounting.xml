@@ -480,13 +480,15 @@
 
       <varlistentry>
         <term><emphasis role="bold">IPSEC - <emphasis>option-list</emphasis>
-        (Optional - Added in Shorewall 4.4.13 )</emphasis></term>
+        (Optional - Added in Shorewall 4.4.13 but broken until 4.5.4.1
+        )</emphasis></term>
 
         <listitem>
           <para>The option-list consists of a comma-separated list of options
           from the following list. Only packets that will be encrypted or have
           been de-crypted via an SA that matches these options will have their
-          source address changed.</para>
+          source address changed. May only be specified when sections are
+          used.</para>
 
           <variablelist>
             <varlistentry>
@@ -594,9 +596,30 @@
                 match the rule.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">in</emphasis></term>
+
+              <listitem>
+                <para>May only be used in the FORWARD section and must be the
+                first or the only item the list. Indicates that matching
+                packets have been decrypted in input.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">out</emphasis></term>
+
+              <listitem>
+                <para>May only be used in the FORWARD section and must be the
+                first or the only item in the list. Indicates that matching
+                packets will be encrypted on output.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
-          <para>If this column is non-empty, then:</para>
+          <para>If this column is non-empty and sections are not used,
+          then:</para>
 
           <itemizedlist>
             <listitem>
@@ -612,10 +635,12 @@
               role="bold">accipsecout</emphasis> or a chain branched either
               directly or indirectly from those chains.</para>
             </listitem>
-          </itemizedlist>
 
-          <para>These rules will NOT appear in the <emphasis
-          role="bold">accounting</emphasis> chain.</para>
+            <listitem>
+              <para>These rules will NOT appear in the <emphasis
+              role="bold">accounting</emphasis> chain.</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
 

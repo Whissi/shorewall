@@ -483,7 +483,8 @@ sub process_zone( \$ ) {
 
     my $complex = 0;
 
-    my $zoneref = $zones{$zone} = { type       => $type,
+    my $zoneref = $zones{$zone} = { name       => $zone,
+				    type       => $type,
 				    parents    => \@parents,
 				    bridge     => '',
 				    options    => { in_out  => parse_zone_option_list( $options , $type, $complex , IN_OUT ) ,

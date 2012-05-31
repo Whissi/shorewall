@@ -521,41 +521,35 @@ sub setup_netmap() {
 #
 # Called from process_rule1 to add a rule to the NAT table
 #
-sub handle_nat_rule( $$$$$$$$$$$$$ ) {
+sub handle_nat_rule( $$$$$$$$$$$$ ) {
     my ( $dest,           # <server>[:port]
 	 $proto,          # Protocol
 	 $ports,          # Destination port list
 	 $origdest,       # Original Destination
 	 $action_target,  # If the target is an action, the name of the log action chain to jump to
 	 $action,         # The Action
-	 $sourcezone,     # The Source Zone name
-	 $sourceref,      # Reference to the Soruce Zone's table entry in the Zones module
-	 $chain,          # Name of the action chain if the rule is in an action
+	 $sourceref,      # Reference to the Source Zone's table entry in the Zones module
+	 $action_chain,   # Name of the action chain if the rule is in an action
 	 $rule,           # Matches 
 	 $source,         # Source Address
-	 $loglevel,       # [ <level>[:<tag>]]
+	 $loglevel,       # [<level>[:<tag>]]
 	 $log_action,     # Action name to include in the log message
        ) = @_;
 
-    my ( $server, $serverport , $origdstports );
+    my ( $server, $serverport , $origdstports ) = ( '', '', '' );
     my $randomize = $dest =~ s/:random$// ? ' --random' : '';
 
     #
     # Isolate server port
     #
-    if ( $dest =~ /^(.*)(:(.+))$/ ) {
+    if ( $dest =~ /^(.*)(?::(.+))$/ ) {
 	#
 	# Server IP and Port
 	#
 	$server = $1;      # May be empty
-	$serverport = $3;  # Not Empty due to RE
-	$origdstports = $ports;
+	$serverport = $2;  # Not Empty due to RE
 
-	if ( $origdstports && $origdstports ne '-' && port_count( $origdstports ) == 1 ) {
-	    $origdstports = validate_port( $proto, $origdstports );
-	} else {
-	    $origdstports = '';
-	}
+	$origdstports = validate_port( $proto, $ports )	if $ports && $ports ne '-' && port_count( $ports ) == 1;
 
 	if ( $serverport =~ /^(\d+)-(\d+)$/ ) {
 	    #
@@ -568,17 +562,11 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 	} else {
 	    $serverport = $ports = validate_port( proto_name( $proto ), $serverport );
 	}
-    } elsif ( $dest eq ':' ) {
-	#
-	# Rule with no server IP or port ( zone:: )
-	#
-	$server = $serverport = '';
-    } else {
+    } elsif ( $dest ne ':' ) {
 	#
 	# Simple server IP address (may be empty or "-")
 	#
 	$server = $dest;
-	$serverport = '';
     }
     #
     # Generate the target
@@ -592,9 +580,9 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 	if ( $origdest eq '' || $origdest eq '-' ) {
 	    $origdest = ALLIP;
 	} elsif ( $origdest eq 'detect' ) {
-	    fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $chain;
+	    fatal_error 'ORIGINAL DEST "detect" is invalid in an action' if $action_chain;
 
-	    if ( $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+	    if ( $config{DETECT_DNAT_IPADDRS} ) {
 		my $interfacesref = $sourceref->{interfaces};
 		my @interfaces = keys %$interfacesref;
 		$origdest = @interfaces ? "detect:@interfaces" : ALLIP;
@@ -605,21 +593,20 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
     } elsif ( $action_target ) {
 	fatal_error "A server port ($serverport) is not allowed in $action rule" if $serverport;
 	$target = $action_target;
-	$loglevel = '';
     } else {
 	if ( $server eq '' ) {
 	    fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
 	} elsif ( $server =~ /^(.+)-(.+)$/ ) {
 	    validate_range( $1, $2 );
 	} else {
-	    unless ( $action_target && $server eq ALLIP ) {
+	    unless ( $server eq ALLIP ) {
 		my @servers = validate_address $server, 1;
 		$server = join ',', @servers;
 	    }
 	}
 
 	if ( $action eq 'DNAT' ) {
-	    $target = 'DNAT';
+	    $target = $action;
 	    if ( $server ) {
 		$serverport = ":$serverport" if $serverport;
 		for my $serv ( split /,/, $server ) {
@@ -631,7 +618,7 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 	}
 
 	unless ( $origdest && $origdest ne '-' && $origdest ne 'detect' ) {
-	    if ( ! $chain && $config{DETECT_DNAT_IPADDRS} && $sourcezone ne firewall_zone ) {
+	    if ( ! $action_chain && $config{DETECT_DNAT_IPADDRS} ) {
 		my $interfacesref = $sourceref->{interfaces};
 		my @interfaces = keys %$interfacesref;
 		$origdest = @interfaces ? "detect:@interfaces" : ALLIP;
@@ -645,7 +632,11 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
     #
     # And generate the nat table rule(s)
     #
-    expand_rule ( ensure_chain ('nat' , $chain ? $chain : $sourceref->{type} == FIREWALL ? 'OUTPUT' : dnat_chain $sourcezone ),
+    expand_rule ( ensure_chain ('nat' ,
+				( $action_chain ?
+				  $action_chain :
+				  ( $sourceref->{type} == FIREWALL ? 'OUTPUT' : 
+				    dnat_chain $sourceref->{name} ) ) ),
 		  PREROUTE_RESTRICT ,
 		  $rule ,
 		  $source ,
@@ -663,8 +654,10 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 #
 # Called from process_rule1() to handle the nat table part of the NONAT and ACCEPT+ actions
 #
-sub handle_nonat_rule( $$$$$$$$$$$ ) {
-    my ( $action, $source, $dest, $origdest, $sourcezone, $sourceref, $inaction, $chain, $loglevel, $log_action, $rule ) = @_;
+sub handle_nonat_rule( $$$$$$$$$$ ) {
+    my ( $action, $source, $dest, $origdest, $sourceref, $inaction, $chain, $loglevel, $log_action, $rule ) = @_;
+
+    my $sourcezone = $sourceref->{name};
     #
     # NONAT or ACCEPT+ may not specify a destination interface
     #

@@ -5763,7 +5763,6 @@ sub isolate_source_interface( $ ) {
     }
 
     ( $iiface, $inets );
-
 }
 
 #

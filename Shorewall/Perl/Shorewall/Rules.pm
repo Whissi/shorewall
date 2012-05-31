@@ -2035,24 +2035,25 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	#
 	# Add the appropriate rule to the nat table
 	#
-	( $ports, $origdstports, $dest ) = handle_nat_rule( $dest,
-							    $proto,
-							    $ports,
-							    $origdest,
-							    ($actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
-							    $action,
-							    $sourcezone,
-							    $sourceref,
-							    $inaction ? $chain : '',
-							    $rule,
-							    $source,
-							    $loglevel,
-							    $log_action
-							  );		 
+	( $ports,
+	  $origdstports,
+	  $dest ) = handle_nat_rule( $dest,
+				     $proto,
+				     $ports,
+				     $origdest,
+				     ( $actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
+				     $action,
+				     $sourceref,
+				     $inaction ? $chain : '',
+				     $rule,
+				     $source,
+				     ( $actiontype & ACTION ) ? '' : $loglevel,
+				     $log_action
+				   );		 
 	#
 	# After NAT:
 	#   - the destination port will be the server port ($ports) -- we did that above
-	#   - the destination IP   will be the server IP   ($dest)  -- also done above
+	#   - the destination IP will be the server IP   ($dest)  -- also done above
 	#   - there will be no log level (we log NAT rules in the nat table rather than in the filter table).
 	#   - the target will be ACCEPT.
 	#
@@ -2076,7 +2077,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 			   $source,
 			   $dest,
 			   $origdest,
-			   $sourcezone,
 			   $sourceref,
 			   $inaction,
 			   $chain,

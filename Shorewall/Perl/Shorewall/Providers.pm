@@ -1236,8 +1236,6 @@ sub process_providers( $ ) {
 enable_provider() {
     g_interface=$1;
 
-    mutex_on
-
     case $g_interface in
 EOF
 
@@ -1273,7 +1271,6 @@ EOF
             ;;
     esac
 
-    mutex_off
 }
 
 #

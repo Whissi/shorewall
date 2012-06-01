@@ -39,6 +39,7 @@ our @EXPORT = qw( process_providers
 		  @routemarked_interfaces
 		  handle_stickiness
 		  handle_optional_interfaces
+		  compile_updown
 		  setup_load_distribution
 	       );
 our @EXPORT_OK = qw( initialize lookup_provider );
@@ -1352,6 +1353,175 @@ sub setup_providers() {
 	emit "fi\n";
     }
 
+}
+
+#
+# Emit the updown() function
+#
+sub compile_updown() {
+    emit( '',
+	  '#',
+	  '# Handle the "up" and "down" commands',
+	  '#',
+	  'updown() # $1 = interface',
+	  '{',
+	);
+
+    push_indent;
+
+    emit( 'local state',
+	  'state=cleared',
+	  '' );
+
+    emit 'progress_message3 "$g_product $COMMAND triggered by $1"';
+    emit '';
+
+    if ( $family == F_IPV4 ) {
+	emit 'if shorewall_is_started; then';
+    } else {
+	emit 'if shorewall6_is_started; then';
+    }
+
+    emit( '    state=started',
+	  'elif [ -f ${VARDIR}/state ]; then',
+	  '    case "$(cat ${VARDIR}/state)" in',
+	  '        Stopped*)',
+	  '            state=stopped',
+	  '            ;;',
+	  '        Cleared*)',
+	  '            ;;',
+	  '        *)',
+	  '            state=unknown',
+	  '            ;;',
+	  '    esac',
+	  'else',
+	  '    state=unknown',
+	  'fi',
+	  ''
+	);
+
+    emit( 'case $1 in' );
+
+    push_indent;
+
+    my $ignore   = find_interfaces_by_option 'ignore';
+    my $required = find_interfaces_by_option 'required';
+    my $optional = find_interfaces_by_option 'optional';
+
+    if ( @$ignore ) {
+	my $interfaces = join '|', map get_physical( $_ ), @$ignore;
+
+	$interfaces =~ s/\+/*/g;
+
+	emit( "$interfaces)",
+	      '    progress_message3 "$COMMAND on interface $1 ignored"',
+	      '    exit 0',
+	      '    ;;'
+	    );
+    }
+
+    if ( @$required ) {
+	my $interfaces = join '|', map get_physical( $_ ), @$required;
+
+	my $wildcard = ( $interfaces =~ s/\+/*/g );
+
+	emit( "$interfaces)",
+	      '    if [ "$COMMAND" = up ]; then' );
+
+	if ( $wildcard ) {
+	    emit( '        if [ "$state" = started ]; then',
+		  '            COMMAND=restart',
+		  '        else',
+		  '            COMMAND=start',
+		  '        fi' );
+	} else {
+	    emit( '        COMMAND=start' );
+	}
+
+	emit( '        progress_message3 "$g_product attempting $COMMAND"',
+	      '        detect_configuration',
+	      '        define_firewall' );
+
+	if ( $wildcard ) {
+	    emit( '    elif [ "$state" = started ]; then',
+		  '        progress_message3 "$g_product attempting restart"',
+		  '        COMMAND=restart',
+		  '        detect_configuration',
+		  '        define_firewall' );
+	} else {
+	    emit( '    else',
+		  '        COMMAND=stop',
+		  '        progress_message3 "$g_product attempting stop"',
+		  '        detect_configuration',
+		  '        stop_firewall' );
+	}
+
+	emit( '    fi',
+	      '    ;;'
+	    );
+    }
+
+    if ( @$optional ) {
+	my @interfaces = map get_physical( $_ ), @$optional;
+	my $interfaces = join '|', @interfaces;
+
+	if ( $interfaces =~ s/\+/*/g || @interfaces > 1 ) {
+	    emit( "$interfaces)",
+		  '    if [ "$COMMAND" = up ]; then',
+		  '        echo 0 > ${VARDIR}/${1}.state',
+		  '    else',
+		  '        echo 1 > ${VARDIR}/${1}.state',
+		  '    fi' );
+	} else {
+	    emit( "$interfaces)",
+		  '    if [ "$COMMAND" = up ]; then',
+		  "        echo 0 > \${VARDIR}/$interfaces.state",
+		  '    else',
+		  "        echo 1 > \${VARDIR}/$interfaces.state",
+		  '    fi' );
+	}
+
+	emit( '',
+	      '    if [ "$state" = started ]; then',
+	      '        COMMAND=restart',
+	      '        progress_message3 "$g_product attempting restart"',
+	      '        detect_configuration',
+	      '        define_firewall',
+	      '    elif [ "$state" = stopped ]; then',
+	      '        COMMAND=start',
+	      '        progress_message3 "$g_product attempting start"',
+	      '        detect_configuration',
+	      '        define_firewall',
+	      '    else',
+	      '        progress_message3 "$COMMAND on interface $1 ignored"',
+	      '    fi',
+	      '    ;;',
+	    );
+    }
+
+    emit( "*)",
+	  '    case $state in',
+	  '        started)',
+	  '            COMMAND=restart',
+	  '            progress_message3 "$g_product attempting restart"',
+	  '            detect_configuration',
+	  '            define_firewall',
+	  '            ;;',
+	  '        *)',
+	  '            progress_message3 "$COMMAND on interface $1 ignored"',
+	  '            ;;',
+	  '    esac',
+	);
+
+    pop_indent;
+
+    emit( 'esac' );
+
+    pop_indent;
+
+    emit( '}',
+	  '',
+	);
 }
 
 sub lookup_provider( $ ) {

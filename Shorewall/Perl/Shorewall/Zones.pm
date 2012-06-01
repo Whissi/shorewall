@@ -62,6 +62,7 @@ our @EXPORT = qw( NOTHING
 		  validate_interfaces_file
 		  all_interfaces
 		  all_real_interfaces
+		  all_plain_interfaces
 		  all_bridges
 		  interface_number
 		  find_interface
@@ -72,6 +73,7 @@ our @EXPORT = qw( NOTHING
 		  port_to_bridge
 		  source_port_to_bridge
 		  interface_is_optional
+		  interface_is_required
 		  find_interfaces_by_option
 		  find_interfaces_by_option1
 		  get_interface_option
@@ -1414,6 +1416,21 @@ sub interface_zones( $ ) {
 sub interface_is_optional($) {
     my $optionsref = $interfaces{$_[0]}{options};
     $optionsref && $optionsref->{optional};
+}
+
+#
+# Return the 'required' setting of the passed interface
+#
+sub interface_is_required($) {
+    my $optionsref = $interfaces{$_[0]}{options};
+    $optionsref && $optionsref->{required};
+}
+
+#
+# Return a list of real interfaces that are neither 
+#
+sub all_plain_interfaces() {
+    grep ! ( $_ eq '%vserver%' || interface_is_optional($_) || interface_is_required($_) ), @interfaces;
 }
 
 #

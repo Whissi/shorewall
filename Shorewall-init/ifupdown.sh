@@ -108,7 +108,7 @@ if [ -f /etc/debian_version ]; then
 	    fi
 
 	    case "$PHASE" in
-		pre-*)
+		post-*)
 		    exit 0
 		    ;;
 	    esac
@@ -188,14 +188,7 @@ fi
 
 for PRODUCT in $PRODUCTS; do
     if [ -x $VARDIR/$PRODUCT/firewall ]; then
-	( g_program=$PRODUCT
-	  g_readrc=
-
-	  . ${SHAREDIR}/shorewall/lib.base
-	  mutex_on
-	  ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
-	  mutex_off
-	)
+	  ( ${VARDIR}/$PRODUCT/firewall -V0 $COMMAND $INTERFACE ) || true
     fi
 done
 

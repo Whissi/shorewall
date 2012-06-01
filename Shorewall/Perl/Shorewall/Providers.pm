@@ -1236,6 +1236,8 @@ sub process_providers( $ ) {
 enable_provider() {
     g_interface=$1;
 
+    mutex_on
+
     case $g_interface in
 EOF
 
@@ -1270,6 +1272,8 @@ EOF
             startup_error "$g_interface is not an optional provider or provider interface"
             ;;
     esac
+
+    mutex_off
 }
 
 #
@@ -1371,7 +1375,8 @@ sub compile_updown() {
 
     emit( 'local state',
 	  'state=cleared',
-	  '' );
+	  ''
+	);
 
     emit 'progress_message3 "$g_product $COMMAND triggered by $1"';
     emit '';
@@ -1420,6 +1425,42 @@ sub compile_updown() {
 	    );
     }
 
+    my @nonshared = ( grep $providers{$_}->{optional},
+		      sort( { $providers{$a}->{number} <=> $providers{$b}->{number} } values %provider_interfaces ) );
+
+    if ( @nonshared ) {
+	my $interfaces = join( '|', map $providers{$_}->{physical}, @nonshared );
+
+	emit "$interfaces)";
+
+	push_indent;
+
+	emit( q(if [ "$state" = started ]; then) ,
+	      q(    if [ "$COMMAND" = up ]; then) , 
+	      q(        progress_message3 "Attempting enable on interface $1") ,
+	      q(        COMMAND=enable) ,
+	      q(        detect_configuration),        
+	      q(        enable_provider $1),
+	      q(    else) ,
+	      q(        progress_message3 "Attempting disable on interface $1") ,
+	      q(        COMMAND=disable) ,
+	      q(        detect_configuration),        
+	      q(        disable_provider $1) ,
+	      q(    fi) ,
+	      q(elif [ "$COMMAND" = up ]; then) ,
+	      q(    echo 0 > \${VARDIR}/${1}.state) ,
+	      q(    COMMAND=start),
+	      q(    progress_message3 "$g_product attempting start") ,
+	      q(    detect_configuration),
+	      q(    define_firewall),
+	      q(else),
+	      q(    progress_message3 "\$COMMAND on interface $1 ignored") ,
+	      q(fi) ,
+	      q(;;) );
+
+	pop_indent;
+    }
+
     if ( @$required ) {
 	my $interfaces = join '|', map get_physical( $_ ), @$required;
 
@@ -1462,41 +1503,43 @@ sub compile_updown() {
     }
 
     if ( @$optional ) {
-	my @interfaces = map get_physical( $_ ), @$optional;
+	my @interfaces = map( get_physical( $_ ), grep( ! $provider_interfaces{$_} , @$optional ) );
 	my $interfaces = join '|', @interfaces;
 
-	if ( $interfaces =~ s/\+/*/g || @interfaces > 1 ) {
-	    emit( "$interfaces)",
-		  '    if [ "$COMMAND" = up ]; then',
-		  '        echo 0 > ${VARDIR}/${1}.state',
-		  '    else',
-		  '        echo 1 > ${VARDIR}/${1}.state',
-		  '    fi' );
-	} else {
-	    emit( "$interfaces)",
-		  '    if [ "$COMMAND" = up ]; then',
-		  "        echo 0 > \${VARDIR}/$interfaces.state",
-		  '    else',
-		  "        echo 1 > \${VARDIR}/$interfaces.state",
-		  '    fi' );
-	}
+	if ( $interfaces ) {
+	    if ( $interfaces =~ s/\+/*/g || @interfaces > 1 ) {
+		emit( "$interfaces)",
+		      '    if [ "$COMMAND" = up ]; then',
+		      '        echo 0 > ${VARDIR}/${1}.state',
+		      '    else',
+		      '        echo 1 > ${VARDIR}/${1}.state',
+		      '    fi' );
+	    } else {
+		emit( "$interfaces)",
+		      '    if [ "$COMMAND" = up ]; then',
+		      "        echo 0 > \${VARDIR}/$interfaces.state",
+		      '    else',
+		      "        echo 1 > \${VARDIR}/$interfaces.state",
+		      '    fi' );
+	    }
 
-	emit( '',
-	      '    if [ "$state" = started ]; then',
-	      '        COMMAND=restart',
-	      '        progress_message3 "$g_product attempting restart"',
-	      '        detect_configuration',
-	      '        define_firewall',
-	      '    elif [ "$state" = stopped ]; then',
-	      '        COMMAND=start',
-	      '        progress_message3 "$g_product attempting start"',
-	      '        detect_configuration',
-	      '        define_firewall',
-	      '    else',
-	      '        progress_message3 "$COMMAND on interface $1 ignored"',
-	      '    fi',
-	      '    ;;',
-	    );
+	    emit( '',
+		  '    if [ "$state" = started ]; then',
+		  '        COMMAND=restart',
+		  '        progress_message3 "$g_product attempting restart"',
+		  '        detect_configuration',
+		  '        define_firewall',
+		  '    elif [ "$state" = stopped ]; then',
+		  '        COMMAND=start',
+		  '        progress_message3 "$g_product attempting start"',
+		  '        detect_configuration',
+		  '        define_firewall',
+		  '    else',
+		  '        progress_message3 "$COMMAND on interface $1 ignored"',
+		  '    fi',
+		  '    ;;',
+		);
+	}
     }
 
     emit( "*)",

@@ -382,7 +382,7 @@ if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ $HOST = debian ]; then
 	    
-	    update-rc.d shorewall-init defaults
+	    update-rc.d shorewall-init enable
 
 	    echo "Shorewall Init will start automatically at boot"
 	else

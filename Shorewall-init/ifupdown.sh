@@ -193,11 +193,14 @@ for PRODUCT in $PRODUCTS; do
     #
     save_vardir=${VARDIR}
     if [ -x $VARDIR/$PRODUCT/firewall ]; then
-	  ( . ${SHAREDIR}/shorewall/lib.base
-	    mutex_on
-	    ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
-	    mutex_off
-	  )
+	( g_program=$PRODUCT
+	  g_readrc=
+
+	  . ${SHAREDIR}/shorewall/lib.base
+	  mutex_on
+	  ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
+	  mutex_off
+	)
     fi
     VARDIR=${save_vardir}
 done

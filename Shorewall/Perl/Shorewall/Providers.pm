@@ -1451,7 +1451,7 @@ sub compile_updown() {
 	      q(    detect_configuration),
 	      q(    define_firewall),
 	      q(else),
-	      q(    progress_message3 "\$COMMAND on interface $1 ignored") ,
+	      q(    progress_message3 "$COMMAND on interface $1 ignored") ,
 	      q(fi) ,
 	      q(;;) );
 

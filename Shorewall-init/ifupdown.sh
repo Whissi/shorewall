@@ -106,12 +106,6 @@ if [ -f /etc/debian_version ]; then
 	    else
 		exit 0
 	    fi
-
-	    case "$PHASE" in
-		post-*)
-		    exit 0
-		    ;;
-	    esac
 	    ;;
     esac
 elif [ -f /etc/SuSE-release ]; then

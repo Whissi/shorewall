@@ -1539,19 +1539,25 @@ sub compile_updown() {
 	}
     }
 
-    emit( "*)",
-	  '    case $state in',
-	  '        started)',
-	  '            COMMAND=restart',
-	  '            progress_message3 "$g_product attempting restart"',
-	  '            detect_configuration',
-	  '            define_firewall',
-	  '            ;;',
-	  '        *)',
-	  '            progress_message3 "$COMMAND on interface $1 ignored"',
-	  '            ;;',
-	  '    esac',
-	);
+    if ( my @plain_interfaces = all_plain_interfaces ) {
+	my $interfaces = join ( '|', map get_physical( $_ ), @plain_interfaces );
+
+	$interfaces =~ s/\+/*/g;
+	
+	emit( "$interfaces)",
+	      '    case $state in',
+	      '        started)',
+	      '            COMMAND=restart',
+	      '            progress_message3 "$g_product attempting restart"',
+	      '            detect_configuration',
+	      '            define_firewall',
+	      '            ;;',
+	      '        *)',
+	      '            progress_message3 "$COMMAND on interface $1 ignored"',
+	      '            ;;',
+	      '    esac',
+	    );
+    }
 
     pop_indent;
 

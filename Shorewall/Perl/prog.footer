@@ -348,7 +348,9 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
-	updown $1
+	mutex_on
+	( updown $1 )
+	mutex_off
 	status=0
 	;;
     enable)

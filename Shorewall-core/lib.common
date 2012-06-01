@@ -717,3 +717,69 @@ truncate() # $1 = length
 {
     cut -b -${1}
 }
+
+#
+# Call this function to assert mutual exclusion with Shorewall. If you invoke the
+# /sbin/shorewall program while holding mutual exclusion, you should pass "nolock" as
+# the first argument. Example "shorewall nolock refresh"
+#
+# This function uses the lockfile utility from procmail if it exists.
+# Otherwise, it uses a somewhat race-prone algorithm to attempt to simulate the
+# behavior of lockfile.
+#
+mutex_on()
+{
+    local try
+    try=0
+    local lockf
+    lockf=${LOCKFILE:=${VARDIR}/lock}
+    local lockpid
+
+    MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
+
+    if [ $MUTEX_TIMEOUT -gt 0 ]; then
+
+	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
+
+	if [ -f $lockf ]; then
+	    lockpid=`cat ${lockf} 2> /dev/null`
+	    if [ -z "$lockpid" -o $lockpid = 0 ]; then
+		rm -f ${lockf}
+		error_message "WARNING: Stale lockfile ${lockf} removed"
+	    elif [ $lockpid -eq $$ ]; then
+                return 0
+	    elif ! qt ps p ${lockpid}; then
+		rm -f ${lockf}
+		error_message "WARNING: Stale lockfile ${lockf} from pid ${lockpid} removed"
+	    fi
+	fi
+
+	if qt mywhich lockfile; then
+	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
+	    chmod u+w ${lockf}
+	    echo $$ > ${lockf}
+	    chmod u-w ${lockf}
+	else
+	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
+		sleep 1
+		try=$((${try} + 1))
+	    done
+
+	    if  [ ${try} -lt ${MUTEX_TIMEOUT} ] ; then
+	        # Create the lockfile
+		echo $$ > ${lockf}
+	    else
+		echo "Giving up on lock file ${lockf}" >&2
+	    fi
+	fi
+    fi
+}
+
+#
+# Call this function to release mutual exclusion
+#
+mutex_off()
+{
+    rm -f ${LOCKFILE:=${VARDIR}/lock}
+}
+

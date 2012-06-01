@@ -182,7 +182,6 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 
     [ $g_family -eq 4 ] && mask=32 || mask=128
 
-
     $IP -$g_family route show dev $1 2> /dev/null |
 	while read address rest; do
 	    case "$address" in

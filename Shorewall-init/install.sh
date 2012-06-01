@@ -347,7 +347,7 @@ fi
 
 cp ifupdown.sh ifupdown
 
-d[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
+[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
 
 mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
 

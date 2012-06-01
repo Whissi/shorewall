@@ -108,7 +108,7 @@ if [ -f /etc/debian_version ]; then
 	    fi
 
 	    case "$PHASE" in
-		pre-*)
+		post-*)
 		    exit 0
 		    ;;
 	    esac
@@ -187,22 +187,9 @@ else
 fi
 
 for PRODUCT in $PRODUCTS; do
-    #
-    # For backward compatibility, lib.base appends the product name to VARDIR
-    # Save it here and restore it below
-    #
-    save_vardir=${VARDIR}
     if [ -x $VARDIR/$PRODUCT/firewall ]; then
-	( g_program=$PRODUCT
-	  g_readrc=
-
-	  . ${SHAREDIR}/shorewall/lib.base
-	  mutex_on
-	  ${VARDIR}/firewall -V0 $COMMAND $INTERFACE || echo_notdone
-	  mutex_off
-	)
+	  ( ${VARDIR}/$PRODUCT/firewall -V0 $COMMAND $INTERFACE ) || true
     fi
-    VARDIR=${save_vardir}
 done
 
 exit 0

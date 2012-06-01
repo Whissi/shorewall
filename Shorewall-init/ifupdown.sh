@@ -187,11 +187,6 @@ else
 fi
 
 for PRODUCT in $PRODUCTS; do
-    #
-    # For backward compatibility, lib.base appends the product name to VARDIR
-    # Save it here and restore it below
-    #
-    save_vardir=${VARDIR}
     if [ -x $VARDIR/$PRODUCT/firewall ]; then
 	( g_program=$PRODUCT
 	  g_readrc=
@@ -202,7 +197,6 @@ for PRODUCT in $PRODUCTS; do
 	  mutex_off
 	)
     fi
-    VARDIR=${save_vardir}
 done
 
 exit 0

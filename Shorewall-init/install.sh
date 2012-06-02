@@ -359,9 +359,9 @@ fi
 
 case $HOST in
     debian)
-	rm -f ${DESTDIR}/etc/network/if-post-down.d/shorewall
 	install_file ifupdown ${DESTDIR}/etc/network/if-up.d/shorewall 0544
 	install_file ifupdown ${DESTDIR}/etc/network/if-down.d/shorewall 0544
+	install_file ifupdown ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
 	;;
     suse)
 	if [ -z "$RPM" ]; then

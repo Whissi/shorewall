@@ -109,6 +109,8 @@ if [ -f /etc/debian_version ]; then
 	    ;;
     esac
 elif [ -f /etc/SuSE-release ]; then
+    PHASE=''
+
     case $0 in
 	/etc/ppp*)
 	    #
@@ -140,6 +142,8 @@ else
     #
     # Assume RedHat/Fedora/CentOS/Foobar/...
     #
+    PHASE=''
+
     case $0 in
 	/etc/ppp*)
 	    INTERFACE="$1"

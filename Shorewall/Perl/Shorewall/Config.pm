@@ -308,6 +308,10 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 DSCP_MATCH      => 'DSCP Match',
 		 DSCP_TARGET     => 'DSCP Target',
 		 GEOIP_MATCH     => 'GeoIP Match' ,
+		 #
+		 # Constants
+		 #
+		 LOG_OPTIONS     => 'Log Options',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
@@ -750,6 +754,7 @@ sub initialize( $;$ ) {
 	       DSCP_TARGET => undef,
 	       GEOIP_MATCH => undef,
 	       CAPVERSION => undef,
+	       LOG_OPTIONS => 1,
 	       KERNELVERSION => undef,
 	       );
     #

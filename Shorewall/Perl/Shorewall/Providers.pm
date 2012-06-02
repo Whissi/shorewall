@@ -1438,7 +1438,7 @@ sub compile_updown() {
 	      q(        COMMAND=enable) ,
 	      q(        detect_configuration),        
 	      q(        enable_provider $1),
-	      q(    else) ,
+	      q(    elif [ "$PHASE" != post-down ]; then # pre-down or not Debian) ,
 	      q(        progress_message3 "Attempting disable on interface $1") ,
 	      q(        COMMAND=disable) ,
 	      q(        detect_configuration),        
@@ -1478,21 +1478,29 @@ sub compile_updown() {
 
 	emit( '        progress_message3 "$g_product attempting $COMMAND"',
 	      '        detect_configuration',
-	      '        define_firewall' );
+	      '        define_firewall',
+	      '    elif [ "$PHASE" != pre-down ]; then # Not Debian pre-down phase'
+	    );
+
+	push_indent;
 
 	if ( $wildcard ) {
-	    emit( '    elif [ "$state" = started ]; then',
+
+	    emit( '    if [ "$state" = started ]; then',
 		  '        progress_message3 "$g_product attempting restart"',
 		  '        COMMAND=restart',
 		  '        detect_configuration',
-		  '        define_firewall' );
+		  '        define_firewall',
+		  '    fi' );
+
 	} else {
-	    emit( '    else',
-		  '        COMMAND=stop',
-		  '        progress_message3 "$g_product attempting stop"',
-		  '        detect_configuration',
-		  '        stop_firewall' );
+	    emit( '    COMMAND=stop',
+		  '    progress_message3 "$g_product attempting stop"',
+		  '    detect_configuration',
+		  '    stop_firewall' );
 	}
+
+	pop_indent;
 
 	emit( '    fi',
 	      '    ;;'

@@ -1445,13 +1445,13 @@ sub compile_updown() {
 	      q(        disable_provider $1) ,
 	      q(    fi) ,
 	      q(elif [ "$COMMAND" = up ]; then) ,
-	      q(    echo 0 > \${VARDIR}/${1}.state) ,
+	      q(    echo 0 > ${VARDIR}/${1}.status) ,
 	      q(    COMMAND=start),
 	      q(    progress_message3 "$g_product attempting start") ,
 	      q(    detect_configuration),
 	      q(    define_firewall),
 	      q(else),
-	      q(    progress_message3 "\$COMMAND on interface $1 ignored") ,
+	      q(    progress_message3 "$COMMAND on interface $1 ignored") ,
 	      q(fi) ,
 	      q(;;) );
 

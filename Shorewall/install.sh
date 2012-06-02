@@ -990,9 +990,9 @@ cd ..
 #
 # Install the libraries
 #
-for f in lib.* ; do
+for f in lib.* Perl/lib.*; do
     if [ -f $f ]; then
-	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
+	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$(basename $f) 0644
 	echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
     fi
 done

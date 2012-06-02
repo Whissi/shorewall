@@ -1458,9 +1458,9 @@ sub all_plain_interfaces() {
     }
 
     return @plain2 unless @wild1;
-    
+
     @plain1 = ();
-    
+
 NAME:
     for my $name ( @plain2) {
 	for ( @wild2 ) {

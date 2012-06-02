@@ -260,6 +260,11 @@ else
     first_install="Yes"
 fi
 
+if [ -n "$DESTDIR" ]; then
+    mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d
+    chmod 755 ${DESTDIR}${CONFDIR}/logrotate.d
+fi
+
 #
 # Install the Firewall Script
 #
@@ -294,6 +299,14 @@ fi
 #
 mkdir -p ${DESTDIR}/usr/share/shorewall-init
 chmod 755 ${DESTDIR}/usr/share/shorewall-init
+
+#
+# Install logrotate file
+#
+if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
+    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT
+    echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
+fi
 
 #
 # Create the version file

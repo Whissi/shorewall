@@ -1547,8 +1547,8 @@ sub compile_updown() {
 	}
     }
 
-    if ( my @plain_interfaces = all_plain_interfaces ) {
-	my $interfaces = join ( '|', map get_physical( $_ ), @plain_interfaces );
+    if ( my @plain_interfaces = all_plain_interfaces ) {			
+	my $interfaces = join ( '|', @plain_interfaces );
 
 	$interfaces =~ s/\+/*/g;
 	

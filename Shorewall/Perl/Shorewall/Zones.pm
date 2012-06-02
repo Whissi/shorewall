@@ -1428,10 +1428,49 @@ sub interface_is_required($) {
 }
 
 #
-# Return a list of real interfaces that are neither 
+# Return true if the interface is 'plain'
+#
+sub interface_is_plain($) {
+    my $interfaceref = $interfaces{$_[0]};
+    my $optionsref   = $interfaceref->{options};
+
+    $interfaceref->{bridge} eq $interfaceref->{name} && ! ( $optionsref && ( $optionsref->{required} || $optionsref->{optional} || $optionsref->{ignore} ) )
+}
+
+#
+# Return a minimal list of physical interfaces that are neither ignored, optional, required nor a bridge port.
 #
 sub all_plain_interfaces() {
-    grep ! ( $_ eq '%vserver%' || interface_is_optional($_) || interface_is_required($_) ), @interfaces;
+    my @plain1 = map get_physical($_), grep $_ ne '%vserver%' && interface_is_plain( $_ ), @interfaces;
+    my @plain2;
+    my @wild1;
+    my @wild2;
+   
+    for ( @plain1 ) {
+	if ( /\+$/ ) {
+	    return ( '+' ) if $_ eq '+';
+	    push @wild1, $_;
+	    chop;
+	    push @wild2, $_;
+	} else {
+	    push @plain2, $_;
+	}
+    }
+
+    return @plain2 unless @wild1;
+    
+    @plain1 = ();
+    
+NAME:
+    for my $name ( @plain2) {
+	for ( @wild2 ) {
+	    next NAME if substr( $name, 0, length( $_ ) ) eq $_;
+	}
+
+	push @plain1, $name;
+    }
+
+    ( @plain1, @wild1 );
 }
 
 #

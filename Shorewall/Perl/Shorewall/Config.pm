@@ -1655,18 +1655,20 @@ sub close_file() {
 #
 sub have_capability( $ );
 
+#
+# Report an error from process_conditional() -- the first argument is the linenumber
+#
+sub cond_error( $$ ) {
+    $currentlinenumber = $_[0];
+    fatal_error $_[1];
+}
+
 sub process_conditional( $$$ ) {
     my ( $omitting, $line, $linenumber ) = @_;
-    #
-    # Save/set $currentlinenumber so that fatal_error will report correct line number
-    #
-    my $save_currentlinenumber = $currentlinenumber;
-
-    $currentlinenumber = $linenumber;
 
     print "CD===> $line\n" if $debug;
 
-    fatal_error "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/;
+    cond_error $linenumber, "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/;
 
     my ($keyword, $rest) = ( $1, $2 );
 
@@ -1680,10 +1682,10 @@ sub process_conditional( $$$ ) {
     my ( $lastkeyword, $prioromit, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
     if ( $keyword =~ /^IF/ ) {
-	fatal_error "Missing IF variable" unless $rest;
+	cond_error $linenumber, "Missing IF variable" unless $rest;
 	my $invert = $rest =~ s/^!\s*//;
 
-	fatal_error "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
+	cond_error $linenumber, "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
 
 	push @ifstack, [ 'IF', $omitting, $omitting, $linenumber ];
 
@@ -1706,20 +1708,16 @@ sub process_conditional( $$$ ) {
 
 	$omitting ||= $lastomit; #?IF cannot transition from omitting -> not omitting
     } elsif ( $keyword eq 'ELSE' ) {
-	fatal_error "Invalid ?ELSE" unless $rest eq '';
-	fatal_error "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword eq 'IF';
+	cond_error $linenumber, "Invalid ?ELSE" unless $rest eq '';
+	cond_error $linenumber, "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword eq 'IF';
 	$omitting = ! $omitting unless $lastomit;
 	$ifstack[-1] = [ 'ELSE', $prioromit, $omitting, $lastlinenumber ];
     } else {
-	fatal_error "Invalid ?ENDIF" unless $rest eq '';
-	fatal_error q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
+	cond_error $linenumber, "Invalid ?ENDIF" unless $rest eq '';
+	cond_error $linenumber, q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
 	$omitting = $prioromit;
 	pop @ifstack;
     }
-    #
-    # Restore $currentlinenumber
-    #
-    $currentlinenumber = $save_currentlinenumber;
 
     $omitting;
 }

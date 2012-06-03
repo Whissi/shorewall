@@ -1652,8 +1652,14 @@ sub have_capability( $ );
 
 sub process_conditional( $$$ ) {
     my ( $omitting, $line, $linenumber ) = @_;
+    #
+    # Save/set $currentlinenumber so that fatal_error will report correct line number
+    #
+    my $save_currentlinenumber = $currentlinenumber;
 
-    print "CD===> $currentline\n" if $debug;
+    $currentlinenumber = $linenumber;
+
+    print "CD===> $line\n" if $debug;
 
     fatal_error "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/;
 
@@ -1705,6 +1711,10 @@ sub process_conditional( $$$ ) {
 	$omitting = $prioromit;
 	pop @ifstack;
     }
+    #
+    # Restore $currentlinenumber
+    #
+    $currentlinenumber = $save_currentlinenumber;
 
     $omitting;
 }
@@ -2264,10 +2274,21 @@ sub read_a_line($) {
 	$currentlinenumber = 0;
 
 	while ( <$currentfile> ) {
+	    chomp;
+	    #
+	    # Handle conditionals
+	    #
+	    if ( /^\s*\?(?:IF|ELSE|ENDIF)/ ) {
+		$omitting = process_conditional( $omitting, $_, $. );
+		next;
+	    }
+
+	    if ( $omitting ) {
+		print "OMIT=> $_\n" if $debug;
+		next;
+	    }
 
 	    $currentlinenumber = $. unless $currentlinenumber;
-
-	    chomp;
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #
@@ -2281,21 +2302,6 @@ sub read_a_line($) {
 	    # Continuation
 	    #
 	    chop $currentline, next if ($currentline .= $_) =~ /\\$/;
-	    #
-	    # Handle conditionals
-	    #
-	    if ( $currentline =~ /^\s*\?(?:IF|ELSE|ENDIF)/ ) {
-		$omitting = process_conditional( $omitting, $currentline, $currentlinenumber );
-		$currentline='';
-		next;
-	    }
-
-	    if ( $omitting ) {
-		print "OMIT=> $currentline\n" if $debug;
-		$currentline='';
-		$currentlinenumber = 0;
-		next;
-	    }
 	    #
 	    # Must check for shell/perl before doing variable expansion
 	    #

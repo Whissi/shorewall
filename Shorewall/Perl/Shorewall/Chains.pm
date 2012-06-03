@@ -112,6 +112,7 @@ our %EXPORT_TAGS = (
 				       ALL_COMMANDS
 				       NOT_RESTORE
 				       OPTIMIZE_POLICY_MASK
+				       OPTIMIZE_POLICY_MASK1
 				       OPTIMIZE_RULESET_MASK
 				       OPTIMIZE_MASK
 
@@ -368,6 +369,7 @@ use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
 #
 use constant {
 	       OPTIMIZE_POLICY_MASK  => 0x02 , # Call optimize_policy_chains()
+	       OPTIMIZE_POLICY_MASK1 => 0x06 ,
 	       OPTIMIZE_RULESET_MASK => 0x1C , # Call optimize_ruleset()
 	     };
 

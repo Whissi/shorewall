@@ -821,7 +821,7 @@ sub compiler {
 	    #
 	    # More Optimization
 	    #
-	    optimize_ruleset if $config{OPTIIMIZE} & OPTIMIZE_RULESET_MASK;
+	    optimize_ruleset if $config{OPTIMIZE} & OPTIMIZE_RULESET_MASK;
 	}
 
 	enable_script;

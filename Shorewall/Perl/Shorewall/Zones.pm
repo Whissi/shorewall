@@ -568,6 +568,7 @@ sub determine_zones()
 		for ( @{$zones{$zone}{children}} ) {
 		    next ZONE unless $ordered{$_};
 		}
+
 		$ordered{$zone} = 1;
 		push @zones, $zone;
 		redo PUSHED;
@@ -575,7 +576,7 @@ sub determine_zones()
 	}
     }
 
-    assert( scalar @zones == scalar @z );
+    assert( @zones == @z );
 
 }
 

@@ -1191,6 +1191,9 @@ sub process_interface( $$ ) {
 	# No options specified -- auto-detect bridge
 	#
 	$hostoptionsref->{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export;
+	#
+	# And give the 'ignore' option a defined value
+	#
 	$options{ignore} ||= 0;
     }
 

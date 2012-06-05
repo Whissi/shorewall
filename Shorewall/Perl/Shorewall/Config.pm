@@ -2311,13 +2311,13 @@ sub read_a_line($) {
 	    # Must check for shell/perl before doing variable expansion
 	    #
 	    if ( $options & EMBEDDED_ENABLED ) {
-		if ( $currentline =~ s/^\s*\??(BEGIN\s+)?SHELL\s*;?// ) {
+		if ( $currentline =~ s/^\s*\??(BEGIN\s+)SHELL\s*;?// || $currentline =~ s/^\s*\??SHELL\s*// ) {
 		    handle_first_entry if $first_entry;
 		    embedded_shell( $1 );
 		    next;
 		}
 
-		if ( $currentline =~ s/^\s*\??(BEGIN\s+)?PERL\s*\;?// ) {
+		if ( $currentline =~ s/^\s*\??(BEGIN\s+)PERL\s*;?// || $currentline =~ s/^\s*\??PERL\s*// ) {
 		    handle_first_entry if $first_entry;
 		    embedded_perl( $1 );
 		    next;

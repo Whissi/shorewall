@@ -2104,6 +2104,8 @@ sub embedded_perl( $ ) {
 
 	fatal_error ( "Missing END PERL" ) unless $last;
 	fatal_error ( "Invalid END PERL directive" ) unless $currentline =~ /^\s*$/;
+    } else {
+	$currentline = '';
     }
 
     $embedded++;

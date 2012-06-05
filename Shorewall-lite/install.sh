@@ -403,6 +403,7 @@ echo "Common functions linked through ${DESTDIR}${SHAREDIR}/$PRODUCT/functions"
 #
 
 install_file shorecap ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap 0755
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${LIBEXECDIR}/$PRODUCT/shorecap
 
 echo
 echo "Capability file builder installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap"

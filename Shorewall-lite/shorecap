@@ -45,17 +45,22 @@
 #    used during firewall compilation, then the generated firewall program will likewise not
 #    require Shorewall to be installed.
 
-SHAREDIR=/usr/share/shorewall-lite
-VARDIR=/var/lib/shorewall-lite
-CONFDIR=/etc/shorewall-lite
-g_program=shorewall-lite
-g_product="Shorewall Lite"
-g_family=4
-g_base=shorewall
-g_basedir=/usr/share/shorewall-lite
 
-. /usr/share/shorewall-lite/lib.base
-. /usr/share/shorewall/lib.cli
+g_program=shorewall-lite
+
+#
+# This is modified by the installer when ${SHAREDIR} != /usr/share
+#
+. /usr/share/shorewall/shorewallrc
+
+g_libexec="$LIBEXECDIR"
+g_sharedir="$SHAREDIR"/shorewall-lite
+g_sbindir="$SBINDIR"
+g_vardir="$VARDIR"
+g_confdir="$CONFDIR"/shorewall-lite
+g_readrc=1
+
+. ${SHAREDIR}/shorewall/lib.cli
 . /usr/share/shorewall-lite/configpath
 
 [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin

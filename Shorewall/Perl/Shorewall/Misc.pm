@@ -749,7 +749,7 @@ sub add_common_rules ( $ ) {
 
 	my $interfaceref = find_interface $interface;
 
-	unless ( $interfaceref->{options}{ignore} ) {
+	unless ( $interfaceref->{options}{ignore} & NO_SFILTER ) {
 
 	    my @filters = @{$interfaceref->{filter}};
 

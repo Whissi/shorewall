@@ -41,6 +41,8 @@ our @EXPORT = qw( NOTHING
 		  IP
 		  BPORT
 		  IPSEC
+		  NO_UPDOWN
+		  NO_SFILTER
 
 		  determine_zones
 		  zone_report
@@ -221,11 +223,14 @@ use constant { SIMPLE_IF_OPTION   => 1,
 	       IF_OPTION_WILDOK   => 64
 	   };
 
+use constant { NO_UPDOWN   => 1, 
+	       NO_SFILTER  => 2 };
+
 my %validinterfaceoptions;
 
 my %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
 
-my %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 );
+my %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN );
 
 my %validhostoptions;
 
@@ -283,6 +288,7 @@ sub initialize( $$ ) {
 				  bridge      => SIMPLE_IF_OPTION,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
+				  ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
@@ -318,6 +324,7 @@ sub initialize( $$ ) {
 	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
+				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -1033,7 +1040,7 @@ sub process_interface( $$ ) {
 
     if ( $options eq 'ignore' ) {
 	fatal_error "Ignored interfaces may not be associated with a zone" if $zone;
-	$options{ignore} = 1;
+	$options{ignore} = NO_UPDOWN | NO_SFILTER;
 	$options = '-';
     }
 
@@ -1153,7 +1160,16 @@ sub process_interface( $$ ) {
 	    }
 	}
 
-	fatal_error "Invalid combination of interface options" if $options{required} && $options{optional};
+	fatal_error "Invalid combination of interface options"
+	    if ( ( $options{required} && $options{optional} ) ||
+		 ( $options{required} && $options{ignore}   ) ||
+		 ( $options{optional} && $options{ignore}   ) );
+
+	if ( supplied( my $ignore = $options{ignore} ) ) {
+	    fatal_error "Invalid value ignore=0" if ! $ignore;
+	} else {
+	    $options{ignore} = 0;
+	}
 
 	if ( $netsref eq 'dynamic' ) {
 	    my $ipset = $family == F_IPV4 ? "${zone}_" . chain_base $physical : "6_${zone}_" . chain_base $physical;
@@ -1175,6 +1191,7 @@ sub process_interface( $$ ) {
 	# No options specified -- auto-detect bridge
 	#
 	$hostoptionsref->{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export;
+	$options{ignore} ||= 0;
     }
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
@@ -1477,8 +1494,8 @@ NAME:
 #
 # Returns reference to array of interfaces with the passed option
 #
-sub find_interfaces_by_option( $ ) {
-    my $option = $_[0];
+sub find_interfaces_by_option( $;$ ) {
+    my ( $option , $nonzero ) = @_;
     my @ints = ();
 
     for my $interface ( @interfaces ) {
@@ -1487,7 +1504,11 @@ sub find_interfaces_by_option( $ ) {
 	next unless $interfaceref->{root};
 
 	my $optionsref = $interfaceref->{options};
-	if ( $optionsref && defined $optionsref->{$option} ) {
+	if ( $nonzero ) {
+	    if ( $optionsref && $optionsref->{$option} ) {
+		push @ints , $interface
+	    }
+	} elsif ( $optionsref && defined $optionsref->{$option} ) {
 	    push @ints , $interface
 	}
     }

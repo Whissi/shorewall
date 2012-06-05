@@ -244,13 +244,22 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">ignore</emphasis></term>
+              <term><emphasis role="bold">ignore[=1]</emphasis></term>
 
               <listitem>
                 <para>When specified, causes the generated script to ignore
                 up/down events from Shorewall-init for this device.
                 Additionally, the option exempts the interface from hairpin
-                filtering.</para>
+                filtering. When '=1' is omitted, the ZONE column must contain
+                '-' and <option>ignore</option> must be the only
+                OPTION.</para>
+
+                <para>Beginning with Shorewall 4.5.5, may be specified as
+                '<option>ignore=1</option>' which only causes the generated
+                script to ignore up/down events from Shorewall-init; hairpin
+                filtering is still applied. In this case, the above
+                restrictions on the ZONE and OPTIONS columns are
+                lifted.</para>
               </listitem>
             </varlistentry>
 

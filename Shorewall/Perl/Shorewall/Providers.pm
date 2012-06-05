@@ -1406,7 +1406,7 @@ sub compile_updown() {
 
     push_indent;
 
-    my $ignore   = find_interfaces_by_option 'ignore';
+    my $ignore   = find_interfaces_by_option 'ignore', 1;
     my $required = find_interfaces_by_option 'required';
     my $optional = find_interfaces_by_option 'optional';
 

@@ -31,7 +31,7 @@ FORMAT 2
 
 DEFAULTS DROP,-
 
-BEGIN PERL;
+?BEGIN PERL;
 
 use Shorewall::Config;
 use Shorewall::Chains;
@@ -52,4 +52,4 @@ allow_optimize( $chainref );
 
 1;
 
-END PERL;
+?END PERL;

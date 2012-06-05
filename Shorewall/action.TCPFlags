@@ -13,11 +13,10 @@ FORMAT 2
 
 DEFAULTS DROP,-
 
-BEGIN PERL;
+?BEGIN PERL;
 use strict;
 use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
 use Shorewall::Chains;
-
 
 my ( $disposition, $audit ) = get_action_params( 2 );
 
@@ -55,7 +54,7 @@ add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,RST SYN,RST';
 add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,FIN SYN,FIN';
 add_ijump $chainref , g => $disposition, p => 'tcp --syn --sport 0';
 
-END PERL;
+?END PERL;
 
 
 

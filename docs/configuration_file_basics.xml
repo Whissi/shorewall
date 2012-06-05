@@ -1625,15 +1625,22 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <itemizedlist>
       <listitem>
-        <para><emphasis role="bold">PERL</emphasis> &lt;<emphasis>perl
+        <para>[<emphasis role="bold">?</emphasis>]<emphasis
+        role="bold">PERL</emphasis> &lt;<emphasis>perl
         script</emphasis>&gt;</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">SHELL</emphasis> &lt;<emphasis>shell
+        <para>[<emphasis role="bold">?</emphasis>]<emphasis
+        role="bold">SHELL</emphasis> &lt;<emphasis>shell
         script</emphasis>&gt;</para>
       </listitem>
     </itemizedlist>
+
+    <note>
+      <para>The optional leading question mark (?) is allowed in Shorewall
+      4.5.5 and later.</para>
+    </note>
 
     <para>Shell scripts run in a child shell process and their output is piped
     back to the compiler which processes that output as if it were embedded at
@@ -1678,14 +1685,19 @@ use Shorewall::Config ( qw/shorewall/ );</programlisting>
       </listitem>
     </orderedlist>
 
-    <para>Multi-line scripts use one of the following forms:<programlisting><emphasis
-          role="bold">BEGIN SHELL</emphasis>
+    <para>Multi-line scripts use one of the following forms:<programlisting>[<emphasis
+          role="bold">?</emphasis>]<emphasis role="bold">BEGIN SHELL</emphasis>
 &lt;<emphasis>shell script</emphasis>&gt;
-<emphasis role="bold">END</emphasis> [ <emphasis role="bold">SHELL</emphasis> ]</programlisting><programlisting><emphasis
-          role="bold">BEGIN PERL</emphasis> [;]
+[<emphasis role="bold">?</emphasis>]<emphasis role="bold">END</emphasis> [ <emphasis
+          role="bold">SHELL</emphasis> ]</programlisting><programlisting>[<emphasis
+          role="bold">?</emphasis>]<emphasis role="bold">BEGIN PERL</emphasis> [<emphasis
+          role="bold">;</emphasis>]
 &lt;<emphasis>perl script</emphasis>&gt;
-<emphasis role="bold">END</emphasis> [ <emphasis role="bold">PERL</emphasis> ] [<emphasis
-          role="bold">;</emphasis>]</programlisting></para>
+[<emphasis role="bold">?</emphasis>]<emphasis role="bold">END</emphasis> [ <emphasis
+          role="bold">PERL</emphasis> ] [<emphasis role="bold">;</emphasis>]</programlisting><note>
+        <para>The optional leading question mark (?) is allowed in Shorewall
+        4.5.5 and later.</para>
+      </note></para>
   </section>
 
   <section id="dnsnames">

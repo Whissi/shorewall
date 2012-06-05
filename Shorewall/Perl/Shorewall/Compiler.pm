@@ -817,7 +817,7 @@ sub compiler {
 	    #
 	    # Optimize Policy Chains
 	    #
-	    optimize_policy_chains if ( $optimize & OPTIMIZE_POLICY_MASK1 ) == OPTIMIZE_POLICY_MASK; # Level 2 but not 4
+	    optimize_policy_chains if ( $optimize & OPTIMIZE_POLICY_MASK2n4 ) == OPTIMIZE_POLICY_MASK; # Level 2 but not 4
 	    #
 	    # More Optimization
 	    #
@@ -882,7 +882,7 @@ sub compiler {
 		#
 		# Optimize Policy Chains
 		#
-		optimize_policy_chains if ( $optimize & OPTIMIZE_POLICY_MASK1 ) == OPTIMIZE_POLICY_MASK; # Level 2 but not 4
+		optimize_policy_chains if ( $optimize & OPTIMIZE_POLICY_MASK2n4 ) == OPTIMIZE_POLICY_MASK; # Level 2 but not 4
 		#
 		# Ruleset Optimization
 		#

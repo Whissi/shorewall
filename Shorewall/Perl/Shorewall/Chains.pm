@@ -747,6 +747,7 @@ sub set_rule_option( $$$ ) {
 
 		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 	    } else {
+		assert( ! reftype $value );
 		$ruleref->{$option} = join(' ', $value1, $value ) unless $value1 eq $value;
 	    }
 	} elsif ( $opttype == EXCLUSIVE ) {
@@ -1194,12 +1195,16 @@ sub push_matches {
     while ( @_ ) {
 	my ( $option, $value ) = ( shift, shift );
 
-	assert( defined $value );
+	assert( defined $value && ! reftype $value );
 
 	if ( exists $ruleref->{$option} ) {
 	    my $curvalue = $ruleref->{$option};
-	    $ruleref->{$option} = [ $curvalue ] unless reftype $curvalue;
-	    push @{$ruleref->{$option}}, reftype $value ? @$value : $value;
+	    if ( $globals{KLUDGEFREE} ) {
+		$ruleref->{$option} = [ $curvalue ] unless reftype $curvalue;
+		push @{$ruleref->{$option}}, reftype $value ? @$value : $value;
+	    } else {
+		$ruleref->{$option} = join( '', $curvalue, $value );
+	    }
 	} else {
 	    $ruleref->{$option} = $value;
 	    $dont_optimize ||= $option =~ /^[piosd]$/ && $value =~ /^!/;
@@ -4799,7 +4804,8 @@ sub imatch_source_net( $;$\$ ) {
 	 ( $family == F_IPV6 && $net =~  /^(!?)(.*:.*)-(.*:.*)$/ ) ) {
 	my ($addr1, $addr2) = ( $2, $3 );
 	$net =~ s/!// if my $invert = $1 ? '! ' : '';
-	fatal_error "Address Ranges require the Multiple Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
+	validate_range $addr1, $addr2;
+	require_capability( 'IPRANGE_MATCH' , 'Address Ranges' , '' );
 	return ( iprange => "${invert}--src-range $net" );
     }
 

@@ -1443,6 +1443,396 @@ sub add_interface_jumps {
     handle_loopback_traffic;
 }
 
+#
+# Do the initial matrix processing for a complex zone
+#
+sub handle_complex_zone( $$ ) {
+    my ( $zone, $zoneref ) = @_;
+
+    our %input_jump_added;
+    our %output_jump_added;
+    our %forward_jump_added;
+    our %ipsec_jump_added;
+    #
+    # Complex zone or we have more than two off-firewall zones -- Shorewall::Rules::classic_blacklist created a zone forwarding chain
+    #
+    my $frwd_ref = $filter_table->{zone_forward_chain( $zone )};
+
+    assert( $frwd_ref, $zone );
+    #
+    # Add Zone mark if any
+    #
+    add_ijump( $frwd_ref , j => 'MARK --set-mark ' . in_hex( $zoneref->{mark} ) . '/' . in_hex( $globals{ZONE_MASK} ) ) if $zoneref->{mark};
+
+    if ( have_ipsec ) {
+	#
+	# Prior to KLUDGEFREE, policy match could only match an 'in' or an 'out' policy (but not both), so we place the
+	# '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
+	# can match '--pol none --dir out' rules and send the packets down the wrong rules chain.
+	#
+	my $type       = $zoneref->{type};
+	my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
+
+	for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
+	    my $sourcechainref = $filter_table->{forward_chain $interface};
+	    my @interfacematch;
+	    my $interfaceref = find_interface $interface;
+
+	    if ( use_forward_chain( $interface, $sourcechainref ) ) {
+		if ( $interfaceref->{ports} && $interfaceref->{options}{bridge} ) {
+		    @interfacematch = imatch_source_dev $interface;
+		    copy_rules( $sourcechainref, $frwd_ref, 1 ) unless $ipsec_jump_added{$zone}++;
+		    $sourcechainref = $filter_table->{FORWARD};
+		} elsif ( $interfaceref->{options}{port} ) {
+		    #
+		    # The forwarding chain for a bridge with ports is always used
+		    #
+		    add_ijump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
+			       j => $sourcechainref ,
+			       imatch_source_dev( $interface , 1 ) )
+			unless $forward_jump_added{$interface}++;
+		} else {
+		    add_ijump $filter_table->{FORWARD} , j => $sourcechainref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+		}
+	    } else {
+		if ( $interfaceref->{options}{port} ) {
+		    #
+		    # The forwarding chain for a bridge with ports is always used
+		    #
+		    $sourcechainref = $filter_table->{ forward_chain $interfaceref->{bridge} };
+		    @interfacematch = imatch_source_dev $interface, 1;
+		} else {
+		    $sourcechainref = $filter_table->{FORWARD};
+		    @interfacematch = imatch_source_dev $interface;
+		}
+
+		move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
+	    }
+
+	    my $arrayref = $source_ref->{$interface};
+
+	    for my $hostref ( @{$arrayref} ) {
+		my @ipsec_match = match_ipsec_in $zone , $hostref;
+		for my $net ( @{$hostref->{hosts}} ) {
+		    add_ijump(
+			      $sourcechainref,
+			      @{$zoneref->{parents}} ? 'j' : 'g' => source_exclusion( $hostref->{exclusions}, $frwd_ref ),
+			      @interfacematch ,
+			      imatch_source_net( $net ),
+			      @ipsec_match
+			     );
+		}
+	    }
+	}
+    }
+}
+ 
+#
+# The passed zone is a sub-zone. We need to determine if
+#
+#   a) A parent zone defines DNAT/REDIRECT or notrack rules; and
+#   b) The current zone has a CONTINUE policy to some other zone.
+#
+# If a) but not b), then we must avoid sending packets from this
+# zone through the DNAT/REDIRECT or notrack chain for the parent.
+# 
+sub handle_nested_zone( $$ ) {
+    my ( $zone, $zoneref ) = @_;
+    #
+    # Function returns this 3-tuple
+    #
+    my ( $nested, $parenthasnat, $parenthasnotrack ) = ( 1, 0, 0 );
+    
+    for my $parent ( @{$zoneref->{parents}} ) {
+	my $ref1 = $nat_table->{dnat_chain $parent} || {};
+	my $ref2 = $raw_table->{notrack_chain $parent} || {};
+	$parenthasnat     = 1 if $ref1->{referenced};
+	$parenthasnotrack = 1 if $ref2->{referenced};
+	last if $parenthasnat && $parenthasnotrack;
+    }
+
+    if ( $parenthasnat || $parenthasnotrack ) {
+	for my $zone1 ( all_zones ) {
+	    if ( $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy} eq 'CONTINUE' ) {
+		#
+		# This zone has a continue policy to another zone. We must
+		# send packets from this zone through the parent's DNAT/REDIRECT/NOTRACK chain.
+		#
+		$nested = 0;
+		last;
+	    }
+	}
+    } else {
+	#
+	# No parent has DNAT or notrack so there is nothing to worry about. Don't bother to generate needless RETURN rules in the 'dnat' or 'notrack' chain.
+	#
+	$nested = 0;
+    }
+
+    ( $nested, $parenthasnat, $parenthasnotrack );
+}
+
+#
+# Generate the PREROUTING, INPUT and OUTPUT jumps for the passed ($zone:$typeref:$interface)
+#
+sub handle_pio_jumps( $$$$$$$$ ) {
+    my ( $zone,
+	 $zoneref,
+	 $typeref,
+	 $interface,
+	 $nested,
+	 $parenthasnat,
+	 $parenthasnotrack,
+	 $frwd_ref,
+       ) = @_;
+
+    our @vservers;
+    our %input_jump_added;
+    our %output_jump_added;
+    our %forward_jump_added;
+
+    my $arrayref      = $typeref->{$interface};
+    my $interfaceref  = find_interface $interface;
+    my $isport        = $interfaceref->{options}{port};
+    my $bridge        = $interfaceref->{bridge};
+    my $notrackref    = ensure_chain 'raw' , notrack_chain( $zone );
+    my $chain1        = rules_target firewall_zone , $zone;
+    my $chain2        = rules_target $zone, firewall_zone;
+
+    for my $hostref ( @$arrayref ) {
+	my @ipsec_in_match  = match_ipsec_in  $zone , $hostref;
+	my @ipsec_out_match = match_ipsec_out $zone , $hostref;
+	my $exclusions = $hostref->{exclusions};
+
+	for my $net ( @{$hostref->{hosts}} ) {
+	    my @dest   = imatch_dest_net $net;
+	    #
+	    # OUTPUT
+	    #
+	    if ( $chain1 && ! ( zone_type( $zone) & BPORT ) ) {
+		#
+		# Policy from the firewall to this zone is not 'CONTINUE' and this isn't a bport zone
+		#
+		my $chain1ref = $filter_table->{$chain1};
+		my $nextchain = dest_exclusion( $exclusions, $chain1 );
+		my $outputref;
+		my $interfacechainref = $filter_table->{output_chain $interface};
+		my @interfacematch;
+		my $use_output = 0;
+
+		if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
+		    $outputref = $interfacechainref;
+
+		    if ( $isport ) {
+			add_ijump( $filter_table->{ output_chain $bridge },
+				   j => $outputref ,
+				   imatch_dest_dev( $interface, 1 ) )
+			    unless $output_jump_added{$interface}++;
+		    } else {
+			add_ijump $filter_table->{OUTPUT}, j => $outputref, imatch_dest_dev( $interface ) unless $output_jump_added{$interface}++;
+		    }
+
+		    $use_output = 1;
+
+		    unless ( lc $net eq IPv6_LINKLOCAL ) {
+			for my $vzone ( vserver_zones ) {
+			    generate_source_rules ( $outputref, $vzone, $zone, @dest );
+			}
+		    }
+		} elsif ( $isport ) {
+		    $outputref = $filter_table->{ output_chain $bridge };
+		    @interfacematch = imatch_dest_dev $interface, 1;
+		} else {
+		    $outputref = $filter_table->{OUTPUT};
+		    @interfacematch = imatch_dest_dev $interface;
+		}
+
+		add_ijump $outputref , j => $nextchain, @interfacematch, @dest, @ipsec_out_match;
+
+		add_ijump( $outputref , j => $nextchain, @interfacematch, d => '255.255.255.255' , @ipsec_out_match )
+		    if $family == F_IPV4 && $hostref->{options}{broadcast};
+
+		move_rules( $interfacechainref , $chain1ref ) unless $use_output;
+	    }
+
+	    clearrule;
+
+	    unless( $hostref->{options}{destonly} ) {
+		#
+		# PREROUTING
+		#
+		my $dnatref       = ensure_chain 'nat' , dnat_chain( $zone );
+		my $preroutingref = ensure_chain 'nat', 'dnat';
+
+		my @source = imatch_source_net $net;
+
+		if ( $dnatref->{referenced} ) {
+		    #
+		    # There are DNAT/REDIRECT rules with this zone as the source.
+		    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
+		    #
+		    add_ijump( $preroutingref,
+			       j => source_exclusion( $exclusions, $dnatref),
+			       imatch_source_dev( $interface),
+			       @source,
+			       @ipsec_in_match );
+
+		    if ( get_physical( $interface ) eq '+' ) {
+			#
+			# The jump from the PREROUTING chain to dnat may not have been added above
+			#
+			addnatjump 'PREROUTING', 'dnat' unless $preroutingref->{references}{PREROUTING};
+		    }
+
+		    check_optimization( $dnatref ) if @source;
+		}
+
+		if ( $notrackref->{referenced} ) {
+		    #
+		    # There are notrack rules with this zone as the source.
+		    # Add a jump from this source network to this zone's notrack chain
+		    #
+		    add_ijump $raw_table->{PREROUTING}, j => source_exclusion( $exclusions, $notrackref), imatch_source_dev( $interface), @source, @ipsec_in_match;
+		}
+
+		#
+		# If this zone has parents with DNAT/REDIRECT or notrack rules and there are no CONTINUE polcies with this zone as the source
+		# then add a RETURN jump for this source network.
+		#
+		if ( $nested ) {
+		    add_ijump $preroutingref,           j => 'RETURN', imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnat;
+		    add_ijump $raw_table->{PREROUTING}, j => 'RETURN', imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnotrack;
+		}
+		#
+		# INPUT
+		#
+		my $chain2ref = $filter_table->{$chain2};
+		my $inputchainref;
+		my $interfacechainref = $filter_table->{input_chain $interface};
+		my @interfacematch;
+		my $use_input;
+
+		if ( @vservers || use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
+		    $inputchainref = $interfacechainref;
+
+		    if ( $isport ) {
+			add_ijump( $filter_table->{ input_chain $bridge },
+				   j => $inputchainref ,
+				   imatch_source_dev($interface, 1) )
+			    unless $input_jump_added{$interface}++;
+		    } else {
+			add_ijump $filter_table->{INPUT}, j => $inputchainref, imatch_source_dev($interface) unless $input_jump_added{$interface}++;
+		    }
+
+		    $use_input = 1;
+
+		    unless ( lc $net eq IPv6_LINKLOCAL ) {
+			for my $vzone ( @vservers ) {
+			    my $target = rules_target( $zone, $vzone );
+			    generate_dest_rules( $inputchainref, $target, $vzone, @source, @ipsec_in_match ) if $target;
+			}
+		    }
+		} elsif ( $isport ) {
+		    $inputchainref = $filter_table->{ input_chain $bridge };
+		    @interfacematch = imatch_source_dev $interface, 1;
+		} else {
+		    $inputchainref = $filter_table->{INPUT};
+		    @interfacematch = imatch_source_dev $interface;
+		}
+
+		if ( $chain2 ) {
+		    add_ijump $inputchainref, j => source_exclusion( $exclusions, $chain2 ), @interfacematch, @source, @ipsec_in_match;
+		    move_rules( $interfacechainref , $chain2ref ) unless $use_input;
+		}
+
+		if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
+		    my $ref = source_exclusion( $exclusions, $frwd_ref );
+		    my $forwardref = $filter_table->{forward_chain $interface};
+
+		    if ( use_forward_chain $interface, $forwardref ) {
+			add_ijump $forwardref , j => $ref, @source, @ipsec_in_match;
+
+			if ( $isport ) {
+			    add_ijump( $filter_table->{ forward_chain $bridge } ,
+				       j => $forwardref ,
+				       imatch_source_dev( $interface , 1 ) )
+				unless $forward_jump_added{$interface}++;
+			} else {
+			    add_ijump $filter_table->{FORWARD} , j => $forwardref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
+			}
+		    } else {
+			if ( $isport ) {
+			    add_ijump( $filter_table->{ forward_chain $bridge } ,
+				       j => $ref ,
+				       imatch_source_dev( $interface, 1 ) ,
+				       @source,
+				       @ipsec_in_match );
+			} else {
+			    add_ijump $filter_table->{FORWARD} , j => $ref, imatch_source_dev( $interface ) , @source, @ipsec_in_match;
+			}
+
+			move_rules ( $forwardref , $frwd_ref );
+		    }
+		} # Complex non-IPSEC host group
+	    } # Not a destonly host group
+	} # Network Loop
+    } # Host Group Loop
+}
+
+#
+# Generate the list of destination zones from the passed source zone when optimization level 1 is selected
+#
+sub optimize1_zones( $$@ ) {
+    my $zone    = shift;
+    my $zoneref = shift;
+    my $last_chain = '';
+    my @dest_zones;
+    my @temp_zones;
+
+    for my $zone1 ( @_ )  {
+	my $zone1ref = find_zone( $zone1 );
+	my $policy = $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy};
+
+	next if $policy eq 'NONE';
+
+	my $chain = rules_target $zone, $zone1;
+
+	next unless $chain;
+
+	if ( $zone eq $zone1 ) {
+	    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! $zoneref->{options}{in_out}{routeback};
+	}
+
+	if ( $zone1ref->{type} & BPORT ) {
+	    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
+	}
+
+	if ( $chain =~ /(2all|-all)$/ ) {
+	    if ( $chain ne $last_chain ) {
+		$last_chain = $chain;
+		push @dest_zones, @temp_zones;
+		@temp_zones = ( $zone1 );
+	    } elsif ( $policy eq 'ACCEPT' ) {
+		push @temp_zones , $zone1;
+	    } else {
+		$last_chain = $chain;
+		@temp_zones = ( $zone1 );
+	    }
+	} else {
+	    push @dest_zones, @temp_zones, $zone1;
+	    @temp_zones = ();
+	    $last_chain = '';
+	}
+    }
+
+    if ( $last_chain && @temp_zones == 1 ) {
+	push @dest_zones, @temp_zones;
+	$last_chain = '';
+    }
+
+    ( $last_chain, @dest_zones );
+}
+
 # Generate the rules matrix.
 #
 # Stealing a comment from the Burroughs B6700 MCP Operating System source, "generate_matrix makes a sow's ear out of a silk purse".
@@ -1458,20 +1848,15 @@ sub generate_matrix() {
     #
     # Should this be the real PREROUTING chain?
     #
-    my $preroutingref = ensure_chain 'nat', 'dnat';
+    my @zones     = off_firewall_zones;
+    our @vservers = vserver_zones;
 
-    my $fw       = firewall_zone;
-    my @zones    = off_firewall_zones;
-    my @vservers = vserver_zones;
-
-    my $notrackref = $raw_table->{notrack_chain $fw};
-    my @state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
     my $interface_jumps_added = 0;
 
     our %input_jump_added   = ();
     our %output_jump_added  = ();
     our %forward_jump_added = ();
-    my  %ipsec_jump_added   = ();
+    our %ipsec_jump_added   = ();
 
     progress_message2 'Generating Rule Matrix...';
     progress_message  '  Handling complex zones...';
@@ -1481,86 +1866,14 @@ sub generate_matrix() {
     #
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
-
-	next if  @zones <= 2 && ! $zoneref->{complex};
-	#
-	# Complex zone or we have more than two off-firewall zones -- Shorewall::Rules::classic_blacklist created a zone forwarding chain
-	#
-	my $frwd_ref = $filter_table->{zone_forward_chain( $zone )};
-
-	assert( $frwd_ref, $zone );
-	#
-	# Add Zone mark if any
-	#
-	add_ijump( $frwd_ref , j => 'MARK --set-mark ' . in_hex( $zoneref->{mark} ) . '/' . in_hex( $globals{ZONE_MASK} ) ) if $zoneref->{mark};
-
-	if ( have_ipsec ) {
-	    #
-	    # Prior to KLUDGEFREE, policy match could only match an 'in' or an 'out' policy (but not both), so we place the
-	    # '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
-	    # can match '--pol none --dir out' rules and send the packets down the wrong rules chain.
-	    #
-	    my $type       = $zoneref->{type};
-	    my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
-
-	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
-		my $sourcechainref = $filter_table->{forward_chain $interface};
-		my @interfacematch;
-		my $interfaceref = find_interface $interface;
-
-		if ( use_forward_chain( $interface, $sourcechainref ) ) {
-		    if ( $interfaceref->{ports} && $interfaceref->{options}{bridge} ) {
-			@interfacematch = imatch_source_dev $interface;
-			copy_rules( $sourcechainref, $frwd_ref, 1 ) unless $ipsec_jump_added{$zone}++;
-			$sourcechainref = $filter_table->{FORWARD};
-		    } elsif ( $interfaceref->{options}{port} ) {
-			#
-			# The forwarding chain for a bridge with ports is always used
-			#
-			add_ijump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
-				   j => $sourcechainref ,
-				   imatch_source_dev( $interface , 1 ) )
-			    unless $forward_jump_added{$interface}++;
-		    } else {
-			add_ijump $filter_table->{FORWARD} , j => $sourcechainref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
-		    }
-		} else {
-		    if ( $interfaceref->{options}{port} ) {
-			#
-			# The forwarding chain for a bridge with ports is always used
-			#
-			$sourcechainref = $filter_table->{ forward_chain $interfaceref->{bridge} };
-			@interfacematch = imatch_source_dev $interface, 1;
-		    } else {
-			$sourcechainref = $filter_table->{FORWARD};
-			@interfacematch = imatch_source_dev $interface;
-		    }
-
-		    move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
-		}
-
-		my $arrayref = $source_ref->{$interface};
-
-		for my $hostref ( @{$arrayref} ) {
-		    my @ipsec_match = match_ipsec_in $zone , $hostref;
-		    for my $net ( @{$hostref->{hosts}} ) {
-			add_ijump(
-				  $sourcechainref,
-				  @{$zoneref->{parents}} ? 'j' : 'g' => source_exclusion( $hostref->{exclusions}, $frwd_ref ),
-				  @interfacematch ,
-				  imatch_source_net( $net ),
-				  @ipsec_match
-				 );
-		    }
-		}
-	    }
-	}
+	handle_complex_zone( $zone, $zoneref ) if @zones > 2 || $zoneref->{complex};
     }
-
     #
     # NOTRACK from firewall
     #
-    add_ijump $raw_table->{OUTPUT}, j => $notrackref if $notrackref->{referenced};
+    if ( ( my $notrackref = $raw_table->{notrack_chain(firewall_zone)}) ) {
+	add_ijump $raw_table->{OUTPUT}, j => $notrackref if $notrackref->{referenced};
+    }
     #
     # Main source-zone matrix-generation loop
     #
@@ -1569,63 +1882,17 @@ sub generate_matrix() {
     for my $zone ( @zones ) {
 	my $zoneref          = find_zone( $zone );
 	my $source_hosts_ref = $zoneref->{hosts};
-	my $chain1           = rules_target firewall_zone , $zone;
-	my $chain2           = rules_target $zone, firewall_zone;
-	my $type             = $zoneref->{type};
 	my $frwd_ref         = $filter_table->{zone_forward_chain $zone};
-	my $chain            = 0;
-	my $dnatref          = ensure_chain 'nat' , dnat_chain( $zone );
-	my $notrackref       = ensure_chain 'raw' , notrack_chain( $zone );
 	my $nested           = @{$zoneref->{parents}};
 	my $parenthasnat     = 0;
 	my $parenthasnotrack = 0;
 
-	if ( $nested ) {
-	    #
-	    # This is a sub-zone. We need to determine if
-	    #
-	    #   a) A parent zone defines DNAT/REDIRECT or notrack rules; and
-	    #   b) The current zone has a CONTINUE policy to some other zone.
-	    #
-	    # If a) but not b), then we must avoid sending packets from this
-	    # zone through the DNAT/REDIRECT or notrack chain for the parent.
-	    #
-	    for my $parent ( @{$zoneref->{parents}} ) {
-		my $ref1 = $nat_table->{dnat_chain $parent} || {};
-		my $ref2 = $raw_table->{notrack_chain $parent} || {};
-		$parenthasnat     = 1 if $ref1->{referenced};
-		$parenthasnotrack = 1 if $ref2->{referenced};
-		last if $parenthasnat && $parenthasnotrack;
-	    }
-
-	    if ( $parenthasnat || $parenthasnotrack ) {
-		for my $zone1 ( all_zones ) {
-		    if ( $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy} eq 'CONTINUE' ) {
-			#
-			# This zone has a continue policy to another zone. We must
-			# send packets from this zone through the parent's DNAT/REDIRECT/NOTRACK chain.
-			#
-			$nested = 0;
-			last;
-		    }
-		}
-	    } else {
-		#
-		# No parent has DNAT or notrack so there is nothing to worry about. Don't bother to generate needless RETURN rules in the 'dnat' or 'notrack' chain.
-		#
-		$nested = 0;
-	    }
-	}
+	( $nested, $parenthasnat, $parenthasnotrack) = handle_nested_zone( $zone, $zoneref ) if $nested;
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
 	for my $typeref ( values %$source_hosts_ref ) {
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
-		my $arrayref = $typeref->{$interface};
-		my $interfaceref = find_interface $interface;
-		my $isport = $interfaceref->{options}{port};
-		my $bridge = $interfaceref->{bridge};
-
 		if ( get_physical( $interface ) eq '+' ) {
 		    #
 		    # Insert the interface-specific jumps before this one which is not interface-specific
@@ -1633,174 +1900,17 @@ sub generate_matrix() {
 		    add_interface_jumps(@interfaces) unless $interface_jumps_added++;
 		}
 
-		for my $hostref ( @$arrayref ) {
-		    my @ipsec_in_match  = match_ipsec_in  $zone , $hostref;
-		    my @ipsec_out_match = match_ipsec_out $zone , $hostref;
-		    my $exclusions = $hostref->{exclusions};
-
-		    for my $net ( @{$hostref->{hosts}} ) {
-			my @dest   = imatch_dest_net $net;
-
-			if ( $chain1 && ! ( zone_type( $zone) & BPORT ) ) {
-			    my $chain1ref = $filter_table->{$chain1};
-			    my $nextchain = dest_exclusion( $exclusions, $chain1 );
-			    my $outputref;
-			    my $interfacechainref = $filter_table->{output_chain $interface};
-			    my @interfacematch;
-			    my $use_output = 0;
-
-			    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
-				$outputref = $interfacechainref;
-
-				if ( $isport ) {
-				    add_ijump( $filter_table->{ output_chain $bridge },
-					       j => $outputref ,
-					       imatch_dest_dev( $interface, 1 ) )
-					unless $output_jump_added{$interface}++;
-				} else {
-				    add_ijump $filter_table->{OUTPUT}, j => $outputref, imatch_dest_dev( $interface ) unless $output_jump_added{$interface}++;
-				}
-
-				$use_output = 1;
-
-				unless ( lc $net eq IPv6_LINKLOCAL ) {
-				    for my $vzone ( vserver_zones ) {
-					generate_source_rules ( $outputref, $vzone, $zone, @dest );
-				    }
-				}
-			    } elsif ( $isport ) {
-				$outputref = $filter_table->{ output_chain $bridge };
-				@interfacematch = imatch_dest_dev $interface, 1;
-			    } else {
-				$outputref = $filter_table->{OUTPUT};
-				@interfacematch = imatch_dest_dev $interface;
-			    }
-
-			    add_ijump $outputref , j => $nextchain, @interfacematch, @dest, @ipsec_out_match;
-
-			    add_ijump( $outputref , j => $nextchain, @interfacematch, d => '255.255.255.255' , @ipsec_out_match )
-				if $family == F_IPV4 && $hostref->{options}{broadcast};
-
-			    move_rules( $interfacechainref , $chain1ref ) unless $use_output;
-			}
-
-			clearrule;
-
-			next if $hostref->{options}{destonly};
-
-			my @source = imatch_source_net $net;
-
-			if ( $dnatref->{referenced} ) {
-			    #
-			    # There are DNAT/REDIRECT rules with this zone as the source.
-			    # Add a jump from this source network to this zone's DNAT/REDIRECT chain
-			    #
-			    add_ijump( $preroutingref,
-				       j => source_exclusion( $exclusions, $dnatref),
-				       imatch_source_dev( $interface),
-				       @source,
-				       @ipsec_in_match );
-
-			    if ( get_physical( $interface ) eq '+' ) {
-				#
-				# The jump from the PREROUTING chain to dnat may not have been added above
-				#
-				addnatjump 'PREROUTING', 'dnat' unless $preroutingref->{references}{PREROUTING};
-			    }
-
-			    check_optimization( $dnatref ) if @source;
-			}
-
-			if ( $notrackref->{referenced} ) {
-			    #
-			    # There are notrack rules with this zone as the source.
-			    # Add a jump from this source network to this zone's notrack chain
-			    #
-			    add_ijump $raw_table->{PREROUTING}, j => source_exclusion( $exclusions, $notrackref), imatch_source_dev( $interface), @source, @ipsec_in_match;
-			}
-
-			#
-			# If this zone has parents with DNAT/REDIRECT or notrack rules and there are no CONTINUE polcies with this zone as the source
-			# then add a RETURN jump for this source network.
-			#
-			if ( $nested ) {
-			    add_ijump $preroutingref,           j => 'RETURN', imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnat;
-			    add_ijump $raw_table->{PREROUTING}, j => 'RETURN', imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnotrack;
-			}
-
-			my $chain2ref = $filter_table->{$chain2};
-			my $inputchainref;
-			my $interfacechainref = $filter_table->{input_chain $interface};
-			my @interfacematch;
-			my $use_input;
-
-			if ( @vservers || use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
-			    $inputchainref = $interfacechainref;
-
-			    if ( $isport ) {
-				add_ijump( $filter_table->{ input_chain $bridge },
-					   j => $inputchainref ,
-					   imatch_source_dev($interface, 1) )
-				    unless $input_jump_added{$interface}++;
-			    } else {
-				add_ijump $filter_table->{INPUT}, j => $inputchainref, imatch_source_dev($interface) unless $input_jump_added{$interface}++;
-			    }
-
-			    $use_input = 1;
-
-			    unless ( lc $net eq IPv6_LINKLOCAL ) {
-				for my $vzone ( @vservers ) {
-				    my $target = rules_target( $zone, $vzone );
-				    generate_dest_rules( $inputchainref, $target, $vzone, @source, @ipsec_in_match ) if $target;
-				}
-			    }
-			} elsif ( $isport ) {
-			    $inputchainref = $filter_table->{ input_chain $bridge };
-			    @interfacematch = imatch_source_dev $interface, 1;
-			} else {
-			    $inputchainref = $filter_table->{INPUT};
-			    @interfacematch = imatch_source_dev $interface;
-			}
-
-			if ( $chain2 ) {
-			    add_ijump $inputchainref, j => source_exclusion( $exclusions, $chain2 ), @interfacematch, @source, @ipsec_in_match;
-			    move_rules( $interfacechainref , $chain2ref ) unless $use_input;
-			}
-
-			if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
-			    my $ref = source_exclusion( $exclusions, $frwd_ref );
-			    my $forwardref = $filter_table->{forward_chain $interface};
-
-			    if ( use_forward_chain $interface, $forwardref ) {
-				add_ijump $forwardref , j => $ref, @source, @ipsec_in_match;
-
-				if ( $isport ) {
-				    add_ijump( $filter_table->{ forward_chain $bridge } ,
-					       j => $forwardref ,
-					       imatch_source_dev( $interface , 1 ) )
-					unless $forward_jump_added{$interface}++;
-				} else {
-				    add_ijump $filter_table->{FORWARD} , j => $forwardref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
-				}
-			    } else {
-				if ( $isport ) {
-				    add_ijump( $filter_table->{ forward_chain $bridge } ,
-					       j => $ref ,
-					       imatch_source_dev( $interface, 1 ) ,
-					       @source,
-					       @ipsec_in_match );
-				} else {
-				    add_ijump $filter_table->{FORWARD} , j => $ref, imatch_source_dev( $interface ) , @source, @ipsec_in_match;
-				}
-
-				move_rules ( $forwardref , $frwd_ref );
-			    }
-			}
-		    }
-		}
+		handle_pio_jumps( $zone, 
+				  $zoneref,
+				  $typeref,
+				  $interface,
+				  $nested,
+				  $parenthasnat,
+				  $parenthasnotrack,
+				  $frwd_ref,
+				);
 	    }
 	}
-
 	#
 	#                           F O R W A R D I N G
 	#
@@ -1808,48 +1918,7 @@ sub generate_matrix() {
 	my $last_chain = '';
 
 	if ( $config{OPTIMIZE} & 1 ) {
-	    my @temp_zones;
-
-	    for my $zone1 ( @zones )  {
-		my $zone1ref = find_zone( $zone1 );
-		my $policy = $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy};
-
-		next if $policy eq 'NONE';
-
-		my $chain = rules_target $zone, $zone1;
-
-		next unless $chain;
-
-		if ( $zone eq $zone1 ) {
-		    next if ( scalar ( keys( %{ $zoneref->{interfaces}} ) ) < 2 ) && ! $zoneref->{options}{in_out}{routeback};
-		}
-
-		if ( $zone1ref->{type} & BPORT ) {
-		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
-		}
-
-		if ( $chain =~ /(2all|-all)$/ ) {
-		    if ( $chain ne $last_chain ) {
-			$last_chain = $chain;
-			push @dest_zones, @temp_zones;
-			@temp_zones = ( $zone1 );
-		    } elsif ( $policy eq 'ACCEPT' ) {
-			push @temp_zones , $zone1;
-		    } else {
-			$last_chain = $chain;
-			@temp_zones = ( $zone1 );
-		    }
-		} else {
-		    push @dest_zones, @temp_zones, $zone1;
-		    @temp_zones = ();
-		    $last_chain = '';
-		}
-	    }
-
-	    if ( $last_chain && @temp_zones == 1 ) {
-		push @dest_zones, @temp_zones;
-		$last_chain = '';
-	    }
+	    ( $last_chain , @dest_zones ) = optimize1_zones($zone, $zoneref, @zones );
 	} else {
 	    @dest_zones =  @zones ;
 	}

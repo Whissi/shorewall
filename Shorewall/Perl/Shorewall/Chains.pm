@@ -707,7 +707,9 @@ sub macro_comment( $ ) {
 # Functions to manipulate cmdlevel
 #
 sub incr_cmd_level( $ ) {
-    $_[0]->{cmdlevel}++;
+    my $chain = $_[0];
+    $chain->{cmdlevel}++;
+    $chain->{optflags} |= ( DONT_OPTIMIZE | DONT_MOVE );
 }
 
 sub decr_cmd_level( $ ) {
@@ -1021,6 +1023,7 @@ sub add_commands ( $$;@ ) {
 				} for @_;
 
     $chainref->{referenced} = 1;
+    $chainref->{optflags} |= ( DONT_OPTIMIZE | DONT_MOVE );
 }
 
 #

@@ -1661,8 +1661,8 @@ sub handle_pio_jumps( $$$$$$$$ ) {
 		#
 		# PREROUTING
 		#
-		my $dnatref       = ensure_chain 'nat' , dnat_chain( $zone );
-		my $preroutingref = ensure_chain 'nat', 'dnat';
+		my $dnatref       = $nat_table->{dnat_chain( $zone )};
+		my $preroutingref = $nat_table->{PREROUTING};
 
 		my @source = imatch_source_net $net;
 
@@ -1676,13 +1676,6 @@ sub handle_pio_jumps( $$$$$$$$ ) {
 			       imatch_source_dev( $interface),
 			       @source,
 			       @ipsec_in_match );
-
-		    if ( get_physical( $interface ) eq '+' ) {
-			#
-			# The jump from the PREROUTING chain to dnat may not have been added above
-			#
-			addnatjump 'PREROUTING', 'dnat' unless $preroutingref->{references}{PREROUTING};
-		    }
 
 		    check_optimization( $dnatref ) if @source;
 		}
@@ -1860,7 +1853,6 @@ sub generate_matrix() {
 
     progress_message2 'Generating Rule Matrix...';
     progress_message  '  Handling complex zones...';
-
     #
     # Special processing for configurations with more than 2 off-firewall zones or with other special considerations like IPSEC.
     #
@@ -1886,6 +1878,10 @@ sub generate_matrix() {
 	my $nested           = @{$zoneref->{parents}};
 	my $parenthasnat     = 0;
 	my $parenthasnotrack = 0;
+	#
+	# Create the zone's dnat chain
+	#
+	ensure_chain 'nat', dnat_chain( $zone );
 
 	( $nested, $parenthasnat, $parenthasnotrack) = handle_nested_zone( $zone, $zoneref ) if $nested;
 	#

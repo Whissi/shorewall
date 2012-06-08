@@ -1839,7 +1839,11 @@ sub generate_matrix() {
     #
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
-	handle_complex_zone( $zone, $zoneref ) if @zones > 2 || $zoneref->{complex};
+	if ( @zones > 2 || $zoneref->{complex} ) {
+	    handle_complex_zone( $zone, $zoneref );
+	} else {
+	    new_standard_chain zone_forward_chain( $zone ) if @zones > 1;
+	}
     }
     #
     # NOTRACK from firewall
@@ -1911,46 +1915,44 @@ sub generate_matrix() {
 		} # Hostref Loop
 	    } # Interface Loop
 	} #Type Loop
-	#
-	#                           F O R W A R D I N G
-	#
-	my @dest_zones;
-	my $last_chain = '';
 
-	if ( $config{OPTIMIZE} & 1 ) {
-	    ( $last_chain , @dest_zones ) = optimize1_zones($zone, $zoneref, @zones );
-	} else {
-	    @dest_zones =  @zones ;
-	}
-	#
-	# We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
-	# @dest_zones is the list of destination zones that we need to handle from this source zone
-	#
-	for my $zone1 ( @dest_zones ) {
-	    my $zone1ref = find_zone( $zone1 );
+	if ( $frwd_ref ) {
+	    #
+	    #                                            F O R W A R D I N G
+	    #
+	    my @dest_zones;
+	    my $last_chain = '';
 
-	    next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
-
-	    my $chain = rules_target $zone, $zone1;
-
-	    next unless $chain; # CONTINUE policy with no rules
-
-	    my $num_ifaces = 0;
-
-	    if ( $zone eq $zone1 ) {
-		next if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
+	    if ( $config{OPTIMIZE} & 1 ) {
+		( $last_chain , @dest_zones ) = optimize1_zones($zone, $zoneref, @zones );
+	    } else {
+		@dest_zones =  @zones ;
 	    }
+	    #
+	    # We now loop through the destination zones creating jumps to the rules chain for each source/dest combination.
+	    # @dest_zones is the list of destination zones that we need to handle from this source zone
+	    #
+	    for my $zone1 ( @dest_zones ) {
+		my $zone1ref = find_zone( $zone1 );
 
-	    if ( $zone1ref->{type} & BPORT ) {
-		next unless $zoneref->{bridge} eq $zone1ref->{bridge};
-	    }
+		next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
-	    my $chainref = $filter_table->{$chain}; #Will be null if $chain is a Netfilter Built-in target like ACCEPT
+		my $chain = rules_target $zone, $zone1;
 
-	    if ( $frwd_ref ) {
-		#
-		# Simple case -- the source zone has it's own forwarding chain
-		#
+		next unless $chain; # CONTINUE policy with no rules
+
+		my $num_ifaces = 0;
+
+		if ( $zone eq $zone1 ) {
+		    next if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
+		}
+
+		if ( $zone1ref->{type} & BPORT ) {
+		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
+		}
+
+		my $chainref = $filter_table->{$chain}; #Will be null if $chain is a Netfilter Built-in target like ACCEPT
+		
 		for my $typeref ( values %{$zone1ref->{hosts}} ) {
 		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 			for my $hostref ( @{$typeref->{$interface}} ) {
@@ -1965,88 +1967,14 @@ sub generate_matrix() {
 			}
 		    }
 		}
-	    } else {
-		#
-		# More compilcated case. If the interface is associated with a single simple zone, we try to combine the interface's forwarding chain with the rules chain
-		#
-		for my $typeref ( values %$source_hosts_ref ) {
-		    for my $interface ( keys %$typeref ) {
-			my $interfaceref = find_interface $interface;
-			my $chain3ref;
-			my @match_source_dev;
-			my $forwardchainref = $filter_table->{forward_chain $interface};
-
-			if ( use_forward_chain( $interface , $forwardchainref ) || ( @{$forwardchainref->{rules} } && ! $chainref ) ) {
-			    #
-			    # Either we must use the interface's forwarding chain or that chain has rules and we have nowhere to move them
-			    #
-			    $chain3ref = $forwardchainref;
-
-			    if ( $interfaceref->{options}{port} ) {
-				add_ijump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
-					   j => $chain3ref,
-					   imatch_source_dev( $interface , 1 ) )
-				    unless $forward_jump_added{$interface}++;
-			    } else {
-				add_ijump $filter_table->{FORWARD} , j => $chain3ref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
-			    }
-			} else {
-			    #
-			    # Don't use the interface's forward chain -- move any rules in that chain to this rules chain
-			    #
-			    if ( $interfaceref->{options}{port} ) {
-				$chain3ref  = $filter_table->{ forward_chain $interfaceref->{bridge} };
-				@match_source_dev = imatch_source_dev $interface, 1;
-			    } else {
-				$chain3ref  = $filter_table->{FORWARD};
-				@match_source_dev = imatch_source_dev $interface;
-			    }
-
-			    move_rules $forwardchainref, $chainref;
-			}
-
-			for my $hostref ( @{$typeref->{$interface}} ) {
-			    next if $hostref->{options}{destonly};
-			    my $excl3ref = source_exclusion( $hostref->{exclusions}, $chain3ref );
-			    for my $net ( @{$hostref->{hosts}} ) {
-				for my $type1ref ( values %{$zone1ref->{hosts}} ) {
-				    for my $interface1 ( keys %$type1ref ) {
-					my $array1ref = $type1ref->{$interface1};
-					for my $host1ref ( @$array1ref ) {
-					    next if $host1ref->{options}{sourceonly};
-					    my @ipsec_out_match = match_ipsec_out $zone1 , $host1ref;
-					    my $dest_exclusion  = dest_exclusion( $host1ref->{exclusions}, $chain );
-					    for my $net1 ( @{$host1ref->{hosts}} ) {
-						unless ( $interface eq $interface1 && $net eq $net1 && ! $host1ref->{options}{routeback} ) {
-						    #
-						    # We defer evaluation of the source net match to accomodate systems without $capabilities{KLUDEFREE};
-						    #
-						    add_ijump(
-							      $excl3ref ,
-							      j => $dest_exclusion,
-							      @match_source_dev,
-							      imatch_dest_dev($interface1),
-							      imatch_source_net($net),
-							      imatch_dest_net($net1),
-							      @ipsec_out_match
-							     );
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    }
-		}
 	    }
+	    #
+	    #                                      E N D   F O R W A R D I N G
+	    #
+	    # Now add an unconditional jump to the last unique policy-only chain determined above, if any
+	    #
+	    add_ijump $frwd_ref , g => $last_chain if $frwd_ref && $last_chain;
 	}
-	#
-	#                                      E N D   F O R W A R D I N G
-	#
-	# Now add an unconditional jump to the last unique policy-only chain determined above, if any
-	#
-	add_ijump $frwd_ref , g => $last_chain if $frwd_ref && $last_chain;
     }
 
     progress_message '  Finishing matrix...';

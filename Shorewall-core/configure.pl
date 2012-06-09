@@ -141,8 +141,7 @@ for ( qw/ HOST
 	  SYSCONFDIR
 	  SPARSE
 	  ANNOTATED
-	  VARDIR
-	  DIGEST / ) {
+	  VARDIR / ) {
 
     my $val = $options{$_} || '';
 

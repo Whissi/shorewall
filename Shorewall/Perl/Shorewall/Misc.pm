@@ -1836,6 +1836,7 @@ sub generate_matrix() {
     progress_message  '  Handling complex zones...';
     #
     # Special processing for configurations with more than 2 off-firewall zones or with other special considerations like IPSEC.
+    # Don't be tempted to move this logic into the zone loop below -- it won't work.
     #
     for my $zone ( @zones ) {
 	my $zoneref = find_zone( $zone );
@@ -1974,8 +1975,8 @@ sub generate_matrix() {
 	    # Now add an unconditional jump to the last unique policy-only chain determined above, if any
 	    #
 	    add_ijump $frwd_ref , g => $last_chain if $frwd_ref && $last_chain;
-	}
-    }
+	} # Forwarding required
+    } # Source Zone Loop
 
     progress_message '  Finishing matrix...';
 

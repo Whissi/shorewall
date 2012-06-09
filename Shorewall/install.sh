@@ -22,7 +22,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=xxx       #The Build script inserts the actual version
+VERSION=4.5.5       #The Build script inserts the actual version
 
 #
 # Change to the directory containing this script
@@ -244,36 +244,6 @@ esac
 
 OWNERSHIP="-o $OWNER -g $GROUP"
 
-#
-# Determine where to install the firewall script
-#
-
-if [ $PRODUCT = shorewall -a "$BUILD" = "$HOST" ]; then
-    #
-    # Fix up 'use Digest::' if SHA1 is installed
-    #
-    if [ -n "$DIGEST" ]; then
-	if [ "$DIGEST" != SHA ]; then
-	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Chains.pm
-	fi
-    elif ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
-	if perl -e 'use Digest::SHA1;' 2> /dev/null ; then
-	    sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Chains.pm
-	else
-	    echo "ERROR: Shorewall $VERSION requires either Digest::SHA or Digest::SHA1" >&2
-	    exit 1
-	fi
-    fi
-    #
-    # Verify that Perl and all required modules are installed
-    #
-    if ! perl -c Perl/compiler.pl; then
-	echo "ERROR: $Product $VERSION requires Perl which either is not installed or is not able to compile the Shorewall Perl code" >&2
-	echo "       Try perl -c $PWD/Perl/compiler.pl" >&2
-	exit 1
-    fi
-fi
-
 case "$HOST" in
     cygwin)
 	echo "Installing Cygwin-specific configuration..."
@@ -303,6 +273,51 @@ case "$HOST" in
 	exit 1;
 	;;
 esac
+
+if [ $PRODUCT = shorewall ]; then
+    if [ -n "$DIGEST" ]; then
+	#
+	# The user specified which digest to use
+	#
+	if [ "$DIGEST" != SHA ]; then
+	    if [ "$BUILD" = "$HOST" ] && ! eval perl -e \'use Digest::$DIGEST\;\' 2> /dev/null ; then
+		echo "ERROR: Perl compilation with Digest::$DIGEST failed" >&2
+		exit 1;
+	    fi
+
+	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Chains.pm
+	fi
+    elif [ "$BUILD" = "$HOST" ]; then
+        #
+        # Fix up 'use Digest::' if SHA1 is installed
+        #
+	DIGEST=SHA
+	if ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
+	    if perl -e 'use Digest::SHA1;' 2> /dev/null ; then
+		sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Chains.pm
+		DIGEST=SHA1
+	    else
+		echo "ERROR: Shorewall $VERSION requires either Digest::SHA or Digest::SHA1" >&2
+		exit 1
+	    fi
+	fi
+    fi
+
+    if [ "$BUILD" = "$HOST" ]; then
+        #
+        # Verify that Perl and all required modules are installed
+        #
+	echo "Compiling the Shorewall Perl Modules with Digest::$DIGEST"
+
+	if ! perl -c Perl/compiler.pl; then
+	    echo "ERROR: $Product $VERSION requires Perl which either is not installed or is not able to compile the Shorewall Perl code" >&2
+	    echo "       Try perl -c $PWD/Perl/compiler.pl" >&2
+	    exit 1
+	fi
+    else
+	echo "Using Digest::$DIGEST"
+    fi
+fi
 
 if [ $BUILD != cygwin ]; then
     if [ `id -u` != 0 ] ; then

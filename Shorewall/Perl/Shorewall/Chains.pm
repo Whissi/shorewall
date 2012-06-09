@@ -2123,7 +2123,7 @@ sub reset_optflags( $$ ) {
 
     $chainref->{optflags} ^= $flags;
 
-    trace( $chainref, '!O', undef, '' ) if $debug;
+    trace( $chainref, "O${flags}", undef, '' ) if $debug;
 
     $chainref;
 }
@@ -2135,7 +2135,7 @@ sub set_optflags( $$ ) {
 
     $chainref->{optflags} |= $flags;
 
-    trace( $chainref, '!O', undef, '' ) if $debug;
+    trace( $chainref, "!O${flags}", undef, '' ) if $debug;
 
     $chainref;
 }

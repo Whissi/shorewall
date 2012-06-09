@@ -39,8 +39,7 @@ my %options;
 
 my %aliases = ( VENDOR         => 'HOST',
 		SHAREDSTATEDIR => 'VARDIR',
-		DATADIR        => 'SHAREDIR',
-		SYSCONFDIR     => 'CONFDIR' );
+		DATADIR        => 'SHAREDIR' );
 
 for ( @ARGV ) {
     die "ERROR: Invalid option specification ( $_ )" unless /^(?:--)?(\w+)=(.*)$/;

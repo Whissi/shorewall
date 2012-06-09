@@ -250,9 +250,13 @@ OWNERSHIP="-o $OWNER -g $GROUP"
 
 if [ $PRODUCT = shorewall -a "$BUILD" = "$HOST" ]; then
     #
-    # Fix up 'use Digest::' if SHA is installed
+    # Fix up 'use Digest::' if SHA1 is installed
     #
-    if ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
+    if [ -n "$DIGEST" ]; then
+	if [ "$DIGEST" != SHA ]; then
+	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Chains.pm
+	fi
+    elif ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
 	if perl -e 'use Digest::SHA1;' 2> /dev/null ; then
 	    sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Chains.pm
 	else

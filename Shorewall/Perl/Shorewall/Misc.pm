@@ -1316,9 +1316,15 @@ sub handle_loopback_traffic() {
     my @rule;
 
     if ( @zones > 1 ) {
+	#
+	# We have a vserver zone -- route output through a separate chain
+	#
 	$outchainref = new_standard_chain 'loopback';
 	add_ijump $filter_table->{OUTPUT}, j => $outchainref, o => 'lo';
     } else {
+	#
+	# Only the firewall -- just use the OUTPUT chain
+	#
 	$outchainref = $filter_table->{OUTPUT};
 	@rule = ( o => 'lo');
     }
@@ -1327,7 +1333,9 @@ sub handle_loopback_traffic() {
 	my $z1ref            = find_zone( $z1 );
 	my $type1            = $z1ref->{type};
 	my $natref           = $nat_table->{dnat_chain $z1};
-
+	#
+	# Add jumps in the 'output' chain to the rules chains
+	#
 	if ( $type1 == FIREWALL ) {
 	    for my $z2 ( @zones ) {
 		my $chain = rules_target( $z1, $z2 );
@@ -1341,6 +1349,9 @@ sub handle_loopback_traffic() {
 	}
 
 	if ( $natref && $natref->{referenced} ) {
+	    #
+	    # There are DNAT rules with this zone as the source --  add jumps from the nat OUTPUT chain
+	    #
 	    my $source_hosts_ref = defined_zone( $z1 )->{hosts};
 
 	    for my $typeref ( values %{$source_hosts_ref} ) {
@@ -1479,25 +1490,40 @@ sub handle_complex_zone( $$ ) {
 	    my $interfaceref = find_interface $interface;
 
 	    if ( use_forward_chain( $interface, $sourcechainref ) ) {
+		#
+		# Use the interface forward chain
+		#
 		if ( $interfaceref->{ports} && $interfaceref->{options}{bridge} ) {
+		    #
+		    # This is a bridge with ports
+		    #
 		    @interfacematch = imatch_source_dev $interface;
+		    #
+		    # Copy the rules from the interface forward chain to the zone forward chain unless they have already been copied
+		    #
 		    copy_rules( $sourcechainref, $frwd_ref, 1 ) unless $ipsec_jump_added{$zone}++;
+		    #
+		    # Jump directly from FORWARD to the zone forward chain
+		    #
 		    $sourcechainref = $filter_table->{FORWARD};
 		} elsif ( $interfaceref->{options}{port} ) {
 		    #
-		    # The forwarding chain for a bridge with ports is always used
+		    # The forwarding chain for a bridge with ports is always used -- use physdev match for this interface
 		    #
 		    add_ijump( $filter_table->{ forward_chain $interfaceref->{bridge} } ,
 			       j => $sourcechainref ,
 			       imatch_source_dev( $interface , 1 ) )
 			unless $forward_jump_added{$interface}++;
 		} else {
+		    #
+		    # Add jump from FORWARD to the intrface forward chain
+		    #
 		    add_ijump $filter_table->{FORWARD} , j => $sourcechainref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 		}
 	    } else {
 		if ( $interfaceref->{options}{port} ) {
 		    #
-		    # The forwarding chain for a bridge with ports is always used
+		    # The forwarding chain for a bridge with ports is always used -- use physdev match
 		    #
 		    $sourcechainref = $filter_table->{ forward_chain $interfaceref->{bridge} };
 		    @interfacematch = imatch_source_dev $interface, 1;
@@ -1505,12 +1531,16 @@ sub handle_complex_zone( $$ ) {
 		    $sourcechainref = $filter_table->{FORWARD};
 		    @interfacematch = imatch_source_dev $interface;
 		}
-
+		#
+		# copy any rules from the interface forward chain to the zone forward chain
+		#
 		move_rules( $filter_table->{forward_chain $interface} , $frwd_ref );
 	    }
 
 	    my $arrayref = $source_ref->{$interface};
-
+	    #
+	    # Now add the jumps from the source chain (interface forward or FORWARD) to the zone forward chain
+	    #
 	    for my $hostref ( @{$arrayref} ) {
 		my @ipsec_match = match_ipsec_in $zone , $hostref;
 		for my $net ( @{$hostref->{hosts}} ) {
@@ -1573,7 +1603,7 @@ sub handle_nested_zone( $$ ) {
 }
 
 #
-# Add output jumps to the passed zone:interface:hostref:net
+# Add output jump to the passed zone:interface:hostref:net
 #
 sub add_output_jumps( $$$$$$$ ) {
     my ( $zone, $interface, $hostref, $net, $exclusions, $isport, $bridge, ) = @_;
@@ -1592,37 +1622,65 @@ sub add_output_jumps( $$$$$$$ ) {
     my @ipsec_out_match   = match_ipsec_out $zone , $hostref;
 
     if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
+	#
+	# - There are vserver zones (so OUTPUT will have multiple source; or
+	# - We must use the interface output chain; or
+	# - There are rules in the interface chain and none in the rules chain
+	#
+	#   In any of these cases use the inteface output chain
+	#
 	$outputref = $interfacechainref;
 
 	if ( $isport ) {
+	    #
+	    # It is a bridge port zone -- use the bridges output chain and match the physdev
+	    #
 	    add_ijump( $filter_table->{ output_chain $bridge },
 		       j => $outputref ,
 		       imatch_dest_dev( $interface, 1 ) )
 		unless $output_jump_added{$interface}++;
 	} else {
+	    #
+	    # Not a bridge -- match the input interface
+	    #
 	    add_ijump $filter_table->{OUTPUT}, j => $outputref, imatch_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 	}
 
 	$use_output = 1;
 
 	unless ( lc $net eq IPv6_LINKLOCAL ) {
+	    #
+	    # Generate output rules for the vservers
+	    #
 	    for my $vzone ( @vservers ) {
 		generate_source_rules ( $outputref, $vzone, $zone, @dest );
 	    }
 	}
     } elsif ( $isport ) {
+	#
+	# It is a bridge port zone -- use the bridges output chain and match the physdev
+	#
 	$outputref = $filter_table->{ output_chain $bridge };
 	@interfacematch = imatch_dest_dev $interface, 1;
     } else {
+	#
+	# Just put the jump in the OUTPUT chain
+	#
 	$outputref = $filter_table->{OUTPUT};
 	@interfacematch = imatch_dest_dev $interface;
     }
-
+    #
+    #  Add the jump
+    # 
     add_ijump $outputref , j => $nextchain, @interfacematch, @dest, @ipsec_out_match;
-
+    #
+    #  Add jump for broadcast
+    #
     add_ijump( $outputref , j => $nextchain, @interfacematch, d => '255.255.255.255' , @ipsec_out_match )
 	if $family == F_IPV4 && $hostref->{options}{broadcast};
-
+    #
+    # Move the rules from the interface output chain if we didn't use it
+    #
     move_rules( $interfacechainref , $chain1ref ) unless $use_output;
 }
 
@@ -1671,14 +1729,13 @@ sub add_prerouting_jumps( $$$$$$$$ ) {
 }
 
 #
-# Add input jumps from the passed zone:interface:hostref:net
+# Add input jump from the passed zone:interface:hostref:net
 #
 sub add_input_jumps( $$$$$$$$ ) {
     my ( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) = @_;
 
     our @vservers;
     our %input_jump_added;
-    our %forward_jump_added;
 
     my $chain2            = rules_target $zone, firewall_zone;
     my $chain2ref         = $filter_table->{$chain2};
@@ -1690,71 +1747,127 @@ sub add_input_jumps( $$$$$$$$ ) {
     my @ipsec_in_match    = match_ipsec_in  $zone , $hostref;
 
     if ( @vservers || use_input_chain( $interface, $interfacechainref ) || ! $chain2 || ( @{$interfacechainref->{rules}} && ! $chain2ref ) ) {
+	#
+	# - There are vserver zones (so INPUT will have multiple destinations; or
+	# - We must use the interface input chain; or
+	# - The zone->firewall policy is CONTINUE; or
+	# - There are rules in the interface chain and none in the rules chain
+	#
+	#   In any of these cases use the inteface input chain
+	#
 	$inputchainref = $interfacechainref;
 
 	if ( $isport ) {
+	    #
+	    # It is a bridge port zone -- use the bridges input chain and match the physdev
+	    #
 	    add_ijump( $filter_table->{ input_chain $bridge },
 		       j => $inputchainref ,
 		       imatch_source_dev($interface, 1) )
 		unless $input_jump_added{$interface}++;
 	} else {
+	    #
+	    # Not a bridge -- match the input interface
+	    #
 	    add_ijump $filter_table->{INPUT}, j => $inputchainref, imatch_source_dev($interface) unless $input_jump_added{$interface}++;
 	}
 
 	$use_input = 1;
 
 	unless ( lc $net eq IPv6_LINKLOCAL ) {
+	    #
+	    # Generate input rules for the vservers
+	    #
 	    for my $vzone ( @vservers ) {
 		my $target = rules_target( $zone, $vzone );
 		generate_dest_rules( $inputchainref, $target, $vzone, @source, @ipsec_in_match ) if $target;
 	    }
 	}
     } elsif ( $isport ) {
+	#
+	# It is a bridge port zone -- use the bridges input chain and match the physdev
+	#
 	$inputchainref = $filter_table->{ input_chain $bridge };
 	@interfacematch = imatch_source_dev $interface, 1;
     } else {
+	#
+	# Just put the jump in the INPUT chain
+	#
 	$inputchainref = $filter_table->{INPUT};
 	@interfacematch = imatch_source_dev $interface;
     }
 
     if ( $chain2 ) {
+	#
+	# Add the jump from the input chain to the rules chain
+	#
 	add_ijump $inputchainref, j => source_exclusion( $exclusions, $chain2 ), @interfacematch, @source, @ipsec_in_match;
 	move_rules( $interfacechainref , $chain2ref ) unless $use_input;
     }
+}
 
-    if ( $frwd_ref && $hostref->{ipsec} ne 'ipsec' ) {
-	my $ref = source_exclusion( $exclusions, $frwd_ref );
-	my $forwardref = $filter_table->{forward_chain $interface};
+#
+# This function is called when there is forwarding and this net isn't IPSEC protected. It adds the jump for this net to the zone forwarding chain.
+#
+sub add_forward_jump( $$$$$$$$ ) {
+    my ( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) = @_;
 
-	if ( use_forward_chain $interface, $forwardref ) {
-	    add_ijump $forwardref , j => $ref, @source, @ipsec_in_match;
+    our %forward_jump_added;
 
-	    if ( $isport ) {
-		add_ijump( $filter_table->{ forward_chain $bridge } ,
-			   j => $forwardref ,
-			   imatch_source_dev( $interface , 1 ) )
-		    unless $forward_jump_added{$interface}++;
-	    } else {
-		add_ijump $filter_table->{FORWARD} , j => $forwardref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
-	    }
+    my @source            = imatch_source_net $net;
+    my @ipsec_in_match    = match_ipsec_in  $zone , $hostref;
+
+    my $ref = source_exclusion( $exclusions, $frwd_ref );
+    my $forwardref = $filter_table->{forward_chain $interface};
+
+    if ( use_forward_chain $interface, $forwardref ) {
+	#
+	# We must use the interface forwarding chain -- add the jump from the interface forward chain to the zone forward chain.
+	#
+	add_ijump $forwardref , j => $ref, @source, @ipsec_in_match;
+
+	if ( $isport ) {
+	    #
+	    # It is a bridge port zone -- use the bridges input chain and match the physdev
+	    #
+	    add_ijump( $filter_table->{ forward_chain $bridge } ,
+		       j => $forwardref ,
+		       imatch_source_dev( $interface , 1 ) )
+		unless $forward_jump_added{$interface}++;
 	} else {
-	    if ( $isport ) {
-		add_ijump( $filter_table->{ forward_chain $bridge } ,
-			   j => $ref ,
-			   imatch_source_dev( $interface, 1 ) ,
-			   @source,
-			   @ipsec_in_match );
-	    } else {
-		add_ijump $filter_table->{FORWARD} , j => $ref, imatch_source_dev( $interface ) , @source, @ipsec_in_match;
-	    }
-
-	    move_rules ( $forwardref , $frwd_ref );
+	    #
+	    # Not a bridge -- match the input interface
+	    #
+	    add_ijump $filter_table->{FORWARD} , j => $forwardref, imatch_source_dev( $interface ) unless $forward_jump_added{$interface}++;
 	}
+    } else {
+	if ( $isport ) {
+	    #
+	    # It is a bridge port zone -- use the bridges input chain and match the physdev
+	    #
+	    add_ijump( $filter_table->{ forward_chain $bridge } ,
+		       j => $ref ,
+		       imatch_source_dev( $interface, 1 ) ,
+		       @source,
+		       @ipsec_in_match );
+	} else {
+	    #
+	    # Not a bridge -- match the input interface
+	    #
+	    add_ijump $filter_table->{FORWARD} , j => $ref, imatch_source_dev( $interface ) , @source, @ipsec_in_match;
+	}
+
+	move_rules ( $forwardref , $frwd_ref );
     }
 }
 
 #
 # Generate the list of destination zones from the passed source zone when optimization level 1 is selected
+#
+# - Drop zones where the policy to that zone is 'NONE'
+# - Drop this zone if it has only one interface without 'routeback'
+# - Drop BPORT zones that are not on the same bridge
+# - Eliminate duplicate zones that have the same '2all' (-all) rules chain.
 #
 sub optimize1_zones( $$@ ) {
     my $zone    = shift;
@@ -1766,7 +1879,7 @@ sub optimize1_zones( $$@ ) {
     for my $zone1 ( @_ )  {
 	my $zone1ref = find_zone( $zone1 );
 	my $policy = $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy};
-
+	
 	next if $policy eq 'NONE';
 
 	my $chain = rules_target $zone, $zone1;
@@ -1911,6 +2024,10 @@ sub generate_matrix() {
 			    # INPUT
 			    #
 			    add_input_jumps( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge );
+			    #
+			    # FORWARDING Jump for non-IPSEC host group
+			    #
+			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec';
 			}
 		    } # Subnet Loop
 		} # Hostref Loop

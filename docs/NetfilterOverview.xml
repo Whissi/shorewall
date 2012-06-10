@@ -77,13 +77,31 @@
           shaping.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Raw</term>
+
+        <listitem>
+          <para>Used primarily for creating exemptions from connection
+          tracking with the NOTRACK target. Also used for stateless
+          DNAT.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Rawpost</term>
+
+        <listitem>
+          <para>Used for stateless SNAT.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
 
     <para>The following diagram shows how packets traverse the various builtin
     chains within Netfilter. Note that not all table/chain combinations are
     used.</para>
 
-    <graphic align="center" fileref="images/Netfilter.png" />
+    <graphic align="center" fileref="images/Netfilter.png"/>
 
     <para><quote>Local Process</quote> means a process running on the
     Shorewall system itself.</para>
@@ -95,7 +113,7 @@
 
     <para>In the above diagram are boxes similar to this:</para>
 
-    <graphic fileref="images/Legend.png" />
+    <graphic fileref="images/Legend.png"/>
 
     <para>The above box gives the name of the built-in chain (<emphasis
     role="bold">INPUT</emphasis>) along with the names of the tables

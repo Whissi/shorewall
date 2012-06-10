@@ -1806,32 +1806,33 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 
 	$bt =~ s/[-+!]$//;
 
-	my %functions = ( ACCEPT => sub() { $action = 'RETURN' if $blacklist; } ,
+	my %functions =
+	    ( ACCEPT => sub() { $action = 'RETURN' if $blacklist; } ,
+	      
+	      REDIRECT => sub () {
+		  my $z = $actiontype & NATONLY ? '' : firewall_zone;
+		  if ( $dest eq '-' ) {
+		      $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+		  } elsif ( $inaction ) {
+		      $dest = ":$dest";
+		  } else {
+		      $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
+		  }
+	      } ,
 
-			  REDIRECT => sub () {
-			      my $z = $actiontype & NATONLY ? '' : firewall_zone;
-			      if ( $dest eq '-' ) {
-				  $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
-			      } elsif ( $inaction ) {
-				  $dest = ":$dest";
-			      } else {
-				  $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
-			      }
-			  } ,
+	      REJECT => sub { $action = 'reject'; } ,
 
-			  REJECT => sub { $action = 'reject'; } ,
+	      CONTINUE => sub { $action = 'RETURN'; } ,
 
-			  CONTINUE => sub { $action = 'RETURN'; } ,
+	      WHITELIST => sub {
+		  fatal_error "'WHITELIST' may only be used in the blrules file" unless $blacklist;
+		  $action = 'RETURN';
+	      } ,
 
-			  WHITELIST => sub {
-			      fatal_error "'WHITELIST' may only be used in the blrules file" unless $blacklist;
-			      $action = 'RETURN';
-			  } ,
+	      COUNT => sub { $action = ''; } ,
 
-			  COUNT => sub { $action = ''; } ,
-
-			  LOG => sub { fatal_error 'LOG requires a log level' unless supplied $loglevel; } ,
-		     );
+	      LOG => sub { fatal_error 'LOG requires a log level' unless supplied $loglevel; } ,
+	    );
 
 	my $function = $functions{ $bt };
 
@@ -2020,8 +2021,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	if ( $config{FASTACCEPT} ) {
 	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
 		$section eq 'BLACKLIST' ||
-		( $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} ) )
-	}
+		    ( $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} ) )
+		}
 
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} $section " unless $section eq 'ALL' || $blacklist;

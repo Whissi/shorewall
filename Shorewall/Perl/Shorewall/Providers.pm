@@ -61,6 +61,7 @@ my  @load_interfaces;
 
 my $balancing;
 my $fallback;
+my $metrics;
 my $first_default_route;
 my $first_fallback_route;
 my $maxload;
@@ -96,6 +97,7 @@ sub initialize( $ ) {
     @load_interfaces        = ();
     $balancing              = 0;
     $fallback               = 0;
+    $metrics                = 0;
     $first_default_route    = 1;
     $first_fallback_route   = 1;
     $maxload                = 0;
@@ -708,7 +710,7 @@ CEOF
 	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
 
-	$fallback = 1;
+	$metrics = 1;
     }
 
     emit( qq(\n) ,
@@ -1161,7 +1163,7 @@ sub finish_providers() {
 	      'fi',
 	      '' );
     } elsif ( $config{USE_DEFAULT_RT} ) {
-	emit "while qt \$IP -$family route del default table " . DEFAULT_TABLE . '; do true; done';
+	emit "while qt \$IP -$family route del default table " . DEFAULT_TABLE . '; do true; done' unless $metrics;
     }
 
     unless ( $config{KEEP_RT_TABLES} ) {
@@ -1199,6 +1201,8 @@ sub process_providers( $ ) {
     }
 
     if ( $providers ) {
+	fatal_error q(Either all 'fallback' providers must specify a weight or non of them can specify a weight) if $fallback && $metrics;
+
 	my $fn = open_file( 'route_rules' );
 
 	if ( $fn ){

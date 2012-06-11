@@ -180,7 +180,17 @@
       <varlistentry>
         <term><emphasis role="bold">OPTIONS</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
-        role="bold">{classify</emphasis>|hfsc} ,...}</term>
+        role="bold">{classify</emphasis>|<emphasis
+        role="bold">hfsc</emphasis>|<emphasis
+        role="bold">linklayer</emphasis>={<emphasis
+        role="bold">ethernet</emphasis>|<emphasis
+        role="bold">atm</emphasis>|<emphasis
+        role="bold">adsl</emphasis>}|<emphasis
+        role="bold">tsize</emphasis>=<replaceable>tsize</replaceable>|<emphasis
+        role="bold">mtu</emphasis>=<replaceable>mtu</replaceable>|<emphasis
+        role="bold">mpu</emphasis>=<replaceable>mpu</replaceable>|<emphasis
+        role="bold">overhead</emphasis>=<replaceable>overhead</replaceable>}
+        ,...}</term>
 
         <listitem>
           <para><option>classify</option> ― When specified, Shorewall will not
@@ -192,6 +202,32 @@
           <firstterm>Hierarchical Token Bucket</firstterm> queuing discipline.
           When <option>hfsc</option> is specified, the <firstterm>Hierarchical
           Fair Service Curves</firstterm> discipline is used instead.</para>
+
+          <para><emphasis role="bold">linklayer</emphasis> - Added in
+          Shorewall 4.5.6. Type of link (ethernet, atm, adsl). When specified,
+          causes scheduler packet size manipulation as described in tc-stab
+          (8). When this option is given, the following options may also be
+          given after it:</para>
+
+          <blockquote>
+            <para><emphasis
+            role="bold">mtu</emphasis>=<replaceable>mtu</replaceable> - The
+            device MTU; default 2048 (will be routed up to a power of
+            two)</para>
+
+            <para><emphasis
+            role="bold">mpu</emphasis>=<replaceable>mpubytes</replaceable> -
+            Minimum packet size used in calculations. Smaller packets will be
+            routed up to this size</para>
+
+            <para><emphasis
+            role="bold">tsize</emphasis>=<replaceable>tablesize</replaceable>
+            - Size table entries; default is 512</para>
+
+            <para><emphasis
+            role="bold">overhead</emphasis>=<replaceable>overheadbytes</replaceable>
+            - Number of overhead bytes per packet.</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 

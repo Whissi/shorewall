@@ -853,6 +853,8 @@ sub process_simple_device() {
     progress_message "  Simple tcdevice \"$currentline\" $done.";
 }
 
+my %validlinklayer = ( ethernet => 1, atm => 1, adsl => 1 );
+
 sub validate_tc_device( ) {
     my ( $device, $inband, $outband , $options , $redirected ) = split_line 'tcdevices', { interface => 0, in_bandwidth => 1, out_bandwidth => 2, options => 3, redirect => 4 };
 
@@ -887,7 +889,8 @@ sub validate_tc_device( ) {
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
     fatal_error "Invalid INTERFACE name ($device)" if $device =~ /[:+]/;
 
-    my ( $classify, $pfifo, $flow, $qdisc )  = (0, 0, '', 'htb' );
+    my ( $classify, $pfifo, $flow, $qdisc, $linklayer, $overhead, $mtu, $mpu, $tsize ) = 
+	(0,         0,      '',    'htb',  '',         0,         0,    0,    0);
 
     if ( $options ne '-' ) {
 	for my $option ( split_list1 $options, 'option' ) {
@@ -903,6 +906,25 @@ sub validate_tc_device( ) {
 		$qdisc = 'hfsc';
 	    } elsif ( $option eq 'htb' ) {
 		$qdisc = 'htb';
+	    } elsif ( $option =~ /^linklayer=([a-z]+)$/ ) {
+		$linklayer = $1;
+		fatal_error "Invalid linklayer ($linklayer)" unless $validlinklayer{ $linklayer };
+	    } elsif ( $option =~ /^overhead=(.+)$/ ) {
+		$overhead = numeric_value( $1 );
+		fatal_error "Invalid overhead ($1)" unless defined $overhead;
+		fatal_error q('overhead' requires 'linklayer') unless $linklayer; 
+	    } elsif ( $option =~ /^mtu=(.+)$/ ) {
+		$mtu = numeric_value( $1 );
+		fatal_error "Invalid mtu ($1)" unless defined $mtu;
+		fatal_error q('mtu' requires 'linklayer') unless $linklayer; 
+	    } elsif ( $option =~ /^mpu=(.+)$/ ) {
+		$mpu = numeric_value( $1 );
+		fatal_error "Invalid mpu ($1)" unless defined $mpu;
+		fatal_error q('mpu' requires 'linklayer') unless $linklayer;
+	    } elsif ( $option =~ /^tsize=(.+)$/ ) {
+		$tsize = numeric_value( $1 );
+		fatal_error "Invalid tsize ($1)" unless defined $tsize;
+		fatal_error q('tsize' requires 'linklayer') unless $linklayer; 
 	    } else {
 		fatal_error "Unknown device option ($option)";
 	    }
@@ -941,7 +963,12 @@ sub validate_tc_device( ) {
 			    guarantee     => 0,
 			    name          => $device,
 			    physical      => physical_name $device,
-			    filters       => []
+			    filters       => [],
+			    linklayer     => $linklayer,
+			    overhead      => $overhead,
+			    mtu           => $mtu,
+			    mpu           => $mpu,
+			    tsize         => $tsize,
 			  } ,
 
     push @tcdevices, $device;
@@ -1711,11 +1738,22 @@ sub process_traffic_shaping() {
 		   "${dev}_mtu1=\$(get_device_mtu1 $device)"
 		 );
 
+	    my $stab;
+
+	    if ( $linklayer ) {
+		$stab =  "stab linklayer $devref->{linklayer} overhead $devref->{overhead} ";
+		$stab .= "mtu $devref->{mtu} "   if $devref->{mtu};
+		$stab .= "mpu $devref->{mpu} "   if $devref->{mpu};
+		$stab .= "mpu $devref->{tsize} " if $devref->{tsize};
+	    } else {
+		$stab = '';
+	    }
+
 	    if ( $devref->{qdisc} eq 'htb' ) {
-		emit ( "run_tc qdisc add dev $device root handle $devnum: htb default $defmark r2q $r2q" ,
+		emit ( "run_tc qdisc add dev $device ${stab}root handle $devnum: htb default $defmark r2q $r2q" ,
 		       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1" );
 	    } else {
-		emit ( "run_tc qdisc add dev $device root handle $devnum: hfsc default $defmark" ,
+		emit ( "run_tc qdisc add dev $device ${stab}root handle $devnum: hfsc default $defmark" ,
 		       "run_tc class add dev $device parent $devnum: classid $devnum:1 hfsc sc rate $devref->{out_bandwidth} ul rate $devref->{out_bandwidth}" );
 	    }
 

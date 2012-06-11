@@ -301,7 +301,28 @@ our $VERSION = 'MODULEVERSION';
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
 #       'loglevel', 'synparams', 'synchain', 'audit' and 'default' only apply to policy chains.
+###########################################################################################################################################
 #
+# For each ordered pair of zones, there may exist a 'canonical rules chain' in the filter table; the name if this chain is formed by
+# joining the names of the zones using the ZONE_SEPARATOR ('2' or '-'). This chain contains the rules that specifically deal with
+# connections from the first zone to the second. These chains will end with the policy rules when EXPAND_POLICIES=Yes and when there is an
+# explicit policy for the order pair. Otherwise, unless the applicable policy is CONTINUE, the chain will terminate with a jump to a
+# wildcard policy chain (all[2-]zone, zone[2-]all, or all[2-]all).
+#
+#
+# Except in the most trivial one-interface configurations, each zone has a "forward chain" which is branched to from the filter table
+# FORWARD chain. 
+#
+# For each network interface, there are up to 6 chains in the filter table:
+#
+# - Input, Output, Forward "Interface Chains"
+#      These are present when there is more than one zone associated with the interface. They are jumped to from the INPUT, OUTPUT and
+#      FORWARD chains respectively.
+# - Input Option, Output Option and Forward "Interface Option Chains"
+#      Used when blacklisting is involved for enforcing interface options that require Netfilter rules. When these chains are not used,
+#      any rules that they contained are moved to the corresponding interface chains.
+#
+
 our %chain_table;
 our $raw_table;
 our $rawpost_table;

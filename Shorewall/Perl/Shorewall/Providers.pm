@@ -61,6 +61,7 @@ my  @load_interfaces;
 
 my $balancing;
 my $fallback;
+my $metrics;
 my $first_default_route;
 my $first_fallback_route;
 my $maxload;
@@ -96,6 +97,7 @@ sub initialize( $ ) {
     @load_interfaces        = ();
     $balancing              = 0;
     $fallback               = 0;
+    $metrics                = 0;
     $first_default_route    = 1;
     $first_fallback_route   = 1;
     $maxload                = 0;
@@ -696,19 +698,20 @@ CEOF
 	emit '';
 	if ( $gateway ) {
 	    if ( $family == F_IPV4 ) {
-		emit qq(run_ip route replace $gateway dev $physical table ) . DEFAULT_TABLE;
+		emit qq(run_ip route replace $gateway/32 dev $physical table ) . DEFAULT_TABLE;
 		emit qq(run_ip route replace default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
 	    } else {
 		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
 		emit qq(run_ip route add default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
 	    }
 	    emit qq(echo "qt \$IP -$family route del default via $gateway table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
+	    emit qq(echo "qt \$IP -4  route del $gateway/32 dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing) if $family == F_IPV4;
 	} else {
 	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $physical metric $number);
 	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
 
-	$fallback = 1;
+	$metrics = 1;
     }
 
     emit( qq(\n) ,
@@ -1154,14 +1157,16 @@ sub finish_providers() {
 
 	emit( "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
 	      'else',
-	      '#',
-	      '# We don\'t have any \'fallback\' providers so we delete any default routes in the default table',
-	      '#',
-	      "    while qt \$IP -$family route del default table " . DEFAULT_TABLE . '; do true; done',
+	      '    #',
+	      '    # We don\'t have any \'fallback\' providers so we delete any default routes in the default table',
+	      '    #',
+	      '    delete_default_routes ' . DEFAULT_TABLE,
 	      'fi',
 	      '' );
     } elsif ( $config{USE_DEFAULT_RT} ) {
-	emit "while qt \$IP -$family route del default table " . DEFAULT_TABLE . '; do true; done';
+	emit( 'delete_default_routes ' . DEFAULT_TABLE,
+	      ''
+	    );
     }
 
     unless ( $config{KEEP_RT_TABLES} ) {

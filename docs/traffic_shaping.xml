@@ -404,7 +404,7 @@
 
           <variablelist>
             <varlistentry>
-              <term>classify</term>
+              <term><emphasis role="bold">classify</emphasis></term>
 
               <listitem>
                 <para>If specified, classification of traffic into the various
@@ -416,7 +416,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>hfsc</term>
+              <term><emphasis role="bold">hfsc</emphasis></term>
 
               <listitem>
                 <para>Shorewall normally uses the <firstterm>Hierarchical
@@ -424,6 +424,58 @@
                 <option>hfsc</option> is specified, the
                 <firstterm>Hierarchical Fair Service Curves</firstterm> (HFSC)
                 discipline is used instead.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">linklayer</emphasis></term>
+
+              <listitem>
+                <para> Added in Shorewall 4.5.6. Type of link (ethernet, atm,
+                adsl). When specified, causes scheduler packet size
+                manipulation as described in tc-stab (8). When this option is
+                given, the following options may also be given after
+                it:</para>
+
+                <variablelist>
+                  <varlistentry>
+                    <term><emphasis
+                    role="bold">mtu</emphasis>=<replaceable>mtu</replaceable></term>
+
+                    <listitem>
+                      <para>The device MTU; default 2048 (will be rounded up
+                      to a power of two)</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><emphasis
+                    role="bold">mpu</emphasis>=<replaceable>mpubytes</replaceable></term>
+
+                    <listitem>
+                      <para>Minimum packet size used in calculations. Smaller
+                      packets will be rounded up to this size</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><emphasis
+                    role="bold">tsize</emphasis>=<replaceable>tablesize</replaceable></term>
+
+                    <listitem>
+                      <para>Size table entries; default is 512</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term><emphasis
+                    role="bold">overhead</emphasis>=<replaceable>overheadbytes</replaceable></term>
+
+                    <listitem>
+                      <para>Number of overhead bytes per packet</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
               </listitem>
             </varlistentry>
           </variablelist>

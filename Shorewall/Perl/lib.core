@@ -339,6 +339,16 @@ replace_default_route() # $1 = USE_DEFAULT_RT
     fi
 }
 
+#
+# Delete default routes with metric 0 from the passed routing table
+#
+delete_default_routes() # $1 = table number
+{
+    $IP -$g_family route ls table $1 | fgrep default | fgrep -v metric | while read route; do
+	qt $IP -$g_family route del $route
+    done
+} 
+
 restore_default_route() # $1 = USE_DEFAULT_RT
 {
     local result

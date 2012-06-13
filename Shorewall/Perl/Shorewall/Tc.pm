@@ -1739,8 +1739,9 @@ sub process_traffic_shaping() {
 	    handle_in_bandwidth( $device, $devref->{in_bandwidth} );
 
 	    for my $rdev ( @{$devref->{redirected}} ) {
-		emit ( "run_tc qdisc add dev $rdev handle ffff: ingress" );
-		emit( "run_tc filter add dev $rdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
+		my $phyrdev = get_physical( $rdev );
+		emit ( "run_tc qdisc add dev $phyrdev handle ffff: ingress" );
+		emit( "run_tc filter add dev $phyrdev parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $device > /dev/null" );
 	    }
 
 	    for my $class ( @tcclasses ) {

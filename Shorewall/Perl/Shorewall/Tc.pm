@@ -1002,7 +1002,7 @@ sub convert_delay( $ ) {
     my $delay = shift;
 
     return 0 unless $delay;
-    return $1 if $delay =~ /^(\d+)(ms)?$/;
+    return $1 if $delay =~ /^(\d+(\.\d+)?)(ms)?$/;
     fatal_error "Invalid Delay ($delay)";
 }
 

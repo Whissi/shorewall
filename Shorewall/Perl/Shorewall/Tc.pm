@@ -1031,6 +1031,18 @@ sub dev_by_number( $ ) {
     ( $dev , $devref );
 }
 
+use constant { RED_INTEGER => 1, RED_FLOAT => 2, RED_NONE => 3 };
+
+my %validredoptions = ( min         => RED_INTEGER,
+			max         => RED_INTEGER,
+			limit       => RED_INTEGER,
+			burst       => RED_INTEGER,
+			avpkt       => RED_INTEGER,
+			bandwidth   => RED_INTEGER,
+			probability => RED_FLOAT,
+			ecn         => RED_NONE,
+		      );
+
 sub validate_tc_class( ) {
     my ( $devclass, $mark, $rate, $ceil, $prio, $options ) =
 	split_line 'tcclasses file', { interface => 0, mark => 1, rate => 2, ceil => 3, prio => 4, options => 5 };
@@ -1040,6 +1052,7 @@ sub validate_tc_class( ) {
     my $occurs = 1;
     my $parentclass = 1;
     my $parentref;
+    my $lsceil = 0;
 
     fatal_error 'INTERFACE must be specified' if $devclass eq '-';
     fatal_error 'CEIL must be specified'      if $ceil eq '-';
@@ -1116,7 +1129,9 @@ sub validate_tc_class( ) {
 	my $parentnum = in_hexp $parentclass;
 	fatal_error "Unknown Parent class ($parentnum)" unless $parentref && $parentref->{occurs} == 1;
 	fatal_error "The class ($parentnum) specifies UMAX and/or DMAX; it cannot serve as a parent" if $parentref->{dmax};
-	fatal_error "The class ($parentnum) specifies flow; it cannot serve as a parent"             if $parentref->{flow};
+	fatal_error "The class ($parentnum) specifies 'flow'; it cannot serve as a parent"           if $parentref->{flow};
+	fatal_error "The class ($parentnum) specifies 'red'; it cannot serve as a parent "           if $parentref->{red};
+	fatal_error "The class ($parentnum) has an 'ls' curve; it cannot serve as a parent "         if $parentref->{lsceil};
 	fatal_error "The default class ($parentnum) may not have sub-classes"                        if ( $devref->{default} || 0 ) == $parentclass;
 	$parentref->{leaf} = 0;
 	$ratemax  = $parentref->{rate};
@@ -1127,16 +1142,27 @@ sub validate_tc_class( ) {
 
     my ( $umax, $dmax ) = ( '', '' );
 
+    if ( $ceil =~ /^(.+):(.+)/ ) {
+	fatal_error "An LS rate may only be specified for HFSC classes" unless $devref->{qdisc} eq 'hfsc';
+	$lsceil = $1;
+	$ceil   = $2;
+    }
+
     if ( $devref->{qdisc} eq 'hfsc' ) {
-	( my $trate , $dmax, $umax , my $rest ) = split ':', $rate , 4;
+	if ( $rate eq '-' ) {
+	    fatal_error 'A RATE must be supplied' unless $lsceil;
+	    $rate = 0;
+	} else {
+	    ( my $trate , $dmax, $umax , my $rest ) = split ':', $rate , 4;
 
-	fatal_error "Invalid RATE ($rate)" if defined $rest;
+	    fatal_error "Invalid RATE ($rate)" if defined $rest;
 
-	$rate = convert_rate ( $ratemax, $trate, 'RATE', $ratename );
-	$dmax = convert_delay( $dmax );
-	$umax = convert_size( $umax );
-	fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax;
-	$parentclass ||= 1;
+	    $rate = convert_rate ( $ratemax, $trate, 'RATE', $ratename );
+	    $dmax = convert_delay( $dmax );
+	    $umax = convert_size( $umax );
+	    fatal_error "DMAX must be specified when UMAX is specified" if $umax && ! $dmax;
+	    $parentclass ||= 1;
+	}
     } else {
 	$rate = convert_rate ( $ratemax, $rate, 'RATE' , $ratename );
     }
@@ -1154,6 +1180,7 @@ sub validate_tc_class( ) {
 			       umax      => $umax ,
 			       dmax      => $dmax ,
 			       ceiling   => convert_rate( $ceilmax, $ceil, 'CEIL' , $ceilname ) ,
+			       lsceil    => $lsceil ? convert_rate( $ceilmax, $lsceil, 'CEIL', 'LSCEIL' ) : 0,
 			       priority  => $prio eq '-' ? 1 : $prio ,
 			       mark      => $markval ,
 			       flow      => '' ,
@@ -1168,6 +1195,8 @@ sub validate_tc_class( ) {
     $tcref = $tcref->{$classnumber};
 
     fatal_error "RATE ($tcref->{rate}) exceeds CEIL ($tcref->{ceiling})" if $tcref->{rate} > $tcref->{ceiling};
+
+    my ( $red, %redopts ) = ( 0, ( avpkt => 1000 ) );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list1 "\L$options", 'option' ) {
@@ -1192,9 +1221,11 @@ sub validate_tc_class( ) {
 		push @{$tcref->{tos}}, $option;
 	    } elsif ( $option =~ /^flow=(.*)$/ ) {
 		fatal_error "The 'flow' option is not allowed with 'pfifo'" if $tcref->{pfifo};
+		fatal_error "The 'flow' option is not allowed with 'red'"   if $tcref->{red};
 		$tcref->{flow} = process_flow $1;
 	    } elsif ( $option eq 'pfifo' ) {
-		fatal_error "The 'pfifo'' option is not allowed with 'flow='" if $tcref->{flow};
+		fatal_error "The 'pfifo' option is not allowed with 'flow='" if $tcref->{flow};
+		fatal_error "The 'pfifo' option is not allowed with 'red='"  if $tcref->{red};
 		$tcref->{pfifo} = 1;
 	    } elsif ( $option =~ /^occurs=(\d+)$/ ) {
 		my $val = $1;
@@ -1215,6 +1246,31 @@ sub validate_tc_class( ) {
 		warning_message "limit ignored with pfifo queuing" if $tcref->{pfifo};
 		fatal_error "Invalid limit ($1)" if $1 < 3 || $1 > 128;
 		$tcref->{limit} = $1;
+	    } elsif ( $option =~ s/^red=// ) {
+		fatal_error "The 'red=' option is not allowed with 'flow='" if $tcref->{flow};
+		fatal_error "The 'red=' option is not allowed with 'pfifo'" if $tcref->{pfifo};
+		$tcref->{red} = 1;
+		my $opttype;
+		for my $redopt ( split_list( $option , q('red' option list) ) ) {
+		    if ( $redopt =~ /^([a-z]+)(?:=((0?\.)?(\d{1,8})))?$/ ) {
+			fatal_error "Invalid 'red' option ($1)"                    unless $opttype = $validredoptions{$1};
+			fatal_error "The $1 option requires a value"               unless $opttype == RED_NONE || $2;
+			fatal_error "The $1 option requires a value 0 < value < 1" if $opttype == RED_FLOAT && ! $3;
+			fatal_error "The $1 option requires an integer value"      if $opttype == RED_INTEGER && $3;
+			$redopts{$1} = $2;
+		    } else {
+			fatal_error "Invalid 'red' option specification ($redopt)";
+		    }
+		}
+
+		for ( qw/ limit min max avpkt burst probability / ) {
+		    fatal_error "The $_ 'red' option is required" unless $redopts{$_};
+		}
+
+		fatal_error "The 'max' red option must be at least 2 * 'min'"   unless $redopts{max}   >= 2 * $redopts{min};
+		fatal_error "The 'limit' red option must be at least 2 * 'max'" unless $redopts{limit} >= 2 * $redopts{min};
+		$redopts{ecn} = 1 if exists $redopts{ecn};
+		$tcref->{redopts} = \%redopts;
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
@@ -1246,6 +1302,8 @@ sub validate_tc_class( ) {
 					       occurs   => 0,
 					       parent   => $parentclass,
 					       limit    => $tcref->{limit},
+					       red      => $tcref->{red},
+					       redopts  => $tcref->{redopts},
 					     };
 	push @tcclasses, "$device:$classnumber";
     };
@@ -1800,7 +1858,9 @@ sub process_traffic_shaping() {
 		my $mark     = $tcref->{mark};
 		my $devicenumber  = in_hexp $devref->{number};
 		my $classid  = join( ':', $devicenumber, $classnum);
-		my $rate     = "$tcref->{rate}kbit";
+		my $rawrate  = $tcref->{rate};
+		my $rate     = "${rawrate}kbit";
+		my $lsceil   = $tcref->{lsceil};
 		my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 
 		$classids{$classid}=$device;
@@ -1814,23 +1874,49 @@ sub process_traffic_shaping() {
 		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 		} else {
 		    my $dmax = $tcref->{dmax};
+		    my $rule = "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc";
 
 		    if ( $dmax ) {
 			my $umax = $tcref->{umax} ? "$tcref->{umax}b" : "\${${dev}_mtu}b";
-			emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc umax $umax dmax ${dmax}ms rate $rate ul rate $tcref->{ceiling}kbit" );
+			$rule .= " sc umax $umax dmax ${dmax}ms";
+			$rule .= " rate $rate" if $rawrate;
 		    } else {
-			emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid hfsc sc rate $rate ul rate $tcref->{ceiling}kbit" );
+			$rule .= " sc rate $rate" if $rawrate;
 		    }
+
+		    $rule .= " ls rate ${lsceil}kbit" if $lsceil;
+
+		    emit ( "$rule ul rate $tcref->{ceiling}kbit" );
 		}
 
-		if ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
-		    1 while $devnums[++$sfq];
+		if ( $tcref->{leaf} ) {
+		    if ( $tcref->{red} ) {
+			1 while $devnums[++$sfq];
+			$sfqinhex = in_hexp( $sfq);
 
-		    $sfqinhex = in_hexp( $sfq);
-		    if ( $devref->{qdisc} eq 'htb' ) {
-			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
-		    } else {
-			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );
+			my ( $options, $redopts ) = ( '', $tcref->{redopts} );
+
+			while ( my ( $option, $type ) = each %validredoptions ) {
+			    if ( my $value = $redopts->{$option} ) {
+				if ( $type == RED_NONE ) {
+				    $options = join( ' ', $options, $option ) if $value;
+				} else {
+				    $options = join( ' ', $options, $option, $value );
+				}
+			    }
+			}
+
+			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: red${options}" );
+
+		    } elsif ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
+			1 while $devnums[++$sfq];
+
+			$sfqinhex = in_hexp( $sfq);
+			if ( $devref->{qdisc} eq 'htb' ) {
+			    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
+			} else {
+			    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );
+			}
 		    }
 		}
 		#

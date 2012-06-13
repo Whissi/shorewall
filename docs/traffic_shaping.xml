@@ -431,7 +431,7 @@
               <term><emphasis role="bold">linklayer</emphasis></term>
 
               <listitem>
-                <para> Added in Shorewall 4.5.6. Type of link (ethernet, atm,
+                <para>Added in Shorewall 4.5.6. Type of link (ethernet, atm,
                 adsl). When specified, causes scheduler packet size
                 manipulation as described in tc-stab (8). When this option is
                 given, the following options may also be given after
@@ -791,6 +791,18 @@ ppp0           6000kbit         500kbit</programlisting>
               number of packets that may be queued within the class. The
               <emphasis>number</emphasis> must be &gt; 2 and less than 128. If
               not specified, the value 127 is assumed</para>
+            </listitem>
+
+            <listitem>
+              <para>red=(<replaceable>redoption</replaceable>,...) - Added in
+              Shorewall 4.5.6. When specified on a leaf class, causes the
+              class to use the red queuing discipline rather than SFQ. See
+              tc-red (8) for additional information.</para>
+
+              <para>See <ulink
+              url="manpages/shorewall-tcdevices.html">shorewall-tcdevices</ulink>
+              (5) for a description of the allowable
+              <replaceable>redoptions</replaceable>.</para>
             </listitem>
           </itemizedlist>
         </listitem>

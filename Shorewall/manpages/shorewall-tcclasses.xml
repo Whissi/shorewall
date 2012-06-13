@@ -175,7 +175,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">RATE</emphasis> -
-        <emphasis>rate</emphasis>[:<emphasis>dmax</emphasis>[:<emphasis>umax</emphasis>]]</term>
+        {-|<emphasis>rate</emphasis>[:<emphasis>dmax</emphasis>[:<emphasis>umax</emphasis>]]}</term>
 
         <listitem>
           <para>The minimum bandwidth this class should get, when the traffic
@@ -185,11 +185,12 @@
           class exceed the CEIL of the parent class, things don't work
           well.</para>
 
-          <para>When using the HFSC queuing discipline, leaf classes may
-          specify <replaceable>dmax</replaceable>, the maximum delay in
-          milliseconds that the first queued packet for this class should
-          experience. May be expressed as an integer, optionally followed by
-          'ms' with no intervening white space (e.g., 10ms).</para>
+          <para>When using the HFSC queuing discipline, this column specify
+          the real-time (RT) service curve. leaf classes may specify
+          <replaceable>dmax</replaceable>, the maximum delay in milliseconds
+          that the first queued packet for this class should experience. May
+          be expressed as an integer, optionally followed by 'ms' with no
+          intervening white space (e.g., 10ms).</para>
 
           <para>HFSC leaf classes may also specify
           <replaceable>umax</replaceable>, the largest packet expected in this
@@ -198,12 +199,18 @@
           followed by 'b' with no intervening white space (e.g., 800b).
           <replaceable>umax</replaceable> may only be given if
           <replaceable>dmax</replaceable> is also given.</para>
+
+          <para>Beginning with Shorewall 4.5.6, HFSC classes may omit this
+          column (e.g, '-' in the column), provided that an
+          <replaceable>lsrate</replaceable> is specified (see CEIL below).
+          These rates are used to arbitrate between classes of the same
+          priority.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">CEIL</emphasis> -
-        <emphasis>rate</emphasis></term>
+        [<emphasis>lsrate</emphasis>:]<emphasis>rate</emphasis></term>
 
         <listitem>
           <para>The maximum bandwidth this class is allowed to use when the
@@ -214,6 +221,9 @@
           here for setting the maximum bandwidth to the RATE of the parent
           class, or the OUT-BANDWIDTH of the device if there is no parent
           class.</para>
+
+          <para>Beginning with Shorewall 4.5.6, you can also specify an
+          <replaceable>lsrate</replaceable> (link sharing rate).</para>
         </listitem>
       </varlistentry>
 
@@ -253,7 +263,7 @@
                 <para>This is the default class for that interface where all
                 traffic should go, that is not classified otherwise.</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>You must define <emphasis
@@ -310,7 +320,7 @@
                 limited to 64 bytes because we want only packets WITHOUT
                 payload to match.</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option is only valid for ONE class per
@@ -430,6 +440,119 @@
                 assumed.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>red=(<replaceable>redoption</replaceable>=<replaceable>value</replaceable>,
+              ...)</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.6. When specified on a leaf
+                class, causes the class to use the red queuing discipline
+                rather than SFQ. See tc-red (8) for additional
+                information.</para>
+
+                <para>Allowable redoptions are:</para>
+
+                <variablelist>
+                  <varlistentry>
+                    <term>min</term>
+
+                    <listitem>
+                      <para>Average queue size at which marking becomes a
+                      possibility.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>max</term>
+
+                    <listitem>
+                      <para>At this average queue size, the marking
+                      probability is maximal. Must be at least twice
+                      <replaceable>min</replaceable> to prevent synchronous
+                      retransmits, higher for low min.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>probability</term>
+
+                    <listitem>
+                      <para>Maximum probability for marking, specified as a
+                      floating point number from 0.0 to 1.0. Suggested values
+                      are 0.01 or 0.02 (1 or 2%, respectively).</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>limit</term>
+
+                    <listitem>
+                      <para>Hard limit on the real (not average) queue size in
+                      bytes. Further packets are dropped. Should be set higher
+                      than
+                      <replaceable>max</replaceable>+<replaceable>burst</replaceable>.
+                      It is advised to set this a few times higher than
+                      <replaceable>max</replaceable>. Shorewall requires that
+                      max be at least twice
+                      <replaceable>min</replaceable>.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>burst</term>
+
+                    <listitem>
+                      <para>Used for determining how fast the average queue
+                      size is influenced by the real queue size. Larger values
+                      make the calculation more sluggish, allowing longer
+                      bursts of traffic before marking starts. Real life
+                      experiments support the following guide‐ line:
+                      (<replaceable>min</replaceable>+<replaceable>min</replaceable>+<replaceable>max</replaceable>)/(3*<replaceable>avpkt</replaceable>).
+                      </para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>avpkt</term>
+
+                    <listitem>
+                      <para>Optional. Specified in bytes. Used with burst to
+                      determine the time constant for average queue size
+                      calculations. 1000 is a good value and is the Shorewall
+                      default.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>bandwidth</term>
+
+                    <listitem>
+                      <para>Optional. This rate is used for calculating the
+                      average queue size after some idle time. Should be set
+                      to the bandwidth of your interface. Does not mean that
+                      RED will shape for you!</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>ecn</term>
+
+                    <listitem>
+                      <para>RED can either 'mark' or 'drop'. Explicit
+                      Congestion Notification allows RED to notify remote
+                      hosts that their rate exceeds the amount of bandwidth
+                      available. Non-ECN capable hosts can only be notified by
+                      dropping a packet. If this parameter is specified,
+                      packets which indicate that their hosts honor ECN will
+                      only be marked and not dropped, unless the queue size
+                      hits limit bytes. Needs a tc binary with RED support
+                      compiled in. Recommended.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </listitem>
       </varlistentry>
@@ -502,6 +625,8 @@
 
     <para><ulink
     url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
+
+    <para>tc-hfsc (7)</para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),

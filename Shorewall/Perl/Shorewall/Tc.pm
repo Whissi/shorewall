@@ -1179,8 +1179,8 @@ sub validate_tc_class( ) {
 			       rate      => $rate ,
 			       umax      => $umax ,
 			       dmax      => $dmax ,
-			       ceiling   => convert_rate( $ceilmax, $ceil, 'CEIL' , $ceilname ) ,
-			       lsceil    => $lsceil ? convert_rate( $ceilmax, $lsceil, 'CEIL', 'LSCEIL' ) : 0,
+			       ceiling   => $ceil   = ( supplied $ceil   ? convert_rate( $ceilmax, $ceil,   'CEIL'  , $ceilname ) : 0 ),
+			       lsceil    => $lsceil = ( $lsceil          ? convert_rate( $ceilmax, $lsceil, 'LSCEIL', $ceilname ) : 0 ),
 			       priority  => $prio eq '-' ? 1 : $prio ,
 			       mark      => $markval ,
 			       flow      => '' ,
@@ -1194,7 +1194,7 @@ sub validate_tc_class( ) {
 
     $tcref = $tcref->{$classnumber};
 
-    fatal_error "RATE ($tcref->{rate}) exceeds CEIL ($tcref->{ceiling})" if $tcref->{rate} > $tcref->{ceiling};
+    fatal_error "RATE ($rate) exceeds CEIL ($ceil)" if $rate && $ceil && $rate > $ceil;
 
     my ( $red, %redopts ) = ( 0, ( avpkt => 1000 ) );
 
@@ -1885,8 +1885,9 @@ sub process_traffic_shaping() {
 		    }
 
 		    $rule .= " ls rate ${lsceil}kbit" if $lsceil;
+		    $rule .= " ul rate $tcref->{ceiling}kbit" if $tcref->{ceiling};
 
-		    emit ( "$rule ul rate $tcref->{ceiling}kbit" );
+		    emit $rule;
 		}
 
 		if ( $tcref->{leaf} ) {

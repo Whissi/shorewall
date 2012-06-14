@@ -344,7 +344,7 @@ replace_default_route() # $1 = USE_DEFAULT_RT
 #
 delete_default_routes() # $1 = table number
 {
-    $IP -$g_family route ls table $1 | fgrep default | fgrep -v metric | while read route; do
+    $IP -$g_family -o route ls table $1 | fgrep default | fgrep -v metric | while read route; do
 	qt $IP -$g_family route del $route
     done
 } 

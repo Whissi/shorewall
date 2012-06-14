@@ -61,7 +61,6 @@ my  @load_interfaces;
 
 my $balancing;
 my $fallback;
-my $metrics;
 my $first_default_route;
 my $first_fallback_route;
 my $maxload;
@@ -97,7 +96,6 @@ sub initialize( $ ) {
     @load_interfaces        = ();
     $balancing              = 0;
     $fallback               = 0;
-    $metrics                = 0;
     $first_default_route    = 1;
     $first_fallback_route   = 1;
     $maxload                = 0;
@@ -710,8 +708,6 @@ CEOF
 	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $physical metric $number);
 	    emit qq(echo "qt \$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq(" >> \${VARDIR}/undo_${table}_routing);
 	}
-
-	$metrics = 1;
     }
 
     emit( qq(\n) ,

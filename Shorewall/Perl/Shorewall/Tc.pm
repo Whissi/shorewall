@@ -1800,9 +1800,9 @@ sub process_traffic_shaping() {
 
 	    if ( $devref->{linklayer} ) {
 		$stab =  "stab linklayer $devref->{linklayer} overhead $devref->{overhead} ";
-		$stab .= "mtu $devref->{mtu} "   if $devref->{mtu};
-		$stab .= "mpu $devref->{mpu} "   if $devref->{mpu};
-		$stab .= "mpu $devref->{tsize} " if $devref->{tsize};
+		$stab .= "mtu $devref->{mtu} "     if $devref->{mtu};
+		$stab .= "mpu $devref->{mpu} "     if $devref->{mpu};
+		$stab .= "tsize $devref->{tsize} " if $devref->{tsize};
 	    } else {
 		$stab = '';
 	    }

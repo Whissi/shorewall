@@ -447,15 +447,15 @@
 
               <listitem>
                 <para>Added in Shorewall 4.5.6. When specified on a leaf
-                class, causes the class to use the red queuing discipline
-                rather than SFQ. See tc-red (8) for additional
-                information.</para>
+                class, causes the class to use the RED (Random Early
+                Detection) queuing discipline rather than SFQ. See tc-red (8)
+                for additional information.</para>
 
                 <para>Allowable redoptions are:</para>
 
                 <variablelist>
                   <varlistentry>
-                    <term>min</term>
+                    <term>min <replaceable>min</replaceable></term>
 
                     <listitem>
                       <para>Average queue size at which marking becomes a
@@ -464,7 +464,7 @@
                   </varlistentry>
 
                   <varlistentry>
-                    <term>max</term>
+                    <term>max <replaceable>max</replaceable></term>
 
                     <listitem>
                       <para>At this average queue size, the marking
@@ -475,7 +475,8 @@
                   </varlistentry>
 
                   <varlistentry>
-                    <term>probability</term>
+                    <term>probability
+                    <replaceable>probability</replaceable></term>
 
                     <listitem>
                       <para>Maximum probability for marking, specified as a
@@ -485,7 +486,7 @@
                   </varlistentry>
 
                   <varlistentry>
-                    <term>limit</term>
+                    <term>limit <replaceable>limit</replaceable></term>
 
                     <listitem>
                       <para>Hard limit on the real (not average) queue size in
@@ -500,21 +501,20 @@
                   </varlistentry>
 
                   <varlistentry>
-                    <term>burst</term>
+                    <term>burst <replaceable>burst</replaceable></term>
 
                     <listitem>
                       <para>Used for determining how fast the average queue
                       size is influenced by the real queue size. Larger values
                       make the calculation more sluggish, allowing longer
                       bursts of traffic before marking starts. Real life
-                      experiments support the following guide‐ line:
-                      (<replaceable>min</replaceable>+<replaceable>min</replaceable>+<replaceable>max</replaceable>)/(3*<replaceable>avpkt</replaceable>).
-                      </para>
+                      experiments support the following guide‐line:
+                      (<replaceable>min</replaceable>+<replaceable>min</replaceable>+<replaceable>max</replaceable>)/(3*<replaceable>avpkt</replaceable>).</para>
                     </listitem>
                   </varlistentry>
 
                   <varlistentry>
-                    <term>avpkt</term>
+                    <term>avpkt <replaceable>avpkt</replaceable></term>
 
                     <listitem>
                       <para>Optional. Specified in bytes. Used with burst to
@@ -525,7 +525,8 @@
                   </varlistentry>
 
                   <varlistentry>
-                    <term>bandwidth</term>
+                    <term>bandwidth
+                    <replaceable>bandwidth</replaceable></term>
 
                     <listitem>
                       <para>Optional. This rate is used for calculating the
@@ -546,8 +547,8 @@
                       dropping a packet. If this parameter is specified,
                       packets which indicate that their hosts honor ECN will
                       only be marked and not dropped, unless the queue size
-                      hits limit bytes. Needs a tc binary with RED support
-                      compiled in. Recommended.</para>
+                      hits <replaceable>limit</replaceable> bytes. Needs a tc
+                      binary with RED support compiled in. Recommended.</para>
                     </listitem>
                   </varlistentry>
                 </variablelist>

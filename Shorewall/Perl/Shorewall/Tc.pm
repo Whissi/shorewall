@@ -1257,6 +1257,7 @@ sub validate_tc_class( ) {
 			fatal_error "The $1 option requires a value"               unless $opttype == RED_NONE || $2;
 			fatal_error "The $1 option requires a value 0 < value < 1" if $opttype == RED_FLOAT && ! $3;
 			fatal_error "The $1 option requires an integer value"      if $opttype == RED_INTEGER && $3;
+			fatal_error "The $1 option does not take a value"          if $opttype == RED_NONE && $2;
 			$redopts{$1} = $2;
 		    } else {
 			fatal_error "Invalid 'red' option specification ($redopt)";

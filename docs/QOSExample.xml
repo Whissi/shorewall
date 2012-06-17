@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>QOS Configuration</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>This configuration was inspired by the one in this thread on the
+    OpenWRT Forum: <ulink
+    url="https://forum.openwrt.org/viewtopic.php?pid=154533#p154533">https://forum.openwrt.org/viewtopic.php?pid=154533#p154533</ulink>.
+    The configuration has been adapted to Shorewall 4.5.6 with the following
+    changes:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The configuration uses an IFB, yet only uses firewall marks in
+        the OUTPUT and FORWARD chains to classify packets; clearly that
+        doesn't work<footnote>
+            <para>To be more precise, it doesn't work with an unpatched
+            kernel. The OpenWRT script assumes an 'act_conntrack' patch which
+            performs conntrack processing on packets before they are sent to
+            the IFB. That patch is not generally available.</para>
+          </footnote>The configuration presented here uses U32 classifiers
+        (shorewall-tcfilters(5)) to classify traffic for download shaping and
+        uses the POSTROUTING chain for upload shaping.</para>
+      </listitem>
+
+      <listitem>
+        <para>The sample uses a weak form of P2P classification; the one
+        presented below uses <ulink url="IPP2P.html">IPP2P</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The OpenWRT script assumed that the uplink was ATM -- the one
+        below makes no assumption (it specifies 'ethernet' with overhead
+        '0').</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>/etc/shorewall/params</title>
+
+    <para>The shell variables set in the OpenWRT script are set in the
+    Shorewall params file:</para>
+
+    <programlisting>DOWNLOAD=40000 #download speed in kbit. set xx% of real download speed
+UPLOAD=7000 # set xx% of real upload speed
+
+# multiports = up to 15 ports
+# ports to be classified as bulk #set after connection mark save and after connection mark restore
+TCP_BULK="1024:" #S and D ports
+UDP_BULK="1024:" #S and D ports
+
+# Destination ports to be classified as P2P
+TCP_P2P="13769" #D ports
+UDP_P2P="13769" #D ports
+IP_P2P="192.168.0.133"
+
+# Destination ports to be classified as normal
+TCP_NORMAL="80,443,25,20,21,110,993,995" # D ports
+UDP_NORMAL=""
+
+# Destination ports to be classified as Prio (overules bulk ports)
+TCP_PRIO="22,53" #destination ports
+UDP_PRIO="22,53" #destination ports
+
+# Destination ports to be classified as VoIP (overules bulk ports)
+TCP_VOIP=""
+UDP_VOIP="18080"
+IP_VOIP="192.168.0.226" #destination and source IP
+IP_VOIP="192.168.0.226" #destination and source IP
+
+#!!!!!uplink leaf class parameters!!!!!!!!!
+
+#bulk
+UP_LS_BULK_RATE=$(($UPLOAD*5/100))
+UP_UL_BULK_RATE=$UPLOAD
+#settings leaf qdisc
+UP_BULK_RED_PROB=0.05 #red drob probability
+UP_BULK_RED_min=6250 #real limit. To limit BULK traffic
+UP_BULK_RED_min2=6250 #min for doing the calculations (burst and etc)
+UP_BULK_RED_max=$((2 * $UP_BULK_RED_min2 + $UP_BULK_RED_min))
+UP_BULK_RED_burst=$(((5 * $UP_BULK_RED_min2) / (3 * 1000)))
+UP_BULK_RED_limit=$(($UP_BULK_RED_max * 5))
+
+#P2P
+UP_LS_P2P_RATE=$(($UPLOAD * 5 / 100))
+UP_UL_P2P_RATE=$UPLOAD
+#settings leaf qdisc
+UP_P2P_RED_PROB=0.05 #red drob probability
+UP_P2P_RED_min=32000 #real limit. To limit P2P traffic
+UP_P2P_RED_min2=32000 #min for doing the calculations (burst and etc)
+UP_P2P_RED_max=$((5 * $UP_P2P_RED_min2 + $UP_P2P_RED_min))
+UP_P2P_RED_burst=$(((5 * $UP_P2P_RED_min2) / (3 * 1000)))
+UP_P2P_RED_limit=$(($UP_P2P_RED_max * 5))
+#normal class
+UP_LS_NORMAL_RATE=$(($UPLOAD * 40 / 100))
+UP_UL_NORMAL_RATE=$UPLOAD
+#settings leaf qdisc
+UP_NORMAL_RED_PROB=0.05 #red drob probability
+UP_NORMAL_RED_min=6250 #real limit. To limit NORMAL traffic
+UP_NORMAL_RED_min2=6250 #min for doing the calculations (burst and etc)
+UP_NORMAL_RED_max=$((2 * $UP_NORMAL_RED_min2 + $UP_NORMAL_RED_min))
+UP_NORMAL_RED_burst=$(((5 * $UP_NORMAL_RED_min2) / (3 * 1000)))
+UP_NORMAL_RED_limit=$(($UP_NORMAL_RED_max * 5))
+
+#prio
+UP_LS_PRIO_RATE=$(($UPLOAD*50/100))
+UP_RT_PRIO_RATE="200" #rate in kbit
+UP_RT_PRIO_UMAX="400" #lengte of the packets [byte]
+UP_RT_PRIO_DMAX="15" #delay in ms
+UP_UL_PRIO_RATE=$UPLOAD
+
+#Voip
+UP_UL_VOIP_RATE=$UPLOAD
+UP_SC_VOIP_RATE="200"
+UP_SC_VOIP_UMAX="350" #length of the voip packets [byte]
+UP_SC_VOIP_DMAX="10" #delay in ms
+
+#bulk
+DOWN_LS_BULK_RATE=$(($DOWNLOAD*5/100))
+DOWN_UL_BULK_RATE=$DOWNLOAD
+#leaf qdisc parameters
+DOWN_BULK_RED_PROB=0.05 #red drob probability
+DOWN_BULK_RED_min=62500 #real limit. To limit BULK traffic
+DOWN_BULK_RED_min2=62500 #min for doing the calculations (burst and etc)
+DOWN_BULK_RED_max=$((2 * $DOWN_BULK_RED_min2 + $DOWN_BULK_RED_min))
+DOWN_BULK_RED_burst=$(((5 * $DOWN_BULK_RED_min2) / (3 * 1000)))
+DOWN_BULK_RED_limit=$(($DOWN_BULK_RED_max * 5))
+
+
+#P2P
+DOWN_LS_P2P_RATE=$(($DOWNLOAD*5/100))
+DOWN_UL_P2P_RATE=4000
+#leaf qdisc parameters
+DOWN_P2P_RED_PROB=0.05 #red drob probability
+DOWN_P2P_RED_min=200000 #real limit. To limit P2P traffic
+DOWN_P2P_RED_min2=200000 #min for doing the calculations (burst and etc)
+DOWN_P2P_RED_max=$((2 * $DOWN_P2P_RED_min2 + $DOWN_P2P_RED_min))
+DOWN_P2P_RED_burst=$(((5 * $DOWN_P2P_RED_min2) / (3 * 1000)))
+DOWN_P2P_RED_limit=$(($DOWN_P2P_RED_max * 5))
+
+#normal class
+DOWN_LS_NORMAL_RATE=$(($DOWNLOAD*75/100))
+DOWN_UL_NORMAL_RATE=$DOWNLOAD
+
+#leaf qdisc parameters
+DOWN_NORMAL_RED_PROB=0.05 #red drob probability
+DOWN_NORMAL_RED_min=62500 #real limit. To limit NORMAL traffic
+DOWN_NORMAL_RED_min2=62500 #min for doing the calculations (burst and etc)
+DOWN_NORMAL_RED_max=$((2 * $DOWN_NORMAL_RED_min2 + $DOWN_NORMAL_RED_min))
+DOWN_NORMAL_RED_burst=$(((5 * $DOWN_NORMAL_RED_min2) / (3 * 1000)))
+DOWN_NORMAL_RED_limit=$(($DOWN_NORMAL_RED_max * 5))
+
+#prio
+DOWN_RT_PRIO_RATE="500" #rate in kbit
+DOWN_RT_PRIO_UMAX="400" #length of the packets [byte]/
+DOWN_RT_PRIO_DMAX="1.5" #delay in ms
+DOWN_UL_PRIO_RATE=$DOWNLOAD
+
+
+#Voip
+DOWN_UL_VOIP_RATE=$DOWNLOAD
+DOWN_SC_VOIP_RATE="250"
+DOWN_SC_VOIP_UMAX="350" #lengt of voip packets [byte]
+DOWN_SC_VOIP_DMAX="1.2" #delay in ms</programlisting>
+  </section>
+
+  <section>
+    <title>/etc/shorewall/init</title>
+
+    <para>The init file loads the ifb module, creating a single device:</para>
+
+    <programlisting>modprobe ifb numifbs=1
+ip link set ifb0 up</programlisting>
+  </section>
+
+  <section>
+    <title>/etc/shorewall/tcdevices</title>
+
+    <para>The tcdevices file describes the two devices:</para>
+
+    <programlisting>#NUMBER:        IN-BANDWITH     OUT-BANDWIDTH   OPTIONS         REDIRECTED
+#INTERFACE                                                      INTERFACES
+1:eth0          -               ${UPLOAD}kbit   hfsc,linklayer=ethernet,overhead=0
+2:ifb0          -               ${DOWNLOAD}kbit hfsc            eth0</programlisting>
+  </section>
+
+  <section>
+    <title>/etc/shorewall/tcclasses</title>
+
+    <para>The tcclasses file defines the class hierarchy for both
+    devices:</para>
+
+    <programlisting>#IFACE: MARK    RATE:                           CEIL                            PRIORITY        OPTIONS
+#CLASS          DMAX:UMAX
+1       1       ${UP_SC_VOIP_RATE}kbit:\
+                ${UP_SC_VOIP_DMAX}:\
+                ${UP_SC_VOIP_UMAX}              ${UP_UL_VOIP_RATE}kbit          1
+
+1       2       ${UP_RT_PRIO_RATE}kbit:\
+                ${UP_RT_PRIO_DMAX}:\
+                ${UP_RT_PRIO_UMAX}              ${UP_LS_PRIO_RATE}kbit:\
+                                                ${UP_UL_PRIO_RATE}kbit          1
+
+1       3       -                               ${UP_LS_NORMAL_RATE}kbit:\
+                                                ${UP_UL_NORMAL_RATE}kbit        1               red=(limit=$UP_NORMAL_RED_limit,\
+                                                                                                     min=$UP_NORMAL_RED_min,\
+                                                                                                     max=$UP_NORMAL_RED_max,\
+                                                                                                     burst=$UP_NORMAL_RED_burst,\
+                                                                                                     probability=$UP_NORMAL_RED_PROB,\
+                                                                                                     ecn)
+1       4       -                               ${UP_LS_P2P_RATE}kbit:\
+                                                ${UP_UL_P2P_RATE}kbit           1               red=(limit=$UP_P2P_RED_limit,\
+                                                                                                     min=$UP_P2P_RED_min,\
+                                                                                                     max=$UP_P2P_RED_max,\
+                                                                                                     burst=$UP_P2P_RED_burst,\
+                                                                                                     probability=$UP_P2P_RED_PROB,\
+                                                                                                     ecn)
+1       5       -                               ${UP_LS_BULK_RATE}kbit:\
+                                                ${UP_UL_BULK_RATE}kbit          1               default,\
+                                                                                                red=(limit=$UP_BULK_RED_limit,\
+                                                                                                     min=$UP_BULK_RED_min,\
+                                                                                                     max=$UP_BULK_RED_max,\
+                                                                                                     burst=$UP_BULK_RED_burst,\
+                                                                                                     probability=$UP_BULK_RED_PROB,\
+                                                                                                     ecn)
+
+2:10    -       ${UP_SC_VOIP_RATE}kbit:\
+                ${UP_SC_VOIP_DMAX}:\
+                ${UP_SC_VOIP_UMAX}              ${UP_UL_VOIP_RATE}kbit          1
+
+2:20    -       ${DOWN_RT_PRIO_RATE}kbit:\
+                ${DOWN_RT_PRIO_DMAX}:\
+                ${DOWN_RT_PRIO_UMAX}            ${DOWN_UL_PRIO_RATE}kbit        1
+
+2:30    -       -                               ${DOWN_LS_NORMAL_RATE}kbit:\
+                                                ${DOWN_UL_NORMAL_RATE}kbit      1               red=(limit=$DOWN_NORMAL_RED_limit,\
+                                                                                                     min=$DOWN_NORMAL_RED_min,\
+                                                                                                     max=$DOWN_NORMAL_RED_max,\
+                                                                                                     burst=$DOWN_NORMAL_RED_burst,\
+                                                                                                     probability=$DOWN_NORMAL_RED_PROB)
+2:40    -       -                               ${DOWN_LS_P2P_RATE}kbit:\
+                                                ${DOWN_UL_P2P_RATE}kbit         1               red=(limit=$DOWN_P2P_RED_limit,\
+                                                                                                     min=$DOWN_P2P_RED_min,\
+                                                                                                     max=$DOWN_P2P_RED_max,\
+                                                                                                     burst=$DOWN_P2P_RED_burst,\
+                                                                                                     probability=$DOWN_P2P_RED_PROB)
+2:50    -       -                               ${DOWN_LS_BULK_RATE}kbit:\
+                                                ${DOWN_UL_BULK_RATE}kbit        1               default,\
+                                                                                                red=(limit=$DOWN_BULK_RED_limit,\
+                                                                                                     min=$DOWN_BULK_RED_min,\
+                                                                                                     max=$DOWN_BULK_RED_max,\
+                                                                                                     burst=$DOWN_BULK_RED_burst,\
+                                                                                                     probability=$DOWN_BULK_RED_PROB)</programlisting>
+  </section>
+
+  <section>
+    <title>/etc/shorewall/tcrules</title>
+
+    <para>The tcrules file classifies upload packets:</para>
+
+    <programlisting>#MARK            SOURCE         DEST          PROTO     DEST        SOURCE     USER    TEST
+#                                                       PORT(S)     PORT(S)
+RESTORE:T        -              -             -         -           -          -       !0:C
+CONTINUE:T       -              -             -         -           -          -       !0
+2:T              -              -             icmp
+1:T              -              -             udp       $UDP_VOIP   -          -       0
+1:T              $IP_VOIP       -             -         -           -          -       0
+1:T              -              $IP_VOIP      -         -           -          -       0
+2:T              -              -             tcp       $TCP_PRIO   -          -       0
+2:T              -              -             udp       $UDP_PRIO   -          -       0
+2:T              -              -             tcp       -           $TCP_PRIO  -       0
+2:T              -              -             udp       -           $UDP_PRIO  -       0
+3:T              -              -             tcp       $TCP_NORMAL -          -       0
+4:T              -              -             ipp2p:all -           -          -       0
+5:T              -              -             tcp       $TCP_BULK   -          -       0
+5:T              -              -             tcp       -           $TCP_BULK  -       0
+5:T              -              -             udp       $UDP_BULK   -          -       0
+5:T              -              -             udp       -           $UDP_BULK  -       0
+SAVE:T           -              -             -         -           -          -      !0</programlisting>
+  </section>
+
+  <section>
+    <title>/etc/shorewall/tcfilters</title>
+
+    <para>The tcfilters file classifies download packets:</para>
+
+    <programlisting>#INTERFACE:     SOURCE  DEST    PROTO   DEST    SOURCE   TOS            LENGTH
+#CLASS                                  PORT(S) PORT(S)
+#
+# These classify download traffic
+#
+2:10            -       $MYNET  udp     -       $UDP_VOIP
+2:20            -       $MYNET  tcp     -       $TCP_PRIO
+2:20            -       $MYNET  udp     -       $UDP_PRIO
+2:20            -       $MYNET  tcp     $TCP_PRIO
+2:20            -       $MYNET  udp     $UDP_PRIO
+2:30            -       $MYNET  tcp     -       $TCP_NORMAL
+2:50            -       $MYNET  tcp     $TCP_BULK
+2:50            -       $MYNET  tcp     -       $TCP_BULK
+2:50            -       $MYNET  udp     $UDP_BULK
+2:50            -       $MYNET  tcp     -       $UDP_BULK
+</programlisting>
+  </section>
+</article>

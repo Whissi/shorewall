@@ -1251,16 +1251,41 @@ sub validate_tc_class( ) {
 		fatal_error "The 'red=' option is not allowed with 'pfifo'" if $tcref->{pfifo};
 		$tcref->{red} = 1;
 		my $opttype;
+
 		for my $redopt ( split_list( $option , q('red' option list) ) ) {
-		    if ( $redopt =~ /^([a-z]+)(?:=((0?\.)?(\d{1,8})))?$/ ) {
-			fatal_error "Invalid 'red' option ($1)"                    unless $opttype = $validredoptions{$1};
-			fatal_error "The $1 option requires a value"               unless $opttype == RED_NONE || $2;
-			fatal_error "The $1 option requires a value 0 < value < 1" if $opttype == RED_FLOAT && ! $3;
-			fatal_error "The $1 option requires an integer value"      if $opttype == RED_INTEGER && $3;
-			fatal_error "The $1 option does not take a value"          if $opttype == RED_NONE && $2;
+		    #
+		    #                            $2  ----------------------
+		    #              $1  ------       | $3 -------           |
+		    #                 |      |      |   |       |          |
+		    if ( $redopt =~ /^([a-z]+) (?:= (   ([01]?\.)?(\d{1,8})) )?$/x ) {
+			fatal_error "Invalid RED option ($1)" unless $opttype = $validredoptions{$1};
+			if ( $2 ) {
+			    #
+			    # '=<value>' supplied
+			    #
+			    fatal_error "The $1 option does not take a value" if $opttype == RED_NONE;
+			    if ( $3 ) {
+				#
+				# fractional value
+				#
+				fatal_error "The $1 option requires an integer value"  if $opttype == RED_INTEGER;
+				fatal_error "The value of $1 must be <= 1" if $2 > 1;
+			    } else {
+				#
+				# Integer value
+				#
+				fatal_error "The $1 option requires a value 0 <= value <= 1" if $opttype == RED_FLOAT;
+			    }
+			} else {
+			    #
+			    # No value supplied
+			    #
+			    fatal_error "The $1 option requires a value" unless $opttype == RED_NONE;
+			}
+
 			$redopts{$1} = $2;
 		    } else {
-			fatal_error "Invalid 'red' option specification ($redopt)";
+			fatal_error "Invalid RED option specification ($redopt)";
 		    }
 		}
 
@@ -1635,7 +1660,6 @@ sub process_tc_priority() {
 					   $address   eq '-' &&
 					   $interface eq '-' &&
 					   $helper    eq '-' );
-
 
     my $val = numeric_value $band;
 

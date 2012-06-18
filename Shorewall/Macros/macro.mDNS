@@ -1,9 +1,11 @@
 #
-# Shorewall version 4 - Multicast DNS Macro
+# Shorewall version 4 - Multicast DNS Macro. The SOURCE in rules that invoke
+# 	    	      		      	     this macro should be where the
+#					     network services are.
 #
 # /usr/share/shorewall/macro.mDNS
 #
-#	This macro handles multicast DNS traffic.
+#	This macro handles multicast DNS traffic
 #
 ###############################################################################
 #ACTION	SOURCE	DEST			PROTO	DEST	SOURCE	RATE	USER/
@@ -12,5 +14,4 @@ PARAM	-	224.0.0.251		udp	5353
 PARAM	-	-			udp	32768:	5353
 PARAM	-	224.0.0.251		2
 PARAM	DEST	SOURCE:224.0.0.251	udp	5353
-PARAM	DEST	SOURCE			udp	32768:	5353
 PARAM	DEST	SOURCE:224.0.0.251	2

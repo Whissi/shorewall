@@ -1,0 +1,16 @@
+#
+# Shorewall version 4 - Bi-directional Multicast DNS Macro.
+#
+# /usr/share/shorewall/macro.mDNSbi
+#
+#	This macro handles multicast DNS traffic
+#
+###############################################################################
+#ACTION	SOURCE	DEST			PROTO	DEST	SOURCE	RATE	USER/
+#						PORT(S)	PORT(S)	LIMIT	GROUP
+PARAM	-	224.0.0.251		udp	5353
+PARAM	-	-			udp	32768:	5353
+PARAM	-	224.0.0.251		2
+PARAM	DEST	SOURCE:224.0.0.251	udp	5353
+PARAM	DEST	SOURCE			udp	32768:	5353
+PARAM	DEST	SOURCE:224.0.0.251	2

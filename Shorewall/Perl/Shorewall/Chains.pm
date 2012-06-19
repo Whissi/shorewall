@@ -4206,44 +4206,37 @@ sub do_user( $ ) {
 
     require_capability 'OWNER_MATCH', 'A non-empty USER column', 's';
 
-    if ( $user =~ /^(!)?(.*)\+(.*)$/ ) {
-	$rule .= "! --cmd-owner $2 " if supplied $2;
-	$user = "!$1";
-    } elsif ( $user =~ /^(.*)\+(.*)$/ ) {
-	$rule .= "--cmd-owner $2 " if supplied $2;
-	$user = $1;
+    assert ( $user =~ /^(!)?(.*?)(:(.*))?$/ );
+    my $invert = $1 ? '! ' : '';
+    my $group  = supplied $4 ? $4 : '';
+
+    if ( supplied $2 ) {
+	$user  = $2;
+	if ( $user =~ /(\d+)(-(\d+))?$/ ) {
+	    if ( supplied $2 ) {
+		fatal_error "Invalid User Range ($user)" unless $3 >= $1;
+	    }
+	} else {
+	    $user  = resolve_id( $user, 'user' );
+	}
+
+	$rule .= "${invert}--uid-owner $user ";
     }
 
-    if ( $user =~ /^(!)?(.*):(.*)$/ ) {
-	my $invert = $1 ? '! ' : '';
-	my $group  = defined $3 ? $3 : '';
-
-	if ( supplied $2 ) {
-	    $user  = $2;
-	    $user  = resolve_id( $user, 'user' ) unless $user =~ /\d+(-\d+)?$/;
-	    $rule .= "${invert}--uid-owner $user ";
+    if ( $group ne '' ) {
+	if ( $group =~ /^(\d+)(-(\d+))?$/ ) {
+	    if ( supplied $2 ) {
+		fatal_error "Invalid Group Range ($group)" unless $3 >= $1;
+	    }
+	} else {
+	    $group = resolve_id( $group, 'group' );
 	}
 
-	if ( $group ne '' ) {
-	    $group = resolve_id( $group, 'group' ) unless $group =~ /^\d+(-\d+)?$/;
-	    $rule .= "${invert}--gid-owner $group ";
-	}
-    } elsif ( $user =~ /^(!)?(.*)$/ ) {
-	my $invert = $1 ? '! ' : '';
-	$user   = $2;
-
-	fatal_error "Invalid USER/GROUP (!)" if $user eq '';
-	$user = resolve_id ($user, 'user' ) unless $user =~ /\d+(-\d+)?$/;
-	$rule .= "${invert}--uid-owner $user ";
-    } else {
-	$user  = resolve_id( $user, 'user' ) unless $user =~ /\d+(-\d+)?$/;
-	$rule .= "--uid-owner $user ";
+	$rule .= "${invert}--gid-owner $group ";
     }
 
     $rule;
 }
-
-
 
 #
 # Create a "-m tos" match for the passed TOS

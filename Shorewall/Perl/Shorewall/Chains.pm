@@ -4199,12 +4199,12 @@ sub do_user( $ ) {
 
 	if ( supplied $2 ) {
 	    $user  = $2;
-	    $user  = resolve_id( $user, 'user' ) unless $user =~ /\d+$/;
+	    $user  = resolve_id( $user, 'user' ) unless $user =~ /\d+(-\d+)?$/;
 	    $rule .= "${invert}--uid-owner $user ";
 	}
 
 	if ( $group ne '' ) {
-	    $group = resolve_id( $group, 'group' ) unless $group =~ /^\d+$/;
+	    $group = resolve_id( $group, 'group' ) unless $group =~ /^\d+(-\d+)?$/;
 	    $rule .= "${invert}--gid-owner $group ";
 	}
     } elsif ( $user =~ /^(!)?(.*)$/ ) {
@@ -4212,10 +4212,10 @@ sub do_user( $ ) {
 	$user   = $2;
 
 	fatal_error "Invalid USER/GROUP (!)" if $user eq '';
-	$user = resolve_id ($user, 'user' ) unless $user =~ /\d+$/;
+	$user = resolve_id ($user, 'user' ) unless $user =~ /\d+(-\d+)?$/;
 	$rule .= "${invert}--uid-owner $user ";
     } else {
-	$user  = resolve_id( $user, 'user' ) unless $user =~ /\d+$/;
+	$user  = resolve_id( $user, 'user' ) unless $user =~ /\d+(-\d+)?$/;
 	$rule .= "--uid-owner $user ";
     }
 

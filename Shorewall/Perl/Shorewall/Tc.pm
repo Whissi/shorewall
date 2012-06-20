@@ -1752,7 +1752,7 @@ sub process_tcpri() {
 			);
 
 	    add_ijump( $mangle_table->{tcpost} ,
-		       j    => 'CONNMARK --save-mark --ctmask '    . in_hex( $globals{TC_MASK} ),
+		       j    => 'CONNMARK --save-mark --mask '    . in_hex( $globals{TC_MASK} ),
 		       mark => '! --mark 0/' . in_hex( $globals{TC_MASK} )
 		     );
 	}

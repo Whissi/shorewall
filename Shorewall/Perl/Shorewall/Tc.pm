@@ -1099,22 +1099,18 @@ sub validate_tc_class( ) {
     my $markval = 0;
 
     if ( $mark ne '-' ) {
-	if ( $devref->{classify} ) {
-	    warning_message "INTERFACE $device has the 'classify' option - MARK value ($mark) ignored";
+	fatal_error "MARK may not be specified when TC_BITS=0" unless $config{TC_BITS};
+
+	$markval = numeric_value( $mark );
+	fatal_error "Invalid MARK ($markval)" unless defined $markval;
+
+	fatal_error "Invalid Mark ($mark)" unless $markval <= $globals{TC_MAX};
+
+	if ( $classnumber ) {
+	    fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
 	} else {
-	    fatal_error "MARK may not be specified when TC_BITS=0" unless $config{TC_BITS};
-
-	    $markval = numeric_value( $mark );
-	    fatal_error "Invalid MARK ($markval)" unless defined $markval;
-
-	    fatal_error "Invalid Mark ($mark)" unless $markval <= $globals{TC_MAX};
-
-	    if ( $classnumber ) {
-		fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};
-	    } else {
-		$classnumber = $config{TC_BITS} >= 14 ? $devref->{nextclass}++ : hex_value( $devnum . $markval );
-		fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
-	    }
+	    $classnumber = $config{TC_BITS} >= 14 ? $devref->{nextclass}++ : hex_value( $devnum . $markval );
+	    fatal_error "Duplicate MARK ($mark)" if $tcref->{$classnumber};
 	}
     } else {
 	fatal_error "Duplicate Class NUMBER ($classnumber)" if $tcref->{$classnumber};

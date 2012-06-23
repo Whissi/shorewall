@@ -4185,10 +4185,10 @@ sub get_configuration( $$$ ) {
     }
 
     if ( ( my $userbits = $config{PROVIDER_OFFSET} - $config{TC_BITS} ) > 0 ) {
-
 	$globals{USER_MASK} = make_mask( $userbits ) << $config{TC_BITS};
+	$globals{USER_BITS} = $userbits;
     } else {
-	$globals{USER_MASK} = 0;
+	$globals{USER_MASK} = $globals{USER_BITS} = 0;
     }
 
     if ( supplied ( $val = $config{ZONE2ZONE} ) ) {
@@ -4606,7 +4606,7 @@ sub dump_mark_layout() {
 	     $globals{TC_MASK} );
 
     dumpout( "User",
-	     $globals{USER_MASK},
+	     $globals{USER_BITS},
 	     $globals{TC_MAX} + 1,
 	     $globals{USER_MASK},
 	     $globals{USER_MASK} );
@@ -4628,6 +4628,12 @@ sub dump_mark_layout() {
 	     $globals{EXCLUSION_MASK},
 	     $globals{EXCLUSION_MASK},
 	     $globals{EXCLUSION_MASK} );
+
+    dumpout( "TProxy",
+	     1,
+	     $globals{TPROXY_MARK},
+	     $globals{TPROXY_MARK},
+	     $globals{TPROXY_MARK} );
 }
 
 END {

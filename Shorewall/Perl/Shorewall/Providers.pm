@@ -65,6 +65,7 @@ my $metrics;
 my $first_default_route;
 my $first_fallback_route;
 my $maxload;
+my $tproxies;
 
 my %providers;
 
@@ -101,6 +102,7 @@ sub initialize( $ ) {
     $first_default_route    = 1;
     $first_fallback_route   = 1;
     $maxload                = 0;
+    $tproxies               = 0;
 
     %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
 		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
@@ -464,10 +466,11 @@ sub process_a_provider() {
     }
 
     if ( $local ) {
-	fatal_error "GATEWAY not valid with 'local' provider" unless $gatewaycase eq 'none';
-	fatal_error "'track' not valid with 'local'"          if $track;
-	fatal_error "DUPLICATE not valid with 'local'"        if $duplicate ne '-';
+	fatal_error "GATEWAY not valid with 'local' provider"  unless $gatewaycase eq 'none';
+	fatal_error "'track' not valid with 'local'"           if $track;
+	fatal_error "DUPLICATE not valid with 'local'"         if $duplicate ne '-';
     } elsif ( $tproxy ) {
+	fatal_error "Only one 'tproxy' provider is allowed"    if $tproxies++;
 	fatal_error "GATEWAY not valid with 'tproxy' provider" unless $gatewaycase eq 'none';
 	fatal_error "'track' not valid with 'tproxy'"          if $track;
 	fatal_error "DUPLICATE not valid with 'tproxy'"        if $duplicate ne '-';

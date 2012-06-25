@@ -1684,10 +1684,11 @@ sub process_conditional( $$$ ) {
     if ( $keyword =~ /^IF/ ) {
 	cond_error $linenumber, "Missing IF variable" unless $rest;
 	my $invert = $rest =~ s/^!\s*//;
-
 	cond_error $linenumber, "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
 
 	push @ifstack, [ 'IF', $omitting, $omitting, $linenumber ];
+
+	$lastomit = $omitting;
 
 	if ( $rest eq '__IPV6' ) {
 	    $omitting = $family == F_IPV4;

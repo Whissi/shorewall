@@ -18,6 +18,10 @@
 #SECTION RELATED
 SECTION NEW
 
+# Drop packets in the INVALID state
+
+Invalid(DROP)  net    	        $FW		tcp
+
 # Drop Ping from the "bad" net zone.. and prevent your log from being flooded..
 
 Ping(DROP)	net		$FW

@@ -1884,7 +1884,7 @@ sub process_traffic_shaping() {
 		my $lsceil   = $tcref->{lsceil};
 		my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
 
-		$classids{$classid}=$device;
+		$classids{$classid}=$devname;
 
 		my $priority = $tcref->{priority} << 8;
 		my $parent   = in_hexp $tcref->{parent};
@@ -2002,7 +2002,7 @@ sub process_traffic_shaping() {
 		my $devicenumber  = in_hexp $devref->{number};
 		my $classid  = join( ':', $devicenumber, $classnum);
 
-		$classids{$classid}=$device;
+		$classids{$classid}=$devname;
 	    }
 	}
     }

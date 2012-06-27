@@ -1600,6 +1600,37 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 &lt;lines to be omitted if $variable is non-empty and non-zero&gt;
 
 ?ENDIF</programlisting>
+
+    <para>Beginning with Shorewall 4.5.6, rather than a simple variable in ?IF
+    directives, Perl-compatible expressions are allowed (after the Shorewall
+    compiler expands all variables, the resulting expression is then evaluated
+    by Perl). Variables in the expressions are as described above.</para>
+
+    <para>Example:</para>
+
+    <programlisting>?IF $BLACKLIST_LOGLEVEL == 6 &amp;&amp; ! __LOG_OPTIONS</programlisting>
+
+    <para>Additionally, a ?ELSIF directive is supported.</para>
+
+    <para>Example:</para>
+
+    <programlisting>?IF <replaceable>expression1
+
+</replaceable>&lt;lines to be included if expression1 evaluates to true (non-empty and non-zero)
+
+?ELSIF <replaceable>expression12</replaceable>
+
+&lt;lines to be included if expression1 evaluates to false (zero or empty) and expression2 evaluates to true
+
+?ELSIF <replaceable>expression3
+</replaceable>
+&lt;lines to be included if expression1 and expression2 both evalute to false and expression3 evalutes to true
+
+?ELSE
+
+&lt;lines to be included if all three expressions evaluate to false.
+
+?ENDIF</programlisting>
   </section>
 
   <section id="Embedded">

@@ -451,6 +451,12 @@ my $omitting;
 my @ifstack;
 my $ifstack;
 #
+# Entries on the ifstack are a 4-tuple:
+#
+#    [0] - Keyword (IF, ELSEIF, ELSE or ENDIF)
+#    [1] - True if the outermost IF evaluated to false
+#    [2] - True if the the last unterminated IF evaluated to false
+#
 # From .shorewallrc
 #
 our %shorewallrc;
@@ -1663,57 +1669,114 @@ sub cond_error( $$ ) {
     fatal_error $_[1];
 }
 
+#
+# Evaluate an expression in an ?IF or ?ELSIF directive
+#
+sub evaluate_expression( $ ) {
+    my $expression = $_[0];
+
+    if ( $family == F_IPV4 ) {
+	$expression =~ s/__IPV6/0/g;
+	$expression =~ s/__IPV4/1/g;
+    } else {
+	$expression =~ s/__IPV6/1/g;
+	$expression =~ s/__IPV4/0/g;
+    }
+
+    my $count = 0;
+
+    #                         $1      $2   $3      -     $4
+    while ( $expression =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+	my ( $first, $var, $rest ) = ( $1, $3, $4);
+	my $val;
+
+	$val = ( exists $ENV{$var}     ? $ENV{$var}    :
+		 exists $params{$var}  ? $params{$var} :
+		 exists $config{$var}  ? $config{$var} :
+		 exists $capdesc{$var} ? have_capability( $var ) : 0 );
+	$val = 0 unless defined $val;
+	$val = "'$val'" unless $val =~ /^-?\d+$/;
+	$expression = join( '', $first, $val, $rest );
+	fatal_error "Variable Expansion Loop" if ++$count > 100;
+    }
+
+    #                         $1      $2   $3      -     $4
+    while ( $expression =~ m( ^(.*?) __({)? (\w+) (?(2)}) (.*)$ )x ) {
+	my ( $first, $cap, $rest ) = ( $1, $3, $4);
+	my $val;
+	if ( exists $capdesc{$cap} ) {
+	    $val = have_capability( $cap );
+	} else {
+	    fatal_error "Unknown capability ($cap)";
+	}
+
+	$expression = join( '', $first, $val, $rest );
+    }
+
+    my $val = eval $expression;
+
+    unless ( $val ) {
+	fatal_error "Couldn't parse expression: $@" if $@;
+	fatal_error "Undefined expression" unless defined $val;
+    }
+
+    $val;
+}
+
+#
+# Each entry in @ifstack consists of a 4-tupple
+#
+# [0] = The keyword (IF,ELSIF or ELSE)
+# [1] = True if we were already omitting at the last IF directive
+# [2] = True if we have included any block of the current IF...ELSEIF....ELSEIF... sequence.
+# [3] = The line number of the directive
+#
 sub process_conditional( $$$ ) {
     my ( $omitting, $line, $linenumber ) = @_;
 
     print "CD===> $line\n" if $debug;
 
-    cond_error $linenumber, "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ENDIF)(.*)$/;
+    cond_error $linenumber, "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF)(.*)$/;
 
-    my ($keyword, $rest) = ( $1, $2 );
+    my ($keyword, $expression) = ( $1, $2 );
 
-    if ( supplied $rest ) {
-	$rest =~ s/#.*//;
-	$rest =~ s/\s*$//;
+    if ( supplied $expression ) {
+	$expression =~ s/#.*//;
+	$expression =~ s/\s*$//;
     } else {
-	$rest = '';
+	$expression = '';
     }
 
-    my ( $lastkeyword, $prioromit, $lastomit, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
+    my ( $lastkeyword, $prioromit, $included, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
     if ( $keyword =~ /^IF/ ) {
-	cond_error $linenumber, "Missing IF variable" unless $rest;
-	my $invert = $rest =~ s/^!\s*//;
-
-	cond_error $linenumber, "Invalid IF variable ($rest)" unless ($rest =~ s/^\$// || $rest =~ /^__/ ) && $rest =~ /^\w+$/;
-
-	push @ifstack, [ 'IF', $omitting, $omitting, $linenumber ];
-
-	if ( $rest eq '__IPV6' ) {
-	    $omitting = $family == F_IPV4;
-	} elsif ( $rest eq '__IPV4' ) {
-	    $omitting = $family == F_IPV6;
+	cond_error $linenumber, "Missing IF expression" unless $expression;
+	my $nextomitting = $omitting || ! evaluate_expression( $expression );
+	push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
+	$omitting = $nextomitting;
+    } elsif ( $keyword =~ /^ELSIF/ ) {
+	cond_error $linenumber, "?ELSIF has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	cond_error $linenumber, "Missing IF expression" unless $expression;
+	if ( $omitting && ! $included ) {
+	    #
+	    # We can only change to including if we were previously omitting
+	    #
+	    $omitting = $prioromit || ! evaluate_expression( $expression );
+	    $included = ! $omitting;
 	} else {
-	    my $cap = $rest;
-
-	    $cap =~ s/^__//;
-
-	    $omitting = ! ( exists $ENV{$rest}    ? $ENV{$rest}    :
-			    exists $params{$rest} ? $params{$rest} :
-			    exists $config{$rest} ? $config{$rest} :
-			    exists $capdesc{$cap} ? have_capability( $cap ) : 0 );
+	    #
+	    # We were including -- so we don't want to include this part
+	    #
+	    $omitting = 1;
 	}
-
-	$omitting = ! $omitting if $invert;
-
-	$omitting ||= $lastomit; #?IF cannot transition from omitting -> not omitting
+	$ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
     } elsif ( $keyword eq 'ELSE' ) {
-	cond_error $linenumber, "Invalid ?ELSE" unless $rest eq '';
-	cond_error $linenumber, "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword eq 'IF';
-	$omitting = ! $omitting unless $lastomit;
-	$ifstack[-1] = [ 'ELSE', $prioromit, $omitting, $lastlinenumber ];
+	cond_error $linenumber, "Invalid ?ELSE" unless $expression eq '';
+	cond_error $linenumber, "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	$omitting = $included || ! $omitting unless $prioromit;
+	$ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
     } else {
-	cond_error $linenumber, "Invalid ?ENDIF" unless $rest eq '';
+	cond_error $linenumber, "Invalid ?ENDIF" unless $expression eq '';
 	cond_error $linenumber, q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
 	$omitting = $prioromit;
 	pop @ifstack;
@@ -2283,7 +2346,7 @@ sub read_a_line($) {
 	    #
 	    # Handle conditionals
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ENDIF)/ ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF)/ ) {
 		$omitting = process_conditional( $omitting, $_, $. );
 		next;
 	    }

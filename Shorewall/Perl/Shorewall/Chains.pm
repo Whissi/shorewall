@@ -1059,6 +1059,7 @@ sub push_rule( $$ ) {
 
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
+    $chainref->{optflags}  |= DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
     trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1]" ) if $debug;
 
     $ruleref;
@@ -1250,6 +1251,7 @@ sub push_irule( $$$;@ ) {
     if ( $jump ) {
 	$ruleref->{jump}       = $jump;
 	$ruleref->{target}     = $target;
+	$chainref->{optflags} |= DONT_MOVE if $target eq 'RETURN';
 	$ruleref->{targetopts} = $targetopts if $targetopts;
     } else {
 	$ruleref->{target} = '';
@@ -6071,7 +6073,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 	#
 	my $echain = newexclusionchain( $table );
 
-	my $echainref = new_chain $table, $echain;
+	my $echainref = dont_move new_chain $table, $echain;
 	#
 	# Use the current rule and send all possible matches to the exclusion chain
 	#

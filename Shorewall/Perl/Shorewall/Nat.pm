@@ -58,8 +58,8 @@ sub initialize() {
 #
 sub process_one_masq( )
 {
-    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition ) =
-	split_line1 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8 };
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest ) =
+	split_line1 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9 };
 
     if ( $interfacelist eq 'COMMENT' ) {
 	process_comment;
@@ -237,7 +237,7 @@ sub process_one_masq( )
 		     $baserule . $rule ,
 		     $networks ,
 		     $destnets ,
-		     '' ,
+		     $origdest ,
 		     $target ,
 		     '' ,
 		     '' ,

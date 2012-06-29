@@ -1657,23 +1657,24 @@ sub close_file() {
 }
 
 #
-# Process an ?IF, ?ELSE or ?END directive
+# Process an ?IF, ?ELSIF, ?ELSE or ?END directive
 #
 sub have_capability( $ );
 
 #
 # Report an error from process_conditional() -- the first argument is the linenumber
 #
-sub cond_error( $$ ) {
-    $currentlinenumber = $_[0];
-    fatal_error $_[1];
+sub cond_error( $$$ ) {
+    $currentfilename   = $_[1];
+    $currentlinenumber = $_[2];
+    fatal_error $_[0];
 }
 
 #
 # Evaluate an expression in an ?IF or ?ELSIF directive
 #
-sub evaluate_expression( $ ) {
-    my $expression = $_[0];
+sub evaluate_expression( $$$ ) {
+    my ( $expression , $filename, $linenumber ) = @_;
 
     if ( $family == F_IPV4 ) {
 	$expression =~ s/__IPV6/0/g;
@@ -1697,7 +1698,7 @@ sub evaluate_expression( $ ) {
 	$val = 0 unless defined $val;
 	$val = "'$val'" unless $val =~ /^-?\d+$/;
 	$expression = join( '', $first, $val, $rest );
-	fatal_error "Variable Expansion Loop" if ++$count > 100;
+	cond_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
     #                         $1      $2   $3      -     $4
@@ -1707,17 +1708,17 @@ sub evaluate_expression( $ ) {
 	if ( exists $capdesc{$cap} ) {
 	    $val = have_capability( $cap );
 	} else {
-	    fatal_error "Unknown capability ($cap)";
+	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
 	}
 
 	$expression = join( '', $first, $val, $rest );
     }
 
-    my $val = eval $expression;
+    my $val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$currentfilename"\n$expression);
 
     unless ( $val ) {
-	fatal_error "Couldn't parse expression: $@" if $@;
-	fatal_error "Undefined expression" unless defined $val;
+	cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;
+	cond_error( "Undefined expression" , $filename, $linenumber ) unless defined $val;
     }
 
     $val;
@@ -1731,12 +1732,12 @@ sub evaluate_expression( $ ) {
 # [2] = True if we have included any block of the current IF...ELSEIF....ELSEIF... sequence.
 # [3] = The line number of the directive
 #
-sub process_conditional( $$$ ) {
-    my ( $omitting, $line, $linenumber ) = @_;
+sub process_conditional( $$$$ ) {
+    my ( $omitting, $line, $filename, $linenumber ) = @_;
 
     print "CD===> $line\n" if $debug;
 
-    cond_error $linenumber, "Invalid compiler directive ($line)" unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF)(.*)$/;
+    cond_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF)(.*)$/;
 
     my ($keyword, $expression) = ( $1, $2 );
 
@@ -1750,34 +1751,34 @@ sub process_conditional( $$$ ) {
     my ( $lastkeyword, $prioromit, $included, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
     if ( $keyword =~ /^IF/ ) {
-	cond_error $linenumber, "Missing IF expression" unless $expression;
-	my $nextomitting = $omitting || ! evaluate_expression( $expression );
+	cond_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
+	my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
 	push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
 	$omitting = $nextomitting;
     } elsif ( $keyword =~ /^ELSIF/ ) {
-	cond_error $linenumber, "?ELSIF has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
-	cond_error $linenumber, "Missing IF expression" unless $expression;
+	cond_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	cond_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
 	if ( $omitting && ! $included ) {
 	    #
 	    # We can only change to including if we were previously omitting
 	    #
-	    $omitting = $prioromit || ! evaluate_expression( $expression );
+	    $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber );
 	    $included = ! $omitting;
 	} else {
 	    #
-	    # We were including -- so we don't want to include this part
+	    # We have already included -- so we don't want to include this part
 	    #
 	    $omitting = 1;
 	}
 	$ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
     } elsif ( $keyword eq 'ELSE' ) {
-	cond_error $linenumber, "Invalid ?ELSE" unless $expression eq '';
-	cond_error $linenumber, "?ELSE has no matching ?IF" unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	cond_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
+	cond_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
 	$omitting = $included || ! $omitting unless $prioromit;
 	$ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
     } else {
-	cond_error $linenumber, "Invalid ?ENDIF" unless $expression eq '';
-	cond_error $linenumber, q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) if @ifstack <= $ifstack;
+	cond_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
+	cond_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
 	$omitting = $prioromit;
 	pop @ifstack;
     }
@@ -1807,7 +1808,7 @@ sub copy( $ ) {
 	    $lineno++;
 
 	    if ( /^\s*\?/ ) {
-		$omitting = process_conditional( $omitting, $_, $lineno );
+		$omitting = process_conditional( $omitting, $_, $file, $lineno );
 		next;
 	    }
 
@@ -1860,7 +1861,7 @@ sub copy1( $ ) {
 		chomp;
 
 		if ( /^\s*\?/ ) {
-		    $omitting = process_conditional( $omitting, $_, $currentlinenumber );
+		    $omitting = process_conditional( $omitting, $_, $currentfilename, $currentlinenumber );
 		    next;
 		}
 
@@ -1991,7 +1992,7 @@ EOF
 		chomp;
 
 		if ( /^\s*\?/ ) {
-		    $omitting = process_conditional( $omitting, $_, $lineno );
+		    $omitting = process_conditional( $omitting, $_, $file, $lineno );
 		    next;
 		}
 
@@ -2347,7 +2348,7 @@ sub read_a_line($) {
 	    # Handle conditionals
 	    #
 	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF)/ ) {
-		$omitting = process_conditional( $omitting, $_, $. );
+		$omitting = process_conditional( $omitting, $_, $currentfilename, $. );
 		next;
 	    }
 

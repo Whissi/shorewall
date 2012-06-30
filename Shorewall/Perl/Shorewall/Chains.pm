@@ -4189,7 +4189,7 @@ sub resolve_id( $$ ) {
 	require_capability 'OWNER_NAME_MATCH', "Specifying a $type name", 's';
     } else {
 	my $num = $type eq 'user' ? getpwnam( $id ) : getgrnam( $id );
-	fatal_error "Unknown $type ($id)" unless supplied $num;
+	fatal_error "Unknown $type ($id)" unless supplied $num && $num  >= 0;
 	$id = $num;
     }
 
@@ -4214,7 +4214,7 @@ sub do_user( $ ) {
 
     if ( supplied $2 ) {
 	$user  = $2;
-	if ( $user =~ /(\d+)(-(\d+))?$/ ) {
+	if ( $user =~ /^(\d+)(-(\d+))?$/ ) {
 	    if ( supplied $2 ) {
 		fatal_error "Invalid User Range ($user)" unless $3 >= $1;
 	    }

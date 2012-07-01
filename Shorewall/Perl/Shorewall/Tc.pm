@@ -2031,13 +2031,15 @@ sub process_tc() {
 # Call the setup_${dev}_tc functions
 #
 sub setup_traffic_shaping() {
-    save_progress_message q("Setting up Traffic Control...");
+    if ( @tcdevices ) {
+	save_progress_message q("Setting up Traffic Control...");
 
-    for my $device ( @tcdevices ) {
-	my $interfaceref = known_interface( $device );
-	my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
+	for my $device ( @tcdevices ) {
+	    my $interfaceref = known_interface( $device );
+	    my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
 
-	emit "setup_${dev}_tc";
+	    emit "setup_${dev}_tc";
+	}
     }
 }
 
@@ -2157,7 +2159,7 @@ sub setup_tc() {
 	append_file $globals{TC_SCRIPT};
     } else {
 	process_tcpri if $config{TC_ENABLED} eq 'Simple';
-	setup_traffic_shaping unless $config{TC_ENABLED} eq 'Shared';
+	setup_traffic_shaping if @tcdevices && $config{TC_ENABLED} ne 'Shared';
     }
 
     if ( $config{TC_ENABLED} ) {

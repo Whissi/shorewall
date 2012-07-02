@@ -525,7 +525,7 @@ sub initialize( $;$ ) {
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
-		    VERSION    => "4.4.22.1",
+		    VERSION    => "4.5.6",
 		    CAPVERSION => 40504 ,
 		  );
     #
@@ -4013,6 +4013,13 @@ sub get_configuration( $$$ ) {
     get_capabilities( $export );
 
     $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
+
+    #
+    # The following is not documented as it is not likely useful to the user base in general 
+    # Going forward, it allows me to create a configuration that will work on multiple
+    # Shorewall versions.        TME
+    #
+    $config{VERSION} = sprintf "%d%02d%02d", $1, $2, $3 if $globals{VERSION} =~ /^(\d+)\.(\d+)\.(\d+)/;
 
     if ( my $rate = $config{LOGLIMIT} ) {
 	my $limit;

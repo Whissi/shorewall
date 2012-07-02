@@ -2009,7 +2009,7 @@ sub process_traffic_shaping() {
 }
 
 #
-# Validate the TC configuration storing basic information in %tcdevices and %tcdevices
+# Validate the TC configuration storing basic information in %tcdevices and %tcclasses (complex TC only)
 #
 sub process_tc() {
     if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {

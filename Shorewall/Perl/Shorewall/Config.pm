@@ -1714,7 +1714,7 @@ sub evaluate_expression( $$$ ) {
 	$expression = join( '', $first, $val, $rest );
     }
 
-    my $val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$currentfilename"\n$expression);
+    my $val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
 
     unless ( $val ) {
 	cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;

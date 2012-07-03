@@ -1622,14 +1622,13 @@ sub verify_required_interfaces( $ ) {
 		my $physical = get_physical $interface;
 
 		if ( $physical =~ /\+$/ ) {
-		    my $base = uc chain_base $physical;
-
 		    $physical =~ s/\+$/*/;
 
-		    emit( 'for interface in $(find_all_interfaces); do',
+		    emit( "waittime=$wait",
+			  '',
+			  'for interface in $(find_all_interfaces); do',
 			  '    case $interface in',
 			  "        $physical)",
-			  "            waittime=$wait",
 			  '            while [ $waittime -gt 0 ]; do',
 			  '                interface_is_usable $interface && break',
 			  '                sleep 1',

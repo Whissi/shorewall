@@ -1632,6 +1632,7 @@ sub verify_required_interfaces( $ ) {
 			  "            waittime=$wait",
 			  '            while [ $waittime -gt 0 ]; do',
 			  '                interface_is_usable $interface && break',
+			  '                sleep 1',
 			  '                waittime=$(($waittime - 1))',
 			  '            done',
 			  '            ;;',
@@ -1644,8 +1645,8 @@ sub verify_required_interfaces( $ ) {
 		    emit qq(    waittime=$wait);
 		    emit  '';
 		    emit  q(    while [ $waittime -gt 0 ]; do);
-		    emit qq(        interface_is_usable $physical && break);
 		    emit  q(        sleep 1);
+		    emit qq(        interface_is_usable $physical && break);
 		    emit   '        waittime=$(($waittime - 1))';
 		    emit  q(    done);
 		    emit  q(fi);

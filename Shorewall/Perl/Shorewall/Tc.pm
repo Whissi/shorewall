@@ -2031,15 +2031,13 @@ sub process_tc() {
 # Call the setup_${dev}_tc functions
 #
 sub setup_traffic_shaping() {
-    if ( @tcdevices ) {
-	save_progress_message q("Setting up Traffic Control...");
+    save_progress_message q("Setting up Traffic Control...");
 
-	for my $device ( @tcdevices ) {
-	    my $interfaceref = known_interface( $device );
-	    my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
+    for my $device ( @tcdevices ) {
+	my $interfaceref = known_interface( $device );
+	my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
 
-	    emit "setup_${dev}_tc";
-	}
+	emit "setup_${dev}_tc";
     }
 }
 

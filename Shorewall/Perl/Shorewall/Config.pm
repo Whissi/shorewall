@@ -1662,7 +1662,7 @@ sub close_file() {
 sub have_capability( $ );
 
 #
-# Report an error from process_conditional() -- the first argument is the linenumber
+# Report an error from process_conditional()
 #
 sub cond_error( $$$ ) {
     $currentfilename   = $_[1];

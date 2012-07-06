@@ -1708,11 +1708,23 @@ sub evaluate_expression( $$$ ) {
 	$expression = join( '', $first, $val, $rest );
     }
 
-    my $val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
+    my $val;
 
-    unless ( $val ) {
-	cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;
-	cond_error( "Undefined expression" , $filename, $linenumber ) unless defined $val;
+    if ( $expression =~ /^\s*(\d+)\s*$/ || $expression =~ /\s*'(.*?)'\s*$/ ) {
+	#
+	# Simple one-term expression -- don't compile it 
+	#
+	$val = $1;
+    } else {
+	#
+	# Not a simple one-term expression
+	#
+	$val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
+
+	unless ( $val ) {
+	    cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;
+	    cond_error( "Undefined expression" , $filename, $linenumber ) unless defined $val;
+	}
     }
 
     $val;

@@ -1674,15 +1674,7 @@ sub cond_error( $$$ ) {
 # Evaluate an expression in an ?IF or ?ELSIF directive
 #
 sub evaluate_expression( $$$ ) {
-    my ( $expression , $filename, $linenumber ) = @_;
-
-    if ( $family == F_IPV4 ) {
-	$expression =~ s/__IPV6/0/g;
-	$expression =~ s/__IPV4/1/g;
-    } else {
-	$expression =~ s/__IPV6/1/g;
-	$expression =~ s/__IPV4/0/g;
-    }
+    my ( $expression , $filename , $linenumber ) = @_;
 
     my $count = 0;
 
@@ -1707,6 +1699,8 @@ sub evaluate_expression( $$$ ) {
 	my $val;
 	if ( exists $capdesc{$cap} ) {
 	    $val = have_capability( $cap );
+	} elsif ( $cap =~ /^IPV([46])$/ ) {
+	    $val = ( $family == $1 )
 	} else {
 	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
 	}

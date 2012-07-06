@@ -1662,7 +1662,7 @@ sub close_file() {
 sub have_capability( $ );
 
 #
-# Report an error from process_conditional() -- the first argument is the linenumber
+# Report an error from process_conditional()
 #
 sub cond_error( $$$ ) {
     $currentfilename   = $_[1];
@@ -1674,15 +1674,7 @@ sub cond_error( $$$ ) {
 # Evaluate an expression in an ?IF or ?ELSIF directive
 #
 sub evaluate_expression( $$$ ) {
-    my ( $expression , $filename, $linenumber ) = @_;
-
-    if ( $family == F_IPV4 ) {
-	$expression =~ s/__IPV6/0/g;
-	$expression =~ s/__IPV4/1/g;
-    } else {
-	$expression =~ s/__IPV6/1/g;
-	$expression =~ s/__IPV4/0/g;
-    }
+    my ( $expression , $filename , $linenumber ) = @_;
 
     my $count = 0;
 
@@ -1707,6 +1699,8 @@ sub evaluate_expression( $$$ ) {
 	my $val;
 	if ( exists $capdesc{$cap} ) {
 	    $val = have_capability( $cap );
+	} elsif ( $cap =~ /^IPV([46])$/ ) {
+	    $val = ( $family == $1 )
 	} else {
 	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
 	}
@@ -1714,11 +1708,23 @@ sub evaluate_expression( $$$ ) {
 	$expression = join( '', $first, $val, $rest );
     }
 
-    my $val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
+    my $val;
 
-    unless ( $val ) {
-	cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;
-	cond_error( "Undefined expression" , $filename, $linenumber ) unless defined $val;
+    if ( $expression =~ /^\s*(\d+)\s*$/ || $expression =~ /\s*'(.*?)'\s*$/ ) {
+	#
+	# Simple one-term expression -- don't compile it 
+	#
+	$val = $1;
+    } else {
+	#
+	# Not a simple one-term expression
+	#
+	$val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
+
+	unless ( $val ) {
+	    cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;
+	    cond_error( "Undefined expression" , $filename, $linenumber ) unless defined $val;
+	}
     }
 
     $val;

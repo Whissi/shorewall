@@ -2160,7 +2160,7 @@ sub setup_tc() {
 	setup_traffic_shaping if @tcdevices && $config{TC_ENABLED} ne 'Shared';
     }
 
-    if ( $config{TC_ENABLED} ) {
+    if ( $config{MANGLE_ENABLED} ) {
 	our  @tccmd = ( { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 			  target    => 'CONNMARK --save-mark --mask' ,
 			  mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK,
@@ -2254,9 +2254,7 @@ sub setup_tc() {
 	    clear_comment;
 
 	}
-    }
 
-    if ( $config{MANGLE_ENABLED} ) {
 	if ( my $fn = open_file 'secmarks' ) {
 
 	    first_entry "$doing $fn...";

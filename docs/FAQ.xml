@@ -2150,6 +2150,17 @@ gateway:~# </programlisting>
       and configured the <emphasis>shorewall-init</emphasis> package and a
       required interface has gone down.</para>
     </section>
+
+    <section id="faq99">
+      <title>(FAQ 99) My /var/lib/shorewall-init.log shows that Shorewall is
+      running at boot but after boot 'iptables -L' shows an empty
+      configuration</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: This is caused by your
+      failure to disable your distributions default iptables configuration
+      tool when you installed Shorewall. Look for a service called 'iptables'
+      that is being started after Shorewall and disable it.</para>
+    </section>
   </section>
 
   <section id="MultiISP">

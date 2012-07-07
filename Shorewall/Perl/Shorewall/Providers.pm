@@ -41,6 +41,7 @@ our @EXPORT = qw( process_providers
 		  handle_optional_interfaces
 		  compile_updown
 		  setup_load_distribution
+		  have_providers
 	       );
 our @EXPORT_OK = qw( initialize lookup_provider );
 our $VERSION = '4.4_24';
@@ -1319,6 +1320,10 @@ EOF
 }
 EOF
 
+}
+
+sub have_providers() {
+    return our $providers;
 }
 
 sub setup_providers() {

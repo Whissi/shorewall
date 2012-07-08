@@ -1688,7 +1688,7 @@ sub evaluate_expression( $$$ ) {
 		 exists $capdesc{$var} ? have_capability( $var ) : 0 );
 	$val = 0 unless defined $val;
 	$val = "'$val'" unless $val =~ /^-?\d+$/;
-	$expression = join( '', $first, $val, $rest );
+	$expression = join( '', $first, $val || 0, $rest );
 	cond_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
@@ -1707,14 +1707,11 @@ sub evaluate_expression( $$$ ) {
 	$expression = join( '', $first, $val || 0, $rest );
     }
 
-    if ( $expression =~ /^\s*(\d+)\s*$/ || $expression =~ /\s*'(.*?)'\s*$/ ) {
+    $expression =~ s/^\s*(.+)\s*$/$1/;
+
+    unless ( $expression =~ /^\d+$/ ) {
 	#
-	# Simple one-term expression -- don't compile it 
-	#
-	$val = $1;
-    } else {
-	#
-	# Not a simple one-term expression
+	# Not a simple one-term expression -- compile it
 	#
 	$val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
 

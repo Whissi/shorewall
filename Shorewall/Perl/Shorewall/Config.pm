@@ -1675,13 +1675,12 @@ sub cond_error( $$$ ) {
 #
 sub evaluate_expression( $$$ ) {
     my ( $expression , $filename , $linenumber ) = @_;
-
+    my $val;
     my $count = 0;
 
     #                         $1      $2   $3      -     $4
     while ( $expression =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
-	my $val;
 
 	$val = ( exists $ENV{$var}     ? $ENV{$var}    :
 		 exists $params{$var}  ? $params{$var} :
@@ -1696,19 +1695,17 @@ sub evaluate_expression( $$$ ) {
     #                         $1      $2   $3      -     $4
     while ( $expression =~ m( ^(.*?) __({)? (\w+) (?(2)}) (.*)$ )x ) {
 	my ( $first, $cap, $rest ) = ( $1, $3, $4);
-	my $val;
+
 	if ( exists $capdesc{$cap} ) {
-	    $val = have_capability( $cap );
+	    $val = have_capability( $cap )
 	} elsif ( $cap =~ /^IPV([46])$/ ) {
-	    $val = ( $family == $1 )
+	    $val = ( $family == $1 );
 	} else {
 	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
 	}
 
-	$expression = join( '', $first, $val, $rest );
+	$expression = join( '', $first, $val || 0, $rest );
     }
-
-    my $val;
 
     if ( $expression =~ /^\s*(\d+)\s*$/ || $expression =~ /\s*'(.*?)'\s*$/ ) {
 	#

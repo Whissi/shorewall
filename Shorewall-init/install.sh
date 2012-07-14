@@ -401,7 +401,7 @@ if [ -z "$DESTDIR" ]; then
 	    echo "Shorewall Init will start automatically at boot"
 	else
 	    if [ -n "$SYSTEMD" ]; then
-		if systemctl enable shorewall-init; then
+		if systemctl enable shorewall-init.service; then
 		    echo "Shorewall Init will start automatically at boot"
 		fi
 	    elif [ -x ${SBINDIR}/insserv -o -x /usr${SBINDIR}/insserv ]; then

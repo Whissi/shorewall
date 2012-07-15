@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Countering Spoofing Attempts</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para><firstterm>Spoofing</firstterm> is the practice of sending packets
+    with a forged source address in an attempt to circumvent security
+    measures. Shorewall supports a variety of measures to counter spoofing
+    attacks.</para>
+  </section>
+
+  <section>
+    <title>The <emphasis>routefilter</emphasis> Interface Option</title>
+
+    <para>This <ulink url="???">shorewall-interfaces</ulink> (5) option was
+    the first measure implemented and uses
+    <filename>/proc/sys/net/ipv4/conf/*/rp_filter</filename>. Many
+    distributions set this option by default for all ip interfaces. The option
+    works by determining the reverse path (the route from the packets
+    destination to its source); it that route does not go out through the
+    interface that received the packet, then the packet is declared to be a
+    martian and is dropped. A kernel log message is generated if the
+    interface's <option>logmartians</option> option is set
+    (<filename>/proc/sys/net/ipv4/conf/*/log_martians</filename>).</para>
+
+    <para>While this option is simple to configure, it has a couple of
+    disadvantages:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It is not supported by IPv6.</para>
+      </listitem>
+
+      <listitem>
+        <para>It does not use packet marks so it doesn't work with some <ulink
+        url="MultiISP.html">Multi-ISP</ulink> configurations.</para>
+      </listitem>
+
+      <listitem>
+        <para>The log messages produces are obscure and confusing.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Hairpin Filtering</title>
+
+    <para>Spoofing can be used to exploit Netfilter's connection tracking to
+    open arbitrary firewall ports. Attacks of this type establish a connection
+    to a server that uses separate control and data connections such as an FTP
+    server. It then sends a packet addressed to itself and from the server.
+    Such packets are sent back out the same interface that received them
+    (<firstterm>hairpin</firstterm>). In cases where the
+    <option>routerfilter</option> option can't be used, Shorewall 4.4.20 and
+    later will set up hairpinning traps (see the SFILTER_DISPOSITION and
+    SFILTER_LOG_LEVEL options in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).</para>
+
+    <para>This automatic hairpin trapping is disabled on interfaces with the
+    <option>routeback</option> option.</para>
+  </section>
+
+  <section>
+    <title>The <emphasis>rpfilter</emphasis> Interface Option</title>
+
+    <para>A new iptables/ip6tables match (rpfilter) was added in kernel 3.4.4.
+    This match performs reverse path evaluation similar to
+    <option>routefilter</option> but without the disadvantages:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It is supported by both IPv4 and IPv6.</para>
+      </listitem>
+
+      <listitem>
+        <para>It uses packet marks so it works with all <ulink
+        url="MultiISP.html">Multi-ISP</ulink> configurations.</para>
+      </listitem>
+
+      <listitem>
+        <para>It produces standard Shorewall/Netfilter log messages controlled
+        by the RPFILTER_LOG_LEVEL option in <ulink
+        url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).</para>
+      </listitem>
+
+      <listitem>
+        <para>Both the disposition and auditing can be controlled using the
+        RPFILTER_DISPOSITION option in <ulink
+        url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</article>

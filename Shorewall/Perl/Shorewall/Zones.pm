@@ -1169,7 +1169,9 @@ sub process_interface( $$ ) {
 
 	if ( $options{rpfilter} ) {
 	    require_capability( 'RPFILTER_MATCH', q(The 'rpfilter' option), 's' ) ;
-	    fatal_error q(The 'routefilter' and 'rpfilter' options are mutually exclusive) if $options{routefilter};
+	    fatal_error q(The 'routefilter', 'sfilter' and 'rpfilter' options are mutually exclusive) if $options{routefilter} || @$filterref;
+	} else {
+	    fatal_error q(The 'routefilter', 'sfilter' and 'rpfilter' options are mutually exclusive) if $options{routefilter} && @$filterref;
 	}
 
 	if ( supplied( my $ignore = $options{ignore} ) ) {

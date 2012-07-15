@@ -96,7 +96,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -106,7 +106,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -116,7 +116,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -126,7 +126,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -482,7 +482,7 @@
           </itemizedlist>
 
           <blockquote>
-            <para/>
+            <para></para>
 
             <para>If CONFIG_PATH is not given or if it is set to the empty
             value then the contents of /usr/share/shorewall/configpath are
@@ -829,7 +829,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </varlistentry>
           </variablelist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>If this variable is not set or is given an empty value
@@ -1039,7 +1039,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </itemizedlist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
@@ -1056,7 +1056,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               control your firewall after you enable this option.</para>
             </important>
 
-            <para/>
+            <para></para>
 
             <caution>
               <para>Do not use this option if the resulting log messages will
@@ -1709,7 +1709,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">"</emphasis></term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -1880,6 +1880,33 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">RPFILTER_DISPOSITION=</emphasis>[<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.7. Determines the disposition of
+          packets entering from interfaces the <option>rpfilter</option>
+          option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)).
+          Packets disposed of by this option are those whose response packets
+          would not be sent through the same interface receiving the
+          packet.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">RPFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added in shorewall 4.5.7. Determines the logging of packets
+          disposed via the RPFILTER_DISPOSITION. The default value is
+          <option>info</option>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">SAVE_IPSETS=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
@@ -1900,7 +1927,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
         <listitem>
           <para>Added in Shorewall 4.4.20. Determines the disposition of
-          packets matching the <option>filter</option> option (see <ulink
+          packets matching the <option>sfilter</option> option (see <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
           of <firstterm>hairpin</firstterm> packets on interfaces without the
           <option>routeback</option> option.<footnote>
@@ -1916,7 +1943,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
         <listitem>
           <para>Added on Shorewall 4.4.20. Determines the logging of packets
-          matching the <option>filter</option> option (see <ulink
+          matching the <option>sfilter</option> option (see <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)) and
           of <firstterm>hairpin</firstterm> packets on interfaces without the
           <option>routeback</option> option.<footnote>

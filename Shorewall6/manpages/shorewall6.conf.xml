@@ -82,7 +82,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -92,7 +92,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -102,7 +102,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -112,7 +112,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -902,7 +902,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </itemizedlist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
@@ -919,7 +919,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               control your firewall after you enable this option.</para>
             </important>
 
-            <para/>
+            <para></para>
 
             <caution>
               <para>Do not use this option if the resulting log messages will
@@ -1507,7 +1507,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">"</emphasis></term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -1613,6 +1613,33 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">RPFILTER_DISPOSITION=</emphasis>[<emphasis
+        role="bold">DROP</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|A_DROP|A_REJECT]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.7. Determines the disposition of
+          packets entering from interfaces with the <option>rpfilter</option>
+          option (see <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)).
+          Packets disposed of by this option are those whose response packets
+          would not be sent through the same interface receiving the
+          packet.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">RPFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added in shorewall 4.5.7. Determines the logging of packets
+          disposed via the RPFILTER_DISPOSITION. The default value is
+          <option>info</option>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">SHOREWALL_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
@@ -1658,7 +1685,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
         <listitem>
           <para>Added in Shorewall 4.4.20. Determines the disposition of
-          packets matching the <option>filter</option> option (see <ulink
+          packets matching the <option>sfilter</option> option (see <ulink
           url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5))
           and of <firstterm>hairpin</firstterm> packets on interfaces without
           the <option>routeback</option> option.<footnote>
@@ -1674,7 +1701,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
         <listitem>
           <para>Added on Shorewall 4.4.20. Determines the logging of packets
-          matching the <option>filter</option> option (see <ulink
+          matching the <option>sfilter</option> option (see <ulink
           url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5))
           and of <firstterm>hairpin</firstterm> packets on interfaces without
           the <option>routeback</option> option.<footnote>

@@ -749,7 +749,7 @@ sub add_common_rules ( $ ) {
 
 	my $interfaceref = find_interface $interface;
 
-	unless ( $interfaceref->{options}{ignore} & NO_SFILTER ) {
+	unless ( $interfaceref->{options}{ignore} & NO_SFILTER || $interfaceref->{options}{rpfilter} ) {
 
 	    my @filters = @{$interfaceref->{filter}};
 
@@ -787,6 +787,39 @@ sub add_common_rules ( $ ) {
 	}
     }
 
+    $list = find_interfaces_by_option('rpfilter');
+
+    if ( @$list ) {
+	$policy   = $config{RPFILTER_DISPOSITION};
+	$level    = $config{RPFILTER_LOG_LEVEL};
+	$audit    = $policy =~ s/^A_//;
+	
+	if ( $level || $audit ) {
+	    #
+	    # Create a chain to log and/or audit and apply the policy
+	    #
+	    $chainref = ensure_mangle_chain 'rplog';
+
+	    log_rule $level , $chainref , $policy , '' if $level ne '';
+
+	    add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
+
+	    add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
+
+	    $target = 'rplog';
+	} else {
+	    $target = $policy eq 'REJECT' ? 'reject' : $policy;
+	}
+
+	$chainref = ensure_mangle_chain( 'rpfilter' );
+	add_ijump( $chainref,
+		   j        => $target,
+		   rpfilter => '--validmark --invert',
+		   state_imatch 'NEW,RELATED,INVALID',
+		   @ipsec
+		 );
+    }
+	    
     run_user_exit1 'initdone';
 
     if ( $upgrade ) {
@@ -1379,6 +1412,7 @@ sub add_interface_jumps {
     our %forward_jump_added;
     my  $lo_jump_added = 0;
     my @interfaces = grep $_ ne '%vserver%', @_;
+    my $dummy;
     #
     # Add Nat jumps
     #
@@ -1400,6 +1434,8 @@ sub add_interface_jumps {
 	    insert_ijump ( $raw_table->{PREROUTING},      j => prerouting_chain( $interface ),  0, imatch_source_dev( $interface) ) if $raw_table->{prerouting_chain $interface};
 	    insert_ijump ( $raw_table->{OUTPUT},          j => output_chain( $interface ),      0, imatch_dest_dev( $interface) )   if $raw_table->{output_chain $interface};
 	}
+
+	add_ijump( $mangle_table->{PREROUTING}, j => 'rpfilter' , imatch_source_dev( $interface ) ) if interface_has_option( $interface, 'rpfilter', $dummy );
     }
     #
     # Add the jumps to the interface chains from filter FORWARD, INPUT, OUTPUT

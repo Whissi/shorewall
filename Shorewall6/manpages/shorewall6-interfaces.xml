@@ -366,9 +366,21 @@ loc     eth2            -</programlisting>
                 if you want to allow traffic between the interfaces that match
                 the wildcard.</para>
 
-                <para>Beginning with Shorewall 4.4.20, if you specify this
-                option, then you should also specify <option>sfilter</option>
-                (see below).</para>
+                <para>If you specify this option, then you should also specify
+                <option>rpfilter</option> (see below) if you are running
+                Shorewall 4.5.7 or later; otherwise, you should specify
+                <option>sfilter</option> (see below).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>rpfilter</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.7. This is an anti-spoofing
+                measure that requires the 'RPFilter Match' capability in your
+                iptables and kernel. It provides a more efficient alternative
+                to the <option>sfilter</option> option below.</para>
               </listitem>
             </varlistentry>
 

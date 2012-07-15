@@ -555,6 +555,7 @@ sub initialize( $;$ ) {
 	  LOG_VERBOSITY => undef,
 	  STARTUP_LOG => undef,
 	  SFILTER_LOG_LEVEL => undef,
+	  RPFILTER_LOG_LEVEL => undef,
 	  #
 	  # Location of Files
 	  #
@@ -655,6 +656,7 @@ sub initialize( $;$ ) {
 	  BLACKLIST_DISPOSITION => undef,
 	  SMURF_DISPOSITION => undef,
 	  SFILTER_DISPOSITION => undef,
+	  RPFILTER_DISPOSITION => undef,
 	  RELATED_DISPOSITION => undef,
 	  #
 	  # Mark Geometry
@@ -4310,6 +4312,15 @@ sub get_configuration( $$$ ) {
 	require_capability 'AUDIT_TARGET' , "SFILTER_DISPOSITION=$val", 's' if $1;
     } else {
 	$config{SFILTER_DISPOSITION} = 'DROP';
+    }
+
+    default_log_level 'RPFILTER_LOG_LEVEL', 'info';
+
+    if ( $val = $config{RPFILTER_DISPOSITION} ) {
+	fatal_error "Invalid RPFILTER_DISPOSITION setting ($val)" unless $val =~ /^(A_)?(DROP|REJECT)$/;
+	require_capability 'AUDIT_TARGET' , "RPFILTER_DISPOSITION=$val", 's' if $1;
+    } else {
+	$config{RPFILTER_DISPOSITION} = 'DROP';
     }
 
     if ( $val = $config{MACLIST_DISPOSITION} ) {

@@ -308,6 +308,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 DSCP_MATCH      => 'DSCP Match',
 		 DSCP_TARGET     => 'DSCP Target',
 		 GEOIP_MATCH     => 'GeoIP Match' ,
+		 RPFILTER_MATCH  => 'RPFilter Match', 
 		 #
 		 # Constants
 		 #
@@ -526,7 +527,7 @@ sub initialize( $;$ ) {
 		    STATEMATCH => '-m state --state',
 		    UNTRACKED  => 0,
 		    VERSION    => "4.5.6",
-		    CAPVERSION => 40504 ,
+		    CAPVERSION => 40507 ,
 		  );
     #
     # From shorewall.conf file
@@ -759,6 +760,7 @@ sub initialize( $;$ ) {
 	       DSCP_MATCH => undef,
 	       DSCP_TARGET => undef,
 	       GEOIP_MATCH => undef,
+	       RPFILTER_MATCH => undef,
 	       CAPVERSION => undef,
 	       LOG_OPTIONS => 1,
 	       KERNELVERSION => undef,
@@ -3208,6 +3210,10 @@ sub Dscp_Target() {
     have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j DSCP --set-dscp 0" );
 }
 
+sub RPFilter_Match() {
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -m rpfilter" );
+}
+
 sub GeoIP_Match() {
     qt1( "$iptables -A $sillyname -m geoip --src-cc US" );
 }
@@ -3271,6 +3277,7 @@ our %detect_capability =
       RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
       RECENT_MATCH => \&Recent_Match,
+      RPFILTER_MATCH => \&RPFilter_Match,
       STATISTIC_MATCH => \&Statistic_Match,
       TCPMSS_MATCH => \&Tcpmss_Match,
       TIME_MATCH => \&Time_Match,
@@ -3410,6 +3417,7 @@ sub determine_capabilities() {
 	$capabilities{DSCP_MATCH}      = detect_capability( 'DSCP_MATCH' );
 	$capabilities{DSCP_TARGET}     = detect_capability( 'DSCP_TARGET' );
 	$capabilities{GEOIP_MATCH}     = detect_capability( 'GEOIP_MATCH' );
+	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );

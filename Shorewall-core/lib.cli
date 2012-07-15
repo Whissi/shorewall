@@ -1995,6 +1995,7 @@ determine_capabilities() {
     DSCP_MATCH=
     DSCP_TARGET=
     GEOIP_MATCH=
+    RPFILTER_MATCH=
 
     chain=fooX$$
 
@@ -2127,6 +2128,7 @@ determine_capabilities() {
 	qt $g_tool -t mangle -A $chain -j IMQ --todev 0 && IMQ_TARGET=Yes
 	qt $g_tool -t mangle -A $chain -m dscp --dscp 0 && DSCP_MATCH=Yes
 	qt $g_tool -t mangle -A $chain -j DSCP --set-dscp 0 && DSCP_TARGET=Yes
+	qt $g_tool -t mangle -A $chain -m rpfilter && RPFILTER_MATCH=Yes
 
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain
@@ -2319,6 +2321,7 @@ report_capabilities() {
 	report_capability "DSCP Match (DSCP_MATCH)" $DSCP_MATCH
 	report_capability "DSCP Target (DSCP_TARGET)" $DSCP_TARGET
 	report_capability "Geo IP match" $GEOIP_MATCH
+	report_capability "RPFilter match" $RPFILTER_MATCH
 
 	if [ $g_family -eq 4 ]; then
 	    report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
@@ -2410,6 +2413,7 @@ report_capabilities1() {
     report_capability1 DSCP_MATCH
     report_capability1 DSCP_TARGET
     report_capability1 GEOIP_MATCH
+    report_capability1 RPFILTER_MATCH
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

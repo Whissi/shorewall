@@ -811,8 +811,7 @@ sub add_common_rules ( $ ) {
 	    $target = $policy eq 'REJECT' ? 'reject' : $policy;
 	}
 
-	$chainref = ensure_mangle_chain( 'rpfilter' );
-	add_ijump( $chainref,
+	add_ijump( ensure_mangle_chain( 'rpfilter' ),
 		   j        => $target,
 		   rpfilter => '--validmark --invert',
 		   state_imatch 'NEW,RELATED,INVALID',

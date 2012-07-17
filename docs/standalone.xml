@@ -119,19 +119,18 @@
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
-      with <inlinegraphic fileref="images/BD21298_.gif"
-      format="GIF" />.</para>
+      with <inlinegraphic fileref="images/BD21298_.gif" format="GIF"/>.</para>
 
       <para>Configuration notes that are unique to Debian and it's derivatives
       are marked with <inlinegraphic fileref="images/openlogo-nd-25.png"
-      format="GIF" />.</para>
+      format="GIF"/>.</para>
     </section>
   </section>
 
   <section id="PPTP">
     <title>PPTP/ADSL</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If you have an <acronym>ADSL</acronym> Modem and you use
     <acronym>PPTP</acronym> to communicate with a server in that modem, you
@@ -144,7 +143,7 @@
   <section id="Concepts">
     <title>Shorewall Concepts</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The configuration files for Shorewall are contained in the directory
     <filename class="directory">/etc/shorewall</filename> -- for simple
@@ -177,7 +176,7 @@
       </listitem>
 
       <listitem>
-        <para><graphic align="left" fileref="images/openlogo-nd-25.png" />If
+        <para><graphic align="left" fileref="images/openlogo-nd-25.png"/>If
         you installed using a Shorewall 4.x .deb, the samples are in <emphasis
         role="bold"><filename
         class="directory">/usr/share/doc/shorewall/examples/one-interface</filename>..</emphasis>
@@ -352,7 +351,7 @@ root@lists:~# </programlisting>
       the external interface.</para>
     </caution>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The Shorewall one-interface sample configuration assumes that the
     external interface is <filename class="devicefile">eth0</filename>. If
@@ -460,7 +459,7 @@ root@lists:~# </programlisting>
       </listitem>
     </itemizedlist>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If you are running a distribution that logs Netfilter messages to a
     log other than <filename>/var/log/messages</filename>, then modify the
@@ -500,7 +499,7 @@ root@lists:~# </programlisting>
     <filename>/usr/share/shorewall/modules</filename> then copy the file to
     <filename>/etc/shorewall</filename> and modify the copy.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>Modify the setting of LOAD_HELPER_ONLY as necessary.</para>
   </section>
@@ -564,33 +563,16 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
 SSH(ACCEPT) net       $FW           </programlisting>
     </important>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>At this point, edit <filename>/etc/shorewall/rules</filename> to add
     other connections as desired.</para>
   </section>
 
-  <section>
-    <title>Disabling your existing Firewall</title>
-
-    <para>Before starting Shorewall for the first time, it's a good idea to
-    stop your existing firewall. On Redhat/CentOS/Fedora:</para>
-
-    <programlisting><command>service iptables stop</command></programlisting>
-
-    <para>If you are running SuSE, use Yast or Yast2 to stop
-    SuSEFirewall.</para>
-
-    <para>Once you have Shorewall running to your satisfaction, you should
-    totally disable your existing firewall. On /Redhat/CentOS/Fedora:</para>
-
-    <programlisting><command>chkconfig --del iptables</command></programlisting>
-  </section>
-
   <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
     configures your system to start Shorewall at system boot but startup is
@@ -598,7 +580,7 @@ SSH(ACCEPT) net       $FW           </programlisting>
     configuration is complete. Once you have completed configuration of your
     firewall, you must edit /etc/shorewall/shorewall.conf and set
     STARTUP_ENABLED=Yes.<graphic align="left"
-    fileref="images/openlogo-nd-25.png" /></para>
+    fileref="images/openlogo-nd-25.png"/></para>
 
     <important>
       <para>Users of the .deb package must edit
@@ -673,6 +655,44 @@ SSH(ACCEPT) net       $FW           </programlisting>
         <para>Check the <ulink url="FAQ.htm">FAQ</ulink>.</para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section>
+    <title>Disabling your existing Firewall</title>
+
+    <para>Before starting Shorewall for the first time, it's a good idea to
+    stop your existing firewall. On older Redhat/CentOS/Fedora:</para>
+
+    <programlisting><command>service iptables stop</command></programlisting>
+
+    <para>On recent Fedora systems that run systemd, the command is:</para>
+
+    <programlisting><command>systemctl stop iptables.service</command></programlisting>
+
+    <para>If you are running SuSE, use Yast or Yast2 to stop
+    SuSEFirewall.</para>
+
+    <para>On other systems that use a classic SysV init system:</para>
+
+    <programlisting><command>/etc/init.d/iptables stop</command></programlisting>
+
+    <para>Once you have Shorewall running to your satisfaction, you should
+    totally disable your existing firewall. On older
+    Redhat/CentOS/Fedora:</para>
+
+    <programlisting><command>chkconfig --del iptables</command></programlisting>
+
+    <para>On Debian systems:</para>
+
+    <programlisting><command>update-rc.d iptables disable</command></programlisting>
+
+    <para>On recent Fedora system running systemd:</para>
+
+    <programlisting><command>systemctl disable iptables.service</command></programlisting>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif"/></para>
+
+    <para>At this point, disable your existing firewall service.</para>
   </section>
 
   <section id="Other">

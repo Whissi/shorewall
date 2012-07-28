@@ -36,7 +36,7 @@ use Shorewall::IPAddrs;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw/
+our @EXPORT = qw(
 		    DONT_OPTIMIZE
 		    DONT_DELETE
 		    DONT_MOVE
@@ -86,10 +86,10 @@ our @EXPORT = qw/
 		    $nat_table
 		    $mangle_table
 		    $filter_table
-		/;
+		);
 
 our %EXPORT_TAGS = (
-		    internal => [  qw/ STANDARD
+		    internal => [  qw( STANDARD
 				       NATRULE
 				       BUILTIN
 				       NONAT
@@ -238,13 +238,15 @@ our %EXPORT_TAGS = (
 				       set_global_variables
 				       save_dynamic_chains
 				       load_ipsets
+				       create_nfobjects
 				       create_netfilter_load
 				       preview_netfilter_load
 				       create_chainlist_reload
 				       create_stop_load
 				       %targets
 				       %dscpmap
-				     / ],
+				       %nfobjects
+				     ) ],
 		   );
 
 Exporter::export_ok_tags('internal');
@@ -334,6 +336,7 @@ my  $comment;
 my  @comments;
 my  $export;
 my  %renamed;
+our %nfobjects;
 
 #
 # Target Types
@@ -662,7 +665,8 @@ sub initialize( $$$ ) {
 		 snmp            => UDP,
 		 tftp            => UDP);
 
-    %isocodes = ();
+    %isocodes  = ();
+    %nfobjects = ();
 
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
@@ -5406,6 +5410,7 @@ sub set_chain_variables() {
     } else {
 	emit 'IPSET=ipset';
     }
+
 }
 
 #
@@ -6872,6 +6877,32 @@ sub load_ipsets() {
     }
 }
 
+#
+# Create nfacct objects if needed
+#
+sub create_nfobjects() {
+    
+    my @objects = ( keys %nfobjects );
+
+    if ( @objects ) {
+	if ( $config{NFACCT} ) {
+	    emit( qq(NFACCT="$config{NFACCT}") ,
+		  '[ -x "$NFACCT" ] || startup_error "NFACCT=$NFACCT does not exist or is not executable"'
+		);
+	} else {
+	    emit( 'NFACCT=$(mywhich nfacct)' ,
+		  '[ -n "$NFACCT" ] || startup_error "No nfacct utility found"',
+		  ''
+		);
+	}
+    }
+
+    for ( keys %nfobjects ) {
+	emit( qq(if ! qt \$NFACCT get $_; then),
+	      qq(    \$NFACCT add $_),
+	      qq(fi\n) );
+    }
+}
 #
 #
 # Generate the netfilter input

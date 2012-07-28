@@ -573,6 +573,7 @@ sub initialize( $;$ ) {
 	  IPSECFILE => undef,
 	  LOCKFILE => undef,
 	  GEOIPDIR => undef,
+	  NFACCT => undef,
 	  #
 	  # Default Actions/Macros
 	  #
@@ -3223,7 +3224,7 @@ sub NFAcct_Match() {
 
     if ( qt1( "nfacct add $sillyname" ) ) {
 	$result = qt1( "$iptables -A $sillyname -m nfacct --nfacct-name $sillyname" );
-	qt( "iptables -D $sillyname -m nfacct $sillyname" );
+	qt( "$iptables -D $sillyname -m nfacct --nfacct-name $sillyname" );
 	qt( "nfacct del $sillyname" );
     }
 

@@ -368,6 +368,7 @@ sub generate_script_3($) {
     emit '';
 
     load_ipsets;
+    create_nfobjects;
 
     if ( $family == F_IPV4 ) {
 	emit ( 'if [ "$COMMAND" = refresh ]; then' ,

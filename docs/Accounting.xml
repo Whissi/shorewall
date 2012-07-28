@@ -296,7 +296,7 @@
     <emphasis role="bold">OUTPUT</emphasis> and <emphasis
     role="bold">FORWARD</emphasis> and must appear in that order (although any
     of them may be omitted). The first non-commentary record in the accounting
-    file must be a section header when sectioning is used. </para>
+    file must be a section header when sectioning is used.</para>
 
     <para>Beginning with Shorewall 4.4.20, the ACCOUNTING_TABLE setting was
     added to shorewall.conf and shorewall6.conf. That setting determines the
@@ -561,5 +561,55 @@ IP: 70.90.191.123 SRC packets: 42 bytes: 4604 DST packets: 44 bytes: 10662
 
 gateway:~# 
 </programlisting>
+  </section>
+
+  <section id="nfacct">
+    <title>Accounting using nfacct</title>
+
+    <para>Beginning with the 3.3 kernels, Netfilter supports a form of
+    accounting (nfacct) that is triggered by iptables rules but that survives
+    purging and/or reloading the Netfilter ruleset. Shorewall support for this
+    form of accounting was added in Shorewall 4.5.7.</para>
+
+    <para>As of this writing (late July 2012), Fedora 17 has partial support
+    for this feature but not all. It is necessary to download and build the
+    following:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>libnetfilter_acct</para>
+      </listitem>
+
+      <listitem>
+        <para>nfacct</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The following Fedora packages are also required:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>libnetlink and libnetlink-dev</para>
+      </listitem>
+
+      <listitem>
+        <para>libmnl and libmnl-dev</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The tarballs are available from the Netfilter download sites.</para>
+
+    <para>The nfacct utility can create, delete and display <firstterm>nfacct
+    objects</firstterm>. These named objects consist of a packet and byte
+    counter. Packets matching those netfilter rules that use the nfacct match
+    cause the packet and byte count in the object named in the match to be
+    incremented.</para>
+
+    <para>To use nfaccnt with Shorewall, use the NFACCT target. See <ulink
+    url="manpages/shorewall-accounting.html">shorewall-accounting</ulink>(5)
+    for details.</para>
+
+    <para>The <command>shorewall show nfacct</command> command is a thin
+    wrapper around the <command>nfacct list</command> command.</para>
   </section>
 </article>

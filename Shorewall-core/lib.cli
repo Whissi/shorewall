@@ -615,6 +615,20 @@ show_connections_filter() {
     fi
 }
 
+show_nfacct() {
+    if [ -n "$NFACCT" -a ! -x "$NFACCT" ]; then
+	error_message "WARNING: NFACCT=$NFACCT does not exist or is not executable"
+	NFACCT=
+    else
+	NFACCT=$(mywhich nfacct)
+	[ -n "$NFACCT" ] || "No NF Accounting defined"
+    fi
+
+    if [ -n "$NFACCT" ]; then
+	$NFACCT list
+	echo
+    fi
+}
 #
 # Show Command Executor
 #
@@ -920,6 +934,12 @@ show_command() {
 	    echo
 	    [ -f ${VARDIR}/marks ] && cat ${VARDIR}/marks;
 	    ;;
+	nfacct)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION NF Accounting at $g_hostname - $(date)"
+	    echo
+	    show_nfacct
+	    ;;
 	*)
 	    case "$g_program" in
 		*-lite)
@@ -1201,6 +1221,9 @@ do_dump_command() {
 
 	perip_accounting
     fi
+
+    heading "NF Accounting"
+    show_nfacct
 
     if qt mywhich setkey; then
 	heading "PFKEY SPD"
@@ -2109,6 +2132,19 @@ determine_capabilities() {
 
     qt $g_tool -A $chain -j ACCEPT -m comment --comment "This is a comment" && COMMENTS=Yes
 
+    if [ -n "$NFACCT" -a ! -x "$NFACCT" ]; then
+	error_message "WARNING: NFACCT=$NFACCT does not exist or is not executable"
+	NFACCT=
+    else
+	NFACCT=$(mywhich nfacct)
+    fi
+
+    if [ -n "$NFACCT" ] && qt $NFACCT add $chain; then
+	qt $g_tool -A $chain -m nfacct --nfacct-name $chain && NFACCT_MATCH=Yes
+	qt $g_tool -D $chain -m nfacct --nfacct-name $chain
+	qt $NFACCT del $chain
+    fi
+
     if [ -n "$MANGLE_ENABLED" ]; then
 	qt $g_tool -t mangle -N $chain
 
@@ -2130,12 +2166,6 @@ determine_capabilities() {
 	qt $g_tool -t mangle -A $chain -m dscp --dscp 0 && DSCP_MATCH=Yes
 	qt $g_tool -t mangle -A $chain -j DSCP --set-dscp 0 && DSCP_TARGET=Yes
 	qt $g_tool -t mangle -A $chain -m rpfilter && RPFILTER_MATCH=Yes
-
-	if qt nfacct add $chain; then
-	    qt $g_tool -t mangle -A $chain -m nfacct --nfacct-name $chain && NFACCT_MATCH=Yes
-	    qt $g_tool -t mangle -D $chain -m nfacct --nfacct-name $chain
-	    qt nfacct del $chain
-	fi
 
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain

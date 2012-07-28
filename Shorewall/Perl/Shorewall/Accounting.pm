@@ -236,6 +236,11 @@ sub process_accounting_rule( ) {
 	    }
 	} elsif ( $action =~ /^NFLOG/ ) {
 	    $target = validate_level $action;
+	} elsif ( $action =~ /^NFACCT\((\w+)\)$/ ) {
+	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
+	    $nfobjects{$1} = 1;
+	    $target = '';
+	    $rule .= "-m nfacct --nfacct-name $1 ";
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 

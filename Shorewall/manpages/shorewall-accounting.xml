@@ -294,8 +294,25 @@
             </varlistentry>
 
             <varlistentry>
-              <term>NFLOG[(nflog-parameters)] - Added in
-              Shorewall-4.4.20.</term>
+              <term><emphasis
+              role="bold">NFACCT</emphasis>(<replaceable>object</replaceable>)</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.7. Provides a form of accounting
+                that survives <command>shorewall stop/shorewall</command>
+                start and <command>shorewall restart</command>. Requires the
+                NFaccnt Match capability in your kernel and iptables.
+                <replaceable>object</replaceable> names an nfacct object (see
+                man nfaccnt(8)). Multiple rules can specify the same
+                <replaceable>object</replaceable>; all packets that match any
+                of the rules increment the packet and bytes count of the
+                object.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">NFLOG</emphasis>[(nflog-parameters)]
+              - Added in Shorewall-4.4.20.</term>
 
               <listitem>
                 <para>Causes each matching packet to be sent via the currently
@@ -306,7 +323,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>COMMENT</term>
+              <term><emphasis role="bold">COMMENT</emphasis></term>
 
               <listitem>
                 <para>The remainder of the line is treated as a comment which

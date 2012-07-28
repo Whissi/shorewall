@@ -308,7 +308,8 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 DSCP_MATCH      => 'DSCP Match',
 		 DSCP_TARGET     => 'DSCP Target',
 		 GEOIP_MATCH     => 'GeoIP Match' ,
-		 RPFILTER_MATCH  => 'RPFilter Match', 
+		 RPFILTER_MATCH  => 'RPFilter Match',
+		 NFACCT_MATCH    => 'NFAcct Match',
 		 #
 		 # Constants
 		 #
@@ -763,6 +764,7 @@ sub initialize( $;$ ) {
 	       DSCP_TARGET => undef,
 	       GEOIP_MATCH => undef,
 	       RPFILTER_MATCH => undef,
+	       NFACCT_MATCH => undef,
 	       CAPVERSION => undef,
 	       LOG_OPTIONS => 1,
 	       KERNELVERSION => undef,
@@ -3216,6 +3218,18 @@ sub RPFilter_Match() {
     have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -m rpfilter" );
 }
 
+sub NFAcct_Match() {
+    my $result;
+
+    if ( qt1( "nfacct add $sillyname" ) ) {
+	$result = qt1( "$iptables -A $sillyname -m nfacct --nfacct-name $sillyname" );
+	qt( "iptables -D $sillyname -m nfacct $sillyname" );
+	qt( "nfacct del $sillyname" );
+    }
+
+    $result;
+}
+
 sub GeoIP_Match() {
     qt1( "$iptables -A $sillyname -m geoip --src-cc US" );
 }
@@ -3265,6 +3279,7 @@ our %detect_capability =
       MULTIPORT => \&Multiport,
       NAT_ENABLED => \&Nat_Enabled,
       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
+      NFACCT_MATCH => \&NFAcct_Match,
       NFQUEUE_TARGET => \&Nfqueue_Target,
       OLD_CONNTRACK_MATCH => \&Old_Conntrack_Match,
       OLD_HL_MATCH => \&Old_Hashlimit_Match,
@@ -3420,6 +3435,7 @@ sub determine_capabilities() {
 	$capabilities{DSCP_TARGET}     = detect_capability( 'DSCP_TARGET' );
 	$capabilities{GEOIP_MATCH}     = detect_capability( 'GEOIP_MATCH' );
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
+	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
 
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );

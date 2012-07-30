@@ -621,7 +621,7 @@ show_nfacct() {
 	NFACCT=
     else
 	NFACCT=$(mywhich nfacct)
-	[ -n "$NFACCT" ] || "No NF Accounting defined"
+	[ -n "$NFACCT" ] || echo "No NF Accounting defined (nfacct not found)"
     fi
 
     if [ -n "$NFACCT" ]; then

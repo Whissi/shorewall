@@ -2989,9 +2989,16 @@ usage() # $1 = exit status
     echo "   show connections"
     echo "   show filters"
     echo "   show ip"
+
+    if [ $g_family -eq 4 ]; then
+	echo "   show ipa"
+    fi
+
     echo "   show [ -m ] log [<regex>]"
-    echo "   show [ -x ] mangle|nat|raw|rawpost|routing"
+    echo "   show [ -x ] mangle|nat|raw|rawpost"
+    echo "   show nfacct"
     echo "   show policies"
+    echo "   show routing"
     echo "   show tc [ device ]"
     echo "   show vardir"
     echo "   show zones"

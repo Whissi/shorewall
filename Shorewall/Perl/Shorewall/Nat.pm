@@ -632,12 +632,13 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
     #
     # And generate the nat table rule(s)
     #
+    my $firewallsource = $sourceref && ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
+
     expand_rule ( ensure_chain ('nat' ,
-				( $action_chain ?
-				  $action_chain :
-				  ( $sourceref->{type} == FIREWALL ? 'OUTPUT' : 
-				    dnat_chain $sourceref->{name} ) ) ),
-		  PREROUTE_RESTRICT ,
+				( $action_chain   ? $action_chain :
+				  $firewallsource ? 'OUTPUT' :
+				  dnat_chain $sourceref->{name} ) ) ,
+		  $firewallsource ? OUTPUT_RESTRICT : PREROUTE_RESTRICT ,
 		  $rule ,
 		  $source ,
 		  $origdest ,

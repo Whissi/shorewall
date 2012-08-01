@@ -1214,7 +1214,7 @@ sub process_providers( $ ) {
 
 	if ( $fn ){
 	    if ( -f ( my $fn1 = find_file 'rtrules' ) ) {
-		warning_message "Both $fn and $fn1 exists: $fn1 will be ignored";
+		warning_message "Both $fn and $fn1 exist: $fn1 will be ignored";
 	    }
 	} else {
 	    $fn = open_file( 'rtrules' );

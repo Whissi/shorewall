@@ -333,6 +333,11 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
 
     <itemizedlist>
       <listitem>
+        <para><filename>/etc/shorewall/conntrack</filename> (formerly
+        <filename>/etc/shorewall/notrack</filename>)</para>
+      </listitem>
+
+      <listitem>
         <para><filename>/etc/shorewall/accounting</filename></para>
       </listitem>
 
@@ -342,10 +347,6 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
 
       <listitem>
         <para><filename>/etc/shorewall/nat</filename></para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall/notrack</filename></para>
       </listitem>
 
       <listitem>
@@ -568,6 +569,12 @@ ACCEPT      net:\
 
             <entry>action,chain, source, dest, proto, dport, sport, user,
             mark, ipsec, headers</entry>
+          </row>
+
+          <row>
+            <entry>conntrack (formerly notrack)</entry>
+
+            <entry>source,dest,proto,dport,sport,user</entry>
           </row>
 
           <row>

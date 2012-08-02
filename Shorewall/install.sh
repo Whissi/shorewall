@@ -634,14 +634,14 @@ if [ -f masq ]; then
     fi
 fi
 #
-# Install the Notrack file
+# Install the Conntrack file
 #
-run_install $OWNERSHIP -m 0644 notrack           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-run_install $OWNERSHIP -m 0644 notrack.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 conntrack           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 conntrack.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/notrack ]; then
-    run_install $OWNERSHIP -m 0600 notrack${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/notrack
-    echo "Notrack file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/notrack"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
+    run_install $OWNERSHIP -m 0600 conntrack${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack
+    echo "Conntrack file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack"
 fi
 
 #

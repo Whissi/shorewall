@@ -124,7 +124,17 @@ sub setup_notrack() {
     my $format = 1;
     my $action = 'NOTRACK';
 
-    if ( my $fn = open_file 'notrack' ) {
+    my $fn = open_file( 'notrack' );
+
+    if ( $fn ) {
+	if ( -f ( my $fn1 = find_file 'conntrack' ) ) {
+	    warning_message "Both $fn and $fn1 exist: $fn1 will be ignored";
+	}
+    } else {
+	$fn = open_file( 'conntrack' );
+    }
+
+    if ( $fn ) {
 
 	first_entry "$doing $fn...";
 

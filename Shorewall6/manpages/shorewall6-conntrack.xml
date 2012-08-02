@@ -3,33 +3,34 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall6-notrack</refentrytitle>
+    <refentrytitle>shorewall6-conntrack</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
 
   <refnamediv>
-    <refname>notrack</refname>
+    <refname>conntrack</refname>
 
-    <refpurpose>shorewall notrack file</refpurpose>
+    <refpurpose>shorewall6 conntrack file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/notrack</command>
+      <command>/etc/shorewall6/conntrack</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>The original intent of the notrack file was to exempt certain
-    traffic from Netfilter connection tracking. Traffic matching entries in
-    this file were not to be tracked.</para>
+    <para>The original intent of the <emphasis role="bold">notrack</emphasis>
+    file was to exempt certain traffic from Netfilter connection tracking.
+    Traffic matching entries in that file were not to be tracked.</para>
 
     <para>The role of the file was expanded in Shorewall 4.4.27 to include all
-    rules tht can be added in the Netfilter <emphasis
-    role="bold">raw</emphasis> table.</para>
+    rules that can be added in the Netfilter <emphasis
+    role="bold">raw</emphasis> table. In 4.5.7, the file's name was changed to
+    <emphasis role="bold">conntrack</emphasis>.</para>
 
     <para>The file supports two different column layouts: FORMAT 1 and FORMAT
     2, FORMAT 1 being the default. The two differ in that FORMAT 2 has an
@@ -38,8 +39,7 @@
     the specified <replaceable>format</replaceable>.</para>
 
     <simplelist>
-      <member><emphasis role="bold">FORMAT</emphasis>
-      <replaceable>format</replaceable></member>
+      <member>FORMAT <replaceable>format</replaceable></member>
     </simplelist>
 
     <para>where <replaceable>format</replaceable> is either <emphasis
@@ -53,63 +53,66 @@
       <varlistentry>
         <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
         role="bold">NOTRACK</emphasis>|<emphasis
-        role="bold">CT</emphasis>:<replaceable>option</replaceable>[:<replaceable>arg,...</replaceable>]}</term>
+        role="bold">CT</emphasis>:<emphasis
+        role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
+        role="bold">CT:notrack</emphasis>}</term>
 
         <listitem>
           <para>This column is only present when FORMAT = 2. Values other than
           NOTRACK require <firstterm>CT Target </firstterm>support in your
           iptables and kernel.</para>
 
-          <para>Possible values for <replaceable>option</replaceable> and
-          <replaceable>arg</replaceable>s are:</para>
-
           <itemizedlist>
             <listitem>
-              <para><option>notrack</option> (no
-              <replaceable>arg</replaceable>)</para>
+              <para><option>NOTRACK</option> or
+              <option>CT:notrack</option></para>
 
-              <para>Disables connection tracking for this packet, the same as
-              if NOTRACK has been specified in this column.</para>
+              <para>Disables connection tracking for this packet.</para>
             </listitem>
 
             <listitem>
               <para><option>helper</option>:<replaceable>name</replaceable></para>
 
-              <para>Use the helper identified by the name to this connection.
-              This is more flexible than loading the conntrack helper with
-              preset ports.</para>
-            </listitem>
+              <para>Attach the helper identified by the
+              <replaceable>name</replaceable> to this connection. This is more
+              flexible than loading the conntrack helper with preset ports.
+              May be followed by an option list of
+              <replaceable>arg</replaceable>=<replaceable>val</replaceable>
+              pairs in parentheses:</para>
 
-            <listitem>
-              <para><option>ctevents</option>:<replaceable>event</replaceable>,...</para>
+              <itemizedlist>
+                <listitem>
+                  <para><option>ctevents</option>=<replaceable>event</replaceable>[,...]</para>
 
-              <para>Only generate the specified conntrack events for this
-              connection. Possible event types are: <emphasis
-              role="bold">new</emphasis>, <emphasis
-              role="bold">related</emphasis>, <emphasis
-              role="bold">destroy</emphasis>, <emphasis
-              role="bold">reply</emphasis>, <emphasis
-              role="bold">assured</emphasis>, <emphasis
-              role="bold">protoinfo</emphasis>, <emphasis
-              role="bold">helper</emphasis>, <emphasis
-              role="bold">mark</emphasis> (this is connection mark, not packet
-              mark), <emphasis role="bold">natseqinfo</emphasis>, and
-              <emphasis role="bold">secmark</emphasis>.</para>
-            </listitem>
+                  <para>Only generate the specified conntrack events for this
+                  connection. Possible event types are: <emphasis
+                  role="bold">new</emphasis>, <emphasis
+                  role="bold">related</emphasis>, <emphasis
+                  role="bold">destroy</emphasis>, <emphasis
+                  role="bold">reply</emphasis>, <emphasis
+                  role="bold">assured</emphasis>, <emphasis
+                  role="bold">protoinfo</emphasis>, <emphasis
+                  role="bold">helper</emphasis>, <emphasis
+                  role="bold">mark</emphasis> (this is connection mark, not
+                  packet mark), <emphasis role="bold">natseqinfo</emphasis>,
+                  and <emphasis role="bold">secmark</emphasis>.</para>
+                </listitem>
 
-            <listitem>
-              <para><option>expevents</option><option>:new</option></para>
+                <listitem>
+                  <para><option>expevents</option><option>=new</option></para>
 
-              <para>Only generate a new expectation events for this
-              connection.</para>
-            </listitem>
+                  <para>Only generate a <emphasis role="bold">new</emphasis>
+                  expectation events for this connection.</para>
+                </listitem>
 
-            <listitem>
-              <para><option>zone</option>:<replaceable>id</replaceable></para>
+                <listitem>
+                  <para><option>zone</option>=<replaceable>id</replaceable></para>
 
-              <para>Assign this packet to zone <replaceable>id</replaceable>
-              and only have lookups done in that zone. By default, packets
-              have zone 0.</para>
+                  <para>Assign this packet to Netfilter security zone
+                  <replaceable>id</replaceable> and only have lookups done in
+                  that zone. By default, packets have zone 0.</para>
+                </listitem>
+              </itemizedlist>
             </listitem>
           </itemizedlist>
 
@@ -120,23 +123,15 @@
 
       <varlistentry>
         <term>SOURCE ‒
-        {<emphasis>zone</emphasis>[:<emphasis>interface</emphasis>][:<emphasis>address-list</emphasis>]|COMMENT}</term>
+        <emphasis>zone</emphasis>[:<emphasis>interface</emphasis>][:<emphasis>address-list</emphasis>]</term>
 
         <listitem>
           <para>where <replaceable>zone</replaceable> is the name of a zone,
           <replaceable>interface</replaceable> is an interface to that zone,
           and <replaceable>address-list</replaceable> is a comma-separated
           list of addresses (may contain exclusion - see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>
+          url="shorewall-exclusion.html">shorewall6-exclusion</ulink>
           (5)).</para>
-
-          <para>Comments may be attached to Netfilter rules generated from
-          entries in this file through the use of COMMENT lines. These lines
-          begin with the word COMMENT; the remainder of the line is treated as
-          a comment which is attached to subsequent rules until another
-          COMMENT line is found or until the end of the file is reached. To
-          stop adding comments to rules, use a line with only the word
-          COMMENT.</para>
         </listitem>
       </varlistentry>
 
@@ -145,15 +140,14 @@
         [<replaceable>interface</replaceable>|<replaceable>address-list</replaceable>]</term>
 
         <listitem>
-          <para>where <replaceable>interface</replaceable> is the name of a
-          network interface and <replaceable>address-list</replaceable> is a
+          <para>where <replaceable>address-list</replaceable> is a
           comma-separated list of addresses (may contain exclusion - see
-          <ulink url="shorewall-exclusion.html">shorewall-exclusion</ulink>
+          <ulink url="shorewall-exclusion.html">shorewall6-exclusion</ulink>
           (5)). If an interface is given:</para>
 
           <itemizedlist>
             <listitem>
-              <para>It must be up and configured with an IPv4 address when
+              <para>It must be up and configured with an IPv6 address when
               Shorewall is started or restarted.</para>
             </listitem>
 
@@ -167,14 +161,6 @@
               warning message and will be ignored.</para>
             </listitem>
           </itemizedlist>
-
-          <para>These restrictions are because Netfilter doesn't support
-          NOTRACK rules that specify a destination interface (these rules are
-          applied before packets are routed and hence the destination
-          interface is unknown). Shorewall uses the routes out of the
-          interface to replace the interface with an address list
-          corresponding to the networks routed out of the named
-          interface.</para>
         </listitem>
       </varlistentry>
 
@@ -226,9 +212,17 @@
   </refsect1>
 
   <refsect1>
+    <title>EXAMPLE</title>
+
+    <programlisting>#ACTION                       SOURCE            DEST               PROTO            DEST              SOURCE              USER/GROUP
+#                                                                                   PORT(S)           PORT(S)
+CT:helper:ftp(expevents=new)  fw                -                  tcp              21              </programlisting>
+  </refsect1>
+
+  <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/notrack</para>
+    <para>/etc/shorewall6/notrack</para>
   </refsect1>
 
   <refsect1>
@@ -237,14 +231,13 @@
     <para><ulink
     url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
-    shorewall-ipsets(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-rtrules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
-    shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
+    shorewall6-ipsec(5), shoewall6-netmap(5),shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-proxyarp(5),
+    shorewall6-rtrules(5), shorewall6-routestopped(5), shorewall6-rules(5),
+    shorewall6.conf(5), shorewall6-secmarks(5), shorewall6-tcclasses(5),
+    shorewall6-tcdevices(5), shorewall6-tcrules(5), shorewall6-tos(5),
+    shorewall6-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

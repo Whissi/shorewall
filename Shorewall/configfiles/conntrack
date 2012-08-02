@@ -1,0 +1,22 @@
+#
+# Shorewall version 4 - conntrack File
+#
+# For information about entries in this file, type "man shorewall-conntrack"
+#
+#############################################################################################
+FORMAT 2
+#ACTION			SOURCE		DESTINATION	PROTO	DEST		SOURCE	USER/
+#								PORT(S)		PORT(S)	GROUP
+?IF $AUTOHELPERS && __CT_TARGET
+CT:helper:ftp		all		-		tcp	21
+CT:helper:amanda	all		-		udp	10080
+CT:helper:RAS		all		-		udp	1719 #H323
+CT:helper:sip		all		-		udp	5060
+CT:helper:tftp		all		-		udp	69
+CT:helper:sane		all		-		tcp	6566
+?IF __IPV4
+CT:helper:irc		all		-		tcp	6667
+CT:helper:netbios-ns	all		-		udp	137
+CT:helper:pptp		all		-		tcp	1729
+?ENDIF
+?ENDIF

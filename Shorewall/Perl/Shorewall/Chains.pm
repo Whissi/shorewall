@@ -28,7 +28,7 @@ package Shorewall::Chains;
 require Exporter;
 
 use Scalar::Util 'reftype';
-use Digest::SHA qw(sha1);
+use Digest::SHA1 qw(sha1);
 use File::Basename;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
@@ -659,6 +659,7 @@ sub initialize( $$$ ) {
 		 irc             => TCP,
 		 'netbios-ns'    => UDP,
 		 pptp            => TCP,
+		 'Q.931'         => TCP,
 		 RAS             => UDP,
 		 sane            => TCP,
 		 sip             => UDP,

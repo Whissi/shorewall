@@ -77,7 +77,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 	    if ( $option eq 'helper' ) {
 		my $modifiers = '';
 
-		if ( $args =~ /^([-\w]+)\((.+)\)$/ ) {
+		if ( $args =~ /^([-\w.]+)\((.+)\)$/ ) {
 		    $args      = $1;
 		    $modifiers = $2;
 		}

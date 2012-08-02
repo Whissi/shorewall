@@ -3848,7 +3848,7 @@ sub read_capabilities() {
 
 	    $val = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
 	    
-	    $capabilities{$var} = $val ne '';
+	    $capabilities{$var} = $var =~ /VERSION$/ ? $val :  $val ne '';
 	} else {
 	    fatal_error "Unrecognized capabilities entry";
 	}

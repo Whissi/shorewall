@@ -75,22 +75,39 @@ sub process_notrack_rule( $$$$$$$ ) {
 	    fatal_error "Invalid or missing CT option and arguments" unless supplied $option && supplied $args;
 
 	    if ( $option eq 'helper' ) {
+		my $modifiers = '';
+
+		if ( $args =~ /^([-\w]+)\((.+)\)$/ ) {
+		    $args      = $1;
+		    $modifiers = $2;
+		}
+
 		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
 		validate_helper( $args, $proto );
 		$action = "CT --helper $args";
 		$exception_rule = do_proto( $proto, '-', '-' );
-	    } elsif ( $option eq 'ctevents' ) {
-		for ( split ',', $args ) {
-		    fatal_error "Invalid 'ctevents' event ($_)" unless $valid_ctevent{$_};
-		}
 
-		$action = "CT --ctevents $args";
-	    } elsif ( $option eq 'expevent' ) {
-		fatal_error "Invalid expevent argument ($args)" unless $args eq 'new';
-	    } elsif ( $option eq 'zone' ) {
-		fatal_error "Invalid zone id ($args)" unless $args =~ /^\d+$/;
-	    } else {
-		fatal_error "Invalid CT option ($option)";
+		for my $mod ( split ',', $modifiers ) {
+		    fatal_error "Invalid helper option ($mod)" unless $mod =~ /^(\w+)=(.+)$/;
+		    $mod  = $1;
+		    $args = $2;
+		    
+		    if ( $mod eq 'ctevents' ) {
+			for ( split ',', $args ) {
+			    fatal_error "Invalid 'ctevents' event ($_)" unless $valid_ctevent{$_};
+			}
+
+			$action .= " --ctevents $args";
+		    } elsif ( $mod eq 'expevents' ) {
+			fatal_error "Invalid expevent argument ($args)" unless $args eq 'new';
+			$action .= ' --expevents new';
+		    } elsif ( $mod eq 'zone' ) {
+			fatal_error "Invalid zone id ($args)" unless $args =~ /^\d+$/;
+			$action .= " --zone $args";
+		    } else {
+			fatal_error "Invalid helper option ($mod)";
+		    }
+		}
 	    }
 	}
     }
@@ -170,7 +187,13 @@ sub setup_notrack() {
 		}
 	    }
 
-	    process_notrack_rule $action, $source, $dest, $proto, $ports, $sports, $user;
+	    if ( $source eq 'all' ) {
+		for my $zone (all_zones) {
+		    process_notrack_rule( $action, $zone, $dest, $proto, $ports, $sports, $user );
+		}
+	    } else {
+		process_notrack_rule( $action, $source, $dest, $proto, $ports, $sports, $user );
+	    }
 	}
 
 	clear_comment;

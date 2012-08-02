@@ -227,6 +227,10 @@ our %globals;
 #
 our %config;
 #
+# Entries in shorewall.conf that have been renamed
+#
+my %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT' );
+#
 # Config options and global settings that are to be copied to output script
 #
 my @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY SUBSYSLOCK LOG_VERBOSITY/;
@@ -630,7 +634,7 @@ sub initialize( $;$ ) {
 	  DELETE_THEN_ADD => undef,
 	  MULTICAST => undef,
 	  DONT_LOAD => '',
-	  AUTO_COMMENT => undef ,
+	  AUTOCOMMENT => undef ,
 	  MANGLE_ENABLED => undef ,
 	  RFC1918_STRICT => undef ,
 	  NULL_ROUTE_RFC1918 => undef ,
@@ -1694,6 +1698,7 @@ sub evaluate_expression( $$$ ) {
 	$val = ( exists $ENV{$var}     ? $ENV{$var}    :
 		 exists $params{$var}  ? $params{$var} :
 		 exists $config{$var}  ? $config{$var} :
+		 exists $renamed{$var} ? $config{$renamed{$var}} :
 		 exists $capdesc{$var} ? have_capability( $var ) : 0 );
 	$val = 0 unless defined $val;
 	$val = "'$val'" unless $val =~ /^-?\d+$/;
@@ -3686,7 +3691,14 @@ sub process_shorewall_conf( $$ ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 
-		    warning_message "Unknown configuration option ($var) ignored", next unless exists $config{$var};
+		    unless ( exists $config{$var} ) {
+			if ( exists $renamed{$var} ) {
+			    $var = $renamed{$var};
+			} else {
+			    warning_message "Unknown configuration option ($var) ignored";
+			    next ;
+			}
+		    }
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 

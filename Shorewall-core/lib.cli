@@ -2020,6 +2020,16 @@ determine_capabilities() {
     GEOIP_MATCH=
     RPFILTER_MATCH=
     NFACCT_MATCH=
+    AMANDA_HELPER=
+    FTP_HELPER=
+    IRC_HELPER=
+    NETBIOS_NS_HELPER=
+    H323_HELPERS=
+    PPTP_HELPER=
+    SANE_HELPER=
+    SIP_HELPER=
+    SNMP_HELPER=
+    TFTP_HELPER=
 
     chain=fooX$$
 
@@ -2173,15 +2183,30 @@ determine_capabilities() {
 	qt $g_tool -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
     fi
 
-    qt $g_tool -t raw	    -L -n && RAW_TABLE=Yes
+    qt $g_tool -t raw	  -L -n && RAW_TABLE=Yes
     qt $g_tool -t rawpost -L -n && RAWPOST_TABLE=Yes
 
     if [ -n "$RAW_TABLE" ]; then
-	qt $g_tool -t raw -N $chain
-	qt $g_tool -t raw -A $chain -j CT --notrack && CT_TARGET=Yes
-	qt $g_tool -t raw -N $chain
 	qt $g_tool -t raw -F $chain
 	qt $g_tool -t raw -X $chain
+	qt $g_tool -t raw -N $chain
+	
+	if qt $g_tool -t raw -A $chain -j CT --notrack; then
+	   CT_TARGET=Yes
+	   qt $g_tool -t raw -A $chain -p udp --dport 10080 -j CT --helper amanda     && AMANDA_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p tcp --dport 21    -j CT --helper ftp        && FTP_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p udp --dport 1719  -j CT --helper RAS        && H323_HELPERS=Yes
+	   qt $g_tool -t raw -A $chain -p tcp --dport 6667  -j CT --helper irc        && IRC_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p udp --dport 137   -j CT --helper netbios-ns && NETBIOS_NS_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p tcp --dport 1729  -j CT --helper pptp       && PPTP_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p tcp --dport 6566  -j CT --helper sane       && SANE_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p udp --dport 5060  -j CT --helper sip        && SIP_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p udp --dport 161   -j CT --helper snmp       && SNMP_HELPER=Yes
+	   qt $g_tool -t raw -A $chain -p udp --dport 69    -j CT --helper tftp       && TFTP_HELPER=Yes
+	fi
+
+	qt $g_tool -t raw -F $chain
+	qt $g_tool -t raw -X $chain	   
     fi
 
     if qt mywhich ipset; then
@@ -2360,6 +2385,16 @@ report_capabilities() {
 	report_capability "Geo IP match" $GEOIP_MATCH
 	report_capability "RPFilter match" $RPFILTER_MATCH
 	report_capability "NFAcct match" $NFACCT_MATCH
+	report_capability "Amanda Helper" $AMANDA_HELPER
+	report_capability "FTP Helper" $FTP_HELPER
+	report_capability "IRC Helper" $IRC_HELPER
+	report_capability "Netbios_ns Helper" $NETBIOS_NS_HELPER
+	report_capability "H323 Helpers" H323_HELPERS
+	report_capability "PPTP Helper" $PPTP_HELPER
+	report_capability "SANE Helper" $SANE_HELPER
+	report_capability "SIP Helper" $SIP_HELPER
+	report_capability "SNMP Helper" $SNMP_HELPER
+	report_capability "TFTP Helper" $TFTP_HELPER
 
 	if [ $g_family -eq 4 ]; then
 	    report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
@@ -2453,6 +2488,15 @@ report_capabilities1() {
     report_capability1 GEOIP_MATCH
     report_capability1 RPFILTER_MATCH
     report_capability1 NFACCT_MATCH
+    report_capability1 AMANDA_HELPER
+    report_capability1 FTP_HELPER
+    report_capability1 IRC_HELPER
+    report_capability1 NETBIOS_NS_HELPER
+    report_capability1 H323_HELPERS
+    report_capability1 PPTP_HELPER
+    report_capability1 SANE_HELPER
+    report_capability1 SNMP_HELPER
+    report_capability1 TFTP_HELPER
 
     echo CAPVERSION=$SHOREWALL_CAPVERSION
     echo KERNELVERSION=$KERNELVERSION

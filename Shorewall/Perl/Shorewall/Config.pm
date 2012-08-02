@@ -144,6 +144,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %config_files
 				       %shorewallrc
 
+				       %helpers_map
+				       
 				       @auditoptions
 
 		                       F_IPV4
@@ -314,6 +316,17 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 GEOIP_MATCH     => 'GeoIP Match' ,
 		 RPFILTER_MATCH  => 'RPFilter Match',
 		 NFACCT_MATCH    => 'NFAcct Match',
+		 AMANDA_HELPER   => 'Amanda Helper',
+		 FTP_HELPER      => 'FTP Helper',
+		 H323_HELPERS    => 'H323 Helpers',
+		 IRC_HELPER      => 'IRC Helper',
+		 NETBIOS_NS_HELPER =>
+                                    'Amanda Helper',
+		 PPTP_HELPER     => 'PPTP Helper',
+		 SANE_HELPER     => 'Amanda Helper',
+		 SIP_HELPER      => 'SIP Helper',
+		 SNMP_HELPER     => 'SNMP Helper',
+		 TFTP_HELPER     => 'TFTP Helper',
 		 #
 		 # Constants
 		 #
@@ -321,6 +334,19 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
+
+our %helpers_map = ( amanda          => 'AMANDA_HELPER',
+		     ftp             => 'FTP_HELPER',
+		     irc             => 'IRC_HELPER',
+		     'netbios-ns'    => 'NETBIOS_NS_HELPER',
+		     pptp            => 'PPTP_HELPER',
+		     'Q.931'         => 'H323_HELPERS',
+		     RAS             => 'H323_HELPERS',
+		     sane            => 'SANE_HELPER',
+		     sip             => 'SIP_HELPER',
+		     snmp            => 'SNMP_HELPER',
+		     tftp            => 'TFTP_HELPER',
+		   );
 
 our %config_files = ( #accounting      => 1,
 		      actions          => 1,
@@ -773,6 +799,17 @@ sub initialize( $;$ ) {
 	       GEOIP_MATCH => undef,
 	       RPFILTER_MATCH => undef,
 	       NFACCT_MATCH => undef,
+	       AMANDA_HELPER => undef,
+	       FTP_HELPER => undef,
+	       H323_HELPERS => undef,
+	       IRC_HELPER => undef,
+	       NETBIOS_NS_HELPER => undef,
+	       PPTP_HELPER => undef,
+	       SANE_HELPER => undef,
+	       SIP_HELPER => undef,
+	       SNMP_HELPER => undef,
+	       TFTP_HELPER => undef,
+
 	       CAPVERSION => undef,
 	       LOG_OPTIONS => 1,
 	       KERNELVERSION => undef,
@@ -949,6 +986,12 @@ sub cleanup() {
 	qt1( "$iptables -X $sillyname1" );
 	qt1( "$iptables -t mangle -F $sillyname" );
 	qt1( "$iptables -t mangle -X $sillyname" );
+	qt1( "$iptables -t nat -F $sillyname" );
+	qt1( "$iptables -t nat -X $sillyname" );
+	qt1( "$iptables -t raw -F $sillyname" );
+	qt1( "$iptables -t raw -X $sillyname" );
+	qt1( "$iptables -t rawpost -F $sillyname" );
+	qt1( "$iptables -t rawpost -X $sillyname" );
 	$sillyname = '';
     }
 }
@@ -3200,16 +3243,55 @@ sub Ct_Target() {
     if ( have_capability 'RAW_TABLE' ) {
 	qt1( "$iptables -t raw -N $sillyname" );
 	$ct_target = qt1( "$iptables -t raw -A $sillyname -j CT --notrack" );
-	qt1( "$iptables -t raw -F $sillyname" );
-	qt1( "$iptables -t raw -X $sillyname" );
     }
 
     $ct_target;
 }
 
+sub Amanda_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 10080 -j CT --helper amanda" );
+}
+
+sub FTP_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 21 -j CT --helper ftp" );
+}
+
+sub H323_Helpers() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 1719 -j CT --helper RAS" );
+}
+
+sub IRC_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 6667 -j CT --helper irc" );
+}
+
+sub Netbios_ns_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 137 -j CT --helper netbios-ns" );
+}
+
+sub PPTP_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 1729 -j CT --helper pptp" );
+}
+
+sub SANE_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 6566 -j CT --helper sane" );
+}
+
+sub SIP_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 5060 -j CT --helper sip" );
+}
+
+sub SNMP_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 161 -j CT --helper snmp" );
+}
+
+sub TFTP_Helper() {
+    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 69 -j CT --helper tftp" );
+}
+
 sub Statistic_Match() {
     qt1( "$iptables -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
 }
+
 
 sub Imq_Target() {
     have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
@@ -3245,6 +3327,7 @@ sub GeoIP_Match() {
 
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
+      AMANDA_HELPER => \&Amanda_Helper,
       AUDIT_TARGET => \&Audit_Target,
       ADDRTYPE => \&Addrtype,
       BASIC_FILTER => \&Basic_Filter,
@@ -3261,9 +3344,11 @@ our %detect_capability =
       ENHANCED_REJECT => \&Enhanced_Reject,
       EXMARK => \&Exmark,
       FLOW_FILTER => \&Flow_Filter,
+      FTP_HELPER => \&FTP_Helper,
       FWMARK_RT_MASK => \&Fwmark_Rt_Mask,
       GEOIP_MATCH => \&GeoIP_Match,
       GOTO_TARGET => \&Goto_Target,
+      H323_HELPERS => \&H323_Helpers,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HEADER_MATCH => \&Header_Match,
       HELPER_MATCH => \&Helper_Match,
@@ -3272,6 +3357,7 @@ our %detect_capability =
       IPP2P_MATCH => \&Ipp2p_Match,
       IPRANGE_MATCH => \&IPRange_Match,
       IPSET_MATCH => \&IPSet_Match,
+      IRC_HELPER => \&IRC_Helper,
       OLD_IPSET_MATCH => \&Old_IPSet_Match,
       IPSET_V5 => \&IPSET_V5,
       IPTABLES_S => \&Iptables_S,
@@ -3287,6 +3373,7 @@ our %detect_capability =
       MARK_ANYWHERE => \&Mark_Anywhere,
       MULTIPORT => \&Multiport,
       NAT_ENABLED => \&Nat_Enabled,
+      NETBIOS_NS_HELPER => \&Netbios_ns_Helper,
       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
       NFACCT_MATCH => \&NFAcct_Match,
       NFQUEUE_TARGET => \&Nfqueue_Target,
@@ -3299,13 +3386,18 @@ our %detect_capability =
       PHYSDEV_BRIDGE => \&Physdev_Bridge,
       PHYSDEV_MATCH => \&Physdev_Match,
       POLICY_MATCH => \&Policy_Match,
+      PPTP_HELPER => \&PPTP_Helper,
       RAW_TABLE => \&Raw_Table,
       RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
       RECENT_MATCH => \&Recent_Match,
       RPFILTER_MATCH => \&RPFilter_Match,
+      SANE_HELPER => \&SANE_Helper,
+      SIP_HELPER => \&SIP_Helper,
+      SNMP_HELPER => \&SNMP_Helper,
       STATISTIC_MATCH => \&Statistic_Match,
       TCPMSS_MATCH => \&Tcpmss_Match,
+      TFTP_HELPER => \&TFTP_Helper,
       TIME_MATCH => \&Time_Match,
       TPROXY_TARGET => \&Tproxy_Target,
       USEPKTTYPE => \&Usepkttype,
@@ -3445,6 +3537,12 @@ sub determine_capabilities() {
 	$capabilities{GEOIP_MATCH}     = detect_capability( 'GEOIP_MATCH' );
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
+	
+	if ( $capabilities{CT_TARGET} ) {
+	    for ( values %helpers_map ) {
+		$capabilities{$_} = detect_capability $_;
+	    }
+	}
 
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );
@@ -3459,6 +3557,11 @@ sub determine_capabilities() {
 	if ( $capabilities{NAT_ENABLED} ) {
 	    qt1( "$iptables -t nat -F $sillyname" );
 	    qt1( "$iptables -t nat -X $sillyname" );
+	}
+
+	if ( $capabilities{RAW_ENABLED} ) {
+	    qt1( "$iptables -t raw -F $sillyname" );
+	    qt1( "$iptables -t raw -X $sillyname" );
 	}
 
 	$sillyname = $sillyname1 = undef;
@@ -3743,7 +3846,9 @@ sub read_capabilities() {
 		next;
 	    }
 
-	    $capabilities{$var} = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
+	    $val = $val =~ /^\"([^\"]*)\"$/ ? $1 : $val;
+	    
+	    $capabilities{$var} = $val ne '';
 	} else {
 	    fatal_error "Unrecognized capabilities entry";
 	}

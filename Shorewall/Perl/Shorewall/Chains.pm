@@ -28,7 +28,7 @@ package Shorewall::Chains;
 require Exporter;
 
 use Scalar::Util 'reftype';
-use Digest::SHA1 qw(sha1);
+use Digest::SHA qw(sha1);
 use File::Basename;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
@@ -331,7 +331,19 @@ our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-our %helpers;
+our %helpers = ( amanda          => UDP,
+		 ftp             => TCP,
+		 irc             => TCP,
+		 'netbios-ns'    => UDP,
+		 pptp            => TCP,
+		 'Q.931'         => TCP,
+		 RAS             => UDP,
+		 sane            => TCP,
+		 sip             => UDP,
+		 snmp            => UDP,
+		 tftp            => UDP,
+	       );
+
 my  $comment;
 my  @comments;
 my  $export;
@@ -653,19 +665,6 @@ sub initialize( $$$ ) {
     $ipset_rules        = 0 if $hard;
 
     %ipset_exists       = ();
-
-    %helpers = ( amanda          => UDP,
-		 ftp             => TCP,
-		 irc             => TCP,
-		 'netbios-ns'    => UDP,
-		 pptp            => TCP,
-		 'Q.931'         => TCP,
-		 RAS             => UDP,
-		 sane            => TCP,
-		 sip             => UDP,
-		 snmp            => UDP,
-		 tftp            => UDP,
-	       );
 
     %isocodes  = ();
     %nfobjects = ();
@@ -4341,6 +4340,8 @@ sub validate_helper( $;$ ) {
 	#  Recognized helper
 	#
 	if ( supplied $proto ) {
+	    require_capability $helpers_map{$helper}, "Helper $helper", 's';
+
 	    my $protonum = -1;
 
 	    fatal_error "Unknown PROTO ($protonum)" unless defined ( $protonum = resolve_proto( $proto ) );

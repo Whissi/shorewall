@@ -9,14 +9,38 @@ FORMAT 2
 #								PORT(S)		PORT(S)	GROUP
 ?IF $AUTOHELPERS && __CT_TARGET
 COMMENT AUTOHELPERS
-CT:helper:ftp		all		-		tcp	21
+?IF __AMANDA_HELPER
 CT:helper:amanda	all		-		udp	10080
+?ENDIF
+?IF __FTP_HELPER
+CT:helper:ftp		all		-		tcp	21
+?ENDIF
+?IF __H323_HELPERS
 COMMENT AUTOHELPERS - H323
 CT:helper:RAS		all		-		udp	1719
 CT:helper:Q.931		all		-		tcp	1720
 COMMENT AUTOHELPERS
-CT:helper:sip		all		-		udp	5060
-CT:helper:tftp		all		-		udp	69
+?ENDIF
+?IF __IRC_HELPER
+CT:helper:irc		all		-		tcp	6667
+?ENDIF
+?IF __NETBIOS_NS_HELPER
+CT:helper:netbios-ns	all		-		udp	137
+?ENDIF
+?IF __PPTP_HELPER
+CT:helper:pptp		all		-		tcp	1729
+?ENDIF
+?IF __SANE_HELPER
 CT:helper:sane		all		-		tcp	6566
+?ENDIF
+?IF __SIP_HELPER
+CT:helper:sip		all		-		udp	5060
+?ENDIF
+?IF __SNMP_HELPER
+CT:helper:snmp		all		-		udp	161
+?ENDIF
+?IF __TFTP_HELPER
+CT:helper:tftp		all		-		udp	69
+?ENDIF
 COMMENT
 ?ENDIF

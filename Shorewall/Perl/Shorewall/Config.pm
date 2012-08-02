@@ -656,6 +656,7 @@ sub initialize( $;$ ) {
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
 	  USE_PHYSICAL_NAMES => undef,
+	  AUTOHELPERS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -4260,6 +4261,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
     default_yes_no 'USE_PHYSICAL_NAMES'         , '';
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
+    default_yes_no 'AUTOHELPERS'                , 'Yes';
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

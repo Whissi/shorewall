@@ -101,9 +101,6 @@ sub process_notrack_rule( $$$$$$$ ) {
 		    } elsif ( $mod eq 'expevents' ) {
 			fatal_error "Invalid expevent argument ($args)" unless $args eq 'new';
 			$action .= ' --expevents new';
-		    } elsif ( $mod eq 'zone' ) {
-			fatal_error "Invalid zone id ($args)" unless $args =~ /^\d+$/;
-			$action .= " --zone $args";
 		    } else {
 			fatal_error "Invalid helper option ($mod)";
 		    }

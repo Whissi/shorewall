@@ -144,12 +144,23 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %config_files
 				       %shorewallrc
 
+				       %helpers
 				       %helpers_map
+				       %helpers_enabled
 				       
 				       @auditoptions
 
 		                       F_IPV4
 		                       F_IPV6
+
+				       TCP
+				       UDP
+				       UDPLITE
+				       ICMP
+				       DCCP
+				       IPv6_ICMP
+				       SCTP
+				       GRE
 
 				       MIN_VERBOSITY
 				       MAX_VERBOSITY
@@ -162,7 +173,18 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       CONFIG_CONTINUATION
 				       DO_INCLUDE
 				       NORMAL_READ
-				     ) ] );
+				     ) ] ,
+		   protocols => [ qw (
+				       TCP
+				       UDP
+				       UDPLITE
+				       ICMP
+				       DCCP
+				       IPv6_ICMP
+				       SCTP
+				       GRE
+				    ) ],
+		   );
 
 Exporter::export_ok_tags('internal');
 
@@ -318,10 +340,10 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 NFACCT_MATCH    => 'NFAcct Match',
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
-		 H323_HELPERS    => 'H323 Helpers',
+		 H323_HELPER     => 'H323 Helpers',
 		 IRC_HELPER      => 'IRC Helper',
 		 NETBIOS_NS_HELPER =>
-                                    'Amanda Helper',
+                                    'Netbios-ns Helper',
 		 PPTP_HELPER     => 'PPTP Helper',
 		 SANE_HELPER     => 'Amanda Helper',
 		 SIP_HELPER      => 'SIP Helper',
@@ -335,18 +357,46 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
 
+use constant {
+	       ICMP                => 1,
+	       TCP                 => 6,
+	       UDP                 => 17,
+	       DCCP                => 33,
+	       GRE                 => 47,
+	       IPv6_ICMP           => 58,
+	       SCTP                => 132,
+	       UDPLITE             => 136,
+	     };
+
+our %helpers = ( amanda          => UDP,
+		 ftp             => TCP,
+		 irc             => TCP,
+		 'netbios-ns'    => UDP,
+		 pptp            => TCP,
+		 'Q.931'         => TCP,
+		 RAS             => UDP,
+		 sane            => TCP,
+		 sip             => UDP,
+		 snmp            => UDP,
+		 tftp            => UDP,
+	       );
+
 our %helpers_map = ( amanda          => 'AMANDA_HELPER',
 		     ftp             => 'FTP_HELPER',
 		     irc             => 'IRC_HELPER',
 		     'netbios-ns'    => 'NETBIOS_NS_HELPER',
 		     pptp            => 'PPTP_HELPER',
-		     'Q.931'         => 'H323_HELPERS',
-		     RAS             => 'H323_HELPERS',
+		     'Q.931'         => 'H323_HELPER',
+		     RAS             => 'H323_HELPER',
 		     sane            => 'SANE_HELPER',
 		     sip             => 'SIP_HELPER',
 		     snmp            => 'SNMP_HELPER',
 		     tftp            => 'TFTP_HELPER',
 		   );
+
+our %helpers_names;
+
+our %helpers_enabled;
 
 our %config_files = ( #accounting      => 1,
 		      actions          => 1,
@@ -682,7 +732,7 @@ sub initialize( $;$ ) {
 	  EXPORTMODULES => undef,
 	  LEGACY_FASTSTART => undef,
 	  USE_PHYSICAL_NAMES => undef,
-	  AUTOHELPERS => undef,
+	  HELPERS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -801,7 +851,7 @@ sub initialize( $;$ ) {
 	       NFACCT_MATCH => undef,
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
-	       H323_HELPERS => undef,
+	       H323_HELPER => undef,
 	       IRC_HELPER => undef,
 	       NETBIOS_NS_HELPER => undef,
 	       PPTP_HELPER => undef,
@@ -848,6 +898,19 @@ sub initialize( $;$ ) {
 		    SHAREDIR => '/usr/share/',
 		    CONFDIR  => '/etc/',
 		    );
+
+    %helpers_enabled = (
+			amanda       => 1,
+			ftp          => 1,
+			h323         => 1,
+			irc          => 1,
+			'netbios-ns' => 1,
+			pptp         => 1,
+			sane         => 1,
+			sip          => 1,
+			snmp         => 1,
+			tftp         => 1,
+		       );
 
     process_shorewallrc( $shorewallrc ) if $shorewallrc;
 
@@ -3165,8 +3228,54 @@ sub Realm_Match() {
     qt1( "$iptables -A $sillyname -m realm --realm 1" );
 }
 
-sub Helper_Match() {
-    qt1( "$iptables -A $sillyname -m helper --helper \"ftp\"" );
+sub Amanda_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{amanda}      && qt1( "$iptables -A $sillyname -p udp --dport 10080 -j CT --helper amanda" );
+}
+
+sub FTP_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{ftp}         && qt1( "$iptables -A $sillyname -p tcp --dport 21 -m helper --helper ftp" );
+}
+
+sub H323_Helpers() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{h323}        && qt1( "$iptables -A $sillyname -p udp --dport 1719 -m helper --helper RAS" );
+}
+
+sub IRC_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{irc}          && qt1( "$iptables -A $sillyname -p tcp --dport 6667 -m helper --helper irc" );
+}
+
+sub Netbios_ns_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{'netbios-ns'} && qt1( "$iptables -A $sillyname -p udp --dport 137 -m helper --helper netbios-ns" );
+}
+
+sub PPTP_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{pptp}         && qt1( "$iptables -A $sillyname -p tcp --dport 1729 -m helper --helper pptp" );
+}
+
+sub SANE_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{sane}         && qt1( "$iptables -A $sillyname -p tcp --dport 6566 -m helper --helper sane" );
+}
+
+sub SIP_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{sip}          && qt1( "$iptables -A $sillyname -p udp --dport 5060 -m helper --helper sip" );
+}
+
+sub SNMP_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{snmp}         && qt1( "$iptables -A $sillyname -p udp --dport 161 -m helper --helper snmp" );
+}
+
+sub TFTP_Helper() {
+    $capabilities{HELPER_MATCH} = 1 if
+	$helpers_enabled{tftp}         && qt1( "$iptables -A $sillyname -p udp --dport 69 -m helper --helper tftp" );
 }
 
 sub Connlimit_Match() {
@@ -3248,46 +3357,6 @@ sub Ct_Target() {
     $ct_target;
 }
 
-sub Amanda_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 10080 -j CT --helper amanda" );
-}
-
-sub FTP_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 21 -j CT --helper ftp" );
-}
-
-sub H323_Helpers() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 1719 -j CT --helper RAS" );
-}
-
-sub IRC_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 6667 -j CT --helper irc" );
-}
-
-sub Netbios_ns_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 137 -j CT --helper netbios-ns" );
-}
-
-sub PPTP_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 1729 -j CT --helper pptp" );
-}
-
-sub SANE_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p tcp --dport 6566 -j CT --helper sane" );
-}
-
-sub SIP_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 5060 -j CT --helper sip" );
-}
-
-sub SNMP_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 161 -j CT --helper snmp" );
-}
-
-sub TFTP_Helper() {
-    have_capability 'CT_TARGET' && qt1( "$iptables -t raw -A $sillyname -p udp --dport 69 -j CT --helper tftp" );
-}
-
 sub Statistic_Match() {
     qt1( "$iptables -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
 }
@@ -3348,10 +3417,9 @@ our %detect_capability =
       FWMARK_RT_MASK => \&Fwmark_Rt_Mask,
       GEOIP_MATCH => \&GeoIP_Match,
       GOTO_TARGET => \&Goto_Target,
-      H323_HELPERS => \&H323_Helpers,
+      H323_HELPER => \&H323_Helpers,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HEADER_MATCH => \&Header_Match,
-      HELPER_MATCH => \&Helper_Match,
       IMQ_TARGET => \&Imq_Target,
       IPMARK_TARGET => \&IPMark_Target,
       IPP2P_MATCH => \&Ipp2p_Match,
@@ -3502,7 +3570,6 @@ sub determine_capabilities() {
 	$capabilities{CLASSIFY_TARGET} = detect_capability( 'CLASSIFY_TARGET' );
 	$capabilities{IPMARK_TARGET}   = detect_capability( 'IPMARK_TARGET' );
 	$capabilities{TPROXY_TARGET}   = detect_capability( 'TPROXY_TARGET' );
-
 	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
 	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
 	$capabilities{RAWPOST_TABLE}   = detect_capability( 'RAWPOST_TABLE' );
@@ -3512,7 +3579,6 @@ sub determine_capabilities() {
 	$capabilities{TCPMSS_MATCH}    = detect_capability( 'TCPMSS_MATCH' );
 	$capabilities{NFQUEUE_TARGET}  = detect_capability( 'NFQUEUE_TARGET' );
 	$capabilities{REALM_MATCH}     = detect_capability( 'REALM_MATCH' );
-	$capabilities{HELPER_MATCH}    = detect_capability( 'HELPER_MATCH' );
 	$capabilities{CONNLIMIT_MATCH} = detect_capability( 'CONNLIMIT_MATCH' );
 	$capabilities{TIME_MATCH}      = detect_capability( 'TIME_MATCH' );
 	$capabilities{GOTO_TARGET}     = detect_capability( 'GOTO_TARGET' );
@@ -4366,7 +4432,29 @@ sub get_configuration( $$$ ) {
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
     default_yes_no 'USE_PHYSICAL_NAMES'         , '';
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
-    default_yes_no 'AUTOHELPERS'                , 'Yes';
+
+    if ( supplied $config{HELPERS} ) {
+	my %helpers_temp = %helpers_enabled;
+
+	$helpers_temp{$_} = 0 for keys %helpers_temp;
+
+	for ( split_list $config{HELPERS} , 'helper' ) {
+	    my $name = $_;
+	    if ( exists $helpers_enabled{$name} ) {
+		s/-/_/;
+		require_capability( uc( $_ ) . '_HELPER' , "The $name helper", 's' );
+		$helpers_temp{$name} = 1;
+	    } else {
+		fatal_error "Unknown Helper ($_)";
+	    }
+	}
+	
+	%helpers_enabled = %helpers_temp;
+
+	while ( my ( $helper, $enabled ) = each %helpers_enabled ) {
+	    $capabilities{uc($helper) . '_HELPER'} = 0 unless $enabled; 
+	}
+    }
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

@@ -46,6 +46,13 @@
     <para>where <replaceable>format</replaceable> is either <emphasis
     role="bold">1</emphasis> or <emphasis role="bold">2</emphasis>.</para>
 
+    <para>Comments may be attached to Netfilter rules generated from entries
+    in this file through the use of COMMENT lines. These lines begin with the
+    word COMMENT; the remainder of the line is treated as a comment which is
+    attached to subsequent rules until another COMMENT line is found or until
+    the end of the file is reached. To stop adding comments to rules, use a
+    line with only the word COMMENT.</para>
+
     <para>The columns in the file are as follows (where the column name is
     followed by a different name in parentheses, the different name is used in
     the alternate specification syntax).</para>
@@ -222,13 +229,9 @@
           url="shorewall-exclusion.html">shorewall-exclusion</ulink>
           (5)).</para>
 
-          <para>Comments may be attached to Netfilter rules generated from
-          entries in this file through the use of COMMENT lines. These lines
-          begin with the word COMMENT; the remainder of the line is treated as
-          a comment which is attached to subsequent rules until another
-          COMMENT line is found or until the end of the file is reached. To
-          stop adding comments to rules, use a line with only the word
-          COMMENT.</para>
+          <para>Beginning with Shorewall 4.5.7, <option>all</option> can be
+          used as the <replaceable>zone</replaceable> name to mean
+          <firstterm>all zones</firstterm>.</para>
         </listitem>
       </varlistentry>
 

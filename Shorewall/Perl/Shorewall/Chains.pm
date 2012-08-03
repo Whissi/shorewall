@@ -79,7 +79,6 @@ our @EXPORT = qw(
 		    add_interface_options
 
 		    %chain_table
-		    %helpers
 		    %targets
 		    $raw_table
 		    $rawpost_table
@@ -331,19 +330,6 @@ our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-our %helpers = ( amanda          => UDP,
-		 ftp             => TCP,
-		 irc             => TCP,
-		 'netbios-ns'    => UDP,
-		 pptp            => TCP,
-		 'Q.931'         => TCP,
-		 RAS             => UDP,
-		 sane            => TCP,
-		 sip             => UDP,
-		 snmp            => UDP,
-		 tftp            => UDP,
-	       );
-
 my  $comment;
 my  @comments;
 my  $export;
@@ -1885,7 +1871,7 @@ sub dnat_chain( $ )
 #
 sub notrack_chain( $ )
 {
-    $_[0] . '_notrk';
+    $_[0] . '_ctrk';
 }
 
 #
@@ -4339,12 +4325,20 @@ sub validate_helper( $;$ ) {
 	#
 	#  Recognized helper
 	#
+	my $capability      = $helpers_map{$helper};
+	my $external_helper = lc $capability;
+	
+	$external_helper =~ s/_helper//;
+	$external_helper =~ s/_/-/;
+
+	fatal_error "The $external_helper helper is not enabled" unless $helpers_enabled{$external_helper};
+	
 	if ( supplied $proto ) {
 	    require_capability $helpers_map{$helper}, "Helper $helper", 's';
 
 	    my $protonum = -1;
 
-	    fatal_error "Unknown PROTO ($protonum)" unless defined ( $protonum = resolve_proto( $proto ) );
+	    fatal_error "Unknown PROTO ($proto)" unless defined ( $protonum = resolve_proto( $proto ) );
 
 	    unless ( $protonum == $helper_proto ) {
 		fatal_error "The $helper_base helper requires PROTO=" . (proto_name $helper_proto );

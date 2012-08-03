@@ -2024,7 +2024,7 @@ determine_capabilities() {
     FTP_HELPER=
     IRC_HELPER=
     NETBIOS_NS_HELPER=
-    H323_HELPERS=
+    H323_HELPER=
     PPTP_HELPER=
     SANE_HELPER=
     SIP_HELPER=
@@ -2191,19 +2191,7 @@ determine_capabilities() {
 	qt $g_tool -t raw -X $chain
 	qt $g_tool -t raw -N $chain
 	
-	if qt $g_tool -t raw -A $chain -j CT --notrack; then
-	   CT_TARGET=Yes
-	   qt $g_tool -t raw -A $chain -p udp --dport 10080 -j CT --helper amanda     && AMANDA_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p tcp --dport 21    -j CT --helper ftp        && FTP_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p udp --dport 1719  -j CT --helper RAS        && H323_HELPERS=Yes
-	   qt $g_tool -t raw -A $chain -p tcp --dport 6667  -j CT --helper irc        && IRC_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p udp --dport 137   -j CT --helper netbios-ns && NETBIOS_NS_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p tcp --dport 1729  -j CT --helper pptp       && PPTP_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p tcp --dport 6566  -j CT --helper sane       && SANE_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p udp --dport 5060  -j CT --helper sip        && SIP_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p udp --dport 161   -j CT --helper snmp       && SNMP_HELPER=Yes
-	   qt $g_tool -t raw -A $chain -p udp --dport 69    -j CT --helper tftp       && TFTP_HELPER=Yes
-	fi
+	qt $g_tool -t raw -A $chain -j CT --notrack && CT_TARGET=Yes;
 
 	qt $g_tool -t raw -F $chain
 	qt $g_tool -t raw -X $chain	   
@@ -2257,7 +2245,18 @@ determine_capabilities() {
     fi
     qt $g_tool -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
     qt $g_tool -A $chain -m realm --realm 4 && REALM_MATCH=Yes
-    qt $g_tool -A $chain -m helper --helper "ftp" && HELPER_MATCH=Yes
+
+    qt $g_tool -A $chain -p udp --dport 10080 -m helper --helper amanda     && HELPER_MATCH=Yes && AMANDA_HELPER=Yes
+    qt $g_tool -A $chain -p tcp --dport 21    -m helper --helper ftp        && HELPER_MATCH=Yes && FTP_HELPER=Yes
+    qt $g_tool -A $chain -p udp --dport 1719  -m helper --helper RAS        && HELPER_MATCH=Yes && H323_HELPER=Yes
+     $g_tool -A $chain -p tcp --dport 6667  -m helper --helper irc        && HELPER_MATCH=Yes && IRC_HELPER=Yes
+    qt $g_tool -A $chain -p udp --dport 137   -m helper --helper netbios-ns && HELPER_MATCH=Yes && NETBIOS_NS_HELPER=Yes
+    qt $g_tool -A $chain -p tcp --dport 1729  -m helper --helper pptp       && HELPER_MATCH=Yes && PPTP_HELPER=Yes
+    qt $g_tool -A $chain -p tcp --dport 6566  -m helper --helper sane       && HELPER_MATCH=Yes && SANE_HELPER=Yes
+    qt $g_tool -A $chain -p udp --dport 5060  -m helper --helper sip        && HELPER_MATCH=Yes && SIP_HELPER=Yes
+    qt $g_tool -A $chain -p udp --dport 161   -m helper --helper snmp       && HELPER_MATCH=Yes && SNMP_HELPER=Yes
+    qt $g_tool -A $chain -p udp --dport 69    -m helper --helper tftp       && HELPER_MATCH=Yes && TFTP_HELPER=Yes
+
     qt $g_tool -A $chain -m connlimit --connlimit-above 8 -j DROP && CONNLIMIT_MATCH=Yes
     qt $g_tool -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
     qt $g_tool -A $chain -g $chain1 && GOTO_TARGET=Yes
@@ -2389,7 +2388,7 @@ report_capabilities() {
 	report_capability "FTP Helper" $FTP_HELPER
 	report_capability "IRC Helper" $IRC_HELPER
 	report_capability "Netbios_ns Helper" $NETBIOS_NS_HELPER
-	report_capability "H323 Helpers" H323_HELPERS
+	report_capability "H323 Helper" $H323_HELPER
 	report_capability "PPTP Helper" $PPTP_HELPER
 	report_capability "SANE Helper" $SANE_HELPER
 	report_capability "SIP Helper" $SIP_HELPER
@@ -2495,7 +2494,7 @@ report_capabilities1() {
     report_capability1 FTP_HELPER
     report_capability1 IRC_HELPER
     report_capability1 NETBIOS_NS_HELPER
-    report_capability1 H323_HELPERS
+    report_capability1 H323_HELPER
     report_capability1 PPTP_HELPER
     report_capability1 SANE_HELPER
     report_capability1 SNMP_HELPER

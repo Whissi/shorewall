@@ -26,7 +26,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 );
+use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 :protocols );
 use Socket;
 
 use strict;
@@ -48,14 +48,6 @@ our @EXPORT = qw( ALLIPv4
 		  ALLIP
 		  NILIP
 		  ALL
-		  TCP
-		  UDP
-		  UDPLITE
-		  ICMP
-		  DCCP
-		  IPv6_ICMP
-		  SCTP
-		  GRE
 
 		  validate_address
 		  validate_net
@@ -115,14 +107,7 @@ use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       IPv6_LINK_ALLRTRS   => 'ff01::2' ,
 	       IPv6_SITE_ALLNODES  => 'ff02::1' ,
 	       IPv6_SITE_ALLRTRS   => 'ff02::2' ,
-	       ICMP                => 1,
-	       TCP                 => 6,
-	       UDP                 => 17,
-	       DCCP                => 33,
-	       GRE                 => 47,
-	       IPv6_ICMP           => 58,
-	       SCTP                => 132,
-	       UDPLITE             => 136 };
+	   };
 
 my @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 

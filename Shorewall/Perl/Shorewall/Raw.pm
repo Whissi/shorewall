@@ -20,7 +20,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   This module contains the code that handles the /etc/shorewall/notrack file.
+#   This module contains the code that handles the /etc/shorewall/conntrack file.
 #
 package Shorewall::Raw;
 require Exporter;
@@ -55,7 +55,7 @@ sub process_notrack_rule( $$$$$$$ ) {
     my $restriction = $zoneref->{type} == FIREWALL || $zoneref->{type} == VSERVER ? OUTPUT_RESTRICT : PREROUTE_RESTRICT;
 
     fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
-    require_capability 'RAW_TABLE', 'Notrack rules', '';
+    require_capability 'RAW_TABLE', 'conntrack rules', '';
 
     my $target = $action;
     my $exception_rule = '';
@@ -66,10 +66,10 @@ sub process_notrack_rule( $$$$$$$ ) {
 
 	fatal_error "Invalid notrack ACTION ( $action )" if $junk || $target ne 'CT';
 
-	require_capability 'CT_TARGET', 'CT entries in the notrack file', '';
+	require_capability 'CT_TARGET', 'CT entries in the conntrack file', '';
 
 	if ( $option eq 'notrack' ) {
-	    fatal_error "Invalid notrack ACTION ( $action )" if supplied $args;
+	    fatal_error "Invalid conntrack ACTION ( $action )" if supplied $args;
 	    $action = 'CT --notrack';
 	} else {
 	    fatal_error "Invalid or missing CT option and arguments" unless supplied $option && supplied $args;
@@ -158,7 +158,7 @@ sub setup_notrack() {
 	    my ( $source, $dest, $proto, $ports, $sports, $user );
 
 	    if ( $format == 1 ) {
-		( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Notrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };
+		( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };
 
 		if ( $source eq 'FORMAT' ) {
 		    $format = process_format( $dest );
@@ -170,7 +170,7 @@ sub setup_notrack() {
 		    next;
 		}
 	    } else {
-		( $action, $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Notrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6 }, { COMMENT => 0, FORMAT => 2 };
+		( $action, $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6 }, { COMMENT => 0, FORMAT => 2 };
 
 		if ( $action eq 'FORMAT' ) {
 		    $format = process_format( $source );

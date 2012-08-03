@@ -229,30 +229,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">AUTOHELPERS=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
-
-        <listitem>
-          <para>Added in Shorewall 4.5.7.</para>
-
-          <para>In Linux 3.5, the Netfilter team announced that the automatic
-          association of helpers with connections based on protocol and port
-          would no longer be supported after a certain point. This means that
-          explicit rules must be added in shorewall-conntrack (5) in order for
-          applications like FTP that require a helper to continue to work
-          correctly. To work around this problem, the AUTOHELPERS option was
-          added with a default value of Yes.</para>
-
-          <para>If set to Yes and the CT Target capability is present in the
-          kernel and iptables, then Shorewall will automatically create the
-          same associations that were made by the modules themselves prior to
-          removal of the automatic association feature. The associations are
-          actually in shorewall-conntrack (5) so you can modify them to suit
-          your particular needs.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">AUTOMAKE=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -614,6 +590,62 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           If not specified, the default value is
           <filename>/usr/share/xt_geoip/LE</filename> which is the default
           location of the little-endian database.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">HELPERS</emphasis>=[<emphasis>helper</emphasis>[,<replaceable>helper</replaceable>...]]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.7. This option lists the Netfilter
+          application helps that are to be enabled. If not specified, the
+          default is to enable all helpers.</para>
+
+          <para>Possible values for <replaceable>helper</replaceable>
+          are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>amanda</para>
+            </listitem>
+
+            <listitem>
+              <para>ftp</para>
+            </listitem>
+
+            <listitem>
+              <para>h323</para>
+            </listitem>
+
+            <listitem>
+              <para>irc</para>
+            </listitem>
+
+            <listitem>
+              <para>netbios-ns</para>
+            </listitem>
+
+            <listitem>
+              <para>pptp</para>
+            </listitem>
+
+            <listitem>
+              <para>sane</para>
+            </listitem>
+
+            <listitem>
+              <para>sip</para>
+            </listitem>
+
+            <listitem>
+              <para>snmp</para>
+            </listitem>
+
+            <listitem>
+              <para>tftp</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
 

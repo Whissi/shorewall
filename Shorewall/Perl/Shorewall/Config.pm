@@ -62,6 +62,7 @@ our @EXPORT = qw(
 
 		 have_capability
 		 require_capability
+		 kernel_version
                 );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
@@ -3641,6 +3642,13 @@ sub require_capability( $$$ ) {
     my ( $capability, $description, $singular ) = @_;
 
     fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless have_capability $capability;
+}
+
+#
+# Return Kernel Version
+#
+sub kernel_version() {
+    $capabilities{KERNELVERSION}
 }
 
 #

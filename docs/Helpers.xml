@@ -240,7 +240,7 @@
     <title>Shorewall Support for Helpers</title>
 
     <para>Shorewall includes support for helpers is several areas. These areas
-    are covered in the sections below. </para>
+    are covered in the sections below.</para>
 
     <section>
       <title>Module Loading</title>
@@ -287,9 +287,10 @@
             <para>This option was added in Shorewall 4.5.7 and lists the
             modules to be enabled for association with connections. This
             option is fully functional only on systems running kernel 3.5 or
-            later. On systems running earlier kernels, the only way to totally
-            disable a module is to not load it. The module names allowed in
-            this list are <emphasis role="bold">amanda</emphasis>, <emphasis
+            later.</para>
+
+            <para>The module names allowed in this list are <emphasis
+            role="bold">amanda</emphasis>, <emphasis
             role="bold">ftp</emphasis>, <emphasis role="bold">h323</emphasis>,
             <emphasis role="bold">irc</emphasis>, <emphasis
             role="bold">netbios-ns</emphasis>, <emphasis
@@ -308,6 +309,33 @@
       </filename>and modify the copy. That way, your changes won't be
       overwritten the next time that Shorewall is updated on your
       system.</para>
+
+      <para>On systems running a a kernel earlier than 3.5, not all of the
+      helpers can be totally disabled. The following modules can be disabled
+      by using the parameter <emphasis role="bold">ports=0</emphasis> in
+      /etc/shorewall/helpers:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>ftp</para>
+        </listitem>
+
+        <listitem>
+          <para>irc</para>
+        </listitem>
+
+        <listitem>
+          <para>sane</para>
+        </listitem>
+
+        <listitem>
+          <para>sip</para>
+        </listitem>
+
+        <listitem>
+          <para>tftp</para>
+        </listitem>
+      </itemizedlist>
     </section>
 
     <section>

@@ -975,12 +975,6 @@ fi
 cd ..
 
 #
-# Install the Standard Actions file
-#
-install_file actions.std ${DESTDIR}${SHAREDIR}/$PRODUCT/actions.std 0644
-echo "Standard actions file installed as ${DESTDIR}${SHAREDIR}d/$PRODUCT/actions.std"
-
-#
 # Install the  Makefiles
 #
 run_install $OWNERSHIP -m 0644 Makefile-lite ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/Makefile

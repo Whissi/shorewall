@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Netfilter Helpers</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Helpers - Introduction</title>
+
+    <para>There are a number of applications that create connections
+    dynamically between a client and server. These connections use temporary
+    TCP or UDP ports, so static configuration of firewall rules to allow those
+    connections would require a very lax firewall configuration. To deal with
+    these problem applications, Netfilter supports the concept of a
+    <firstterm>helper</firstterm>. Each helper monitors traffic to/from the
+    default primary port used by the application and opens the firewall to
+    accept temporary connections created by the primary session.</para>
+
+    <para>There are helpers for the following applications; default ports
+    monitored by each helper are listed in parentheses:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Amanda (UDP 10080)</para>
+      </listitem>
+
+      <listitem>
+        <para>FTP (TCP 21)</para>
+      </listitem>
+
+      <listitem>
+        <para>H323 (UDP 1719, TCP 1720)</para>
+      </listitem>
+
+      <listitem>
+        <para>IRC (TCP 6667)</para>
+      </listitem>
+
+      <listitem>
+        <para>Netbios-NS (UDP 137)</para>
+      </listitem>
+
+      <listitem>
+        <para>PPTP (TCP 1729)</para>
+      </listitem>
+
+      <listitem>
+        <para>SANE (TCP 6566)</para>
+      </listitem>
+
+      <listitem>
+        <para>SIP (UDP 5060)</para>
+      </listitem>
+
+      <listitem>
+        <para>SNMP (UDP 161)</para>
+      </listitem>
+
+      <listitem>
+        <para>TFTP (UDP 69)</para>
+      </listitem>
+    </itemizedlist>
+
+    <section>
+      <title>Helper Module Loading</title>
+
+      <para>In a modular kernel, each helper is typically packaged as two
+      kernel modules. One module handles connection tracking where NAT isn't
+      involved and the other module handles NAT. For example, the FTP helper
+      consists of these two modules (kernels 2.6.20 and later):</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>nf_conntrack_ftp</para>
+        </listitem>
+
+        <listitem>
+          <para>nf_nat_ftp</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Note that the naming convention is
+      nf_conntrack_<replaceable>application</replaceable> and
+      nf_nat_<replaceable>application</replaceable>; more about that
+      below.</para>
+
+      <para>The modules are not auto-loaded and must be loaded explicitly
+      using the <command>modprob</command> or <command>insmod</command>
+      utilities.</para>
+
+      <para>Many of the modules allow parameters to be specified when the
+      module is loaded. Among the common parameters is the ports parameter
+      that lists one or more ports that the module is to monitor. This allows
+      running the application on a non-standard port.</para>
+    </section>
+
+    <section>
+      <title>Iptables and Helpers</title>
+
+      <para>Iptables supports two ways of interacting with modules:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>Helper Match</term>
+
+          <listitem>
+            <para>This match (-m helper --helper
+            <replaceable>name</replaceable>) allows selection of packets from
+            connections monitored or created by the named helper.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CT Target</term>
+
+          <listitem>
+            <para>This target (-j CT --helper <replaceable>name</replaceable>
+            ...) , introduced in the 3.4 kernels, allows for explicit
+            association of a helper with a connection.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>It is important to note that the name used in iptables is not
+      always the same as the name in the kernel module. Names used in iptables
+      are shown in the following table:</para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>Name of kernel module</entry>
+
+              <entry>Name recognized by iptables</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_amanda</entry>
+
+              <entry>amanda</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_ftp</entry>
+
+              <entry>ftp</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_h323</entry>
+
+              <entry><emphasis role="bold">RAS (udp 1719), Q.931 (tcp
+              1720)</emphasis></entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_irc</entry>
+
+              <entry>irc</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_netbios_ns</entry>
+
+              <entry><emphasis role="bold">netbios-ns</emphasis></entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_pptp</entry>
+
+              <entry>pptp</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_sane</entry>
+
+              <entry>sane</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_sip</entry>
+
+              <entry>sip</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_snmp</entry>
+
+              <entry>snmp</entry>
+            </row>
+
+            <row>
+              <entry>nf_conntrack_tftp</entry>
+
+              <entry>tftp</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>Netfilter helpers present an opportunity for attackers to attempt
+      to breach your firewall by IP address spoofing; See <ulink
+      url="https://home.regit.org/netfilter-en/secure-use-of-helpers/">https://home.regit.org/netfilter-en/secure-use-of-helpers/</ulink>
+      for a description of the Netfilter facilities available to meet these
+      attacks.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Shorewall Support for Helpers</title>
+
+    <para>Shorewall includes support for helpers is several areas. These areas
+    are covered in the sections below. </para>
+
+    <section>
+      <title>Module Loading</title>
+
+      <para>Shorewall includes support for loading the helper modules as part
+      of its support for loading kernel modules in general. There are several
+      options in shorewall.conf (5) that deal with kernel module
+      loading:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>MODULESDIR</term>
+
+          <listitem>
+            <para>This option specifies a comma-separated list of directories
+            where Shorewall will look for kernel modules to load.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>MODULE_SUFFIX</term>
+
+          <listitem>
+            <para>Lists the possible suffixes for module names.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>LOAD_HELPERS_ONLY</term>
+
+          <listitem>
+            <para>Controls whether Shorewall should load only the helpers and
+            leave the other modules to the auto-loader. This option
+            dramatically reduces the time to process a <command>shorewall
+            start</command> or <command>shorewall restart</command>
+            command.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>HELPERS</term>
+
+          <listitem>
+            <para>This option was added in Shorewall 4.5.7 and lists the
+            modules to be enabled for association with connections. This
+            option is fully functional only on systems running kernel 3.5 or
+            later. On systems running earlier kernels, the only way to totally
+            disable a module is to not load it. The module names allowed in
+            this list are <emphasis role="bold">amanda</emphasis>, <emphasis
+            role="bold">ftp</emphasis>, <emphasis role="bold">h323</emphasis>,
+            <emphasis role="bold">irc</emphasis>, <emphasis
+            role="bold">netbios-ns</emphasis>, <emphasis
+            role="bold">pptp</emphasis>, <emphasis
+            role="bold">sane</emphasis>, <emphasis role="bold">sip</emphasis>,
+            <emphasis role="bold">snmp</emphasis> and <emphasis
+            role="bold">tftp</emphasis>.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The helper modules to be loaded are listed in the file
+      <filename>/usr/share/shorewall/helpers</filename>. If you wish to
+      customize that file to load only a subset of the helpers or to specify
+      module parameters, then copy the file to <filename>/etc/shorewall/
+      </filename>and modify the copy. That way, your changes won't be
+      overwritten the next time that Shorewall is updated on your
+      system.</para>
+    </section>
+
+    <section>
+      <title>Iptables</title>
+
+      <para>The iptables helper match is supported by Shorewall in the form of
+      the HELPER column in <ulink
+      url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>
+      (5).</para>
+
+      <para>The CT target is supported directly in <ulink
+      url="manpages/shorewall-conntrack.html">shorewall-conntrack</ulink>
+      (5).</para>
+
+      <para>In these files, Shorewall supports the same module names as
+      iptables; see the table above.</para>
+    </section>
+  </section>
+</article>

@@ -3229,54 +3229,60 @@ sub Realm_Match() {
     qt1( "$iptables -A $sillyname -m realm --realm 1" );
 }
 
+sub Helper_Match() {
+    qt1( "$iptables -A $sillyname -p tcp --dport 21 -m helper --helper ftp" );
+}
+
+sub have_helper( $ ) {
+    my $helper = $_[0];
+
+    if ( $helpers_enabled{$helper} ) {
+	if ( have_capability 'CT_TARGET' ) {
+	    qt1( "$iptables -t raw -A $sillyname -p udp --dport 10080 -j CT --helper $helper" );
+	} else {
+	    have_capability 'HELPER_MATCH';
+	}
+    }
+}
+
 sub Amanda_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{amanda}      && qt1( "$iptables -A $sillyname -p udp --dport 10080 -j CT --helper amanda" );
+    have_helper 'amanda';
 }
 
 sub FTP_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{ftp}         && qt1( "$iptables -A $sillyname -p tcp --dport 21 -m helper --helper ftp" );
+    have_helper 'ftp';
 }
 
 sub H323_Helpers() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{h323}        && qt1( "$iptables -A $sillyname -p udp --dport 1719 -m helper --helper RAS" );
+    have_helper 'RAS';
 }
 
 sub IRC_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{irc}          && qt1( "$iptables -A $sillyname -p tcp --dport 6667 -m helper --helper irc" );
+    have_helper 'irc';
 }
 
 sub Netbios_ns_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{'netbios-ns'} && qt1( "$iptables -A $sillyname -p udp --dport 137 -m helper --helper netbios-ns" );
+    have_helper 'netbios-ns';
 }
 
 sub PPTP_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{pptp}         && qt1( "$iptables -A $sillyname -p tcp --dport 1729 -m helper --helper pptp" );
+    have_helper 'pptp';
 }
 
 sub SANE_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{sane}         && qt1( "$iptables -A $sillyname -p tcp --dport 6566 -m helper --helper sane" );
+    have_helper 'sane';
 }
 
 sub SIP_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{sip}          && qt1( "$iptables -A $sillyname -p udp --dport 5060 -m helper --helper sip" );
+    have_helper 'sip';
 }
 
 sub SNMP_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{snmp}         && qt1( "$iptables -A $sillyname -p udp --dport 161 -m helper --helper snmp" );
+    have_helper 'snmp';
 }
 
 sub TFTP_Helper() {
-    $capabilities{HELPER_MATCH} = 1 if
-	$helpers_enabled{tftp}         && qt1( "$iptables -A $sillyname -p udp --dport 69 -m helper --helper tftp" );
+    have_helper 'tftp';
 }
 
 sub Connlimit_Match() {
@@ -3421,6 +3427,7 @@ our %detect_capability =
       H323_HELPER => \&H323_Helpers,
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HEADER_MATCH => \&Header_Match,
+      HELPER_MATCH => \&Helper_Match,
       IMQ_TARGET => \&Imq_Target,
       IPMARK_TARGET => \&IPMark_Target,
       IPP2P_MATCH => \&Ipp2p_Match,
@@ -3604,6 +3611,7 @@ sub determine_capabilities() {
 	$capabilities{GEOIP_MATCH}     = detect_capability( 'GEOIP_MATCH' );
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
+	$capabilities{HELPER_MATCH}    = detect_capability( 'HELPER_MATCH' );
 	
 	if ( $capabilities{CT_TARGET} ) {
 	    for ( values %helpers_map ) {

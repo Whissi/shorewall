@@ -87,24 +87,26 @@ sub process_notrack_rule( $$$$$$$ ) {
 		$action = "CT --helper $args";
 		$exception_rule = do_proto( $proto, '-', '-' );
 
-		for my $mod ( split ',', $modifiers ) {
+		for my $mod ( split_list1( $modifiers, 'ctevents' ) ) {
 		    fatal_error "Invalid helper option ($mod)" unless $mod =~ /^(\w+)=(.+)$/;
-		    $mod  = $1;
-		    $args = $2;
+		    $mod    = $1;
+		    my $val = $2;
 		    
 		    if ( $mod eq 'ctevents' ) {
-			for ( split ',', $args ) {
+			for ( split_list( $val, 'ctevents' ) ) {
 			    fatal_error "Invalid 'ctevents' event ($_)" unless $valid_ctevent{$_};
 			}
 
-			$action .= " --ctevents $args";
+			$action .= " --ctevents $val";
 		    } elsif ( $mod eq 'expevents' ) {
-			fatal_error "Invalid expevent argument ($args)" unless $args eq 'new';
+			fatal_error "Invalid expevent argument ($val)" unless $val eq 'new';
 			$action .= ' --expevents new';
 		    } else {
 			fatal_error "Invalid helper option ($mod)";
 		    }
 		}
+	    } else {
+		fatal_error "Invalid CT option ($option)";
 	    }
 	}
     }

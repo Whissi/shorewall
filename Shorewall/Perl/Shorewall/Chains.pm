@@ -4359,7 +4359,7 @@ sub do_helper( $ ) {
 
     validate_helper( $helper );
 
-    qq(-m helper --helper "$helper" ) if defined wantarray;
+    qq(-m helper --helper "$helpers_aliases{$helper}" ) if defined wantarray;
 }
 
 

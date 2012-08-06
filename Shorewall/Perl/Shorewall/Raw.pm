@@ -84,7 +84,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 
 		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
 		validate_helper( $args, $proto );
-		$action = "CT --helper $args";
+		$action = "CT --helper $helpers_aliases{$args}";
 		$exception_rule = do_proto( $proto, '-', '-' );
 
 		for my $mod ( split_list1( $modifiers, 'ctevents' ) ) {

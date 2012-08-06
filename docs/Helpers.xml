@@ -336,6 +336,29 @@
           <para>tftp</para>
         </listitem>
       </itemizedlist>
+
+      <para>After disabling one or more helpers using this method, you
+      must:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Unload the related module(s).</para>
+        </listitem>
+
+        <listitem>
+          <para>Restart Shorewall (use the -c option (e.g., <command>shorewall
+          restart -c</command>) if you have AUTOMAKE=Yes in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink>
+          (5))..</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Note that if you choose to reboot your system to unload the
+      modules, then if you have CT:helper entries in <ulink
+      url="manpages/shorewall-conntrack.html">shorewall-conntrack</ulink> (5)
+      that refer to the module(s) and you have AUTOMAKE=Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5), then
+      Shorewall will fail to start at boot time.</para>
     </section>
 
     <section>

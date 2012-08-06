@@ -336,6 +336,29 @@
           <para>tftp</para>
         </listitem>
       </itemizedlist>
+
+      <para>After disabling one or more helpers using this method, you
+      must:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Unload the related module(s).</para>
+        </listitem>
+
+        <listitem>
+          <para>Restart Shorewall (use the -c option (e.g., <command>shorewall
+          restart -c</command>) if you have AUTOMAKE=Yes in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf</ulink>
+          (5))..</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Note that if you choose to reboot your system to unload the
+      modules, then if you have CT:helper entries in <ulink
+      url="manpages/shorewall-conntrack.html">shorewall-conntrack</ulink> (5)
+      that refer to the module(s) and you have AUTOMAKE=Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5), then
+      Shorewall will fail to start at boot time.</para>
     </section>
 
     <section>
@@ -352,6 +375,59 @@
 
       <para>In these files, Shorewall supports the same module names as
       iptables; see the table above.</para>
+    </section>
+
+    <section>
+      <title>Capabilities</title>
+
+      <para>The output of <command>shorewall show capabilities</command> has
+      two entries for each of the helpers listed above that can be disabled by
+      adding<emphasis role="bold"> ports=0</emphasis> in
+      /etc/shorewall/helpers.</para>
+
+      <programlisting>shorewall show capabilities
+   Amanda Helper: Available
+   <emphasis role="bold">FTP Helper: Not available
+   FTP-0 Helper: Available</emphasis>
+<emphasis role="bold">   IRC Helper: Not available
+   IRC-0 Helper: Available
+</emphasis>   Netbios_ns Helper: Available
+   H323 Helper: Not available
+   PPTP Helper: Available
+<emphasis role="bold">   SANE Helper: Not available
+   SANE-0 Helper: Available
+</emphasis>   SNMP Helper: Available
+<emphasis role="bold">   TFTP Helper: Not available
+   TFTP-0 Helper: Available
+</emphasis>   iptables -S (IPTABLES_S): Available
+   Basic Filter (BASIC_FILTER): Available
+   CT Target (CT_TARGET): Available
+   Kernel Version (KERNELVERSION): 30404
+   Capabilities Version (CAPVERSION): 40507
+
+</programlisting>
+
+      <para>The above output is produced when this /etc/shorewall/helpers file
+      is used on a system running kernel 3.4.4:</para>
+
+      <programlisting>loadmodule nf_conntrack_ftp         ports=0
+loadmodule nf_conntrack_irc         ports=0
+loadmodule nf_conntrack_netbios_ns
+loadmodule nf_conntrack_sip         ports=0
+loadmodule nf_conntrack_tftp        ports=0
+loadmodule nf_conntrack_sane        ports=0</programlisting>
+
+      <para>The reason for the double capabilities is that when <emphasis
+      role="bold">ports=0</emphasis> is specified, the iptables name of the
+      helper gets '-0' added to it. So in order for the compiler to generate
+      the correct iptables commands, it needs to know if <emphasis
+      role="bold">ports=0</emphasis> was specified for each of the helprs that
+      support it.</para>
+
+      <para>Notice that most of the other helpers are available, even though
+      their modules were not loaded. That's because auto-loading occurs during
+      capability detection on those modules whose iptables name matches the
+      module name.</para>
     </section>
   </section>
 </article>

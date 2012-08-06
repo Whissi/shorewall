@@ -7,34 +7,47 @@
 FORMAT 2
 #ACTION			SOURCE		DESTINATION	PROTO	DEST		SOURCE	USER/
 #								PORT(S)		PORT(S)	GROUP
-?IF __CT_TARGET &&  __AMANDA_HELPER
+?IF __CT_TARGET
+
+?IF __AMANDA_HELPER
 CT:helper:amanda	all		-		udp	10080
 ?ENDIF
-?IF __CT_TARGET &&  __FTP_HELPER
+
+?IF __FTP_HELPER
 CT:helper:ftp		all		-		tcp	21
 ?ENDIF
-?IF __CT_TARGET &&  __H323_HELPER
+
+?IF __H323_HELPER
 CT:helper:RAS		all		-		udp	1719
 CT:helper:Q.931		all		-		tcp	1720
 ?ENDIF
-?IF __CT_TARGET &&  __IRC_HELPER
+
+?IF __IRC_HELPER
 CT:helper:irc		all		-		tcp	6667
 ?ENDIF
-?IF __CT_TARGET &&  __NETBIOS_NS_HELPER
+
+?IF __NETBIOS_NS_HELPER
 CT:helper:netbios-ns	all		-		udp	137
 ?ENDIF
-?IF __CT_TARGET &&  __PPTP_HELPER
+
+?IF __PPTP_HELPER
 CT:helper:pptp		all		-		tcp	1729
 ?ENDIF
-?IF __CT_TARGET &&  __SANE_HELPER
+
+?IF __SANE_HELPER
 CT:helper:sane		all		-		tcp	6566
 ?ENDIF
-?IF __CT_TARGET &&  __SIP_HELPER
+
+?IF __SIP_HELPER
 CT:helper:sip		all		-		udp	5060
 ?ENDIF
-?IF __CT_TARGET &&  __SNMP_HELPER
+
+?IF __SNMP_HELPER
 CT:helper:snmp		all		-		udp	161
 ?ENDIF
-?IF __CT_TARGET &&  __TFTP_HELPER
+
+?IF __TFTP_HELPER
 CT:helper:tftp		all		-		udp	69
+?ENDIF
+
 ?ENDIF

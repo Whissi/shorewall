@@ -698,10 +698,6 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tunnels ]; then
     echo "Tunnels file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tunnels"
 fi
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/blacklist ]; then
-    run_install $OWNERSHIP -m 0600 blacklist${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/blacklist
-    echo "Blacklist file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/blacklist"
-fi
 #
 # Install the blacklist rules file
 #

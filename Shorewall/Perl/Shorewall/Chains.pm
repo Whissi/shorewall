@@ -651,16 +651,18 @@ sub initialize( $$$ ) {
 
     %ipset_exists       = ();
 
-    %helpers = ( amanda          => TCP,
+    %helpers = ( amanda          => UDP,
 		 ftp             => TCP,
-		 h323            => UDP,
 		 irc             => TCP,
-		 netbios_ns      => UDP,
+		 'netbios-ns'    => UDP,
 		 pptp            => TCP,
+		 'Q.931'         => TCP,
+		 RAS             => UDP,
 		 sane            => TCP,
 		 sip             => UDP,
 		 snmp            => UDP,
-		 tftp            => UDP);
+		 tftp            => UDP,
+	       );
 
     %isocodes = ();
 

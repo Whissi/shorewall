@@ -1342,6 +1342,7 @@ sub generate_source_rules( $$$;@ ) {
 sub handle_loopback_traffic() {
     my @zones   = ( vserver_zones, firewall_zone );
     my $natout  = $nat_table->{OUTPUT};
+    my $rawout  = $raw_table->{OUTPUT};
     my $rulenum = 0;
 
     my $outchainref;
@@ -1365,6 +1366,7 @@ sub handle_loopback_traffic() {
 	my $z1ref            = find_zone( $z1 );
 	my $type1            = $z1ref->{type};
 	my $natref           = $nat_table->{dnat_chain $z1};
+	my $notrackref       = $raw_table->{notrack_chain( $z1 )};
 	#
 	# Add jumps in the 'output' chain to the rules chains
 	#
@@ -1374,9 +1376,31 @@ sub handle_loopback_traffic() {
 
 		generate_dest_rules( $outchainref, $chain, $z2, @rule ) if $chain;
 	    }
+	    #
+	    # Handle conntrack 
+	    #
+	    if ( $notrackref ) {
+		add_ijump $rawout, j => $notrackref if $notrackref->{referenced};
+	    }
 	} else {
 	    for my $z2 ( @zones ) {
 		generate_source_rules( $outchainref, $z1, $z2, @rule );
+	    }
+	    #
+	    # Handle conntrack rules
+	    #
+	    if ( $notrackref->{referenced} ) {
+		for my $hostref ( @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
+		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $notrackref);
+		    my @ipsec_match = match_ipsec_in $z1 , $hostref;
+
+		    for my $net ( @{$hostref->{hosts}} ) {
+			add_ijump( $rawout,
+				   j => $exclusion ,
+				   imatch_source_net $net,
+				   @ipsec_match );
+		    }
+		}
 	    }
 	}
 
@@ -1993,12 +2017,6 @@ sub generate_matrix() {
 	} else {
 	    new_standard_chain zone_forward_chain( $zone ) if @zones > 1;
 	}
-    }
-    #
-    # NOTRACK from firewall
-    #
-    if ( ( my $notrackref = $raw_table->{notrack_chain(firewall_zone)}) ) {
-	add_ijump $raw_table->{OUTPUT}, j => $notrackref if $notrackref->{referenced};
     }
     #
     # Main source-zone matrix-generation loop

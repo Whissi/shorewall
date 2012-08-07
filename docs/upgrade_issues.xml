@@ -35,7 +35,7 @@
 
       <holder>Thomas M. Eastep</holder>
 
-      <holder/>
+      <holder></holder>
     </copyright>
 
     <legalnotice>
@@ -110,6 +110,89 @@
         <para>The generated firewall script now maintains the
         /var/lib/shorewall[6][-lite]/interface.status files used by SWPING and
         by LSM.</para>
+      </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall 4.5.2, using /etc/shorewall-lite/vardir
+        and /etc/shorewall6-lite/vardir to specify VARDIR is deprecated in
+        favor of the VARDIR setting in shorewallrc.</para>
+
+        <para>NOTE: While the name of the variable remains VARDIR, the meaning
+        is slightly different. When set in shorewallrc, each product
+        (shorewall-lite, and shorewall6-lite) will create a directory under
+        the specified path name to hold state information.</para>
+
+        <para>Example: </para>
+
+        <blockquote>
+          <para>VARDIR=/opt/var/</para>
+
+          <para>The state directory for shorewall-lite will be
+          /opt/var/shorewall-lite/ and the directory for shorewall6-lite will
+          be /opt/var/shorewall6-lite.</para>
+        </blockquote>
+
+        <para>When VARDIR is set in /etc/shorewall[6]/vardir, the product will
+        save its state directly in the specified directory.</para>
+      </listitem>
+
+      <listitem>
+        <para>Begining with Shorewall 4.5.6, the tcrules file is processed if
+        MANGLE_ENABLED=Yes, independent of the setting of TC_ENABLED. This
+        allows actions like TTL and TPROXY to be used without enabling traffic
+        shaping. If you have rules in your tcrules file that you only want
+        processed when TC_ENABLED is other than 'No', then enclose them
+        in</para>
+
+        <blockquote>
+          <para>?IF $TC_ENABLED</para>
+
+          <para>...</para>
+
+          <para>?ENDIF</para>
+        </blockquote>
+
+        <para> If they are to be processed only if TC_ENABLED=Internal, then
+        enclose them in</para>
+
+        <blockquote>
+          <para>?IF TC_ENABLED eq 'Internal'</para>
+
+          <para> ...</para>
+
+          <para>?ENDIF.</para>
+        </blockquote>
+
+        <para> </para>
+      </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall 4.5.7, the deprecated
+        /etc/shorewall[6]/blacklist files are no longer installed. Existing
+        files are still processed by the compiler.</para>
+
+        <para>Note that blacklist files may be converted to equivalent blrules
+        files using <command>shorewall[6] update -b</command>. </para>
+      </listitem>
+
+      <listitem>
+        <para> In Shorewall 4.5.7, the
+        <filename>/etc/shorewall[6]/notrack</filename> file was renamed
+        <filename>/etc/shorewall[6]/conntrack</filename>. When upgrading to a
+        release &gt;= 4.5.7, the <filename>conntrack</filename> file will be
+        installed along side of an existing <filename>notrack</filename> file.
+        When both files exist, a compiler warning is generated:</para>
+
+        <blockquote>
+          <para>WARNING: Both /etc/shorewall/notrack and
+          /etc/shorewall/conntrack exist; /etc/shorewall/conntrack is
+          ignored</para>
+        </blockquote>
+
+        <para>This warning may be eliminated by moving any entries in the
+        <filename>notrack</filename> file to the
+        <filename>conntrack</filename> file and removing the
+        <filename>notrack</filename> file. </para>
       </listitem>
     </orderedlist>
   </section>

@@ -606,7 +606,6 @@ sub initialize( $;$ ) {
 		    EXPORT     => 0,
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
-		    UNTRACKED  => 0,
 		    VERSION    => "4.5.6",
 		    CAPVERSION => 40507 ,
 		  );

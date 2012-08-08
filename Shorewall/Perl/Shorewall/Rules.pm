@@ -34,6 +34,7 @@ use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Nat qw(:rules);
+use Shorewall::Raw qw( process_conntrack_rule );
 use Scalar::Util 'reftype';
 
 use strict;
@@ -91,7 +92,9 @@ my %rulecolumns = ( action    =>   0,
 		    connlimit =>  10,
 		    time      =>  11,
 		    headers   =>  12,
-		    switch    =>  13 );
+		    switch    =>  13,
+		    helper    =>  14,
+		  );
 
 use constant { MAX_MACRO_NEST_LEVEL => 5 };
 
@@ -117,6 +120,10 @@ my %auditpolicies = ( ACCEPT => 1,
 		      DROP   => 1,
 		      REJECT => 1
 		    );
+#
+# Source zone of the rule being processed
+#
+my $rulezone;
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -1424,7 +1431,7 @@ sub process_actions() {
 
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1457,14 +1464,14 @@ sub process_action( $) {
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
-	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition );
+	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
 
 	    if ( $format == 1 ) {
 		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
 		    split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
 		$origdest = $connlimit = $time = $headers = $condition = '-';
 	    } else {
-		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition )
+		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
 		    = split_line1 'action file', \%rulecolumns, $action_commands;
 	    }
 
@@ -1502,6 +1509,7 @@ sub process_action( $) {
 			   $time,
 			   $headers,
 			   $condition,
+			   $helper,
 			   0 );
 	}
 
@@ -1531,8 +1539,8 @@ sub use_policy_action( $ ) {
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
-    my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $wildcard ) = @_;
+sub process_macro ( $$$$$$$$$$$$$$$$$$$) {
+    my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
     my $nocomment = no_comment;
 
@@ -1550,13 +1558,13 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 
     while ( read_a_line( NORMAL_READ ) ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition );
+	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
 
 	if ( $format == 1 ) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
-	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = qw/- - - - - -/;
+	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = qw/- - - - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
@@ -1635,6 +1643,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$ ) {
 				    merge_macro_column( $mtime,      $time ),
 				    merge_macro_column( $mheaders,   $headers ),
 				    merge_macro_column( $mcondition, $condition ),
+				    merge_macro_column( $mhelper,    $helper ),
 				    $wildcard
 				   );
 
@@ -1667,7 +1676,7 @@ sub verify_audit($;$$) {
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action
 # body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument.
 #
-sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
+sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $target,
 	 $current_param,
@@ -1684,6 +1693,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	 $time,
 	 $headers,
 	 $condition,
+	 $helper,
 	 $wildcard ) = @_;
 
     my ( $action, $loglevel)    = split_action $target;
@@ -1735,6 +1745,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 				       $time,
 				       $headers,
 				       $condition,
+				       $helper,
 				       $wildcard );
 
 	$macro_nest_level--;
@@ -1884,6 +1895,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 	fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
 	fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
 	fatal_error 'USER/GROUP may only be specified when the SOURCE zone is $FW' unless $user eq '-' || $sourcezone eq firewall_zone;
+
+	$rulezone = $sourcezone;
     }
 
     if ( $actiontype & NATONLY ) {
@@ -2049,8 +2062,18 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 				     $rule,
 				     $source,
 				     ( $actiontype & ACTION ) ? '' : $loglevel,
-				     $log_action
-				   );		 
+				     $log_action,
+				   );
+
+	unless ( $helper eq '-' ) {
+	    process_conntrack_rule( "CT:helper:$helper" ,
+				    "$rulezone:$source",
+				    $origdest,
+				    $proto,
+				    $ports,
+				    $sports,
+				    $user );
+	}
 	#
 	# After NAT:
 	#   - the destination port will be the server port ($ports) -- we did that above
@@ -2121,6 +2144,16 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$ ) {
 		     $loglevel ,
 		     $log_action ,
 		     '' );
+
+	if ( ! ( $helper eq '-' || ( $actiontype & NATRULE ) ) ) {
+	    process_conntrack_rule( "CT:helper:$helper" ,
+				    "$rulezone:$source",
+				    $origdest ? $origdest : $dest,
+				    $proto,
+				    $ports,
+				    $sports,
+				    $user );
+	}
     }
 
     return 1;
@@ -2224,7 +2257,7 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition )
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
 	= split_line1 'rules file', \%rulecolumns, $rule_commands;
 
     fatal_error 'ACTION must be specified' if $target eq '-';
@@ -2281,6 +2314,7 @@ sub process_rule ( ) {
 						 $time,
 						 $headers,
 						 $condition,
+						 $helper,
 						 $wild );
 		}
 	    }
@@ -2305,7 +2339,7 @@ sub classic_blacklist() {
     my $fw       = firewall_zone;
     my @zones    = off_firewall_zones;
     my @vservers = vserver_zones;
-    my @state = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
+    my @state = $config{BLACKLISTNEWONLY} ? have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
     my $result;
 
     for my $zone ( @zones ) {

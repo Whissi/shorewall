@@ -666,11 +666,6 @@ sub compiler {
     #                           (Produces no output to the compiled script)
     #
     process_policies;
-    #
-    #                                       N O T R A C K
-    #                           (Produces no output to the compiled script)
-    #
-    setup_notrack;
 
     enable_script;
 
@@ -798,6 +793,10 @@ sub compiler {
     # Process the rules file.
     #
     process_rules( $convert );
+    #
+    # Process the conntrack file
+    #
+    setup_conntrack;
     #
     # Add Tunnel rules.
     #

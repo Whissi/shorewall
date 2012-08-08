@@ -32,8 +32,8 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_notrack );
-our @EXPORT_OK = qw( );
+our @EXPORT = qw( setup_conntrack );
+our @EXPORT_OK = qw( process_conntrack_rule );
 our $VERSION = 'MODULEVERSION';
 
 my %valid_ctevent = ( new => 1, related => 1, destroy => 1, reply => 1, assured => 1, protoinfo => 1, helper => 1, mark => 1, natseqinfo => 1, secmark => 1 );
@@ -41,7 +41,7 @@ my %valid_ctevent = ( new => 1, related => 1, destroy => 1, reply => 1, assured 
 #
 # Notrack
 #
-sub process_notrack_rule( $$$$$$$ ) {
+sub process_conntrack_rule( $$$$$$$ ) {
 
     my ($action, $source, $dest, $proto, $ports, $sports, $user ) = @_;
 
@@ -122,9 +122,7 @@ sub process_notrack_rule( $$$$$$$ ) {
 		 $target ,
 		 $exception_rule );
 
-    progress_message "  Notrack rule \"$currentline\" $done";
-
-    $globals{UNTRACKED} = 1;
+    progress_message "  Conntrack rule \"$currentline\" $done";
 }
 
 sub process_format( $ ) {
@@ -135,7 +133,7 @@ sub process_format( $ ) {
     $format;
 }
 
-sub setup_notrack() {
+sub setup_conntrack() {
 
     my $format = 1;
     my $action = 'NOTRACK';
@@ -188,10 +186,10 @@ sub setup_notrack() {
 
 	    if ( $source eq 'all' ) {
 		for my $zone (all_zones) {
-		    process_notrack_rule( $action, $zone, $dest, $proto, $ports, $sports, $user );
+		    process_conntrack_rule( $action, $zone, $dest, $proto, $ports, $sports, $user );
 		}
 	    } else {
-		process_notrack_rule( $action, $source, $dest, $proto, $ports, $sports, $user );
+		process_conntrack_rule( $action, $source, $dest, $proto, $ports, $sports, $user );
 	    }
 	}
 

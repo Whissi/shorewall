@@ -1912,7 +1912,7 @@ sub process_conditional( $$$$ ) {
     my ( $lastkeyword, $prioromit, $included, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
     if ( $keyword =~ /^IF/ ) {
-	cond_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
+	cond_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
 	my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
 	push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
 	$omitting = $nextomitting;

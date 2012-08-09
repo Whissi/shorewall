@@ -10,4 +10,9 @@
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	47
 PARAM	DEST	SOURCE	47
-PARAM	-	-	tcp	1723
+
+?IF ( __CT_TARGET && $HELPERS && __PPTP_HELPER )
+ PARAM	-	-	tcp	1723 ; helper=pptp
+?ELSE
+ PARAM	-	-	tcp	1723
+?ENDIF

@@ -8,4 +8,9 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	tcp	6667
+
+?IF ( __CT_TARGET && $HELPERS && __IRC_HELPER  )
+ PARAM	-	-	tcp	6667 ; helper=irc
+?ELSE
+ PARAM	-	-	tcp	6667
+?ENDIF

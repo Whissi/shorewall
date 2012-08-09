@@ -8,4 +8,9 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	tcp	21
+
+?IF ( __CT_TARGET && $HELPERS && __FTP_HELPER  )
+ PARAM	-	-	tcp	21 ; helper=ftp
+?ELSE
+ PARAM	-	-	tcp	21
+?ENDIF

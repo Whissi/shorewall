@@ -10,4 +10,9 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	udp	69
+
+?IF ( __CT_TARGET && $HELPERS && __TFTP_HELPER )
+ PARAM	-	-	udp	69 ; helper=tftp
+?ELSE
+ PARAM	-	-	udp	69
+?ENDIF

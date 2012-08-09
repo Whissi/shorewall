@@ -10,7 +10,13 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	udp	10080
+
+?IF ( __CT_TARGET && $HELPERS && __AMANDA_HELPER )
+ PARAM	-	-	udp	10080 ; helper=amanda
+?ELSE
+ PARAM	-	-	udp	10080
+?ENDIF
+
 PARAM	-	-	tcp	10080
 #
 # You may also need this rule.  With AMANDA 2.4.4 on Linux kernel 2.6,

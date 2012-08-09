@@ -8,5 +8,12 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	udp	161:162
+
+?IF ( __CT_TARGET && $HELPERS && __SNMP_HELPER )
+ PARAM	-	-  	udp     161 ; helper=snmp
+ PARAM	-	-	udp	162
+?ELSE
+ PARAM	-	-	udp	161:162
+?ENDIF
+
 PARAM	-	-	tcp	161

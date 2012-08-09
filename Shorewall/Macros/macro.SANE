@@ -8,7 +8,13 @@
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	tcp	6566
+
+?IF ( __CT_TARGET && $HELPERS && __SANE_HELPER )
+ PARAM	-	-	tcp	6566 ; helper=sane
+?ELSE
+ PARAM	-	-	tcp	6566
+?ENDIF
+
 #
 # Kernels 2.6.23+ has nf_conntrack_sane module which will handle
 # sane data connection.

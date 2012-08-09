@@ -1897,9 +1897,9 @@ sub process_conditional( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    cond_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF)(.*)$/;
+    cond_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF)(.*)$/i;
 
-    my ($keyword, $expression) = ( $1, $2 );
+    my ($keyword, $expression) = ( uc $1, $2 );
 
     if ( supplied $expression ) {
 	$expression =~ s/#.*//;
@@ -2507,7 +2507,7 @@ sub read_a_line($) {
 	    #
 	    # Handle conditionals
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF)/ ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF)/i ) {
 		$omitting = process_conditional( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

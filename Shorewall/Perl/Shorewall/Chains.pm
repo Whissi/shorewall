@@ -3282,6 +3282,62 @@ sub combine_dports {
     \@rules;
 }
 
+#
+# Delete duplicate rules from the passed chain.
+#
+#   The arguments are a reference to the chain followed by references to each 
+#   of its rules.
+#
+sub delete_duplicates {
+    my @rules;
+    my $chainref  = shift;
+    my $lastrule  = @_;
+    my $baseref   = pop;
+    my $ruleref;
+    my $duplicate = 0;
+
+    while ( @_ && ! $duplicate ) {
+	{
+	    my $ports1;
+	    my @keys1     = sort( keys( %$baseref ) );
+	    my $rulenum   = @_;
+	    my $duplicate = 0;
+
+	  RULE:
+
+	    while ( --$rulenum >= 0 ) {
+		$ruleref = $_[$rulenum];
+
+		my @keys2 = sort(keys( %$ruleref ) );
+
+		next unless @keys1 == @keys2 ;
+
+		my $keynum = 0;
+
+		for my $key ( @keys1 ) {
+		    next RULE unless $key eq $keys2[$keynum++];
+		    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+		}
+
+		$duplicate = 1;
+	    }
+
+	    if ( $duplicate ) {
+		trace( $chainref, 'D', $lastrule, $baseref ) if $debug;
+	    } else {
+		unshift @rules, $baseref;
+	    }
+
+	    $baseref = pop @_;
+	    $lastrule--;
+	}
+    }
+
+    unshift @rules, $baseref if $baseref;
+
+    \@rules;
+}
+
 sub optimize_level16( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my @chains   = ( grep $_->{referenced}, values %{$tableref} );
@@ -3290,11 +3346,23 @@ sub optimize_level16( $$$ ) {
 
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 16...";
 
+    if ( $table eq 'raw' ) {
+	#
+	# Helpers in rules have the potential for generating lots of duplicate iptables rules
+	# in the raw table. This step eliminates those duplicates
+	#
+	for my $chainref ( @chains ) {
+	    $chainref->{rules} = delete_duplicates( $chainref, @{$chainref->{rules}} );
+	}
+
+	$passes++;
+    }
+
     for my $chainref ( @chains ) {
 	$chainref->{rules} = combine_dports( $chainref, @{$chainref->{rules}} );
     }
 
-    $passes++;
+    ++$passes;
 }
 
 #

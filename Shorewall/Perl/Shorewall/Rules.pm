@@ -121,10 +121,6 @@ my %auditpolicies = ( ACCEPT => 1,
 		      REJECT => 1
 		    );
 #
-# Source zone of the rule being processed
-#
-my $rulezone;
-#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -922,7 +918,7 @@ sub new_action( $$ ) {
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => ''  };
+    $actions{$action} = { actchain => '' };
 
     $targets{$action} = $type;
 }
@@ -1895,8 +1891,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;
 	fatal_error "Unknown source zone ($sourcezone)" unless $sourceref = defined_zone( $sourcezone );
 	fatal_error 'USER/GROUP may only be specified when the SOURCE zone is $FW' unless $user eq '-' || $sourcezone eq firewall_zone;
-
-	$rulezone = $sourcezone;
     }
 
     if ( $actiontype & NATONLY ) {
@@ -2066,6 +2060,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 				   );
 
 	unless ( $helper eq '-' ) {
+	    my $rulezone = $inaction ? 'all' : $sourcezone;
+
 	    process_conntrack_rule( "CT:helper:$helper" ,
 				    "$rulezone:$source",
 				    $origdest,
@@ -2092,6 +2088,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    $loglevel = '';
 	    $action   = 'ACCEPT';
 	    $origdest = ALLIP if  $origdest =~ /[+]/;
+	    $helper   = '-';
 	}
     } elsif ( $actiontype & NONAT ) {
 	#
@@ -2145,7 +2142,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		     $log_action ,
 		     '' );
 
-	if ( ! ( $helper eq '-' || ( $actiontype & NATRULE ) ) ) {
+	if ( $action eq 'ACCEPT' && $helper ne '-' ) {
+	    my $rulezone = $inaction ? 'all' : $sourcezone;
 	    process_conntrack_rule( "CT:helper:$helper" ,
 				    "$rulezone:$source",
 				    $origdest ? $origdest : $dest,

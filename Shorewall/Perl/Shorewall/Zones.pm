@@ -118,7 +118,8 @@ use constant { IN_OUT     => 1,
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
+#     %zones{<zone1> => {name =>       <name>,
+#                        type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
 #                        complex =>    0|1
 #                        super   =>    0|1
 #                        options =>    { in_out  => < policy match string >

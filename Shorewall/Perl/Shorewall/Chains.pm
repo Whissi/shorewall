@@ -101,6 +101,7 @@ our %EXPORT_TAGS = (
 				       CHAIN
 				       SET
 				       AUDIT
+				       HELPER
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
 				       DESTIFACE_DISALLOW
@@ -352,6 +353,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       CHAIN    => 1024,           #Manual Chain
 	       SET      => 2048,           #SET
 	       AUDIT    => 4096,           #A_ACCEPT, etc
+	       HELPER   => 8192,           #CT:helper
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above

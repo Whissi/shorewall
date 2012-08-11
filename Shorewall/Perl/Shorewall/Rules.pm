@@ -34,7 +34,7 @@ use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Nat qw(:rules);
-use Shorewall::Raw qw( process_conntrack_rule );
+use Shorewall::Raw qw( handle_helper_rule );
 use Scalar::Util 'reftype';
 
 use strict;
@@ -1783,12 +1783,13 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    process_action( $ref );
 	    #
-	    # Processing the action may determine that the action or one of it's dependents does NAT, so:
+	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
 	    #
 	    #    - Refresh $actiontype
-	    #    - Create the associate nat table chain if appropriate.
+	    #    - Create the associated nat and/or table chain if appropriate.
 	    #
 	    ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
+	    ensure_chain( 'raw', $ref->{name} ) if ( $actiontype & HELPER );
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.
@@ -1803,6 +1804,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	$targets{$inaction} |= NATRULE if $inaction;
 	fatal_error "NAT rules are only allowed in the NEW section" unless $section eq 'NEW';
     }
+
+    if ( $actiontype & HELPER ) {
+	fatal_error "HELPER rules are only allowed in the NEW section" unless $section eq 'NEW';
+    }
     #
     # Take care of irregular syntax and targets
     #
@@ -1814,7 +1819,13 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	$bt =~ s/[-+!]$//;
 
 	my %functions =
-	    ( ACCEPT => sub() { $action = 'RETURN' if $blacklist; } ,
+	    ( ACCEPT => sub() { 
+		  if ( $blacklist ) {
+		      $action = 'RETURN';
+		  } elsif ( $helper ne '-' ) {
+		      $actiontype |= HELPER;
+		  }
+	      } ,
 	      
 	      REDIRECT => sub () {
 		  my $z = $actiontype & NATONLY ? '' : firewall_zone;
@@ -1845,6 +1856,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
 	if ( $function ) {
 	    $function->();
+	} elsif ( $actiontype & NATRULE && $helper ne '-' ) {
+	    $actiontype |= HELPER;
 	} elsif ( $actiontype & SET ) {
 	    my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
 
@@ -2034,8 +2047,26 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} $section " unless $section eq 'ALL' || $blacklist;
     }
-
     #
+    # Generate CT rules(s), if any
+    #
+    if ( $actiontype & HELPER ) {
+	handle_helper_rule( $helper,
+			    $source,
+			    $origdest ? $origdest : $dest,
+			    $proto,
+			    $ports,
+			    $sports,
+			    $sourceref,
+			    ( $actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
+			    $inaction ? $chain : '' ,
+			    $user ,
+			    $rule ,
+			  );
+
+	$targets{$inaction} |= HELPER if $inaction; 
+    }
+
     # Generate NAT rule(s), if any
     #
     if ( $actiontype & NATRULE ) {
@@ -2059,17 +2090,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 				     $log_action,
 				   );
 
-	unless ( $helper eq '-' ) {
-	    my $rulezone = $inaction ? 'all' : $sourcezone;
-
-	    process_conntrack_rule( "CT:helper:$helper" ,
-				    "$rulezone:$source",
-				    $origdest,
-				    $proto,
-				    $ports,
-				    $sports,
-				    $user );
-	}
 	#
 	# After NAT:
 	#   - the destination port will be the server port ($ports) -- we did that above
@@ -2141,17 +2161,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		     $loglevel ,
 		     $log_action ,
 		     '' );
-
-	if ( $action eq 'ACCEPT' && $helper ne '-' ) {
-	    my $rulezone = $inaction ? 'all' : $sourcezone;
-	    process_conntrack_rule( "CT:helper:$helper" ,
-				    "$rulezone:$source",
-				    $origdest ? $origdest : $dest,
-				    $proto,
-				    $ports,
-				    $sports,
-				    $user );
-	}
     }
 
     return 1;

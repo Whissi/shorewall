@@ -2981,6 +2981,51 @@ sub optimize_level4( $$ ) {
 	}
     }
 
+    #
+    # Identify short chains with a single reference and replace the reference with the chain rules
+    #
+    my @chains  = grep ( $_->{referenced}   &&
+			 ! $_->{optflags}   &&
+			 @{$_->{rules}} < 4 &&
+			 keys %{$_->{references}} == 1 , values %$tableref );
+
+    if ( my $chains  = @chains ) {
+	$passes++;
+
+	progress_message "\n Table $table pass $passes, $chains short chains, level 4b...";
+
+	for my $chainref ( @chains ) {
+	    my $name = $chainref->{name};
+	    for my $sourceref ( map $tableref->{$_}, keys %{$chainref->{references}} ) {
+		my $name1 = $sourceref->{name};
+
+		if ( $chainref->{references}{$name1} == 1 ) {
+		    my $rulenum  = 0;
+		    my $rulesref = $sourceref->{rules};
+		    my $rules    = @{$chainref->{rules}};
+
+		    for ( @$rulesref ) {
+			if ( $_->{simple} && ( $_->{target} || '' ) eq $name ) {
+			    trace( $sourceref, 'D', $rulenum  + 1, $_ ) if $debug;
+			    splice @$rulesref, $rulenum, 1, @{$chainref->{rules}};
+			    if ( $debug ) {
+				while ( my $ruleref = shift @{$chainref->{rules}} ) {
+				    trace ( $sourceref, 'I', $rulenum++, $ruleref );
+				}
+			    }
+
+			    delete $chainref->{references}{$name1};
+			    delete_chain $chainref;
+			    last;
+			}
+			$rulenum++;
+
+		    }
+		}
+	    }
+	}
+    }
+
     $passes;
 }
 
@@ -3553,7 +3598,7 @@ sub source_exclusion( $$ ) {
 
     my $table = reftype $target ? $target->{table} : 'filter';
 
-    my $chainref = new_chain( $table , newexclusionchain( $table ) );
+    my $chainref = dont_move new_chain( $table , newexclusionchain( $table ) );
 
     add_ijump( $chainref, j => 'RETURN', imatch_source_net( $_ ) ) for @$exclusions;
     add_ijump( $chainref, g => $target );
@@ -3575,7 +3620,7 @@ sub source_iexclusion( $$$$$;@ ) {
 	$source = $1;
 	@exclusion = mysplit( $2 );
 
-	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	my $chainref1 = dont_move new_chain( $table , newexclusionchain( $table ) );
 
 	add_ijump( $chainref1 , j => 'RETURN', imatch_source_net( $_ ) ) for @exclusion;
 
@@ -3604,7 +3649,7 @@ sub dest_exclusion( $$ ) {
 
     my $table = reftype $target ? $target->{table} : 'filter';
 
-    my $chainref = new_chain( $table , newexclusionchain( $table ) );
+    my $chainref = dont_move new_chain( $table , newexclusionchain( $table ) );
 
     add_ijump( $chainref, j => 'RETURN', imatch_dest_net( $_ ) ) for @$exclusions;
     add_ijump( $chainref, g => $target );
@@ -3626,7 +3671,7 @@ sub dest_iexclusion( $$$$$;@ ) {
 	$dest = $1;
 	@exclusion = mysplit( $2 );
 
-	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	my $chainref1 = dont_move new_chain( $table , newexclusionchain( $table ) );
 
 	add_ijump( $chainref1 , j => 'RETURN', imatch_dest_net( $_ ) ) for @exclusion;
 

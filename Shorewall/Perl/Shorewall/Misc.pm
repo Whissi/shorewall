@@ -2340,6 +2340,14 @@ EOF
     deletechain shorewall
 
     run_stop_exit
+
+    #
+    # Enable automatic helper association on kernel 3.5.0 and later
+    #
+    if [ -f /proc/sys/net/netfilter/nf_conntrack_helper ]; then
+        echo 1 > /proc/sys/net/netfilter/nf_conntrack_helper
+    fi
+
 EOF
 
     if ( have_capability( 'NAT_ENABLED' ) ) {

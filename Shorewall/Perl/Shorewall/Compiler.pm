@@ -705,12 +705,10 @@ sub compiler {
     #
     setup_proxy_arp;
 
-    my $setting = supplied $config{HELPERS} ? 0 : 1;
-
-    emit( "#\n# Set automatic helper association on kernel 3.5.0 and later\n#" ,
+    emit( "#\n# Disable automatic helper association on kernel 3.5.0 and later\n#" ,
 	  'if [ -f /proc/sys/net/netfilter/nf_conntrack_helper ]; then' ,
-	  '    progress_message "Setting up Automatic Helper Association"',
-	  "    echo $setting > /proc/sys/net/netfilter/nf_conntrack_helper",
+	  '    progress_message "Disabling Kernel Automatic Helper Association"',
+	  "    echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper",
 	  'fi',
 	  ''
 	);

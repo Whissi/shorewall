@@ -10,11 +10,11 @@ FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 
-?IF ( __CT_TARGET && $HELPERS && __SNMP_HELPER )
+?if ( __CT_TARGET && ! $AUTOHELPERS && __SNMP_HELPER )
  PARAM	-	-  	udp     161 ; helper=snmp
  PARAM	-	-	udp	162
-?ELSE
+?else
  PARAM	-	-	udp	161:162
-?ENDIF
+?endif
 
 PARAM	-	-	tcp	161

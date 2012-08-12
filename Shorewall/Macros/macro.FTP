@@ -9,8 +9,8 @@
 FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-?IF ( __CT_TARGET && $HELPERS && __FTP_HELPER  )
+?if ( __CT_TARGET && ! $AUTOHELPERS && __FTP_HELPER  )
  PARAM	-	-	tcp	21 ; helper=ftp
-?ELSE
+?else
  PARAM	-	-	tcp	21
-?ENDIF
+?endif

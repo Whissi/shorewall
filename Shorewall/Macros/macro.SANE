@@ -10,11 +10,11 @@ FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 
-?IF ( __CT_TARGET && $HELPERS && __SANE_HELPER )
+?if ( __CT_TARGET && ! $AUTOHELPERS && __SANE_HELPER )
  PARAM	-	-	tcp	6566 ; helper=sane
-?ELSE
+?else
  PARAM	-	-	tcp	6566
-?ENDIF
+?endif
 
 #
 # Kernels 2.6.23+ has nf_conntrack_sane module which will handle

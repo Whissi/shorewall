@@ -15,12 +15,12 @@ FORMAT 2
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	udp	135,445
 
-?IF ( __CT_TARGET && $HELPERS && __NETBIOS_NS_HELPER )
+?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
  PARAM	-	-	udp	137 ; helper=netbios-ns
  PARAM	-	-	udp	138:139
-?ELSE
+?else
  PARAM	-	-	udp	137:139
-?ENDIF
+?endif
 
 PARAM	-	-	udp	1024:	137
 PARAM	-	-	tcp	135,139,445

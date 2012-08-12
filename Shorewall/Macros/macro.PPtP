@@ -12,8 +12,8 @@
 PARAM	-	-	47
 PARAM	DEST	SOURCE	47
 
-?IF ( __CT_TARGET && $HELPERS && __PPTP_HELPER )
+?if ( __CT_TARGET && ! $AUTOHELPERS && __PPTP_HELPER )
  PARAM	-	-	tcp	1723 ; helper=pptp
-?ELSE
+?else
  PARAM	-	-	tcp	1723
-?ENDIF
+?endif

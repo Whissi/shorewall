@@ -6,6 +6,12 @@
 #	This macro handles IRC traffic (Internet Relay Chat).
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	tcp	6667
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __IRC_HELPER  )
+ PARAM	-	-	tcp	6667 ; helper=irc
+?else
+ PARAM	-	-	tcp	6667
+?endif

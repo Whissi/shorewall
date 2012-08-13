@@ -61,7 +61,7 @@ sub setup_tunnels() {
 	    }
 	}
 
-	my @options = $globals{UNTRACKED} ? state_imatch 'NEW,UNTRACKED' : state_imatch 'NEW';
+	my @options = have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,UNTRACKED' : state_imatch 'NEW';
 
 	add_tunnel_rule $inchainref,  p => 50, @$source;
 	add_tunnel_rule $outchainref, p => 50, @$dest;

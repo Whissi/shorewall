@@ -32,8 +32,8 @@ use Shorewall::Chains qw(:DEFAULT :internal);
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_notrack );
-our @EXPORT_OK = qw( );
+our @EXPORT = qw( setup_conntrack );
+our @EXPORT_OK = qw( handle_helper_rule );
 our $VERSION = 'MODULEVERSION';
 
 my %valid_ctevent = ( new => 1, related => 1, destroy => 1, reply => 1, assured => 1, protoinfo => 1, helper => 1, mark => 1, natseqinfo => 1, secmark => 1 );
@@ -41,21 +41,34 @@ my %valid_ctevent = ( new => 1, related => 1, destroy => 1, reply => 1, assured 
 #
 # Notrack
 #
-sub process_notrack_rule( $$$$$$$ ) {
+sub process_conntrack_rule( $$$$$$$$$ ) {
 
-    my ($action, $source, $dest, $proto, $ports, $sports, $user ) = @_;
+    my ($chainref, $zoneref, $action, $source, $dest, $proto, $ports, $sports, $user ) = @_;
+
+    require_capability 'RAW_TABLE', 'conntrack rules', '';
 
     $proto  = ''    if $proto  eq 'any';
     $ports  = ''    if $ports  eq 'any' || $ports  eq 'all';
     $sports = ''    if $sports eq 'any' || $sports eq 'all';
 
-    ( my $zone, $source) = split /:/, $source, 2;
-    my $zoneref  = find_zone $zone;
-    my $chainref = ensure_raw_chain( notrack_chain $zone );
-    my $restriction = $zoneref->{type} == FIREWALL || $zoneref->{type} == VSERVER ? OUTPUT_RESTRICT : PREROUTE_RESTRICT;
+    my $zone;
+    my $restriction = PREROUTE_RESTRICT;
 
-    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
-    require_capability 'RAW_TABLE', 'conntrack rules', '';
+    unless ( $chainref ) {
+	#
+	# Entry in the conntrack file
+	#
+	if ( $zoneref ) {
+	    $zone = $zoneref->{name};
+	} else {
+	    ($zone, $source) = split /:/, $source, 2;
+	    $zoneref = find_zone ( $zone );
+	}
+
+	$chainref = ensure_raw_chain( notrack_chain $zone );
+	$restriction = OUTPUT_RESTRICT if $zoneref->{type} == FIREWALL || $zoneref->{type} == VSERVER;
+	fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
+    }
 
     my $target = $action;
     my $exception_rule = '';
@@ -122,9 +135,60 @@ sub process_notrack_rule( $$$$$$$ ) {
 		 $target ,
 		 $exception_rule );
 
-    progress_message "  Notrack rule \"$currentline\" $done";
+    progress_message "  Conntrack rule \"$currentline\" $done";
+}
 
-    $globals{UNTRACKED} = 1;
+sub handle_helper_rule( $$$$$$$$$$$ ) {
+    my ( $helper, $source, $dest, $proto, $ports, $sports, $sourceref, $action_target, $actionchain, $user, $rule ) = @_;
+
+    if ( $helper ne '-' ) {
+	fatal_error "A HELPER is not allowed with this ACTION" if $action_target;
+	#
+	# This means that an ACCEPT or NAT rule with a helper is being processed
+	#
+	process_conntrack_rule( $actionchain ? ensure_raw_chain( $actionchain ) : undef ,
+				$sourceref ,
+				"CT:helper:$helper",
+				$source ,
+				$dest ,
+				$proto ,
+				$ports ,
+				$sports ,
+				$user );
+    } else {
+	assert( $action_target );
+	#
+	# The target is an action
+	#
+	if ( $actionchain ) {
+	    #
+	    # And the source is another action chain
+	    #
+	    expand_rule( ensure_raw_chain( $actionchain ) ,
+			 PREROUTE_RESTRICT ,
+			 $rule ,
+			 $source ,
+			 $dest ,
+			 '' ,
+			 $action_target ,
+			 '',
+			 'CT' ,
+			 '' );
+	} else {
+	    expand_rule( ensure_raw_chain( notrack_chain( $sourceref->{name} ) ) ,
+			 ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ?
+			   OUTPUT_RESTRICT :
+			   PREROUTE_RESTRICT ) ,
+			 $rule ,
+			 $source ,
+			 $dest ,
+			 '' ,
+			 $action_target ,
+			 '' ,
+			 'CT' ,
+			 '' );
+	}
+    }
 }
 
 sub process_format( $ ) {
@@ -135,7 +199,7 @@ sub process_format( $ ) {
     $format;
 }
 
-sub setup_notrack() {
+sub setup_conntrack() {
 
     my $format = 1;
     my $action = 'NOTRACK';
@@ -188,10 +252,10 @@ sub setup_notrack() {
 
 	    if ( $source eq 'all' ) {
 		for my $zone (all_zones) {
-		    process_notrack_rule( $action, $zone, $dest, $proto, $ports, $sports, $user );
+		    process_conntrack_rule( undef, undef, $action, $zone, $dest, $proto, $ports, $sports, $user );
 		}
 	    } else {
-		process_notrack_rule( $action, $source, $dest, $proto, $ports, $sports, $user );
+		process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user );
 	    }
 	}
 

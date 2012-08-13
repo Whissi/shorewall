@@ -6,8 +6,14 @@
 #	This macro handles PPTP traffic.
 #
 ###############################################################################
+?FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	47
 PARAM	DEST	SOURCE	47
-PARAM	-	-	tcp	1723
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __PPTP_HELPER )
+ PARAM	-	-	tcp	1723 ; helper=pptp
+?else
+ PARAM	-	-	tcp	1723
+?endif

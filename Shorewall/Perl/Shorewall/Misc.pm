@@ -681,7 +681,7 @@ sub add_common_rules ( $ ) {
     my $chain;
     my $dynamicref;
 
-    my @state     = $config{BLACKLISTNEWONLY} ? $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
+    my @state     = $config{BLACKLISTNEWONLY} ? have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID' : ();
     my $faststate = $config{RELATED_DISPOSITION} eq 'ACCEPT' && $config{RELATED_LOG_LEVEL} eq '' ? 'ESTABLISHED,RELATED' : 'ESTABLISHED';
     my $level     = $config{BLACKLIST_LOGLEVEL};
     my $rejectref = $filter_table->{reject};
@@ -882,7 +882,7 @@ sub add_common_rules ( $ ) {
 	    add_ijump( $chainref, g => $smurfdest, s => IPv6_MULTICAST );
 	}
 
-	my @state = $globals{UNTRACKED} ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID';
+	my @state = have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID';
 
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
@@ -1187,7 +1187,7 @@ sub setup_mac_lists( $ ) {
 	    my @policy     = have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
 	    my @source     = imatch_source_net $hostref->[2];
 
-	    my @state = $globals{UNTRACKED} ? state_imatch 'NEW,UNTRACKED' : state_imatch 'NEW';
+	    my @state = have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,UNTRACKED' : state_imatch 'NEW';
 
 	    if ( $table eq 'filter' ) {
 		my $chainref = source_exclusion( $hostref->[3], $filter_table->{mac_chain $interface} );

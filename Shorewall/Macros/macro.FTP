@@ -6,6 +6,11 @@
 #	This macro handles FTP traffic.
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	tcp	21
+?if ( __CT_TARGET && ! $AUTOHELPERS && __FTP_HELPER  )
+ PARAM	-	-	tcp	21 ; helper=ftp
+?else
+ PARAM	-	-	tcp	21
+?endif

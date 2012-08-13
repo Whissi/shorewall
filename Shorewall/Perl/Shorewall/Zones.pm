@@ -57,6 +57,7 @@ our @EXPORT = qw( NOTHING
 		  all_parent_zones
 		  complex_zones
 		  vserver_zones
+		  on_firewall_zones
 		  off_firewall_zones
 		  non_firewall_zones
 		  single_interface
@@ -117,7 +118,8 @@ use constant { IN_OUT     => 1,
 #
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
-#     %zones{<zone1> => {type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
+#     %zones{<zone1> => {name =>       <name>,
+#                        type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
 #                        complex =>    0|1
 #                        super   =>    0|1
 #                        options =>    { in_out  => < policy match string >
@@ -836,6 +838,10 @@ sub defined_zone( $ ) {
 
 sub all_zones() {
     @zones;
+}
+
+sub on_firewall_zones() {
+   grep ( ( $zones{$_}{type} & ( FIREWALL | VSERVER ) )  ,  @zones );
 }
 
 sub off_firewall_zones() {

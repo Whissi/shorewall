@@ -606,7 +606,6 @@ sub initialize( $;$ ) {
 		    EXPORT     => 0,
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
-		    UNTRACKED  => 0,
 		    VERSION    => "4.5.6",
 		    CAPVERSION => 40507 ,
 		  );
@@ -731,6 +730,7 @@ sub initialize( $;$ ) {
 	  LEGACY_FASTSTART => undef,
 	  USE_PHYSICAL_NAMES => undef,
 	  HELPERS => undef,
+	  AUTOHELPERS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -4529,6 +4529,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
     default_yes_no 'USE_PHYSICAL_NAMES'         , '';
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
+    default_yes_no 'AUTOHELPERS'                , 'Yes';
 
     if ( supplied $config{HELPERS} ) {
 	my %helpers_temp = %helpers_enabled;

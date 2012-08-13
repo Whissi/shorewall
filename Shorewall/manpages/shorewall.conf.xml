@@ -96,7 +96,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -106,7 +106,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -116,7 +116,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -126,7 +126,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -296,6 +296,49 @@
           <command>start</command> or <command>restart</command> command
           includes a directory name (e.g.,<command> shorewall restart
           /etc/shorewall.new</command>).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">AUTOHELPERS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.8. When set to <option>Yes</option>
+          (the default), the generated ruleset will automatically associate
+          helpers with applications that require them (FTP, IRC, etc.). When
+          configuring your firewall on systems running kernel 3.5 or later, it
+          is recommended that you:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Set AUTOHELPERS=No.</para>
+            </listitem>
+
+            <listitem>
+              <para>Either:</para>
+
+              <orderedlist numeration="loweralpha">
+                <listitem>
+                  <para>Modify <ulink
+                  url="shorewall-conntrack.html">shorewall-conntrack</ulink>
+                  (5) to only apply helpers where they are required; or</para>
+                </listitem>
+
+                <listitem>
+                  <para>Specify the appropriate helper in the HELPER column in
+                  <ulink url="shorewall-rules.html">shorewall-rules</ulink>
+                  (5).</para>
+
+                  <note>
+                    <para>The macros for those applications requiring a helper
+                    automatically specify the appropriate HELPER where
+                    required.</para>
+                  </note>
+                </listitem>
+              </orderedlist>
+            </listitem>
+          </orderedlist>
         </listitem>
       </varlistentry>
 
@@ -482,7 +525,7 @@
           </itemizedlist>
 
           <blockquote>
-            <para/>
+            <para></para>
 
             <para>If CONFIG_PATH is not given or if it is set to the empty
             value then the contents of /usr/share/shorewall/configpath are
@@ -739,8 +782,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           </itemizedlist>
 
           <para>When HELPERS is specified on a system running Kernel 3.5.0 or
-          later, automatic association of helpers to connections is disabled.
-          </para>
+          later, automatic association of helpers to connections is
+          disabled.</para>
         </listitem>
       </varlistentry>
 
@@ -889,7 +932,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </varlistentry>
           </variablelist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>If this variable is not set or is given an empty value
@@ -1099,7 +1142,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </itemizedlist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
@@ -1116,7 +1159,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               control your firewall after you enable this option.</para>
             </important>
 
-            <para/>
+            <para></para>
 
             <caution>
               <para>Do not use this option if the resulting log messages will
@@ -1780,7 +1823,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">"</emphasis></term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 

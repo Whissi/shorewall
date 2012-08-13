@@ -8,9 +8,16 @@
 #	files from those nodes.
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	udp	10080
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __AMANDA_HELPER )
+ PARAM	-	-	udp	10080 ; helper=amanda
+?else
+ PARAM	-	-	udp	10080
+?endif
+
 PARAM	-	-	tcp	10080
 #
 # You may also need this rule.  With AMANDA 2.4.4 on Linux kernel 2.6,

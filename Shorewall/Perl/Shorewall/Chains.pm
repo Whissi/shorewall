@@ -101,6 +101,7 @@ our %EXPORT_TAGS = (
 				       CHAIN
 				       SET
 				       AUDIT
+				       HELPER
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
 				       DESTIFACE_DISALLOW
@@ -352,6 +353,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       CHAIN    => 1024,           #Manual Chain
 	       SET      => 2048,           #SET
 	       AUDIT    => 4096,           #A_ACCEPT, etc
+	       HELPER   => 8192,           #CT:helper
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -2979,6 +2981,51 @@ sub optimize_level4( $$ ) {
 	}
     }
 
+    #
+    # Identify short chains with a single reference and replace the reference with the chain rules
+    #
+    my @chains  = grep ( $_->{referenced}   &&
+			 ! $_->{optflags}   &&
+			 @{$_->{rules}} < 4 &&
+			 keys %{$_->{references}} == 1 , values %$tableref );
+
+    if ( my $chains  = @chains ) {
+	$passes++;
+
+	progress_message "\n Table $table pass $passes, $chains short chains, level 4b...";
+
+	for my $chainref ( @chains ) {
+	    my $name = $chainref->{name};
+	    for my $sourceref ( map $tableref->{$_}, keys %{$chainref->{references}} ) {
+		my $name1 = $sourceref->{name};
+
+		if ( $chainref->{references}{$name1} == 1 ) {
+		    my $rulenum  = 0;
+		    my $rulesref = $sourceref->{rules};
+		    my $rules    = @{$chainref->{rules}};
+
+		    for ( @$rulesref ) {
+			if ( $_->{simple} && ( $_->{target} || '' ) eq $name ) {
+			    trace( $sourceref, 'D', $rulenum  + 1, $_ ) if $debug;
+			    splice @$rulesref, $rulenum, 1, @{$chainref->{rules}};
+			    if ( $debug ) {
+				while ( my $ruleref = shift @{$chainref->{rules}} ) {
+				    trace ( $sourceref, 'I', $rulenum++, $ruleref );
+				}
+			    }
+
+			    delete $chainref->{references}{$name1};
+			    delete_chain $chainref;
+			    last;
+			}
+			$rulenum++;
+
+		    }
+		}
+	    }
+	}
+    }
+
     $passes;
 }
 
@@ -3282,6 +3329,62 @@ sub combine_dports {
     \@rules;
 }
 
+#
+# Delete duplicate rules from the passed chain.
+#
+#   The arguments are a reference to the chain followed by references to each 
+#   of its rules.
+#
+sub delete_duplicates {
+    my @rules;
+    my $chainref  = shift;
+    my $lastrule  = @_;
+    my $baseref   = pop;
+    my $ruleref;
+    my $duplicate = 0;
+
+    while ( @_ && ! $duplicate ) {
+	{
+	    my $ports1;
+	    my @keys1     = sort( keys( %$baseref ) );
+	    my $rulenum   = @_;
+	    my $duplicate = 0;
+
+	  RULE:
+
+	    while ( --$rulenum >= 0 ) {
+		$ruleref = $_[$rulenum];
+
+		my @keys2 = sort(keys( %$ruleref ) );
+
+		next unless @keys1 == @keys2 ;
+
+		my $keynum = 0;
+
+		for my $key ( @keys1 ) {
+		    next RULE unless $key eq $keys2[$keynum++];
+		    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+		}
+
+		$duplicate = 1;
+	    }
+
+	    if ( $duplicate ) {
+		trace( $chainref, 'D', $lastrule, $baseref ) if $debug;
+	    } else {
+		unshift @rules, $baseref;
+	    }
+
+	    $baseref = pop @_;
+	    $lastrule--;
+	}
+    }
+
+    unshift @rules, $baseref if $baseref;
+
+    \@rules;
+}
+
 sub optimize_level16( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my @chains   = ( grep $_->{referenced}, values %{$tableref} );
@@ -3290,11 +3393,23 @@ sub optimize_level16( $$$ ) {
 
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 16...";
 
+    if ( $table eq 'raw' ) {
+	#
+	# Helpers in rules have the potential for generating lots of duplicate iptables rules
+	# in the raw table. This step eliminates those duplicates
+	#
+	for my $chainref ( @chains ) {
+	    $chainref->{rules} = delete_duplicates( $chainref, @{$chainref->{rules}} );
+	}
+
+	$passes++;
+    }
+
     for my $chainref ( @chains ) {
 	$chainref->{rules} = combine_dports( $chainref, @{$chainref->{rules}} );
     }
 
-    $passes++;
+    ++$passes;
 }
 
 #
@@ -3483,7 +3598,7 @@ sub source_exclusion( $$ ) {
 
     my $table = reftype $target ? $target->{table} : 'filter';
 
-    my $chainref = new_chain( $table , newexclusionchain( $table ) );
+    my $chainref = dont_move new_chain( $table , newexclusionchain( $table ) );
 
     add_ijump( $chainref, j => 'RETURN', imatch_source_net( $_ ) ) for @$exclusions;
     add_ijump( $chainref, g => $target );
@@ -3505,7 +3620,7 @@ sub source_iexclusion( $$$$$;@ ) {
 	$source = $1;
 	@exclusion = mysplit( $2 );
 
-	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	my $chainref1 = dont_move new_chain( $table , newexclusionchain( $table ) );
 
 	add_ijump( $chainref1 , j => 'RETURN', imatch_source_net( $_ ) ) for @exclusion;
 
@@ -3534,7 +3649,7 @@ sub dest_exclusion( $$ ) {
 
     my $table = reftype $target ? $target->{table} : 'filter';
 
-    my $chainref = new_chain( $table , newexclusionchain( $table ) );
+    my $chainref = dont_move new_chain( $table , newexclusionchain( $table ) );
 
     add_ijump( $chainref, j => 'RETURN', imatch_dest_net( $_ ) ) for @$exclusions;
     add_ijump( $chainref, g => $target );
@@ -3556,7 +3671,7 @@ sub dest_iexclusion( $$$$$;@ ) {
 	$dest = $1;
 	@exclusion = mysplit( $2 );
 
-	my $chainref1 = new_chain( $table , newexclusionchain( $table ) );
+	my $chainref1 = dont_move new_chain( $table , newexclusionchain( $table ) );
 
 	add_ijump( $chainref1 , j => 'RETURN', imatch_dest_net( $_ ) ) for @exclusion;
 

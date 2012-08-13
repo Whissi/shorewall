@@ -8,6 +8,12 @@
 #	Internet.
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	udp	69
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __TFTP_HELPER )
+ PARAM	-	-	udp	69 ; helper=tftp
+?else
+ PARAM	-	-	udp	69
+?endif

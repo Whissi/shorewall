@@ -6,7 +6,15 @@
 #	This macro handles SNMP traffic (including traps).
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	udp	161:162
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __SNMP_HELPER )
+ PARAM	-	-  	udp     161 ; helper=snmp
+ PARAM	-	-	udp	162
+?else
+ PARAM	-	-	udp	161:162
+?endif
+
 PARAM	-	-	tcp	161

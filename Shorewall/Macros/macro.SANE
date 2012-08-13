@@ -6,9 +6,16 @@
 #	This macro handles SANE network scanning.
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
-PARAM	-	-	tcp	6566
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __SANE_HELPER )
+ PARAM	-	-	tcp	6566 ; helper=sane
+?else
+ PARAM	-	-	tcp	6566
+?endif
+
 #
 # Kernels 2.6.23+ has nf_conntrack_sane module which will handle
 # sane data connection.

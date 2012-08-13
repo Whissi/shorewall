@@ -10,13 +10,28 @@
 #	allow SMB traffic between hosts you fully trust.
 #
 ###############################################################################
+FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
 #				PORT(S)	PORT(S)	LIMIT	GROUP
 PARAM	-	-	udp	135,445
-PARAM	-	-	udp	137:139
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
+ PARAM	-	-	udp	137 ; helper=netbios-ns
+ PARAM	-	-	udp	138:139
+?else
+ PARAM	-	-	udp	137:139
+?endif
+
 PARAM	-	-	udp	1024:	137
 PARAM	-	-	tcp	135,139,445
 PARAM	DEST	SOURCE	udp	135,445
-PARAM	DEST	SOURCE	udp	137:139
+
+?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
+ PARAM	DEST	SOURCE	udp	137 ; helper=netbios-ns
+ PARAM	DEST	SOURCE	udp	138:139
+?else
+ PARAM	DEST	SOURCE	udp	137:139
+?endif
+
 PARAM	DEST	SOURCE	udp	1024:	137
 PARAM	DEST	SOURCE	tcp	135,139,445

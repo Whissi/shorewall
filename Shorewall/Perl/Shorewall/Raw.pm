@@ -204,62 +204,69 @@ sub setup_conntrack() {
     my $format = 1;
     my $action = 'NOTRACK';
 
-    my $fn = open_file( 'notrack' );
+    for my $name ( qw/notrack conntrack/ ) {
 
-    if ( $fn ) {
-	if ( -f ( my $fn1 = find_file 'conntrack' ) ) {
-	    warning_message "Both $fn and $fn1 exist: $fn1 will be ignored";
-	}
-    } else {
-	$fn = open_file( 'conntrack' );
-    }
+	my $fn = open_file( $name );
 
-    if ( $fn ) {
+	if ( $fn ) {
 
-	first_entry "$doing $fn...";
+	    my $empty = 1;
 
-	my $nonEmpty = 0;
+	    first_entry( sub () { progress_message2 "$doing $fn...";
+				  $empty = 0;
+				  warning_message( "Non-empty notrack file ($fn); please move its contents to the conntrack file" ) if $name eq 'notrack';
+			      }
+		       );
 
-	while ( read_a_line( NORMAL_READ ) ) {
-	    my ( $source, $dest, $proto, $ports, $sports, $user );
+	    while ( read_a_line( NORMAL_READ ) ) {
+		my ( $source, $dest, $proto, $ports, $sports, $user );
 
-	    if ( $format == 1 ) {
-		( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };
+		if ( $format == 1 ) {
+		    ( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };
 
-		if ( $source eq 'FORMAT' ) {
-		    $format = process_format( $dest );
-		    next;
+		    if ( $source eq 'FORMAT' ) {
+			$format = process_format( $dest );
+			next;
+		    }
+
+		    if ( $source eq 'COMMENT' ) {
+			process_comment;
+			next;
+		    }
+		} else {
+		    ( $action, $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6 }, { COMMENT => 0, FORMAT => 2 };
+
+		    if ( $action eq 'FORMAT' ) {
+			$format = process_format( $source );
+			$action = 'NOTRACK';
+			next;
+		    }
+
+		    if ( $action eq 'COMMENT' ) {
+			process_comment;
+			next;
+		    }
 		}
 
-		if ( $source eq 'COMMENT' ) {
-		    process_comment;
-		    next;
-		}
-	    } else {
-		( $action, $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6 }, { COMMENT => 0, FORMAT => 2 };
-
-		if ( $action eq 'FORMAT' ) {
-		    $format = process_format( $source );
-		    $action = 'NOTRACK';
-		    next;
-		}
-
-		if ( $action eq 'COMMENT' ) {
-		    process_comment;
-		    next;
+		if ( $source eq 'all' ) {
+		    for my $zone (all_zones) {
+			process_conntrack_rule( undef, undef, $action, $zone, $dest, $proto, $ports, $sports, $user );
+		    }
+		} else {
+		    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user );
 		}
 	    }
 
-	    if ( $source eq 'all' ) {
-		for my $zone (all_zones) {
-		    process_conntrack_rule( undef, undef, $action, $zone, $dest, $proto, $ports, $sports, $user );
+	    clear_comment;
+
+	    if ( $empty && $name eq 'notrack') {
+		if ( unlink( $fn ) ) {
+		    warning_message "Empty notrack file ($fn) removed";
+		} else {
+		    warning_message "Unable to remove empty notrack file ($fn): $!";
 		}
-	    } else {
-		process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user );
 	    }
 	}
-
-	clear_comment;
     }
 }
 

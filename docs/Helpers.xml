@@ -300,6 +300,17 @@
             role="bold">tftp</emphasis>.</para>
           </listitem>
         </varlistentry>
+
+        <varlistentry>
+          <term>AUTOHELPERS</term>
+
+          <listitem>
+            <para>This option was also added in Shorewall 4.5.7. When enabled
+            on systems that support the CT Target capability, it provides
+            automatic association of helpers to connections in the same manner
+            as in pre-3.5 kernels (and with the same vulnerabilities).</para>
+          </listitem>
+        </varlistentry>
       </variablelist>
 
       <para>The helper modules to be loaded are listed in the file
@@ -375,6 +386,12 @@
 
       <para>In these files, Shorewall supports the same module names as
       iptables; see the table above.</para>
+
+      <para>Beginning with Shorewall 4.5.7, there is a HELPER column in <ulink
+      url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5). This
+      column allows the explicit association of a helper with connections
+      allowed by a given rules. The column may contain any of the helper names
+      recognized by iptables (see the table above).</para>
     </section>
 
     <section>

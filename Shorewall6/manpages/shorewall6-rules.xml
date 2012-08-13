@@ -1189,6 +1189,47 @@
           restart</command>.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">HELPER</emphasis> - [helper]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.7. Causes the named conntrack
+          <replaceable>helper</replaceable> to be associated with this
+          connection. The contents of this column are ignored unless ACTION is
+          ACCEPT*, DNAT* or REDIRECT*. The <replaceable>helper</replaceable>
+          may be one of:</para>
+
+          <simplelist>
+            <member><option>amanda</option></member>
+
+            <member><option>ftp</option></member>
+
+            <member><option>irc</option></member>
+
+            <member><option>netbios-ns</option></member>
+
+            <member><option>pptp</option></member>
+
+            <member><option>Q.931</option></member>
+
+            <member><option>RAS</option></member>
+
+            <member><option>sane</option></member>
+
+            <member><option>sip</option></member>
+
+            <member><option>snmp</option></member>
+
+            <member><option>tftp</option></member>
+          </simplelist>
+
+          <para>If the HELPERS option is specified in <ulink
+          url="shorewall.conf.html">shorewall6.conf</ulink>(5), then any
+          module specified in this column most be listed in the HELPERS
+          setting.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 

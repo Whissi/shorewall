@@ -3982,6 +3982,10 @@ sub process_shorewall_conf( $$ ) {
 	    expand_variables( $_ ) unless /^'(.+)'$/;
 	}
     }
+    #
+    # Temporary -- set AUTOHELPERS until 4.5.8
+    #
+    $config{AUTOHELPERS} = 1;
 }
 
 #

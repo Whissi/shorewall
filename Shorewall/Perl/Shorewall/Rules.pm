@@ -1823,7 +1823,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		  if ( $blacklist ) {
 		      $action = 'RETURN';
 		  } elsif ( $helper ne '-' ) {
-		      $actiontype |= HELPER;
+		      $actiontype |= HELPER if $section eq 'NEW';
 		  }
 	      } ,
 	      
@@ -2028,6 +2028,18 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_time( $time ) ,
 		      do_headers( $headers ) ,
 		      do_condition( $condition ) ,
+		    );
+    } elsif ( $section eq 'RELATED' ) {
+	$rule = join( '',
+		      do_proto($proto, $ports, $sports),
+		      do_ratelimit( $ratelimit, $basictarget ) ,
+		      do_user( $user ) ,
+		      do_test( $mark , $globals{TC_MASK} ) ,
+		      do_connlimit( $connlimit ),
+		      do_time( $time ) ,
+		      do_headers( $headers ) ,
+		      do_condition( $condition ) ,
+		      do_helper( $helper ) ,
 		    );
     } else {
 	$rule = join( '',

@@ -388,10 +388,18 @@
       iptables; see the table above.</para>
 
       <para>Beginning with Shorewall 4.5.7, there is a HELPER column in <ulink
-      url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5). This
-      column allows the explicit association of a helper with connections
-      allowed by a given rules. The column may contain any of the helper names
-      recognized by iptables (see the table above).</para>
+      url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5). In the
+      NEW section, this column allows the explicit association of a helper
+      with connections allowed by a given rules. The column may contain any of
+      the helper names recognized by iptables (see the table above). In the
+      RELATED section, the rule will only match the packet if the related
+      connection has the named helper attached.</para>
+
+      <para>Also added in Shorewall 4.5.7 is the HELPER action in <ulink
+      url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5). HELPER
+      rules associate the helper listed in the HELPER column with connections
+      that match the rule. A destination zone should not be specified in
+      HELPER rules.</para>
     </section>
 
     <section>
@@ -446,5 +454,43 @@ loadmodule nf_conntrack_sane        ports=0</programlisting>
       capability detection on those modules whose iptables name matches the
       module name.</para>
     </section>
+  </section>
+
+  <section>
+    <title>Kernel &gt;= 3.5 and Shorewall &gt;= 4.5.7</title>
+
+    <para>While the AUTOHELPER option described above provides for seamless
+    migration to kernel 3.5 and beyond, we recommend setting AUTOHELPER=No at
+    the first opportunity after migrating. Additionally, you should:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Use the HELPER action and the HELPER column in <ulink
+        url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5) to
+        attach helpers to only those connections that you need to
+        support.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you run one or more servers (such as an FTP server) that
+        interact with helpers, you should consider adding rules to the RELATED
+        section of <ulink
+        url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5) to
+        limit the scope of the helper. Suppose that your Linux FTP server is
+        in zone dmz and has address 70.90.191.123.</para>
+
+        <programlisting>#ACTION               SOURCE                         DEST                      PROTO            DEST           SOURCE
+#                                                                                               PORT(S)        PORT(2)
+SECTION RELATED
+ACCEPT                all                            dmz:70.90.191.123                          32768:               ; helper=ftp   # passive FTP to dmz server; /proc/sys/net/ipv4/ip_local_port_range == 32760:65535
+ACCEPT                dmz:70.90.191.123              all                       tcp              1024:          20    ; helper=ftp   # active  FTP to dmz server
+ACCEPT                loc,dmz,$FW                    net                       tcp              -              1024: ; helper=ftp   # passive FTP to net
+ACCEPT                net                            all                       tcp              1024:          20    ; helper=ftp   # active  FTP from net
+DROP:info             all                            all                                                             ; helper=ftp   # 
+SECTION NEW
+HELPER                all                            net                       tcp              21                   ; helper=ftp
+ACCEPT                all                            dmz:70.90.191.123         tcp              21                   ; helper=ftp</programlisting>
+      </listitem>
+    </itemizedlist>
   </section>
 </article>

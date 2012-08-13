@@ -1207,11 +1207,18 @@
         <term><emphasis role="bold">HELPER</emphasis> - [helper]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.7. Causes the named conntrack
+          <para>Added in Shorewall 4.5.7.</para>
+
+          <para>In the NEW section, causes the named conntrack
           <replaceable>helper</replaceable> to be associated with this
-          connection. The contents of this column are ignored unless ACTION is
-          ACCEPT*, DNAT* or REDIRECT*. The <replaceable>helper</replaceable>
-          may be one of:</para>
+          connection; the contents of this column are ignored unless ACTION is
+          ACCEPT*, DNAT* or REDIRECT*.</para>
+
+          <para>In the RELATED section, will only match if the related
+          connection has the named <replaceable>helper</replaceable>
+          associated with it.</para>
+
+          <para>The <replaceable>helper</replaceable> may be one of:</para>
 
           <simplelist>
             <member><option>amanda</option></member>
@@ -1238,8 +1245,8 @@
           </simplelist>
 
           <para>If the HELPERS option is specified in <ulink
-          url="shorewall.conf.html">shorewall6.conf</ulink>(5), then any
-          module specified in this column most be listed in the HELPERS
+          url="shorewall.conf.html">shorewall.conf</ulink>(5), then any module
+          specified in this column most be listed in the HELPERS
           setting.</para>
         </listitem>
       </varlistentry>

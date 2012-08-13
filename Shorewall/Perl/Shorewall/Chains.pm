@@ -2482,7 +2482,8 @@ sub initialize_chain_table($) {
 		    'NFQUEUE!'        => STANDARD + NFQ,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
-		    'WHITELIST'       => STANDARD
+		    'WHITELIST'       => STANDARD,
+		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
@@ -2528,6 +2529,7 @@ sub initialize_chain_table($) {
 		    'NFQUEUE!'        => STANDARD + NFQ,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
+		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {

@@ -1465,7 +1465,7 @@ sub process_action( $) {
 	    if ( $format == 1 ) {
 		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
 		    split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
-		$origdest = $connlimit = $time = $headers = $condition = '-';
+		$origdest = $connlimit = $time = $headers = $condition = $helper = '-';
 	    } else {
 		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
 		    = split_line1 'action file', \%rulecolumns, $action_commands;
@@ -1594,7 +1594,7 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$$) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error "Invalid Action ($mtarget) in macro" unless $actiontype & ( ACTION +  STANDARD + NATRULE + MACRO + CHAIN );
+	fatal_error( "Invalid Action ($mtarget) in macro", $actiontype ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {
@@ -1850,6 +1850,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	      COUNT => sub { $action = ''; } ,
 
 	      LOG => sub { fatal_error 'LOG requires a log level' unless supplied $loglevel; } ,
+
+	      HELPER => sub { 
+		  fatal_error "HELPER requires require that the helper be specified in the HELPER column" if $helper eq '-';
+		  fatal_error "HELPER rules may only appear in the NEW section" unless $section eq 'NEW';
+		  $action = ''; } ,
 	    );
 
 	my $function = $functions{ $bt };

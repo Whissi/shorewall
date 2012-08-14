@@ -3010,9 +3010,16 @@ sub optimize_level4( $$ ) {
 			if ( $_->{simple} && ( $_->{target} || '' ) eq $name ) {
 			    trace( $sourceref, 'D', $rulenum  + 1, $_ ) if $debug;
 			    splice @$rulesref, $rulenum, 1, @{$chainref->{rules}};
-			    if ( $debug ) {
-				while ( my $ruleref = shift @{$chainref->{rules}} ) {
-				    trace ( $sourceref, 'I', $rulenum++, $ruleref );
+			    while ( my $ruleref = shift @{$chainref->{rules}} ) {
+				trace ( $sourceref, 'I', $rulenum++, $ruleref ) if $debug;
+				my $target = $ruleref->{target};
+
+				if ( $target && ( my $targetref = $tableref->{$target} ) ) {
+				    #
+				    # The rule target is a chain
+				    #
+				    add_reference( $chainref, $targetref );
+				    delete_reference( $sourceref, $targetref );
 				}
 			    }
 
@@ -3021,7 +3028,6 @@ sub optimize_level4( $$ ) {
 			    last;
 			}
 			$rulenum++;
-
 		    }
 		}
 	    }

@@ -3018,8 +3018,8 @@ sub optimize_level4( $$ ) {
 				    #
 				    # The rule target is a chain
 				    #
-				    add_reference( $chainref, $targetref );
-				    delete_reference( $sourceref, $targetref );
+				    add_reference( $sourceref, $targetref );
+				    delete_reference( $chainref, $targetref );
 				}
 			    }
 

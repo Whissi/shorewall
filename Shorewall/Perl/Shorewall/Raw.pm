@@ -212,11 +212,7 @@ sub setup_conntrack() {
 
 	    my $empty = 1;
 
-	    first_entry( sub () { progress_message2 "$doing $fn...";
-				  $empty = 0;
-				  warning_message( "Non-empty notrack file ($fn); please move its contents to the conntrack file" ) if $name eq 'notrack';
-			      }
-		       );
+	    first_entry( "$doing $fn..." );
 
 	    while ( read_a_line( NORMAL_READ ) ) {
 		my ( $source, $dest, $proto, $ports, $sports, $user );
@@ -247,6 +243,8 @@ sub setup_conntrack() {
 			next;
 		    }
 		}
+
+		$empty = 0;
 
 		if ( $source eq 'all' ) {
 		    for my $zone (all_zones) {

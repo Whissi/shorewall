@@ -2890,7 +2890,7 @@ sub optimize_level4( $$ ) {
 			#
 			# Not so easy -- the rule contains matches
 			#
-			if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} ) {
+			if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
 			    #
 			    # This case requires a new rule merging algorithm. Ignore this chain for
 			    # now on.

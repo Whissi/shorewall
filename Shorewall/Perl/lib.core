@@ -916,7 +916,12 @@ add_gateway() # $1 = Delta $2 = Table Number
 	delta=$1
 
 	if ! echo $route | fgrep -q ' nexthop '; then
-	    route=`echo $route | sed 's/via/nexthop via/'`
+	    if echo $route | fgrep -q via; then
+		route=`echo $route | sed 's/via/nexthop via/'`
+	    else
+		route="nexthop $route"
+	    fi
+
 	    dev=$(find_device $route)
 	    if [ -f ${VARDIR}/${dev}_weight ]; then
 		weight=`cat ${VARDIR}/${dev}_weight`

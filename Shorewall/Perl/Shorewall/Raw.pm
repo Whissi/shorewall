@@ -201,14 +201,15 @@ sub process_format( $ ) {
 
 sub setup_conntrack() {
 
-    my $format = 1;
-    my $action = 'NOTRACK';
-
     for my $name ( qw/notrack conntrack/ ) {
 
 	my $fn = open_file( $name );
 
 	if ( $fn ) {
+
+	    my $format = 1;
+
+	    my $action = 'NOTRACK';
 
 	    my $empty = 1;
 
@@ -224,11 +225,6 @@ sub setup_conntrack() {
 			$format = process_format( $dest );
 			next;
 		    }
-
-		    if ( $source eq 'COMMENT' ) {
-			process_comment;
-			next;
-		    }
 		} else {
 		    ( $action, $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6 }, { COMMENT => 0, FORMAT => 2 };
 
@@ -237,11 +233,11 @@ sub setup_conntrack() {
 			$action = 'NOTRACK';
 			next;
 		    }
+		}
 
-		    if ( $action eq 'COMMENT' ) {
-			process_comment;
-			next;
-		    }
+		if ( $action eq 'COMMENT' ) {
+		    process_comment;
+		    next;
 		}
 
 		$empty = 0;
@@ -257,11 +253,15 @@ sub setup_conntrack() {
 
 	    clear_comment;
 
-	    if ( $empty && $name eq 'notrack') {
-		if ( unlink( $fn ) ) {
-		    warning_message "Empty notrack file ($fn) removed";
+	    if ( $name eq 'notrack') {
+		if ( $empty ) {
+		    if ( unlink( $fn ) ) {
+			warning_message "Empty notrack file ($fn) removed";
+		    } else {
+			warning_message "Unable to remove empty notrack file ($fn): $!";
+		    }
 		} else {
-		    warning_message "Unable to remove empty notrack file ($fn): $!";
+		    warning_message "Non-empty notrack file ($fn); please move its contents to the conntrack file";
 		}
 	    }
 	}

@@ -951,7 +951,7 @@ sub compatible( $$ ) {
 	}
     }
 
-    return 1;
+    return ! ( $ref1->{policy} && $ref2->{policy} );
 }
 
 #

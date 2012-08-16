@@ -1536,7 +1536,7 @@ sub handle_complex_zone( $$ ) {
 
     if ( have_ipsec ) {
 	#
-	# Prior to KLUDGEFREE, policy match could only match an 'in' or an 'out' policy (but not both), so we place the
+	# In general, policy match can only match an 'in' or an 'out' policy (but not both), so we place the
 	# '--pol ipsec --dir in' rules at the front of the (interface) forwarding chains. Otherwise, decrypted packets
 	# can match '--pol none --dir out' rules and send the packets down the wrong rules chain.
 	#

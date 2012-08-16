@@ -950,7 +950,9 @@ sub compatible( $$ ) {
 	    }
 	}
     }
-
+    #
+    # Don't combine chains where each specifies '-m policy'
+    #
     return ! ( $ref1->{policy} && $ref2->{policy} );
 }
 

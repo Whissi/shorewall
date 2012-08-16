@@ -639,7 +639,7 @@ fi
 run_install $OWNERSHIP -m 0644 conntrack           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 run_install $OWNERSHIP -m 0644 conntrack.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
+if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
     run_install $OWNERSHIP -m 0600 conntrack${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack
     echo "Conntrack file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack"
 fi

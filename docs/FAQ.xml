@@ -247,7 +247,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
         <itemizedlist>
           <listitem>
             <para>You are trying to test from inside your firewall (no, that
-            won't work -- see <xref linkend="faq2"/>).</para>
+            won't work -- see <xref linkend="faq2" />).</para>
           </listitem>
 
           <listitem>
@@ -948,6 +948,20 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
 
   <section id="Openports">
     <title>Open Ports</title>
+
+    <section id="faq100">
+      <title>(FAQ 100) With Shorewall started, the output of 'iptables -L'
+      looks like my firewall is wide open!</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> The problem here is that
+      a bare <command>iptables -L</command> command produces totally useless
+      output. Use <command>shorewall show</command> instead.</para>
+
+      <note>
+        <para>The <command>shorewall show</command> command is a wrapper
+        around <command>iptables -L -n -v</command>.</para>
+      </note>
+    </section>
 
     <section id="faq51">
       <title>(FAQ 51) How do I Open Ports in Shorewall?</title>
@@ -2871,7 +2885,7 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Persistent SNAT: Available
 gateway:~# </programlisting>
 
-      <para/>
+      <para></para>
     </section>
 
     <section id="faq19">

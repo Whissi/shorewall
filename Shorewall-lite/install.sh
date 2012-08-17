@@ -303,8 +303,8 @@ if [ -z "$DESTDIR" -a -d ${CONFDIR}/$PRODUCT ]; then
 	mv -f ${CONFDIR}/$PRODUCT/shorewall.conf ${CONFDIR}/$PRODUCT/$PRODUCT.conf
 else
     rm -rf ${DESTDIR}${CONFDIR}/$PRODUCT
-    rm -rf ${DESTDIR}/usr/share/$PRODUCT
-    rm -rf ${DESTDIR}/var/lib/$PRODUCT
+    rm -rf ${DESTDIR}${SHAREDIR}/$PRODUCT
+    rm -rf ${DESTDIR}${VARDIR}/$PRODUCT
     [ "$LIBEXECDIR" = /usr/share ] || rm -rf ${DESTDIR}/usr/share/$PRODUCT/wait4ifup ${DESTDIR}/usr/share/$PRODUCT/shorecap
 fi
 
@@ -327,9 +327,9 @@ echo "$Product control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 # Create ${CONFDIR}/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
 #
 mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
-mkdir -p ${DESTDIR}/usr/share/$PRODUCT
+mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
-mkdir -p ${DESTDIR}/var/lib/$PRODUCT
+mkdir -p ${DESTDIR}${VARDIR}/$PRODUCT
 
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
 chmod 755 ${DESTDIR}/usr/share/$PRODUCT

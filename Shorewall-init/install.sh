@@ -297,8 +297,8 @@ fi
 #
 # Create /usr/share/shorewall-init if needed
 #
-mkdir -p ${DESTDIR}/usr/share/shorewall-init
-chmod 755 ${DESTDIR}/usr/share/shorewall-init
+mkdir -p ${DESTDIR}${SHAREDIR}/shorewall-init
+chmod 755 ${DESTDIR}${SHAREDIR}/shorewall-init
 
 #
 # Install logrotate file
@@ -311,14 +311,14 @@ fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}/usr/share/shorewall-init/version
-chmod 644 ${DESTDIR}/usr/share/shorewall-init/version
+echo "$VERSION" > ${DESTDIR}/${SHAREDIR}/shorewall-init/version
+chmod 644 ${DESTDIR}${SHAREDIR}/shorewall-init/version
 
 #
 # Remove and create the symbolic link to the init script
 #
 if [ -z "$DESTDIR" ]; then
-    rm -f /usr/share/shorewall-init/init
+    rm -f ${SHAREDIR}/shorewall-init/init
     ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/shorewall-init/init
 fi
 

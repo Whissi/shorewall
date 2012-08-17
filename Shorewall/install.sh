@@ -371,7 +371,7 @@ mkdir -p ${DESTDIR}/${CONFDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${PERLLIBDIR}/Shorewall
 mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-mkdir -p ${DESTDIR}/var/lib/$PRODUCT
+mkdir -p ${DESTDIR}${VARDIR}/$PRODUCT
 
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
 chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT

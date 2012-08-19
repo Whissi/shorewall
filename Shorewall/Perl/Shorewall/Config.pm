@@ -3194,7 +3194,7 @@ sub Old_IPSet_Match() {
 
 	if ( qt( "$ipset -N $sillyname iphash" ) ) {
 	    if ( qt1( "$iptables -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
-		qt1( "$iptables -D $sillyname -m set --set $sillyname src -j ACCEPT" );
+		qt1( "$iptables -F $sillyname" );
 		$result = $capabilities{IPSET_MATCH} = 1;
 	    }
 
@@ -3217,7 +3217,7 @@ sub IPSet_Match() {
 
 	if ( qt( "$ipset -N $sillyname iphash" ) || qt( "$ipset -N $sillyname hash:ip family $fam") ) {
 	    if ( qt1( "$iptables -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
-		qt1( "$iptables -D $sillyname -m set --match-set $sillyname src -j ACCEPT" );
+		qt1( "$iptables -F $sillyname" );
 		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
 	    } else {
 		$result = have_capability 'OLD_IPSET_MATCH';

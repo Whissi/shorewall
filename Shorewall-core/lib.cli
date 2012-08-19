@@ -2235,10 +2235,10 @@ determine_capabilities() {
 
 	    if [ -n "$have_ipset" ]; then
 		if qt $g_tool -A $chain -m set --match-set $chain src -j ACCEPT; then
-		    qt $g_tool -D $chain -m set --match-set $chain src -j ACCEPT
+		    qt $g_tool -F $chain
 		    IPSET_MATCH=Yes
 		elif qt $g_tool -A $chain -m set --set $chain src -j ACCEPT; then
-		    qt $g_tool -D $chain -m set --set $chain src -j ACCEPT
+		    qt $g_tool -F $chain
 		    IPSET_MATCH=Yes
 		    OLD_IPSET_MATCH=Yes
 		fi
@@ -2247,10 +2247,10 @@ determine_capabilities() {
 	elif qt ipset -N $chain hash:ip family inet6; then
 	    IPSET_V5=Yes
 	    if qt $g_tool -A $chain -m set --match-set $chain src -j ACCEPT; then
-		qt $g_tool -D $chain -m set --match-set $chain src -j ACCEPT
+		qt $g_tool -F $chain
 		IPSET_MATCH=Yes
 	    elif qt $g_tool -A $chain -m set --set $chain src -j ACCEPT; then
-		qt $g_tool -D $chain -m set --set $chain src -j ACCEPT
+		qt $g_tool -F $chain
 		IPSET_MATCH=Yes
 		OLD_IPSET_MATCH=Yes
 	    fi

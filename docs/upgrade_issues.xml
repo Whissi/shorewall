@@ -122,7 +122,7 @@
         (shorewall-lite, and shorewall6-lite) will create a directory under
         the specified path name to hold state information.</para>
 
-        <para>Example: </para>
+        <para>Example:</para>
 
         <blockquote>
           <para>VARDIR=/opt/var/</para>
@@ -152,18 +152,18 @@
           <para>?ENDIF</para>
         </blockquote>
 
-        <para> If they are to be processed only if TC_ENABLED=Internal, then
+        <para>If they are to be processed only if TC_ENABLED=Internal, then
         enclose them in</para>
 
         <blockquote>
           <para>?IF TC_ENABLED eq 'Internal'</para>
 
-          <para> ...</para>
+          <para>...</para>
 
           <para>?ENDIF.</para>
         </blockquote>
 
-        <para> </para>
+        <para></para>
       </listitem>
 
       <listitem>
@@ -172,27 +172,29 @@
         files are still processed by the compiler.</para>
 
         <para>Note that blacklist files may be converted to equivalent blrules
-        files using <command>shorewall[6] update -b</command>. </para>
+        files using <command>shorewall[6] update -b</command>.</para>
       </listitem>
 
       <listitem>
-        <para> In Shorewall 4.5.7, the
+        <para>In Shorewall 4.5.7, the
         <filename>/etc/shorewall[6]/notrack</filename> file was renamed
         <filename>/etc/shorewall[6]/conntrack</filename>. When upgrading to a
         release &gt;= 4.5.7, the <filename>conntrack</filename> file will be
         installed along side of an existing <filename>notrack</filename> file.
-        When both files exist, a compiler warning is generated:</para>
+        </para>
+
+        <para>If the 'notrack' file is non-empty, a warning message is issued
+        during compilation: </para>
 
         <blockquote>
-          <para>WARNING: Both /etc/shorewall/notrack and
-          /etc/shorewall/conntrack exist; /etc/shorewall/conntrack is
-          ignored</para>
+          <para>WARNING: Non-empty notrack file (...); please move its
+          contents to the conntrack file </para>
         </blockquote>
 
-        <para>This warning may be eliminated by moving any entries in the
-        <filename>notrack</filename> file to the
-        <filename>conntrack</filename> file and removing the
-        <filename>notrack</filename> file. </para>
+        <para>This warning can be eliminated by removing the notrack file (if
+        it has no entries), or by moving its entries to the conntrack file and
+        removing the notrack file. Note that the conntrack file is always
+        populated with rules </para>
       </listitem>
     </orderedlist>
   </section>

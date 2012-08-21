@@ -177,8 +177,6 @@ sub process_one_masq( )
 
 		if ( $addresses =~ /^SAME/ ) {
 		    fatal_error "The SAME target is no longer supported";
-		} elsif ( $addresses eq 'CONTINUE' ) {
-		    $target = 'ACCEPT';
 		} elsif ( $addresses eq 'detect' ) {
 		    my $variable = get_interface_address $interface;
 		    $target = "SNAT --to-source $variable";

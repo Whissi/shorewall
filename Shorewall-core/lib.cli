@@ -1216,6 +1216,8 @@ do_dump_command() {
 	brctl show
     fi
 
+    show_routing
+
     if [ $g_family -eq 4 ]; then
 	heading "Per-IP Counters"
 
@@ -1251,8 +1253,6 @@ do_dump_command() {
 	    done
 	done
     fi
-
-    show_routing
 
     if [ $g_family -eq 4 ]; then
 	heading "ARP"

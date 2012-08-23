@@ -35,17 +35,18 @@ use warnings;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 use Cwd qw(abs_path getcwd);
-use autouse 'Carp' => qw(longmess confess);
+use autouse 'Carp' => qw(longmess confess cluck);
 use Scalar::Util 'reftype';
 use FindBin;
 
 our @ISA = qw(Exporter);
 #
-# Imported variables should be treated as read-only by importers
-#
+# Imported variables should be treated as read-only by
 our @EXPORT = qw(
 		 warning_message
 		 fatal_error
+		 nonfatal_error
+		 exit_if_errors
 		 assert
 
 		 progress_message
@@ -557,6 +558,8 @@ use constant { PLAIN_READ          => 0,     # No read_a_line options
                NORMAL_READ         => -1     # All options
 	   };
 
+my $errors;
+
 sub process_shorewallrc($);
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -595,6 +598,7 @@ sub initialize( $;$ ) {
     $ifstack        = 0;
     @ifstack        = ();
     $embedded       = 0;
+    $errors         = 0;
     #
     # Misc Globals
     #
@@ -1107,9 +1111,9 @@ sub fatal_error	{
 	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
 	if ( $confess ) {
-	    print $log longmess( "   ERROR: @_$currentlineinfo\n" );
+	    print $log longmess( "   FATAL ERROR: @_$currentlineinfo\n" );
 	} else {
-	    print $log "   ERROR: @_$currentlineinfo\n";
+	    print $log "   FATAL ERROR: @_$currentlineinfo\n";
 	}
 
 	close $log;
@@ -1122,8 +1126,8 @@ sub fatal_error	{
 	confess "@_$currentlineinfo" if $confess;
 	die "@_$currentlineinfo\n";
     }  else {
-	confess "   ERROR: @_$currentlineinfo" if $confess;
-	die "   ERROR: @_$currentlineinfo\n";
+	confess "   FATAL ERROR: @_$currentlineinfo" if $confess;
+	die "   FATAL ERROR: @_$currentlineinfo\n";
     }
 }
 
@@ -1135,9 +1139,9 @@ sub fatal_error1 {
 	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
 
 	if ( $debug ) {
-	    print $log longmess( "   ERROR: @_\n" );
+	    print $log longmess( "   FATAL ERROR: @_\n" );
 	} else {
-	    print $log "   ERROR: @_\n";
+	    print $log "   FATAL ERROR: @_\n";
 	}
 
 	close $log;
@@ -1145,8 +1149,65 @@ sub fatal_error1 {
     }
 
     cleanup;
-    confess "   ERROR: @_" if $debug;
-    die "   ERROR: @_\n";
+    confess "   FATAL ERROR: @_" if $debug;
+    die "   FATAL ERROR: @_\n";
+}
+
+#
+# Issue non-fatal error message and die
+#
+sub nonfatal_error {
+
+    fatal_error @_ unless $command eq 'check';
+
+    my $currentlineinfo = currentlineinfo;
+
+    $| = 1; #Reset output buffering (flush any partially filled buffers).
+
+    if ( $log ) {
+	our @localtime = localtime;
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+
+	if ( $confess ) {
+	    print $log longmess( "   ERROR: @_$currentlineinfo\n" );
+	} else {
+	    print $log "   ERROR: @_$currentlineinfo\n";
+	}
+    }
+
+    if ( $confess ) {
+	cluck "   ERROR: @_$currentlineinfo";
+    } else {
+	print STDERR "   ERROR: @_$currentlineinfo\n";
+    }
+
+    $errors++;
+
+    $| = 0;
+
+    0;
+}
+
+#
+# Check for errors
+#
+sub exit_if_errors() {
+    if ( $errors ) {
+	$| = 1; #Reset output buffering (flush any partially filled buffers).
+
+	if ( $log ) {
+	    our @localtime = localtime;
+	    printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	    print $log "Compilation aborted -- $errors errors detected\n";
+
+	    close $log;
+	    $log = undef;
+	}
+
+	cleanup;
+
+	die "Compilation aborted -- $errors errors detected\n";
+    }
 }
 
 #

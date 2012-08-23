@@ -811,6 +811,10 @@ sub compiler {
     # Accounting.
     #
     setup_accounting if $config{ACCOUNTING};
+    #
+    # Bail out now if errors
+    #
+    exit_if_errors;
 
     if ( $scriptfilename ) {
 	#

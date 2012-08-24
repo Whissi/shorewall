@@ -253,7 +253,10 @@ case "$HOST" in
     archlinux)
 	echo "Installing ArchLinux-specific configuration..."
 	;;
-    linux|suse)
+    suse)
+	echo "Installing Suse-specific configuration..."
+	;;
+    linux)
 	;;
     *)
 	echo "ERROR: Unknown HOST \"$HOST\"" >&2

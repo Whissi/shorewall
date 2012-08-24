@@ -3778,7 +3778,10 @@ sub determine_capabilities() {
 sub require_capability( $$$ ) {
     my ( $capability, $description, $singular ) = @_;
 
-    fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless have_capability $capability;
+    unless ( have_capability $capability ) {
+	nonfatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables";
+	$capabilities{$capability} = 1;
+    }
 }
 
 #

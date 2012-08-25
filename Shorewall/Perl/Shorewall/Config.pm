@@ -1198,7 +1198,7 @@ sub exit_if_errors() {
 	if ( $log ) {
 	    our @localtime = localtime;
 	    printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
-	    print $log "Compilation aborted -- $errors errors detected\n";
+	    print $log "Check aborted -- $errors errors detected\n";
 
 	    close $log;
 	    $log = undef;
@@ -1206,7 +1206,7 @@ sub exit_if_errors() {
 
 	cleanup;
 
-	die "Compilation aborted -- $errors errors detected\n";
+	die "Check aborted -- $errors errors detected\n";
     }
 }
 

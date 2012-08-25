@@ -1927,12 +1927,15 @@ Dec 15 16:47:30 heath-desktop last message repeated 2 times</programlisting>
       stop</quote>, I can't connect to anything. Why doesn't that command
       work?</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> The <quote>
-      <command>stop</command> </quote> command is intended to place your
-      firewall into a safe state whereby only those hosts listed in
-      <filename>/etc/shorewall/routestopped</filename> are allowed. If you
-      want to totally open up your firewall, you must use the <quote>
-      <command>shorewall[-lite] clear</command> </quote> command.</para>
+      <para><emphasis role="bold">Answer:</emphasis> The
+      <command>stop</command> command places the firewall in a safe state;
+      connections that are allowed are governed by the setting of
+      ADMINISABSENTMINDED in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) and the
+      contents of <ulink
+      url="manpages/shorewall-routestopped.html">shorewall-routestopped</ulink>
+      (5). To totally open the firewall, use the <command>clear</command>
+      command.</para>
     </section>
 
     <section id="faq9">
@@ -2009,7 +2012,8 @@ Creating input Chains...
       <filename>/usr/share/shorewall[-lite]/modules</filename> to
       <filename>/etc/shorewall/modules </filename>and modify the copy to
       include only the modules that you need. An alternative is to set
-      LOAD_HELPERS_ONLY=Yes in shorewall.conf.</para>
+      LOAD_HELPERS_ONLY=Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
     </section>
 
     <section id="faq68">
@@ -2656,6 +2660,10 @@ if [ $kernel -lt <emphasis role="bold">20624</emphasis> ]; then
     status=2
 else 
  </programlisting>
+
+        <para>Update: The above logic is found in
+        <filename>/usr/share/shorewall/prog.footer</filename> in later
+        Shorewall releases.</para>
       </section>
     </section>
 
@@ -2747,8 +2755,12 @@ else
       behind the firewall, I get <quote>operation not permitted</quote>. How
       can I use nmap with Shorewall?"</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> Temporarily remove and
-      rejNotSyn, dropNotSyn and dropInvalid rules from
+      <para><emphasis role="bold">Answer:</emphasis> Temporarily remove any
+      <emphasis role="bold">rejNotSyn</emphasis>, <emphasis
+      role="bold">dropNotSyn</emphasis>, <emphasis
+      role="bold">dropInvalid</emphasis>, <emphasis
+      role="bold">NotSyn(...)</emphasis> and <emphasis
+      role="bold">Invalid(...)</emphasis> rules from
       <filename>/etc/shorewall/rules</filename> and restart Shorewall.</para>
     </section>
 

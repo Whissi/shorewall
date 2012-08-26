@@ -74,7 +74,13 @@ sub process_conntrack_rule( $$$$$$$$$ ) {
     my $exception_rule = '';
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );
 
-    unless ( $action eq 'NOTRACK' ) {
+    if ( $action eq 'NOTRACK' ) {
+	#
+	# A patch that deimplements the NOTRACK target has been posted on the
+	# Netfilter development list
+	#
+	$target = 'CT--notrack' if have_capability 'CT_TARGET';
+    } else {
 	(  $target, my ( $option, $args, $junk ) ) = split ':', $action, 4;
 
 	fatal_error "Invalid notrack ACTION ( $action )" if $junk || $target ne 'CT';

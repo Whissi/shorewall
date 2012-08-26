@@ -79,7 +79,7 @@ sub process_conntrack_rule( $$$$$$$$$ ) {
 	# A patch that deimplements the NOTRACK target has been posted on the
 	# Netfilter development list
 	#
-	$action = 'CT--notrack' if have_capability 'CT_TARGET';
+	$action = 'CT --notrack' if have_capability 'CT_TARGET';
     } else {
 	(  $target, my ( $option, $args, $junk ) ) = split ':', $action, 4;
 

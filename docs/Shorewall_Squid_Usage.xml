@@ -236,7 +236,7 @@ REDIRECT  $FW        3128     tcp      www              -          -            
           <para>Add this entry to your /etc/shorewall/providers file.</para>
 
           <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
-Squid   1       202     -               eth1            192.168.1.3     loose</programlisting>
+Squid   1       202     -               eth1            192.168.1.3     loose,notrack</programlisting>
         </listitem>
 
         <listitem>
@@ -259,7 +259,7 @@ loc     eth1         detect       <emphasis role="bold">routeback</emphasis>    
           <para>On 192.168.1.3, arrange for the following command to be
           executed after networking has come up</para>
 
-          <programlisting><command>iptables -t nat -A PREROUTING -i eth0 -d ! 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command>          </programlisting>
+          <programlisting><command>iptables -t nat -A PREROUTING -i eth0 ! -d 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command>          </programlisting>
 
           <para>If you are running RedHat on the server, you can simply
           execute the following commands after you have typed the iptables

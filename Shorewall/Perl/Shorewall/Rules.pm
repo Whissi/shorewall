@@ -2460,6 +2460,8 @@ sub process_rules( $ ) {
 		   );
 
 	process_rule while read_a_line( NORMAL_READ );
+
+	clear_comment;
     }
 
     $section = '';

@@ -1601,9 +1601,12 @@ teastep@ursa:~$ </programlisting>The first number determines the maximum log
             zones</command></quote> and look at the printed zone definitions)
             or the chain is FORWARD and the destination IP isn't in any of
             your defined zones. If the chain is FORWARD and the IN and OUT
-            interfaces are the same, then you probably need the <emphasis
-            role="bold">routeback</emphasis> option on that interface in
-            <filename> <ulink
+            interfaces are the same or they match the same wildcard entry in
+            <ulink
+            url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>,
+            then you probably need the <emphasis
+            role="bold">routeback</emphasis> option on that interface
+            in<filename> <ulink
             url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces</ulink>
             </filename>, you need the <emphasis
             role="bold">routeback</emphasis> option in the relevant entry in

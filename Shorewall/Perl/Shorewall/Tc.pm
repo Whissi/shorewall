@@ -384,9 +384,15 @@ sub process_tc_rule( ) {
 		       TTL => sub() {
 			                  fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
 					  fatal_error "Invalid TTL specification( $cmd/$rest )" if $rest;
-					  fatal_error "Chain designator $designator not allowed with TTL" if $designator && ! ( $designator eq 'F' );
-
 					  $chain = 'tcfor';
+
+					  if ( $designator ) {
+					      if ( $designator eq 'P' ) {
+						  $chain = 'tcpre';
+					      } else {
+						  fatal_error "Chain designator $designator not allowed with TTL" if $designator ne 'F';
+					      }
+					  }
 
 					  $cmd =~ /^TTL\(([-+]?\d+)\)$/;
 
@@ -405,9 +411,16 @@ sub process_tc_rule( ) {
 		       HL => sub() {
 			                  fatal_error "HL is not supported in IPv4 - use TTL instead" if $family == F_IPV4;
 					  fatal_error "Invalid HL specification( $cmd/$rest )" if $rest;
-					  fatal_error "Chain designator $designator not allowed with HL" if $designator && ! ( $designator eq 'F' );
-
 					  $chain = 'tcfor';
+
+
+					  if ( $designator ) {
+					      if ( $designator eq 'P' ) {
+						  $chain = 'tcpre';
+					      } else {
+						  fatal_error "Chain designator $designator not allowed with HL" if $designator ne 'F';
+					      }
+					  }
 
 					  $cmd =~ /^HL\(([-+]?\d+)\)$/;
 

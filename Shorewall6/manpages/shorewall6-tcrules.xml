@@ -411,15 +411,21 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               role="bold">-</emphasis>|<emphasis
               role="bold">+</emphasis>]<replaceable>number</replaceable>)</para>
 
-              <para>Added in Shorewall 4.4.24. May be option followed by
+              <para>Added in Shorewall 4.4.24.</para>
+
+              <para>Prior to Shorewall 4.5.7.2, may be optionally followed by
               <emphasis role="bold">:F</emphasis> but the resulting rule is
-              always added to the FORWARD chain. If <emphasis
-              role="bold">+</emphasis> is included, packets matching the rule
-              will have their HL (hop limit) incremented by
-              <replaceable>number</replaceable>. Similarly, if <emphasis
-              role="bold">-</emphasis> is included, matching packets have
-              their HL decremented by <replaceable>number</replaceable>. If
-              neither <emphasis role="bold">+</emphasis> nor <emphasis
+              always added to the FORWARD chain. Beginning with Shorewall
+              4.5.7.s, it may be optionally followed by <emphasis
+              role="bold">:P</emphasis>, in which case the rule is added to
+              the PREROUTING chain.</para>
+
+              <para> If <emphasis role="bold">+</emphasis> is included,
+              packets matching the rule will have their HL (hop limit)
+              incremented by <replaceable>number</replaceable>. Similarly, if
+              <emphasis role="bold">-</emphasis> is included, matching packets
+              have their HL decremented by <replaceable>number</replaceable>.
+              If neither <emphasis role="bold">+</emphasis> nor <emphasis
               role="bold">-</emphasis> is given, the HL of matching packets is
               set to <replaceable>number</replaceable>. The valid range of
               values for <replaceable>number</replaceable> is 1-255.</para>

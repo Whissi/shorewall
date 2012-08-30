@@ -150,8 +150,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %helpers_enabled
 				       %helpers_aliases
 				       
-				       @auditoptions
-
 		                       F_IPV4
 		                       F_IPV6
 

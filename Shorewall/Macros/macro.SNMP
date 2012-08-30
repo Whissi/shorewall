@@ -5,6 +5,8 @@
 #
 #	This macro handles SNMP traffic (including traps).
 #
+#       Note that traps are passed from DEST to SOURCE.
+#
 ###############################################################################
 FORMAT 2
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
@@ -12,9 +14,8 @@ FORMAT 2
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __SNMP_HELPER )
  PARAM	-	-  	udp     161 ; helper=snmp
- PARAM	-	-	udp	162
 ?else
- PARAM	-	-	udp	161:162
+ PARAM	-	-	udp	161
 ?endif
 
-PARAM	-	-	tcp	161
+PARAM	DEST	SOURCE	tcp	162

@@ -3,9 +3,9 @@
 #
 # /usr/share/shorewall/macro.SNMP
 #
-#	This macro handles SNMP traffic (including traps).
+#	This macro handles SNMP traffic.
 #
-#       Note that traps are passed from DEST to SOURCE.
+#       Note: To allow SNMP Traps, use the SNMPTrap macro
 #
 ###############################################################################
 FORMAT 2
@@ -17,5 +17,3 @@ FORMAT 2
 ?else
  PARAM	-	-	udp	161
 ?endif
-
-PARAM	DEST	SOURCE	tcp	162

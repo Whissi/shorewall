@@ -634,7 +634,6 @@ sub process_routestopped() {
 	    my $rule    = shift @rule;
 
 	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
-	    add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
 
 	    my $matched = 0;
 
@@ -644,6 +643,7 @@ sub process_routestopped() {
 	    }
 
 	    if ( $dest{$host} ) {
+		add_rule $filter_table->{OUTPUT},  "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
 		add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
 		$matched = 1;
 	    }

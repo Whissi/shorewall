@@ -1067,7 +1067,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">reset [<replaceable>chain</replaceable>,
-        ...]</emphasis><acronym/></term>
+        ...]</emphasis><acronym></acronym></term>
 
         <listitem>
           <para>Resets the packet and byte counters in the specified
@@ -1447,9 +1447,11 @@
           temporary saved configuration
           (<filename>/var/lib/shorewall6/.try</filename>). Next, if Shorewall6
           is currently started then a <emphasis role="bold">restart</emphasis>
-          command is issued; otherwise, a <emphasis
-          role="bold">start</emphasis> command is performed. if an error
-          occurs during the compliation phase of the <emphasis
+          command is issued using the specified configuration
+          <replaceable>directory</replaceable>; otherwise, a <emphasis
+          role="bold">start</emphasis> command is performed using the
+          specified configuration <replaceable>directory</replaceable>. if an
+          error occurs during the compliation phase of the <emphasis
           role="bold">restart</emphasis> or <emphasis
           role="bold">start</emphasis>, the command terminates without
           changing the Shorewall6 state. If an error occurs during the

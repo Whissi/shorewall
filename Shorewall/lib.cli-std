@@ -34,8 +34,6 @@ get_config() {
 
     ensure_config_path
 
-
-
     if [ "$1" = Yes ]; then
 	params=$(find_file params)
 
@@ -378,7 +376,7 @@ compiler() {
     #
     # Get the config from $g_shorewalldir
     #
-    [ -n "$g_shorewalldir" -a "$g_shorewalldir" != ${g_confdir} ] && get_config
+    get_config Yes
 
     case $COMMAND in
 	*start|try|refresh)
@@ -1648,7 +1646,6 @@ compiler_command() {
 
     case $COMMAND in
 	compile)
-	    get_config Yes
 	    shift
 	    compile_command $@
 	    ;;
@@ -1658,7 +1655,6 @@ compiler_command() {
 	    refresh_command $@
 	    ;;
 	check)
-	    get_config Yes
 	    shift
 	    check_command $@
 	    ;;

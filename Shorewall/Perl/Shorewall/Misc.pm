@@ -574,8 +574,7 @@ sub process_routestopped() {
 	    my $rule = do_proto( $proto, $ports, $sports, 0 );
 
 	    for my $host ( split /,/, $hosts ) {
-		fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
-		validate_host $host, 1;
+		imatch_source_net( $host );
 		push @hosts, "$interface|$host|$seq";
 		push @rule, $rule;
 	    }

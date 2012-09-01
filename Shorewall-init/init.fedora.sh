@@ -14,13 +14,8 @@
 #                    prior to bringing up the network.  
 ### END INIT INFO
 #determine where the files were installed
-if [ -f ~/.shorewallrc ]; then
-    . ~/.shorewallrc || exit 1
-else
-    SBINDIR=/sbin
-    SYSCONFDIR=/etc/default
-    VARDIR=/var/lib
-fi
+
+. /usr/share/shorewall/shorewallrc
 
 prog="shorewall-init"
 logger="logger -i -t $prog"
@@ -56,7 +51,7 @@ start () {
 	if [ -x ${VARDIR}/$product/firewall ]; then
 	    ${VARDIR}/$product/firewall stop 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
-	    [ retval -ne 0 ] && break
+	    [ $retval -ne 0 ] && break
 	fi
     done
 
@@ -80,7 +75,7 @@ stop () {
 	if [ -x ${VARDIR}/$product/firewall ]; then
 	    ${VARDIR}/$product/firewall clear 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
-	    [ retval -ne 0 ] && break
+	    [ $retval -ne 0 ] && break
 	fi
     done
 
@@ -119,7 +114,7 @@ case "$1" in
 	status $prog
 	;;
   *)
-	echo "Usage: /etc/init.d/shorewall-init {start|stop}"
+	echo "Usage: /etc/init.d/shorewall-init {start|stop|status}"
 	exit 1
 esac
 

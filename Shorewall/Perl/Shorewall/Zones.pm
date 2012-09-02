@@ -527,20 +527,10 @@ sub process_zone( \$ ) {
 	    $mark = 0;
 	} else {
 	    unless ( $zoneref->{options}{in_out}{nomark} ) {
-		if ( $type == GROUP ) {
-		    $zonemarklimit >>= 1;
-		    fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
-		    $mark = $zonemarklimit;
-		} else {
-		    fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
-		    $mark      = $zonemark;
-		    $zonemark += $zonemarkincr;
-		    $zoneref->{complex} = 1;
-		    
-		    for ( @parents ) {
-			$mark |= $zones{$_}{mark} if $zones{$_}{type} == GROUP;
-		    }
-		}
+		fatal_error "Zone mark overflow - please increase the setting of ZONE_BITS" if $zonemark >= $zonemarklimit;
+		$mark      = $zonemark;
+		$zonemark += $zonemarkincr;
+		$zoneref->{complex} = 1;
 	    }
 	}
 

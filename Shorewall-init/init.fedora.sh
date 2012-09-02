@@ -37,6 +37,22 @@ else
     exit 6
 fi
 
+# set the STATEDIR variable
+setstatedir() {
+    local statedir
+    if [ -f ${CONFDIR}/${g_program}/vardir ]; then
+	statedir=$( . /${CONFDIR}/${g_program}/vardir && echo $VARDIR )
+    fi
+    
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${g_program}
+
+    if [ ! -x $STATEDIR/firewall ]; then
+	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	    ${SBINDIR}/$PRODUCT compile
+	fi
+    fi
+}
+
 # Initialize the firewall
 start () {
     local PRODUCT
@@ -50,8 +66,7 @@ start () {
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
     for PRODUCT in $PRODUCTS; do
-	[ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
-	[ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+	setstatedir
 
 	if [ ! -x ${VARDIR}/firewall ]; then
 	    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
@@ -83,8 +98,7 @@ stop () {
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
     for PRODUCT in $PRODUCTS; do
-	[ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
-	[ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+	setstatedir
 
 	if [ ! -x ${VARDIR}/firewall ]; then
 	    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then

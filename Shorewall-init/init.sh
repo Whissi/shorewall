@@ -35,6 +35,21 @@
 #                    prior to bringing up the network.  
 ### END INIT INFO
 
+setstatedir() {
+    local statedir
+    if [ -f ${CONFDIR}/${g_program}/vardir ]; then
+	statedir=$( . /${CONFDIR}/${g_program}/vardir && echo $VARDIR )
+    fi
+    
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${g_program}
+
+    if [ ! -x $STATEDIR/firewall ]; then
+	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	    ${SBINDIR}/$PRODUCT compile
+	fi
+    fi
+}
+
 if [ "$(id -u)" != "0" ]
 then
   echo "You must be root to start, stop or restart \"Shorewall \"."
@@ -63,22 +78,15 @@ vardir=${VARDIR}
 # Initialize the firewall
 shorewall_start () {
   local PRODUCT
-  local VARDIR
+  local STATEDIR
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      [ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
-      [ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+      setstatedir
 
-      if [ ! -x ${VARDIR}/firewall ]; then
-	  if [ $PRODUCT = shorewall -o $product = shorewall6 ]; then
-	      ${SBINDIR}/$PRODUCT compile
-	  fi
-      fi
-
-      if [ -x ${VARDIR}/firewall ]; then
+      if [ -x ${STATEDIR}/firewall ]; then
 	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
-	      ${VARDIR}/firewall stop || echo_notdone
+	      ${STATEDIR}/firewall stop || echo_notdone
 	  fi
       fi
   done
@@ -97,8 +105,7 @@ shorewall_stop () {
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      [ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
-      [ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+      setstatedir
 
       if [ ! -x ${VARDIR}/firewall ]; then
 	  if [ $PRODUCT = shorewall -o $product = shorewall6 ]; then

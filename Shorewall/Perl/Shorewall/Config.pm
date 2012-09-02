@@ -4578,9 +4578,9 @@ sub get_configuration( $$$ ) {
     $globals{PROVIDER_MASK}  = make_mask( $config{PROVIDER_BITS} ) << $config{PROVIDER_OFFSET};
 
     if ( $config{ZONE_BITS} ) {
-	$globals{ZONE_MASK} = make_mask( $config{ZONE_BITS} ) << $globals{ZONE_OFFSET};
+	$globals{ZONE_MASK} = $globals{ZONE_MASK1} = make_mask( $config{ZONE_BITS} ) << $globals{ZONE_OFFSET};
     } else {
-	$globals{ZONE_MASK} = 0;
+	$globals{ZONE_MASK} = $globals{ZONE_MASK1} = 0;
     }
 
     if ( ( my $userbits = $config{PROVIDER_OFFSET} - $config{TC_BITS} ) > 0 ) {

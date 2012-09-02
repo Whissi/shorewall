@@ -58,6 +58,8 @@ fi
 #
 . /usr/share/shorewall/shorewallrc
 
+vardir=${VARDIR}
+
 # Initialize the firewall
 shorewall_start () {
   local PRODUCT
@@ -65,6 +67,9 @@ shorewall_start () {
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
+      [ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
+      [ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+
       if [ ! -x ${VARDIR}/firewall ]; then
 	  if [ $PRODUCT = shorewall -o $product = shorewall6 ]; then
 	      ${SBINDIR}/$PRODUCT compile
@@ -92,6 +97,9 @@ shorewall_stop () {
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
+      [ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
+      [ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+
       if [ ! -x ${VARDIR}/firewall ]; then
 	  if [ $PRODUCT = shorewall -o $product = shorewall6 ]; then
 	      ${SBINDIR}/$PRODUCT compile

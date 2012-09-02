@@ -24,6 +24,8 @@ lockfile="/var/lock/subsys/shorewall-init"
 # Source function library.
 . /etc/rc.d/init.d/functions
 
+vardir=$VARDIR
+
 # Get startup options (override default)
 OPTIONS=
 
@@ -37,7 +39,7 @@ fi
 
 # Initialize the firewall
 start () {
-    local product
+    local PRODUCT
     local vardir
 
     if [ -z "$PRODUCTS" ]; then
@@ -47,15 +49,18 @@ start () {
     fi
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
-    for product in $PRODUCTS; do
+    for PRODUCT in $PRODUCTS; do
+	[ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
+	[ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+
 	if [ ! -x ${VARDIR}/firewall ]; then
-	    if [ $product = shorewall -o $product = shorewall6 ]; then
-		${SBINDIR}/$product compile
+	    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+		${SBINDIR}/$PRODUCT compile
 	    fi
 	fi
 
-	if [ -x ${VARDIR}/$product/firewall ]; then
-	    ${VARDIR}/$product/firewall stop 2>&1 | $logger
+	if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
+	    ${VARDIR}/$PRODUCT/firewall stop 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
 	    [ $retval -ne 0 ] && break
 	fi
@@ -73,19 +78,22 @@ start () {
 
 # Clear the firewall
 stop () {
-    local product
+    local PRODUCT
     local vardir
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
-    for product in $PRODUCTS; do
+    for PRODUCT in $PRODUCTS; do
+	[ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
+	[ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+
 	if [ ! -x ${VARDIR}/firewall ]; then
-	    if [ $product = shorewall -o $product = shorewall6 ]; then
-		${SBINDIR}/$product compile
+	    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+		${SBINDIR}/$PRODUCT compile
 	    fi
 	fi
 
-	if [ -x ${VARDIR}/$product/firewall ]; then
-	    ${VARDIR}/$product/firewall clear 2>&1 | $logger
+	if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
+	    ${VARDIR}/$PRODUCT/firewall clear 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
 	    [ $retval -ne 0 ] && break
 	fi

@@ -67,6 +67,8 @@ not_configured () {
 #
 . /usr/share/shorewall/shorewallrc
 
+vardir=$VARDIR
+
 # check if shorewall-init is configured or not
 if [ -f "$SYSCONFDIR/shorewall-init" ]
 then
@@ -81,24 +83,27 @@ fi
 
 # Initialize the firewall
 shorewall_start () {
-  local product
+  local PRODUCT
+  local VARDIR
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
-  for product in $PRODUCTS; do
+  for PRODUCT in $PRODUCTS; do
+      [ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
+      [ -n ${VARDIR:=${vardir}/$PRODUCT} ]
 
-      if [ ! -x ${VARDIR}/$product/firewall ]; then
-	  if [ $product = shorewall -o $product = shorewall6 ]; then
-	      ${SBINDIR}/$product compile
+      if [ ! -x ${VARDIR}/$PRODUCT/firewall ]; then
+	  if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	      ${SBINDIR}/$PRODUCT compile
 	  fi
       fi
 
-      if [ -x ${VARDIR}/$product/firewall ]; then
+      if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
 	  #
 	  # Run in a sub-shell to avoid name collisions
 	  #
 	  ( 
-	      if ! ${VARDIR}/$product/firewall status > /dev/null 2>&1; then
-		  ${VARDIR}/$product/firewall stop || echo_notdone
+	      if ! ${VARDIR}/$PRODUCT/firewall status > /dev/null 2>&1; then
+		  ${VARDIR}/$PRODUCT/firewall stop || echo_notdone
 	      fi
 	  )
       fi
@@ -111,18 +116,22 @@ shorewall_start () {
 
 # Clear the firewall
 shorewall_stop () {
-  local product
+  local PRODUCT
+  local VARDIR
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
-  for product in $PRODUCTS; do
-      if [ ! -x ${VARDIR}/$product/firewall ]; then
-	  if [ $product = shorewall -o $product = shorewall6 ]; then
-	      ${SBINDIR}/$product compile
+  for PRODUCT in $PRODUCTS; do
+      [ -f ${CONFDIR}/$PRODUCT/vardir ] && . ${CONFDIR}/$PRODUCT/vardir
+      [ -n ${VARDIR:=${vardir}/$PRODUCT} ]
+
+      if [ ! -x ${VARDIR}/$PRODUCT/firewall ]; then
+	  if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	      ${SBINDIR}/$PRODUCT compile
 	  fi
       fi
 
-      if [ -x ${VARDIR}/$product/firewall ]; then
-	  ${VARDIR}/$product/firewall clear || echo_notdone
+      if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
+	  ${VARDIR}/$PRODUCT/firewall clear || echo_notdone
       fi
   done
 

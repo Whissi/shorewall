@@ -78,6 +78,8 @@ esac
 if [ -z "${VARLIB}" ]; then
     VARLIB=${VARDIR}
     VARDIR=${VARLIB}/$g_program
+elif [ -z "${VARDIR}" ]; then
+    VARDIR='${VARLIB}/${PRODUCT}'
 fi
 
 #

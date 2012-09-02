@@ -121,7 +121,7 @@ use constant { IN_OUT     => 1,
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
 #     %zones{<zone1> => {name =>       <name>,
-#                        type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT, GROUP;
+#                        type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
 #                        complex =>    0|1
 #                        super   =>    0|1
 #                        options =>    { in_out  => < policy match string >
@@ -208,11 +208,8 @@ my $zonemarklimit;
 use constant { FIREWALL => 1,
 	       IP       => 2,
 	       BPORT    => 4,
-	       GROUP    => 8,
-	       IPSEC    => 16,
-	       VSERVER  => 32,
-
- };
+	       IPSEC    => 8,
+	       VSERVER  => 16 };
 
 use constant { SIMPLE_IF_OPTION   => 1,
 	       BINARY_IF_OPTION   => 2,
@@ -327,7 +324,7 @@ sub initialize( $$ ) {
 			     sourceonly => 1,
 			     mss => 1,
 			    );
-	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'group', 16 => 'ipsec4', 32 => 'vserver' );
+	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver' );
     } else {
 	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
@@ -374,8 +371,6 @@ sub parse_zone_option_list($$\$$)
     my $fmt;
 
     if ( $list ne '-' ) {
-	fatal_error 'Group zones may not have options' if $zonetype == GROUP;
-
 	for my $e ( split_list $list, 'option' ) {
 	    my $val    = undef;
 	    my $invert = '';
@@ -480,8 +475,6 @@ sub process_zone( \$ ) {
     } elsif ( $type eq 'vserver' ) {
 	fatal_error 'Vserver zones may not be nested' if @parents;
 	$type = VSERVER;
-    } elsif ( $type eq 'group' ) {
-	$type = GROUP;
     } elsif ( $type eq '-' ) {
 	$type = IP;
 	$$ip = 1;
@@ -655,12 +648,6 @@ sub zone_report()
 		    }
 		}
 	    }
-	} elsif ( $type == GROUP ) {
-	    progress_message_nocompress '      Sub-zones';
-	    for ( @{$zoneref->{children}} ) {
-		progress_message_nocompress '         $_';
-		$printed = 1;
-	    }
 	}
 
 	unless ( $printed ) {
@@ -713,8 +700,6 @@ sub dump_zone_contents() {
 		    }
 		}
 	    }
-	} elsif ( $type == GROUP ) {
-	    $entry .= 'sub-zones: ' . join(',', @{$zoneref->{children}});
 	}
 
 	emit_unindented $entry;
@@ -980,7 +965,6 @@ sub process_interface( $$ ) {
 
 	fatal_error "Unknown zone ($zone)" unless $zoneref;
 	fatal_error "Firewall zone not allowed in ZONE column of interface record" if $zoneref->{type} == FIREWALL;
-	fatal_error "Group zone not allowed in ZONE column of interface record" if $zoneref->{type} == GROUP;
     }
 
     fatal_error 'INTERFACE must be specified' if $originalinterface eq '-';
@@ -1764,7 +1748,6 @@ sub process_host( ) {
 
     fatal_error "Unknown ZONE ($zone)" unless $type;
     fatal_error 'Firewall zone not allowed in ZONE column of hosts record' if $type == FIREWALL;
-    fatal_error 'Group zone not allowed in ZONE column of hosts record'    if $type == GROUP;
 
     my ( $interface, $interfaceref );
 

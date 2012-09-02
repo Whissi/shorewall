@@ -501,14 +501,55 @@
           </varlistentry>
 
           <varlistentry>
+            <term>VARLIB</term>
+
+            <listitem>
+              <para>Added in Shorewall 4.5.8. Directory where subsystem state
+              data is to be stored. Default is <emphasis
+              role="bold">/var/lib</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term>VARDIR</term>
 
             <listitem>
-              <para>Directory where subsystem state data is to be stored.
-              Default is <emphasis role="bold">/var/lib</emphasis>.</para>
+              <para>Shorewall 4.5.7 and earlier: Directory where subsystem
+              state data is to be stored. Default is <emphasis
+              role="bold">/var/lib</emphasis>.</para>
+
+              <para>Shorewall 4.5.8 and later: Default is <emphasis
+              role="bold">/var/lib/$PRODUCT</emphasis>.</para>
             </listitem>
           </varlistentry>
         </variablelist>
+
+        <note>
+          <para>From Shorewall 4.5.2 through 4.5.7, there were two
+          interpretations of VARDIR. In the shorewallrc file, it referred to
+          the directory where all Shorewall product state would be stored
+          (default <emphasis role="bold">/var/lib</emphasis>). But in the code
+          and in shorewall-vardir(5), it referred to the directory where an
+          individual products state would be stored (e.g., <emphasis
+          role="bold">/var/lib/shorewall</emphasis>).</para>
+
+          <para>In Shorewall 4.5.8, the variable VARLIB was added to
+          shorewallrc. In that release, the shorewallrc files packaged with
+          the Shorewall products were changed to include these two
+          lines:</para>
+
+          <simplelist>
+            <member>VARLIB=/var/lib</member>
+          </simplelist>
+
+          <para>VARDIR defaults to '${VARLIB}/${PRODUCT}' if VARLIB is
+          specified and VARDIR isn't.</para>
+
+          <para>The consumers of shorewallrc were changed so that if there is
+          no VARLIB setting, then VARLIB is set to $VARDIR and $VARDIR is set
+          to ${VARLIB}/${PRODUCT}. This allows existing
+          <filename>shorewallrc</filename> files to be used unchanged.</para>
+        </note>
       </section>
 
       <section>
@@ -552,7 +593,11 @@
             <term>sharedstatedir</term>
 
             <listitem>
-              <para>Alias for <emphasis role="bold">vardir</emphasis>.</para>
+              <para>Shorewall 4.5.2 - 4.5.7 Alias for <emphasis
+              role="bold">vardir</emphasis>.</para>
+
+              <para>Shorewall 4.5.8 and later. Alias for <emphasis
+              role="bold">varlib</emphasis>.</para>
             </listitem>
           </varlistentry>
 

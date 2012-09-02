@@ -438,6 +438,21 @@ compiler() {
 }
 
 #
+# Run the postcompile user exit
+#
+run_postcompile() { # $1 is the compiled script
+    local script
+
+    script=$(find_file postcompile)
+
+    if [ -n "$script" ]; then
+	. $script $1
+    else
+	return 0
+    fi
+}
+
+#
 # Start Command Executor
 #
 start_command() {
@@ -457,6 +472,7 @@ start_command() {
 	    progress_message3 "Compiling..."
 
 	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
+		run_postcompile ${VARDIR}/.start
 		[ -n "$nolock" ] || mutex_on
 		run_it ${VARDIR}/.start $g_debugging start
 		rc=$?
@@ -666,7 +682,7 @@ compile_command() {
 
     [ "x$file" = x- ] || progress_message3 "Compiling..."
 
-    compiler $g_debugging compile $file
+    compiler $g_debugging compile $file && run_postcompile $file
 }
 
 #
@@ -932,6 +948,7 @@ restart_command() {
 	progress_message3 "Compiling..."
 
 	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
+	    run_postcompile ${VARDIR}/.restart
 	    [ -n "$nolock" ] || mutex_on
 	    run_it ${VARDIR}/.restart $g_debugging restart
 	    rc=$?
@@ -1023,6 +1040,7 @@ refresh_command() {
     progress_message3 "Compiling..."
 
     if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
+	run_postcompile ${VARDIR}/.refresh
 	[ -n "$nolock" ] || mutex_on
 	run_it ${VARDIR}/.refresh $g_debugging refresh
 	rc=$?
@@ -1136,6 +1154,8 @@ safe_commands() {
 	status=$?
 	exit $status
     fi
+
+    run_postcompile ${VARDIR}/.$command
 
     case $command in
 	start)
@@ -1267,6 +1287,8 @@ try_command() {
 	status=$?
 	exit $status
     fi
+
+    run_postcompile ${VARDIR}/.restart
 
     case $command in
 	start)

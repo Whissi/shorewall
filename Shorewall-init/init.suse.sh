@@ -60,13 +60,18 @@ fi
 # Initialize the firewall
 shorewall_start () {
   local PRODUCT
-  local VARDIR
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      if [ -x ${VARDIR}/firewall ]; then
+      if [ ! -x ${VARDIR}/$PRODUCT/firewall ]; then
+	  if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	      ${SBINDIR}/$PRODUCT compile
+	  fi
+      fi
+
+      if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
 	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
-	      ${VARDIR}/firewall stop || echo_notdone
+	      ${VARDIR}/$PRODUCT/firewall stop || echo_notdone
 	  fi
       fi
   done
@@ -81,12 +86,17 @@ shorewall_start () {
 # Clear the firewall
 shorewall_stop () {
   local PRODUCT
-  local VARDIR
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      if [ -x ${VARDIR}/firewall ]; then
-	  ${VARDIR}/firewall clear || exit 1
+      if [ ! -x ${VARDIR}/$PRODUCT/firewall ]; then
+	  if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	      ${SBINDIR}/$PRODUCT compile
+	  fi
+      fi
+
+      if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
+	  ${VARDIR}/$PRODUCT/firewall clear || exit 1
       fi
   done
 

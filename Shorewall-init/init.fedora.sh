@@ -48,6 +48,12 @@ start () {
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
     for product in $PRODUCTS; do
+	if [ ! -x ${VARDIR}/firewall ]; then
+	    if [ $product = shorewall -o $product = shorewall6 ]; then
+		${SBINDIR}/$product compile
+	    fi
+	fi
+
 	if [ -x ${VARDIR}/$product/firewall ]; then
 	    ${VARDIR}/$product/firewall stop 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
@@ -72,6 +78,12 @@ stop () {
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
     for product in $PRODUCTS; do
+	if [ ! -x ${VARDIR}/firewall ]; then
+	    if [ $product = shorewall -o $product = shorewall6 ]; then
+		${SBINDIR}/$product compile
+	    fi
+	fi
+
 	if [ -x ${VARDIR}/$product/firewall ]; then
 	    ${VARDIR}/$product/firewall clear 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}

@@ -82,26 +82,24 @@ fi
 # Initialize the firewall
 shorewall_start () {
   local product
-  local VARDIR
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
-      VARDIR=/var/lib/$product
-      [ -f /etc/$product/vardir ] && . /etc/$product/vardir
-      if [ -x ${VARDIR}/firewall ]; then
+
+      if [ ! -x ${VARDIR}/$product/firewall ]; then
+	  if [ $product = shorewall -o $product = shorewall6 ]; then
+	      ${SBINDIR}/$product compile
+	  fi
+      fi
+
+      if [ -x ${VARDIR}/$product/firewall ]; then
 	  #
 	  # Run in a sub-shell to avoid name collisions
 	  #
 	  ( 
-	      . /usr/share/$product/lib.base
-	      #
-	      # Get mutex so the firewall state is stable
-	      #
-	      mutex_on
-	      if ! ${VARDIR}/firewall status > /dev/null 2>&1; then
-		  ${VARDIR}/firewall stop || echo_notdone
+	      if ! ${VARDIR}/$product/firewall status > /dev/null 2>&1; then
+		  ${VARDIR}/$product/firewall stop || echo_notdone
 	      fi
-	      mutex_off
 	  )
       fi
   done
@@ -114,18 +112,17 @@ shorewall_start () {
 # Clear the firewall
 shorewall_stop () {
   local product
-  local VARDIR
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for product in $PRODUCTS; do
-      VARDIR=/var/lib/$product
-      [ -f /etc/$product/vardir ] && . /etc/$product/vardir
-      if [ -x ${VARDIR}/firewall ]; then
-	  ( . /usr/share/$product/lib.base
-	    mutex_on
-	    ${VARDIR}/firewall clear || echo_notdone
-	    mutex_off
-	  )
+      if [ ! -x ${VARDIR}/$product/firewall ]; then
+	  if [ $product = shorewall -o $product = shorewall6 ]; then
+	      ${SBINDIR}/$product compile
+	  fi
+      fi
+
+      if [ -x ${VARDIR}/$product/firewall ]; then
+	  ${VARDIR}/$product/firewall clear || echo_notdone
       fi
   done
 

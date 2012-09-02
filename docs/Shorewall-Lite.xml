@@ -248,7 +248,8 @@
               command, Shorewall will use ssh to run
               <filename>/usr/share/shorewall-lite/shorecap</filename> on the
               remote firewall to create a capabilities file in the firewall's
-              administrative direction. See <link
+              administrative direction. It also uses scp to copy the
+              shorewallrc file from the remote firewall system. See <link
               linkend="Shorecap">below</link>.</para>
             </listitem>
           </orderedlist>
@@ -592,8 +593,9 @@
     command:</para>
 
     <blockquote>
-      <para><command>shorewall compile [ -e ] [ &lt;directory name&gt; ] [
-      &lt;path name&gt; ]</command></para>
+      <para><command>shorewall compile [ -e ] [ <replaceable>&lt;directory
+      name&gt;</replaceable> ] [ <replaceable>&lt;path name&gt;</replaceable>
+      ]</command></para>
     </blockquote>
 
     <para>where</para>
@@ -615,6 +617,11 @@
             supports. It rather reads those capabilities from
             <filename>/etc/shorewall/capabilities</filename>. See below for
             details.</para>
+
+            <para>Also, when <option>-e</option> is specified you should have
+            a copy of the remote firewall's <filename>shorewallrc</filename>
+            file in the the directory specified by <replaceable>&lt;directory
+            name&gt;</replaceable>.</para>
           </listitem>
         </varlistentry>
 
@@ -626,12 +633,19 @@
             before those directories listed in the CONFIG_PATH variable in
             <filename>shorewall.conf</filename>.</para>
 
-            <para>When -e &lt;directory-name&gt; is included, only the
-            SHOREWALL_SHELL and VERBOSITY settings from
+            <para>When -e <replaceable>&lt;directory-name&gt;</replaceable> is
+            included, only the SHOREWALL_SHELL and VERBOSITY settings from
             <filename>/etc/shorewall/shorewall.conf</filename> are used and
             these apply only to the compiler itself. The settings used by the
             compiled firewall script are determined by the contents of
             <filename>&lt;directory name&gt;/shorewall.conf</filename>.</para>
+
+            <note>
+              <para>Beginning with Shorewall 4.5.7.2,
+              <filename>/etc/shorewall/shorewall.conf</filename> is not read
+              if there is a <filename>shorewall.conf</filename> file in the
+              specified configuration directory.</para>
+            </note>
           </listitem>
         </varlistentry>
 

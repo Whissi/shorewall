@@ -76,7 +76,7 @@ for p in $@; do
 		    pn=HOST
 		    ;;
 		SHAREDSTATEDIR)
-		    pn=VARDIR
+		    pn=VARLIB
 		    ;;
 		DATADIR)
 		    pn=SHAREDIR
@@ -161,6 +161,17 @@ if [ $# -gt 0 ]; then
     echo '#'           >> shorewallrc
 fi
 
+if [ -n "${options[VARLIB]}" ]; then
+    if [ -z "${options[VARDIR]}" ]; then
+	options[VARDIR]='${VARLIB}/${PRODUCT}'
+    fi
+elif [ -n "${options[VARDIR]}" ]; then
+    if [ -z "{$options[VARLIB]}" ]; then
+	options[VARLIB]=${options[VARDIR]}
+	options[VARDIR]='${VARLIB}/${PRODUCT}'
+    fi
+fi
+
 for on in \
     HOST \
     PREFIX \
@@ -180,6 +191,7 @@ for on in \
     SYSCONFDIR \
     SPARSE \
     ANNOTATED \
+    VARLIB \
     VARDIR
 do
     echo "$on=${options[${on}]}"

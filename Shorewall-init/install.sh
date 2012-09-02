@@ -160,7 +160,12 @@ else
     usage 1
 fi
 
-for var in SHAREDIR LIBEXECDIR CONFDIR SBINDIR VARDIR; do
+if [ -z "${VARLIB}" ]; then
+    VARLIB=${VARDIR}
+    VARDIR='${VARLIB}/${PRODUCT}'
+fi
+
+for var in SHAREDIR LIBEXECDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 

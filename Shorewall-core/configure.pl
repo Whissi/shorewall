@@ -38,7 +38,7 @@ my %params;
 my %options;
 
 my %aliases = ( VENDOR         => 'HOST',
-		SHAREDSTATEDIR => 'VARDIR',
+		SHAREDSTATEDIR => 'VARLIB',
 		DATADIR        => 'SHAREDIR' );
 
 for ( @ARGV ) {
@@ -123,6 +123,15 @@ printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s %2d
 
 print  $outfile "# Input: @ARGV\n#\n" if @ARGV;
 
+if ( $options{VARLIB} ) {
+    unless ( $options{VARDIR} ) {
+	$options{VARDIR} = '${VARLIB}/${PRODUCT}';
+    }
+} elsif ( $options{VARDIR} ) {
+    $options{VARLIB} = $options{VARDIR};
+    $options{VARDIR} = '${VARLIB}/${PRODUCT}';
+}
+
 for ( qw/ HOST
 	  PREFIX
 	  SHAREDIR
@@ -141,6 +150,7 @@ for ( qw/ HOST
 	  SYSCONFDIR
 	  SPARSE
 	  ANNOTATED
+	  VARLIB
 	  VARDIR / ) {
 
     my $val = $options{$_} || '';

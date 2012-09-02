@@ -171,7 +171,12 @@ else
     usage 1
 fi
 
-for var in SHAREDIR LIBEXECDIRDIRDIR CONFDIR SBINDIR VARDIR; do
+if [ -z "${VARLIB}" ]; then
+    VARLIB=${VARDIR}
+    VARDIR='${VARLIB}/${PRODUCT}'
+fi
+
+for var in SHAREDIR LIBEXECDIRDIRDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 
@@ -307,7 +312,7 @@ if [ -z "$DESTDIR" -a -d ${CONFDIR}/$PRODUCT ]; then
 else
     rm -rf ${DESTDIR}${CONFDIR}/$PRODUCT
     rm -rf ${DESTDIR}${SHAREDIR}/$PRODUCT
-    rm -rf ${DESTDIR}${VARDIR}/$PRODUCT
+    rm -rf ${DESTDIR}${VARDIR}
     [ "$LIBEXECDIR" = /usr/share ] || rm -rf ${DESTDIR}/usr/share/$PRODUCT/wait4ifup ${DESTDIR}/usr/share/$PRODUCT/shorecap
 fi
 
@@ -332,7 +337,7 @@ echo "$Product control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${VARDIR}/$PRODUCT
+mkdir -p ${DESTDIR}${VARDIR}
 
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
 chmod 755 ${DESTDIR}/usr/share/$PRODUCT

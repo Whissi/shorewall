@@ -193,7 +193,12 @@ else
     usage 1
 fi
 
-for var in SHAREDIR LIBEXECDIR PERLLIBDIR CONFDIR SBINDIR VARDIR; do
+if [ -z "${VARLIB}" ]; then
+    VARLIB=${VARDIR}
+    VARDIR='${VARLIB}/${PRODUCT}'
+fi
+
+for var in SHAREDIR LIBEXECDIR PERLLIBDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 
@@ -371,7 +376,7 @@ mkdir -p ${DESTDIR}/${CONFDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${PERLLIBDIR}/Shorewall
 mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-mkdir -p ${DESTDIR}${VARDIR}/$PRODUCT
+mkdir -p ${DESTDIR}${VARDIR}
 
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
 chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT

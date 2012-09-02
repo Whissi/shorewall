@@ -445,7 +445,7 @@ run_postcompile() { # $1 is the compiled script
 
     script=$(find_file postcompile)
 
-    if [ -n "$script" ]; then
+    if [ -f $script ]; then
 	. $script $1
     else
 	return 0

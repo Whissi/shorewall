@@ -191,10 +191,6 @@ Exporter::export_ok_tags('internal');
 our $VERSION = 'MODULEVERSION';
 
 #
-# The installer will modify this if necessary
-#
-use constant { SHAREDIR => '/usr/share' };
-#
 # describe the current command, it's present progressive, and it's completion.
 #
 our ($command, $doing, $done );
@@ -571,8 +567,8 @@ sub process_shorewallrc($);
 #   2. The compiler can run multiple times in the same process so it has to be
 #      able to re-initialize its dependent modules' state.
 #
-sub initialize( $;$ ) {
-    ( $family, my $shorewallrc ) = @_;
+sub initialize( $;$$) {
+    ( $family, my ( $shorewallrc, $shorewallrc1 ) ) = @_;
 
     if ( $family == F_IPV4 ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall  Shorewall iptables  IPTABLES );
@@ -609,7 +605,7 @@ sub initialize( $;$ ) {
 		    EXPORT     => 0,
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
-		    VERSION    => "4.5.6",
+		    VERSION    => "4.5.8-Beta2",
 		    CAPVERSION => 40507 ,
 		  );
     #
@@ -951,7 +947,9 @@ sub initialize( $;$ ) {
     #
     # Process the global shorewallrc file
     #
-    process_shorewallrc( SHAREDIR . '/shorewall/shorewallrc' );
+    #   Note: The build file executes this function passing only the protocol family
+    #
+    process_shorewallrc( $shorewallrc ) if defined $shorewallrc;
 
     $globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
 
@@ -970,7 +968,7 @@ sub initialize( $;$ ) {
     #
     # If we are compiling for export, process the shorewallrc from the remote system
     #
-    process_shorewallrc( $shorewallrc ) if $shorewallrc;
+    process_shorewallrc( $shorewallrc1 ) if $shorewallrc1;
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );

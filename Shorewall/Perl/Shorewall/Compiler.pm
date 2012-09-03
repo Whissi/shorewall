@@ -54,8 +54,8 @@ my $family;
 #
 # Initilize the package-globals in the other modules
 #
-sub initialize_package_globals( $$ ) {
-    Shorewall::Config::initialize($family, $_[1]);
+sub initialize_package_globals( $$$ ) {
+    Shorewall::Config::initialize($family, $_[1], $_[2]);
     Shorewall::Chains::initialize ($family, 1, $export );
     Shorewall::Zones::initialize ($family, $_[0]);
     Shorewall::Nat::initialize;
@@ -546,8 +546,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path, $shorewallrc ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , ''          , '');
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path, $shorewallrc                      , $shorewallrc1 ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , ''          , '/usr/share/shorewall/shorewallrc', '' );
 
     $export = 0;
     $test   = 0;
@@ -586,6 +586,7 @@ sub compiler {
 		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,
 		  config_path   => { store => \$config_path } ,
 		  shorewallrc   => { store => \$shorewallrc } ,
+		  shorewallrc1  => { store => \$shorewallrc1 } ,
 		);
     #
     #                               P A R A M E T E R    P R O C E S S I N G
@@ -603,7 +604,7 @@ sub compiler {
     #
     # Now that we know the address family (IPv4/IPv6), we can initialize the other modules' globals
     #
-    initialize_package_globals( $update, $shorewallrc );
+    initialize_package_globals( $update, $shorewallrc, $shorewallrc1 );
 
     set_config_path( $config_path ) if $config_path;
 

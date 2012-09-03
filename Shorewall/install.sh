@@ -1051,6 +1051,10 @@ if [ -d Perl ]; then
 	install_file $f ${DESTDIR}${PERLLIBDIR}/$f 0644
 	echo "Module ${f%.*} installed as ${DESTDIR}${PERLLIBDIR}/$f"
     done
+
+    if [ $SHAREDIR != /usr/share ]; then
+	eval perl -p -i -e \'s\|SHAREDIR => \(.\)/usr/share\|SHAREDIR => \\${1}${SHAREDIR}/\|\' ${DESTDIR}${PERLLIBDIR}/Config.pm
+    fi
     #
     # Install the program skeleton files
     #

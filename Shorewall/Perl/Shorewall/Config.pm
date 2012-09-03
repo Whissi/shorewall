@@ -191,6 +191,10 @@ Exporter::export_ok_tags('internal');
 our $VERSION = 'MODULEVERSION';
 
 #
+# The installer will modify this if necessary
+#
+use constant { SHAREDIR => '/usr/share' };
+#
 # describe the current command, it's present progressive, and it's completion.
 #
 our ($command, $doing, $done );
@@ -944,9 +948,10 @@ sub initialize( $;$ ) {
 			 snmp         => 'snmp',
 			 tftp         => 'tftp',
 		       );
-			 
-    
-    process_shorewallrc( $shorewallrc ) if $shorewallrc;
+    #
+    # Process the global shorewallrc file
+    #
+    process_shorewallrc( SHAREDIR . '/shorewall/shorewallrc' );
 
     $globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
 
@@ -962,6 +967,10 @@ sub initialize( $;$ ) {
 	$globals{PRODUCT}       = 'shorewall6';
 	$config{IP6TABLES}      = undef;
     }
+    #
+    # If we are compiling for export, process the shorewallrc from the remote system
+    #
+    process_shorewallrc( $shorewallrc ) if $shorewallrc;
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );

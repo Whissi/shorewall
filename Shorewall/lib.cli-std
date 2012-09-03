@@ -401,10 +401,11 @@ compiler() {
 	shorewallrc=$(find_file shorewallrc)
 	[ -f "$shorewallrc" ] || fatal_error "Compiling for export requires a shorewallrc file"
     else
-	shorewallrc="${g_basedir}/shorewallrc"
+	shorewallrc=
     fi
 
-    options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH --shorewallrc=${shorewallrc}"
+    options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH"
+    [ -n "$shorewallrc" ] && options="$options --shorewallrc=${shorewallrc}"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
     [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
     [ -n "$g_export" ] && options="$options --export"

@@ -608,14 +608,14 @@ else
     fi
 fi
 #
-# Install the Stopped Routing file
+# Install the Stopped Rules file
 #
-run_install $OWNERSHIP -m 0644 routestopped           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 routestopped.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 stoppedrules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 stoppedrules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/routestopped ]; then
-    run_install $OWNERSHIP -m 0600 routestopped${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/routestopped
-    echo "Stopped Routing file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/routestopped"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/stoppedrules ]; then
+    run_install $OWNERSHIP -m 0600 stoppedrules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/stoppedrules
+    echo "Stopped Rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/stoppedrules"
 fi
 #
 # Install the Mac List file

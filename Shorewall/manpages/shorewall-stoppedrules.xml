@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall-stoppedrules</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>stoppedrules</refname>
+
+    <refpurpose>The Shorewall file that governs what traffic flows through the
+    firewall while it is in the 'stopped' state.</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/stoppedrules</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>This file is used to define the hosts that are accessible when the
+    firewall is stopped or is being stopped.</para>
+
+    <warning>
+      <para>Changes to this file do not take effect until after the next
+      <command>shorewall start</command>, <command>shorewall
+      restart</command>, or <option>shorewall compile</option> command.</para>
+    </warning>
+
+    <para>The columns in the file are as follows (where the column name is
+    followed by a different name in parentheses, the different name is used in
+    the alternate specification syntax).</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">ACTION</emphasis> -
+        <option>ACCEPT|NOTRACK</option></term>
+
+        <listitem>
+          <para>Determines the disposition of the packet.
+          <option>ACCEPT</option> means that the packet will be accepted.
+          <option>NOTRACK</option> indicates that no conntrack entry should be
+          created for the packet. <option>NOTRACK</option> does not imply
+          <option>ACCEPT</option>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> - [<emphasis
+        role="bold">-</emphasis>|[$FW|<replaceable>interface</replaceable>]|[{$FW|interface}[<emphasis>:address</emphasis>[,<emphasis>address</emphasis>]...]]|[<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...]</term>
+
+        <listitem>
+          <para><option>$FW</option> matches packets originating on the
+          firewall itself, while <replaceable>interface</replaceable>
+          specifies packets arriving on the named interface.</para>
+
+          <para>This column may also include a omma-separated list of
+          IP/subnet addresses. If your kernel and iptables include iprange
+          match support, IP address ranges are also allowed. Ipsets and
+          exclusion are also supported. When <option>$FW</option> or interface
+          are specified, the list must be preceeded by a colon (":").</para>
+
+          <para>If left empty or supplied as "-", 0.0.0.0/0 is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST</emphasis> - [<emphasis
+        role="bold">-</emphasis>|[$FW|<replaceable>interface</replaceable>]|[{$FW|interface}[<emphasis>:address</emphasis>[,<emphasis>address</emphasis>]...]]|[<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...]</term>
+
+        <listitem>
+          <para><option>$FW</option> matches packets addressed the firewall
+          itself, while <replaceable>interface</replaceable> specifies packets
+          arriving on the named interface. Neither may be specified if the
+          target is <option>NOTRACK</option>.</para>
+
+          <para>This column may also include a omma-separated list of
+          IP/subnet addresses. If your kernel and iptables include iprange
+          match support, IP address ranges are also allowed. Ipsets and
+          exclusion are also supported. When <option>$FW</option> or interface
+          are specified, the list must be preceeded by a colon (":").</para>
+
+          <para>If left empty or supplied as "-", 0.0.0.0/0 is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>PROTO (Optional) ‒
+        <replaceable>protocol-name-or-number</replaceable></term>
+
+        <listitem>
+          <para>Protocol.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DEST PORT(S) (dport) ‒
+        <replaceable>service-name/port-number-list</replaceable></term>
+
+        <listitem>
+          <para>Optional. A comma-separated list of port numbers and/or
+          service names from <filename>/etc/services</filename>. May also
+          include port ranges of the form
+          <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
+          if your kernel and iptables include port range support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>SOURCE PORT(S) (sport) ‒
+        <replaceable>service-name/port-number-list</replaceable></term>
+
+        <listitem>
+          <para>Optional. A comma-separated list of port numbers and/or
+          service names from <filename>/etc/services</filename>. May also
+          include port ranges of the form
+          <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
+          if your kernel and iptables include port range support.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <note>
+      <para>The <emphasis role="bold">source</emphasis> and <emphasis
+      role="bold">dest</emphasis> options work best when used in conjunction
+      with ADMINISABSENTMINDED=Yes in <ulink
+      url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+    </note>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall/stoppedrules</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See ALSO</title>
+
+    <para><ulink
+    url="http://shorewall.net/starting_and_stopping_shorewall.htm">http://shorewall.net/starting_and_stopping_shorewall.htm</ulink></para>
+
+    <para><ulink
+    url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
+
+    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-rtrules(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
+    shorewall-tcrules(5), shorewall-tos(5), shorewall-tunnels(5),
+    shorewall-zones(5)</para>
+  </refsect1>
+</refentry>

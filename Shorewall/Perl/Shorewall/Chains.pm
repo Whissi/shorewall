@@ -225,6 +225,7 @@ our %EXPORT_TAGS = (
 				       handle_network_list
 				       expand_rule
 				       addnatjump
+				       mysplit
 				       set_chain_variables
 				       mark_firewall_not_started
 				       mark_firewall6_not_started

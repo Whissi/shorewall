@@ -41,6 +41,7 @@ our @EXPORT = qw( process_tos
 		  add_common_rules
 		  setup_mac_lists
 		  process_routestopped
+		  process_stoppedrules
 		  compile_stop_firewall
 		  generate_matrix
 		  );
@@ -548,9 +549,9 @@ EOF
 sub process_routestopped() {
 
     if ( my $fn = open_file 'routestopped' ) {
-	my ( @allhosts, %source, %dest , %notrack, @rule );
+	my ( @allhosts, %source, %dest , %destonly, %notrack, @rule );
 
-	my $seq = 0;
+	my $seq    = 0;
 
 	first_entry "$doing $fn...";
 
@@ -573,12 +574,7 @@ sub process_routestopped() {
 
 	    my $rule = do_proto( $proto, $ports, $sports, 0 );
 
-	    for my $host ( split /,/, $hosts ) {
-		imatch_source_net( $host );
-		push @hosts, "$interface|$host|$seq";
-		push @rule, $rule;
-	    }
-
+	    my $verified;
 
 	    unless ( $options eq '-' ) {
 		for my $option (split /,/, $options ) {
@@ -589,12 +585,22 @@ sub process_routestopped() {
 			    $routeback = 1;
 			}
 		    } elsif ( $option eq 'source' ) {
-			for my $host ( split /,/, $hosts ) {
+			$verified = 1;
+			for my $host ( mysplit $hosts ) {
+			    imatch_source_net( $host );
 			    $source{"$interface|$host|$seq"} = 1;
 			}
 		    } elsif ( $option eq 'dest' ) {
-			for my $host ( split /,/, $hosts ) {
+			$verified = 1;
+			for my $host ( mysplit $hosts ) {
+			    imatch_dest_net( $host );
 			    $dest{"$interface|$host|$seq"} = 1;
+			}
+		    } elsif ( $option eq 'destonly' ) {
+			$verified = 1;
+			for my $host ( mysplit $hosts ) {
+			    imatch_dest_net( $host );
+			    $destonly{"$interface|$host|$seq"} = 1;
 			}
 		    } elsif ( $option eq 'notrack' ) {
 			for my $host ( split /,/, $hosts ) {
@@ -610,7 +616,7 @@ sub process_routestopped() {
 	    if ( $routeback || $interfaceref->{options}{routeback} ) {
 		my $chainref = $filter_table->{FORWARD};
 
-		for my $host ( split /,/, $hosts ) {
+		for my $host ( mysplit $hosts ) {
 		    add_ijump( $chainref ,
 			       j => 'ACCEPT',
 			       imatch_source_dev( $interface ) ,
@@ -619,9 +625,21 @@ sub process_routestopped() {
 			       imatch_dest_net( $host ) );
 		    clearrule;
 		}
+		$verified = 1;
+	    }
+
+	    for my $host ( mysplit $hosts ) {
+		unless ( $verified ) {
+		    imatch_source_net( $host );
+		    imatch_dest_net( $host );
+		}
+
+		push @hosts, "$interface|$host|$seq";
+		push @rule, $rule;
 	    }
 
 	    push @allhosts, @hosts;
+
 	}
 
 	for my $host ( @allhosts ) {
@@ -632,7 +650,7 @@ sub process_routestopped() {
 	    my $desti   = match_dest_dev $interface;
 	    my $rule    = shift @rule;
 
-	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
+	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1 unless $destonly{$host};
 
 	    my $matched = 0;
 
@@ -641,15 +659,20 @@ sub process_routestopped() {
 		$matched = 1;
 	    }
 
-	    if ( $dest{$host} ) {
+	    if ( $dest{$host} || $destonly{$host} ) {
 		add_rule $filter_table->{OUTPUT},  "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
 		add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
 		$matched = 1;
 	    }
 
 	    if ( $notrack{$host} ) {
-		add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
-		add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
+		if ( have_capability 'CT_TARGET' ) {
+		    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j CT --notrack", 1;
+		    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j CT --notrack", 1;
+		} else {
+		    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
+		    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
+		}
 	    }
 
 	    unless ( $matched ) {
@@ -665,6 +688,86 @@ sub process_routestopped() {
 	    }
 	}
     }
+}
+
+#
+# Process the stoppedrules file
+#
+sub process_stoppedrules() {
+    my $fw = firewall_zone;
+
+    if ( my $fn = open_file 'stoppedrules' ) {
+	first_entry "$doing $fn...";
+
+	while ( read_a_line( NORMAL_READ ) ) {
+
+	    my ( $target, $source, $dest, $proto, $ports, $sports ) = 
+		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 }, { COMMENT => 0, FORMAT => 2 };
+		
+	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
+
+	    my $tableref;
+
+	    my $chainref;
+	    my $restriction = NO_RESTRICT;
+
+	    if ( $target eq 'NOTRACK' ) {
+		$tableref = $raw_table;
+		require_capability 'RAW_TABLE', 'NOTRACK', 's';
+		$chainref = $raw_table->{PREROUTING};
+		$restriction = PREROUTE_RESTRICT | DESTIFACE_DISALLOW;
+	    } else {
+		$tableref = $filter_table;
+	    }
+		
+	    if ( $source eq $fw ) {
+		$chainref = $tableref->{OUTPUT};
+		$source = '';
+		$restriction = OUTPUT_RESTRICT;
+	    } 
+		
+	    if ( $source =~ s/^($fw):// ) {
+		$chainref = $filter_table->{OUTPUT};
+		$restriction = OUTPUT_RESTRICT;
+	    }
+
+	    if ( $dest eq $fw ) {
+		fatal_error "\$FW may not be specified as the destination of a NOTRACK rule" if $target eq 'NOTRACK';
+		$chainref = $filter_table->{INPUT};
+		$dest = '';
+		$restriction = INPUT_RESTRICT;
+	    }
+		
+	    if ( $dest =~ s/^($fw):// ) {
+		fatal_error "\$FW may not be specified as the destination of a NOTRACK rule" if $target eq 'NOTRACK';
+		$chainref = $filter_table->{INPUT};
+		$restriction = INPUT_RESTRICT;
+	    }
+
+	    $chainref = $tableref->{FORWARD} unless $chainref;
+
+	    my $disposition = $target;
+		
+	    $target = 'CT --notrack' if $target eq 'NOTRACK' and have_capability( 'CT_TARGET' );
+
+	    unless ( $restriction == OUTPUT_RESTRICT
+		     && $target eq 'ACCEPT'
+		     && $config{ADMINISABSENTMINDED} ) {
+		expand_rule( $chainref ,
+			     $restriction ,
+			     do_proto( $proto, $ports, $sports ) ,
+			     $source ,
+			     $dest ,
+			     '' ,
+			     $target,
+			     '',
+			     $disposition,
+			     do_proto( $proto, '-', '-' ) );            	     
+	    }
+	}
+    }
+
+    clear_comment;
 }
 
 sub setup_mss();
@@ -2415,6 +2518,7 @@ EOF
     }
 
     process_routestopped;
+    process_stoppedrules;
 
     add_ijump $input,  j => 'ACCEPT', i => 'lo';
     add_ijump $output, j => 'ACCEPT', o => 'lo' unless $config{ADMINISABSENTMINDED};

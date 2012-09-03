@@ -919,6 +919,7 @@ sub compiler {
 	    # call that function during normal 'check', we must validate routestopped here.
 	    #
 	    process_routestopped;
+	    process_stoppedrules;
 	}
 
 	if ( $family == F_IPV4 ) {

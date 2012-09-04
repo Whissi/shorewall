@@ -1,6 +1,6 @@
 #
-# Shorewall version 4.0 - Sample Routestopped File for three-interface configuration.
-# Copyright (C) 2006 by the Shorewall Team
+# Shorewall6 version 4.5 Sample Stoppedrules File for two-interface configuration.
+# Copyright (C) 2012 by the Shorewall Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -9,8 +9,9 @@
 #
 # See the file README.txt for further details.
 #------------------------------------------------------------------------------
-# For information about entries in this file, type "man shorewall-routestopped"
-##############################################################################
-#INTERFACE	HOST(S)
-eth1		-
-eth2		-
+# For information about entries in this file, type "man shorewall-stoppedrules"
+###############################################################################
+#TARGET		SOURCE		DEST		PROTO	DEST		SOURCE
+#							PORT(S)		PORT(S)
+ACCEPT		eth1		-
+ACCEPT		-		eth1

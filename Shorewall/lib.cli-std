@@ -665,7 +665,7 @@ compile_command() {
 	    [ -d $file ] && echo "   ERROR: $file is a directory" >&2 && exit 2;
 	    ;;
 	2)
-	    [ -n "$g_shorewalldir" ] && usage 2
+	    [ -n "$g_shorewalldir" -a -z "$g_export" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
@@ -749,7 +749,7 @@ check_command() {
 	0)
 	    ;;
 	1)
-	    [ -n "$g_shorewalldir" ] && usage 2
+	    [ -n "$g_shorewalldir" -a -z "$g_export" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then

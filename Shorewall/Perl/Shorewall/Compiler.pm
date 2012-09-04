@@ -202,21 +202,8 @@ sub generate_script_2() {
 	}
     }
 
-    emit( '[ -f ${g_confdir}/vardir ] && . ${g_confdir}/vardir' );
-
-    if ( $family == F_IPV4 ) {
-	if ( $export ) {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall-lite}" ]' );
-	} else {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall}" ]' );
-	}
-    } else {
-	if ( $export ) {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall6-lite}" ]' );
-	} else {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall6}" ]' );
-	}
-    }
+    emit (   '[ -f ${g_confdir}/vardir ] && . ${g_confdir}/vardir' );
+    emit ( qq([ -n "\${VARDIR:=$shorewallrc1{VARDIR}}" ]) );
 
     emit 'TEMPFILE=';
 

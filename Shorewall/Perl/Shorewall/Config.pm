@@ -557,7 +557,7 @@ use constant { PLAIN_READ          => 0,     # No read_a_line options
                NORMAL_READ         => -1     # All options
 	   };
 
-sub process_shorewallrc($);
+sub process_shorewallrc($$);
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -897,16 +897,6 @@ sub initialize( $;$$) {
 
     @actparms = ();
 
-    %shorewallrc = (
-		    SHAREDIR => '/usr/share/',
-		    CONFDIR  => '/etc/',
-		    );
-    
-    %shorewallrc1 = (
-		    SHAREDIR => '/usr/share/',
-		    CONFDIR  => '/etc/',
-		    );
-
     %helpers_enabled = (
 			amanda       => 1,
 			ftp          => 1,
@@ -950,12 +940,34 @@ sub initialize( $;$$) {
 			 snmp         => 'snmp',
 			 tftp         => 'tftp',
 		       );
+
+    %shorewallrc = (
+		    SHAREDIR => '/usr/share/',
+		    CONFDIR  => '/etc/',
+		    );
+    #
+    # If we are compiling for export, process the shorewallrc from the remote system
+    #
+    if ( $shorewallrc1 ) {
+	process_shorewallrc( $shorewallrc1,
+			     $family == F_IPV4 ? 'shorewall-lite' : 'shorewall6-lite'
+			   );
+
+	%shorewallrc1 = %shorewallrc;
+
+	%shorewallrc = (
+			SHAREDIR => '/usr/share/',
+			CONFDIR  => '/etc/',
+		       );
+    }
     #
     # Process the global shorewallrc file
     #
     #   Note: The build file executes this function passing only the protocol family
     #
-    process_shorewallrc( $shorewallrc ) if defined $shorewallrc;
+    process_shorewallrc( $shorewallrc,
+			 $family == F_IPV4 ? 'shorewall' : 'shorewall6'
+		       ) if defined $shorewallrc;
 
     $globals{SHAREDIRPL} = "$shorewallrc{SHAREDIR}/shorewall/";
 
@@ -971,18 +983,8 @@ sub initialize( $;$$) {
 	$globals{PRODUCT}       = 'shorewall6';
 	$config{IP6TABLES}      = undef;
     }
-    #
-    # If we are compiling for export, process the shorewallrc from the remote system
-    #
-    if ( $shorewallrc1 ) {
-	my %rc = %shorewallrc;
-	%shorewallrc = ( );
-	process_shorewallrc( $shorewallrc1 );
-	%shorewallrc1 = %shorewallrc;
-	%shorewallrc   = %rc;
-    } else {
-	%shorewallrc1 = %shorewallrc;
-    }
+
+    %shorewallrc1 = %shorewallrc unless $shorewallrc1;
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -2624,10 +2626,10 @@ sub read_a_line($) {
     }
 }
 
-sub process_shorewallrc( $ ) {
-    my $shorewallrc = shift;
+sub process_shorewallrc( $$ ) {
+    my ( $shorewallrc , $product ) = @_;
 
-    $shorewallrc{PRODUCT} = $family == F_IPV4 ? 'shorewall' : 'shorewall6';
+    $shorewallrc{PRODUCT} = $product;
 
     if ( open_file $shorewallrc ) {
 	while ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE | CHECK_GUNK ) ) {

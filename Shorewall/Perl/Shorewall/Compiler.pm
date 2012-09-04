@@ -158,7 +158,7 @@ sub generate_script_2() {
 
     push_indent;
 
-    if ( $shorewallrc{TEMPDIR} ) {
+    if ( $shorewallrc1{TEMPDIR} ) {
 	emit( '',
 	      qq(TMPDIR="$shorewallrc{TEMPDIR}") ,
 	      q(export TMPDIR) );
@@ -168,14 +168,14 @@ sub generate_script_2() {
 	emit( 'g_family=4' );
 
 	if ( $export ) {
-	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall-lite),
+	    emit ( qq(g_confdir=$shorewallrc1{CONFDIR}/shorewall-lite),
 		   'g_product="Shorewall Lite"',
 		   'g_program=shorewall-lite',
 		   'g_basedir=/usr/share/shorewall-lite',
-		   qq(CONFIG_PATH="$shorewallrc{CONFDIR}/shorewall-lite:$shorewallrc{SHAREDIR}/shorewall-lite") ,
+		   qq(CONFIG_PATH="$shorewallrc1{CONFDIR}/shorewall-lite:$shorewallrc1{SHAREDIR}/shorewall-lite") ,
 		 );
 	} else {
-	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall),
+	    emit ( qq(g_confdir=$shorewallrc1{CONFDIR}/shorewall),
 		   'g_product=Shorewall',
 		   'g_program=shorewall',
 		   'g_basedir=/usr/share/shorewall',
@@ -186,14 +186,14 @@ sub generate_script_2() {
 	emit( 'g_family=6' );
 
 	if ( $export ) {
-	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall6-lite),
+	    emit ( qq(g_confdir=$shorewallrc1{CONFDIR}/shorewall6-lite),
 		   'g_product="Shorewall6 Lite"',
 		   'g_program=shorewall6-lite',
 		   'g_basedir=/usr/share/shorewall6',
-		   qq(CONFIG_PATH="$shorewallrc{CONFDIR}/shorewall6-lite:$shorewallrc{SHAREDIR}/shorewall6-lite") ,
+		   qq(CONFIG_PATH="$shorewallrc1{CONFDIR}/shorewall6-lite:$shorewallrc{SHAREDIR}/shorewall6-lite") ,
 		 );
 	} else {
-	    emit ( qq(g_confdir=$shorewallrc{CONFDIR}/shorewall6),
+	    emit ( qq(g_confdir=$shorewallrc1{CONFDIR}/shorewall6),
 		   'g_product=Shorewall6',
 		   'g_program=shorewall6',
 		   'g_basedir=/usr/share/shorewall',
@@ -206,15 +206,15 @@ sub generate_script_2() {
 
     if ( $family == F_IPV4 ) {
 	if ( $export ) {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall-lite}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall-lite}" ]' );
 	} else {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall}" ]' );
 	}
     } else {
 	if ( $export ) {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall6-lite}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall6-lite}" ]' );
 	} else {
-	    emit ( '[ -n "${VARDIR:=' . $shorewallrc{VARDIR} . '/shorewall6}" ]' );
+	    emit ( '[ -n "${VARDIR:=' . $shorewallrc1{VARDIR} . '/shorewall6}" ]' );
 	}
     }
 

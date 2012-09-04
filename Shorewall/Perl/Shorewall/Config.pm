@@ -144,6 +144,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %globals
 				       %config_files
 				       %shorewallrc
+				       %shorewallrc1
 
 				       %helpers
 				       %helpers_map
@@ -540,7 +541,7 @@ my $ifstack;
 #
 # From .shorewallrc
 #
-our %shorewallrc;
+our ( %shorewallrc, %shorewallrc1 );
 #
 # read_a_line options
 #
@@ -900,6 +901,11 @@ sub initialize( $;$$) {
 		    SHAREDIR => '/usr/share/',
 		    CONFDIR  => '/etc/',
 		    );
+    
+    %shorewallrc1 = (
+		    SHAREDIR => '/usr/share/',
+		    CONFDIR  => '/etc/',
+		    );
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -968,7 +974,15 @@ sub initialize( $;$$) {
     #
     # If we are compiling for export, process the shorewallrc from the remote system
     #
-    process_shorewallrc( $shorewallrc1 ) if $shorewallrc1;
+    if ( $shorewallrc1 ) {
+	my %rc = %shorewallrc;
+	%shorewallrc = ( );
+	process_shorewallrc( $shorewallrc1 );
+	%shorewallrc1 = %shorewallrc;
+	%shorewallrc   = %rc;
+    } else {
+	%shorewallrc1 = %shorewallrc;
+    }
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );

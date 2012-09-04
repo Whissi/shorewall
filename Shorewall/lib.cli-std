@@ -658,7 +658,7 @@ compile_command() {
 
     case $# in
 	0)
-	    file=${VARDIR}/firewall
+	    [ -n "$g_export" ] && file=firewall || file=${VARDIR}/firewall
 	    ;;
 	1)
 	    file=$1

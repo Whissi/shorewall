@@ -187,8 +187,8 @@ fi
 [ -n "$LOGFILE" ] || LOGFILE=/dev/null
 
 for PRODUCT in $PRODUCTS; do
-    if [ -x $VARDIR/$PRODUCT/firewall ]; then
-	  ( ${VARDIR}/$PRODUCT/firewall -V0 $COMMAND $INTERFACE >> $LOGFILE 2>&1 ) || true
+    if [ -x $VARLIB/$PRODUCT/firewall ]; then
+	  ( ${VARLIB}/$PRODUCT/firewall -V0 $COMMAND $INTERFACE >> $LOGFILE 2>&1 ) || true
     fi
 done
 

@@ -691,19 +691,22 @@ sub process_routestopped() {
 }
 
 #
-# Process the stoppedrules file
+# Process the stoppedrules file. Returns true if the file was non-empty.
 #
 sub process_stoppedrules() {
     my $fw = firewall_zone;
+    my $result;
 
     if ( my $fn = open_file 'stoppedrules' ) {
 	first_entry "$doing $fn...";
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
+	    $result = 1;
+
 	    my ( $target, $source, $dest, $proto, $ports, $sports ) = 
 		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 }, { COMMENT => 0, FORMAT => 2 };
-		
+
 	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
 
 	    my $tableref;
@@ -719,13 +722,13 @@ sub process_stoppedrules() {
 	    } else {
 		$tableref = $filter_table;
 	    }
-		
+
 	    if ( $source eq $fw ) {
 		$chainref = $tableref->{OUTPUT};
 		$source = '';
 		$restriction = OUTPUT_RESTRICT;
 	    } 
-		
+
 	    if ( $source =~ s/^($fw):// ) {
 		$chainref = $filter_table->{OUTPUT};
 		$restriction = OUTPUT_RESTRICT;
@@ -737,7 +740,7 @@ sub process_stoppedrules() {
 		$dest = '';
 		$restriction = INPUT_RESTRICT;
 	    }
-		
+
 	    if ( $dest =~ s/^($fw):// ) {
 		fatal_error "\$FW may not be specified as the destination of a NOTRACK rule" if $target eq 'NOTRACK';
 		$chainref = $filter_table->{INPUT};
@@ -747,7 +750,7 @@ sub process_stoppedrules() {
 	    $chainref = $tableref->{FORWARD} unless $chainref;
 
 	    my $disposition = $target;
-		
+
 	    $target = 'CT --notrack' if $target eq 'NOTRACK' and have_capability( 'CT_TARGET' );
 
 	    unless ( $restriction == OUTPUT_RESTRICT
@@ -768,6 +771,8 @@ sub process_stoppedrules() {
     }
 
     clear_comment;
+
+    $result;
 }
 
 sub setup_mss();
@@ -2517,8 +2522,7 @@ EOF
 	}
     }
 
-    process_routestopped;
-    process_stoppedrules;
+    process_routestopped unless process_stoppedrules;
 
     add_ijump $input,  j => 'ACCEPT', i => 'lo';
     add_ijump $output, j => 'ACCEPT', o => 'lo' unless $config{ADMINISABSENTMINDED};

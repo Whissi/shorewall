@@ -92,7 +92,7 @@ our @EXPORT = ( qw( NOTHING
 		    find_zones_by_option
 		    all_ipsets
 		    have_ipsec
-		 )
+		 ),
 	      );
 
 our @EXPORT_OK = qw( initialize );
@@ -535,12 +535,17 @@ sub process_zone( \$ ) {
     }
 
     if ( $zoneref->{options}{in_out}{blacklist} ) {
+	warning_message q(The 'blacklist' option is deprecated);
 	for ( qw/in out/ ) {
 	    unless ( $zoneref->{options}{$_}{blacklist} ) {
 		$zoneref->{options}{$_}{blacklist} = 1;
 	    } else {
 		warning_message( "Redundant 'blacklist' in " . uc( $_ ) . '_OPTIONS' );
 	    }
+	}
+    } else {
+	for ( qw/in out/ ) {
+	    warning_message q(The 'blacklist' option is deprecated), last if  $zoneref->{options}{$_}{blacklist};
 	}
     }
 
@@ -1801,6 +1806,7 @@ sub process_host( ) {
 	    } elsif ( $option eq 'norfc1918' ) {
 		warning_message "The 'norfc1918' host option is no longer supported"
 	    } elsif ( $option eq 'blacklist' ) {
+		warning_message "The 'blacklist' option is deprecated";
 		$zoneref->{options}{in}{blacklist} = 1;
 	    } elsif ( $option =~ /^mss=(\d+)$/ ) {
 		fatal_error "Invalid mss ($1)" unless $1 >= 500;

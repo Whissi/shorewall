@@ -65,11 +65,11 @@ not_configured () {
 # set the STATEDIR variable
 setstatedir() {
     local statedir
-    if [ -f ${CONFDIR}/${g_program}/vardir ]; then
-	statedir=$( . /${CONFDIR}/${g_program}/vardir && echo $VARDIR )
+    if [ -f ${CONFDIR}/${PRODUCT}/vardir ]; then
+	statedir=$( . /${CONFDIR}/${PRODUCT}/vardir && echo $VARDIR )
     fi
-    
-    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${g_program}
+
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
 
     if [ ! -x $STATEDIR/firewall ]; then
 	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then

@@ -22,6 +22,21 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+setstatedir() {
+    local statedir
+    if [ -f ${CONFDIR}/${PRODUCT}/vardir ]; then
+	statedir=$( . /${CONFDIR}/${PRODUCT}/vardir && echo $VARDIR )
+    fi
+
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
+
+    if [ ! -x $STATEDIR/firewall ]; then
+	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	    ${SBINDIR}/$PRODUCT compile
+	fi
+    fi
+}
+
 Debian_SuSE_ppp() {
     NEWPRODUCTS=
     INTERFACE="$1"
@@ -187,6 +202,8 @@ fi
 [ -n "$LOGFILE" ] || LOGFILE=/dev/null
 
 for PRODUCT in $PRODUCTS; do
+    setstatedir
+
     if [ -x $VARLIB/$PRODUCT/firewall ]; then
 	  ( ${VARLIB}/$PRODUCT/firewall -V0 $COMMAND $INTERFACE >> $LOGFILE 2>&1 ) || true
     fi

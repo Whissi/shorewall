@@ -35,21 +35,6 @@
 #                    prior to bringing up the network.  
 ### END INIT INFO
 
-setstatedir() {
-    local statedir
-    if [ -f ${CONFDIR}/${g_program}/vardir ]; then
-	statedir=$( . /${CONFDIR}/${g_program}/vardir && echo $VARDIR )
-    fi
-    
-    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${g_program}
-
-    if [ ! -x $STATEDIR/firewall ]; then
-	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	    ${SBINDIR}/$PRODUCT compile
-	fi
-    fi
-}
-
 if [ "$(id -u)" != "0" ]
 then
   echo "You must be root to start, stop or restart \"Shorewall \"."
@@ -73,7 +58,21 @@ fi
 #
 . /usr/share/shorewall/shorewallrc
 
-vardir=${VARDIR}
+# Locate the current PRODUCT's statedir
+setstatedir() {
+    local statedir
+    if [ -f ${CONFDIR}/${PRODUCT}/vardir ]; then
+	statedir=$( . /${CONFDIR}/${PRODUCT}/vardir && echo $VARDIR )
+    fi
+
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
+
+    if [ ! -x $STATEDIR/firewall ]; then
+	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	    ${SBINDIR}/$PRODUCT compile $STATEDIR/firewall
+	fi
+    fi
+}
 
 # Initialize the firewall
 shorewall_start () {

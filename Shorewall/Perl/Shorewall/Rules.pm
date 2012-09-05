@@ -2281,7 +2281,7 @@ sub build_zone_list( $$$\$\$ ) {
 # Process a Record in the rules file
 #
 sub process_rule ( ) {
-    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
 	= split_line1 'rules file', \%rulecolumns, $rule_commands;
 
     fatal_error 'ACTION must be specified' if $target eq '-';
@@ -2307,6 +2307,7 @@ sub process_rule ( ) {
     my @source    = build_zone_list ( $fw, $source, 'SOURCE', $intrazone, $wild );
     my @dest      = build_zone_list ( $fw, $dest,   'DEST'  , $intrazone, $wild );
     my @protos    = split_list1 $protos, 'Protocol';
+    my @users     = split_list1 $users, 'USER/GROUP';
     my $generated = 0;
 
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
@@ -2322,24 +2323,26 @@ sub process_rule ( ) {
 	    $destzone = $action =~ /^REDIRECT/ ? $fw : '' unless defined_zone $destzone;
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
 		for my $proto ( @protos ) {
-		    $generated |= process_rule1( undef,
-						 $target,
-						 '',
-						 $source,
-						 $dest,
-						 $proto,
-						 $ports,
-						 $sports,
-						 $origdest,
-						 $ratelimit,
-						 $user,
-						 $mark,
-						 $connlimit,
-						 $time,
-						 $headers,
-						 $condition,
-						 $helper,
-						 $wild );
+		    for my $user ( @users ) {
+			$generated |= process_rule1( undef,
+						     $target,
+						     '',
+						     $source,
+						     $dest,
+						     $proto,
+						     $ports,
+						     $sports,
+						     $origdest,
+						     $ratelimit,
+						     $user,
+						     $mark,
+						     $connlimit,
+						     $time,
+						     $headers,
+						     $condition,
+						     $helper,
+						     $wild );
+		    }
 		}
 	    }
 	}

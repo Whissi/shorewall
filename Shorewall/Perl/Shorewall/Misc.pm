@@ -549,9 +549,9 @@ EOF
 sub process_routestopped() {
 
     if ( my $fn = open_file 'routestopped' ) {
-	my ( @allhosts, %source, %dest , %destonly, %notrack, @rule );
+	my ( @allhosts, %source, %dest , %notrack, @rule );
 
-	my $seq    = 0;
+	my $seq = 0;
 
 	first_entry "$doing $fn...";
 
@@ -574,7 +574,13 @@ sub process_routestopped() {
 
 	    my $rule = do_proto( $proto, $ports, $sports, 0 );
 
-	    my $verified;
+	    for my $host ( split /,/, $hosts ) {
+		fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
+		validate_host $host, 1;
+		push @hosts, "$interface|$host|$seq";
+		push @rule, $rule;
+	    }
+
 
 	    unless ( $options eq '-' ) {
 		for my $option (split /,/, $options ) {
@@ -585,22 +591,12 @@ sub process_routestopped() {
 			    $routeback = 1;
 			}
 		    } elsif ( $option eq 'source' ) {
-			$verified = 1;
-			for my $host ( mysplit $hosts ) {
-			    imatch_source_net( $host );
+			for my $host ( split /,/, $hosts ) {
 			    $source{"$interface|$host|$seq"} = 1;
 			}
 		    } elsif ( $option eq 'dest' ) {
-			$verified = 1;
-			for my $host ( mysplit $hosts ) {
-			    imatch_dest_net( $host );
+			for my $host ( split /,/, $hosts ) {
 			    $dest{"$interface|$host|$seq"} = 1;
-			}
-		    } elsif ( $option eq 'destonly' ) {
-			$verified = 1;
-			for my $host ( mysplit $hosts ) {
-			    imatch_dest_net( $host );
-			    $destonly{"$interface|$host|$seq"} = 1;
 			}
 		    } elsif ( $option eq 'notrack' ) {
 			for my $host ( split /,/, $hosts ) {
@@ -616,7 +612,7 @@ sub process_routestopped() {
 	    if ( $routeback || $interfaceref->{options}{routeback} ) {
 		my $chainref = $filter_table->{FORWARD};
 
-		for my $host ( mysplit $hosts ) {
+		for my $host ( split /,/, $hosts ) {
 		    add_ijump( $chainref ,
 			       j => 'ACCEPT',
 			       imatch_source_dev( $interface ) ,
@@ -625,21 +621,9 @@ sub process_routestopped() {
 			       imatch_dest_net( $host ) );
 		    clearrule;
 		}
-		$verified = 1;
-	    }
-
-	    for my $host ( mysplit $hosts ) {
-		unless ( $verified ) {
-		    imatch_source_net( $host );
-		    imatch_dest_net( $host );
-		}
-
-		push @hosts, "$interface|$host|$seq";
-		push @rule, $rule;
 	    }
 
 	    push @allhosts, @hosts;
-
 	}
 
 	for my $host ( @allhosts ) {
@@ -650,7 +634,8 @@ sub process_routestopped() {
 	    my $desti   = match_dest_dev $interface;
 	    my $rule    = shift @rule;
 
-	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1 unless $destonly{$host};
+	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
+	    add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
 
 	    my $matched = 0;
 
@@ -659,20 +644,14 @@ sub process_routestopped() {
 		$matched = 1;
 	    }
 
-	    if ( $dest{$host} || $destonly{$host} ) {
-		add_rule $filter_table->{OUTPUT},  "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
+	    if ( $dest{$host} ) {
 		add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
 		$matched = 1;
 	    }
 
 	    if ( $notrack{$host} ) {
-		if ( have_capability 'CT_TARGET' ) {
-		    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j CT --notrack", 1;
-		    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j CT --notrack", 1;
-		} else {
-		    add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
-		    add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
-		}
+		add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
+		add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
 	    }
 
 	    unless ( $matched ) {

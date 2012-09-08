@@ -139,149 +139,151 @@ httpd_accel_uses_host_header on</programlisting>
       http://www.domain.tld:<emphasis role="bold">8080</emphasis>) then you
       must open those ports as well.</para>
     </caution>
-  </section>
 
-  <section id="Configurations">
-    <title>Configurations</title>
+    <section id="Configurations">
+      <title>Configurations</title>
 
-    <para>Three different configurations are covered:</para>
+      <para>Three different configurations are covered:</para>
 
-    <simplelist>
-      <member>Squid (transparent) Running on the Firewall</member>
+      <simplelist>
+        <member>Squid (transparent) Running on the Firewall</member>
 
-      <member>Squid (transparent) Running in the local Network</member>
+        <member>Squid (transparent) Running in the local Network</member>
 
-      <member>Squid (transparent) Running in a DMZ</member>
-    </simplelist>
+        <member>Squid (transparent) Running in a DMZ</member>
+      </simplelist>
 
-    <section id="Firewall">
-      <title>Squid (transparent) Running on the Firewall</title>
+      <section id="Firewall">
+        <title>Squid (transparent) Running on the Firewall</title>
 
-      <para>You want to redirect all local www connection requests EXCEPT
-      those to your own http server (206.124.146.177) to a Squid transparent
-      proxy running on the firewall and listening on port 3128. Squid will of
-      course require access to remote web servers.</para>
+        <para>You want to redirect all local www connection requests EXCEPT
+        those to your own http server (206.124.146.177) to a Squid transparent
+        proxy running on the firewall and listening on port 3128. Squid will
+        of course require access to remote web servers.</para>
 
-      <para>In <filename>/etc/shorewall/rules</filename>:</para>
+        <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
+        <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
 ACCEPT    $FW        net      tcp      www
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177
 </programlisting>
 
-      <para>There may be a requirement to exclude additional destination hosts
-      or networks from being redirected. For example, you might also want
-      requests destined for 130.252.100.0/24 to not be routed to Squid.</para>
+        <para>There may be a requirement to exclude additional destination
+        hosts or networks from being redirected. For example, you might also
+        want requests destined for 130.252.100.0/24 to not be routed to
+        Squid.</para>
 
-      <para>If needed, you may just add the additional hosts/networks to the
-      ORIGINAL DEST column in your REDIRECT rule.</para>
+        <para>If needed, you may just add the additional hosts/networks to the
+        ORIGINAL DEST column in your REDIRECT rule.</para>
 
-      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
+        <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
 
-      <para>People frequently ask <emphasis>How can I exclude certain internal
-      systems from using the proxy? I want to allow those systems to go
-      directly to the net</emphasis>.</para>
+        <para>People frequently ask <emphasis>How can I exclude certain
+        internal systems from using the proxy? I want to allow those systems
+        to go directly to the net</emphasis>.</para>
 
-      <para>Suppose that you want to exclude 192.168.1.5 and 192.168.1.33 from
-      the proxy. Your rules would then be:</para>
+        <para>Suppose that you want to exclude 192.168.1.5 and 192.168.1.33
+        from the proxy. Your rules would then be:</para>
 
-      <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
+        <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
 ACCEPT    $FW        net      tcp      www
 REDIRECT  loc:!192.168.1.5,192.168.1.33\
                      3128     tcp      www              -          !206.124.146.177,130.252.100.0/24
 ACCEPT    loc        net      tcp      www</programlisting>
 
-      <para>The last rule may be omitted if your loc-&gt;net policy is
-      ACCEPT.</para>
+        <para>The last rule may be omitted if your loc-&gt;net policy is
+        ACCEPT.</para>
 
-      <para>In some cases (when running an LTSP server on the Shorewall
-      system), you might want to transparently proxy web connections that
-      originate on the firewall itself. This requires care to ensure that
-      Squid's own web connections are not proxied.</para>
+        <para>In some cases (when running an LTSP server on the Shorewall
+        system), you might want to transparently proxy web connections that
+        originate on the firewall itself. This requires care to ensure that
+        Squid's own web connections are not proxied.</para>
 
-      <para>First, determine the user id that Squid is running under:</para>
+        <para>First, determine the user id that Squid is running under:</para>
 
-      <programlisting>gateway:/etc/shorewall# <emphasis role="bold">ps aux | fgrep -i squid | fgrep -v fgrep</emphasis>
+        <programlisting>gateway:/etc/shorewall# <emphasis role="bold">ps aux | fgrep -i squid | fgrep -v fgrep</emphasis>
 root     10085  0.0  0.0  23864   700 ?        Ss   Apr22   0:00 /usr/sbin/squid -D -YC
 <emphasis role="bold">proxy</emphasis>    10088  0.0  0.9  40512 19192 ?        S    Apr22  10:58 <emphasis
-          role="bold">(squid)</emphasis> -D -YC
+            role="bold">(squid)</emphasis> -D -YC
 gateway:/etc/shorewall# </programlisting>
 
-      <para>In this case, the proxy process <emphasis
-      role="bold">(squid)</emphasis> is running under the <emphasis
-      role="bold">proxy</emphasis> user Id. We add these rules:</para>
+        <para>In this case, the proxy process <emphasis
+        role="bold">(squid)</emphasis> is running under the <emphasis
+        role="bold">proxy</emphasis> user Id. We add these rules:</para>
 
-      <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL          RATE       USER/
+        <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL          RATE       USER/
 #                                                       PORT(S)    DEST              LIMIT      GROUP
 ACCEPT    $FW        net      tcp      www
 REDIRECT  $FW        3128     tcp      www              -          -                 -         <emphasis
-          role="bold"> !proxy</emphasis></programlisting>
-    </section>
+            role="bold"> !proxy</emphasis></programlisting>
+      </section>
 
-    <section id="Local">
-      <title>Squid (transparent) Running in the local network</title>
+      <section id="Local">
+        <title>Squid (transparent) Running in the local network</title>
 
-      <para>You want to redirect all local www connection requests to a Squid
-      transparent proxy running in your local zone at 192.168.1.3 and
-      listening on port 3128. Your local interface is eth1. There may also be
-      a web server running on 192.168.1.3. It is assumed that web access is
-      already enabled from the local zone to the Internet.</para>
+        <para>You want to redirect all local www connection requests to a
+        Squid transparent proxy running in your local zone at 192.168.1.3 and
+        listening on port 3128. Your local interface is eth1. There may also
+        be a web server running on 192.168.1.3. It is assumed that web access
+        is already enabled from the local zone to the Internet.</para>
 
-      <orderedlist>
-        <listitem>
-          <para>Add this entry to your /etc/shorewall/providers file.</para>
+        <orderedlist>
+          <listitem>
+            <para>Add this entry to your /etc/shorewall/providers file.</para>
 
-          <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
+            <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
 Squid   1       202     -               eth1            192.168.1.3     loose,notrack</programlisting>
-        </listitem>
+          </listitem>
 
-        <listitem>
-          <para>In <filename>/etc/shorewall/tcrules</filename> add:</para>
+          <listitem>
+            <para>In <filename>/etc/shorewall/tcrules</filename> add:</para>
 
-          <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
+            <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
 #                                                 PORT(S)
 202:P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
-        </listitem>
+          </listitem>
 
-        <listitem>
-          <para>In <filename> <filename>/etc/shorewall/interfaces</filename>
-          </filename>:</para>
+          <listitem>
+            <para>In <filename> <filename>/etc/shorewall/interfaces</filename>
+            </filename>:</para>
 
-          <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
+            <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
 loc     eth1         detect       <emphasis role="bold">routeback</emphasis>          </programlisting>
-        </listitem>
+          </listitem>
 
-        <listitem>
-          <para>On 192.168.1.3, arrange for the following command to be
-          executed after networking has come up</para>
+          <listitem>
+            <para>On 192.168.1.3, arrange for the following command to be
+            executed after networking has come up</para>
 
-          <programlisting><command>iptables -t nat -A PREROUTING -i eth0 ! -d 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command>          </programlisting>
+            <programlisting><command>iptables -t nat -A PREROUTING -i eth0 ! -d 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command>          </programlisting>
 
-          <para>If you are running RedHat on the server, you can simply
-          execute the following commands after you have typed the iptables
-          command above:</para>
+            <para>If you are running RedHat on the server, you can simply
+            execute the following commands after you have typed the iptables
+            command above:</para>
 
-          <programlisting><command>iptables-save &gt; /etc/sysconfig/iptables
+            <programlisting><command>iptables-save &gt; /etc/sysconfig/iptables
  chkconfig --level 35 iptables on</command>         </programlisting>
-        </listitem>
-      </orderedlist>
-    </section>
+          </listitem>
+        </orderedlist>
+      </section>
 
-    <section id="DMZ">
-      <title>Squid (transparent) Running in the DMZ</title>
+      <section id="DMZ">
+        <title>Squid (transparent) Running in the DMZ</title>
 
-      <para>You have a single system in your DMZ with IP address 192.0.2.177.
-      You want to run both a web server and Squid on that system.</para>
+        <para>You have a single system in your DMZ with IP address
+        192.0.2.177. You want to run both a web server and Squid on that
+        system.</para>
 
-      <para>In <filename>/etc/shorewall/rules</filename>:</para>
+        <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION  SOURCE   DEST                 PROTO    DEST PORT(S)    SOURCE     ORIGINAL
+        <programlisting>#ACTION  SOURCE   DEST                 PROTO    DEST PORT(S)    SOURCE     ORIGINAL
 #                                                               PORT(S)    DEST
 DNAT     loc      dmz:192.0.2.177:3128 tcp      80              -          !192.0.2.177</programlisting>
+      </section>
     </section>
   </section>
 
@@ -310,7 +312,7 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
   </section>
 
   <section id="TPROXY">
-    <title>Transparent with TPROXY</title>
+    <title>Squid3 as a Transparent Proxy with TPROXY</title>
 
     <para>Shorewall 4.5.4 contains support for TPROXY. TPROXY differs from
     REDIRECT in that it does not modify the IP header and requires Squid 3 or

@@ -1353,7 +1353,7 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 #
 sub process_tc_filter() {
 
-    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length ) = split_line 'tcfilters file', { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 };
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority ) = split_line 'tcfilters file', { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 , priority => 8 };
 
     fatal_error 'CLASS must be specified' if $devclass eq '-';
 
@@ -1364,6 +1364,11 @@ sub process_tc_filter() {
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
 
     my ( $ip, $ip32, $prio , $lo ) = $family == F_IPV4 ? ('ip', 'ip', 10, 2 ) : ('ipv6', 'ip6', 11 , 4 );
+
+    if ( $priority ne '-' ) {
+	$prio = numeric_value $priority;
+	fatal_error "Invalid priority ($priority)" unless defined $prio && $prio >= 12;
+    }
 
     my $devref;
 

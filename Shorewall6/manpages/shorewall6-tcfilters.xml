@@ -185,6 +185,17 @@
           <replaceable>number</replaceable> will match the rule.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PRIORITY</emphasis> - [<emphasis
+        role="bold">-</emphasis>|<emphasis>number</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.8. Specifies the rule priority. If not
+          given, priority 11 is assumed. The priority value must be &gt;=
+          12.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -200,7 +211,7 @@
           ALL cannot be used because IPv4 ICMP and IPv6 ICMP are two different
           protocols.</para>
 
-          <programlisting>        #CLASS    SOURCE    DEST         PROTO   DEST
+          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DEST
        #                                        PORT
 
        IPV4

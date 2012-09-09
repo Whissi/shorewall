@@ -2645,6 +2645,15 @@ sub process_shorewallrc( $$ ) {
     } else {
 	fatal_error "Failed to open $shorewallrc: $!";
     }
+
+    if ( supplied $shorewallrc{VARDIR} ) {
+	if ( ! supplied $shorewallrc{VARLIB} ) {
+	    $shorewallrc{VARLIB} =  $shorewallrc{VARDIR};
+	    $shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product";
+	}
+    } elsif ( supplied $shorewallrc{VARLIB} ) {
+	$shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product" unless supplied $shorewallrc{VARDIR};
+    }
 }
 
 #

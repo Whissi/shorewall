@@ -162,9 +162,9 @@ fi
 
 if [ -z "${VARLIB}" ]; then
     VARLIB=${VARDIR}
-    VARDIR='${VARLIB}/${PRODUCT}'
+    VARDIR=${VARLIB}/${PRODUCT}
 elif [ -z "${VARDIR}" ]; then
-    VARDIR='${VARLIB}/${PRODUCT}'
+    VARDIR=${VARLIB}/${PRODUCT}
 fi
 
 for var in SHAREDIR LIBEXECDIR CONFDIR SBINDIR VARLIB VARDIR; do

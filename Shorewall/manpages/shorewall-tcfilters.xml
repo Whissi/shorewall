@@ -192,12 +192,40 @@
 
       <varlistentry>
         <term><emphasis role="bold">PRIORITY</emphasis> - [<emphasis
-        role="bold">-</emphasis>|<emphasis>number</emphasis>]</term>
+        role="bold">-</emphasis>|<emphasis>priority</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.8. Specifies the rule priority. If not
-          given, priority 10 is assumed. The priority value must be &gt;=
-          12.</para>
+          <para>Added in Shorewall 4.5.8. Specifies the rule
+          <replaceable>priority</replaceable>. If not given,
+          <replaceable>priority</replaceable> 10 is assumed. The
+          <replaceable>priority</replaceable> value must be &gt; 0.</para>
+
+          <para>The priority values used by other Shorewall-generated filters
+          are as follows:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Classify by packet mark - <replaceable>class
+              priority</replaceable> LOR 32.</para>
+            </listitem>
+
+            <listitem>
+              <para>Ingress policing - 10</para>
+            </listitem>
+
+            <listitem>
+              <para>Simple TC ACK packets - 1</para>
+            </listitem>
+
+            <listitem>
+              <para>Complex TC ACK packets - <replaceable>class
+              priority</replaceable> LOR 16.</para>
+            </listitem>
+
+            <listitem>
+              <para>Class with 'occurs' - 65535</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
     </variablelist>

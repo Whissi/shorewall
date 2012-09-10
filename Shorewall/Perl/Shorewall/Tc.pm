@@ -833,8 +833,9 @@ sub process_simple_device() {
     }
 
     for ( my $i = 1; $i <= 3; $i++ ) {
+	my $prio = 16 + $i;
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";
-	emit "run_tc filter add dev $physical protocol all prio 2 parent $number: handle $i fw classid $number:$i";
+	emit "run_tc filter add dev $physical protocol all prio $prio parent $number: handle $i fw classid $number:$i";
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
 	emit '';
     }
@@ -1367,7 +1368,7 @@ sub process_tc_filter() {
 
     if ( $priority ne '-' ) {
 	$prio = numeric_value $priority;
-	fatal_error "Invalid priority ($priority)" unless defined $prio && $prio >= 12;
+	fatal_error "Invalid priority ($priority)" unless defined $prio && $prio > 0;
     }
 
     my $devref;
@@ -1963,14 +1964,14 @@ sub process_traffic_shaping() {
 		# add filters
 		#
 		unless ( $mark eq '-' ) {
-		    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
+		    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 0x20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
 		}
 
 		emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
 		#
 		# options
 		#
-		emit( "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . ' u32' .
+		emit( "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 0x10 ) . ' u32' .
 		      "\\\n    match ip protocol 6 0xff" .
 		      "\\\n    match u8 0x05 0x0f at 0" .
 		      "\\\n    match u16 0x0000 0xffc0 at 2" .
@@ -1978,7 +1979,7 @@ sub process_traffic_shaping() {
 
 		for my $tospair ( @{$tcref->{tos}} ) {
 		    my ( $tos, $mask ) = split q(/), $tospair;
-		    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 10 ) . " u32 match ip tos $tos $mask flowid $classid";
+		    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 0x10 ) . " u32 match ip tos $tos $mask flowid $classid";
 		}
 
 		save_progress_message_short qq("   TC Class $classid defined.");

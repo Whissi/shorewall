@@ -192,8 +192,35 @@
 
         <listitem>
           <para>Added in Shorewall 4.5.8. Specifies the rule priority. If not
-          given, priority 11 is assumed. The priority value must be &gt;=
-          12.</para>
+          given, priority 11 is assumed. The priority value must be &gt;
+          0.</para>
+
+          <para>The priority values used by other Shorewall-generated filters
+          are as follows:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Classify by packet mark - <replaceable>class
+              priority</replaceable> LOR 32.</para>
+            </listitem>
+
+            <listitem>
+              <para>Ingress policing - 10</para>
+            </listitem>
+
+            <listitem>
+              <para>Simple TC ACK packets - 1</para>
+            </listitem>
+
+            <listitem>
+              <para>Complex TC ACK packets - <replaceable>class
+              priority</replaceable> LOR 16.</para>
+            </listitem>
+
+            <listitem>
+              <para>Class with 'occurs' - 65535</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -246,6 +273,6 @@
     <para><ulink
     url="http://shorewall.net/PacketMarking.html">http://shorewall.net/PacketMarking.html</ulink></para>
 
-    <para/>
+    <para></para>
   </refsect1>
 </refentry>

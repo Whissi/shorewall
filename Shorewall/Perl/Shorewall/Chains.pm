@@ -36,7 +36,7 @@ use Shorewall::IPAddrs;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(
+our @EXPORT = ( qw(
 		    DONT_OPTIMIZE
 		    DONT_DELETE
 		    DONT_MOVE
@@ -85,7 +85,8 @@ our @EXPORT = qw(
 		    $nat_table
 		    $mangle_table
 		    $filter_table
-		);
+		),
+	      );
 
 our %EXPORT_TAGS = (
 		    internal => [  qw( STANDARD
@@ -247,7 +248,7 @@ our %EXPORT_TAGS = (
 				       %targets
 				       %dscpmap
 				       %nfobjects
-				     ) ],
+				     ), ],
 		   );
 
 Exporter::export_ok_tags('internal');

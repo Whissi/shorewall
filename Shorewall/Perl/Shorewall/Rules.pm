@@ -2373,41 +2373,42 @@ sub classic_blacklist() {
 	my $zoneref = find_zone( $zone );
 	my $simple  =  @zones <= 2 && ! $zoneref->{complex};
 
-	if ( $zoneref->{options}{in}{blacklist} ) {
-	    my $blackref = $filter_table->{blacklst};
-	    add_ijump ensure_rules_chain( rules_chain( $zone, $_ ) ) , j => $blackref , @state for firewall_zone, @vservers;
+	if ( my $blackref = $filter_table->{blacklst} ) {
+	    if ( $zoneref->{options}{in}{blacklist} ) {
+		add_ijump ensure_rules_chain( rules_chain( $zone, $_ ) ) , j => $blackref , @state for firewall_zone, @vservers;
 
-	    if ( $simple ) {
-		#
-		# We won't create a zone forwarding chain for this zone so we must add blacklisting jumps to the rules chains
-		#
-		for my $zone1 ( @zones ) {
-		    my $ruleschain    = rules_chain( $zone, $zone1 );
+		if ( $simple ) {
+		    #
+		    # We won't create a zone forwarding chain for this zone so we must add blacklisting jumps to the rules chains
+		    #
+		    for my $zone1 ( @zones ) {
+			my $ruleschain    = rules_chain( $zone, $zone1 );
+			my $ruleschainref = $filter_table->{$ruleschain};
+
+			if ( $zone ne $zone1 || intrazone_allowed( $zone, $zoneref ) ) {
+			    add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
+			}
+		    }
+		}
+
+		$result = 1;
+	    }
+
+	    if ( $zoneref->{options}{out}{blacklist} ) {
+		$blackref = $filter_table->{blackout};
+		add_ijump ensure_rules_chain( rules_chain( firewall_zone, $zone ) ) , j => $blackref , @state;
+
+		for my $zone1 ( @zones, @vservers ) {
+		    my $ruleschain    = rules_chain( $zone1, $zone );
 		    my $ruleschainref = $filter_table->{$ruleschain};
 
-		    if ( $zone ne $zone1 || intrazone_allowed( $zone, $zoneref ) ) {
+		    if ( ( $zone ne $zone1 || intrazone_allowed( $zone, $zoneref ) ) ) {
 			add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
 		    }
 		}
+
+		$result = 1;
 	    }
-
-	    $result = 1;
-	}
-
-	if ( $zoneref->{options}{out}{blacklist} ) {
-	    my $blackref = $filter_table->{blackout};
-	    add_ijump ensure_rules_chain( rules_chain( firewall_zone, $zone ) ) , j => $blackref , @state;
-
-	    for my $zone1 ( @zones, @vservers ) {
-		my $ruleschain    = rules_chain( $zone1, $zone );
-		my $ruleschainref = $filter_table->{$ruleschain};
-
-		if ( ( $zone ne $zone1 || intrazone_allowed( $zone, $zoneref ) ) ) {
-		    add_ijump( ensure_rules_chain( $ruleschain ), j => $blackref, @state );
-		}
-	    }
-
-	    $result = 1;
 	}
 
 	unless ( $simple ) {
@@ -2416,7 +2417,7 @@ sub classic_blacklist() {
 	    #
 	    my $frwd_ref = new_standard_chain zone_forward_chain( $zone );
 
-	    add_ijump( $frwd_ref , j => $filter_table->{blacklst}, @state ) if $zoneref->{options}{in}{blacklist};
+	    add_ijump( $frwd_ref , j => $filter_table->{blacklst}, @state ) if $filter_table->{blacklst} && $zoneref->{options}{in}{blacklist};
 	}
     }
 

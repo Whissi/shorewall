@@ -204,25 +204,24 @@ sub setup_blacklist() {
     my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
     my $orig_target = $target;
 
-    #
-    # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
-    # for 'refresh' to work properly.
-    #
-    if ( @$zones || @$zones1 ) {
-	$chainref  = set_optflags( new_standard_chain( 'blacklst' ), DONT_OPTIMIZE | DONT_DELETE ) if @$zones;
-	$chainref1 = set_optflags( new_standard_chain( 'blackout' ), DONT_OPTIMIZE | DONT_DELETE ) if @$zones1;
-
-	if ( supplied $level ) {
-	    $target = ensure_blacklog_chain ( $target, $disposition, $level, $audit );
-	} elsif ( $audit ) {
-	    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
-	    $target = verify_audit( $disposition );
-	}
-    }
-
   BLACKLIST:
     {
 	if ( my $fn = open_file 'blacklist' ) {
+	    #
+	    # We go ahead and generate the blacklist chains and jump to them, even if they turn out to be empty. That is necessary
+	    # for 'refresh' to work properly.
+	    #
+	    if ( @$zones || @$zones1 ) {
+		$chainref  = set_optflags( new_standard_chain( 'blacklst' ), DONT_OPTIMIZE | DONT_DELETE ) if @$zones;
+		$chainref1 = set_optflags( new_standard_chain( 'blackout' ), DONT_OPTIMIZE | DONT_DELETE ) if @$zones1;
+
+		if ( supplied $level ) {
+		    $target = ensure_blacklog_chain ( $target, $disposition, $level, $audit );
+		} elsif ( $audit ) {
+		    require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';
+		    $target = verify_audit( $disposition );
+		}
+	    }
 
 	    my $first_entry = 1;
 

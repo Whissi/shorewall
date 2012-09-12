@@ -833,7 +833,7 @@ sub process_simple_device() {
     }
 
     for ( my $i = 1; $i <= 3; $i++ ) {
-	my $prio = 16 + $i;
+	my $prio = 16 | $i;
 	emit "run_tc qdisc add dev $physical parent $number:$i handle ${number}${i}: sfq quantum 1875 limit 127 perturb 10";
 	emit "run_tc filter add dev $physical protocol all prio $prio parent $number: handle $i fw classid $number:$i";
 	emit "run_tc filter add dev $physical protocol all prio 1 parent ${number}$i: handle ${number}${i} flow hash keys $type divisor 1024" if $type ne '-' && have_capability 'FLOW_FILTER';
@@ -1110,10 +1110,20 @@ sub validate_tc_class( ) {
 
     my $tcref = $tcclasses{$device};
 
-    my $markval = 0;
+    fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;
+
+    my $markval  = 0;
+    my $markprio =  ( $prio << 8 ) | 0x20; 
 
     if ( $mark ne '-' ) {
 	fatal_error "MARK may not be specified when TC_BITS=0" unless $config{TC_BITS};
+
+	( $mark, my $priority ) = split/:/, $mark, 2;
+
+	if ( supplied $priority ) {
+	    $markprio = numeric_value $priority;
+	    fatal_error "Invalid mark priority ($priority)" unless defined $markprio && $markprio > 0;
+	}
 
 	$markval = numeric_value( $mark );
 	fatal_error "Invalid MARK ($markval)" unless defined $markval;
@@ -1183,8 +1193,6 @@ sub validate_tc_class( ) {
 	warning_message "Total RATE of classes ($devref->{guarantee}kbits) exceeds OUT-BANDWIDTH (${full}kbits)" if ( $devref->{guarantee} += $rate ) > $full;
     }
 
-    fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;
-
     $tcref->{$classnumber} = { tos       => [] ,
 			       rate      => $rate ,
 			       umax      => $umax ,
@@ -1193,6 +1201,7 @@ sub validate_tc_class( ) {
 			       lsceil    => $lsceil = ( $lsceil          ? convert_rate( $ceilmax, $lsceil, 'LSCEIL', $ceilname ) : 0 ),
 			       priority  => $prio eq '-' ? 1 : $prio ,
 			       mark      => $markval ,
+			       markprio  => $markprio ,
 			       flow      => '' ,
 			       pfifo     => 0,
 			       occurs    => 1,
@@ -1210,25 +1219,46 @@ sub validate_tc_class( ) {
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list1 "\L$options", 'option' ) {
-	    my $optval = $tosoptions{$option};
+	    my $priority;
+	    my $optval;
 
-	    $option = "tos=$optval" if $optval;
+	    ( $option, my $prio ) =  split /:/, $option, 2;
+
+	    if ( $option =~ /^tos=(.+)/ || ( $optval = $tosoptions{$option} ) ) {
+
+		if ( supplied $prio ) {
+		    $priority = numeric_value $prio;
+		    fatal_error "Invalid tos priority ($prio)" unless defined $priority && $priority > 0;
+		} else {
+		    $priority = ( $tcref->{priority} << 8 ) | 0x10;
+		}
+
+		$option = "tos=$optval" if $optval;
+	    } elsif ( supplied $prio ) {
+		$option = join ':', $option, $prio;
+	    }
 
 	    if ( $option eq 'default' ) {
 		fatal_error "Only one default class may be specified for device $device" if $devref->{default};
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		$devref->{default} = $classnumber;
-	    } elsif ( $option eq 'tcp-ack' ) {
+	    } elsif ( $option =~ /tcp-ack(:(\d+|0x[0-0a-fA-F]))?$/ ) {
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
-		$tcref->{tcp_ack} = 1;
+		if ( $1 ) {
+		    my $priority = numeric_value $2;
+		    fatal_error "Invalid tcp-ack priority ($prio)" unless defined $priority && $priority > 0;
+		    $tcref->{tcp_ack} = $priority;
+		} else {
+		    $tcref->{tcp_ack} =  ( $tcref->{priority} << 8 ) | 0x10;
+		}
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		( undef, $option ) = split /=/, $option;
-		push @{$tcref->{tos}}, "$option/0xff";
+		push @{$tcref->{tos}}, "$option/0xff:$priority";
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}\/0x[0-9a-f]{2}$/ ) {
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		( undef, $option ) = split /=/, $option;
-		push @{$tcref->{tos}}, $option;
+		push @{$tcref->{tos}}, "$option:$priority";
 	    } elsif ( $option =~ /^flow=(.*)$/ ) {
 		fatal_error "The 'flow' option is not allowed with 'pfifo'" if $tcref->{pfifo};
 		fatal_error "The 'flow' option is not allowed with 'red'"   if $tcref->{red};
@@ -1333,6 +1363,7 @@ sub validate_tc_class( ) {
 					       ceiling  => $tcref->{ceiling} ,
 					       priority => $tcref->{priority} ,
 					       mark     => 0 ,
+					       markprio => $markprio ,
 					       flow     => $tcref->{flow} ,
 					       pfifo    => $tcref->{pfifo},
 					       occurs   => 0,
@@ -1964,7 +1995,7 @@ sub process_traffic_shaping() {
 		# add filters
 		#
 		unless ( $mark eq '-' ) {
-		    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio " . ( $priority | 0x20 ) . " handle $mark fw classid $classid" if $tcref->{occurs} == 1;
+		    emit "run_tc filter add dev $device protocol all parent $devicenumber:0 prio $tcref->{markprio} handle $mark fw classid $classid" if $tcref->{occurs} == 1;
 		}
 
 		emit "run_tc filter add dev $device protocol all prio 1 parent $sfqinhex: handle $classnum flow hash keys $tcref->{flow} divisor 1024" if $tcref->{flow};
@@ -1978,8 +2009,9 @@ sub process_traffic_shaping() {
 		      "\\\n    match u8 0x10 0xff at 33 flowid $classid" ) if $tcref->{tcp_ack};
 
 		for my $tospair ( @{$tcref->{tos}} ) {
+		    ( $tospair, my $priority ) = split /:/, $tospair;
 		    my ( $tos, $mask ) = split q(/), $tospair;
-		    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 0x10 ) . " u32 match ip tos $tos $mask flowid $classid";
+		    emit "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio $priority u32 match ip tos $tos $mask flowid $classid";
 		}
 
 		save_progress_message_short qq("   TC Class $classid defined.");

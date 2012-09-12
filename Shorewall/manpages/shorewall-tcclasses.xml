@@ -232,17 +232,32 @@
         <emphasis>priority</emphasis></term>
 
         <listitem>
-          <para>The <emphasis>priority</emphasis> in which classes will be
-          serviced by the packet shaping scheduler and also the priority in
-          which bandwidth in excess of the rate will be given to each
-          class.</para>
+          <para>For HTB:</para>
 
-          <para>Higher priority classes will experience less delay since they
-          are serviced first. Priority values are serviced in ascending order
-          (e.g. 0 is higher priority than 1).</para>
+          <blockquote>
+            <para>The <emphasis>priority</emphasis> in which classes will be
+            serviced by the packet shaping scheduler and also the priority in
+            which bandwidth in excess of the rate will be given to each
+            class.</para>
 
-          <para>Classes may be set to the same priority, in which case they
-          will be serviced as equals.</para>
+            <para>Higher priority classes will experience less delay since
+            they are serviced first. Priority values are serviced in ascending
+            order (e.g. 0 is higher priority than 1).</para>
+
+            <para>Classes may be set to the same priority, in which case they
+            will be serviced as equals.</para>
+          </blockquote>
+
+          <para>For both HTB and HFSC, the <emphasis>priority</emphasis> is
+          used to calculate the priority of Shorewall-generated classification
+          filters that refer to the class. The rules for classes with lower
+          numeric priorities will appear before those with higher numeric
+          priorities.</para>
+
+          <para>Beginning with Shorewall 4.5.8, the PRIORITY may be omitted,
+          providing that a priority is specified in the MARK column and with
+          the <emphasis role="bold">tcp-ack</emphasis> and <emphasis
+          role="bold">tos</emphasis> options.</para>
         </listitem>
       </varlistentry>
 
@@ -275,7 +290,7 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">tos=0x</emphasis><emphasis>value</emphasis>[/0x<emphasis>mask</emphasis>]
+              role="bold">tos=0x</emphasis><emphasis>value</emphasis>[/0x<emphasis>mask</emphasis>][:<replaceable>priority</replaceable>]
               (mask defaults to 0xff)</term>
 
               <listitem>
@@ -283,18 +298,34 @@
                 <emphasis>value</emphasis>/<emphasis>mask</emphasis>
                 combination of the IP packet's TOS/Precedence/DiffSrv octet
                 (aka the TOS byte).</para>
+
+                <para>Beginning with Shorewall 4.5.8, the
+                <replaceable>value/mask</replaceable> may be followed by a
+                colon (":") and a <replaceable>priority</replaceable>. This
+                priority determines the order in which filter rules are
+                processed during packet classification. If not specified, the
+                value (<replaceable>class priority</replaceable> &lt;&lt; 8) |
+                10) is used.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
               <term><emphasis
-              role="bold">tos-</emphasis><emphasis>tosname</emphasis></term>
+              role="bold">tos-</emphasis><emphasis>tosname</emphasis>[:<replaceable>priority</replaceable>]</term>
 
               <listitem>
                 <para>Aliases for the following TOS octet value and mask
                 encodings. TOS encodings of the "TOS byte" have been
                 deprecated in favor of diffserve classes, but programs like
-                ssh, rlogin, and ftp still use them.</para>
+                ssh, rlogin, and ftp still use them. </para>
+
+                <para>Beginning with Shorewall 4.5.8, the
+                <replaceable>tos-name</replaceable> may be followed by a colon
+                (":") and a <replaceable>priority</replaceable>. This priority
+                determines the order in which filter rules are processed
+                during packet classification. If not specified, the value
+                (<replaceable>class priority</replaceable> &lt;&lt; 8) | 10)
+                is used.</para>
 
                 <programlisting>        <emphasis role="bold">tos-minimize-delay</emphasis>       0x10/0x10
         <emphasis role="bold">tos-maximize-throughput</emphasis>  0x08/0x08
@@ -310,7 +341,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">tcp-ack</emphasis></term>
+              <term><emphasis
+              role="bold">tcp-ack[:<replaceable>priority</replaceable>]</emphasis></term>
 
               <listitem>
                 <para>If defined, causes a tc filter to be created that puts
@@ -320,7 +352,13 @@
                 limited to 64 bytes because we want only packets WITHOUT
                 payload to match.</para>
 
-                <para/>
+                <para>Beginning with Shorewall 4.5.8, the <emphasis
+                role="bold">tcp-ack</emphasis> may be followed by a colon
+                (":") and a <replaceable>priority</replaceable>. This priority
+                determines the order in which filter rules are processed
+                during packet classification. If not specified, the value
+                (<replaceable>class priority</replaceable> &lt;&lt; 8) | 20)
+                is used.</para>
 
                 <note>
                   <para>This option is only valid for ONE class per

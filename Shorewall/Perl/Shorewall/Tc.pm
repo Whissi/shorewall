@@ -1057,6 +1057,16 @@ my %validredoptions = ( min         => RED_INTEGER,
 			ecn         => RED_NONE,
 		      );
 
+sub validate_filter_priority( $$ ) {
+    my ( $priority, $kind ) = @_;
+
+    my $pri = numeric_value( $priority );
+
+    fatal_error "Invalid $kind priority ($priority)" unless defined $pri && $pri > 0 && $pri <= 65535;
+
+    $pri;
+}
+
 sub validate_tc_class( ) {
     my ( $devclass, $mark, $rate, $ceil, $prio, $options ) =
 	split_line 'tcclasses file', { interface => 0, mark => 1, rate => 2, ceil => 3, prio => 4, options => 5 };
@@ -1110,10 +1120,12 @@ sub validate_tc_class( ) {
 
     my $tcref = $tcclasses{$device};
 
-    fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;
+    if ( $devref->{qdisc} eq 'htb' ) {
+	fatal_error "Invalid PRIO ($prio)" unless defined numeric_value $prio;
+    }
 
     my $markval  = 0;
-    my $markprio =  ( $prio << 8 ) | 0x20; 
+    my $markprio;
 
     if ( $mark ne '-' ) {
 	fatal_error "MARK may not be specified when TC_BITS=0" unless $config{TC_BITS};
@@ -1121,8 +1133,10 @@ sub validate_tc_class( ) {
 	( $mark, my $priority ) = split/:/, $mark, 2;
 
 	if ( supplied $priority ) {
-	    $markprio = numeric_value $priority;
-	    fatal_error "Invalid mark priority ($priority)" unless defined $markprio && $markprio > 0;
+	    $markprio = validate_filter_priority( $priority, 'mark' );
+	} else {
+	    fatal_error "Missing mark priority" if $prio eq '-';
+	    $markprio =  ( $prio << 8 ) | 20; 
 	}
 
 	$markval = numeric_value( $mark );
@@ -1199,7 +1213,7 @@ sub validate_tc_class( ) {
 			       dmax      => $dmax ,
 			       ceiling   => $ceil   = ( supplied $ceil   ? convert_rate( $ceilmax, $ceil,   'CEIL'  , $ceilname ) : 0 ),
 			       lsceil    => $lsceil = ( $lsceil          ? convert_rate( $ceilmax, $lsceil, 'LSCEIL', $ceilname ) : 0 ),
-			       priority  => $prio eq '-' ? 1 : $prio ,
+			       priority  => $prio ,
 			       mark      => $markval ,
 			       markprio  => $markprio ,
 			       flow      => '' ,
@@ -1222,20 +1236,20 @@ sub validate_tc_class( ) {
 	    my $priority;
 	    my $optval;
 
-	    ( $option, my $prio ) =  split /:/, $option, 2;
+	    ( $option, my $pri ) =  split /:/, $option, 2;
 
 	    if ( $option =~ /^tos=(.+)/ || ( $optval = $tosoptions{$option} ) ) {
 
-		if ( supplied $prio ) {
-		    $priority = numeric_value $prio;
-		    fatal_error "Invalid tos priority ($prio)" unless defined $priority && $priority > 0;
+		if ( supplied $pri ) {
+		    $priority = validate_filter_priority( $pri, 'mark' );
 		} else {
-		    $priority = ( $tcref->{priority} << 8 ) | 0x10;
+		    fatal_error "Missing TOS priority" if $prio eq '-';
+		    $priority = ( $prio << 8 ) | 10;
 		}
 
 		$option = "tos=$optval" if $optval;
-	    } elsif ( supplied $prio ) {
-		$option = join ':', $option, $prio;
+	    } elsif ( supplied $pri ) {
+		$option = join ':', $option, $pri;
 	    }
 
 	    if ( $option eq 'default' ) {
@@ -1245,11 +1259,10 @@ sub validate_tc_class( ) {
 	    } elsif ( $option =~ /tcp-ack(:(\d+|0x[0-0a-fA-F]))?$/ ) {
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
 		if ( $1 ) {
-		    my $priority = numeric_value $2;
-		    fatal_error "Invalid tcp-ack priority ($prio)" unless defined $priority && $priority > 0;
-		    $tcref->{tcp_ack} = $priority;
+		    $tcref->{tcp_ack} = validate_filter_priority( $2, 'tcp-ack' );
 		} else {
-		    $tcref->{tcp_ack} =  ( $tcref->{priority} << 8 ) | 0x10;
+		    fatal_error "Missing tcp-ack priority" if $prio eq '-';
+		    $tcref->{tcp_ack} =  ( $prio << 8 ) | 10;
 		}
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;
@@ -1397,10 +1410,7 @@ sub process_tc_filter() {
 
     my ( $ip, $ip32, $prio , $lo ) = $family == F_IPV4 ? ('ip', 'ip', 10, 2 ) : ('ipv6', 'ip6', 11 , 4 );
 
-    if ( $priority ne '-' ) {
-	$prio = numeric_value $priority;
-	fatal_error "Invalid priority ($priority)" unless defined $prio && $prio > 0;
-    }
+    $prio = validate_filter_priority( $priority, 'filter' ) unless $priority eq '-';
 
     my $devref;
 
@@ -1936,7 +1946,6 @@ sub process_traffic_shaping() {
 
 		$classids{$classid}=$devname;
 
-		my $priority = $tcref->{priority} << 8;
 		my $parent   = in_hexp $tcref->{parent};
 
 		emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
@@ -2002,7 +2011,7 @@ sub process_traffic_shaping() {
 		#
 		# options
 		#
-		emit( "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio " . ( $priority | 0x10 ) . ' u32' .
+		emit( "run_tc filter add dev $device parent $devicenumber:0 protocol ip prio $tcref->{tcp_ack} u32" .
 		      "\\\n    match ip protocol 6 0xff" .
 		      "\\\n    match u8 0x05 0x0f at 0" .
 		      "\\\n    match u16 0x0000 0xffc0 at 2" .

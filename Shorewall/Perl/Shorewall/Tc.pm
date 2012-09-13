@@ -983,6 +983,7 @@ sub validate_tc_device( ) {
 			    mtu           => $mtu,
 			    mpu           => $mpu,
 			    tsize         => $tsize,
+			    filterpri     => 1,
 			  } ,
 
     push @tcdevices, $device;
@@ -1408,9 +1409,7 @@ sub process_tc_filter() {
 
     fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
 
-    my ( $ip, $ip32, $prio , $lo ) = $family == F_IPV4 ? ('ip', 'ip', 10, 2 ) : ('ipv6', 'ip6', 11 , 4 );
-
-    $prio = validate_filter_priority( $priority, 'filter' ) unless $priority eq '-';
+    my ( $ip, $ip32, $lo ) = $family == F_IPV4 ? ('ip', 'ip', 2 ) : ('ipv6', 'ip6', 4 );
 
     my $devref;
 
@@ -1419,6 +1418,18 @@ sub process_tc_filter() {
     } else {
 	( $device , $devref ) = dev_by_number( $device );
     }
+
+    my ( $prio, $filterpri ) = ( undef, $devref->{filterpri} );
+
+    if ( $priority eq '-' ) {
+	$prio = $filterpri++;
+	fatal_error "Filter priority overflow" if $prio > 65535;
+    } else {
+	$prio = validate_filter_priority( $priority, 'filter' );
+	$filterpri = $prio + 1 if $prio >= $filterpri;
+    }
+
+    $devref->{filterpri} = $filterpri;
 
     my $devnum = in_hexp $devref->{number};
 

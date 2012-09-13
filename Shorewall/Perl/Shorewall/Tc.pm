@@ -1244,7 +1244,7 @@ sub validate_tc_class( ) {
 		    $priority = validate_filter_priority( $pri, 'mark' );
 		} else {
 		    fatal_error "Missing TOS priority" if $prio eq '-';
-		    $priority = ( $prio << 8 ) | 10;
+		    $priority = ( $prio << 8 ) | 15;
 		}
 
 		$option = "tos=$optval" if $optval;

@@ -249,15 +249,30 @@
           </blockquote>
 
           <para>For both HTB and HFSC, the <emphasis>priority</emphasis> is
-          used to calculate the priority of Shorewall-generated classification
-          filters that refer to the class. The rules for classes with lower
-          numeric priorities will appear before those with higher numeric
-          priorities.</para>
+          used to calculate the priority of following Shorewall-generated
+          classification filters that refer to the class:</para>
 
-          <para>Beginning with Shorewall 4.5.8, the PRIORITY may be omitted,
-          providing that a priority is specified in the MARK column and with
-          the <emphasis role="bold">tcp-ack</emphasis> and <emphasis
-          role="bold">tos</emphasis> options.</para>
+          <itemizedlist>
+            <listitem>
+              <para>Packet MARK</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">tcp-ack</emphasis> and the <emphasis
+              role="bold">tos</emphasis> options (see below)</para>
+            </listitem>
+          </itemizedlist>
+
+          <para> The rules for classes with lower numeric priorities will
+          appear before those with higher numeric priorities. </para>
+
+          <para>Beginning with Shorewall 4.5.8, the PRIORITY may be omitted
+          from an HFSC class if you do not use the MARK column or the
+          <emphasis role="bold">tcp-ack</emphasis> or <emphasis
+          role="bold">tos</emphasis> options. If you use any of those features
+          and omit the PRIORITY, then you must specify a
+          <replaceable>priority</replaceable> along with the MARK or
+          option.</para>
         </listitem>
       </varlistentry>
 
@@ -317,7 +332,7 @@
                 <para>Aliases for the following TOS octet value and mask
                 encodings. TOS encodings of the "TOS byte" have been
                 deprecated in favor of diffserve classes, but programs like
-                ssh, rlogin, and ftp still use them. </para>
+                ssh, rlogin, and ftp still use them.</para>
 
                 <para>Beginning with Shorewall 4.5.8, the
                 <replaceable>tos-name</replaceable> may be followed by a colon

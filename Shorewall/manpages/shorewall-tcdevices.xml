@@ -180,7 +180,7 @@
         <term><emphasis role="bold">OPTIONS</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">{classify</emphasis>|<emphasis
-        role="bold">hfsc</emphasis>|<emphasis
+        role="bold">htb|hfsc</emphasis>|<emphasis
         role="bold">linklayer</emphasis>={<emphasis
         role="bold">ethernet</emphasis>|<emphasis
         role="bold">atm</emphasis>|<emphasis
@@ -197,11 +197,14 @@
           marks. You must do all classification using CLASSIFY rules in <ulink
           url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5).</para>
 
+          <para><option>htb</option> - Use the <firstterm>Hierarchical Token
+          Bucket</firstterm> queuing discipline. This is the default.</para>
+
           <para><option>hfsc</option> - Shorewall normally uses the
-          <firstterm>Hierarchical Token Bucket</firstterm> queuing discipline.
-          When <option>hfsc</option> is specified, the <firstterm>Hierarchical
-          Fair Service Curves</firstterm> discipline is used instead (see
-          tc-hfsc (7)).</para>
+          Hierarchical Token Bucket queuing discipline. When
+          <option>hfsc</option> is specified, the <firstterm>Hierarchical Fair
+          Service Curves</firstterm> discipline is used instead (see tc-hfsc
+          (7)).</para>
 
           <para><emphasis role="bold">linklayer</emphasis> - Added in
           Shorewall 4.5.6. Type of link (ethernet, atm, adsl). When specified,

@@ -1137,7 +1137,8 @@ sub validate_tc_class( ) {
 	    $markprio = validate_filter_priority( $priority, 'mark' );
 	} else {
 	    fatal_error "Missing mark priority" if $prio eq '-';
-	    $markprio =  ( $prio << 8 ) | 20; 
+	    $markprio =  ( $prio << 8 ) | 20;
+	    progress_message2 "   Priority of the $device packet mark $mark filter is $markprio";
 	}
 
 	$markval = numeric_value( $mark );
@@ -1246,6 +1247,7 @@ sub validate_tc_class( ) {
 		} else {
 		    fatal_error "Missing TOS priority" if $prio eq '-';
 		    $priority = ( $prio << 8 ) | 15;
+		    progress_message2 "   Priority of the $device $option filter is $priority";
 		}
 
 		$option = "tos=$optval" if $optval;
@@ -1263,7 +1265,8 @@ sub validate_tc_class( ) {
 		    $tcref->{tcp_ack} = validate_filter_priority( $2, 'tcp-ack' );
 		} else {
 		    fatal_error "Missing tcp-ack priority" if $prio eq '-';
-		    $tcref->{tcp_ack} =  ( $prio << 8 ) | 10;
+		    my $ackpri = $tcref->{tcp_ack} =  ( $prio << 8 ) | 10;
+		    progress_message2 "   Priority of the $device tcp-ack filter is $ackpri";
 		}
 	    } elsif ( $option =~ /^tos=0x[0-9a-f]{2}$/ ) {
 		fatal_error "The $option option is not valid with 'occurs" if $tcref->{occurs} > 1;

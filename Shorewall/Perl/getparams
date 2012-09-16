@@ -25,12 +25,12 @@
 #
 #      $1 = Path name of params file
 #      $2 = $CONFIG_PATH
-#      $3 = Address family (4 o4 6)
+#      $3 = Address family (4 or 6)
 #
 if [ "$3" = 6 ]; then
-    g_program=shorewall6
+    PRODUCT=shorewall6
 else
-    g_program=shorewall
+    PRODUCT=shorewall
 fi
 
 #
@@ -38,11 +38,12 @@ fi
 #
 . /usr/share/shorewall/shorewallrc
 
+g_program=$PRODUCT
 g_libexec="$LIBEXECDIR"
-g_sharedir="$SHAREDIR"/shorewall
+g_sharedir="$SHAREDIR/shorewall"
 g_sbindir="$SBINDIR"
 g_perllib="$PERLLIBDIR"
-g_confdir="$CONFDIR"/shorewall
+g_confdir="$CONFDIR/$PRODUCT"
 g_readrc=1
 
 . $g_sharedir/lib.cli

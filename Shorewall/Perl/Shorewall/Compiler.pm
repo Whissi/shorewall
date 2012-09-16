@@ -34,7 +34,6 @@ use Shorewall::Accounting;
 use Shorewall::Rules;
 use Shorewall::Proc;
 use Shorewall::Proxyarp;
-use Shorewall::IPAddrs;
 use Shorewall::Raw;
 use Shorewall::Misc;
 

@@ -40,13 +40,49 @@
     <para>This document provides an overview of Shorewall internals. It is
     intended to ease the task of approaching the Shorewall code base by
     providing a roadmap of what you will find there.</para>
-  </section>
 
-  <section>
-    <title>Overall Architecture</title>
+    <section>
+      <title>History</title>
 
-    <para>Shorewall was originally written entirely in Bourne Shell. The chief
-    advantage of this approach was that virtually any platform supports the
-    shell, including small embedded environments. The </para>
+      <para>Shorewall was originally written entirely in Bourne Shell. The
+      chief advantage of this approach was that virtually any platform
+      supports the shell, including small embedded environments. The initial
+      release was in early 2001. This version ran iptables, ip, etc.
+      immediately after processing the corresponding configuration entry. If
+      an error was encountered, the firewall was stopped. For this reason, the
+      <filename>routestopped</filename> file had to be very simple and
+      foolproof.</para>
+
+      <para>In Shorewall 3.2.0 (July 2006), the implementation was changed to
+      use the current compile-then-execute architecture. This was
+      accompilished by modifying the existing code rather than writing a
+      compiler/generator from scratch. The resulting code was fragile and hard
+      to maintain. 3.2.0 also marked the introduction of
+      Shorewall-lite.</para>
+
+      <para>By 2007, the compiler had become unmaintainable and needed to be
+      rewritten. I made the decision to write the compiler in Perl and
+      released it as a separate Shorewall-perl packets in Shorewall 4.0.0
+      (July 2007). The shell-based compiler was packaged in a Shorewall-shell
+      package. An option (SHOREWALL_COMPILER) in shorewall.conf specified
+      which compiler to use. The Perl-based compiler was siginificantly faster
+      and the compiled script also ran much faster, thanks to its use of
+      iptables-restore.</para>
+
+      <para>Shorewall6 was introduced in Shorewall 4.2.4 (December
+      2008).</para>
+
+      <para>Support for the old Shell-based compiler was eliminated in
+      Shorewall 4.4.0 (July 2009).</para>
+
+      <para>Shorewall 4.5.0 (February 2012) marked the introduction of the
+      current architecture and packaging.</para>
+    </section>
+
+    <section>
+      <title>Architecture</title>
+
+      <para/>
+    </section>
   </section>
 </article>

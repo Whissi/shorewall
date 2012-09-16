@@ -65,9 +65,9 @@
       released it as a separate Shorewall-perl packets in Shorewall 4.0.0
       (July 2007). The shell-based compiler was packaged in a Shorewall-shell
       package. An option (SHOREWALL_COMPILER) in shorewall.conf specified
-      which compiler to use. The Perl-based compiler was siginificantly faster
-      and the compiled script also ran much faster, thanks to its use of
-      iptables-restore.</para>
+      which compiler to use. The Perl-based compiler was siginificantly
+      faster, and the compiled script also ran much faster thanks to its use
+      of iptables-restore.</para>
 
       <para>Shorewall6 was introduced in Shorewall 4.2.4 (December
       2008).</para>
@@ -82,7 +82,387 @@
     <section>
       <title>Architecture</title>
 
-      <para/>
+      <para>The components of the Shorewall product suite fall into five broad
+      categories:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Build/Install subsystem</para>
+        </listitem>
+      </orderedlist>
+
+      <orderedlist>
+        <listitem>
+          <para>Command Line Interface (CLI)</para>
+        </listitem>
+
+        <listitem>
+          <para>Run-time Libraries</para>
+        </listitem>
+
+        <listitem>
+          <para>Compiler</para>
+        </listitem>
+
+        <listitem>
+          <para>Configuration files (including actions and macros)</para>
+        </listitem>
+      </orderedlist>
+
+      <section>
+        <title>Build/Install Subsystem</title>
+
+        <para>The Shorewall Build/Install subsystem packages the products for
+        release and installs them on an end-user's or a packager's system. It
+        is diagrammed in the following graphic.</para>
+
+        <graphic fileref="images/BuildInstall.png"/>
+
+        <para>The build environment components are not released and are
+        discussed in the <ulink url="Build.html">Shorewall Build
+        Article</ulink>.</para>
+
+        <para>The end-user/packager environment consists of the
+        <filename>configure</filename> and <filename>configure.pl</filename>
+        programs in Shorewall-core and an <filename>install.sh</filename>
+        program in each product.</para>
+      </section>
+
+      <section>
+        <title>CLI</title>
+
+        <para>The CLI is written entirely in Bourne Shell so as to allow it to
+        run on small embedded systems within the -lite products. The CLI
+        programs themselves are very small; then set global variables then
+        call into the CLI libraries. Here's an example
+        (/sbin/shorewall):</para>
+
+        <programlisting>PRODUCT=shorewall
+
+#
+# This is modified by the installer when ${SHAREDIR} != /usr/share
+#
+. /usr/share/shorewall/shorewallrc
+
+g_program=$PRODUCT
+g_libexec="$LIBEXECDIR"
+g_sharedir="$SHAREDIR"/shorewall
+g_sbindir="$SBINDIR"
+g_perllib="$PERLLIBDIR"
+g_confdir="$CONFDIR"/shorewall
+g_readrc=1
+
+. $g_sharedir/lib.cli
+
+shorewall_cli $@</programlisting>
+
+        <para>As you can see, it sets the PRODUCT variable, loads the
+        shorewallrc file, sets the global variables (all of which have names
+        beginning with "g_", loads <filename>lib.cli</filename>, and calls
+        shorewall_cli passing its own arguments.</para>
+
+        <para>There are two CLI libraries: <filename>lib.cli</filename> in
+        Shorewall Core and <filename>lib.cli-std </filename>in Shorewall. The
+        <filename>lib.cli</filename> library is always loaded by the CLI
+        programs; <filename>lib-cli-std</filename> is also loaded when the
+        product is 'shorewall' or 'shorewall6'.
+        <filename>lib.cli-std</filename> overloads some functions in
+        <filename>lib.cli</filename> and also provides logic for the
+        additional commands supported by the full products.</para>
+
+        <para>The CLI libraries load two additional Shell libraries from
+        Shorewall.core: <filename>lib.base</filename> and
+        <filename>lib.common</filename> (actually,
+        <filename>lib.base</filename> loads <filename>lib.common</filename>).
+        These libraries are separete from <filename>lib.cli</filename> for
+        both historical and practicle reasons. <filename>lib.base</filename>
+        (aka functions) can be loaded by application programs, although this
+        was more common in the early years of Shorewall. In addition to being
+        loaded by the CLIs, <filename>lib.common</filename> is also copied
+        into the generated script by the compilers.</para>
+      </section>
+
+      <section>
+        <title>Run-time Libraries</title>
+
+        <para>Thare are two libraries that are copied into the generated
+        script by the compiler: <filename>lib.common</filename> from
+        Shorewall-core and <filename>lib.core</filename> from Shorewall. The
+        "outer block" of the generated script comes from the Shorewall file
+        <filename>prog.footer</filename>.</para>
+      </section>
+
+      <section>
+        <title>Compiler</title>
+
+        <para>With the exception of the <filename>getparams</filename> Shell
+        program, the compiler is written in Perl. The compiler main program is
+        compiler.pl from Shorewall.conf; it's run-line arguments are described
+        in the <ulink url="Shorewall-perl.html%23compiler.pl">Shorewall Perl
+        Article</ulink>. It is invoked by the <emphasis>compiler</emphasis>
+        function in <filename>lib.cli-std</filename>.</para>
+
+        <para>The compiler is modularized as follows:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><filename>Accounting.pm</filename> (Shorewall::Accounting).
+            Processes the <filename>accounting</filename> file.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Chains.pm</filename> (Shorewall::Chains). This is
+            the module that provides an interface to iptables/Netfilter for
+            the other modules. The optimizer is included in this
+            module.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Config.pm</filename> (Shorewall::Config). This is
+            a multi-purpose module that supplies several related
+            services:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Error and Progress message production.</para>
+              </listitem>
+
+              <listitem>
+                <para>Pre-processor. Supplies all configuration file handling
+                including variable expansion, ?IF...?ELSE...?ENDIF processing,
+                INCLUDE directives and embedded Shell and Perl.</para>
+              </listitem>
+
+              <listitem>
+                <para>Output script file creation with functions to write into
+                the script. The latter functions are no-ops when the
+                <command>check</command> command is being executed.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para><filename>Compiler.pm</filename> (Shorewall::Compiler). The
+            compiler() function in this module contains the top-leve of the
+            compiler.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>IPAddrs.pm</filename> (Shorewall::IPAddrs) - IP
+            Address validation and manipulation (both IPv4 and IPv6). Also
+            interfaces to NSS for protocol/service name resolution.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Misc.pm</filename> (Shorewall::Misc) - Provides
+            services that don't fit well into the other modules.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Nat.pm</filename> (Shorewall::Nat) - Handles all
+            nat table rules. Processes the <filename>masq</filename>,
+            <filename>nat</filename> and <filename>netmap</filename>
+            files.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Proc.pm</filename> (Shorewall::Proc) - Handles
+            manipulation of <filename>/proc/sys/</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Providers.pm</filename> (Shorewall::Providers) -
+            Handles policy routing; processes the
+            <filename>providers</filename> file.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Proxyarp.pm</filename> (Shorewall::Proxyarp) -
+            Processes the <filename>proxyarp</filename> file.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Raw.pm</filename> (Shorewall::Raw) - Handles the
+            raw table; processes the <filename>conntrack</filename> (formerly
+            <filename>notrack</filename>) file.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Rules.pm</filename> (Shorewall::Rules) - Contains
+            the logic for process the <filename>policy</filename> and
+            <filename>rules</filename> files, including
+            <filename>macros</filename> and
+            <filename>actions</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Tc.pm</filename> (Shorewall::Tc) - Handles traffic
+            shaping.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Tunnels.pm</filename> (Shorewall::Tunnels) -
+            Processes the <filename>tunnels</filename> file.</para>
+          </listitem>
+
+          <listitem>
+            <para><filename>Zones.pm</filename> (Shorewall::Zones) - Processes
+            the <filename>zones</filename>, <filename>interfaces</filename>
+            and <filename>hosts</filename> files. Provides the interface to
+            zones and interfaces to the other modules.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>Because the params file can contain arbitrary shell code, it
+        must be processed by a shell. The body of
+        <filename>getparams</filename> is as follows:</para>
+
+        <programlisting>#  Parameters:
+#
+#      $1 = Path name of params file
+#      $2 = $CONFIG_PATH
+#      $3 = Address family (4 or 6)
+#
+if [ "$3" = 6 ]; then
+    PRODUCT=shorewall6
+else
+    PRODUCT=shorewall
+fi
+
+#
+# This is modified by the installer when ${SHAREDIR} != /usr/share
+#
+. /usr/share/shorewall/shorewallrc
+
+g_program="$PRODUCT"
+g_libexec="$LIBEXECDIR"
+g_sharedir="$SHAREDIR"/shorewall
+g_sbindir="$SBINDIR"
+g_perllib="$PERLLIBDIR"
+g_confdir="$CONFDIR/$PRODUCT"
+g_readrc=1
+
+. $g_sharedir/lib.cli
+
+CONFIG_PATH="$2"
+
+set -a
+
+. $1 &gt;&amp;2 # Avoid spurious output on STDOUT
+
+set +a
+
+export -p</programlisting>
+
+        <para>The program establishes the environment of the Shorewall or
+        Shoreall6 CLI program since that is the environment in which the
+        <filename>params</filename> file has been traditionally processed. It
+        then sets the -<option>a</option> option so that all newly-created
+        variables will be exported and invokes the
+        <filename><filename>params</filename></filename> file. Because the
+        STDOUT file is a pipe back to the compiler, no spurious output must be
+        sent to that file; so <filename>getparams</filename> redirect
+        <filename>params</filename> output to STDOUT. After the script has
+        executed, an <command>export -p</command> command is executed to send
+        the contents of the environ array back to the compiler.</para>
+
+        <para>Regrettably, the various shells (and even different versions of
+        the same shell) produce quite different output from <command>export
+        -p</command>. The Perl function Shorewall::Config::getparams() detects
+        which species of shell was being used and stores the variable settings
+        into the %params hash. Variables that are also in %ENV are only stored
+        in %params if there value in the output from the
+        <filename>getparams</filename> script is different from that in
+        %ENV.</para>
+      </section>
+
+      <section>
+        <title>Configuration Files</title>
+
+        <para>The configuration files are all well-documented. About the only
+        thing worth noting is that some macros and actions are duplicated in
+        the Shorewall and Shorewall6 packages. Because the Shorewall6 default
+        CONFIG_PATH looks in ${SHAREDIR}/shorewall6 before looking in
+        ${SHARDIR_/shorewall, this allows Shorewall6 to implement
+        IPv6-specific handling where required.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>The Generated Script</title>
+
+      <para>The generated script is completely self-contained so as to avoid
+      version dependencies between the Shorewall version used to create the
+      script and the version of Shorewall-common installed on the remote
+      firewall.</para>
+
+      <para>The operation of the generated script is illustrated in this
+      diagram.</para>
+
+      <graphic fileref="images/RunningScript.png"/>
+
+      <para>The Netfilter ruleset is sometimes dependent on the environment
+      when the script runs. Dynamic IP addresses and gateways, for example,
+      must be detected when the script runs. As a consequence, it is the
+      generated script and not the compiler that creates the input for
+      iptables-restore. While that input could be passed to iptables-restore
+      in a pipe, it is written to
+      <filename>${VARDIR}/.iptables_restore-input</filename> so that it is
+      available for post-mortem analysis in the event that iptables-restore
+      fails. For the other utilities (ip, tc, ipset, etc), the script runs
+      them passing their input on the run-line.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Compiler Internals</title>
+
+    <para>Because the compiler is the most complex part of the Shorewall
+    product suite, I've chosen to document it first. Before diving into the
+    details of the individual modules, lets take a look at a few general
+    things.</para>
+
+    <section>
+      <title>Modularization</title>
+
+      <para>While the compiler is modularized and uses encapsulation, it is
+      not object-oriented. This is due to the fact that much of the compiler
+      was written by manually translating the earlier Shell code.</para>
+
+      <para>Module data is not completely encapsulated. Heavily used tables,
+      most notably the Chain Table (%chain_table) in Shorewall::Chains is
+      exported for read access. Updates to module data is always
+      encapsulated.</para>
+    </section>
+
+    <section>
+      <title>Module Initialization</title>
+
+      <para>While currently unused and untested, the Compiler modules are
+      designed to be able to be loaded into a parent Perl program and the
+      compiler executed repeatedly without unloading the modules. To
+      accomodate that usage scenario, variable data is not initialized at
+      declaration time or in an INIT block, but is rather initialized in an
+      <firstterm>initialize</firstterm> function. Because off of these
+      functions have the same name ("initialize"), they are not exported but
+      are rather called using a fully-qualified name (e.g.,
+      "Shorewall::Config::initialize").</para>
+
+      <para>Most of the the initialization functions accept arguements. Those
+      most common argument is the address family (4 or 6), depending on
+      whether an IPv4 or IPv6 firewall is being compiled. Each of the modules
+      that are address-family dependent have their own $family private (my)
+      variable.</para>
+    </section>
+
+    <section>
+      <title>Module Dependence</title>
+
+      <para>Here is the module dependency tree. To simplify the diagram,
+      direct dependencies are not shown where there is also a transitive
+      dependency.</para>
+
+      <graphic fileref="images/ModuleDepencency.png"/>
     </section>
   </section>
 </article>

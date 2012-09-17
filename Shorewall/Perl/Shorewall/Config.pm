@@ -174,7 +174,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       CONFIG_CONTINUATION
 				       DO_INCLUDE
 				       NORMAL_READ
-				     ) ] ,
+				     ) , ] ,
 		   protocols => [ qw (
 				       TCP
 				       UDP
@@ -184,7 +184,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       IPv6_ICMP
 				       SCTP
 				       GRE
-				    ) ],
+				    ) , ],
 		   );
 
 Exporter::export_ok_tags('internal');

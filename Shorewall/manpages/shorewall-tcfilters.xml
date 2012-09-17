@@ -205,22 +205,21 @@
 
           <itemizedlist>
             <listitem>
-              <para>For Shorewall versions prior to 4.5.8, all filters have
+              <para>For Shorewall versions prior to 4.5.8 - all filters have
               priority 10.</para>
             </listitem>
 
             <listitem>
-              <para>For Shorewall 4.5.8 and later, the compiler maintains a
-              <firstterm>high-water priority</firstterm> that has an initial
-              value of 1. When a filter has no
+              <para>For Shorewall 4.5.8 and later - for each device, the
+              compiler maintains a <firstterm>high-water priority</firstterm>
+              with an initial value of 0. When a filter has no
               <replaceable>priority</replaceable>, the high-water priority is
-              assigned to the filter and the high-wanter priority is
-              incremented by 1. When a <replaceable>priority</replaceable>
-              greater than or equal than the high-water priority is entered in
-              this column, the high-water priority is set to the specified
-              <replaceable>priority</replaceable> plus 1. An attempt to assign
-              a priority value greater than 65535 (explicitly or implicitly),
-              an error is raised.</para>
+              incremented by 1 and assigned to the filter. When a
+              <replaceable>priority</replaceable> greater than the high-water
+              priority is entered in this column, the high-water priority is
+              set to the specified <replaceable>priority</replaceable>. An
+              attempt to assign a priority value greater than 65535
+              (explicitly or implicitly) raises an error.</para>
             </listitem>
           </itemizedlist>
 

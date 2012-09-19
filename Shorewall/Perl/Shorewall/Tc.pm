@@ -983,7 +983,7 @@ sub validate_tc_device( ) {
 			    mtu           => $mtu,
 			    mpu           => $mpu,
 			    tsize         => $tsize,
-			    filterpri     => 1,
+			    filterpri     => 0,
 			  } ,
 
     push @tcdevices, $device;
@@ -1425,11 +1425,11 @@ sub process_tc_filter() {
     my ( $prio, $filterpri ) = ( undef, $devref->{filterpri} );
 
     if ( $priority eq '-' ) {
-	$prio = $filterpri++;
+	$prio = ++$filterpri;
 	fatal_error "Filter priority overflow" if $prio > 65535;
     } else {
 	$prio = validate_filter_priority( $priority, 'filter' );
-	$filterpri = $prio + 1 if $prio >= $filterpri;
+	$filterpri = $prio if $prio > $filterpri;
     }
 
     $devref->{filterpri} = $filterpri;

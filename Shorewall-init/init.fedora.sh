@@ -136,14 +136,10 @@ case "$1" in
 	status_q || exit 0
 	$1
 	;;
-    restart|reload|force-reload)
+    restart|reload|force-reload|condrestart|try-restart)
 	echo "Not implemented"
 	exit 3
 	;;
-    condrestart|try-restart)
-	echo "Not implemented"
-	exit 3
-        ;;
     status)
 	status $prog
 	;;

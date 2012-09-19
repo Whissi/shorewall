@@ -164,11 +164,15 @@ else
     usage 1
 fi
 
+update=0
+
 if [ -z "${VARLIB}" ]; then
     VARLIB=${VARDIR}
     VARDIR="${VARLIB}/${PRODUCT}"
+    update=1
 elif [ -z "${VARDIR}" ]; then
     VARDIR="${VARLIB}/${PRODUCT}"
+    update=2
 fi
 
 for var in SHAREDIR LIBEXECDIR PERLLIBDIR CONFDIR SBINDIR VARLIB VARDIR; do
@@ -353,9 +357,25 @@ ln -sf lib.base ${DESTDIR}${SHAREDIR}/shorewall/functions
 echo "$VERSION" > ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 
-[ $file != "${SHAREDIR}/shorewall/shorewallrc" ] && cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
+if [ -z "${DESTDIR}" ]; then
+    if [ $update -ne 0 ]; then
+	echo "Updating $file - original saved in $file.bak"
 
-[ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
+	cp $file $file.bak
+
+	echo '#'                                             >> $file
+	echo "# Updated by Shorewall-core $VERSION -" `date` >> $file
+	echo '#'                                             >> $file
+
+	[ $update -eq 1 ] && sed -i 's/VARDIR/VARLIB/' $file
+
+	echo 'VARDIR=${VARLIB}/${PRODUCT}' >> $file
+    fi
+
+    [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
+fi
+
+[ $file != "${DESTDIR}${SHAREDIR}/shorewall/shorewallrc" ] && cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
 
 if [ ${SHAREDIR} != /usr/share ]; then
     for f in lib.*; do

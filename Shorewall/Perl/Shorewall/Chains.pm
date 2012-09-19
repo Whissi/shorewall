@@ -4326,7 +4326,7 @@ sub do_user( $ ) {
 
     require_capability 'OWNER_MATCH', 'A non-empty USER column', 's';
 
-    assert ( $user =~ /^(!)?(.*?)(:(.*))?$/ );
+    assert( $user =~ /^(!)?(.*?)(:(.+))?$/ );
     my $invert = $1 ? '! ' : '';
     my $group  = supplied $4 ? $4 : '';
 

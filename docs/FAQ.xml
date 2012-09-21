@@ -247,7 +247,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
         <itemizedlist>
           <listitem>
             <para>You are trying to test from inside your firewall (no, that
-            won't work -- see <xref linkend="faq2" />).</para>
+            won't work -- see <xref linkend="faq2"/>).</para>
           </listitem>
 
           <listitem>
@@ -545,6 +545,28 @@ REDIRECT        net           22          tcp          9022</programlisting>
         <para>Note that the above rule will also allow connections from the
         net on TCP port 22. If you don't want that, see <link
         linkend="faq1e">FAQ 1e</link>.</para>
+      </section>
+
+      <section id="faq1j">
+        <title>(FAQ 1j) Why doesn't this DNAT rule work?</title>
+
+        <para>I added this rule but I'm still seeing the log message
+        below</para>
+
+        <programlisting>RULE:
+DNAT           scnet:172.19.41.2       dmz0:10.199.198.145             udp     2055
+
+LOG:
+Sep 21 12:55:37 fw001 kernel: [10357687.114928] Shorewall:scnet2fw:DROP:IN=eth2 OUT=
+MAC=00:26:33:dd:aa:05:00:24:f7:19:ce:44:08:00 SRC=172.19.41.2 DST=172.19.1.1 LEN=1492
+TOS=0x00 PREC=0x00 TTL=63 ID=23035 PROTO=UDP SPT=6376 DPT=2055 LEN=1472</programlisting>
+
+        <para><emphasis role="bold">Answer</emphasis>: There was already a
+        conntrack entry for the failing connection before you added the rule.
+        Install the <emphasis role="bold">conntrack</emphasis> utility program
+        and use it to delete the entry.</para>
+
+        <programlisting><command>conntrack -D -s 172.19.41.2 -d 172.19.1.1 -p udp -sport 6367 -dport 2055 </command></programlisting>
       </section>
     </section>
 
@@ -2900,7 +2922,7 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Persistent SNAT: Available
 gateway:~# </programlisting>
 
-      <para></para>
+      <para/>
     </section>
 
     <section id="faq19">

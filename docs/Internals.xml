@@ -483,7 +483,7 @@ export -p</programlisting>
         <title>Pre-processor</title>
 
         <para>Unlike preprocessors like ccp, the Shorewall pre-processor does
-        it's work each time that the higher-level functions ask for the next
+        it's work each time that the higher-level modules asks for the next
         line of input.</para>
 
         <para>The major exported functions in the pre-processor are:</para>
@@ -499,8 +499,8 @@ export -p</programlisting>
               role="bold">open_file</emphasis> calls <emphasis
               role="bold">find_file</emphasis> who traverses the CONFIG_PATH
               looking for a file with the requested name. If the file is found
-              and has non-zero size, it is opened and module-global variables
-              are set as follows, and the fully-qualified name of the file is
+              and has non-zero size, it is opened, module-global variables are
+              set as follows, and the fully-qualified name of the file is
               returned by the function.</para>
 
               <variablelist>
@@ -540,8 +540,9 @@ export -p</programlisting>
             <listitem>
               <para>Sometimes, the higher-level modules need to suspend
               processing of the current file and open another file. An obvious
-              example is when the Rules module needs to process a macro file.
-              The push_open function is called in these cases.</para>
+              example is when the Rules module encounters a macro invocation
+              and needs to process the corresponding macro file. The push_open
+              function is called in these cases.</para>
 
               <para><emphasis role="bold">push_open</emphasis> pushes
               <emphasis role="bold">$currentfile</emphasis>, <emphasis
@@ -595,7 +596,7 @@ export -p</programlisting>
             <term>first_entry( $ )</term>
 
             <listitem>
-              <para>This function is called to determine what happens when the
+              <para>This function is called to specify what happens when the
               first non-commentary and no-blank line is read from the open
               file. The argument may be either a scalar or a function
               reference. If the argument is a scalar then it is treaded as a
@@ -634,8 +635,8 @@ export -p</programlisting>
                NORMAL_READ         =&gt; -1     # All options
             };</programlisting>
 
-              <para>The actual argument may be a bit-wise OR of any of the
-              above constants.</para>
+              <para>The actual argument may be a bit-wise OR of any of these
+              constants.</para>
 
               <para>The function does not return the logical line; that line
               is rather stored in the module-global variable <emphasis
@@ -658,14 +659,15 @@ export -p</programlisting>
               role="bold">split_line1</emphasis> functions return an array
               containing the contents of those columns.</para>
 
-              <para>The arguments to split_line1 are:</para>
+              <para>The arguments to <emphasis
+              role="bold">split_line1</emphasis> are:</para>
 
               <itemizedlist>
                 <listitem>
                   <para>A <option>name</option> =&gt;
                   <replaceable>column-number</replaceable> pair for each of
-                  the columns in the file. These are used to handle lines that
-                  use the <ulink
+                  the columns in the file. These are used to process lines
+                  that use the <ulink
                   url="configuration_file_basics.htm#Pairs">alternate input
                   methods</ulink> and also serve to define the number of
                   columns in the file's records.</para>
@@ -676,13 +678,14 @@ export -p</programlisting>
                   =&gt; <replaceable>number-of-columns</replaceable> pairs.
                   For example "{ COMMENT =&gt; 0, FORMAT 2 }" allows COMMENT
                   lines of an unlimited number of space-separated tokens and
-                  it allows FORMAT lines with exactly two columns. </para>
+                  it allows FORMAT lines with exactly two columns. The hash
+                  reference must be the last argument passed.</para>
                 </listitem>
               </itemizedlist>
 
               <para>If there are fewer space-separated tokens on the line than
-              specified in the arguments, then "-" is returned for the the
-              trailing columns that were omitted.</para>
+              specified in the arguments, then "-" is returned for the omitted
+              trailing columns.</para>
             </listitem>
           </varlistentry>
 
@@ -713,7 +716,7 @@ export -p</programlisting>
 
               <simplelist>
                 <member>"ERROR: @_" followed by the name of the file and the
-                line number where the error occurred. </member>
+                line number where the error occurred.</member>
               </simplelist>
 
               <para>The mesage is written to the STARTUP_LOG, if any.</para>
@@ -781,7 +784,69 @@ export -p</programlisting>
       </section>
 
       <section>
-        <title/>
+        <title>Script File Handling</title>
+
+        <para>The functions involved in script file creation are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>create_temp_script( $$ )</term>
+
+            <listitem>
+              <para>This function creates and opens a temporary file in the
+              directory where the final script is to be placed; this function
+              is not called when the <command>check</command> command is being
+              processed. The first argument is the fully-qualified name of the
+              output script; the second (boolean) argument determines if the
+              compilation is for export. The function returns no meaningful
+              value but sets module-global variables as follows:</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>$script</term>
+
+                  <listitem>
+                    <para>Handle of the open script file.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$dir</term>
+
+                  <listitem>
+                    <para>The directory in which the script was
+                    created.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$tempfile</term>
+
+                  <listitem>
+                    <para>The name of the temporary file.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$file</term>
+
+                  <listitem>
+                    <para>This fully-qualified name of the script file.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>finalize_script( $ )</term>
+
+            <listitem>
+              <para>This function closes the temporary file and renames it to
+              the </para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
 
         <para/>
       </section>

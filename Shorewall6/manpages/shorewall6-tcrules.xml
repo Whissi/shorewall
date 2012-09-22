@@ -420,12 +420,12 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               role="bold">:P</emphasis>, in which case the rule is added to
               the PREROUTING chain.</para>
 
-              <para> If <emphasis role="bold">+</emphasis> is included,
-              packets matching the rule will have their HL (hop limit)
-              incremented by <replaceable>number</replaceable>. Similarly, if
-              <emphasis role="bold">-</emphasis> is included, matching packets
-              have their HL decremented by <replaceable>number</replaceable>.
-              If neither <emphasis role="bold">+</emphasis> nor <emphasis
+              <para>If <emphasis role="bold">+</emphasis> is included, packets
+              matching the rule will have their HL (hop limit) incremented by
+              <replaceable>number</replaceable>. Similarly, if <emphasis
+              role="bold">-</emphasis> is included, matching packets have
+              their HL decremented by <replaceable>number</replaceable>. If
+              neither <emphasis role="bold">+</emphasis> nor <emphasis
               role="bold">-</emphasis> is given, the HL of matching packets is
               set to <replaceable>number</replaceable>. The valid range of
               values for <replaceable>number</replaceable> is 1-255.</para>
@@ -870,10 +870,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           <para>Optional. Names a Netfiler protocol
           <firstterm>helper</firstterm> module such as <option>ftp</option>,
           <option>sip</option>, <option>amanda</option>, etc. A packet will
-          match if it was accepted by the named helper module. You can also
-          append "-" and a port number to the helper module name (e.g.,
-          <emphasis role="bold">ftp-21</emphasis>) to specify the port number
-          that the original connection was made on.</para>
+          match if it was accepted by the named helper module. </para>
 
           <para>Example: Mark all FTP data connections with mark
           4:<programlisting>#ACTION   SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER

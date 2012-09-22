@@ -3319,24 +3319,24 @@ sub Amanda_Helper() {
     have_helper( 'amanda', 'udp', 10080 );
 }
 
-sub FTP_Helper() {
-    have_helper( 'ftp', 'tcp', 21 );
-}
-
 sub FTP0_Helper() {
     have_helper( 'ftp-0', 'tcp', 21 ) and $helpers_aliases{ftp} = 'ftp-0';
+}
+
+sub FTP_Helper() {
+    have_helper( 'ftp', 'tcp', 21 ) || FTP0_Helper;
 }
 
 sub H323_Helpers() {
     have_helper( 'RAS', 'udp', 1719 );
 }
 
-sub IRC_Helper() {
-    have_helper( 'irc', 'tcp', 6667 );
-}
-
 sub IRC0_Helper() {
     have_helper( 'irc-0', 'tcp', 6667 ) and $helpers_aliases{irc} = 'irc-0';
+}
+
+sub IRC_Helper() {
+    have_helper( 'irc', 'tcp', 6667 ) || IRC0_Helper;
 }
 
 sub Netbios_ns_Helper() {
@@ -3347,32 +3347,32 @@ sub PPTP_Helper() {
     have_helper( 'pptp', 'tcp', 1729 );
 }
 
-sub SANE_Helper() {
-    have_helper( 'sane', 'tcp', 6566 );
-}
-
 sub SANE0_Helper() {
     have_helper( 'sane-0', 'tcp', 6566 ) and $helpers_aliases{sane} = 'sane-0';
 }
 
-sub SIP_Helper() {
-    have_helper( 'sip', 'udp', 5060 );
+sub SANE_Helper() {
+    have_helper( 'sane', 'tcp', 6566 ) || SANE0_Helper;
 }
 
 sub SIP0_Helper() {
     have_helper( 'sip-0', 'udp', 5060 ) and $helpers_aliases{sip} = 'sip-0';
 }
 
+sub SIP_Helper() {
+    have_helper( 'sip', 'udp', 5060 ) || SIP0_Helper;
+}
+
 sub SNMP_Helper() {
     have_helper( 'snmp', 'udp', 161 );
 }
 
-sub TFTP_Helper() {
-    have_helper( 'tftp', 'udp', 69 );
-}
-
 sub TFTP0_Helper() {
     have_helper( 'tftp-0', 'udp', 69 ) and $helpers_aliases{tftp} = 'tftp-0';
+}
+
+sub TFTP_Helper() {
+    have_helper( 'tftp', 'udp', 69 ) || TFTP0_Helper;
 }
 
 sub Connlimit_Match() {
@@ -3624,17 +3624,6 @@ sub determine_capabilities() {
 
     $globals{KLUDGEFREE} = $capabilities{KLUDGEFREE} = detect_capability 'KLUDGEFREE';
 
-    if ( have_capability 'CT_TARGET' ) {
-	$capabilities{$_} = detect_capability $_ for ( values( %helpers_map ),
-						       'FTP0_HELPER',
-						       'IRC0_HELPER',
-						       'SANE0_HELPER',
-						       'SIP0_HELPER',
-						       'TFTP0_HELPER' );
-    } else {
-	$capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
-    }
-
     unless ( $config{ LOAD_HELPERS_ONLY } ) {
 	#
 	# Using 'detect_capability()' is a bit less efficient than calling the individual detection
@@ -3718,6 +3707,12 @@ sub determine_capabilities() {
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
 	
+	if ( have_capability 'CT_TARGET' ) {
+	    $capabilities{$_} = detect_capability $_ for ( values( %helpers_map ) );
+	} else {
+	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
+	}
+
 	qt1( "$iptables -F $sillyname" );
 	qt1( "$iptables -X $sillyname" );
 	qt1( "$iptables -F $sillyname1" );

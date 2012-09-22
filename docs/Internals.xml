@@ -472,7 +472,380 @@ export -p</programlisting>
     <section>
       <title>Config Module</title>
 
-      <para></para>
+      <para>As mentioned above, the Config module offers several related
+      services. Each will be described in a separate sub-section.</para>
+
+      <section>
+        <title>Pre-processor</title>
+
+        <para>Unlike preprocessors like ccp, the Shorewall pre-processor does
+        it's work each time that the higher-level modules asks for the next
+        line of input.</para>
+
+        <para>The major exported functions in the pre-processor are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>open_file( $ )</term>
+
+            <listitem>
+              <para>The single argument names the file to be opened and is
+              usually a simple filename such as
+              <filename>shorewall.conf</filename>. <emphasis
+              role="bold">open_file</emphasis> calls <emphasis
+              role="bold">find_file</emphasis> who traverses the CONFIG_PATH
+              looking for a file with the requested name. If the file is found
+              and has non-zero size, it is opened, module-global variables are
+              set as follows, and the fully-qualified name of the file is
+              returned by the function.</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>$currentfile</term>
+
+                  <listitem>
+                    <para>Handle for the file open</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$currentfilename (exported)</term>
+
+                  <listitem>
+                    <para>The fully-qualified name of the file.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$currentlinenumber</term>
+
+                  <listitem>
+                    <para>Set to zero.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
+
+              <para>If the file is not found or if it has zero size, false
+              ('') is returned.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>push_open( $ )</term>
+
+            <listitem>
+              <para>Sometimes, the higher-level modules need to suspend
+              processing of the current file and open another file. An obvious
+              example is when the Rules module encounters a macro invocation
+              and needs to process the corresponding macro file. The push_open
+              function is called in these cases.</para>
+
+              <para><emphasis role="bold">push_open</emphasis> pushes
+              <emphasis role="bold">$currentfile</emphasis>, <emphasis
+              role="bold">$currentfilename</emphasis>, <emphasis
+              role="bold">$currentlinenumber</emphasis> and <emphasis
+              role="bold">$ifstack</emphasis> onto <emphasis
+              role="bold">@includestack</emphasis>, copies <emphasis
+              role="bold">@includestack</emphasis> into a local array, pushes
+              a reference to the local array onto <emphasis
+              role="bold">@openstack</emphasis>, and empties <emphasis
+              role="bold">@includestack</emphasis></para>
+
+              <para>As its final step, <emphasis
+              role="bold">push_open</emphasis> calls <emphasis
+              role="bold">open_file</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>pop_open()</term>
+
+            <listitem>
+              <para>The <emphasis role="bold">pop_open</emphasis> function
+              must be called after the file opened by <emphasis
+              role="bold">push_open</emphasis> is processed. This is true even
+              in the case where <emphasis role="bold">push_open</emphasis>
+              returned false.</para>
+
+              <para><emphasis role="bold">pop_open</emphasis> pops <emphasis
+              role="bold">@openstack</emphasis> and restores <emphasis
+              role="bold">$currentfile</emphasis>, <emphasis
+              role="bold">$currentfilename</emphasis>, <emphasis
+              role="bold">$currentlinenumber</emphasis>, <emphasis
+              role="bold">$ifstack</emphasis> and <emphasis
+              role="bold">@includestack</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>close_file()</term>
+
+            <listitem>
+              <para><emphasis role="bold">close_file</emphasis> is called to
+              close the current file. Higher-level modules should only call
+              <emphasis role="bold">close_file</emphasis> to close the current
+              file prior to end-of-file.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>first_entry( $ )</term>
+
+            <listitem>
+              <para>This function is called to specify what happens when the
+              first non-commentary and no-blank line is read from the open
+              file. The argument may be either a scalar or a function
+              reference. If the argument is a scalar then it is treaded as a
+              progress message that should be issued if the VERBOSITY setting
+              is &gt;= 1. If the argument is a function reference, the
+              function (usually a closure) is called.</para>
+
+              <para><emphasis role="bold">first_entry</emphasis> may called
+              after a successful call to <emphasis
+              role="bold">open_file</emphasis>. If it is not called, then the
+              pre-processor takes no action when the first non-blank
+              non-commentary line is found.</para>
+
+              <para><emphasis role="bold">first_entry</emphasis> returns no
+              significant value.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>read_a_line( $ )</term>
+
+            <listitem>
+              <para>This function delivers the next logical input line to the
+              caller. The single argument is defined by the following
+              constants:</para>
+
+              <programlisting>use constant { PLAIN_READ          =&gt; 0,     # No read_a_line options
+               EMBEDDED_ENABLED    =&gt; 1,     # Look for embedded Shell and Perl
+               EXPAND_VARIABLES    =&gt; 2,     # Expand Shell variables
+               STRIP_COMMENTS      =&gt; 4,     # Remove comments
+               SUPPRESS_WHITESPACE =&gt; 8,     # Ignore blank lines
+               CHECK_GUNK          =&gt; 16,    # Look for unprintable characters
+               CONFIG_CONTINUATION =&gt; 32,    # Suppress leading whitespace if
+                                             # continued line ends in ',' or ':'
+               DO_INCLUDE          =&gt; 64,    # Look for INCLUDE &lt;filename&gt;
+               NORMAL_READ         =&gt; -1     # All options
+            };</programlisting>
+
+              <para>The actual argument may be a bit-wise OR of any of these
+              constants.</para>
+
+              <para>The function does not return the logical line; that line
+              is rather stored in the module-global variable <emphasis
+              role="bold">$currentline</emphasis> (exported). The function
+              simply returns true if a line was read or false if end-of-file
+              was reached. <emphasis role="bold">read_a_line</emphasis>
+              automatically calls <emphasis role="bold">close_file</emphasis>
+              at EOF.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>split_line1</term>
+
+            <listitem>
+              <para>Most of the callers of <emphasis
+              role="bold">read_a_line</emphasis> want to treat each line as
+              whitespace-separated columns. The <emphasis
+              role="bold">split_line</emphasis> and <emphasis
+              role="bold">split_line1</emphasis> functions return an array
+              containing the contents of those columns.</para>
+
+              <para>The arguments to <emphasis
+              role="bold">split_line1</emphasis> are:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>A <option>name</option> =&gt;
+                  <replaceable>column-number</replaceable> pair for each of
+                  the columns in the file. These are used to process lines
+                  that use the <ulink
+                  url="configuration_file_basics.htm#Pairs">alternate input
+                  methods</ulink> and also serve to define the number of
+                  columns in the file's records.</para>
+                </listitem>
+
+                <listitem>
+                  <para>A hash reference defining <option>keyword</option>
+                  =&gt; <replaceable>number-of-columns</replaceable> pairs.
+                  For example "{ COMMENT =&gt; 0, FORMAT 2 }" allows COMMENT
+                  lines of an unlimited number of space-separated tokens and
+                  it allows FORMAT lines with exactly two columns. The hash
+                  reference must be the last argument passed.</para>
+                </listitem>
+              </itemizedlist>
+
+              <para>If there are fewer space-separated tokens on the line than
+              specified in the arguments, then "-" is returned for the omitted
+              trailing columns.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>split_line</term>
+
+            <listitem>
+              <para><emphasis role="bold">split_line</emphasis> simply returns
+              <emphasis role="bold">split_line1( @_, {} )</emphasis>.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+
+      <section>
+        <title>Error and Progress Message Production</title>
+
+        <para>There are several exported functions dealing with error and
+        warning messages:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>fatal_error</term>
+
+            <listitem>
+              <para>The argument(s) to this function describe the error. The
+              generated error message is:</para>
+
+              <simplelist>
+                <member>"ERROR: @_" followed by the name of the file and the
+                line number where the error occurred.</member>
+              </simplelist>
+
+              <para>The mesage is written to the STARTUP_LOG, if any.</para>
+
+              <para>The function does not return but rather passes the message
+              to <emphasis role="bold">die</emphasis> or to <emphasis
+              role="bold">confess</emphasis>, depending on whether the "-T"
+              option was specified.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>warning_message</term>
+
+            <listitem>
+              <para>The warning_message is very similar to fatal_error but
+              avoids calling <emphasis role="bold">die</emphasis> or <emphasis
+              role="bold">confess</emphasis>. It also prefixes the argument(s)
+              with "WARNING: " rather than "ERROR: ".</para>
+
+              <para>It message is written to Standard Out and to the
+              STARTUP_LOG, if any.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>progress_message, progress_message2, progress_message3 and
+            progress_message_nocompress</term>
+
+            <listitem>
+              <para>These procedures conditionally write their argument(s) to
+              Standard Out and to the STARTUP_LOG (if any), depending on the
+              settings of VERBOSITY and and LOG_VERBOSITY respectively.</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><emphasis role="bold">progress_message</emphasis> only
+                  write messages when the verbosity is 2. This function also
+                  preserves leading whitespace while removing superflous
+                  embedded whitespace from the messages.</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis role="bold">progress_message2</emphasis>
+                  writes messages with the verbosity is &gt;= 1.</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis role="bold">progress_message3</emphasis>
+                  writes messages when the verbosity is &gt;= 0.</para>
+                </listitem>
+
+                <listitem>
+                  <para><emphasis
+                  role="bold">progress_message_nocompress</emphasis> is like
+                  <emphasis role="bold">progress_message</emphasis> except
+                  that it does not preserve leading whitespace nor does it
+                  eliminate superfluous embedded whitespacve from the
+                  messages.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+
+      <section>
+        <title>Script File Handling</title>
+
+        <para>The functions involved in script file creation are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>create_temp_script( $$ )</term>
+
+            <listitem>
+              <para>This function creates and opens a temporary file in the
+              directory where the final script is to be placed; this function
+              is not called when the <command>check</command> command is being
+              processed. The first argument is the fully-qualified name of the
+              output script; the second (boolean) argument determines if the
+              compilation is for export. The function returns no meaningful
+              value but sets module-global variables as follows:</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>$script</term>
+
+                  <listitem>
+                    <para>Handle of the open script file.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$dir</term>
+
+                  <listitem>
+                    <para>The directory in which the script was
+                    created.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$tempfile</term>
+
+                  <listitem>
+                    <para>The name of the temporary file.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>$file</term>
+
+                  <listitem>
+                    <para>This fully-qualified name of the script file.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>finalize_script( $ )</term>
+
+            <listitem>
+              <para>This function closes the temporary file and renames it to
+              the </para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para/>
+      </section>
     </section>
   </section>
 </article>

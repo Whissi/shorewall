@@ -372,7 +372,11 @@ sub process_tc_rule( ) {
 
 					  if ( supplied $ip ) {
 					      if ( $family == F_IPV6 ) {
-						  $ip = $1 if $ip =~ /^\[(.+)\]$/ || $ip =~ /^<(.+)>$/;
+						  if ( $ip =~ /^\[(.+)\]$/ || $ip =~ /^<(.+)>$/ ) {
+						      $ip = $1;
+						  } elsif ( $ip =~ /^\[(.+)\]\/(\d+)$/ ) {
+						      $ip = join( $1, $2 );
+						  }
 					      }
 
 					      validate_address $ip, 1;

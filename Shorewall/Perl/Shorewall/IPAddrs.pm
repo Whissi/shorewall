@@ -32,7 +32,7 @@ use Socket;
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( ALLIPv4
+our @EXPORT = ( qw( ALLIPv4
                   ALLIPv6
 		  NILIPv4
 		  NILIPv6
@@ -72,7 +72,7 @@ our @EXPORT = qw( ALLIPv4
 		  validate_port_list
 		  validate_icmp
 		  validate_icmp6
-		 );
+		 ) );
 our @EXPORT_OK = qw( );
 our $VERSION = 'MODULEVERSION';
 
@@ -178,7 +178,7 @@ sub encodeaddr( $ ) {
     $result;
 }
 
-sub validate_4net( $$ ) {
+sub validate_4net( $$; $ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[1];
 
@@ -207,11 +207,13 @@ sub validate_4net( $$ ) {
     }
 
     if ( defined wantarray ) {
-	assert ( ! $allow_name );
 	if ( wantarray ) {
+	    assert( ! $allow_name );
 	    ( decodeaddr( $net ) , $vlsm );
+	} elsif ( valid_4address $net ) {
+	    $vlsm == 32 ? $net : "$net/$vlsm";
 	} else {
-	    "$net/$vlsm";
+	    $net;
 	}
     }
 }
@@ -606,9 +608,9 @@ sub validate_6address( $$ ) {
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
-sub validate_6net( $$ ) {
+sub validate_6net( $$;$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
-    my $allow_name = $_[1];
+    my $allow_name = $_[0];
 
     if ( $net =~ /\+(\[?)/ ) {
 	if ( $1 ) {
@@ -620,22 +622,28 @@ sub validate_6net( $$ ) {
 	}
     }
 
+    fatal_error "Invalid Network address ($_[0])" unless supplied $net;
+
+    $net = $1 if $net =~ /^\[(.*)\]$/;
+
     if ( defined $vlsm ) {
         fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 128;
 	fatal_error "Invalid Network address ($_[0])"   if defined $rest;
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {
-	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
+	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/';
 	validate_6address $net, $allow_name;
 	$vlsm = 128;
     }
 
     if ( defined wantarray ) {
-	assert ( ! $allow_name );
 	if ( wantarray ) {
+	    assert( ! $allow_name );
 	    ( $net , $vlsm );
+	} elsif ( valid_6address ( $net ) ) {
+	    $vlsm == 32 ? $net : "$net/$vlsm";
 	} else {
-	    "$net/$vlsm";
+	    $net;
 	}
     }
 }

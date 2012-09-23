@@ -938,7 +938,7 @@ sub add_an_rtrule( ) {
     if ( $dest eq '-' ) {
 	$dest = 'to ' . ALLIP;
     } else {
-	validate_net( $dest, 0 );
+	$dest = validate_net( $dest, 0 );
 	$dest = "to $dest";
     }
 
@@ -950,22 +950,22 @@ sub add_an_rtrule( ) {
 	if ( $source =~ /:/ ) {
 	    ( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
 	    fatal_error "Invalid SOURCE" if defined $remainder;
-	    validate_net ( $source, 0 );
+	    $source = validate_net ( $source, 0 );
 	    $interface = physical_name $interface;
 	    $source = "iif $interface from $source";
 	} elsif ( $source =~ /\..*\..*/ ) {
-	    validate_net ( $source, 0 );
+	    $source = validate_net ( $source, 0 );
 	    $source = "from $source";
 	} else {
 	    $source = 'iif ' . physical_name $source;
 	}
-    } elsif ( $source =~  /^(.+?):<(.+)>\s*$/ ||  $source =~  /^(.+?):\[(.+)\]\s*$/ ) {
+    } elsif ( $source =~  /^(.+?):<(.+)>\s*$/ ||  $source =~  /^(.+?):\[(.+)\]\s*$/ || $source =~ /^(.+?):(\[.+?\](?:\/\d+))$/ ) {
 	my ($interface, $source ) = ($1, $2);
-	validate_net ($source, 0);
+	$source = validate_net ($source, 0);
 	$interface = physical_name $interface;
 	$source = "iif $interface from $source";
     } elsif (  $source =~ /:.*:/ || $source =~ /\..*\..*/ ) {
-	validate_net ( $source, 0 );
+	$source = validate_net ( $source, 0 );
 	$source = "from $source";
     } else {
 	$source = 'iif ' . physical_name $source;
@@ -1020,7 +1020,7 @@ sub add_a_route( ) {
     }
 
     fatal_error 'DEST must be specified' if $dest eq '-';
-    validate_net ( $dest, 1 );
+    $dest = validate_net ( $dest, 1 );
 
     validate_address ( $gateway, 1 ) if $gateway ne '-';
 

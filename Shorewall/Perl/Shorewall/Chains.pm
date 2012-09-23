@@ -85,7 +85,7 @@ our @EXPORT = ( qw(
 		    $nat_table
 		    $mangle_table
 		    $filter_table
-		),
+		)
 	      );
 
 our %EXPORT_TAGS = (
@@ -248,7 +248,7 @@ our %EXPORT_TAGS = (
 				       %targets
 				       %dscpmap
 				       %nfobjects
-				     ), ],
+				     ) ],
 		   );
 
 Exporter::export_ok_tags('internal');
@@ -4930,7 +4930,7 @@ sub match_source_net( $;$\$ ) {
 	    return '! -s ' . record_runtime_address $1, $2;
 	}
 
-	validate_net $net, 1;
+	$net = validate_net $net, 1;
 	return "! -s $net ";
     }
 
@@ -4938,7 +4938,7 @@ sub match_source_net( $;$\$ ) {
 	return '-s ' . record_runtime_address $1, $2;
     }
 
-    validate_net $net, 1;
+    $net = validate_net $net, 1;
     $net eq ALLIP ? '' : "-s $net ";
 }
 
@@ -5003,7 +5003,7 @@ sub imatch_source_net( $;$\$ ) {
 	    return  ( s => '! ' . record_runtime_address( $1, $2, 1 ) );
 	}
 
-	validate_net $net, 1;
+	$net = validate_net $net, 1;
 	return ( s => "! $net " );
     }
 
@@ -5011,7 +5011,7 @@ sub imatch_source_net( $;$\$ ) {
 	return ( s =>  record_runtime_address( $1, $2, 1 ) );
     }
 
-    validate_net $net, 1;
+    $net = validate_net $net, 1;
     $net eq ALLIP ? () : ( s => $net );
 }
 
@@ -5072,7 +5072,7 @@ sub match_dest_net( $;$ ) {
 	    return '! -d ' . record_runtime_address $1, $2;
 	}
 
-	validate_net $net, 1;
+	$net = validate_net $net, 1;
 	return "! -d $net ";
     }
 
@@ -5080,7 +5080,7 @@ sub match_dest_net( $;$ ) {
 	return '-d ' . record_runtime_address $1, $2;
     }
 
-    validate_net $net, 1;
+    $net = validate_net $net, 1;
     $net eq ALLIP ? '' : "-d $net ";
 }
 
@@ -5139,7 +5139,7 @@ sub imatch_dest_net( $;$ ) {
 	    return ( d => '! ' . record_runtime_address( $1, $2, 1 ) );
 	}
 
-	validate_net $net, 1;
+	$net = validate_net $net, 1;
 	return ( d => "! $net " );
     }
 
@@ -5147,7 +5147,7 @@ sub imatch_dest_net( $;$ ) {
 	return ( d => record_runtime_address( $1, $2, 1 ) );
     }
 
-    validate_net $net, 1;
+    $net = validate_net $net, 1;
     $net eq ALLIP ? () : ( d =>  $net );
 }
 
@@ -5164,7 +5164,7 @@ sub match_orig_dest ( $ ) {
 	if ( $net =~ /^&(.+)/ ) {
 	    $net = record_runtime_address '&', $1;
 	} else {
-	    validate_net $net, 1;
+	    $net = validate_net $net, 1;
 	}
 
 	have_capability( 'OLD_CONNTRACK_MATCH' ) ? "-m conntrack --ctorigdst ! $net " : "-m conntrack ! --ctorigdst $net ";
@@ -5172,7 +5172,7 @@ sub match_orig_dest ( $ ) {
 	if ( $net =~ /^&(.+)/ ) {
 	    $net = record_runtime_address '&', $1;
 	} else {
-	    validate_net $net, 1;
+	    $net = validate_net $net, 1;
 	}
 
 	$net eq ALLIP ? '' : "-m conntrack --ctorigdst $net ";
@@ -5903,7 +5903,11 @@ sub isolate_source_interface( $ ) {
 	} else {
 	    $iiface = $source;
 	}
-    } elsif  ( $source =~ /^(.+?):<(.+)>\s*$/ || $source =~ /^(.+?):\[(.+)\]\s*$/ || $source =~ /^(.+?):(!?\+.+)$/ ) {
+    } elsif  ( $source =~ /^(.+?):<(.+)>\s*$/   ||
+	       $source =~ /^(.+?):\[(.+)\]\s*$/ ||
+	       $source =~ /^(.+?):(!?\+.+)$/    ||
+	       $source =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
+	     ) {
 	$iiface = $1;
 	$inets  = $2;
     } elsif ( $source =~ /:/ ) {
@@ -6008,7 +6012,11 @@ sub isolate_dest_interface( $$$$ ) {
 	} else {
 	    $diface = $dest;
 	}
-    } elsif ( $dest =~ /^(.+?):<(.+)>\s*$/ || $dest =~ /^(.+?):\[(.+)\]\s*$/ || $dest =~ /^(.+?):(!?\+.+)$/ ) {
+    } elsif ( $dest =~ /^(.+?):<(.+)>\s*$/   || 
+	      $dest =~ /^(.+?):\[(.+)\]\s*$/ ||
+	      $dest =~ /^(.+?):(!?\+.+)$/    ||
+	      $dest =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
+	    ) {
 	$diface = $1;
 	$dnets  = $2;
     } elsif ( $dest =~ /:/ ) {

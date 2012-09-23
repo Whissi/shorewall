@@ -431,8 +431,8 @@ sub setup_netmap() {
 		    my @rulein;
 		    my @ruleout;
 
-		    validate_net $net1, 0;
-		    validate_net $net2, 0;
+		    $net1 = validate_net $net1, 0;
+		    $net2 = validate_net $net2, 0;
 
 		    unless ( $interfaceref->{root} ) {
 			@rulein  = imatch_source_dev( $interface );
@@ -466,7 +466,7 @@ sub setup_netmap() {
 
 		    require_capability 'RAWPOST_TABLE', 'Stateless NAT Entries', '';
 
-		    validate_net $net2, 0;
+		    $net2 = validate_net $net2, 0;
 
 		    unless ( $interfaceref->{root} ) {
 			@match = imatch_dest_dev(  $interface );

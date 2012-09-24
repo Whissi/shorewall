@@ -402,7 +402,7 @@ sub process_tc_rule( ) {
 
 					  my $param =  $1;
 
-					  fatal_error "Invalid TTL specification( $cmd )" unless $2 && ( $param = abs $param ) < 256;
+					  fatal_error "Invalid TTL specification( $cmd )" unless ( $1 eq $2 || $2 != 0 ) && ( $param = abs $param ) < 256;
 
 					  if ( $1 =~ /^\+/ ) {
 					      $target .= " --ttl-inc $param";
@@ -430,7 +430,7 @@ sub process_tc_rule( ) {
 
 					  my $param =  $1;
 
-					  fatal_error "Invalid HL specification( $cmd )" unless $2 && ( $param = abs $param ) < 256;
+					  fatal_error "Invalid HL specification( $cmd )" unless ( $1 eq $2 || $2 != 0 ) && ( $param = abs $param ) < 256;
 
 					  if ( $1 =~ /^\+/ ) {
 					      $target .= " --hl-inc $param";

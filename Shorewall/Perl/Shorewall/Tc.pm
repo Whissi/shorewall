@@ -398,11 +398,11 @@ sub process_tc_rule( ) {
 					      }
 					  }
 
-					  $cmd =~ /^TTL\(([-+]?\d+)\)$/;
+					  $cmd =~ /^TTL\(([-+]?(\d+))\)$/;
 
 					  my $param =  $1;
 
-					  fatal_error "Invalid TTL specification( $cmd )" unless $param && ( $param = abs $param ) < 256;
+					  fatal_error "Invalid TTL specification( $cmd )" unless $2 && ( $param = abs $param ) < 256;
 
 					  if ( $1 =~ /^\+/ ) {
 					      $target .= " --ttl-inc $param";
@@ -426,11 +426,11 @@ sub process_tc_rule( ) {
 					      }
 					  }
 
-					  $cmd =~ /^HL\(([-+]?\d+)\)$/;
+					  $cmd =~ /^HL\(([-+]?(\d+))\)$/;
 
 					  my $param =  $1;
 
-					  fatal_error "Invalid HL specification( $cmd )" unless $param && ( $param = abs $param ) < 256;
+					  fatal_error "Invalid HL specification( $cmd )" unless $2 && ( $param = abs $param ) < 256;
 
 					  if ( $1 =~ /^\+/ ) {
 					      $target .= " --hl-inc $param";

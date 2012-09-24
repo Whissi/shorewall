@@ -365,6 +365,7 @@ fi
 #
 if [ -n "$SYSTEMD" ]; then
     run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/${SYSTEMD}/$PRODUCT.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/$PRODUCT.service
     echo "Service file installed as ${DESTDIR}/lib/systemd/system/$PRODUCT.service"
 fi
 

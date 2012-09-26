@@ -1530,10 +1530,6 @@ sub add_interface_jumps {
 	addnatjump 'POSTROUTING' , snat_chain( $interface ), imatch_dest_dev( $interface );
     }
 
-    addnatjump 'PREROUTING'  , 'nat_in';
-    addnatjump 'POSTROUTING' , 'nat_out';
-    addnatjump 'PREROUTING', 'dnat';
-
     for my $interface ( @interfaces  ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
 	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
@@ -2236,6 +2232,11 @@ sub generate_matrix() {
     } # Source Zone Loop
 
     progress_message '  Finishing matrix...';
+    #
+    # Make sure that the 1:1 NAT jumps are last in PREROUTING
+    #
+    addnatjump 'PREROUTING'  , 'nat_in';
+    addnatjump 'POSTROUTING' , 'nat_out';
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
 

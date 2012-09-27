@@ -428,6 +428,12 @@ ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                      
           <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
 #                                                                             PORT(S)
 ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                         22</programlisting>
+
+          <para>Prior to Shorewall 4.5.9, network addresses were required to
+          be enclosed in either angle brackets or square brackets (e.g.
+          [2001:470:b:787::/64]). Beginning with Shorewall 4.5.9, the more
+          common representation that places the VLSM outside the brackets is
+          also accepted (e.g., [2001:470:b:787::]/64).</para>
         </listitem>
       </varlistentry>
 
@@ -493,7 +499,7 @@ ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                         22<
             </listitem>
           </itemizedlist>
 
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 

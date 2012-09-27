@@ -178,7 +178,7 @@ sub encodeaddr( $ ) {
     $result;
 }
 
-sub validate_4net( $$; $ ) {
+sub validate_4net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[1];
 
@@ -608,7 +608,7 @@ sub validate_6address( $$ ) {
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
-sub validate_6net( $$;$ ) {
+sub validate_6net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[0];
 

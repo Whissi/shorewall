@@ -759,6 +759,8 @@ sub add_group_to_zone($$$$$)
 	    $new = \@exclusions;
 	}
 
+	$host = validate_net( $host, 1 ) unless $host =~ /^\+/;
+
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $interfaces{$interface}{zone} eq $zone;

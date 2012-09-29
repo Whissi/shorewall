@@ -759,6 +759,8 @@ sub add_group_to_zone($$$$$)
 	    $new = \@exclusions;
 	}
 
+	$host = validate_net( $host, 1 ) unless $host =~ /^\+/;
+
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $interfaces{$interface}{zone} eq $zone;
@@ -1764,9 +1766,9 @@ sub process_host( ) {
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
-    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/   ||
-	      $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]$/ ||
-	      $hosts =~ /^([\w.@%-]+\+?):(!?\+.*)$/   ||
+    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/             ||
+	      $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]$/           ||
+	      $hosts =~ /^([\w.@%-]+\+?):(\[.+\](?:\/\d+)?)$/ ||
 	      $hosts =~ /^([\w.@%-]+\+?):(dynamic)$/ ) {
 	$interface = $1;
 	$hosts = $2;

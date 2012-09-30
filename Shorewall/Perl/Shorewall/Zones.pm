@@ -1784,22 +1784,6 @@ sub process_host( ) {
 	fatal_error "Invalid HOST(S) column contents: $hosts"
     }
 
-    unless ( $hosts eq 'dynamic' ) {
-	my @hosts = split_list1( $hosts , 'host' );
-
-	for ( @hosts ) {
-	    if ( $_ =~ /^!?\+/ ) {
-		$zoneref->{complex} = 1;
-		fatal_error "ipset name qualification is disallowed in this file" if /[\[\]]/;
-		fatal_error "Invalid ipset name ($hosts)" unless /^!?\+[a-zA-Z][-\w]*$/;
-	    } else {
-		$_ = validate_net( $_, 1 );
-	    }
-	}
-
-	$hosts = join( ',', @hosts );
-    }
-
     if ( $type & BPORT ) {
 	if ( $zoneref->{bridge} eq '' ) {
 	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaceref->{options}{port};

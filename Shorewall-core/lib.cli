@@ -507,7 +507,7 @@ find_sets() {
     local junk
     local setname
 
-    ipset -L -n | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
+    $IPSET -L | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
 }
 
 list_zone() {
@@ -515,22 +515,24 @@ list_zone() {
     local sets
     local setname
 
-    [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
+    if [ $IPSET = ipset ]; then
+	[ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
+    fi
 
     if [ $g_family -eq 4 ]; then
-	sets=$(ipset -L -n | grep '^$1_');
+	sets=$($IPSET -L | grep '^$1_');
      else
-	sets=$(ipset -L -n | grep "^6_$1_")
+	sets=$($IPSET-L | grep "^6_$1_")
     fi
 
     [ -n "$sets" ] || sets=$(find_sets $1)
 
     for setname in $sets; do
 	echo "${setname#${1}_}:"
-	ipset -L $setname -n | awk 'BEGIN        {prnt=0;}; \
-                                    /^Members:/  {prnt=1; next; }; \
-                                    /^Bindings:/ {prnt=0; }; \
-                                                 { if (prnt == 1) print "   ", $1; };'
+	$IPSET -L $setname | awk 'BEGIN        {prnt=0;}; \
+                                 /^Members:/  {prnt=1; next; }; \
+                                 /^Bindings:/ {prnt=0; }; \
+                                              { if (prnt == 1) print "   ", $1; };'
     done
 }
 
@@ -2844,6 +2846,27 @@ get_config() {
 	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
 	    SHOREWALL_SHELL=/bin/sh
 	fi
+    fi
+
+    if [ -n "$IPSET" ]; then
+	case "$IPSET" in
+	    */*)
+		if [ ! -x "$IPSET" ] ; then
+		    echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
+		    exit 2
+		fi
+		;;
+	    *)
+		prog="$(mywhich $IPSET 2> /dev/null)"
+		if [ -z "$prog" ] ; then
+		    echo "   ERROR: Can't find $IPSET executable" >&2
+		    exit 2
+		fi
+		IPSET=$prog
+		;;
+	esac
+    else
+	IPSET='ipset'
     fi
 
     [ -n "$RESTOREFILE" ] || RESTOREFILE=restore

@@ -891,8 +891,14 @@ sub is_a_bridge( $ ) {
 #
 # Transform the passed interface name into a legal shell variable name.
 #
-sub chain_base($) {
-    my $chain = $_[0];
+sub unclean_name( $$ ) {
+    my ( $name, $allow_cash ) = @_;
+
+    $allow_cash ? $name =~ /[^-\w]/ : $name =~ /[^\w]/;
+}
+ 
+sub chain_base($;$) {
+    my ( $chain, $allow_dash ) = @_;
     my $name  = $basemap{$chain};
     #
     # Return existing mapping, if any
@@ -908,7 +914,7 @@ sub chain_base($) {
     $chain =~ s/\+$//;
     $chain =~ tr/./_/;
 
-    if ( $chain eq '' || $chain =~ /^[0-9]/ || $chain =~ /[^\w]/ ) {
+    if ( $chain eq '' || $chain =~ /^[0-9]/ || unclean_name( $chain, $allow_cash ) ) {
 	#
 	# Must map. Remove all illegal characters
 	#
@@ -1855,7 +1861,7 @@ sub process_host( ) {
     if ( $hosts eq 'dynamic' ) {
 	fatal_error "Vserver zones may not be dynamic" if $type & VSERVER;
 	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-	my $physical = chain_base( physical_name $interface );
+	my $physical = chain_base( physical_name $interface , 1 );
 	my $set      = $family == F_IPV4 ? "${zone}_${physical}" : "6_${zone}_${physical}";
 	$hosts = "+$set";
 	$optionsref->{dynamic} = 1;

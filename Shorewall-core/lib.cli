@@ -507,7 +507,7 @@ find_sets() {
     local junk
     local setname
 
-    ipset -L -n | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
+    ipset -L | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
 }
 
 list_zone() {
@@ -516,11 +516,11 @@ list_zone() {
     local setname
 
     [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
-
+    
     if [ $g_family -eq 4 ]; then
-	sets=$(ipset -L -n | grep '^$1_');
+	sets=$(ipset -L | grep '^$1_');
      else
-	sets=$(ipset -L -n | grep "^6_$1_")
+	sets=$(ipset -L | grep "^6_$1_")
     fi
 
     [ -n "$sets" ] || sets=$(find_sets $1)

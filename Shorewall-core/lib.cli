@@ -31,7 +31,6 @@ if [ -z "$g_readrc" ]; then
     . /usr/share/shorewall/shorewallrc
 
     g_sharedir="$SHAREDIR"/$g_program
-    g_sbindir="$SBINDIR"
     g_perllib="$PERLLIBDIR"
     g_confdir="$CONFDIR"/$g_program
     g_readrc=1
@@ -886,14 +885,14 @@ show_command() {
 		echo "CONFIG_PATH=$CONFIG_PATH"
 		echo "VARDIR=$VARDIR"
 		echo "LIBEXEC=${LIBEXECDIR}"
-		echo "SBINDIR=$g_sbindir"
+		echo "SBINDIR=${SBINDIR}"
 		echo "CONFDIR=${CONFDIR}"
 		[ -n "$g_lite" ] && [ ${VARDIR} != /var/lib/$g_program ] && echo "LITEDIR=${VARDIR}"
 	    else
 		echo "Default CONFIG_PATH is $CONFIG_PATH"
 		echo "Default VARDIR is /var/lib/$g_program"
 		echo "LIBEXEC is ${LIBEXECDIR}"
-		echo "SBINDIR is $g_sbindir"
+		echo "SBINDIR is ${SBINDIR}"
 		echo "CONFDIR is ${CONFDIR}"
 		[ -n "$g_lite" ] && [ ${VARDIR} != /var/lib/$g_program ] && echo "LITEDIR is ${VARDIR}"
 	    fi

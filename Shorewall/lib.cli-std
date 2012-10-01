@@ -430,10 +430,10 @@ compiler() {
 	PERL=/usr/bin/perl
     fi
 
-    if [ $g_perllib = ${LIBEXECDIR}/shorewall ]; then
+    if [ ${PERLLIBDIR} = ${LIBEXECDIR}/shorewall ]; then
 	$PERL $debugflags $pc $options $@
     else
-	PERL5LIB=$g_perllib
+	PERL5LIB=${PERLLIBDIR}
 	export PERL5LIB
 	$PERL $debugflags $pc $options $@
     fi

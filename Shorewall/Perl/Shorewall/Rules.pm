@@ -1868,7 +1868,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
 	    my ( $setname, $flags, $rest ) = split ':', $param, 3;
 	    fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
-	    fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^[a-zA-Z]\w*$/;
+	    fatal_error "Expected ipset name ($setname)" unless $setname =~ s/^\+// && $setname =~ /^(6_)?[a-zA-Z][-\w]*$/;
 	    fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
 	    $action = join( ' ', 'SET --' . $xlate{$basictarget} , $setname , $flags );
 	}

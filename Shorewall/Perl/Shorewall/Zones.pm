@@ -195,7 +195,9 @@ my @bport_zones;
 my %ipsets;
 my %physical;
 my %basemap;
+my %basemap1;
 my %mapbase;
+my %mapbase1;
 my $family;
 my $upgrade;
 my $have_ipsec;
@@ -281,7 +283,9 @@ sub initialize( $$ ) {
     %ipsets = ();
     %physical = ();
     %basemap = ();
+    %basemap1 = ();
     %mapbase = ();
+    %mapbase1 = ();
     $baseseq = 0;
     $minroot = 0;
 
@@ -780,7 +784,7 @@ sub add_group_to_zone($$$$$)
 	}
 
 	if ( substr( $host, 0, 1 ) eq '+' ) {
-	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+(6_)?[a-zA-Z]\w*$/;
+	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+(6_)?[a-zA-Z][-\w]*$/;
 	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', '');
 	} else {
 	    validate_host $host, 0;
@@ -935,6 +939,55 @@ sub chain_base($) {
     # Store the mapping
     #
     $basemap{$key} = $name;
+}
+
+#
+# This is a slightly relaxed version of the above that allows '-' in the generated name.
+#
+sub chain_base1($) {
+    my $chain = $_[0];
+    my $name  = $basemap1{$chain};
+    #
+    # Return existing mapping, if any
+    #
+    return $name if $name;
+    #
+    # Remember initial value
+    #
+    my $key = $chain;
+    #
+    # Handle VLANs and wildcards
+    #
+    $chain =~ s/\+$//;
+    $chain =~ tr/./_/;
+
+    if ( $chain eq '' || $chain =~ /^[0-9]/ || $chain =~ /[^-\w]/ ) {
+	#
+	# Must map. Remove all illegal characters
+	#
+	$chain =~ s/[^\w]//g;
+	#
+	# Prefix with if_ if it begins with a digit
+	#
+	$chain = join( '' , 'if_', $chain ) if $chain =~ /^[0-9]/;
+	#
+	# Create a new unique name
+	#
+	1 while $mapbase1{$name = join ( '_', $chain, ++$baseseq )};
+    } else {
+	#
+	# We'll store the identity mapping if it is unique
+	#
+	$chain = join( '_', $key , ++$baseseq ) while $mapbase1{$name = $chain};
+    }
+    #
+    # Store the reverse mapping
+    #
+    $mapbase1{$name} = $key;
+    #
+    # Store the mapping
+    #
+    $basemap1{$key} = $name;
 }
 
 #
@@ -1839,7 +1892,7 @@ sub process_host( ) {
     if ( $hosts eq 'dynamic' ) {
 	fatal_error "Vserver zones may not be dynamic" if $type & VSERVER;
 	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-	my $physical = chain_base( physical_name $interface );
+	my $physical = chain_base1( physical_name $interface );
 	my $set      = $family == F_IPV4 ? "${zone}_${physical}" : "6_${zone}_${physical}";
 	$hosts = "+$set";
 	$optionsref->{dynamic} = 1;

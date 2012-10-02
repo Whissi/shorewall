@@ -4779,7 +4779,7 @@ sub get_set_flags( $$ ) {
 	}
     }
 
-    fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z]\w*/;
+    fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z][-\w]*/;
 
     have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
 
@@ -4900,7 +4900,7 @@ sub match_source_net( $;$\$ ) {
 	fatal_error "Multiple ipset matches require the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
 	}
 
@@ -4973,7 +4973,7 @@ sub imatch_source_net( $;$\$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) ) );
 	}
 
@@ -5042,7 +5042,7 @@ sub match_dest_net( $;$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
 	}
 
@@ -5109,7 +5109,7 @@ sub imatch_dest_net( $;$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)[a-zA-Z][-\w]*(\[.*\])?/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) ) );
 	}
 

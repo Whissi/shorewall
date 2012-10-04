@@ -1831,6 +1831,12 @@ sub process_host( ) {
 	fatal_error "Invalid HOST(S) column contents: $hosts"
     }
 
+    if ( $hosts =~ /^!?\+/ ) {
+       $zoneref->{complex} = 1;
+       fatal_error "ipset name qualification is disallowed in this file" if $hosts =~ /[\[\]]/;
+       fatal_error "Invalid ipset name ($hosts)" unless $hosts =~ /^!?\+[a-zA-Z][-\w]*$/;
+    }
+
     if ( $type & BPORT ) {
 	if ( $zoneref->{bridge} eq '' ) {
 	    fatal_error 'Bridge Port Zones may only be associated with bridge ports' unless $interfaceref->{options}{port};

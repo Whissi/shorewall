@@ -292,7 +292,7 @@ fi
 if [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}${SYSTEMD}
     run_install $OWNERSHIP -m 600 shorewall-init.service ${DESTDIR}${SYSTEMD}/shorewall-init.service
-    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\ ${DESTDIR}${SYSTEMD}/shorewall-init.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/shorewall-init.service
     echo "Service file installed as ${DESTDIR}${SYSTEMD}/shorewall-init.service"
     if [ -n "$DESTDIR" ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}

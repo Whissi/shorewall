@@ -662,7 +662,7 @@ sub zone_report()
 
 	unless ( $printed ) {
 	    fatal_error "No bridge has been associated with zone $zone" if $type & BPORT && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL || $zoneref->{options}{in_out}{dynamic};
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL;
 	}
 
     }
@@ -1250,7 +1250,8 @@ sub process_interface( $$ ) {
 	}
 
 	if ( $netsref eq 'dynamic' ) {
-	    my $ipset = $family == F_IPV4 ? "${zone}_" . chain_base $physical : "6_${zone}_" . chain_base $physical;
+	    my $ipset = $family == F_IPV4 ? "${zone}" : "6_${zone}";
+	    $ipset = join( '_', $ipset, chain_base1( $physical ) ) unless $zoneref->{options}{in_out}{dynamic};	    
 	    $netsref = [ "+$ipset" ];
 	    $ipsets{$ipset} = 1;
 	}
@@ -1899,8 +1900,14 @@ sub process_host( ) {
     if ( $hosts eq 'dynamic' ) {
 	fatal_error "Vserver zones may not be dynamic" if $type & VSERVER;
 	require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
-	my $physical = chain_base1( physical_name $interface );
-	my $set      = $family == F_IPV4 ? "${zone}_${physical}" : "6_${zone}_${physical}";
+
+	my $set = $family == F_IPV4 ? "${zone}" : "6_${zone}";
+	
+	unless ( $zoneref->{options}{in_out}{dynamic} ) {
+	    my $physical = chain_base1( physical_name $interface );
+	    $set = join( '_', $set, $physical );
+	}
+
 	$hosts = "+$set";
 	$optionsref->{dynamic} = 1;
 	$ipsets{$set} = 1;

@@ -1595,53 +1595,82 @@ add_command() {
 	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
 	    ;;
     esac
-    #
-    # Normalize host list
-    #
-    while [ $# -gt 1 ]; do
-	interface=${1%%:*}
-	host=${1#*:}
-	[ "$host" = "$1" ] && host=
 
-	if [ -z "$host" ]; then
-	    if [ $g_family -eq 4 ]; then
-	        hostlist="$hostlist $interface:0.0.0.0/0"
-	    else
-		hostlist="$hostlist $interface:::/0"
-	    fi
-	else
-	    for h in $(separate_list $host); do
-		hostlist="$hostlist $interface:$h"
+    case $1 in
+	*:*)
+	    while [ $# -gt 1 ]; do
+		if $g_family -eq 4; then
+		    interface=${1%%:*}
+		    host=${1#*:}
+		else
+		    interface=${1%%|*}
+		    host=${1#*|}
+		fi
+
+		[ "$host" = "$1" ] && host=
+
+		if [ -z "$host" ]; then
+		    if [ $g_family -eq 4 ]; then
+			hostlist="$hostlist $interface:0.0.0.0/0"
+		    else
+			hostlist="$hostlist $interface:::/0"
+		    fi
+		else
+		    for h in $(separate_list $host); do
+			hostlist="$hostlist $interface:$h"
+		    done
+		fi
+
+		shift
 	    done
-	fi
-
-	shift
-    done
+	    ;;
+	*)
+	    ipset=$1
+	    shift
+	    while [ $# -gt 0 ]; do
+		for h in $(separate_list $1); do
+		    hostlist="$hostlist $h"
+		done
+		shift
+	    done
+	    ;;
+    esac
 
     zone=$1
 
-    for host in $hostlist; do
-	if [ $g_family -eq 4 ]; then
-	    interface=${host%:*}
-	    ipset=${zone}_${interface};
-	else
-	    interface=${host%%:*}
-	    ipset=6_${zone}_${interface};
-	fi
+    if [ -n "$zone" ]; then
+	for host in $hostlist; do
+	    if [ $g_family -eq 4 ]; then
+		interface=${host%:*}
+		ipset=${zone}_${interface};
+	    else
+		interface=${host%%:*}
+		ipset=6_${zone}_${interface};
+	    fi
 
-	if ! qt $IPSET -L $ipset -n; then
-	    fatal_error "Zone $zone, interface $interface does not have a dynamic host list"
-	fi
+	    if ! qt $IPSET -L $ipset -n; then
+		fatal_error "Zone $zone, interface $interface does not have a dynamic host list"
+	    fi
 
-	host=${host#*:}
+	    host=${host#*:}
 
-	if $IPSET -A $ipset $host; then
-	    echo "Host $interface:$host added to zone $zone"
-	else
-	    fatal_error "Unable to add $interface:$host to zone $zone"
-	fi
-    done
+	    if $IPSET -A $ipset $host; then
+		echo "Host $interface:$host added to zone $zone"
+	    else
+		fatal_error "Unable to add $interface:$host to zone $zone"
+	    fi
+	done
+    else
+	qt $IPSET -L $ipset -n || fatal_error "Zone $ipset is not dynamic"
 
+	for host in $hostlist; do
+	    if $IPSET -A $ipset $host; then
+		echo "Host $host added to zone $ipset"
+	    else
+		fatal_error "Unable to add $host to zone $ipset"
+	    fi
+	done
+    fi
 }
 
 #
@@ -1662,53 +1691,81 @@ delete_command() {
 	    ;;
     esac
 
-    #
-    # Normalize host list
-    #
-    while [ $# -gt 1 ]; do
-	interface=${1%%:*}
-	host=${1#*:}
-	[ "$host" = "$1" ] && host=
+    case $1 in
+	*:*)
+	    while [ $# -gt 1 ]; do
+		if $g_family -eq 4; then
+		    interface=${1%%:*}
+		    host=${1#*:}
+		else
+		    interface=${1%%|*}
+		    host=${1#*|}
+		fi
 
-	if [ -z "$host" ]; then
-	    if [ $g_family -eq 4 ]; then
-		hostlist="$hostlist $interface:0.0.0.0/0"
-	    else
-		hostlist="$hostlist $interface:::/0"
-	    fi
-	else
-	    for h in $(separate_list $host); do
-		hostlist="$hostlist $interface:$h"
+		[ "$host" = "$1" ] && host=
+
+		if [ -z "$host" ]; then
+		    if [ $g_family -eq 4 ]; then
+			hostlist="$hostlist $interface:0.0.0.0/0"
+		    else
+			hostlist="$hostlist $interface:::/0"
+		    fi
+		else
+		    for h in $(separate_list $host); do
+			hostlist="$hostlist $interface:$h"
+		    done
+		fi
+
+		shift
 	    done
-	fi
-
-	shift
-    done
+	    ;;
+	*)
+	    ipset=$1
+	    shift
+	    while [ $# -gt 0 ]; do
+		for h in $(separate_list $1); do
+		    hostlist="$hostlist $h"
+		done
+		shift
+	    done
+	    ;;
+    esac
 
     zone=$1
 
-    for hostent in $hostlist; do
-	if [ $g_family -eq 4 ]; then
-	    interface=${hostent%:*}
-	    ipset=${zone}_${interface};
-	else
-	    interface=${hostent%%:*}
-	    ipset=6_${zone}_${interface};
-	fi
+    if [ -n "$zone" ]; then
+	for host in $hostlist; do
+	    if [ $g_family -eq 4 ]; then
+		interface=${host%:*}
+		ipset=${zone}_${interface};
+	    else
+		interface=${host%%:*}
+		ipset=6_${zone}_${interface};
+	    fi
 
-	if ! qt $IPSET -L $ipset -n; then
-	    fatal_error "Zone $zone, interface $interface is does not have a dynamic host list"
-	fi
+	    if ! qt $IPSET -L $ipset -n; then
+		fatal_error "Zone $zone, interface $interface does not have a dynamic host list"
+	    fi
 
-	host=${hostent#*:}
+	    host=${host#*:}
 
-	if $IPSET -D $ipset $host; then
-	    echo "Host $hostent deleted from zone $zone"
-	else
-	    echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
-	fi
-    done
+	    if $IPSET -D $ipset $host; then
+		echo "Host $hostent deleted from zone $zone"
+	    else
+		echo "   WARNING: Unable to delete host $hostent to zone $zone" >&2
+	    fi
+	done
+    else
+	qt $IPSET -L $ipset -n || fatal_error "Zone $ipset is not dynamic"
 
+	for host in $hostlist; do
+	    if $IPSET -D $ipset $host; then
+		echo "Host $host deleted from to zone $ipset"
+	    else
+		echo "   WARNING: Unable to delete host $host from zone $zone" >&2
+	    fi
+	done
+    fi
 }
 
 #

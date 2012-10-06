@@ -243,6 +243,7 @@ my %validhostoptions;
 my %validzoneoptions = ( mss          => NUMERIC,
 			 nomark       => NOTHING,
 			 blacklist    => NOTHING,
+			 dynamic      => NOTHING,
 			 strict       => NOTHING,
 			 next         => NOTHING,
 			 reqid        => NUMERIC,
@@ -257,7 +258,7 @@ use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
 #
 # Hash of options that have their own key in the returned hash.
 #
-my %zonekey = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY );
+my %zonekey = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY, dynamic => IN_OUT_ONLY );
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -403,7 +404,7 @@ sub parse_zone_option_list($$\$$)
 
 	    if ( $key ) {
 		fatal_error "Option '$e' not permitted with this zone type " if $key & NOFW && ($zonetype & ( FIREWALL | VSERVER) );
-		fatal_error "Opeion '$e' is only permitted in the OPTIONS columns" if $key & IN_OUT_ONLY && $column != IN_OUT;
+		fatal_error "Option '$e' is only permitted in the OPTIONS columns" if $key & IN_OUT_ONLY && $column != IN_OUT;
 		$$complexref = 1 if $key & COMPLEX;
 		$h{$e} = $val || 1;
 	    } else {
@@ -661,7 +662,7 @@ sub zone_report()
 
 	unless ( $printed ) {
 	    fatal_error "No bridge has been associated with zone $zone" if $type & BPORT && ! $zoneref->{bridge};
-	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL;
+	    warning_message "*** $zone is an EMPTY ZONE ***" unless $type == FIREWALL || $zoneref->{options}{in_out}{dynamic};
 	}
 
     }

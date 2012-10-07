@@ -764,7 +764,11 @@ sub add_group_to_zone($$$$$)
 	    $new = \@exclusions;
 	}
 
-	$host = validate_net( $host, 1 ) unless $host =~ /^\+/;
+	if ( $host =~ /-/ ) {
+	    &validate_range( split('-', $host, 2 ) )
+	} else {
+	    $host = validate_net( $host, 1 ) unless $host =~ /^\+/;
+	}
 
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {

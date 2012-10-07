@@ -523,7 +523,7 @@ find_sets() {
     local junk
     local setname
 
-    $IPSETN -L | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
+    $IPSETN -L | egrep "^Name: ${1}(_.+)?$" | while read junk setname; do echo $setname; done
 }
 
 list_zone() {
@@ -534,9 +534,9 @@ list_zone() {
     determine_ipset_version
 
     if [ $g_family -eq 4 ]; then
-	sets=$($IPSETN -L | grep "^$1_");
+	sets=$($IPSETN -L | egrep "^$1(_.+)?");
      else
-	sets=$($IPSETN -L | grep "^6_$1_")
+	sets=$($IPSETN -L | egrep "^6_$1(_.+)?")
     fi
 
     [ -n "$sets" ] || sets=$(find_sets $1)

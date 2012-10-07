@@ -518,7 +518,7 @@ list_zone() {
     [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
     
     if [ $g_family -eq 4 ]; then
-	sets=$(ipset -L | grep '^$1_');
+	sets=$(ipset -L | grep "^$1_");
      else
 	sets=$(ipset -L | grep "^6_$1_")
     fi

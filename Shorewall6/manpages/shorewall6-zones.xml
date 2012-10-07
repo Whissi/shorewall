@@ -178,7 +178,7 @@ c:a,b     ipv6</programlisting>
               <listitem>
                 <para>Added in Shorewall 4.4.11 Beta 2 - A zone composed of
                 Linux-vserver guests. The zone contents must be defined in
-                <ulink url="shorewall-hosts.html">shorewall-hosts</ulink>
+                <ulink url="shorewall6-hosts.html">shorewall6-hosts</ulink>
                 (5).</para>
 
                 <para>Vserver zones are implicitly handled as subzones of the
@@ -222,6 +222,20 @@ c:a,b     ipv6</programlisting>
                 <para>Specifying this option in the OPTIONS column is
                 equivalent to entering it in both of the IN_OPTIONS and
                 OUT_OPTIONS column.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">dynamic_shared</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.9. May only be specified in the
+                OPTIONS column and indicates that only a single ipset should
+                be created for this zone if it has multiple dynamic entries in
+                <ulink
+                url="shorewall6-hosts.html">shorewall6-hosts</ulink>(5).
+                Without this option, a separate ipset is created for each
+                interface.</para>
               </listitem>
             </varlistentry>
 

@@ -24,12 +24,13 @@
 
       <arg rep="norepeat">-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>add</option></arg>
+      <arg choice="plain"><option>add {</option></arg>
 
       <arg choice="plain"
       rep="repeat"><replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]</arg>
 
-      <arg choice="plain"><replaceable>zone</replaceable></arg>
+      <arg choice="plain"><replaceable>zone | zone host-list
+      </replaceable><option>}</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -96,6 +97,23 @@
       <arg><replaceable>directory</replaceable></arg>
 
       <arg choice="opt"><replaceable>pathname</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg rep="norepeat">-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>delete {</option></arg>
+
+      <arg choice="plain"
+      rep="repeat"><replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]</arg>
+
+      <arg choice="plain"><replaceable>zone | zone host-list
+      </replaceable><option>}</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -649,6 +667,15 @@
               <command>add</command> by <command>delete</command> and run the
               same command again. Then enter the correct command.</para>
             </caution></para>
+
+          <para>Beginning with Shorewall 4.5.9, the <emphasis
+          role="bold">dynamic_shared</emphasis> zone option (<ulink
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(5)) allows a
+          single ipset to handle entries for multiple interfaces. When that
+          option is specified for a zone, the <command>add</command> command
+          has the alternative syntax in which the
+          <replaceable>zone</replaceable> name precedes the
+          <replaceable>host-list</replaceable>.</para>
         </listitem>
       </varlistentry>
 
@@ -759,6 +786,15 @@
           url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
           file. A <emphasis>host-list</emphasis> is comma-separated list whose
           elements are a host or network address.</para>
+
+          <para>Beginning with Shorewall 4.5.9, the <emphasis
+          role="bold">dynamic_shared</emphasis> zone option (<ulink
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(5)) allows a
+          single ipset to handle entries for multiple interfaces. When that
+          option is specified for a zone, the <command>delete</command>
+          command has the alternative syntax in which the
+          <replaceable>zone</replaceable> name precedes the
+          <replaceable>host-list</replaceable>.</para>
         </listitem>
       </varlistentry>
 

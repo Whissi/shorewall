@@ -180,127 +180,233 @@
     </orderedlist>
   </section>
 
-  <section id="defining">
-    <title>Defining a Dynamic Zone</title>
+  <section>
+    <title>Dynamic Zones -- Shorewall 4.5.9 and Later</title>
 
-    <para>A dynamic zone is defined by using the keyword dynamic in the zones
-    host list.</para>
+    <para>Prior to Shorewall 4.5.9, when multiple records for a zone appear in
+    <filename>/etc/shorewall/hosts</filename>, Shorewall would create a
+    separate ipset for each interface. This meant that an add or delete
+    command was required for each of the interface, when the address involved
+    was reachable via multiple interfaces.</para>
 
-    <para>Example:</para>
+    <para>Beginning with Shoreawll 4.5.9, it is possible to have a single
+    ipset shared among all interfaces. This also simplifies management of
+    dynamic zone contents for dynamic zones associated with only a single
+    interface.</para>
 
-    <blockquote>
+    <para>The earlier implementation described below is still available in
+    these later releases.</para>
+
+    <section id="defining">
+      <title>Defining a Dynamic Zone</title>
+
+      <para>A dynamic zone is defined by specifying the
+      <option>dynamic_shared</option> option in the zones file and using the
+      <option>dynamic</option> keyword in the hosts list.</para>
+
       <para><filename>/etc/shorewall/zones</filename>:<programlisting>#NAME        TYPE             OPTIONS
-loc          ipv4
-webok:loc    ipv4</programlisting><filename>/etc/shorewall/interfaces</filename>:</para>
+net          ipv4
+rsyncok:loc  ipv4             <emphasis role="bold">dynamic_shared</emphasis></programlisting><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>#ZONE       INTERFACE      BROADCAST        OPTIONS
 loc         eth0           -                …
-</programlisting>
+loc         eth1           -                …</programlisting>
 
       <para><filename>/etc/shorewall/hosts</filename>:</para>
 
       <programlisting>#ZONE       HOSTS          OPTIONS
+rsyncok     eth0:<option>dynamic</option>
+rsyncok     eth1:<option>dynamic</option></programlisting>
+
+      <para>When the <option>dynamic_shared</option> option is specified, a
+      single ipset is created; the ipset has the same name as the zone.</para>
+    </section>
+
+    <section id="Adding">
+      <title>Adding a Host to a Dynamic Zone.</title>
+
+      <para>Adding a host to a dynamic zone is accomplished by adding the
+      host's IP address to the appropriate ipset. Shorewall provldes a command
+      for doing that:<blockquote>
+          <para><command>shorewall add</command> <replaceable>zone
+          address</replaceable> ...</para>
+        </blockquote></para>
+
+      <para>Example:</para>
+
+      <blockquote>
+        <para><command>shorewall add rsyncok 70.90.191.124</command></para>
+      </blockquote>
+    </section>
+
+    <section id="delete">
+      <title>Deleting a Host from a Dynamic Zone</title>
+
+      <para>Deleting a host from a dynamic zone is accomplished by removing
+      the host's IP address from the appropriate ipset. Shorewall provldes a
+      command for doing that:</para>
+
+      <blockquote>
+        <para><command>shorewall delete</command>
+        <replaceable>zone</replaceable> <replaceable>address</replaceable>
+        ...</para>
+      </blockquote>
+
+      <para>Example:</para>
+
+      <blockquote>
+        <para><command>shorewall delete rsyncok 70.19.191.124</command></para>
+      </blockquote>
+
+      <para>The command can only be used when the ipset involved is of type
+      iphash. For other ipset types, the <command>ipset</command> command must
+      be used directly.</para>
+    </section>
+
+    <section id="listing">
+      <title>Listing the Contents of a Dynamic Zone</title>
+
+      <para>The shorewall show command may be used to list the current
+      contents of a dynamic zone.</para>
+
+      <blockquote>
+        <para><command>shorewall show dynamic</command>
+        <replaceable>zone</replaceable></para>
+      </blockquote>
+
+      <para>Example:</para>
+
+      <blockquote>
+        <programlisting><command>shorewall show dynamic rsyncok</command>
+rsyncok:
+   70.90.191.122
+   70.90.191.124</programlisting>
+      </blockquote>
+    </section>
+  </section>
+
+  <section id="Version-4.5.9">
+    <title>Dynamic Zones -- Shorewall 5.4.8 and Earlier.</title>
+
+    <para/>
+
+    <section id="defining1">
+      <title>Defining a Dynamic Zone</title>
+
+      <para>A dynamic zone is defined by using the keyword <emphasis
+      role="bold">dynamic</emphasis> in the zones host list.</para>
+
+      <para>Example:</para>
+
+      <blockquote>
+        <para><filename>/etc/shorewall/zones</filename>:<programlisting>#NAME        TYPE             OPTIONS
+loc          ipv4
+webok:loc    ipv4</programlisting><filename>/etc/shorewall/interfaces</filename>:</para>
+
+        <programlisting>#ZONE       INTERFACE      BROADCAST        OPTIONS
+loc         eth0           -                …
+</programlisting>
+
+        <para><filename>/etc/shorewall/hosts</filename>:</para>
+
+        <programlisting>#ZONE       HOSTS          OPTIONS
 webok       eth0:dynamic</programlisting>
-    </blockquote>
+      </blockquote>
 
-    <para>Once the above definition is added, Shorewall will automatically
-    create an ipset named <emphasis>webok_eth0</emphasis> the next time that
-    Shorewall is started or restarted. Shorewall will create an ipset of type
-    <firstterm>iphash</firstterm>. If you want to use a different type of
-    ipset, such as <firstterm>macipmap</firstterm>, then you will want to
-    manually create that ipset yourself before the next Shorewall
-    start/restart.</para>
+      <para>Once the above definition is added, Shorewall will automatically
+      create an ipset named <emphasis>webok_eth0</emphasis> the next time that
+      Shorewall is started or restarted. Shorewall will create an ipset of
+      type <firstterm>iphash</firstterm>. If you want to use a different type
+      of ipset, such as <firstterm>macipmap</firstterm>, then you will want to
+      manually create that ipset yourself before the next Shorewall
+      start/restart.</para>
 
-    <para>The dynamic zone capability was added to Shorewall6 in Shorewall
-    4.4.21.</para>
-  </section>
+      <para>The dynamic zone capability was added to Shorewall6 in Shorewall
+      4.4.21.</para>
+    </section>
 
-  <section>
-    <title>Adding a Host to a Dynamic Zone</title>
+    <section id="adding1">
+      <title>Adding a Host to a Dynamic Zone</title>
 
-    <para>Adding a host to a dynamic zone is accomplished by adding the host's
-    IP address to the appropriate ipset. Shorewall provldes a command for
-    doing that:</para>
+      <para>Adding a host to a dynamic zone is accomplished by adding the
+      host's IP address to the appropriate ipset. Shorewall provldes a command
+      for doing that:</para>
 
-    <blockquote>
-      <para><command>shorewall add</command> <replaceable>interface:address
-      ...</replaceable> <replaceable>zone</replaceable></para>
-    </blockquote>
+      <blockquote>
+        <para><command>shorewall add</command> <replaceable>interface:address
+        ...</replaceable> <replaceable>zone</replaceable></para>
+      </blockquote>
 
-    <para>Example:</para>
+      <para>Example:</para>
 
-    <blockquote>
-      <para><command>shorewall add eth0:192.168.3.4 webok</command></para>
-    </blockquote>
+      <blockquote>
+        <para><command>shorewall add eth0:192.168.3.4 webok</command></para>
+      </blockquote>
 
-    <para>The command can only be used when the ipset involved is of type
-    iphash. For other ipset types, the <command>ipset</command> command must
-    be used directly.</para>
-  </section>
+      <para>The command can only be used when the ipset involved is of type
+      iphash. For other ipset types, the <command>ipset</command> command must
+      be used directly.</para>
+    </section>
 
-  <section id="delete">
-    <title>Deleting a Host from a Dynamic Zone</title>
+    <section id="deleting">
+      <title>Deleting a Host from a Dynamic Zone</title>
 
-    <para>Deleting a host from a dynamic zone is accomplished by removing the
-    host's IP address from the appropriate ipset. Shorewall provldes a command
-    for doing that:</para>
+      <para>Deleting a host from a dynamic zone is accomplished by removing
+      the host's IP address from the appropriate ipset. Shorewall provldes a
+      command for doing that:</para>
 
-    <blockquote>
-      <para><command>shorewall delete</command> <replaceable>interface:address
-      ...</replaceable> <replaceable>zone</replaceable></para>
-    </blockquote>
+      <blockquote>
+        <para><command>shorewall delete</command>
+        <replaceable>interface:address ...</replaceable>
+        <replaceable>zone</replaceable></para>
+      </blockquote>
 
-    <para>Example:</para>
+      <para>Example:</para>
 
-    <blockquote>
-      <para><command>shorewall delete eth0:192.168.3.4 webok</command></para>
-    </blockquote>
+      <blockquote>
+        <para><command>shorewall delete eth0:192.168.3.4
+        webok</command></para>
+      </blockquote>
 
-    <para>The command can only be used when the ipset involved is of type
-    iphash. For other ipset types, the <command>ipset</command> command must
-    be used directly.</para>
-  </section>
+      <para>The command can only be used when the ipset involved is of type
+      iphash. For other ipset types, the <command>ipse t</command> command
+      must be used directly.</para>
+    </section>
 
-  <section id="listing">
-    <title>Listing the Contents of a Dynamic Zone</title>
+    <section id="listing1">
+      <title>Listing the Contents of a Dynamic Zone</title>
 
-    <para>The shorewall show command may be used to list the current contents
-    of a dynamic zone.</para>
+      <para>The shorewall show command may be used to list the current
+      contents of a dynamic zone.</para>
 
-    <blockquote>
-      <para><command>shorewall show dynamic</command>
-      <replaceable>zone</replaceable></para>
-    </blockquote>
+      <blockquote>
+        <para><command>shorewall show dynamic</command>
+        <replaceable>zone</replaceable></para>
+      </blockquote>
 
-    <para>Example:</para>
+      <para>Example:</para>
 
-    <blockquote>
-      <programlisting><command>shorewall show dynamic webok</command>
+      <blockquote>
+        <programlisting><command>shorewall show dynamic webok</command>
 eth0:
    192.168.3.4
    192.168.3.9</programlisting>
-    </blockquote>
+      </blockquote>
+    </section>
   </section>
 
   <section id="start-stop">
     <title>Dynamic Zone Contents and Shorewall stop/start/restart</title>
 
-    <para>The contents of a dynamic zone survive <command>shorewall
-    stop/shorewall start</command> and <command>shorewall restart</command>.
-    During <command>shorewall stop</command>, the contents of the ipsets are
-    saved in the file <filename>${VARDIR}/ipsets.save</filename> (usually
+    <para>When SAVE_IPSETS=Yes in shorewall.conf, the contents of a dynamic
+    zone survive <command>shorewall stop/shorewall start</command> and
+    <command>shorewall restart</command>. During <command>shorewall
+    stop</command>, the contents of the ipsets are saved in the file
+    <filename>${VARDIR}/ipsets.save</filename> (usually
     <filename>/var/lib/shorewall/ipsets.save</filename>). During
     <command>shorewall start</command>, the contents of that file are restored
     to the sets. During both <command>shorewall start</command> and
     <command>shorewall restart</command>, any new ipsets required as a result
     of a configuration change are added.</para>
-  </section>
-
-  <section id="restrictions">
-    <title>Restrictions</title>
-
-    <para>When using dynamic zones, you may not use ipsets in your <ulink
-    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>
-    file.</para>
   </section>
 </article>

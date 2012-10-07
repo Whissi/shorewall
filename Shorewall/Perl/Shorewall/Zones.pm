@@ -240,25 +240,25 @@ my %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore =>
 
 my %validhostoptions;
 
-my %validzoneoptions = ( mss          => NUMERIC,
-			 nomark       => NOTHING,
-			 blacklist    => NOTHING,
-			 dynamic      => NOTHING,
-			 strict       => NOTHING,
-			 next         => NOTHING,
-			 reqid        => NUMERIC,
-			 spi          => NUMERIC,
-			 proto        => IPSECPROTO,
-			 mode         => IPSECMODE,
-			 "tunnel-src" => NETWORK,
-			 "tunnel-dst" => NETWORK,
+my %validzoneoptions = ( mss            => NUMERIC,
+			 nomark         => NOTHING,
+			 blacklist      => NOTHING,
+			 dynamic_shared => NOTHING,
+			 strict         => NOTHING,
+			 next           => NOTHING,
+			 reqid          => NUMERIC,
+			 spi            => NUMERIC,
+			 proto          => IPSECPROTO,
+			 mode           => IPSECMODE,
+			 "tunnel-src"   => NETWORK,
+			 "tunnel-dst"   => NETWORK,
 		       );
 
 use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
 #
 # Hash of options that have their own key in the returned hash.
 #
-my %zonekey = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY, dynamic => IN_OUT_ONLY );
+my %zonekey = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY, dynamic_shared => IN_OUT_ONLY );
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -1251,7 +1251,7 @@ sub process_interface( $$ ) {
 
 	if ( $netsref eq 'dynamic' ) {
 	    my $ipset = $family == F_IPV4 ? "${zone}" : "6_${zone}";
-	    $ipset = join( '_', $ipset, chain_base1( $physical ) ) unless $zoneref->{options}{in_out}{dynamic};	    
+	    $ipset = join( '_', $ipset, chain_base1( $physical ) ) unless $zoneref->{options}{in_out}{dynamic_shared};	    
 	    $netsref = [ "+$ipset" ];
 	    $ipsets{$ipset} = 1;
 	}
@@ -1903,7 +1903,7 @@ sub process_host( ) {
 
 	my $set = $family == F_IPV4 ? "${zone}" : "6_${zone}";
 	
-	unless ( $zoneref->{options}{in_out}{dynamic} ) {
+	unless ( $zoneref->{options}{in_out}{dynamic_shared} ) {
 	    my $physical = chain_base1( physical_name $interface );
 	    $set = join( '_', $set, $physical );
 	}

@@ -500,6 +500,26 @@ show_routing() {
     fi
 }
 
+determine_ipset_version() {
+    local setname
+
+    if [ $IPSET = ipset ]; then
+	IPSET=$(mywhich ipset)
+	[ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
+    fi
+
+    setname=fooX$$
+
+    qt ipset -X $setname # Just in case something went wrong the last time
+
+    if qt ipset -N $setname hash:ip family inet; then
+	qt ipset -X $setname
+	IPSETN="$IPSET"
+    else
+	IPSETN="$IPSET -n"
+    fi
+}
+
 #
 # 'list dynamic' command executor
 #
@@ -507,7 +527,7 @@ find_sets() {
     local junk
     local setname
 
-    ipset -L | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
+    $IPSETN -L | grep "^Name: ${1}_" | while read junk setname; do echo $setname; done
 }
 
 list_zone() {
@@ -515,22 +535,22 @@ list_zone() {
     local sets
     local setname
 
-    [ -n "$(mywhich ipset)" ] || fatal_error "The ipset utility cannot be located"
-    
+    determine_ipset_version
+
     if [ $g_family -eq 4 ]; then
-	sets=$(ipset -L | grep "^$1_");
+	sets=$($IPSETN -L | grep "^$1_");
      else
-	sets=$(ipset -L | grep "^6_$1_")
+	sets=$($IPSETN -L | grep "^6_$1_")
     fi
 
     [ -n "$sets" ] || sets=$(find_sets $1)
 
     for setname in $sets; do
 	echo "${setname#${1}_}:"
-	ipset -L $setname -n | awk 'BEGIN        {prnt=0;}; \
-                                    /^Members:/  {prnt=1; next; }; \
-                                    /^Bindings:/ {prnt=0; }; \
-                                                 { if (prnt == 1) print "   ", $1; };'
+	$IPSETN -L $setname | awk 'BEGIN        {prnt=0;}; \
+                                   /^Members:/  {prnt=1; next; }; \
+                                   /^Bindings:/ {prnt=0; }; \
+                                                { if (prnt == 1) print "   ", $1; };'
     done
 }
 
@@ -1590,13 +1610,7 @@ add_command() {
 	exit 2
     fi
 
-    case "$IPSET" in
-	*/*)
-	    ;;
-	*)
-	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
-	    ;;
-    esac
+    determine_ipset_version
     #
     # Normalize host list
     #
@@ -1631,7 +1645,7 @@ add_command() {
 	    ipset=6_${zone}_${interface};
 	fi
 
-	if ! qt $IPSET -L $ipset -n; then
+	if ! qt $IPSET -L $ipset; then
 	    fatal_error "Zone $zone, interface $interface does not have a dynamic host list"
 	fi
 
@@ -1656,14 +1670,7 @@ delete_command() {
 	exit 2;
     fi
 
-    case "$IPSET" in
-	*/*)
-	    ;;
-	*)
-	    [ -n "$(mywhich $IPSET)" ] || fatal_error "The $IPSET utility cannot be located"
-	    ;;
-    esac
-
+    determine_ipset_version
     #
     # Normalize host list
     #
@@ -2868,7 +2875,27 @@ get_config() {
 	exit 2
     fi
 
-    IPSET=ipset
+    if [ -n "$IPSET" ]; then
+	case "$IPSET" in
+	    */*)
+		if [ ! -x "$IPSET" ] ; then
+		    echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
+		    exit 2
+		fi
+		;;
+	    *)
+		prog="$(mywhich $IPSET 2> /dev/null)"
+		if [ -z "$prog" ] ; then
+		    echo "   ERROR: Can't find $IPSET executable" >&2
+		    exit 2
+		fi
+		IPSET=$prog
+		;;
+	esac
+    else
+	IPSET='ipset'
+    fi
+
     TC=tc
 
 }

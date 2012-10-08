@@ -189,7 +189,6 @@ PATH=${SBINDIR}:/bin:/usr${SBINDIR}:/usr/bin:/usr/local/bin:/usr/local${SBINDIR}
 #
 cygwin=
 INSTALLD='-D'
-INITFILE=$PRODUCT
 T='-T'
 
 if [ -z "$BUILD" ]; then
@@ -281,20 +280,10 @@ if [ -n "$DESTDIR" ]; then
 
     install -d $OWNERSHIP -m 755 ${DESTDIR}/${SBINDIR}
     install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
-
-    if [ -n "$SYSTEMD" ]; then
-	mkdir -p ${DESTDIR}/lib/systemd/system
-	INITFILE=
-    fi
 else
     if [ ! -f /usr/share/shorewall/coreversion ]; then
 	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
-    fi
-
-    if [ -f /lib/systemd/system ]; then
-	SYSTEMD=Yes
-	INITFILE=
     fi
 fi
 
@@ -364,6 +353,7 @@ fi
 # Install the .service file
 #
 if [ -n "$SYSTEMD" ]; then
+    mkdir -p ${DESTDIR}${SYSTEMD}
     run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/${SYSTEMD}/$PRODUCT.service
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/$PRODUCT.service
     echo "Service file installed as ${DESTDIR}/lib/systemd/system/$PRODUCT.service"

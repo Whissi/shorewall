@@ -228,6 +228,8 @@ sub validate_4range( $$ ) {
     my $last  = decodeaddr $high;
 
     fatal_error "Invalid IP Range ($low-$high)" unless $first <= $last;
+
+    "$low-$high";
 }
 
 sub validate_4host( $$ ) {
@@ -690,11 +692,13 @@ sub validate_6range( $$ ) {
     while ( @low ) {
 	my ( $l, $h) = ( shift @low, shift @high );
 	next     if hex "0x$l" == hex "0x$h";
-	return 1 if hex "0x$l"  < hex "0x$h";
+	return "$low-$high" if hex "0x$l"  < hex "0x$h";
 	last;
     }
 
     fatal_error "Invalid IPv6 Range ($low-$high)";
+
+    
 }
 
 sub validate_6host( $$ ) {

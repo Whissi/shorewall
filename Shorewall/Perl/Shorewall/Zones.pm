@@ -763,8 +763,6 @@ sub add_group_to_zone($$$$$)
 	    $new = \@exclusions;
 	}
 
-	$host = validate_net( $host, 1 ) unless $host =~ /^\+/;
-
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $interfaces{$interface}{zone} eq $zone;
@@ -787,7 +785,7 @@ sub add_group_to_zone($$$$$)
 	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+(6_)?[a-zA-Z][-\w]*$/;
 	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', '');
 	} else {
-	    validate_host $host, 0;
+	    $host = validate_host $host, 0;
 	}
 
 	push @$new, $host;
@@ -1819,9 +1817,10 @@ sub process_host( ) {
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
-    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/             ||
-	      $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]$/           ||
-	      $hosts =~ /^([\w.@%-]+\+?):(\[.+\](?:\/\d+)?)$/ ||
+    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/               ||
+	      $hosts =~ /^([\w.@%-]+\+?)\[(.*)\]$/              ||
+	      $hosts =~ /^([\w.@%-]+\+?):(!?\[.+\](?:\/\d+)?)$/ ||
+	      $hosts =~ /^([\w.@%-]+\+?):(!?\+.*)$/             ||
 	      $hosts =~ /^([\w.@%-]+\+?):(dynamic)$/ ) {
 	$interface = $1;
 	$hosts = $2;

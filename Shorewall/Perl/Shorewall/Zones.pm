@@ -1819,9 +1819,10 @@ sub process_host( ) {
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
-    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/             ||
-	      $hosts =~ /^([\w.@%-]+\+?):\[(.*)\]$/           ||
-	      $hosts =~ /^([\w.@%-]+\+?):(\[.+\](?:\/\d+)?)$/ ||
+    } elsif ( $hosts =~ /^([\w.@%-]+\+?):<(.*)>$/               ||
+	      $hosts =~ /^([\w.@%-]+\+?)\[(.*)\]$/              ||
+	      $hosts =~ /^([\w.@%-]+\+?):(!?\[.+\](?:\/\d+)?)$/ ||
+	      $hosts =~ /^([\w.@%-]+\+?):(!?\+.*)$/             ||
 	      $hosts =~ /^([\w.@%-]+\+?):(dynamic)$/ ) {
 	$interface = $1;
 	$hosts = $2;

@@ -763,12 +763,6 @@ sub add_group_to_zone($$$$$)
 	    $new = \@exclusions;
 	}
 
-	if ( $host =~ /-/ ) {
-	    &validate_range( split('-', $host, 2 ) )
-	} else {
-	    $host = validate_net( $host, 1 ) unless $host =~ /^\+/;
-	}
-
 	unless ( $switched ) {
 	    if ( $type == $zonetype ) {
 		fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if $interfaces{$interface}{zone} eq $zone;
@@ -791,7 +785,7 @@ sub add_group_to_zone($$$$$)
 	    fatal_error "Invalid ipset name ($host)" unless $host =~ /^\+(6_)?[a-zA-Z][-\w]*$/;
 	    require_capability( 'IPSET_MATCH', 'Ipset names in host lists', '');
 	} else {
-	    validate_host $host, 0;
+	    $host = validate_host $host, 0;
 	}
 
 	push @$new, $host;

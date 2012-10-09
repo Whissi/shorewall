@@ -200,9 +200,10 @@
     <section id="defining">
       <title>Defining a Dynamic Zone</title>
 
-      <para>A dynamic zone is defined by specifying the
-      <option>dynamic_shared</option> option in the zones file and using the
-      <option>dynamic</option> keyword in the hosts list.</para>
+      <para>A dynamic zone is defined by specifying the <emphasis
+      role="bold">dynamic_shared</emphasis> option in the zones file and using
+      the <emphasis role="bold">dynamic</emphasis> keyword in the hosts
+      list.</para>
 
       <para><filename>/etc/shorewall/zones</filename>:<programlisting>#NAME        TYPE             OPTIONS
 net          ipv4
@@ -215,11 +216,12 @@ loc         eth1           -                …</programlisting>
       <para><filename>/etc/shorewall/hosts</filename>:</para>
 
       <programlisting>#ZONE       HOSTS          OPTIONS
-rsyncok     eth0:<option>dynamic</option>
-rsyncok     eth1:<option>dynamic</option></programlisting>
+rsyncok     eth0:<emphasis role="bold">dynamic</emphasis>
+rsyncok     eth1:<emphasis role="bold">dynamic</emphasis></programlisting>
 
-      <para>When the <option>dynamic_shared</option> option is specified, a
-      single ipset is created; the ipset has the same name as the zone.</para>
+      <para>When the <emphasis role="bold">dynamic_shared</emphasis> option is
+      specified, a single ipset is created; the ipset has the same name as the
+      zone.</para>
     </section>
 
     <section id="Adding">
@@ -311,7 +313,7 @@ loc         eth0           -                …
         <para><filename>/etc/shorewall/hosts</filename>:</para>
 
         <programlisting>#ZONE       HOSTS          OPTIONS
-webok       eth0:dynamic</programlisting>
+webok       eth0:<emphasis role="bold">dynamic</emphasis></programlisting>
       </blockquote>
 
       <para>Once the above definition is added, Shorewall will automatically

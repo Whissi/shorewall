@@ -82,7 +82,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 
@@ -92,7 +92,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 
@@ -102,7 +102,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 
@@ -112,7 +112,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 
@@ -1005,7 +1005,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </itemizedlist>
 
-          <para></para>
+          <para/>
 
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
@@ -1022,7 +1022,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               control your firewall after you enable this option.</para>
             </important>
 
-            <para></para>
+            <para/>
 
             <caution>
               <para>Do not use this option if the resulting log messages will
@@ -1621,7 +1621,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">"</emphasis></term>
 
         <listitem>
-          <para></para>
+          <para/>
         </listitem>
       </varlistentry>
 
@@ -1709,6 +1709,22 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           to be in the started state. Intended to be used with the <ulink
           url="../Manpages/shorewall-init.html">Shorewall Init
           Package</ulink>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">RESTORE_ROUTEMARKS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.9. When set to <emphasis
+          role="bold">Yes</emphasis> (the default), provider marks are
+          restored unconditionally at the top of the mangle OUTPUT and
+          PREROUTING chains, even if the saved mark is zero. When this option
+          is set to <emphasis role="bold">No</emphasis>, the mark is restored
+          even when it is zero. If you have problems with IPSEC ESP packets
+          not being routed correctly on output, try setting this option to
+          <emphasis role="bold">No</emphasis>.</para>
         </listitem>
       </varlistentry>
 

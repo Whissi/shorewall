@@ -731,6 +731,7 @@ sub initialize( $;$$) {
 	  USE_PHYSICAL_NAMES => undef,
 	  HELPERS => undef,
 	  AUTOHELPERS => undef,
+	  RESTORE_ROUTEMARKS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -4552,6 +4553,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'USE_PHYSICAL_NAMES'         , '';
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
     default_yes_no 'AUTOHELPERS'                , 'Yes';
+    default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
 
     if ( supplied $config{HELPERS} ) {
 	my %helpers_temp = %helpers_enabled;

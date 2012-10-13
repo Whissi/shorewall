@@ -432,7 +432,7 @@ save_config() {
 sort_routes() {
     local dest
     local rest
-    local crvsn
+    local vlsm
 
     while read dest rest; do
 	if [ -n "$dest" ]; then
@@ -441,8 +441,8 @@ sort_routes() {
 		    echo "00 $dest $rest"
 		    ;;
 		*/*)
-		    crvsn=${dest#*/}
-		    printf "%02d %s\n" $crvsn "$dest $rest"
+		    vlsm=${dest#*/}
+		    printf "%02d %s\n" $vlsm "$dest $rest"
 		    ;;
 		*)
 		    echo "32 $dest $rest"

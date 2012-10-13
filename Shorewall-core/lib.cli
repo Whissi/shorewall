@@ -738,6 +738,7 @@ show_command() {
 
 
     [ -n "$g_debugging" ] && set -x
+
     case "$1" in
 	connections)
 	    [ $# -gt 1 ] && usage 1
@@ -1163,7 +1164,7 @@ do_dump_command() {
 	elif [ -r $LOGFILE ]; then
 	    g_logread="tac $LOGFILE"
 	else
-	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	    echo "LOGFILE ($LOGFILE) does not exist! - See http://www.shorewall.net/shorewall_logging.html" >&2
 	    exit 2
 	fi
     fi

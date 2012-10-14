@@ -430,7 +430,7 @@ run_iptables()
     local status
 
     while [ 1 ]; do
-	$g_tool $@
+	eval $g_tool $@
 	status=$?
 	[ $status -ne 4 ] && break
     done

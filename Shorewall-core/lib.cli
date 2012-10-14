@@ -660,6 +660,8 @@ show_command() {
     table=filter
     local table_given
     table_given=
+    local output_filter
+    output_filter=cat
 
     show_macro() {
 	foo=`grep 'This macro' $macro | sed 's/This macro //'`
@@ -672,6 +674,11 @@ show_command() {
 		$g_echo_e "   $macro  \t${foo#\#}"
 	    fi
 	fi
+    }
+
+    # eliminates rules which have not been used from ip*tables' output
+    brief_output() {
+        grep -Eve '^ +0 +0 +'
     }
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
@@ -725,6 +732,10 @@ show_command() {
 			c*)
 			    g_routecache=Yes
 			    option=${option#c}
+			    ;;
+			b)
+			    output_filter=brief_output
+			    option=${option#b}
 			    ;;
 			*)
 			    usage 1
@@ -787,28 +798,28 @@ show_command() {
 	    echo "$g_product $SHOREWALL_VERSION NAT Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $g_tool -t nat -L $g_ipt_options
+	    $g_tool -t nat -L $g_ipt_options | $output_filter
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION RAW Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $g_tool -t raw -L $g_ipt_options
+	    $g_tool -t raw -L $g_ipt_options | $output_filter
 	    ;;
 	rawpost)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION RAWPOST Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $g_tool -t rawpost -L $g_ipt_options
+	    $g_tool -t rawpost -L $g_ipt_options | $output_filter
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
 	    echo "$g_product $SHOREWALL_VERSION Mangle Table at $g_hostname - $(date)"
 	    echo
 	    show_reset
-	    $g_tool -t mangle -L $g_ipt_options
+	    $g_tool -t mangle -L $g_ipt_options | $output_filter
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
@@ -844,7 +855,7 @@ show_command() {
 	    shift
 
 	    if [ -z "$1" ]; then
-		$g_tool -t mangle -L -n -v
+		$g_tool -t mangle -L -n -v | $output_filter
 		echo
 	    fi
 
@@ -927,11 +938,11 @@ show_command() {
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    $g_tool -t $table -L $chain $g_ipt_options
+		    $g_tool -t $table -L $chain $g_ipt_options | $output_filter
 		    echo
 		done
 	    else
-		$g_tool -t $table -L $g_ipt_options
+		$g_tool -t $table -L $g_ipt_options | $output_filter
 	    fi
 	    ;;
 	vardir)
@@ -1049,14 +1060,14 @@ show_command() {
 		echo
 		show_reset
 		for chain in $*; do
-		    $g_tool -t $table -L $chain $g_ipt_options
+		    $g_tool -t $table -L $chain $g_ipt_options | $output_filter
 		    echo
 		done
 	    else
 		echo "$g_product $SHOREWALL_VERSION $table Table at $g_hostname - $(date)"
 		echo
 		show_reset
-		$g_tool -t $table -L $g_ipt_options
+		$g_tool -t $table -L $g_ipt_options | $output_filter
 	    fi
 	    ;;
     esac
@@ -3180,7 +3191,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   show [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   show [ -f ] capabilities"
     echo "   show classifiers"
     echo "   show config"

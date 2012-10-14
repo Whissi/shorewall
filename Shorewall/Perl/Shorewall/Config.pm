@@ -4178,7 +4178,7 @@ sub get_params() {
 	    #
 	    # - Variable names preceded by 'export '
 	    # - Variable values are delimited by double quotes
-	    # - Embedded single quotes are escaped with '\'
+	    # - Embedded double quotes are escaped with '\'
 	    # - Valueless variables ( e.g., 'export foo') are supported
 	    #
 	    $shell = OLDBASH;

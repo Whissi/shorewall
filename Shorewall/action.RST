@@ -38,8 +38,8 @@ use Shorewall::Chains;
 
 my ( $action, $audit ) = get_action_params( 2 );
 
-fatal_error "Invalid parameter ($audit) to action NotSyn"   if supplied $audit && $audit ne 'audit';
-fatal_error "Invalid parameter ($action) to action NotSyn"  unless $action =~ /^(?:ACCEPT|DROP)$/;
+fatal_error "Invalid parameter ($audit) to action RST"   if supplied $audit && $audit ne 'audit';
+fatal_error "Invalid parameter ($action) to action RST"  unless $action =~ /^(?:ACCEPT|DROP)$/;
 
 my $chainref         = get_action_chain;
 my ( $level, $tag )  = get_action_logging;

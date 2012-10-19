@@ -20,15 +20,11 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# This library contains the code common to all Shorewall components.
-#
-# - It is loaded by /sbin/shorewall.
-# - It is released as part of Shorewall[6] Lite where it is used by /sbin/shorewall[6]-lite
-#   and /usr/share/shorewall[6]-lite/shorecap.
+# This library contains the code common to all Shorewall components except the
+# generated scripts.
 #
 
-SHOREWALL_LIBVERSION=40502
-SHOREWALL_CAPVERSION=40507
+SHOREWALL_LIBVERSION=40509
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -49,13 +45,13 @@ case $g_program in
     shorewall)
 	g_product="Shorewall"
 	g_family=4
-	g_tool=
+	g_tool=iptables
 	g_lite=
 	;;
     shorewall6)
 	g_product="Shorewall6"
 	g_family=6
-	g_tool=
+	g_tool=ip6tables
 	g_lite=
 	;;
     shorewall-lite)

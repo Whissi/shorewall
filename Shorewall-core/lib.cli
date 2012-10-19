@@ -21,8 +21,13 @@
 #	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # This library contains the command processing code common to /sbin/shorewall[6] and
-# /sbin/shorewall[6]-lite.
+# /sbin/shorewall[6]-lite. In Shorewall and Shorewall6, the lib.cli-std library is 
+# loaded after this one and replaces some of the functions declared here.
 #
+
+SHOREWALL_CAPVERSION=40507
+
+[ -n "${g_program:=shorewall}" ]
 
 if [ -z "$g_readrc" ]; then
     #

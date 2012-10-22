@@ -678,7 +678,12 @@ show_command() {
 
     # eliminates rules which have not been used from ip*tables' output
     brief_output() {
-        grep -Eve '^ +0 +0 +'
+	awk \
+	'/^Chain /  { heading1 = $0; getline heading2; printed = 0; next; };
+         /^ +0 +0 / { next; };
+         /^$/       { if ( printed == 1 ) { print $0; }; next; };
+                    { if ( printed == 0 ) { print heading1; print heading2; printed = 1 }; };
+	            { print; }';
     }
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do

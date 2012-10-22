@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40507
+SHOREWALL_CAPVERSION=40509
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -2103,6 +2103,7 @@ determine_capabilities() {
     GEOIP_MATCH=
     RPFILTER_MATCH=
     NFACCT_MATCH=
+    CHECKSUM_TARGET=
     AMANDA_HELPER=
     FTP_HELPER=
     FTP0_HELPER=
@@ -2264,6 +2265,7 @@ determine_capabilities() {
 	qt $g_tool -t mangle -A $chain -m dscp --dscp 0 && DSCP_MATCH=Yes
 	qt $g_tool -t mangle -A $chain -j DSCP --set-dscp 0 && DSCP_TARGET=Yes
 	qt $g_tool -t mangle -A $chain -m rpfilter && RPFILTER_MATCH=Yes
+	qt $g_tool -t mangle -A $chain -j CHECKSUM --checksum-fill && CHECKSUM_TARGET=Yes
 
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain
@@ -2500,6 +2502,8 @@ report_capabilities() {
 	report_capability "Geo IP match" $GEOIP_MATCH
 	report_capability "RPFilter match" $RPFILTER_MATCH
 	report_capability "NFAcct match" $NFACCT_MATCH
+	report_capability "Checksum Target" $CHECKSUM_TARGET
+
 	report_capability "Amanda Helper" $AMANDA_HELPER
 	report_capability "FTP Helper" $FTP_HELPER
 	report_capability "FTP-0 Helper" $FTP0_HELPER
@@ -2611,6 +2615,8 @@ report_capabilities1() {
     report_capability1 GEOIP_MATCH
     report_capability1 RPFILTER_MATCH
     report_capability1 NFACCT_MATCH
+    report_capability1 CHECKSUM_TARGET
+
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER
     report_capability1 FTP0_HELPER

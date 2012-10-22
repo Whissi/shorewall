@@ -339,6 +339,7 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 GEOIP_MATCH     => 'GeoIP Match' ,
 		 RPFILTER_MATCH  => 'RPFilter Match',
 		 NFACCT_MATCH    => 'NFAcct Match',
+		 CHECKSUM_TARGET => 'Checksum Target',
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -607,7 +608,7 @@ sub initialize( $;$$) {
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
 		    VERSION    => "4.5.8-Beta2",
-		    CAPVERSION => 40507 ,
+		    CAPVERSION => 40509 ,
 		  );
     #
     # From shorewall.conf file
@@ -848,6 +849,8 @@ sub initialize( $;$$) {
 	       GEOIP_MATCH => undef,
 	       RPFILTER_MATCH => undef,
 	       NFACCT_MATCH => undef,
+	       CHECKSUM_TARGET => undef,
+
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
 	       FTP0_HELPER => undef,
@@ -3492,12 +3495,17 @@ sub GeoIP_Match() {
     qt1( "$iptables -A $sillyname -m geoip --src-cc US" );
 }
 
+sub Checksum_Target() {
+    have_capability 'MANGLE_ENABLED' && qt1( "iptables -m mangle -A $sillyname -j CHECKSUM --checksum-fill" );
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AMANDA_HELPER => \&Amanda_Helper,
       AUDIT_TARGET => \&Audit_Target,
       ADDRTYPE => \&Addrtype,
       BASIC_FILTER => \&Basic_Filter,
+      CHECKSUM_TARGET => \&Checksum_Target,
       CLASSIFY_TARGET => \&Classify_Target,
       CONDITION_MATCH => \&Condition_Match,
       COMMENTS => \&Comments,
@@ -3707,6 +3715,7 @@ sub determine_capabilities() {
 	$capabilities{GEOIP_MATCH}     = detect_capability( 'GEOIP_MATCH' );
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
+	$capabilities{CHECKSUM_TARGET} = detect_capability( 'CHECKSUM_TARGET' );
 	
 	if ( have_capability 'CT_TARGET' ) {
 	    $capabilities{$_} = detect_capability $_ for ( values( %helpers_map ) );

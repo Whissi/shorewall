@@ -457,6 +457,10 @@ sub process_tc_rule( ) {
 			                  assert( $cmd =~ /^TOS\((.+)\)$/ );
 					  $target .= decode_tos( $1 , 2 );
 				      },
+		       CHECKSUM => sub()
+		                        {  require_capability 'CHECKSUM_TARGET', 'The CHECKSUM action', 's';
+					   $target .= ' --checksum-fill';
+				       },
 		     );
 
     if ( $source ) {
@@ -2319,6 +2323,12 @@ sub setup_tc() {
 			  mask      => '',
 			  connmark  => 0
 			},
+			{ match     => sub( $ ) { $_[0] eq 'CHECKSUM' },
+			  target    => 'CHECKSUM' ,
+			  mark      => NOMARK,
+			  mask      => '',
+			  connmark  => 0,
+			}
 		      );
 
 	if ( my $fn = open_file 'tcrules' ) {

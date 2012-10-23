@@ -436,21 +436,42 @@ save_config() {
 #
 sort_routes() {
     local dest
+    local second
     local rest
     local vlsm
+    local maxvlsm
+    local rule
 
-    while read dest rest; do
+    if [ $g_family -eq 4 ]; then
+	maxvlsm=032
+    else
+	maxvlsm=128
+    fi
+
+    while read dest second rest; do
 	if [ -n "$dest" ]; then
+	    rule="$dest $second $rest"
 	    case "$dest" in
 		default)
-		    echo "00 $dest $rest"
+		    echo "000 $rule"
+		    ;;
+		blackhole|local)
+		    case "$second" in
+			*/*)
+			    vlsm=${second#*/}
+			    printf "%03d %s\n" $vlsm "$rule"
+			    ;;
+			*)
+			    echo "$maxvlsm $rule"
+			    ;;
+		    esac
 		    ;;
 		*/*)
 		    vlsm=${dest#*/}
-		    printf "%02d %s\n" $vlsm "$dest $rest"
+		    printf "%03d %s\n" $vlsm "$rule"
 		    ;;
 		*)
-		    echo "32 $dest $rest"
+		    echo "$maxvlsm $rule"
 		    ;;
 	    esac
 	fi
@@ -481,7 +502,7 @@ show_routing() {
 	ip -$g_family rule list | find_tables | sort -u | while read table; do
 	    heading "Table $table:"
 	    if [ $g_family -eq 6 ]; then
-		ip -$g_family -o route list table $table | fgrep -v cache
+		ip -$g_family -o route list table $table | fgrep -v cache | sort_routes
 	    else
 		ip -4 -o route list table $table | sort_routes
 	    fi
@@ -494,7 +515,7 @@ show_routing() {
     else
 	heading "Routing Table"
 	if [ $g_family -eq 6 ]; then
-	    ip -$g_family -o route list | fgrep -v cache
+	    ip -$g_family -o route list | fgrep -v cache | sort_routes
 	else
 	    ip -4 -o route list table $table | sort_routes
 	fi

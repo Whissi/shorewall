@@ -194,12 +194,12 @@
               assigned to packets on a round-robin fashion.</para>
 
               <para>When a mask is specified, the result of logically ANDing
-              the mark value with the mask must be the same as the mark value.
-              The least significant bit in the mask is used as an increment.
-              For example, if '0x200-0x400/0xff00' is specified, then the
-              assigned mark values are 0x200, 0x300 and 0x400 in equal
-              proportions. If no mask is specified, then ( 2 ** MASK_BITS ) -
-              1 is assumed (MASK_BITS is set in <ulink
+              each mark value with the mask must be the same as the mark
+              value. The least significant bit in the mask is used as an
+              increment. For example, if '0x200-0x400/0xff00' is specified,
+              then the assigned mark values are 0x200, 0x300 and 0x400 in
+              equal proportions. If no mask is specified, then ( 2 **
+              MASK_BITS ) - 1 is assumed (MASK_BITS is set in <ulink
               url="shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
 
               <para>May optionally be followed by <emphasis
@@ -243,7 +243,7 @@
               logically ANDing the mark value with each of the masks must be
               the same as the mark value.</para>
 
-              <para>The mark and optional mask are then followed by one
+              <para>The mark range and optional mask may followed by one
               of:</para>
 
               <variablelist>
@@ -350,9 +350,9 @@
               <para><emphasis role="bold">CHECKSUM</emphasis></para>
 
               <para>Added in Shorewall 4.5.9. Compute and fill in the checksum
-              in a packet that lacks a checksum. This is particularly useful,
-              if you need to work around old applications such as dhcp
-              clients, that do not work well with check‐ sum offloads, but
+              in a packet that lacks a checksum. This is particularly useful
+              if you need to work around old applications, such as dhcp
+              clients, that do not work well with checksum offloads, but you
               don't want to disable checksum offload in your device.</para>
 
               <para>Requires 'Checksum Target' support in your kernel and

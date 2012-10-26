@@ -131,8 +131,12 @@
 
               <para>The mark value may be optionally followed by "/" and a
               mask value (used to determine those bits of the connection mark
-              to actually be set). The mark and optional mask are then
-              followed by one of:+</para>
+              to actually be set). When a mask is specified, the result of
+              logically ANDing the mark value with the mask must be the same
+              as the mark value.</para>
+
+              <para>The mark and optional mask are then followed by one
+              of:+</para>
 
               <variablelist>
                 <varlistentry>
@@ -178,26 +182,114 @@
                   </listitem>
                 </varlistentry>
               </variablelist>
+            </listitem>
 
-              <para><emphasis role="bold">Special considerations for If
-              HIGH_ROUTE_MARKS=Yes in <ulink
-              url="shorewall6.conf.html">shorewall6.conf</ulink>(5</emphasis>).</para>
+            <listitem>
+              <para>A mark range which is a pair of integers separated by a
+              dash ("-"). Added in Shorewall 4.5.9.</para>
 
-              <para>If HIGH_ROUTE_MARKS=Yes, then you may also specify a value
-              in the range 0x0100-0xFF00 with the low-order byte being zero.
-              Such values may only be used in the PREROUTING chain (value
-              followed by <emphasis role="bold">:P</emphasis> or you have set
-              MARK_IN_FORWARD_CHAIN=No in <ulink
-              url="shorewall6.conf.html">shorewall6.conf</ulink>(5) and have
-              not followed the value with <option>:F</option>) or the OUTPUT
-              chain (SOURCE is <emphasis role="bold">$FW</emphasis>). With
-              HIGH_ROUTE_MARKS=Yes, non-zero mark values less that 256 are not
-              permitted. Shorewall6 prohibits non-zero mark values less that
-              256 in the OUTPUT chain when HIGH_ROUTE_MARKS=Yes. While earlier
-              versions allow such values in the OUTPUT chain, it is strongly
-              recommended that with HIGH_ROUTE_MARKS=Yes, you use the
-              POSTROUTING chain to apply traffic shaping
-              marks/classification.</para>
+              <para>May be optionally followed by a slash ("/") and a mask and
+              requires the <firstterm>Statistics Match</firstterm> capability
+              in iptables and kernel. Marks in the specified range are
+              assigned to packets on a round-robin fashion.</para>
+
+              <para>When a mask is specified, the result of logically ANDing
+              the mark value with the mask must be the same as the mark value.
+              The least significant bit in the mask is used as an increment.
+              For example, if '0x200-0x400/0xff00' is specified, then the
+              assigned mark values are 0x200, 0x300 and 0x400 in equal
+              proportions. If no mask is specified, then ( 2 ** MASK_BITS ) -
+              1 is assumed (MASK_BITS is set in <ulink
+              url="shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
+
+              <para>May optionally be followed by <emphasis
+              role="bold">:P</emphasis>, <emphasis
+              role="bold">:F</emphasis>,<emphasis role="bold">:T</emphasis> or
+              <emphasis role="bold">:I</emphasis> where<emphasis role="bold">
+              :P</emphasis> indicates that marking should occur in the
+              PREROUTING chain, <emphasis role="bold">:F</emphasis> indicates
+              that marking should occur in the FORWARD chain, <emphasis
+              role="bold">:I </emphasis>indicates that marking should occur in
+              the INPUT chain (added in Shorewall 4.4.13), and <emphasis
+              role="bold">:T</emphasis> indicates that marking should occur in
+              the POSTROUTING chain. If neither <emphasis
+              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
+              nor <emphasis role="bold">:T</emphasis> follow the mark value
+              then the chain is determined as follows:</para>
+
+              <para>- If the SOURCE is <emphasis
+              role="bold">$FW</emphasis>[<emphasis
+              role="bold">:</emphasis><emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...],
+              then the rule is inserted into the OUTPUT chain. When
+              HIGH_ROUTE_MARKS=Yes, only high mark values may be assigned
+              there. Packet marking rules for traffic shaping of packets
+              originating on the firewall must be coded in the POSTROUTING
+              chain (see below).</para>
+
+              <para>- Otherwise, the chain is determined by the setting of
+              MARK_IN_FORWARD_CHAIN in <ulink
+              url="shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+
+              <para>Please note that <emphasis role="bold">:I</emphasis> is
+              included for completeness and affects neither traffic shaping
+              nor policy routing.</para>
+
+              <para>If your kernel and iptables include CONNMARK support then
+              you can also mark the connection rather than the packet.</para>
+
+              <para>The mark range may be optionally followed by "/" and a
+              mask value (used to determine those bits of the connection mark
+              to actually be set). When a mask is specified, the result of
+              logically ANDing the mark value with each of the masks must be
+              the same as the mark value.</para>
+
+              <para>The mark and optional mask are then followed by one
+              of:</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term><emphasis role="bold">C</emphasis></term>
+
+                  <listitem>
+                    <para>Mark the connection in the chain determined by the
+                    setting of MARK_IN_FORWARD_CHAIN</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term><emphasis role="bold">CF</emphasis></term>
+
+                  <listitem>
+                    <para>Mark the connection in the FORWARD chain</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term><emphasis role="bold">CP</emphasis></term>
+
+                  <listitem>
+                    <para>Mark the connection in the PREROUTING chain.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>CT</term>
+
+                  <listitem>
+                    <para>Mark the connecdtion in the POSTROUTING chain</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>CI</term>
+
+                  <listitem>
+                    <para>Mark the connection in the INPUT chain. This option
+                    is included for completeness and has no applicability to
+                    traffic shaping or policy routing.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
             </listitem>
 
             <listitem>
@@ -449,6 +541,17 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
               <para>As in 1) above, may be followed by <emphasis
               role="bold">:P</emphasis> or <emphasis
               role="bold">:F</emphasis></para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">STATE</emphasis> {<emphasis
+              role="bold">NEW</emphasis>|<emphasis
+              role="bold">RELATED</emphasis>|<emphasis
+              role="bold">ESTABLISHED</emphasis>|<emphasis
+              role="bold">INVALID</emphasis>} [,...]</para>
+
+              <para>Added in Shorewall 4.5.9. The rule will only match if the
+              packet's connection is in one of the listed states.</para>
             </listitem>
 
             <listitem>

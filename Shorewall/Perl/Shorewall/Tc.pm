@@ -174,6 +174,12 @@ my $family;
 
 my $divertref; # DIVERT chain
 
+my %validstates = ( NEW                => 0,
+		    RELATED            => 0,
+		    ESTABLISHED        => 0,
+		    UNTRACKED          => 0,
+		    INVALID            => 0,
+		  );
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -199,14 +205,14 @@ sub initialize( $ ) {
 }
 
 sub process_tc_rule( ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp );
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     if ( $family == F_IPV4 ) {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13 }, { COMMENT => 0, FORMAT => 2 } , 14;
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, { COMMENT => 0, FORMAT => 2 } , 15;
 	$headers = '-';
     } else {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 },  { COMMENT => 0, FORMAT => 2 }, 15;
+	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },  { COMMENT => 0, FORMAT => 2 }, 16;
     }
 
     our @tccmd;
@@ -259,6 +265,7 @@ sub process_tc_rule( ) {
     my $cmd;
     my $rest;
     my $matches = '';
+    my $mark1;
 
     my %processtcc = ( sticky => sub() {
 			                  if ( $chain eq 'tcout' ) {
@@ -501,7 +508,7 @@ sub process_tc_rule( ) {
 
 	    $chain    = $tcsref->{chain}                       if $tcsref->{chain};
 	    $target   = $tcsref->{target}                      if $tcsref->{target};
-	    $mark     = "$mark/" . in_hex( $globals{TC_MASK} ) if $connmark = $tcsref->{connmark};
+	    $mark     = "$mark/" . in_hex( $globals{TC_MASK} ) if $connmark = $tcsref->{connmark} && $mark !~ m'/';
 
 	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
 
@@ -584,15 +591,23 @@ sub process_tc_rule( ) {
 		}
 	    }
 
-	    validate_mark $mark;
+	    if ( $mark =~ /-/ ) {
+		( $mark, $mark1 ) = split /-/, $mark, 2;
+		validate_mark $mark;
+		fatal_error "Invalid mark range ($mark-$mark1)" if $mark =~ m'/';
+		validate_mark $mark1;
+		require_capability 'STATISTIC_MATCH', 'A mark range', 's';
+	    }  else {
+		validate_mark $mark;
 
-	    if ( $config{PROVIDER_OFFSET} ) {
-		my $val = numeric_value( $cmd );
-		fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
-		my $limit = $globals{TC_MASK};
-		unless ( have_capability 'FWMARK_RT_MASK' ) {
-		    fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
-			if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
+		if ( $config{PROVIDER_OFFSET} ) {
+		    my $val = numeric_value( $cmd );
+		    fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
+		    my $limit = $globals{TC_MASK};
+		    unless ( have_capability 'FWMARK_RT_MASK' ) {
+			fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
+			    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
+		    }
 		}
 	    }
 	}
@@ -600,26 +615,88 @@ sub process_tc_rule( ) {
 
     fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || ( $chain eq 'tcout' || $chain eq 'tcpost' ) );
 
-    if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
-				     $restrictions{$chain} | $restriction,
-				     do_proto( $proto, $ports, $sports) . $matches .
-				     do_user( $user ) .
-				     do_test( $testval, $globals{TC_MASK} ) .
-				     do_length( $length ) .
-				     do_tos( $tos ) .
-				     do_connbytes( $connbytes ) .
-				     do_helper( $helper ) .
-				     do_headers( $headers ) .
-				     do_probability( $probability ) .
-				     do_dscp( $dscp ) ,
-				     $source ,
-				     $dest ,
-				     '' ,
-				     $mark ? "$target $mark" : $target,
-				     '' ,
-				     $target ,
-				     '' ) )
-	  && $device ) {
+    if ( $state ne '-' ) {
+	my @state = split_list( $state, 'state' );
+	my %state = %validstates;
+
+	for ( @state ) {
+	    fatal_error "Invalid STATE ($_)"   unless exists $state{$_};
+	    fatal_error "Duplicate STATE ($_)" if $state{$_};
+	}
+    } else {
+	$state = 'ALL';
+    }
+
+    if ( $mark1 ) {
+	#
+	# A Mark Range
+	#
+	my $chainref = ensure_chain( 'mangle', $chain );
+
+	( $mark1, my $mask ) = split( '/', $mark1 );
+
+	my ( $markval, $mark1val ) = ( numeric_value $mark, numeric_value $mark1 );
+
+	fatal_error "Invalid mark range ($mark-$mark1)" unless $markval < $mark1val;
+
+	$mask = $globals{TC_MASK} unless supplied $mask;
+
+	$mask = numeric_value $mask;
+
+	my $increment = 1;
+
+	$increment <<= 1 until $increment & $mask;
+
+	$mask = in_hex $mask;
+
+	my $marks = $mark1val - $markval + 1;
+
+	for ( my $packet = 0; $packet < $marks; $packet++, $markval += $increment ) {
+	    my $match = "-m statistic --mode nth --every $marks --packet $packet ";
+
+	    expand_rule( $chainref,
+			 $restrictions{$chain} | $restriction,
+			 $match .
+			 do_user( $user ) .
+			 do_test( $testval, $globals{TC_MASK} ) .
+			 do_test( $testval, $globals{TC_MASK} ) .
+			 do_length( $length ) .
+			 do_tos( $tos ) .
+			 do_connbytes( $connbytes ) .
+			 do_helper( $helper ) .
+			 do_headers( $headers ) .
+			 do_probability( $probability ) .
+			 do_dscp( $dscp ) .
+			 state_match( $state ) ,
+			 $source ,
+			 $dest ,
+			 '' ,
+			 "$target " . join( '/', in_hex( $markval ) , $mask ) ,
+			 '',
+			 $target ,
+			 '' );
+	}
+    } elsif ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
+					  $restrictions{$chain} | $restriction,
+					  do_proto( $proto, $ports, $sports) . $matches .
+					  do_user( $user ) .
+					  do_test( $testval, $globals{TC_MASK} ) .
+					  do_length( $length ) .
+					  do_tos( $tos ) .
+					  do_connbytes( $connbytes ) .
+					  do_helper( $helper ) .
+					  do_headers( $headers ) .
+					  do_probability( $probability ) .
+					  do_dscp( $dscp ) .
+					  state_match( $state ) ,
+					  $source ,
+					  $dest ,
+					  '' ,
+					  $mark ? "$target $mark" : $target,
+					  '' ,
+					  $target ,
+					  '' ) )
+	      && $device ) {
 	#
 	# expand_rule() returns destination device if any
 	#

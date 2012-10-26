@@ -117,6 +117,7 @@ our %EXPORT_TAGS = (
 				       OPTIMIZE_RULESET_MASK
 				       OPTIMIZE_MASK
 
+				       state_match
 				       state_imatch
 				       initialize_chain_table
 				       copy_rules
@@ -3715,6 +3716,16 @@ sub port_count( $ ) {
 #
 # Generate a state match
 #
+sub state_match( $ ) {
+    my $state = shift;
+
+    if ( $state eq 'ALL' ) {
+	''
+    } else {
+	have_capability 'CONNTRACK_MATCH' ? ( "-m conntrack --ctstate $state " ) : ( "-m state --state $state " );
+    }
+}
+
 sub state_imatch( $ ) {
     my $state = shift;
 

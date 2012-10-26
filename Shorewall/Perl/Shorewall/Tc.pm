@@ -644,12 +644,13 @@ sub process_tc_rule( ) {
 	$mask = numeric_value $mask;
 
 	my $increment = 1;
+	my $shift     = 0;
 
-	$increment <<= 1 until $increment & $mask;
+	$increment <<= 1, $shift++ until $increment & $mask;
 
 	$mask = in_hex $mask;
 
-	my $marks = $mark1val - $markval + 1;
+	my $marks = ( ( $mark1val - $markval ) >> $shift ) + 1;
 
 	for ( my $packet = 0; $packet < $marks; $packet++, $markval += $increment ) {
 	    my $match = "-m statistic --mode nth --every $marks --packet $packet ";

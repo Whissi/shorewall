@@ -85,7 +85,7 @@
     problem reporting process. It will ensure that you provide us with the
     information we need to solve your problem as quickly as possible.</para>
 
-    <graphic align="center" fileref="images/Troubleshoot.png"/>
+    <graphic align="center" fileref="images/Troubleshoot.png" />
 
     <orderedlist>
       <important>
@@ -203,7 +203,7 @@
         message produced by Shorewall is "done.":</para>
 
         <blockquote>
-          <para/>
+          <para></para>
 
           <programlisting>…
 Activating Rules...
@@ -268,6 +268,22 @@ State:Stopped (Thu Mar 30 14:08:11 PDT 2006)</programlisting>
           </listitem>
 
           <listitem>
+            <para>If you are running <emphasis role="bold">Ubuntu Precise with
+            Shorewall 4.4.26.1</emphasis>, then please edit
+            <filename>/sbin/shorewall</filename> and change the first line
+            to:</para>
+
+            <simplelist>
+              <member>#!/bin/bash</member>
+            </simplelist>
+          </listitem>
+
+          <listitem>
+            <para>If your problem has anything to do with IPSEC, be sure that
+            the ipsec-tools package is installed.</para>
+          </listitem>
+
+          <listitem>
             <para>If Shorewall isn't started then <command>/sbin/shorewall
             start</command>. Otherwise <command>/sbin/shorewall
             reset</command>.</para>
@@ -279,7 +295,7 @@ State:Stopped (Thu Mar 30 14:08:11 PDT 2006)</programlisting>
 
           <listitem>
             <para><command>/sbin/shorewall dump &gt;
-            /tmp/status.txt</command></para>
+            /tmp/shorewall_dump.txt</command></para>
           </listitem>
 
           <listitem>

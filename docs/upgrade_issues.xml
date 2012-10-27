@@ -180,21 +180,64 @@
         <filename>/etc/shorewall[6]/notrack</filename> file was renamed
         <filename>/etc/shorewall[6]/conntrack</filename>. When upgrading to a
         release &gt;= 4.5.7, the <filename>conntrack</filename> file will be
-        installed along side of an existing <filename>notrack</filename> file.
-        </para>
+        installed along side of an existing <filename>notrack</filename>
+        file.</para>
 
         <para>If the 'notrack' file is non-empty, a warning message is issued
-        during compilation: </para>
+        during compilation:</para>
 
         <blockquote>
           <para>WARNING: Non-empty notrack file (...); please move its
-          contents to the conntrack file </para>
+          contents to the conntrack file</para>
         </blockquote>
 
         <para>This warning can be eliminated by removing the notrack file (if
         it has no entries), or by moving its entries to the conntrack file and
         removing the notrack file. Note that the conntrack file is always
-        populated with rules </para>
+        populated with rules</para>
+      </listitem>
+
+      <listitem>
+        <para>In Shorewall 4.5.8, the /etc/shorewall[6]/routestopped files
+        were deprecated if favor of new /etc/shorewall[6]/stoppedrules
+        counterparts. The new files have much more familiar and
+        straightforward semantics. Once a stoppedrules file is populated, the
+        compiler will process that file and will ignore the corresponding
+        routestopped file.</para>
+      </listitem>
+
+      <listitem>
+        <para>In Shorewall 4.5.8, a new variable (VARLIB) was added to the
+        shorewallrc file. This variable assumes the role formerly played by
+        VARDIR, and VARDIR now designates the configuration directory for a
+        particular product.</para>
+
+        <para>This change should be transparent to all users:</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>If VARDIR is set in an existing shorewallrc file and VARLIB
+            is not, then VARLIB is set to ${VARDIR} and VARDIR is set to
+            ${VARLIB}/${PRODUCT}.</para>
+          </listitem>
+
+          <listitem>
+            <para>If VARLIB is set in a shorewallrc file and VARDIR is not,
+            then VARDIR is set to ${VARLIB}/${PRODUCT}.</para>
+          </listitem>
+        </orderedlist>
+
+        <para> The Shorewall-core installer will automatically update
+        ~/.shorewallrc and save the original in ~/.shorewallrc.bak.</para>
+      </listitem>
+
+      <listitem>
+        <para>Previously, the macro.SNMP macro opened both UDP ports 161 and
+        162 from SOURCE to DEST. This is against the usual practice of opening
+        these ports in the opposite direction. Beginning with Shorewall 4.5.8,
+        the SNMP macro opens port 161 from SOURCE to DEST as before, and a new
+        SNMPTrap macro is added that opens port 162 (from SOURCE to
+        DEST).</para>
       </listitem>
     </orderedlist>
   </section>

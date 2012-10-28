@@ -776,7 +776,12 @@ DROP:info        net:192.168.1.0/24         all</programlisting>
     </section>
 
     <section id="Example1">
-      <title id="Example">Example</title>
+      <title id="Example">Legacy Example</title>
+
+      <para>This section describes the legacy method of configuring multiple
+      uplinks. It is deprecated in favor of the USE_DEFAULT_RT=Yes
+      configuration described <link
+      linkend="USE_DEFAULT_RT">below</link>.</para>
 
       <para>The configuration in the figure at the top of this section would
       be specified in <filename>/etc/shorewall/providers</filename> as
@@ -1275,6 +1280,16 @@ lillycat: #</programlisting>
           must have a GATEWAY specified explicitly.</para>
         </listitem>
       </orderedlist>
+
+      <para>The configuration in the figure at the top of this section would
+      be specified in <filename>/etc/shorewall/providers</filename> as
+      follows.</para>
+
+      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
+ISP1    1       1       -               eth0            206.124.146.254 track            -
+ISP2    2       2       -               eth1            130.252.99.254  track            -  </programlisting>
+
+      <para>The remainder of the example is the same.</para>
 
       <para>Although 'balance' is automatically assumed when
       USE_DEFAULT_RT=Yes, you can easily cause all traffic to use one provider
@@ -2317,7 +2332,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
   <section id="Complete">
     <title>A Complete Working Example</title>
 
-    <para>This section describes the network at shorewall.net early in 2009.
+    <para>This section describes the network at shorewall.net in late 2012.
     The configuration is as follows:</para>
 
     <itemizedlist>
@@ -2326,196 +2341,237 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
         <itemizedlist>
           <listitem>
-            <para>Avvanta -- A slow (1.5mb/384kb) DSL service with 5 static IP
-            addresses.</para>
+            <para>ComcastC -- A consumer-grade Comcast cable line with a
+            dynamic IP address.</para>
           </listitem>
 
           <listitem>
-            <para>Comcast -- A fast (20mb/10mb) Cable circuit with a single
-            <emphasis>dynamic</emphasis> address.</para>
+            <para>ComcastB -- A Comcast Business-class line with 5 static IP
+            addresses.</para>
           </listitem>
         </itemizedlist>
       </listitem>
 
       <listitem>
         <para>A local network consisting of wired and wireless client systems.
-        A Linksys WRT300N wireless router is used as an access point for the
-        wireless hosts.</para>
+        A wireless-N router is used as an access point for the wireless
+        hosts.</para>
       </listitem>
 
       <listitem>
-        <para>A DMZ hosting a single server (lists.shorewall.net aka
-        www1.shorewall.net, ftp1.shorewall.net,etc.)</para>
+        <para>A DMZ hosting a two servers (one has two public IP addresses -
+        one for receiving email and one for sending) and a system dedicaed to
+        running irssi (usually via IPv6)</para>
       </listitem>
     </itemizedlist>
 
     <para>The network is pictured in the following diagram:</para>
 
-    <graphic align="center" fileref="images/Network2009.png"/>
+    <graphic fileref="images/Network2012a.png"/>
 
-    <para>Because of the speed of the cable provider, all traffic uses that
-    provider unless there is a specific need for the traffic to use the DSL
-    line.</para>
+    <para>The Business Gateway manages a gigabit local network with address
+    10.1.10.1/24. So The firewall is given address 10.1.10.11/24 and the
+    gateway is configured to route the public IP block via that address. The
+    gateway's firewall is only enabled for the 10.1.10/0/24 network.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>Responses to connections from the Internet to one of the DSL IP
-        addresses -- the <emphasis role="bold">track</emphasis> option takes
-        care of that.</para>
-      </listitem>
+    <para>Because the business network is faster and more reliable, the
+    configuration favors sending local network traffic via that uplink rather
+    than the consumer line.</para>
 
-      <listitem>
-        <para>Connections initiated by the server and connections requested by
-        clients on the firewall that have bound their local socket to one of
-        the DSL IP addresses. Two entries in
-        <filename>/etc/shorewall/rtrules</filename> take care of that
-        traffic.</para>
-      </listitem>
-    </itemizedlist>
+    <para>Here are the key entries in
+    <filename>/etc/shorewall/params</filename>:</para>
 
-    <para>As a consequence, I have disabled all route filtering on the
-    firewall and only use the <emphasis role="bold">balance</emphasis> option
-    in <filename>/etc/shorewall/providers</filename> on the Comcast provider
-    whose default route in the main table is established by DHCP. By
-    specifying the <emphasis role="bold">fallback</emphasis> option on
-    Avvanta, I ensure that there is still a default route if Comcast is down.
-    <link linkend="lsm">lsm</link> is used to monitor the links.</para>
+    <programlisting>LOG=NFLOG
 
-    <para><filename>/etc/sysctl.conf</filename>:</para>
+INT_IF=eth2
+TUN_IF=tun+
+COMB_IF=eth1
+COMC_IF=eth0
 
-    <programlisting>net.ipv4.conf.all.rp_filter = 0</programlisting>
+STATISTICAL=
+PROXY=
+FALLBACK=
+PROXYDMZ=
+SQUID2=</programlisting>
 
-    <para><filename>/etc/shorewall/shorewall.conf</filename>:</para>
+    <para>The last three variables are used to configure the firewall
+    differently to exercise various Shorewall features.</para>
 
-    <programlisting>ROUTE_FILTER=No
-RESTORE_DEFAULT_ROUTE=No</programlisting>
+    <para>Here are the key entries in
+    <filename>/etc/shorewall/shorewall.conf</filename>:</para>
 
-    <para>RESTORE_DEFAULT_ROUTE=No causes the default route in the main table
-    to be deleted when the Comcast link is unavailable. That way, the default
-    route in the default table will be used until Comcast is available
-    again.</para>
+    <programlisting>###############################################################################
+#                       F I R E W A L L   O P T I O N S
+###############################################################################
 
-    <para><filename>/etc/shorewall/providers</filename>:</para>
+...
 
-    <programlisting>#NAME  NUMBER MARK  DUPLICATE INTERFACE GATEWAY         OPTIONS                 COPY
-Avvanta     1 0x100 main      eth0      206.124.146.254 track,loose,fallback    eth2,eth4,tun*
-Comcast     2 0x200 main      eth3      detect          track,balance           eth2,eth4,tun*
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+ACCOUNTING_TABLE=mangle
 
-    <para>The <emphasis role="bold">loose</emphasis> option on Avvanta results
-    in fewer routing rules. The first two routing rules below insure that all
-    traffic from Avvanta-assigned IP addresses is sent via the Avvanta
-    provider. The 'tun*' included in the COPY column is there because I run a
-    routed OpenVPN server on the firewall.</para>
+...
 
-    <para><filename>/etc/shorewall/rtrules</filename>:</para>
+AUTOMAKE=Yes
 
-    <programlisting>#SOURCE            DEST           PROVIDER PRIORITY
--                  172.20.0.0/24  main     1000    # Addresses assigned by routed OpenVPN server
-206.124.146.176/30 -              Avvanta  26000
-206.124.146.180    -              Avvanta  26000
--                  216.168.3.44   Avvanta  26000   # Avvanta NNTP Server -- verifies source IP address
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+BLACKLISTNEWONLY=Yes
 
-    <para>The <filename>/etc/shorewall/rtrules </filename>entries provide all
-    of the provider selection necessary so my
-    <filename>/etc/shorewall/tcrules</filename> file is used exclusively for
-    traffic shaping of the Avvanta line. Note that I still need to provide
-    values in the MARK colum of <filename>/etc/shorewall/providers</filename>
-    because I specify <emphasis role="bold">track</emphasis> on both
-    providers.</para>
+...
 
-    <para>Here is the output of <command>shorewall show
-    routing</command>:</para>
+EXPAND_POLICIES=No
 
-    <programlisting>Routing Rules
+EXPORTMODULES=Yes
 
-0:     from all lookup local
-1000:  from all to 172.20.0.0/24 lookup main 
-10000: from all fwmark 0x100 lookup Avvanta 
-10001: from all fwmark 0x200 lookup Comcast 
-20256: from 71.227.156.229 lookup Comcast 
-26000: from 206.124.146.176/30 lookup Avvanta 
-26000: from 206.124.146.180 lookup Avvanta 
-26000: from all to 216.168.3.44 lookup Avvanta 
-32766: from all lookup main 
-32767: from all lookup default 
+FASTACCEPT=No
 
-Table Avvanta:
+..
 
-206.124.146.254 dev eth0  scope link  src 206.124.146.176 
-206.124.146.177 dev eth4  scope link 
-172.20.1.0/24 dev eth2  proto kernel  scope link  src 172.20.1.254 
-206.124.146.0/24 dev eth0  proto kernel  scope link  src 206.124.146.176 
-169.254.0.0/16 dev eth0  scope link 
-default via 206.124.146.254 dev eth0  src 206.124.146.176 
+<emphasis role="bold">KEEP_RT_TABLES=Yes</emphasis>
 
-Table Comcast:
+LEGACY_FASTSTART=Yes
 
-206.124.146.177 dev eth4  scope link 
-71.227.156.1 dev eth3  scope link  src 71.227.156.229 
-172.20.1.0/24 dev eth2  proto kernel  scope link  src 172.20.1.254 
-71.227.156.0/23 dev eth3  proto kernel  scope link  src 71.227.156.229 
-default via 71.227.156.1 dev eth3  src 71.227.156.229 
+LOAD_HELPERS_ONLY=Yes
 
-Table default:
+...
 
-default via 206.124.146.254 dev eth0 metric 1
+MARK_IN_FORWARD_CHAIN=No
 
-Table local:
+MODULE_SUFFIX=ko
 
-broadcast 127.255.255.255 dev lo  proto kernel  scope link  src 127.0.0.1 
-broadcast 172.20.1.0 dev eth2  proto kernel  scope link  src 172.20.1.254 
-broadcast 206.124.146.255 dev eth0  proto kernel  scope link  src 206.124.146.176 
-local 206.124.146.179 dev eth0  proto kernel  scope host  src 206.124.146.176 
-local 206.124.146.178 dev eth0  proto kernel  scope host  src 206.124.146.176 
-local 206.124.146.176 dev eth0  proto kernel  scope host  src 206.124.146.176 
-local 206.124.146.176 dev eth4  proto kernel  scope host  src 206.124.146.176 
-broadcast 71.227.157.255 dev eth3  proto kernel  scope link  src 71.227.156.229 
-broadcast 71.227.156.0 dev eth3  proto kernel  scope link  src 71.227.156.229 
-local 172.20.1.254 dev eth2  proto kernel  scope host  src 172.20.1.254 
-local 127.0.0.2 dev lo  proto kernel  scope host  src 127.0.0.1 
-broadcast 172.20.1.255 dev eth2  proto kernel  scope link  src 172.20.1.254 
-local 71.227.156.229 dev eth3  proto kernel  scope host  src 71.227.156.229 
-broadcast 206.124.146.0 dev eth0  proto kernel  scope link  src 206.124.146.176 
-broadcast 127.0.0.0 dev lo  proto kernel  scope link  src 127.0.0.1 
-local 206.124.146.180 dev eth0  proto kernel  scope host  src 206.124.146.176 
-local 127.0.0.1 dev lo  proto kernel  scope host  src 127.0.0.1 
-local 127.0.0.0/8 dev lo  proto kernel  scope host  src 127.0.0.1 
+MULTICAST=No
 
-Table main:
+MUTEX_TIMEOUT=60
 
-206.124.146.177 dev eth4  scope link 
-172.20.1.0/24 dev eth2  proto kernel  scope link  src 172.20.1.254 
-206.124.146.0/24 dev eth0  proto kernel  scope link  src 206.124.146.176 
-71.227.156.0/23 dev eth3  proto kernel  scope link  src 71.227.156.229 
-169.254.0.0/16 dev eth0  scope link 
-127.0.0.0/8 dev lo  scope link 
-default via 71.227.156.1 dev eth3 </programlisting>
+NULL_ROUTE_RFC1918=Yes
+
+OPTIMIZE=31
+
+OPTIMIZE_ACCOUNTING=No
+
+REQUIRE_INTERFACE=No
+
+<emphasis role="bold">RESTORE_DEFAULT_ROUTE=No</emphasis>
+
+RETAIN_ALIASES=No
+
+<emphasis role="bold">ROUTE_FILTER=No</emphasis>
+
+SAVE_IPSETS=
+
+TC_ENABLED=No
+
+TC_EXPERT=No
+
+TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"
+
+<emphasis role="bold">TRACK_PROVIDERS=Yes</emphasis>
+
+<emphasis role="bold">USE_DEFAULT_RT=Yes</emphasis>
+
+<emphasis role="bold">USE_PHYSICAL_NAMES=Yes</emphasis>
+
+ZONE2ZONE=-
+
+################################################################################
+#                       P A C K E T  M A R K  L A Y O U T
+################################################################################
+
+TC_BITS=8
+
+<emphasis role="bold">PROVIDER_BITS=2</emphasis>
+
+<emphasis role="bold">PROVIDER_OFFSET=16</emphasis>
+
+MASK_BITS=8
+
+ZONE_BITS=0</programlisting>
+
+    <para>I use USE_DEFAULT_RT=Yes and since there are only two providers, two
+    provider bits are all that are required.</para>
+
+    <para>Here is /etc/shorewall/zones:</para>
+
+    <programlisting>fw              firewall
+loc             ip           #Local Zone
+net             ip           #Internet
+smc:net         ip           #10.0.1.0/24
+vpn             ip           #OpenVPN clients
+dmz             ip           #LXC Containers</programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>#ZONE    INTERFACE         BROADCAST           OPTIONS
-loc      eth2              detect              dhcp,routeback
-dmz      eth4              detect
-net      eth0              detect              dhcp,blacklist,tcpflags,optional
-net      eth3              detect              dhcp,blacklist,tcpflags,optional
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+    <programlisting>#ZONE  INTERFACE   OPTIONS
+loc    INT_IF      dhcp,physical=$INT_IF,required,wait=5,routefilter,nets=172.20.1.0/24
+net    COMB_IF     optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
+net    COMC_IF     optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
+vpn    TUN_IF+     physical=tun+,ignore=1
+dmz    br0         routeback,proxyarp=1
+-      lo          ignore</programlisting>
 
-    <para><filename>/etc/shorewall/masq</filename>:</para>
+    <para><filename>/etc/shorewall/providers</filename>:</para>
 
-    <programlisting>#INTERFACE   SOURCE           ADDRESS      PROTO      PORT(S)      IPSEC
+    <programlisting>#NAME             NUMBER   MARK    DUPLICATE  INTERFACE	GATEWAY         OPTIONS               COPY
+?if $FALLBACK
+ComcastB          1        0x10000 -          COMB_IF     70.90.191.126 loose,fallback
+ComcastC          2        0x20000 -          COMC_IF     detect        loose,fallback
+?elsif $STATISTICAL
+ComcastB          1        0x10000 -          COMB_IF     70.90.191.126 loose,load=0.66666667
+ComcastC          2        0x20000 -          COMC_IF     detect        loose,load=0.33333333
+?else
+<emphasis role="bold">ComcastB          1        0x10000 -          COMB_IF     70.90.191.126 loose,balance=2
+ComcastC          2        0x20000 -          COMC_IF     detect        loose,balance</emphasis>
+?endif
+?if $PROXY &amp;&amp; ! $SQUID
+Squid             3        -       -          lo          -             tproxy 
+?endif
+</programlisting>
 
-COMMENT Masquerade Local Network
-eth3         0.0.0.0/0
-eth0        !206.124.146.0/24 206.124.146.179
+    <para>Notice that in the current balance mode, as in the STAISTICAL mode,
+    the business line is favored 2:1 over the consumer line.</para>
 
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+    <para>Here is <filename>/etc/shorewall/rtrules</filename>:</para>
 
-    <para>All traffic leaving eth3 must use the dynamic IP address assigned to
-    that interface as the SOURCE address. All traffic leaving eth0 that does
-    not have a SOURCE address falling within the Avvanta subnet
-    (206.124.146.0/24) must have its SOURCE address changed to
-    206.124.146.179.</para>
+    <programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
+70.90.191.121       -                ComcastB  1000
+70.90.191.123       -                ComcastB  1000
+&amp;COMC_IF            -                ComcastC  1000
+172.20.1.145        -                ComcastC  1000
+172.20.1.146        -                ComcastC  1000
+br0                 -                ComcastB  11000</programlisting>
+
+    <para>For reference, this configuration generates these routing
+    rules:</para>
+
+    <programlisting>root@gateway:~# ip rule ls
+0:     from all lookup local 
+999:   from all lookup main 
+1000:  from 70.90.191.121 lookup Primary 
+1000:  from 70.90.191.123 lookup Primary 
+1000:  from 67.170.121.6 lookup Backup 
+1000:  from 172.20.1.145 lookup Backup 
+1000:  from 172.20.1.146 lookup Backup 
+10000: from all fwmark 0x10000/0x30000 lookup Primary 
+10001: from all fwmark 0x20000/0x30000 lookup Backup 
+11000: from all iif br0 lookup Primary 
+32765: from all lookup balance 
+32767: from all lookup default 
+root@gateway:~# </programlisting>
+
+    <para><filename>/etc/shorewall/tcrules</filename> is not used to support
+    Multi-ISP:</para>
+
+    <programlisting>#MARK                           SOURCE        DEST          PROTO  DEST    SOURCE  
+#                                                                  PORT(S) PORT(S)
+FORMAT 2
+TTL(+1):P                       INT_IF        -
+SAME:P                          INT_IF        -             tcp    80,443
+?if $PROXY &amp;&amp; ! $SQUID2
+   DIVERT                       COMB_IF       -             tcp    -       80
+   DIVERT                       COMC_IF       -             tcp    -       80
+   DIVERT                       br0           172.20.1.0/24 tcp    -       80
+   TPROXY(3129,172.20.1.254)    INT_IF        -             tcp    80
+   ?if $PROXYDMZ
+      TPROXY(3129,172.20.1.254) br0           -             tcp    80
+   ?endif
+?endof
+</programlisting>
   </section>
 </article>

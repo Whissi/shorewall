@@ -2369,19 +2369,22 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <graphic fileref="images/Network2012a.png"/>
 
-    <para>The Business Gateway manages a gigabit local network with address
-    10.1.10.1/24. So The firewall is given address 10.1.10.11/24 and the
-    gateway is configured to route the public IP block via that address. The
-    gateway's firewall is only enabled for the 10.1.10/0/24 network.</para>
+    <section>
+      <title>IPv4 Configuration</title>
 
-    <para>Because the business network is faster and more reliable, the
-    configuration favors sending local network traffic via that uplink rather
-    than the consumer line.</para>
+      <para>The Business Gateway manages a gigabit local network with address
+      10.0.1.1/24. So The firewall is given address 10.0.1.11/24 and the
+      gateway is configured to route the public IP block via that address. The
+      gateway's firewall is only enabled for the 10.0.1.0/24 network.</para>
 
-    <para>Here are the key entries in
-    <filename>/etc/shorewall/params</filename>:</para>
+      <para>Because the business network is faster and more reliable, the
+      configuration favors sending local network traffic via that uplink
+      rather than the consumer line.</para>
 
-    <programlisting>LOG=NFLOG
+      <para>Here are the key entries in
+      <filename>/etc/shorewall/params</filename>:</para>
+
+      <programlisting>LOG=NFLOG
 
 INT_IF=eth2
 TUN_IF=tun+
@@ -2394,13 +2397,13 @@ FALLBACK=
 PROXYDMZ=
 SQUID2=</programlisting>
 
-    <para>The last three variables are used to configure the firewall
-    differently to exercise various Shorewall features.</para>
+      <para>The last three variables are used to configure the firewall
+      differently to exercise various Shorewall features.</para>
 
-    <para>Here are the key entries in
-    <filename>/etc/shorewall/shorewall.conf</filename>:</para>
+      <para>Here are the key entries in
+      <filename>/etc/shorewall/shorewall.conf</filename>:</para>
 
-    <programlisting>###############################################################################
+      <programlisting>###############################################################################
 #                       F I R E W A L L   O P T I O N S
 ###############################################################################
 
@@ -2424,7 +2427,7 @@ FASTACCEPT=No
 
 ..
 
-<emphasis role="bold">KEEP_RT_TABLES=Yes</emphasis>
+<emphasis role="bold">KEEP_RT_TABLES=Yes</emphasis> #This is necessary when both IPv4 and IPv6 Multi-ISP are used
 
 LEGACY_FASTSTART=Yes
 
@@ -2484,21 +2487,21 @@ MASK_BITS=8
 
 ZONE_BITS=0</programlisting>
 
-    <para>I use USE_DEFAULT_RT=Yes and since there are only two providers, two
-    provider bits are all that are required.</para>
+      <para>I use USE_DEFAULT_RT=Yes and since there are only two providers,
+      two provider bits are all that are required.</para>
 
-    <para>Here is /etc/shorewall/zones:</para>
+      <para>Here is /etc/shorewall/zones:</para>
 
-    <programlisting>fw              firewall
+      <programlisting>fw              firewall
 loc             ip           #Local Zone
 net             ip           #Internet
 smc:net         ip           #10.0.1.0/24
 vpn             ip           #OpenVPN clients
 dmz             ip           #LXC Containers</programlisting>
 
-    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>#ZONE  INTERFACE   OPTIONS
+      <programlisting>#ZONE  INTERFACE   OPTIONS
 loc    INT_IF      dhcp,physical=$INT_IF,required,wait=5,routefilter,nets=172.20.1.0/24
 net    COMB_IF     optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
 net    COMC_IF     optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
@@ -2506,9 +2509,14 @@ vpn    TUN_IF+     physical=tun+,ignore=1
 dmz    br0         routeback,proxyarp=1
 -      lo          ignore</programlisting>
 
-    <para><filename>/etc/shorewall/providers</filename>:</para>
+      <para><filename>/etc/shorewall/hosts:</filename></para>
 
-    <programlisting>#NAME             NUMBER   MARK    DUPLICATE  INTERFACE	GATEWAY         OPTIONS               COPY
+      <programlisting>#ZONE   HOST(S)                                 OPTIONS
+smc     COMB_IF:10.1.10.0/24</programlisting>
+
+      <para><filename>/etc/shorewall/providers</filename>:</para>
+
+      <programlisting>#NAME             NUMBER   MARK    DUPLICATE  INTERFACE	GATEWAY         OPTIONS               COPY
 ?if $FALLBACK
 ComcastB          1        0x10000 -          COMB_IF     70.90.191.126 loose,fallback
 ComcastC          2        0x20000 -          COMC_IF     detect        loose,fallback
@@ -2519,17 +2527,17 @@ ComcastC          2        0x20000 -          COMC_IF     detect        loose,lo
 <emphasis role="bold">ComcastB          1        0x10000 -          COMB_IF     70.90.191.126 loose,balance=2
 ComcastC          2        0x20000 -          COMC_IF     detect        loose,balance</emphasis>
 ?endif
-?if $PROXY &amp;&amp; ! $SQUID
+?if $PROXY &amp;&amp; ! $SQUID2
 Squid             3        -       -          lo          -             tproxy 
 ?endif
 </programlisting>
 
-    <para>Notice that in the current balance mode, as in the STAISTICAL mode,
-    the business line is favored 2:1 over the consumer line.</para>
+      <para>Notice that in the current balance mode, as in the STATISTICAL
+      mode, the business line is favored 2:1 over the consumer line.</para>
 
-    <para>Here is <filename>/etc/shorewall/rtrules</filename>:</para>
+      <para>Here is <filename>/etc/shorewall/rtrules</filename>:</para>
 
-    <programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
+      <programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
 70.90.191.121       -                ComcastB  1000
 70.90.191.123       -                ComcastB  1000
 &amp;COMC_IF            -                ComcastC  1000
@@ -2537,28 +2545,28 @@ Squid             3        -       -          lo          -             tproxy
 172.20.1.146        -                ComcastC  1000
 br0                 -                ComcastB  11000</programlisting>
 
-    <para>For reference, this configuration generates these routing
-    rules:</para>
+      <para>For reference, this configuration generates these routing
+      rules:</para>
 
-    <programlisting>root@gateway:~# ip rule ls
+      <programlisting>root@gateway:~# ip rule ls
 0:     from all lookup local 
 999:   from all lookup main 
-1000:  from 70.90.191.121 lookup Primary 
-1000:  from 70.90.191.123 lookup Primary 
-1000:  from 67.170.121.6 lookup Backup 
-1000:  from 172.20.1.145 lookup Backup 
-1000:  from 172.20.1.146 lookup Backup 
-10000: from all fwmark 0x10000/0x30000 lookup Primary 
-10001: from all fwmark 0x20000/0x30000 lookup Backup 
-11000: from all iif br0 lookup Primary 
+1000:  from 70.90.191.121 lookup ComcastB 
+1000:  from 70.90.191.123 lookup ComcastB 
+1000:  from 67.170.121.6 lookup ComcastC 
+1000:  from 172.20.1.145 lookup ComcastC 
+1000:  from 172.20.1.146 lookup ComcastC 
+10000: from all fwmark 0x10000/0x30000 lookup ComcastB 
+10001: from all fwmark 0x20000/0x30000 lookup ComcastC 
+11000: from all iif br0 lookup ComcastB 
 32765: from all lookup balance 
 32767: from all lookup default 
 root@gateway:~# </programlisting>
 
-    <para><filename>/etc/shorewall/tcrules</filename> is not used to support
-    Multi-ISP:</para>
+      <para><filename>/etc/shorewall/tcrules</filename> is not used to support
+      Multi-ISP:</para>
 
-    <programlisting>#MARK                           SOURCE        DEST          PROTO  DEST    SOURCE  
+      <programlisting>#MARK                           SOURCE        DEST          PROTO  DEST    SOURCE  
 #                                                                  PORT(S) PORT(S)
 FORMAT 2
 TTL(+1):P                       INT_IF        -
@@ -2573,5 +2581,134 @@ SAME:P                          INT_IF        -             tcp    80,443
    ?endif
 ?endof
 </programlisting>
+    </section>
+
+    <section>
+      <title>IPv6 Configuration</title>
+
+      <para>The IPv6 configuration has two separate sub-nets, both services
+      through 6in4 tunnels from <ulink
+      url="http://tunnelbroker.he.net">Hurricane Electric</ulink>. They are
+      both configured through the Business IPv4 uplink. I originally had the
+      sit2 tunnel configured through the consumer uplink but Comcast (Xfinity)
+      decided to start blocking HE IPv6 tunnels on their consumer network,
+      preferring their own 6to4 IPv6 solution.</para>
+
+      <para>One HE tunnel handles the servers and one tunnel handles the local
+      network.</para>
+
+      <para>Here are the key entries in
+      <filename>/etc/shorewall6/shorewall6.conf</filename>:</para>
+
+      <programlisting>###############################################################################
+#                      F I R E W A L L  O P T I O N S
+###############################################################################
+
+...
+
+FASTACCEPT=No
+
+FORWARD_CLEAR_MARK=Yes
+
+IMPLICIT_CONTINUE=No
+
+<emphasis role="bold">IP_FORWARDING=Keep</emphasis>
+
+<emphasis role="bold">KEEP_RT_TABLES=Yes</emphasis> #Required when both IPv4 and IPv6 Multi-ISP are used
+
+...
+
+TRACK_PROVIDERS=No
+
+<emphasis role="bold">USE_DEFAULT_RT=Yes</emphasis>
+
+ZONE2ZONE=-
+
+...
+
+################################################################################
+#                      P A C K E T  M A R K  L A Y O U T
+################################################################################
+
+TC_BITS=8
+
+PROVIDER_BITS=8
+
+PROVIDER_OFFSET=8
+
+MASK_BITS=8
+
+ZONE_BITS=0
+</programlisting>
+
+      <para>Here is <filename>/etc/shorewall6/zones</filename>:</para>
+
+      <programlisting>#ZONE   TYPE    OPTIONS
+fw      firewall
+net     ipv6
+loc     ipv6
+dmz     ipv6</programlisting>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE   INTERFACE       OPTIONS
+net     sit1            forward=1,sfilter=2001:470:b:227::40/124,optional
+net     sit2            forward=1,sfilter=2001:470:b:227::40/124,optional
+net     sit3            forward=1,sfilter=2001:470:b:227::40/124,optional
+loc     eth2            forward=1
+dmz     br0             routeback,forward=1,required</programlisting>
+
+      <para><filename>/etc/shorewall/providers</filename>:</para>
+
+      <programlisting>#NAME   NUMBER    MARK    DUPLICATE   INTERFACE GATEWAY                OPTIONS            COPY
+LOC     4        0x100    -           sit2      -                      track,balance,loose
+DMZ     5        0x200    -           sit1      -                      track,fallback,loose
+6to4    6        0x300    -           sit3      ::192.88.99.1          track,fallback,loose</programlisting>
+
+      <para>Notice that the provider numbers are disjoint from those in the
+      IPv4 configuration. This allows for unique provider names in
+      <filename>/etc/iproute2/rt_tables</filename>:</para>
+
+      <programlisting>#
+# reserved values
+#
+255     local
+254     main
+253     default
+250     balance
+0       unspec
+#
+# local
+#
+1       ComcastB
+2       ComcastC
+3       TProxy
+4       LOC
+5       DMZ
+6       6to4</programlisting>
+
+      <para>The <filename>/etc/shorewall6/rtrules</filename> file is
+      straight-forward:</para>
+
+      <programlisting>#SOURCE                DEST                     PROVIDER             PRIORITY
+2001:470:B:227::1/64   ::/0                     DMZ                  11000
+2001:470:B:787::1/64   ::/0                     LOC                  11000
+2002:465a:bf79::1/64   ::/0                     6to4                 11000</programlisting>
+
+      <para>This results in the following routing rules:</para>
+
+      <programlisting>root@gateway:~# <command>ip -6 rule ls</command>
+0:     from all lookup local 
+999:   from all lookup main 
+10003: from all fwmark 0x100/0xff00 lookup LOC 
+10004: from all fwmark 0x200/0xff00 lookup DMZ 
+10005: from all fwmark 0x300/0xff00 lookup 6to4 
+11000: from 2001:470:b:787::1/64 lookup LOC 
+11000: from 2001:470:b:227::1/64 lookup DMZ 
+11000: from 2002:465a:bf79::1/64 lookup 6to4 
+32765: from all lookup balance 
+32767: from all lookup default 
+root@gateway:~# </programlisting>
+    </section>
   </section>
 </article>

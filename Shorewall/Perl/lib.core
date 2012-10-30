@@ -838,13 +838,13 @@ detect_dynamic_gateway() { # $1 = interface
 	gateway=$( find_peer $($IP addr list $interface ) )
     fi
 
-    if [ -z "$gateway" -a -f /var/lib/dhcpcd/dhcpcd-${1}.info ]; then
-	eval $(grep ^GATEWAYS=  /var/lib/dhcpcd/dhcpcd-${1}.info 2> /dev/null)
+    if [ -z "$gateway" -a -f ${VARLIB}/dhcpcd/dhcpcd-${1}.info ]; then
+	eval $(grep ^GATEWAYS=  ${VARLIB}/dhcpcd/dhcpcd-${1}.info 2> /dev/null)
 	[ -n "$GATEWAYS" ] && GATEWAYS=${GATEWAYS%,*} && gateway=$GATEWAYS
     fi
 
-    if [ -z "$gateway" -a -f /var/lib/dhcp/dhclient-${1}.lease ]; then
-	gateway=$(grep 'option routers' /var/lib/dhcp/dhclient-${1}.lease | tail -n 1 | while read j1 j2 gateway; do echo $gateway ; return 0; done)
+    if [ -z "$gateway" -a -f ${VARLIB}/dhcp/dhclient-${1}.lease ]; then
+	gateway=$(grep 'option routers' ${VARLIB}/dhcp/dhclient-${1}.lease | tail -n 1 | while read j1 j2 gateway; do echo $gateway ; return 0; done)
     fi
 
     [ -n "$gateway" ] && echo $gateway

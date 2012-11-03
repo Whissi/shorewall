@@ -5904,9 +5904,7 @@ sub isolate_source_interface( $ ) {
     my ( $iiface, $inets );
 
     if ( $family == F_IPV4 ) {
-	if ( $source =~ /^~/ ) {
-	    $inets = $source;
-	} elsif ( $source =~ /^(.+?):(.+)$/ ) {
+	if ( $source =~ /^(.+?):(.+)$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
 	} elsif ( $source =~ /^!?(?:\+|&|~|\^|\d+\.)/ ) {

@@ -1447,10 +1447,7 @@ sub validate_tc_class( ) {
     }
 
     unless ( $devref->{classify} || $occurs > 1 ) {
-	if ( $mark ne '-' ) {
-	    fatal_error "Missing MARK" if $mark eq '-';
-	    warning_message "Class NUMBER ignored -- INTERFACE $device does not have the 'classify' option"	if $devclass =~ /:/;
-	}
+	fatal_error "Missing MARK" if $mark eq '-';
     }
 
     $tcref->{flow}  = $devref->{flow}  unless $tcref->{flow};

@@ -203,6 +203,7 @@ sub generate_script_2() {
 
     emit (   '[ -f ${g_confdir}/vardir ] && . ${g_confdir}/vardir' );
     emit ( qq([ -n "\${VARDIR:=$shorewallrc1{VARDIR}}" ]) );
+    emit ( qq([ -n "\${VARLIB:=$shorewallrc1{VARLIB}}" ]) );
 
     emit 'TEMPFILE=';
 

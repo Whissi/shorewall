@@ -84,7 +84,7 @@ get_script_version() { # $1 = script
 
     temp=$( $SHOREWALL_SHELL $1 version | tail -n 1 | sed 's/-.*//' )
 
-    if [ $? -ne 0 ]; then
+    if [ -z "$temp" ]; then
 	version=0
     else
 	ifs=$IFS

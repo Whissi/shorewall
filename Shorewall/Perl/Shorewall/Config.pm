@@ -4564,6 +4564,8 @@ sub get_configuration( $$$ ) {
     default_yes_no 'AUTOHELPERS'                , 'Yes';
     default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
 
+    $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
+
     if ( supplied $config{HELPERS} ) {
 	my %helpers_temp = %helpers_enabled;
 

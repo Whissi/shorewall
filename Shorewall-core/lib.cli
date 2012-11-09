@@ -525,7 +525,7 @@ show_routing() {
 determine_ipset_version() {
     local setname
 
-    if [ $IPSET = ipset ]; then
+    if [ -z "$IPSET" -o $IPSET = ipset ]; then
 	IPSET=$(mywhich ipset)
 	[ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
     fi
@@ -2956,27 +2956,6 @@ get_config() {
 	fi
     fi
 
-    if [ -n "$IPSET" ]; then
-	case "$IPSET" in
-	    */*)
-		if [ ! -x "$IPSET" ] ; then
-		    echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
-		    exit 2
-		fi
-		;;
-	    *)
-		prog="$(mywhich $IPSET 2> /dev/null)"
-		if [ -z "$prog" ] ; then
-		    echo "   ERROR: Can't find $IPSET executable" >&2
-		    exit 2
-		fi
-		IPSET=$prog
-		;;
-	esac
-    else
-	IPSET='ipset'
-    fi
-
     [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
 
     validate_restorefile RESTOREFILE
@@ -3017,7 +2996,7 @@ get_config() {
 		;;
 	esac
     else
-	IPSET='ipset'
+	IPSET=''
     fi
 
     TC=tc

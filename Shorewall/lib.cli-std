@@ -136,6 +136,12 @@ get_config() {
 			exit 2
 		    fi
 		    ;;
+		ipset)
+		    #
+		    # Old config files had this as default
+		    #
+		    IPSET=''
+		    ;;
 		*)
 		    prog="$(mywhich $IPSET 2> /dev/null)"
 		    if [ -z "$prog" ] ; then
@@ -146,7 +152,7 @@ get_config() {
 		    ;;
 	    esac
 	else
-	    IPSET='ipset'
+	    IPSET=''
 	fi
 
 	if [ -n "$TC" ]; then

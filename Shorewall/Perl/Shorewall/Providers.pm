@@ -149,10 +149,10 @@ sub setup_route_marking() {
 
 	    if ( $providerref->{shared} ) {
 		add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
+		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}/$mask", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
 		decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	    } else {
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}", imatch_source_dev( $interface );
+		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}/$mask", imatch_source_dev( $interface );
 	    }
 	}
 

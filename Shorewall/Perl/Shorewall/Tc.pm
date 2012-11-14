@@ -266,6 +266,7 @@ sub process_tc_rule( ) {
     my $rest;
     my $matches = '';
     my $mark1;
+    my $exceptionrule = '';
 
     my %processtcc = ( sticky => sub() {
 			                  if ( $chain eq 'tcout' ) {
@@ -391,6 +392,8 @@ sub process_tc_rule( ) {
 					  }
 
 					  $target .= ' --tproxy-mark';
+
+					  $exceptionrule = '-p tcp ';
 				      },
 		       TTL => sub() {
 			                  fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
@@ -673,7 +676,7 @@ sub process_tc_rule( ) {
 			 "$target " . join( '/', in_hex( $markval ) , $mask ) ,
 			 '',
 			 $target ,
-			 '' );
+			 $exceptionrule );
 	}
     } elsif ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 					  $restrictions{$chain} | $restriction,
@@ -694,7 +697,7 @@ sub process_tc_rule( ) {
 					  $mark ? "$target $mark" : $target,
 					  '' ,
 					  $target ,
-					  '' ) )
+					  $exceptionrule ) )
 	      && $device ) {
 	#
 	# expand_rule() returns destination device if any

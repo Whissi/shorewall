@@ -373,5 +373,13 @@ ACCEPT    $FW      net    tcp     80</programlisting>
     <programlisting>...
 http_port 3129 tproxy
 ...</programlisting>
+
+    <important>
+      <para>If you use TPROXY with both IPv4 and IPv6, then both your local
+      hosts and the gateway must have the same DNS view. If a client resolves
+      a website URL to an IPv6 address and the server can only resolve to an
+      IPv4 address, then Squid will attempt to connect to the IPv4 address
+      using the local client's IPv6 address. That clearly doesn't work.</para>
+    </important>
   </section>
 </article>

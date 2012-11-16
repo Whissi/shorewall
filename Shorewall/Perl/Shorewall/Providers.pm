@@ -337,24 +337,32 @@ sub balance_fallback_route( $$$$ ) {
     }
 }
 
-sub start_provider( $$$ ) {
-    my ($table, $number, $test ) = @_;
+sub start_provider( $$$$ ) {
+    my ($what, $table, $number, $test ) = @_;
 
-    emit "\n#\n# Add Provider $table ($number)\n#";
+    emit "\n#\n# Add $what $table ($number)\n#";
 
-    emit "start_provider_$table() {";
+    if ( $number ) {
+	emit "start_provider_$table() {";
+    } else {
+	emit "start_interface_$table() {";
+    }
+
     push_indent;
     emit $test;
     push_indent;
 
-    emit "qt ip -$family route flush table $number";
-    emit "echo \"qt \$IP -$family route flush table $number\" > \${VARDIR}/undo_${table}_routing";
+    if ( $number ) {
+	emit "qt ip -$family route flush table $number";
+	emit "echo \"qt \$IP -$family route flush table $number\" > \${VARDIR}/undo_${table}_routing";
+    }
 }
 
 #
 # Process a record in the providers file
 #
-sub process_a_provider() {
+sub process_a_provider( $ ) {
+    my $pseudo = $_[0]; # When true, this is an optional interface that we are treating somewhat like a provider.
 
     my ($table, $number, $mark, $duplicate, $interface, $gateway,  $options, $copy ) =
 	split_line 'providers file', { table => 0, number => 1, mark => 2, duplicate => 3, interface => 4, gateway => 5, options => 6, copy => 7 };
@@ -362,17 +370,20 @@ sub process_a_provider() {
     fatal_error "Duplicate provider ($table)" if $providers{$table};
 
     fatal_error 'NAME must be specified' if $table eq '-';
-    fatal_error "Invalid Provider Name ($table)" unless $table =~ /^[\w]+$/;
 
-    my $num = numeric_value $number;
+    unless ( $pseudo ) {
+	fatal_error "Invalid Provider Name ($table)" unless $table =~ /^[\w]+$/;
 
-    fatal_error 'NUMBER must be specified' if $number eq '-';
-    fatal_error "Invalid Provider number ($number)" unless defined $num;
+	my $num = numeric_value $number;
 
-    $number = $num;
+	fatal_error 'NUMBER must be specified' if $number eq '-';
+	fatal_error "Invalid Provider number ($number)" unless defined $num;
 
-    for my $providerref ( values %providers  ) {
-	fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
+	$number = $num;
+
+	for my $providerref ( values %providers  ) {
+	    fatal_error "Duplicate provider number ($number)" if $providerref->{number} == $number;
+	}
     }
 
     fatal_error 'INTERFACE must be specified' if $interface eq '-';
@@ -406,8 +417,15 @@ sub process_a_provider() {
 	$gateway = '';
     }
 
-    my ( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load ) =
-	(0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0 );
+    my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what );
+
+    if ( $pseudo ) {	
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what ) =
+	( 0,      0                       , 0 ,        0,        0,                               1                                  , ''  , 0       , 0,      0,     'interface');
+    } else {
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what )=
+	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider');
+    }
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list $options, 'option' ) {
@@ -517,7 +535,7 @@ sub process_a_provider() {
 
     }
 
-    unless ( $loose ) {
+    unless ( $loose || $pseudo ) {
 	warning_message q(The 'proxyarp' option is dangerous when specified on a Provider interface) if get_interface_option( $interface, 'proxyarp' );
 	warning_message q(The 'proxyndp' option is dangerous when specified on a Provider interface) if get_interface_option( $interface, 'proxyndp' );
     }
@@ -555,9 +573,13 @@ sub process_a_provider() {
 			   local       => $local ,
 			   tproxy      => $tproxy ,
 			   load        => $load ,
+			   pseudo      => $pseudo ,
+			   what        => $what ,
 			   rules       => [] ,
 			   routes      => [] ,
 			 };
+
+    $provider_interfaces{$interface} = $table unless $shared;
 
     if ( $track ) {
 	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
@@ -577,7 +599,20 @@ sub process_a_provider() {
 
     push @providers, $table;
 
-    progress_message "   Provider \"$currentline\" $done";
+    progress_message "   Provider \"$currentline\" $done" unless $pseudo;
+}
+
+#
+# Emit a 'started' message
+#
+sub emit_started_message( $$$$$ ) {
+    my ( $spaces, $level, $pseudo, $name, $number ) = @_;
+
+    if ( $pseudo ) {
+	emit qq(${spaces}progress_message${level} "   Optional interface $name Started");
+    } else {
+	emit qq(${spaces}progress_message${level} "   Provider $name ($number) Started");
+    }
 }
 
 #
@@ -608,6 +643,9 @@ sub add_a_provider( $$ ) {
     my $local       = $providerref->{local};
     my $tproxy      = $providerref->{tproxy};
     my $load        = $providerref->{load};
+    my $pseudo      = $providerref->{pseudo};
+    my $what        = $providerref->{what};
+    my $label       = $pseudo ? 'Optional Interface' : 'Provider';
 
     my $dev         = chain_base $physical;
     my $base        = uc $dev;
@@ -616,14 +654,16 @@ sub add_a_provider( $$ ) {
     if ( $shared ) {
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
-	start_provider( $table, $number, qq(if interface_is_usable $physical && [ -n "$variable" ]; then) );
+	start_provider( $label , $table, $number, qq(if interface_is_usable $physical && [ -n "$variable" ]; then) );
+    } elsif ( $pseudo ) {
+	start_provider( $label , $table, $number, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
     } else {
 	if ( $optional ) {
-	    start_provider( $table, $number, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
+	    start_provider( $label, $table , $number, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
 	} elsif ( $gatewaycase eq 'detect' ) {
-	    start_provider( $table, $number, qq(if interface_is_usable $physical && [ -n "$gateway" ]; then) );
+	    start_provider( $label, $table, $number, qq(if interface_is_usable $physical && [ -n "$gateway" ]; then) );
 	} else {
-	    start_provider( $table, $number, "if interface_is_usable $physical; then" );
+	    start_provider( $label, $table, $number, "if interface_is_usable $physical; then" );
 	}
 	$provider_interfaces{$interface} = $table;
 
@@ -741,7 +781,7 @@ CEOF
 	    emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
 	    emit( "run_ip rule add from $address pref 20000 table $number" ,
 		  "echo \"qt \$IP -$family rule del from $address\" >> \${VARDIR}/undo_${table}_routing" );
-	} else {
+	} elsif ( ! $pseudo ) {
 	    emit  ( "find_interface_addresses $physical | while read address; do" );
 	    emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
 	    emit  ( "    run_ip rule add from \$address pref 20000 table $number",
@@ -804,15 +844,14 @@ CEOF
 	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
 	}
 
-	emit ( qq(progress_message2 "   Provider $table ($number) Started") );
+	emit_started_message( '', 2, $pseudo, $table, $number );
 
 	pop_indent;
 
 	emit( 'else' );
-	emit( qq(    echo $weight > \${VARDIR}/${physical}_weight) ,
-	      qq(    progress_message "   Provider $table ($number) Started"),
-	      qq(fi\n)
-	    );
+	emit( qq(    echo $weight > \${VARDIR}/${physical}_weight) );
+	emit_started_message( '    ', '', $pseudo, $table, $number );
+	emit "fi\n";
     } else {
 	emit( qq(echo 0 > \${VARDIR}/${physical}.status) );
 	emit( qq(progress_message "Provider $table ($number) Started") );
@@ -829,6 +868,8 @@ CEOF
     if ( $optional ) {
 	if ( $shared ) {
 	    emit ( "error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Started\"" );
+	} elsif ( $pseudo ) {
+	    emit ( "error_message \"WARNING: Optional Interface $physical is not usable -- $table not Started\"" );
 	} else {
 	    emit ( "error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Started\"" );
 	}
@@ -846,14 +887,14 @@ CEOF
 
     pop_indent;
 
-    emit '}'; # End of start_provider_$table();
+    emit "} # End of start_${what}_${table}();";
 
     if ( $optional ) {
 	emit( '',
 	      '#',
-	      "# Stop provider $table",
+	      "# Stop $what $table",
 	      '#',
-	      "stop_provider_$table() {" );
+	      "stop_${what}_${table}() {" );
 
 	push_indent;
 
@@ -893,8 +934,13 @@ CEOF
 		  "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
 	}
 
-	emit( "echo 1 > \${VARDIR}/${physical}.status",
-	      "progress_message2 \"   Provider $table ($number) stopped\"" );
+	emit( "echo 1 > \${VARDIR}/${physical}.status" );
+
+	if ( $pseudo ) {
+	    emit( "progress_message2 \"   Optional Interface $table stopped\"" );
+	} else {
+	    emit( "progress_message2 \"   Provider $table ($number) stopped\"" );
+	}
 
 	pop_indent;
 
@@ -1203,12 +1249,23 @@ sub process_providers( $ ) {
     my $tcdevices = shift;
 
     our $providers = 0;
+    our $pseudoproviders = 0;
 
     $lastmark = 0;
 
     if ( my $fn = open_file 'providers' ) {
 	first_entry "$doing $fn...";
-	process_a_provider, $providers++ while read_a_line( NORMAL_READ );
+	process_a_provider(0), $providers++ while read_a_line( NORMAL_READ );
+    }
+    #
+    # Treat optional interfaces as pseudo-providers
+    #
+    for ( grep interface_is_optional( $_ ) && ! $provider_interfaces{ $_ }, all_real_interfaces ) {
+	#
+	#               TABLE NUMBER MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
+	$currentline = "$_    0      -    -         $_        -       -       -";
+	#
+	process_a_provider(1), $pseudoproviders++;
     }
 
     if ( $providers ) {
@@ -1231,17 +1288,19 @@ sub process_providers( $ ) {
 
 	    add_an_rtrule while read_a_line( NORMAL_READ );
 	}
+    }
 
-	$fn = open_file 'routes';
+    if ( $providers || $pseudoproviders ) {
+	my $fn = open_file 'routes';
 
 	if ( $fn ) {
 	    first_entry "$doing $fn...";
 	    emit '';
 	    add_a_route while read_a_line( NORMAL_READ );
 	}
-    }
 
-    add_a_provider( $providers{$_}, $tcdevices ) for @providers;
+	add_a_provider( $providers{$_}, $tcdevices ) for @providers;
+    }
 
     emit << 'EOF';;
 
@@ -1262,14 +1321,20 @@ EOF
 
 	if ( $providerref->{optional} ) {
 	    if ( $providerref->{shared} || $providerref->{physical} eq $provider) {
-		emit "$provider})";
+		emit "$provider)";
 	    } else {
 		emit( "$providerref->{physical}|$provider)" );
 	    }
 
-	    emit ( "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then",
-		   "        start_provider_$provider",
-		   '    else',
+	    if ( $providerref->{pseudo} ) {
+		emit ( "    if [ ! -f \${VARDIR}/$product/undo_${provider}_routing ]; then",
+		       "        start_interface_$provider" );
+	    } else {
+		emit ( "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then",
+		       "        start_provider_$provider" );
+	    }
+
+	    emit ( '    else',
 		   "        startup_error \"Interface $providerref->{physical} is already enabled\"",
 		   '    fi',
 		   '    ;;'
@@ -1282,7 +1347,7 @@ EOF
 
     emit << 'EOF';;
         *)
-            startup_error "$g_interface is not an optional provider or provider interface"
+            startup_error "$g_interface is not an optional provider or interface"
             ;;
     esac
 
@@ -1303,14 +1368,22 @@ EOF
     for my $provider (@providers ) {
 	my $providerref = $providers{$provider};
 
-	emit( "$providerref->{physical}|$provider)",
-	      "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then",
-	      "        stop_provider_$provider",
-	      '    else',
-	      "        startup_error \"Interface $providerref->{physical} is already disabled\"",
-	      '    fi',
-	      '    ;;'
-	    ) if $providerref->{optional};
+	if ( $provider eq $providerref->{physical} ) {
+	    emit( "$provider)" );
+	} else {
+	    emit( "$providerref->{physical}|$provider)" );
+	}
+
+	emit( "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then" );
+
+	if ( $providerref->{optional} ) {
+	    emit( "        stop_$providerref->{what}_$provider",
+		  '    else',
+		  "        startup_error \"Interface $providerref->{physical} is already disabled\"",
+		  '    fi',
+		  '    ;;'
+		);
+	}
     }
 
     pop_indent;
@@ -1342,7 +1415,7 @@ sub setup_providers() {
 
 	emit '';
 
-	emit "start_provider_$_" for @providers;
+	emit "start_$providers{$_}->{what}_$_" for @providers;
 
 	emit '';
 

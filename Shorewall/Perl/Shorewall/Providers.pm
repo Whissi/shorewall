@@ -1262,7 +1262,7 @@ EOF
 
 	if ( $providerref->{optional} ) {
 	    if ( $providerref->{shared} || $providerref->{physical} eq $provider) {
-		emit "$provider})";
+		emit "$provider)";
 	    } else {
 		emit( "$providerref->{physical}|$provider)" );
 	    }

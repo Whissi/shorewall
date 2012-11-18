@@ -1588,6 +1588,11 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$$) {
 	    $mtarget = substitute_param $param,  $mtarget;
 	}
 
+	if ( $mtarget =~ s/&$// ) {
+	    fatal_error "$mtarget& requires a parameter to be supplied in macro invocation" unless $param ne '';
+	    $mtarget = "$mtarget:$macro($param)";
+	}   
+
 	my $action = isolate_basic_target $mtarget;
 
 	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;

@@ -812,7 +812,10 @@
 
           <para>Beginning with Shorewall 4.5.10, this command may be used with
           any optional network interface. <replaceable>interface</replaceable>
-          may be either the logical or physical name of the interface.</para>
+          may be either the logical or physical name of the interface. The
+          command removes any routes added from <ulink
+          url="shorewall6-routes.html">shorewall6-routes</ulink>(5) and any
+          traffic shaping configuration for the interface.</para>
         </listitem>
       </varlistentry>
 
@@ -855,7 +858,12 @@
 
           <para>Beginning with Shorewall 4.5.10, this command may be used with
           any optional network interface. <replaceable>interface</replaceable>
-          may be either the logical or physical name of the interface.</para>
+          may be either the logical or physical name of the interface. The
+          command sets <filename>/proc</filename> entries for the interface,
+          adds any route specified in <ulink
+          url="shorewall6-routes.html">shorewall6-routes</ulink>(5) and
+          installs the interface's traffic shaping configuration, if
+          any.</para>
         </listitem>
       </varlistentry>
 

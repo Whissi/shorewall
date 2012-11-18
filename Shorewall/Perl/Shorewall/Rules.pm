@@ -1588,6 +1588,11 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$$) {
 	    $mtarget = substitute_param $param,  $mtarget;
 	}
 
+	if ( $mtarget =~ s/&$// ) {
+	    fatal_error "$mtarget& requires a parameter to be supplied in macro invocation" unless $param ne '';
+	    $mtarget = "$mtarget:$macro($param)";
+	}   
+
 	my $action = isolate_basic_target $mtarget;
 
 	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;
@@ -1712,16 +1717,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
     if ( $config{ MAPOLDACTIONS } ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || $param;
-    }
-
-    unless ( $actiontype ) {
-	if ( $action =~ /^NFLOG\(?/ ) {
-	    $basictarget = 'LOG';
-	    $actiontype  = $targets{LOG};
-	    fatal_error "Invalid NFLOG action($action:$loglevel)" if $loglevel;
-	    $loglevel    = supplied $param ? "NFLOG($param)" : 'NFLOG';
-	    $param       = '';
-	}
     }
 
     fatal_error "Unknown ACTION ($action)" unless $actiontype;

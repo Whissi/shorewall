@@ -80,7 +80,7 @@ sub process_conntrack_rule( $$$$$$$$$ ) {
 	# Netfilter development list
 	#
 	$action = 'CT --notrack' if have_capability 'CT_TARGET';
-    } else {
+    } elsif ( $action ne 'DROP' ) {
 	(  $target, my ( $option, $args, $junk ) ) = split ':', $action, 4;
 
 	fatal_error "Invalid notrack ACTION ( $action )" if $junk || $target ne 'CT';

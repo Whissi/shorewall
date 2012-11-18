@@ -67,8 +67,8 @@
 
         <listitem>
           <para>This column is only present when FORMAT = 2. Values other than
-          NOTRACK require <firstterm>CT Target </firstterm>support in your
-          iptables and kernel.</para>
+          NOTRACK or DROP require <firstterm>CT Target </firstterm>support in
+          your iptables and kernel.</para>
 
           <itemizedlist>
             <listitem>
@@ -76,6 +76,13 @@
               <option>CT:notrack</option></para>
 
               <para>Disables connection tracking for this packet.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>DROP</option></para>
+
+              <para>Added in Shorewall 4.5.10. Silently discard the
+              packet.</para>
             </listitem>
 
             <listitem>
@@ -140,6 +147,14 @@
                   <listitem>
                     <para>Requires that the pptp netfilter helper is
                     present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term/>
+
+                  <listitem>
+                    <para/>
                   </listitem>
                 </varlistentry>
 

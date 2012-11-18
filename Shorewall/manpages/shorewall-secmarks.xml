@@ -92,7 +92,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">CHAIN:STATE (chain) -
-        {P|I|F|O|T}[:{N|I|NI|E|ER}]</emphasis></term>
+        {P|I|F|O|T}[:{N|I|U|NI|NU|NIU|NUI:E|ER}]</emphasis></term>
 
         <listitem>
           <para>This column determines the CHAIN where the SElinux context is
@@ -124,6 +124,17 @@
             <member>:E - ESTABLISHED connection</member>
 
             <member>:ER - ESTABLISHED or RELATED connection</member>
+          </simplelist>
+
+          <para>Beginning with Shorewall 4.5.10, the following additional
+          options are available</para>
+
+          <simplelist>
+            <member>:U - UNTRACKED connection</member>
+
+            <member>:NU - NEW or UNTRACKED connection</member>
+
+            <member>:NIU - NEW, INVALID or UNTRACKED connection.</member>
           </simplelist>
         </listitem>
       </varlistentry>

@@ -2219,11 +2219,14 @@ sub process_secmark_rule() {
 		 I => 'tcin'    ,
 		 O => 'tcout'   , );
 
-    my %state = ( N =>  'NEW' ,
-		  I => 'INVALID',
-		  NI => 'NEW,INVALID',
-		  E =>  'ESTABLISHED' ,
-		  ER => 'ESTABLISHED,RELATED',
+    my %state = ( N   => 'NEW' ,
+		  I   => 'INVALID',
+		  U   => 'UNTRACKED',
+		  NI  => 'NEW,INVALID',
+		  NU  => 'NEW,UNTRACKED',
+		  NIU => 'NEW,INVALID,UNTRACKED',
+		  E   => 'ESTABLISHED' ,
+		  ER  => 'ESTABLISHED,RELATED',
 		);
 
     my ( $chain , $state, $rest) = split ':', $chainin , 3;

@@ -1535,7 +1535,7 @@ sub use_policy_action( $ ) {
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ( $$$$$$$$$$$$$$$$$$$) {
+sub process_macro ($$$$$$$$$$$$$$$$$$$) {
     my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
     my $nocomment = no_comment;
@@ -1589,8 +1589,11 @@ sub process_macro ( $$$$$$$$$$$$$$$$$$$) {
 	}
 
 	if ( $mtarget =~ s/&$// ) {
-	    fatal_error "$mtarget& requires a parameter to be supplied in macro invocation" unless $param ne '';
-	    $mtarget = "$mtarget:$macro($param)";
+	    if ( supplied $param ) {
+		$mtarget = "$mtarget:$macro($param)";
+	    } else {
+		$mtarget = "$mtarget:$macro";
+	    }
 	}   
 
 	my $action = isolate_basic_target $mtarget;

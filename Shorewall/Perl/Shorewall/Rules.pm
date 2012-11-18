@@ -1714,6 +1714,16 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || $param;
     }
 
+    unless ( $actiontype ) {
+	if ( $action =~ /^NFLOG\(?/ ) {
+	    $basictarget = 'LOG';
+	    $actiontype  = $targets{LOG};
+	    fatal_error "Invalid NFLOG action($action:$loglevel)" if $loglevel;
+	    $loglevel    = supplied $param ? "NFLOG($param)" : 'NFLOG';
+	    $param       = '';
+	}
+    }
+
     fatal_error "Unknown ACTION ($action)" unless $actiontype;
 
     if ( $actiontype == MACRO ) {

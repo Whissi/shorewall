@@ -3738,7 +3738,7 @@ sub determine_capabilities() {
 	    qt1( "$iptables -t nat -X $sillyname" );
 	}
 
-	if ( $capabilities{RAW_ENABLED} ) {
+	if ( $capabilities{RAW_TABLE} ) {
 	    qt1( "$iptables -t raw -F $sillyname" );
 	    qt1( "$iptables -t raw -X $sillyname" );
 	}

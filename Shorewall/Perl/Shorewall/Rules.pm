@@ -1590,9 +1590,9 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
 	if ( $mtarget =~ s/&$// ) {
 	    if ( supplied $param ) {
-		$mtarget = "$mtarget:$macro($param)";
+		$mtarget = "${mtarget}${macro}($param)";
 	    } else {
-		$mtarget = "$mtarget:$macro";
+		$mtarget = "${mtarget}${macro}";
 	    }
 	}   
 

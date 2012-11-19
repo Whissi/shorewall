@@ -120,32 +120,16 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
-        role="bold">ACCEPT</emphasis>[<emphasis
-        role="bold"><option>+</option>|<option>!</option></emphasis>]|<emphasis
-        role="bold">DROP[<option>!</option>]</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>[<option>!</option>]|<emphasis
-        role="bold">DNAT</emphasis>[<emphasis
-        role="bold">-</emphasis>]|<emphasis
-        role="bold">SAME</emphasis>[<emphasis
-        role="bold">-</emphasis>]|<emphasis
-        role="bold">CONTINUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">LOG</emphasis>|<emphasis
-        role="bold">QUEUE</emphasis>[<option>!</option>]|<emphasis
-        role="bold">NFQUEUE</emphasis>[<emphasis
-        role="bold">(</emphasis><emphasis>queuenumber</emphasis><emphasis
-        role="bold">)</emphasis>]<emphasis
-        role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
-        role="bold">(</emphasis><emphasis>target</emphasis><emphasis
-        role="bold">)</emphasis>]}<emphasis
-        role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
+        <term><emphasis role="bold">ACTION</emphasis> - <emphasis
+        role="bold"><replaceable>target</replaceable>[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
         role="bold">none</emphasis>}[<emphasis role="bold"><emphasis
         role="bold">!</emphasis></emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>tag</emphasis>]]</term>
 
         <listitem>
           <para>Specifies the action to be taken if the connection request
-          matches the rule. Must be one of the following.</para>
+          matches the rule. <replaceable>target</replaceable> must be one of
+          the following.</para>
 
           <variablelist>
             <varlistentry>
@@ -167,30 +151,45 @@
             </varlistentry>
 
             <varlistentry>
-              <term>A_ACCEPT and A_ACCEPT!</term>
+              <term><emphasis>action</emphasis></term>
 
               <listitem>
-                <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT
-                and ACCEPT! respectively. Require AUDIT_TARGET support in the
-                kernel and ip6tables.</para>
+                <para>The name of an <emphasis>action</emphasis> declared in
+                <ulink
+                url="shorewall6-actions.html">shorewall6-actions</ulink>(5) or
+                in /usr/share/shorewall/actions.std.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">DROP</emphasis></term>
+              <term><emphasis
+              role="bold">ADD(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
 
               <listitem>
-                <para>Ignore the request.</para>
+                <para>Added in Shorewall 4.4.12. Causes addresses and/or port
+                numbers to be added to the named
+                <replaceable>ipset</replaceable>. The
+                <replaceable>flags</replaceable> specify the address or tupple
+                to be added to the set and must match the type of ipset
+                involved. For example, for an iphash ipset, either the SOURCE
+                or DESTINATION address can be added using
+                <replaceable>flags</replaceable> <emphasis
+                role="bold">src</emphasis> or <emphasis
+                role="bold">dst</emphasis> respectively (see the -A command in
+                ipset (8)).</para>
+
+                <para>ADD is non-terminating. Even if a packet matches the
+                rule, it is passed on to the next rule.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">DROP!</emphasis></term>
+              <term>A_ACCEPT, A_ACCEPT+ and A_ACCEPT!</term>
 
               <listitem>
-                <para>like DROP but exempts the rule from being suppressed by
-                OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT,
+                ACCEPT+ and ACCEPT! respectively. Require AUDIT_TARGET support
+                in the kernel and iptables.</para>
               </listitem>
             </varlistentry>
 
@@ -200,26 +199,7 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of DROP and
                 DROP! respectively. Require AUDIT_TARGET support in the kernel
-                and ip6tables.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">REJECT</emphasis></term>
-
-              <listitem>
-                <para>disallow the request and return an icmp-unreachable or
-                an RST packet.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">REJECT!</emphasis></term>
-
-              <listitem>
-                <para>like REJECT but exempts the rule from being suppressed
-                by OPTIMIZE=1 in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                and iptables.</para>
               </listitem>
             </varlistentry>
 
@@ -229,7 +209,20 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of REJECT
                 and REJECT! respectively. Require AUDIT_TARGET support in the
-                kernel and ip6tables.</para>
+                kernel and iptables.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">COMMENT</emphasis></term>
+
+              <listitem>
+                <para>the rest of the line will be attached as a comment to
+                the Netfilter rule(s) generated by the following entries. The
+                comment will appear delimited by "/* ... */" in the output of
+                "shorewall show &lt;chain&gt;". To stop the comment from being
+                attached to further rules, simply include COMMENT on a line by
+                itself.</para>
               </listitem>
             </varlistentry>
 
@@ -262,11 +255,146 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">LOG</emphasis></term>
+              <term><emphasis role="bold">COUNT</emphasis></term>
+
+              <listitem>
+                <para>Simply increment the rule's packet and byte count and
+                pass the packet to the next rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">DEL(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.4.12. Causes an entry to be deleted
+                from the named <replaceable>ipset</replaceable>. The
+                <replaceable>flags</replaceable> specify the address or tupple
+                to be deleted from the set and must match the type of ipset
+                involved. For example, for an iphash ipset, either the SOURCE
+                or DESTINATION address can be deletec using
+                <replaceable>flags</replaceable> <emphasis
+                role="bold">src</emphasis> or <emphasis
+                role="bold">dst</emphasis> respectively (see the -D command in
+                ipset (8)).</para>
+
+                <para>DEL is non-terminating. Even if a packet matches the
+                rule, it is passed on to the next rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">DROP</emphasis></term>
+
+              <listitem>
+                <para>Ignore the request.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">DROP!</emphasis></term>
+
+              <listitem>
+                <para>like DROP but exempts the rule from being suppressed by
+                OPTIMIZE=1 in <ulink
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>HELPER</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.7. This action requires that the
+                HELPER column contains the name of the Netfilter helper to be
+                associated with connections matching this connection. May only
+                be specified in the NEW section and is useful for being able
+                to specify a helper when the applicable policy is ACCEPT. No
+                destination zone should be specified in HELPER rules.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">LOG:<replaceable>level</replaceable></emphasis></term>
 
               <listitem>
                 <para>Simply log the packet and continue with the next
                 rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>macro</emphasis><emphasis
+              role="bold">[(<replaceable>macrotarget</replaceable>)]</emphasis></term>
+
+              <listitem>
+                <para>The name of a macro defined in a file named
+                macro.<emphasis>macro</emphasis>. If the macro accepts an
+                action parameter (Look at the macro source to see if it has
+                PARAM in the TARGET column) then the
+                <emphasis>macro</emphasis> name is followed by the
+                parenthesized <emphasis>macrotarget</emphasis> (<emphasis
+                role="bold">ACCEPT</emphasis>, <emphasis
+                role="bold">DROP</emphasis>, <emphasis
+                role="bold">REJECT</emphasis>, ...) to be substituted for the
+                parameter.</para>
+
+                <para>Example: FTP(ACCEPT).</para>
+
+                <para>The older syntax where the macro name and the target are
+                separated by a slash (e.g. FTP/ACCEPT) is still allowed but is
+                deprecated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">NFLOG</emphasis>[(<replaceable>nflog-parameters</replaceable>)]</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.9.3. Queues matching packets to a
+                backend logging daemon via a netlink socket then continues to
+                the next rule. See <ulink
+                url="http://www.shorewall.net/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
+
+                <para>Equivalent to<emphasis role="bold">
+                LOG:NFLOG</emphasis>[(<replaceable>nflog-parameters</replaceable>)]</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">NFQUEUE</emphasis>[(<replaceable>queuenumber</replaceable>)]</term>
+
+              <listitem>
+                <para>Queues the packet to a user-space application using the
+                nfnetlink_queue mechanism. If a
+                <replaceable>queuenumber</replaceable> is not specified, queue
+                zero (0) is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">NFQUEUE![(<replaceable>queuenumber</replaceable>)]</emphasis></term>
+
+              <listitem>
+                <para>like NFQUEUE but exempts the rule from being suppressed
+                by OPTIMIZE=1 in <ulink
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">NONAT</emphasis></term>
+
+              <listitem>
+                <para>Excludes the connection from any subsequent <emphasis
+                role="bold">DNAT</emphasis>[-] or <emphasis
+                role="bold">REDIRECT</emphasis>[-] rules but doesn't generate
+                a rule to accept the traffic.</para>
               </listitem>
             </varlistentry>
 
@@ -291,107 +419,38 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis
-              role="bold">NFLOG</emphasis>[(<replaceable>nflog-parameters</replaceable>)]</term>
+              <term><emphasis role="bold">REJECT</emphasis></term>
 
               <listitem>
-                <para>queues matching packets to a backend logging daemon via
-                a netlink socket then continues to the next rule. See <ulink
-                url="http://www.shorewall.net/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
+                <para>disallow the request and return an icmp-unreachable or
+                an RST packet.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">NFQUEUE</emphasis></term>
+              <term><emphasis role="bold">REJECT!</emphasis></term>
 
               <listitem>
-                <para>Queues the packet to a user-space application using the
-                nfnetlink_queue mechanism. If a
-                <replaceable>queuenumber</replaceable> is not specified, queue
-                zero (0) is assumed.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">NFQUEUE!</emphasis></term>
-
-              <listitem>
-                <para>like NFQUEUE but exempts the rule from being suppressed
+                <para>like REJECT but exempts the rule from being suppressed
                 by OPTIMIZE=1 in <ulink
                 url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">COMMENT</emphasis></term>
-
-              <listitem>
-                <para>the rest of the line will be attached as a comment to
-                the Netfilter rule(s) generated by the following entries. The
-                comment will appear delimited by "/* ... */" in the output of
-                "shorewall6 show &lt;chain&gt;". To stop the comment from
-                being attached to further rules, simply include COMMENT on a
-                line by itself.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis>action</emphasis></term>
-
-              <listitem>
-                <para>The name of an <emphasis>action</emphasis> declared in
-                <ulink
-                url="shorewall6-actions.html">shorewall6-actions</ulink>(5) or
-                in /usr/share/shorewall6/actions.std.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis>macro</emphasis></term>
-
-              <listitem>
-                <para>The name of a macro defined in a file named
-                macro.<emphasis>macro</emphasis>. If the macro accepts an
-                action parameter (Look at the macro source to see if it has
-                PARAM in the TARGET column) then the
-                <emphasis>macro</emphasis> name is followed by the
-                parenthesized <emphasis>target</emphasis> (<emphasis
-                role="bold">ACCEPT</emphasis>, <emphasis
-                role="bold">DROP</emphasis>, <emphasis
-                role="bold">REJECT</emphasis>, ...) to be substituted for the
-                parameter.</para>
-
-                <para>Example: FTP(ACCEPT).</para>
-
-                <para>The older syntax where the macro name and the target are
-                separated by a slash (e.g. FTP/ACCEPT) is still allowed but is
-                deprecated.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>HELPER</term>
-
-              <listitem>
-                <para>Added in Shorewall 4.5.7. This action requires that the
-                HELPER column contains the name of the Netfilter helper to be
-                associated with connections matching this connection. May only
-                be specified in the NEW section and is useful for being able
-                to specify a helper when the applicable policy is ACCEPT. No
-                destination zone should be specified in HELPER rules.</para>
-              </listitem>
-            </varlistentry>
           </variablelist>
 
-          <para>The <emphasis role="bold">ACTION</emphasis> may optionally be
+          <para>The <replaceable>target</replaceable> may optionally be
           followed by ":" and a syslog log level (e.g, REJECT:info or
           Web(ACCEPT):debug). This causes the packet to be logged at the
-          specified level.</para>
+          specified level. Note that if the <emphasis
+          role="bold">ACTION</emphasis> involves destination network address
+          translation (DNAT, REDIRECT, etc.) then the packet is logged
+          <emphasis role="bold">before</emphasis> the destination address is
+          rewritten.</para>
 
           <para>If the <emphasis role="bold">ACTION</emphasis> names an
           <emphasis>action</emphasis> declared in <ulink
-          url="shorewall6-actions.html">shorewall6-actions</ulink>(5) or in
-          /usr/share/shorewall6/actions.std then:</para>
+          url="shorewall-actions.html">shorewall-actions</ulink>(5) or in
+          /usr/share/shorewall/actions.std then:</para>
 
           <itemizedlist>
             <listitem>
@@ -412,15 +471,16 @@
             </listitem>
           </itemizedlist>
 
-          <para>You may also specify <emphasis role="bold">NFLOG</emphasis>
-          (must be in upper case) as a log level.This will log to the NFLOG
-          target for routing to a separate log through use of ulogd (<ulink
+          <para>You may also specify <emphasis role="bold">ULOG</emphasis> or
+          <emphasis role="bold">NFLOG</emphasis> (must be in upper case) as a
+          log level.This will log to the ULOG or NFLOG target for routing to a
+          separate log through use of ulogd (<ulink
           url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
 
           <para>Actions specifying logging may be followed by a log tag (a
           string of alphanumeric characters) which is appended to the string
           generated by the LOGPREFIX (in <ulink
-          url="shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
+          url="shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
 
           <para>Example: ACCEPT:info:ftp would include 'ftp ' at the end of
           the log prefix generated by the LOGPREFIX setting.</para>

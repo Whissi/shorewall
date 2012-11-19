@@ -2435,7 +2435,7 @@ sub default_action_params {
     for ( $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
 	my $curval = $actparms[$i];
-	$actparms[$i] =$val unless supplied( $curval );
+	$actparms[$i] = $val unless supplied( $curval );
     }
 
     fatal_error "Too Many arguments to action $action" if defined $actparms[$i];

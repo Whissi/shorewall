@@ -117,7 +117,7 @@
           ISP.</para>
         </footnote> as in the following diagram.</para>
 
-      <graphic align="center" fileref="images/TwoISPs.png" valign="middle"/>
+      <graphic align="center" fileref="images/TwoISPs.png" valign="middle" />
 
       <itemizedlist>
         <listitem>
@@ -528,6 +528,14 @@
                   <para>Prior to Shorewall 4.4.24, the option is ignored with
                   a warning message if USE_DEFAULT_RT=Yes in
                   <filename>shorewall.conf</filename>.</para>
+
+                  <warning>
+                    <para>If you set this option on an interface, you must
+                    disable route filtering on the interface. Include
+                    'routefilter=0,logmartions=0' in the OPTIONS column of
+                    <ulink
+                    url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+                  </warning>
                 </listitem>
               </varlistentry>
             </variablelist>
@@ -2212,7 +2220,7 @@ exit 0
       on ursa that I will describe here</emphasis>.</para>
 
       <para>Below is a diagram of our network:<graphic align="center"
-      fileref="images/Network2008a.png"/></para>
+      fileref="images/Network2008a.png" /></para>
 
       <para>The local wired network in my office is connected to both gateways
       and uses the private (RFC 1918) network 172.20.1.0/24. The Comcast
@@ -2367,7 +2375,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <para>The network is pictured in the following diagram:</para>
 
-    <graphic fileref="images/Network2012a.png"/>
+    <graphic fileref="images/Network2012a.png" />
 
     <section>
       <title>IPv4 Configuration</title>

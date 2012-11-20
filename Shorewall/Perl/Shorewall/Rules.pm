@@ -360,6 +360,9 @@ sub process_a_policy() {
 	} elsif ( $actions{$def} ) {
 	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $def;
 	    use_policy_action( $default );
+	} elsif ( find_macro( $def ) ) {
+	    fatal_error "Default Action Macros may not have parameters" if supplied $param;
+	    $default = join( '.', 'macro', $def ) unless $default =~ /^macro./;
 	} else {
 	    fatal_error "Unknown Default Action ($default)";
 	}
@@ -505,6 +508,9 @@ sub process_policies()
 	    } elsif ( $actions{$act} ) {
 		$action = supplied $param ? normalize_action( $act, 'none', $param  ) : normalize_action_name $act;
 		use_policy_action( $action );
+	    } elsif ( find_macro( $act ) ) {
+		fatal_error "Default Action Macros may not have parameters" if supplied $param;
+		$action = join( '.', 'macro', $act ) unless $action =~ /^macro\./;
 	    } elsif ( $targets{$act} ) {
 		fatal_error "Invalid setting ($action) for $option";
 	    } else {
@@ -553,7 +559,34 @@ sub policy_rules( $$$$$ ) {
 
     unless ( $target eq 'NONE' ) {
 	add_ijump $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
-	add_ijump $chainref, j => $default if $default && $default ne 'none';
+
+	if ( $default && $default ne 'none' ) {
+	    if ( $default =~ s/^macro\.// ) {
+		process_macro( $default,                                       #Macro
+			       $chainref,                                      #Chain
+			       $default,                                       #Target
+			       '',                                             #Param
+			       '-',                                            #Source
+			       '-',                                            #Dest
+			       '-',                                            #Proto
+                               '-',                                            #Ports
+                               '-',                                            #Sports
+			       '-',                                            #Original Dest
+                               '-',                                            #Rate
+                               '-',                                            #User
+                               '-',                                            #Mark
+                               '-',                                            #ConnLimit
+                               '-',                                            #Time
+                               '-',                                            #Headers
+                               '-',                                            #Condition
+                               '-',                                            #Helper
+                               0,                                              #Wildcard
+			     );
+	    } else {
+		add_ijump $chainref, j => $default;
+	    }
+	}
+ 
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 
@@ -589,6 +622,7 @@ sub default_policy( $$$ ) {
 	    } else {
 		add_ijump $chainref,  g => $policyref;
 		$chainref = $policyref;
+		policy_rules( $chainref, $policy, $loglevel, $default, $config{MULTICAST} ) if $default =~/^macro\./;
 	    }
 	} elsif ( $policy eq 'CONTINUE' ) {
 	    report_syn_flood_protection if $synparams;
@@ -601,7 +635,6 @@ sub default_policy( $$$ ) {
     }
 
     progress_message_nocompress "   Policy $policy from $_[1] to $_[2] using chain $chainref->{name}";
-
 }
 
 sub ensure_rules_chain( $ );
@@ -630,7 +663,11 @@ sub apply_policy_rules() {
 		    # is a single jump. Generate_matrix() will just use the policy target when
 		    # needed.
 		    #
-		    ensure_rules_chain $name if $default ne 'none' || $loglevel || $synparms || $config{MULTICAST} || ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} );
+		    ensure_rules_chain $name if ( $default ne 'none' ||
+						  $loglevel          ||
+						  $synparms          ||
+						  $config{MULTICAST} ||
+						  ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} ) );
 		} else {
 		    ensure_rules_chain $name;
 		}
@@ -747,7 +784,7 @@ sub ensure_rules_chain( $ )
     $chainref = new_chain( 'filter', $chain ) unless $chainref;
 
     unless ( $chainref->{referenced} ) {
-	if ( $section =~/^(NEW|DONE)$/ ) {
+	if ( $section =~/^(NEW|DEFAULTACTION)$/ ) {
 	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
 	} elsif ( $section eq 'RELATED' ) {
 	    finish_chain_section $chainref , 'ESTABLISHED';
@@ -796,7 +833,7 @@ sub finish_chain_section ($$) {
 	if ( $chainref->{is_policy} ) {
 	    if ( $chainref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
-		if ( $section eq 'DONE' ) {
+		if ( $section eq 'DEFAULTACTION' ) {
 		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_ijump $chainref, j => $synchainref, p => 'tcp --syn';
 		    }
@@ -1095,7 +1132,7 @@ sub merge_levels ($$) {
 sub find_macro( $ )
 {
     my $macro = $_[0];
-    my $macrofile = find_file "macro.$macro";
+    my $macrofile = find_file( $macro =~ /^macro\./ ? $macro : "macro.$macro" );
 
     if ( -f $macrofile ) {
 	$macros{$macro} = $macrofile;
@@ -1678,8 +1715,10 @@ sub verify_audit($;$$) {
 # Once a rule has been expanded via wildcards (source and/or dest zone eq 'all'), it is processed by this function. If
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action
-# body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument.
+# body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument. A chain
+# reference is also passed when rules are being generated during processing of a macro used as a default action.
 #
+
 sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $target,
@@ -1704,12 +1743,15 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     my ( $basictarget, $param ) = get_target_param $action;
     my $rule = '';
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 5 ) : 0;
-    my $inaction = '';
+    my $inaction  = ''; # Set to true when we are process rules in an action file
+    my $inchain   = ''; # Set to true when a chain reference is passed.
     my $normalized_target;
     my $normalized_action;
     my $blacklist = ( $section eq 'BLACKLIST' );
 
-    ( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if defined $chainref;
+    if ( $inchain = defined $chainref ) {
+	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
+    }
 
     $param = '' unless defined $param;
 
@@ -1720,16 +1762,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
     if ( $config{ MAPOLDACTIONS } ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || $param;
-    }
-
-    unless ( $actiontype ) {
-	if ( $action =~ /^NFLOG\(?/ ) {
-	    $basictarget = 'LOG';
-	    $actiontype  = $targets{LOG};
-	    fatal_error "Invalid NFLOG action($action:$loglevel)" if $loglevel;
-	    $loglevel    = supplied $param ? "NFLOG($param)" : 'NFLOG';
-	    $param       = '';
-	}
     }
 
     fatal_error "Unknown ACTION ($action)" unless $actiontype;
@@ -1848,8 +1880,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	      REDIRECT => sub () {
 		  my $z = $actiontype & NATONLY ? '' : firewall_zone;
 		  if ( $dest eq '-' ) {
-		      $dest = $inaction ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
-		  } elsif ( $inaction ) {
+		      $dest = ( $inchain ) ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+		  } elsif ( $inchain ) {
 		      $dest = ":$dest";
 		  } else {
 		      $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
@@ -1900,7 +1932,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     my $destref;
     my $origdstports;
 
-    unless ( $inaction ) {
+    unless ( $inchain ) {
 	if ( $source =~ /^(.+?):(.*)/ ) {
 	    fatal_error "Missing SOURCE Qualifier ($source)" if $2 eq '';
 	    $sourcezone = $1;
@@ -1941,7 +1973,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     } else {
-	unless ( $inaction ) {
+	unless ( $inchain ) {
 	    fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
 	    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
 	}
@@ -1949,7 +1981,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
     my $restriction = NO_RESTRICT;
 
-    unless ( $inaction ) {
+    unless ( $inchain ) {
 	if ( $sourceref && ( $sourceref->{type} & ( FIREWALL | VSERVER ) ) ) {
 	    $restriction = $destref && ( $destref->{type} & ( FIREWALL | VSERVER ) ) ? ALL_RESTRICT : OUTPUT_RESTRICT;
 	} else {
@@ -1967,9 +1999,9 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     #
     my $chain;
 
-    if ( $inaction ) {
+    if ( $inchain ) {
         #
-        # We are generating rules in an action chain -- the chain name is the name of that action chain
+        # We are generating rules in a chain -- get its name
         #
 	$chain = $chainref->{name};
     } else {
@@ -2072,7 +2104,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    );
     }
 
-    unless ( $section eq 'NEW' || $inaction ) {
+    unless ( $section eq 'NEW' || $inchain ) {
 	if ( $config{FASTACCEPT} ) {
 	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
 		$section eq 'BLACKLIST' ||
@@ -2094,7 +2126,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 			    $sports,
 			    $sourceref,
 			    ( $actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
-			    $inaction ? $chain : '' ,
+			    $inchain ? $chain : '' ,
 			    $user ,
 			    $rule ,
 			  );
@@ -2506,7 +2538,7 @@ sub process_rules( $ ) {
 	clear_comment;
     }
 
-    $section = 'DONE';
+    $section = 'DEFAULTACTION';
 }
 
 1;

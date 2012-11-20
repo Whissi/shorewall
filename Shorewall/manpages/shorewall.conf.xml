@@ -96,7 +96,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -106,7 +106,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -116,7 +116,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -126,7 +126,7 @@
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 
@@ -153,10 +153,15 @@
           <para>The value applied to these may be:</para>
 
           <simplelist>
-            <member>a) The name of an
-            <replaceable>action</replaceable>.</member>
+            <member>a) The name of an <replaceable>action</replaceable>. The
+            name may optionally be followed by a comma-separated list of
+            parameters enclosed in parentheses if the specified action accepts
+            parameters (e.g., 'Drop(audit)').</member>
 
-            <member>b) <emphasis role="bold">None</emphasis> or <emphasis
+            <member>b) The name of a <replaceable>macro</replaceable>
+            (Shorewall 4.5.10 and Laater)</member>
+
+            <member>c) <emphasis role="bold">None</emphasis> or <emphasis
             role="bold">none</emphasis></member>
           </simplelist>
 
@@ -178,6 +183,12 @@
           default action will be used and the default action or macro must be
           specified in <ulink
           url="shorewall-policy.html">shorewall-policy</ulink>(5).</para>
+
+          <para>Beginning with Shorewall 4.5.10,
+          <replaceable>action</replaceable> may name a macro. If you wish to
+          use a macro with the same name as an existing action, you may
+          specify the name of the macro file (e.g., <emphasis
+          role="bold">macro.</emphasis><replaceable>macro-name</replaceable>).</para>
         </listitem>
       </varlistentry>
 
@@ -521,7 +532,7 @@
           </itemizedlist>
 
           <blockquote>
-            <para/>
+            <para></para>
 
             <para>If CONFIG_PATH is not given or if it is set to the empty
             value then the contents of /usr/share/shorewall/configpath are
@@ -928,7 +939,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </varlistentry>
           </variablelist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>If this variable is not set or is given an empty value
@@ -1138,7 +1149,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
             </listitem>
           </itemizedlist>
 
-          <para/>
+          <para></para>
 
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
@@ -1155,7 +1166,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
               control your firewall after you enable this option.</para>
             </important>
 
-            <para/>
+            <para></para>
 
             <caution>
               <para>Do not use this option if the resulting log messages will
@@ -1819,7 +1830,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
         role="bold">"</emphasis></term>
 
         <listitem>
-          <para/>
+          <para></para>
         </listitem>
       </varlistentry>
 

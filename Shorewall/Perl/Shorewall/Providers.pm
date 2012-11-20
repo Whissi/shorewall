@@ -352,9 +352,12 @@ sub start_provider( $$$$ ) {
     emit $test;
     push_indent;
 
+
     if ( $number ) {
 	emit "qt ip -$family route flush table $number";
 	emit "echo \"qt \$IP -$family route flush table $number\" > \${VARDIR}/undo_${table}_routing";
+    } else {
+	emit( "> \${VARDIR}/undo_${table}_routing" );
     }
 }
 
@@ -929,8 +932,13 @@ CEOF
 	    emit( qq(delete_gateway "$via" $tbl $physical) );
 	}
 
-	emit (". $undo",
-	      "> $undo" );
+	emit (". $undo" );
+
+	if ( $pseudo ) {
+	    emit( "rm -f $undo" );
+	} else {
+	    emit( "> $undo" );
+	}
 
 	emit ( '',
 	       "distribute_load $maxload @load_interfaces" ) if $load;
@@ -1375,15 +1383,19 @@ EOF
     for my $provider (@providers ) {
 	my $providerref = $providers{$provider};
 
-	if ( $provider eq $providerref->{physical} ) {
-	    emit( "$provider)" );
-	} else {
-	    emit( "$providerref->{physical}|$provider)" );
-	}
-
-	emit( "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then" );
-
 	if ( $providerref->{optional} ) {
+	    if ( $provider eq $providerref->{physical} ) {
+		emit( "$provider)" );
+	    } else {
+		emit( "$providerref->{physical}|$provider)" );
+	    }
+
+	    if ( $providerref->{pseudo} ) {
+		emit( "    if [ -f \${VARDIR}/$product/undo_${provider}_routing ]; then" );
+	    } else {
+		emit( "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then" );
+	    }
+
 	    emit( "        stop_$providerref->{what}_$provider",
 		  '    else',
 		  "        startup_error \"Interface $providerref->{physical} is already disabled\"",

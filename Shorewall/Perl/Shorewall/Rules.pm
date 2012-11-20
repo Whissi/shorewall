@@ -562,27 +562,33 @@ sub policy_rules( $$$$$ ) {
 
 	if ( $default && $default ne 'none' ) {
 	    if ( $default =~ s/^macro\.// ) {
-		process_macro( $default,                                       #Macro
-			       $chainref,                                      #Chain
-			       $default,                                       #Target
-			       '',                                             #Param
-			       '-',                                            #Source
-			       '-',                                            #Dest
-			       '-',                                            #Proto
-                               '-',                                            #Ports
-                               '-',                                            #Sports
-			       '-',                                            #Original Dest
-                               '-',                                            #Rate
-                               '-',                                            #User
-                               '-',                                            #Mark
-                               '-',                                            #ConnLimit
-                               '-',                                            #Time
-                               '-',                                            #Headers
-                               '-',                                            #Condition
-                               '-',                                            #Helper
-                               0,                                              #Wildcard
+		#
+		# Default action is a macro -- expand it in-line
+		#
+		process_macro( $default,  #Macro
+			       $chainref, #Chain
+			       $default,  #Target
+			       '',        #Param
+			       '-',       #Source
+			       '-',       #Dest
+			       '-',       #Proto
+                               '-',       #Ports
+                               '-',       #Sports
+			       '-',       #Original Dest
+                               '-',       #Rate
+                               '-',       #User
+                               '-',       #Mark
+                               '-',       #ConnLimit
+                               '-',       #Time
+                               '-',       #Headers
+                               '-',       #Condition
+                               '-',       #Helper
+                               0,         #Wildcard
 			     );
 	    } else {
+		#
+		# Default action is an action -- jump to the action chain
+		#
 		add_ijump $chainref, j => $default;
 	    }
 	}
@@ -596,7 +602,7 @@ sub policy_rules( $$$$$ ) {
 }
 
 sub report_syn_flood_protection() {
-    progress_message_nocompress '      Enabled SYN flood protection';
+    progress_message_nocompress '      Enabled SYN flood Protection';
 }
 
 #
@@ -1597,7 +1603,21 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = qw/- - - - - - -/;
 	} else {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
+	    ( $mtarget,
+	      $msource,
+	      $mdest,
+	      $mproto,
+	      $mports,
+	      $msports,
+	      $morigdest,
+	      $mrate,
+	      $muser,
+	      $mmark,
+	      $mconnlimit,
+	      $mtime,
+	      $mheaders,
+	      $mcondition,
+	      $mhelper ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';

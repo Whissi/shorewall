@@ -404,6 +404,11 @@ sub process_a_provider( $ ) {
     my $physical    = get_physical $interface;
     my $gatewaycase = '';
 
+    if ( $physical =~ /\+$/ ) {
+	return 0 if $pseudo;
+	fatal_error "Wildcard interfaces ($physical) may not be used as provider interfaces";
+    }
+
     if ( $gateway eq 'detect' ) {
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
@@ -600,6 +605,8 @@ sub process_a_provider( $ ) {
     push @providers, $table;
 
     progress_message "   Provider \"$currentline\" $done" unless $pseudo;
+
+    return 1;
 }
 
 #
@@ -1255,7 +1262,7 @@ sub process_providers( $ ) {
 
     if ( my $fn = open_file 'providers' ) {
 	first_entry "$doing $fn...";
-	process_a_provider(0), $providers++ while read_a_line( NORMAL_READ );
+	$providers += process_a_provider(0) while read_a_line( NORMAL_READ );
     }
     #
     # Treat optional interfaces as pseudo-providers
@@ -1265,7 +1272,7 @@ sub process_providers( $ ) {
 	#               TABLE NUMBER MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
 	$currentline = "$_    0      -    -         $_        -       -       -";
 	#
-	process_a_provider(1), $pseudoproviders++;
+	$pseudoproviders += process_a_provider(1);
     }
 
     if ( $providers ) {

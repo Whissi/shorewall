@@ -3496,7 +3496,7 @@ sub GeoIP_Match() {
 }
 
 sub Checksum_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "iptables -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
+    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
 }
 
 our %detect_capability =

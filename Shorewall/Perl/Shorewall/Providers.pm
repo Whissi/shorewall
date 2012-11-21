@@ -858,9 +858,12 @@ CEOF
 
 	pop_indent;
 
-	emit( 'else' );
-	emit( qq(    echo $weight > \${VARDIR}/${physical}_weight) );
-	emit_started_message( '    ', '', $pseudo, $table, $number );
+	unless ( $pseudo ) {
+	    emit( 'else' );
+	    emit( qq(    echo $weight > \${VARDIR}/${physical}_weight) );
+	    emit_started_message( '    ', '', $pseudo, $table, $number );
+	}
+
 	emit "fi\n";
     } else {
 	emit( qq(echo 0 > \${VARDIR}/${physical}.status) );

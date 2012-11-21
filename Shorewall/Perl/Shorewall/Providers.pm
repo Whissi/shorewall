@@ -118,13 +118,14 @@ sub initialize( $ ) {
 #
 sub setup_route_marking() {
     my $mask = in_hex( $globals{PROVIDER_MASK} );
+    my $testmask = have_capability( 'XCONNMARK_MATCH' ) ? "/$mask" : '';
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
     if ( $config{RESTORE_ROUTEMARKS} ) {
 	add_ijump $mangle_table->{$_} , j => 'CONNMARK', targetopts => "--restore-mark --mask $mask" for qw/PREROUTING OUTPUT/;
     } else {
-	add_ijump $mangle_table->{$_} , j => 'CONNMARK', targetopts => "--restore-mark --mask $mask", connmark => "! --mark 0/$mask" for qw/PREROUTING OUTPUT/;
+	add_ijump $mangle_table->{$_} , j => 'CONNMARK', targetopts => "--restore-mark --mask $mask", connmark => "! --mark 0${testmask}" for qw/PREROUTING OUTPUT/;
     }
 
     my $chainref  = new_chain 'mangle', 'routemark';

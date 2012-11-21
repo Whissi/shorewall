@@ -118,6 +118,7 @@ sub initialize( $ ) {
 #
 sub setup_route_marking() {
     my $mask = in_hex( $globals{PROVIDER_MASK} );
+    my $exmask = have_capability( 'EXMARK' ) ? "/$mask" : '';
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
 
@@ -149,10 +150,10 @@ sub setup_route_marking() {
 
 	    if ( $providerref->{shared} ) {
 		add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}/$mask", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
+		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
 		decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	    } else {
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}/$mask", imatch_source_dev( $interface );
+		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface );
 	    }
 	}
 

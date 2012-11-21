@@ -54,7 +54,9 @@ sub process_conntrack_rule( $$$$$$$$$ ) {
     my $zone;
     my $restriction = PREROUTE_RESTRICT;
 
-    unless ( $chainref ) {
+    if ( $chainref ) {
+	$restriction = OUTPUT_RESTRICT if $chainref->{name} eq 'OUTPUT';
+    } else {
 	#
 	# Entry in the conntrack file
 	#
@@ -248,10 +250,10 @@ sub setup_conntrack() {
 
 		$empty = 0;
 
-		if ( $source eq 'all' ) {
-		    for my $zone (all_zones) {
-			process_conntrack_rule( undef, undef, $action, $zone, $dest, $proto, $ports, $sports, $user );
-		    }
+		if ( $source =~ /^all(-)?(:(.+))?$/ ) {
+		    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
+		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user ) unless $1;
+		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user );
 		} else {
 		    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user );
 		}

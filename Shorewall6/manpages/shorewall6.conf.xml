@@ -162,13 +162,16 @@
           specified in <ulink
           url="shorewall6-policy.html">shorewall6-policy</ulink>(5).</para>
 
-          <para></para>
-
           <para>Beginning with Shorewall 4.5.10,
           <replaceable>action</replaceable> may name a macro. If you wish to
           use a macro with the same name as an existing action, you may
           specify the name of the macro file here (e.g., <emphasis
           role="bold">macro.</emphasis><replaceable>macro-name</replaceable>).</para>
+
+          <para>You can pass parameters to the specified action or macro
+          (e.g., <emphasis>myaction(audit,DROP)</emphasis>). In the case of a
+          macro, only a single parameter may be passed; that parameter is
+          interpreted as the log level for rules in the macro body.</para>
         </listitem>
       </varlistentry>
 

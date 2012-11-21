@@ -2492,7 +2492,7 @@ sub initialize_chain_table($) {
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
-	    new_builtin_chain 'raw', $chain, 'ACCEPT';
+	    new_builtin_chain( 'raw', $chain, 'ACCEPT' )->{insert} = 0;
 	}
 
 	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
@@ -2538,7 +2538,8 @@ sub initialize_chain_table($) {
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
-	    new_builtin_chain 'raw', $chain, 'ACCEPT';
+	    new_builtin_chain( 'raw', $chain, 'ACCEPT' )->{insert} = 0;
+	    
 	}
 
 	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';

@@ -1482,10 +1482,11 @@ sub handle_loopback_traffic() {
 		    my @ipsec_match = match_ipsec_in $z1 , $hostref;
 
 		    for my $net ( @{$hostref->{hosts}} ) {
-			add_ijump( $rawout,
-				   j => $exclusion ,
-				   imatch_source_net $net,
-				   @ipsec_match );
+			insert_ijump( $rawout,
+				      j => $exclusion ,
+				      $rawout->{insert}++,
+				      imatch_source_net $net,
+				      @ipsec_match );
 		    }
 		}
 	    }
@@ -1834,6 +1835,7 @@ sub add_prerouting_jumps( $$$$$$$$ ) {
 
     my $dnatref         = $nat_table->{dnat_chain( $zone )};
     my $preroutingref   = $nat_table->{PREROUTING};
+    my $rawref          = $raw_table->{PREROUTING};
     my $notrackref      = ensure_chain 'raw' , notrack_chain( $zone );
     my @ipsec_in_match  = match_ipsec_in  $zone , $hostref;
 
@@ -1858,15 +1860,17 @@ sub add_prerouting_jumps( $$$$$$$$ ) {
 	# There are notrack rules with this zone as the source.
 	# Add a jump from this source network to this zone's notrack chain
 	#
-	add_ijump $raw_table->{PREROUTING}, j => source_exclusion( $exclusions, $notrackref), imatch_source_dev( $interface), @source, @ipsec_in_match;
+	insert_ijump $rawref, j => source_exclusion( $exclusions, $notrackref), $rawref->{insert}++, imatch_source_dev( $interface), @source, @ipsec_in_match;
     }
     #
     # If this zone has parents with DNAT/REDIRECT or notrack rules and there are no CONTINUE polcies with this zone as the source
     # then add a RETURN jump for this source network.
     #
     if ( $nested ) {
-	add_ijump $preroutingref,           j => 'RETURN', imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnat;
-	add_ijump $raw_table->{PREROUTING}, j => 'RETURN', imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnotrack;
+	my $rawref = $raw_table->{PREROUTING};
+
+	add_ijump $preroutingref, j => 'RETURN',                      imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnat;
+	insert_ijump $rawref    , j => 'RETURN', $rawref->{insert}++, imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnotrack;
     }
 }
 

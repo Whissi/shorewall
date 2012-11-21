@@ -1867,10 +1867,13 @@ sub add_prerouting_jumps( $$$$$$$$ ) {
     # then add a RETURN jump for this source network.
     #
     if ( $nested ) {
-	my $rawref = $raw_table->{PREROUTING};
-
-	add_ijump $preroutingref, j => 'RETURN',                      imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnat;
-	insert_ijump $rawref    , j => 'RETURN', $rawref->{insert}++, imatch_source_dev( $interface), @source, @ipsec_in_match if $parenthasnotrack;
+	if ( $parenthasnat ) {
+	    add_ijump $preroutingref, j => 'RETURN',                      imatch_source_dev( $interface), @source, @ipsec_in_match;
+	}
+	if ( $parenthasnotrack ) {
+	    my $rawref = $raw_table->{PREROUTING};
+	    insert_ijump $rawref,     j => 'RETURN', $rawref->{insert}++, imatch_source_dev( $interface), @source, @ipsec_in_match;
+	}
     }
 }
 
@@ -2073,7 +2076,7 @@ sub optimize1_zones( $$@ ) {
 # The biggest disadvantage of the zone-policy-rule model used by Shorewall is that it doesn't scale well as the number of zones increases (Order N**2 where N = number of zones).
 # A major goal of the rewrite of the compiler in Perl was to restrict those scaling effects to this function and the rules that it generates.
 #
-# The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table and
+# The function traverses the full "source-zone by destination-zone" matrix and generates the rules necessary to direct traffic through the right set of filter-table, raw-table and
 # nat-table rules.
 #
 sub generate_matrix() {

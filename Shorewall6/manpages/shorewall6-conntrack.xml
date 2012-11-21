@@ -225,6 +225,44 @@
           id and or group id of the process sending the traffic.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SWITCH -
+        [!]<replaceable>switch-name</replaceable></emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall6 4.5.10 and allows enabling and disabling
+          the rule without requiring <command>shorewall6
+          restart</command>.</para>
+
+          <para>Enables the rule if the value stored in
+          <filename>/proc/net/nf_condition/<replaceable>switch-name</replaceable></filename>
+          is 1. Disables the rule if that file contains 0 (the default). If
+          '!' is supplied, the test is inverted such that the rule is enabled
+          if the file contains 0. The <replaceable>switch-name</replaceable>
+          must begin with a letter and be composed of letters, decimal digits,
+          underscores or hyphens. Switch names must be 30 characters or less
+          in length.</para>
+
+          <para>Switches are normally <emphasis role="bold">off</emphasis>. To
+          turn a switch <emphasis role="bold">on</emphasis>:</para>
+
+          <simplelist>
+            <member><command>echo 1 &gt;
+            /proc/net/nf_condition/<replaceable>switch-name</replaceable></command></member>
+          </simplelist>
+
+          <para>To turn it <emphasis role="bold">off</emphasis> again:</para>
+
+          <simplelist>
+            <member><command>echo 0 &gt;
+            /proc/net/nf_condition/<replaceable>switch-name</replaceable></command></member>
+          </simplelist>
+
+          <para>Switch settings are retained over <command>shorewall6
+          restart</command>.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 

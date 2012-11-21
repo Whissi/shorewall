@@ -41,9 +41,9 @@ my %valid_ctevent = ( new => 1, related => 1, destroy => 1, reply => 1, assured 
 #
 # Notrack
 #
-sub process_conntrack_rule( $$$$$$$$$ ) {
+sub process_conntrack_rule( $$$$$$$$$$ ) {
 
-    my ($chainref, $zoneref, $action, $source, $dest, $proto, $ports, $sports, $user ) = @_;
+    my ($chainref, $zoneref, $action, $source, $dest, $proto, $ports, $sports, $user, $switch ) = @_;
 
     require_capability 'RAW_TABLE', 'conntrack rules', '';
 
@@ -74,7 +74,7 @@ sub process_conntrack_rule( $$$$$$$$$ ) {
 
     my $target = $action;
     my $exception_rule = '';
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_condition( $switch );
 
     if ( $action eq 'NOTRACK' ) {
 	#
@@ -162,7 +162,9 @@ sub handle_helper_rule( $$$$$$$$$$$ ) {
 				$proto ,
 				$ports ,
 				$sports ,
-				$user );
+				$user,
+				'-',
+			      );
     } else {
 	assert( $action_target );
 	#
@@ -224,17 +226,17 @@ sub setup_conntrack() {
 	    first_entry( "$doing $fn..." );
 
 	    while ( read_a_line( NORMAL_READ ) ) {
-		my ( $source, $dest, $proto, $ports, $sports, $user );
+		my ( $source, $dest, $proto, $ports, $sports, $user, $switch );
 
 		if ( $format == 1 ) {
-		    ( $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5 };
+		    ( $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 };
 
 		    if ( $source eq 'FORMAT' ) {
 			$format = process_format( $dest );
 			next;
 		    }
 		} else {
-		    ( $action, $source, $dest, $proto, $ports, $sports, $user ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6 }, { COMMENT => 0, FORMAT => 2 };
+		    ( $action, $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 }, { COMMENT => 0, FORMAT => 2 };
 
 		    if ( $action eq 'FORMAT' ) {
 			$format = process_format( $source );
@@ -252,10 +254,10 @@ sub setup_conntrack() {
 
 		if ( $source =~ /^all(-)?(:(.+))?$/ ) {
 		    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
-		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user ) unless $1;
-		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user );
+		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch ) unless $1;
+		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch );
 		} else {
-		    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user );
+		    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		}
 	    }
 

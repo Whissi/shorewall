@@ -361,8 +361,11 @@ sub process_a_policy() {
 	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $def;
 	    use_policy_action( $default );
 	} elsif ( find_macro( $def ) ) {
-	    fatal_error "Default Action Macros may not have parameters" if supplied $param;
 	    $default = join( '.', 'macro', $def ) unless $default =~ /^macro./;
+	    if ( supplied $param ) {
+		validate_level($param);
+		$default = join( ':', $default, $param );
+	    }
 	} else {
 	    fatal_error "Unknown Default Action ($default)";
 	}
@@ -509,8 +512,11 @@ sub process_policies()
 		$action = supplied $param ? normalize_action( $act, 'none', $param  ) : normalize_action_name $act;
 		use_policy_action( $action );
 	    } elsif ( find_macro( $act ) ) {
-		fatal_error "Default Action Macros may not have parameters" if supplied $param;
 		$action = join( '.', 'macro', $act ) unless $action =~ /^macro\./;
+		if ( supplied $param ) {
+		    validate_level( $param );
+		    $action = join( ':', $action, $param );
+		}
 	    } elsif ( $targets{$act} ) {
 		fatal_error "Invalid setting ($action) for $option";
 	    } else {
@@ -565,7 +571,9 @@ sub policy_rules( $$$$$ ) {
 		#
 		# Default action is a macro -- expand it in-line
 		#
-		process_macro( $default,  #Macro
+		my ( $macro ) = split ':', $default;
+
+		process_macro( $macro,    #Macro
 			       $chainref, #Chain
 			       $default,  #Target
 			       '',        #Param
@@ -1112,10 +1120,12 @@ sub merge_levels ($$) {
 
     push @subparts, '' while @subparts < 3;   #Avoid undefined values
 
-    my $level = $supparts[1];
-    my $tag   = $supparts[2];
+    my $sublevel = $subparts[1];
+    my $level    = $supparts[1];
+    my $tag      = $supparts[2];
 
     if ( @supparts == 3 ) {
+	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/ || $sublevel =~ /^(?:NFLOG|ULOG)\b/;
 	return "$target:none!:$tag"   if $level eq 'none!';
 	return "$target:$level:$tag"  if $level =~ /!$/;
 	return $subordinate           if $subparts >= 2;
@@ -1123,6 +1133,7 @@ sub merge_levels ($$) {
     }
 
     if ( @supparts == 2 ) {
+	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/|| $sublevel =~ /^(?:NFLOG|ULOG)\b/;
 	return "$target:none!"        if $level eq 'none!';
 	return "$target:$level"       if ($level =~ /!$/) || ($subparts < 2);
     }

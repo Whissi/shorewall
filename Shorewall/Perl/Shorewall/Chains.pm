@@ -2465,6 +2465,7 @@ sub initialize_chain_table($) {
 		    'A_ACCEPT'        => STANDARD  + AUDIT,
 		    'A_ACCEPT+'       => STANDARD  + NONAT + AUDIT,
 		    'NONAT'           => STANDARD  + NONAT + NATONLY,
+		    'AUDIT'           => STANDARD,
 		    'DROP'            => STANDARD,
 		    'DROP!'           => STANDARD,
 		    'A_DROP'          => STANDARD + AUDIT,
@@ -2520,6 +2521,7 @@ sub initialize_chain_table($) {
 	#
 	%targets = ('ACCEPT'          => STANDARD,
 		    'ACCEPT!'         => STANDARD,
+		    'AUDIT'           => STANDARD,
 		    'DROP'            => STANDARD,
 		    'DROP!'           => STANDARD,
 		    'REJECT'          => STANDARD,

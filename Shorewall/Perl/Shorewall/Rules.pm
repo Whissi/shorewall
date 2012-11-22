@@ -1841,6 +1841,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	fatal_error "$action rules require a set name parameter" unless $param;
     } elsif ( $actiontype & ACTION ) {
 	split_list $param, 'Action parameter';
+    } elsif ( $basictarget eq 'AUDIT' ) {
+	require_capability ( 'AUDIT_TARGET', 'The AUDIT action', 's' );
+	$param = $param eq '' ? 'drop' : $param;
+	fatal_error "Invalid AUDIT type ($param) -- must be 'accept', 'drop' or 'reject'" unless $param =~ /^(?:accept|drop|reject)$/;
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -1909,7 +1913,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      $actiontype |= HELPER if $section eq 'NEW';
 		  }
 	      } ,
-	      
+
+	      AUDIT => sub() {
+		  $action = "AUDIT --type $param";
+	      } ,
+
 	      REDIRECT => sub () {
 		  my $z = $actiontype & NATONLY ? '' : firewall_zone;
 		  if ( $dest eq '-' ) {

@@ -149,6 +149,16 @@
           <para>Beginning with Shorewall 4.5.10, <option>all-</option> can be
           used as the <replaceable>zone</replaceable> name to mean all
           <firstterm>off-firewall zone</firstterm>s.</para>
+
+          <note>
+            <para>In 4.5.10, handling of <option>all</option> was changed.
+            <option>all</option> now causes the generated netfilter rule to be
+            appended to the raw table PREROUTING and OUTPUT chains directly.
+            <option>all-</option> rules are added directly to PREROUTING.
+            <option>all</option> and <option>all-</option> rules are processed
+            after the more specific rules that specify an individual
+            zone.</para>
+          </note>
         </listitem>
       </varlistentry>
 

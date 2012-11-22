@@ -560,6 +560,8 @@ sub process_policies()
 #
 # Policy Rule application
 #
+sub process_macro ($$$$$$$$$$$$$$$$$$$);
+
 sub policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
 

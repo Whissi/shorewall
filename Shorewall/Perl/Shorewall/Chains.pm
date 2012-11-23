@@ -3059,6 +3059,8 @@ sub optimize_level8( $$$ ) {
 
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
+    %renamed = ();
+
     for my $chainref ( @chains ) {
 	my $digest = '';
 
@@ -3435,7 +3437,7 @@ sub valid_tables() {
     push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
     push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
     push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
-    push @table_list, 'filter';
+    push @table_list, 'filter'; #MUST BE LAST!!!
 
     @table_list;
 }

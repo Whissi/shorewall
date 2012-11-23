@@ -1127,7 +1127,7 @@ sub merge_levels ($$) {
     my $tag      = $supparts[2];
 
     if ( @supparts == 3 ) {
-	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/ || $sublevel =~ /^(?:NFLOG|ULOG)\b/;
+	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/;
 	return "$target:none!:$tag"   if $level eq 'none!';
 	return "$target:$level:$tag"  if $level =~ /!$/;
 	return $subordinate           if $subparts >= 2;
@@ -1135,7 +1135,7 @@ sub merge_levels ($$) {
     }
 
     if ( @supparts == 2 ) {
-	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/|| $sublevel =~ /^(?:NFLOG|ULOG)\b/;
+	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/;
 	return "$target:none!"        if $level eq 'none!';
 	return "$target:$level"       if ($level =~ /!$/) || ($subparts < 2);
     }
@@ -1658,14 +1658,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	    $mtarget = substitute_param $param,  $mtarget;
 	}
 
-	if ( $mtarget =~ s/&$// ) {
-	    if ( supplied $param ) {
-		$mtarget = "${mtarget}${macro}($param)";
-	    } else {
-		$mtarget = "${mtarget}${macro}";
-	    }
-	}   
-
 	my $action = isolate_basic_target $mtarget;
 
 	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;
@@ -1845,6 +1837,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	require_capability ( 'AUDIT_TARGET', 'The AUDIT action', 's' );
 	$param = $param eq '' ? 'drop' : $param;
 	fatal_error "Invalid AUDIT type ($param) -- must be 'accept', 'drop' or 'reject'" unless $param =~ /^(?:accept|drop|reject)$/;
+    } elsif ( $actiontype & NFLOG ) {
+	fatal_error "$basictarget does not allow a log level" if $loglevel;
+	validate_level( $action );
+	$action = join( ':', 'LOG', $action );
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -1900,7 +1896,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     #
     my $log_action = $action;
 
-    unless ( $actiontype & ( ACTION | MACRO | NFQ | CHAIN ) ) {
+    unless ( $actiontype & ( ACTION | MACRO | NFLOG | NFQ | CHAIN ) ) {
 	my $bt = $basictarget;
 
 	$bt =~ s/[-+!]$//;

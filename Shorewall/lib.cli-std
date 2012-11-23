@@ -1315,7 +1315,7 @@ try_command() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if run_it ${VARDIR}/.$command $command && [ -n "$timeout" ]; then
+    if run_it ${VARDIR}/.$command $g_debugging $command && [ -n "$timeout" ]; then
 	sleep $timeout
 
 	if [ "$command" = "restart" ]; then

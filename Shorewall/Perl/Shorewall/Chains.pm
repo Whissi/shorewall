@@ -2540,6 +2540,7 @@ sub initialize_chain_table($) {
 		    'ULOG'            => STANDARD + LOGRULE + NFLOG,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
+		    'WHITELIST'       => STANDARD,
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		   );
 

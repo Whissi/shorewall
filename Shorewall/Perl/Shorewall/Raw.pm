@@ -204,7 +204,7 @@ sub handle_helper_rule( $$$$$$$$$$$ ) {
 sub process_format( $ ) {
     my $format = shift;
 
-    fatal_error q(FORMAT must be '1' or '2') unless $format =~ /^[12]$/;
+    fatal_error q(FORMAT must be '1', '2' or '3') unless $format =~ /^[123]$/;
 
     $format;
 }
@@ -252,13 +252,23 @@ sub setup_conntrack() {
 
 		$empty = 0;
 
-		if ( $source =~ /^all(-)?(:(.+))?$/ ) {
-		    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
-		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch ) unless $1;
-		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch );
+		if ( $format < 3 ) {
+		    if ( $source =~ /^all(-)?(:(.+))?$/ ) {
+			fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
+			process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch ) unless $1;
+			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch );
+		    } else {
+			process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    }
+		} elsif ( $action =~ s/:0$// ) {
+		    process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		} elsif ( $action =~ s/:OP// || $action =~ s/:PO// ) {
+		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		} else {
-		    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		}
+		    $action =~ s/:P//;
+		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		}		    
 	    }
 
 	    clear_comment;

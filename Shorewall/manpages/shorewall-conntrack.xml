@@ -32,11 +32,26 @@
     role="bold">raw</emphasis> table. In 4.5.7, the file's name was changed to
     <emphasis role="bold">conntrack</emphasis>.</para>
 
-    <para>The file supports two different column layouts: FORMAT 1 and FORMAT
-    2, FORMAT 1 being the default. The two differ in that FORMAT 2 has an
-    additional leading ACTION column. When an entry in the file of this form
-    is encountered, the format of the following entries are assumed to be of
-    the specified <replaceable>format</replaceable>.</para>
+    <para>The file supports two different column layouts: FORMAT 1, FORMAT 2,
+    and FORMAT 3, FORMAT 1 being the default. The three differ as
+    follows:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>in FORMAT 2 and 3, there is an additional leading ACTION
+        column.</para>
+      </listitem>
+
+      <listitem>
+        <para>in FORMAT 3, the SOURCE column accepts no zone name; rather the
+        ACTION column allows a SUFFIX that determines the chain(s) that the
+        generated rule will be added to.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>When an entry in the following form is encountered, the format of
+    the following entries are assumed to be of the specified
+    <replaceable>format</replaceable>.</para>
 
     <simplelist>
       <member><emphasis role="bold">FORMAT</emphasis>
@@ -44,7 +59,10 @@
     </simplelist>
 
     <para>where <replaceable>format</replaceable> is either <emphasis
-    role="bold">1</emphasis> or <emphasis role="bold">2</emphasis>.</para>
+    role="bold">1</emphasis>,<emphasis role="bold">2</emphasis> or <emphasis
+    role="bold">3</emphasis>.</para>
+
+    <para>Format 3 was introduced in Shorewall 4.5.10.</para>
 
     <para>Comments may be attached to Netfilter rules generated from entries
     in this file through the use of COMMENT lines. These lines begin with the
@@ -63,7 +81,7 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:notrack</emphasis>}</term>
+        role="bold">CT:notrack</emphasis>}[:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
           <para>This column is only present when FORMAT = 2. Values other than
@@ -151,10 +169,10 @@
                 </varlistentry>
 
                 <varlistentry>
-                  <term></term>
+                  <term/>
 
                   <listitem>
-                    <para></para>
+                    <para/>
                   </listitem>
                 </varlistentry>
 
@@ -232,11 +250,46 @@
 
           <para>When FORMAT = 1, this column is not present and the rule is
           processed as if NOTRACK had been entered in this column.</para>
+
+          <para>Beginning with Shoreall 4.5.10, when FORMAT = 3, this column
+          can end with a colon followed by a
+          <replaceable>chain-designator</replaceable>. The
+          <replaceable>chain-designator</replaceable> can be one of the
+          following:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>P</term>
+
+              <listitem>
+                <para>The rule is added to the raw table PREROUTING chain.
+                This is the default if no
+                <replaceable>chain-designator</replaceable> is present.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>O</term>
+
+              <listitem>
+                <para>The rule is added to the raw table OUTPUT chain.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>PO or OP</term>
+
+              <listitem>
+                <para>The rule is added to the raw table PREROUTING and OUTPUT
+                chains.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>SOURCE ‒
+        <term>SOURCE (formats 1 and 2) ‒
         {<emphasis>zone</emphasis>[:<emphasis>interface</emphasis>][:<emphasis>address-list</emphasis>]|COMMENT}</term>
 
         <listitem>
@@ -264,6 +317,23 @@
             after the more specific rules that specify an individual
             zone.</para>
           </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>SOURCE (formats 3) ‒
+        {-|[:<emphasis>interface</emphasis>][:<emphasis>address-list</emphasis>}</term>
+
+        <listitem>
+          <para>Where <replaceable>interface</replaceable> is an interface to
+          that zone, and <replaceable>address-list</replaceable> is a
+          comma-separated list of addresses (may contain exclusion - see
+          <ulink url="shorewall-exclusion.html">shorewall-exclusion</ulink>
+          (5)).</para>
+
+          <para>COMMENT is only allowed in format 1; the remainder of the line
+          is treated as a comment that will be associated with the generated
+          rule(s).</para>
         </listitem>
       </varlistentry>
 
@@ -393,9 +463,28 @@
   <refsect1>
     <title>EXAMPLE</title>
 
+    <para>Example 1:</para>
+
     <programlisting>#ACTION                       SOURCE            DEST               PROTO            DEST              SOURCE              USER/GROUP
 #                                                                                   PORT(S)           PORT(S)
 CT:helper:ftp(expevents=new)  fw                -                  tcp              21              </programlisting>
+
+    <para>Example 2 (Shorewall 4.5.10 or later):</para>
+
+    <para>Drop traffic to/from all zones to IP address 1.2.3.4</para>
+
+    <programlisting>FORMAT 2
+#ACTION                       SOURCE             DEST               PROTO            DEST              SOURCE              USER/GROUP
+#                                                                                   PORT(S)           PORT(S)
+DROP                          all-:1.2.3.4       -
+DROP                          all                1.2.3.4</programlisting>
+
+    <para>or<programlisting>FORMAT 3
+#ACTION                       SOURCE             DEST               PROTO            DEST              SOURCE              USER/GROUP
+#                                                                                   PORT(S)           PORT(S)
+DROP:P                        1.2.3.4            -
+DROP:PO                       -                  1.2.3.4
+</programlisting></para>
   </refsect1>
 
   <refsect1>

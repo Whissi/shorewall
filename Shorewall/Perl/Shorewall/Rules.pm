@@ -1763,7 +1763,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     } elsif ( $actiontype & NFLOG ) {
 	fatal_error "$basictarget does not allow a log level" if $loglevel;
 	validate_level( $action );
-	$action = join( ':', 'LOG', $action );
+	$loglevel = $action;
+	$action   = 'LOG';
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }

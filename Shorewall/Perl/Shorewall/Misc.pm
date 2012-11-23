@@ -702,13 +702,11 @@ sub process_stoppedrules() {
 	    }
 
 	    if ( $source eq $fw ) {
-		$chainref = $tableref->{OUTPUT};
+		$chainref = ( $target eq 'NOTRACK' ? $raw_table : $filter_table)->{OUTPUT};
 		$source = '';
 		$restriction = OUTPUT_RESTRICT;
-	    } 
-
-	    if ( $source =~ s/^($fw):// ) {
-		$chainref = $filter_table->{OUTPUT};
+	    } elsif ( $source =~ s/^($fw):// ) {
+		$chainref = ( $target eq 'NOTRACK' ? $raw_table : $filter_table)->{OUTPUT};
 		$restriction = OUTPUT_RESTRICT;
 	    }
 
@@ -717,9 +715,7 @@ sub process_stoppedrules() {
 		$chainref = $filter_table->{INPUT};
 		$dest = '';
 		$restriction = INPUT_RESTRICT;
-	    }
-
-	    if ( $dest =~ s/^($fw):// ) {
+	    } elsif ( $dest =~ s/^($fw):// ) {
 		fatal_error "\$FW may not be specified as the destination of a NOTRACK rule" if $target eq 'NOTRACK';
 		$chainref = $filter_table->{INPUT};
 		$restriction = INPUT_RESTRICT;

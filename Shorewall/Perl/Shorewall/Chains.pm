@@ -7379,7 +7379,7 @@ sub create_stop_load( $ ) {
 
     emit '';
 
-    emit(  '[ -n "$DEBUG" ] && command=debug_restore_input || command=$' . $UTILITY,
+    emit(  '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY,
 	   '',
 	   'progress_message2 "Running $command..."',
 	   '',

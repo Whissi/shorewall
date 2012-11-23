@@ -1073,6 +1073,7 @@ sub merge_levels ($$) {
     my $tag   = $supparts[2];
 
     if ( @supparts == 3 ) {
+	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/;
 	return "$target:none!:$tag"   if $level eq 'none!';
 	return "$target:$level:$tag"  if $level =~ /!$/;
 	return $subordinate           if $subparts >= 2;
@@ -1080,6 +1081,7 @@ sub merge_levels ($$) {
     }
 
     if ( @supparts == 2 ) {
+	return $subordinate           if $target =~ /^(?:NFLOG|ULOG)\b/;
 	return "$target:none!"        if $level eq 'none!';
 	return "$target:$level"       if ($level =~ /!$/) || ($subparts < 2);
     }
@@ -1758,6 +1760,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	fatal_error "$action rules require a set name parameter" unless $param;
     } elsif ( $actiontype & ACTION ) {
 	split_list $param, 'Action parameter';
+    } elsif ( $actiontype & NFLOG ) {
+	fatal_error "$basictarget does not allow a log level" if $loglevel;
+	validate_level( $action );
+	$action = join( ':', 'LOG', $action );
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -1813,7 +1819,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     #
     my $log_action = $action;
 
-    unless ( $actiontype & ( ACTION | MACRO | NFQ | CHAIN ) ) {
+    unless ( $actiontype & ( ACTION | MACRO | NFLOG | NFQ | CHAIN ) ) {
 	my $bt = $basictarget;
 
 	$bt =~ s/[-+!]$//;

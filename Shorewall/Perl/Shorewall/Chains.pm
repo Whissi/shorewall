@@ -98,6 +98,7 @@ our %EXPORT_TAGS = (
 				       ACTION
 				       MACRO
 				       LOGRULE
+				       NFLOG
 				       NFQ
 				       CHAIN
 				       SET
@@ -357,6 +358,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       SET      => 2048,           #SET
 	       AUDIT    => 4096,           #A_ACCEPT, etc
 	       HELPER   => 8192,           #CT:helper
+	       NFLOG    => 16384,          #NFLOG or ULOG
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -2483,8 +2485,10 @@ sub initialize_chain_table($) {
 		    'COUNT'           => STANDARD,
 		    'QUEUE'           => STANDARD,
 		    'QUEUE!'          => STANDARD,
+		    'NFLOG'           => STANDARD + LOGRULE + NFLOG,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'ULOG'            => STANDARD + LOGRULE + NFLOG,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
 		    'WHITELIST'       => STANDARD,
@@ -2530,8 +2534,10 @@ sub initialize_chain_table($) {
 		    'COUNT'           => STANDARD,
 		    'QUEUE'           => STANDARD,
 		    'QUEUE!'          => STANDARD,
+		    'NFLOG'           => STANDARD + LOGRULE + NFLOG,
 		    'NFQUEUE'         => STANDARD + NFQ,
 		    'NFQUEUE!'        => STANDARD + NFQ,
+		    'ULOG'            => STANDARD + LOGRULE + NFLOG,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY

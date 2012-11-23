@@ -1823,6 +1823,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
 	return $generated;
 
+    } elsif ( $actiontype & ACTION ) {
+	split_list $param, 'Action parameter';
     } elsif ( $actiontype & NFQ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
 	my $paramval = $param eq '' ? 0 : numeric_value( $param );
@@ -1831,16 +1833,14 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     } elsif ( $actiontype & SET ) {
 	require_capability( 'IPSET_MATCH', 'SET and UNSET rules', '' );
 	fatal_error "$action rules require a set name parameter" unless $param;
-    } elsif ( $actiontype & ACTION ) {
-	split_list $param, 'Action parameter';
-    } elsif ( $basictarget eq 'AUDIT' ) {
+    } elsif ( ( $actiontype & AUDIT ) && ( $basictarget eq 'AUDIT' ) ) {
 	require_capability ( 'AUDIT_TARGET', 'The AUDIT action', 's' );
 	$param = $param eq '' ? 'drop' : $param;
 	fatal_error "Invalid AUDIT type ($param) -- must be 'accept', 'drop' or 'reject'" unless $param =~ /^(?:accept|drop|reject)$/;
     } elsif ( $actiontype & NFLOG ) {
-	fatal_error "$basictarget does not allow a log level" if $loglevel;
 	validate_level( $action );
-	$action = join( ':', 'LOG', $action );
+	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
+	$action   = 'LOG';
     } else {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }

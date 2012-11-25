@@ -260,7 +260,7 @@ sub setup_conntrack() {
 		    } else {
 			process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    }
-		} elsif ( $action =~ s/:0$// ) {
+		} elsif ( $action =~ s/:O$// ) {
 		    process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		} elsif ( $action =~ s/:OP// || $action =~ s/:PO// ) {
 		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );

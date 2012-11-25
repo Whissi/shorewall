@@ -6086,7 +6086,7 @@ sub verify_dest_interface( $$$$ ) {
 	    if ( $chainref->{accounting} ) {
 		fatal_error "Destination Interface ($diface) not allowed in the $chainref->{name} chain";
 	    } else {
-		fatal_error "Destination Interface ($diface) not allowed in the mangle OUTPUT chain";
+		fatal_error "Destination Interface ($diface) not allowed in the $chainref->{table} OUTPUT chain";
 	    }
 	}
 

@@ -55,7 +55,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
     my $restriction = PREROUTE_RESTRICT;
 
     if ( $chainref ) {
-	$restriction = OUTPUT_RESTRICT if $chainref->{name} eq 'OUTPUT';
+	$restriction = DESTIFACE_DISALLOW if $chainref->{name} eq 'OUTPUT';
     } else {
 	#
 	# Entry in the conntrack file

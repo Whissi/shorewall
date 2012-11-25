@@ -81,12 +81,12 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:notrack</emphasis>}[:<replaceable>chain-designator</replaceable>]</term>
+        role="bold">CT:notrack</emphasis>|drop}[:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
-          <para>This column is only present when FORMAT = 2. Values other than
-          NOTRACK require <firstterm>CT Target </firstterm>support in your
-          iptables and kernel.</para>
+          <para>This column is only present when FORMAT &gt;= 2. Values other
+          than NOTRACK require <firstterm>CT Target </firstterm>support in
+          your iptables and kernel.</para>
 
           <itemizedlist>
             <listitem>
@@ -97,7 +97,7 @@
             </listitem>
 
             <listitem>
-              <para>DROP</para>
+              <para><option>DROP</option></para>
 
               <para>Added in Shorewall 4.5.10. Silently discard the
               packet.</para>
@@ -147,7 +147,7 @@
           <para>When FORMAT = 1, this column is not present and the rule is
           processed as if NOTRACK had been entered in this column.</para>
 
-          <para>Beginning with Shoreall 4.5.10, when FORMAT = 3, this column
+          <para>Beginning with Shorewall 4.5.10, when FORMAT = 3, this column
           can end with a colon followed by a
           <replaceable>chain-designator</replaceable>. The
           <replaceable>chain-designator</replaceable> can be one of the

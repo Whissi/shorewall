@@ -361,10 +361,12 @@ sub process_a_policy() {
 	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $def;
 	    use_policy_action( $default );
 	} elsif ( find_macro( $def ) ) {
-	    $default = join( '.', 'macro', $def ) unless $default =~ /^macro./;
+	    $def = join( '.', 'macro', $def ) unless $default =~ /^macro./;
 	    if ( supplied $param ) {
 		validate_level($param);
-		$default = join( ':', $default, $param );
+		$default = join( ':', $def, $param );
+	    } else {
+		$default = $def;
 	    }
 	} else {
 	    fatal_error "Unknown Default Action ($default)";
@@ -1151,7 +1153,10 @@ sub merge_levels ($$) {
 sub find_macro( $ )
 {
     my $macro = $_[0];
-    my $macrofile = find_file( $macro =~ /^macro\./ ? $macro : "macro.$macro" );
+
+    $macro =~ s/^macro.//;
+
+    my $macrofile = find_file "macro.$macro";
 
     if ( -f $macrofile ) {
 	$macros{$macro} = $macrofile;

@@ -1837,6 +1837,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	require_capability ( 'AUDIT_TARGET', 'The AUDIT action', 's' );
 	$param = $param eq '' ? 'drop' : $param;
 	fatal_error "Invalid AUDIT type ($param) -- must be 'accept', 'drop' or 'reject'" unless $param =~ /^(?:accept|drop|reject)$/;
+	$actiontype = STANDARD;
     } elsif ( $actiontype & NFLOG ) {
 	validate_level( $action );
 	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;

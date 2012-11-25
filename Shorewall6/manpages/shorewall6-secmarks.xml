@@ -91,10 +91,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CHAIN -
-        {P|I|F|O|T}[:{N|I|NI|E|ER}]</emphasis></term>
+        <term><emphasis role="bold">CHAIN:STATE (chain) -
+        {P|I|F|O|T}[:{N|I|U|IU|NI|NU|NIU|NUI:E|ER}]</emphasis></term>
 
         <listitem>
+          <para>This column determines the CHAIN where the SElinux context is
+          to be applied:</para>
+
           <simplelist>
             <member>P - PREROUTING</member>
 
@@ -116,7 +119,7 @@
 
             <member>:I - INVALID connection</member>
 
-            <member>:NI - New or INVALID connection</member>
+            <member>:NI - NEW or INVALID connection</member>
 
             <member>:E - ESTABLISHED connection</member>
 
@@ -128,6 +131,8 @@
 
           <simplelist>
             <member>:U - UNTRACKED connection</member>
+
+            <member>:IU - INVALID or UNTRACKED connection</member>
 
             <member>:NU - NEW or UNTRACKED connection</member>
 

@@ -2222,6 +2222,7 @@ sub process_secmark_rule() {
     my %state = ( N   => 'NEW' ,
 		  I   => 'INVALID',
 		  U   => 'UNTRACKED',
+		  IU  => 'INVALID,UNTRACKED',
 		  NI  => 'NEW,INVALID',
 		  NU  => 'NEW,UNTRACKED',
 		  NIU => 'NEW,INVALID,UNTRACKED',

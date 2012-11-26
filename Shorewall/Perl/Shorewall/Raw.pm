@@ -74,7 +74,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 
     my $target = $action;
     my $exception_rule = '';
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_condition( $switch );
+    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_condition( $switch , $chainref->{name} );
 
     if ( $action eq 'NOTRACK' ) {
 	#

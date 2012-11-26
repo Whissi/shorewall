@@ -123,7 +123,7 @@ sub process_one_masq( )
     #
     # Handle Protocol, Ports and Condition
     #
-    $baserule .= do_proto( $proto, $ports, '' ) . do_condition( $condition );
+    $baserule .= do_proto( $proto, $ports, '' );
     #
     # Handle Mark
     #
@@ -157,6 +157,8 @@ sub process_one_masq( )
 	}
 
 	my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
+
+	$baserule .= do_condition( $condition , $chainref->{name} );
 
 	my $detectaddress = 0;
 	my $exceptionrule = '';

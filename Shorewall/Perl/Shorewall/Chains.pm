@@ -4624,14 +4624,20 @@ sub do_probability( $ ) {
 #
 # Generate a -m condition match
 #
-sub do_condition( $ ) {
-    my $condition = shift;
+sub do_condition( $$ ) {
+    my ( $condition, $chain ) = @_;
 
     return '' if $condition eq '-';
 
     my $invert = $condition =~ s/^!// ? '! ' : '';
 
     require_capability 'CONDITION_MATCH', 'A non-empty SWITCH column', 's';
+
+    if ( $condition =~ /@/ ) {
+	$chain     =~ s/[^\w-]//g;
+	$condition =~ s/@/$chain/g;
+    }
+
     fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/ && length $condition <= 30;
 
     "-m condition ${invert}--condition $condition "

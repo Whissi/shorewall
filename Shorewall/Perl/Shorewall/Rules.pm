@@ -2142,7 +2142,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_connlimit( $connlimit ),
 		      do_time( $time ) ,
 		      do_headers( $headers ) ,
-		      do_condition( $condition ) ,
+		      do_condition( $condition , $chain ) ,
 		    );
     } elsif ( $section eq 'RELATED' ) {
 	$rule = join( '',
@@ -2153,7 +2153,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_connlimit( $connlimit ),
 		      do_time( $time ) ,
 		      do_headers( $headers ) ,
-		      do_condition( $condition ) ,
+		      do_condition( $condition , $chain ) ,
 		      do_helper( $helper ) ,
 		    );
     } else {
@@ -2165,7 +2165,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_connlimit( $connlimit ),
 		      do_time( $time ) ,
 		      do_headers( $headers ) ,
-		      do_condition( $condition ) ,
+		      do_condition( $condition , $chain ) ,
 		    );
     }
 
@@ -2235,7 +2235,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 			  do_ratelimit( $ratelimit, 'ACCEPT' ),
 			  do_user $user,
 			  do_test( $mark , $globals{TC_MASK} ),
-			  do_condition( $condition )
+			  do_condition( $condition , $chain )
 			);
 	    $loglevel = '';
 	    $action   = 'ACCEPT';

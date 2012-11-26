@@ -307,6 +307,51 @@ sub use_policy_action( $ );
 sub normalize_action( $$$ );
 sub normalize_action_name( $ );
 
+sub process_default_action( $$$$ ) {
+    my ( $originalpolicy, $policy, $default, $level ) = @_;
+
+    if ( supplied $default ) {
+	my $default_option = ( $policy =~ /_DEFAULT$/ );
+	my ( $def, $param ) = get_target_param( $default );
+
+	if ( supplied $level ) {
+	    validate_level( $level );
+	} else {
+	    $level = 'none';
+	}
+
+	if ( "\L$default" eq 'none' ) {
+	    if ( supplied $param || ( supplied $level && $level ne 'none' ) ) {
+		if ( $default_option ) {
+		    fatal_error "Invalid setting (originalpolicy) for $policy";
+		} else {
+		    fatal_error "Invalid policy ($originalpolicy)";
+		}
+	    }
+
+	    $default = 'none';
+	} elsif ( $actions{$def} ) {
+	    $default = supplied $param  ? normalize_action( $def, $level, $param  ) :
+		       $level eq 'none' ? normalize_action_name $def :
+		       normalize_action( $def, $level, '' );
+	    use_policy_action( $default );
+	} elsif ( find_macro( $def ) ) {
+	    $default = join( '.', 'macro', $def ) unless $default =~ /^macro./;
+	    $default = "$def($param)" if supplied $param;
+	} elsif ( $default_option ) {
+	    fatal_error "Unknown Action ($default) in $policy setting";
+	} else {
+	    fatal_error "Unknown Default Action ($default)";
+	}
+
+	$default = join( ':', $default, $level ) if $level ne 'none';
+    } else {
+	$default = $default_actions{$policy} || 'none';
+    }
+
+    $default;
+}
+
 #
 # Process an entry in the policy file.
 #
@@ -338,11 +383,11 @@ sub process_a_policy() {
 
     require_capability 'AUDIT_TARGET', ":audit", "s" if $audit;
 
-    my ( $policy, $default, $remainder ) = split( /:/, $originalpolicy, 3 );
+    my ( $policy, $default, $level, $remainder ) = split( /:/, $originalpolicy, 4 );
 
     fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
 
-    fatal_error "Invalid default action ($default:$remainder)" if defined $remainder;
+    fatal_error "Invalid default action ($default:$level:$remainder)" if defined $remainder;
 
     ( $policy , my $queue ) = get_target_param $policy;
 
@@ -352,28 +397,7 @@ sub process_a_policy() {
 	fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
     }
 
-    if ( $default ) {
-	my ( $def, $param ) = get_target_param( $default );
-
-	if ( "\L$default" eq 'none' ) {
-	    $default = 'none';
-	} elsif ( $actions{$def} ) {
-	    $default = supplied $param ? normalize_action( $def, 'none', $param  ) : normalize_action_name $def;
-	    use_policy_action( $default );
-	} elsif ( find_macro( $def ) ) {
-	    $def = join( '.', 'macro', $def ) unless $default =~ /^macro./;
-	    if ( supplied $param ) {
-		validate_level($param);
-		$default = join( ':', $def, $param );
-	    } else {
-		$default = $def;
-	    }
-	} else {
-	    fatal_error "Unknown Default Action ($default)";
-	}
-    } else {
-	$default = $default_actions{$policy} || 'none';
-    }
+    $default = process_default_action( $originalpolicy, $policy, $default, $level );
 
     if ( defined $queue ) {
 	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
@@ -506,24 +530,9 @@ sub process_policies()
 	my $action = $config{$option};
 
 	unless ( $action eq 'none' ) {
-	    my ( $act, $param ) = get_target_param( $action );
-
-	    if ( "\L$action" eq 'none' ) {
-		$action = 'none';
-	    } elsif ( $actions{$act} ) {
-		$action = supplied $param ? normalize_action( $act, 'none', $param  ) : normalize_action_name $act;
-		use_policy_action( $action );
-	    } elsif ( find_macro( $act ) ) {
-		$action = join( '.', 'macro', $act ) unless $action =~ /^macro\./;
-		if ( supplied $param ) {
-		    validate_level( $param );
-		    $action = join( ':', $action, $param );
-		}
-	    } elsif ( $targets{$act} ) {
-		fatal_error "Invalid setting ($action) for $option";
-	    } else {
-		fatal_error "Default Action $option=$action not found";
-	    }
+	    my ( $default, $level, $remainder ) = split( /:/, $action, 3 );
+	    fatal_error "Invalid setting ( $action ) for $option" if supplied $remainder;
+	    $action = process_default_action( $action, $option, $default, $level );
 	}
 
 	$default_actions{$map{$option}} = $action;
@@ -577,25 +586,27 @@ sub policy_rules( $$$$$ ) {
 		#
 		my ( $macro ) = split ':', $default;
 
-		process_macro( $macro,    #Macro
-			       $chainref, #Chain
-			       $default,  #Target
-			       '',        #Param
-			       '-',       #Source
-			       '-',       #Dest
-			       '-',       #Proto
-                               '-',       #Ports
-                               '-',       #Sports
-			       '-',       #Original Dest
-                               '-',       #Rate
-                               '-',       #User
-                               '-',       #Mark
-                               '-',       #ConnLimit
-                               '-',       #Time
-                               '-',       #Headers
-                               '-',       #Condition
-                               '-',       #Helper
-                               0,         #Wildcard
+		( $macro, my $param ) = get_target_param( $macro );
+
+		process_macro( $macro,       #Macro
+			       $chainref,    #Chain
+			       $default,     #Target
+			       $param || '', #Param
+			       '-',          #Source
+			       '-',          #Dest
+			       '-',          #Proto
+                               '-',          #Ports
+                               '-',          #Sports
+			       '-',          #Original Dest
+                               '-',          #Rate
+                               '-',          #User
+                               '-',          #Mark
+                               '-',          #ConnLimit
+                               '-',          #Time
+                               '-',          #Headers
+                               '-',          #Condition
+                               '-',          #Helper
+                               0,            #Wildcard
 			     );
 	    } else {
 		#
@@ -1607,6 +1618,10 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     macro_comment $macro;
 
+    my $oldparms = push_action_params( $chainref, $param );
+
+    ( $param ) = get_action_params( 1 );
+
     my $macrofile = $macros{$macro};
 
     progress_message "..Expanding Macro $macrofile...";
@@ -1651,8 +1666,9 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	    next;
 	}
 
-	if ( $mtarget eq 'DEFAULT' ) {
-	    $param = $msource unless supplied $param;
+	if ( $mtarget =~ /^DEFAULTS?$/ ) {
+	    default_action_params( $macro, split_list( $msource, 'defaults' ) );
+	    ( $param ) = get_action_params( 1 ) unless supplied $param;
 	    next;
 	}
 
@@ -1729,6 +1745,8 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..End Macro $macrofile";
 
+    pop_action_params( $oldparms );
+
     clear_comment unless $nocomment;
 
     return $generated;
@@ -1795,7 +1813,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     my $actiontype = $targets{$basictarget} || find_macro ( $basictarget );
 
     if ( $config{ MAPOLDACTIONS } ) {
-	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || $param;
+	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || supplied $param;
     }
 
     fatal_error "Unknown ACTION ($action)" unless $actiontype;

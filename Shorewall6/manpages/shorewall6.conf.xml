@@ -78,7 +78,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis
-        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
+        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -88,7 +88,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
+        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -98,7 +98,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
+        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -108,7 +108,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
+        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -118,7 +118,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>|<emphasis
+        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -168,10 +168,15 @@
           specify the name of the macro file here (e.g., <emphasis
           role="bold">macro.</emphasis><replaceable>macro-name</replaceable>).</para>
 
-          <para>You can pass parameters to the specified action or macro
-          (e.g., <emphasis>myaction(audit,DROP)</emphasis>). In the case of a
-          macro, only a single parameter may be passed; that parameter is
-          interpreted as the log level for rules in the macro body.</para>
+          <para>You can pass <replaceable>parameters</replaceable> to the
+          specified action or macro (e.g.,
+          <emphasis>myaction(audit,DROP)</emphasis>).</para>
+
+          <para>Beginning with Shorewall 4.5.10, the macro or action name can
+          be followed optionally by a colon and a log
+          <replaceable>level</replaceable>. The level will be applied to each
+          rule in the action or macro body that does not already have a log
+          level.</para>
         </listitem>
       </varlistentry>
 

@@ -291,6 +291,21 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
 
       <para>Beginning with Shorewall 4.5.10, macros may also be used as <ulink
       url="Actions.html#Default">default actions</ulink>.</para>
+
+      <para>Also beginning with Shorewall 4.5.10, you may pass multiple
+      parameters in a macro invocation. Within the macro body, $1 expands to
+      the value of the first parameter, $2 expands to the value of the second
+      and so on.</para>
+
+      <para>You can specify default values for parameters using a DEFAULT or
+      DEFAULTS line.</para>
+
+      <programlisting>DEFAULTS <replaceable>def1</replaceable>,<replaceable>def2</replaceable>,...</programlisting>
+
+      <para>where <replaceable>def1</replaceable> is the default value for the
+      first parameter, <replaceable>def2</replaceable> is the default value
+      for the second parameter and so on. You can specify an empty default
+      using '-' (e.g. DEFAULTS DROP,-,audit).</para>
     </section>
 
     <section>

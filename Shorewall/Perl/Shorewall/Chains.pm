@@ -3380,23 +3380,29 @@ sub delete_duplicates {
 	    my $rulenum   = @_;
 	    my $duplicate = 0;
 
-	  RULE:
+	    if ( $baseref->{mode} == CAT_MODE ) {
+		{
+		  RULE:
 
-	    while ( --$rulenum >= 0 ) {
-		$ruleref = $_[$rulenum];
+		    while ( --$rulenum >= 0 ) {
+			$ruleref = $_[$rulenum];
 
-		my @keys2 = sort(keys( %$ruleref ) );
+			last unless $ruleref->{mode} == CAT_MODE;
 
-		next unless @keys1 == @keys2 ;
+			my @keys2 = sort(keys( %$ruleref ) );
 
-		my $keynum = 0;
+			next unless @keys1 == @keys2 ;
 
-		for my $key ( @keys1 ) {
-		    next RULE unless $key eq $keys2[$keynum++];
-		    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			my $keynum = 0;
+
+			for my $key ( @keys1 ) {
+			    next RULE unless $key eq $keys2[$keynum++];
+			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			}
+
+			$duplicate = 1;
+		    }
 		}
-
-		$duplicate = $ruleref->{mode} == CAT_MODE;;
 	    }
 
 	    if ( $duplicate ) {

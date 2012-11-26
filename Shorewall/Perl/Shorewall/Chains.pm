@@ -6070,7 +6070,7 @@ sub verify_dest_interface( $$$$ ) {
 
     fatal_error "Unknown Interface ($diface)" unless known_interface $diface;
 
-    if ( $restriction & ( PREROUTE_RESTRICT | OUTPUT_RESTRICT ) ) {
+    if ( ( $restriction & PREROUTE_RESTRICT ) || ( $chainref->{table} eq 'raw' && ( $restriction & OUTPUT_RESTRICT ) ) ) {
 	#
 	# Dest interface -- must use routing table
 	#

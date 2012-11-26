@@ -2480,8 +2480,8 @@ sub expand_variables( \$ ) {
 	my $val;
 
 	if ( $var =~ /^\d+$/ ) {
-	    fatal_error "Undefined parameter (\$$var)" unless $var > 0 && defined $actparms[$var];
-	    $val = $actparms[$var];
+	    fatal_error "Undefined parameter (\$$var)" unless defined $actparms[$var];
+	    $val = $var ? $actparms[$var] : $actparms[0]->{name};
 	} elsif ( exists $params{$var} ) {
 	    $val = $params{$var};
 	} elsif ( exists $shorewallrc{$var} ) {

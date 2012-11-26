@@ -255,8 +255,18 @@ sub setup_conntrack() {
 		if ( $format < 3 ) {
 		    if ( $source =~ /^all(-)?(:(.+))?$/ ) {
 			fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
-			process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch ) unless $1;
-			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $3 || '-', $dest, $proto, $ports, $sports, $user , $switch );
+			for my $zone ( $1 ? off_firewall_zones : all_zones ) {
+			    process_conntrack_rule( undef ,
+						    undef,
+						    $action,
+						    $zone . ( $2 || ''),
+						    $dest,
+						    $proto,
+						    $ports,
+						    $sports,
+						    $user ,
+						    $switch );
+			}
 		    } else {
 			process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    }

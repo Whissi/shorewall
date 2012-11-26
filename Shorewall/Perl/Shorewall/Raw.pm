@@ -55,7 +55,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
     my $restriction = PREROUTE_RESTRICT;
 
     if ( $chainref ) {
-	$restriction = DESTIFACE_DISALLOW if $chainref->{name} eq 'OUTPUT';
+	$restriction = OUTPUT_RESTRICT if $chainref->{name} eq 'OUTPUT';
     } else {
 	#
 	# Entry in the conntrack file
@@ -68,7 +68,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	}
 
 	$chainref = ensure_raw_chain( notrack_chain $zone );
-	$restriction = OUTPUT_RESTRICT if $zoneref->{type} == FIREWALL || $zoneref->{type} == VSERVER;
+	$restriction = OUTPUT_RESTRICT if $zoneref->{type}  & (FIREWALL | VSERVER );
 	fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
     }
 

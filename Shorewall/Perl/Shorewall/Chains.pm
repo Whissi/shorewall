@@ -3396,7 +3396,7 @@ sub delete_duplicates {
 		    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 		}
 
-		$duplicate = 1;
+		$duplicate = $ruleref->{mode} == CAT_MODE;;
 	    }
 
 	    if ( $duplicate ) {

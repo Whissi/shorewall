@@ -1672,11 +1672,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	    next;
 	}
 
-	unless ( $section eq 'DEFAULTACTION' ) {
-	    $mtarget = merge_levels $target, $mtarget;
-	} else {
-	    $mtarget = merge_levels( $target, $mtarget ) if $mtarget eq 'LOG';
-	}
+	$mtarget = merge_levels $target, $mtarget;
 
 	if ( $mtarget =~ /^PARAM(:.*)?$/ ) {
 	    fatal_error 'PARAM requires a parameter to be supplied in macro invocation' unless $param ne '';

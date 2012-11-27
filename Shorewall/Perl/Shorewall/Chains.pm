@@ -104,6 +104,7 @@ our %EXPORT_TAGS = (
 				       SET
 				       AUDIT
 				       HELPER
+				       INLINE
 				       NO_RESTRICT
 				       PREROUTE_RESTRICT
 				       DESTIFACE_DISALLOW
@@ -359,6 +360,7 @@ use constant { STANDARD => 1,              #defined by Netfilter
 	       AUDIT    => 4096,           #A_ACCEPT, etc
 	       HELPER   => 8192,           #CT:helper
 	       NFLOG    => 16384,          #NFLOG or ULOG
+	       INLINE   => 32768,          #Inline action
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -2443,11 +2445,16 @@ sub require_audit($$;$) {
 sub get_action_logging() {
     my $chainref = get_action_chain;
     my $wholeaction = $chainref->{action};
-    my ( undef, $level, $tag, undef ) = split ':', $wholeaction;
 
-    $level = '' if $level =~ /^none/;
+    if ( $wholeaction ) {
+	my ( undef, $level, $tag, undef ) = split ':', $wholeaction;
 
-    ( $level, $tag );
+	$level = '' if $level =~ /^none/;
+
+	( $level, $tag );
+    } else {
+	( '' , '' );
+    }
 }
 
 #

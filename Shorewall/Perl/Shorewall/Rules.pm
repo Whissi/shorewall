@@ -96,7 +96,7 @@ my %rulecolumns = ( action    =>   0,
 		    helper    =>  14,
 		  );
 
-use constant { MAX_MACRO_NEST_LEVEL => 5 };
+use constant { MAX_MACRO_NEST_LEVEL => 10 };
 
 my $macro_nest_level;
 
@@ -108,6 +108,10 @@ my %active;
 #     %actions{ actchain => used to eliminate collisions }
 #
 my %actions;
+#
+#  Inline Action Table
+#
+my %inlines;
 #
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
@@ -177,6 +181,10 @@ sub initialize( $ ) {
     # All builtin actions plus those mentioned in /etc/shorewall[6]/actions and /usr/share/shorewall[6]/actions
     #
     %actions           = ();
+    #
+    # Inline Actions -- value is file.
+    #
+    %inlines           = ();
     #
     # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
     #
@@ -335,8 +343,11 @@ sub process_default_action( $$$$ ) {
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );
 	    use_policy_action( $default );
-	} elsif ( find_macro( $def ) ) {
+	} elsif ( find_macro( $def )) {
 	    $default = join( '.', 'macro', $def ) unless $default =~ /^macro./;
+	    $default = "$def($param)" if supplied $param;
+	} elsif ( ( $targets{$def} || 0 ) == INLINE ) {
+	    $default = $def;
 	    $default = "$def($param)" if supplied $param;
 	} elsif ( $default_option ) {
 	    fatal_error "Unknown Action ($default) in $policy setting";
@@ -571,7 +582,8 @@ sub process_policies()
 #
 # Policy Rule application
 #
-sub process_macro ($$$$$$$$$$$$$$$$$$$);
+sub process_macro  ($$$$$$$$$$$$$$$$$$$);
+sub process_inline ($$$$$$$$$$$$$$$$$$$);
 
 sub policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
@@ -609,10 +621,37 @@ sub policy_rules( $$$$$ ) {
                                0,            #Wildcard
 			     );
 	    } else {
-		#
-		# Default action is an action -- jump to the action chain
-		#
-		add_ijump $chainref, j => $default;
+		my ( $inline ) = split ':', $default;
+
+		( $inline, my $param ) = get_target_param( $inline );
+
+		if ( $targets{$inline} == INLINE ) {
+		    process_inline( $inline,      #Inline
+				    $chainref,    #Chain
+				    $default,     #Target
+				    $param || '', #Param
+				    '-',          #Source
+				    '-',          #Dest
+				    '-',          #Proto
+				    '-',          #Ports
+				    '-',          #Sports
+				    '-',          #Original Dest
+				    '-',          #Rate
+				    '-',          #User
+				    '-',          #Mark
+				    '-',          #ConnLimit
+				    '-',          #Time
+				    '-',          #Headers
+				    '-',          #Condition
+				    '-',          #Helper
+				    0,            #Wildcard
+				  );
+		} else {
+		    #
+		    # Default action is an action -- jump to the action chain
+		    #
+		    add_ijump $chainref, j => $default;
+		}
 	    }
 	}
  
@@ -984,7 +1023,7 @@ sub new_action( $$ ) {
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => '' };
+    $actions{$action} = { actchain => '' } if $type & ACTION;
 
     $targets{$action} = $type;
 }
@@ -1125,6 +1164,8 @@ sub use_action( $ ) {
 #
 sub merge_levels ($$) {
     my ( $superior, $subordinate ) = @_;
+
+    return $subordinate if $subordinate =~ /^(?:FORMAT|COMMENT|DEFAULTS?)$/;
 
     my @supparts = split /:/, $superior;
     my @subparts = split /:/, $subordinate;
@@ -1471,27 +1512,35 @@ sub process_actions() {
 	open_file $file;
 
 	while ( read_a_line( NORMAL_READ ) ) {
-	    my ( $action ) = split_line 'action file' , { action => 0 };
+	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
+
+	    my $type = ACTION;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
 		$action =~ s/:.*$//;
 	    }
 
-	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[\w-]+$/;
+	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*$/;
 
 	    if ( $targets{$action} ) {
-		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ACTION;
+		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ( ACTION | INLINE );
 		next;
 	    }
 
-	    fatal_error "Invalid Action Name ($action)" unless "\L$action" =~ /^[a-z]\w*$/;
+	    if ( $options eq 'inline' ) {
+		$type = INLINE;
+	    } else {
+		fatal_error "Invalid option($options)" unless $options eq '-';
+	    }
 
-	    new_action $action, ACTION;
+	    new_action $action, $type;
 
 	    my $actionfile = find_file "action.$action";
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+
+	    $inlines{$action} = $actionfile if $type == INLINE;
 	}
     }
 
@@ -1749,6 +1798,131 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 }
 
 #
+# Expand a macro rule from the rules file
+#
+sub process_inline ($$$$$$$$$$$$$$$$$$$) {
+    my ($inline, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
+
+    my $nocomment = no_comment;
+
+    my $generated = 0;
+
+    macro_comment $inline;
+
+    my $oldparms = push_action_params( $chainref, $param );
+
+    my $inlinefile = $inlines{$inline};
+
+    progress_message "..Expanding inline action $inlinefile...";
+
+    push_open $inlinefile;
+
+    while ( read_a_line( NORMAL_READ ) ) {
+	my  ( $mtarget,
+	      $msource,
+	      $mdest,
+	      $mproto,
+	      $mports,
+	      $msports,
+	      $morigdest,
+	      $mrate,
+	      $muser,
+	      $mmark,
+	      $mconnlimit,
+	      $mtime,
+	      $mheaders,
+	      $mcondition,
+	      $mhelper ) = split_line1 'inline action file', \%rulecolumns, $rule_commands;
+
+	fatal_error 'TARGET must be specified' if $mtarget eq '-';
+
+	if ( $mtarget eq 'COMMENT' ) {
+	    process_comment unless $nocomment;
+	    next;
+	}
+
+	if ( $mtarget eq 'DEFAULTS' ) {
+	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
+	    next;
+	}
+
+	if ( $mtarget eq 'FORMAT' ) {
+	    fatal_error "FORMAT must be 2" unless $source ne '2';
+	    next;
+	}
+
+	$mtarget = merge_levels $target, $mtarget;
+
+	my $action = isolate_basic_target $mtarget;
+
+	fatal_error "Invalid or missing ACTION ($mtarget)" unless defined $action;
+
+	my $actiontype = $targets{$action} || find_macro( $action );
+
+	fatal_error( "Invalid Action ($mtarget) in inline action", $inline ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN + INLINE );
+
+	if ( $msource ) {
+	    if ( $msource eq '-' ) {
+		$msource = $source || '';
+	    } elsif ( $msource =~ s/^DEST:?// ) {
+		$msource = merge_macro_source_dest $msource, $dest;
+	    } else {
+		$msource =~ s/^SOURCE:?//;
+		$msource = merge_macro_source_dest $msource, $source;
+	    }
+	} else {
+	    $msource = '';
+	}
+
+	if ( $mdest ) {
+	    if ( $mdest eq '-' ) {
+		$mdest = $dest || '';
+	    } elsif ( $mdest =~ s/^SOURCE:?// ) {
+		$mdest = merge_macro_source_dest $mdest , $source;
+	    } else {
+		$mdest =~ s/DEST:?//;
+		$mdest = merge_macro_source_dest $mdest, $dest;
+	    }
+	} else {
+	    $mdest = '';
+	}
+
+	$generated |= process_rule1(
+				    $chainref,
+				    $mtarget,
+				    $param,
+				    $msource,
+				    $mdest,
+				    merge_macro_column( $mproto,     $proto ) ,
+				    merge_macro_column( $mports,     $ports ) ,
+				    merge_macro_column( $msports,    $sports ) ,
+				    merge_macro_column( $morigdest,  $origdest ) ,
+				    merge_macro_column( $mrate,      $rate ) ,
+				    merge_macro_column( $muser,      $user ) ,
+				    merge_macro_column( $mmark,      $mark ) ,
+				    merge_macro_column( $mconnlimit, $connlimit) ,
+				    merge_macro_column( $mtime,      $time ),
+				    merge_macro_column( $mheaders,   $headers ),
+				    merge_macro_column( $mcondition, $condition ),
+				    merge_macro_column( $mhelper,    $helper ),
+				    $wildcard
+				   );
+
+	progress_message "   Rule \"$currentline\" $done";
+    }
+
+    pop_open;
+
+    progress_message "..End inline action $inlinefile";
+
+    pop_action_params( $oldparms );
+
+    clear_comment unless $nocomment;
+
+    return $generated;
+}
+
+#
 # Confirm that we have AUDIT_TARGET capability and ensure the appropriate AUDIT chain.
 #
 sub verify_audit($;$$) {
@@ -1818,7 +1992,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	#
 	# process_macro() will call process_rule1() recursively for each rule in the macro body
 	#
-	fatal_error "Macro invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
+	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
 	$current_param = $param unless $param eq '' || $param eq 'PARAM';
 
@@ -1846,7 +2020,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
 	return $generated;
 
-    } elsif ( $actiontype & ACTION ) {
+    } elsif ( $actiontype & ( ACTION | INLINE ) ) {
 	split_list $param, 'Action parameter';
     } elsif ( $actiontype & NFQ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
@@ -1920,7 +2094,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     #
     my $log_action = $action;
 
-    unless ( $actiontype & ( ACTION | MACRO | NFLOG | NFQ | CHAIN ) ) {
+    unless ( $actiontype & ( ACTION | MACRO | NFLOG | NFQ | CHAIN | INLINE ) ) {
 	my $bt = $basictarget;
 
 	$bt =~ s/[-+!]$//;
@@ -2065,6 +2239,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
         # We are generating rules in a chain -- get its name
         #
 	$chain = $chainref->{name};
+	#
+	# If we are processing an inline action, we need the source zone for NAT.
+	#
+	$sourceref = find_zone( $chainref->{sourcezone} ) if $chainref->{sourcezone}; 
     } else {
 	unless ( $actiontype & NATONLY ) {
 	    #
@@ -2081,7 +2259,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Ensure that the chain exists but don't mark it as referenced until after optimization is checked
 	    #
-	    $chainref  = ensure_chain 'filter', $chain;
+	    ( $chainref  = ensure_chain( 'filter', $chain ) )->{sourcezone} = $sourcezone;
+
 	    my $policy = $chainref->{policy};
 
 	    if ( $policy eq 'NONE' ) {
@@ -2122,6 +2301,39 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		$chainref = $blacklistref;
 	    }
 	}
+    }
+
+    if ( $actiontype & INLINE ) {
+	#
+	# process_inline() will call process_rule1() recursively for each rule in the macro body
+	#
+	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
+
+	$current_param = $param unless $param eq '' || $param eq 'PARAM';
+
+	my $generated = process_inline( $basictarget,
+					$chainref,
+					$target,
+					$current_param,
+					$source,
+					$dest,
+					$proto,
+					$ports,
+					$sports,
+					$origdest,
+					$ratelimit,
+					$user,
+					$mark,
+					$connlimit,
+					$time,
+					$headers,
+					$condition,
+					$helper,
+					$wildcard );
+
+	$macro_nest_level--;
+
+	return $generated;
     }
     #
     # Generate Fixed part of the rule

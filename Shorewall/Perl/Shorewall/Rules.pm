@@ -1699,7 +1699,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error( "Invalid Action ($mtarget) in macro", $actiontype ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN );
+	fatal_error( "Invalid Action ($mtarget) in macro") unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {
@@ -1822,7 +1822,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error( "Invalid Action ($mtarget) in inline action", $inline ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN + INLINE );
+	fatal_error( "Invalid Action ($mtarget) in inline action" ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN + INLINE );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {

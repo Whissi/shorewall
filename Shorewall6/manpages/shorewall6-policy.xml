@@ -97,36 +97,29 @@
         <listitem>
           <para>Policy if no match from the rules file is found.</para>
 
-          <para>If the policy is other than CONTINUE or NONE then the policy
-          may be followed by ":" and one of the following:</para>
+          <para>If the policy is neither CONTINUE nor NONE then the policy may
+          be followed by ":" and one of the following:</para>
 
           <orderedlist numeration="loweralpha">
             <listitem>
               <para>The word "None" or "none". This causes any default action
               defined in <ulink
-              url="shorewall6.conf.html">shorewall6.conf</ulink>(5) to be
+              url="shorewall.conf.html">shorewall.conf</ulink>(5) to be
               omitted for this policy.</para>
             </listitem>
 
             <listitem>
-              <para>The name of an action. That action will be invoked before
+              <para>The name of an action. The action will be invoked before
               the policy is enforced.</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of a macro (Shorewall 4.5.10 or later). The rules
-              in that macro will be applied before the policy is enforced. If
-              you wish to use a macro with the same name as an existing
-              action, you may specify the name of the macro file (e.g.,
-              <emphasis
-              role="bold">macro.</emphasis><replaceable>macro-name</replaceable>).</para>
             </listitem>
           </orderedlist>
 
-          <para>Beginning with Shorewall 4.5.10, the macro or action name can
-          be followed optionally by a colon and a log level. The level will be
-          applied to each rule in the action or macro body that does not
-          already have a log level.</para>
+          <para>Actions can have parameters specified.</para>
+
+          <para>Beginning with Shorewall 4.5.10, the action name can be
+          followed optionally by a colon and a log level. The level will be
+          applied to each rule in the action or body that does not already
+          have a log level.</para>
 
           <para>Possible actions are:</para>
 

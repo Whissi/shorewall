@@ -343,9 +343,6 @@ sub process_default_action( $$$$ ) {
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );
 	    use_policy_action( $default );
-	} elsif ( find_macro( $def )) {
-	    $default = join( '.', 'macro', $def ) unless $default =~ /^macro./;
-	    $default = "$def($param)" if supplied $param;
 	} elsif ( ( $targets{$def} || 0 ) == INLINE ) {
 	    $default = $def;
 	    $default = "$def($param)" if supplied $param;
@@ -582,7 +579,6 @@ sub process_policies()
 #
 # Policy Rule application
 #
-sub process_macro  ($$$$$$$$$$$$$$$$$$$);
 sub process_inline ($$$$$$$$$$$$$$$$$$$);
 
 sub policy_rules( $$$$$ ) {
@@ -592,66 +588,39 @@ sub policy_rules( $$$$$ ) {
 	add_ijump $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
 
 	if ( $default && $default ne 'none' ) {
-	    if ( $default =~ s/^macro\.// ) {
-		#
-		# Default action is a macro -- expand it in-line
-		#
-		my ( $macro ) = split ':', $default;
+	    my ( $inline ) = split ':', $default;
 
-		( $macro, my $param ) = get_target_param( $macro );
+	    ( $inline, my $param ) = get_target_param( $inline );
 
-		process_macro( $macro,       #Macro
-			       $chainref,    #Chain
-			       $default,     #Target
-			       $param || '', #Param
-			       '-',          #Source
-			       '-',          #Dest
-			       '-',          #Proto
-                               '-',          #Ports
-                               '-',          #Sports
-			       '-',          #Original Dest
-                               '-',          #Rate
-                               '-',          #User
-                               '-',          #Mark
-                               '-',          #ConnLimit
-                               '-',          #Time
-                               '-',          #Headers
-                               '-',          #Condition
-                               '-',          #Helper
-                               0,            #Wildcard
-			     );
+	    if ( $targets{$inline} == INLINE ) {
+		#
+		# Default action is an inline 
+		#
+		process_inline( $inline,      #Inline
+				$chainref,    #Chain
+				$default,     #Target
+				$param || '', #Param
+				'-',          #Source
+				'-',          #Dest
+				'-',          #Proto
+				'-',          #Ports
+				'-',          #Sports
+				'-',          #Original Dest
+				'-',          #Rate
+				'-',          #User
+				'-',          #Mark
+				'-',          #ConnLimit
+				'-',          #Time
+				'-',          #Headers
+				'-',          #Condition
+				'-',          #Helper
+				0,            #Wildcard
+			      );
 	    } else {
-		my ( $inline ) = split ':', $default;
-
-		( $inline, my $param ) = get_target_param( $inline );
-
-		if ( $targets{$inline} == INLINE ) {
-		    process_inline( $inline,      #Inline
-				    $chainref,    #Chain
-				    $default,     #Target
-				    $param || '', #Param
-				    '-',          #Source
-				    '-',          #Dest
-				    '-',          #Proto
-				    '-',          #Ports
-				    '-',          #Sports
-				    '-',          #Original Dest
-				    '-',          #Rate
-				    '-',          #User
-				    '-',          #Mark
-				    '-',          #ConnLimit
-				    '-',          #Time
-				    '-',          #Headers
-				    '-',          #Condition
-				    '-',          #Helper
-				    0,            #Wildcard
-				  );
-		} else {
-		    #
-		    # Default action is an action -- jump to the action chain
-		    #
-		    add_ijump $chainref, j => $default;
-		}
+		#
+		# Default action is a regular action -- jump to the action chain
+		#
+		add_ijump $chainref, j => $default;
 	    }
 	}
  
@@ -1667,10 +1636,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     macro_comment $macro;
 
-    my $oldparms = push_action_params( $chainref, $param );
-
-    ( $param ) = get_action_params( 1 );
-
     my $macrofile = $macros{$macro};
 
     progress_message "..Expanding Macro $macrofile...";
@@ -1789,8 +1754,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
     pop_open;
 
     progress_message "..End Macro $macrofile";
-
-    pop_action_params( $oldparms );
 
     clear_comment unless $nocomment;
 

@@ -592,7 +592,7 @@ sub policy_rules( $$$$$ ) {
 
 	    ( $inline, my $param ) = get_target_param( $inline );
 
-	    if ( $targets{$inline} == INLINE ) {
+	    if ( ( $targets{$inline} || 0 ) == INLINE ) {
 		#
 		# Default action is an inline 
 		#
@@ -1681,8 +1681,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	}
 
 	if ( $mtarget =~ /^DEFAULTS?$/ ) {
-	    default_action_params( $macro, split_list( $msource, 'defaults' ) );
-	    ( $param ) = get_action_params( 1 ) unless supplied $param;
+	    $param = $msource unless supplied $param;
 	    next;
 	}
 
@@ -1761,7 +1760,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 }
 
 #
-# Expand a macro rule from the rules file
+# Expand an inline action rule from the rules file
 #
 sub process_inline ($$$$$$$$$$$$$$$$$$$) {
     my ($inline, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
@@ -2137,7 +2136,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    $source = $2;
 	} else {
 	    $sourcezone = $source;
-	    $source = ALLIP;
+	    $source = $actiontype == INLINE ? '-' : ALLIP;
 	}
 
 	if ( $dest =~ /^(.*?):(.*)/ ) {
@@ -2151,7 +2150,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    $destzone = '-';
 	} else {
 	    $destzone = $dest;
-	    $dest = ALLIP;
+	    $dest = $actiontype == INLINE ? '-' : ALLIP;
 	}
 
 	fatal_error "Missing source zone" if $sourcezone eq '-' || $sourcezone =~ /^:/;

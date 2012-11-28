@@ -1464,7 +1464,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 # This function is called prior to processing of the policy file. It:
 #
 # - Adds the builtin actions to the target table
-# - Reads actions.std and actions (in that order) and for each entry:
+# - Reads actions and actions.std (in that order) and for each entry:
 #   o Adds the action to the target table
 #   o Verifies that the corresponding action file exists
 #
@@ -1477,7 +1477,7 @@ sub process_actions() {
     #
     $targets{$_} = new_action( $_ , ACTION + BUILTIN ) for @builtins;
 
-    for my $file ( qw/actions.std actions/ ) {
+    for my $file ( qw/actions actions.std/ ) {
 	open_file $file;
 
 	while ( read_a_line( NORMAL_READ ) ) {
@@ -1512,8 +1512,6 @@ sub process_actions() {
 	    $inlines{$action} = $actionfile if $type == INLINE;
 	}
     }
-
-    my $ref;
 
 }
 

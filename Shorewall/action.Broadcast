@@ -43,6 +43,9 @@ fatal_error "Invalid parameter ($audit) to action Broadcast"   if supplied $audi
 fatal_error "Invalid parameter ($action) to action Broadcast"  unless $action =~ /^(?:ACCEPT|DROP|REJECT)$/;
 
 my $chainref           = get_action_chain;
+
+fatal_error "The Broadcast Action may not be invoked in-line" unless $chainref->{action};
+
 my ( $level, $tag )    = get_action_logging;
 my $target             = require_audit ( $action , $audit );
 

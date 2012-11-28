@@ -28,11 +28,63 @@
     the iptables rules to be performed in an ACTION in
     /etc/shorewall/action.<emphasis>action-name</emphasis>.</para>
 
-    <para>ACTION names should begin with an upper-case letter to distinguish
-    them from Shorewall-generated chain names and be composed of letters,
-    digits or numbers. If you intend to log from the action then the name must
-    be no longer than 11 characters in length if you use the standard
-    LOGFORMAT.</para>
+    <para>Columns are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>NAME</term>
+
+        <listitem>
+          <para>The name of the action. ACTION names should begin with an
+          upper-case letter to distinguish them from Shorewall-generated chain
+          names and be composed of letters, digits or numbers. If you intend
+          to log from the action then the name must be no longer than 11
+          characters in length if you use the standard LOGFORMAT.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>OPTIONS</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.10. Available actions are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>inline</term>
+
+              <listitem>
+                <para>Causes the action body (defined in
+                action.<replaceable>action-name</replaceable>) to be expanded
+                in-line like a macro rather than in its own chain. You can
+                list Shorewall Standard Actions in this file to specify the
+                <option>inline</option> option.</para>
+
+                <caution>
+                  <para>Some of the Shorewall standard actions cannot be used
+                  in-line and will generate a compiler error if you try to use
+                  them that way:</para>
+
+                  <simplelist>
+                    <member>Broadcast</member>
+
+                    <member>DropSmurfs</member>
+
+                    <member>Invalid</member>
+
+                    <member>NotSyn</member>
+
+                    <member>RST</member>
+
+                    <member>TCPFlags</member>
+                  </simplelist>
+                </caution>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </refsect1>
 
   <refsect1>

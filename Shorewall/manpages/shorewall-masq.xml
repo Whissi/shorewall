@@ -461,7 +461,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">SWITCH -
-        [!]<replaceable>switch-name</replaceable></emphasis></term>
+        [!]<replaceable>switch-name</replaceable>[={0|1}]</emphasis></term>
 
         <listitem>
           <para>Added in Shorewall 4.5.1 and allows enabling and disabling the
@@ -493,6 +493,12 @@
 
           <para>Switch settings are retained over <command>shorewall
           restart</command>.</para>
+
+          <para>Beginning with Shoreawll 4.5.10, when the
+          <replaceable>switch-name</replaceable> is followed by
+          <option>=0</option> or <option>=1</option>, then the switch is
+          initialized to off or on respectively by the start command. Other
+          commands do not affect the switch setting.</para>
         </listitem>
       </varlistentry>
 

@@ -47,6 +47,7 @@ our @EXPORT = qw(
 		 warning_message
 		 fatal_error
 		 assert
+		 currentlineinfo
 
 		 progress_message
 		 progress_message_nocompress

@@ -248,6 +248,7 @@ our %EXPORT_TAGS = (
 				       preview_netfilter_load
 				       create_chainlist_reload
 				       create_stop_load
+				       initialize_switches
 				       %targets
 				       %dscpmap
 				       %nfobjects
@@ -603,6 +604,8 @@ my %isocodes;
 
 use constant { ISODIR => '/usr/share/xt_geoip/LE' };
 
+my %switches;
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -663,6 +666,7 @@ sub initialize( $$$ ) {
 
     %isocodes  = ();
     %nfobjects = ();
+    %switches  = ();
 
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
@@ -4644,6 +4648,10 @@ sub do_condition( $$ ) {
 
     my $invert = $condition =~ s/^!// ? '! ' : '';
 
+    my $initialize;
+
+    $initialize = $1 if $condition =~ s/(?:=([01]))?$//;
+
     require_capability 'CONDITION_MATCH', 'A non-empty SWITCH column', 's';
 
     if ( $condition =~ /@/ ) {
@@ -4653,7 +4661,16 @@ sub do_condition( $$ ) {
 
     fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/ && length $condition <= 30;
 
+    if ( defined $initialize ) {
+	if ( my $switchref = $switches{$condition} ) {
+	    fatal_error "Switch $condition was previously initialized to $switchref->{setting} at $switchref->{where}" unless $switchref->{setting} == $initialize;
+	} else {
+	    $switches{$condition} = { setting => $initialize, where => currentlineinfo };
+	}
+    }
+
     "-m condition ${invert}--condition $condition "
+	
 }
 
 #
@@ -7462,6 +7479,18 @@ sub create_stop_load( $ ) {
 	   "fi\n"
 	 );
 
+}
+
+sub initialize_switches() {
+    if ( keys %switches ) {
+	emit( '        if [ $COMMAND = start ]; then' );
+	push_indent;
+	while ( my ( $switch, $setting ) = each %switches ) {
+	    emit "        echo $setting->{setting} > /proc/net/nf_condition/$switch";
+	}
+	pop_indent;
+	emit "        fi\n";
+    }
 }
 
 1;

@@ -487,6 +487,7 @@ EOF
     emit<<"EOF";
         conditionally_flush_conntrack
 EOF
+    initialize_switches;
     setup_forwarding( $family , 0 );
 
     emit<<"EOF";

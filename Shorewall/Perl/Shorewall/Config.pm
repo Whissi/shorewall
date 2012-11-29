@@ -2483,7 +2483,7 @@ sub expand_variables( \$ ) {
 	my $val;
 
 	if ( $var =~ /^\d+$/ ) {
-	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms[$var] ) || ( length( $var ) > 0 && $var =~ /^0/ );
+	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms[$var] ) || ( length( $var ) > 1 && $var =~ /^0/ );
 	    $val = $var ? $actparms[$var] : $actparms[0]->{name};
 	} elsif ( exists $params{$var} ) {
 	    $val = $params{$var};

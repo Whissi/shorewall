@@ -4654,9 +4654,10 @@ sub do_condition( $$ ) {
 
     require_capability 'CONDITION_MATCH', 'A non-empty SWITCH column', 's';
 
-    if ( $condition =~ /\@\{0\}/ ) {
-	$chain     =~ s/[^\w-]//g;
-	$condition =~ s/\@\{0\}/$chain/g;
+    $chain     =~ s/[^\w-]//g;
+    #                          $1    $2      -     $3
+    while ( $condition =~ m( ^(.*?) @({)?0(?(2)}) (.*)$ )x ) {
+	$condition = join( '', $1, $chain, $3 );
     }
 
     fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/ && length $condition <= 30;

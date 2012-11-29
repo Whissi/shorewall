@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40509
+SHOREWALL_CAPVERSION=40510
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -2114,6 +2114,7 @@ determine_capabilities() {
     ACCOUNT_TARGET=
     AUDIT_TARGET=
     CONDITION_MATCH=
+    CONDITION_INIT=
     IPTABLES_S=
     BASIC_FILTER=
     CT_TARGET=
@@ -2415,7 +2416,12 @@ determine_capabilities() {
     fi
 
     qt $g_tool -A $chain -j AUDIT --type drop && AUDIT_TARGET=Yes
-    qt $g_tool -A $chain -m condition --condition foo && CONDITION_MATCH=Yes
+
+    if qt $g_tool -A $chain -m condition --condition foo; then
+	CONDITION_MATCH=Yes
+	qt $g_tool -A $chain -m condition --condition foo --condinit 1 && CONDITION_INIT=Yes
+    fi
+
     qt $g_tool -S INPUT && IPTABLES_S=Yes
     qt $g_tool -F $chain
     qt $g_tool -X $chain
@@ -2516,6 +2522,7 @@ report_capabilities() {
 	report_capability "AUDIT Target (AUDIT_TARGET)" $AUDIT_TARGET
 	report_capability "ipset V5 (IPSET_V5)" $IPSET_V5
 	report_capability "Condition Match (CONDITION_MATCH)" $CONDITION_MATCH
+	[ -n "$CONDITION_MATCH" ] && report_capability "Condition Initialize (CONDITION_INIT)" $CONDITION_INIT
 	report_capability "Statistic Match (STATISTIC_MATCH)" $STATISTIC_MATCH
 	report_capability "IMQ Target (IMQ_TARGET)" $IMQ_TARGET
 	report_capability "DSCP Match (DSCP_MATCH)" $DSCP_MATCH
@@ -2626,6 +2633,7 @@ report_capabilities1() {
     report_capability1 AUDIT_TARGET
     report_capability1 IPSET_V5
     report_capability1 CONDITION_MATCH
+    report_capability1 CONDITION_INIT
     report_capability1 IPTABLES_S
     report_capability1 BASIC_FILTER
     report_capability1 CT_TARGET

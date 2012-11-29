@@ -293,8 +293,12 @@
           <filename>/proc/net/nf_condition/<replaceable>switch-name</replaceable></filename>
           is 1. Disables the rule if that file contains 0 (the default). If
           '!' is supplied, the test is inverted such that the rule is enabled
-          if the file contains 0. The <replaceable>switch-name</replaceable>
-          must begin with a letter and be composed of letters, decimal digits,
+          if the file contains 0.</para>
+
+          <para>Within the <replaceable>switch-name</replaceable>, '@{0}' is
+          replaced by the name of the chain to which the rule is a added. The
+          <replaceable>switch-name</replaceable> (after '@{0}' expansion) must
+          begin with a letter and be composed of letters, decimal digits,
           underscores or hyphens. Switch names must be 30 characters or less
           in length.</para>
 

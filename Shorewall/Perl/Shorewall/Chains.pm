@@ -4654,7 +4654,7 @@ sub do_condition( $$ ) {
 
     require_capability 'CONDITION_MATCH', 'A non-empty SWITCH column', 's';
 
-    $chain     =~ s/[^\w-]//g;
+    $chain =~ s/[^\w-]//g;
     #                          $1    $2      -     $3
     while ( $condition =~ m( ^(.*?) @({)?0(?(2)}) (.*)$ )x ) {
 	$condition = join( '', $1, $chain, $3 );

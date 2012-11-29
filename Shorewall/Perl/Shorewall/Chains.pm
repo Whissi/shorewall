@@ -4673,7 +4673,7 @@ sub do_condition( $$ ) {
 	}
     }
 
-    "-m condition ${invert}--condition $condition"
+    "-m condition ${invert}--condition $condition $initialization"
 	
 }
 

@@ -7488,13 +7488,16 @@ sub create_stop_load( $ ) {
 sub initialize_switches() {
     unless ( have_capability 'CONDITION_INIT' ) {
 	if ( keys %switches ) {
-	    emit( '        if [ $COMMAND = start ]; then' );
+	    push_indent; push_indent;
+	    emit( 'if [ $COMMAND = start ]; then' );
 	    push_indent;
 	    while ( my ( $switch, $setting ) = each %switches ) {
-		emit "        echo $setting->{setting} > /proc/net/nf_condition/$switch";
+		my $file = "/proc/net/nf_condition/$switch";
+		emit "[ -f $file ] && echo $setting->{setting} > $file";
 	    }
 	    pop_indent;
-	    emit "        fi\n";
+	    emit "fi\n";
+	    pop_indent; pop_indent;
 	}
     }
 }

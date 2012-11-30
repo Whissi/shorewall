@@ -7484,7 +7484,6 @@ sub create_stop_load( $ ) {
 
 sub initialize_switches() {
     if ( keys %switches ) {
-	push_indent; push_indent;
 	emit( 'if [ $COMMAND = start ]; then' );
 	push_indent;
 	while ( my ( $switch, $setting ) = each %switches ) {
@@ -7493,7 +7492,6 @@ sub initialize_switches() {
 	}
 	pop_indent;
 	emit "fi\n";
-	pop_indent; pop_indent;
     }
 }
 

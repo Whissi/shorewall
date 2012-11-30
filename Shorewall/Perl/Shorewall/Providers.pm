@@ -1952,7 +1952,7 @@ sub handle_stickiness( $ ) {
 
 sub setup_load_distribution() {
     emit ( '',
-	   "        distribute_load $maxload @load_interfaces" ,
+	   "distribute_load $maxload @load_interfaces" ,
 	   ''
 	 ) if @load_interfaces;
 }

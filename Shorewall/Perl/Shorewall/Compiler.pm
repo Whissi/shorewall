@@ -459,10 +459,10 @@ sub generate_script_3($) {
         fatal_error "$iptables_save_file does not exist"
     fi
 EOF
-    pop_indent;
+    push_indent;
     setup_load_distribution;
     setup_forwarding( $family , 1 );
-    push_indent;
+    pop_indent;
 
     my $config_dir = $globals{CONFIGDIR};
 
@@ -473,8 +473,10 @@ else
     if [ \$COMMAND = refresh ]; then
         chainlist_reload
 EOF
+    push_indent(2);
     setup_load_distribution;
     setup_forwarding( $family , 0 );
+    pop_indent(2);
 
     emit( '        run_refreshed_exit' ,
 	  '        do_iptables -N shorewall' ,
@@ -482,13 +484,17 @@ EOF
 	  '    else' ,
 	  '        setup_netfilter' );
 
+    push_indent(2);
     setup_load_distribution;
+    pop_indent(2);
 
     emit<<"EOF";
         conditionally_flush_conntrack
 EOF
+    push_indent(2);
     initialize_switches;
     setup_forwarding( $family , 0 );
+    pop_indent(2);
 
     emit<<"EOF";
         run_start_exit

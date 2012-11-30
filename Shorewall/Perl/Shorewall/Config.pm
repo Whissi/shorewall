@@ -1489,24 +1489,32 @@ sub progress_message3 {
 #
 # Push/Pop Indent
 #
-sub push_indent() {
-    if ( $indent2 ) {
-	$indent2 = '';
-	$indent = $indent1 = $indent1 . "\t";
-    } else {
-	$indent2 = '    ';
-	$indent = $indent1 . $indent2;
+sub push_indent(;$) {
+    my $times = shift || 1;
+
+    while ( $times-- ) {
+	if ( $indent2 ) {
+	    $indent2 = '';
+	    $indent = $indent1 = $indent1 . "\t";
+	} else {
+	    $indent2 = '    ';
+	    $indent = $indent1 . $indent2;
+	}
     }
 }
 
-sub pop_indent() {
-    if ( $indent2 ) {
-	$indent2 = '';
-	$indent = $indent1;
-    } else {
-	$indent1 = substr( $indent1 , 0, -1 );
-	$indent2 = '    ';
-	$indent = $indent1 . $indent2;
+sub pop_indent(;$) {
+    my $times = shift || 1;
+
+    while ( $times-- ) {
+	if ( $indent2 ) {
+	    $indent2 = '';
+	    $indent = $indent1;
+	} else {
+	    $indent1 = substr( $indent1 , 0, -1 );
+	    $indent2 = '    ';
+	    $indent = $indent1 . $indent2;
+	}
     }
 }
 

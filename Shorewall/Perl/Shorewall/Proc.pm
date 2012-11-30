@@ -219,30 +219,30 @@ sub setup_forwarding( $$ ) {
 
     if ( $family == F_IPV4 ) {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
-	    emit '        echo 1 > /proc/sys/net/ipv4/ip_forward';
-	    emit '        progress_message2 IPv4 Forwarding Enabled';
+	    emit 'echo 1 > /proc/sys/net/ipv4/ip_forward';
+	    emit 'progress_message2 IPv4 Forwarding Enabled';
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	    emit '        echo 0 > /proc/sys/net/ipv4/ip_forward';
-	    emit '        progress_message2 IPv4 Forwarding Disabled!';
+	    emit 'echo 0 > /proc/sys/net/ipv4/ip_forward';
+	    emit 'progress_message2 IPv4 Forwarding Disabled!';
 	}
 
 	emit '';
 
-	emit ( '        echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables' ,
+	emit ( 'echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables' ,
 	       ''
 	     ) if have_bridges;
     } else {
 	if ( $config{IP_FORWARDING} eq 'on' ) {
-	    emit '        echo 1 > /proc/sys/net/ipv6/conf/all/forwarding';
-	    emit '        progress_message2 IPv6 Forwarding Enabled';
+	    emit 'echo 1 > /proc/sys/net/ipv6/conf/all/forwarding';
+	    emit 'progress_message2 IPv6 Forwarding Enabled';
 	} elsif ( $config{IP_FORWARDING} eq 'off' ) {
-	    emit '        echo 0 > /proc/sys/net/ipv6/conf/all/forwarding';
-	    emit '        progress_message2 IPv6 Forwarding Disabled!';
+	    emit 'echo 0 > /proc/sys/net/ipv6/conf/all/forwarding';
+	    emit 'progress_message2 IPv6 Forwarding Disabled!';
 	}
 
 	emit '';
 
-	emit ( '        echo 1 > /proc/sys/net/bridge/bridge-nf-call-ip6tables' ,
+	emit ( 'echo 1 > /proc/sys/net/bridge/bridge-nf-call-ip6tables' ,
 	       ''
 	     ) if have_bridges;
 
@@ -250,9 +250,6 @@ sub setup_forwarding( $$ ) {
 
 	if ( @$interfaces ) {
 	    progress_message2 "$doing Interface forwarding..." if $first;
-
-	    push_indent;
-	    push_indent;
 
 	    save_progress_message 'Setting up IPv6 Interface Forwarding...';
 
@@ -270,9 +267,6 @@ sub setup_forwarding( $$ ) {
 		       "    error_message \"WARNING: Cannot set IPv6 forwarding on $interface\"" ) unless $optional;
 		emit   "fi\n";
 	    }
-
-	    pop_indent;
-	    pop_indent;
 	}
     }
 }

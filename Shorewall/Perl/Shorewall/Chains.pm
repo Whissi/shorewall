@@ -4662,18 +4662,15 @@ sub do_condition( $$ ) {
 
     fatal_error "Invalid switch name ($condition)" unless $condition =~ /^[a-zA-Z][-\w]*$/ && length $condition <= 30;
 
-    my $initialization = '';
-
     if ( defined $initialize ) {
 	if ( my $switchref = $switches{$condition} ) {
 	    fatal_error "Switch $condition was previously initialized to $switchref->{setting} at $switchref->{where}" unless $switchref->{setting} == $initialize;
 	} else {
-	    $initialization = "--condinit $initialize " if have_capability 'CONDITION_INIT';
 	    $switches{$condition} = { setting => $initialize, where => currentlineinfo };
 	}
     }
 
-    "-m condition ${invert}--condition $condition $initialization"
+    "-m condition ${invert}--condition $condition "
 	
 }
 
@@ -7486,19 +7483,17 @@ sub create_stop_load( $ ) {
 }
 
 sub initialize_switches() {
-    unless ( have_capability 'CONDITION_INIT' ) {
-	if ( keys %switches ) {
-	    push_indent; push_indent;
-	    emit( 'if [ $COMMAND = start ]; then' );
-	    push_indent;
-	    while ( my ( $switch, $setting ) = each %switches ) {
-		my $file = "/proc/net/nf_condition/$switch";
-		emit "[ -f $file ] && echo $setting->{setting} > $file";
-	    }
-	    pop_indent;
-	    emit "fi\n";
-	    pop_indent; pop_indent;
+    if ( keys %switches ) {
+	push_indent; push_indent;
+	emit( 'if [ $COMMAND = start ]; then' );
+	push_indent;
+	while ( my ( $switch, $setting ) = each %switches ) {
+	    my $file = "/proc/net/nf_condition/$switch";
+	    emit "[ -f $file ] && echo $setting->{setting} > $file";
 	}
+	pop_indent;
+	emit "fi\n";
+	pop_indent; pop_indent;
     }
 }
 

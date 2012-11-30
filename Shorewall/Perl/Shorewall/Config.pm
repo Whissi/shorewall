@@ -610,7 +610,7 @@ sub initialize( $;$$) {
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
 		    VERSION    => "4.5.8-Beta2",
-		    CAPVERSION => 40510 ,
+		    CAPVERSION => 40509 ,
 		  );
     #
     # From shorewall.conf file
@@ -841,7 +841,6 @@ sub initialize( $;$$) {
 	       ACCOUNT_TARGET => undef,
 	       AUDIT_TARGET => undef,
 	       CONDITION_MATCH => undef,
-	       CONDITION_INIT => undef,
 	       IPTABLES_S => undef,
 	       BASIC_FILTER => undef,
 	       CT_TARGET => undef,
@@ -3515,7 +3514,6 @@ our %detect_capability =
       CHECKSUM_TARGET => \&Checksum_Target,
       CLASSIFY_TARGET => \&Classify_Target,
       CONDITION_MATCH => \&Condition_Match,
-      CONDITION_INIT => \&Condition_Init,
       COMMENTS => \&Comments,
       CONNLIMIT_MATCH => \&Connlimit_Match,
       CONNMARK => \&Connmark,
@@ -3713,7 +3711,6 @@ sub determine_capabilities() {
 	$capabilities{AUDIT_TARGET}    = detect_capability( 'AUDIT_TARGET' );
 	$capabilities{IPSET_V5}        = detect_capability( 'IPSET_V5' );
 	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
-	$capabilities{CONDITION_INIT}  = detect_capability( 'CONDITION_INIT' );
 	$capabilities{IPTABLES_S}      = detect_capability( 'IPTABLES_S' );
 	$capabilities{BASIC_FILTER}    = detect_capability( 'BASIC_FILTER' );
 	$capabilities{CT_TARGET}       = detect_capability( 'CT_TARGET' );

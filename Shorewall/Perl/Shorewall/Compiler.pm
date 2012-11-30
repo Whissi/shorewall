@@ -469,46 +469,46 @@ EOF
     emit<<"EOF";
     set_state Started $config_dir
     run_restored_exit
-else
-    if [ \$COMMAND = refresh ]; then
-        chainlist_reload
+elif [ \$COMMAND = refresh ]; then
+    chainlist_reload
 EOF
-    push_indent(2);
+    push_indent;
     setup_load_distribution;
     setup_forwarding( $family , 0 );
-    pop_indent(2);
-
-    emit( '        run_refreshed_exit' ,
-	  '        do_iptables -N shorewall' ,
-	  "        set_state Started $config_dir" ,
-	  '    else' ,
-	  '        setup_netfilter' );
-
-    push_indent(2);
+    pop_indent;
+    #
+    # Use a parameter list rather than 'here documents' to avoid an extra blank line
+    #
+    emit(
+'    run_refreshed_exit',
+'    do_iptables -N shorewall',
+"    set_state Started $config_dir",
+'    [ \$0 = \${VARDIR}/firewall ] || cp -f \$(my_pathname) \${VARDIR}/firewall',
+'else',
+'    setup_netfilter'
+	);
+    push_indent;
     setup_load_distribution;
-    pop_indent(2);
+    pop_indent;
 
-    emit<<"EOF";
-        conditionally_flush_conntrack
+    emit<<'EOF';
+    conditionally_flush_conntrack
 EOF
-    push_indent(2);
+    push_indent;
     initialize_switches;
     setup_forwarding( $family , 0 );
-    pop_indent(2);
+    pop_indent;
 
     emit<<"EOF";
-        run_start_exit
-        do_iptables -N shorewall
-        set_state Started $config_dir
-        run_started_exit
-    fi
-
+    run_start_exit
+    do_iptables -N shorewall
+    set_state Started $config_dir
+    [ \$0 = \${VARDIR}/firewall ] || cp -f \$(my_pathname) \${VARDIR}/firewall
+    run_started_exit
+fi
 EOF
 
     emit<<'EOF';
-    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall
-fi
-
 date > ${VARDIR}/restarted
 
 case $COMMAND in

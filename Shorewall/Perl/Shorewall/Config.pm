@@ -329,7 +329,6 @@ my  %capdesc = ( NAT_ENABLED     => 'NAT',
 		 AUDIT_TARGET    => 'AUDIT Target',
 		 RAWPOST_TABLE   => 'Rawpost Table',
 		 CONDITION_MATCH => 'Condition Match',
-		 CONDITION_INIT  => 'Condition Initialization',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
 		 CT_TARGET       => 'CT Target',
@@ -3447,10 +3446,6 @@ sub Account_Target() {
 
 sub Condition_Match() {
     qt1( "$iptables -A $sillyname -m condition --condition foo" );
-}
-
-sub Condition_Init() {
-    qt1( "$iptables -A $sillyname -m condition --condition foo --condinit 1" );
 }
 
 sub Audit_Target() {

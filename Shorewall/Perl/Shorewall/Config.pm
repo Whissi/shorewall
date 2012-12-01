@@ -2481,8 +2481,8 @@ sub set_action_param( $$ ) {
 #
 sub expand_variables( \$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
-    #                         $1      $2   $3      -     $4
-    while ( $$lineref =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+    #                         $1      $2   $3                  -     $4
+    while ( $$lineref =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 

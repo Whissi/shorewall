@@ -1019,7 +1019,7 @@ sub createlogactionchain( $$$$$ ) {
 
     validate_level $level;
 
-    $actionref = new_action( $action , ACTION , 0 ) unless $actionref;
+    assert( $actionref );
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 

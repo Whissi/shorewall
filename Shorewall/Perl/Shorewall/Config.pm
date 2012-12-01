@@ -105,6 +105,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       find_file
 				       split_list
 				       split_list1
+				       split_list2
 				       split_line
 				       split_line1
 				       first_entry
@@ -1683,6 +1684,59 @@ sub split_list1( $$ ) {
 	} else {
 	    push @list2 , $_;
 	}
+    }
+
+    @list2;
+}
+
+sub split_list2( $$ ) {
+    my ($list, $type ) = @_;
+
+    fatal_error "Invalid $type ($list)" if $list =~ /^:|::/;
+
+    my @list1 = split /:/, $list;
+    my @list2;
+    my $element   = '';
+    my $opencount = 0;
+
+
+    for ( @list1 ) {
+	my $count;
+
+	if ( ( $count = tr/(/(/ ) > 0 ) {
+	    $opencount += $count;
+	    if ( $element eq '' ) {
+		$element = $_;
+	    } else {
+		$element = join( ':', $element, $_ );
+	    }
+
+	    if ( ( $count = tr/)/)/ ) > 0 ) {
+		if ( ! ( $opencount -= $count ) ) {
+		     push @list2 , $element;
+		     $element = '';
+		} else {
+		    fatal_error "Invalid $type ($list)" if $opencount < 0;
+		}
+	    }
+	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
+	    fatal_error "Invalid $type ($list)" unless $element ne '';
+	    $element = join (':', $element, $_ );
+	    if ( ! ( $opencount -= $count ) ) {
+		 push @list2 , $element;
+		 $element = '';
+	    } else {
+		fatal_error "Invalid $type ($list)" if $opencount < 0;
+	    }
+	} elsif ( $element eq '' ) {
+	    push @list2 , $_;
+	} else {
+	    $element = join ':', $element , $_;
+	}
+    }
+    
+    unless ( $opencount == 0 ) {
+	fatal_error "Invalid $type ($list)";
     }
 
     @list2;

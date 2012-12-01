@@ -1501,8 +1501,6 @@ sub process_actions() {
 		fatal_error "Invalid option($options)" unless $options eq '-';
 	    }
 
-	    my $actionfile;
-
 	    if ( my $actiontype = $targets{$action} ) {
 		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
 		    if ( $actions{$action}->{noinline} ) {
@@ -1520,7 +1518,7 @@ sub process_actions() {
 
 	    new_action $action, $type, $noinline;
 
-	    $actionfile = find_file( "action.$action" ) unless $actionfile;
+	    my $actionfile = find_file( "action.$action" );
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 

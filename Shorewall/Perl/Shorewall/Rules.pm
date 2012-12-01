@@ -1554,7 +1554,7 @@ sub process_action( $) {
 
 	my $oldparms = push_action_params( $chainref, $param );
 
-	$active{$wholeaction}++;
+	$active{$action}++;
 	push @actionstack, $wholeaction;
 
 	push_comment( '' );
@@ -1612,7 +1612,7 @@ sub process_action( $) {
 
 	pop_comment;
 
-	$active{$wholeaction}--;
+	$active{$action}--;
 	pop @actionstack;
 
 	pop_open;
@@ -2029,7 +2029,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	#
 	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
-	fatal_error( "Action $basictarget invoked Recursively (" .  join( '->', map( externalize( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$normalized_target};
+	fatal_error( "Action $basictarget invoked Recursively (" .  join( '->', map( externalize( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$basictarget};
 
 	if ( my $ref = use_action( $normalized_target ) ) {
 	    #

@@ -19,15 +19,15 @@
 #
 ###############################################################################
 #ACTION
-A_Drop	            # Audited Default Action for DROP policy
-A_Reject	    # Audited Default Action for REJECT policy
-A_AllowICMPs	    # Audited Accept needed ICMP6 types
-AllowICMPs	    # Accept needed ICMP6 types
-Broadcast           # Handles Broadcast/Multicast/Anycast
-Drop		    # Default Action for DROP policy
-DropSmurfs	    # Handles packets with a broadcast source address
-Invalid		    # Handles packets in the INVALID conntrack state
-NotSyn		    # Handles TCP packets that do not have SYN=1 and ACK=0
-Reject		    # Default Action for REJECT policy
-TCPFlags	    # Handles bad flags combinations
+A_Drop	                # Audited Default Action for DROP policy
+A_Reject	        # Audited Default Action for REJECT policy
+A_AllowICMPs	        # Audited Accept needed ICMP6 types
+AllowICMPs   	        # Accept needed ICMP6 types
+Broadcast  noinline     # Handles Broadcast/Multicast/Anycast
+Drop		        # Default Action for DROP policy
+DropSmurfs noinline     # Handles packets with a broadcast source address
+Invalid	   noinline	# Handles packets in the INVALID conntrack state
+NotSyn	   noinline 	# Handles TCP packets that do not have SYN=1 and ACK=0
+Reject		        # Default Action for REJECT policy
+TCPFlags   noinline	# Handles bad flags combinations
 

@@ -62,8 +62,9 @@
 
                 <caution>
                   <para>Some of the Shorewall standard actions cannot be used
-                  in-line and will generate a compiler error if you try to use
-                  them that way:</para>
+                  in-line and will generate a warning and the compiler will
+                  ignore <option>inline</option> if you try to use them that
+                  way:</para>
 
                   <simplelist>
                     <member>Broadcast</member>
@@ -79,6 +80,15 @@
                     <member>TCPFlags</member>
                   </simplelist>
                 </caution>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>noinline</term>
+
+              <listitem>
+                <para>Reverses the effect of any previous
+                <option>inline</option> option for the same action.</para>
               </listitem>
             </varlistentry>
           </variablelist>

@@ -986,13 +986,13 @@ sub externalize( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$ ) {
+sub new_action( $$$ ) {
 
-    my ( $action , $type ) = @_;
+    my ( $action , $type, $noinline ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => '' } if $type & ACTION;
+    $actions{$action} = { actchain => '' , noinline => $noinline } if $type & ACTION;
 
     $targets{$action} = $type;
 }
@@ -1019,7 +1019,7 @@ sub createlogactionchain( $$$$$ ) {
 
     validate_level $level;
 
-    $actionref = new_action( $action , ACTION ) unless $actionref;
+    $actionref = new_action( $action , ACTION , 0 ) unless $actionref;
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
@@ -1464,7 +1464,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 # This function is called prior to processing of the policy file. It:
 #
 # - Adds the builtin actions to the target table
-# - Reads actions and actions.std (in that order) and for each entry:
+# - Reads actions.std and actions (in that order) and for each entry:
 #   o Adds the action to the target table
 #   o Verifies that the corresponding action file exists
 #
@@ -1475,15 +1475,16 @@ sub process_actions() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1 ) for @builtins;
 
-    for my $file ( qw/actions actions.std/ ) {
+    for my $file ( qw/actions.std actions/ ) {
 	open_file $file;
 
 	while ( read_a_line( NORMAL_READ ) ) {
 	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
 
-	    my $type = ACTION;
+	    my $type     = ACTION;
+	    my $noinline = 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1492,20 +1493,34 @@ sub process_actions() {
 
 	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*$/;
 
-	    if ( $targets{$action} ) {
-		warning_message "Duplicate Action Name ($action) Ignored" unless $targets{$action} & ( ACTION | INLINE );
-		next;
-	    }
-
 	    if ( $options eq 'inline' ) {
 		$type = INLINE;
+	    } elsif ( $options eq 'noinline' ) {
+		$noinline = 1;
 	    } else {
 		fatal_error "Invalid option($options)" unless $options eq '-';
 	    }
 
-	    new_action $action, $type;
+	    my $actionfile;
 
-	    my $actionfile = find_file "action.$action";
+	    if ( my $actiontype = $targets{$action} ) {
+		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
+		    if ( $actions{$action}->{noinline} ) {
+			warning_message "'inline' option ignored on action $action -- that action may not be in-lined";
+			next;
+		    }
+		    
+		    delete $actions{$action};
+		    delete $targets{$action};
+		} else {
+		    warning_message "Duplicate Action Name ($action) Ignored" unless $actiontype & ( ACTION | INLINE );
+		    next;
+		}
+	    }
+
+	    new_action $action, $type, $noinline;
+
+	    $actionfile = find_file( "action.$action" ) unless $actionfile;
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 

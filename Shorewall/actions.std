@@ -33,13 +33,13 @@
 #
 ###############################################################################
 #ACTION
-A_Drop 		    # Audited Default Action for DROP policy
-A_Reject	    # Audited Default action for REJECT policy
-Broadcast	    # Handles Broadcast/Multicast/Anycast
-Drop		    # Default Action for DROP policy
-DropSmurfs          # Drop smurf packets
-Invalid             # Handles packets in the INVALID conntrack state
-NotSyn              # Handles TCP packets which do not have SYN=1 and ACK=0
-Reject		    # Default Action for REJECT policy
-RST		    # Handle packets with RST set
-TCPFlags            # Handle bad flag combinations.
+A_Drop 		        # Audited Default Action for DROP policy
+A_Reject	        # Audited Default action for REJECT policy
+Broadcast  noinline     # Handles Broadcast/Multicast/Anycast
+Drop		        # Default Action for DROP policy
+DropSmurfs noinline     # Drop smurf packets
+Invalid    noinline     # Handles packets in the INVALID conntrack state
+NotSyn     noinline     # Handles TCP packets which do not have SYN=1 and ACK=0
+Reject                  # Default Action for REJECT policy
+RST	   noinline     # Handle packets with RST set
+TCPFlags   noinline     # Handle bad flag combinations.

@@ -725,7 +725,7 @@ sub set_comment( $ ) {
 sub macro_comment( $ ) {
     my $macro = $_[0];
 
-    $comment = $macro unless $comment || ! ( have_capability( 'COMMENTS' ) && $config{AUTO_COMMENT} );
+    $comment = $macro unless $comment || ! ( have_capability( 'COMMENTS' ) && $config{AUTOCOMMENT} );
 }
 
 #

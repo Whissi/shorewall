@@ -4595,7 +4595,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'EXPAND_POLICIES'            , '';
     default_yes_no 'KEEP_RT_TABLES'             , '';
     default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
-    default_yes_no 'AUTO_COMMENT'               , 'Yes';
+    default_yes_no 'AUTOCOMMENT'                , 'Yes';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'MANGLE_ENABLED'             , have_capability 'MANGLE_ENABLED' ? 'Yes' : '';

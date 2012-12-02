@@ -3432,6 +3432,62 @@ sub delete_duplicates {
     \@rules;
 }
 
+sub delete_adjacent_duplicates {
+    my @rules;
+    my $chainref  = shift;
+    my $lastrule  = @_;
+    my $baseref   = pop;
+    my $ruleref;
+    my $duplicate = 0;
+
+    while ( @_ && ! $duplicate ) {
+	{
+	    my $ports1;
+	    my @keys1     = sort( keys( %$baseref ) );
+	    my $rulenum   = @_;
+	    my $duplicate = 0;
+
+	    if ( $baseref->{mode} == CAT_MODE ) {
+		{
+		  RULE:
+
+		    while ( --$rulenum >= 0 ) {
+			$ruleref = $_[$rulenum];
+
+			last unless $ruleref->{mode} == CAT_MODE;
+
+			my @keys2 = sort(keys( %$ruleref ) );
+
+			last RULE unless @keys1 == @keys2 ;
+
+			my $keynum = 0;
+
+			for my $key ( @keys1 ) {
+			    last RULE unless $key eq $keys2[$keynum++];
+			    last RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			}
+
+			$duplicate = 1;
+		    }
+		}
+	    }
+
+	    if ( $duplicate ) {
+		trace( $chainref, 'D', $lastrule, $baseref ) if $debug;
+	    } else {
+		unshift @rules, $baseref;
+	    }
+
+	    $baseref = pop @_;
+	    $lastrule--;
+	}
+    }
+
+    unshift @rules, $baseref if $baseref;
+
+    \@rules;
+}
+
 sub optimize_level16( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my @chains   = ( grep $_->{referenced}, values %{$tableref} );
@@ -3440,18 +3496,24 @@ sub optimize_level16( $$$ ) {
 
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 16...";
 
-    if ( $table eq 'raw' ) {
-	#
-	# Helpers in rules have the potential for generating lots of duplicate iptables rules
-	# in the raw table. This step eliminates those duplicates
-	#
-	for my $chainref ( @chains ) {
+    for my $chainref ( @chains ) {
+	if ( $table eq 'raw' ) {
+	    #
+	    # Helpers in rules have the potential for generating lots of duplicate iptables rules
+	    # in the raw table. This step eliminates those duplicates
+	    #
 	    $chainref->{rules} = delete_duplicates( $chainref, @{$chainref->{rules}} );
+	} else {
+	    #
+	    # Conservative version that only deletes adjacent duplicates
+	    #
+	    $chainref->{rules} = delete_adjacent_duplicates( $chainref, @{$chainref->{rules}} );
 	}
 
-	$passes++;
     }
 
+    $passes++;
+    
     for my $chainref ( @chains ) {
 	$chainref->{rules} = combine_dports( $chainref, @{$chainref->{rules}} );
     }

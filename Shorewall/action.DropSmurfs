@@ -24,8 +24,6 @@ my ( $audit ) = get_action_params( 1 );
 
 my $chainref        = get_action_chain;
 
-fatal_error "The DropSmurfs Action may not be invoked in-line" unless $chainref->{action};
-
 my ( $level, $tag ) = get_action_logging;
 my $target;
 

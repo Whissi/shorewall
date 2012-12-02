@@ -43,8 +43,6 @@ fatal_error "Invalid parameter ($action) to action RST"  unless $action =~ /^(?:
 
 my $chainref         = get_action_chain;
 
-fatal_error "The RST Action may not be invoked in-line" unless $chainref->{action};
-
 my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
 

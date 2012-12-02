@@ -22,8 +22,6 @@ my ( $disposition, $audit ) = get_action_params( 2 );
 
 my $chainref        = get_action_chain;
 
-fatal_error "The TCPFlags Action may not be invoked in-line" unless $chainref->{action};
-
 my ( $level, $tag ) = get_action_logging;
 
 fatal_error q(The first argument to 'TCPFlags' must be ACCEPT, REJECT, or DROP) unless $disposition =~ /^(ACCEPT|REJECT|DROP)$/;

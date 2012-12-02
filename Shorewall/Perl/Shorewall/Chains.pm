@@ -3370,6 +3370,13 @@ sub combine_dports {
     \@rules;
 }
 
+my %bad_match = ( conntrack => 1, 
+		  dscp      => 1,
+		  ecn       => 1,
+		  mark      => 1,
+		  set       => 1,
+		  tos       => 1,
+		  u32       => 1 );
 #
 # Delete duplicate rules from the passed chain.
 #
@@ -3388,22 +3395,10 @@ sub delete_duplicates {
 	my $duplicate = 0;
 
 	if ( $baseref->{mode} == CAT_MODE ) {
-	    $docheck = 1;
-	    #
-	    # We must not suppress duplicate rules that match on things that can
-	    # be altered by other rules in the chain
-	    #
-	    for ( qw( mark connmark dscp tos set ecn u32 ) ) {
-		$docheck = 0, last if exists $baseref->{$_};
-	    }
-	} else {
-	    $docheck = 0;
-	}
-
-	if ( $docheck ) {
 	    my $ports1;
-	    my @keys1     = sort( keys( %$baseref ) );
-	    my $rulenum   = @_;
+	    my @keys1    = sort( keys( %$baseref ) );
+	    my $rulenum  = @_;
+	    my $adjacent = 1;
 		
 	    {
 	      RULE:
@@ -3419,12 +3414,24 @@ sub delete_duplicates {
 
 		    my $keynum = 0;
 
-		    for my $key ( @keys1 ) {
-			next RULE unless $key eq $keys2[$keynum++];
-			next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+		    if ( $adjacent > 0 ) {
+			for my $key ( @keys1 ) {
+			    next RULE unless $key eq $keys2[$keynum++];
+			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			}
+		    } else {
+			for my $key ( @keys1 ) {
+			    last RULE if $bad_match{$key};
+			    next RULE unless $key eq $keys2[$keynum++];
+			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			}
 		    }
 
 		    $duplicate = 1;
+		    $adjacent++;
+
+		} continue {
+		    $adjacent--;
 		}
 	    }
 	}

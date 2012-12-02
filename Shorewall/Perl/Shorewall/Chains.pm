@@ -3382,105 +3382,61 @@ sub delete_duplicates {
     my $lastrule  = @_;
     my $baseref   = pop;
     my $ruleref;
-    my $duplicate = 0;
 
-    while ( @_ && ! $duplicate ) {
-	{
+    while ( @_ ) {
+	my $docheck;
+	my $duplicate = 0;
+
+	if ( $baseref->{mode} == CAT_MODE ) {
+	    $docheck = 1;
+	    #
+	    # We must not suppress duplicate rules that match on things that can
+	    # be altered by other rules in the chain
+	    #
+	    for ( qw( mark connmark dscp tos set ecn u32 ) ) {
+		$docheck = 0, last if exists $baseref->{$_};
+	    }
+	} else {
+	    $docheck = 0;
+	}
+
+	if ( $docheck ) {
 	    my $ports1;
 	    my @keys1     = sort( keys( %$baseref ) );
 	    my $rulenum   = @_;
-	    my $duplicate = 0;
+		
+	    {
+	      RULE:
 
-	    if ( $baseref->{mode} == CAT_MODE ) {
-		{
-		  RULE:
+		while ( --$rulenum >= 0 ) {
+		    $ruleref = $_[$rulenum];
 
-		    while ( --$rulenum >= 0 ) {
-			$ruleref = $_[$rulenum];
+		    last unless $ruleref->{mode} == CAT_MODE;
 
-			last unless $ruleref->{mode} == CAT_MODE;
+		    my @keys2 = sort(keys( %$ruleref ) );
 
-			my @keys2 = sort(keys( %$ruleref ) );
+		    next unless @keys1 == @keys2 ;
 
-			next unless @keys1 == @keys2 ;
+		    my $keynum = 0;
 
-			my $keynum = 0;
-
-			for my $key ( @keys1 ) {
-			    next RULE unless $key eq $keys2[$keynum++];
-			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
-			}
-
-			$duplicate = 1;
+		    for my $key ( @keys1 ) {
+			next RULE unless $key eq $keys2[$keynum++];
+			next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 		    }
+
+		    $duplicate = 1;
 		}
 	    }
-
-	    if ( $duplicate ) {
-		trace( $chainref, 'D', $lastrule, $baseref ) if $debug;
-	    } else {
-		unshift @rules, $baseref;
-	    }
-
-	    $baseref = pop @_;
-	    $lastrule--;
 	}
-    }
 
-    unshift @rules, $baseref if $baseref;
-
-    \@rules;
-}
-
-sub delete_adjacent_duplicates {
-    my @rules;
-    my $chainref  = shift;
-    my $lastrule  = @_;
-    my $baseref   = pop;
-    my $ruleref;
-    my $duplicate = 0;
-
-    while ( @_ && ! $duplicate ) {
-	{
-	    my $ports1;
-	    my @keys1     = sort( keys( %$baseref ) );
-	    my $rulenum   = @_;
-	    my $duplicate = 0;
-
-	    if ( $baseref->{mode} == CAT_MODE ) {
-		{
-		  RULE:
-
-		    while ( --$rulenum >= 0 ) {
-			$ruleref = $_[$rulenum];
-
-			last unless $ruleref->{mode} == CAT_MODE;
-
-			my @keys2 = sort(keys( %$ruleref ) );
-
-			last RULE unless @keys1 == @keys2 ;
-
-			my $keynum = 0;
-
-			for my $key ( @keys1 ) {
-			    last RULE unless $key eq $keys2[$keynum++];
-			    last RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
-			}
-
-			$duplicate = 1;
-		    }
-		}
-	    }
-
-	    if ( $duplicate ) {
-		trace( $chainref, 'D', $lastrule, $baseref ) if $debug;
-	    } else {
-		unshift @rules, $baseref;
-	    }
-
-	    $baseref = pop @_;
-	    $lastrule--;
+	if ( $duplicate ) {
+	    trace( $chainref, 'D', $lastrule, $baseref ) if $debug;
+	} else {
+	    unshift @rules, $baseref;
 	}
+
+	$baseref = pop @_;
+	$lastrule--;
     }
 
     unshift @rules, $baseref if $baseref;
@@ -3497,19 +3453,7 @@ sub optimize_level16( $$$ ) {
     progress_message "\n Table $table pass $passes, $chains referenced user chains, level 16...";
 
     for my $chainref ( @chains ) {
-	if ( $table eq 'raw' ) {
-	    #
-	    # Helpers in rules have the potential for generating lots of duplicate iptables rules
-	    # in the raw table. This step eliminates those duplicates
-	    #
-	    $chainref->{rules} = delete_duplicates( $chainref, @{$chainref->{rules}} );
-	} else {
-	    #
-	    # Conservative version that only deletes adjacent duplicates
-	    #
-	    $chainref->{rules} = delete_adjacent_duplicates( $chainref, @{$chainref->{rules}} );
-	}
-
+	$chainref->{rules} = delete_duplicates( $chainref, @{$chainref->{rules}} );
     }
 
     $passes++;

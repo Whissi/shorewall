@@ -1478,13 +1478,19 @@ sub process_actions() {
 
 	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*$/;
 
-	    if ( $options eq 'inline' ) {
-		$type = INLINE;
-	    } elsif ( $options eq 'noinline' ) {
-		$noinline = 1;
-	    } else {
-		fatal_error "Invalid option($options)" unless $options eq '-';
+	    if ( $options ne '-' ) {
+		for ( split_list( $options, 'option' ) ) {
+		    if ( $_ eq 'inline' ) {
+			$type = INLINE;
+		    } elsif ( $_ eq 'noinline' ) {
+			$noinline = 1;
+		    } else {
+			fatal_error "Invalid option ($_)";
+		    }
+		}
 	    }
+
+	    fatal_error "Conflicting OPTIONS ($options)" if $noinline && $type == INLINE; 
 
 	    if ( my $actiontype = $targets{$action} ) {
 		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {

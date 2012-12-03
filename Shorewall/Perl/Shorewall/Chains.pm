@@ -3432,9 +3432,9 @@ sub delete_duplicates {
 			# There are non-duplicate rules between this rule and the base rule
 			#
 			for my $key ( @keys1 ) {
-			    last RULE if $bad_match{$key};
 			    next RULE unless $key eq $keys2[$keynum++];
 			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			    last RULE if $bad_match{$key};
 			}
 		    }
 		    #

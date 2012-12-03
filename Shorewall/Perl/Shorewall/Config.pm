@@ -472,7 +472,7 @@ my %compiler_params;
 #
 # Action parameters
 #
-my @actparms;
+my %actparms;
 
 our $currentline;            # Current config file line image
 my  $currentfile;            # File handle reference
@@ -901,7 +901,7 @@ sub initialize( $;$$) {
 
     %compiler_params = ();
 
-    @actparms = ();
+    %actparms = ( );
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -1922,15 +1922,16 @@ sub evaluate_expression( $$$ ) {
     my $val;
     my $count = 0;
 
-    #                         $1      $2   $3      -     $4
-    while ( $expression =~ m( ^(.*?) \$({)? (\w+) (?(2)}) (.*)$ )x ) {
+    #                         $1      $2   $3                    -     $4
+    while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
-	$val = ( exists $ENV{$var}     ? $ENV{$var}    :
-		 exists $params{$var}  ? $params{$var} :
-		 exists $config{$var}  ? $config{$var} :
-		 exists $renamed{$var} ? $config{$renamed{$var}} :
-		 exists $capdesc{$var} ? have_capability( $var ) : 0 );
+	$val = ( exists $ENV{$var}      ? $ENV{$var}    :
+		 exists $params{$var}   ? $params{$var} :
+		 exists $config{$var}   ? $config{$var} :
+		 exists $renamed{$var}  ? $config{$renamed{$var}} :
+		 exists $actparms{$var} ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
+		 exists $capdesc{$var}  ? have_capability( $var ) : 0 );
 	$val = 0 unless defined $val;
 	$val = "'$val'" unless $val =~ /^-?\d+$/;
 	$expression = join( '', $first, $val || 0, $rest );
@@ -2469,26 +2470,28 @@ sub embedded_perl( $ ) {
 #
 # Push/pop action params
 #
-sub push_action_params( $$ ) {
-    my @params = split /,/, $_[1];
-    my @oldparams = @actparms;
+sub push_action_params( $$$$ ) {
+    my @params = ( undef , split /,/, $_[1] );
+    my %oldparams = %actparms;
 
-    @actparms = ();
+    %actparms = ();
 
-    $actparms[0] = $_[0];
+    for ( my $i = 1; $i < @params; $i++ ) {
+	my $val = $params[$i];
 
-    for ( my $i = 1; $i <= @params; $i++ ) {
-	my $val = $params[$i - 1];
-
-	$actparms[$i] = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
+	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    \@oldparams;
+    $actparms{0}         = $_[0];
+    $actparms{loglevel}  = $_[2];
+    $actparms{logtag}    = $_[3];
+
+    \%oldparams;
 }
 
 sub pop_action_params( $ ) {
     my $oldparms = shift;
-    @actparms = @$oldparms;
+    %actparms = %$oldparms;
 }
 
 sub default_action_params {
@@ -2497,11 +2500,11 @@ sub default_action_params {
 
     for ( $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
-	my $curval = $actparms[$i];
-	$actparms[$i] = $val unless supplied( $curval );
+	my $curval = $actparms{$i};
+	$actparms{$i} = $val unless supplied( $curval );
     }
 
-    fatal_error "Too Many arguments to action $action" if defined $actparms[$i];
+    fatal_error "Too Many arguments to action $action" if defined $actparms{$i};
 }
 
 sub get_action_params( $ ) {
@@ -2512,7 +2515,7 @@ sub get_action_params( $ ) {
     my @return;
 
     for ( my $i = 1; $i <= $num; $i++ ) {
-	my $val = $actparms[$i];
+	my $val = $actparms{$i};
 	push @return, defined $val ? $val eq '-' ? '' : $val eq '--' ? '-' : $val : $val;
     }
 
@@ -2520,18 +2523,18 @@ sub get_action_params( $ ) {
 }
 
 sub get_action_chain() {
-    $actparms[0];
+    $actparms{0};
 }
 
 sub set_action_param( $$ ) {
     my $i = shift;
 
     fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/ && $i > 0;
-    $actparms[$i] = shift;
+    $actparms{$i} = shift;
 }
 
 #
-# Expand Shell Variables in the passed buffer using @actparms, %params, %shorewallrc and %config, 
+# Expand Shell Variables in the passed buffer using %actparms, %params, %shorewallrc and %config, 
 #
 sub expand_variables( \$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
@@ -2543,12 +2546,14 @@ sub expand_variables( \$ ) {
 	my $val;
 
 	if ( $var =~ /^\d+$/ ) {
-	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms[$var] ) || ( length( $var ) > 1 && $var =~ /^0/ );
-	    $val = $var ? $actparms[$var] : $actparms[0]->{name};
+	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
+	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
 	} elsif ( exists $params{$var} ) {
 	    $val = $params{$var};
 	} elsif ( exists $shorewallrc{$var} ) {
 	    $val = $shorewallrc{$var}
+	} elsif ( exists $actparms{$var} ) { 
+	    $val = $actparms{$var};
 	} else {
 	    fatal_error "Undefined shell variable (\$$var)" unless exists $config{$var};
 	    $val = $config{$var};
@@ -2657,7 +2662,7 @@ sub read_a_line($) {
 	    #
 	    handle_first_entry if $first_entry;
 	    #
-	    # Expand Shell Variables using %params and @actparms
+	    # Expand Shell Variables using %params and %actparms
 	    #
 	    expand_variables( $currentline ) if $options & EXPAND_VARIABLES;
 

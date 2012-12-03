@@ -579,7 +579,7 @@ sub process_policies()
 #
 # Policy Rule application
 #
-sub process_inline ($$$$$$$$$$$$$$$$$$$);
+sub process_inline ($$$$$$$$$$$$$$$$$$$$);
 
 sub policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
@@ -598,6 +598,7 @@ sub policy_rules( $$$$$ ) {
 		#
 		process_inline( $inline,      #Inline
 				$chainref,    #Chain
+				$loglevel,    #Log Level and Tag
 				$default,     #Target
 				$param || '', #Param
 				'-',          #Source
@@ -971,13 +972,13 @@ sub externalize( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$$ ) {
+sub new_action( $$$$ ) {
 
-    my ( $action , $type, $noinline ) = @_;
+    my ( $action , $type, $noinline, $nolog ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => '' , noinline => $noinline } if $type & ACTION;
+    $actions{$action} = { actchain => '' , noinline => $noinline, nolog => $nolog } if $type & ACTION;
 
     $targets{$action} = $type;
 }
@@ -1460,7 +1461,7 @@ sub process_actions() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1 ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file $file;
@@ -1470,6 +1471,7 @@ sub process_actions() {
 
 	    my $type     = ACTION;
 	    my $noinline = 0;
+	    my $nolog    = 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1484,6 +1486,8 @@ sub process_actions() {
 			$type = INLINE;
 		    } elsif ( $_ eq 'noinline' ) {
 			$noinline = 1;
+		    } elsif ( $_ eq 'nolog' ) {
+			$nolog = 1;
 		    } else {
 			fatal_error "Invalid option ($_)";
 		    }
@@ -1507,13 +1511,13 @@ sub process_actions() {
 		}
 	    }
 
-	    new_action $action, $type, $noinline;
+	    new_action $action, $type, $noinline, $nolog;
 
 	    my $actionfile = find_file( "action.$action" );
 
 	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-	    $inlines{$action} = $actionfile if $type == INLINE;
+	    $inlines{$action} = { file => $actionfile, nolog => $nolog } if $type == INLINE;
 	}
     }
 
@@ -1525,7 +1529,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ );
 # Populate an action invocation chain. As new action tuples are encountered,
 # the function will be called recursively by process_rule1().
 #
-sub process_action( $) {
+sub process_action($) {
     my $chainref = shift;
     my $wholeaction = $chainref->{action};
     my ( $action, $level, $tag, $param ) = split /:/, $wholeaction, 4;
@@ -1543,7 +1547,9 @@ sub process_action( $) {
 
 	push_open $actionfile;
 
-	my $oldparms = push_action_params( $chainref, $param );
+	my $oldparms = push_action_params( $chainref, $param, $level, $tag );
+
+	my $nolog = $actions{$action}{nolog};
 
 	$active{$action}++;
 	push @actionstack, $wholeaction;
@@ -1582,7 +1588,7 @@ sub process_action( $) {
 	    }
 
 	    process_rule1( $chainref,
-			   merge_levels( "$action:$level:$tag", $target ),
+			   $nolog ? $target : merge_levels( "$action:$level:$tag", $target ),
 			   '',
 			   $source,
 			   $dest,
@@ -1764,8 +1770,8 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 #
 # Expand an inline action rule from the rules file
 #
-sub process_inline ($$$$$$$$$$$$$$$$$$$) {
-    my ($inline, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
+sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
+    my ($inline, $chainref, $loglevel, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
     my $nocomment = no_comment;
 
@@ -1773,9 +1779,15 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$) {
 
     macro_comment $inline;
 
-    my $oldparms = push_action_params( $chainref, $param );
+    my ( $level, $tag ) = split( ':', $loglevel, 2 );
 
-    my $inlinefile = $inlines{$inline};
+    my $oldparms   = push_action_params( $chainref,
+					 $param,
+					 supplied $level ? $level : 'none',
+					 defined  $tag   ? $tag   : '');
+
+    my $inlinefile = $inlines{$inline}{file};
+    my $nolog      = $inlines{$inline}{nolog};
 
     progress_message "..Expanding inline action $inlinefile...";
 
@@ -1815,7 +1827,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$) {
 	    next;
 	}
 
-	$mtarget = merge_levels $target, $mtarget;
+	$mtarget = merge_levels( $target, $mtarget ) unless $nolog;
 
 	my $action = isolate_basic_target $mtarget;
 
@@ -2277,6 +2289,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
 	my $generated = process_inline( $basictarget,
 					$chainref,
+					$loglevel,
 					$target,
 					$current_param,
 					$source,

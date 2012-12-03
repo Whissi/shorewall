@@ -1927,12 +1927,14 @@ sub evaluate_expression( $$$ ) {
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
-	$val = ( exists $ENV{$var}      ? $ENV{$var}    :
-		 exists $params{$var}   ? $params{$var} :
-		 exists $config{$var}   ? $config{$var} :
-		 exists $renamed{$var}  ? $config{$renamed{$var}} :
-		 exists $actparms{$var} ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
-		 exists $capdesc{$var}  ? have_capability( $var ) : 0 );
+	$val = ( exists $ENV{$var}          ? $ENV{$var}    :
+		 exists $params{$var}       ? $params{$var} :
+		 exists $config{$var}       ? $config{$var} :
+		 exists $renamed{$var}      ? $config{$renamed{$var}} :
+		 exists $shorewallrc1{$var} ? $shorewallrc1{$var} :
+		 exists $shorewallrc{$var}  ? $shorewallrc{$var} :
+		 exists $actparms{$var}     ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
+		 exists $capdesc{$var}      ? have_capability( $var ) : 0 );
 	$val = 0 unless defined $val;
 	$val = "'$val'" unless $val =~ /^-?\d+$/;
 	$expression = join( '', $first, $val || 0, $rest );
@@ -2535,7 +2537,7 @@ sub set_action_param( $$ ) {
 }
 
 #
-# Expand Shell Variables in the passed buffer using %actparms, %params, %shorewallrc and %config, 
+# Expand Shell Variables in the passed buffer using %actparms, %params, %shorewallrc1 and %config, 
 #
 sub expand_variables( \$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
@@ -2554,6 +2556,8 @@ sub expand_variables( \$ ) {
 	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
 	} elsif ( exists $params{$var} ) {
 	    $val = $params{$var};
+	} elsif ( exists $shorewallrc1{$var} ) {
+	    $val = $shorewallrc1{$var}
 	} elsif ( exists $shorewallrc{$var} ) {
 	    $val = $shorewallrc{$var}
 	} elsif ( exists $actparms{$var} ) { 

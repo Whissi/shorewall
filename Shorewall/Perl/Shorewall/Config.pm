@@ -735,6 +735,7 @@ sub initialize( $;$$) {
 	  HELPERS => undef,
 	  AUTOHELPERS => undef,
 	  RESTORE_ROUTEMARKS => undef,
+	  ALLOWUNKNOWNVARIABLES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -2546,6 +2547,9 @@ sub expand_variables( \$ ) {
 	my $val;
 
 	if ( $var =~ /^\d+$/ ) {
+	    fatal_error "Undefined parameter (\$$var)" unless ( $config{ALLOWUNKNOWNVARIABLES} ||
+								( defined $actparms{$var} &&
+								  ( length( $var ) == 1 || $var !~ /^0/ ) ) );
 	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
 	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
 	} elsif ( exists $params{$var} ) {
@@ -4631,6 +4635,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
     default_yes_no 'AUTOHELPERS'                , 'Yes';
     default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
+    default_yes_no 'ALLOWUNKNOWNVARIABLES'      , 'Yes';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
 

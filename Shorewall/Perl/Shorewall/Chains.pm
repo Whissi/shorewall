@@ -3370,6 +3370,11 @@ sub combine_dports {
     \@rules;
 }
 
+#
+# When suppressing duplicate rules, care must be taken to avoid suppressing non-adjacent duplicates 
+# using any of these matches, because an intervening rule could modify the result of the match
+# of the second duplicate
+#
 my %bad_match = ( conntrack => 1, 
 		  dscp      => 1,
 		  ecn       => 1,
@@ -3415,19 +3420,30 @@ sub delete_duplicates {
 		    my $keynum = 0;
 
 		    if ( $adjacent > 0 ) {
+			#
+			# There are no non-duplicate rules between this rule and the base rule
+			#
 			for my $key ( @keys1 ) {
 			    next RULE unless $key eq $keys2[$keynum++];
 			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 			}
 		    } else {
+			#
+			# There are non-duplicate rules between this rule and the base rule
+			#
 			for my $key ( @keys1 ) {
 			    last RULE if $bad_match{$key};
 			    next RULE unless $key eq $keys2[$keynum++];
 			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 			}
 		    }
-
+		    #
+		    # This rule is a duplicate
+		    #
 		    $duplicate = 1;
+		    #
+		    # Increment $adjacent so that the continue block won't set it to zero
+		    #
 		    $adjacent++;
 
 		} continue {

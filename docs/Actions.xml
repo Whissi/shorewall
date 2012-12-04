@@ -58,8 +58,9 @@
     series of one or more iptables rules. The symbolic name may appear in the
     ACTION column of an <filename><ulink
     url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink></filename>
-    file entry, in which case the traffic matching that rules file entry will
-    be passed to the series of iptables rules named by the action.</para>
+    entry, in a <ulink url="Macros.html">macro</ulink> body and within another
+    action, in which case the traffic matching that rules file entry will be
+    passed to the series of iptables rules named by the action.</para>
 
     <para>Actions can be thought of as templates. When an action is invoked in
     an <filename>/etc/shorewall/rules</filename> entry, it may be qualified by
@@ -289,12 +290,6 @@ ACCEPT   -              -               tcp     135,139,445
     POLICY column of <ulink
     url="manpages/shorewall-policy.html">shorewall-policy</ulink>(5) (e.g.,
     DROP:<emphasis role="bold">Drop(audit)</emphasis>:audit).</para>
-
-    <note>
-      <para>Beginning with Shorewall 4.5.10, a <ulink
-      url="Macros.html">macro</ulink> may also be specified as a default
-      action.</para>
-    </note>
   </section>
 
   <section id="Defining">

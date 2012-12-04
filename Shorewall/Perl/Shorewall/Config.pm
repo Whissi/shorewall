@@ -191,7 +191,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 'MODULEVERSION';
+our $VERSION = '4.5.11-Beta1';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -1914,12 +1914,19 @@ sub close_file() {
 sub have_capability( $ );
 
 #
-# Report an error from process_conditional()
+# Report an error or warning from process_conditional()
 #
 sub cond_error( $$$ ) {
     $currentfilename   = $_[1];
     $currentlinenumber = $_[2];
     fatal_error $_[0];
+}
+
+sub cond_warning( $$$ ) {
+    my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
+    ( my $warning, $currentfilename, $currentlinenumber ) = @_;
+    warning_message $warning;
+    ( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
 }
 
 #
@@ -1993,7 +2000,7 @@ sub process_conditional( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    cond_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF)(.*)$/i;
+    cond_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2032,11 +2039,27 @@ sub process_conditional( $$$$ ) {
 	cond_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
 	$omitting = $included || ! $omitting unless $prioromit;
 	$ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
-    } else {
+    } elsif ( $keyword eq 'ENDIF' ) {
 	cond_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
 	cond_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
 	$omitting = $prioromit;
 	pop @ifstack;
+    } elsif ( $keyword =~ /^SET/ ) {
+	fatal_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
+	( my $var , $expression ) = split ' ', $expression, 2;
+	cond_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+	cond_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
+	$variables{$1} = evaluate_expression( $expression, $filename, $linenumber );
+    } else {
+	my $var = $expression;
+	cond_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
+	cond_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+
+	if ( exists $variables{$1} ) {
+	    delete $variables{$1};
+	} else {
+	    cond_warning( "Variable $1 does not exist", $filename, $linenumber );
+	}
     }
 
     $omitting;
@@ -2626,7 +2649,7 @@ sub read_a_line($) {
 	    #
 	    # Handle conditionals
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF)/i ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET)/i ) {
 		$omitting = process_conditional( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

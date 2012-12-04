@@ -122,7 +122,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       qt
 				       ensure_config_path
 				       add_param
-				       add_symbol
 				       export_params
 				       get_configuration
 				       report_capabilities
@@ -561,10 +560,10 @@ use constant { PLAIN_READ          => 0,     # No read_a_line options
                NORMAL_READ         => -1     # All options
 	   };
 
-my %symbols; # Symbol table for expanding shell variables
+my %variables; # Symbol table for expanding shell variables
 
 sub process_shorewallrc($$);
-sub add_symbols( \% );
+sub add_variables( \% );
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -957,7 +956,7 @@ sub initialize( $;$$) {
 		    CONFDIR  => '/etc/',
 		    );
 
-    %symbols = %ENV;
+    %variables = %ENV;
     #
     # If we are compiling for export, process the shorewallrc from the remote system
     #
@@ -999,7 +998,7 @@ sub initialize( $;$$) {
 
     %shorewallrc1 = %shorewallrc unless $shorewallrc1;
 
-    add_symbols %shorewallrc1;
+    add_variables %shorewallrc1;
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -1935,6 +1934,7 @@ sub evaluate_expression( $$$ ) {
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
+	$val = ( exists $variables{$var}    ? $variables{$var}    :
 	$val = ( exists $symbols{$var}      ? $symbols{$var}    :
 		 exists $actparms{$var}     ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
 		 exists $capdesc{$var}      ? have_capability( $var ) : 0 );
@@ -2557,8 +2557,8 @@ sub expand_variables( \$ ) {
 								  ( length( $var ) == 1 || $var !~ /^0/ ) ) );
 	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
 	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
-	} elsif ( exists $symbols{$var} ) {
-	    $val = $symbols{$var};
+	} elsif ( exists $variables{$var} ) {
+	    $val = $variables{$var};
 	} elsif ( exists $actparms{$var} ) { 
 	    $val = $actparms{$var};
 	} else {
@@ -4347,34 +4347,27 @@ sub get_params() {
 	}
     }
 
-    add_symbols %params;
+    add_variables %params;
 }
 
 #
-# Add an entry to %param, %symbols and to %compiler_params
+# Add an entry to %param, %variabless and to %compiler_params
 #
 sub add_param( $$ ) {
     my ( $param, $value ) = @_;
 
-    $params{$param}   = $value;
-    $symbols{$param}  = $value;
+    $params{$param}    = $value;
+    $variables{$param} = $value;
     $compiler_params{$param} = 1;
 }
 
 #
-# Add an entry to %symbols
-#
-sub add_symbol( $$ ) {
-    $symbols{$_[0]} = $_[1];
-}
-
-#
-# Add symbols from a hash
+# Add variables from a hash
 #
 
-sub add_symbols( \% ) {
+sub add_variables( \% ) {
     while ( my ( $var, $val ) = each %{$_[0]} ) {
-	$symbols{$var} = $val;
+	$variables{$var} = $val;
     }
 }
 
@@ -4952,10 +4945,10 @@ sub get_configuration( $$$ ) {
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{PROVIDER_OFFSET} > 0;
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
 
-    add_symbols %config;
+    add_variables %config;
 
     while ( my ($var, $val ) = each %renamed ) {
-	$symbols{$var} = $config{$val};
+	$variables{$var} = $config{$val};
     }
 }
 #

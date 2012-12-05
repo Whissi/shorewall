@@ -1944,6 +1944,7 @@ sub evaluate_expression( $$$ ) {
 	$val = ( exists $variables{$var}    ? $variables{$var}    :
 		 exists $actparms{$var}     ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
 		 exists $capdesc{$var}      ? have_capability( $var ) : '' );
+
 	$val = '' unless defined $val;
 
 	if ( $val eq '' ) {

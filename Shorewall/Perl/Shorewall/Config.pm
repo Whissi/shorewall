@@ -1914,15 +1914,15 @@ sub close_file() {
 sub have_capability( $ );
 
 #
-# Report an error or warning from process_conditional()
+# Report an error or warning from process_compiler_directive()
 #
-sub cond_error( $$$ ) {
+sub directive_error( $$$ ) {
     $currentfilename   = $_[1];
     $currentlinenumber = $_[2];
     fatal_error $_[0];
 }
 
-sub cond_warning( $$$ ) {
+sub directive_warning( $$$ ) {
     my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
     ( my $warning, $currentfilename, $currentlinenumber ) = @_;
     warning_message $warning;
@@ -1930,7 +1930,7 @@ sub cond_warning( $$$ ) {
 }
 
 #
-# Evaluate an expression in an ?IF or ?ELSIF directive
+# Evaluate an expression in an ?IF, ?ELSIF or ?SET directive
 #
 sub evaluate_expression( $$$ ) {
     my ( $expression , $filename , $linenumber ) = @_;
@@ -1952,7 +1952,7 @@ sub evaluate_expression( $$$ ) {
 				   ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
 
 	$expression = join( '', $first, $val, $rest );
-	cond_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
+	directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
     #                         $1      $2   $3      -     $4
@@ -1969,7 +1969,7 @@ sub evaluate_expression( $$$ ) {
 	} elsif ( $cap =~ /^IPV([46])$/ ) {
 	    $val = ( $family == $1 ) || 0;
 	} else {
-	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
+	    directive_error "Unknown capability ($cap)", $filename, $linenumber;
 	}
 
 	$expression = join( '', $first, $val, $rest );
@@ -1986,7 +1986,7 @@ sub evaluate_expression( $$$ ) {
 	$val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
 
 	unless ( $val ) {
-	    cond_error( "Couldn't parse expression ($expression): $@" , $filename, $linenumber ) if $@;
+	    directive_error( "Couldn't parse expression ($expression): $@" , $filename, $linenumber ) if $@;
 	    $val = '' unless defined $val;
 	}
     }
@@ -2002,12 +2002,12 @@ sub evaluate_expression( $$$ ) {
 # [2] = True if we have included any block of the current IF...ELSEIF....ELSEIF... sequence.
 # [3] = The line number of the directive
 #
-sub process_conditional( $$$$ ) {
+sub process_compiler_directive( $$$$ ) {
     my ( $omitting, $line, $filename, $linenumber ) = @_;
 
     print "CD===> $line\n" if $debug;
 
-    cond_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2021,13 +2021,13 @@ sub process_conditional( $$$$ ) {
     my ( $lastkeyword, $prioromit, $included, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
     if ( $keyword =~ /^IF/ ) {
-	cond_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
+	directive_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
 	my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
 	push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
 	$omitting = $nextomitting;
     } elsif ( $keyword =~ /^ELSIF/ ) {
-	cond_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
-	cond_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
+	directive_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	directive_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
 	if ( $omitting && ! $included ) {
 	    #
 	    # We can only change to including if we were previously omitting
@@ -2042,33 +2042,33 @@ sub process_conditional( $$$$ ) {
 	}
 	$ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
     } elsif ( $keyword eq 'ELSE' ) {
-	cond_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
-	cond_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	directive_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
+	directive_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
 	$omitting = $included || ! $omitting unless $prioromit;
 	$ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
     } elsif ( $keyword eq 'ENDIF' ) {
-	cond_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
-	cond_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
+	directive_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
+	directive_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
 	$omitting = $prioromit;
 	pop @ifstack;
     } elsif ( ! $omitting ) {
 	if ( $keyword =~ /^SET/ ) {
 	    fatal_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
 	    ( my $var , $expression ) = split ' ', $expression, 2;
-	    cond_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
-	    cond_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
+	    directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+	    directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
 	    $variables{$1} = evaluate_expression( $expression,
 						  $filename,
 						  $linenumber );
 	} else {
 	    my $var = $expression;
-	    cond_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
-	    cond_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+	    directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
+	    directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
 
 	    if ( exists $variables{$1} ) {
 		delete $variables{$1};
 	    } else {
-		cond_warning( "Variable $1 does not exist", $filename, $linenumber );
+		directive_warning( "Variable $1 does not exist", $filename, $linenumber );
 	    }
 	}
     }
@@ -2098,7 +2098,7 @@ sub copy( $ ) {
 	    $lineno++;
 
 	    if ( /^\s*\?/ ) {
-		$omitting = process_conditional( $omitting, $_, $file, $lineno );
+		$omitting = process_compiler_directive( $omitting, $_, $file, $lineno );
 		next;
 	    }
 
@@ -2151,7 +2151,7 @@ sub copy1( $ ) {
 		chomp;
 
 		if ( /^\s*\?/ ) {
-		    $omitting = process_conditional( $omitting, $_, $currentfilename, $currentlinenumber );
+		    $omitting = process_compiler_directive( $omitting, $_, $currentfilename, $currentlinenumber );
 		    next;
 		}
 
@@ -2282,7 +2282,7 @@ EOF
 		chomp;
 
 		if ( /^\s*\?/ ) {
-		    $omitting = process_conditional( $omitting, $_, $file, $lineno );
+		    $omitting = process_compiler_directive( $omitting, $_, $file, $lineno );
 		    next;
 		}
 
@@ -2661,7 +2661,7 @@ sub read_a_line($) {
 	    # Handle conditionals
 	    #
 	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET)/i ) {
-		$omitting = process_conditional( $omitting, $_, $currentfilename, $. );
+		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
 		next;
 	    }
 

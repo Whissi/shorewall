@@ -1943,10 +1943,16 @@ sub evaluate_expression( $$$ ) {
 
 	$val = ( exists $variables{$var}    ? $variables{$var}    :
 		 exists $actparms{$var}     ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
-		 exists $capdesc{$var}      ? have_capability( $var ) : 0 );
-	$val = 0 unless defined $val;
-	$val = "'$val'" unless $val =~ /^-?\d+$/;
-	$expression = join( '', $first, $val || 0, $rest );
+		 exists $capdesc{$var}      ? have_capability( $var ) : '' );
+	$val = '' unless defined $val;
+
+	if ( $val eq '' ) {
+	    $val = "''" unless $first =~ /['"]$/;
+	} else {
+	    $val = "'$val'" unless $val =~ /^-?\d+$/;
+	}
+
+	$expression = join( '', $first, $val, $rest );
 	cond_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
@@ -1967,12 +1973,13 @@ sub evaluate_expression( $$$ ) {
 	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
 	}
 
-	$expression = join( '', $first, $val || 0, $rest );
+	$expression = join( '', $first, $val, $rest );
     }
 
     $expression =~ s/^\s*(.+)\s*$/$1/;
 
     unless ( $expression =~ /^\d+$/ ) {
+	print "EXPR=> $expression\n" if $debug;
 	#
 	# Not a simple one-term expression -- compile it
 	#

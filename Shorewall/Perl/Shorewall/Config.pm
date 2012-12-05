@@ -2044,21 +2044,25 @@ sub process_conditional( $$$$ ) {
 	cond_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
 	$omitting = $prioromit;
 	pop @ifstack;
-    } elsif ( $keyword =~ /^SET/ ) {
-	fatal_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
-	( my $var , $expression ) = split ' ', $expression, 2;
-	cond_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
-	cond_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
-	$variables{$1} = evaluate_expression( $expression, $filename, $linenumber );
-    } else {
-	my $var = $expression;
-	cond_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
-	cond_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
-
-	if ( exists $variables{$1} ) {
-	    delete $variables{$1};
+    } elsif ( ! $omitting ) {
+	if ( $keyword =~ /^SET/ ) {
+	    fatal_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
+	    ( my $var , $expression ) = split ' ', $expression, 2;
+	    cond_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+	    cond_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
+	    $variables{$1} = evaluate_expression( $expression,
+						  $filename,
+						  $linenumber );
 	} else {
-	    cond_warning( "Variable $1 does not exist", $filename, $linenumber );
+	    my $var = $expression;
+	    cond_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
+	    cond_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+
+	    if ( exists $variables{$1} ) {
+		delete $variables{$1};
+	    } else {
+		cond_warning( "Variable $1 does not exist", $filename, $linenumber );
+	    }
 	}
     }
 

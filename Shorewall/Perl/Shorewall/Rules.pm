@@ -1129,6 +1129,8 @@ sub merge_levels ($$) {
 
     my $target   = $subparts[0];
 
+    fatal_error "Missing ACTION" unless supplied $target;
+
     push @subparts, '' while @subparts < 3;   #Avoid undefined values
 
     my $sublevel = $subparts[1];

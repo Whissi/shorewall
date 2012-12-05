@@ -1947,11 +1947,9 @@ sub evaluate_expression( $$$ ) {
 
 	$val = '' unless defined $val;
 
-	if ( $val eq '' ) {
-	    $val = "''" unless $first =~ /['"]$/;
-	} else {
-	    $val = "'$val'" unless $val =~ /^-?\d+$/;
-	}
+	$val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
+				 ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
+				   ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
 
 	$expression = join( '', $first, $val, $rest );
 	cond_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
@@ -1969,7 +1967,7 @@ sub evaluate_expression( $$$ ) {
 		$val = 0;
 	    }
 	} elsif ( $cap =~ /^IPV([46])$/ ) {
-	    $val = ( $family == $1 );
+	    $val = ( $family == $1 ) || 0;
 	} else {
 	    cond_error "Unknown capability ($cap)", $filename, $linenumber;
 	}
@@ -1979,16 +1977,17 @@ sub evaluate_expression( $$$ ) {
 
     $expression =~ s/^\s*(.+)\s*$/$1/;
 
+    print "EXPR=> $expression\n" if $debug;
+
     unless ( $expression =~ /^\d+$/ ) {
-	print "EXPR=> $expression\n" if $debug;
 	#
 	# Not a simple one-term expression -- compile it
 	#
 	$val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
 
 	unless ( $val ) {
-	    cond_error( "Couldn't parse expression: $@" , $filename, $linenumber ) if $@;
-	    cond_error( "Undefined expression" , $filename, $linenumber ) unless defined $val;
+	    cond_error( "Couldn't parse expression ($expression): $@" , $filename, $linenumber ) if $@;
+	    $val = '' unless defined $val;
 	}
     }
 

@@ -1987,7 +1987,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	return $generated;
 
     } elsif ( $actiontype & ( ACTION | INLINE ) ) {
-	split_list $param, 'Action parameter';
+	split_list1 $param, 'Action parameter';
     } elsif ( $actiontype & NFQ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
 	my $paramval = $param eq '' ? 0 : numeric_value( $param );

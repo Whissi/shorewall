@@ -1728,7 +1728,7 @@ sub split_list2( $$ ) {
 		}
 	    }
 	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
-	    fatal_error "Invalid $type ($list)" unless $element ne '';
+	    fatal_error "Invalid $type ($list)" if $element eq '';
 	    $element = join (':', $element, $_ );
 	    if ( ! ( $opencount -= $count ) ) {
 		 push @list2 , $element;

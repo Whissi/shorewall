@@ -1660,8 +1660,8 @@ sub split_list( $$;$ ) {
     split /,/, $list;
 }
 
-sub split_list1( $$ ) {
-    my ($list, $type ) = @_;
+sub split_list1( $$;$ ) {
+    my ($list, $type, $keepparens ) = @_;
 
     fatal_error "Invalid $type list ($list)" if $list =~ /^,|,$|,,|!,|,!$/;
 
@@ -1674,17 +1674,17 @@ sub split_list1( $$ ) {
 
 	if ( ( $count = tr/(/(/ ) > 0 ) {
 	    fatal_error "Invalid $type list ($list)" if $element || $count > 1;
-	    s/\(//;
+	    s/\(// unless $keepparens;
 	    if ( ( $count = tr/)/)/ ) > 0 ) {
 		fatal_error "Invalid $type list ($list)" if $count > 1;
-		s/\)//;
+		s/\)// unless $keepparens;
 		push @list2 , $_;
 	    } else {
 		$element = $_;
 	    }
 	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
 	    fatal_error "Invalid $type list ($list)" unless $element && $count == 1;
-	    s/\)//;
+	    s/\)// unless $keepparens;
 	    push @list2, join ',', $element, $_;
 	    $element = '';
 	} elsif ( $element ) {
@@ -2510,7 +2510,7 @@ sub embedded_perl( $ ) {
 # Push/pop action params
 #
 sub push_action_params( $$$$ ) {
-    my @params = ( undef , split /,/, $_[1] );
+    my @params = ( undef , split_list1( $_[1], 'parameter', 1 ) );
     my %oldparams = %actparms;
 
     %actparms = ();

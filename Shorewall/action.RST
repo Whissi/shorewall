@@ -47,7 +47,7 @@ my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
 
 log_rule_limit $level, $chainref, 'RST' , $action, '', $tag, 'add', '-p 6 --tcp-flags RST RST ' if $level ne '';
-add_jump $chainref , $target, 0, '-p 6 --tcp-flags RST RST, ';
+add_jump $chainref , $target, 0, '-p 6 --tcp-flags RST RST ';
 
 allow_optimize( $chainref );
 

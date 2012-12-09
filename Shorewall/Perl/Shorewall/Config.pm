@@ -1697,6 +1697,10 @@ sub split_list1( $$;$ ) {
     @list2;
 }
 
+#
+# The next two functions split a list which contain arbitrarily deep paren nesting.
+# The first splits on ':' and the second on ','.
+#
 sub split_list2( $$ ) {
     my ($list, $type ) = @_;
 
@@ -1740,6 +1744,59 @@ sub split_list2( $$ ) {
 	    push @list2 , $_;
 	} else {
 	    $element = join ':', $element , $_;
+	}
+    }
+    
+    unless ( $opencount == 0 ) {
+	fatal_error "Invalid $type ($list)";
+    }
+
+    @list2;
+}
+
+sub split_list3( $$ ) {
+    my ($list, $type ) = @_;
+
+    fatal_error "Invalid $type ($list)" if $list =~ /^,|,,/;
+
+    my @list1 = split /,/, $list;
+    my @list2;
+    my $element   = '';
+    my $opencount = 0;
+
+
+    for ( @list1 ) {
+	my $count;
+
+	if ( ( $count = tr/(/(/ ) > 0 ) {
+	    $opencount += $count;
+	    if ( $element eq '' ) {
+		$element = $_;
+	    } else {
+		$element = join( ',', $element, $_ );
+	    }
+
+	    if ( ( $count = tr/)/)/ ) > 0 ) {
+		if ( ! ( $opencount -= $count ) ) {
+		     push @list2 , $element;
+		     $element = '';
+		} else {
+		    fatal_error "Invalid $type ($list)" if $opencount < 0;
+		}
+	    }
+	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
+	    fatal_error "Invalid $type ($list)" if $element eq '';
+	    $element = join (',', $element, $_ );
+	    if ( ! ( $opencount -= $count ) ) {
+		 push @list2 , $element;
+		 $element = '';
+	    } else {
+		fatal_error "Invalid $type ($list)" if $opencount < 0;
+	    }
+	} elsif ( $element eq '' ) {
+	    push @list2 , $_;
+	} else {
+	    $element = join ',', $element , $_;
 	}
     }
     
@@ -2510,7 +2567,7 @@ sub embedded_perl( $ ) {
 # Push/pop action params
 #
 sub push_action_params( $$$$ ) {
-    my @params = ( undef , split_list1( $_[1], 'parameter', 1 ) );
+    my @params = ( undef , split_list3( $_[1], 'parameter' ) );
     my %oldparams = %actparms;
 
     %actparms = ();

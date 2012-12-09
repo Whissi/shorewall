@@ -1470,6 +1470,46 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       <para>Options that were not set in shorewall.conf will expand to their
       default value.</para>
     </note>
+
+    <para>Beginning with Shorewall 4.5.11, variables can be altered by
+    compiler directives.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>?SET <replaceable>variable value</replaceable></term>
+
+        <listitem>
+          <para>The <replaceable>variable</replaceable> can be specified
+          either with or without a leading '$' to allow using both Perl and
+          Shell variable representation.</para>
+
+          <para>The <replaceable>value</replaceable> is a Perl-compatible
+          expression.</para>
+
+          <note>
+            <para>The Shorewall compiler performs variable expansion within
+            the expression. So variables are expanded even when they appear in
+            single quotes.</para>
+          </note>
+
+          <note>
+            <para>If a variable within the expression can contain a
+            non-numeric value, it is a good idea to enclose it in quotes.
+            Otherwise, the Shorewall compiler has to guess whether to enclose
+            the variable's value in quotes or not.</para>
+          </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>?RESET <replaceable>variable</replaceable></term>
+
+        <listitem>
+          <para>Removes the named <replaceable>variable</replaceable> from the
+          compiler's variable table.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </section>
 
   <section id="Conditional">
@@ -1558,7 +1598,9 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <para>If it is not found in any of those places, the
     <replaceable>variable</replaceable> is assumed to have a value of 0
-    (false).</para>
+    (false) in Shorewall versions prior to 4.5.11. In 4.5.11 and later, it is
+    assumed to have the value '' (empty string which also evaluates to
+    false).</para>
 
     <para>The setting in <filename>/etc/shorewall/params</filename> by be
     overridden at runtime, provided the setting in

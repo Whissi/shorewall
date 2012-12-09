@@ -1229,7 +1229,13 @@ sub merge_macro_column( $$ ) {
 # Get Macro Name -- strips away trailing /*, :* and (*) from the first column in a rule, macro or action.
 #
 sub isolate_basic_target( $ ) {
-    my $target = ( split '[/:]', $_[0])[0];
+    my $target = $_[0];
+
+    if ( $target =~ /[\/]/ ) {
+	( $target ) = split( '/', $target);
+    } else {
+	( $target ) = split_list2( $target, 'parameter' );
+    } 
 
     $target =~ /^(\w+)[(].*[)]$/ ? $1 : $target;
 }

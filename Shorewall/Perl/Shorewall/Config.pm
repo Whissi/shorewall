@@ -1998,18 +1998,34 @@ sub evaluate_expression( $$$ ) {
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
-	$val = ( exists $variables{$var}    ? $variables{$var}    :
-		 exists $actparms{$var}     ? ( $var ? $actparms{$var} : $actparms{0}->{name} ) :
-		 exists $capdesc{$var}      ? have_capability( $var ) : '' );
+	if ( $var =~ /^\d+$/ ) {
+	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	} else {
+	    $val = ( exists $variables{$var} ? $variables{$var} :
+		     exists $capdesc{$var}   ? have_capability( $var ) : '' );
+	}
 
 	$val = '' unless defined $val;
-
 	$val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
 				 ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
 				   ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
 
 	$expression = join( '', $first, $val, $rest );
 	directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
+    }
+
+    if ( $actparms{0} ) {
+	#                         $1      $2   $3                     -     $4
+	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
+	    my ( $first, $var, $rest ) = ( $1, $3, $4);
+	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	    $val = '' unless defined $val;
+	    $val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
+				     ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
+				       ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
+	    $expression = join( '', $first, $val, $rest );
+	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
+	}
     }
 
     #                         $1      $2   $3      -     $4
@@ -2578,9 +2594,10 @@ sub push_action_params( $$$$ ) {
 	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    $actparms{0}          = $_[0];
-    $actparms{_loglevel}  = $_[2];
-    $actparms{_logtag}    = $_[3];
+    $actparms{0}          =
+    $actparms{chain}      = $_[0];
+    $actparms{loglevel}   = $_[2];
+    $actparms{logtag}     = $_[3];
 
     \%oldparams;
 }
@@ -2652,12 +2669,23 @@ sub expand_variables( \$ ) {
 	} elsif ( exists $actparms{$var} ) { 
 	    $val = $actparms{$var};
 	} else {
-	    fatal_error "Undefined shell variable (\$$var)" unless exists $config{$var};
+	    fatal_error "Undefined shell variable (\$$var)" unless $config{ALLOWUNKNOWNVARIABLES} || exists $config{$var};
 	}
 
 	$val = '' unless defined $val;
 	$$lineref = join( '', $first , $val , $rest );
 	fatal_error "Variable Expansion Loop" if ++$count > 100;
+    }
+
+    if ( $actparms{0} ) {
+	#                         $1      $2   $3                     -     $4
+	while ( $$lineref =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
+	    my ( $first, $var, $rest ) = ( $1, $3, $4);
+	    my $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	    $val = '' unless defined $val;
+	    $$lineref = join( '', $first , $val , $rest );
+	    fatal_error "Variable Expansion Loop" if ++$count > 100;
+	}
     }
 }
 

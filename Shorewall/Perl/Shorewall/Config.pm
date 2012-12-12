@@ -738,7 +738,7 @@ sub initialize( $;$$) {
 	  HELPERS => undef,
 	  AUTOHELPERS => undef,
 	  RESTORE_ROUTEMARKS => undef,
-	  ALLOWUNKNOWNVARIABLES => undef,
+	  IGNOREUNKNOWNVARIABLES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -2659,7 +2659,7 @@ sub expand_variables( \$ ) {
 	my $val;
 
 	if ( $var =~ /^\d+$/ ) {
-	    fatal_error "Undefined parameter (\$$var)" unless ( $config{ALLOWUNKNOWNVARIABLES} ||
+	    fatal_error "Undefined parameter (\$$var)" unless ( $config{IGNOREUNKNOWNVARIABLES} ||
 								( defined $actparms{$var} &&
 								  ( length( $var ) == 1 || $var !~ /^0/ ) ) );
 	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
@@ -2669,7 +2669,7 @@ sub expand_variables( \$ ) {
 	} elsif ( exists $actparms{$var} ) { 
 	    $val = $actparms{$var};
 	} else {
-	    fatal_error "Undefined shell variable (\$$var)" unless $config{ALLOWUNKNOWNVARIABLES} || exists $config{$var};
+	    fatal_error "Undefined shell variable (\$$var)" unless $config{IGNOREUNKNOWNVARIABLES} || exists $config{$var};
 	}
 
 	$val = '' unless defined $val;
@@ -4787,7 +4787,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
     default_yes_no 'AUTOHELPERS'                , 'Yes';
     default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
-    default_yes_no 'ALLOWUNKNOWNVARIABLES'      , 'Yes';
+    default_yes_no 'IGNOREUNKNOWNVARIABLES'     , 'Yes';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
 

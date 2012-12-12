@@ -472,7 +472,7 @@ my %compiler_params;
 #
 # Action parameters
 #
-my %actparms;
+our %actparms;
 
 our $currentline;            # Current config file line image
 my  $currentfile;            # File handle reference
@@ -1993,12 +1993,14 @@ sub evaluate_expression( $$$ ) {
     my ( $expression , $filename , $linenumber ) = @_;
     my $val;
     my $count = 0;
+    my $chain = $actparms{chain};
 
     #                         $1      $2   $3                     -     $4
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
 	if ( $var =~ /^\d+$/ ) {
+	    fatal_error "Action parameters (\$$var) may only be referenced within the body of an action" unless $chain;
 	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
 	} else {
 	    $val = ( exists $variables{$var} ? $variables{$var} :
@@ -2014,11 +2016,11 @@ sub evaluate_expression( $$$ ) {
 	directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
-    if ( $actparms{0} ) {
+    if ( $chain ) {
 	#                         $1      $2   $3                     -     $4
 	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
-	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	    $val = $var ? $actparms{$var} : $chain;
 	    $val = '' unless defined $val;
 	    $val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
 				     ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
@@ -2594,10 +2596,13 @@ sub push_action_params( $$$$ ) {
 	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    $actparms{0}          =
-    $actparms{chain}      = $_[0];
+    $actparms{0}          = $_[0];
     $actparms{loglevel}   = $_[2];
     $actparms{logtag}     = $_[3];
+    #
+    # The Shorewall variable '@chain' has the non-word charaters removed
+    #
+    ( $actparms{chain} = $_[0]->{name} ) =~ s/[^\w]//g;
 
     \%oldparams;
 }
@@ -2651,6 +2656,7 @@ sub set_action_param( $$ ) {
 #
 sub expand_variables( \$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
+    my $chain = $actparms{chain};
     #                         $1      $2   $3                   -     $4
     while ( $$lineref =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 
@@ -2659,10 +2665,15 @@ sub expand_variables( \$ ) {
 	my $val;
 
 	if ( $var =~ /^\d+$/ ) {
-	    fatal_error "Undefined parameter (\$$var)" unless ( $config{IGNOREUNKNOWNVARIABLES} ||
-								( defined $actparms{$var} &&
-								  ( length( $var ) == 1 || $var !~ /^0/ ) ) );
-	    fatal_error "Undefined parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
+	    fatal_error "Action parameters (\$$var) may only be referenced within the body of an action" unless $chain;
+
+	    unless ( $config{IGNOREUNKNOWNVARIABLES} ) {
+		fatal_error "Undefined parameter (\$$var)" unless ( defined $actparms{$var} &&
+								    ( length( $var ) == 1 ||
+								      $var !~ /^0/ ) );
+	    }
+
+	    fatal_error "Invalid action parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
 	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
 	} elsif ( exists $variables{$var} ) {
 	    $val = $variables{$var};
@@ -2681,7 +2692,7 @@ sub expand_variables( \$ ) {
 	#                         $1      $2   $3                     -     $4
 	while ( $$lineref =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
-	    my $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	    my $val = $var ? $actparms{$var} : $actparms{chain};
 	    $val = '' unless defined $val;
 	    $$lineref = join( '', $first , $val , $rest );
 	    fatal_error "Variable Expansion Loop" if ++$count > 100;

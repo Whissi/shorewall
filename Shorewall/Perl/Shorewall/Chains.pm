@@ -4685,7 +4685,7 @@ sub do_condition( $$ ) {
 
     $chain =~ s/[^\w-]//g;
     #                          $1    $2      -     $3
-    while ( $condition =~ m( ^(.*?) @({)?0(?(2)}) (.*)$ )x ) {
+    while ( $condition =~ m( ^(.*?) @({)?(?:0|chain)(?(2)}) (.*)$ )x ) {
 	$condition = join( '', $1, $chain, $3 );
     }
 

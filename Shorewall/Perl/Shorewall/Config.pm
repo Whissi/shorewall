@@ -1987,6 +1987,20 @@ sub directive_warning( $$$ ) {
 }
 
 #
+# Add quotes to the passed value if the passed 'first part' has an odd number of quotes
+# Return an expression that concatenates $first, $val and $rest
+#
+sub add_quotes( $$$ ) {
+    my ( $first, $val, $rest ) = @_;
+
+    $val = '' unless defined $val;
+    $val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
+			     ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
+			       ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
+    join( '', $first, $val, $rest );
+}
+
+#
 # Evaluate an expression in an ?IF, ?ELSIF or ?SET directive
 #
 sub evaluate_expression( $$$ ) {
@@ -1994,7 +2008,6 @@ sub evaluate_expression( $$$ ) {
     my $val;
     my $count = 0;
     my $chain = $actparms{chain};
-
     #                         $1      $2   $3                     -     $4
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
@@ -2007,25 +2020,16 @@ sub evaluate_expression( $$$ ) {
 		     exists $capdesc{$var}   ? have_capability( $var ) : '' );
 	}
 
-	$val = '' unless defined $val;
-	$val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
-				 ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
-				   ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
-
-	$expression = join( '', $first, $val, $rest );
+	$expression = add_quotes( $first, $val, $rest );
 	directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
     if ( $chain ) {
 	#                         $1      $2   $3                     -     $4
-	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
+	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    $val = $var ? $actparms{$var} : $chain;
-	    $val = '' unless defined $val;
-	    $val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
-				     ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
-				       ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
-	    $expression = join( '', $first, $val, $rest );
+	    $expression = add_quotes( $first, $val, $rest );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
 	}
     }

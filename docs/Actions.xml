@@ -655,8 +655,55 @@ bar:debug</programlisting>
     </orderedlist>
   </section>
 
+  <section>
+    <title>Using BEGIN PERL .... END PERL in an Action</title>
+
+    <para>The Shorewall compiler provides a set of services that are available
+    to Perl code embedded in an action file.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>Shorewall::Config::get_action_params( $ )</term>
+
+        <listitem>
+          <para>This function returns an array containing the functions
+          parameters. The scalar argument is the number of parameters that you
+          expect to be passed. You can ensure that at least this many
+          parameters are passed by including a DEFAULTS line prior to the
+          embedded Perl.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Config::get_action_chain()</term>
+
+        <listitem>
+          <para>This function returns a reference to the chain table entry for
+          the current action chain.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Config::get_action_logging()</term>
+
+        <listitem>
+          <para>Returns a two-element list containing the the log level and
+          log tag specified when the action was invoked. Note that you must
+          use this function rather than @loglevel and @logtag within embedded
+          Perl, as the compiler does not expand <ulink
+          url="configuration_file_basics.html#ShorewallVariables">Shorewall
+          Variables</ulink> within embedded Perl (or embedded shell).</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>For an example of using these services, look at the standard action
+    <filename>/usr/share/shorewall/action.dropBroadcast</filename>.</para>
+  </section>
+
   <section id="Extension">
-    <title>Creating an Action using an Extension Script</title>
+    <title>Creating an Action using an Extension Script (deprecated in favor
+    of BEGIN PERL ... END PERL)</title>
 
     <para>There may be cases where you wish to create a chain with rules that
     can't be constructed using the tools defined in the

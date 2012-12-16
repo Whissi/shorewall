@@ -1990,7 +1990,7 @@ sub directive_warning( $$$ ) {
 # Add quotes to the passed value if the passed 'first part' has an odd number of quotes
 # Return an expression that concatenates $first, $val and $rest
 #
-sub add_quotes( $$$ ) {
+sub join_parts( $$$ ) {
     my ( $first, $val, $rest ) = @_;
 
     $val = '' unless defined $val;
@@ -2020,7 +2020,7 @@ sub evaluate_expression( $$$ ) {
 		     exists $capdesc{$var}   ? have_capability( $var ) : '' );
 	}
 
-	$expression = add_quotes( $first, $val, $rest );
+	$expression = join_parts( $first, $val, $rest );
 	directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
@@ -2029,7 +2029,7 @@ sub evaluate_expression( $$$ ) {
 	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    $val = $var ? $actparms{$var} : $chain;
-	    $expression = add_quotes( $first, $val, $rest );
+	    $expression = join_parts( $first, $val, $rest );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
 	}
     }

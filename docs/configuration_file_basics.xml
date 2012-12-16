@@ -1280,9 +1280,67 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </listitem>
     </orderedlist>
 
+    <para>Beginning with Shorewall 4.4.27, you may also use options in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) (e.g.,
+    $BLACKLIST_LOGLEVEL).</para>
+
+    <note>
+      <para>When an option is set to 'No' in shorewall.conf, the corresponding
+      shell variable will be empty.</para>
+    </note>
+
+    <note>
+      <para>Options that were not set in shorewall.conf will expand to their
+      default value.</para>
+    </note>
+
     <para id="Rvariables">Beginning with Shorewall 4.5.2, configuration files
     can access variables defined in the <ulink
     url="Install.htm#shorewallrc">shorewallrc file</ulink>.</para>
+
+    <para>Beginning with Shorewall 4.5.11, variables can be altered by
+    compiler directives.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>?SET <replaceable>variable value</replaceable></term>
+
+        <listitem>
+          <para>The <replaceable>variable</replaceable> can be specified
+          either with or without a leading '$' to allow using both Perl and
+          Shell variable representation.</para>
+
+          <para>The <replaceable>value</replaceable> is a Perl-compatible
+          expression.</para>
+
+          <note>
+            <para>The Shorewall compiler performs variable expansion within
+            the expression. So variables are expanded even when they appear in
+            single quotes.</para>
+          </note>
+
+          <note>
+            <para>If a variable within the expression can contain a
+            non-numeric value, it is a good idea to enclose it in quotes.
+            Otherwise, the Shorewall compiler has to guess whether to enclose
+            the variable's value in quotes or not.</para>
+          </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>?RESET <replaceable>variable</replaceable></term>
+
+        <listitem>
+          <para>Removes the named <replaceable>variable</replaceable> from the
+          compiler's variable table.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+
+  <section id="AddressVariables">
+    <title>Address Variables</title>
 
     <para>Given that shell variables are expanded at compile time, there is no
     way to cause such variables to be expended at run time. Prior to Shorewall
@@ -1456,57 +1514,83 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     <para>If there is no gateway out of the named interface, the nil IP
     address is used (0.0.0.0 in IPv4 and :: in IPv6). That way, the generated
     rule will match no packets (or all packets if used with exclusion).</para>
+  </section>
 
-    <para>Beginning with Shorewall 4.4.27, you may also use options in <ulink
-    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) (e.g.,
-    $BLACKLIST_LOGLEVEL).</para>
+  <section id="ActionVariables">
+    <title>Action Variables</title>
 
-    <note>
-      <para>When an option is set to 'No' in shorewall.conf, the corresponding
-      shell variable will be empty.</para>
-    </note>
-
-    <note>
-      <para>Options that were not set in shorewall.conf will expand to their
-      default value.</para>
-    </note>
-
-    <para>Beginning with Shorewall 4.5.11, variables can be altered by
-    compiler directives.</para>
+    <para>Action variables were introduced in Shorewall 4.4.16 and may be
+    accessed within the body of an <ulink
+    url="Actions.html">action</ulink>.</para>
 
     <variablelist>
       <varlistentry>
-        <term>?SET <replaceable>variable value</replaceable></term>
+        <term>Parameter variables</term>
 
         <listitem>
-          <para>The <replaceable>variable</replaceable> can be specified
-          either with or without a leading '$' to allow using both Perl and
-          Shell variable representation.</para>
-
-          <para>The <replaceable>value</replaceable> is a Perl-compatible
-          expression.</para>
-
-          <note>
-            <para>The Shorewall compiler performs variable expansion within
-            the expression. So variables are expanded even when they appear in
-            single quotes.</para>
-          </note>
-
-          <note>
-            <para>If a variable within the expression can contain a
-            non-numeric value, it is a good idea to enclose it in quotes.
-            Otherwise, the Shorewall compiler has to guess whether to enclose
-            the variable's value in quotes or not.</para>
-          </note>
+          <para>Parameter variables expand to the value of the corresponding
+          action parameter. <emphasis>$1</emphasis> is the first parameter,
+          <emphasis>$2</emphasis> is the second parameter and so on.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>?RESET <replaceable>variable</replaceable></term>
+        <term>Chain name</term>
 
         <listitem>
-          <para>Removes the named <replaceable>variable</replaceable> from the
-          compiler's variable table.</para>
+          <para>Beginning with Shorewall 4.5.10, $0 expands to the name of the
+          action chain. Shorewall generates a separate chain for each unique
+          (action,log-level,log-tag,parameters) tupple. The first such chain
+          has the same name as the action itself. Subsequent chains are formed
+          by prepending '%' to the action name and appending a number to
+          insure uniqueness. For an action called 'Action', the chains would
+          be <emphasis>Action</emphasis>, <emphasis>%Action</emphasis>,
+          <emphasis>%Action0</emphasis>, <emphasis>%Action1</emphasis> and so
+          on.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+
+  <section>
+    <title>Shorewall Variables</title>
+
+    <para>Shorewall Variables were introduced in Shorewall 4.5.11. To insure
+    uniqueness, these variables start with the character @; the name of the
+    variable must be enclosed in {...} when the following character is
+    alphanumeric or is an underscore ("_"). With the exception of @0 (or it's
+    alias @chain), Shorewall variables may only be used within an action
+    body.</para>
+
+    <para>The Shorewall variables are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>@0 and @chain</term>
+
+        <listitem>
+          <para>Expands to the name of the current chain. Unlike $0, @0 has
+          all non-alphanumeric characters except underscore removed. Also
+          unlike $0, @0 may be used in SWITCH columns in the rules
+          file.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>@loglevel</term>
+
+        <listitem>
+          <para>Expands to the log level specified when the action was
+          invoked.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>@logtag</term>
+
+        <listitem>
+          <para>Expands to the log tag specified when the action was
+          invoked.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -1555,7 +1639,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <para>Unless <replaceable>variable</replaceable> is one of these
     pre-defined ones, it is searched for in the following places in the order
-    listed:</para>
+    listed.</para>
 
     <itemizedlist>
       <listitem>
@@ -1578,6 +1662,11 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </listitem>
     </itemizedlist>
 
+    <important>
+      <para>Beginning with Shorewall 4.5.11, the compiler's environmental
+      variables are search last rather than first.</para>
+    </important>
+
     <para>If the <replaceable>variable</replaceable> is still not
     found:</para>
 
@@ -1599,7 +1688,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     <para>If it is not found in any of those places, the
     <replaceable>variable</replaceable> is assumed to have a value of 0
     (false) in Shorewall versions prior to 4.5.11. In 4.5.11 and later, it is
-    assumed to have the value '' (empty string which also evaluates to
+    assumed to have the value '' (an empty string, which also evaluates to
     false).</para>
 
     <para>The setting in <filename>/etc/shorewall/params</filename> by be

@@ -319,6 +319,10 @@ ACCEPT   -              -               tcp     135,139,445
         <option>inline</option> in the OPTIONS column of
         <filename>/etc/shorewall/actions</filename>.</para>
 
+        <para>Beginning in Shorewall 4.5.11, the <option>nolog</option> option
+        may be specified; see the <link linkend="Logging">logging
+        section</link> below for details.</para>
+
         <para>Shorewall includes pre-defined actions for DROP and REJECT --
         see above.</para>
       </listitem>
@@ -595,7 +599,9 @@ LogAndAccept loc         $FW         tcp      22</programlisting>
 
     <para>Specifying a log level in a rule that specifies a user-defined or
     Shorewall-defined action will cause each rule in the action to be logged
-    with the specified level (and tag).</para>
+    with the specified level (and tag), unless the <option>nolog</option>
+    option is specified in the action's entry in
+    <filename>/etc/shorewall/actions</filename>.</para>
 
     <para>The extent to which logging of action rules occur is governed by the
     following:</para>
@@ -656,21 +662,32 @@ bar:debug</programlisting>
   </section>
 
   <section>
-    <title>Using BEGIN PERL .... END PERL in an Action</title>
+    <title>Using Embedded Perl in an Action</title>
+
+    <para>There may be cases where you wish to create a chain with rules that
+    can't be constructed using the tools defined in the
+    <filename>action.template</filename>. Such rules can be constructed using
+    <ulink url="configuration_file_basics.htm#Embedded">Embedded Perl.</ulink>
+    For those who are comfortable using Perl, embedded Perl is more efficient
+    that using complicated conditional entries. The Perl compiler is invoked
+    only once for a BEGIN PERL...END PERL block; it is invoked most times that
+    an expression is evaluated in an ?IF, ?ELSEIF or ?SET directive.</para>
 
     <para>The Shorewall compiler provides a set of services that are available
-    to Perl code embedded in an action file.</para>
+    to Perl code embedded in an action file. These services are not available
+    in in-line actions.</para>
 
     <variablelist>
       <varlistentry>
-        <term>Shorewall::Config::get_action_params( $ )</term>
+        <term>Shorewall::Config::get_action_params(
+        <replaceable>$howmany</replaceable> )</term>
 
         <listitem>
           <para>This function returns an array containing the functions
-          parameters. The scalar argument is the number of parameters that you
-          expect to be passed. You can ensure that at least this many
-          parameters are passed by including a DEFAULTS line prior to the
-          embedded Perl.</para>
+          parameters. The scalar argument <replaceable>$howmany</replaceable>
+          is the number of parameters that you expect to be passed. You can
+          ensure that at least this many parameters are passed by including a
+          DEFAULTS line prior to the embedded Perl.</para>
         </listitem>
       </varlistentry>
 
@@ -691,14 +708,161 @@ bar:debug</programlisting>
           log tag specified when the action was invoked. Note that you must
           use this function rather than @loglevel and @logtag within embedded
           Perl, as the compiler does not expand <ulink
-          url="configuration_file_basics.html#ShorewallVariables">Shorewall
+          url="configuration_file_basics.htm#ShorewallVariables">Shorewall
           Variables</ulink> within embedded Perl (or embedded shell).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Chains::add_rule(
+        <replaceable>$chainre</replaceable>f, <replaceable>$rule</replaceable>
+        [, <replaceable>$expandports</replaceable> ] )</term>
+
+        <listitem>
+          <para>This function adds a rule to a chain. Arguments are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><replaceable>$chainref</replaceable></term>
+
+              <listitem>
+                <para>Normally, you get this from get_action_chain() described
+                above.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$rule</replaceable></term>
+
+              <listitem>
+                <para>The matches and target for the rule that you want
+                added.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$expandports</replaceable> (optional)</term>
+
+              <listitem>
+                <para>This optional argument is for compiler-internal use
+                only. Either omit it or pass a false value.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Chains::log_rule_limit(
+        <replaceable>$level</replaceable>,
+        $<replaceable>chainref</replaceable>,
+        <replaceable>$chain</replaceable>,
+        <replaceable>$disposition</replaceable>,
+        <replaceable>$limit</replaceable>, <replaceable>$tag</replaceable>,
+        <replaceable>$command</replaceable>,
+        <replaceable>$matches</replaceable> )</term>
+
+        <listitem>
+          <para>This function adds a logging rule to a chain. Arguments
+          are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><replaceable>$level</replaceable></term>
+
+              <listitem>
+                <para>Either a syslog level or a ULOG or NFLOG target
+                expression (e.g., "NFLOG(1,0,1)"). Specifies how you want the
+                logging done.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$chainref</replaceable></term>
+
+              <listitem>
+                <para>Normally, you get this from get_action_chain() described
+                above.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$chain</replaceable></term>
+
+              <listitem>
+                <para>The value you want substituted for the first %s
+                formatting directive in the LOGFORMAT setting in
+                <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$disposition</replaceable></term>
+
+              <listitem>
+                <para>This is the value substituted for the second '%s'
+                formatting directive in the LOGFORMAT setting in
+                <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$limit</replaceable></term>
+
+              <listitem>
+                <para>If you want to use the default limit set in LOGLIMIT
+                (<filename>/etc/shorewall/shorewall.conf</filename>), you can
+                specify your own '-limit' match. Otherwise, if you want to use
+                the default, pass 0 or "". If you want the rule to be
+                unlimited, pass '-'.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$tag</replaceable></term>
+
+              <listitem>
+                <para>Log tag.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>$command</replaceable></term>
+
+              <listitem>
+                <para>Pass 'add' here, unless you want the rule to be inserted
+                at the front of the chain.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><firstterm>$matches</firstterm></term>
+
+              <listitem>
+                <para>Zero or more iptables matches that limit when logging
+                will occur. If this parameter is other than the empty string,
+                the last character must be a space.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Chains::allow::optimize(
+        <replaceable>chainref</replaceable> )</term>
+
+        <listitem>
+          <para>This allows the passed action chain to be optimized away
+          (jumps to the chain are replaced by the chain's rule(s)). The
+          <replaceable>chainref</replaceable> argument is usually obtained
+          from get_action_chain() described above.</para>
         </listitem>
       </varlistentry>
     </variablelist>
 
     <para>For an example of using these services, look at the standard action
-    <filename>/usr/share/shorewall/action.dropBroadcast</filename>.</para>
+    <filename>/usr/share/shorewall/action.Broadcast</filename>.</para>
   </section>
 
   <section id="Extension">

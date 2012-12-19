@@ -196,12 +196,16 @@ sub process_one_masq( )
 		} else {
 		    my $addrlist = '';
 		    for my $addr ( split_list $addresses , 'address' ) {
-			if ( $addr =~ /^&(.+)$/ ) {
+			if ( $addr =~ /^([&%])(.+)$/ ) {
+			    my ( $type, $interface ) = ( $1, $2 );
 			    $target = 'SNAT ';
-			    if ( $conditional = conditional_rule( $chainref, $addr ) ) {
-				$addrlist .= '--to-source ' . get_interface_address $1;
+			    if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+				$conditional = conditional_rule( $chainref, $addr );
+				$addrlist .= '--to-source ' . "\$$1 ";
+			    } elsif ( $conditional = conditional_rule( $chainref, $addr ) ) {
+				$addrlist .= '--to-source ' . get_interface_address $interface;
 			    } else {
-				$addrlist .= '--to-source ' . record_runtime_address( '&', $1 );
+				$addrlist .= '--to-source ' . record_runtime_address( $type, $interface );
 			    }
 			} elsif ( $addr =~ /^.*\..*\..*\./ ) {
 			    $target = 'SNAT ';

@@ -1840,7 +1840,7 @@ sub split_line1( $$;$$ ) {
 	# Found it -- be sure there wasn't more than one.
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
-    } elsif ( $currentline =~ /(.*){(.*)}$/ ) {
+    } elsif ( $currentline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
 	#
 	# Pairs are enclosed in curly brackets.
 	#

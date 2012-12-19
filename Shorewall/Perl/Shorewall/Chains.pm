@@ -209,6 +209,7 @@ our %EXPORT_TAGS = (
 				       do_dscp
 				       have_ipset_rules
 				       record_runtime_address
+				       verify_address_variables
 				       conditional_rule
 				       conditional_rule_end
 				       match_source_dev
@@ -389,6 +390,7 @@ my $idiotcount1;
 my $warningcount;
 my $hashlimitset;
 my $global_variables;
+my %address_variables;
 my $ipset_rules;
 
 #
@@ -654,6 +656,7 @@ sub initialize( $$$ ) {
     %interfacebcasts    = ();
     %interfaceacasts    = ();
     %interfacegateways  = ();
+    %address_variables  = ();
 
     $global_variables   = 0;
     $idiotcount         = 0;
@@ -4887,6 +4890,13 @@ sub get_interface_address( $ );
 
 sub record_runtime_address( $$;$ ) {
     my ( $addrtype, $interface, $protect ) = @_;
+
+    if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+	fatal_error "Mixed required/optional usage of address variable $1" if ( $address_variables{$1} || $addrtype ) ne $addrtype;
+	$address_variables{$1} = $addrtype;
+	return '$' . "$1 ";
+    }
+
     fatal_error "Unknown interface address variable (&$interface)" unless known_interface( $interface );
     fatal_error "Invalid interface address variable (&$interface)" if $interface =~ /\+$/;
 
@@ -4913,6 +4923,7 @@ sub conditional_rule( $$ ) {
 
     if ( $address =~ /^!?([&%])(.+)$/ ) {
 	my ($type, $interface) = ($1, $2);
+
 	if ( my $ref = known_interface $interface ) {
 	    if ( $ref->{options}{optional} ) {
 		my $variable;
@@ -4927,7 +4938,13 @@ sub conditional_rule( $$ ) {
 		incr_cmd_level $chainref;
 		return 1;
 	    }
-	};
+	} elsif ( $type eq '%' && $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+	    fatal_error "Mixed required/optional usage of address variable $1" if ( $address_variables{$1} || $type ) ne $type;
+	    $address_variables{$1} = $type;
+	    add_commands( $chainref , "if [ \$$1 != " . NILIP . ' ]; then' );
+	    incr_cmd_level $chainref;
+	    return 1;
+	}
     }
 
     0;
@@ -5873,6 +5890,27 @@ sub set_global_variables( $ ) {
     }
 }
 
+sub verify_address_variables() {
+    while ( my ( $variable, $type ) = ( each %address_variables ) ) {
+	my $address = "\$$variable";
+
+	if ( $type eq '&' ) {
+	    emit( qq([ -n "$address" ] || startup_error "Address variable $variable had not been assigned an address") ,
+		  q() ,
+		  qq(if qt \$g_tool -A INPUT -s $address; then) );
+	} else {
+	    emit( qq(if [ -z "$address" ]; then) ,
+		  qq(    $variable=) . NILIP ,
+		  qq(elif qt \$g_tool -A INPUT -s $address; then) );
+	}
+
+	emit( qq(    qt \$g_tool -D INPUT -s $address),
+	      q(else),
+	      qq(    startup_error "Invalid value ($address) for address variable $variable"),
+	      qq(fi\n) );
+    }
+}
+
 ############################################################################################
 # Helpers for expand_rule()
 ############################################################################################
@@ -5990,7 +6028,7 @@ sub isolate_source_interface( $ ) {
 	if ( $source =~ /^(.+?):(.+)$/ ) {
 	    $iiface = $1;
 	    $inets  = $2;
-	} elsif ( $source =~ /^!?(?:\+|&|~|\^|\d+\.)/ ) {
+	} elsif ( $source =~ /^!?(?:\+|&|~|%|\^|\d+\.)/ ) {
 	    $inets = $source;
 	} else {
 	    $iiface = $source;
@@ -5998,6 +6036,7 @@ sub isolate_source_interface( $ ) {
     } elsif  ( $source =~ /^(.+?):<(.+)>\s*$/   ||
 	       $source =~ /^(.+?):\[(.+)\]\s*$/ ||
 	       $source =~ /^(.+?):(!?\+.+)$/    ||
+	       $source =~ /^(.+?):(!?[&%].+)$/  ||
 	       $source =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
 	     ) {
 	$iiface = $1;
@@ -6107,6 +6146,7 @@ sub isolate_dest_interface( $$$$ ) {
     } elsif ( $dest =~ /^(.+?):<(.+)>\s*$/   || 
 	      $dest =~ /^(.+?):\[(.+)\]\s*$/ ||
 	      $dest =~ /^(.+?):(!?\+.+)$/    ||
+	      $dest =~ /^(.+?):(!?[&%].+)$/  ||
 	      $dest =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
 	    ) {
 	$diface = $1;

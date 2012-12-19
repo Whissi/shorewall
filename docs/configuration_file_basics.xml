@@ -1366,6 +1366,66 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </varlistentry>
     </variablelist>
 
+    <para>Beginning with Shorewall 4.5.11, you can define your own address
+    variables by using this syntax:</para>
+
+    <simplelist>
+      <member>&amp;{<replaceable>variable</replaceable>}</member>
+    </simplelist>
+
+    <para>where <replaceable>variable</replaceable> is a valid shell variable
+    name. The generated script will verify that the
+    <replaceable>variable</replaceable> contains a valid host or network
+    address, either from the environment or from it being assigned in your
+    <emphasis>init</emphasis> <ulink
+    url="shorewall_extension_scripts.htm">extension script</ulink>, and will
+    raise an error if it does not. In the error case, the state of the
+    firewall will remain unchanged.</para>
+
+    <para>Example:</para>
+
+    <para>/etc/shorewall/init:</para>
+
+    <programlisting><emphasis role="bold">SMC_ADDR</emphasis>=10.1.10.11</programlisting>
+
+    <para>/etc/shorewall/rules:</para>
+
+    <programlisting>test:debug	net:<emphasis role="bold">&amp;{SMC_ADDR}</emphasis>		fw</programlisting>
+
+    <para>A second form is also available beginning with Shorewall
+    4.5.11</para>
+
+    <simplelist>
+      <member>%{<replaceable>variable</replaceable>}</member>
+    </simplelist>
+
+    <para>Unlike with the first form, this form does not require the variable
+    to be set. If the variable is empty, the generated script will supply the
+    all-zeros address (0.0.0.0 in IPv4 and :: in IPv6). In most cases, the
+    compiler simply omits rules containing matches on the all-zeros
+    address.</para>
+
+    <para>Example:</para>
+
+    <para>/etc/shorewall/init:</para>
+
+    <programlisting><emphasis role="bold">SMC_ADDR</emphasis>=10.1.10.11</programlisting>
+
+    <para>/etc/shorewall/rules:</para>
+
+    <programlisting>test:debug	net:<emphasis role="bold">%{SMC_ADDR}</emphasis>		fw</programlisting>
+
+    <important>
+      <para>For a particular address variable, all references must use the
+      same prefix character ('&amp;' or '%'). Otherwise, the following error
+      message is raised:</para>
+
+      <simplelist>
+        <member>ERROR: Mixed required/optional usage of address variable
+        <replaceable>variable</replaceable></member>
+      </simplelist>
+    </important>
+
     <para>Run-time address variables may be used in the SOURCE and DEST column
     of the following configuration files:</para>
 
@@ -1566,7 +1626,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <variablelist>
       <varlistentry>
-        <term>@0 and @chain</term>
+        <term>@0 and @chain (@{0} and @{chain})</term>
 
         <listitem>
           <para>Expands to the name of the current chain. Unlike $0, @0 has
@@ -1577,7 +1637,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </varlistentry>
 
       <varlistentry>
-        <term>@loglevel</term>
+        <term>@loglevel (@{loglevel})</term>
 
         <listitem>
           <para>Expands to the log level specified when the action was
@@ -1586,7 +1646,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </varlistentry>
 
       <varlistentry>
-        <term>@logtag</term>
+        <term>@logtag (@{logtag})</term>
 
         <listitem>
           <para>Expands to the log tag specified when the action was

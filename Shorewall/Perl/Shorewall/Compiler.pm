@@ -365,8 +365,8 @@ sub generate_script_3($) {
 	       'fi',
 	       '' );
 
+	verify_address_variables;
 	save_dynamic_chains;
-
 	mark_firewall_not_started;
 
 	emit ( '',
@@ -394,6 +394,7 @@ sub generate_script_3($) {
 	       'fi',
 	       '' );
 
+	verify_address_variables;
 	save_dynamic_chains;
 	mark_firewall_not_started;
 

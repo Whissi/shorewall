@@ -485,6 +485,7 @@ my  $embedded;               # True if we're in an embedded perl script
 my  @tempfiles;              # Files that need unlinking at END
 my  $first_entry;            # Message to output or function to call on first non-blank line of a file
 our $file_format;            # Format of configuration file.
+my  $max_format              # Max format value
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
@@ -897,6 +898,7 @@ sub initialize( $;$$) {
     $currentfilename = '';    # File NAME
     $currentlinenumber = 0;   # Line number
     $first_entry = 0;         # Message to output or function to call on first non-blank file entry
+    $max_format  = 1;
 
     $shorewall_dir = '';      #Shorewall Directory
 
@@ -1944,7 +1946,7 @@ sub pop_include() {
     }
 
     if ( $arrayref ) {
-	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format ) = @$arrayref;
+	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
@@ -2135,7 +2137,7 @@ sub process_compiler_directive( $$$$ ) {
 	pop @ifstack;
     } elsif ( ! $omitting ) {
 	if ( $keyword =~ /^SET/ ) {
-	    fatal_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
+	    directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
 	    ( my $var , $expression ) = split ' ', $expression, 2;
 	    directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
 	    directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
@@ -2426,7 +2428,7 @@ EOF
 #
 sub push_open( $ ) {
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format ] if $currentfile;
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();

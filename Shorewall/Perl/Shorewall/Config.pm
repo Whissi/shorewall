@@ -2091,7 +2091,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|INCLUDE\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2144,6 +2144,11 @@ sub process_compiler_directive( $$$$ ) {
 	    $variables{$1} = evaluate_expression( $expression,
 						  $filename,
 						  $linenumber );
+	} elsif ( $keyword =~ /^FORMAT/ ) {
+	    directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
+	    directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
+	    directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;
+	    $file_format = $expression;
 	} else {
 	    my $var = $expression;
 	    directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
@@ -2426,14 +2431,15 @@ EOF
 # The following two functions allow module clients to nest opens. This happens frequently
 # in the Rules module.
 #
-sub push_open( $ ) {
-
+sub push_open( $;$ ) {
+    my ( $file, $max ) = @_;
     push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $_[0] );
+    open_file( $file );
+    $max_format = supplied $max ? $max : 1;
 
 }
 
@@ -2478,10 +2484,11 @@ sub shorewall {
 # until we get back to the caller of read_a_line(), we could issue error messages about parsing and
 # running scripts in the file before we'd even indicated that we are processing it.
 #
-sub first_entry( $ ) {
-    $first_entry = $_[0];
+sub first_entry( $;$ ) {
+    ( $first_entry, my $max ) = @_;
     my $reftype = reftype $first_entry;
     assert( $reftype eq 'CODE' ) if $reftype;
+    $max_format = supplied $max ? $max : 1;
 }
 
 sub read_a_line($);
@@ -2765,7 +2772,7 @@ sub read_a_line($) {
 	    #
 	    # Handle conditionals
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET)/i ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT)/i ) {
 		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

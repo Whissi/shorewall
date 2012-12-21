@@ -142,6 +142,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $currentline
 				       $currentfilename
 				       $debug
+				       $file_format
 				       %config
 				       %globals
 				       %config_files
@@ -483,6 +484,7 @@ my  $perlscriptname;         # Name of that file.
 my  $embedded;               # True if we're in an embedded perl script
 my  @tempfiles;              # Files that need unlinking at END
 my  $first_entry;            # Message to output or function to call on first non-blank line of a file
+our $file_format;            # Format of configuration file.
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
@@ -1921,6 +1923,7 @@ sub open_file( $ ) {
 
     if ( -f $fname && -s _ ) {
 	$first_entry = 0;
+	$file_format = 1;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
@@ -1941,7 +1944,7 @@ sub pop_include() {
     }
 
     if ( $arrayref ) {
-	( $currentfile, $currentfilename, $currentlinenumber, $ifstack ) = @$arrayref;
+	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
@@ -2423,7 +2426,7 @@ EOF
 #
 sub push_open( $ ) {
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack ] if $currentfile;
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();

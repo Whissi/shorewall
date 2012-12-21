@@ -29,7 +29,7 @@
 ###############################################################################
 FORMAT 2
 #
-# The following magic provides different defaults for $2 thru $5, when $1 is
+# The following magic provides different defaults for @2 thru @5, when @1 is
 # 'audit'.
 #
 ?BEGIN PERL;
@@ -62,33 +62,33 @@ COUNT
 #
 # Don't log 'auth' -- REJECT
 #
-Auth($2)
+Auth(@2)
 #
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).
 #
-Broadcast(DROP,$1)
+Broadcast(DROP,@1)
 #
 # ACCEPT critical ICMP types
 #
-AllowICMPs($4)	-	-	icmp
+AllowICMPs(@4)	-	-	icmp
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
 # rejected).
 #
-Invalid(DROP,$1)
+Invalid(DROP,@1)
 #
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
-SMB($3)
-DropUPnP($5)
+SMB(@3)
+DropUPnP(@5)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-NotSyn(DROP,$1)	-	-	tcp
+NotSyn(DROP,@1)	-	-	tcp
 #
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-DropDNSrep($5)
+DropDNSrep(@5)

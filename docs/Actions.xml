@@ -403,6 +403,10 @@ REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
       <para>The DEFAULTS directive also determines the maximum number of
       parameters that an action may have. If more parameters are passed than
       have default values, an error message is issued.</para>
+
+      <para>For additional information about actions, see the <ulink
+      url="configuration_file_basics.htm#ActionVariables">Action Variables
+      section</ulink> of the Configuration Basics article.</para>
     </section>
 
     <section>
@@ -661,7 +665,7 @@ bar:debug</programlisting>
     </orderedlist>
   </section>
 
-  <section>
+  <section id="Embedded">
     <title>Using Embedded Perl in an Action</title>
 
     <para>There may be cases where you wish to create a chain with rules that
@@ -688,6 +692,22 @@ bar:debug</programlisting>
           is the number of parameters that you expect to be passed. You can
           ensure that at least this many parameters are passed by including a
           DEFAULTS line prior to the embedded Perl.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Config::set_action_param(
+        <replaceable>$ordinal</replaceable>, <replaceable>$value</replaceable>
+        )</term>
+
+        <listitem>
+          <para>Set the value of parameter <replaceable>$ordinal</replaceable>
+          to <replaceable>$value</replaceable>. Care must be take when using
+          this function such that for a given set of parameters actually
+          passed to the action, the same rules are created. That is because
+          the compiler assumes that all invocations of an action with the same
+          parameters, log level and log tag can share the same action
+          chain.</para>
         </listitem>
       </varlistentry>
 

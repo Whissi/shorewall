@@ -485,7 +485,7 @@ my  $embedded;               # True if we're in an embedded perl script
 my  @tempfiles;              # Files that need unlinking at END
 my  $first_entry;            # Message to output or function to call on first non-blank line of a file
 our $file_format;            # Format of configuration file.
-my  $max_format              # Max format value
+my  $max_format;             # Max format value
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
@@ -2091,7 +2091,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|INCLUDE\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 

@@ -999,9 +999,8 @@ sub process_interface( $$ ) {
     my ($zone, $originalinterface, $bcasts, $options );
     my $zoneref;
     my $bridge = '';
-    our $format;
 
-    if ( $format == 1 ) {
+    if ( $file_format == 1 ) {
 	($zone, $originalinterface, $bcasts, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 }, { COMMENT => 0, FORMAT => 2 };
     } else {
 	($zone, $originalinterface, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, options => 2 }, { COMMENT => 0, FORMAT => 2 };
@@ -1010,7 +1009,7 @@ sub process_interface( $$ ) {
 
     if ( $zone eq 'FORMAT' ) {
 	if ( $originalinterface =~ /^([12])$/ ) {
-	    $format = $1;
+	    $file_format = $1;
 	    return;
 	}
 
@@ -1308,13 +1307,12 @@ sub process_interface( $$ ) {
 #
 sub validate_interfaces_file( $ ) {
     my  $export = shift;
-    our $format = 1;
 
     my @ifaces;
     my $nextinum = 1;
 
     if ( my $fn = open_file 'interfaces' ) {
-	first_entry "$doing $fn...";
+	first_entry "$doing $fn..." , 2;
 	push @ifaces, process_interface( $nextinum++, $export ) while read_a_line( NORMAL_READ );
     } else {
 	fatal_error q(The 'interfaces' file does not exist or has zero size);

@@ -217,8 +217,6 @@ sub process_tc_rule( ) {
 
     our %tccmd;
 
-    our $format;
-
     fatal_error 'MARK must be specified' if $originalmark eq '-';
 
     if ( $originalmark eq 'COMMENT' ) {
@@ -228,7 +226,7 @@ sub process_tc_rule( ) {
 
     if ( $originalmark eq 'FORMAT' ) {
 	if ( $source =~ /^([12])$/ ) {
-	    $format = $1;
+	    $file_format = $1;
 	    return;
 	}
 
@@ -320,7 +318,7 @@ sub process_tc_rule( ) {
 					  $target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
 				      },
 		       DIVERT => sub() {
-			                  fatal_error "Invalid MARK ($originalmark)"               unless $format == 2;
+			                  fatal_error "Invalid MARK ($originalmark)"               unless $file_format == 2;
 			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
 
 					  $chain = 'PREROUTING';
@@ -349,7 +347,7 @@ sub process_tc_rule( ) {
 					  my $params = $1;
 					  my ( $port, $ip, $bad );
 
-					  if ( $format == 1 ) {
+					  if ( $file_format == 1 ) {
 					      fatal_error "Invalid TPROXY specification( $cmd )" unless defined $params;
 
 					      ( $mark, $port, $ip, $bad ) = split_list $params, 'Parameter';
@@ -2416,9 +2414,7 @@ sub setup_tc() {
 
 	if ( my $fn = open_file 'tcrules' ) {
 
-	    our $format = 1;
-
-	    first_entry "$doing $fn...";
+	    first_entry "$doing $fn...", 2;
 
 	    process_tc_rule while read_a_line( NORMAL_READ );
 

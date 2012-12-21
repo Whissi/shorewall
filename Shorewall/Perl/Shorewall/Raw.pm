@@ -206,7 +206,7 @@ sub process_format( $ ) {
 
     fatal_error q(FORMAT must be '1', '2' or '3') unless $format =~ /^[123]$/;
 
-    $format;
+    $file_format = $format;
 }
 
 sub setup_conntrack() {
@@ -217,29 +217,27 @@ sub setup_conntrack() {
 
 	if ( $fn ) {
 
-	    my $format = 1;
-
 	    my $action = 'NOTRACK';
 
 	    my $empty = 1;
 
-	    first_entry( "$doing $fn..." );
+	    first_entry( "$doing $fn..." , 3 );
 
 	    while ( read_a_line( NORMAL_READ ) ) {
 		my ( $source, $dest, $proto, $ports, $sports, $user, $switch );
 
-		if ( $format == 1 ) {
+		if ( $file_format == 1 ) {
 		    ( $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 };
 
 		    if ( $source eq 'FORMAT' ) {
-			$format = process_format( $dest );
+			process_format( $dest );
 			next;
 		    }
 		} else {
 		    ( $action, $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 }, { COMMENT => 0, FORMAT => 2 };
 
 		    if ( $action eq 'FORMAT' ) {
-			$format = process_format( $source );
+			process_format( $source );
 			$action = 'NOTRACK';
 			next;
 		    }
@@ -252,7 +250,7 @@ sub setup_conntrack() {
 
 		$empty = 0;
 
-		if ( $format < 3 ) {
+		if ( $file_format < 3 ) {
 		    if ( $source =~ /^all(-)?(:(.+))?$/ ) {
 			fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
 			for my $zone ( $1 ? off_firewall_zones : all_zones ) {

@@ -1547,13 +1547,12 @@ sub process_action($) {
 	$builtinops{$action}->( $chainref, $level, $tag, $param );
     } else {
 	my $actionfile = find_file "action.$action";
-	my $format = 1;
 
 	fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
 	progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
-	push_open $actionfile;
+	push_open $actionfile, 2;
 
 	my $oldparms = push_action_params( $chainref, $param, $level, $tag );
 
@@ -1568,7 +1567,7 @@ sub process_action($) {
 
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
 
-	    if ( $format == 1 ) {
+	    if ( $file_format == 1 ) {
 		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
 		    split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
 		$origdest = $connlimit = $time = $headers = $condition = $helper = '-';
@@ -1586,12 +1585,12 @@ sub process_action($) {
 
 	    if ( $target eq 'FORMAT' ) {
 		fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
-		$format = $source;
+		$file_format = $source;
 		next;
 	    }
 
 	    if ( $target eq 'DEFAULTS' ) {
-		default_action_params( $action, split_list $source, 'defaults' ), next if $format == 2;
+		default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
 		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
 	    }
 
@@ -1646,8 +1645,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     my $nocomment = no_comment;
 
-    my $format = 1;
-
     my $generated = 0;
 
     macro_comment $macro;
@@ -1656,13 +1653,13 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding Macro $macrofile...";
 
-    push_open $macrofile;
+    push_open $macrofile, 2;
 
     while ( read_a_line( NORMAL_READ ) ) {
 
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
 
-	if ( $format == 1 ) {
+	if ( $file_format == 1 ) {
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = qw/- - - - - - -/;
 	} else {
@@ -1692,7 +1689,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
 	if ( $mtarget eq 'FORMAT' ) {
 	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
-	    $format = $msource;
+	    $file_format = $msource;
 	    next;
 	}
 

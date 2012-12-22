@@ -2412,9 +2412,9 @@ sub setup_tc() {
 				    }
 		      );
 
-	if ( my $fn = open_file 'tcrules' ) {
+	if ( my $fn = open_file( 'tcrules' , 2 ) ) {
 
-	    first_entry "$doing $fn...", 2;
+	    first_entry "$doing $fn...";
 
 	    process_tc_rule while read_a_line( NORMAL_READ );
 

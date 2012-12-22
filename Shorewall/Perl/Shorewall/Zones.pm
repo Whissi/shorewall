@@ -1311,8 +1311,8 @@ sub validate_interfaces_file( $ ) {
     my @ifaces;
     my $nextinum = 1;
 
-    if ( my $fn = open_file 'interfaces' ) {
-	first_entry "$doing $fn..." , 2;
+    if ( my $fn = open_file 'interfaces', 2 ) {
+	first_entry "$doing $fn...";
 	push @ifaces, process_interface( $nextinum++, $export ) while read_a_line( NORMAL_READ );
     } else {
 	fatal_error q(The 'interfaces' file does not exist or has zero size);

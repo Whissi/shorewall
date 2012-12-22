@@ -1918,7 +1918,7 @@ sub do_open_file( $ ) {
     $currentfilename   = $fname;
 }
 
-sub open_file( $ ) {
+sub open_file( $;$ ) {
     my $fname = find_file $_[0];
 
     assert( ! defined $currentfile );
@@ -1926,6 +1926,7 @@ sub open_file( $ ) {
     if ( -f $fname && -s _ ) {
 	$first_entry = 0;
 	$file_format = 1;
+	$max_format  = supplied $_[1] ? $_[1] : 1;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
@@ -2463,9 +2464,7 @@ sub push_open( $;$ ) {
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $file );
-    $max_format = supplied $max ? $max : 1;
-
+    open_file( $file , $max );
 }
 
 sub pop_open() {
@@ -2509,11 +2508,10 @@ sub shorewall {
 # until we get back to the caller of read_a_line(), we could issue error messages about parsing and
 # running scripts in the file before we'd even indicated that we are processing it.
 #
-sub first_entry( $;$ ) {
-    ( $first_entry, my $max ) = @_;
+sub first_entry( $ ) {
+    $first_entry = shift;
     my $reftype = reftype $first_entry;
     assert( $reftype eq 'CODE' ) if $reftype;
-    $max_format = supplied $max ? $max : 1;
 }
 
 sub read_a_line($);

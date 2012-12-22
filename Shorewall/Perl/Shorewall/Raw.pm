@@ -213,7 +213,7 @@ sub setup_conntrack() {
 
     for my $name ( qw/notrack conntrack/ ) {
 
-	my $fn = open_file( $name );
+	my $fn = open_file( $name, 3 );
 
 	if ( $fn ) {
 
@@ -221,7 +221,7 @@ sub setup_conntrack() {
 
 	    my $empty = 1;
 
-	    first_entry( "$doing $fn..." , 3 );
+	    first_entry( "$doing $fn..." );
 
 	    while ( read_a_line( NORMAL_READ ) ) {
 		my ( $source, $dest, $proto, $ports, $sports, $user, $switch );

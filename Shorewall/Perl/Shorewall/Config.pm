@@ -2095,6 +2095,8 @@ sub process_compiler_directive( $$$$ ) {
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
+    $keyword =~ s/\s*$//;
+
     if ( supplied $expression ) {
 	$expression =~ s/#.*//;
 	$expression =~ s/\s*$//;
@@ -2104,62 +2106,85 @@ sub process_compiler_directive( $$$$ ) {
 
     my ( $lastkeyword, $prioromit, $included, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
-    if ( $keyword =~ /^IF/ ) {
-	directive_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
-	my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
-	push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
-	$omitting = $nextomitting;
-    } elsif ( $keyword =~ /^ELSIF/ ) {
-	directive_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
-	directive_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
-	if ( $omitting && ! $included ) {
-	    #
-	    # We can only change to including if we were previously omitting
-	    #
-	    $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber );
-	    $included = ! $omitting;
-	} else {
-	    #
-	    # We have already included -- so we don't want to include this part
-	    #
-	    $omitting = 1;
-	}
-	$ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
-    } elsif ( $keyword eq 'ELSE' ) {
-	directive_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
-	directive_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
-	$omitting = $included || ! $omitting unless $prioromit;
-	$ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
-    } elsif ( $keyword eq 'ENDIF' ) {
-	directive_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
-	directive_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
-	$omitting = $prioromit;
-	pop @ifstack;
-    } elsif ( ! $omitting ) {
-	if ( $keyword =~ /^SET/ ) {
-	    directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
-	    ( my $var , $expression ) = split ' ', $expression, 2;
-	    directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
-	    directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
-	    $variables{$1} = evaluate_expression( $expression,
-						  $filename,
-						  $linenumber );
-	} elsif ( $keyword =~ /^FORMAT/ ) {
-	    directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
-	    directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
-	    directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;
-	    $file_format = $expression;
-	} else {
-	    my $var = $expression;
-	    directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
-	    directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+    my %directives = ( IF => sub() {
+			   directive_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
+			   my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
+			   push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
+			   $omitting = $nextomitting;
+		       } ,
 
-	    if ( exists $variables{$1} ) {
-		delete $variables{$1};
-	    } else {
-		directive_warning( "Variable $1 does not exist", $filename, $linenumber );
-	    }
-	}
+		       ELSIF => sub() {
+			   directive_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+			   directive_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
+			   if ( $omitting && ! $included ) {
+			       #
+			       # We can only change to including if we were previously omitting
+			       #
+			       $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber );
+			       $included = ! $omitting;
+			   } else {
+			       #
+			       # We have already included -- so we don't want to include this part
+			       #
+			       $omitting = 1;
+			   }
+			   $ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
+		       } ,
+
+		       ELSE => sub() {
+			   directive_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
+			   directive_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+			   $omitting = $included || ! $omitting unless $prioromit;
+			   $ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
+		       } ,
+
+		       ENDIF => sub() {
+			   directive_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
+			   directive_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
+			   $omitting = $prioromit;
+			   pop @ifstack;
+		       } ,
+
+		       SET => sub() {
+			   if ( ! $omitting ) {
+			       directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
+			       ( my $var , $expression ) = split ' ', $expression, 2;
+			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+			       directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
+			       $variables{$1} = evaluate_expression( $expression,
+								     $filename,
+								     $linenumber );
+			   }
+		       } ,
+
+		       FORMAT => sub() {
+			   if ( ! $omitting ) {
+			       directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
+			       directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
+			       directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;
+			       $file_format = $expression;
+			   }
+		       } ,
+
+		       RESET => sub() {
+			   if ( ! $omitting ) {
+			       my $var = $expression;
+			       directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
+			       directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+
+			       if ( exists $variables{$1} ) {
+				   delete $variables{$1};
+			       } else {
+				   directive_warning( "Variable $1 does not exist", $filename, $linenumber );
+			       }
+			   }
+		       }
+		     );
+
+    if ( my $function = $directives{$keyword} ) {
+	$function->();
+    } else {
+	assert( 0, $keyword );
     }
 
     $omitting;

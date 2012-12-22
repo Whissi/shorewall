@@ -127,12 +127,6 @@ our %EXPORT_TAGS = (
 				       insert_rule1
 				       delete_jumps
 				       add_tunnel_rule
-				       process_comment
-				       no_comment
-				       macro_comment
-				       clear_comment
-				       push_comment
-				       pop_comment
 				       forward_chain
 				       forward_option_chain
 				       rules_chain
@@ -338,8 +332,6 @@ our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-my  $comment;
-my  @comments;
 my  $export;
 my  %renamed;
 our %nfobjects;
@@ -387,7 +379,6 @@ my $iprangematch;
 my %chainseq;
 my $idiotcount;
 my $idiotcount1;
-my $warningcount;
 my $hashlimitset;
 my $global_variables;
 my %address_variables;
@@ -634,11 +625,6 @@ sub initialize( $$$ ) {
     $filter_table  = $chain_table{filter};
     %renamed       = ();
     #
-    # Contents of last COMMENT line.
-    #
-    $comment  = '';
-    @comments = ();
-    #
     # Used to sequence chain names in each table.
     #
     %chainseq = () if $hard;
@@ -661,7 +647,6 @@ sub initialize( $$$ ) {
     $global_variables   = 0;
     $idiotcount         = 0;
     $idiotcount1        = 0;
-    $warningcount       = 0;
     $hashlimitset       = 0;
     $ipset_rules        = 0 if $hard;
 
@@ -674,61 +659,6 @@ sub initialize( $$$ ) {
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
-}
-
-#
-# Process a COMMENT line (in $currentline)
-#
-sub process_comment() {
-    if ( have_capability( 'COMMENTS' ) ) {
-	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
-	$comment =~ s/\s*$//;
-    } else {
-	warning_message "COMMENTs ignored -- require comment support in iptables/Netfilter" unless $warningcount++;
-    }
-}
-
-#
-# Returns True if there is a current COMMENT or if COMMENTS are not available.
-#
-sub no_comment() {
-    $comment ? 1 : ! have_capability( 'COMMENTS' );
-}
-
-#
-# Clear the $comment variable and the comment stack
-#
-sub clear_comment() {
-    $comment  = '';
-    @comments = ();
-}
-
-#
-# Push and Pop comment stack
-#
-sub push_comment( $ ) {
-    push @comments, $comment;
-    $comment = shift;
-}
-
-sub pop_comment() {
-    $comment = pop @comments;
-}
-
-#
-# Set comment
-#
-sub set_comment( $ ) {
-    $comment = shift;
-}
-
-#
-# Set $comment to the passed unless there is a current comment
-#
-sub macro_comment( $ ) {
-    my $macro = $_[0];
-
-    $comment = $macro unless $comment || ! ( have_capability( 'COMMENTS' ) && $config{AUTOCOMMENT} );
 }
 
 #

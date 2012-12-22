@@ -131,6 +131,12 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
+				       process_comment
+				       no_comment
+				       macro_comment
+				       clear_comment
+				       push_comment
+				       pop_comment
 				       dump_mark_layout
 
 				       $product
@@ -143,6 +149,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $currentfilename
 				       $debug
 				       $file_format
+				       $comment
 				       %config
 				       %globals
 				       %config_files
@@ -486,6 +493,9 @@ my  @tempfiles;              # Files that need unlinking at END
 my  $first_entry;            # Message to output or function to call on first non-blank line of a file
 our $file_format;            # Format of configuration file.
 my  $max_format;             # Max format value
+our $comment;                # Current COMMENT
+my  @comments;
+my $warningcount;
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
@@ -604,6 +614,12 @@ sub initialize( $;$$) {
     $ifstack        = 0;
     @ifstack        = ();
     $embedded       = 0;
+    #
+    # Contents of last COMMENT line.
+    #
+    $comment      = '';
+    @comments     = ();
+    $warningcount = 0;
     #
     # Misc Globals
     #
@@ -1903,6 +1919,61 @@ sub split_line1( $$;$$ ) {
 
 sub split_line($$) {
     &split_line1( @_, {} );
+}
+
+#
+# Process a COMMENT line (in $currentline)
+#
+sub process_comment() {
+    if ( have_capability( 'COMMENTS' ) ) {
+	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
+	$comment =~ s/\s*$//;
+    } else {
+	warning_message "COMMENTs ignored -- require comment support in iptables/Netfilter" unless $warningcount++;
+    }
+}
+
+#
+# Returns True if there is a current COMMENT or if COMMENTS are not available.
+#
+sub no_comment() {
+    $comment ? 1 : ! have_capability( 'COMMENTS' );
+}
+
+#
+# Clear the $comment variable and the comment stack
+#
+sub clear_comment() {
+    $comment  = '';
+    @comments = ();
+}
+
+#
+# Push and Pop comment stack
+#
+sub push_comment( $ ) {
+    push @comments, $comment;
+    $comment = shift;
+}
+
+sub pop_comment() {
+    $comment = pop @comments;
+}
+
+#
+# Set comment
+#
+sub set_comment( $ ) {
+    $comment = shift;
+}
+
+#
+# Set $comment to the passed unless there is a current comment
+#
+sub macro_comment( $ ) {
+    my $macro = $_[0];
+
+    $comment = $macro unless $comment || ! ( have_capability( 'COMMENTS' ) && $config{AUTOCOMMENT} );
 }
 
 #

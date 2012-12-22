@@ -282,7 +282,7 @@ sub process_one_masq( )
 #
 sub setup_masq()
 {
-    if ( my $fn = open_file 'masq' ) {
+    if ( my $fn = open_file( 'masq', 1, 1 ) ) {
 
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
 
@@ -379,7 +379,7 @@ sub do_one_nat( $$$$$ )
 #
 sub setup_nat() {
 
-    if ( my $fn = open_file 'nat' ) {
+    if ( my $fn = open_file( 'nat', 1, 1 ) ) {
 
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty nat file' , 's'; } );
 
@@ -415,7 +415,7 @@ sub setup_nat() {
 #
 sub setup_netmap() {
 
-    if ( my $fn = open_file 'netmap' ) {
+    if ( my $fn = open_file 'netmap', 1, 1 ) {
 
 	first_entry "$doing $fn...";
 

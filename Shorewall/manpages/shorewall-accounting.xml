@@ -182,7 +182,7 @@
         <term><emphasis role="bold">ACTION</emphasis> - {<emphasis
         role="bold">COUNT</emphasis>|<emphasis
         role="bold">DONE</emphasis>|<emphasis>chain</emphasis>[:<emphasis
-        role="bold">{COUNT</emphasis>|JUMP}]|ACCOUNT(<replaceable>table</replaceable>,<replaceable>network</replaceable>)|COMMENT
+        role="bold">{COUNT</emphasis>|JUMP}]|ACCOUNT(<replaceable>table</replaceable>,<replaceable>network</replaceable>)|[?]COMMENT
         <emphasis>comment</emphasis>}</term>
 
         <listitem>
@@ -323,7 +323,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">COMMENT</emphasis></term>
+              <term><emphasis role="bold">[?]COMMENT</emphasis></term>
 
               <listitem>
                 <para>The remainder of the line is treated as a comment which
@@ -331,6 +331,11 @@
                 found or until the end of the file is reached. To stop adding
                 comments to rules, use a line with only the word
                 COMMENT.</para>
+
+                <note>
+                  <para>Beginning with Shorewall 4.5.11, ?COMMENT is a synonym
+                  for COMMENT and is preferred.</para>
+                </note>
               </listitem>
             </varlistentry>
           </variablelist>

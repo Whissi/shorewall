@@ -1116,11 +1116,11 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     the first token. This requires each of the file processors to handle
     FORMAT separately.</para>
 
-    <para>In Shorewall 4.5.11, the ?FORMAT Directive was created to centralize
+    <para>In Shorewall 4.5.11, the ?FORMAT directive was created to centralize
     processing of FORMAT directives. The old entries, while still supported,
     are now deprecated.</para>
 
-    <para>The format directive is as follows:</para>
+    <para>The ?FORMAT directive is as follows:</para>
 
     <variablelist>
       <varlistentry>
@@ -1175,6 +1175,61 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
         </tbody>
       </tgroup>
     </informaltable>
+  </section>
+
+  <section>
+    <title>?COMMENT Directive</title>
+
+    <para>A number of files allow attaching comments to generated Netfilter
+    rules:</para>
+
+    <simplelist>
+      <member><filename>accounting</filename></member>
+
+      <member><filename>action</filename>.* files</member>
+
+      <member><filename>blrules</filename></member>
+
+      <member><filename>conntrack</filename></member>
+
+      <member><filename>macro</filename>.* files</member>
+
+      <member><filename>masq</filename></member>
+
+      <member><filename>nat</filename></member>
+
+      <member><filename>rules</filename></member>
+
+      <member><filename>secmarks</filename></member>
+
+      <member><filename>tcrules</filename></member>
+
+      <member><filename>tunnels</filename></member>
+    </simplelist>
+
+    <para>Prior to Shorewall 4.5.11, comments were specified by a line having
+    COMMENT as the first token. The remainder of the line is treated as a
+    comment to be attached to rules.</para>
+
+    <para>In Shorewall 4.5.11, the ?COMMENT directive was created to
+    centralize processing of COMMENT directives. The old entries, while still
+    supported, are now deprecated.</para>
+
+    <para>The ?COMMENT directive is as follows:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>COMMENT [ <replaceable>comment</replaceable> ]</term>
+
+        <listitem>
+          <para>If <replaceable>comment</replaceable> is present, it will
+          appear enclosed in /*....*/ in the output of the <command>shorewall
+          show </command>and <command>shorewall dump</command> commands. If no
+          <replaceable>comment</replaceable> is present, the rules generated
+          by following entries will not have comments attached.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </section>
 
   <section id="CONFIG_PATH">

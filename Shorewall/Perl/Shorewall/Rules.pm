@@ -1472,7 +1472,7 @@ sub process_actions() {
     $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
-	open_file $file;
+	open_file( $file, 2, 1 );
 
 	while ( read_a_line( NORMAL_READ ) ) {
 	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
@@ -2744,7 +2744,7 @@ sub process_rules( $ ) {
     #
     $section = 'BLACKLIST';
 
-    my $fn = open_file 'blrules';
+    my $fn = open_file( 'blrules', 1, 1 );
 
     if ( $fn ) {
 	first_entry( sub () {
@@ -2782,7 +2782,7 @@ sub process_rules( $ ) {
     #
     setup_zone_mss;
 
-    $fn = open_file 'rules';
+    $fn = open_file( 'rules', 1, 1 );
 
     if ( $fn ) {
 

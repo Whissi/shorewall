@@ -213,7 +213,7 @@ sub setup_conntrack() {
 
     for my $name ( qw/notrack conntrack/ ) {
 
-	my $fn = open_file( $name, 3 );
+	my $fn = open_file( $name, 3 , 1 );
 
 	if ( $fn ) {
 

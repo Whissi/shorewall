@@ -495,6 +495,7 @@ our $file_format;            # Format of configuration file.
 my  $max_format;             # Max format value
 our $comment;                # Current COMMENT
 my  @comments;
+my  $comments_allowed;
 my $warningcount;
 
 my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
@@ -915,6 +916,7 @@ sub initialize( $;$$) {
     $currentlinenumber = 0;   # Line number
     $first_entry = 0;         # Message to output or function to call on first non-blank file entry
     $max_format  = 1;
+    $comments_allowed = 0;
 
     $shorewall_dir = '';      #Shorewall Directory
 
@@ -1989,15 +1991,16 @@ sub do_open_file( $ ) {
     $currentfilename   = $fname;
 }
 
-sub open_file( $;$ ) {
+sub open_file( $;$$ ) {
     my $fname = find_file $_[0];
 
     assert( ! defined $currentfile );
 
     if ( -f $fname && -s _ ) {
-	$first_entry = 0;
-	$file_format = 1;
-	$max_format  = supplied $_[1] ? $_[1] : 1;
+	$first_entry      = 0;
+	$file_format      = 1;
+	$max_format       = supplied $_[1] ? $_[1] : 1;
+	$comments_allowed = supplied $_[2] ? $_[2] : 0;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
@@ -2037,8 +2040,7 @@ sub close_file() {
 
 	fatal_error "SHELL Script failed" unless $result;
 
-	$first_entry = 0;
-
+	$first_entry      = 0;
     }
 }
 
@@ -2163,7 +2165,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2218,7 +2220,7 @@ sub process_compiler_directive( $$$$ ) {
 		       } ,
 
 		       SET => sub() {
-			   if ( ! $omitting ) {
+			   unless ( $omitting ) {
 			       directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
 			       ( my $var , $expression ) = split ' ', $expression, 2;
 			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
@@ -2230,7 +2232,7 @@ sub process_compiler_directive( $$$$ ) {
 		       } ,
 
 		       FORMAT => sub() {
-			   if ( ! $omitting ) {
+			   unless ( $omitting ) {
 			       directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
 			       directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
 			       directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;
@@ -2239,7 +2241,7 @@ sub process_compiler_directive( $$$$ ) {
 		       } ,
 
 		       RESET => sub() {
-			   if ( ! $omitting ) {
+			   unless ( $omitting ) {
 			       my $var = $expression;
 			       directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
 			       directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
@@ -2250,7 +2252,23 @@ sub process_compiler_directive( $$$$ ) {
 				   directive_warning( "Variable $1 does not exist", $filename, $linenumber );
 			       }
 			   }
+		       } ,
+
+		       COMMENT => sub() {
+			   unless ( $omitting ) {
+			       if ( $comments_allowed ) {
+				   if ( have_capability( 'COMMENTS' ) ) {
+				       ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
+				       $comment =~ s/\s*$//;
+				   } else {
+				       directive_warning( "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
+				   }
+			       } else {
+				   directive_error ( "?COMMENT is not allowed in this file", $filename, $linenumber );
+			       }
+			   }
 		       }
+
 		     );
 
     if ( my $function = $directives{$keyword} ) {
@@ -2535,7 +2553,7 @@ sub push_open( $;$ ) {
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $file , $max );
+    open_file( $file , $max, $comments_allowed );
 }
 
 sub pop_open() {
@@ -2866,7 +2884,7 @@ sub read_a_line($) {
 	    #
 	    # Handle conditionals
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT)/i ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT)/i ) {
 		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

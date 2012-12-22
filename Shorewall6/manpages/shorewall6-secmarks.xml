@@ -41,7 +41,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">SECMARK -
-        {SAVE|RESTORE|<replaceable>context</replaceable>|COMMENT
+        {SAVE|RESTORE|<replaceable>context</replaceable>|[?]COMMENT
         <replaceable>comment</replaceable>}</emphasis></term>
 
         <listitem>
@@ -76,7 +76,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>COMMENT</term>
+              <term>[?]COMMENT</term>
 
               <listitem>
                 <para>The remainder of the line is treated as a comment which
@@ -84,6 +84,11 @@
                 found or until the end of the file is reached. To stop adding
                 comments to rules, use a line with only the word
                 COMMENT.</para>
+
+                <note>
+                  <para>Beginning with Shorewall 4.5.11, ?COMMENT is a synonym
+                  for COMMENT and is preferred.</para>
+                </note>
               </listitem>
             </varlistentry>
           </variablelist>

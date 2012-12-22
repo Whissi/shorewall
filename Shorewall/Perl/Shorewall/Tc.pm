@@ -2412,7 +2412,7 @@ sub setup_tc() {
 				    }
 		      );
 
-	if ( my $fn = open_file( 'tcrules' , 2 ) ) {
+	if ( my $fn = open_file( 'tcrules' , 2, 1 ) ) {
 
 	    first_entry "$doing $fn...";
 
@@ -2422,7 +2422,7 @@ sub setup_tc() {
 
 	}
 
-	if ( my $fn = open_file 'secmarks' ) {
+	if ( my $fn = open_file( 'secmarks', 1, 1 ) ) {
 
 	    first_entry "$doing $fn...";
 

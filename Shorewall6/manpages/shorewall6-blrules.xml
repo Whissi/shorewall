@@ -47,7 +47,7 @@
         role="bold">NFQUEUE</emphasis>[<emphasis
         role="bold">(</emphasis><emphasis>queuenumber</emphasis><emphasis
         role="bold">)</emphasis>]<emphasis
-        role="bold">|COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
+        role="bold">|[?]COMMENT</emphasis>|<emphasis>action</emphasis>|<emphasis>macro</emphasis>[<emphasis
         role="bold">(</emphasis><emphasis>target</emphasis><emphasis
         role="bold">)</emphasis>]}<emphasis
         role="bold">[:</emphasis>{<emphasis>log-level</emphasis>|<emphasis
@@ -183,7 +183,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">COMMENT</emphasis></term>
+              <term><emphasis role="bold">[?]COMMENT</emphasis></term>
 
               <listitem>
                 <para>the rest of the line will be attached as a comment to
@@ -192,6 +192,11 @@
                 "shorewall6 show &lt;chain&gt;". To stop the comment from
                 being attached to further rules, simply include COMMENT on a
                 line by itself.</para>
+
+                <note>
+                  <para>Beginning with Shorewall 4.5.11, ?COMMENT is a synonym
+                  for COMMENT and is preferred.</para>
+                </note>
               </listitem>
             </varlistentry>
 

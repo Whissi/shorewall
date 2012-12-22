@@ -323,6 +323,28 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     'sit1".</para>
   </section>
 
+  <section>
+    <title>Zone and Chain Names</title>
+
+    <para>For a pair of zones, Shorewall creates two Netfilter chains; one for
+    connections in each direction. The names of these chains are formed by
+    separating the names of the two zones by either "2" or "-".</para>
+
+    <para>Example: Traffic from zone A to zone B would go through chain A2B
+    (think "A to B") or "A-B".</para>
+
+    <para>The default separator is "2" but you can override that by setting
+    ZONE_SEPARATOR="-" in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+
+    <para>Zones themselves have names that begin with a letter and are
+    composed of letters, numerals, and "_". The maximum length of a name is
+    dependent on the setting of LOGFORMAT in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5). See <ulink
+    url="manpages/shorewall-zones.html">shorewall-zones</ulink> (5) for
+    details.</para>
+  </section>
+
   <section id="COMMENT">
     <title>Attach Comment to Netfilter Rules</title>
 
@@ -1407,7 +1429,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
       </varlistentry>
     </variablelist>
 
-    <para>Action variables are read only and cannot be ?SET (although you can
+    <para>Action variables are read-only and cannot be ?SET (although you can
     change their values <ulink url="Actions.html#Embedded">using embedded
     Perl</ulink>).</para>
   </section>
@@ -1416,7 +1438,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     <title>Address Variables</title>
 
     <para>Given that shell variables are expanded at compile time, there is no
-    way to cause such variables to be expended at run time. Prior to Shorewall
+    way to cause such variables to be expanded at run time. Prior to Shorewall
     4.4.17, this made it difficult (to impossible) to include dynamic IP
     addresses in a <ulink url="Shorewall-Lite.html">Shorewall-lite</ulink>
     configuration.</para>
@@ -1814,8 +1836,8 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <itemizedlist>
       <listitem>
-        <para>it begins with '__', then those leading characters are stripped
-        off.</para>
+        <para>if it begins with '__', then those leading characters are
+        stripped off.</para>
       </listitem>
 
       <listitem>
@@ -2607,28 +2629,6 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
 
     <para>Note in particular that Shorewall translates TUN_IF to <filename
     class="devicefile">tun*</filename> in the COPY column.</para>
-  </section>
-
-  <section>
-    <title>Zone and Chain Names</title>
-
-    <para>For a pair of zones, Shorewall creates two Netfilter chains; one for
-    connections in each direction. The names of these chains are formed by
-    separating the names of the two zones by either "2" or "-".</para>
-
-    <para>Example: Traffic from zone A to zone B would go through chain A2B
-    (think "A to B") or "A-B".</para>
-
-    <para>The default separator is "2" but you can override that by setting
-    ZONE_SEPARATOR="-" in <ulink
-    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
-
-    <para>Zones themselves have names that begin with a letter and are
-    composed of letters, numerals, and "_". The maximum length of a name is
-    dependent on the setting of LOGFORMAT in <ulink
-    url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5). See <ulink
-    url="manpages/shorewall-zones.html">shorewall-zones</ulink> (5) for
-    details.</para>
   </section>
 
   <section>

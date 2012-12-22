@@ -1086,6 +1086,75 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     </example>
   </section>
 
+  <section>
+    <title>?FORMAT Directive</title>
+
+    <para>A number of different files support multiple formats. Prior to
+    Shorewall 4.5.11, the format was specified by a line having 'FORMAT' as
+    the first token. This requires each of the file processors to handle
+    FORMAT separately.</para>
+
+    <para>In Shorewall 4.5.11, the ?FORMAT Directive was created to centralize
+    processing of FORMAT directives. The old entries, while still supported,
+    are now deprecated.</para>
+
+    <para>The format directive is as follows:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>?FORMAT <replaceable>format</replaceable></term>
+
+        <listitem>
+          <para>Where format is an integer. In all cases, the default format
+          is 1. The following table shows the files that have different
+          formats and the supported formats for each.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <informaltable>
+      <tgroup align="left" cols="2">
+        <tbody>
+          <row>
+            <entry>FILE</entry>
+
+            <entry>FORMATS</entry>
+          </row>
+
+          <row>
+            <entry>action files (action.*)</entry>
+
+            <entry>1 and 2</entry>
+          </row>
+
+          <row>
+            <entry>conntrack</entry>
+
+            <entry>1, 2 and 3</entry>
+          </row>
+
+          <row>
+            <entry>interfaces</entry>
+
+            <entry>1 and 2</entry>
+          </row>
+
+          <row>
+            <entry>macro files (macro.*)</entry>
+
+            <entry>1 and 2</entry>
+          </row>
+
+          <row>
+            <entry>tcrules</entry>
+
+            <entry>1 and 2</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
   <section id="CONFIG_PATH">
     <title>CONFIG_PATH</title>
 

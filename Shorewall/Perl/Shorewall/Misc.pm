@@ -675,7 +675,7 @@ sub process_stoppedrules() {
     my $fw = firewall_zone;
     my $result;
 
-    if ( my $fn = open_file 'stoppedrules' ) {
+    if ( my $fn = open_file 'stoppedrules' , 1, 1 ) {
 	first_entry "$doing $fn...";
 
 	while ( read_a_line( NORMAL_READ ) ) {
@@ -683,7 +683,7 @@ sub process_stoppedrules() {
 	    $result = 1;
 
 	    my ( $target, $source, $dest, $proto, $ports, $sports ) = 
-		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 }, { COMMENT => 0, FORMAT => 2 };
+		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 }, { COMMENT => 0 };
 
 	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
 
@@ -1208,7 +1208,7 @@ sub setup_mac_lists( $ ) {
 	    }
 	}
 
-	if ( my $fn = open_file 'maclist' ) {
+	if ( my $fn = open_file 'maclist', 1, 1 ) {
 
 	    first_entry "$doing $fn...";
 

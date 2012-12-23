@@ -285,7 +285,7 @@ sub setup_tunnels() {
     #
     # Setup_Tunnels() Starts Here
     #
-    if ( my $fn = open_file 'tunnels' ) {
+    if ( my $fn = open_file( 'tunnels', 1, 1 ) ) {
 
 	first_entry "$doing $fn...";
 

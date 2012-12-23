@@ -497,11 +497,11 @@ my  $max_format;             # Max format value
 our $comment;                # Current COMMENT
 my  @comments;
 my  $comments_allowed;
-my $warningcount;
-my $warningcount1;
-my $warningcount2;
+my  $warningcount;
+my  $warningcount1;
+my  $warningcount2;
 
-my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
+my  $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
 our $debug;                  # Global debugging flag
 my  $confess;                # If true, use Carp to report errors with stack trace.
@@ -514,9 +514,9 @@ our $Product;                # $product with initial cap.
 
 our $sillyname;              # Name of temporary filter chains for testing capabilities
 our $sillyname1;
-my $iptables;                # Path to iptables/ip6tables
-my $tc;                      # Path to tc
-my $ip;                      # Path to ip
+my  $iptables;               # Path to iptables/ip6tables
+my  $tc;                     # Path to tc
+my  $ip;                     # Path to ip
 
 my $shell;                   # Type of shell that processed the params file
 
@@ -2559,14 +2559,14 @@ EOF
 # The following two functions allow module clients to nest opens. This happens frequently
 # in the Rules module.
 #
-sub push_open( $;$ ) {
-    my ( $file, $max ) = @_;
+sub push_open( $;$$ ) {
+    my ( $file, $max , $ca) = @_;
     push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $file , $max, $comments_allowed );
+    open_file( $file , $max, $comments_allowed || $ca );
 }
 
 sub pop_open() {

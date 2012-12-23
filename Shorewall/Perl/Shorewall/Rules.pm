@@ -1584,6 +1584,7 @@ sub process_action($) {
 	    }
 
 	    if ( $target eq 'FORMAT' ) {
+		format_warning;
 		fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
 		$file_format = $source;
 		next;
@@ -1688,6 +1689,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	}
 
 	if ( $mtarget eq 'FORMAT' ) {
+	    format_warning;
 	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
 	    $file_format = $msource;
 	    next;
@@ -1828,7 +1830,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	}
 
 	if ( $mtarget eq 'FORMAT' ) {
-	    fatal_error "FORMAT must be 2" unless $source ne '2';
+	    fatal_error "FORMAT must be 2" unless $msource eq '2';
 	    next;
 	}
 

@@ -205,6 +205,7 @@ sub process_format( $ ) {
     my $format = shift;
 
     fatal_error q(FORMAT must be '1', '2' or '3') unless $format =~ /^[123]$/;
+    format_warning;
 
     $file_format = $format;
 }

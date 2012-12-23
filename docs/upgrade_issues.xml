@@ -35,7 +35,7 @@
 
       <holder>Thomas M. Eastep</holder>
 
-      <holder/>
+      <holder></holder>
     </copyright>
 
     <legalnotice>
@@ -163,7 +163,7 @@
           <para>?ENDIF.</para>
         </blockquote>
 
-        <para/>
+        <para></para>
       </listitem>
 
       <listitem>
@@ -256,6 +256,17 @@
 
           <member><filename>tcrules</filename></member>
         </simplelist>
+
+        <para>The first instance of 'FORMAT' (without the '?') will generate
+        this warning:</para>
+
+        <simplelist>
+          <member>WARNING: FORMAT is deprecated in favor of ?FORMAT; consider
+          running 'shorewall update -D'</member>
+        </simplelist>
+
+        <para>As the warning suggests, 'shorewall[6] update -D' will convert
+        all instances of FORMAT to ?FORMAT in files on the CONFIG_PATH.</para>
       </listitem>
 
       <listitem>
@@ -286,6 +297,18 @@
 
           <member><filename>tunnels</filename></member>
         </simplelist>
+
+        <para>The first instance of 'COMMENT' (without the '?') will generate
+        this warning:</para>
+
+        <simplelist>
+          <member>WARNING: COMMENT is deprecated in favor of ?COMMENT;
+          consider running 'shorewall update -D'</member>
+        </simplelist>
+
+        <para>As the warning suggests, 'shorewall[6] update -D' will convert
+        all instances of COMMENT to ?COMMENT in files on the
+        CONFIG_PATH.</para>
       </listitem>
     </orderedlist>
   </section>

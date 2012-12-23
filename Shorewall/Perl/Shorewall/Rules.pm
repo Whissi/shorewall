@@ -1472,7 +1472,7 @@ sub process_actions() {
     $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
-	open_file( $file, 2, 1 );
+	open_file( $file, 2 );
 
 	while ( read_a_line( NORMAL_READ ) ) {
 	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
@@ -1552,7 +1552,7 @@ sub process_action($) {
 
 	progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
-	push_open $actionfile, 2;
+	push_open $actionfile, 2, 1;
 
 	my $oldparms = push_action_params( $chainref, $param, $level, $tag );
 
@@ -1584,6 +1584,7 @@ sub process_action($) {
 	    }
 
 	    if ( $target eq 'FORMAT' ) {
+		format_warning;
 		fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
 		$file_format = $source;
 		next;
@@ -1688,6 +1689,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	}
 
 	if ( $mtarget eq 'FORMAT' ) {
+	    format_warning;
 	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
 	    $file_format = $msource;
 	    next;
@@ -1796,7 +1798,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding inline action $inlinefile...";
 
-    push_open $inlinefile;
+    push_open $inlinefile, 2;
 
     while ( read_a_line( NORMAL_READ ) ) {
 	my  ( $mtarget,
@@ -1828,7 +1830,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	}
 
 	if ( $mtarget eq 'FORMAT' ) {
-	    fatal_error "FORMAT must be 2" unless $source ne '2';
+	    fatal_error "FORMAT must be 2" unless $msource eq '2';
 	    next;
 	}
 

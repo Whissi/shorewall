@@ -426,6 +426,7 @@ compiler() {
     [ -n "$g_update" ] && options="$options --update"
     [ -n "$g_convert" ] && options="$options --convert"
     [ -n "$g_annotate" ] && options="$options --annotate"
+    [ -n "$g_directives" ] && options="$options --directives"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -734,10 +735,6 @@ check_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
-			a*)
-			    g_annotate=Yes
-			    option=${option#a}
-			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -825,6 +822,10 @@ update_command() {
 			b*)
 			    g_convert=Yes
 			    option=${option#b}
+			    ;;
+			D*)
+			    g_directives=Yes
+			    option=${option#D}
 			    ;;
 			*)
 			    usage 1
@@ -1668,7 +1669,7 @@ usage() # $1 = exit status
     echo "   status"
     echo "   stop"
     echo "   try <directory> [ <timeout> ]"
-    echo "   update [ -a ] [ -b ] [ -r ] [ -T ] [ <directory> ]"
+    echo "   update [ -a ] [ -b ] [ -r ] [ -T ] [ -D ] [ <directory> ]"
     echo "   version [ -a ]"
     echo
     exit $1

@@ -1008,6 +1008,7 @@ sub process_interface( $$ ) {
     }
 
     if ( $zone eq 'FORMAT' ) {
+	format_warning;
 	if ( $originalinterface =~ /^([12])$/ ) {
 	    $file_format = $1;
 	    return;

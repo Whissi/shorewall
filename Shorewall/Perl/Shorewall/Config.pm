@@ -131,6 +131,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit1
 				       run_user_exit2
 				       generate_aux_config
+				       format_warning
 				       process_comment
 				       no_comment
 				       macro_comment
@@ -199,7 +200,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.5.11-Beta1';
+our $VERSION = '4.5_11';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -496,9 +497,11 @@ my  $max_format;             # Max format value
 our $comment;                # Current COMMENT
 my  @comments;
 my  $comments_allowed;
-my $warningcount;
+my  $warningcount;
+my  $warningcount1;
+my  $warningcount2;
 
-my $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
+my  $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
 our $debug;                  # Global debugging flag
 my  $confess;                # If true, use Carp to report errors with stack trace.
@@ -511,9 +514,9 @@ our $Product;                # $product with initial cap.
 
 our $sillyname;              # Name of temporary filter chains for testing capabilities
 our $sillyname1;
-my $iptables;                # Path to iptables/ip6tables
-my $tc;                      # Path to tc
-my $ip;                      # Path to ip
+my  $iptables;               # Path to iptables/ip6tables
+my  $tc;                     # Path to tc
+my  $ip;                     # Path to ip
 
 my $shell;                   # Type of shell that processed the params file
 
@@ -618,9 +621,11 @@ sub initialize( $;$$) {
     #
     # Contents of last COMMENT line.
     #
-    $comment      = '';
-    @comments     = ();
-    $warningcount = 0;
+    $comment       = '';
+    @comments      = ();
+    $warningcount  = 0;
+    $warningcount1 = 0;
+    $warningcount2 = 0;
     #
     # Misc Globals
     #
@@ -632,7 +637,7 @@ sub initialize( $;$$) {
 		    EXPORT     => 0,
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
-		    VERSION    => "4.5.8-Beta2",
+		    VERSION    => "4.5.11-RC1",
 		    CAPVERSION => 40509 ,
 		  );
     #
@@ -1924,10 +1929,18 @@ sub split_line($$) {
 }
 
 #
+# Generate a FORMAT warning
+#
+sub format_warning() {
+    warning_message "'FORMAT' is deprecated in favor of '?FORMAT' - consider running '$product update -D'" unless $warningcount2++; 
+}    
+
+#
 # Process a COMMENT line (in $currentline)
 #
 sub process_comment() {
     if ( have_capability( 'COMMENTS' ) ) {
+	warning_message "'COMMENT' is deprecated in favor of '?COMMENT' - consider running '$product update -D'" unless $warningcount1++; 
 	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
 	$comment =~ s/\s*$//;
     } else {
@@ -2546,14 +2559,14 @@ EOF
 # The following two functions allow module clients to nest opens. This happens frequently
 # in the Rules module.
 #
-sub push_open( $;$ ) {
-    my ( $file, $max ) = @_;
+sub push_open( $;$$ ) {
+    my ( $file, $max , $ca) = @_;
     push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $file , $max, $comments_allowed );
+    open_file( $file , $max, $comments_allowed || $ca );
 }
 
 sub pop_open() {
@@ -4673,14 +4686,70 @@ sub export_params() {
 }
 
 #
+# Walk the CONFIG_PATH converting FORMAT and COMMENT lines to compiler directives
+#
+sub convert_to_directives() {
+    my $sharedir = $shorewallrc{SHAREDIR};
+    #
+    # Make a copy of @config_path so that the for-loop below doesn't clobber that list
+    #
+    my @path = @config_path;
+
+    $sharedir =~ s|/+$||;
+
+    my $dirtest = qr|^$sharedir/+shorewall6?(?:/.*)?$|;
+
+    progress_message3 "Converting 'FORMAT' and 'COMMENT' lines to compiler directives...";
+
+    for my $dir ( @path ) {
+	unless ( $dir =~ /$dirtest/ || ! -w $dir ) {
+	    $dir =~ s|/+$||;
+
+	    opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
+
+	    while ( my $file = readdir( $dirhandle ) ) {
+		unless ( $file eq 'capabilities' || $file =~ /\.bak$/ ) {
+		    $file = "$dir/$file";
+		
+		    if ( -f $file && -w _ ) {
+			#
+			# writeable regular file
+			#
+			my $result = system << "EOF";
+perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
+                 if ( /^\\s*COMMENT\\s+/ ) {
+                     s/COMMENT/?COMMENT/;
+                 } elsif ( /^\\s*COMMENT\\s*\$/ ) {
+                     s/COMMENT/?COMMENT/;
+                 }' $file
+EOF
+			if ( $result == 0 ) {
+			    if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
+				progress_message3 "   File $file updated - old file renamed ${file}.bak";
+			    } elsif ( ! unlink "${file}.bak" ) {
+
+			    }
+			} else {
+			    warning_message ("Unable to update file ${file}.bak:$!" );
+			}
+		    }
+		}
+	    }
+
+	    closedir $dirhandle;
+	}
+    }
+}
+
+#
 # - Process the params file
 # - Read the shorewall.conf file
 # - Read the capabilities file, if any
 # - establish global hashes %params, %config , %globals and %capabilities
 #
-sub get_configuration( $$$ ) {
+sub get_configuration( $$$$ ) {
 
-    my ( $export, $update, $annotate ) = @_;
+    my ( $export, $update, $annotate, $directives ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -5207,7 +5276,10 @@ sub get_configuration( $$$ ) {
     while ( my ($var, $val ) = each %renamed ) {
 	$variables{$var} = $config{$val};
     }
+
+    convert_to_directives if $directives;
 }
+
 #
 # The values of the options in @propagateconfig are copied to the script file in OPTION=<value> format.
 #

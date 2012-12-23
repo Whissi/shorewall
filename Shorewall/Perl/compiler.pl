@@ -67,6 +67,7 @@ sub usage( $ ) {
     [ --annotate ]
     [ --update ]
     [ --convert ]
+    [ --directives ]
     [ --shorewallrc=<pathname> ]
     [ --shorewallrc1=<pathname> ]
     [ --config_path=<path-list> ]
@@ -94,6 +95,7 @@ my $preview       = 0;
 my $annotate      = 0;
 my $update        = 0;
 my $convert       = 0;
+my $directives    = 0;
 my $config_path   = '';
 my $shorewallrc   = '';
 my $shorewallrc1  = '';
@@ -124,6 +126,8 @@ my $result = GetOptions('h'               => \$help,
 			'confess'         => \$confess,
 			'a'               => \$annotate,
 			'annotate'        => \$annotate,
+			'directives'      => \$directives,
+			'D'               => \$directives,
 			'u'               => \$update,
 			'update'          => \$update,
 			'convert'         => \$convert,
@@ -151,6 +155,7 @@ compiler( script          => $ARGV[0] || '',
 	  update          => $update,
 	  convert         => $convert,
 	  annotate        => $annotate,
+	  directives      => $directives,
 	  config_path     => $config_path,
 	  shorewallrc     => $shorewallrc,
 	  shorewallrc1    => $shorewallrc1,

@@ -225,6 +225,7 @@ sub process_tc_rule( ) {
     }
 
     if ( $originalmark eq 'FORMAT' ) {
+	format_warning;
 	if ( $source =~ /^([12])$/ ) {
 	    $file_format = $1;
 	    return;
@@ -1877,7 +1878,7 @@ sub process_tcinterfaces() {
 #
 sub process_tcpri() {
     my $fn  = find_file 'tcinterfaces';
-    my $fn1 = open_file 'tcpri';
+    my $fn1 = open_file 'tcpri', 1,1;
 
     if ( $fn1 ) {
 	first_entry

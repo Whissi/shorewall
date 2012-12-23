@@ -256,6 +256,59 @@
 
           <member><filename>tcrules</filename></member>
         </simplelist>
+
+        <para>The first instance of 'FORMAT' (without the '?') will generate
+        this warning:</para>
+
+        <simplelist>
+          <member>WARNING: FORMAT is deprecated in favor of ?FORMAT; consider
+          running 'shorewall update -D'</member>
+        </simplelist>
+
+        <para>As the warning suggests, 'shorewall[6] update -D' will convert
+        all instances of FORMAT to ?FORMAT in files on the CONFIG_PATH.</para>
+      </listitem>
+
+      <listitem>
+        <para>Also beginning with Shorewalll 4.5.11, ?COMMENT is preferred
+        over COMMENT for specifying comments to be attached to generated
+        Netfilter rules in the following files:</para>
+
+        <simplelist>
+          <member><filename>accounting</filename></member>
+
+          <member><filename>action</filename>.* files</member>
+
+          <member><filename>blrules</filename></member>
+
+          <member><filename>conntrack</filename></member>
+
+          <member><filename>macro</filename>.* files</member>
+
+          <member><filename>masq</filename></member>
+
+          <member><filename>nat</filename></member>
+
+          <member><filename>rules</filename></member>
+
+          <member><filename>secmarks</filename></member>
+
+          <member><filename>tcrules</filename></member>
+
+          <member><filename>tunnels</filename></member>
+        </simplelist>
+
+        <para>The first instance of 'COMMENT' (without the '?') will generate
+        this warning:</para>
+
+        <simplelist>
+          <member>WARNING: COMMENT is deprecated in favor of ?COMMENT;
+          consider running 'shorewall update -D'</member>
+        </simplelist>
+
+        <para>As the warning suggests, 'shorewall[6] update -D' will convert
+        all instances of COMMENT to ?COMMENT in files on the
+        CONFIG_PATH.</para>
       </listitem>
 
       <listitem>

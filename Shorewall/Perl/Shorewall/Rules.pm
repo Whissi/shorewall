@@ -58,72 +58,72 @@ our $VERSION = 'MODULEVERSION';
 #
 # Globals are documented in the initialize() function
 #
-my %sections;
+our %sections;
 
-my $section;
+our $section;
 
-my @policy_chains;
+our @policy_chains;
 
-my %default_actions;
+our %default_actions;
 
-my %macros;
+our %macros;
 
 our $family;
 
-my @builtins;
+our @builtins;
 
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-my $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
-my $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
-my $macro_commands  = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
+our $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
+our $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
+our $macro_commands  = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
 
-my %rulecolumns = ( action    =>   0,
-		    source    =>   1,
-		    dest      =>   2,
-		    proto     =>   3,
-		    dport     =>   4,
-		    sport     =>   5,
-		    origdest  =>   6,
-		    rate      =>   7,
-		    user      =>   8,
-		    mark      =>   9,
-		    connlimit =>  10,
-		    time      =>  11,
-		    headers   =>  12,
-		    switch    =>  13,
-		    helper    =>  14,
-		  );
+our %rulecolumns = ( action    =>   0,
+		     source    =>   1,
+		     dest      =>   2,
+		     proto     =>   3,
+		     dport     =>   4,
+		     sport     =>   5,
+		     origdest  =>   6,
+		     rate      =>   7,
+		     user      =>   8,
+		     mark      =>   9,
+		     connlimit =>  10,
+		     time      =>  11,
+		     headers   =>  12,
+		     switch    =>  13,
+		     helper    =>  14,
+		   );
 
 use constant { MAX_MACRO_NEST_LEVEL => 10 };
 
-my $macro_nest_level;
+our $macro_nest_level;
 
-my @actionstack;
-my %active;
+our @actionstack;
+our %active;
 
 #  Action Table
 #
 #     %actions{ actchain => used to eliminate collisions }
 #
-my %actions;
+our %actions;
 #
 #  Inline Action Table
 #
-my %inlines;
+our %inlines;
 #
 # Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
 #
-my %usedactions;
+our %usedactions;
 
 #
 # Policies for which AUDIT is allowed
 #
-my %auditpolicies = ( ACCEPT => 1,
-		      DROP   => 1,
-		      REJECT => 1
-		    );
+our %auditpolicies = ( ACCEPT => 1,
+		       DROP   => 1,
+		       REJECT => 1
+		     );
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:

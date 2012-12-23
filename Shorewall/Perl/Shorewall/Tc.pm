@@ -86,7 +86,7 @@ use constant { NOMARK    => 0 ,
 	       HIGHMARK  => 2
 	       };
 
-my  %flow_keys = ( 'src'            => 1,
+our %flow_keys = ( 'src'            => 1,
 		   'dst'            => 1,
 		   'proto'          => 1,
 		   'proto-src'      => 1,
@@ -104,15 +104,15 @@ my  %flow_keys = ( 'src'            => 1,
 		   'sk-gid'         => 1,
 		   'vlan-tag'       => 1 );
 
-my %designator = ( F => 'tcfor' ,
-		   T => 'tcpost' );
+our %designator = ( F => 'tcfor' ,
+		    T => 'tcpost' );
 
-my  %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
+our %tosoptions = ( 'tos-minimize-delay'       => '0x10/0x10' ,
 		    'tos-maximize-throughput'  => '0x08/0x08' ,
 		    'tos-maximize-reliability' => '0x04/0x04' ,
 		    'tos-minimize-cost'        => '0x02/0x02' ,
 		    'tos-normal-service'       => '0x00/0x1e' );
-my  %classids;
+our %classids;
 
 #
 # Perl version of Arn Bernin's 'tc4shorewall'.
@@ -133,12 +133,12 @@ my  %classids;
 #                              name          => <interface>
 #                                               }
 #
-my  @tcdevices;
-my  %tcdevices;
-my  @devnums;
-my  $devnum;
-my  $sticky;
-my  $ipp2p;
+our @tcdevices;
+our %tcdevices;
+our @devnums;
+our $devnum;
+our $sticky;
+our $ipp2p;
 
 #
 # TCClasses Table
@@ -159,10 +159,10 @@ my  $ipp2p;
 #                                                }
 #                                     }
 #             }
-my  @tcclasses;
-my  %tcclasses;
+our @tcclasses;
+our %tcclasses;
 
-my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
+our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      PREROUTING => PREROUTE_RESTRICT ,
 		      tcpost     => POSTROUTE_RESTRICT ,
 		      tcfor      => NO_RESTRICT ,
@@ -170,16 +170,16 @@ my  %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 		      tcout      => OUTPUT_RESTRICT ,
 		    );
 
-my $family;
+our $family;
 
-my $divertref; # DIVERT chain
+our $divertref; # DIVERT chain
 
-my %validstates = ( NEW                => 0,
-		    RELATED            => 0,
-		    ESTABLISHED        => 0,
-		    UNTRACKED          => 0,
-		    INVALID            => 0,
-		  );
+our %validstates = ( NEW                => 0,
+		     RELATED            => 0,
+		     ESTABLISHED        => 0,
+		     UNTRACKED          => 0,
+		     INVALID            => 0,
+		   );
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:

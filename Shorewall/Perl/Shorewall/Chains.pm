@@ -332,8 +332,8 @@ our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
-my  $export;
-my  %renamed;
+our $export;
+our %renamed;
 our %nfobjects;
 
 #
@@ -375,14 +375,14 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 #
 # See initialize() below for additional comments on these variables
 #
-my $iprangematch;
-my %chainseq;
-my $idiotcount;
-my $idiotcount1;
-my $hashlimitset;
-my $global_variables;
-my %address_variables;
-my $ipset_rules;
+our $iprangematch;
+our %chainseq;
+our $idiotcount;
+our $idiotcount1;
+our $hashlimitset;
+our $global_variables;
+our %address_variables;
+our $ipset_rules;
 
 #
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
@@ -434,18 +434,18 @@ our %tosmap = ( 'Minimize-Delay'       => 0x10,
 #
 # These hashes hold the shell code to set shell variables. The key is the name of the variable; the value is the code to generate the variable's contents
 #
-my %interfaceaddr;         # First interface address
-my %interfaceaddrs;        # All interface addresses
-my %interfacenets;         # Networks routed out of the interface
-my %interfacemacs;         # Interface MAC
-my %interfacebcasts;       # Broadcast addresses associated with the interface (IPv4)
-my %interfaceacasts;       # Anycast addresses associated with the interface (IPv6)
-my %interfacegateways;     # Gateway of default route out of the interface
+our %interfaceaddr;         # First interface address
+our %interfaceaddrs;        # All interface addresses
+our %interfacenets;         # Networks routed out of the interface
+our %interfacemacs;         # Interface MAC
+our %interfacebcasts;       # Broadcast addresses associated with the interface (IPv4)
+our %interfaceacasts;       # Anycast addresses associated with the interface (IPv6)
+our %interfacegateways;     # Gateway of default route out of the interface
 
 #
 # Built-in Chains
 #
-my @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
+our @builtins = qw(PREROUTING INPUT FORWARD OUTPUT POSTROUTING);
 
 #
 # Mode of the emitter (part of this module that converts rules in the chain table into iptables-restore input)
@@ -454,7 +454,7 @@ use constant { NULL_MODE => 0 ,   # Emitting neither shell commands nor iptables
 	       CAT_MODE  => 1 ,   # Emitting iptables-restore input
 	       CMD_MODE  => 2 };  # Emitting shell commands.
 
-my $mode;
+our $mode;
 #
 # Address Family
 #
@@ -463,7 +463,7 @@ our $family;
 #
 # These are the current builtin targets
 #
-my  %builtin_target = ( ACCEPT      => 1,
+our %builtin_target = ( ACCEPT      => 1,
 			ACCOUNT     => 1,
 			AUDIT       => 1,
 			CHAOS       => 1,
@@ -518,7 +518,7 @@ my  %builtin_target = ( ACCEPT      => 1,
 			ULOG        => 1,
 		        );
 
-my %ipset_exists;
+our %ipset_exists;
 
 #
 # Rules are stored in an internal form
@@ -549,55 +549,55 @@ use constant { UNIQUE      => 1,
 	       MATCH       => 8,
 	       CONTROL     => 16 };
 
-my %opttype = ( rule          => CONTROL,
-		cmd           => CONTROL,
+our %opttype = ( rule          => CONTROL,
+		 cmd           => CONTROL,
 
-		dhcp          => UNIQUE,
+		 dhcp          => UNIQUE,
 
-	        mode          => CONTROL,
-		cmdlevel      => CONTROL,
-		simple        => CONTROL,
+		 mode          => CONTROL,
+		 cmdlevel      => CONTROL,
+		 simple        => CONTROL,
 
-	        i             => UNIQUE,
-		s             => UNIQUE,
-		o             => UNIQUE,
-		d             => UNIQUE,
-		p             => UNIQUE,
-		dport         => UNIQUE,
-		sport         => UNIQUE,
-		'icmp-type'   => UNIQUE,
-		'icmpv6-type' => UNIQUE,
+		 i             => UNIQUE,
+		 s             => UNIQUE,
+		 o             => UNIQUE,
+		 d             => UNIQUE,
+		 p             => UNIQUE,
+		 dport         => UNIQUE,
+		 sport         => UNIQUE,
+		 'icmp-type'   => UNIQUE,
+		 'icmpv6-type' => UNIQUE,
 
-		comment       => CONTROL,
+		 comment       => CONTROL,
 
-		policy        => MATCH,
-		state         => EXCLUSIVE,
+		 policy        => MATCH,
+		 state         => EXCLUSIVE,
 
-		jump          => TARGET,
-		target        => TARGET,
-		targetopts    => TARGET,
-	      );
+		 jump          => TARGET,
+		 target        => TARGET,
+		 targetopts    => TARGET,
+	       );
 
-my %aliases = ( protocol        => 'p',
-		source          => 's',
-		destination     => 'd',
-		jump            => 'j',
-		goto            => 'g',
-		'in-interface'  => 'i',
-		'out-interface' => 'o',
-		dport           => 'dport',
-		sport           => 'sport',
-		'icmp-type'     => 'icmp-type',
-		'icmpv6-type'   => 'icmpv6-type',
-	      );
+our %aliases = ( protocol        => 'p',
+		 source          => 's',
+		 destination     => 'd',
+		 jump            => 'j',
+		 goto            => 'g',
+		 'in-interface'  => 'i',
+		 'out-interface' => 'o',
+		 dport           => 'dport',
+		 sport           => 'sport',
+		 'icmp-type'     => 'icmp-type',
+		 'icmpv6-type'   => 'icmpv6-type',
+	       );
 
-my @unique_options = ( qw/p dport sport icmp-type icmpv6-type s d i o/ );
+our @unique_options = ( qw/p dport sport icmp-type icmpv6-type s d i o/ );
 
-my %isocodes;
+our %isocodes;
 
 use constant { ISODIR => '/usr/share/xt_geoip/LE' };
 
-my %switches;
+our %switches;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

@@ -53,28 +53,28 @@ use constant { LOCAL_TABLE   => 255,
 	       UNSPEC_TABLE  => 0
 	       };
 
-my  @routemarked_providers;
-my  %routemarked_interfaces;
+our @routemarked_providers;
+our %routemarked_interfaces;
 our @routemarked_interfaces;
-my  %provider_interfaces;
-my  @load_providers;
-my  @load_interfaces;
+our %provider_interfaces;
+our @load_providers;
+our @load_interfaces;
 
-my $balancing;
-my $fallback;
-my $metrics;
-my $first_default_route;
-my $first_fallback_route;
-my $maxload;
-my $tproxies;
+our $balancing;
+our $fallback;
+our $metrics;
+our $first_default_route;
+our $first_fallback_route;
+our $maxload;
+our $tproxies;
 
-my %providers;
+our %providers;
 
-my @providers;
+our @providers;
 
-my $family;
+our $family;
 
-my $lastmark;
+our $lastmark;
 
 use constant { ROUTEMARKED_SHARED => 1, ROUTEMARKED_UNSHARED => 2 };
 

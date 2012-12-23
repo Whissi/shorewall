@@ -44,11 +44,11 @@ our @EXPORT = qw( compiler );
 our @EXPORT_OK = qw( $export );
 our $VERSION = 'MODULEVERSION';
 
-my $export;
+our $export;
 
-my $test;
+our $test;
 
-my $family;
+our $family;
 
 #
 # Initilize the package-globals in the other modules

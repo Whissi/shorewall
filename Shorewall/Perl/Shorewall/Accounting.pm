@@ -40,18 +40,18 @@ our $VERSION = 'MODULEVERSION';
 #
 # Per-IP accounting tables. Each entry contains the associated network.
 #
-my %tables;
+our %tables;
 
-my $jumpchainref;
-my %accountingjumps;
-my $asection;
-my $defaultchain;
-my $ipsecdir;
-my $defaultrestriction;
-my $restriction;
-my $accounting_commands = { COMMENT => 0, SECTION => 2 };
-my $sectionname;
-my $acctable;
+our $jumpchainref;
+our %accountingjumps;
+our $asection;
+our $defaultchain;
+our $ipsecdir;
+our $defaultrestriction;
+our $restriction;
+our $accounting_commands = { COMMENT => 0, SECTION => 2 };
+our $sectionname;
+our $acctable;
 
 #
 # Sections in the Accounting File

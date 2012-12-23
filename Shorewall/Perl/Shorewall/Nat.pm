@@ -42,8 +42,8 @@ Exporter::export_ok_tags('rules');
 
 our $VERSION = 'MODULEVERSION';
 
-my @addresses_to_add;
-my %addresses_to_add;
+our @addresses_to_add;
+our %addresses_to_add;
 
 #
 # Called by the compiler

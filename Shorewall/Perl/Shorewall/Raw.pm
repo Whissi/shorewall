@@ -36,7 +36,16 @@ our @EXPORT = qw( setup_conntrack );
 our @EXPORT_OK = qw( handle_helper_rule );
 our $VERSION = 'MODULEVERSION';
 
-my %valid_ctevent = ( new => 1, related => 1, destroy => 1, reply => 1, assured => 1, protoinfo => 1, helper => 1, mark => 1, natseqinfo => 1, secmark => 1 );
+our %valid_ctevent = ( new        => 1,
+		       related    => 1,
+		       destroy    => 1,
+		       reply      => 1,
+		       assured    => 1,
+		       protoinfo  => 1,
+		       helper     => 1,
+		       mark       => 1,
+		       natseqinfo => 1,
+		       secmark    => 1 );
 
 #
 # Notrack

@@ -148,12 +148,12 @@ use constant { IN_OUT     => 1,
 #
 #     $firewall_zone names the firewall zone.
 #
-my @zones;
-my %zones;
-my %zonetypes;
-my $firewall_zone;
+our @zones;
+our %zones;
+our %zonetypes;
+our $firewall_zone;
 
-my  %reservedName = ( all => 1,
+our %reservedName = ( all => 1,
 		      any => 1,
 		      none => 1,
 		      SOURCE => 1,
@@ -188,24 +188,24 @@ my  %reservedName = ( all => 1,
 #    The purpose of the 'base' member is to ensure that the base names associated with the physical interfaces are assigned in
 #    the same order as the interfaces are encountered in the configuration files.
 #
-my @interfaces;
-my %interfaces;
-my %roots;
-my @bport_zones;
-my %ipsets;
-my %physical;
-my %basemap;
-my %basemap1;
-my %mapbase;
-my %mapbase1;
-my $family;
-my $upgrade;
-my $have_ipsec;
-my $baseseq;
-my $minroot;
-my $zonemark;
-my $zonemarkincr;
-my $zonemarklimit;
+our @interfaces;
+our %interfaces;
+our %roots;
+our @bport_zones;
+our %ipsets;
+our %physical;
+our %basemap;
+our %basemap1;
+our %mapbase;
+our %mapbase1;
+our $family;
+our $upgrade;
+our $have_ipsec;
+our $baseseq;
+our $minroot;
+our $zonemark;
+our $zonemarkincr;
+our $zonemarklimit;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -232,24 +232,24 @@ use constant { SIMPLE_IF_OPTION   => 1,
 use constant { NO_UPDOWN   => 1, 
 	       NO_SFILTER  => 2 };
 
-my %validinterfaceoptions;
+our %validinterfaceoptions;
 
-my %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
+our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
 
-my %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN );
+our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN );
 
-my %validhostoptions;
+our %validhostoptions;
 
-my %validzoneoptions = ( mss            => NUMERIC,
-			 nomark         => NOTHING,
-			 blacklist      => NOTHING,
-			 dynamic_shared => NOTHING,
-			 strict         => NOTHING,
-			 next           => NOTHING,
-			 reqid          => NUMERIC,
-			 spi            => NUMERIC,
-			 proto          => IPSECPROTO,
-			 mode           => IPSECMODE,
+our %validzoneoptions = ( mss            => NUMERIC,
+			  nomark         => NOTHING,
+			  blacklist      => NOTHING,
+			  dynamic_shared => NOTHING,
+			  strict         => NOTHING,
+			  next           => NOTHING,
+			  reqid          => NUMERIC,
+			  spi            => NUMERIC,
+			  proto          => IPSECPROTO,
+			  mode           => IPSECMODE,
 			 "tunnel-src"   => NETWORK,
 			 "tunnel-dst"   => NETWORK,
 		       );
@@ -258,7 +258,10 @@ use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
 #
 # Hash of options that have their own key in the returned hash.
 #
-my %zonekey = ( mss => UNRESTRICTED | COMPLEX , blacklist => NOFW, nomark => NOFW | IN_OUT_ONLY, dynamic_shared => IN_OUT_ONLY );
+our %zonekey = ( mss            => UNRESTRICTED | COMPLEX ,
+		 blacklist      => NOFW, 
+		 nomark         => NOFW | IN_OUT_ONLY,
+		 dynamic_shared => IN_OUT_ONLY );
 
 #
 # Rather than initializing globals in an INIT block or during declaration,

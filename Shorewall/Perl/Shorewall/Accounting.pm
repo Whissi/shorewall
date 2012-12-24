@@ -406,7 +406,7 @@ sub process_accounting_rule( ) {
 
 sub setup_accounting() {
 
-    if ( my $fn = open_file 'accounting' ) {
+    if ( my $fn = open_file 'accounting', 1, 1 ) {
 
 	first_entry "$doing $fn...";
 

@@ -497,6 +497,7 @@ our $max_format;             # Max format value
 our $comment;                # Current COMMENT
 our @comments;
 our $comments_allowed;
+our $nocomment;
 our $warningcount;
 our $warningcount1;
 our $warningcount2;
@@ -922,6 +923,7 @@ sub initialize( $;$$) {
     $first_entry = 0;         # Message to output or function to call on first non-blank file entry
     $max_format  = 1;
     $comments_allowed = 0;
+    $nocomment = 0;
 
     $shorewall_dir = '';      #Shorewall Directory
 
@@ -2004,7 +2006,7 @@ sub do_open_file( $ ) {
     $currentfilename   = $fname;
 }
 
-sub open_file( $;$$ ) {
+sub open_file( $;$$$ ) {
     my $fname = find_file $_[0];
 
     assert( ! defined $currentfile );
@@ -2014,6 +2016,7 @@ sub open_file( $;$$ ) {
 	$file_format      = 1;
 	$max_format       = supplied $_[1] ? $_[1] : 1;
 	$comments_allowed = supplied $_[2] ? $_[2] : 0;
+	$nocomment        = supplied $_[3] ? $_[3] && no_comment : 0;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
@@ -2034,10 +2037,11 @@ sub pop_include() {
     }
 
     if ( $arrayref ) {
-	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ) = @$arrayref;
+	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
+	$nocomment = $comment = 0;
     }
 }
 
@@ -2270,11 +2274,13 @@ sub process_compiler_directive( $$$$ ) {
 		       COMMENT => sub() {
 			   unless ( $omitting ) {
 			       if ( $comments_allowed ) {
-				   if ( have_capability( 'COMMENTS' ) ) {
-				       ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
-				       $comment =~ s/\s*$//;
-				   } else {
-				       directive_warning( "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
+				   unless ( $nocomment ) {
+				       if ( have_capability( 'COMMENTS' ) ) {
+					   ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
+					   $comment =~ s/\s*$//;
+				       } else {
+					   directive_warning( "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
+				       }
 				   }
 			       } else {
 				   directive_error ( "?COMMENT is not allowed in this file", $filename, $linenumber );
@@ -2423,7 +2429,7 @@ sub copy1( $ ) {
 			fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 			if ( -s _ ) {
-			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ];
+			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ];
 			    $currentfile = undef;
 			    do_open_file $filename;
 			} else {
@@ -2559,14 +2565,14 @@ EOF
 # The following two functions allow module clients to nest opens. This happens frequently
 # in the Rules module.
 #
-sub push_open( $;$$ ) {
-    my ( $file, $max , $ca) = @_;
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format ] if $currentfile;
+sub push_open( $;$$$ ) {
+    my ( $file, $max , $ca, $nc ) = @_;
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $file , $max, $comments_allowed || $ca );
+    open_file( $file , $max, $comments_allowed || $ca, $nc );
 }
 
 sub pop_open() {
@@ -2644,7 +2650,7 @@ sub embedded_shell( $ ) {
 
     $command .= q(');
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format ];
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format, $nocomment ];
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
     $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
@@ -2706,7 +2712,7 @@ sub embedded_perl( $ ) {
 
 	$perlscript = undef;
 
-	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack , $file_format, $max_format ];
+	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack , $file_format, $max_format, $nocomment ];
 	$currentfile = undef;
 
 	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
@@ -2993,7 +2999,7 @@ sub read_a_line($) {
 		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
-		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format ];
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format, $nocomment ];
 		    $currentfile = undef;
 		    do_open_file $filename;
 		} else {

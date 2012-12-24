@@ -1636,13 +1636,14 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     my $generated = 0;
 
-    macro_comment $macro;
 
     my $macrofile = $macros{$macro};
 
     progress_message "..Expanding Macro $macrofile...";
 
-    push_open $macrofile, 2;
+    push_open $macrofile, 2, 1, 1;
+
+    macro_comment $macro;
 
     while ( read_a_line( NORMAL_READ ) ) {
 
@@ -1760,8 +1761,6 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     my $generated = 0;
 
-    macro_comment $inline;
-
     my ( $level, $tag ) = split( ':', $loglevel, 2 );
 
     my $oldparms   = push_action_params( $chainref,
@@ -1774,7 +1773,9 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding inline action $inlinefile...";
 
-    push_open $inlinefile, 2;
+    push_open $inlinefile, 2, 1, 1;
+
+    macro_comment $inline;
 
     while ( read_a_line( NORMAL_READ ) ) {
 	my  ( $mtarget,

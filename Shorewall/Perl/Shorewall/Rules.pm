@@ -1781,8 +1781,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
     my ($inline, $chainref, $loglevel, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
-    my $nocomment = no_comment;
-
     my $generated = 0;
 
     my ( $level, $tag ) = split( ':', $loglevel, 2 );
@@ -1799,7 +1797,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     push_open $inlinefile, 2, 1, 1;
 
-    macro_comment $inline;
+    push_comment('');
 
     while ( read_a_line( NORMAL_READ ) ) {
 	my  ( $mtarget,
@@ -1821,7 +1819,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
 
 	if ( $mtarget eq 'COMMENT' ) {
-	    process_comment unless $nocomment;
+	    process_comment;
 	    next;
 	}
 
@@ -1895,13 +1893,13 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	progress_message "   Rule \"$currentline\" $done";
     }
 
+    pop_comment;
+
     pop_open;
 
     progress_message "..End inline action $inlinefile";
 
     pop_action_params( $oldparms );
-
-    clear_comment unless $nocomment;
 
     return $generated;
 }

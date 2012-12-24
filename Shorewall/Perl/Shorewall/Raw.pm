@@ -274,8 +274,6 @@ sub setup_conntrack() {
 		}		    
 	    }
 
-	    clear_comment;
-
 	    if ( $name eq 'notrack') {
 		if ( $empty ) {
 		    if ( unlink( $fn ) ) {

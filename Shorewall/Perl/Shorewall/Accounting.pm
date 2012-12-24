@@ -414,8 +414,6 @@ sub setup_accounting() {
 
 	$nonEmpty |= process_accounting_rule while read_a_line( NORMAL_READ );
 
-	clear_comment;
-
 	if ( $nonEmpty ) {
 	    my $tableref = $chain_table{$acctable};
 

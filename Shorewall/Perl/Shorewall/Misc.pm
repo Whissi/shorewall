@@ -746,8 +746,6 @@ sub process_stoppedrules() {
 	}
     }
 
-    clear_comment;
-
     $result;
 }
 
@@ -1254,8 +1252,6 @@ sub setup_mac_lists( $ ) {
 
 		progress_message "      Maclist entry \"$currentline\" $done";
 	    }
-
-	    clear_comment;
 	}
 	#
 	# Generate jumps from the input and forward chains

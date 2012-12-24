@@ -298,8 +298,6 @@ sub setup_tunnels() {
 	    fatal_error 'ZONE must be specified' if $zone eq '-';
 	    setup_one_tunnel $kind, $zone, $gateway, $gatewayzones;
 	}
-
-	clear_comment;
     }
 }
 

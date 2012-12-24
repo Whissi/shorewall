@@ -282,8 +282,6 @@ sub setup_masq()
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
 
 	process_one_masq while read_a_line( NORMAL_READ );
-
-	clear_comment;
     }
 }
 
@@ -396,8 +394,6 @@ sub setup_nat() {
 
 	    progress_message "   NAT entry \"$currentline\" $done";
 	}
-
-	clear_comment;
     }
 }
 
@@ -509,8 +505,6 @@ sub setup_netmap() {
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";
 	    }
 	}
-
-	clear_comment;
     }
 
 }

@@ -1961,8 +1961,8 @@ sub no_comment() {
 # Clear the $comment variable and the comment stack
 #
 sub clear_comment() {
-    $comment  = '';
-    @comments = ();
+    $comment   = '';
+    @comments  = ();
 }
 
 #
@@ -2007,16 +2007,18 @@ sub do_open_file( $ ) {
 }
 
 sub open_file( $;$$$ ) {
-    my $fname = find_file $_[0];
+    my ( $fname, $mf, $ca, $nc ) = @_;
+    
+    $fname = find_file $fname;
 
     assert( ! defined $currentfile );
 
     if ( -f $fname && -s _ ) {
 	$first_entry      = 0;
 	$file_format      = 1;
-	$max_format       = supplied $_[1] ? $_[1] : 1;
-	$comments_allowed = supplied $_[2] ? $_[2] : 0;
-	$nocomment        = supplied $_[3] ? $_[3] && no_comment : 0;
+	$max_format       = supplied $mf ? $mf : 1;
+	$comments_allowed = supplied $ca ? $ca : 0;
+	$nocomment++ if supplied( $ca ) && no_comment;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
@@ -2038,10 +2040,12 @@ sub pop_include() {
 
     if ( $arrayref ) {
 	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ) = @$arrayref;
+	$comment = '' unless @openstack;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
-	$nocomment = $comment = 0;
+	clear_comment;
+	$nocomment = 0;
     }
 }
 
@@ -2960,7 +2964,7 @@ sub read_a_line($) {
 	    }
 
 	    if ( $comments_allowed && $currentline =~ /^\s*COMMENT\b/ ) {
-		process_comment;
+		process_comment unless $nocomment;
 		$currentline = '';
 		$currentlinenumber = 0;
 		next

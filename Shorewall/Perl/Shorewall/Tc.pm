@@ -1869,8 +1869,6 @@ sub process_tcpri() {
 
 	process_tc_priority while read_a_line( NORMAL_READ );
 
-	clear_comment;
-
 	if ( $ipp2p ) {
 	    insert_irule( $mangle_table->{tcpost} ,
 			  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
@@ -2394,8 +2392,6 @@ sub setup_tc() {
 
 	    process_tc_rule while read_a_line( NORMAL_READ );
 
-	    clear_comment;
-
 	}
 
 	if ( my $fn = open_file( 'secmarks', 1, 1 ) ) {
@@ -2404,7 +2400,6 @@ sub setup_tc() {
 
 	    process_secmark_rule while read_a_line( NORMAL_READ );
 
-	    clear_comment;
 	}
 
 	handle_stickiness( $sticky );

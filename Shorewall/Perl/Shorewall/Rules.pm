@@ -1632,8 +1632,6 @@ sub use_policy_action( $ ) {
 sub process_macro ($$$$$$$$$$$$$$$$$$$) {
     my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
-    my $nocomment = no_comment;
-
     my $generated = 0;
 
 
@@ -1746,8 +1744,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..End Macro $macrofile";
 
-    clear_comment unless $nocomment;
-
     return $generated;
 }
 
@@ -1756,8 +1752,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 #
 sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
     my ($inline, $chainref, $loglevel, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
-
-    my $nocomment = no_comment;
 
     my $generated = 0;
 
@@ -1866,8 +1860,6 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
     progress_message "..End inline action $inlinefile";
 
     pop_action_params( $oldparms );
-
-    clear_comment unless $nocomment;
 
     return $generated;
 }
@@ -2737,8 +2729,6 @@ sub process_rules( $ ) {
 		   );
 
 	process_rule while read_a_line( NORMAL_READ );
-
-	clear_comment;
     }
 
     $section = '';
@@ -2757,8 +2747,6 @@ sub process_rules( $ ) {
 	first_entry "$doing $fn...";
 
 	process_rule while read_a_line( NORMAL_READ );
-
-	clear_comment;
     }
 
     $section = 'DEFAULTACTION';

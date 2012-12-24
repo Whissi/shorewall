@@ -227,7 +227,7 @@ sub setup_conntrack() {
 
 	if ( $fn ) {
 
-	    my $action = 'NOTRACK';
+	    my $action;
 
 	    my $empty = 1;
 
@@ -238,24 +238,9 @@ sub setup_conntrack() {
 
 		if ( $file_format == 1 ) {
 		    ( $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 };
-
-		    if ( $source eq 'FORMAT' ) {
-			process_format( $dest );
-			next;
-		    }
+		    $action = 'NOTRACK';
 		} else {
-		    ( $action, $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 }, { COMMENT => 0, FORMAT => 2 };
-
-		    if ( $action eq 'FORMAT' ) {
-			process_format( $source );
-			$action = 'NOTRACK';
-			next;
-		    }
-		}
-
-		if ( $action eq 'COMMENT' ) {
-		    process_comment;
-		    next;
+		    ( $action, $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
 		}
 
 		$empty = 0;

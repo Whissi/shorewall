@@ -208,31 +208,16 @@ sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, { COMMENT => 0, FORMAT => 2 } , 15;
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, {}, 15;
 	$headers = '-';
     } else {
 	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },  { COMMENT => 0, FORMAT => 2 }, 16;
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 }, {}, 16;
     }
 
     our %tccmd;
 
     fatal_error 'MARK must be specified' if $originalmark eq '-';
-
-    if ( $originalmark eq 'COMMENT' ) {
-	process_comment;
-	return;
-    }
-
-    if ( $originalmark eq 'FORMAT' ) {
-	format_warning;
-	if ( $source =~ /^([12])$/ ) {
-	    $file_format = $1;
-	    return;
-	}
-
-	fatal_error "Invalid FORMAT ($source)";
-    }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
@@ -1803,11 +1788,6 @@ sub process_tc_priority() {
 
     fatal_error 'BAND must be specified' if $band eq '-';
 
-    if ( $band eq 'COMMENT' ) {
-	process_comment;
-	return;
-    }
-
     fatal_error "Invalid tcpri entry" if ( $proto     eq '-' &&
 					   $ports     eq '-' &&
 					   $address   eq '-' &&
@@ -2206,11 +2186,6 @@ sub process_secmark_rule() {
 	split_line1( 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
 
     fatal_error 'SECMARK must be specified' if $secmark eq '-';
-
-    if ( $secmark eq 'COMMENT' ) {
-	process_comment;
-	return;
-    }
 
     my %chns = ( T => 'tcpost'  ,
 		 P => 'tcpre'   ,

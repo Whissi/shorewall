@@ -1004,20 +1004,10 @@ sub process_interface( $$ ) {
     my $bridge = '';
 
     if ( $file_format == 1 ) {
-	($zone, $originalinterface, $bcasts, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 }, { COMMENT => 0, FORMAT => 2 };
+	($zone, $originalinterface, $bcasts, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
     } else {
-	($zone, $originalinterface, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, options => 2 }, { COMMENT => 0, FORMAT => 2 };
+	($zone, $originalinterface, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, options => 2 };
 	$bcasts = '-';
-    }
-
-    if ( $zone eq 'FORMAT' ) {
-	format_warning;
-	if ( $originalinterface =~ /^([12])$/ ) {
-	    $file_format = $1;
-	    return;
-	}
-
-	fatal_error "Invalid FORMAT ($originalinterface)";
     }
 
     if ( $zone eq '-' ) {

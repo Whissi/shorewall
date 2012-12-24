@@ -1882,7 +1882,7 @@ sub split_line1( $$;$$ ) {
 
     my @line = split( ' ', $columns );
 
-    $nopad = { COMMENT => 0 } unless $nopad;
+    $nopad = {} unless $nopad;
 
     my $first     = supplied $line[0] ? $line[0] : '-';
     my $npcolumns = $nopad->{$first};
@@ -2952,6 +2952,25 @@ sub read_a_line($) {
 		#
 		$currentline =~ s/\s*$//;
 	    }
+
+	    if ( $comments_allowed && $currentline =~ /^\s*COMMENT\b/ ) {
+		process_comment;
+		$currentline = '';
+		$currentlinenumber = 0;
+		next
+	    }
+
+	    if ( $max_format > 1 && $currentline =~ /^\s*FORMAT\s+(.+)/ ) {
+		format_warning;
+		my $format = $1;
+		fatal_error( "Invalid format ($format)" )                 unless $format =~ /\d+/;
+		fatal_error( "Format must be between 1 and $max_format" ) unless $format && $format <= $max_format;
+		$file_format = $format;
+		$currentline = '';
+		$currentlinenumber = 0;
+		next
+	    }
+
 	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #

@@ -75,9 +75,9 @@ our @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-our $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
-our $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
-our $macro_commands  = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
+our $rule_commands   = { SECTION => 2 };
+our $action_commands = { SECTION => 2, DEFAULTS => 2 };
+our $macro_commands  = { SECTION => 2, DEFAULT => 2 };
 
 our %rulecolumns = ( action    =>   0,
 		     source    =>   1,
@@ -1578,18 +1578,6 @@ sub process_action($) {
 
 	    fatal_error 'TARGET must be specified' if $target eq '-';
 
-	    if ( $target eq 'COMMENT' ) {
-		process_comment;
-		next;
-	    }
-
-	    if ( $target eq 'FORMAT' ) {
-		format_warning;
-		fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
-		$file_format = $source;
-		next;
-	    }
-
 	    if ( $target eq 'DEFAULTS' ) {
 		default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
 		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
@@ -1682,18 +1670,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
-
-	if ( $mtarget eq 'COMMENT' ) {
-	    process_comment unless $nocomment;
-	    next;
-	}
-
-	if ( $mtarget eq 'FORMAT' ) {
-	    format_warning;
-	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
-	    $file_format = $msource;
-	    next;
-	}
 
 	if ( $mtarget =~ /^DEFAULTS?$/ ) {
 	    $param = $msource unless supplied $param;
@@ -1819,18 +1795,8 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
 
-	if ( $mtarget eq 'COMMENT' ) {
-	    process_comment unless $nocomment;
-	    next;
-	}
-
 	if ( $mtarget eq 'DEFAULTS' ) {
 	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
-	    next;
-	}
-
-	if ( $mtarget eq 'FORMAT' ) {
-	    fatal_error "FORMAT must be 2" unless $msource eq '2';
 	    next;
 	}
 
@@ -2593,7 +2559,6 @@ sub process_rule ( ) {
 
     fatal_error 'ACTION must be specified' if $target eq '-';
 
-    process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that

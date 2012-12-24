@@ -1639,7 +1639,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding Macro $macrofile...";
 
-    push_open $macrofile, 2, 1, 1;
+    push_open $macrofile, 2, 1, no_comment;
 
     macro_comment $macro;
 
@@ -1767,9 +1767,9 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding inline action $inlinefile...";
 
-    push_open $inlinefile, 2, 1, 1;
+    push_open $inlinefile, 2, 1;
 
-    macro_comment $inline;
+    push_comment('');
 
     while ( read_a_line( NORMAL_READ ) ) {
 	my  ( $mtarget,
@@ -1854,6 +1854,8 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
 	progress_message "   Rule \"$currentline\" $done";
     }
+
+    pop_comment;
 
     pop_open;
 

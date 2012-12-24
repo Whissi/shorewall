@@ -2006,6 +2006,7 @@ sub do_open_file( $ ) {
     $currentfilename   = $fname;
 }
 
+
 sub open_file( $;$$$ ) {
     my ( $fname, $mf, $ca, $nc ) = @_;
     
@@ -2018,12 +2019,26 @@ sub open_file( $;$$$ ) {
 	$file_format      = 1;
 	$max_format       = supplied $mf ? $mf : 1;
 	$comments_allowed = supplied $ca ? $ca : 0;
-	$nocomment++ if supplied( $ca ) && no_comment;
+	$nocomment        = $nc;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
 	'';
     }
+}
+
+#
+# Push open-specific globals onto the include stack
+#
+sub push_include() {
+    push @includestack, [ $currentfile,
+			  $currentfilename,
+			  $currentlinenumber,
+			  $ifstack,
+			  $file_format,
+			  $max_format,
+			  $comment,
+			  $nocomment ];
 }
 
 #
@@ -2039,8 +2054,14 @@ sub pop_include() {
     }
 
     if ( $arrayref ) {
-	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ) = @$arrayref;
-	$comment = '' unless @openstack;
+	( $currentfile,
+	  $currentfilename,
+	  $currentlinenumber,
+	  $ifstack,
+	  $file_format,
+	  $max_format,
+	  $comment,
+	  $nocomment ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
@@ -2433,7 +2454,7 @@ sub copy1( $ ) {
 			fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 			if ( -s _ ) {
-			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ];
+			    push_include;
 			    $currentfile = undef;
 			    do_open_file $filename;
 			} else {
@@ -2571,7 +2592,7 @@ EOF
 #
 sub push_open( $;$$$ ) {
     my ( $file, $max , $ca, $nc ) = @_;
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ] if $currentfile;
+    push_include;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
@@ -2654,7 +2675,7 @@ sub embedded_shell( $ ) {
 
     $command .= q(');
 
-    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format, $nocomment ];
+    push_include;
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
     $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
@@ -2716,7 +2737,7 @@ sub embedded_perl( $ ) {
 
 	$perlscript = undef;
 
-	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack , $file_format, $max_format, $nocomment ];
+	push_include;
 	$currentfile = undef;
 
 	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
@@ -3003,7 +3024,7 @@ sub read_a_line($) {
 		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
-		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format, $nocomment ];
+		    push_include;
 		    $currentfile = undef;
 		    do_open_file $filename;
 		} else {

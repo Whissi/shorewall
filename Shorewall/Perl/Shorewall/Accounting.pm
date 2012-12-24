@@ -152,6 +152,11 @@ sub process_accounting_rule( ) {
 
     fatal_error 'ACTION must be specified' if $action eq '-';
 
+    if ( $action eq 'SECTION' ) {
+	process_section( $chain );
+	return 0;
+    }
+
     $asection = LEGACY if $asection < 0;
 
     our $disposition = '';

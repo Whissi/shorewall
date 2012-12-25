@@ -2250,6 +2250,7 @@ sub process_compiler_directive( $$$$ ) {
 
 		       FORMAT => sub() {
 			   unless ( $omitting ) {
+			       directive_error( "?FORMAT is not allowed in this file",      $filename, $linenumber ) unless $max_format > 1;
 			       directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
 			       directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
 			       directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;

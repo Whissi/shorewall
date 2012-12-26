@@ -2330,7 +2330,7 @@ sub ensure_audit_blacklog_chain( $$$ ) {
 sub ensure_audit_chain( $;$$ ) {
     my ( $target, $action, $tgt ) = @_;
 
-    push_comment( '' );
+    my $save_comment = push_comment;
 
     my $ref = $filter_table->{$target};
 
@@ -2353,7 +2353,7 @@ sub ensure_audit_chain( $;$$ ) {
 	}
     }
 
-    pop_comment;
+    pop_comment( $save_comment );
 
     return $target;
 }

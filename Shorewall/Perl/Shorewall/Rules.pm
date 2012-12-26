@@ -842,8 +842,7 @@ sub finish_chain_section ($$) {
     my $chain               = $chainref->{name};
     my $related_level       = $config{RELATED_LOG_LEVEL};
     my $related_target      = $globals{RELATED_TARGET};
-
-    push_comment(''); #These rules should not have comments
+    my $save_comment        = push_comment;
 
     if ( $state =~ /RELATED/ && ( $related_level || $related_target ne 'ACCEPT' ) ) {
 
@@ -890,7 +889,7 @@ sub finish_chain_section ($$) {
 	$chainref->{new} = @{$chainref->{rules}};
     }
 
-    pop_comment;
+    pop_comment( $save_comment );
 }
 
 #
@@ -1561,7 +1560,7 @@ sub process_action($) {
 	$active{$action}++;
 	push @actionstack, $wholeaction;
 
-	push_comment( '' );
+	my $save_comment = push_comment;
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
@@ -1603,7 +1602,7 @@ sub process_action($) {
 			   0 );
 	}
 
-	pop_comment;
+	pop_comment( $save_comment );
 
 	$active{$action}--;
 	pop @actionstack;
@@ -1769,7 +1768,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     push_open $inlinefile, 2, 1;
 
-    push_comment('');
+    my $save_comment = push_comment;
 
     while ( read_a_line( NORMAL_READ ) ) {
 	my  ( $mtarget,
@@ -1855,7 +1854,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	progress_message "   Rule \"$currentline\" $done";
     }
 
-    pop_comment;
+    pop_comment( $save_comment );
 
     pop_open;
 

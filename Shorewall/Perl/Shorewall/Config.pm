@@ -135,7 +135,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       process_comment
 				       no_comment
 				       macro_comment
-				       clear_comment
 				       push_comment
 				       pop_comment
 				       dump_mark_layout
@@ -495,7 +494,6 @@ our $first_entry;            # Message to output or function to call on first no
 our $file_format;            # Format of configuration file.
 our $max_format;             # Max format value
 our $comment;                # Current COMMENT
-our @comments;
 our $comments_allowed;
 our $nocomment;
 our $warningcount;
@@ -623,7 +621,6 @@ sub initialize( $;$$) {
     # Contents of last COMMENT line.
     #
     $comment       = '';
-    @comments      = ();
     $warningcount  = 0;
     $warningcount1 = 0;
     $warningcount2 = 0;
@@ -1962,26 +1959,20 @@ sub no_comment() {
 #
 sub clear_comment() {
     $comment   = '';
-    @comments  = ();
+    $nocomment = 0;
 }
 
 #
 # Push and Pop comment stack
 #
-sub push_comment( $ ) {
-    push @comments, $comment;
-    $comment = shift;
+sub push_comment() {
+    my $return = $comment;
+    $comment   = '';
+    $return;
 }
 
-sub pop_comment() {
-    $comment = pop @comments;
-}
-
-#
-# Set comment
-#
-sub set_comment( $ ) {
-    $comment = shift;
+sub pop_comment( $ ) {
+    $comment = $_[0];
 }
 
 #
@@ -2073,7 +2064,6 @@ sub pop_include() {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
 	clear_comment;
-	$nocomment = 0;
     }
 }
 

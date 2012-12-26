@@ -494,13 +494,13 @@ our $first_entry;            # Message to output or function to call on first no
 our $file_format;            # Format of configuration file.
 our $max_format;             # Max format value
 our $comment;                # Current COMMENT
-our $comments_allowed;
-our $nocomment;
-our $warningcount;
-our $warningcount1;
-our $warningcount2;
+our $comments_allowed;       # True if [?]COMMENT is allowed in the current file
+our $nocomment;              # When true, ignore [?]COMMENT in the current file
+our $warningcount;           # Used to suppress duplicate warnings about missing COMMENT support
+our $warningcount1;          # Used to suppress duplicate warnings about COMMENT being deprecated
+our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
 
-our $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
+our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
 our $debug;                  # Global debugging flag
 our $confess;                # If true, use Carp to report errors with stack trace.
@@ -513,11 +513,11 @@ our $Product;                # $product with initial cap.
 
 our $sillyname;              # Name of temporary filter chains for testing capabilities
 our $sillyname1;
-our $iptables;                # Path to iptables/ip6tables
-our $tc;                      # Path to tc
-our $ip;                      # Path to ip
+our $iptables;               # Path to iptables/ip6tables
+our $tc;                     # Path to tc
+our $ip;                     # Path to ip
 
-my $shell;                   # Type of shell that processed the params file
+our $shell;                  # Type of shell that processed the params file
 
 use constant { BASH    => 1,
 	       OLDBASH => 2,

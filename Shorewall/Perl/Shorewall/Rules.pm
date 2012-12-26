@@ -1795,7 +1795,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding inline action $inlinefile...";
 
-    push_open $inlinefile, 2, 1, 1;
+    push_open $inlinefile, 2, 1;
 
     push_comment('');
 

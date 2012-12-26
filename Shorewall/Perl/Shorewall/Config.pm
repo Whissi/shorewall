@@ -762,6 +762,7 @@ sub initialize( $;$$) {
 	  AUTOHELPERS => undef,
 	  RESTORE_ROUTEMARKS => undef,
 	  IGNOREUNKNOWNVARIABLES => undef,
+	  IGNOREOLDCAPS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -4451,13 +4452,6 @@ sub read_capabilities() {
 	}
     }
 
-    if ( $capabilities{CAPVERSION} ) {
-	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}"
-	    unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
-    } else {
-	warning_message "Your capabilities file may not contain all of the capabilities defined by $Product version $globals{VERSION}";
-    }
-
     unless ( $capabilities{KERNELVERSION} ) {
 	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
 	$capabilities{KERNELVERSION} = 20630;
@@ -5044,6 +5038,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'AUTOHELPERS'                , 'Yes';
     default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
     default_yes_no 'IGNOREUNKNOWNVARIABLES'     , 'Yes';
+    default_yes_no 'IGNOREOLDCAPS'              , '';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
 
@@ -5318,6 +5313,15 @@ sub get_configuration( $$$$ ) {
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{PROVIDER_OFFSET} > 0;
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
+
+    unless ( $config{IGNOREOLDCAPS} ) {
+	if ( $capabilities{CAPVERSION} ) {
+	    warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}"
+		unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
+	} else {
+	    warning_message "Your capabilities file may not contain all of the capabilities defined by $Product version $globals{VERSION}";
+	}
+    }
 
     add_variables %config;
 

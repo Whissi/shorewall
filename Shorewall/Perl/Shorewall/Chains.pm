@@ -3334,7 +3334,7 @@ sub delete_duplicates {
 
 	if ( $baseref->{mode} == CAT_MODE ) {
 	    my $ports1;
-	    my @keys1    = sort( keys( %$baseref ) );
+	    my @keys1    = sort( grep $_ ne 'comment', keys( %$baseref ) );
 	    my $rulenum  = @_;
 	    my $adjacent = 1;
 		
@@ -3346,7 +3346,7 @@ sub delete_duplicates {
 
 		    last unless $ruleref->{mode} == CAT_MODE;
 
-		    my @keys2 = sort(keys( %$ruleref ) );
+		    my @keys2 = sort(grep $_ ne 'comment', keys( %$ruleref ) );
 
 		    next unless @keys1 == @keys2 ;
 
@@ -3356,7 +3356,7 @@ sub delete_duplicates {
 			#
 			# There are no non-duplicate rules between this rule and the base rule
 			#
-			for my $key ( @keys1 ) {
+			for my $key (  @keys1 ) {
 			    next RULE unless $key eq $keys2[$keynum++];
 			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 			}

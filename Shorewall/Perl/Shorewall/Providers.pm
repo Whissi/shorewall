@@ -1281,8 +1281,8 @@ sub process_providers( $ ) {
     #
     for ( grep interface_is_optional( $_ ) && ! $provider_interfaces{ $_ }, all_real_interfaces ) {
 	#
-	#               TABLE NUMBER MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
-	$currentline = "$_    0      -    -         $_        -       -       -";
+	#               TABLE             NUMBER MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
+	$currentline =  chain_base($_) ." 0      -    -         $_        -       -       -";
 	#
 	$pseudoproviders += process_a_provider(1);
     }

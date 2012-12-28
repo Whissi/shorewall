@@ -658,7 +658,7 @@ sub add_a_provider( $$ ) {
     my $what        = $providerref->{what};
     my $label       = $pseudo ? 'Optional Interface' : 'Provider';
 
-    my $dev         = chain_base $physical;
+    my $dev         = var_base $physical;
     my $base        = uc $dev;
     my $realm = '';
 
@@ -1282,7 +1282,7 @@ sub process_providers( $ ) {
     for ( grep interface_is_optional( $_ ) && ! $provider_interfaces{ $_ }, all_real_interfaces ) {
 	#
 	#               TABLE             NUMBER MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
-	$currentline =  chain_base($_) ." 0      -    -         $_        -       -       -";
+	$currentline =  var_base($_) ." 0      -    -         $_        -       -       -";
 	#
 	$pseudoproviders += process_a_provider(1);
     }
@@ -1732,7 +1732,7 @@ sub handle_optional_interfaces( $ ) {
 	#
 	# Clear the '_IS_USABLE' variables
 	#
-	emit( join( '_', 'SW', uc chain_base( get_physical( $_ ) ) , 'IS_USABLE=' ) ) for @$interfaces;
+	emit( join( '_', 'SW', uc var_base( get_physical( $_ ) ) , 'IS_USABLE=' ) ) for @$interfaces;
 
 	if ( $wildcards ) {
 	    #
@@ -1752,7 +1752,7 @@ sub handle_optional_interfaces( $ ) {
 	for my $interface ( grep $provider_interfaces{$_}, @$interfaces ) {
 	    my $provider    = $provider_interfaces{$interface};
 	    my $physical    = get_physical $interface;
-	    my $base        = uc chain_base( $physical );
+	    my $base        = uc var_base( $physical );
 	    my $providerref = $providers{$provider};
 
 	    emit( "$physical)" ), push_indent if $wildcards;
@@ -1773,7 +1773,7 @@ sub handle_optional_interfaces( $ ) {
 
 	for my $interface ( grep ! $provider_interfaces{$_}, @$interfaces ) {
 	    my $physical    = get_physical $interface;
-	    my $base        = uc chain_base( $physical );
+	    my $base        = uc var_base( $physical );
 	    my $case        = $physical;
 	    my $wild        = $case =~ s/\+$/*/;
 
@@ -1861,7 +1861,7 @@ sub handle_stickiness( $ ) {
 
 	for my $providerref ( @routemarked_providers ) {
 	    my $interface = $providerref->{physical};
-	    my $base      = uc chain_base $interface;
+	    my $base      = uc var_base $interface;
 	    my $mark      = $providerref->{mark};
 
 	    for ( grep rule_target($_) eq 'sticky', @{$tcpreref->{rules}} ) {

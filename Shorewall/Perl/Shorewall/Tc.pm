@@ -823,7 +823,7 @@ sub process_simple_device() {
     fatal_error "Unknown interface( $device )" unless known_interface $device;
 
     my $physical = physical_name $device;
-    my $dev      = chain_base( $physical );
+    my $dev      = var_base( $physical );
 
     push @tcdevices, $device;
 
@@ -1932,7 +1932,7 @@ sub process_traffic_shaping() {
 
 	unless ( $config{TC_ENABLED} eq 'Shared' ) {
 
-	    my $dev = chain_base( $device );
+	    my $dev = var_base( $device );
 
 	    emit( '',
 		  '#',
@@ -2170,7 +2170,7 @@ sub setup_traffic_shaping() {
 
     for my $device ( @tcdevices ) {
 	my $interfaceref = known_interface( $device );
-	my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
+	my $dev          = var_base( $interfaceref ? $interfaceref->{physical} : $device );
 
 	emit "setup_${dev}_tc";
     }

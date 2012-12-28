@@ -62,7 +62,7 @@ our @EXPORT = ( qw( NOTHING
 		    off_firewall_zones
 		    non_firewall_zones
 		    single_interface
-		    chain_base
+		    var_base
 		    validate_interfaces_file
 		    all_interfaces
 		    all_real_interfaces
@@ -897,9 +897,9 @@ sub is_a_bridge( $ ) {
 #
 # Transform the passed interface name into a legal shell variable name.
 #
-sub chain_base($) {
-    my $chain = $_[0];
-    my $name  = $basemap{$chain};
+sub var_base($) {
+    my $var = $_[0];
+    my $name  = $basemap{$var};
     #
     # Return existing mapping, if any
     #
@@ -907,31 +907,31 @@ sub chain_base($) {
     #
     # Remember initial value
     #
-    my $key = $chain;
+    my $key = $var;
     #
     # Handle VLANs and wildcards
     #
-    $chain =~ s/\+$//;
-    $chain =~ tr/./_/;
+    $var =~ s/\+$/_plus/;
+    $var =~ tr/./_/;
 
-    if ( $chain eq '' || $chain =~ /^[0-9]/ || $chain =~ /[^\w]/ ) {
+    if ( $var eq '' || $var =~ /^[0-9]/ || $var =~ /[^\w]/ ) {
 	#
 	# Must map. Remove all illegal characters
 	#
-	$chain =~ s/[^\w]//g;
+	$var =~ s/[^\w]//g;
 	#
 	# Prefix with if_ if it begins with a digit
 	#
-	$chain = join( '' , 'if_', $chain ) if $chain =~ /^[0-9]/;
+	$var = join( '' , 'if_', $var ) if $var =~ /^[0-9]/;
 	#
 	# Create a new unique name
 	#
-	1 while $mapbase{$name = join ( '_', $chain, ++$baseseq )};
+	1 while $mapbase{$name = join ( '_', $var, ++$baseseq )};
     } else {
 	#
 	# We'll store the identity mapping if it is unique
 	#
-	$chain = join( '_', $key , ++$baseseq ) while $mapbase{$name = $chain};
+	$var = join( '_', $key , ++$baseseq ) while $mapbase{$name = $var};
     }
     #
     # Store the reverse mapping
@@ -946,9 +946,9 @@ sub chain_base($) {
 #
 # This is a slightly relaxed version of the above that allows '-' in the generated name.
 #
-sub chain_base1($) {
-    my $chain = $_[0];
-    my $name  = $basemap1{$chain};
+sub var_base1($) {
+    my $var = $_[0];
+    my $name  = $basemap1{$var};
     #
     # Return existing mapping, if any
     #
@@ -956,31 +956,31 @@ sub chain_base1($) {
     #
     # Remember initial value
     #
-    my $key = $chain;
+    my $key = $var;
     #
     # Handle VLANs and wildcards
     #
-    $chain =~ s/\+$//;
-    $chain =~ tr/./_/;
+    $var =~ s/\+$//;
+    $var =~ tr/./_/;
 
-    if ( $chain eq '' || $chain =~ /^[0-9]/ || $chain =~ /[^-\w]/ ) {
+    if ( $var eq '' || $var =~ /^[0-9]/ || $var =~ /[^-\w]/ ) {
 	#
 	# Must map. Remove all illegal characters
 	#
-	$chain =~ s/[^\w]//g;
+	$var =~ s/[^\w]//g;
 	#
 	# Prefix with if_ if it begins with a digit
 	#
-	$chain = join( '' , 'if_', $chain ) if $chain =~ /^[0-9]/;
+	$var = join( '' , 'if_', $var ) if $var =~ /^[0-9]/;
 	#
 	# Create a new unique name
 	#
-	1 while $mapbase1{$name = join ( '_', $chain, ++$baseseq )};
+	1 while $mapbase1{$name = join ( '_', $var, ++$baseseq )};
     } else {
 	#
 	# We'll store the identity mapping if it is unique
 	#
-	$chain = join( '_', $key , ++$baseseq ) while $mapbase1{$name = $chain};
+	$var = join( '_', $key , ++$baseseq ) while $mapbase1{$name = $var};
     }
     #
     # Store the reverse mapping
@@ -1242,7 +1242,7 @@ sub process_interface( $$ ) {
 
 	if ( $netsref eq 'dynamic' ) {
 	    my $ipset = $family == F_IPV4 ? "${zone}" : "6_${zone}";
-	    $ipset = join( '_', $ipset, chain_base1( $physical ) ) unless $zoneref->{options}{in_out}{dynamic_shared};	    
+	    $ipset = join( '_', $ipset, var_base1( $physical ) ) unless $zoneref->{options}{in_out}{dynamic_shared};	    
 	    $netsref = [ "+$ipset" ];
 	    $ipsets{$ipset} = 1;
 	}
@@ -1277,7 +1277,7 @@ sub process_interface( $$ ) {
 						       options    => \%options ,
 						       zone       => '',
 						       physical   => $physical ,
-						       base       => chain_base( $physical ),
+						       base       => var_base( $physical ),
 						       zones      => {},
 						     };
 
@@ -1401,7 +1401,7 @@ sub known_interface($)
 						   name     => $i ,
 						   number   => $interfaceref->{number} ,
 						   physical => $physical ,
-						   base     => chain_base( $physical ) ,
+						   base     => var_base( $physical ) ,
 						 };
 	    }
 	}
@@ -1748,7 +1748,7 @@ sub verify_required_interfaces( $ ) {
 	    my $physical = get_physical $interface;
 
 	    if ( $physical =~ /\+$/ ) {
-		my $base = uc chain_base $physical;
+		my $base = uc var_base $physical;
 
 		$physical =~ s/\+$/*/;
 
@@ -1895,7 +1895,7 @@ sub process_host( ) {
 	my $set = $family == F_IPV4 ? "${zone}" : "6_${zone}";
 	
 	unless ( $zoneref->{options}{in_out}{dynamic_shared} ) {
-	    my $physical = chain_base1( physical_name $interface );
+	    my $physical = var_base1( physical_name $interface );
 	    $set = join( '_', $set, $physical );
 	}
 

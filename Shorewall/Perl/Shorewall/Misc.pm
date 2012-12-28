@@ -1124,7 +1124,7 @@ sub add_common_rules ( $ ) {
 
 	    for $interface ( @$list ) {
 		my $chainref = $filter_table->{input_option_chain $interface};
-		my $base     = uc chain_base get_physical $interface;
+		my $base     = uc var_base get_physical $interface;
 		my $optional = interface_is_optional( $interface );
 		my $variable = get_interface_gateway( $interface, ! $optional );
 

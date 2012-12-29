@@ -501,7 +501,8 @@
                 Detection) queuing discipline rather than SFQ. See tc-red (8)
                 for additional information.</para>
 
-                <para>Allowable redoptions are:</para>
+                <para>Allowable <replaceable>redoptions</replaceable>
+                are:</para>
 
                 <variablelist>
                   <varlistentry>
@@ -600,6 +601,94 @@
                       only be marked and not dropped, unless the queue size
                       hits <replaceable>limit</replaceable> bytes. Needs a tc
                       binary with RED support compiled in. Recommended.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>fq_codel[=(<replaceable>codeloption</replaceable>=<replaceable>value</replaceable>,
+              ...)]</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.12. When specified for a leaf
+                class, causes the class to use the FQ_CODEL (Fair-queuing
+                Controlled Delay) queuing discipline rather than SFQ. See
+                tc-fq_codel (8) for additional information.</para>
+
+                <para>Allowable <replaceable>codeloptions</replaceable>
+                are:</para>
+
+                <variablelist>
+                  <varlistentry>
+                    <term>limit</term>
+
+                    <listitem>
+                      <para>hard limit on the real queue size. When this limit
+                      is reached, incoming packets are dropped. If the value
+                      is lowered, packets are dropped so that the new limit is
+                      met. Default is 1000 packets.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>flows</term>
+
+                    <listitem>
+                      <para>is the number of flows into which the incoming
+                      packets are classified. Due to the stochastic nature of
+                      hashing, multiple flows may end up being hashed into the
+                      same slot. Newer flows have priority over older ones.
+                      This parameter can be set only at load time since memory
+                      has to be allocated for the hash table. Default value is
+                      1024.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>target</term>
+
+                    <listitem>
+                      <para>is the acceptable minimum standing/persistent
+                      queue delay. This minimum delay is identified by
+                      tracking the local minimum queue delay that packets
+                      experience. Default and recommended value is 5ms.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>interval</term>
+
+                    <listitem>
+                      <para>is used to ensure that the measured minimum delay
+                      does not become too stale. The minimum delay must be
+                      experienced in the last epoch of length interval. It
+                      should be set on the order of the worst-case RTT through
+                      the bottleneck to give endpoints sufficient time to
+                      react. Default value is 100ms.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>quantum</term>
+
+                    <listitem>
+                      <para>is the number of bytes used as 'deficit' in the
+                      fair queuing algorithm. Default is set to 1514 bytes
+                      which corresponds to the Ethernet MTU plus the hardware
+                      header length of 14 bytes.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>ecn | noecn</term>
+
+                    <listitem>
+                      <para>can be used to mark packets instead of dropping
+                      them. If ecn has been enabled, noecn can be used to turn
+                      it off and vice-a-versa. By default, ecn is
+                      enabled.</para>
                     </listitem>
                   </varlistentry>
                 </variablelist>

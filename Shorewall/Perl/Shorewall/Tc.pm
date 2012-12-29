@@ -1449,9 +1449,9 @@ sub validate_tc_class( ) {
 
 		for my $codelopt ( split_list( $option , q('fq_codel' option list) ) ) {
 		    #
-		    #                          $2  --------------------
-		    #              $1  ------      | $3 -----------   |
-		    #                 |      |     |  |            |  |
+		    #              $1  ------      $2 --------------
+		    #                 |      |        |    $3 ---- | 
+		    #                 |      |        |       |  | |
 		    if ( $codelopt =~ /^([a-z]+) (?:= ((?:\d+)(ms)?))?$/x )
 			    {
 			fatal_error "Invalid CODEL option ($1)" unless $opttype = $validcodeloptions{$1};

@@ -1568,14 +1568,6 @@ sub blacklist_chain($$) {
 }
 
 #
-# Create the base for a chain involving the passed interface -- we make this a function so it will be
-# easy to change the mapping should the need ever arrive.
-#
-sub chain_base( $ ) {
-    $_[0];
-}
-
-#
 # Forward Chain for an interface
 #
 sub forward_chain($)
@@ -2338,7 +2330,7 @@ sub ensure_audit_blacklog_chain( $$$ ) {
 sub ensure_audit_chain( $;$$ ) {
     my ( $target, $action, $tgt ) = @_;
 
-    my $save_comment = push_comment;
+    push_comment( '' );
 
     my $ref = $filter_table->{$target};
 
@@ -2361,7 +2353,7 @@ sub ensure_audit_chain( $;$$ ) {
 	}
     }
 
-    pop_comment( $save_comment );
+    pop_comment;
 
     return $target;
 }
@@ -3342,7 +3334,7 @@ sub delete_duplicates {
 
 	if ( $baseref->{mode} == CAT_MODE ) {
 	    my $ports1;
-	    my @keys1    = sort( grep $_ ne 'comment', keys( %$baseref ) );
+	    my @keys1    = sort( keys( %$baseref ) );
 	    my $rulenum  = @_;
 	    my $adjacent = 1;
 		
@@ -3354,7 +3346,7 @@ sub delete_duplicates {
 
 		    last unless $ruleref->{mode} == CAT_MODE;
 
-		    my @keys2 = sort(grep $_ ne 'comment', keys( %$ruleref ) );
+		    my @keys2 = sort(keys( %$ruleref ) );
 
 		    next unless @keys1 == @keys2 ;
 
@@ -3364,7 +3356,7 @@ sub delete_duplicates {
 			#
 			# There are no non-duplicate rules between this rule and the base rule
 			#
-			for my $key (  @keys1 ) {
+			for my $key ( @keys1 ) {
 			    next RULE unless $key eq $keys2[$keynum++];
 			    next RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 			}
@@ -5606,7 +5598,7 @@ sub mark_firewall_not_started() {
 # Returns the name of the shell variable holding the first address of the passed interface
 #
 sub interface_address( $ ) {
-    my $variable = 'sw_' . var_base( $_[0] ) . '_address';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_address';
     uc $variable;
 }
 
@@ -5631,7 +5623,7 @@ sub get_interface_address ( $ ) {
 # Returns the name of the shell variable holding the broadcast addresses of the passed interface
 #
 sub interface_bcasts( $ ) {
-    my $variable = 'sw_' . var_base( $_[0] ) . '_bcasts';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_bcasts';
     uc $variable;
 }
 
@@ -5654,7 +5646,7 @@ sub get_interface_bcasts ( $ ) {
 # Returns the name of the shell variable holding the anycast addresses of the passed interface
 #
 sub interface_acasts( $ ) {
-    my $variable = 'sw_' . var_base( $_[0] ) . '_acasts';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_acasts';
     uc $variable;
 }
 
@@ -5677,7 +5669,7 @@ sub get_interface_acasts ( $ ) {
 # Returns the name of the shell variable holding the gateway through the passed interface
 #
 sub interface_gateway( $ ) {
-    my $variable = 'sw_' . var_base( $_[0] ) . '_gateway';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_gateway';
     uc $variable;
 }
 
@@ -5709,7 +5701,7 @@ sub get_interface_gateway ( $;$ ) {
 # Returns the name of the shell variable holding the addresses of the passed interface
 #
 sub interface_addresses( $ ) {
-    my $variable = 'sw_' . var_base( $_[0] ) . '_addresses';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_addresses';
     uc $variable;
 }
 
@@ -5739,7 +5731,7 @@ sub get_interface_addresses ( $ ) {
 # Returns the name of the shell variable holding the networks routed out of the passed interface
 #
 sub interface_nets( $ ) {
-    my $variable = 'sw_' . var_base( $_[0] ) . '_networks';
+    my $variable = 'sw_' . chain_base( $_[0] ) . '_networks';
     uc $variable;
 }
 
@@ -5770,7 +5762,7 @@ sub get_interface_nets ( $ ) {
 # Returns the name of the shell variable holding the MAC address of the gateway for the passed provider out of the passed interface
 #
 sub interface_mac( $$ ) {
-    my $variable = join( '_' , 'sw' , var_base( $_[0] ) , var_base( $_[1] ) , 'mac' );
+    my $variable = join( '_' , 'sw' , chain_base( $_[0] ) , chain_base( $_[1] ) , 'mac' );
     uc $variable;
 }
 

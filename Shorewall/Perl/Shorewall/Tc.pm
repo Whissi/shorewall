@@ -208,16 +208,31 @@ sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, {}, 15;
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, { COMMENT => 0, FORMAT => 2 } , 15;
 	$headers = '-';
     } else {
 	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 }, {}, 16;
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },  { COMMENT => 0, FORMAT => 2 }, 16;
     }
 
     our %tccmd;
 
     fatal_error 'MARK must be specified' if $originalmark eq '-';
+
+    if ( $originalmark eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
+
+    if ( $originalmark eq 'FORMAT' ) {
+	format_warning;
+	if ( $source =~ /^([12])$/ ) {
+	    $file_format = $1;
+	    return;
+	}
+
+	fatal_error "Invalid FORMAT ($source)";
+    }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
@@ -823,7 +838,7 @@ sub process_simple_device() {
     fatal_error "Unknown interface( $device )" unless known_interface $device;
 
     my $physical = physical_name $device;
-    my $dev      = var_base( $physical );
+    my $dev      = chain_base( $physical );
 
     push @tcdevices, $device;
 
@@ -1129,17 +1144,6 @@ my %validredoptions = ( min         => RED_INTEGER,
 			ecn         => RED_NONE,
 		      );
 
-use constant { CODEL_INTEGER => 1, CODEL_INTERVAL => 2, CODEL_NONE => 3 };
-
-my %validcodeloptions = ( flows       => CODEL_INTEGER,
-			  target      => CODEL_INTERVAL,
-			  interval    => CODEL_INTERVAL,
-			  limit       => CODEL_INTEGER,
-			  ecn         => CODEL_NONE,
-			  noecn       => CODEL_NONE,
-			  quantum     => CODEL_INTEGER
-			);
-
 sub validate_filter_priority( $$ ) {
     my ( $priority, $kind ) = @_;
 
@@ -1314,7 +1318,6 @@ sub validate_tc_class( ) {
     fatal_error "RATE ($rate) exceeds CEIL ($ceil)" if $rate && $ceil && $rate > $ceil;
 
     my ( $red, %redopts ) = ( 0, ( avpkt => 1000 ) );
-    my ( $codel, %codelopts ) = ( 0, ( ) );
 
     unless ( $options eq '-' ) {
 	for my $option ( split_list1 "\L$options", 'option' ) {
@@ -1364,9 +1367,8 @@ sub validate_tc_class( ) {
 		fatal_error "The 'flow' option is not allowed with 'red'"   if $tcref->{red};
 		$tcref->{flow} = process_flow $1;
 	    } elsif ( $option eq 'pfifo' ) {
-		fatal_error "The 'pfifo' option is not allowed with 'flow='"      if $tcref->{flow};
-		fatal_error "The 'pfifo' option is not allowed with 'red='"       if $tcref->{red};
-		fatal_error "The 'pfifo' option is not allowed with 'fq_codel='"  if $tcref->{fq_codel};
+		fatal_error "The 'pfifo' option is not allowed with 'flow='" if $tcref->{flow};
+		fatal_error "The 'pfifo' option is not allowed with 'red='"  if $tcref->{red};
 		$tcref->{pfifo} = 1;
 	    } elsif ( $option =~ /^occurs=(\d+)$/ ) {
 		my $val = $1;
@@ -1388,9 +1390,8 @@ sub validate_tc_class( ) {
 		fatal_error "Invalid limit ($1)" if $1 < 3 || $1 > 128;
 		$tcref->{limit} = $1;
 	    } elsif ( $option =~ s/^red=// ) {
-		fatal_error "The 'red=' option is not allowed with 'flow='"       if $tcref->{flow};
-		fatal_error "The 'red=' option is not allowed with 'pfifo'"       if $tcref->{pfifo};
-		fatal_error "The 'pfifo' option is not allowed with 'fq_codel='"  if $tcref->{fq_codel};
+		fatal_error "The 'red=' option is not allowed with 'flow='" if $tcref->{flow};
+		fatal_error "The 'red=' option is not allowed with 'pfifo'" if $tcref->{pfifo};
 		$tcref->{red} = 1;
 		my $opttype;
 
@@ -1439,61 +1440,6 @@ sub validate_tc_class( ) {
 		fatal_error "The 'limit' red option must be at least 2 * 'max'" unless $redopts{limit} >= 2 * $redopts{min};
 		$redopts{ecn} = 1 if exists $redopts{ecn};
 		$tcref->{redopts} = \%redopts;
-	    } elsif ( $option =~ /^fq_codel(?:=.+)?$/ ) {
-		fatal_error "The 'fq_codel' option is not allowed with 'red='"       if $tcref->{red};
-		fatal_error "The 'fq_codel' option is not allowed with 'pfifo'"      if $tcref->{pfifo};
-		$tcref->{fq_codel} = 1;
-		my $opttype;
-
-		$option =~ s/fq_codel=?//;
-
-		for my $codelopt ( split_list( $option , q('fq_codel' option list) ) ) {
-		    #
-		    #              $1  ------      $2 --------------
-		    #                 |      |        |    $3 ---- | 
-		    #                 |      |        |       |  | |
-		    if ( $codelopt =~ /^([a-z]+) (?:= ((?:\d+)(ms)?))?$/x )
-			    {
-			fatal_error "Invalid CODEL option ($1)" unless $opttype = $validcodeloptions{$1};
-			if ( $2 ) {
-			    #
-			    # '=<value>' supplied
-			    #
-			    fatal_error "The $1 option does not take a value" if $opttype == CODEL_NONE;
-			    if ( $3 ) {
-				#
-				# Rate
-				#
-				fatal_error "The $1 option requires an integer value"  if $opttype == CODEL_INTEGER;
-			    } else {
-				#
-				# Interval value
-				#
-				fatal_error "The $1 option requires an interval value" if $opttype == CODEL_INTERVAL;
-			    }
-			} else {
-			    #
-			    # No value supplied
-			    #
-			    fatal_error "The $1 option requires a value" unless $opttype == CODEL_NONE;
-			}
-
-			$codelopts{$1} = $2;
-		    } else {
-			fatal_error "Invalid fq_codel option specification ($codelopt)";
-		    }
-		}
-
-		if ( exists $codelopts{ecn} ) {
-		    fatal_error "The 'ecn' and 'noecn' fq_codel options are mutually exclusive" if exists $codelopts{noecn};
-		    $codelopts{ecn} = 1;
-		} elsif ( exists $codelopts{noecn} ) {
-		    $codelopts{noecn} = 1;
-		} else {
-		    $codelopts{ecn} = 1;
-		}
-		    
-		$tcref->{codelopts} = \%codelopts;
 	    } else {
 		fatal_error "Unknown option ($option)";
 	    }
@@ -1512,21 +1458,19 @@ sub validate_tc_class( ) {
     while ( --$occurs ) {
 	fatal_error "Duplicate class number ($classnumber)" if $tcclasses{$device}{++$classnumber};
 
-	$tcclasses{$device}{$classnumber} =  { tos       => [] ,
-					       rate      => $tcref->{rate} ,
-					       ceiling   => $tcref->{ceiling} ,
-					       priority  => $tcref->{priority} ,
-					       mark      => 0 ,
-					       markprio  => $markprio ,
-					       flow      => $tcref->{flow} ,
-					       pfifo     => $tcref->{pfifo},
-					       occurs    => 0,
-					       parent    => $parentclass,
-					       limit     => $tcref->{limit},
-					       red       => $tcref->{red},
-					       redopts   => $tcref->{redopts},
-					       fq_codel  => $tcref->{fq_codel},
-					       codelopts => $tcref->{codelopts},
+	$tcclasses{$device}{$classnumber} =  { tos      => [] ,
+					       rate     => $tcref->{rate} ,
+					       ceiling  => $tcref->{ceiling} ,
+					       priority => $tcref->{priority} ,
+					       mark     => 0 ,
+					       markprio => $markprio ,
+					       flow     => $tcref->{flow} ,
+					       pfifo    => $tcref->{pfifo},
+					       occurs   => 0,
+					       parent   => $parentclass,
+					       limit    => $tcref->{limit},
+					       red      => $tcref->{red},
+					       redopts  => $tcref->{redopts},
 					     };
 	push @tcclasses, "$device:$classnumber";
     };
@@ -1859,6 +1803,11 @@ sub process_tc_priority() {
 
     fatal_error 'BAND must be specified' if $band eq '-';
 
+    if ( $band eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
+
     fatal_error "Invalid tcpri entry" if ( $proto     eq '-' &&
 					   $ports     eq '-' &&
 					   $address   eq '-' &&
@@ -1940,6 +1889,8 @@ sub process_tcpri() {
 
 	process_tc_priority while read_a_line( NORMAL_READ );
 
+	clear_comment;
+
 	if ( $ipp2p ) {
 	    insert_irule( $mangle_table->{tcpost} ,
 			  j => 'CONNMARK --restore-mark --ctmask ' . in_hex( $globals{TC_MASK} ) ,
@@ -2003,7 +1954,7 @@ sub process_traffic_shaping() {
 
 	unless ( $config{TC_ENABLED} eq 'Shared' ) {
 
-	    my $dev = var_base( $device );
+	    my $dev = chain_base( $device );
 
 	    emit( '',
 		  '#',
@@ -2134,25 +2085,8 @@ sub process_traffic_shaping() {
 			}
 
 			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: red${options}" );
-		    } elsif ( $tcref->{fq_codel} ) {
-			1 while $devnums[++$sfq];
-			$sfqinhex = in_hexp( $sfq);
 
-			my ( $options, $codelopts ) = ( '', $tcref->{codelopts} );
-
-			while ( my ( $option, $type ) = each %validcodeloptions ) {
-			    if ( my $value = $codelopts->{$option} ) {
-				if ( $type == CODEL_NONE ) {
-				    $options = join( ' ', $options, $option );
-				} else {
-				    $options = join( ' ', $options, $option, $value );
-				}
-			    }
-			}
-
-			emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: fq_codel${options}" );
-			
-		    } elsif ( ! $tcref->{pfifo} ) {
+		    } elsif ( $tcref->{leaf} && ! $tcref->{pfifo} ) {
 			1 while $devnums[++$sfq];
 
 			$sfqinhex = in_hexp( $sfq);
@@ -2258,7 +2192,7 @@ sub setup_traffic_shaping() {
 
     for my $device ( @tcdevices ) {
 	my $interfaceref = known_interface( $device );
-	my $dev          = var_base( $interfaceref ? $interfaceref->{physical} : $device );
+	my $dev          = chain_base( $interfaceref ? $interfaceref->{physical} : $device );
 
 	emit "setup_${dev}_tc";
     }
@@ -2272,6 +2206,11 @@ sub process_secmark_rule() {
 	split_line1( 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
 
     fatal_error 'SECMARK must be specified' if $secmark eq '-';
+
+    if ( $secmark eq 'COMMENT' ) {
+	process_comment;
+	return;
+    }
 
     my %chns = ( T => 'tcpost'  ,
 		 P => 'tcpre'   ,
@@ -2480,6 +2419,8 @@ sub setup_tc() {
 
 	    process_tc_rule while read_a_line( NORMAL_READ );
 
+	    clear_comment;
+
 	}
 
 	if ( my $fn = open_file( 'secmarks', 1, 1 ) ) {
@@ -2488,6 +2429,7 @@ sub setup_tc() {
 
 	    process_secmark_rule while read_a_line( NORMAL_READ );
 
+	    clear_comment;
 	}
 
 	handle_stickiness( $sticky );

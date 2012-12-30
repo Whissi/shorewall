@@ -135,6 +135,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       process_comment
 				       no_comment
 				       macro_comment
+				       clear_comment
 				       push_comment
 				       pop_comment
 				       dump_mark_layout
@@ -494,13 +495,14 @@ our $first_entry;            # Message to output or function to call on first no
 our $file_format;            # Format of configuration file.
 our $max_format;             # Max format value
 our $comment;                # Current COMMENT
-our $comments_allowed;       # True if [?]COMMENT is allowed in the current file
-our $nocomment;              # When true, ignore [?]COMMENT in the current file
-our $warningcount;           # Used to suppress duplicate warnings about missing COMMENT support
-our $warningcount1;          # Used to suppress duplicate warnings about COMMENT being deprecated
-our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
+our @comments;
+our $comments_allowed;
+our $nocomment;
+our $warningcount;
+our $warningcount1;
+our $warningcount2;
 
-our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
+our $shorewall_dir;           # Shorewall Directory; if non-empty, search here first for files.
 
 our $debug;                  # Global debugging flag
 our $confess;                # If true, use Carp to report errors with stack trace.
@@ -513,11 +515,11 @@ our $Product;                # $product with initial cap.
 
 our $sillyname;              # Name of temporary filter chains for testing capabilities
 our $sillyname1;
-our $iptables;               # Path to iptables/ip6tables
-our $tc;                     # Path to tc
-our $ip;                     # Path to ip
+our $iptables;                # Path to iptables/ip6tables
+our $tc;                      # Path to tc
+our $ip;                      # Path to ip
 
-our $shell;                  # Type of shell that processed the params file
+my $shell;                   # Type of shell that processed the params file
 
 use constant { BASH    => 1,
 	       OLDBASH => 2,
@@ -621,6 +623,7 @@ sub initialize( $;$$) {
     # Contents of last COMMENT line.
     #
     $comment       = '';
+    @comments      = ();
     $warningcount  = 0;
     $warningcount1 = 0;
     $warningcount2 = 0;
@@ -762,7 +765,6 @@ sub initialize( $;$$) {
 	  AUTOHELPERS => undef,
 	  RESTORE_ROUTEMARKS => undef,
 	  IGNOREUNKNOWNVARIABLES => undef,
-	  WARNOLDCAPVERSION => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -1882,7 +1884,7 @@ sub split_line1( $$;$$ ) {
 
     my @line = split( ' ', $columns );
 
-    $nopad = {} unless $nopad;
+    $nopad = { COMMENT => 0 } unless $nopad;
 
     my $first     = supplied $line[0] ? $line[0] : '-';
     my $npcolumns = $nopad->{$first};
@@ -1959,21 +1961,27 @@ sub no_comment() {
 # Clear the $comment variable and the comment stack
 #
 sub clear_comment() {
-    $comment   = '';
-    $nocomment = 0;
+    $comment  = '';
+    @comments = ();
 }
 
 #
 # Push and Pop comment stack
 #
-sub push_comment() {
-    my $return = $comment;
-    $comment   = '';
-    $return;
+sub push_comment( $ ) {
+    push @comments, $comment;
+    $comment = shift;
 }
 
-sub pop_comment( $ ) {
-    $comment = $_[0];
+sub pop_comment() {
+    $comment = pop @comments;
+}
+
+#
+# Set comment
+#
+sub set_comment( $ ) {
+    $comment = shift;
 }
 
 #
@@ -1998,46 +2006,22 @@ sub do_open_file( $ ) {
     $currentfilename   = $fname;
 }
 
-#
-# Arguments are:
-#
-# - file name
-# - Maximum value allowed in ?FORMAT directives
-# - ?COMMENT allowed in this file
-# - Ignore ?COMMENT in ths file
-#
 sub open_file( $;$$$ ) {
-    my ( $fname, $mf, $ca, $nc ) = @_;
-    
-    $fname = find_file $fname;
+    my $fname = find_file $_[0];
 
     assert( ! defined $currentfile );
 
     if ( -f $fname && -s _ ) {
 	$first_entry      = 0;
 	$file_format      = 1;
-	$max_format       = supplied $mf ? $mf : 1;
-	$comments_allowed = supplied $ca ? $ca : 0;
-	$nocomment        = $nc;
+	$max_format       = supplied $_[1] ? $_[1] : 1;
+	$comments_allowed = supplied $_[2] ? $_[2] : 0;
+	$nocomment        = supplied $_[3] ? $_[3] && no_comment : 0;
 	do_open_file $fname;;
     } else {
 	$ifstack = @ifstack;
 	'';
     }
-}
-
-#
-# Push open-specific globals onto the include stack
-#
-sub push_include() {
-    push @includestack, [ $currentfile,
-			  $currentfilename,
-			  $currentlinenumber,
-			  $ifstack,
-			  $file_format,
-			  $max_format,
-			  $comment,
-			  $nocomment ];
 }
 
 #
@@ -2053,18 +2037,11 @@ sub pop_include() {
     }
 
     if ( $arrayref ) {
-	( $currentfile,
-	  $currentfilename,
-	  $currentlinenumber,
-	  $ifstack,
-	  $file_format,
-	  $max_format,
-	  $comment,
-	  $nocomment ) = @$arrayref;
+	( $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
-	clear_comment;
+	$nocomment = $comment = 0;
     }
 }
 
@@ -2453,7 +2430,7 @@ sub copy1( $ ) {
 			fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 			if ( -s _ ) {
-			    push_include;
+			    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ];
 			    $currentfile = undef;
 			    do_open_file $filename;
 			} else {
@@ -2591,7 +2568,7 @@ EOF
 #
 sub push_open( $;$$$ ) {
     my ( $file, $max , $ca, $nc ) = @_;
-    push_include;
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack, $file_format, $max_format, $nocomment ] if $currentfile;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
@@ -2674,7 +2651,7 @@ sub embedded_shell( $ ) {
 
     $command .= q(');
 
-    push_include;
+    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format, $nocomment ];
     $currentfile = undef;
     open $currentfile , '-|', $command or fatal_error qq(Shell Command failed);
     $currentfilename = "SHELL\@$currentfilename:$currentlinenumber";
@@ -2736,7 +2713,7 @@ sub embedded_perl( $ ) {
 
 	$perlscript = undef;
 
-	push_include;
+	push @includestack, [ $currentfile, $currentfilename, $currentlinenumber , $ifstack , $file_format, $max_format, $nocomment ];
 	$currentfile = undef;
 
 	open $currentfile, '<', $perlscriptname or fatal_error "Unable to open Perl Script $perlscriptname";
@@ -2982,25 +2959,6 @@ sub read_a_line($) {
 		#
 		$currentline =~ s/\s*$//;
 	    }
-
-	    if ( $comments_allowed && $currentline =~ /^\s*COMMENT\b/ ) {
-		process_comment unless $nocomment;
-		$currentline = '';
-		$currentlinenumber = 0;
-		next
-	    }
-
-	    if ( $max_format > 1 && $currentline =~ /^\s*FORMAT\s+(.+)/ ) {
-		format_warning;
-		my $format = $1;
-		fatal_error( "Invalid format ($format)" )                 unless $format =~ /\d+/;
-		fatal_error( "Format must be between 1 and $max_format" ) unless $format && $format <= $max_format;
-		$file_format = $format;
-		$currentline = '';
-		$currentlinenumber = 0;
-		next
-	    }
-
 	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #
@@ -3023,7 +2981,7 @@ sub read_a_line($) {
 		fatal_error "Directory ($filename) not allowed in INCLUDE" if -d _;
 
 		if ( -s _ ) {
-		    push_include;
+		    push @includestack, [ $currentfile, $currentfilename, $currentlinenumber, $ifstack , $file_format, $max_format, $nocomment ];
 		    $currentfile = undef;
 		    do_open_file $filename;
 		} else {
@@ -4452,6 +4410,13 @@ sub read_capabilities() {
 	}
     }
 
+    if ( $capabilities{CAPVERSION} ) {
+	warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}"
+	    unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
+    } else {
+	warning_message "Your capabilities file may not contain all of the capabilities defined by $Product version $globals{VERSION}";
+    }
+
     unless ( $capabilities{KERNELVERSION} ) {
 	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
 	$capabilities{KERNELVERSION} = 20630;
@@ -5038,7 +5003,6 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'AUTOHELPERS'                , 'Yes';
     default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
     default_yes_no 'IGNOREUNKNOWNVARIABLES'     , 'Yes';
-    default_yes_no 'WARNOLDCAPVERSION'          , 'Yes';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
 
@@ -5313,15 +5277,6 @@ sub get_configuration( $$$$ ) {
     require_capability( 'RECENT_MATCH'    , 'MACLIST_TTL' , 's' )           if $config{MACLIST_TTL};
     require_capability( 'XCONNMARK'       , 'HIGH_ROUTE_MARKS=Yes' , 's' )  if $config{PROVIDER_OFFSET} > 0;
     require_capability( 'MANGLE_ENABLED'  , 'Traffic Shaping' , 's'      )  if $config{TC_ENABLED};
-
-    if ( $config{WARNOLDCAPVERSION} ) {
-	if ( $capabilities{CAPVERSION} ) {
-	    warning_message "Your capabilities file is out of date -- it does not contain all of the capabilities defined by $Product version $globals{VERSION}"
-		unless $capabilities{CAPVERSION} >= $globals{CAPVERSION};
-	} else {
-	    warning_message "Your capabilities file may not contain all of the capabilities defined by $Product version $globals{VERSION}";
-	}
-    }
 
     add_variables %config;
 

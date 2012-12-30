@@ -683,7 +683,7 @@ sub process_stoppedrules() {
 	    $result = 1;
 
 	    my ( $target, $source, $dest, $proto, $ports, $sports ) = 
-		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 };
+		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 }, { COMMENT => 0 };
 
 	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
 
@@ -745,6 +745,8 @@ sub process_stoppedrules() {
 	    }
 	}
     }
+
+    clear_comment;
 
     $result;
 }
@@ -1124,7 +1126,7 @@ sub add_common_rules ( $ ) {
 
 	    for $interface ( @$list ) {
 		my $chainref = $filter_table->{input_option_chain $interface};
-		my $base     = uc var_base get_physical $interface;
+		my $base     = uc chain_base get_physical $interface;
 		my $optional = interface_is_optional( $interface );
 		my $variable = get_interface_gateway( $interface, ! $optional );
 
@@ -1214,44 +1216,50 @@ sub setup_mac_lists( $ ) {
 
 		my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 'maclist file', { disposition => 0, interface => 1, mac => 2, addresses => 3 };
 
-		my ( $disposition, $level, $remainder) = split( /:/, $original_disposition, 3 );
+		if ( $original_disposition eq 'COMMENT' ) {
+		    process_comment;
+		} else {
+		    my ( $disposition, $level, $remainder) = split( /:/, $original_disposition, 3 );
 
-		fatal_error "Invalid DISPOSITION ($original_disposition)" if defined $remainder || ! $disposition;
+		    fatal_error "Invalid DISPOSITION ($original_disposition)" if defined $remainder || ! $disposition;
 
-		my $targetref = $maclist_targets{$disposition};
+		    my $targetref = $maclist_targets{$disposition};
 
-		fatal_error "Invalid DISPOSITION ($original_disposition)"              if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
-		fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
-		fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
+		    fatal_error "Invalid DISPOSITION ($original_disposition)"              if ! $targetref || ( ( $table eq 'mangle' ) && ! $targetref->{mangle} );
+		    fatal_error "Unknown Interface ($interface)"                           unless known_interface( $interface );
+		    fatal_error "No hosts on $interface have the maclist option specified" unless $maclist_interfaces{$interface};
 
-		my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
+		    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 
-		$mac       = '' unless $mac && ( $mac ne '-' );
-		$addresses = '' unless defined $addresses && ( $addresses ne '-' );
+		    $mac       = '' unless $mac && ( $mac ne '-' );
+		    $addresses = '' unless defined $addresses && ( $addresses ne '-' );
 
-		fatal_error "You must specify a MAC address or an IP address" unless $mac || $addresses;
+		    fatal_error "You must specify a MAC address or an IP address" unless $mac || $addresses;
 
-		$mac = do_mac $mac if $mac;
+		    $mac = do_mac $mac if $mac;
 
-		if ( $addresses ) {
-		    for my $address ( split ',', $addresses ) {
-			my $source = match_source_net $address;
-			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
+		    if ( $addresses ) {
+			for my $address ( split ',', $addresses ) {
+			    my $source = match_source_net $address;
+			    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , "${mac}${source}"
+				if supplied $level;
+
+			    add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
+			    add_jump( $chainref , $targetref->{target}, 0, "${mac}${source}" );
+			}
+		    } else {
+			log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
 			    if supplied $level;
 
 			add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
-			add_jump( $chainref , $targetref->{target}, 0, "${mac}${source}" );
+			add_jump ( $chainref , $targetref->{target}, 0, "$mac" );
 		    }
-		} else {
-		    log_rule_limit $level, $chainref , mac_chain( $interface) , $disposition, '', '', 'add' , $mac
-			if supplied $level;
 
-		    add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $disposition ) if $audit && $disposition ne 'ACCEPT';
-		    add_jump ( $chainref , $targetref->{target}, 0, "$mac" );
+		    progress_message "      Maclist entry \"$currentline\" $done";
 		}
-
-		progress_message "      Maclist entry \"$currentline\" $done";
 	    }
+
+	    clear_comment;
 	}
 	#
 	# Generate jumps from the input and forward chains

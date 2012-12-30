@@ -75,9 +75,9 @@ our @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-our $rule_commands   = { SECTION => 2 };
-our $action_commands = { SECTION => 2, DEFAULTS => 2 };
-our $macro_commands  = { SECTION => 2, DEFAULT => 2 };
+our $rule_commands   = { COMMENT => 0, FORMAT => 2, SECTION => 2 };
+our $action_commands = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULTS => 2 };
+our $macro_commands  = { COMMENT => 0, FORMAT => 2, SECTION => 2, DEFAULT => 2 };
 
 our %rulecolumns = ( action    =>   0,
 		     source    =>   1,
@@ -842,7 +842,8 @@ sub finish_chain_section ($$) {
     my $chain               = $chainref->{name};
     my $related_level       = $config{RELATED_LOG_LEVEL};
     my $related_target      = $globals{RELATED_TARGET};
-    my $save_comment        = push_comment;
+
+    push_comment(''); #These rules should not have comments
 
     if ( $state =~ /RELATED/ && ( $related_level || $related_target ne 'ACCEPT' ) ) {
 
@@ -889,7 +890,7 @@ sub finish_chain_section ($$) {
 	$chainref->{new} = @{$chainref->{rules}};
     }
 
-    pop_comment( $save_comment );
+    pop_comment;
 }
 
 #
@@ -1560,7 +1561,7 @@ sub process_action($) {
 	$active{$action}++;
 	push @actionstack, $wholeaction;
 
-	my $save_comment = push_comment;
+	push_comment( '' );
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
@@ -1576,6 +1577,18 @@ sub process_action($) {
 	    }
 
 	    fatal_error 'TARGET must be specified' if $target eq '-';
+
+	    if ( $target eq 'COMMENT' ) {
+		process_comment;
+		next;
+	    }
+
+	    if ( $target eq 'FORMAT' ) {
+		format_warning;
+		fatal_error "FORMAT must be 1 or 2" unless $source =~ /^[12]$/;
+		$file_format = $source;
+		next;
+	    }
 
 	    if ( $target eq 'DEFAULTS' ) {
 		default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
@@ -1602,7 +1615,7 @@ sub process_action($) {
 			   0 );
 	}
 
-	pop_comment( $save_comment );
+	pop_comment;
 
 	$active{$action}--;
 	pop @actionstack;
@@ -1631,6 +1644,8 @@ sub use_policy_action( $ ) {
 sub process_macro ($$$$$$$$$$$$$$$$$$$) {
     my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
+    my $nocomment = no_comment;
+
     my $generated = 0;
 
 
@@ -1638,7 +1653,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding Macro $macrofile...";
 
-    push_open $macrofile, 2, 1, no_comment;
+    push_open $macrofile, 2, 1, 1;
 
     macro_comment $macro;
 
@@ -1668,6 +1683,18 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
+
+	if ( $mtarget eq 'COMMENT' ) {
+	    process_comment unless $nocomment;
+	    next;
+	}
+
+	if ( $mtarget eq 'FORMAT' ) {
+	    format_warning;
+	    fatal_error "Invalid FORMAT ($msource)" unless $msource =~ /^[12]$/;
+	    $file_format = $msource;
+	    next;
+	}
 
 	if ( $mtarget =~ /^DEFAULTS?$/ ) {
 	    $param = $msource unless supplied $param;
@@ -1743,6 +1770,8 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..End Macro $macrofile";
 
+    clear_comment unless $nocomment;
+
     return $generated;
 }
 
@@ -1768,7 +1797,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
     push_open $inlinefile, 2, 1;
 
-    my $save_comment = push_comment;
+    push_comment('');
 
     while ( read_a_line( NORMAL_READ ) ) {
 	my  ( $mtarget,
@@ -1789,8 +1818,18 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
 
+	if ( $mtarget eq 'COMMENT' ) {
+	    process_comment;
+	    next;
+	}
+
 	if ( $mtarget eq 'DEFAULTS' ) {
 	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
+	    next;
+	}
+
+	if ( $mtarget eq 'FORMAT' ) {
+	    fatal_error "FORMAT must be 2" unless $msource eq '2';
 	    next;
 	}
 
@@ -1854,7 +1893,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	progress_message "   Rule \"$currentline\" $done";
     }
 
-    pop_comment( $save_comment );
+    pop_comment;
 
     pop_open;
 
@@ -2553,6 +2592,7 @@ sub process_rule ( ) {
 
     fatal_error 'ACTION must be specified' if $target eq '-';
 
+    process_comment,            return 1 if $target eq 'COMMENT';
     process_section( $source ), return 1 if $target eq 'SECTION';
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
@@ -2730,6 +2770,8 @@ sub process_rules( $ ) {
 		   );
 
 	process_rule while read_a_line( NORMAL_READ );
+
+	clear_comment;
     }
 
     $section = '';
@@ -2748,6 +2790,8 @@ sub process_rules( $ ) {
 	first_entry "$doing $fn...";
 
 	process_rule while read_a_line( NORMAL_READ );
+
+	clear_comment;
     }
 
     $section = 'DEFAULTACTION';

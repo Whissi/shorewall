@@ -61,6 +61,11 @@ sub process_one_masq( )
     my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest ) =
 	split_line1 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9 };
 
+    if ( $interfacelist eq 'COMMENT' ) {
+	process_comment;
+	return 1;
+    }
+
     fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
 
     my $pre_nat;
@@ -282,6 +287,8 @@ sub setup_masq()
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
 
 	process_one_masq while read_a_line( NORMAL_READ );
+
+	clear_comment;
     }
 }
 
@@ -380,20 +387,26 @@ sub setup_nat() {
 
 	    my ( $external, $interfacelist, $internal, $allints, $localnat ) = split_line1 'nat file', { external => 0, interface => 1, internal => 2, allints => 3, local => 4 };
 
-	    ( $interfacelist, my $digit ) = split /:/, $interfacelist;
+	    if ( $external eq 'COMMENT' ) {
+		process_comment;
+	    } else {
+		( $interfacelist, my $digit ) = split /:/, $interfacelist;
 
-	    $digit = defined $digit ? ":$digit" : '';
+		$digit = defined $digit ? ":$digit" : '';
 
-	    fatal_error 'EXTERNAL must be specified' if $external eq '-';
-	    fatal_error 'INTERNAL must be specified' if $interfacelist eq '-';
+		fatal_error 'EXTERNAL must be specified' if $external eq '-';
+		fatal_error 'INTERNAL must be specified' if $interfacelist eq '-';
 
-	    for my $interface ( split_list $interfacelist , 'interface' ) {
-		fatal_error "Invalid Interface List ($interfacelist)" unless supplied $interface;
-		do_one_nat $external, "${interface}${digit}", $internal, $allints, $localnat;
+		for my $interface ( split_list $interfacelist , 'interface' ) {
+		    fatal_error "Invalid Interface List ($interfacelist)" unless supplied $interface;
+		    do_one_nat $external, "${interface}${digit}", $internal, $allints, $localnat;
+		}
+
+		progress_message "   NAT entry \"$currentline\" $done";
 	    }
-
-	    progress_message "   NAT entry \"$currentline\" $done";
 	}
+
+	clear_comment;
     }
 }
 
@@ -505,6 +518,8 @@ sub setup_netmap() {
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";
 	    }
 	}
+
+	clear_comment;
     }
 
 }

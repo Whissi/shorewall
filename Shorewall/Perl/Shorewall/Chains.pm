@@ -4467,14 +4467,14 @@ sub validate_helper( $;$ ) {
 	#
 	#  Recognized helper
 	#
-	my $capability      = $helpers_map{$helper};
+	my $capability      = $helpers_map{defined $proto ? $helper : $helper_base};
 	my $external_helper = lc $capability;
 	
 	$external_helper =~ s/_helper//;
 	$external_helper =~ s/_/-/;
 
 	fatal_error "The $external_helper helper is not enabled" unless $helpers_enabled{$external_helper};
-	
+
 	if ( supplied $proto ) {
 	    require_capability $helpers_map{$helper}, "Helper $helper", 's';
 
@@ -4501,7 +4501,10 @@ sub do_helper( $ ) {
 
     validate_helper( $helper );
 
-    qq(-m helper --helper "$helpers_aliases{$helper}" ) if defined wantarray;
+    if ( defiend wantarray ) {
+	$helper = $helpers_aliases{$helper} || $helper;
+	qq(-m helper --helper $helper );
+    }
 }
 
 

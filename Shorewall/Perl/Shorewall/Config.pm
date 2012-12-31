@@ -199,7 +199,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.5_11';
+our $VERSION = '4.5_12';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -635,7 +635,7 @@ sub initialize( $;$$) {
 		    EXPORT     => 0,
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
-		    VERSION    => "4.5.11-RC1",
+		    VERSION    => "4.5.12-Beta3",
 		    CAPVERSION => 40509 ,
 		  );
     #
@@ -4750,7 +4750,10 @@ sub convert_to_directives() {
 	    opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
 
 	    while ( my $file = readdir( $dirhandle ) ) {
-		unless ( $file eq 'capabilities' || $file =~ /\.bak$/ ) {
+		unless ( $file eq 'capabilities'       ||
+			 $file eq 'params'             ||
+			 $file =~ /^shorewall6?.conf$/ ||
+			 $file =~ /\.bak$/ ) {
 		    $file = "$dir/$file";
 		
 		    if ( -f $file && -w _ ) {
@@ -4768,8 +4771,8 @@ EOF
 			if ( $result == 0 ) {
 			    if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
 				progress_message3 "   File $file updated - old file renamed ${file}.bak";
-			    } elsif ( ! unlink "${file}.bak" ) {
-
+			    } elsif ( ! rename "${file}.bak" , $file ) {
+				warning message "Unable to rename ${file}.bak to $file:$!";
 			    }
 			} else {
 			    warning_message ("Unable to update file ${file}.bak:$!" );

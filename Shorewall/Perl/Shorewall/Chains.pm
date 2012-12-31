@@ -4501,7 +4501,7 @@ sub do_helper( $ ) {
 
     validate_helper( $helper );
 
-    if ( defiend wantarray ) {
+    if ( defined wantarray ) {
 	$helper = $helpers_aliases{$helper} || $helper;
 	qq(-m helper --helper $helper );
     }

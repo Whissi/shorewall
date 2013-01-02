@@ -4357,10 +4357,10 @@ EOF
 	if ( system( "diff -q $configfile $configfile.bak > /dev/null" ) ) {
 	    progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
 	} else {
-	    if ( unlink "$configfile.bak" ) {
+	    if ( rename "$configfile.bak", $configfile ) {
 		progress_message3 "No update required to configuration file $configfile; $configfile.bak not saved";
 	    } else {
-		warning_message "Unable to unlink $configfile.bak";
+		warning_message "Unable to rename $configfile.bak to $configfile";
 		progress_message3 "No update required to configuration file $configfile";
 	    }
 

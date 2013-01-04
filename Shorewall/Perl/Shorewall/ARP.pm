@@ -43,6 +43,11 @@ our @builtins;
 our $arptablesjf;
 our @map = ( qw( 0 Request Reply Request_Reverse Reply_Reverse DRARP_Request DRARP_Reply DRARP_Error InARP_Request ARP_NAK ) );
 
+
+#
+# Handles the network and mac parts of the SOURCE ($source == 1 ) and DEST ($source == 0) columns in the arprules file.
+# Returns any match(es) specified.
+#
 sub match_arp_net( $$$ ) {
     my ( $net, $mac, $source ) = @_;
 
@@ -74,6 +79,9 @@ sub match_arp_net( $$$ ) {
     $return;
 }
 
+#
+# Process a rule in the arprules file
+#
 sub process_arprule() {
     my ( $originalaction, $source, $dest, $opcode ) = split_line( 'arprules file entry', {action => 0, source => 1, dest => 2, opcode => 3 } );
 
@@ -173,7 +181,10 @@ sub process_arprule() {
     push @$chainref, $rule;
 
 }
-	    
+
+#
+# Process the arprules file -- returns true if there were any arp rules
+#
 sub process_arprules() {
     my $result = 0;
 
@@ -205,7 +216,10 @@ sub process_arprules() {
 
     $result;
 }
-    
+
+#
+# Generate the arptables_load() function
+#
 sub create_arptables_load( $ ) {
     my $test = shift;
 
@@ -268,6 +282,9 @@ sub create_arptables_load( $ ) {
     emit "}\n";
 }	  
 
+#
+# Preview the generated ARP rules
+#
 sub preview_arptables_load() {
 
     my $date = localtime;

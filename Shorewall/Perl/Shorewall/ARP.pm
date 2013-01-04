@@ -63,11 +63,11 @@ sub match_arp_net( $$$ ) {
     }
 
     if ( supplied $mac ) {
-	my ( $addr , $mask ) = split( $mac , '/', 2 );
+	my ( $addr , $mask ) = split( '/', $mac, 2 );
 
 	my $invert = ( $addr =~ s/^!// ) ? '! ' : '';
 
-	fatal_error "Invalid MAC address ($net)" unless $addr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
+	fatal_error "Invalid MAC address ($addr)" unless $addr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 	if ( supplied $mask ) {
 	    fatal_error "Invalid MAC Mask ($mask)" unless $mask =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 	    $return .= $source ? "$sourcemac $invert$addr/$mask " : "$destmac $invert$addr/mask ";
@@ -105,33 +105,30 @@ sub process_arprule() {
 		      DNAT   => sub() { validate_address $newaddr, 0;
 					$rule .= "-j mangle --mangle-ip-d $newaddr"; },
 		      SMAT   => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "-j mangle --mangle-mac-s $newaddr"; },
+					$rule .= "--h-length 6 -j mangle --mangle-mac-s $newaddr"; },
 		      DMAT   => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "-j mangle --mangle-mac-d $newaddr"; },
+					$rule .= "--h-length 6 -j mangle --mangle-mac-d $newaddr"; },
 		      SNATC  => sub() { validate_address $newaddr, 0;
-					$rule .= "-j mangle --mangle-ip-s $newaddr--mangle-target CONTINUE"; },
+					$rule .= "-j mangle --mangle-ip-s $newaddr --mangle-target CONTINUE"; },
 		      DNATC  => sub() { validate_address $newaddr, 0;
-					$rule .= "-j mangle --mangle-ip-d $newaddr--mangle-target CONTINUE"; },
+					$rule .= "-j mangle --mangle-ip-d $newaddr --mangle-target CONTINUE"; },
 		      SMATC  => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "-j mangle --mangle-mac-s $newaddr--mangle-target CONTINUE"; },
+					$rule .= "--h-length 6 -j mangle --mangle-mac-s $newaddr --mangle-target CONTINUE"; },
 		      DMATC  => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "-j mangle --mangle-mac-d $newaddr --mangle-target CONTINUE"; },
+					$rule .= "--h-length 6 -j mangle --mangle-mac-d $newaddr --mangle-target CONTINUE"; },
 		    );
 
     if ( supplied $newaddr ) {
 	fatal_error "The $action ACTION does not allow a new address" unless $action =~ /^SNAT|DNAT|SMAT|DMAT$/;
     } else {
+	fatal_error "The $action ACTION requires a new address" if $action =~ /^SNAT|DNAT|SMAT|DMAT$/;
 	fatal_error "Invalid ACTION ($action)" unless $action =~ /^DROP|ACCEPT$/;
     }
 
     if ( $source ne '-' ) {
-	if ( $source =~ /^(.+?):(.*)(?::(.*))?/ ) {
-	    $iiface = $1;
-	    $saddr  = $2;
-	    $smac   = $3;
-	} else {
-	    $iiface = $source;
-	}
+	( $iiface, $saddr, $smac ) = split /:/, $source, 3;
+
+	fatal_error "SOURCE interface missing" unless supplied $iiface; 
 
 	$iiface = find_interface( $iiface )->{physical};
 
@@ -143,13 +140,9 @@ sub process_arprule() {
     }
 
     if ( $dest ne '-' ) {
-	if ( $dest =~ /^(.+?):(.*)(?::(.*))?/ ) {
-	    $diface = $1;
-	    $daddr  = $2;
-	    $dmac   = $3;
-	} else {
-	    $diface = $dest;
-	}
+	( $diface, $daddr, $dmac ) = split /:/, $dest, 3;
+
+	fatal_error "DEST interface missing" unless supplied $diface; 
 
 	$diface = find_interface( $diface )->{physical};
 
@@ -201,7 +194,7 @@ sub process_arprules() {
 	$arp_forward = $arp_table{FORWARD} = [];
 	@builtins = qw( INPUT OUTPUT FORWARD );
 	$sourcemac = '--source-mac';
-	$destmac   = '--dest-mac';
+	$destmac   = '--destination-mac';
     }
 
     my $fn = open_file 'arprules';

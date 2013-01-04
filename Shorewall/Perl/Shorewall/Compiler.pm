@@ -36,6 +36,7 @@ use Shorewall::Proc;
 use Shorewall::Proxyarp;
 use Shorewall::Raw;
 use Shorewall::Misc;
+use Shorewall::ARP;
 
 use strict;
 
@@ -49,6 +50,8 @@ our $export;
 our $test;
 
 our $family;
+
+our $have_arptables;
 
 #
 # Initilize the package-globals in the other modules
@@ -226,6 +229,22 @@ sub generate_script_2() {
 
     set_chain_variables;
 
+    my $need_arptables = $have_arptables || $config{SAVE_ARPTABLES};
+
+    if ( my $arptables = $config{ARPTABLES} ) {
+	emit( qq(ARPTABLES="$arptables"),
+	      '[ -x "$ARPTABLES" ] || startup_error "ARPTABLES=$ARPTABLES does not exist or is not executable"',
+	    );
+    } elsif ( $need_arptables ) {
+	emit( '[ -z "$ARPTABLES" ] && ARPTABLES=$(mywhich arptables)',
+	      '[ -n "$ARPTABLES" -a -x "$ARPTABLES" ] || startup_error "Can\'t find arptables executable"' );
+    }
+
+    if ( $need_arptables ) {
+	emit( 'ARPTABLES_RESTORE=${ARPTABLES}-restore',
+	      '[ -x "$ARPTABLES_RESTORE" ] || startup_error "$ARPTABLES_RESTORE does not exist or is not executable"' );
+    }
+
     if ( $config{EXPORTPARAMS} ) {
 	append_file 'params';
     } else {
@@ -323,6 +342,7 @@ sub generate_script_3($) {
     }
 
     create_netfilter_load( $test );
+    create_arptables_load( $test ) if $have_arptables;
     create_chainlist_reload( $_[0] );
 
     emit "#\n# Start/Restart the Firewall\n#";
@@ -450,16 +470,25 @@ sub generate_script_3($) {
 	  '    if [ -f $iptables_save_file ]; then' );
 
     if ( $family == F_IPV4 ) {
-	emit '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux'
+	emit( '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux' );
+
+	emit( '',
+	      '        arptables_save_file=${VARDIR}/$(basename $0)-arptables',
+	      '        if [ -f $arptables_save_file ]; then',
+	      '            cat $arptables_save_file | $ARPTABLES_RESTORE',
+	      '        fi')
+	    if $config{SAVE_ARPTABLES};
+
     } else {
 	emit '        cat $iptables_save_file | $IP6TABLES_RESTORE # Use this nonsensical form to appease SELinux'
     }
 
-    emit<<'EOF';
-    else
-        fatal_error "$iptables_save_file does not exist"
-    fi
-EOF
+    emit( '    else',
+	  '       fatal_error "$iptables_save_file does not exist"',
+	  '    fi',
+	  ''
+	);
+
     push_indent;
     setup_load_distribution;
     setup_forwarding( $family , 1 );
@@ -489,6 +518,7 @@ EOF
 '    setup_netfilter'
 	);
     push_indent;
+    emit 'setup_arptables' if $have_arptables;
     setup_load_distribution;
     pop_indent;
 
@@ -544,8 +574,9 @@ sub compiler {
     my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path, $shorewallrc                      , $shorewallrc1 , $directives ) =
        ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , ''          , '/usr/share/shorewall/shorewallrc', ''            , 0 );
 
-    $export = 0;
-    $test   = 0;
+    $export         = 0;
+    $test           = 0;
+    $have_arptables = 0;
 
     sub validate_boolean( $ ) {
 	 my $val = numeric_value( shift );
@@ -754,6 +785,8 @@ sub compiler {
 	emit "}\n"; # End of setup_routing_and_traffic_shaping()
     }
 
+    $have_arptables = process_arprules if $family == F_IPV4;
+
     disable_script;
     #
     #                                       N E T F I L T E R
@@ -837,7 +870,7 @@ sub compiler {
 	generate_script_2;
 	#
 	#                          N E T F I L T E R   L O A D
-	#    (Produces setup_netfilter(), chainlist_reload() and define_firewall() )
+	#    (Produces setup_netfilter(), setup_arptables(), chainlist_reload() and define_firewall() )
 	#
 	generate_script_3( $chains );
 	#
@@ -850,7 +883,7 @@ sub compiler {
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
 	#
-	compile_stop_firewall( $test, $export );
+	compile_stop_firewall( $test, $export , $have_arptables );
 	#
 	#                               U P D O W N
 	#               (Writes the updown() function to the compiled script)
@@ -898,7 +931,10 @@ sub compiler {
 
 	    generate_script_2 if $debug;
 
-	    preview_netfilter_load if $preview;
+	    if ( $preview ) {
+		preview_netfilter_load;
+		preview_arptables_load if $have_arptables;
+	    }
 	}
 	#
 	# Re-initialize the chain table so that process_routestopped() has the same
@@ -908,7 +944,7 @@ sub compiler {
 	initialize_chain_table(0);
 
 	if ( $debug ) {
-	    compile_stop_firewall( $test, $export );
+	    compile_stop_firewall( $test, $export, $have_arptables );
 	    disable_script;
 	} else {
 	    #

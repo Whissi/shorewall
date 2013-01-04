@@ -350,6 +350,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 RPFILTER_MATCH  => 'RPFilter Match',
 		 NFACCT_MATCH    => 'NFAcct Match',
 		 CHECKSUM_TARGET => 'Checksum Target',
+		 ARPTABLESJF     => 'Arptables JF',
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -636,7 +637,7 @@ sub initialize( $;$$) {
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
 		    VERSION    => "4.5.12-Beta3",
-		    CAPVERSION => 40509 ,
+		    CAPVERSION => 40512 ,
 		  );
     #
     # From shorewall.conf file
@@ -722,6 +723,7 @@ sub initialize( $;$$) {
 	  MACLIST_TABLE => undef,
 	  MACLIST_TTL => undef,
 	  SAVE_IPSETS => undef,
+	  SAVE_ARPTABLES => undef,
 	  MAPOLDACTIONS => undef,
 	  FASTACCEPT => undef,
 	  IMPLICIT_CONTINUE => undef,
@@ -880,6 +882,7 @@ sub initialize( $;$$) {
 	       RPFILTER_MATCH => undef,
 	       NFACCT_MATCH => undef,
 	       CHECKSUM_TARGET => undef,
+	       ARPTABLESJF => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -1015,12 +1018,14 @@ sub initialize( $;$$) {
 	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
 	$globals{PRODUCT}       = 'shorewall';
 	$config{IPTABLES}       = undef;
+	$config{ARPTABLES}      = undef;
 	$validlevels{ULOG}      = 'ULOG';
     } else {
 	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
 	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
 	$globals{PRODUCT}       = 'shorewall6';
 	$config{IP6TABLES}      = undef;
+	delete $config{ARPTABLES};
     }
 
     %shorewallrc1 = %shorewallrc unless $shorewallrc1;
@@ -3911,9 +3916,21 @@ sub Checksum_Target() {
     have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
 }
 
+sub Arptables_JF() {
+    my $arptables = $config{ARPTABLES};
+
+    $arptables = which( 'arptables' ) unless supplied $arptables;
+
+    if ( $arptables && -f $arptables && -x _ ) {
+	$config{ARPTABLES} = $arptables;
+	qt( "$arptables -L OUT" );
+    }
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AMANDA_HELPER => \&Amanda_Helper,
+      ARPTABLESJF => \&Arptables_JF,
       AUDIT_TARGET => \&Audit_Target,
       ADDRTYPE => \&Addrtype,
       BASIC_FILTER => \&Basic_Filter,
@@ -4986,6 +5003,7 @@ sub get_configuration( $$$$ ) {
     unsupported_yes_no_warning 'RFC1918_STRICT';
 
     default_yes_no 'SAVE_IPSETS'                , '';
+    default_yes_no 'SAVE_ARPTABLES'             , '';
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
     default_yes_no 'MAPOLDACTIONS'              , 'Yes';
@@ -5496,7 +5514,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE) ) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE) ) {
 	conditionally_add_option $option;
     }
 

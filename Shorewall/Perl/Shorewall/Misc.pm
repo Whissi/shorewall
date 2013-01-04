@@ -2317,8 +2317,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall( $$ ) {
-    my ( $test, $export ) = @_;
+sub compile_stop_firewall( $$$ ) {
+    my ( $test, $export, $have_arptables ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};
@@ -2523,6 +2523,8 @@ EOF
     create_stop_load $test;
 
     if ( $family == F_IPV4 ) {
+	emit( '$ARPTABLES -F',
+	      '' ) if $have_arptables; 
 	if ( $config{IP_FORWARDING} eq 'on' ) {
 	    emit( 'echo 1 > /proc/sys/net/ipv4/ip_forward',
 		  'progress_message2 IPv4 Forwarding Enabled' );

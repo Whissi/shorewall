@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40509
+SHOREWALL_CAPVERSION=40512
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -329,11 +329,30 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     done
 }
 
+
+#
+# Try to find the arptables binary -- sets the variable 'arptables'
+#
+resolve_arptables() {
+    arptables="$ARPTABLES"
+
+    [ -n "${arptables:=arptables}" ]
+
+    case $arptables in
+	*/*)
+	    ;;
+	*)
+	    arptables=$(mywhich "$arptables")
+	    ;;
+    esac
+}
+
 #
 # Save currently running configuration
 #
 do_save() {
     local status
+    local arptables
     status=0
 
     if [ -f ${VARDIR}/firewall ]; then
@@ -352,6 +371,42 @@ do_save() {
 	echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
 	status=1
     fi
+
+    case ${SAVE_ARPTABLES:=No} in
+	[Yy]es)
+	    resolve_arptables
+
+	    if [ -n "$arptables" ]; then
+	        #
+	        # 'sed' command is a hack to work around broken arptables_jf
+	        #
+		if ${arptables}-save | sed 's/-p[[:space:]]\+0\([[:digit:]]\)00\/ffff/-p 000\1\/ffff/' > ${VARDIR}/restore-$$; then
+		    if grep -q '^-A' ${VARDIR}/restore-$$; then
+			mv -f ${VARDIR}/restore-$$ ${g_restorepath}-arptables
+		    else
+			rm -f ${VARDIR}/restore-$$
+		    fi
+		fi
+	    else
+		case "$ARPTABLES" in
+		    */*)
+			error_message "ERROR: ARPTABLES=$ARPTABLES does not exist or is not executable - arptables not saved"
+			;;
+		    *)
+			error_message "ERROR: The arptables utility cannot be located - arptables not saved"
+		    ;;
+		esac
+
+		rm -f ${g_restorepath}-arptables
+	    fi
+	    ;;
+	[Nn]o)
+	    rm -f ${g_restorepath}-arptables
+	    ;;
+	*)
+	    error_message "WARNING: Invalid value ($SAVE_ARPTABLES) for SAVE_ARPTABLES"
+	    ;;
+    esac
 
     case ${SAVE_IPSETS:=No} in
 	[Yy]es)
@@ -683,6 +738,7 @@ show_command() {
     table_given=
     local output_filter
     output_filter=cat
+    local arptables
 
     show_macro() {
 	foo=`grep 'This macro' $macro | sed 's/This macro //'`
@@ -999,6 +1055,17 @@ show_command() {
 	    echo
 	    show_nfacct
 	    ;;
+	arptables)
+	    [ $# -gt 1 ] && usage 1
+	    resolve_arptables
+	    if [ -n "$arptables" -a -x $arptables ]; then
+		echo "$g_product $SHOREWALL_VERSION arptables at $g_hostname - $(date)"
+		echo
+		$arptables -L -n -v
+	    else
+		error_message "Cannot locate the arptables executable"
+	    fi
+	    ;;
 	*)
 	    case "$g_program" in
 		*-lite)
@@ -1156,6 +1223,9 @@ dump_filter() {
 do_dump_command() {
     local finished
     finished=0
+    local arptables
+
+    resolve_arptables
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1229,6 +1299,11 @@ do_dump_command() {
     show_reset
     host=$(echo $g_hostname | sed 's/\..*$//')
     $g_tool -L $g_ipt_options
+
+    if [ -n "$arptables" -a -x "$arptables" ]; then
+	heading "ARP rules"
+	$arptables -L -n -v
+    fi
 
     heading "Log ($LOGFILE)"
     packet_log 20
@@ -2035,6 +2110,7 @@ determine_capabilities() {
     local tool
     local chain
     local chain1
+    local arptables
 
     if [ -z "$g_tool" ]; then
 	[ $g_family -eq 4 ] && tool=iptables || tool=ip6tables
@@ -2125,6 +2201,7 @@ determine_capabilities() {
     RPFILTER_MATCH=
     NFACCT_MATCH=
     CHECKSUM_TARGET=
+    ARPTABLESJF=
     AMANDA_HELPER=
     FTP_HELPER=
     FTP0_HELPER=
@@ -2140,6 +2217,12 @@ determine_capabilities() {
     SNMP_HELPER=
     TFTP_HELPER=
     TFTP0_HELPER=
+
+    resolve_arptables
+
+    if [ -n "$arptables" -a -x $arptables ]; then
+	qt $arptables -L OUT && ARPTABLESJF=Yes
+    fi
 
     chain=fooX$$
 
@@ -2524,6 +2607,7 @@ report_capabilities_unsorted() {
     report_capability "RPFilter match" $RPFILTER_MATCH
     report_capability "NFAcct match" $NFACCT_MATCH
     report_capability "Checksum Target" $CHECKSUM_TARGET
+    report_capability "Arptables JF" $ARPTABLESJF
 
     report_capability "Amanda Helper" $AMANDA_HELPER
     report_capability "FTP Helper" $FTP_HELPER
@@ -2641,6 +2725,7 @@ report_capabilities_unsorted1() {
     report_capability1 RPFILTER_MATCH
     report_capability1 NFACCT_MATCH
     report_capability1 CHECKSUM_TARGET
+    report_capability1 ARPTABLESJF
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER
@@ -2784,6 +2869,7 @@ forget_command() {
 	rm -f $g_restorepath
 	rm -f ${g_restorepath}-iptables
 	rm -f ${g_restorepath}-ipsets
+	rm -f ${g_restorepath}-arptables
 	echo "    $g_restorepath removed"
     elif [ -f $g_restorepath ]; then
 	echo "   $g_restorepath exists and is not a saved $g_product configuration"
@@ -3215,6 +3301,7 @@ usage() # $1 = exit status
     echo "   save [ <file name> ]"
     echo "   show [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   show [ -f ] capabilities"
+    echo "   show arptables"
     echo "   show classifiers"
     echo "   show config"
     echo "   show connections"

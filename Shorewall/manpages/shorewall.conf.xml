@@ -282,16 +282,18 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">IGNOREUNKNOWNVARIABLES=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+        role="bold">ARPTABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.11. Normally, if an unknown shell
-          variable is encountered in a configuration file (except in ?IF and
-          ?ELSIF directives), the compiler raises a fatal error. If
-          IGNOREUNKNOWNVARIABLES is set to <emphasis
-          role="bold">Yes</emphasis>, then such variables simply expand to an
-          empty string. Default is <emphasis role="bold">No</emphasis>.</para>
+          <para>Added in Shorewall 4.5.12. This parameter names the arptables
+          executable to be used by Shorewall. If not specified or if specified
+          as a null value, then the arptables executable located using the
+          PATH option is used.</para>
+
+          <para>Regardless of how the arptables utility is located (specified
+          via arptables= or located via PATH), Shorewall uses the
+          arptables-restore and arptables-save utilities from that same
+          directory.</para>
         </listitem>
       </varlistentry>
 
@@ -868,6 +870,21 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">IGNOREUNKNOWNVARIABLES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.11. Normally, if an unknown shell
+          variable is encountered in a configuration file (except in ?IF and
+          ?ELSIF directives), the compiler raises a fatal error. If
+          IGNOREUNKNOWNVARIABLES is set to <emphasis
+          role="bold">Yes</emphasis>, then such variables simply expand to an
+          empty string. Default is <emphasis role="bold">No</emphasis>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">IMPLICIT_CONTINUE=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
@@ -1012,7 +1029,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           the iptables executable located using the PATH option is
           used.</para>
 
-          <para>Regardless of how the IPTABLES utility is located (specified
+          <para>Regardless of how the iptables utility is located (specified
           via IPTABLES= or located via PATH), Shorewall uses the
           iptables-restore and iptables-save utilities from that same
           directory.</para>
@@ -2055,6 +2072,19 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>Added in shorewall 4.5.7. Determines the logging of packets
           disposed via the RPFILTER_DISPOSITION. The default value is
           <option>info</option>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SAVE_ARPTABLES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.12. If SAVE_ARPTABLES=Yes, then the
+          current arptables contents will be saved by <emphasis
+          role="bold">shorewall save</emphasis> command and restored by
+          <emphasis role="bold">shorewall restore</emphasis> command. Default
+          value is No.</para>
         </listitem>
       </varlistentry>
 

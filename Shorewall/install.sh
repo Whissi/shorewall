@@ -641,6 +641,19 @@ if [ -f masq ]; then
 	echo "Masquerade file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/masq"
     fi
 fi
+
+if [ -f arprules ]; then
+    #
+    # Install the ARP rules file
+    #
+    run_install $OWNERSHIP -m 0644 arprules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 arprules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/arprules ]; then
+	run_install $OWNERSHIP -m 0600 arprules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/arprules
+	echo "ARP rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/arprules"
+    fi
+fi
 #
 # Install the Conntrack file
 #

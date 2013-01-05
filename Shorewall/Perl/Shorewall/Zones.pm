@@ -173,7 +173,7 @@ our %reservedName = ( all => 1,
 #                                     zone        => <zone name>
 #                                     multizone   => undef|1   #More than one zone interfaces through this interface
 #                                     nets        => <number of nets in interface/hosts records referring to this interface>
-#                                     bridge      => <bridge name>
+#                                     bridge      => <bridge name> # Same as ->{name} if not a bridge port.
 #                                     ports       => <number of port on this bridge>
 #                                     ipsec       => undef|1 # Has an ipsec host group
 #                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]

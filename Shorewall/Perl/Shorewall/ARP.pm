@@ -88,7 +88,9 @@ sub process_arprule() {
     my ( $originalaction, $source, $dest, $opcode ) = split_line( 'arprules file entry', {action => 0, source => 1, dest => 2, opcode => 3 } );
 
     my $chainref;
+    my $iifaceref;
     my $iiface;
+    my $difaceref;
     my $diface;
     my $saddr;
     my $smac;
@@ -132,7 +134,7 @@ sub process_arprule() {
 
 	fatal_error "SOURCE interface missing" unless supplied $iiface; 
 
-	$iiface = find_interface( $iiface )->{physical};
+	$iiface = ( $iifaceref = find_interface( $iiface ) )->{physical};
 
 	fatal_error "Wildcard Interfaces ( $iiface )may not be used in this context" if $iiface =~ /\+$/;
 
@@ -146,13 +148,13 @@ sub process_arprule() {
 
 	fatal_error "DEST interface missing" unless supplied $diface; 
 
-	$diface = find_interface( $diface )->{physical};
+	$diface = ( $difaceref = find_interface( $diface ) )->{physical};
 
 	fatal_error "A wildcard interfaces ( $diface) may not be used in this context" if $diface =~ /\+$/;
 
 	if ( $iiface ) {
 	    fatal_error "When both SOURCE and DEST are given, the interfaces must be ports on the same bridge"
-		if $iiface->{bridge} ne $diface->{bridge};
+		if $iifaceref->{bridge} ne $difaceref->{bridge};
 	    $chainref = $arp_forward;
 	} else {
 	    $chainref = $arp_output;

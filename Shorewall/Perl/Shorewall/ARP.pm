@@ -39,6 +39,8 @@ our $arp_output;
 our $arp_forward;
 our $sourcemac;
 our $destmac;
+our $addrlen;
+our $hw;
 our @builtins;
 our $arptablesjf;
 our @map = ( qw( 0 Request Reply Request_Reverse Reply_Reverse DRARP_Request DRARP_Reply DRARP_Error InARP_Request ARP_NAK ) );
@@ -105,17 +107,17 @@ sub process_arprule() {
 		      DNAT   => sub() { validate_address $newaddr, 0;
 					$rule .= "-j mangle --mangle-ip-d $newaddr"; },
 		      SMAT   => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "--h-length 6 -j mangle --mangle-mac-s $newaddr"; },
+					$rule .= "$addrlen 6 -j mangle --mangle-$hw-s $newaddr"; },
 		      DMAT   => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "--h-length 6 -j mangle --mangle-mac-d $newaddr"; },
+					$rule .= "$addrlen 6 -j mangle --mangle-$hw-d $newaddr"; },
 		      SNATC  => sub() { validate_address $newaddr, 0;
 					$rule .= "-j mangle --mangle-ip-s $newaddr --mangle-target CONTINUE"; },
 		      DNATC  => sub() { validate_address $newaddr, 0;
 					$rule .= "-j mangle --mangle-ip-d $newaddr --mangle-target CONTINUE"; },
 		      SMATC  => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "--h-length 6 -j mangle --mangle-mac-s $newaddr --mangle-target CONTINUE"; },
+					$rule .= "$addrlen 6 -j mangle --mangle-$hw-s $newaddr --mangle-target CONTINUE"; },
 		      DMATC  => sub() { fatal_error "Invalid MAC address ($newaddr)" unless $newaddr =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
-					$rule .= "--h-length 6 -j mangle --mangle-mac-d $newaddr --mangle-target CONTINUE"; },
+					$rule .= "$addrlen 6 -j mangle --mangle-$hw-d $newaddr --mangle-target CONTINUE"; },
 		    );
 
     if ( supplied $newaddr ) {
@@ -188,6 +190,8 @@ sub process_arprules() {
 	@builtins = qw( IN OUT FORWARD );
 	$sourcemac = '-z';
 	$destmac   = '-y';
+	$addrlen   = '--arhln';
+	$hw        = 'hw';
     } else {
 	$arp_input   = $arp_table{INPUT}   = [];
 	$arp_output  = $arp_table{OUTPUT}  = [];
@@ -195,6 +199,8 @@ sub process_arprules() {
 	@builtins = qw( INPUT OUTPUT FORWARD );
 	$sourcemac = '--source-mac';
 	$destmac   = '--destination-mac';
+	$addrlen   = '--h-length';
+	$hw        = 'mac';
     }
 
     my $fn = open_file 'arprules';

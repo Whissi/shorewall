@@ -165,7 +165,7 @@ sub process_arprule() {
     if ( $opcode ne '-' ) {
 	my $invert = ( $opcode =~ s/^!// ) ? '! ' : '';
 	fatal_error "Invalid ARP OPCODE ($opcode)" unless $opcode =~ /^\d$/ && $opcode;
-	$rule .= $arptablesjf ? " --arpop ${invert}$map[$opcode] " : "--opcode $opcode ";
+	$rule .= $arptablesjf ? " --arpop ${invert}$map[$opcode] " : "--opcode ${invert}$opcode ";
     }
 
     $functions{$action} ->();

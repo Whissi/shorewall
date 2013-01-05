@@ -56,12 +56,9 @@ sub match_arp_net( $$$ ) {
     my $return = '';
 
     if ( supplied $net ) {
-	my ( $addr , $mask ) = split( $net , '/', 2 );
-
-	my $invert = ( $addr =~ s/^!// ) ? '! ' : '';
-
+	my $invert = ( $net =~ s/^!// ) ? '! ' : '';
 	validate_net $net, 0;
-	$return = $source ? "-s $net " : "-d $net ";
+	$return = $source ? "-s ${invert}$net " : "-d ${invert}$net ";
     }
 
     if ( supplied $mac ) {

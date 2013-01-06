@@ -2322,7 +2322,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    );
     }
 
-    unless ( $section =~ /^NEW|DEFAULTACTION$/ || $inaction ) {
+    unless ( $section =~ /^NEW|DEFAULTACTION$/ || $inaction || $basictarget eq 'dropInvalid' ) {
 	if ( $config{FASTACCEPT} ) {
 	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
 		$section eq 'BLACKLIST' ||

@@ -1319,6 +1319,33 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           names may be used with log tags if you set LOGTAGONLY=Yes. With
           LOGTAGONLY=Yes, if a log tag is specified then the tag is included
           in the log prefix in place of the chain name.</para>
+
+          <para>Beginning with Shorewall 4.5.12, when LOGTAGONLY=Yes, you have
+          more control over the generated log prefix. Beginning with that
+          release, the tag is interpreted as a <replaceable>chain
+          name</replaceable> and a <replaceable>disposition</replaceable>
+          separated by a comma. So this rule:</para>
+
+          <programlisting>#ACTION                                SOURCE         DEST
+LOG:info:foo,bar                 net                   fw</programlisting>
+
+          <para>would generate the following log prefix when using the default
+          LOGFORMAT setting:</para>
+
+          <simplelist>
+            <member>Shorewall:foo:bar:</member>
+          </simplelist>
+
+          <para>Similarly,</para>
+
+          <programlisting>#ACTION                               SOURCE            DEST
+LOG:info:,bar                        net                    fw</programlisting>
+
+          <para>would generate</para>
+
+          <simplelist>
+            <member>Shorewall:net2fw:bar:</member>
+          </simplelist>
         </listitem>
       </varlistentry>
 

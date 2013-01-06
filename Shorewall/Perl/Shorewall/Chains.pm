@@ -5393,8 +5393,15 @@ sub log_rule_limit( $$$$$$$$ ) {
 	}
     } else {
 	if ( $tag ) {
-	    if ( $config{LOGTAGONLY} ) {
-		$chain = $tag;
+	    if ( $config{LOGTAGONLY} && $tag ne ',' ) {
+		if ( $tag =~ /^,/ ) {
+		    ( $disposition = $tag ) =~ s/,//;
+		} elsif ( $tag =~ /,/ ) {
+		    ( $chain, $disposition ) = split ',', $tag;
+		} else { 
+		    $chain = $tag;
+		}
+
 		$tag   = '';
 	    } else {
 		$tag .= ' ';

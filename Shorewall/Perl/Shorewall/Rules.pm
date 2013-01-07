@@ -62,6 +62,21 @@ our %sections;
 
 our $section;
 
+use constant { NULL_SECTION          => 0,
+               BLACKLIST_SECTION     => 1,
+	       ALL_SECTION           => 2,
+	       ESTABLISHED_SECTION   => 4,
+	       RELATED_SECTION       => 8,
+	       NEW_SECTION           => 16,
+	       DEFAULTACTION_SECTION => 32 };
+#
+# These are the sections that may appear in a section header
+#
+our %section_map = ( ALL           => ALL_SECTION,
+		     ESTABLISHED   => ESTABLISHED_SECTION,
+		     RELATED       => RELATED_SECTION,
+		     NEW           => NEW_SECTION );
+
 our @policy_chains;
 
 our %default_actions;
@@ -160,7 +175,7 @@ sub initialize( $ ) {
     #
     # Current rules file section.
     #
-    $section  = '';
+    $section  = NULL_SECTION;
     #
     # Macro=><macro file> mapping
     #
@@ -822,9 +837,9 @@ sub ensure_rules_chain( $ )
     $chainref = new_chain( 'filter', $chain ) unless $chainref;
 
     unless ( $chainref->{referenced} ) {
-	if ( $section =~/^(NEW|DEFAULTACTION)$/ ) {
+	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED';
-	} elsif ( $section eq 'RELATED' ) {
+	} elsif ( $section == RELATED_SECTION ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED';
 	}
 
@@ -889,7 +904,7 @@ sub finish_chain_section ($$$) {
 	if ( $chain1ref->{is_policy} ) {
 	    if ( $chain1ref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $chain1ref;
-		if ( $section eq 'DEFAULTACTION' ) {
+		if ( $section == DEFAULTACTION_SECTION ) {
 		    if ( $chain1ref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_ijump $chain1ref, j => $synchainref, p => 'tcp --syn';
 		    }
@@ -921,7 +936,7 @@ sub finish_section ( $ ) {
 
     my $function;
 
-    if ( $section eq 'RELATED' ) {
+    if ( $section == RELATED_SECTION ) {
 	$function = \&related_chain;
     } else {
 	$function = \&rules_chain;
@@ -1940,7 +1955,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     my $inchain   = ''; # Set to true when a chain reference is passed.
     my $normalized_target;
     my $normalized_action;
-    my $blacklist = ( $section eq 'BLACKLIST' );
+    my $blacklist = ( $section == BLACKLIST_SECTION );
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2054,11 +2069,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
     if ( $actiontype & (NATRULE | NONAT | NATONLY ) ) {
 	$targets{$inaction} |= NATRULE if $inaction;
-	fatal_error "NAT rules are only allowed in the NEW section" unless $section eq 'NEW';
+	fatal_error "NAT rules are only allowed in the NEW section" unless $section == NEW_SECTION;
     }
 
     if ( $actiontype & HELPER ) {
-	fatal_error "HELPER rules are only allowed in the NEW section" unless $section eq 'NEW';
+	fatal_error "HELPER rules are only allowed in the NEW section" unless $section == NEW_SECTION;
     }
     #
     # Take care of irregular syntax and targets
@@ -2075,7 +2090,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		  if ( $blacklist ) {
 		      $action = 'RETURN';
 		  } elsif ( $helper ne '-' ) {
-		      $actiontype |= HELPER if $section eq 'NEW';
+		      $actiontype |= HELPER if $section == NEW_SECTION;
 		  }
 	      } ,
 
@@ -2109,7 +2124,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
 	      HELPER => sub { 
 		  fatal_error "HELPER requires require that the helper be specified in the HELPER column" if $helper eq '-';
-		  fatal_error "HELPER rules may only appear in the NEW section" unless $section eq 'NEW';
+		  fatal_error "HELPER rules may only appear in the NEW section" unless $section == NEW_SECTION;
 		  $action = ''; } ,
 	    );
 
@@ -2242,7 +2257,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Handle Optimization
 	    #
-	    if ( $optimize == 1 && $section eq 'NEW' ) {
+	    if ( $optimize == 1 && $section == NEW_SECTION ) {
 		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 		if ( $loglevel ne '' ) {
 		    return 0 if $target eq "${policy}:${loglevel}";
@@ -2255,39 +2270,37 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    $chainref = ensure_rules_chain $chain;
 	    #
-	    # Handle rules not in the NEW section
+	    # Handle rules in the BLACKLIST and RELATED sections
 	    #
-	    unless ( $section eq 'NEW' ) {
+	    if ( $section & ( BLACKLIST_SECTION | RELATED_SECTION ) ) {
 		my $auxchain;
 		my $auxref;
 
 		if ( $blacklist ) {
 		    $auxchain = blacklist_chain( ${sourcezone}, ${destzone} );
-		} elsif ( $section eq 'RELATED' ) {
+		} else {
 		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
 		}
 
-		if ( $auxchain ) {
-		    $auxref   = $filter_table->{$auxchain};
+		$auxref = $filter_table->{$auxchain};
 
-		    unless ( $auxref ) {
-			my @state;
+		unless ( $auxref ) {
+		    my @state;
 
-			$auxref = new_chain 'filter', $auxchain;
+		    $auxref = new_chain 'filter', $auxchain;
 			
-			if ( $blacklist ) {
-			    @state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
-			    $auxref->{blacklistsection} = 1;
-			} else {
-			    @state = state_imatch( $section )
-			};
+		    if ( $blacklist ) {
+			@state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
+			$auxref->{blacklistsection} = 1;
+		    } else {
+			@state = state_imatch 'RELATED';
+		    };
 			    
-			add_ijump( $chainref, j => $auxref, @state );
-		    }
-
-		    $chain    = $auxchain;
-		    $chainref = $auxref;
+		    add_ijump( $chainref, j => $auxref, @state );
 		}
+
+		$chain    = $auxchain;
+		$chainref = $auxref;
 	    }
 	}
     }
@@ -2342,7 +2355,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_headers( $headers ) ,
 		      do_condition( $condition , $chain ) ,
 		    );
-    } elsif ( $section eq 'RELATED' ) {
+    } elsif ( $section == RELATED_SECTION ) {
 	$rule = join( '',
 		      do_proto($proto, $ports, $sports),
 		      do_ratelimit( $ratelimit, $basictarget ) ,
@@ -2367,14 +2380,17 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    );
     }
 
-    unless ( $section =~ /^NEW|DEFAULTACTION$/ || $inaction || $blacklist || $basictarget eq 'dropInvalid' ) {
+    unless ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ||
+	     $inaction ||
+	     $blacklist ||
+	     $basictarget eq 'dropInvalid' ) {
 	if ( $config{FASTACCEPT} ) {
 	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
-		$section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
+		$section == RELATED_SECTION && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
 	    }
 
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
-	$rule .= "$globals{STATEMATCH} $section " unless $section =~ /^ALL|RELATED$/ || $blacklist;
+	$rule .= "$globals{STATEMATCH} ESTABLISHED" if $section == ESTABLISHED_SECTION;
     }
     #
     # Generate CT rules(s), if any
@@ -2521,7 +2537,7 @@ sub process_section ($) {
 	finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
     }
 
-    $section = $sect;
+    $section = $section_map{$sect};
 }
 
 #
@@ -2748,7 +2764,7 @@ sub process_rules( $ ) {
     #
     # Process the blrules file
     #
-    $section = 'BLACKLIST';
+    $section = BLACKLIST_SECTION;
 
     my $fn = open_file( 'blrules', 1, 1 );
 
@@ -2777,7 +2793,7 @@ sub process_rules( $ ) {
 	process_rule while read_a_line( NORMAL_READ );
     }
 
-    $section = '';
+    $section = NULL_SECTION;
 
     add_interface_options( $blrules );
 
@@ -2795,7 +2811,7 @@ sub process_rules( $ ) {
 	process_rule while read_a_line( NORMAL_READ );
     }
 
-    $section = 'DEFAULTACTION';
+    $section = DEFAULTACTION_SECTION;
 }
 
 1;

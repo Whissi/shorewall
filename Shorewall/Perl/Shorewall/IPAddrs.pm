@@ -324,6 +324,7 @@ sub resolve_proto( $ ) {
 	$number = numeric_value ( $proto );
 	defined $number && $number <= 255 ? $number : undef;
     } else {
+	fatal_error "A protocol list  ($proto) is not allowed in this context" if $proto =~ /,/; 
 	#
 	# Allow 'icmp' as a synonym for 'ipv6-icmp' in IPv6 compilations
 	#

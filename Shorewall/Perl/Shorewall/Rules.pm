@@ -878,10 +878,10 @@ sub finish_chain_section ($$$) {
 
 	
     if ( $state && !  $config{FASTACCEPT} ) {
-	if ( $chainref->{name} eq $chain1ref->{name} ) {
-	    add_ijump $chainref, j => 'ACCEPT', state_imatch $state;
-	} else { 
+	if ( $relatedchain ) {
 	    add_ijump $chainref, j => 'ACCEPT';
+	} else { 
+	    add_ijump $chainref, j => 'ACCEPT', state_imatch $state;
 	}
     }
 

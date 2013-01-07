@@ -274,7 +274,8 @@ sub create_arptables_load( $ ) {
 	   'cat ${VARDIR}/.arptables-input | $ARPTABLES_RESTORE # Use this nonsensical form to appease SELinux',
 	   'if [ $? != 0 ]; then',
 	   qq(    fatal_error "arptables-restore Failed. Input is in \${VARDIR}/.arptables-input"),
-	   "fi\n"
+	   "fi\n",
+	   "run_ip neigh flush nud noarp nud stale nud reachable\n",
 	   );    
 
     pop_indent;

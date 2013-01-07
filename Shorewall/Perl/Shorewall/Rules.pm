@@ -806,7 +806,7 @@ sub optimize_policy_chains() {
 # Modules moved from the Chains module in 4.4.18
 ################################################################################
 
-sub finish_chain_section( $$ );
+sub finish_chain_section( $$$ );
 
 #
 # Create a rules chain if necessary and populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
@@ -823,9 +823,9 @@ sub ensure_rules_chain( $ )
 
     unless ( $chainref->{referenced} ) {
 	if ( $section =~/^(NEW|DEFAULTACTION)$/ ) {
-	    finish_chain_section $chainref , 'ESTABLISHED,RELATED';
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED';
 	} elsif ( $section eq 'RELATED' ) {
-	    finish_chain_section $chainref , 'ESTABLISHED';
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED';
 	}
 
 	$chainref->{referenced} = 1;
@@ -837,56 +837,75 @@ sub ensure_rules_chain( $ )
 #
 # Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
 #
-sub finish_chain_section ($$) {
-    my ($chainref, $state ) = @_;
+sub finish_chain_section ($$$) {
+    my ($chainref,
+	$chain1ref,
+	$state )            = @_;
     my $chain               = $chainref->{name};
     my $related_level       = $config{RELATED_LOG_LEVEL};
     my $related_target      = $globals{RELATED_TARGET};
     my $save_comment        = push_comment;
+    my $relatedchain        = $chainref->{name} =~ /^\+/;
 
     if ( $state =~ /RELATED/ && ( $related_level || $related_target ne 'ACCEPT' ) ) {
 
 	if ( $related_level ) {
-	    my $relatedref = new_chain( 'filter', "+$chainref->{name}" );
+	    my $relatedref;
+
+	    if ( $relatedchain ) {
+		$relatedref = $chainref;
+	    } else {
+		$relatedref = new_chain( 'filter', "+$chainref->{name}" );
+	    }
+
 	    log_rule( $related_level,
 		      $relatedref,
 		      $config{RELATED_DISPOSITION},
 		      '' );
 	    add_ijump( $relatedref, g => $related_target );
 
-	    $related_target = $relatedref->{name};
+	    $related_target = $relatedref->{name} unless $relatedchain;
 	}
 
-	add_ijump $chainref, g => $related_target, state_imatch 'RELATED';
-
+        if ( $relatedchain ) {
+	    add_ijump $chainref, g => $related_target;
+	} else {
+	    add_ijump $chainref, g => $related_target, state_imatch 'RELATED';
+	}
+    
 	$state =~ s/,?RELATED//;
     }
 
-    if ( $state ) {
-	add_ijump $chainref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
+	
+    if ( $state && !  $config{FASTACCEPT} ) {
+	if ( $chainref->{name} eq $chain1ref->{name} ) {
+	    add_ijump $chainref, j => 'ACCEPT', state_imatch $state;
+	} else { 
+	    add_ijump $chainref, j => 'ACCEPT';
+	}
     }
 
     if ($sections{NEW} ) {
-	if ( $chainref->{is_policy} ) {
-	    if ( $chainref->{synparams} ) {
-		my $synchainref = ensure_chain 'filter', syn_flood_chain $chainref;
+	if ( $chain1ref->{is_policy} ) {
+	    if ( $chain1ref->{synparams} ) {
+		my $synchainref = ensure_chain 'filter', syn_flood_chain $chain1ref;
 		if ( $section eq 'DEFAULTACTION' ) {
-		    if ( $chainref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
-			add_ijump $chainref, j => $synchainref, p => 'tcp --syn';
+		    if ( $chain1ref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
+			add_ijump $chain1ref, j => $synchainref, p => 'tcp --syn';
 		    }
 		} else {
-		    add_ijump $chainref, j => $synchainref, p => 'tcp --syn';
+		    add_ijump $chain1ref, j => $synchainref, p => 'tcp --syn';
 		}
 	    }
 	} else {
-	    my $policychainref = $filter_table->{$chainref->{policychain}};
+	    my $policychainref = $filter_table->{$chain1ref->{policychain}};
 	    if ( $policychainref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $policychainref;
-		add_ijump $chainref, j => $synchainref, p => 'tcp --syn';
+		add_ijump $chain1ref, j => $synchainref, p => 'tcp --syn';
 	    }
 	}
 
-	$chainref->{new} = @{$chainref->{rules}};
+	$chain1ref->{new} = @{$chain1ref->{rules}};
     }
 
     pop_comment( $save_comment );
@@ -900,10 +919,19 @@ sub finish_section ( $ ) {
 
     $sections{$_} = 1 for split /,/, $sections;
 
+    my $function;
+
+    if ( $section eq 'RELATED' ) {
+	$function = \&related_chain;
+    } else {
+	$function = \&rules_chain;
+    }
+
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    my $chainref = $chain_table{'filter'}{rules_chain( $zone, $zone1 )};
-	    finish_chain_section $chainref, $sections if $chainref->{referenced};
+	    my $chainref  = $filter_table->{$function->( $zone, $zone1 ) };
+	    my $chain1ref = $filter_table->{rules_chain( $zone, $zone1 )};
+	    finish_chain_section $chainref || $chain1ref, $chain1ref, $sections if $chain1ref->{referenced};
 	}
     }
 }
@@ -2227,22 +2255,39 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    $chainref = ensure_rules_chain $chain;
 	    #
-	    # Handle use of the blacklist chain
+	    # Handle rules not in the NEW section
 	    #
-	    if ( $blacklist ) {
-		my $blacklistchain = blacklist_chain( ${sourcezone}, ${destzone} );
-		my $blacklistref = $filter_table->{$blacklistchain};
+	    unless ( $section eq 'NEW' ) {
+		my $auxchain;
+		my $auxref;
 
-		unless ( $blacklistref  ) {
-		    my @state;
-		    $blacklistref = new_chain 'filter', $blacklistchain;
-		    $blacklistref->{blacklistsection} = 1;
-		    @state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
-		    add_ijump( $chainref, j => $blacklistref, @state );
+		if ( $blacklist ) {
+		    $auxchain = blacklist_chain( ${sourcezone}, ${destzone} );
+		} elsif ( $section eq 'RELATED' ) {
+		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
 		}
 
-		$chain = $blacklistchain;
-		$chainref = $blacklistref;
+		if ( $auxchain ) {
+		    $auxref   = $filter_table->{$auxchain};
+
+		    unless ( $auxref ) {
+			my @state;
+
+			$auxref = new_chain 'filter', $auxchain;
+			
+			if ( $blacklist ) {
+			    @state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
+			    $auxref->{blacklistsection} = 1;
+			} else {
+			    @state = state_imatch( $section )
+			};
+			    
+			add_ijump( $chainref, j => $auxref, @state );
+		    }
+
+		    $chain    = $auxchain;
+		    $chainref = $auxref;
+		}
 	    }
 	}
     }
@@ -2322,15 +2367,14 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    );
     }
 
-    unless ( $section =~ /^NEW|DEFAULTACTION$/ || $inaction || $basictarget eq 'dropInvalid' ) {
+    unless ( $section =~ /^NEW|DEFAULTACTION$/ || $inaction || $blacklist || $basictarget eq 'dropInvalid' ) {
 	if ( $config{FASTACCEPT} ) {
 	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
-		$section eq 'BLACKLIST' ||
-		    ( $section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} ) )
-		}
+		$section eq 'RELATED' && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
+	    }
 
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
-	$rule .= "$globals{STATEMATCH} $section " unless $section eq 'ALL' || $blacklist;
+	$rule .= "$globals{STATEMATCH} $section " unless $section =~ /^ALL|RELATED$/ || $blacklist;
     }
     #
     # Generate CT rules(s), if any

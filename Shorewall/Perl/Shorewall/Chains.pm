@@ -131,6 +131,7 @@ our %EXPORT_TAGS = (
 				       forward_option_chain
 				       rules_chain
 				       blacklist_chain
+				       related_chain
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -1565,6 +1566,13 @@ sub rules_chain ($$) {
 #
 sub blacklist_chain($$) {
     &rules_chain(@_) . '~';
+}
+
+#
+# Name of the related chain between an ordered pair of zones
+#
+sub related_chain($$) {
+    '+' . &rules_chain(@_);
 }
 
 #

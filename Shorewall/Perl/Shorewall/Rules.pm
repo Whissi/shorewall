@@ -2475,8 +2475,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	if ( $actiontype & ACTION ) {
 	    $action = $usedactions{$normalized_target}{name};
 	    $loglevel = '';
-	} else {
-	    set_optflags( $chainref , DONT_MOVE | DONT_OPTIMIZE ) if $action eq 'RETURN';
 	}
 
 	if ( $origdest ) {

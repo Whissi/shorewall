@@ -407,7 +407,7 @@ use constant {
 
 use constant { OPTIMIZE_MASK => OPTIMIZE_POLICY_MASK | OPTIMIZE_RULESET_MASK };
 
-use constant { DONT_OPTIMIZE => 1 , DONT_DELETE => 2, DONT_MOVE => 4 };
+use constant { DONT_OPTIMIZE => 1 , DONT_DELETE => 2, DONT_MOVE => 4, RETURNS => 8, RETURNS_DONT_MOVE => 12 };
 
 our %dscpmap = ( CS0  => 0x00,
 		 CS1  => 0x08,
@@ -1040,7 +1040,7 @@ sub push_rule( $$ ) {
 
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
-    $chainref->{optflags} |= DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
+    $chainref->{optflags} |= RETURNS_DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
     trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1]" ) if $debug;
 
     $chainref->{complete} = 1 if $complete;
@@ -1057,7 +1057,7 @@ sub add_trule( $$ ) {
     assert( reftype $ruleref , $ruleref );
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
-    $chainref->{optflags} |= DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
+    $chainref->{optflags} |= RETURNS_DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
 
     trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
 
@@ -1237,7 +1237,7 @@ sub push_irule( $$$;@ ) {
     if ( $jump ) {
 	$ruleref->{jump}       = $jump;
 	$ruleref->{target}     = $target;
-	$chainref->{optflags} |= DONT_MOVE if $target eq 'RETURN';
+	$chainref->{optflags} |= RETURNS_DONT_MOVE if $target eq 'RETURN';
 	$ruleref->{targetopts} = $targetopts if $targetopts;
     } else {
 	$ruleref->{target} = '';

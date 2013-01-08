@@ -123,8 +123,11 @@ sub process_arprule() {
 	fatal_error "The $action ACTION does not allow a new address" unless $action =~ /^SNAT|DNAT|SMAT|DMAT$/;
     } else {
 	fatal_error "The $action ACTION requires a new address" if $action =~ /^SNAT|DNAT|SMAT|DMAT$/;
-	fatal_error "Invalid ACTION ($action)" unless $action =~ /^DROP|ACCEPT$/;
     }
+
+    my $function = $functions{$action};
+
+    fatal_error "Unknown ACTION ($action)" unless $function;
 
     if ( $source ne '-' ) {
 	( $iiface, $saddr, $smac ) = split /:/, $source, 3;
@@ -169,7 +172,7 @@ sub process_arprule() {
 	$rule .= $arptablesjf ? " --arpop ${invert}$map[$opcode] " : "--opcode ${invert}$opcode ";
     }
 
-    $functions{$action} ->();
+    $function ->();
 
     fatal_error "Either SOURCE or DEST must be specified" unless $chainref;
 

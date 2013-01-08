@@ -122,7 +122,7 @@ sub process_arprule() {
     if ( supplied $newaddr ) {
 	fatal_error "The $action ACTION does not allow a new address" unless $action =~ /^(?:SNAT|DNAT|SMAT|DMAT)C?$/;
     } else {
-	fatal_error "The $action ACTION requires a new address" if $action =~ /^SNAT|DNAT|SMAT|DMAT$/;
+	fatal_error "The $action ACTION requires a new address" if $action =~ /^(?:SNAT|DNAT|SMAT|DMAT)C?$/;
     }
 
     my $function = $functions{$action};

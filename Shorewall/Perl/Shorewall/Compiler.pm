@@ -915,7 +915,7 @@ sub compiler {
 
 	    optimize_level0;
 
-	    if ( ( my $optimize = $config{OPTIMIZE} & OPTIMIZE_MASK ) ) {
+	    if ( ( my $optimize = $config{OPTIMIZE} ) & 0x1e ) {
 		progress_message2 'Optimizing Ruleset...';
 		#
 		# Optimize Policy Chains

@@ -293,6 +293,8 @@ our $VERSION = 'MODULEVERSION';
 #                                               digest       => string representation of the chain's rules for use in optimization
 #                                                               level 8.
 #                                               accepted     => A 'ESTABLISHED,RELATED' ACCEPT rule has been added to this chain.
+#                                               complete     => The last rule in the chain is a -g or a simple -j to a terminating target
+#                                                               Suppresses adding additional rules to the chain end of the chain
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -340,28 +342,31 @@ our %nfobjects;
 #
 # Target Types
 #
-use constant { STANDARD => 1,              #defined by Netfilter
-	       NATRULE  => 2,              #Involves NAT
-	       BUILTIN  => 4,              #A built-in action
-	       NONAT    => 8,              #'NONAT' or 'ACCEPT+'
-	       NATONLY  => 16,             #'DNAT-' or 'REDIRECT-'
-	       REDIRECT => 32,             #'REDIRECT'
-	       ACTION   => 64,             #An action (may be built-in)
-	       MACRO    => 128,            #A Macro
-	       LOGRULE  => 256,            #'LOG','NFLOG'
-	       NFQ      => 512,            #'NFQUEUE'
-	       CHAIN    => 1024,           #Manual Chain
-	       SET      => 2048,           #SET
-	       AUDIT    => 4096,           #A_ACCEPT, etc
-	       HELPER   => 8192,           #CT:helper
-	       NFLOG    => 16384,          #NFLOG or ULOG
-	       INLINE   => 32768,          #Inline action
+use constant { STANDARD    =>    0x1,       #defined by Netfilter
+	       NATRULE     =>    0x2,       #Involves NAT
+	       BUILTIN     =>    0x4,       #A built-in action
+	       NONAT       =>    0x8,       #'NONAT' or 'ACCEPT+'
+	       NATONLY     =>   0x10,       #'DNAT-' or 'REDIRECT-'
+	       REDIRECT    =>   0x20,       #'REDIRECT'
+	       ACTION      =>   0x40,       #An action (may be built-in)
+	       MACRO       =>   0x80,       #A Macro
+	       LOGRULE     =>  0x100,       #'LOG','NFLOG'
+	       NFQ         =>  0x200,       #'NFQUEUE'
+	       CHAIN       =>  0x400,       #Manual Chain
+	       SET         =>  0x800,       #SET
+	       AUDIT       => 0x1000,       #A_ACCEPT, etc
+	       HELPER      => 0x2000,       #CT:helper
+	       NFLOG       => 0x4000,       #NFLOG or ULOG
+	       INLINE      => 0x8000,       #Inline action
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
 #
 our %targets;
-
+#
+# Terminating builtins
+#
+our %terminating;
 #
 # expand_rule() restrictions
 #
@@ -373,6 +378,7 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 	       ALL_RESTRICT        => 12,  # fw->fw rule            - neither -i nor -o allowed
 	       DESTIFACE_DISALLOW  => 32,  # Don't allow dest interface. Similar to INPUT_RESTRICT but generates a more relevant error message
 	       };
+
 #
 # See initialize() below for additional comments on these variables
 #
@@ -456,6 +462,11 @@ use constant { NULL_MODE => 0 ,   # Emitting neither shell commands nor iptables
 	       CMD_MODE  => 2 };  # Emitting shell commands.
 
 our $mode;
+#
+# A reference to this rule is returned when we try to push a rule onto a 'complete' chain
+#
+our $dummyrule = { simple => 1, mode => CAT_MODE };
+
 #
 # Address Family
 #
@@ -656,7 +667,29 @@ sub initialize( $$$ ) {
     %isocodes  = ();
     %nfobjects = ();
     %switches  = ();
-
+    #
+    # Initialize this here so we can make it dynamic without moving the initialization
+    #
+    %terminating = ( ACCEPT       => 1,
+		     DROP         => 1,
+		     RETURN       => 1,
+		     QUEUE        => 1,
+		     CLASSIFY     => 1,
+		     CT           => 1,
+		     DNAT         => 1,
+		     MASQUERADE   => 1,
+		     NETMAP       => 1,
+		     NFQUEUE      => 1,
+		     NOTRACK      => 1,
+		     REDIRECT     => 1,
+		     RAWDNAT      => 1,
+		     RAWSNAT      => 1,
+		     REJECT       => 1,
+		     SAME         => 1,
+		     SNAT         => 1,
+		     TPROXY       => 1,
+		     reject       => 1,
+		   );
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
@@ -723,10 +756,12 @@ sub set_rule_option( $$$ ) {
     }
 }
 
-sub transform_rule( $ ) {
-    my $input = $_[0];
+sub transform_rule( $;\$ ) {
+    my ( $input, $completeref ) = @_;
     my $ruleref  = { mode => CAT_MODE, target => '' };
     my $simple   = 1;
+    my $target   = '';
+    my $jump     = '';
 
     $input =~ s/^\s*//;
 
@@ -748,9 +783,9 @@ sub transform_rule( $ ) {
 	}
 
 	if ( $option eq 'j' or $option eq 'g' ) {
-	    $ruleref->{jump} = $option;
+	    $ruleref->{jump} = $jump = $option;
 	    $input =~ s/([^\s]+)\s*//;
-	    $ruleref->{target} = $1;
+	    $ruleref->{target} = $target = $1;
 	    $option = 'targetopts';
 	} else {
 	    $simple = 0;
@@ -782,7 +817,9 @@ sub transform_rule( $ ) {
 	set_rule_option( $ruleref, $option, $params );
     }
 
-    $ruleref->{simple} = $simple;
+    if ( ( $ruleref->{simple} = $simple ) && $completeref ) {
+	$$completeref = 1 if $jump eq 'g' || $terminating{$target};
+    }
 
     $ruleref;
 }
@@ -992,15 +1029,21 @@ sub add_commands ( $$;@ ) {
 #
 sub push_rule( $$ ) {
     my $chainref = $_[0];
-    my $ruleref  = transform_rule( $_[1] );
+
+    return $dummyrule if $chainref->{complete};
+
+    my $complete = 0;
+    my $ruleref  = transform_rule( $_[1], $complete );
 
     $ruleref->{comment}  = "$comment" if $comment;
     $ruleref->{mode}     = CMD_MODE   if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
 
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
-    $chainref->{optflags}  |= DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
+    $chainref->{optflags} |= DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
     trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1]" ) if $debug;
+
+    $chainref->{complete} = 1 if $complete;
 
     $ruleref;
 }
@@ -1014,6 +1057,7 @@ sub add_trule( $$ ) {
     assert( reftype $ruleref , $ruleref );
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
+    $chainref->{optflags} |= DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
 
     trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
 
@@ -1108,6 +1152,8 @@ sub add_rule($$;$) {
     our $splitcount;
 
     assert( ! reftype $rule , $rule );
+
+    return $dummyrule if $chainref->{complete};
 
     $iprangematch = 0;
     #
@@ -1947,6 +1993,8 @@ sub ensure_chain($$)
 sub add_jump( $$$;$$$ ) {
     my ( $fromref, $to, $goto_ok, $predicate, $expandports, $index ) = @_;
 
+    return $dummyrule if $fromref->{complete};
+
     $predicate |= '';
 
     my $toref;
@@ -1988,6 +2036,7 @@ sub add_jump( $$$;$$$ ) {
 #
 sub add_expanded_jump( $$$$ ) {
     my ( $chainref, $toref, $goto, $rule ) = @_;
+    return $dummyrule if $chainref->{complete};
     our $splitcount = 0;
     add_jump( $chainref, $toref, $goto, $rule, 1 );
     add_reference( $chainref, $toref ) while --$splitcount > 0;
@@ -1996,7 +2045,10 @@ sub add_expanded_jump( $$$$ ) {
 sub add_ijump( $$$;@ ) {
     my ( $fromref, $jump, $to, @matches ) = @_;
 
+    return $dummyrule if $fromref->{complete};
+
     my $toref;
+    my $ruleref;
     #
     # The second argument may be a scalar (chain name or builtin target) or a chain reference
     #
@@ -2017,10 +2069,16 @@ sub add_ijump( $$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	push_irule ($fromref, $jump => $to, @matches );
+	$ruleref = push_irule ($fromref, $jump => $to, @matches );
     } else {
-	push_irule( $fromref, 'j' => $to, @matches );
+	$ruleref = push_irule( $fromref, 'j' => $to, @matches );
     }
+
+    if ( $ruleref->{simple} ) {
+	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
+    }
+
+    $ruleref;
 }
 
 sub insert_ijump( $$$$;@ ) {
@@ -2764,7 +2822,7 @@ sub check_optimization( $ ) {
 #
 # Perform Optimization
 #
-# When an unreferenced chain is found, itis deleted unless its 'dont_delete' flag is set.
+# When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
 sub optimize_level0() {
     for my $table ( qw/raw rawpost mangle nat filter/ ) {
 	next if $family == F_IPV6 && $table eq 'nat';
@@ -2834,7 +2892,7 @@ sub optimize_level4( $$ ) {
 			delete_references $chainref;
 			$progress = 1;
 		    }
-		} elsif ( $numrules == 1 ) {
+		} elsif ( $numrules == 1) {
 		    my $firstrule = $chainref->{rules}[0];
 		    #
 		    # Chain has a single rule
@@ -2859,6 +2917,11 @@ sub optimize_level4( $$ ) {
 				#
 				$chainref->{optflags} |= DONT_OPTIMIZE;
 			    }
+			} elsif ( ( $firstrule->{target} || '' ) eq 'RETURN' ) {
+			    #
+			    # A chain with a single 'RETURN' rule -- get rid of it
+			    #
+			    delete_chain_and_references( $chainref );
 			} else {
 			    #
 			    # Replace all references to this chain with references to the target
@@ -6389,6 +6452,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	$exceptionrule,# Caller's matches used in exclusion case
 	$logname,      # Name of chain to name in log messages
        ) = @_;
+
+    return '' if $chainref->{complete};
 
     my ( $iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl ) = 
        ( '',      '',      '',     '',     '',     '',     '',      '',     '',            '' );

@@ -682,7 +682,7 @@ sub process_stoppedrules() {
 
 	    $result = 1;
 
-	    my ( $target, $source, $dest, $proto, $ports, $sports ) = 
+	    my ( $target, $source, $dest, $protos, $ports, $sports ) = 
 		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 };
 
 	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
@@ -730,16 +730,18 @@ sub process_stoppedrules() {
 	    unless ( $restriction == OUTPUT_RESTRICT
 		     && $target eq 'ACCEPT'
 		     && $config{ADMINISABSENTMINDED} ) {
-		expand_rule( $chainref ,
-			     $restriction ,
-			     do_proto( $proto, $ports, $sports ) ,
-			     $source ,
-			     $dest ,
-			     '' ,
-			     $target,
-			     '',
-			     $disposition,
-			     do_proto( $proto, '-', '-' ) );
+		for my $proto ( split_list $protos, 'Protocol' ) {
+		    expand_rule( $chainref ,
+				 $restriction ,
+				 do_proto( $proto, $ports, $sports ) ,
+				 $source ,
+				 $dest ,
+				 '' ,
+				 $target,
+				 '',
+				 $disposition,
+				 do_proto( $proto, '-', '-' ) );
+		}
 	    } else {
 		warning_message "Redundant OUTPUT rule ignored because ADMINISABSENTMINDED=Yes";
 	    }

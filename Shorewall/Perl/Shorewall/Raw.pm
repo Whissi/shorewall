@@ -234,44 +234,46 @@ sub setup_conntrack() {
 	    first_entry( "$doing $fn..." );
 
 	    while ( read_a_line( NORMAL_READ ) ) {
-		my ( $source, $dest, $proto, $ports, $sports, $user, $switch );
+		my ( $source, $dest, $protos, $ports, $sports, $user, $switch );
 
 		if ( $file_format == 1 ) {
-		    ( $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 };
+		    ( $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 };
 		    $action = 'NOTRACK';
 		} else {
-		    ( $action, $source, $dest, $proto, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
+		    ( $action, $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
 		}
 
 		$empty = 0;
 
-		if ( $file_format < 3 ) {
-		    if ( $source =~ /^all(-)?(:(.+))?$/ ) {
-			fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
-			for my $zone ( $1 ? off_firewall_zones : all_zones ) {
-			    process_conntrack_rule( undef ,
-						    undef,
-						    $action,
-						    $zone . ( $2 || ''),
-						    $dest,
-						    $proto,
-						    $ports,
-						    $sports,
-						    $user ,
-						    $switch );
+		for my $proto ( split_list $protos, 'Protocol' ) {
+		    if ( $file_format < 3 ) {
+			if ( $source =~ /^all(-)?(:(.+))?$/ ) {
+			    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
+			    for my $zone ( $1 ? off_firewall_zones : all_zones ) {
+				process_conntrack_rule( undef ,
+							undef,
+							$action,
+							$zone . ( $2 || ''),
+							$dest,
+							$proto,
+							$ports,
+							$sports,
+							$user ,
+							$switch );
+			    }
+			} else {
+			    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 			}
+		    } elsif ( $action =~ s/:O$// ) {
+			process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    } elsif ( $action =~ s/:OP// || $action =~ s/:PO// ) {
+			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+			process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    } else {
-			process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+			$action =~ s/:P//;
+			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    }
-		} elsif ( $action =~ s/:O$// ) {
-		    process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		} elsif ( $action =~ s/:OP// || $action =~ s/:PO// ) {
-		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		} else {
-		    $action =~ s/:P//;
-		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		}		    
+		}
 	    }
 
 	    if ( $name eq 'notrack') {

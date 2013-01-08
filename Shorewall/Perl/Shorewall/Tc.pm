@@ -204,16 +204,8 @@ sub initialize( $ ) {
     $divertref = 0;
 }
 
-sub process_tc_rule( ) {
-    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
-    if ( $family == F_IPV4 ) {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, {}, 15;
-	$headers = '-';
-    } else {
-	( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 }, {}, 16;
-    }
+sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
+    my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
     our %tccmd;
 
@@ -691,6 +683,22 @@ sub process_tc_rule( ) {
 
     progress_message "  TC Rule \"$currentline\" $done";
 
+}
+
+sub process_tc_rule( ) {
+    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
+    if ( $family == F_IPV4 ) {
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, {}, 15;
+	$headers = '-';
+    } else {
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
+	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 }, {}, 16;
+    }
+
+    for my $proto (split_list( $protos, 'Protocol' ) ) {
+	process_tc_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
+    }
 }
 
 sub rate_to_kbit( $ ) {
@@ -1539,11 +1547,9 @@ my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0x
 #
 # Process a record from the tcfilters file
 #
-sub process_tc_filter() {
+sub process_tc_filter1( $$$$$$$$$ ) {
 
-    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority ) = split_line 'tcfilters file', { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 , priority => 8 };
-
-    fatal_error 'CLASS must be specified' if $devclass eq '-';
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority ) = @_;
 
     my ($device, $class, $rest ) = split /:/, $devclass, 3;
 
@@ -1814,6 +1820,18 @@ sub process_tc_filter() {
 
 }
 
+sub process_tc_filter() {
+
+    my ( $devclass, $source, $dest , $protos, $portlist , $sportlist, $tos, $length, $priority )
+	= split_line 'tcfilters file', { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 , priority => 8 };
+
+    fatal_error 'CLASS must be specified' if $devclass eq '-';
+
+    for my $proto ( split_list $protos, 'Protocol' ) {
+	process_tc_filter1( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority );
+    }
+}
+
 #
 # Process the tcfilter file storing the compiled filters in the %tcdevices table
 #
@@ -1854,16 +1872,8 @@ sub process_tcfilters() {
 #
 # Process a tcpri record
 #
-sub process_tc_priority() {
-    my ( $band, $proto, $ports , $address, $interface, $helper ) = split_line1 'tcpri', { band => 0, proto => 1, port => 2, address => 3, interface => 4, helper => 5 };
-
-    fatal_error 'BAND must be specified' if $band eq '-';
-
-    fatal_error "Invalid tcpri entry" if ( $proto     eq '-' &&
-					   $ports     eq '-' &&
-					   $address   eq '-' &&
-					   $interface eq '-' &&
-					   $helper    eq '-' );
+sub process_tc_priority1( $$$$$$ ) {
+    my ( $band, $proto, $ports , $address, $interface, $helper ) = @_;
 
     my $val = numeric_value $band;
 
@@ -1908,6 +1918,26 @@ sub process_tc_priority() {
 		    unless $proto =~ /^ipp2p/ || $protocol == ICMP || $protocol == IPv6_ICMP;
 	    }
 	}
+    }
+}
+
+sub process_tc_priority() {
+    my ( $band, $protos, $ports , $address, $interface, $helper ) = split_line1 'tcpri', { band => 0, proto => 1, port => 2, address => 3, interface => 4, helper => 5 };
+
+    fatal_error 'BAND must be specified' if $band eq '-';
+
+    fatal_error "Invalid tcpri entry" if ( $protos    eq '-' &&
+					   $ports     eq '-' &&
+					   $address   eq '-' &&
+					   $interface eq '-' &&
+					   $helper    eq '-' );
+
+    my $val = numeric_value $band;
+
+    fatal_error "Invalid PRIORITY ($band)" unless $val && $val <= 3;
+
+    for my $proto ( split_list $protos, 'Protocol' ) {
+	process_tc_priority1( $band, $proto, $ports , $address, $interface, $helper );
     }
 }
 
@@ -2267,11 +2297,8 @@ sub setup_traffic_shaping() {
 #
 # Process a record in the secmarks file
 #
-sub process_secmark_rule() {
-    my ( $secmark, $chainin, $source, $dest, $proto, $dport, $sport, $user, $mark ) =
-	split_line1( 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
-
-    fatal_error 'SECMARK must be specified' if $secmark eq '-';
+sub process_secmark_rule1( $$$$$$$$$ ) {
+    my ( $secmark, $chainin, $source, $dest, $proto, $dport, $sport, $user, $mark ) = @_;
 
     my %chns = ( T => 'tcpost'  ,
 		 P => 'tcpre'   ,
@@ -2329,6 +2356,20 @@ sub process_secmark_rule() {
 
     progress_message "Secmarks rule \"$currentline\" $done";
 
+}
+
+#
+# Process a record in the secmarks file
+#
+sub process_secmark_rule() {
+    my ( $secmark, $chainin, $source, $dest, $protos, $dport, $sport, $user, $mark ) =
+	split_line1( 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
+
+    fatal_error 'SECMARK must be specified' if $secmark eq '-';
+
+    for my $proto ( split_list( $protos, 'Protocol' ) ) {
+	process_secmark_rule1( $secmark, $chainin, $source, $dest, $proto, $dport, $sport, $user, $mark );
+    }
 }
 
 #

@@ -141,21 +141,13 @@ sub process_section ($) {
 #
 # Accounting
 #
-sub process_accounting_rule( ) {
+sub process_accounting_rule1( $$$$$$$$$$$ ) {
+
+    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = @_;
 
     $acctable = $config{ACCOUNTING_TABLE};
 
     $jumpchainref = 0;
-
-    my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) =
-	split_line1 'Accounting File', { action => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8, ipsec => 9, headers => 10 };
-
-    fatal_error 'ACTION must be specified' if $action eq '-';
-
-    if ( $action eq 'SECTION' ) {
-	process_section( $chain );
-	return 0;
-    }
 
     $asection = LEGACY if $asection < 0;
 
@@ -407,6 +399,28 @@ sub process_accounting_rule( ) {
     }
 
     return 1;
+}
+
+sub process_accounting_rule( ) {
+
+    my ($action, $chain, $source, $dest, $protos, $ports, $sports, $user, $mark, $ipsec, $headers ) =
+	split_line1 'Accounting File', { action => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8, ipsec => 9, headers => 10 };
+
+    my $nonempty = 0;
+
+    for my $proto ( split_list $protos, 'Protocol' ) {
+	fatal_error 'ACTION must be specified' if $action eq '-';
+
+	if ( $action eq 'SECTION' ) {
+	    process_section( $chain );
+	} else {
+	    for my $proto ( split_list $protos, 'Protocol' ) {
+		$nonempty |= process_accounting_rule1( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers );
+	    }
+	}
+    }
+
+    $nonempty;
 }
 
 sub setup_accounting() {

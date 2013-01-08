@@ -56,12 +56,9 @@ sub initialize() {
 #
 # Process a single rule from the the masq file
 #
-sub process_one_masq( )
+sub process_one_masq1( $$$$$$$$$$ )
 {
-    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest ) =
-	split_line1 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9 };
-
-    fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest ) = @_;
 
     my $pre_nat;
     my $add_snat_aliases = $config{ADD_SNAT_ALIASES};
@@ -270,6 +267,18 @@ sub process_one_masq( )
 
     progress_message "   Masq record \"$currentline\" $done";
 
+}
+
+sub process_one_masq( )
+{
+    my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest ) =
+	split_line1 'masq file', { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9 };
+
+    fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
+
+    for my $proto ( split_list $protos, 'Protocol' ) {
+	process_one_masq1( $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest );
+    }
 }
 
 #

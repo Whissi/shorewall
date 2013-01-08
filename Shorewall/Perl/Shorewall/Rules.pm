@@ -884,20 +884,15 @@ sub finish_chain_section ($$$) {
 
         if ( $relatedchain ) {
 	    add_ijump $chainref, g => $related_target;
+	    $state = '';
 	} else {
 	    add_ijump $chainref, g => $related_target, state_imatch 'RELATED';
+	    $state =~ s/,?RELATED//;
 	}
-    
-	$state =~ s/,?RELATED//;
     }
 
-	
-    if ( $state && !  $config{FASTACCEPT} ) {
-	if ( $relatedchain ) {
-	    add_ijump $chainref, j => 'ACCEPT';
-	} else { 
-	    add_ijump $chainref, j => 'ACCEPT', state_imatch $state;
-	}
+    if ( $state ) {
+	add_ijump $chain1ref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
     }
 
     if ($sections{NEW} ) {

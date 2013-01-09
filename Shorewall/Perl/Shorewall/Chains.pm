@@ -2898,7 +2898,7 @@ sub optimize_level4( $$ ) {
 		    my $name    = $chainref->{name};
 		    my $lastref = $chainref->{rules}[-1];
 
-		    unless ( $terminating{$name} ) {
+		    unless ( $chainref->{optflags} & RETURNS || $terminating{$name} ) {
 			$progress = 1 if $terminating{$name} = ( ( $terminating{$lastref->{target} || ''} ) || ( $lastref->{jump} || '' ) eq 'g' );
 		    }
 

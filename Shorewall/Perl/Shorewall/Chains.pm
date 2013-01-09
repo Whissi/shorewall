@@ -667,9 +667,7 @@ sub initialize( $$$ ) {
     %isocodes  = ();
     %nfobjects = ();
     %switches  = ();
-    #
-    # Initialize this here so we can make it dynamic without moving the initialization
-    #
+
     %terminating = ( ACCEPT       => 1,
 		     DROP         => 1,
 		     RETURN       => 1,
@@ -2854,6 +2852,7 @@ sub optimize_level4( $$ ) {
     # The search continues until no short chains remain
     # Chains with 'DONT_OPTIMIZE' are exempted from optimization
     #
+
     while ( $progress ) {
 	$progress = 0;
 	$passes++;
@@ -2892,100 +2891,112 @@ sub optimize_level4( $$ ) {
 			delete_references $chainref;
 			$progress = 1;
 		    }
-		} elsif ( $numrules == 1) {
-		    my $firstrule = $chainref->{rules}[0];
-		    #
-		    # Chain has a single rule
-		    #
-		    if ( $firstrule ->{simple} ) {
-			#
-			# Easy case -- the rule is a simple jump
-			#
-			if ( $chainref->{builtin} ) {
-			    #
-			    # A built-in chain. If the target is a user chain without 'dont_move',
-			    # we can copy its rules to the built-in
-			    #
-			    if ( conditionally_copy_rules $chainref, $firstrule->{target} ) {
-				#
-				# Target was a user chain -- rules moved
-				#
-				$progress = 1;
-			    } else {
-				#
-				# Target was a built-in. Ignore this chain in follow-on passes
-				#
-				$chainref->{optflags} |= DONT_OPTIMIZE;
-			    }
-			} elsif ( ( $firstrule->{target} || '' ) eq 'RETURN' ) {
-			    #
-			    # A chain with a single 'RETURN' rule -- get rid of it
-			    #
-			    delete_chain_and_references( $chainref );
-			} else {
-			    #
-			    # Replace all references to this chain with references to the target
-			    #
-			    replace_references $chainref, $firstrule->{target}, $firstrule->{targetopts};
-			    $progress = 1;
-			}
-		    } elsif ( $firstrule->{target} ) {
-			#
-			# Not so easy -- the rule contains matches
-			#
-			if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
-			    #
-			    # This case requires a new rule merging algorithm. Ignore this chain for
-			    # now on.
-			    #
-			    $chainref->{optflags} |= DONT_OPTIMIZE;
-			} else {
-			    #
-			    # Replace references to this chain with the target and add the matches
-			    #
-			    $progress = 1 if replace_references1 $chainref, $firstrule;
-			}
-		    }
 		} else {
 		    #
-		    # Chain has more than one rule. If the last rule is a simple jump, then delete
-		    # all immediately preceding rules that have the same target
+		    # The chain has rules -- determine if it is terminating
 		    #
-		    my $rulesref = $chainref->{rules};
-		    my $lastref = $rulesref->[-1];
+		    my $name    = $chainref->{name};
+		    my $lastref = $chainref->{rules}[-1];
 
-		    if ( $lastref->{simple} && $lastref->{target} && ! $lastref->{targetopts} ) {
-			my $target = $lastref->{target};
-			my $count  = 0;
-			my $rule   = @$rulesref - 1;
+		    unless ( $terminating{$name} ) {
+			$progress = 1 if $terminating{$name} = ( ( $terminating{$lastref->{target} || ''} ) || ( $lastref->{jump} || '' ) eq 'g' );
+		    }
 
-			pop @$rulesref; #Pop the last simple rule
+		    if ( $numrules == 1) {
+			#
+			# Chain has a single rule
+			#
+			my $firstrule = $lastref;
 
-			while ( @$rulesref ) {
-			    my $rule1ref = $rulesref->[-1];
-
-			    last unless ( $rule1ref->{target} || '' ) eq $target && ! $rule1ref->{targetopts};
-
-			    trace ( $chainref, 'D', $rule, $rule1ref ) if $debug;
-
-			    pop @$rulesref;
-			    $progress = 1;
-			    $count++;
-			    $rule--;
-			}
-
-			if ( @$rulesref || ! $chainref->{builtin} || $target !~ /^(?:ACCEPT|DROP|REJECT)$/ ) {
-			    push @$rulesref, $lastref; # Restore the last simple rule
-			} else {
+			if ( $firstrule ->{simple} ) {
 			    #
-			    #empty builtin chain -- change it's policy
+			    # Easy case -- the rule is a simple jump
 			    #
-			    $chainref->{policy} = $target;
-			    trace( $chainref, 'P', undef, 'ACCEPT' ) if $debug;
-			    $count++;
+			    if ( $chainref->{builtin} ) {
+				#
+				# A built-in chain. If the target is a user chain without 'dont_move',
+				# we can copy its rules to the built-in
+				#
+				if ( conditionally_copy_rules $chainref, $firstrule->{target} ) {
+				    #
+				    # Target was a user chain -- rules moved
+				    #
+				    $progress = 1;
+				} else {
+				    #
+				    # Target was a built-in. Ignore this chain in follow-on passes
+				    #
+				    $chainref->{optflags} |= DONT_OPTIMIZE;
+				}
+			    } elsif ( ( $firstrule->{target} || '' ) eq 'RETURN' ) {
+				#
+				# A chain with a single 'RETURN' rule -- get rid of it
+				#
+				delete_chain_and_references( $chainref );
+			    } else {
+				#
+				# Replace all references to this chain with references to the target
+				#
+				replace_references $chainref, $firstrule->{target}, $firstrule->{targetopts};
+				$progress = 1;
+			    }
+			} elsif ( $firstrule->{target} ) {
+			    #
+			    # Not so easy -- the rule contains matches
+			    #
+			    if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
+				#
+				# This case requires a new rule merging algorithm. Ignore this chain for
+				# now on.
+				#
+				$chainref->{optflags} |= DONT_OPTIMIZE;
+			    } else {
+				#
+				# Replace references to this chain with the target and add the matches
+				#
+				$progress = 1 if replace_references1 $chainref, $firstrule;
+			    }
 			}
+		    } else {
+			#
+			# Chain has more than one rule. If the last rule is a simple jump, then delete
+			# all immediately preceding rules that have the same target
+			#
+			my $rulesref = $chainref->{rules};
 
-			progress_message "   $count $target rules deleted from chain $chainref->{name}" if $count;
+			if ( $lastref->{simple} && $lastref->{target} && ! $lastref->{targetopts} ) {
+			    my $target = $lastref->{target};
+			    my $count  = 0;
+			    my $rule   = @$rulesref - 1;
+
+			    pop @$rulesref; #Pop the last simple rule
+
+			    while ( @$rulesref ) {
+				my $rule1ref = $rulesref->[-1];
+
+				last unless ( $rule1ref->{target} || '' ) eq $target && ! $rule1ref->{targetopts};
+
+				trace ( $chainref, 'D', $rule, $rule1ref ) if $debug;
+
+				pop @$rulesref;
+				$progress = 1;
+				$count++;
+				$rule--;
+			    }
+
+			    if ( @$rulesref || ! $chainref->{builtin} || $target !~ /^(?:ACCEPT|DROP|REJECT)$/ ) {
+				push @$rulesref, $lastref; # Restore the last simple rule
+			    } else {
+				#
+				#empty builtin chain -- change it's policy
+				#
+				$chainref->{policy} = $target;
+				trace( $chainref, 'P', undef, 'ACCEPT' ) if $debug;
+				$count++;
+			    }
+
+			    progress_message "   $count $target rules deleted from chain $name" if $count;
+			}
 		    }
 		}
 	    }

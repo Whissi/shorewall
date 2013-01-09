@@ -142,8 +142,14 @@
         </listitem>
 
         <listitem>
-          <para><filename>/etc/shorewall/blacklist</filename> - lists
+          <para><filename>/etc/shorewall/blacklist</filename> - Deprecated in
+          favor of <filename>/etc/shorewall/blrules</filename>. Lists
           blacklisted IP/subnet/MAC addresses.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>/etc/shorewall/blrules</filename> — Added in
+          Shorewall 4.5.0. Define blacklisting and whitelisting.</para>
         </listitem>
 
         <listitem>
@@ -258,6 +264,11 @@
           start/restart when LOAD_HELPERS_ONLY=Yes in
           <filename>shorewall.conf</filename>.</para>
         </listitem>
+
+        <listitem>
+          <para><filename>/usr/share/arprules</filename> — Added in Shorewall
+          4.5.12. Allows specification of arptables rules.</para>
+        </listitem>
       </itemizedlist></para>
 
     <para><emphasis role="bold">If you need to change a file in
@@ -297,6 +308,12 @@
       <programlisting># This is a comment
 ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</programlisting>
     </example>
+
+    <important>
+      <para>If a comment ends with a backslash ("\"), the next line will also
+      be treated as a comment. See <link linkend="Continuation">Line
+      Continuation</link> below.</para>
+    </important>
   </section>
 
   <section id="Names">
@@ -516,6 +533,19 @@ ACCEPT      net:\
       continuation line does not end with a comma or colon, the leading white
       space in the last line is not ignored.</para>
     </example>
+
+    <important>
+      <para>A trailing backslash is not ignored in a comment. So the continued
+      rule above can be commented out with a single '#' as follows:</para>
+
+      <programlisting>#ACTION     SOURCE          DEST            PROTO           DEST
+#                                                           PORT(S)
+<emphasis role="bold">#</emphasis>ACCEPT     net:\
+            206.124.146.177,\
+            206.124.146.178,\
+            206.124.146.180\
+                            dmz             tcp             873</programlisting>
+    </important>
   </section>
 
   <section id="Pairs">

@@ -1128,8 +1128,8 @@ sub cleanup() {
 	for ( my $i = @openstack - 1; $i >= 0; $i-- ) {
 	    my $istack = $openstack[$i];
 	    for ( my $j = ( @$istack - 1 ); $j >= 0; $j-- ) {
-		my $info = $istack->[$j];
-		close $info->[0];
+		my $info = $istack->[$j][0];
+		close $info if $info;
 	    }
 	}
     }

@@ -216,8 +216,8 @@ get_routed_networks() # $1 = interface name, $2-n = Fatal error message
 delete_tc1()
 {
     clear_one_tc() {
-        $TC qdisc del dev $1 root 2> /dev/null
-        $TC qdisc del dev $1 ingress 2> /dev/null
+        $TC qdisc del dev ${1%@*} root 2> /dev/null
+        $TC qdisc del dev ${1%@*} ingress 2> /dev/null
 
     }
 

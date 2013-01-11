@@ -278,7 +278,7 @@ sub create_arptables_load( $ ) {
 	   'if [ $? != 0 ]; then',
 	   qq(    fatal_error "arptables-restore Failed. Input is in \${VARDIR}/.arptables-input"),
 	   "fi\n",
-	   "run_ip neigh flush nud noarp nud stale nud reachable\n",
+	   "run_ip neigh flush nud stale nud reachable\n",
 	   );    
 
     pop_indent;

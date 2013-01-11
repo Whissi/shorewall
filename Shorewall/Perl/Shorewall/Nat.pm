@@ -724,8 +724,6 @@ sub handle_nonat_rule( $$$$$$$$$$ ) {
 	}
     }
 
-    set_optflags( $nonat_chain, DONT_MOVE | DONT_OPTIMIZE ) if $tgt eq 'RETURN';
-
     expand_rule( $nonat_chain ,
 		 PREROUTE_RESTRICT ,
 		 $rule ,

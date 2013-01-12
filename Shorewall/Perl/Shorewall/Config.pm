@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011,2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010,2011,2012,2013 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -1128,8 +1128,8 @@ sub cleanup() {
 	for ( my $i = @openstack - 1; $i >= 0; $i-- ) {
 	    my $istack = $openstack[$i];
 	    for ( my $j = ( @$istack - 1 ); $j >= 0; $j-- ) {
-		my $info = $istack->[$j];
-		close $info->[0];
+		my $info = $istack->[$j][0];
+		close $info if $info;
 	    }
 	}
     }

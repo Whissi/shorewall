@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011,2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010,2011,2012,2013 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -2385,7 +2385,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    }
 
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
-	$rule .= "$globals{STATEMATCH} ESTABLISHED" if $section == ESTABLISHED_SECTION;
+	$rule .= "$globals{STATEMATCH} ESTABLISHED " if $section == ESTABLISHED_SECTION;
     }
     #
     # Generate CT rules(s), if any

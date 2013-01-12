@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011,2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007,2008,2009,2010,2011,2012,2013 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -1419,9 +1419,20 @@ sub delete_chain_and_references( $ ) {
     #  We're going to delete this chain but first, we must delete all references to it.
     #
     my $tableref = $chain_table{$chainref->{table}};
-    my $name1    = $chainref->{name};
-    for ( @{$chainref->{rules}} ) {
-	decrement_reference_count( $tableref->{$_->{target}}, $name1 ) if $_->{target};
+    my $name     = $chainref->{name};
+
+    while ( my ( $chain, $references ) = each %{$chainref->{references}} ) {
+	#
+	# Delete all rules from $chain that have $name as their target
+	#
+	my $chain1ref = $tableref->{$chain};
+	$chain1ref->{rules} = [ grep ( ( $_->{target} || '' ) ne $name, @{$chain1ref->{rules}} ) ];
+    }
+    #
+    # Now decrement the reference count of all targets of this chain's rules
+    #
+    for ( grep $_, ( map( $_->{target}, @{$chainref->{rules}} ) ) ) {
+	decrement_reference_count( $tableref->{$_}, $name );
     }
 
     delete_chain $chainref;

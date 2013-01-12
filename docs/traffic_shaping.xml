@@ -24,7 +24,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2009</year>
+      <year>2001-2013</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -223,10 +223,10 @@
     <para>This screen shot shows how I configured QoS in a 2.6.16
     Kernel:</para>
 
-    <graphic align="center" fileref="images/traffic_shaping2.6.png"/>
+    <graphic align="center" fileref="images/traffic_shaping2.6.png" />
 
     <para>And here's my recommendation for a 2.6.21 kernel:<graphic
-    align="center" fileref="images/traffic_shaping2.6.21.png"/></para>
+    align="center" fileref="images/traffic_shaping2.6.21.png" /></para>
   </section>
 
   <section id="Shorewall">
@@ -497,7 +497,7 @@
       </itemizedlist>
 
       <example id="Example0">
-        <title/>
+        <title></title>
 
         <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
         interface for this. The device has an outgoing bandwidth of 500kbit
@@ -1254,7 +1254,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </itemizedlist>
 
       <example id="Example1">
-        <title/>
+        <title></title>
 
         <para>All packets arriving on eth1 should be marked with 1. All
         packets arriving on eth2 and eth3 should be marked with 2. All packets
@@ -1268,7 +1268,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </example>
 
       <example id="Example2">
-        <title/>
+        <title></title>
 
         <para>All GRE (protocol 47) packets destined for 155.186.235.151
         should be marked with 12.</para>
@@ -1278,7 +1278,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </example>
 
       <example id="Example3">
-        <title/>
+        <title></title>
 
         <para>All SSH request packets originating in 192.168.1.0/24 and
         destined for 155.186.235.151 should be marked with 22.</para>
@@ -1288,7 +1288,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </example>
 
       <example id="Example4">
-        <title/>
+        <title></title>
 
         <para>All SSH packets packets going out of the first device in in
         /etc/shorewall/tcdevices should be assigned to the class with mark
@@ -1301,7 +1301,7 @@ ppp0           6000kbit         500kbit</programlisting>
       </example>
 
       <example id="Example5">
-        <title/>
+        <title></title>
 
         <para>Mark all ICMP echo traffic with packet mark 1. Mark all peer to
         peer traffic with packet mark 4.</para>
@@ -1334,7 +1334,7 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
       </example>
 
       <example>
-        <title/>
+        <title></title>
 
         <para>Mark all forwarded VOIP connections with connection mark 1 and
         ensure that all VOIP packets also receive that mark (assumes that

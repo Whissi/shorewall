@@ -202,7 +202,7 @@ sub validate_4net( $$ ) {
 	fatal_error "Invalid IP address ($net)"       unless valid_4address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	$net = validate_4address $net, $_[1];
+	validate_4address $net, $_[1];
 	$vlsm = 32;
     }
 
@@ -635,7 +635,7 @@ sub validate_6net( $$ ) {
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/';
-	net   = validate_6address $net, $allow_name;
+	validate_6address $net, $allow_name;
 	$vlsm = 128;
     }
 

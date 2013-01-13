@@ -49,6 +49,7 @@ our @EXPORT = ( qw( ALLIPv4
 		  NILIP
 		  ALL
 
+		  valid_address
 		  validate_address
 		  validate_net
 		  decompose_net
@@ -65,6 +66,7 @@ our @EXPORT = ( qw( ALLIPv4
 		  nilip
 		  rfc1918_networks
 		  resolve_proto
+		  resolve_dnsname
 		  proto_name
 		  validate_port
 		  validate_portpair
@@ -90,6 +92,7 @@ our @nilip;
 our $valid_address;
 our $validate_address;
 our $validate_net;
+our $resolve_dnsname;
 our $validate_range;
 our $validate_host;
 our $family;
@@ -151,6 +154,21 @@ sub validate_4address( $$ ) {
 
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
+
+sub resolve_4dnsname( $ ) {
+    my $net = $_[0];
+    my @addrs;
+
+    fatal_error "Unknown Host ($net)" unless  @addrs = gethostbyname( $net );
+
+    shift @addrs for (1..4);
+    for ( @addrs ) {
+	$_ = ( inet_ntoa( $_ ) );
+    }
+
+    @addrs;
+} 
+    
 
 sub decodeaddr( $ ) {
     my $address = $_[0];
@@ -611,6 +629,21 @@ sub validate_6address( $$ ) {
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
+sub resolve_6dnsname( $ ) {
+    my $net = $_[0];
+    my @addrs;
+    
+    require Socket6;
+    fatal_error "Unknown Host ($net)" unless (@addrs = Socket6::gethostbyname2( $net, Socket6::AF_INET6()));
+
+    shift @addrs for (1..4);
+    for ( @addrs ) {
+	$_ = Socket6::inet_ntop( Socket6::AF_INET6(), $_ );
+    }
+
+    @addrs;
+} 
+
 sub validate_6net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[0];
@@ -778,6 +811,10 @@ sub validate_net ( $$ ) {
     $validate_net->(@_);
 }
 
+sub resolve_dnsname( $ ) {
+    $resolve_dnsname->(@_);
+}
+
 sub validate_range ($$ ) {
     $validate_range->(@_);
 }
@@ -809,6 +846,7 @@ sub initialize( $ ) {
 	$validate_net     = \&validate_4net;
 	$validate_range   = \&validate_4range;
 	$validate_host    = \&validate_4host;
+	$resolve_dnsname  = \&resolve_4dnsname;
     } else {
 	$allip            = ALLIPv6;
 	@allip            = @allipv6;
@@ -819,6 +857,7 @@ sub initialize( $ ) {
 	$validate_net     = \&validate_6net;
 	$validate_range   = \&validate_6range;
 	$validate_host    = \&validate_6host;
+	$resolve_dnsname  = \&resolve_6dnsname;
     }
 }
 

@@ -247,7 +247,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
         <itemizedlist>
           <listitem>
             <para>You are trying to test from inside your firewall (no, that
-            won't work -- see <xref linkend="faq2"/>).</para>
+            won't work -- see <xref linkend="faq2" />).</para>
           </listitem>
 
           <listitem>
@@ -2204,6 +2204,35 @@ gateway:~# </programlisting>
       tool when you installed Shorewall. Look for a service called 'iptables'
       that is being started after Shorewall and disable it.</para>
     </section>
+
+    <section id="faq101">
+      <title>(FAQ 101) How can I speed up 'shorewall start' and 'shorewall
+      restart' on my slow hardware?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: There are several steps
+      that you can take:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>If your kernel supports module autoloading (and distribution
+          default kernels almost always do), then set LOAD_HELPERS_ONLY=Yes in
+          shorewall.conf.</para>
+        </listitem>
+
+        <listitem>
+          <para>Set AUTOMAKE=Yes in shorewall.conf. This will avoid the
+          compilation phase in cases where the configuration has not changed
+          since the last time that the configuration was compiled.</para>
+        </listitem>
+
+        <listitem>
+          <para>Don't set optimization option 8. For example, if you currently
+          set OPTIMIZE=31, then change that to OPTIMIZE=23. Optimization
+          option 8 combines identical chains which can result in a smaller
+          ruleset, but it slows down the compilation of large rulesets.</para>
+        </listitem>
+      </orderedlist>
+    </section>
   </section>
 
   <section id="MultiISP">
@@ -2922,7 +2951,7 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Persistent SNAT: Available
 gateway:~# </programlisting>
 
-      <para/>
+      <para></para>
     </section>
 
     <section id="faq19">

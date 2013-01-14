@@ -26,7 +26,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 :protocols );
+use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 :protocols %config );
 use Socket;
 
 use strict;
@@ -49,6 +49,7 @@ our @EXPORT = ( qw( ALLIPv4
 		  NILIP
 		  ALL
 
+		  valid_address
 		  validate_address
 		  validate_net
 		  decompose_net
@@ -65,6 +66,7 @@ our @EXPORT = ( qw( ALLIPv4
 		  nilip
 		  rfc1918_networks
 		  resolve_proto
+		  resolve_dnsname
 		  proto_name
 		  validate_port
 		  validate_portpair
@@ -90,6 +92,7 @@ our @nilip;
 our $valid_address;
 our $validate_address;
 our $validate_net;
+our $resolve_dnsname;
 our $validate_range;
 our $validate_host;
 our $family;
@@ -152,6 +155,21 @@ sub validate_4address( $$ ) {
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
+sub resolve_4dnsname( $ ) {
+    my $net = $_[0];
+    my @addrs;
+
+    fatal_error "Unknown Host ($net)" unless  @addrs = gethostbyname( $net );
+
+    shift @addrs for (1..4);
+    for ( @addrs ) {
+	$_ = ( inet_ntoa( $_ ) );
+    }
+
+    @addrs;
+} 
+    
+
 sub decodeaddr( $ ) {
     my $address = $_[0];
 
@@ -202,7 +220,8 @@ sub validate_4net( $$ ) {
 	fatal_error "Invalid IP address ($net)"       unless valid_4address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	validate_4address $net, $_[1];
+	my $net1 = validate_4address $net, $allow_name;
+	$net  = $net1 unless $config{DEFER_DNS_RESOLUTION};
 	$vlsm = 32;
     }
 
@@ -611,6 +630,21 @@ sub validate_6address( $$ ) {
     defined wantarray ? wantarray ? @addrs : $addrs[0] : undef;
 }
 
+sub resolve_6dnsname( $ ) {
+    my $net = $_[0];
+    my @addrs;
+    
+    require Socket6;
+    fatal_error "Unknown Host ($net)" unless (@addrs = Socket6::gethostbyname2( $net, Socket6::AF_INET6()));
+
+    shift @addrs for (1..4);
+    for ( @addrs ) {
+	$_ = Socket6::inet_ntop( Socket6::AF_INET6(), $_ );
+    }
+
+    @addrs;
+} 
+
 sub validate_6net( $$ ) {
     my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
     my $allow_name = $_[0];
@@ -635,7 +669,8 @@ sub validate_6net( $$ ) {
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/';
-	validate_6address $net, $allow_name;
+	my $net1 = validate_6address $net, $allow_name;
+	$net  = $net1 unless $config{DEFER_DNS_RESOLUTION};
 	$vlsm = 128;
     }
 
@@ -778,6 +813,10 @@ sub validate_net ( $$ ) {
     $validate_net->(@_);
 }
 
+sub resolve_dnsname( $ ) {
+    $resolve_dnsname->(@_);
+}
+
 sub validate_range ($$ ) {
     $validate_range->(@_);
 }
@@ -809,6 +848,7 @@ sub initialize( $ ) {
 	$validate_net     = \&validate_4net;
 	$validate_range   = \&validate_4range;
 	$validate_host    = \&validate_4host;
+	$resolve_dnsname  = \&resolve_4dnsname;
     } else {
 	$allip            = ALLIPv6;
 	@allip            = @allipv6;
@@ -819,6 +859,7 @@ sub initialize( $ ) {
 	$validate_net     = \&validate_6net;
 	$validate_range   = \&validate_6range;
 	$validate_host    = \&validate_6host;
+	$resolve_dnsname  = \&resolve_6dnsname;
     }
 }
 

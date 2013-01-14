@@ -1089,7 +1089,7 @@ sub add_a_route( ) {
     }
 
     fatal_error 'DEST must be specified' if $dest eq '-';
-    $dest = validate_net ( $dest, 1 );
+    $dest = validate_net ( $dest, 0 );
 
     validate_address ( $gateway, 1 ) if $gateway ne '-';
 

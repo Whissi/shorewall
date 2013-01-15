@@ -1200,7 +1200,7 @@ sub process_interface( $$ ) {
 		    $hostoptions{broadcast} = 1;
 		} elsif ( $option eq 'sfilter' ) {
 		    $filterref = [ split_list $value, 'address' ];
-		    $_ = validate_net( $_, 1) for @{$filterref}
+		    validate_net( $_, 0) for @{$filterref}
 		} else {
 		    assert(0);
 		}

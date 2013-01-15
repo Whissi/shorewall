@@ -559,23 +559,11 @@
           is an advantage if you use AUTOMAKE=Yes and the IP address
           associated with the DNS name is subject to change. When
           DEFER_DNS_RESOLUTION=No, DNS names are converted into IP addresses
-          by the compiler. This has two advantages:</para>
-
-          <orderedlist>
-            <listitem>
-              <para>When AUTOMAKE=Yes the <command>start</command> and
-              <command>restart</command> commands will succeed even if no DNS
-              server is reachable (assuming that the configuration hasn't
-              changed since the compiled script was last generated).</para>
-            </listitem>
-
-            <listitem>
-              <para>The <command>restore</command> command (including the
-              automatic <command>restore</command> performed when
-              <command>start</command> or <command>restart</command> fails)
-              will succeed even if no DNS server is reachable.</para>
-            </listitem>
-          </orderedlist>
+          by the compiler. This has the advantage that when AUTOMAKE=Yes, the
+          <command>start</command> and <command>restart</command> commands
+          will succeed even if no DNS server is reachable (assuming that the
+          configuration hasn't changed since the compiled script was last
+          generated).</para>
         </listitem>
       </varlistentry>
 

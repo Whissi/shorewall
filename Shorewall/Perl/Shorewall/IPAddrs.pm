@@ -26,7 +26,7 @@
 #
 package Shorewall::IPAddrs;
 require Exporter;
-use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 :protocols );
+use Shorewall::Config qw( :DEFAULT split_list require_capability in_hex8 numeric_value F_IPV4 F_IPV6 :protocols %config );
 use Socket;
 
 use strict;
@@ -220,7 +220,8 @@ sub validate_4net( $$ ) {
 	fatal_error "Invalid IP address ($net)"       unless valid_4address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
-	validate_4address $net, $_[1];
+	my $net1 = validate_4address $net, $allow_name;
+	$net  = $net1 unless $config{DEFER_DNS_RESOLUTION};
 	$vlsm = 32;
     }
 
@@ -668,7 +669,8 @@ sub validate_6net( $$ ) {
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/';
-	validate_6address $net, $allow_name;
+	my $net1 = validate_6address $net, $allow_name;
+	$net  = $net1 unless $config{DEFER_DNS_RESOLUTION};
 	$vlsm = 128;
     }
 

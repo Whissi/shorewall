@@ -607,6 +607,34 @@
           Shorewall will take no action with respect to allowing or
           disallowing IPv6 traffic. If not specified or empty,
           “DISABLE_IPV6=No” is assumed.</para>
+
+          <important>
+            <para>After changing the setting from <option>Yes</option> to
+            <option>No</option>, you must execute the following
+            commands:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para><command>shorewall restart</command></para>
+              </listitem>
+
+              <listitem>
+                <para><command>ip6tables -F</command></para>
+              </listitem>
+
+              <listitem>
+                <para><command>ip6tables -P INPUT ACCEPT</command></para>
+              </listitem>
+
+              <listitem>
+                <para><command>ip6tables -P OUTPUT ACCEPT</command></para>
+              </listitem>
+
+              <listitem>
+                <para><command>ip6tables -P FORWARD ACCEPT</command></para>
+              </listitem>
+            </itemizedlist>
+          </important>
         </listitem>
       </varlistentry>
 

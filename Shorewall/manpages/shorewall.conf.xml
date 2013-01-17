@@ -608,33 +608,24 @@
           disallowing IPv6 traffic. If not specified or empty,
           “DISABLE_IPV6=No” is assumed.</para>
 
-          <important>
-            <para>After changing the setting from <option>Yes</option> to
-            <option>No</option>, you must execute the following
-            commands:</para>
+          <para>It is important to note that changing DISABLE_IPV6=Yes to
+          DISABLE_IPV6=No does <emphasis>not</emphasis> enable IPV6. The
+          recommended approach for enabling IPv6 on your system is:</para>
 
-            <itemizedlist>
-              <listitem>
-                <para><command>shorewall restart</command></para>
-              </listitem>
+          <itemizedlist>
+            <listitem>
+              <para>Install, configure and start <ulink
+              url="../IPv6Support.html">Shorewall6</ulink>.</para>
+            </listitem>
 
-              <listitem>
-                <para><command>ip6tables -F</command></para>
-              </listitem>
+            <listitem>
+              <para>Change DISABLE_IPV6=Yes to DISABLE_IPV6=No</para>
+            </listitem>
 
-              <listitem>
-                <para><command>ip6tables -P INPUT ACCEPT</command></para>
-              </listitem>
-
-              <listitem>
-                <para><command>ip6tables -P OUTPUT ACCEPT</command></para>
-              </listitem>
-
-              <listitem>
-                <para><command>ip6tables -P FORWARD ACCEPT</command></para>
-              </listitem>
-            </itemizedlist>
-          </important>
+            <listitem>
+              <para>Restart Shorewall</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
 

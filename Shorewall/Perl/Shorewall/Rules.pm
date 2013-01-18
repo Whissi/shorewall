@@ -2055,7 +2055,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.
-    } else {
+    } elsif ( ! ( $actiontype & INLINE ) ) {
 	#
 	# Catch empty parameter list
 	#

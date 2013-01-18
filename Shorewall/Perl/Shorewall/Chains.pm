@@ -5573,56 +5573,32 @@ sub split_host_list( $;$ ) {
 
     my @input = split_list $input, 'host';
 
+    return @input unless $input =~ /\[/;
 
     my $exclude = 0;
 
     my @result;
 
-    if ( $input =~ /\[/ ) {
-	while ( @input ) {
-	    my $element = shift @input;
+    while ( @input ) {
+	my $element = shift @input;
 
-	    if ( $element =~ /\[/ ) {
-		while ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
-		    fatal_error "Missing ']' ($element)" unless @input;
-		    $element .= ( ',' . shift @input );
-		}
-
-		unless ( $loose ) {
-		    fatal_error "Invalid host list ($input)" if $exclude && $element =~ /!/;
-		    $exclude ||= $element =~ /^!/ || $element =~ /\]!/;
-		}
-
-		fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
-	    } else {
-		$exclude ||= $element =~ /!/ unless $loose;
+	if ( $element =~ /\[/ ) {
+	    while ( $element =~ tr/[/[/ > $element =~ tr/]/]/ ) {
+		fatal_error "Missing ']' ($element)" unless @input;
+		$element .= ( ',' . shift @input );
 	    }
 
-	    push @result, $element;
-	}
-    } else {
-	@result = @input;
-    }
-
-    unless ( $config{DEFER_DNS_RESOLUTION} ) {
-	my @result1;
-
-	for ( @result ) {
-	    if ( m|[-\+\[~/^&]| ) {
-		push @result1, $_;
-	    } elsif ( /^.+\..+\./ ) {
-		/^(!)?(.*)$/;
-		if ( valid_address( $2 ) ) {
-		    push @result1, $_;
-		} else {
-		    push @result1, resolve_dnsname( $_ );
-		}
-	    } else {
-		push @result1, $_;
+	    unless ( $loose ) {
+		fatal_error "Invalid host list ($input)" if $exclude && $element =~ /!/;
+		$exclude ||= $element =~ /^!/ || $element =~ /\]!/;
 	    }
+
+	    fatal_error "Mismatched [...] ($element)" unless $element =~ tr/[/[/ == $element =~ tr/]/]/;
+	} else {
+	    $exclude ||= $element =~ /!/ unless $loose;
 	}
 
-	return @result1;
+	push @result, $element;
     }
 
     @result;

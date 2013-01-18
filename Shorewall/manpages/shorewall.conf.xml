@@ -539,31 +539,19 @@
             </listitem>
           </itemizedlist>
 
-          <para>If CONFIG_PATH is not given or if it is set to the empty value
-          then the contents of /usr/share/shorewall/configpath are used. As
-          released from shorewall.net, that file sets the CONFIG_PATH to
-          /etc/shorewall:/usr/share/shorewall but your particular distribution
-          may set it differently. See the output of shorewall show config for
-          the default on your system.</para>
-        </listitem>
-      </varlistentry>
+          <blockquote>
+            <para></para>
 
-      <varlistentry>
-        <term><emphasis role="bold">DEFER_DNS_RESOLUTION=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+            <para>If CONFIG_PATH is not given or if it is set to the empty
+            value then the contents of /usr/share/shorewall/configpath are
+            used. As released from shorewall.net, that file sets the
+            CONFIG_PATH to /etc/shorewall:/usr/share/shorewall but your
+            particular distribution may set it differently. See the output of
+            shorewall show config for the default on your system.</para>
 
-        <listitem>
-          <para>Added in Shorewall 4.5.12. When set to 'Yes' (the default),
-          DNS names are validated in the compiler and then passed on to the
-          generated script where they are resolved by iptables-restore. This
-          is an advantage if you use AUTOMAKE=Yes and the IP address
-          associated with the DNS name is subject to change. When
-          DEFER_DNS_RESOLUTION=No, DNS names are converted into IP addresses
-          by the compiler. This has the advantage that when AUTOMAKE=Yes, the
-          <command>start</command> and <command>restart</command> commands
-          will succeed even if no DNS server is reachable (assuming that the
-          configuration hasn't changed since the compiled script was last
-          generated).</para>
+            <para>Note that the setting in /usr/share/shorewall/configpath is
+            always used to locate shorewall.conf.</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 

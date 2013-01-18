@@ -765,7 +765,6 @@ sub initialize( $;$$) {
 	  RESTORE_ROUTEMARKS => undef,
 	  IGNOREUNKNOWNVARIABLES => undef,
 	  WARNOLDCAPVERSION => undef,
-	  DEFER_DNS_RESOLUTION => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -5061,7 +5060,6 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'RESTORE_ROUTEMARKS'         , 'Yes';
     default_yes_no 'IGNOREUNKNOWNVARIABLES'     , 'Yes';
     default_yes_no 'WARNOLDCAPVERSION'          , 'Yes';
-    default_yes_no 'DEFER_DNS_RESOLUTION'       , 'Yes';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
 

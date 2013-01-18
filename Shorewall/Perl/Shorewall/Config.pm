@@ -59,6 +59,7 @@ our @EXPORT = qw(
 
 		 get_action_params
 		 get_action_chain
+		 get_action_logging
 		 set_action_param
 
 		 have_capability
@@ -936,7 +937,7 @@ sub initialize( $;$$) {
 
     %compiler_params = ();
 
-    %actparms = ( );
+    %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => ''  );
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -2815,6 +2816,13 @@ sub get_action_params( $ ) {
     }
 
     @return;
+}
+
+#
+# Returns the Level and Tag for the current action chain
+#
+sub get_action_logging() {
+    @actparms{ 'loglevel', 'logtag' };
 }
 
 sub get_action_chain() {

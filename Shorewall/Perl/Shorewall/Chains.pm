@@ -75,7 +75,6 @@ our @EXPORT = ( qw(
 		    dont_optimize
 		    dont_delete
 		    dont_move
-		    get_action_logging
 		    add_interface_options
 
 		    %chain_table
@@ -2457,24 +2456,6 @@ sub require_audit($$;$) {
     require_capability 'AUDIT_TARGET', 'audit', 's';
 
     return ensure_audit_chain $target, $action, $tgt;
-}
-
-#
-# Returns the Level and Tag for the current action chain
-#
-sub get_action_logging() {
-    my $chainref = get_action_chain;
-    my $wholeaction = $chainref->{action};
-
-    if ( $wholeaction ) {
-	my ( undef, $level, $tag, undef ) = split ':', $wholeaction;
-
-	$level = '' if $level =~ /^none/;
-
-	( $level, $tag );
-    } else {
-	( '' , '' );
-    }
 }
 
 #

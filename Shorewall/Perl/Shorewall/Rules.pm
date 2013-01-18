@@ -2028,34 +2028,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
     # We can now dispense with the postfix character
     #
     fatal_error "The +, - and ! modifiers are not allowed in the blrules file" if $action =~ s/[-+!]$// && $blacklist;
-    #
-    # Handle actions
-    #
-    if ( $actiontype & ACTION ) {
-	#
-	# Create the action:level:tag:param tuple.
-	#
-	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
-
-	fatal_error( "Action $basictarget invoked Recursively (" .  join( '->', map( externalize( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$basictarget};
-
-	if ( my $ref = use_action( $normalized_target ) ) {
-	    #
-	    # First reference to this tuple
-	    #
-	    process_action( $ref );
-	    #
-	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
-	    #
-	    #    - Refresh $actiontype
-	    #    - Create the associated nat and/or table chain if appropriate.
-	    #
-	    ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
-	    ensure_chain( 'raw', $ref->{name} ) if ( $actiontype & HELPER );
-	}
-
-	$action = $basictarget; # Remove params, if any, from $action.
-    } else {
+    
+    unless ( $actiontype & ( ACTION | INLINE) ) {
 	#
 	# Catch empty parameter list
 	#
@@ -2299,8 +2273,34 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     }
+    #
+    # Handle actions
+    #
+    if ( $actiontype & ACTION ) {
+	#
+	# Create the action:level:tag:param tuple.
+	#
+	$normalized_target = normalize_action( $basictarget, $loglevel, $param );
 
-    if ( $actiontype & INLINE ) {
+	fatal_error( "Action $basictarget invoked Recursively (" .  join( '->', map( externalize( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$basictarget};
+
+	if ( my $ref = use_action( $normalized_target ) ) {
+	    #
+	    # First reference to this tuple
+	    #
+	    process_action( $ref );
+	    #
+	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
+	    #
+	    #    - Refresh $actiontype
+	    #    - Create the associated nat and/or table chain if appropriate.
+	    #
+	    ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
+	    ensure_chain( 'raw', $ref->{name} ) if ( $actiontype & HELPER );
+	}
+
+	$action = $basictarget; # Remove params, if any, from $action.
+    } elsif ( $actiontype & INLINE ) {
 	#
 	# process_inline() will call process_rule1() recursively for each rule in the macro body
 	#

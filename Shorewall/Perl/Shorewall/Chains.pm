@@ -3716,6 +3716,8 @@ sub source_exclusion( $$ ) {
     reftype $target ? $chainref : $chainref->{name};
 }
 
+sub split_host_list( $;$ );
+
 sub source_iexclusion( $$$$$;@ ) {
     my $chainref   = shift;
     my $jump       = shift;
@@ -5009,8 +5011,6 @@ sub load_isocodes() {
     $isocodes{substr(basename($_),0,2)} = 1 for @codes;
 }
 
-sub split_host_list( $;$ );
-
 #
 # Match a Source.
 #
@@ -5607,19 +5607,30 @@ sub split_host_list( $;$ ) {
     unless ( $config{DEFER_DNS_RESOLUTION} ) {
 	my @result1;
 
-	for ( @result ) {
-	    if ( m|[-\+\[~/^&]| ) {
-		push @result1, $_;
-	    } elsif ( /^.+\..+\./ ) {
-		/^(!)?(.*)$/;
-		if ( valid_address( $2 ) ) {
-		    push @result1, $_;
+	for my $element ( @result ) {
+	    my @list = split '!', $element, 3;
+
+	    fatal_error "Invalid host list ($input)" if @list > 2;
+
+	    my @pair;
+	    
+	    for ( @list ) {
+		unless ( supplied $_ ) {
+		    push @pair, '';
+		} elsif ( m|[-\+\[~/^&]| ) {
+		    push @pair, $_;
+		} elsif ( /^.+\..+\./ ) {
+		    if ( valid_address( $_ ) ) {
+			push @pair, $_
+		    } else {
+			push @pair, resolve_dnsname( $2 );
+		    }
 		} else {
-		    push @result1, resolve_dnsname( $_ );
+		    push @pair, $_;
 		}
-	    } else {
-		push @result1, $_;
 	    }
+
+	    push @result1 , supplied $pair[1] ? join( '!', @pair ) : $pair[0] ;
 	}
 
 	return @result1;

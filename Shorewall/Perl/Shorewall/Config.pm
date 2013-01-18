@@ -2272,11 +2272,20 @@ sub process_compiler_directive( $$$$ ) {
 			   unless ( $omitting ) {
 			       directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
 			       ( my $var , $expression ) = split ' ', $expression, 2;
-			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^([$@])?([a-zA-Z]\w*)$/;
 			       directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
-			       $variables{$1} = evaluate_expression( $expression,
-								     $filename,
-								     $linenumber );
+
+			       if ( ( $1 || '' ) eq '@' ) {
+				   directive_error( "Invalid SET variable", $filename, $linenumber ) unless exists $actparms{$2};
+				   $actparms{$2} = evaluate_expression ( $expression,
+									 $filename,
+									 $linenumber );
+				   $paramsmodified = 1;
+			       } else {
+				   $variables{$1} = evaluate_expression( $expression,
+									 $filename,
+									 $linenumber );
+			       }
 			   }
 		       } ,
 

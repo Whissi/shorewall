@@ -1574,81 +1574,86 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ );
 # Populate an action invocation chain. As new action tuples are encountered,
 # the function will be called recursively by process_rule1().
 #
-sub process_action($) {
-    my $chainref = shift;
+sub process_action($$) {
+    my ( $chainref, $caller ) = @_;
     my $wholeaction = $chainref->{action};
     my ( $action, $level, $tag, $param ) = split /:/, $wholeaction, 4;
 
     if ( $targets{$action} & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
 	$builtinops{$action}->( $chainref, $level, $tag, $param );
-    } else {
-	my $actionfile = find_file "action.$action";
+	return 0;
+    } 
 
-	fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+    my $actionfile = find_file "action.$action";
 
-	progress_message2 "$doing $actionfile for chain $chainref->{name}...";
+    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-	push_open $actionfile, 2, 1;
+    progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
-	my $oldparms = push_action_params( $chainref, $param, $level, $tag );
+    push_open $actionfile, 2, 1;
 
-	my $nolog = $actions{$action}{nolog};
+    my $oldparms = push_action_params( $chainref, $param, $level, $tag, $caller );
 
-	$active{$action}++;
-	push @actionstack, $wholeaction;
+    my $nolog = $actions{$action}{nolog};
 
-	my $save_comment = push_comment;
+    $active{$action}++;
+    push @actionstack, $wholeaction;
 
-	while ( read_a_line( NORMAL_READ ) ) {
+    my $save_comment = push_comment;
 
-	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
+    while ( read_a_line( NORMAL_READ ) ) {
 
-	    if ( $file_format == 1 ) {
-		($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
-		    split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
-		$origdest = $connlimit = $time = $headers = $condition = $helper = '-';
-	    } else {
-		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
-		    = split_line1 'action file', \%rulecolumns, $action_commands;
-	    }
+	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
 
-	    fatal_error 'TARGET must be specified' if $target eq '-';
-
-	    if ( $target eq 'DEFAULTS' ) {
-		default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
-		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
-	    }
-
-	    process_rule1( $chainref,
-			   $nolog ? $target : merge_levels( "$action:$level:$tag", $target ),
-			   '',
-			   $source,
-			   $dest,
-			   $proto,
-			   $ports,
-			   $sports,
-			   $origdest,
-			   $rate,
-			   $user,
-			   $mark,
-			   $connlimit,
-			   $time,
-			   $headers,
-			   $condition,
-			   $helper,
-			   0 );
+	if ( $file_format == 1 ) {
+	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
+		split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
+	    $origdest = $connlimit = $time = $headers = $condition = $helper = '-';
+	} else {
+	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
+		= split_line1 'action file', \%rulecolumns, $action_commands;
 	}
 
-	pop_comment( $save_comment );
+	fatal_error 'TARGET must be specified' if $target eq '-';
 
-	$active{$action}--;
-	pop @actionstack;
+	if ( $target eq 'DEFAULTS' ) {
+	    default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
+	    fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
+	}
 
-	pop_open;
-
-	pop_action_params( $oldparms );
+	process_rule1( $chainref,
+		       $nolog ? $target : merge_levels( "$action:$level:$tag", $target ),
+		       '',
+		       $source,
+		       $dest,
+		       $proto,
+		       $ports,
+		       $sports,
+		       $origdest,
+		       $rate,
+		       $user,
+		       $mark,
+		       $connlimit,
+		       $time,
+		       $headers,
+		       $condition,
+		       $helper,
+		       0 );
     }
+
+    pop_comment( $save_comment );
+
+    $active{$action}--;
+    pop @actionstack;
+
+    pop_open;
+
+    #
+    # Pop the action parameters and delete record of this chain if the action parameters
+    # were modified
+    #
+    delete $usedactions{$wholeaction} if pop_action_params( $oldparms );
 }
 
 #
@@ -1657,7 +1662,7 @@ sub process_action($) {
 sub use_policy_action( $ ) {
     my $ref = use_action( $_[0] );
 
-    process_action( $ref ) if $ref;
+    process_action( $ref, 'POLICY' ) if $ref; 
 }
 
 ################################################################################
@@ -1797,7 +1802,9 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
     my $oldparms   = push_action_params( $chainref,
 					 $param,
 					 supplied $level ? $level : 'none',
-					 defined  $tag   ? $tag   : '');
+					 defined  $tag   ? $tag   : '' ,
+					 $chainref->{name} ,
+				       );
 
     my $inlinefile = $inlines{$inline}{file};
     my $nolog      = $inlines{$inline}{nolog};
@@ -2288,7 +2295,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # First reference to this tuple
 	    #
-	    process_action( $ref );
+	    process_action( $ref, $chain );
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
 	    #

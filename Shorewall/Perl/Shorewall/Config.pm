@@ -483,6 +483,7 @@ our %compiler_params;
 # Action parameters
 #
 our %actparms;
+our $paramsmodified;
 
 our $currentline;            # Current config file line image
 our $currentfile;            # File handle reference
@@ -938,6 +939,7 @@ sub initialize( $;$$) {
     %compiler_params = ();
 
     %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => ''  );
+    $paramsmodified = 0;
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -2762,9 +2764,14 @@ sub embedded_perl( $ ) {
 #
 # Push/pop action params
 #
-sub push_action_params( $$$$ ) {
+sub push_action_params( $$$$$ ) {
     my @params = ( undef , split_list3( $_[1], 'parameter' ) );
-    my %oldparams = %actparms;
+
+    $actparms{modified} = $paramsmodified;
+
+    my %oldparms = %actparms;
+
+    $paramsmodified = 0;
 
     %actparms = ();
 
@@ -2777,17 +2784,25 @@ sub push_action_params( $$$$ ) {
     $actparms{0}          = $_[0];
     $actparms{loglevel}   = $_[2];
     $actparms{logtag}     = $_[3];
+    $actparms{caller}     = $_[4];
     #
     # The Shorewall variable '@chain' has the non-word charaters removed
     #
     ( $actparms{chain} = $_[0]->{name} ) =~ s/[^\w]//g;
 
-    \%oldparams;
+    \%oldparms;
 }
 
+#
+# Pop the action parameters using the passed hash reference
+# Return true of the popped parameters were modified
+#
 sub pop_action_params( $ ) {
-    my $oldparms = shift;
-    %actparms = %$oldparms;
+    my $oldparms    = shift;
+    %actparms       = %$oldparms;
+    my $return      = $paramsmodified;
+    ( $paramsmodified ) = delete $actparms{modified};
+    $return;
 }
 
 sub default_action_params {

@@ -1802,6 +1802,10 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     alias @chain), Shorewall variables may only be used within an action
     body.</para>
 
+    <para>Prior to Shorewall 4.5.13, Shorewall variables are read-only.
+    Beginning with Shorewall 4.5.13, their values may be altered using the
+    ?SET directive.</para>
+
     <para>The Shorewall variables are:</para>
 
     <variablelist>
@@ -1842,7 +1846,22 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
           invoked.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>@disposition (@{disposition})</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.13. When a non-inlined action is
+          entered, this variable is set to the empty value. When an inline
+          action is entered, the variable's value is unchanged.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
+
+    <para>Beginning with Shorewall 4.5.13, the values of @chain and
+    @disposition are used to generated the --log-prefix in logging rules. When
+    either is empty, the historical value is used to generate the
+    --log-prefix. </para>
   </section>
 
   <section id="Conditional">

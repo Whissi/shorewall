@@ -1623,7 +1623,7 @@ sub process_action($$) {
 	}
 
 	process_rule1( $chainref,
-		       $nolog ? $target : merge_levels( "$action:$level:$tag", $target ),
+		       $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
 		       '',
 		       $source,
 		       $dest,
@@ -1839,7 +1839,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 	    next;
 	}
 
-	$mtarget = merge_levels( $target, $mtarget ) unless $nolog;
+	$mtarget = merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $mtarget ) unless $nolog;
 
 	my $action = isolate_basic_target $mtarget;
 

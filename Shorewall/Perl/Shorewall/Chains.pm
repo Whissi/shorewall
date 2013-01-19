@@ -6439,7 +6439,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 	log_rule_limit( $loglevel ,
 			$echainref ,
 			$chain,
-			$disposition eq 'reject' ? 'REJECT' : $disposition ,
+			$actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
 			'' ,
 			$logtag ,
 			'add' ,
@@ -6484,7 +6484,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 
     my ( $iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl ) = 
        ( '',      '',      '',     '',     '',     '',     '',      '',     '',            '' );
-    my  $chain = $chainref->{name};
+    my  $chain = $actparms{chain} || $chainref->{name};
     my $table = $chainref->{table};
     my ( $jump, $mac,  $targetref, $basictarget );
     our @ends = ();
@@ -6653,7 +6653,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 				       $loglevel ,
 				       $chainref ,
 				       $chain,
-				       $disposition eq 'reject' ? 'REJECT' : $disposition ,
+				       $actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
 				       '' ,
 				       $logtag ,
 				       'add' ,
@@ -6664,7 +6664,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 				       $loglevel ,
 				       $chainref ,
 				       $logname || $chain,
-				       $disposition,
+				       $actparms{disposition} || $disposition,
 				       '',
 				       $logtag,
 				       'add',
@@ -6681,7 +6681,12 @@ sub expand_rule( $$$$$$$$$$;$ )
 			# and jump to the log chain if all of the rule's conditions are met
 			#
 			add_expanded_jump( $chainref,
-					   logchain( $chainref, $loglevel, $logtag, $exceptionrule , $disposition, $target ),
+					   logchain( $chainref,
+						     $loglevel,
+						     $logtag,
+						     $exceptionrule,
+						     $actparms{disposition} || $disposition,
+						     $target ),
 					   1,
 					   $matches );
 		    }

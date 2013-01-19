@@ -59,7 +59,9 @@ our @EXPORT = qw(
 
 		 get_action_params
 		 get_action_chain
+		 get_action_chain_name
 		 get_action_logging
+		 get_action_disposition
 		 set_action_param
 
 		 have_capability
@@ -161,6 +163,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %helpers_map
 				       %helpers_enabled
 				       %helpers_aliases
+
+				       %actparms
 				       
 		                       F_IPV4
 		                       F_IPV6
@@ -483,7 +487,7 @@ our %compiler_params;
 # Action parameters
 #
 our %actparms;
-our $paramsmodified;
+our $parmsmodified;
 
 our $currentline;            # Current config file line image
 our $currentfile;            # File handle reference
@@ -638,7 +642,7 @@ sub initialize( $;$$) {
 		    EXPORT     => 0,
 		    KLUDGEFREE => '',
 		    STATEMATCH => '-m state --state',
-		    VERSION    => "4.5.12-Beta3",
+		    VERSION    => "4.5.13-Beta1",
 		    CAPVERSION => 40512 ,
 		  );
     #
@@ -938,8 +942,8 @@ sub initialize( $;$$) {
 
     %compiler_params = ();
 
-    %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => ''  );
-    $paramsmodified = 0;
+    %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => ''  );
+    $parmsmodified = 0;
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -2156,6 +2160,7 @@ sub evaluate_expression( $$$ ) {
 	#                         $1      $2   $3                     -     $4
 	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
+	    $var = numeric_value( $var ) if $var;
 	    $val = $var ? $actparms{$var} : $chain;
 	    $expression = join_parts( $first, $val, $rest );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
@@ -2272,15 +2277,17 @@ sub process_compiler_directive( $$$$ ) {
 			   unless ( $omitting ) {
 			       directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
 			       ( my $var , $expression ) = split ' ', $expression, 2;
-			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^([$@])?([a-zA-Z]\w*)$/;
+			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^(\$)?([a-zA-Z]\w*)$/ || $var =~ /^(@)(\d+|[a-zA-Z]\w*)/;
 			       directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
 
 			       if ( ( $1 || '' ) eq '@' ) {
-				   directive_error( "Invalid SET variable", $filename, $linenumber ) unless exists $actparms{$2};
-				   $actparms{$2} = evaluate_expression ( $expression,
-									 $filename,
-									 $linenumber );
-				   $paramsmodified = 1;
+				   $var = numeric_value( $var ) if $var =~ /^\d/;
+				   $var = $2 || 'chain';
+				   directive_error( "Action variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
+				   my $val = $actparms{$var} = evaluate_expression ( $expression,
+										     $filename,
+										     $linenumber );
+				   $parmsmodified = 1;
 			       } else {
 				   $variables{$1} = evaluate_expression( $expression,
 									 $filename,
@@ -2774,30 +2781,32 @@ sub embedded_perl( $ ) {
 # Push/pop action params
 #
 sub push_action_params( $$$$$ ) {
-    my @params = ( undef , split_list3( $_[1], 'parameter' ) );
+    my ( $chainref, $parms, $loglevel, $logtag, $caller ) = @_;
+    my @parms = ( undef , split_list3( $parms , 'parameter' ) );
 
-    $actparms{modified} = $paramsmodified;
+    $actparms{modified} = $parmsmodified;
 
     my %oldparms = %actparms;
 
-    $paramsmodified = 0;
+    $parmsmodified = 0;
 
     %actparms = ();
 
-    for ( my $i = 1; $i < @params; $i++ ) {
-	my $val = $params[$i];
+    for ( my $i = 1; $i < @parms; $i++ ) {
+	my $val = $parms[$i];
 
 	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    $actparms{0}          = $_[0];
-    $actparms{loglevel}   = $_[2];
-    $actparms{logtag}     = $_[3];
-    $actparms{caller}     = $_[4];
+    $actparms{0}           = $chainref;
+    $actparms{loglevel}    = $loglevel;
+    $actparms{logtag}      = $logtag;
+    $actparms{caller}      = $caller;
+    $actparms{disposition} = '' if $chainref->{action};
     #
     # The Shorewall variable '@chain' has the non-word charaters removed
     #
-    ( $actparms{chain} = $_[0]->{name} ) =~ s/[^\w]//g;
+    ( $actparms{chain} = $chainref->{name} ) =~ s/[^\w]//g;
 
     \%oldparms;
 }
@@ -2807,10 +2816,10 @@ sub push_action_params( $$$$$ ) {
 # Return true of the popped parameters were modified
 #
 sub pop_action_params( $ ) {
-    my $oldparms    = shift;
-    %actparms       = %$oldparms;
-    my $return      = $paramsmodified;
-    ( $paramsmodified ) = delete $actparms{modified};
+    my $oldparms       = shift;
+    %actparms          = %$oldparms;
+    my $return         = $parmsmodified;
+    ( $parmsmodified ) = delete $actparms{modified};
     $return;
 }
 
@@ -2851,6 +2860,14 @@ sub get_action_logging() {
 
 sub get_action_chain() {
     $actparms{0};
+}
+
+sub get_action_chain_name() {
+    $actparms{chain};
+}
+
+sub get_action_disposition() {
+    $actparms{disposition};
 }
 
 sub set_action_param( $$ ) {

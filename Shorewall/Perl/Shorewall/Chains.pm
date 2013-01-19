@@ -3697,7 +3697,7 @@ sub source_exclusion( $$ ) {
     reftype $target ? $chainref : $chainref->{name};
 }
 
-sub split_host_list( $;$ );
+sub split_host_list( $$;$ );
 
 sub source_iexclusion( $$$$$;@ ) {
     my $chainref   = shift;
@@ -3711,7 +3711,7 @@ sub source_iexclusion( $$$$$;@ ) {
 
     if ( $source =~ /^([^!]+)!([^!]+)$/ ) {
 	$source = $1;
-	@exclusion = split_host_list( $2 );
+	@exclusion = split_host_list( $2, $config{DEFER_DNS_RESOLUTION} );
 
 	my $chainref1 = dont_move new_chain( $table , newexclusionchain( $table ) );
 
@@ -3762,7 +3762,7 @@ sub dest_iexclusion( $$$$$;@ ) {
 
     if ( $dest =~ /^([^!]+)!([^!]+)$/ ) {
 	$dest = $1;
-	@exclusion = split_host_list( $2 );
+	@exclusion = split_host_list( $2, $config{DEFER_DNS_RESOLUTION} );
 
 	my $chainref1 = dont_move new_chain( $table , newexclusionchain( $table ) );
 
@@ -5020,7 +5020,7 @@ sub match_source_net( $;$\$ ) {
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
 	my $result = '';
-	my @sets = split_host_list $1, 1;
+	my @sets = split_host_list( $1, 1, 1 );
 
 	fatal_error "Multiple ipset matches require the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
@@ -5093,7 +5093,7 @@ sub imatch_source_net( $;$\$ ) {
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
 	my @result = ();
-	my @sets = split_host_list $1, 1;
+	my @sets = split_host_list( $1, 1, 1 );
 
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
@@ -5162,7 +5162,7 @@ sub match_dest_net( $;$ ) {
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
 	my $result = '';
-	my @sets = split_host_list $1, 1;
+	my @sets = split_host_list( $1, 1, 1 );
 
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
@@ -5229,7 +5229,7 @@ sub imatch_dest_net( $;$ ) {
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
 	my @result;
-	my @sets = split_host_list $1, 1;
+	my @sets = split_host_list( $1, 1, 1 );
 
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
@@ -5547,10 +5547,11 @@ sub addnatjump( $$;@ ) {
 
 #
 # Split a comma-separated source or destination host list but keep [...] together. Used for spliting address lists
-# where an element of the list might be +ipset[flag,...] or +[ipset[flag,...],...]
+# where an element of the list might be +ipset[flag,...] or +[ipset[flag,...],...]. The second argument ($deferresolve)
+# should be 'true' when the passed input list may include exclusion.
 #
-sub split_host_list( $;$ ) {
-    my ( $input, $loose ) = @_;
+sub split_host_list( $$;$ ) {
+    my ( $input, $deferresolve, $loose ) = @_;
 
     my @input = split_list $input, 'host';
 
@@ -5585,33 +5586,21 @@ sub split_host_list( $;$ ) {
 	@result = @input;
     }
 
-    unless ( $config{DEFER_DNS_RESOLUTION} ) {
+    unless ( $deferresolve ) {
 	my @result1;
 
-	for my $element ( @result ) {
-	    my @list = split '!', $element, 3;
-
-	    fatal_error "Invalid host list ($input)" if @list > 2;
-
-	    my @pair;
-	    
-	    for ( @list ) {
-		unless ( supplied $_ ) {
-		    push @pair, '';
-		} elsif ( m|[-\+\[~/^&]| ) {
-		    push @pair, $_;
-		} elsif ( /^.+\..+\./ ) {
-		    if ( valid_address( $_ ) ) {
-			push @pair, $_
-		    } else {
-			push @pair, resolve_dnsname( $2 );
-		    }
+	for ( @result ) {
+	    if ( m|[-\+\[~/^&!]| ) {
+		push @result1, $_;
+	    } elsif ( /^.+\..+\./ ) {
+		if ( valid_address( $_ ) ) {
+		    push @result1, $_
 		} else {
-		    push @pair, $_;
+		    push @result1, resolve_dnsname( $_ );
 		}
+	    } else {
+		push @result1, $_;
 	    }
-
-	    push @result1 , supplied $pair[1] ? join( '!', @pair ) : $pair[0] ;
 	}
 
 	return @result1;
@@ -6046,7 +6035,7 @@ sub handle_network_list( $$ ) {
     my $nets = '';
     my $excl = '';
 
-    my @nets = split_host_list $list;
+    my @nets = split_host_list $list, 1, 0;
 
     for ( @nets ) {
 	if ( /!/ ) {
@@ -6318,7 +6307,7 @@ sub handle_original_dest( $$$ ) {
 	}
 
 	unless ( $onets ) {
-	    my @oexcl = split_host_list $oexcl;
+	    my @oexcl = split_host_list( $oexcl, $config{DEFER_DNS_RESOLUTION} );
 	    if ( @oexcl == 1 ) {
 		$rule .= match_orig_dest( "!$oexcl" );
 		$oexcl = '';
@@ -6369,19 +6358,19 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 	#
 	my $exclude = '-j MARK --or-mark ' . in_hex( $globals{EXCLUSION_MASK} );
 
-	for ( split_host_list $iexcl ) {
+	for ( split_host_list( $iexcl, $config{DEFER_DNS_RESOLUTION} ) ) {
 	    my $cond = conditional_rule( $chainref, $_ );
 	    add_rule $chainref, ( match_source_net $_ , $restriction, $mac ) . $exclude;
 	    conditional_rule_end( $chainref ) if $cond;
 	}
 
-	for ( split_host_list $dexcl ) {
+	for ( split_host_list( $dexcl, $config{DEFER_DNS_RESOLUTION} ) ) {
 	    my $cond = conditional_rule( $chainref, $_ );
 	    add_rule $chainref, ( match_dest_net $_, $restriction ) . $exclude;
 	    conditional_rule_end( $chainref ) if $cond;
 	}
 
-	for ( split_host_list $oexcl ) {
+	for ( split_host_list( $oexcl, $config{DEFER_DNS_RESOLUTION} ) ) {
 	    my $cond = conditional_rule( $chainref, $_ );
 	    add_rule $chainref, ( match_orig_dest $_ ) . $exclude;
 	    conditional_rule_end( $chainref ) if $cond;
@@ -6402,19 +6391,19 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 	#
 	# Use the current rule and send all possible matches to the exclusion chain
 	#
-	for my $onet ( split_host_list $onets ) {
+	for my $onet ( split_host_list( $onets, $config{DEFER_DNS_RESOLUTION} ) ) {
 
 	    my $cond = conditional_rule( $chainref, $onet );
 
 	    $onet = match_orig_dest $onet;
 
-	    for my $inet ( split_host_list $inets ) {
+	    for my $inet ( split_host_list( $inets, $config{DEFER_DNS_RESOLUTION} ) ) {
 
 		my $cond = conditional_rule( $chainref, $inet );
 
 		my $source_match = match_source_net( $inet, $restriction, $mac ) if $globals{KLUDGEFREE};
 
-		for my $dnet ( split_host_list $dnets ) {
+		for my $dnet ( split_host_list( $dnets, $config{DEFER_DNS_RESOLUTION} ) ) {
 		    $source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 		    add_expanded_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet, $restriction ), $onet ) );
 		}
@@ -6427,19 +6416,19 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 	#
 	# Generate RETURNs for each exclusion
 	#
-	for ( split_host_list $iexcl ) {
+	for ( split_host_list( $iexcl, $config{DEFER_DNS_RESOLUTION} ) ) {
 	    my $cond = conditional_rule( $echainref, $_ );
 	    add_rule $echainref, ( match_source_net $_ , $restriction, $mac ) . '-j RETURN';
 	    conditional_rule_end( $echainref ) if $cond;
 	}
 
-	for ( split_host_list $dexcl ) {
+	for ( split_host_list( $dexcl, $config{DEFER_DNS_RESOLUTION} ) ) {
 	    my $cond = conditional_rule( $echainref, $_ );
 	    add_rule $echainref, ( match_dest_net $_, $restriction ) . '-j RETURN';
 	    conditional_rule_end( $echainref ) if $cond;
 	}
 
-	for ( split_host_list $oexcl ) {
+	for ( split_host_list( $oexcl, $config{DEFER_DNS_RESOLUTION} ) ) {
 	    my $cond = conditional_rule( $echainref, $_ );
 	    add_rule $echainref, ( match_orig_dest $_ ) . '-j RETURN';
 	    conditional_rule_end( $echainref ) if $cond;
@@ -6499,6 +6488,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     my $table = $chainref->{table};
     my ( $jump, $mac,  $targetref, $basictarget );
     our @ends = ();
+    my $deferdns = $config{DEFER_DNS_RESOLUTION};
 
     if ( $target ) {
 	( $basictarget, my $rest ) = split ' ', $target, 2;
@@ -6566,7 +6556,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	( $inets, $iexcl ) = handle_network_list( $inets, 'SOURCE' );
 
 	unless ( $inets || $iexcl =~ /^\+\[/ || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
-	    my @iexcl = split_host_list $iexcl, 1;
+	    my @iexcl = split_host_list( $iexcl, $deferdns, 1 );
 	    if ( @iexcl == 1 ) {
 		$rule .= match_source_net "!$iexcl" , $restriction;
 		$iexcl = '';
@@ -6581,7 +6571,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	( $dnets, $dexcl ) = handle_network_list( $dnets, 'DEST' );
 
 	unless ( $dnets || $dexcl =~ /^\+\[/ ) {
-	    my @dexcl = split_host_list $dexcl, 1;
+	    my @dexcl = split_host_list( $dexcl, $deferdns, 1 );
 	    if ( @dexcl == 1 ) {
 		$rule .= match_dest_net "!$dexcl", $restriction;
 		$dexcl = '';
@@ -6627,19 +6617,19 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	# No non-trivial exclusions or we're using marks to handle them
 	#
-	for my $onet ( split_host_list $onets ) {
+	for my $onet ( split_host_list( $onets, $deferdns ) ) {
 	    my $cond1 = conditional_rule( $chainref, $onet );
 
 	    $onet = match_orig_dest $onet;
 
-	    for my $inet ( split_host_list $inets ) {
+	    for my $inet ( split_host_list( $inets, $deferdns ) ) {
 		my $source_match;
 
 		my $cond2 = conditional_rule( $chainref, $inet );
 
 		$source_match = match_source_net( $inet, $restriction, $mac ) if $globals{KLUDGEFREE};
 
-		for my $dnet ( split_host_list $dnets ) {
+		for my $dnet ( split_host_list( $dnets, $deferdns ) ) {
 		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet, $restriction );
 		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );

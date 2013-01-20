@@ -942,7 +942,7 @@ sub initialize( $;$$) {
 
     %compiler_params = ();
 
-    %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => ''  );
+    %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => ''  );
     $parmsmodified = 0;
 
     %helpers_enabled = (
@@ -2310,12 +2310,28 @@ sub process_compiler_directive( $$$$ ) {
 			   unless ( $omitting ) {
 			       my $var = $expression;
 			       directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
-			       directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^\$?([a-zA-Z]\w*)$/;
+			       directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^(\$)?([a-zA-Z]\w*)$/ || $var =~ /^(@)(\d+|[a-zA-Z]\w*)/;
 
-			       if ( exists $variables{$1} ) {
-				   delete $variables{$1};
+			       if ( ( $1 || '' ) eq '@' ) {
+				   $var = numeric_value( $var ) if $var =~ /^\d/;
+				   $var = $2 || 'chain';
+				   directive_error( "Shorewall variables may only be RESET in the body of an action", $filename, $linenumber ) unless $actparms{0};
+				   if ( exists $actparms{$var} ) {
+				       if ( $var =~ /^loglevel|logtag|chain|disposition|caller$/ ) {
+					   $actparms{$var} = '';
+				       } else {
+					   delete $actparms{$var}
+				       }
+				   } else {
+				       directive_warning( "Shorewall variable $2 does not exist", $filename, $linenumber );
+				   }
+
 			       } else {
-				   directive_warning( "Variable $1 does not exist", $filename, $linenumber );
+				   if ( exists $variables{$2} ) {
+				       delete $variables{$2};
+				   } else {
+				       directive_warning( "Shell variable $2 does not exist", $filename, $linenumber );
+				   }
 			       }
 			   }
 		       } ,

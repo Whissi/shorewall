@@ -2283,13 +2283,13 @@ sub process_compiler_directive( $$$$ ) {
 			       if ( ( $1 || '' ) eq '@' ) {
 				   $var = numeric_value( $var ) if $var =~ /^\d/;
 				   $var = $2 || 'chain';
-				   directive_error( "Action variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
+				   directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
 				   my $val = $actparms{$var} = evaluate_expression ( $expression,
 										     $filename,
 										     $linenumber );
 				   $parmsmodified = 1;
 			       } else {
-				   $variables{$1} = evaluate_expression( $expression,
+				   $variables{$2} = evaluate_expression( $expression,
 									 $filename,
 									 $linenumber );
 			       }

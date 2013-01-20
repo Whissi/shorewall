@@ -2160,8 +2160,9 @@ sub evaluate_expression( $$$ ) {
 	#                         $1      $2   $3                     -     $4
 	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
-	    $var = numeric_value( $var ) if $var;
+	    $var = numeric_value( $var ) if $var =~ /^\d/;
 	    $val = $var ? $actparms{$var} : $chain;
+	    $parmsmodified ||= $var eq 'caller';
 	    $expression = join_parts( $first, $val, $rest );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
 	}
@@ -2281,6 +2282,7 @@ sub process_compiler_directive( $$$$ ) {
 			       directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
 
 			       if ( ( $1 || '' ) eq '@' ) {
+				   $var = $2;
 				   $var = numeric_value( $var ) if $var =~ /^\d/;
 				   $var = $2 || 'chain';
 				   directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};

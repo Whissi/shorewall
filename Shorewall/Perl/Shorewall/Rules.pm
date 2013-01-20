@@ -326,12 +326,12 @@ sub print_policy($$$$) {
     }
 }
 
-sub use_policy_action( $ );
+sub use_policy_action( $$ );
 sub normalize_action( $$$ );
 sub normalize_action_name( $ );
 
-sub process_default_action( $$$$ ) {
-    my ( $originalpolicy, $policy, $default, $level ) = @_;
+sub process_default_action( $$$$$ ) {
+    my ( $originalpolicy, $policy, $default, $level, $caller ) = @_;
 
     if ( supplied $default ) {
 	my $default_option = ( $policy =~ /_DEFAULT$/ );
@@ -357,7 +357,7 @@ sub process_default_action( $$$$ ) {
 	    $default = supplied $param  ? normalize_action( $def, $level, $param  ) :
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );
-	    use_policy_action( $default );
+	    use_policy_action( $default, $caller );
 	} elsif ( ( $targets{$def} || 0 ) == INLINE ) {
 	    $default = $def;
 	    $default = "$def($param)" if supplied $param;
@@ -420,7 +420,9 @@ sub process_a_policy() {
 	fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
     }
 
-    $default = process_default_action( $originalpolicy, $policy, $default, $level );
+    my $chain = rules_chain( ${client}, ${server} );
+
+    $default = process_default_action( $originalpolicy, $policy, $default, $level, $chain );
 
     if ( defined $queue ) {
 	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
@@ -442,7 +444,6 @@ sub process_a_policy() {
 	}
     }
 
-    my $chain = rules_chain( ${client}, ${server} );
     my $chainref;
 
     if ( defined $filter_table->{$chain} ) {
@@ -555,7 +556,7 @@ sub process_policies()
 	unless ( $action eq 'none' ) {
 	    my ( $default, $level, $remainder ) = split( /:/, $action, 3 );
 	    fatal_error "Invalid setting ( $action ) for $option" if supplied $remainder;
-	    $action = process_default_action( $action, $option, $default, $level );
+	    $action = process_default_action( $action, $option, $default, $level, 'POLICY' );
 	}
 
 	$default_actions{$map{$option}} = $action;
@@ -1604,7 +1605,7 @@ sub process_action($$) {
 
     while ( read_a_line( NORMAL_READ ) ) {
 
-	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
+	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper ;
 
 	if ( $file_format == 1 ) {
 	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
@@ -1659,10 +1660,16 @@ sub process_action($$) {
 #
 # Create a policy action if it doesn't already exist
 #
-sub use_policy_action( $ ) {
+sub use_policy_action( $$ ) {
     my $ref = use_action( $_[0] );
 
-    process_action( $ref, 'POLICY' ) if $ref; 
+    if ( $ref ) {
+	process_action( $ref, $_[1] );
+    } else {
+	$ref = $usedactions{$_[0]};
+    }
+
+    $ref;
 }
 
 ################################################################################

@@ -357,7 +357,6 @@ sub process_default_action( $$$$$ ) {
 	    $default = supplied $param  ? normalize_action( $def, $level, $param  ) :
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );
-	    use_policy_action( $default, $caller );
 	} elsif ( ( $targets{$def} || 0 ) == INLINE ) {
 	    $default = $def;
 	    $default = "$def($param)" if supplied $param;
@@ -637,7 +636,7 @@ sub policy_rules( $$$$$ ) {
 		#
 		# Default action is a regular action -- jump to the action chain
 		#
-		add_ijump $chainref, j => $default;
+		add_ijump $chainref, j => use_policy_action( $default, $chainref->{name} );
 	    }
 	}
  
@@ -1605,7 +1604,7 @@ sub process_action($$) {
 
     while ( read_a_line( NORMAL_READ ) ) {
 
-	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper ;
+	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
 
 	if ( $file_format == 1 ) {
 	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =

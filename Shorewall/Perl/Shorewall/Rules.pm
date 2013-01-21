@@ -603,15 +603,15 @@ sub policy_rules( $$$$$ ) {
 	add_ijump $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
 
 	if ( $default && $default ne 'none' ) {
-	    my ( $inline ) = split ':', $default;
+	    my ( $action ) = split ':', $default;
 
-	    ( $inline, my $param ) = get_target_param( $inline );
-
-	    if ( ( $targets{$inline} || 0 ) == INLINE ) {
+	    if ( ( $targets{$action} || 0 ) == INLINE ) {
 		#
 		# Default action is an inline 
 		#
-		process_inline( $inline,      #Inline
+		( $action, my $param ) = get_target_param( $action );
+
+		process_inline( $action,      #Inline
 				$chainref,    #Chain
 				$loglevel,    #Log Level and Tag
 				$default,     #Target

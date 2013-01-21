@@ -330,8 +330,8 @@ sub use_policy_action( $$ );
 sub normalize_action( $$$ );
 sub normalize_action_name( $ );
 
-sub process_default_action( $$$$$ ) {
-    my ( $originalpolicy, $policy, $default, $level, $caller ) = @_;
+sub process_default_action( $$$$ ) {
+    my ( $originalpolicy, $policy, $default, $level ) = @_;
 
     if ( supplied $default ) {
 	my $default_option = ( $policy =~ /_DEFAULT$/ );
@@ -419,9 +419,7 @@ sub process_a_policy() {
 	fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
     }
 
-    my $chain = rules_chain( ${client}, ${server} );
-
-    $default = process_default_action( $originalpolicy, $policy, $default, $level, $chain );
+    $default = process_default_action( $originalpolicy, $policy, $default, $level );
 
     if ( defined $queue ) {
 	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
@@ -443,6 +441,7 @@ sub process_a_policy() {
 	}
     }
 
+    my $chain = rules_chain( ${client}, ${server} );
     my $chainref;
 
     if ( defined $filter_table->{$chain} ) {
@@ -555,7 +554,7 @@ sub process_policies()
 	unless ( $action eq 'none' ) {
 	    my ( $default, $level, $remainder ) = split( /:/, $action, 3 );
 	    fatal_error "Invalid setting ( $action ) for $option" if supplied $remainder;
-	    $action = process_default_action( $action, $option, $default, $level, 'POLICY' );
+	    $action = process_default_action( $action, $option, $default, $level );
 	}
 
 	$default_actions{$map{$option}} = $action;

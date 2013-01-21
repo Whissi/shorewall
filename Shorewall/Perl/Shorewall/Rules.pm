@@ -765,7 +765,11 @@ sub complete_standard_chain ( $$$$ ) {
 
     $policychainref = $filter_table->{$ruleschainref->{policychain}} if $ruleschainref;
 
-    ( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' } if $policychainref;
+    if ( $policychainref ) {
+	( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' }
+    } elsif ( $defaultaction !~ /:/ ) {
+	$defaultaction = join(":", $defaultaction, 'none', '', '' );
+    }
 
     policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }

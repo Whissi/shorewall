@@ -3137,7 +3137,7 @@ sub optimize_level8( $$$ ) {
 		    $progress = 1;
 		    replace_references $chainref1, $chainref->{name}, undef;
 
-		    unless ( $chainref->{name} =~ /^~/ ) {
+		    unless ( $chainref->{name} =~ /^~/ || $chainref1 =~ /^%/ ) {
 			#
 			# For simple use of the BLACKLIST section, we can end up with many identical
 			# chains. To distinguish them from other renamed chains, we keep track of

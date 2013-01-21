@@ -3089,122 +3089,130 @@ sub optimize_level4( $$ ) {
 sub optimize_level8( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my $progress = 1;
-    my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
-    my @chains1  = @chains;
-    my $chains   = @chains;
     my $chainseq = 0;
-    my %rename;
-    my %combined;
-
-    $passes++;
-
-    progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
     %renamed = ();
 
-    for my $chainref ( @chains ) {
-	my $digest = '';
+    while ( $progress ) {
+	my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+	my @chains1  = @chains;
+	my $chains   = @chains;
+	my %rename;
+	my %combined;
 
-	for ( @{$chainref->{rules}} ) {
-	    if ( $digest ) {
-		$digest .= ' |' . format_rule( $chainref, $_, 1 );
-	    } else {
-		$digest = format_rule( $chainref, $_, 1 );
-	    }
-	}
+	$progress = 0;
 
-	$chainref->{digest} = sha1 $digest;
-    }
+	progress_message "\n Table $table pass $passes, $chains referenced user chains, level 8...";
 
-    for my $chainref ( @chains ) {
-	my $rules    = $chainref->{rules};
-	#
-	# Shift the current $chainref off of @chains1
-	#
-	shift @chains1;
-	#
-	# Skip empty chains
-	#
-	for my $chainref1 ( @chains1 ) {
-	    next unless @{$chainref1->{rules}};
-	    next if $chainref1->{optflags} & DONT_DELETE;
-	    if ( $chainref->{digest} eq $chainref1->{digest} ) {
-		progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
-		replace_references $chainref1, $chainref->{name}, undef;
+	$passes++;
 
-		unless ( $chainref->{name} =~ /^~/ ) {
-		    #
-		    # For simple use of the BLACKLIST section, we can end up with many identical
-		    # chains. To distinguish them from other renamed chains, we keep track of
-		    # these chains via the 'blacklistsection' member.
-		    #
-		    $rename{ $chainref->{name} } = $chainref->{blacklistsection} ? '~blacklist' : '~comb';
-		}
-
-		$combined{ $chainref1->{name} } = $chainref->{name};
-	    }
-	}
-    }
-
-    my @rename = keys %rename;
-
-    if ( @rename ) {
-	#
-	# First create aliases for each renamed chain and change the {name} member.
-	#
-	for my $oldname ( @rename ) {
-	    my $newname = $renamed{ $oldname } = $rename{ $oldname } . $chainseq++;
-
-	    trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
-	    $tableref->{$newname} = $tableref->{$oldname};
-	    $tableref->{$oldname}{name} = $newname;
-	    progress_message "  Chain $oldname renamed to $newname";
-	}
-	#
-	# Next, map the combined names
-	#
-	while ( my ( $oldname, $combinedname ) = each %combined ) {
-	    $renamed{$oldname} = $renamed{$combinedname} || $combinedname;
-	}
-	#
-	# Now adjust the references to point to the new name
-	#
-	while ( my ($chain, $chainref ) = each %$tableref ) {
-	    my %references = %{$chainref->{references}};
-
-	    if ( my $newname = $renamed{$chainref->{policychain} || ''} ) {
-		$chainref->{policychain} = $newname;
-	    }
-
-	    while ( my ( $chain1, $chainref1 ) = each %references ) {
-		if ( my $newname = $renamed{$chainref->{references}{$chain1}} ) {
-		    $chainref->{references}{$newname} = $chainref->{references}{$chain1};
-		    delete $chainref->{references}{$chain1};
-		}
-	    }
-	}
-	#
-	# Delete the old names from the table
-	#
-	delete $tableref->{$_} for @rename;
-	#
-	# And fix up the rules
-	#
-	for my $chainref ( values %$tableref ) {
-	    my $rulenum = 0;
+	for my $chainref ( grep ! $_->{digest}, @chains ) {
+	    my $digest = '';
 
 	    for ( @{$chainref->{rules}} ) {
-		$rulenum++;
+		if ( $digest ) {
+		    $digest .= ' |' . format_rule( $chainref, $_, 1 );
+		} else {
+		    $digest = format_rule( $chainref, $_, 1 );
+		}
+	    }
 
-		if ( my $newname = $renamed{$_->{target}} ) {
-		    $_->{target} = $newname;
-		    trace( $chainref, 'R', $rulenum, $_ ) if $debug;
+	    $chainref->{digest} = sha1 $digest;
+	}
+
+	for my $chainref ( @chains ) {
+	    my $rules    = $chainref->{rules};
+	    #
+	    # Shift the current $chainref off of @chains1
+	    #
+	    shift @chains1;
+	    #
+	    # Skip empty chains
+	    #
+	    for my $chainref1 ( @chains1 ) {
+		next unless @{$chainref1->{rules}};
+		next if $chainref1->{optflags} & DONT_DELETE;
+		if ( $chainref->{digest} eq $chainref1->{digest} ) {
+		    progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
+		    $progress = 1;
+		    replace_references $chainref1, $chainref->{name}, undef;
+
+		    unless ( $chainref->{name} =~ /^~/ ) {
+			#
+			# For simple use of the BLACKLIST section, we can end up with many identical
+			# chains. To distinguish them from other renamed chains, we keep track of
+			# these chains via the 'blacklistsection' member.
+			#
+			$rename{ $chainref->{name} } = $chainref->{blacklistsection} ? '~blacklist' : '~comb';
+		    }
+
+		    $combined{ $chainref1->{name} } = $chainref->{name};
+		}
+	    }
+	}
+
+	my @rename = keys %rename;
+
+	if ( @rename ) {
+	    #
+	    # First create aliases for each renamed chain and change the {name} member.
+	    #
+	    for my $oldname ( @rename ) {
+		my $newname = $renamed{ $oldname } = $rename{ $oldname } . $chainseq++;
+
+		trace( $tableref->{$oldname}, 'RN', 0, " Renamed $newname" ) if $debug;
+		$tableref->{$newname} = $tableref->{$oldname};
+		$tableref->{$oldname}{name} = $newname;
+		progress_message "  Chain $oldname renamed to $newname";
+	    }
+	    #
+	    # Next, map the combined names
+	    #
+	    while ( my ( $oldname, $combinedname ) = each %combined ) {
+		$renamed{$oldname} = $renamed{$combinedname} || $combinedname;
+	    }
+	    #
+	    # Now adjust the references to point to the new name
+	    #
+	    while ( my ($chain, $chainref ) = each %$tableref ) {
+		my %references = %{$chainref->{references}};
+
+		if ( my $newname = $renamed{$chainref->{policychain} || ''} ) {
+		    $chainref->{policychain} = $newname;
+		}
+
+		while ( my ( $chain1, $chainref1 ) = each %references ) {
+		    if ( my $newname = $renamed{$chainref->{references}{$chain1}} ) {
+			$chainref->{references}{$newname} = $chainref->{references}{$chain1};
+			delete $chainref->{references}{$chain1};
+		    }
+		}
+	    }
+	    #
+	    # Delete the old names from the table
+	    #
+	    delete $tableref->{$_} for @rename;
+	    #
+	    # And fix up the rules
+	    #
+	    for my $chainref ( values %$tableref ) {
+		my $rulenum = 0;
+
+		for ( @{$chainref->{rules}} ) {
+		    $rulenum++;
+
+		    if ( my $newname = $renamed{$_->{target}} ) {
+			$_->{target} = $newname;
+			delete $chainref->{digest};
+			trace( $chainref, 'R', $rulenum, $_ ) if $debug;
+		    }
 		}
 	    }
 	}
     }
 
     $passes;
+
 }
 
 #

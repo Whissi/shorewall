@@ -881,7 +881,7 @@ sub finish_chain_section ($$$) {
 		      $config{RELATED_DISPOSITION},
 		      '' );
 
-	    $related_target = ensure_audit_chain( $related_target ) if $targets{$related_target} & AUDIT;
+	    $related_target = ensure_audit_chain( $related_target ) if ( $targets{$related_target} || 0 ) & AUDIT;
 
 	    add_ijump( $relatedref, g => $related_target );
 

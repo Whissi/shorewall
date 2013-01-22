@@ -2962,7 +2962,7 @@ sub optimize_level4( $$ ) {
 				# now on.
 				#
 				$chainref->{optflags} |= DONT_OPTIMIZE;
-			    } else {
+			    } elsif ( ! ( $chainref->{optflags} & DONT_MOVE ) ) {
 				#
 				# Replace references to this chain with the target and add the matches
 				#

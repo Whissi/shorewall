@@ -356,9 +356,13 @@
         <listitem>
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, blacklists are only consulted for new
-          connections. This includes entries in the <ulink
-          url="???">shorewall-blrules</ulink> (5) file and in the BLACKLIST
-          section of <ulink
+          connections, for packets in the INVALID connection state (such as a
+          TCP SYN,ACK when there has been no corresponding SYN), and for
+          packets that are UNTRACKED due to entries in <ulink
+          url="shorewall6-conntrack.html">shorewall6-conntrack</ulink>(5).
+          This includes entries in the <ulink
+          url="shorewall6-blrules.html">shorewall6-blrules</ulink> (5) file
+          and in the BLACKLIST section of <ulink
           url="shorewall6-rules.html">shorewall6-rules</ulink> (5).</para>
 
           <para>When set to <emphasis role="bold">No</emphasis> or <emphasis

@@ -2675,10 +2675,28 @@ sub delete_references( $ ) {
 }
 
 #
+# Calculate a digest for the passed chain and store it in the {digest} member.
+#
+sub calculate_digest( $ ) {
+    my $chainref = shift;
+    my $digest = '';
+
+    for ( @{$chainref->{rules}} ) {
+	if ( $digest ) {
+	    $digest .= ' |' . format_rule( $chainref, $_, 1 );
+	} else {
+	    $digest = format_rule( $chainref, $_, 1 );
+	}
+    }
+
+    $chainref->{digest} = sha1 $digest;
+}
+
+#
 # Replace jumps to the passed chain with jumps to the passed target
 #
-sub replace_references( $$$ ) {
-    my ( $chainref, $target, $targetopts ) = @_;
+sub replace_references( $$$;$ ) {
+    my ( $chainref, $target, $targetopts, $digest ) = @_;
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     my $name      = $chainref->{name};
@@ -2705,6 +2723,8 @@ sub replace_references( $$$ ) {
 		    $count++;
 		    trace( $fromref, 'R', $rule, $_ ) if $debug;
 		}
+
+		calculate_digest( $fromref ) if $digest;
 	    }
 	    #
 	    # The passed chain is no longer referenced by chain $fromref
@@ -3094,7 +3114,7 @@ sub optimize_level8( $$$ ) {
     %renamed = ();
 
     while ( $progress ) {
-	my @chains   = ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+	my @chains   = ( sort { $b->{name} cmp $a->{name} } grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
 	my @chains1  = @chains;
 	my $chains   = @chains;
 	my %rename;
@@ -3106,19 +3126,7 @@ sub optimize_level8( $$$ ) {
 
 	$passes++;
 
-	for my $chainref ( grep ! $_->{digest}, @chains ) {
-	    my $digest = '';
-
-	    for ( @{$chainref->{rules}} ) {
-		if ( $digest ) {
-		    $digest .= ' |' . format_rule( $chainref, $_, 1 );
-		} else {
-		    $digest = format_rule( $chainref, $_, 1 );
-		}
-	    }
-
-	    $chainref->{digest} = sha1 $digest;
-	}
+	calculate_digest( $_ ) for ( grep ! $_->{digest}, @chains );
 
 	for my $chainref ( @chains ) {
 	    my $rules    = $chainref->{rules};
@@ -3135,9 +3143,9 @@ sub optimize_level8( $$$ ) {
 		if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		    progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		    $progress = 1;
-		    replace_references $chainref1, $chainref->{name}, undef;
+		    replace_references $chainref1, $chainref->{name}, undef, 1;
 
-		    unless ( $chainref->{name} =~ /^~/ || $chainref1 =~ /^%/ ) {
+		    unless ( $chainref->{name} =~ /^~/ || $chainref1->{name} =~ /^%/ ) {
 			#
 			# For simple use of the BLACKLIST section, we can end up with many identical
 			# chains. To distinguish them from other renamed chains, we keep track of
@@ -3151,9 +3159,8 @@ sub optimize_level8( $$$ ) {
 	    }
 	}
 
-	my @rename = keys %rename;
-
-	if ( @rename ) {
+	if ( $progress ) {
+	    my @rename = keys %rename;
 	    #
 	    # First create aliases for each renamed chain and change the {name} member.
 	    #

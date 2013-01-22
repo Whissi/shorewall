@@ -291,7 +291,6 @@ our $VERSION = 'MODULEVERSION';
 #                                               filtered     => Number of filter rules at the front of an interface forward chain
 #                                               digest       => string representation of the chain's rules for use in optimization
 #                                                               level 8.
-#                                               accepted     => A 'ESTABLISHED,RELATED' ACCEPT rule has been added to this chain.
 #                                               complete     => The last rule in the chain is a -g or a simple -j to a terminating target
 #                                                               Suppresses adding additional rules to the chain end of the chain
 #                                             } ,

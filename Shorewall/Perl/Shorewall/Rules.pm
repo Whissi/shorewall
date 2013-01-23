@@ -865,7 +865,7 @@ sub finish_chain_section ($$$) {
     my $save_comment        = push_comment;
     my $relatedchain        = $chainref->{name} =~ /^\+/;
 
-    if ( $state =~ /RELATED/ && ( $related_level || $related_target ne 'ACCEPT' ) ) {
+    if ( $state =~ /RELATED/ && ( $relatedchain || $related_level || $related_target ne 'ACCEPT' ) ) {
 
 	if ( $related_level ) {
 	    my $relatedref;
@@ -879,7 +879,7 @@ sub finish_chain_section ($$$) {
 	    log_rule( $related_level,
 		      $relatedref,
 		      $config{RELATED_DISPOSITION},
-		      '' );
+		      '' ) if $related_level;
 
 	    $related_target = ensure_audit_chain( $related_target ) if ( $targets{$related_target} || 0 ) & AUDIT;
 
@@ -945,7 +945,7 @@ sub finish_section ( $ ) {
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
-	    my $chainref  = $filter_table->{$function->( $zone, $zone1 ) };
+	    my $chainref  = $filter_table->{$function->( $zone, $zone1 )};
 	    my $chain1ref = $filter_table->{rules_chain( $zone, $zone1 )};
 	    finish_chain_section $chainref || $chain1ref, $chain1ref, $sections if $chain1ref->{referenced};
 	}

@@ -820,6 +820,34 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
       <varlistentry>
         <term><emphasis
+        role="bold">INVALID_DISPOSITION=[A_DROP|A_REJECT|DROP|REJECT|CONTINUE]</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.13. Shorewall has traditionally passed
+          INVALID packets through the NEW section of <ulink
+          url="shorewall6-rules.html">shorewall-rules</ulink> (5). When a
+          packet in INVALID state fails to match any rule in the INVALID
+          section, the packet is disposed of based on this setting. The
+          default value is CONTINUE for compatibility with earlier
+          versions.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">INVALID_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.13. Packets in the INVALID state that
+          do not match any rule in the INVALID section of <ulink
+          url="manpages/shorewall6-rules.html">shorewall-rules</ulink> (5) are
+          logged at this level. The default value is empty which means no
+          logging is performed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
         role="bold">IP</emphasis>=[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
@@ -2110,6 +2138,34 @@ LOG:info:,bar                        net                    fw</programlisting>
           through 'tracked' interfaces will not be passed to the PREROUTING
           rules. Since TRACK_PROVIDERS was just introduced in 4.4.3, this
           change should be transparent to most, if not all, users.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">UNTRACKED_DISPOSITION=[ACCEPT|A_ACCEPT|A_DROP|A_REJECT|DROP|REJECT|CONTINUE]</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.13. Shorewall has traditionally passed
+          UNTRACKED packets through the NEW section of <ulink
+          url="shorewall6-rules.html">shorewall6-rules</ulink> (5). When a
+          packet in UNTRACKED state fails to match any rule in the UNTRACKED
+          section, the packet is disposed of based on this setting. The
+          default value is CONTINUE for compatibility with earlier
+          versions.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">UNTRACKED_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.13. Packets in the UNTRACKED state that
+          do not match any rule in the UNTRACKED section of <ulink
+          url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5) are
+          logged at this level. The default value is empty which means no
+          logging is performed.</para>
         </listitem>
       </varlistentry>
 

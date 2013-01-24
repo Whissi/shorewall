@@ -663,7 +663,6 @@ sub initialize( $;$$) {
 	  LOGALLNEW => undef,
 	  BLACKLIST_LOGLEVEL => undef,
 	  RELATED_LOG_LEVEL => undef,
-	  INVALID_LOG_LEVEL => undef,
 	  RFC1918_LOG_LEVEL => undef,
 	  MACLIST_LOG_LEVEL => undef,
 	  TCP_FLAGS_LOG_LEVEL => undef,
@@ -673,6 +672,8 @@ sub initialize( $;$$) {
 	  STARTUP_LOG => undef,
 	  SFILTER_LOG_LEVEL => undef,
 	  RPFILTER_LOG_LEVEL => undef,
+	  INVALID_LOG_LEVEL => undef,
+	  UNTRACKED_LOG_LEVEL => undef,
 	  #
 	  # Location of Files
 	  #
@@ -784,6 +785,7 @@ sub initialize( $;$$) {
 	  RPFILTER_DISPOSITION => undef,
 	  RELATED_DISPOSITION => undef,
 	  INVALID_DISPOSITION => undef,
+	  UNTRACKED_DISPOSITION => undef,
 	  #
 	  # Mark Geometry
 	  #
@@ -5227,6 +5229,7 @@ sub get_configuration( $$$$ ) {
     default_log_level 'RFC1918_LOG_LEVEL',   '';
     default_log_level 'RELATED_LOG_LEVEL',   '';
     default_log_level 'INVALID_LOG_LEVEL',   '';
+    default_log_level 'UNTRACKED_LOG_LEVEL', '';
 
     warning_message "RFC1918_LOG_LEVEL=$config{RFC1918_LOG_LEVEL} ignored. The 'norfc1918' interface/host option is no longer supported" if $config{RFC1918_LOG_LEVEL};
 
@@ -5300,10 +5303,27 @@ sub get_configuration( $$$$ ) {
 	    fatal_error "Invalid value ($config{INVALID_DISPOSITION}) for INVALID_DISPOSITION"
 	}
 
-	require_capability 'AUDIT_TARGET' , "RELATED_DISPOSITION=$val", 's' if $val =~ /^A_/;
+	require_capability 'AUDIT_TARGET' , "INVALID_DISPOSITION=$val", 's' if $val =~ /^A_/;
     } else {
 	$config{INVALID_DISPOSITION}  = 'CONTINUE';
 	$globals{INVALID_TARGET}      = '';
+    }
+
+    if ( $val = $config{UNTRACKED_DISPOSITION} ) {
+	if ( $val =~ /^(?:A_)?(?:DROP|ACCEPT)$/ ) {
+	    $globals{UNTRACKED_TARGET} = $val;
+	} elsif ( $val eq 'REJECT' ) {
+	    $globals{UNTRACKED_TARGET} = 'reject';
+	} elsif ( $val eq 'A_REJECT' ) {
+	    $globals{UNTRACKED_TARGET} = $val;
+	} else {
+	    fatal_error "Invalid value ($config{UNTRACKED_DISPOSITION}) for UNTRACKED_DISPOSITION"
+	}
+
+	require_capability 'AUDIT_TARGET' , "UNTRACKED_DISPOSITION=$val", 's' if $val =~ /^A_/;
+    } else {
+	$config{UNTRACKED_DISPOSITION}  = 'CONTINUE';
+	$globals{UNTRACKED_TARGET}        = '';
     }
 
     if ( $val = $config{MACLIST_TABLE} ) {

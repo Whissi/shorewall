@@ -132,6 +132,7 @@ our %EXPORT_TAGS = (
 				       blacklist_chain
 				       related_chain
 				       invalid_chain
+				       untracked_chain
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -1635,6 +1636,13 @@ sub related_chain($$) {
 #
 sub invalid_chain($$) {
     '_' . &rules_chain(@_);
+}
+
+#
+# Name of the untracked chain between an ordered pair of zones
+#
+sub untracked_chain($$) {
+    '&' . &rules_chain(@_);
 }
 
 #

@@ -62,14 +62,15 @@ our %sections;
 
 our $section;
 
-use constant { NULL_SECTION          => 0,
-               BLACKLIST_SECTION     => 1,
-	       ALL_SECTION           => 2,
-	       ESTABLISHED_SECTION   => 4,
-	       RELATED_SECTION       => 8,
-	       INVALID_SECTION       => 16,
-	       NEW_SECTION           => 32,
-	       DEFAULTACTION_SECTION => 64 };
+use constant { NULL_SECTION          => 0x00,
+               BLACKLIST_SECTION     => 0x01,
+	       ALL_SECTION           => 0x02,
+	       ESTABLISHED_SECTION   => 0x04,
+	       RELATED_SECTION       => 0x08,
+	       INVALID_SECTION       => 0x10,
+	       UNTRACKED_SECTION     => 0x20,
+	       NEW_SECTION           => 0x40,
+	       DEFAULTACTION_SECTION => 0x80 };
 #
 # These are the sections that may appear in a section header
 #
@@ -77,6 +78,7 @@ our %section_map = ( ALL           => ALL_SECTION,
 		     ESTABLISHED   => ESTABLISHED_SECTION,
 		     RELATED       => RELATED_SECTION,
                      INVALID       => INVALID_SECTION,
+                     UNTRACKED     => UNTRACKED_SECTION,
 		     NEW           => NEW_SECTION );
 
 our @policy_chains;
@@ -173,6 +175,7 @@ sub initialize( $ ) {
 		  ESTABLISHED => 0,
 		  RELATED     => 0,
 		  INVALID     => 0,
+                  UNTRACKED   => 0,
 		  NEW         => 0
 		  );
     #
@@ -848,20 +851,24 @@ sub finish_chain_section ($$$) {
     my $related_target      = $globals{RELATED_TARGET};
     my $invalid_level       = $config{INVALID_LOG_LEVEL};
     my $invalid_target      = $globals{INVALID_TARGET};
+    my $untracked_level     = $config{UNTRACKED_LOG_LEVEL};
+    my $untracked_target    = $globals{UNTRACKED_TARGET};
     my $save_comment        = push_comment;
     my %state;
-    my %statetable          = ( RELATED => [ '+', $related_level, $related_target ] ,
-				INVALID => [ '_', $invalid_level, $invalid_target ] );
+    my %statetable          = ( RELATED   => [ '+', $related_level, $related_target ] ,
+				INVALID   => [ '_', $invalid_level, $invalid_target ] ,
+				UNTRACKED => [ '&', $untracked_level, $untracked_target ] ,
+			      );
 
     $state{$_} = 1 for split ',', $state;
 
-    for ( qw/ESTABLISHED RELATED INVALID/ ) {
+    for ( qw/ESTABLISHED RELATED INVALID UNTRACKED/ ) {
 	delete $state{$_} if $chain1ref->{sections}{$_};
     }
 
     $chain1ref->{sections}{$_} = 1 for keys %state;
 
-    for ( qw( RELATED INVALID ) ) {
+    for ( qw( RELATED INVALID UNTRACKED ) ) {
 	if ( $state{$_} ) {
 	    my ( $char, $level, $target ) = @{$statetable{$_}};
 	    my $twochains = substr( $chainref->{name}, 0, 1 ) eq $char;
@@ -951,6 +958,8 @@ sub ensure_rules_chain( $ )
 
     unless ( $chainref->{referenced} ) {
 	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID,UNTRACKED';
+	} elsif ( $section == UNTRACKED_SECTION ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID';
 	} elsif ( $section == INVALID_SECTION ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED';
@@ -978,6 +987,8 @@ sub finish_section ( $ ) {
 	$function = \&related_chain;
     } elsif ( $section == INVALID_SECTION ) {
 	$function = \&invalid_chain;
+    } elsif ( $section == UNTRACKED_SECTION ) {
+	$function = \&untracked_chain;
     } else {
 	$function = \&rules_chain;
     }
@@ -2299,7 +2310,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # Handle rules in the BLACKLIST, RELATED and INVALID sections
 	    #
-	    if ( $section & ( BLACKLIST_SECTION | RELATED_SECTION | INVALID_SECTION ) ) {
+	    if ( $section & ( BLACKLIST_SECTION | RELATED_SECTION | INVALID_SECTION | UNTRACKED_SECTION ) ) {
 		my $auxchain;
 		my $auxref;
 
@@ -2307,6 +2318,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    $auxchain = blacklist_chain( ${sourcezone}, ${destzone} );
 		} elsif ( $section == INVALID_SECTION ) {
 		    $auxchain = invalid_chain( ${sourcezone}, ${destzone} );
+		} elsif ( $section == UNTRACKED_SECTION ) {
+		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
 		} else {
 		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
 		}
@@ -2323,6 +2336,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 			$auxref->{blacklistsection} = 1;
 		    } elsif ( $section == INVALID_SECTION ) {
 			@state = state_imatch( 'INVALID' );
+		    } elsif ( $section == UNTRACKED_SECTION ) {
+			@state = state_imatch( 'UNTRACKED' );
 		    } else {
 			@state = state_imatch 'RELATED';
 		    };
@@ -2412,7 +2427,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_headers( $headers ) ,
 		      do_condition( $condition , $chain ) ,
 		    );
-    } elsif ( $section & ( INVALID_SECTION | RELATED_SECTION ) ) {
+    } elsif ( $section & ( INVALID_SECTION | RELATED_SECTION | UNTRACKED_SECTION ) ) {
 	$rule = join( '',
 		      do_proto($proto, $ports, $sports),
 		      do_ratelimit( $ratelimit, $basictarget ) ,
@@ -2588,12 +2603,13 @@ sub process_section ($) {
 	finish_section 'ESTABLISHED';
     } elsif ( $sect eq 'INVALID' ) {
 	@sections{'ALL','ESTABLISHED','RELATED'} = ( 1, 1, 1 );
-	finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
+	finish_section ( 'ESTABLISHED,RELATED' );
+    } elsif ( $sect eq 'UNTRACKED' ) {
+	@sections{'ALL','ESTABLISHED','RELATED', 'INVALID' } = ( 1, 1, 1, 1 );
+	finish_section ( 'ESTABLISHED,RELATED, INVALID' );
     } elsif ( $sect eq 'NEW' ) {
-	@sections{'ALL','ESTABLISHED','RELATED','INVALID','NEW'} = ( 1, 1, 1, 1, 1 );
-	finish_section ( ( $section == RELATED_SECTION ) ? 'RELATED,INVALID' : 
-			 ( $section == INVALID_SECTION ) ? 'INVALID' :
-			 'ESTABLISHED,RELATED,INVALID' );
+	@sections{'ALL','ESTABLISHED','RELATED','INVALID','UNTRACKED', 'NEW'} = ( 1, 1, 1, 1, 1, 1 );
+	finish_section ( 'ESTABLISHED,RELATED,INVALID' );
     }
 
     $section = $section_map{$sect};

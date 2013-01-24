@@ -849,9 +849,9 @@ sub finish_chain_section ($$$) {
     my $invalid_level       = $config{INVALID_LOG_LEVEL};
     my $invalid_target      = $globals{INVALID_TARGET};
     my $save_comment        = push_comment;
-    my $relatedchain        = $chainref->{name} =~ /^\+/;
-    my $invalidchain        = $chainref->{name} =~ /^_/;
     my %state;
+    my %statetable          = ( RELATED => [ '+', $related_level, $related_target ] ,
+				INVALID => [ '_', $invalid_level, $invalid_target ] );
 
     $state{$_} = 1 for split ',', $state;
 
@@ -861,67 +861,42 @@ sub finish_chain_section ($$$) {
 
     $chain1ref->{sections}{$_} = 1 for keys %state;
 
-    if ( $state =~ /RELATED/ && ( $relatedchain || $related_level || $related_target ne 'ACCEPT' ) ) {
+    for ( qw( RELATED INVALID ) ) {
+	if ( $state{$_} ) {
+	    my ( $char, $level, $target ) = @{$statetable{$_}};
+	    my $twochains = substr( $chainref->{name}, 0, 1 ) eq $char;
 
-	if ( $related_level ) {
-	    my $relatedref;
+	    if ( $twochains || $level || $target ne 'ACCEPT' ) {
+		if ( $level ) {
+		    my $chain2ref;
 
-	    if ( $relatedchain ) {
-		$relatedref = $chainref;
-	    } else {
-		$relatedref = new_chain( 'filter', "+$chainref->{name}" );
+		    if ( $twochains ) {
+			$chain2ref = $chainref;
+		    } else {
+			$chain2ref = new_chain( 'filter', "${char}$chainref->{name}" );
+		    }
+
+		    log_rule( $level,
+			      $chain2ref,
+			      uc $target,
+			      '' );
+
+		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
+
+		    add_ijump( $chain2ref, g => $target ) if $target;
+
+		    $target = $chain2ref->{name} unless $twochains;
+		}
+
+		if ( $twochains ) {
+		    add_ijump $chainref, g => $target;
+		    %state = ();
+		    last;
+		}
+
+		add_ijump( $chainref, g => $target, state_imatch $_ ) if $target;
+		delete $state{$_};
 	    }
-
-	    log_rule( $related_level,
-		      $relatedref,
-		      $config{RELATED_DISPOSITION},
-		      '' );
-
-	    $related_target = ensure_audit_chain( $related_target ) if ( $targets{$related_target} || 0 ) & AUDIT;
-
-	    add_ijump( $relatedref, g => $related_target );
-
-	    $related_target = $relatedref->{name} unless $relatedchain;
-	}
-
-        if ( $relatedchain ) {
-	    add_ijump $chainref, g => $related_target;
-	    %state = ();
-	} else {
-	    add_ijump $chainref, g => $related_target, state_imatch 'RELATED';
-	    delete $state{RELATED};
-	}
-    }
-
-    if ( $state =~ /INVALID/ && ( $invalidchain || $invalid_level || $invalid_target ne 'ACCEPT' ) ) {
-
-	if ( $invalid_level ) {
-	    my $invalidref;
-
-	    if ( $invalidchain ) {
-		$invalidref = $chainref;
-	    } else {
-		$invalidref = new_chain( 'filter', "_$chainref->{name}" );
-	    }
-
-	    log_rule( $invalid_level,
-		      $invalidref,
-		      $config{INVALID_DISPOSITION},
-		      '' );
-
-	    $invalid_target = ensure_audit_chain( $invalid_target ) if ( $targets{$invalid_target} || 0 ) & AUDIT;
-
-	    add_ijump( $invalidref, g => $invalid_target ) if $invalid_target;
-
-	    $invalid_target = $invalidref->{name} unless $invalidchain;
-	}
-
-        if ( $invalidchain ) {
-	    add_ijump $chainref, g => $invalid_target;
-	    %state = ();
-	} else {
-	    add_ijump $chainref, g => $invalid_target, state_imatch 'INVALID' if $invalid_target;
-	    delete $state{INVALID};
 	}
     }
 
@@ -932,7 +907,7 @@ sub finish_chain_section ($$$) {
 	    push @state, $_ if $state{$_};
 	}
 
-	add_ijump $chain1ref, j => 'ACCEPT', state_imatch join(',', @state ) if @state;
+	add_ijump( $chain1ref, j => 'ACCEPT', state_imatch join(',', @state ) ) if @state;
     }
 
     if ($sections{NEW} ) {

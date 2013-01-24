@@ -836,36 +836,6 @@ sub optimize_policy_chains() {
 # Modules moved from the Chains module in 4.4.18
 ################################################################################
 
-sub finish_chain_section( $$$ );
-
-#
-# Create a rules chain if necessary and populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
-#
-# Return a reference to the chain's table entry.
-#
-sub ensure_rules_chain( $ )
-{
-    my ($chain) = @_;
-
-    my $chainref = $filter_table->{$chain};
-
-    $chainref = new_rules_chain( $chain ) unless $chainref;
-
-    unless ( $chainref->{referenced} ) {
-	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
-	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID';
-	} elsif ( $section == INVALID_SECTION ) {
-	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED';
-	} elsif ( $section == RELATED_SECTION ) {
-	    finish_chain_section $chainref , $chainref, 'ESTABLISHED';
-	}
-
-	$chainref->{referenced} = 1;
-    }
-
-    $chainref;
-}
-
 #
 # Add ESTABLISHED,RELATED,INVALID rules and synparam jumps to the passed chain
 #
@@ -989,6 +959,34 @@ sub finish_chain_section ($$$) {
     }
 
     pop_comment( $save_comment );
+}
+
+#
+# Create a rules chain if necessary and populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
+#
+# Return a reference to the chain's table entry.
+#
+sub ensure_rules_chain( $ )
+{
+    my ($chain) = @_;
+
+    my $chainref = $filter_table->{$chain};
+
+    $chainref = new_rules_chain( $chain ) unless $chainref;
+
+    unless ( $chainref->{referenced} ) {
+	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID';
+	} elsif ( $section == INVALID_SECTION ) {
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED';
+	} elsif ( $section == RELATED_SECTION ) {
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED';
+	}
+
+	$chainref->{referenced} = 1;
+    }
+
+    $chainref;
 }
 
 #

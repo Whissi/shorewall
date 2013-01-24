@@ -131,6 +131,7 @@ our %EXPORT_TAGS = (
 				       rules_chain
 				       blacklist_chain
 				       related_chain
+				       invalid_chain
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -293,6 +294,7 @@ our $VERSION = 'MODULEVERSION';
 #                                                               level 8.
 #                                               complete     => The last rule in the chain is a -g or a simple -j to a terminating target
 #                                                               Suppresses adding additional rules to the chain end of the chain
+#                                               sections     => { <section> = 1, ... } - Records sections that have been completed.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -1626,6 +1628,13 @@ sub blacklist_chain($$) {
 #
 sub related_chain($$) {
     '+' . &rules_chain(@_);
+}
+
+#
+# Name of the invalid chain between an ordered pair of zones
+#
+sub invalid_chain($$) {
+    '_' . &rules_chain(@_);
 }
 
 #

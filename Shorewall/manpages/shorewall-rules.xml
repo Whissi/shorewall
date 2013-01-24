@@ -81,8 +81,25 @@
           <para>The only ACTIONs allowed in this section are ACCEPT, DROP,
           REJECT, LOG and QUEUE</para>
 
-          <para>There is an implicit ACCEPT rule inserted at the end of this
-          section.</para>
+          <para>There is an implicit rule added at the end of this section
+          that invokes the RELATED_DISPOSITION (<ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">INVALID</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.13. Packets in the INVALID state are
+          processed by rules in this section.</para>
+
+          <para>The only Actions allowed in this section are ACCEPT, DROP,
+          REJECT, LOG and QUEUE.</para>
+
+          <para>There is an implicit rule added at the end of this section
+          that invokes the INVALID_DISPOSITION (<ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 

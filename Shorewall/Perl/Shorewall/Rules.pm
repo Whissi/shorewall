@@ -67,14 +67,16 @@ use constant { NULL_SECTION          => 0,
 	       ALL_SECTION           => 2,
 	       ESTABLISHED_SECTION   => 4,
 	       RELATED_SECTION       => 8,
-	       NEW_SECTION           => 16,
-	       DEFAULTACTION_SECTION => 32 };
+	       INVALID_SECTION       => 16,
+	       NEW_SECTION           => 32,
+	       DEFAULTACTION_SECTION => 64 };
 #
 # These are the sections that may appear in a section header
 #
 our %section_map = ( ALL           => ALL_SECTION,
 		     ESTABLISHED   => ESTABLISHED_SECTION,
 		     RELATED       => RELATED_SECTION,
+                     INVALID       => INVALID_SECTION,
 		     NEW           => NEW_SECTION );
 
 our @policy_chains;
@@ -170,6 +172,7 @@ sub initialize( $ ) {
     %sections = ( ALL         => 0,
 		  ESTABLISHED => 0,
 		  RELATED     => 0,
+		  INVALID     => 0,
 		  NEW         => 0
 		  );
     #
@@ -212,6 +215,15 @@ sub initialize( $ ) {
     }
 }
 
+#
+# Create a rules chain
+#
+sub new_rules_chain( $ ) {
+    my $chainref = new_chain( 'filter', $_[0] );
+    $chainref->{sections} = {};
+    $chainref;
+}
+
 ###############################################################################
 # Functions moved from the former Policy Module
 ###############################################################################
@@ -250,7 +262,7 @@ sub new_policy_chain($$$$$)
 {
     my ($source, $dest, $policy, $provisional, $audit) = @_;
 
-    my $chainref = new_chain( 'filter', rules_chain( ${source}, ${dest} ) );
+    my $chainref = new_rules_chain( rules_chain( ${source}, ${dest} ) );
 
     convert_to_policy_chain( $chainref, $source, $dest, $policy, $provisional, $audit );
 
@@ -266,7 +278,7 @@ sub set_policy_chain($$$$$)
 
     my $chainref1 = $filter_table->{$chain1};
 
-    $chainref1 = new_chain 'filter', $chain1 unless $chainref1;
+    $chainref1 = new_rules_chain $chain1 unless $chainref1;
 
     unless ( $chainref1->{policychain} ) {
 	if ( $config{EXPAND_POLICIES} ) {
@@ -837,10 +849,12 @@ sub ensure_rules_chain( $ )
 
     my $chainref = $filter_table->{$chain};
 
-    $chainref = new_chain( 'filter', $chain ) unless $chainref;
+    $chainref = new_rules_chain( $chain ) unless $chainref;
 
     unless ( $chainref->{referenced} ) {
 	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID';
+	} elsif ( $section == INVALID_SECTION ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED';
 	} elsif ( $section == RELATED_SECTION ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED';
@@ -853,7 +867,7 @@ sub ensure_rules_chain( $ )
 }
 
 #
-# Add ESTABLISHED,RELATED rules and synparam jumps to the passed chain
+# Add ESTABLISHED,RELATED,INVALID rules and synparam jumps to the passed chain
 #
 sub finish_chain_section ($$$) {
     my ($chainref,
@@ -862,8 +876,20 @@ sub finish_chain_section ($$$) {
     my $chain               = $chainref->{name};
     my $related_level       = $config{RELATED_LOG_LEVEL};
     my $related_target      = $globals{RELATED_TARGET};
+    my $invalid_level       = $config{INVALID_LOG_LEVEL};
+    my $invalid_target      = $globals{INVALID_TARGET};
     my $save_comment        = push_comment;
     my $relatedchain        = $chainref->{name} =~ /^\+/;
+    my $invalidchain        = $chainref->{name} =~ /^_/;
+    my %state;
+
+    $state{$_} = 1 for split ',', $state;
+
+    for ( qw/ESTABLISHED RELATED INVALID/ ) {
+	delete $state{$_} if $chain1ref->{sections}{$_};
+    }
+
+    $chain1ref->{sections}{$_} = 1 for keys %state;
 
     if ( $state =~ /RELATED/ && ( $relatedchain || $related_level || $related_target ne 'ACCEPT' ) ) {
 
@@ -879,7 +905,7 @@ sub finish_chain_section ($$$) {
 	    log_rule( $related_level,
 		      $relatedref,
 		      $config{RELATED_DISPOSITION},
-		      '' ) if $related_level;
+		      '' );
 
 	    $related_target = ensure_audit_chain( $related_target ) if ( $targets{$related_target} || 0 ) & AUDIT;
 
@@ -890,15 +916,53 @@ sub finish_chain_section ($$$) {
 
         if ( $relatedchain ) {
 	    add_ijump $chainref, g => $related_target;
-	    $state = '';
+	    %state = ();
 	} else {
 	    add_ijump $chainref, g => $related_target, state_imatch 'RELATED';
-	    $state =~ s/,?RELATED//;
+	    delete $state{RELATED};
 	}
     }
 
-    if ( $state ) {
-	add_ijump $chain1ref, j => 'ACCEPT', state_imatch $state unless $config{FASTACCEPT};
+    if ( $state =~ /INVALID/ && ( $invalidchain || $invalid_level || $invalid_target ne 'ACCEPT' ) ) {
+
+	if ( $invalid_level ) {
+	    my $invalidref;
+
+	    if ( $invalidchain ) {
+		$invalidref = $chainref;
+	    } else {
+		$invalidref = new_chain( 'filter', "_$chainref->{name}" );
+	    }
+
+	    log_rule( $invalid_level,
+		      $invalidref,
+		      $config{INVALID_DISPOSITION},
+		      '' );
+
+	    $invalid_target = ensure_audit_chain( $invalid_target ) if ( $targets{$invalid_target} || 0 ) & AUDIT;
+
+	    add_ijump( $invalidref, g => $invalid_target ) if $invalid_target;
+
+	    $invalid_target = $invalidref->{name} unless $invalidchain;
+	}
+
+        if ( $invalidchain ) {
+	    add_ijump $chainref, g => $invalid_target;
+	    %state = ();
+	} else {
+	    add_ijump $chainref, g => $invalid_target, state_imatch 'INVALID' if $invalid_target;
+	    delete $state{INVALID};
+	}
+    }
+
+    if ( keys %state && ! $config{FASTACCEPT} ) {
+	my @state;
+
+	for ( qw/ESTABLISHED RELATED/ ) {
+	    push @state, $_ if $state{$_};
+	}
+
+	add_ijump $chain1ref, j => 'ACCEPT', state_imatch join(',', @state ) if @state;
     }
 
     if ($sections{NEW} ) {
@@ -939,6 +1003,8 @@ sub finish_section ( $ ) {
 
     if ( $section == RELATED_SECTION ) {
 	$function = \&related_chain;
+    } elsif ( $section == INVALID_SECTION ) {
+	$function = \&invalid_chain;
     } else {
 	$function = \&rules_chain;
     }
@@ -2258,14 +2324,16 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    $chainref = ensure_rules_chain $chain;
 	    #
-	    # Handle rules in the BLACKLIST and RELATED sections
+	    # Handle rules in the BLACKLIST, RELATED and INVALID sections
 	    #
-	    if ( $section & ( BLACKLIST_SECTION | RELATED_SECTION ) ) {
+	    if ( $section & ( BLACKLIST_SECTION | RELATED_SECTION | INVALID_SECTION ) ) {
 		my $auxchain;
 		my $auxref;
 
 		if ( $blacklist ) {
 		    $auxchain = blacklist_chain( ${sourcezone}, ${destzone} );
+		} elsif ( $section == INVALID_SECTION ) {
+		    $auxchain = invalid_chain( ${sourcezone}, ${destzone} );
 		} else {
 		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
 		}
@@ -2280,6 +2348,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    if ( $blacklist ) {
 			@state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
 			$auxref->{blacklistsection} = 1;
+		    } elsif ( $section == INVALID_SECTION ) {
+			@state = state_imatch( 'INVALID' );
 		    } else {
 			@state = state_imatch 'RELATED';
 		    };
@@ -2369,7 +2439,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		      do_headers( $headers ) ,
 		      do_condition( $condition , $chain ) ,
 		    );
-    } elsif ( $section == RELATED_SECTION ) {
+    } elsif ( $section & ( INVALID_SECTION | RELATED_SECTION ) ) {
 	$rule = join( '',
 		      do_proto($proto, $ports, $sports),
 		      do_ratelimit( $ratelimit, $basictarget ) ,
@@ -2400,8 +2470,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 	     $basictarget eq 'dropInvalid' ) {
 	if ( $config{FASTACCEPT} ) {
 	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
-		$section == RELATED_SECTION && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
-	    }
+		( $section & ( RELATED_SECTION | INVALID_SECTION ) ) && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
+	     }
 
 	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} ESTABLISHED " if $section == ESTABLISHED_SECTION;
@@ -2535,7 +2605,6 @@ sub process_section ($) {
     #
     fatal_error "Invalid SECTION ($sect)" unless defined $sections{$sect};
     fatal_error "Duplicate or out of order SECTION $sect" if $sections{$sect};
-    $sections{$sect} = 1;
 
     if ( $sect eq 'BLACKLIST' ) {
 	fatal_error "The BLACKLIST section has been eliminated. Please move your BLACKLIST rules to the 'blrules' file";
@@ -2544,9 +2613,14 @@ sub process_section ($) {
     } elsif ( $sect eq 'RELATED' ) {
 	@sections{'ALL','ESTABLISHED'} = ( 1, 1);
 	finish_section 'ESTABLISHED';
-    } elsif ( $sect eq 'NEW' ) {
+    } elsif ( $sect eq 'INVALID' ) {
 	@sections{'ALL','ESTABLISHED','RELATED'} = ( 1, 1, 1 );
 	finish_section ( ( $section eq 'RELATED' ) ? 'RELATED' : 'ESTABLISHED,RELATED' );
+    } elsif ( $sect eq 'NEW' ) {
+	@sections{'ALL','ESTABLISHED','RELATED','INVALID','NEW'} = ( 1, 1, 1, 1, 1 );
+	finish_section ( ( $section == RELATED_SECTION ) ? 'RELATED,INVALID' : 
+			 ( $section == INVALID_SECTION ) ? 'INVALID' :
+			 'ESTABLISHED,RELATED,INVALID' );
     }
 
     $section = $section_map{$sect};
@@ -2822,7 +2896,9 @@ sub process_rules( $ ) {
 
 	process_rule while read_a_line( NORMAL_READ );
     }
-
+    #
+    # No need to finish the NEW section since no rules need to be generated
+    #
     $section = DEFAULTACTION_SECTION;
 }
 

@@ -2961,6 +2961,7 @@ sub optimize_level4( $$ ) {
 				# A chain with a single 'RETURN' rule -- get rid of it
 				#
 				delete_chain_and_references( $chainref );
+				$progress = 1;
 			    } else {
 				#
 				# Replace all references to this chain with references to the target
@@ -2969,10 +2970,13 @@ sub optimize_level4( $$ ) {
 				$progress = 1;
 			    }
 			} elsif ( $firstrule->{target} ) {
-			    #
-			    # Not so easy -- the rule contains matches
-			    #
-			    if ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
+			    if ( $firstrule->{target} eq 'RETURN' ) {
+				#
+				# A chain with a single 'RETURN' rule -- get rid of it
+				#
+				delete_chain_and_references( $chainref );
+				$progress = 1;
+			    } elsif ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
 				#
 				# This case requires a new rule merging algorithm. Ignore this chain for
 				# now on.
@@ -2991,6 +2995,15 @@ sub optimize_level4( $$ ) {
 			# all immediately preceding rules that have the same target
 			#
 			my $rulesref = $chainref->{rules};
+
+			if ( ( $lastref->{target} || '' ) eq 'RETURN' ) {
+			    #
+			    # The last rule is a RETURN -- get rid of it
+			    #
+			    pop @$rulesref;
+			    $lastref = $rulesref->[-1];
+			    $progress = 1;
+			}
 
 			if ( $lastref->{simple} && $lastref->{target} && ! $lastref->{targetopts} ) {
 			    my $target = $lastref->{target};

@@ -3120,18 +3120,22 @@ sub optimize_level4( $$ ) {
 }
 
 #
-# Delete duplicate chains replacing their references
+# Compare two chains. Sort in reverse order except within names that have the
+# same first character, which are sorted in forward order.
 #
 sub level8_compare( $$ ) {
     my ( $name1, $name2 ) = ( $_[0]->{name}, $_[1]->{name} );
 
-    if ( $name1 =~ /^%/ && $name2 =~ /^%/ ) {
+    if ( substr( $name1, 0, 1 ) eq substr( $name2, 0, 1 ) ) {
 	$name1 cmp $name2;
     } else {
 	$name2 cmp $name1;
     }
 }
 
+#
+# Delete duplicate chains replacing their references
+#
 sub optimize_level8( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my $progress = 1;

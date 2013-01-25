@@ -2319,7 +2319,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		} elsif ( $section == INVALID_SECTION ) {
 		    $auxchain = invalid_chain( ${sourcezone}, ${destzone} );
 		} elsif ( $section == UNTRACKED_SECTION ) {
-		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
+		    $auxchain = untracked_chain( ${sourcezone}, ${destzone} );
 		} else {
 		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
 		}
@@ -2609,7 +2609,7 @@ sub process_section ($) {
 	finish_section ( 'ESTABLISHED,RELATED, INVALID' );
     } elsif ( $sect eq 'NEW' ) {
 	@sections{'ALL','ESTABLISHED','RELATED','INVALID','UNTRACKED', 'NEW'} = ( 1, 1, 1, 1, 1, 1 );
-	finish_section ( 'ESTABLISHED,RELATED,INVALID' );
+	finish_section ( 'ESTABLISHED,RELATED,INVALID,UNTRACKED' );
     }
 
     $section = $section_map{$sect};

@@ -3122,6 +3122,16 @@ sub optimize_level4( $$ ) {
 #
 # Delete duplicate chains replacing their references
 #
+sub level8_compare( $$ ) {
+    my ( $name1, $name2 ) = ( $_[0]->{name}, $_[1]->{name} );
+
+    if ( $name1 =~ /^%/ && $name2 =~ /^%/ ) {
+	$name1 cmp $name2;
+    } else {
+	$name2 cmp $name1;
+    }
+}
+
 sub optimize_level8( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my $progress = 1;
@@ -3130,7 +3140,7 @@ sub optimize_level8( $$$ ) {
     %renamed = ();
 
     while ( $progress ) {
-	my @chains   = ( sort { $b->{name} cmp $a->{name} } grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+	my @chains   = ( sort level8_compare grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
 	my @chains1  = @chains;
 	my $chains   = @chains;
 	my %rename;

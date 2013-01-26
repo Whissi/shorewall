@@ -2983,8 +2983,11 @@ sub handle_first_entry() {
     # $first_entry can contain either a function reference or a message. If it
     # contains a reference, call the function -- otherwise issue the message
     #
-    reftype( $first_entry ) ? $first_entry->() : progress_message2( $first_entry );
+    my $entry = $first_entry;
+
     $first_entry = 0;
+
+    reftype( $entry ) ? $entry->() : progress_message2( $entry );
 }
 
 #

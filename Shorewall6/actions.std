@@ -29,5 +29,7 @@ DropSmurfs noinline     	# Handles packets with a broadcast source address
 Invalid	   noinline		# Handles packets in the INVALID conntrack state
 NotSyn	   noinline 		# Handles TCP packets that do not have SYN=1 and ACK=0
 Reject		        	# Default Action for REJECT policy
+Related    noinline             # Handles packets in the RELATED conntrack state
+RST	   noinline             # Handle packets with RST set
 TCPFlags   noinline		# Handles bad flags combinations
-
+Untracked  noinline             # Handles packets in the UNTRACKED conntrack state

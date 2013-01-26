@@ -1,11 +1,11 @@
 #
 # Shorewall 4 - Invalid Action
 #
-#    /usr/share/shorewall/action.Invalid
+#    /usr/share/shorewall/action.Related
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2011,2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2013 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -22,7 +22,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   Invalid[([<action>|-[,{audit|-}])]
+#   Related[([<action>|-[,{audit|-}])]
 #
 #       Default action is DROP
 #
@@ -39,16 +39,16 @@ use Shorewall::Chains;
 
 my ( $action, $audit ) = get_action_params( 2 );
 
-fatal_error "Invalid parameter ($audit) to action Invalid"   if supplied $audit && $audit ne 'audit';
-fatal_error "Invalid parameter ($action) to action Invalid"  unless $action =~ /^(?:ACCEPT|DROP|REJECT)$/;
+fatal_error "Related parameter ($audit) to action Related"   if supplied $audit && $audit ne 'audit';
+fatal_error "Related parameter ($action) to action Related"  unless $action =~ /^(?:ACCEPT|DROP|REJECT)$/;
 
 my $chainref         = get_action_chain;
 
 my ( $level, $tag )  = get_action_logging;
 my $target           = require_audit ( $action , $audit );
 
-log_rule_limit $level, $chainref, 'Invalid' , $action, '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
-add_jump $chainref , $target, 0, "$globals{STATEMATCH} INVALID ";
+log_rule_limit $level, $chainref, 'Related' , $action, '', $tag, 'add', "$globals{STATEMATCH} RELATED " if $level ne '';
+add_jump $chainref , $target, 0, "$globals{STATEMATCH} RELATED ";
 
 allow_optimize( $chainref );
 

@@ -1088,6 +1088,8 @@ sub currentlineinfo() {
     }
 }
 
+sub handle_first_entry();
+
 #
 # Issue a Warning Message
 #
@@ -1095,6 +1097,8 @@ sub warning_message
 {
     my $currentlineinfo = currentlineinfo;
     our @localtime;
+
+    handle_first_entry if $first_entry;
 
     $| = 1; #Reset output buffering (flush any partially filled buffers).
 
@@ -1180,6 +1184,8 @@ sub cleanup() {
 sub fatal_error	{
     my $currentlineinfo = currentlineinfo;
 
+    handle_first_entry if $first_entry;
+
     $| = 1; #Reset output buffering (flush any partially filled buffers).
 
     if ( $log ) {
@@ -1208,6 +1214,8 @@ sub fatal_error	{
 }
 
 sub fatal_error1 {
+    handle_first_entry if $first_entry;
+
     $| = 1;
 
     if ( $log ) {

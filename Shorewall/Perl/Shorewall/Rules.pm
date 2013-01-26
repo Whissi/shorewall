@@ -2332,7 +2332,14 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 		    $auxref = new_chain 'filter', $auxchain;
 			
 		    if ( $blacklist ) {
-			@state = state_imatch( 'NEW,INVALID' ) if $config{BLACKLISTNEWONLY};
+			if ( $config{BLACKLISTNEWONLY} ) {
+			    if ( have_capability 'RAW_TABLE' ) {
+				@state = state_imatch( 'NEW,INVALID,UNTRACKED' );
+			    } else {
+				@state = state_imatch( 'NEW,INVALID' );
+			    }
+			}
+
 			$auxref->{blacklistsection} = 1;
 		    } elsif ( $section == INVALID_SECTION ) {
 			@state = state_imatch( 'INVALID' );

@@ -2740,8 +2740,9 @@ sub replace_references( $$$;$ ) {
 		    trace( $fromref, 'R', $rule, $_ ) if $debug;
 		}
 
-		calculate_digest( $fromref ) if $digest;
 	    }
+	    
+	    calculate_digest( $fromref ) if $digest;
 	    #
 	    # The passed chain is no longer referenced by chain $fromref
 	    #

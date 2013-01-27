@@ -5327,6 +5327,8 @@ sub get_configuration( $$$$ ) {
 	    $globals{UNTRACKED_TARGET} = 'reject';
 	} elsif ( $val eq 'A_REJECT' ) {
 	    $globals{UNTRACKED_TARGET} = $val;
+	} elsif ( $val eq 'CONTINUE' ) {
+	    $globals{UNTRACKED_TARGET} = '';
 	} else {
 	    fatal_error "Invalid value ($config{UNTRACKED_DISPOSITION}) for UNTRACKED_DISPOSITION"
 	}

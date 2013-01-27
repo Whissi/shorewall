@@ -2739,9 +2739,10 @@ sub replace_references( $$$;$ ) {
 		    $count++;
 		    trace( $fromref, 'R', $rule, $_ ) if $debug;
 		}
-
 	    }
-	    
+	    #
+	    # The chain has been modified, so the digest is now stale
+	    #
 	    calculate_digest( $fromref ) if $digest;
 	    #
 	    # The passed chain is no longer referenced by chain $fromref

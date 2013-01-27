@@ -1624,7 +1624,7 @@ sub process_actions() {
 
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$$$$$$ );
+sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1679,6 +1679,7 @@ sub process_action($$) {
 	}
 
 	process_rule1( $chainref,
+		       '',
 		       $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
 		       '',
 		       $source,
@@ -1822,6 +1823,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
 	$generated |= process_rule1(
 				    $chainref,
+				    '',
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -1939,6 +1941,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
 	$generated |= process_rule1(
 				    $chainref,
+				    '',
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -1991,8 +1994,9 @@ sub verify_audit($;$$) {
 # reference is also passed when rules are being generated during processing of a macro used as a default action.
 #
 
-sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
+sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
+	 $rule,       #Matches
 	 $target,
 	 $current_param,
 	 $source,
@@ -2013,7 +2017,6 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$ ) {
 
     my ( $action, $loglevel)    = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
-    my $rule = '';
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 5 ) : 0;
     my $inaction  = ''; # Set to true when we are process rules in an action file
     my $inchain   = ''; # Set to true when a chain reference is passed.
@@ -2734,6 +2737,7 @@ sub process_rule ( ) {
 		for my $proto ( @protos ) {
 		    for my $user ( @users ) {
 			$generated |= process_rule1( undef,
+						     '',
 						     $target,
 						     '',
 						     $source,

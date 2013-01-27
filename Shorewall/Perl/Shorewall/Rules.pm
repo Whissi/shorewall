@@ -896,7 +896,7 @@ sub finish_chain_section ($$$) {
 		}
 
 		if ( $twochains ) {
-		    add_ijump $chainref, g => $target;
+		    add_ijump $chainref, g => $target if $target;
 		    %state = ();
 		    last;
 		}
@@ -2613,7 +2613,7 @@ sub process_section ($) {
 	finish_section ( 'ESTABLISHED,RELATED' );
     } elsif ( $sect eq 'UNTRACKED' ) {
 	@sections{'ALL','ESTABLISHED','RELATED', 'INVALID' } = ( 1, 1, 1, 1 );
-	finish_section ( 'ESTABLISHED,RELATED, INVALID' );
+	finish_section ( 'ESTABLISHED,RELATED,INVALID' );
     } elsif ( $sect eq 'NEW' ) {
 	@sections{'ALL','ESTABLISHED','RELATED','INVALID','UNTRACKED', 'NEW'} = ( 1, 1, 1, 1, 1, 1 );
 	finish_section ( 'ESTABLISHED,RELATED,INVALID,UNTRACKED' );

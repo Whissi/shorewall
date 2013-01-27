@@ -223,7 +223,7 @@ sub initialize( $ ) {
 #
 sub new_rules_chain( $ ) {
     my $chainref = new_chain( 'filter', $_[0] );
-    $chainref->{sections} = {};
+    $chainref->{sections} = $config{FASTACCEPT} ? { RELATED => 1, ESTABLISHED => 1 } : {};
     $chainref;
 }
 
@@ -902,7 +902,18 @@ sub finish_chain_section ($$$) {
 		    last;
 		}
 
-		add_ijump( $chainref, g => $target, state_imatch $_ ) if $target;
+		if ( $target ) {
+		    #
+		    # Always handle ESTABLISHED first
+		    #
+		    if ( $state{ESTABLISHED} ) {
+			add_ijump( $chain1ref, j => 'ACCEPT', state_imatch 'ESTABLISHED' );
+			delete $state{ESTABLISHED};
+		    }
+		    
+		    add_ijump( $chainref, g => $target, state_imatch $_ );
+		}
+
 		delete $state{$_};
 	    }
 	}

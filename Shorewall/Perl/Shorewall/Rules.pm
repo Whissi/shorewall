@@ -53,7 +53,9 @@ our @EXPORT = qw(
 		  verify_audit
 	       );
 
-our @EXPORT_OK = qw( initialize process_rule1 );
+our %EXPORT_TAGS = ( action => [ qw( process_rule1 is_inline ) ] );
+
+our @EXPORT_OK = qw( initialize process_rule1 is_inline );
 our $VERSION = 'MODULEVERSION';
 #
 # Globals are documented in the initialize() function
@@ -143,6 +145,10 @@ our %auditpolicies = ( ACCEPT => 1,
 		       DROP   => 1,
 		       REJECT => 1
 		     );
+
+our @columns;
+our @columnstack;
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -210,6 +216,9 @@ sub initialize( $ ) {
     # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
     #
     %usedactions       = ();
+
+    @columns           = ();
+    @columnstack       = ();
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
@@ -1217,6 +1226,17 @@ sub use_action( $ ) {
     } else {
 	createactionchain $normalized;
     }
+}
+
+#
+# Determine if an action is in-line
+#
+sub is_inline($) {
+    $actions{$_[0]}->{inline};
+}
+
+sub inline_columns() {
+    @columns;
 }
 
 #
@@ -2409,6 +2429,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	$current_param = $param unless $param eq '' || $param eq 'PARAM';
 
+	push @columnstack, [ ( @columns ) ];
+
+	@columns = ( $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard );
+
 	my $generated = process_inline( $basictarget,
 					$chainref,
 					$rule,
@@ -2430,6 +2454,8 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 					$condition,
 					$helper,
 					$wildcard );
+
+	@columns = @{pop @columnstack};
 
 	$macro_nest_level--;
 

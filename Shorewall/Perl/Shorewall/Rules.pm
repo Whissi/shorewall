@@ -53,7 +53,7 @@ our @EXPORT = qw(
 		  verify_audit
 	       );
 
-our @EXPORT_OK = qw( initialize );
+our @EXPORT_OK = qw( initialize process_rule1 );
 our $VERSION = 'MODULEVERSION';
 #
 # Globals are documented in the initialize() function
@@ -608,7 +608,7 @@ sub process_policies()
 #
 # Policy Rule application
 #
-sub process_inline ($$$$$$$$$$$$$$$$$$$$);
+sub process_inline ($$$$$$$$$$$$$$$$$$$$$);
 
 sub policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
@@ -627,6 +627,7 @@ sub policy_rules( $$$$$ ) {
 
 		process_inline( $action,      #Inline
 				$chainref,    #Chain
+				'',           #Matches
 				$loglevel,    #Log Level and Tag
 				$default,     #Target
 				$param || '', #Param
@@ -1734,8 +1735,8 @@ sub use_policy_action( $$ ) {
 #
 # Expand a macro rule from the rules file
 #
-sub process_macro ($$$$$$$$$$$$$$$$$$$) {
-    my ($macro, $chainref, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
+sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
+    my ($macro, $chainref, $matches, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
     my $generated = 0;
 
@@ -1823,7 +1824,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 
 	$generated |= process_rule1(
 				    $chainref,
-				    '',
+				    $matches,
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -1856,8 +1857,8 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$) {
 #
 # Expand an inline action rule from the rules file
 #
-sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
-    my ($inline, $chainref, $loglevel, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
+sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
+    my ($inline, $chainref, $matches, $loglevel, $target, $param, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard ) = @_;
 
     my $generated = 0;
 
@@ -1941,7 +1942,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$) {
 
 	$generated |= process_rule1(
 				    $chainref,
-				    '',
+				    $matches,
 				    $mtarget,
 				    $param,
 				    $msource,
@@ -2023,6 +2024,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
     my $normalized_target;
     my $normalized_action;
     my $blacklist = ( $section == BLACKLIST_SECTION );
+    my $matches   = $rule;
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2051,6 +2053,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	my $generated = process_macro( $basictarget,
 				       $chainref,
+				       $rule,
 				       $target,
 				       $current_param,
 				       $source,
@@ -2397,6 +2400,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	my $generated = process_inline( $basictarget,
 					$chainref,
+					$rule,
 					$loglevel,
 					$target,
 					$current_param,
@@ -2428,38 +2432,38 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 	# Either a DNAT, REDIRECT or ACCEPT+ rule or an Action with NAT;
 	# don't apply rate limiting twice
 	#
-	$rule = join( '',
-		      do_proto($proto, $ports, $sports),
-		      do_user( $user ) ,
-		      do_test( $mark , $globals{TC_MASK} ) ,
-		      do_connlimit( $connlimit ),
-		      do_time( $time ) ,
-		      do_headers( $headers ) ,
-		      do_condition( $condition , $chain ) ,
-		    );
+	$rule .= join( '',
+		       do_proto($proto, $ports, $sports),
+		       do_user( $user ) ,
+		       do_test( $mark , $globals{TC_MASK} ) ,
+		       do_connlimit( $connlimit ),
+		       do_time( $time ) ,
+		       do_headers( $headers ) ,
+		       do_condition( $condition , $chain ) ,
+		     );
     } elsif ( $section & ( INVALID_SECTION | RELATED_SECTION | UNTRACKED_SECTION ) ) {
-	$rule = join( '',
-		      do_proto($proto, $ports, $sports),
-		      do_ratelimit( $ratelimit, $basictarget ) ,
-		      do_user( $user ) ,
-		      do_test( $mark , $globals{TC_MASK} ) ,
-		      do_connlimit( $connlimit ),
-		      do_time( $time ) ,
-		      do_headers( $headers ) ,
-		      do_condition( $condition , $chain ) ,
-		      do_helper( $helper ) ,
-		    );
+	$rule .= join( '',
+		       do_proto($proto, $ports, $sports),
+		       do_ratelimit( $ratelimit, $basictarget ) ,
+		       do_user( $user ) ,
+		       do_test( $mark , $globals{TC_MASK} ) ,
+		       do_connlimit( $connlimit ),
+		       do_time( $time ) ,
+		       do_headers( $headers ) ,
+		       do_condition( $condition , $chain ) ,
+		       do_helper( $helper ) ,
+		     );
     } else {
-	$rule = join( '',
-		      do_proto($proto, $ports, $sports),
-		      do_ratelimit( $ratelimit, $basictarget ) ,
-		      do_user( $user ) ,
-		      do_test( $mark , $globals{TC_MASK} ) ,
-		      do_connlimit( $connlimit ),
-		      do_time( $time ) ,
-		      do_headers( $headers ) ,
-		      do_condition( $condition , $chain ) ,
-		    );
+	$rule .= join( '',
+		       do_proto($proto, $ports, $sports),
+		       do_ratelimit( $ratelimit, $basictarget ) ,
+		       do_user( $user ) ,
+		       do_test( $mark , $globals{TC_MASK} ) ,
+		       do_connlimit( $connlimit ),
+		       do_time( $time ) ,
+		       do_headers( $headers ) ,
+		       do_condition( $condition , $chain ) ,
+		     );
     }
 
     unless ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ||
@@ -2526,6 +2530,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 	#
 	unless ( $actiontype & NATONLY ) {
 	    $rule = join( '',
+			  $matches,
 			  do_proto( $proto, $ports, $sports ),
 			  do_ratelimit( $ratelimit, 'ACCEPT' ),
 			  do_user $user,

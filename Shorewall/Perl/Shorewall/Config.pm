@@ -5291,6 +5291,8 @@ sub get_configuration( $$$$ ) {
 	    $globals{RELATED_TARGET} = 'reject';
 	} elsif ( $val eq 'A_REJECT' ) {
 	    $globals{RELATED_TARGET} = $val;
+	} elsif ( $val eq 'CONTINUE' ) {
+	    $globals{RELATED_TARGET} = '';
 	} else {
 	    fatal_error "Invalid value ($config{RELATED_DISPOSITION}) for RELATED_DISPOSITION"
 	}

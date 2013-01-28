@@ -223,7 +223,17 @@ sub initialize( $ ) {
 #
 sub new_rules_chain( $ ) {
     my $chainref = new_chain( 'filter', $_[0] );
-    $chainref->{sections} = $config{FASTACCEPT} ? { RELATED => 1, ESTABLISHED => 1 } : {};
+
+    if ( $config{FASTACCEPT} ) {
+	if ( $globals{RELATED_TARGET} eq 'ACCEPT' && ! $config{RELATED_LOG_LEVEL} ) {
+	    $chainref->{sections} = { ESTABLISHED => 1, RELATED => 1 };
+	} else {
+	    $chainref->{sections} = { ESTABLISHED => 1 };
+	}
+    } else {
+	$chainref->{sections} = {};
+    }
+
     $chainref;
 }
 

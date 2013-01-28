@@ -82,6 +82,16 @@ our %section_map = ( ALL           => ALL_SECTION,
                      INVALID       => INVALID_SECTION,
                      UNTRACKED     => UNTRACKED_SECTION,
 		     NEW           => NEW_SECTION );
+#
+# Reverse map
+#
+our %section_rmap = ( ALL_SECTION ,        'ALL',
+		      BLACKLIST_SECTION ,  'BLACKLIST',
+		      ESTABLISHED_SECTION, 'ESTABLISHED',
+		      RELATED_SECTION,     'RELATED',
+		      INVALID_SECTION,     'INVALID',
+		      UNTRACKED_SECTION,   'UNTRACKED',
+		      NEW_SECTION,         'NEW' );
 
 our @policy_chains;
 
@@ -860,7 +870,7 @@ sub optimize_policy_chains() {
 ################################################################################
 
 #
-# Add ESTABLISHED,RELATED,INVALID rules and synparam jumps to the passed chain
+# Add ESTABLISHED,RELATED,INVALID,UNTRACKED rules and synparam jumps to the passed chain
 #
 sub finish_chain_section ($$$) {
     my ($chainref,
@@ -2518,11 +2528,12 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 	     $blacklist ||
 	     $basictarget eq 'dropInvalid' ) {
 	if ( $config{FASTACCEPT} ) {
-	    fatal_error "Entries in the $section SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
-		( $section & ( RELATED_SECTION | INVALID_SECTION ) ) && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} )
+	    fatal_error "Entries in the $section_rmap{$section} SECTION of the rules file not permitted with FASTACCEPT=Yes" unless
+		( ( $section & ( UNTRACKED_SECTION | INVALID_SECTION | ALL_SECTION ) ) ||
+		  ( $section & ( RELATED_SECTION ) ) && ( $config{RELATED_DISPOSITION} ne 'ACCEPT' || $config{RELATED_LOG_LEVEL} ) )
 	     }
 
-	fatal_error "$basictarget rules are not allowed in the $section SECTION" if $actiontype & ( NATRULE | NONAT );
+	fatal_error "$basictarget rules are not allowed in the $section_rmap{$section} SECTION" if $actiontype & ( NATRULE | NONAT );
 	$rule .= "$globals{STATEMATCH} ESTABLISHED " if $section == ESTABLISHED_SECTION;
     }
     #

@@ -5291,6 +5291,8 @@ sub get_configuration( $$$$ ) {
 	    $globals{RELATED_TARGET} = 'reject';
 	} elsif ( $val eq 'A_REJECT' ) {
 	    $globals{RELATED_TARGET} = $val;
+	} elsif ( $val eq 'CONTINUE' ) {
+	    $globals{RELATED_TARGET} = '';
 	} else {
 	    fatal_error "Invalid value ($config{RELATED_DISPOSITION}) for RELATED_DISPOSITION"
 	}
@@ -5355,7 +5357,6 @@ sub get_configuration( $$$$ ) {
     } else {
 	$val = $config{TCP_FLAGS_DISPOSITION} = 'DROP';
     }
-
 
     default 'TC_ENABLED' , $family == F_IPV4 ? 'Internal' : 'no';
 

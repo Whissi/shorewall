@@ -2443,9 +2443,13 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
 	$current_param = $param unless $param eq '' || $param eq 'PARAM';
-
+	#
+	# Push the current column array onto the column stack
+	#
 	push @columnstack, [ ( @columns ) ];
-
+	#
+	# And store the (modified) columns into the columns array for use by perl_action[_tcp]_helper
+	#
 	@columns = ( $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard );
 
 	my $generated = process_inline( $basictarget,
@@ -2704,6 +2708,10 @@ sub perl_action_tcp_helper($$) {
     assert( $chainref );
 
     if ( $inlines{$action} ) {
+	my $passedproto = $columns[2];
+
+	fatal_error "Invalid PROTO ($passedproto) for the $action action" unless $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6';
+
 	$result = &process_rule1( $chainref,
 				  $proto,
 				  $target,

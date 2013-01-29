@@ -158,6 +158,7 @@ our %auditpolicies = ( ACCEPT => 1,
 
 our @columns;
 our @columnstack;
+our $actionresult;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -2469,7 +2470,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	$macro_nest_level--;
 
-	return $generated;
+	return $generated || $actionresult;
     }
     #
     # Generate Fixed part of the rule
@@ -2651,6 +2652,7 @@ sub perl_action_helper($$) {
     my ( $target, $matches ) = @_;
     my $action   = $actparms{action};
     my $chainref = $actparms{0};
+    my $result;
 
     assert( $chainref );
 
@@ -2661,27 +2663,29 @@ sub perl_action_helper($$) {
 			'',
 			@columns );
     } else {
-	process_rule1( $chainref,
-		       $matches,
-		       $target,
-		       '',                               # Current Param
-		       '-',                              # Source
-		       '-',                              # Dest
-		       '-',                              # Proto
-		       '-',                              # Port(s)
-		       '-',                              # Source Port(s)
-		       '-',                              # Original Dest
-		       '-',                              # Rate Limit
-		       '-',                              # User
-		       '-',                              # Mark
-		       '-',                              # Connlimit
-		       '-',                              # Time
-		       '-',                              # Headers,
-		       '-',                              # condition,
-		       '-',                              # helper,
-		       0,                                # Wildcard
-		     );
+	$result = process_rule1( $chainref,
+				 $matches,
+				 $target,
+				 '',                               # Current Param
+				 '-',                              # Source
+				 '-',                              # Dest
+				 '-',                              # Proto
+				 '-',                              # Port(s)
+				 '-',                              # Source Port(s)
+				 '-',                              # Original Dest
+				 '-',                              # Rate Limit
+				 '-',                              # User
+				 '-',                              # Mark
+				 '-',                              # Connlimit
+				 '-',                              # Time
+				 '-',                              # Headers,
+				 '-',                              # condition,
+				 '-',                              # helper,
+				 0,                                # Wildcard
+			       );
     }
+
+    $actionresult ||= $result;
 }
 
 #
@@ -2691,40 +2695,43 @@ sub perl_action_tcp_helper($$) {
     my ( $target, $proto ) = @_;
     my $action   = $actparms{action};
     my $chainref = $actparms{0};
+    my $result;
 
     assert( $chainref );
 
     if ( $inlines{$action} ) {
-	&process_rule1( $chainref,
-			$proto,
-			$target,
-			'',
-			@columns[0,1],
-			'-',
-			@columns[3..14]
-		      );
+	$result = &process_rule1( $chainref,
+				  $proto,
+				  $target,
+				  '',
+				  @columns[0,1],
+				  '-',
+				  @columns[3..14]
+				);
     } else {
-	process_rule1( $chainref,
-		       $proto,
-		       $target,
-		       '',                               # Current Param
-		       '-',                              # Source
-		       '-',                              # Dest
-		       "-",                              # Proto
-		       '-',                              # Port(s)
-		       '-',                              # Source Port(s)
-		       '-',                              # Original Dest
-		       '-',                              # Rate Limit
-		       '-',                              # User
-		       '-',                              # Mark
-		       '-',                              # Connlimit
-		       '-',                              # Time
-		       '-',                              # Headers,
-		       '-',                              # condition,
-		       '-',                              # helper,
-		       0,                                # Wildcard
-		     );
+	$result = process_rule1( $chainref,
+				 $proto,
+				 $target,
+				 '',                               # Current Param
+				 '-',                              # Source
+				 '-',                              # Dest
+				 "-",                              # Proto
+				 '-',                              # Port(s)
+				 '-',                              # Source Port(s)
+				 '-',                              # Original Dest
+				 '-',                              # Rate Limit
+				 '-',                              # User
+				 '-',                              # Mark
+				 '-',                              # Connlimit
+				 '-',                              # Time
+				 '-',                              # Headers,
+				 '-',                              # condition,
+				 '-',                              # helper,
+				 0,                                # Wildcard
+			       );
     }
+
+    $actionresult ||= $result;
 }
 
 #
@@ -2872,25 +2879,27 @@ sub process_rule ( ) {
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
 		for my $proto ( @protos ) {
 		    for my $user ( @users ) {
-			$generated |= process_rule1( undef,
-						     '',
-						     $target,
-						     '',
-						     $source,
-						     $dest,
-						     $proto,
-						     $ports,
-						     $sports,
-						     $origdest,
-						     $ratelimit,
-						     $user,
-						     $mark,
-						     $connlimit,
-						     $time,
-						     $headers,
-						     $condition,
-						     $helper,
-						     $wild );
+			if ( process_rule1( undef,
+					    '',
+					    $target,
+					    '',
+					    $source,
+					    $dest,
+					    $proto,
+					    $ports,
+					    $sports,
+					    $origdest,
+					    $ratelimit,
+					    $user,
+					    $mark,
+					    $connlimit,
+					    $time,
+					    $headers,
+					    $condition,
+					    $helper,
+					    $wild ) ) {
+			    $generated = 1;
+			}
 		    }
 		}
 	    }

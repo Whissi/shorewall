@@ -227,8 +227,12 @@ sub initialize( $ ) {
     # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
     #
     %usedactions       = ();
-
-    @columns           = ();
+    #
+    # Columns $source through $wildcard -- with the exception of the latter, these correspond to the rules file columns
+    # The columns array is a hidden argument to perl_action_helper() and perl_action_tcp_helper() that allows Perl
+    # code in inline actions to generate proper rules.
+    #
+    @columns           = ( '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0 );
     @columnstack       = ();
 
     if ( $family == F_IPV4 ) {

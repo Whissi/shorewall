@@ -51,11 +51,10 @@ our @EXPORT = qw(
 		  process_actions
 		  process_rules
 		  verify_audit
+		  perl_action_helper
 	       );
 
-our %EXPORT_TAGS = ( action => [ qw( process_rule1 is_inline ) ] );
-
-our @EXPORT_OK = qw( initialize process_rule1 is_inline );
+our @EXPORT_OK = qw( initialize );
 our $VERSION = 'MODULEVERSION';
 #
 # Globals are documented in the initialize() function
@@ -1249,17 +1248,6 @@ sub use_action( $ ) {
 }
 
 #
-# Determine if an action is in-line
-#
-sub is_inline($) {
-    $actions{$_[0]}->{inline};
-}
-
-sub inline_columns() {
-    @columns;
-}
-
-#
 # This function determines the logging and params for a subordinate action or a rule within a superior action
 #
 sub merge_levels ($$) {
@@ -1701,7 +1689,7 @@ sub process_action($$) {
 
     push_open $actionfile, 2, 1;
 
-    my $oldparms = push_action_params( $chainref, $param, $level, $tag, $caller );
+    my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
 
     my $nolog = $actions{$action}{nolog};
 
@@ -1915,7 +1903,8 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 
     my ( $level, $tag ) = split( ':', $loglevel, 2 );
 
-    my $oldparms   = push_action_params( $chainref,
+    my $oldparms   = push_action_params( $inline,
+					 $chainref,
 					 $param,
 					 supplied $level ? $level : 'none',
 					 defined  $tag   ? $tag   : '' ,
@@ -2653,6 +2642,47 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
     return 1;
 }
+
+#
+# May be called by Perl code in action bodies (regular and inline) to generate a rule.
+#
+sub perl_action_helper($$) {
+    my ( $target, $matches ) = @_;
+    my $action   = $actparms{action};
+    my $chainref = $actparms{0};
+
+    assert( $chainref );
+
+    if ( $inlines{$action} ) {
+	&process_rule1( $chainref,
+			$matches,
+			$target,
+			'',
+			@columns );
+    } else {
+	process_rule1( $chainref,
+		       $matches,
+		       $target,
+		       '',                               # Current Param
+		       '-',                              # Source
+		       '-',                              # Dest
+		       '-',                              # Proto
+		       '-',                              # Port(s)
+		       '-',                              # Source Port(s)
+		       '-',                              # Original Dest
+		       '-',                              # Rate Limit
+		       '-',                              # User
+		       '-',                              # Mark
+		       '-',                              # Connlimit
+		       '-',                              # Time
+		       '-',                              # Headers,
+		       '-',                              # condition,
+		       '-',                              # helper,
+		       0,                                # Wildcard
+		     );
+    }
+}
+
 
 #
 # Helper functions for process_rule(). That function deals with the ugliness of wildcard zones ('all' and 'any') and zone lists.

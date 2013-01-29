@@ -2808,10 +2808,10 @@ sub embedded_perl( $ ) {
 }
 
 #
-# Push/pop action params
+# Push/pop acton params
 #
-sub push_action_params( $$$$$ ) {
-    my ( $chainref, $parms, $loglevel, $logtag, $caller ) = @_;
+sub push_action_params( $$$$$$ ) {
+    my ( $action, $chainref, $parms, $loglevel, $logtag, $caller ) = @_;
     my @parms = ( undef , split_list3( $parms , 'parameter' ) );
 
     $actparms{modified} = $parmsmodified;
@@ -2829,6 +2829,7 @@ sub push_action_params( $$$$$ ) {
     }
 
     $actparms{0}           = $chainref;
+    $actparms{action}      = $action;
     $actparms{loglevel}    = $loglevel;
     $actparms{logtag}      = $logtag;
     $actparms{caller}      = $caller;

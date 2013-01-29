@@ -49,30 +49,13 @@ my ( $level, $tag ) = get_action_logging;
 
 $action = join( ':', $action, $level, $tag ) if "${level}${tag}";
 
-my $chainref = get_action_chain;
+perl_action_helper(
+		   $action,                            # Target
+		   "$globals{STATEMATCH} UNTRACKED ",  # Matches
+		  );
 
-process_rule1( $chainref,                         # Chainref
-	       "$globals{STATEMATCH} UNTRACKED ", # Rule
-	       $action,                           # Target
-	       '',                                # Current Param
-	       '-',                               # Source
-	       '-',                               # Dest
-	       '-',                               # Proto
-	       '-',                               # Port(s)
-	       '-',                               # Source Port(s)
-	       '-',                               # Original Dest
-	       '-',                               # Rate Limit
-	       '-',                               # User
-	       '-',                               # Mark
-	       '-',                               # Connlimit
-	       '-',                               # Time
-	       '-',                               # Headers,
-	       '-',                               # condition,
-	       '-',                               # helper,
-	       0,                                 # Wildcard
-);
 
-allow_optimize( $chainref );
+allow_optimize( get_action_chain );
 
 1;
 

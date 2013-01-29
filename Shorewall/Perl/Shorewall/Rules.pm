@@ -2706,48 +2706,50 @@ sub perl_action_tcp_helper($$) {
     my $action   = $actparms{action};
     my $chainref = $actparms{0};
     my $result;
+    my $passedproto = $columns[2];
 
     assert( $chainref );
 
-    if ( $inlines{$action} ) {
-	my $passedproto = $columns[2];
-
-	fatal_error "Invalid PROTO ($passedproto) for the $action action" unless $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6';
-
-	$result = &process_rule( $chainref,
-				 $proto,
-				 $target,
-				 '',
-				 @columns[0,1],
-				 '-',
-				 @columns[3..14]
-			       );
-    } else {
-	$result = process_rule( $chainref,
-				$proto,
-				$target,
-				'',                               # Current Param
-				'-',                              # Source
-				'-',                              # Dest
-				"-",                              # Proto
-				'-',                              # Port(s)
-				'-',                              # Source Port(s)
-				'-',                              # Original Dest
-				'-',                              # Rate Limit
-				'-',                              # User
-				'-',                              # Mark
-				'-',                              # Connlimit
-				'-',                              # Time
-				'-',                              # Headers,
-				'-',                              # condition,
-				'-',                              # helper,
-				0,                                # Wildcard
-			      );
+    if ( $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6' ) {
+	#
+	# For other protos, a 'no rule generated' warning will be issued
+	#
+	if ( $inlines{$action} ) {
+	    $result = &process_rule( $chainref,
+				     $proto,
+				     $target,
+				     '',
+				     @columns[0,1],
+				     '-',
+				     @columns[3..14]
+				   );
+	} else {
+	    $result = process_rule( $chainref,
+				    $proto,
+				    $target,
+				    '',                               # Current Param
+				    '-',                              # Source
+				    '-',                              # Dest
+				    "-",                              # Proto
+				    '-',                              # Port(s)
+				    '-',                              # Source Port(s)
+				    '-',                              # Original Dest
+				    '-',                              # Rate Limit
+				    '-',                              # User
+				    '-',                              # Mark
+				    '-',                              # Connlimit
+				    '-',                              # Time
+				    '-',                              # Headers,
+				    '-',                              # condition,
+				    '-',                              # helper,
+				    0,                                # Wildcard
+				  );
+	}
+	#
+	# Record that we generated a rule to avoid bogus warning
+	#
+	$actionresult ||= $result;
     }
-    #
-    # Record that we generated a rule to avoid bogus warning
-    #
-    $actionresult ||= $result;
 }
 
 #

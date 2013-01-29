@@ -52,6 +52,7 @@ our @EXPORT = qw(
 		  process_rules
 		  verify_audit
 		  perl_action_helper
+		  perl_action_tcp_helper
 	       );
 
 our @EXPORT_OK = qw( initialize );
@@ -2683,6 +2684,48 @@ sub perl_action_helper($$) {
     }
 }
 
+#
+# May be called by Perl code in action bodies (regular and inline) to generate a rule.
+#
+sub perl_action_tcp_helper($$) {
+    my ( $target, $proto ) = @_;
+    my $action   = $actparms{action};
+    my $chainref = $actparms{0};
+
+    assert( $chainref );
+
+    if ( $inlines{$action} ) {
+	&process_rule1( $chainref,
+			$proto,
+			$target,
+			'',
+			@columns[0,1],
+			'-',
+			@columns[3..14]
+		      );
+    } else {
+	process_rule1( $chainref,
+		       $proto,
+		       $target,
+		       '',                               # Current Param
+		       '-',                              # Source
+		       '-',                              # Dest
+		       "-",                              # Proto
+		       '-',                              # Port(s)
+		       '-',                              # Source Port(s)
+		       '-',                              # Original Dest
+		       '-',                              # Rate Limit
+		       '-',                              # User
+		       '-',                              # Mark
+		       '-',                              # Connlimit
+		       '-',                              # Time
+		       '-',                              # Headers,
+		       '-',                              # condition,
+		       '-',                              # helper,
+		       0,                                # Wildcard
+		     );
+    }
+}
 
 #
 # Helper functions for process_rule(). That function deals with the ugliness of wildcard zones ('all' and 'any') and zone lists.

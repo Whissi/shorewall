@@ -2665,11 +2665,11 @@ sub perl_action_helper($$) {
     assert( $chainref );
 
     if ( $inlines{$action} ) {
-	&process_rule1( $chainref,
-			$matches,
-			$target,
-			'',
-			@columns );
+	$result = &process_rule1( $chainref,
+				  $matches,
+				  $target,
+				  '',                              # CurrentParam
+				  @columns );
     } else {
 	$result = process_rule1( $chainref,
 				 $matches,
@@ -2692,7 +2692,9 @@ sub perl_action_helper($$) {
 				 0,                                # Wildcard
 			       );
     }
-
+    #
+    # Record that we generated a rule to avoid bogus warning
+    #
     $actionresult ||= $result;
 }
 
@@ -2742,7 +2744,9 @@ sub perl_action_tcp_helper($$) {
 				 0,                                # Wildcard
 			       );
     }
-
+    #
+    # Record that we generated a rule to avoid bogus warning
+    #
     $actionresult ||= $result;
 }
 

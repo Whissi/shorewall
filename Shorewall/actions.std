@@ -38,11 +38,11 @@ A_Reject	                # Audited Default action for REJECT policy
 Broadcast   noinline            # Handles Broadcast/Multicast/Anycast
 Drop		                # Default Action for DROP policy
 DropSmurfs  noinline            # Drop smurf packets
-Established noinline		# Handles packets in the ESTABLISHED state
-Invalid     noinline            # Handles packets in the INVALID conntrack state
-NotSyn      noinline            # Handles TCP packets which do not have SYN=1 and ACK=0
+Established inline		# Handles packets in the ESTABLISHED state
+Invalid     inline              # Handles packets in the INVALID conntrack state
+NotSyn      inline              # Handles TCP packets which do not have SYN=1 and ACK=0
 Reject                          # Default Action for REJECT policy
-Related     noinline            # Handles packets in the RELATED conntrack state
-RST	    noinline            # Handle packets with RST set
+Related     inline              # Handles packets in the RELATED conntrack state
+RST	    inline              # Handle packets with RST set
 TCPFlags    noinline            # Handle bad flag combinations.
-Untracked   noinline            # Handles packets in the UNTRACKED conntrack state
+Untracked   inline              # Handles packets in the UNTRACKED conntrack state

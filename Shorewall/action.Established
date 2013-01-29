@@ -22,7 +22,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   Established[([<action>|-[,{audit|-}])]
+#   Established[([<action>])]
 #
 #       Default action is DROP
 #
@@ -36,21 +36,25 @@ DEFAULTS DROP,-
 use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
+use Shorewall::Rules qw( process_rule1 );
 
 my ( $action, $audit ) = get_action_params( 2 );
 
-fatal_error "Established parameter ($audit) to action Established"   if supplied $audit && $audit ne 'audit';
-fatal_error "Established parameter ($action) to action Established"  unless $action =~ /^(?:ACCEPT|DROP|REJECT)$/;
+if ( supplied $audit ) {
+     fatal_error "Established parameter ($audit) to action Established" if $audit ne 'audit';
+     $action = "A_$action";
+}    
 
-my $chainref         = get_action_chain;
+my ( $level, $tag ) = get_action_logging;
 
-my ( $level, $tag )  = get_action_logging;
-my $target           = require_audit ( $action , $audit );
+$action = join( ':', $action, $level, $tag ) if "${level}${tag}";
 
-log_rule_limit $level, $chainref, 'Established' , $action, '', $tag, 'add', "$globals{STATEMATCH} ESTABLISHED " if $level ne '';
-add_jump $chainref , $target, 0, "$globals{STATEMATCH} ESTABLISHED ";
+perl_action_helper(
+		   $action,                          # Target
+		   "$globals{STATEMATCH} INVALID ",  # Matches
+		  );
 
-allow_optimize( $chainref );
+allow_optimize( get_action_chain );
 
 1;
 

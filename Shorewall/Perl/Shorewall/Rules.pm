@@ -51,6 +51,8 @@ our @EXPORT = qw(
 		  process_actions
 		  process_rules
 		  verify_audit
+		  perl_action_helper
+		  perl_action_tcp_helper
 	       );
 
 our @EXPORT_OK = qw( initialize process_rule1 );
@@ -153,6 +155,11 @@ our %auditpolicies = ( ACCEPT => 1,
 		       DROP   => 1,
 		       REJECT => 1
 		     );
+
+our @columns;
+our @columnstack;
+our $actionresult;
+
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -220,6 +227,9 @@ sub initialize( $ ) {
     # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
     #
     %usedactions       = ();
+
+    @columns           = ();
+    @columnstack       = ();
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
@@ -1681,7 +1691,7 @@ sub process_action($$) {
 
     push_open $actionfile, 2, 1;
 
-    my $oldparms = push_action_params( $chainref, $param, $level, $tag, $caller );
+    my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
 
     my $nolog = $actions{$action}{nolog};
 
@@ -1895,7 +1905,8 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 
     my ( $level, $tag ) = split( ':', $loglevel, 2 );
 
-    my $oldparms   = push_action_params( $chainref,
+    my $oldparms   = push_action_params( $inline,
+					 $chainref,
 					 $param,
 					 supplied $level ? $level : 'none',
 					 defined  $tag   ? $tag   : '' ,
@@ -2429,6 +2440,10 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	$current_param = $param unless $param eq '' || $param eq 'PARAM';
 
+	push @columnstack, [ ( @columns ) ];
+
+	@columns = ( $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard );
+
 	my $generated = process_inline( $basictarget,
 					$chainref,
 					$rule,
@@ -2451,9 +2466,11 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 					$helper,
 					$wildcard );
 
+	@columns = @{pop @columnstack};
+
 	$macro_nest_level--;
 
-	return $generated;
+	return $generated || $actionresult;
     }
     #
     # Generate Fixed part of the rule
@@ -2629,6 +2646,95 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 }
 
 #
+# May be called by Perl code in action bodies (regular and inline) to generate a rule.
+#
+sub perl_action_helper($$) {
+    my ( $target, $matches ) = @_;
+    my $action   = $actparms{action};
+    my $chainref = $actparms{0};
+    my $result;
+
+    assert( $chainref );
+
+    if ( $inlines{$action} ) {
+	&process_rule1( $chainref,
+			$matches,
+			$target,
+			'',
+			@columns );
+    } else {
+	$result = process_rule1( $chainref,
+				 $matches,
+				 $target,
+				 '',                               # Current Param
+				 '-',                              # Source
+				 '-',                              # Dest
+				 '-',                              # Proto
+				 '-',                              # Port(s)
+				 '-',                              # Source Port(s)
+				 '-',                              # Original Dest
+				 '-',                              # Rate Limit
+				 '-',                              # User
+				 '-',                              # Mark
+				 '-',                              # Connlimit
+				 '-',                              # Time
+				 '-',                              # Headers,
+				 '-',                              # condition,
+				 '-',                              # helper,
+				 0,                                # Wildcard
+			       );
+    }
+
+    $actionresult ||= $result;
+}
+
+#
+# May be called by Perl code in action bodies (regular and inline) to generate a rule.
+#
+sub perl_action_tcp_helper($$) {
+    my ( $target, $proto ) = @_;
+    my $action   = $actparms{action};
+    my $chainref = $actparms{0};
+    my $result;
+
+    assert( $chainref );
+
+    if ( $inlines{$action} ) {
+	$result = &process_rule1( $chainref,
+				  $proto,
+				  $target,
+				  '',
+				  @columns[0,1],
+				  '-',
+				  @columns[3..14]
+				);
+    } else {
+	$result = process_rule1( $chainref,
+				 $proto,
+				 $target,
+				 '',                               # Current Param
+				 '-',                              # Source
+				 '-',                              # Dest
+				 "-",                              # Proto
+				 '-',                              # Port(s)
+				 '-',                              # Source Port(s)
+				 '-',                              # Original Dest
+				 '-',                              # Rate Limit
+				 '-',                              # User
+				 '-',                              # Mark
+				 '-',                              # Connlimit
+				 '-',                              # Time
+				 '-',                              # Headers,
+				 '-',                              # condition,
+				 '-',                              # helper,
+				 0,                                # Wildcard
+			       );
+    }
+
+    $actionresult ||= $result;
+}
+
+#
 # Helper functions for process_rule(). That function deals with the ugliness of wildcard zones ('all' and 'any') and zone lists.
 #
 # Process a SECTION header
@@ -2773,25 +2879,27 @@ sub process_rule ( ) {
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
 		for my $proto ( @protos ) {
 		    for my $user ( @users ) {
-			$generated |= process_rule1( undef,
-						     '',
-						     $target,
-						     '',
-						     $source,
-						     $dest,
-						     $proto,
-						     $ports,
-						     $sports,
-						     $origdest,
-						     $ratelimit,
-						     $user,
-						     $mark,
-						     $connlimit,
-						     $time,
-						     $headers,
-						     $condition,
-						     $helper,
-						     $wild );
+			if ( process_rule1( undef,
+					    '',
+					    $target,
+					    '',
+					    $source,
+					    $dest,
+					    $proto,
+					    $ports,
+					    $sports,
+					    $origdest,
+					    $ratelimit,
+					    $user,
+					    $mark,
+					    $connlimit,
+					    $time,
+					    $headers,
+					    $condition,
+					    $helper,
+					    $wild ) ) {
+			    $generated = 1;
+			}
 		    }
 		}
 	    }

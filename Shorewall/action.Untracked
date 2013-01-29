@@ -5,7 +5,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2013 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2011,2012 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -22,7 +22,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   Untracked[([<action>|-[,{audit|-}])]
+#   Untracked[([<action>])]
 #
 #       Default action is DROP
 #
@@ -36,21 +36,26 @@ DEFAULTS DROP,-
 use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
+use Shorewall::Rules qw( process_rule1 );
 
 my ( $action, $audit ) = get_action_params( 2 );
 
-fatal_error "Untracked parameter ($audit) to action Untracked"   if supplied $audit && $audit ne 'audit';
-fatal_error "Untracked parameter ($action) to action Untracked"  unless $action =~ /^(?:ACCEPT|DROP|REJECT)$/;
+if ( supplied $audit ) {
+     fatal_error "Untracked parameter ($audit) to action Untracked" if $audit ne 'audit';
+     $action = "A_$action";
+}    
 
-my $chainref         = get_action_chain;
+my ( $level, $tag ) = get_action_logging;
 
-my ( $level, $tag )  = get_action_logging;
-my $target           = require_audit ( $action , $audit );
+$action = join( ':', $action, $level, $tag ) if "${level}${tag}";
 
-log_rule_limit $level, $chainref, 'Untracked' , $action, '', $tag, 'add', "$globals{STATEMATCH} UNTRACKED " if $level ne '';
-add_jump $chainref , $target, 0, "$globals{STATEMATCH} UNTRACKED ";
+perl_action_helper(
+		   $action,                            # Target
+		   "$globals{STATEMATCH} UNTRACKED ",  # Matches
+		  );
 
-allow_optimize( $chainref );
+
+allow_optimize( get_action_chain );
 
 1;
 

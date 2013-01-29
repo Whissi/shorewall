@@ -22,7 +22,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   RST[([<action>|-[,{audit|-}])]
+#   RST[([<action>])]
 #
 #       Default action is DROP
 #
@@ -35,21 +35,25 @@ DEFAULTS DROP,-
 
 use Shorewall::Config;
 use Shorewall::Chains;
+use Shorewall::Rules;
 
 my ( $action, $audit ) = get_action_params( 2 );
 
-fatal_error "Invalid parameter ($audit) to action RST"   if supplied $audit && $audit ne 'audit';
-fatal_error "Invalid parameter ($action) to action RST"  unless $action =~ /^(?:ACCEPT|DROP)$/;
-
-my $chainref         = get_action_chain;
+if ( supplied $audit ) {
+     fatal_error "Invalid parameter ($audit) to action Invalid" if $audit ne 'audit';
+     $action = "A_$action";
+}    
 
 my ( $level, $tag )  = get_action_logging;
-my $target           = require_audit ( $action , $audit );
 
-log_rule_limit $level, $chainref, 'RST' , $action, '', $tag, 'add', '-p 6 --tcp-flags RST RST ' if $level ne '';
-add_jump $chainref , $target, 0, '-p 6 --tcp-flags RST RST ';
+$action = join( ':', $action, $level, $tag ) if "${level}${tag}";
 
-allow_optimize( $chainref );
+perl_action_tcp_helper(
+		       $action,
+		       '-p 6 --tcp-flags RST RST '
+		      );
+
+allow_optimize( get_action_chain );
 
 1;
 

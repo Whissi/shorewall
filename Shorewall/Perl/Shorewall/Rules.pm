@@ -55,7 +55,7 @@ our @EXPORT = qw(
 		  perl_action_tcp_helper
 	       );
 
-our @EXPORT_OK = qw( initialize process_rule1 );
+our @EXPORT_OK = qw( initialize process_rule );
 our $VERSION = 'MODULEVERSION';
 #
 # Globals are documented in the initialize() function
@@ -1670,11 +1670,11 @@ sub process_actions() {
 
 }
 
-sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ );
+sub process_rule ( $$$$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
-# the function will be called recursively by process_rule1().
+# the function will be called recursively by process_rule().
 #
 sub process_action($$) {
     my ( $chainref, $caller ) = @_;
@@ -1724,25 +1724,25 @@ sub process_action($$) {
 	    fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
 	}
 
-	process_rule1( $chainref,
-		       '',
-		       $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
-		       '',
-		       $source,
-		       $dest,
-		       $proto,
-		       $ports,
-		       $sports,
-		       $origdest,
-		       $rate,
-		       $user,
-		       $mark,
-		       $connlimit,
-		       $time,
-		       $headers,
-		       $condition,
-		       $helper,
-		       0 );
+	process_rule( $chainref,
+		      '',
+		      $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
+		      '',
+		      $source,
+		      $dest,
+		      $proto,
+		      $ports,
+		      $sports,
+		      $origdest,
+		      $rate,
+		      $user,
+		      $mark,
+		      $connlimit,
+		      $time,
+		      $headers,
+		      $condition,
+		      $helper,
+		      0 );
     }
 
     pop_comment( $save_comment );
@@ -1867,27 +1867,27 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 	    $mdest = '';
 	}
 
-	$generated |= process_rule1(
-				    $chainref,
-				    $matches,
-				    $mtarget,
-				    $param,
-				    $msource,
-				    $mdest,
-				    merge_macro_column( $mproto,     $proto ) ,
-				    merge_macro_column( $mports,     $ports ) ,
-				    merge_macro_column( $msports,    $sports ) ,
-				    merge_macro_column( $morigdest,  $origdest ) ,
-				    merge_macro_column( $mrate,      $rate ) ,
-				    merge_macro_column( $muser,      $user ) ,
-				    merge_macro_column( $mmark,      $mark ) ,
-				    merge_macro_column( $mconnlimit, $connlimit) ,
-				    merge_macro_column( $mtime,      $time ),
-				    merge_macro_column( $mheaders,   $headers ),
-				    merge_macro_column( $mcondition, $condition ),
-				    merge_macro_column( $mhelper,    $helper ),
-				    $wildcard
-				   );
+	$generated |= process_rule(
+				   $chainref,
+				   $matches,
+				   $mtarget,
+				   $param,
+				   $msource,
+				   $mdest,
+				   merge_macro_column( $mproto,     $proto ) ,
+				   merge_macro_column( $mports,     $ports ) ,
+				   merge_macro_column( $msports,    $sports ) ,
+				   merge_macro_column( $morigdest,  $origdest ) ,
+				   merge_macro_column( $mrate,      $rate ) ,
+				   merge_macro_column( $muser,      $user ) ,
+				   merge_macro_column( $mmark,      $mark ) ,
+				   merge_macro_column( $mconnlimit, $connlimit) ,
+				   merge_macro_column( $mtime,      $time ),
+				   merge_macro_column( $mheaders,   $headers ),
+				   merge_macro_column( $mcondition, $condition ),
+				   merge_macro_column( $mhelper,    $helper ),
+				   $wildcard
+				  );
 
 	progress_message "   Rule \"$currentline\" $done";
     }
@@ -1986,27 +1986,27 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 	    $mdest = '';
 	}
 
-	$generated |= process_rule1(
-				    $chainref,
-				    $matches,
-				    $mtarget,
-				    $param,
-				    $msource,
-				    $mdest,
-				    merge_macro_column( $mproto,     $proto ) ,
-				    merge_macro_column( $mports,     $ports ) ,
-				    merge_macro_column( $msports,    $sports ) ,
-				    merge_macro_column( $morigdest,  $origdest ) ,
-				    merge_macro_column( $mrate,      $rate ) ,
-				    merge_macro_column( $muser,      $user ) ,
-				    merge_macro_column( $mmark,      $mark ) ,
-				    merge_macro_column( $mconnlimit, $connlimit) ,
-				    merge_macro_column( $mtime,      $time ),
-				    merge_macro_column( $mheaders,   $headers ),
-				    merge_macro_column( $mcondition, $condition ),
-				    merge_macro_column( $mhelper,    $helper ),
-				    $wildcard
-				   );
+	$generated |= process_rule(
+				   $chainref,
+				   $matches,
+				   $mtarget,
+				   $param,
+				   $msource,
+				   $mdest,
+				   merge_macro_column( $mproto,     $proto ) ,
+				   merge_macro_column( $mports,     $ports ) ,
+				   merge_macro_column( $msports,    $sports ) ,
+				   merge_macro_column( $morigdest,  $origdest ) ,
+				   merge_macro_column( $mrate,      $rate ) ,
+				   merge_macro_column( $muser,      $user ) ,
+				   merge_macro_column( $mmark,      $mark ) ,
+				   merge_macro_column( $mconnlimit, $connlimit) ,
+				   merge_macro_column( $mtime,      $time ),
+				   merge_macro_column( $mheaders,   $headers ),
+				   merge_macro_column( $mcondition, $condition ),
+				   merge_macro_column( $mhelper,    $helper ),
+				   $wildcard
+				  );
 
 	progress_message "   Rule \"$currentline\" $done";
     }
@@ -2041,7 +2041,7 @@ sub verify_audit($;$$) {
 # reference is also passed when rules are being generated during processing of a macro used as a default action.
 #
 
-sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
+sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $rule,       #Matches
 	 $target,
@@ -2091,7 +2091,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 
     if ( $actiontype == MACRO ) {
 	#
-	# process_macro() will call process_rule1() recursively for each rule in the macro body
+	# process_macro() will call process_rule() recursively for each rule in the macro body
 	#
 	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
@@ -2438,7 +2438,7 @@ sub process_rule1 ( $$$$$$$$$$$$$$$$$$$ ) {
 	$action = $basictarget; # Remove params, if any, from $action.
     } elsif ( $actiontype & INLINE ) {
 	#
-	# process_inline() will call process_rule1() recursively for each rule in the macro body
+	# process_inline() will call process_rule() recursively for each rule in the macro body
 	#
 	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 
@@ -2665,32 +2665,32 @@ sub perl_action_helper($$) {
     assert( $chainref );
 
     if ( $inlines{$action} ) {
-	$result = &process_rule1( $chainref,
-				  $matches,
-				  $target,
-				  '',                              # CurrentParam
-				  @columns );
-    } else {
-	$result = process_rule1( $chainref,
+	$result = &process_rule( $chainref,
 				 $matches,
 				 $target,
-				 '',                               # Current Param
-				 '-',                              # Source
-				 '-',                              # Dest
-				 '-',                              # Proto
-				 '-',                              # Port(s)
-				 '-',                              # Source Port(s)
-				 '-',                              # Original Dest
-				 '-',                              # Rate Limit
-				 '-',                              # User
-				 '-',                              # Mark
-				 '-',                              # Connlimit
-				 '-',                              # Time
-				 '-',                              # Headers,
-				 '-',                              # condition,
-				 '-',                              # helper,
-				 0,                                # Wildcard
-			       );
+				 '',                              # CurrentParam
+				 @columns );
+    } else {
+	$result = process_rule( $chainref,
+				$matches,
+				$target,
+				'',                               # Current Param
+				'-',                              # Source
+				'-',                              # Dest
+				'-',                              # Proto
+				'-',                              # Port(s)
+				'-',                              # Source Port(s)
+				'-',                              # Original Dest
+				'-',                              # Rate Limit
+				'-',                              # User
+				'-',                              # Mark
+				'-',                              # Connlimit
+				'-',                              # Time
+				'-',                              # Headers,
+				'-',                              # condition,
+				'-',                              # helper,
+				0,                                # Wildcard
+			      );
     }
     #
     # Record that we generated a rule to avoid bogus warning
@@ -2714,35 +2714,35 @@ sub perl_action_tcp_helper($$) {
 
 	fatal_error "Invalid PROTO ($passedproto) for the $action action" unless $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6';
 
-	$result = &process_rule1( $chainref,
-				  $proto,
-				  $target,
-				  '',
-				  @columns[0,1],
-				  '-',
-				  @columns[3..14]
-				);
-    } else {
-	$result = process_rule1( $chainref,
+	$result = &process_rule( $chainref,
 				 $proto,
 				 $target,
-				 '',                               # Current Param
-				 '-',                              # Source
-				 '-',                              # Dest
-				 "-",                              # Proto
-				 '-',                              # Port(s)
-				 '-',                              # Source Port(s)
-				 '-',                              # Original Dest
-				 '-',                              # Rate Limit
-				 '-',                              # User
-				 '-',                              # Mark
-				 '-',                              # Connlimit
-				 '-',                              # Time
-				 '-',                              # Headers,
-				 '-',                              # condition,
-				 '-',                              # helper,
-				 0,                                # Wildcard
+				 '',
+				 @columns[0,1],
+				 '-',
+				 @columns[3..14]
 			       );
+    } else {
+	$result = process_rule( $chainref,
+				$proto,
+				$target,
+				'',                               # Current Param
+				'-',                              # Source
+				'-',                              # Dest
+				"-",                              # Proto
+				'-',                              # Port(s)
+				'-',                              # Source Port(s)
+				'-',                              # Original Dest
+				'-',                              # Rate Limit
+				'-',                              # User
+				'-',                              # Mark
+				'-',                              # Connlimit
+				'-',                              # Time
+				'-',                              # Headers,
+				'-',                              # condition,
+				'-',                              # helper,
+				0,                                # Wildcard
+			      );
     }
     #
     # Record that we generated a rule to avoid bogus warning
@@ -2751,7 +2751,7 @@ sub perl_action_tcp_helper($$) {
 }
 
 #
-# Helper functions for process_rule(). That function deals with the ugliness of wildcard zones ('all' and 'any') and zone lists.
+# Helper functions for process_raw_rule(). That function deals with the ugliness of wildcard zones ('all' and 'any') and zone lists.
 #
 # Process a SECTION header
 #
@@ -2852,7 +2852,7 @@ sub build_zone_list( $$$\$\$ ) {
 #
 # Process a Record in the rules file
 #
-sub process_rule ( ) {
+sub process_raw_rule ( ) {
     my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
 	= split_line1 'rules file', \%rulecolumns, $rule_commands;
 
@@ -2895,7 +2895,7 @@ sub process_rule ( ) {
 	    if ( ! $wild || $intrazone || ( $sourcezone ne $destzone ) ) {
 		for my $proto ( @protos ) {
 		    for my $user ( @users ) {
-			if ( process_rule1( undef,
+			if ( process_rule( undef,
 					    '',
 					    $target,
 					    '',
@@ -3037,7 +3037,7 @@ sub process_rules( $ ) {
 		     }
 		   );
 
-	process_rule while read_a_line( NORMAL_READ );
+	process_raw_rule while read_a_line( NORMAL_READ );
     }
 
     $section = NULL_SECTION;
@@ -3055,7 +3055,7 @@ sub process_rules( $ ) {
 
 	first_entry "$doing $fn...";
 
-	process_rule while read_a_line( NORMAL_READ );
+	process_raw_rule while read_a_line( NORMAL_READ );
     }
     #
     # No need to finish the NEW section since no rules need to be generated

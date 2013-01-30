@@ -29,7 +29,7 @@
 ##########################################################################################
 ?FORMAT 2
 
-DEFAULTS DROP,-
+DEFAULTS DROP
 
 ?BEGIN PERL;
 
@@ -39,12 +39,7 @@ use Shorewall::Config;
 use Shorewall::Chains;
 use Shorewall::Rules qw( process_rule1 );
 
-my ( $action, $audit ) = get_action_params( 2 );
-
-if ( supplied $audit ) {
-     fatal_error "Related parameter ($audit) to action Related" if $audit ne 'audit';
-     $action = "A_$action";
-}    
+my ( $action ) = get_action_params( 1 );
 
 my ( $level, $tag ) = get_action_logging;
 

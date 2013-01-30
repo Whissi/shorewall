@@ -232,7 +232,8 @@ sub initialize( $ ) {
     # The columns array is a hidden argument to perl_action_helper() and perl_action_tcp_helper() that allows Perl
     # code in inline actions to generate proper rules.
     #
-    @columns           = ( '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0 );
+    #                      SOURCE DEST PROTO PORT SPORT ORIG RATE USER MARK CONNLIMIT TIME HEADERS SWITCH HELPER WILDCARD
+    @columns           = ( '-',   '-', '-',  '-', '-',  '-', '-', '-', '-', '-',      '-', '-',    '-',   '-',   0 );
     @columnstack       = ();
 
     if ( $family == F_IPV4 ) {
@@ -882,17 +883,11 @@ sub finish_chain_section ($$$) {
 	$chain1ref,
 	$state )            = @_;
     my $chain               = $chainref->{name};
-    my $related_level       = $config{RELATED_LOG_LEVEL};
-    my $related_target      = $globals{RELATED_TARGET};
-    my $invalid_level       = $config{INVALID_LOG_LEVEL};
-    my $invalid_target      = $globals{INVALID_TARGET};
-    my $untracked_level     = $config{UNTRACKED_LOG_LEVEL};
-    my $untracked_target    = $globals{UNTRACKED_TARGET};
     my $save_comment        = push_comment;
     my %state;
-    my %statetable          = ( RELATED   => [ '+', $related_level, $related_target ] ,
-				INVALID   => [ '_', $invalid_level, $invalid_target ] ,
-				UNTRACKED => [ '&', $untracked_level, $untracked_target ] ,
+    my %statetable          = ( RELATED   => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_TARGET} ] ,
+				INVALID   => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
+				UNTRACKED => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
 			      );
 
     $state{$_} = 1 for split ',', $state;

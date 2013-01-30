@@ -109,6 +109,11 @@ our @builtins;
 our $rule_commands   = { SECTION => 2 };
 our $action_commands = { SECTION => 2, DEFAULTS => 2 };
 our $macro_commands  = { SECTION => 2, DEFAULT => 2 };
+#
+# There is an implicit assumption that the last column of the @rulecolumns hash is always the last column of the @columns array.
+# The @columns array doesn't include the ACTION but does include a 'wildcard' last element.
+#
+use constant { LAST_COLUMN => 14 };
 
 our %rulecolumns = ( action    =>   0,
 		     source    =>   1,
@@ -124,7 +129,7 @@ our %rulecolumns = ( action    =>   0,
 		     time      =>  11,
 		     headers   =>  12,
 		     switch    =>  13,
-		     helper    =>  14,
+		     helper    =>  LAST_COLUMN,
 		   );
 
 use constant { MAX_MACRO_NEST_LEVEL => 10 };
@@ -241,13 +246,8 @@ sub initialize( $ ) {
     # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
     #
     %usedactions       = ();
-    #
-    # Columns $source through $wildcard -- with the exception of the latter, these correspond to the rules file columns
-    # The columns array is a hidden argument to perl_action_helper() and perl_action_tcp_helper() that allows Perl
-    # code in inline actions to generate proper rules.
-    #
-    #                      SOURCE DEST PROTO PORT SPORT ORIG RATE USER MARK CONNLIMIT TIME HEADERS SWITCH HELPER WILDCARD
-    @columns           = ( '-',   '-', '-',  '-', '-',  '-', '-', '-', '-', '-',      '-', '-',    '-',   '-',   0 );
+
+    @columns           = ( ( '-' ) x LAST_COLUMN, 0 );
     @columnstack       = ();
 
     if ( $family == F_IPV4 ) {
@@ -2719,7 +2719,7 @@ sub perl_action_tcp_helper($$) {
 				     '',
 				     @columns[0,1],
 				     '-',
-				     @columns[3..14]
+				     @columns[3..LAST_COLUMN]
 				   );
 	} else {
 	    $result = process_rule( $chainref,
@@ -2728,7 +2728,7 @@ sub perl_action_tcp_helper($$) {
 				    '',                               # Current Param
 				    '-',                              # Source
 				    '-',                              # Dest
-				    "-",                              # Proto
+				    '-',                              # Proto
 				    '-',                              # Port(s)
 				    '-',                              # Source Port(s)
 				    '-',                              # Original Dest

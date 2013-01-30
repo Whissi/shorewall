@@ -155,10 +155,24 @@ our %auditpolicies = ( ACCEPT => 1,
 		       DROP   => 1,
 		       REJECT => 1
 		     );
-
+#
+# Columns $source through $wildcard -- with the exception of the latter, these correspond to the rules file columns
+# The columns array is a hidden argument to perl_action_helper() and perl_action_tcp_helper() that allows Perl
+# code in inline actions to generate proper rules.
+#
 our @columns;
+#
+# Used to handle recursive inline invocations.
+#
 our @columnstack;
+#
+# Hidden return from perl_action_[tcp_]helper that indicates that a rule was generated
+#
 our $actionresult;
+#
+# See process_rules() and finish_chain_section().
+#
+our %statetable;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -885,10 +899,6 @@ sub finish_chain_section ($$$) {
     my $chain               = $chainref->{name};
     my $save_comment        = push_comment;
     my %state;
-    my %statetable          = ( RELATED   => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_TARGET} ] ,
-				INVALID   => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
-				UNTRACKED => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
-			      );
 
     $state{$_} = 1 for split ',', $state;
 
@@ -2994,6 +3004,13 @@ sub classic_blacklist() {
 sub process_rules( $ ) {
     my $convert = shift;
     my $blrules = 0;
+    #
+    # Populate the state table
+    #
+    %statetable          = ( RELATED   => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_TARGET} ] ,
+			     INVALID   => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
+			     UNTRACKED => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
+			   );
     #
     # Generate jumps to the classic blacklist chains
     #

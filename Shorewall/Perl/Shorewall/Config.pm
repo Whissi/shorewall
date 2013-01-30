@@ -545,13 +545,16 @@ our %deprecated = ( LOGRATE            => '' ,
 		    LOGBURST           => '' ,
 		    EXPORTPARAMS       => 'no',
 		    WIDE_TC_MARKS      => 'no',
-		    HIGH_ROUTE_MARKS   => 'no'
+		    HIGH_ROUTE_MARKS   => 'no',
+		    BLACKLISTNEWONLY   => 'yes',
 		  );
 #
 # Deprecated options that are eliminated via update
 #
 our %converted = ( WIDE_TC_MARKS => 1,
-		   HIGH_ROUTE_MARKS => 1 );
+		   HIGH_ROUTE_MARKS => 1,
+		   BLACKLISTNEWONLY => 1,
+		 );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
 #
@@ -722,6 +725,7 @@ sub initialize( $;$$) {
 	  DETECT_DNAT_IPADDRS => undef,
 	  MUTEX_TIMEOUT => undef,
 	  ADMINISABSENTMINDED => undef,
+	  BLACKLIST => undef,
 	  BLACKLISTNEWONLY => undef,
 	  DELAYBLACKLISTLOAD => undef,
 	  MODULE_SUFFIX => undef,
@@ -5079,7 +5083,6 @@ sub get_configuration( $$$$ ) {
     }
 
     default_yes_no 'ADMINISABSENTMINDED'        , '';
-    default_yes_no 'BLACKLISTNEWONLY'           , '';
     default_yes_no 'DISABLE_IPV6'               , '';
 
     unsupported_yes_no_warning 'DYNAMIC_ZONES';
@@ -5098,7 +5101,47 @@ sub get_configuration( $$$$ ) {
 
     default_yes_no 'FASTACCEPT'                 , '';
 
-    fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
+    if ( supplied( $val = $config{BLACKLIST} ) ) {
+	my %states;
+
+	if ( $val eq 'ALL' ) {
+	    $globals{BLACKLIST_STATES} = 'ALL';
+	} else {
+	    for ( split_list $val, 'BLACKLIST' ) {
+		fatal_error "Invalid BLACKLIST state ($_)" unless /^(?:NEW|RELATED|ESTABLISHED|INVALID|UNTRACKED)$/;
+		fatal_error "Duplicate BLACKLIST state($_)" if $states{$_};
+		$states{$_} = 1;
+	    }
+
+	    fatal_error "ESTABLISHED state may not be specified when FASTACCEPT=Yes" if $config{FASTACCEPT} && $states{ESTABLISHED};
+	    require_capability 'RAW_TABLE', 'UNTRACKED state', 's' if $states{UNTRACKED};
+	    #
+	    # Place the states in a predictable order
+	    #
+	    my @states;
+
+	    for ( qw( NEW ESTABLISHED RELATED INVALID UNTRACKED ) ) {
+		push @states, $_ if $states{$_};
+	    }
+
+	    $globals{BLACKLIST_STATES} = join ',', @states;
+	}
+    } elsif ( supplied $config{BLACKLISTNEWONLY} ) {
+	default_yes_no 'BLACKLISTNEWONLY'           , '';
+	fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
+
+	if ( have_capability 'RAW_TABLE' ) {
+	    $globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';
+	} else {
+	    $globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID' : 'NEW,ESTABLISHED,INVALID';
+	}
+    } else {
+	if ( have_capability 'RAW_TABLE' ) {
+	    $globals{BLACKLIST_STATES} = $config{FASTACCEPT} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';
+	} else {
+	    $globals{BLACKLIST_STATES} = $config{FASTACCEPT} ? 'NEW,INVALID' : 'NEW,INVALID,ESTABLISHED';
+	}
+    }
 
     default_yes_no 'IMPLICIT_CONTINUE'          , '';
     default_yes_no 'HIGH_ROUTE_MARKS'           , '';

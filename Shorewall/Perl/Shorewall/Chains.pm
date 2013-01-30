@@ -3871,6 +3871,8 @@ sub state_imatch( $ ) {
 
     unless ( $state eq 'ALL' ) {
 	have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => "--state $state" );
+    } else {
+	();
     }
 }
 

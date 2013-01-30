@@ -310,6 +310,26 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">BLACKLIST=</emphasis>[{<emphasis
+        role="bold">ALL</emphasis>|<emphasis
+        role="bold"><replaceable>state</replaceable>[,...]</emphasis>}]</term>
+
+        <listitem>
+          <para>where state is one of NEW, ESTABLISHED, RELATED, INVALID,or
+          UNTRACKED.</para>
+
+          <para>Added in Shorewall 4.5.13 to replace the BLACKLISTNEWONLY
+          option below. Specifies the connection tracking states that are to
+          be subject to blacklist screening. If neither BLACKLIST nor
+          BLACKLISTNEWONLY are specified then the states subject to
+          blacklisting are NEW,ESTABLISHED,INVALID,UNTRACKED.</para>
+
+          <para>Note: The ESTABLISHED state may not be specified if FASTACCEPT
+          is specified.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">BLACKLIST_DISPOSITION=</emphasis>[<emphasis
         role="bold">DROP</emphasis>|A_DROP|<emphasis
@@ -354,6 +374,9 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
+          <para>Deprecated in Shorewall 4.5.13 in favor of BLACKLIST
+          above.</para>
+
           <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, blacklists are only consulted for new
           connections, for packets in the INVALID connection state (such as a

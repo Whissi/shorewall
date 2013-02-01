@@ -24,12 +24,12 @@
 #
 #   Established[([<action>])]
 #
-#       Default action is DROP
+#       Default action is ACCEPT
 #
 ##########################################################################################
 ?FORMAT 2
 
-DEFAULTS DROP
+DEFAULTS ACCEPT
 
 ?BEGIN PERL;
 
@@ -45,8 +45,8 @@ my ( $level, $tag ) = get_action_logging;
 $action = join( ':', $action, $level, $tag ) if "${level}${tag}";
 
 perl_action_helper(
-		   $action,                          # Target
-		   "$globals{STATEMATCH} INVALID ",  # Matches
+		   $action,                             # Target
+		   "$globals{STATEMATCH} ESTABLISHED",  # Matches
 		  );
 
 allow_optimize( get_action_chain );

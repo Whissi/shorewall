@@ -50,7 +50,7 @@ $action = join( ':', $action, $level, $tag ) if "${level}${tag}";
 
 perl_action_tcp_helper(
 		       $action,
-		       '-p 6 --tcp-flags RST RST '
+		       '-p 6 --tcp-flags RST RST'
 		      );
 
 allow_optimize( get_action_chain );

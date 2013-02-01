@@ -2662,6 +2662,8 @@ sub perl_action_helper($$) {
 
     assert( $chainref );
 
+    $matches .= ' ' unless $matches =~ /^(?:.+\s)?$/;
+
     if ( $inlines{$action} ) {
 	$result = &process_rule( $chainref,
 				 $matches,
@@ -2707,6 +2709,8 @@ sub perl_action_tcp_helper($$) {
     my $passedproto = $columns[2];
 
     assert( $chainref );
+
+    $proto .= ' ' unless $proto =~ /^(?:.+\s)?$/;
 
     if ( $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6' ) {
 	#

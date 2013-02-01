@@ -77,6 +77,24 @@ our @EXPORT = ( qw(
 		    dont_move
 		    add_interface_options
 
+		    STANDARD
+		    NATRULE
+		    BUILTIN
+		    NONAT
+		    NATONLY
+		    REDIRECT
+		    ACTION
+		    MACRO
+		    LOGRULE
+		    NFLOG
+		    NFQ
+		    CHAIN
+		    SET
+		    AUDIT
+		    HELPER
+		    INLINE
+		    TERMINATING
+
 		    %chain_table
 		    %targets
 		    $raw_table
@@ -88,23 +106,7 @@ our @EXPORT = ( qw(
 	      );
 
 our %EXPORT_TAGS = (
-		    internal => [  qw( STANDARD
-				       NATRULE
-				       BUILTIN
-				       NONAT
-				       NATONLY
-				       REDIRECT
-				       ACTION
-				       MACRO
-				       LOGRULE
-				       NFLOG
-				       NFQ
-				       CHAIN
-				       SET
-				       AUDIT
-				       HELPER
-				       INLINE
-				       NO_RESTRICT
+		    internal => [  qw( NO_RESTRICT
 				       PREROUTE_RESTRICT
 				       DESTIFACE_DISALLOW
 				       INPUT_RESTRICT

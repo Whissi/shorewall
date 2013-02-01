@@ -1675,7 +1675,7 @@ sub process_actions() {
 
 }
 
-sub process_rule ( $$$$$$$$$$$$$$$$$$$ );
+sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1731,6 +1731,7 @@ sub process_action($$) {
 
 	process_rule( $chainref,
 		      '',
+		      0,
 		      $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
 		      '',
 		      $source,
@@ -1875,6 +1876,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 	$generated |= process_rule(
 				   $chainref,
 				   $matches,
+				   0,
 				   $mtarget,
 				   $param,
 				   $msource,
@@ -1994,6 +1996,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 	$generated |= process_rule(
 				   $chainref,
 				   $matches,
+				   0,
 				   $mtarget,
 				   $param,
 				   $msource,
@@ -2046,9 +2049,10 @@ sub verify_audit($;$$) {
 # reference is also passed when rules are being generated during processing of a macro used as a default action.
 #
 
-sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
+sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $rule,       #Matches
+	 $actiontype,
 	 $target,
 	 $current_param,
 	 $source,
@@ -2086,7 +2090,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    my $actiontype = $targets{$basictarget} || find_macro ( $basictarget );
+    $actiontype = ( $targets{$basictarget} || find_macro ( $basictarget ) ) unless $actiontype;
 
     if ( $config{ MAPOLDACTIONS } ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || supplied $param;
@@ -2654,8 +2658,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 #
 # May be called by Perl code in action bodies (regular and inline) to generate a rule.
 #
-sub perl_action_helper($$) {
-    my ( $target, $matches ) = @_;
+sub perl_action_helper($$;$) {
+    my ( $target, $matches, $actiontype ) = @_;
     my $action   = $actparms{action};
     my $chainref = $actparms{0};
     my $result;
@@ -2667,12 +2671,14 @@ sub perl_action_helper($$) {
     if ( $inlines{$action} ) {
 	$result = &process_rule( $chainref,
 				 $matches,
+				 $actiontype || 0,
 				 $target,
 				 '',                              # CurrentParam
 				 @columns );
     } else {
 	$result = process_rule( $chainref,
 				$matches,
+				$actiontype || 0,
 				$target,
 				'',                               # Current Param
 				'-',                              # Source
@@ -2719,6 +2725,7 @@ sub perl_action_tcp_helper($$) {
 	if ( $inlines{$action} ) {
 	    $result = &process_rule( $chainref,
 				     $proto,
+				     0,
 				     $target,
 				     '',
 				     @columns[0,1],
@@ -2727,7 +2734,8 @@ sub perl_action_tcp_helper($$) {
 				   );
 	} else {
 	    $result = process_rule( $chainref,
-				    $proto,
+				    '',
+				    0,
 				    $target,
 				    '',                               # Current Param
 				    '-',                              # Source
@@ -2900,24 +2908,25 @@ sub process_raw_rule ( ) {
 		for my $proto ( @protos ) {
 		    for my $user ( @users ) {
 			if ( process_rule( undef,
-					    '',
-					    $target,
-					    '',
-					    $source,
-					    $dest,
-					    $proto,
-					    $ports,
-					    $sports,
-					    $origdest,
-					    $ratelimit,
-					    $user,
-					    $mark,
-					    $connlimit,
-					    $time,
-					    $headers,
-					    $condition,
-					    $helper,
-					    $wild ) ) {
+					   '',
+					   0,
+					   $target,
+					   '',
+					   $source,
+					   $dest,
+					   $proto,
+					   $ports,
+					   $sports,
+					   $origdest,
+					   $ratelimit,
+					   $user,
+					   $mark,
+					   $connlimit,
+					   $time,
+					   $headers,
+					   $condition,
+					   $helper,
+					   $wild ) ) {
 			    $generated = 1;
 			}
 		    }

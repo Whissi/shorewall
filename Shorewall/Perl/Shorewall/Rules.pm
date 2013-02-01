@@ -2656,6 +2656,15 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 }
 
 #
+# Helper for the perl_action_xxx functions
+#
+sub merge_target( $$ ) {
+    my ( $ref, $target ) = @_;
+
+    $ref->{inline} ? $target : merge_levels( join( ':', @actparms{'chain','loglevel','logtag'}), $target );
+}
+
+#
 # May be called by Perl code in action bodies (regular and inline) to generate a rule.
 #
 sub perl_action_helper($$;$) {
@@ -2668,18 +2677,18 @@ sub perl_action_helper($$;$) {
 
     $matches .= ' ' unless $matches =~ /^(?:.+\s)?$/;
 
-    if ( $inlines{$action} ) {
+    if ( my $ref = $inlines{$action} ) {
 	$result = &process_rule( $chainref,
 				 $matches,
 				 $actiontype || 0,
-				 $target,
+				 merge_target( $ref, $target ),
 				 '',                              # CurrentParam
 				 @columns );
     } else {
 	$result = process_rule( $chainref,
 				$matches,
 				$actiontype || 0,
-				$target,
+				merge_target( $actions{$action}, $target ),
 				'',                               # Current Param
 				'-',                              # Source
 				'-',                              # Dest
@@ -2697,6 +2706,7 @@ sub perl_action_helper($$;$) {
 				'-',                              # helper,
 				0,                                # Wildcard
 			      );
+	allow_optimize( $chainref );
     }
     #
     # Record that we generated a rule to avoid bogus warning
@@ -2722,11 +2732,11 @@ sub perl_action_tcp_helper($$) {
 	#
 	# For other protos, a 'no rule generated' warning will be issued
 	#
-	if ( $inlines{$action} ) {
+	if ( my $ref = $inlines{$action} ) {
 	    $result = &process_rule( $chainref,
 				     $proto,
 				     0,
-				     $target,
+				     merge_target( $ref, $target ),
 				     '',
 				     @columns[0,1],
 				     '-',
@@ -2736,7 +2746,7 @@ sub perl_action_tcp_helper($$) {
 	    $result = process_rule( $chainref,
 				    '',
 				    0,
-				    $target,
+				    merge_target( $actions{$action}, $target ),
 				    '',                               # Current Param
 				    '-',                              # Source
 				    '-',                              # Dest
@@ -2754,6 +2764,7 @@ sub perl_action_tcp_helper($$) {
 				    '-',                              # helper,
 				    0,                                # Wildcard
 				  );
+	    allow_optimize( $chainref );
 	}
 	#
 	# Record that we generated a rule to avoid bogus warning

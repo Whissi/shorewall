@@ -17,43 +17,21 @@ DEFAULTS DROP,-
 use strict;
 use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
 use Shorewall::Chains;
+use Shorewall::Rules;
 
-my ( $disposition, $audit ) = get_action_params( 2 );
+my ( $action, $audit ) = get_action_params( 2 );
 
 my $chainref        = get_action_chain;
 
-my ( $level, $tag ) = get_action_logging;
+if ( supplied $audit ) {
+     fatal_error "Invalid parameter ($audit) to action Invalid" if $audit ne 'audit';
+     $action = "A_$action";
+}    
 
-fatal_error q(The first argument to 'TCPFlags' must be ACCEPT, REJECT, or DROP) unless $disposition =~ /^(ACCEPT|REJECT|DROP)$/;
-
-if ( $level ne '-' || $audit ne '-' ) {
-    my $logchainref = ensure_filter_chain newlogchain( $chainref->{table} ), 0;
-
-    log_rule_limit( $level,
-		    $logchainref,
-		    $chainref->{name},
-		    $disposition,
-		    '',
-		    $tag,
-		    'add',
-		    '' ) if $level;
-
-    if ( supplied $audit ) {
-	fatal_error "Invalid argument ($audit) to TCPFlags" if $audit ne 'audit';
-	require_capability 'AUDIT_TARGET', q(Passing 'audit' to the TCPFlags action), 's';
-	add_ijump( $logchainref, j => 'AUDIT --type ' . lc $disposition );
-    }
-
-    add_ijump( $logchainref, g => $disposition );
-
-    $disposition = $logchainref;
-}
-
-add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags ALL FIN,URG,PSH';
-add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags ALL NONE';
-add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,RST SYN,RST';
-add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,FIN SYN,FIN';
-add_ijump $chainref , g => $disposition, p => 'tcp --syn --sport 0';
+perl_action_tcp_helper( $action, '-p tcp --tcp-flags ALL FIN,URG,PSH' );
+perl_action_tcp_helper( $action, '-p tcp --tcp-flags SYN,RST SYN,RST' );
+perl_action_tcp_helper( $action, '-p tcp --tcp-flags SYN,FIN SYN,FIN' );
+perl_action_tcp_helper( $action, '-p tcp --syn --sport 0' );
 
 ?END PERL;
 

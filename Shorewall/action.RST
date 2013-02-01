@@ -44,16 +44,7 @@ if ( supplied $audit ) {
      $action = "A_$action";
 }    
 
-my ( $level, $tag )  = get_action_logging;
-
-$action = join( ':', $action, $level, $tag ) if "${level}${tag}";
-
-perl_action_tcp_helper(
-		       $action,
-		       '-p 6 --tcp-flags RST RST'
-		      );
-
-allow_optimize( get_action_chain );
+perl_action_tcp_helper( $action, '-p 6 --tcp-flags RST RST' );
 
 1;
 

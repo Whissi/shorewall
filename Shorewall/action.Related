@@ -41,16 +41,10 @@ use Shorewall::Rules qw( process_rule1 );
 
 my ( $action ) = get_action_params( 1 );
 
-my ( $level, $tag ) = get_action_logging;
-
-$action = join( ':', $action, $level, $tag ) if "${level}${tag}";
-
 perl_action_helper( 
 		   $action,                         # Target
 		   "$globals{STATEMATCH} RELATED",  # Matches
 		  );
-
-allow_optimize( get_action_chain );
 
 1;
 

@@ -1762,10 +1762,11 @@ sub process_action($$) {
     pop_open;
 
     #
-    # Pop the action parameters and delete record of this chain if the action parameters
-    # were modified
+    # Pop the action parameters
+    # Caller should delete record of this chain if the action parameters
+    # were modified (and this function returns true
     #
-    delete $usedactions{$wholeaction} if pop_action_params( $oldparms );
+    pop_action_params( $oldparms );
 }
 
 #
@@ -2417,6 +2418,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     #
     # Handle actions
     #
+    my $delete_action;
+
     if ( $actiontype & ACTION ) {
 	#
 	# Create the action:level:tag:param tuple.
@@ -2431,7 +2434,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    $actionresult = 0;
 
-	    process_action( $ref, $chain );
+	    $delete_action = process_action( $ref, $chain );
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
 	    #
@@ -2658,6 +2661,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		     $log_action ,
 		     '' );
     }
+
+    delete $usedactions{$normalized_target} if $delete_action;
 
     return 1;
 }

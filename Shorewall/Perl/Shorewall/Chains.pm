@@ -748,6 +748,15 @@ sub set_rule_option( $$$ ) {
 	} elsif ( $opttype == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";
 	} elsif ( $opttype == UNIQUE ) {
+	    #
+	    # Shorewall::Rules::perl_action_tcp_helper() can produce rules that have two -p specifications.
+	    # The first will have a modifier like '! --syn' while the second will not.  We want to retain
+	    # the first while 
+	    if ( $option eq 'p' ) {
+		my ( $proto ) = split( ' ', $ruleref->{p} );
+		return if $proto eq $value;
+	    }
+
 	    fatal_error "Multiple $option settings in one rule is prohibited";
 	} else {
 	    assert(0, $opttype );

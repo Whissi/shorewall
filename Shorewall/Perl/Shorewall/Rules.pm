@@ -2786,7 +2786,7 @@ sub perl_action_tcp_helper($$) {
 				     merge_target( $ref, $target ),
 				     '',
 				     @columns[0,1],
-				     '-',
+				     6,
 				     @columns[3..LAST_COLUMN]
 				   );
 	} else {

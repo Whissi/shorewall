@@ -43,12 +43,11 @@ my ( $action, $audit ) = get_action_params( 2 );
 if ( supplied $audit ) {
      fatal_error "Invalid parameter ($audit) to action Invalid" if $audit ne 'audit';
      $action = "A_$action";
-}    
+}
 
-perl_action_helper(
-		   $action,                         # Target
-		   "$globals{STATEMATCH} INVALID",  # Matches
-		  );
+if ( my $check = check_state( 'INVALID' ) ) {
+    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} INVALID" : '' );
+}
 
 1;
 

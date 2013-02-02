@@ -53,6 +53,7 @@ our @EXPORT = qw(
 		  verify_audit
 		  perl_action_helper
 		  perl_action_tcp_helper
+		  check_state
 	       );
 
 our @EXPORT_OK = qw( initialize process_rule );
@@ -2428,6 +2429,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # First reference to this tuple
 	    #
+	    $actionresult = 0;
+
 	    process_action( $ref, $chain );
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
@@ -2455,6 +2458,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	# And store the (modified) columns into the columns array for use by perl_action[_tcp]_helper
 	#
 	@columns = ( $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard );
+
+	$actionresult = 0;
 
 	my $generated = process_inline( $basictarget,
 					$chainref,
@@ -2655,6 +2660,41 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     }
 
     return 1;
+}
+
+
+#
+# Check the passed connection state for conflict with the current section
+#
+# Returns true of the state is compatible with the section
+#
+sub check_state( $ ) {
+    my $state = $_[0];
+
+    if ( $section == BLACKLIST_SECTION ) {
+	my $blacklist_states = $globals{BLACKLIST_STATES};
+	return 1 if $blacklist_states eq 'ALL';
+	return 2 if $blacklist_states eq $state;
+	for ( split ',', $blacklist_states ) {
+	    return 1 if $_ eq $state;
+	}
+    } else {
+	if ( ( $state eq 'ESTABLISHED' ) || 
+	     ( $state =~ /^(?:INVALID|UNTRACKED|RELATED)$/ && $globals{"${state}_DISPOSITION"} ) ) {
+	    my $sections = $actparms{0}->{sections};
+
+	    if ( $sections ) {
+		my $sectionnumber = ( $section_map{$state} || 0 );
+		return 0 if $sectionnumber & $sections;
+	    }
+	}
+
+	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+	    return ( $state =~ /^(?:INVALID|UNTRACKED|NEW)$/ );
+	} else {
+	    return 2 if $state eq $section_rmap{$section};
+	}
+    }
 }
 
 #

@@ -41,10 +41,9 @@ use Shorewall::Rules qw( process_rule1 );
 
 my ( $action ) = get_action_params( 1 );
 
-perl_action_helper( 
-		   $action,                         # Target
-		   "$globals{STATEMATCH} RELATED",  # Matches
-		  );
+if ( my $state = check_state( 'RELATED' ) ) {
+    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} RELATED" : '' );
+}
 
 1;
 

@@ -42,7 +42,7 @@ use Shorewall::Rules;
 my ( $action, $audit ) = get_action_params( 2 );
 
 if ( supplied $audit ) {
-     fatal_error "Invalid parameter ($audit) to action Invalid" if $audit ne 'audit';
+     fatal_error "Invalid parameter ($audit) to action NotSyn" if $audit ne 'audit';
      $action = "A_$action";
 }    
 

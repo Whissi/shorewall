@@ -950,6 +950,8 @@ sub finish_chain_section ($$$) {
 			delete $state{ESTABLISHED};
 		    }
 		    
+		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
+
 		    add_ijump( $chainref, g => $target, state_imatch $_ );
 		}
 

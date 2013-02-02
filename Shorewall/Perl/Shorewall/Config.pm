@@ -5348,7 +5348,7 @@ sub get_configuration( $$$$ ) {
     }
 
     if ( $val = $config{INVALID_DISPOSITION} ) {
-	if ( $val =~ /^(?:A_)?(?:DROP|ACCEPT)$/ ) {
+	if ( $val =~ /^(?:A_)?DROP$/ ) {
 	    $globals{INVALID_TARGET} = $val;
 	} elsif ( $val eq 'REJECT' ) {
 	    $globals{INVALID_TARGET} = 'reject';

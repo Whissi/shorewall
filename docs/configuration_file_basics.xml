@@ -1484,7 +1484,8 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
         <listitem>
           <para>The <replaceable>variable</replaceable> can be specified
           either with or without a leading '$' to allow using both Perl and
-          Shell variable representation.</para>
+          Shell variable representation. The ${...} form (e.g. ${foo}) is not
+          allowed.</para>
 
           <para>The <replaceable>value</replaceable> is a Perl-compatible
           expression.</para>
@@ -1517,6 +1518,11 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     <para>Action variables are read-only and cannot be ?SET (although you can
     change their values <ulink url="Actions.html#Embedded">using embedded
     Perl</ulink>).</para>
+
+    <para>Beginning with Shorewall 4.5.13, <link
+    linkend="ShorewallVariables">Shorewall Variables</link> may be set. When
+    setting a Shorewall Variable, the <replaceable>variable</replaceable> must
+    include the leading '@' and the @{...} form is not allowed.</para>
   </section>
 
   <section id="AddressVariables">
@@ -1861,7 +1867,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     <para>Beginning with Shorewall 4.5.13, the values of @chain and
     @disposition are used to generated the --log-prefix in logging rules. When
     either is empty, the historical value is used to generate the
-    --log-prefix. </para>
+    --log-prefix.</para>
   </section>
 
   <section id="Conditional">

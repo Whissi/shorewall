@@ -1,0 +1,55 @@
+#
+# Shorewall 4 - New Action
+#
+#    /usr/share/shorewall/action.New
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2011,2012 - Tom Eastep (teastep@shorewall.net)
+#
+#       Complete documentation is available at http://shorewall.net
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of Version 2 of the GNU General Public License
+#       as published by the Free Software Foundation.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#   Untracked[([<action>])]
+#
+#       Default action is DROP
+#
+##########################################################################################
+?FORMAT 2
+
+DEFAULTS ACCEPT
+
+?BEGIN PERL;
+
+use Shorewall::IPAddrs;
+use Shorewall::Config;
+use Shorewall::Chains;
+use Shorewall::Rules qw( process_rule1 );
+
+my ( $action ) = get_action_params( 1 );
+
+my ( $level, $tag ) = get_action_logging;
+
+$action = join( ':', $action, $level, $tag ) if "${level}${tag}";
+
+if ( my $check = check_state( 'NEW' ) ) {
+    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} NEW" : '' );
+}
+
+allow_optimize( get_action_chain );
+
+1;
+
+?END PERL;

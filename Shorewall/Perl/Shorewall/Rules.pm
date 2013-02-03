@@ -961,12 +961,16 @@ sub finish_chain_section ($$$) {
 	}
     }
 
-    if ( keys %state && ! $config{FASTACCEPT} ) {
+    if ( keys %state ) {
 	my @state;
 
-	for ( qw/ESTABLISHED RELATED/ ) {
-	    push @state, $_ if $state{$_};
+	unless ( $config{FASTACCEPT} ) {
+	    for ( qw/ESTABLISHED RELATED/ ) {
+		push @state, $_ if $state{$_};
+	    }
 	}
+
+	push @state, 'UNTRACKED' if $state{UNTRACKED};
 
 	add_ijump( $chain1ref, j => 'ACCEPT', state_imatch join(',', @state ) ) if @state;
     }

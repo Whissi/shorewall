@@ -2791,7 +2791,7 @@ sub perl_action_tcp_helper($$) {
 				   );
 	} else {
 	    $result = process_rule( $chainref,
-				    '',
+				    $proto,
 				    0,
 				    merge_target( $actions{$action}, $target ),
 				    '',                               # Current Param

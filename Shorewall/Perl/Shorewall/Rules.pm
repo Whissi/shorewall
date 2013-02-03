@@ -2436,8 +2436,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # First reference to this tuple
 	    #
-	    $actionresult = 0;
-
 	    $delete_action = process_action( $ref, $chain );
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
@@ -2460,7 +2458,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	#
 	# Push the current column array onto the column stack
 	#
-	push @columnstack, [ ( @columns ) ];
+	push @columnstack, [ ( $actionresult, @columns ) ];
 	#
 	# And store the (modified) columns into the columns array for use by perl_action[_tcp]_helper
 	#
@@ -2488,13 +2486,13 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 					$headers,
 					$condition,
 					$helper,
-					$wildcard );
+					$wildcard ) || $actionresult;
 
-	@columns = @{pop @columnstack};
+	( $actionresult, @columns ) = @{pop @columnstack};
 
 	$macro_nest_level--;
 
-	return $generated || $actionresult;
+	return $generated;
     }
     #
     # Generate Fixed part of the rule

@@ -3553,6 +3553,141 @@ sub delete_duplicates {
     \@rules;
 }
 
+#
+# Get the 'conntrack' state for the passed rule reference
+#
+sub get_conntrack( $ ) {
+    if ( my $states = $_[0]->{conntrack} ) {
+	unless ( reftype $states ) {
+	    return $states if $states =~ s/--ctstate //;
+	}
+    }
+
+    '';
+}
+
+#
+# Return an array of keys for the passed rule. 'conntrack' and 'comment' are omitted;
+#
+sub get_keys1( $ ) {
+    sort grep $_ ne 'conntrack' && $_ ne 'comment',  keys %{$_[0]};
+}
+
+#
+# The arguments are a list of rule references; function returns a similar list with adjacent compatible rules combined
+#
+# Adjacent rules are compatible if:
+#
+#   - They all specify conntrack match
+#   - All of the rest of their members are identical with the possible exception of 'comment'.
+#
+#  Adjacent distinct comments are combined, separated by ', '. Redundant adjacent comments are dropped.
+#
+sub combine_states {
+    my @rules;
+    my $rulenum  = 1;
+    my $chainref = shift;
+    my $baseref  = shift;
+
+    while ( $baseref ) {
+	{
+	    my $ruleref;
+	    my $conntrack;
+	    my $basenum = $rulenum;
+
+	    if ( my $conntrack1 = get_conntrack( $baseref ) ) {
+		my @keys1         = get_keys1( $baseref );
+		my @states        = ( split ',', $conntrack1 );
+		my %states;
+
+		$states{$_} = 1 for @states;
+
+		my $origstates  = @states;
+		my $comment     = $baseref->{comment} || '';
+		my $lastcomment = $comment;
+
+	      RULE:
+
+		while ( ( $ruleref = shift ) ) {
+		    my $conntrack2;
+
+		    $rulenum++;
+
+		    if ( $conntrack2 = get_conntrack( $ruleref ) ) {
+			#
+			# We have a candidate
+			#
+			my $comment2 = $ruleref->{comment} || '';
+
+			last if $comment2 ne $lastcomment && length( $comment ) + length( $comment2 ) > 253;
+
+			my @keys2 = get_keys1( $ruleref );
+
+			last unless @keys1 == @keys2 ;
+
+			my $keynum = 0;
+
+			for my $key ( @keys1 ) {
+			    last RULE unless $key eq $keys2[$keynum++];
+			    last RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
+			}
+			
+			#
+			# The rules connection tracking states must be different; otherwise,
+			# the rules are identical
+			#
+			assert( $conntrack1 ne $conntrack2 );
+
+			if ( $comment2 ) {
+			    if ( $comment ) {
+				$comment .= ", $comment2" unless $comment2 eq $lastcomment;
+			    } else {
+				$comment = 'Others and ';
+				last if length( $comment ) + length( $comment2 ) > 255;
+				$comment .= $comment2;
+			    }
+
+			    $lastcomment = $comment2;
+			} else {
+			    if ( $comment ) {
+				unless ( ( $comment2 = ' and others' ) eq $lastcomment ) {
+				    last if length( $comment ) + length( $comment2 ) > 255;
+				    $comment .= $comment2;
+				}
+			    }
+
+			    $lastcomment = $comment2;
+			}
+
+			for ( split ',', $conntrack2 ) {
+			    unless ( $states{$_} ) {
+				push @states, $_;
+				$states{$_} = 1;
+			    }
+			}
+
+			trace( $chainref, 'D', $rulenum, $ruleref ) if $debug;
+
+		    } else {
+			last;
+		    }
+		}
+
+		if ( @states > $origstates ) {
+		    $baseref->{conntrack} = '--ctstate ' . join( ',', @states );
+		    trace ( $chainref, 'R', $basenum, $baseref ) if $debug;
+		}
+	    }
+
+	    push @rules, $baseref;
+
+	    $baseref = $ruleref ? $ruleref : shift;
+	}
+    }
+
+    \@rules;
+}
+
 sub optimize_level16( $$$ ) {
     my ( $table, $tableref , $passes ) = @_;
     my @chains   = ( grep $_->{referenced}, values %{$tableref} );
@@ -3572,6 +3707,13 @@ sub optimize_level16( $$$ ) {
     }
 
     ++$passes;
+
+    if ( have_capability 'CONNTRACK_MATCH' ) {
+	for my $chainref ( @chains ) {
+	    $chainref->{rules} = combine_states( $chainref, @{$chainref->{rules}} );
+	}
+    }
+	
 }
 
 #

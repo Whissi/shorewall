@@ -2687,19 +2687,18 @@ sub check_state( $ ) {
 	}
     } else {
 	if ( ( $state eq 'ESTABLISHED' ) || 
-	     ( $state =~ /^(?:INVALID|UNTRACKED|RELATED)$/ && $globals{"${state}_DISPOSITION"} ) ) {
-	    my $sections = $actparms{0}->{sections};
+	     ( $state =~ /^(?:INVALID|UNTRACKED|RELATED)$/ && $globals{"${state}_TARGET"} ) ) {
+	    my $sectionref = $actparms{0}->{sections};
 
-	    if ( $sections ) {
-		my $sectionnumber = ( $section_map{$state} || 0 );
-		return 0 if $sectionnumber & $sections;
+	    if ( $sectionref ) {
+		return 0 if $sectionref->{$state};
 	    }
 	}
 
 	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
 	    return ( $state =~ /^(?:INVALID|UNTRACKED|NEW)$/ );
 	} else {
-	    return 2 if $state eq $section_rmap{$section};
+	    return $state eq $section_rmap{$section} ? 2 : 1;
 	}
     }
 }

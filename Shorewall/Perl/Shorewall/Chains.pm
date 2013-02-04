@@ -72,6 +72,7 @@ our @EXPORT = ( qw(
 		    allow_move
 		    set_optflags
 		    reset_optflags
+		    has_return
 		    dont_optimize
 		    dont_delete
 		    dont_move
@@ -2209,6 +2210,14 @@ sub set_optflags( $$ ) {
     trace( $chainref, "!O${flags}", undef, '' ) if $debug;
 
     $chainref;
+}
+
+#
+# Return true if the passed chain has a RETURN rule.
+#
+
+sub has_return( $ ) {
+    $_[0]->{optflags} & RETURNS;
 }
 
 #

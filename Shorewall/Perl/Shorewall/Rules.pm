@@ -2685,21 +2685,47 @@ sub check_state( $ ) {
 	for ( split ',', $blacklist_states ) {
 	    return 1 if $_ eq $state;
 	}
-    } else {
-	if ( ( $state eq 'ESTABLISHED' ) || 
-	     ( $state =~ /^(?:INVALID|UNTRACKED|RELATED)$/ && $globals{"${state}_TARGET"} ) ) {
-	    my $sectionref = $actparms{0}->{sections};
 
-	    if ( $sectionref ) {
-		return 0 if $sectionref->{$state};
+	return 0;
+    }
+
+    if ( $state eq 'ESTABLISHED' ) {
+	my $sectionref = $actparms{0}->{sections};
+	return ( $sectionref && $sectionref->{$state} ) ? 0 : $section == ESTABLISHED_SECTION ? 2 : 1;
+    }
+
+    if ( $state =~ /^(?:INVALID|UNTRACKED|RELATED)$/ && $globals{"${state}_TARGET"} ) {
+	#
+	# One of the states that has its own state chain -- get the current action's chain
+	#
+	my $chainref = $actparms{0};
+	#
+	# See if we've passed the section associated with this STATE
+	#
+	if ( my $sectionref = $chainref->{sections} ) {
+	    if ( $sectionref->{$state} ) {
+		#
+		# We're past that section -- see if there was a separate state chain
+		#
+		if ( my $statechainref = $filter_table->{"$statetable{$state}{char}$chainref->{name}"} ) {
+		    #
+		    # There was -- if the chain had a RETURN then we will emit the current rule; otherwise we won't
+		    #
+		    return has_return( $statechainref ) ? 1 : 0;
+		} else {
+		    #
+		    # There wasn't -- suppress the current rule
+		    #
+		    return 0;
+		}
 	    }
 	}
+    }
 
-	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
-	    return ( $state =~ /^(?:INVALID|UNTRACKED|NEW)$/ );
-	} else {
-	    return $state eq $section_rmap{$section} ? 2 : 1;
-	}
+    if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+	$state =~ /^(?:INVALID|UNTRACKED|NEW)$/;
+    } else {
+	$state eq $section_rmap{$section} ? 2 : 1;
     }
 }
 

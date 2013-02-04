@@ -3554,17 +3554,18 @@ sub delete_duplicates {
 }
 
 #
-# Get the 'conntrack' state for the passed rule reference
+# Get the 'conntrack' state(s) for the passed rule reference
 #
 sub get_conntrack( $ ) {
     my $ruleref = $_[0];
     if ( my $states = $ruleref->{conntrack} ) {
-	unless ( reftype $states ) {
-	    if ( $states =~ s/--ctstate // ) {
-		delete $ruleref->{targetopts} unless $ruleref->{targetopts};
-		$ruleref->{simple} = '' unless $ruleref->{simple};
-		return $states 
-	    }
+	if ( $states =~ s/--ctstate // ) {
+	    #
+	    # Normalize the rule and return the states.
+	    #
+	    delete $ruleref->{targetopts} unless $ruleref->{targetopts};
+	    $ruleref->{simple} = ''       unless $ruleref->{simple};
+	    return $states 
 	}
     }
 
@@ -3668,6 +3669,9 @@ sub combine_states {
 			trace( $chainref, 'D', $rulenum, $ruleref ) if $debug;
 
 		    } else {
+			#
+			# Rule doesn't have the conntrack match
+			#
 			last;
 		    }
 		}

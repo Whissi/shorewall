@@ -36,10 +36,11 @@ DEFAULTS ACCEPT
 use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
+use Shorewall::Rules;
 
 my ( $action ) = get_action_params( 1 );
 
-if ( my $state = check_state( 'ESTABLISHED' ) ) {
+if ( my $check = check_state( 'ESTABLISHED' ) ) {
     perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} ESTABLISHED" : '' );
 }
 

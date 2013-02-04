@@ -3557,9 +3557,14 @@ sub delete_duplicates {
 # Get the 'conntrack' state for the passed rule reference
 #
 sub get_conntrack( $ ) {
-    if ( my $states = $_[0]->{conntrack} ) {
+    my $ruleref = $_[0];
+    if ( my $states = $ruleref->{conntrack} ) {
 	unless ( reftype $states ) {
-	    return $states if $states =~ s/--ctstate //;
+	    if ( $states =~ s/--ctstate // ) {
+		delete $ruleref->{targetopts} unless $ruleref->{targetopts};
+		$ruleref->{simple} = '' unless $ruleref->{simple};
+		return $states 
+	    }
 	}
     }
 
@@ -3632,12 +3637,6 @@ sub combine_states {
 			    last RULE unless compare_values( $baseref->{$key}, $ruleref->{$key} );
 			}
 			
-			#
-			# The rules connection tracking states must be different; otherwise,
-			# the rules are identical
-			#
-			assert( $conntrack1 ne $conntrack2 );
-
 			if ( $comment2 ) {
 			    if ( $comment ) {
 				$comment .= ", $comment2" unless $comment2 eq $lastcomment;

@@ -1508,6 +1508,8 @@ sub dropNotSyn ( $$$$ ) {
 sub rejNotSyn ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
+    warning_message "rejNotSyn is deprecated in favor of NotSyn(REJECT)";
+
     my $target = 'REJECT --reject-with tcp-reset';
 
     if ( supplied $audit ) {
@@ -1521,6 +1523,8 @@ sub rejNotSyn ( $$$$ ) {
 sub dropInvalid ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
+    warning_message "dropInvalid is deprecated in favor of Invalid(DROP)";
+
     my $target = require_audit( 'DROP', $audit );
 
     log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
@@ -1529,6 +1533,8 @@ sub dropInvalid ( $$$$ ) {
 
 sub allowInvalid ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
+
+    warning_message "allowInvalid is deprecated in favor of Invalid(ACCEPT)";
 
     my $target = require_audit( 'ACCEPT', $audit );
 
@@ -2670,10 +2676,14 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 }
 
 
+sub check_state( $ );
 #
 # Check the passed connection state for conflict with the current section
 #
-# Returns true of the state is compatible with the section
+# Returns non-zero value if the state is compatible with the section:
+#
+#   1:  Emit the rule with state match
+#   2:  Emit the rule without 
 #
 sub check_state( $ ) {
     my $state = $_[0];
@@ -2689,8 +2699,22 @@ sub check_state( $ ) {
 	return 0;
     }
 
+    my $chainref   = $actparms{0};
+    my $name       = $chainref->{name};
+    my $statechainref;
+
+    if ( $name =~ /^([+_&])/ ) {
+	#
+	# This is a state chain
+	#
+	return $state eq 'RELATED'   ? 2 : 0 if $_ eq '+';
+	return $state eq 'INVALID'   ? 2 : 0 if $_ eq '_';
+	return $state eq 'UNTRACKED' ? 2 : 0;
+    }
+
+    my $sectionref = $chainref->{sections};
+
     if ( $state eq 'ESTABLISHED' ) {
-	my $sectionref = $actparms{0}->{sections};
 	return ( $sectionref && $sectionref->{$state} ) ? 0 : $section == ESTABLISHED_SECTION ? 2 : 1;
     }
 
@@ -2698,32 +2722,37 @@ sub check_state( $ ) {
 	#
 	# One of the states that has its own state chain -- get the current action's chain
 	#
-	my $chainref = $actparms{0};
-	#
-	# See if we've passed the section associated with this STATE
-	#
-	if ( my $sectionref = $chainref->{sections} ) {
-	    if ( $sectionref->{$state} ) {
+	if ( $sectionref && $sectionref->{$state} ) {
+	    #
+	    # We're past that section -- see if there was a separate state chain
+	    #
+	    if ( my $statechainref = $filter_table->{"$statetable{$state}[0]$chainref->{name}"} ) {
 		#
-		# We're past that section -- see if there was a separate state chain
+		# There was -- if the chain had a RETURN then we will emit the current rule; otherwise we won't
 		#
-		if ( my $statechainref = $filter_table->{"$statetable{$state}[0]$chainref->{name}"} ) {
-		    #
-		    # There was -- if the chain had a RETURN then we will emit the current rule; otherwise we won't
-		    #
-		    return has_return( $statechainref ) ? 1 : 0;
-		} else {
-		    #
-		    # There wasn't -- suppress the current rule
-		    #
-		    return 0;
-		}
+		return has_return( $statechainref ) ? 1 : 0;
+	    } else {
+		#
+		# There wasn't -- suppress the current rule
+		#
+		return 0;
 	    }
 	}
     }
 
     if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
-	$state =~ /^(?:INVALID|UNTRACKED|NEW)$/;
+	if ( $state eq 'NEW' ) {
+	    #
+	    # If an INVALID or UNTRACKED rule would be emitted then we must include the state match
+	    #
+	    for ( qw/INVALID UNTRACKED/ ) {
+		return 1 if check_state( $_ );
+	    }
+
+	    2;
+	} else {
+	    $state =~ /^(?:INVALID|UNTRACKED)$/;
+	}
     } else {
 	$state eq $section_rmap{$section} ? 2 : 1;
     }

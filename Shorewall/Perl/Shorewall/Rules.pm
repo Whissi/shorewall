@@ -2727,8 +2727,16 @@ sub check_state( $ ) {
 	} else {
 	    $state =~ /^(?:INVALID|UNTRACKED)$/;
 	}
-    } else {
+    } elsif ( $sectionref ) {
+	#
+	# we're dealing with a rules chain
+	#
 	$state eq $section_rmap{$section} ? 2 : 1;
+    } else {
+	#
+	# An action chain -- we can't predict where it will get invoked so populate it fully
+	#
+	1;
     }
 }
 

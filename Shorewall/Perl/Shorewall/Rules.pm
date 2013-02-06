@@ -2707,7 +2707,7 @@ sub check_state( $ ) {
 		#
 		# We're past that section -- see if there was a separate state chain
 		#
-		if ( my $statechainref = $filter_table->{"$statetable{$state}{char}$chainref->{name}"} ) {
+		if ( my $statechainref = $filter_table->{"$statetable{$state}[0]$chainref->{name}"} ) {
 		    #
 		    # There was -- if the chain had a RETURN then we will emit the current rule; otherwise we won't
 		    #

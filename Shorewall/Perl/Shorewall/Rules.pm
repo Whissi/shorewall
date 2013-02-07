@@ -252,9 +252,9 @@ sub initialize( $ ) {
     @columnstack       = ();
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn allowinUPnP forwardUPnP Limit/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP forwardUPnP Limit/;
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn/;
+	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid/;
     }
 }
 
@@ -1508,6 +1508,8 @@ sub dropNotSyn ( $$$$ ) {
 sub rejNotSyn ( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
+    warning_message "rejNotSyn is deprecated in favor of NotSyn(REJECT)";
+
     my $target = 'REJECT --reject-with tcp-reset';
 
     if ( supplied $audit ) {
@@ -1516,6 +1518,28 @@ sub rejNotSyn ( $$$$ ) {
 
     log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
     add_ijump $chainref , j => $target, p => '6 ! --syn';
+}
+
+sub dropInvalid ( $$$$ ) {
+    my ($chainref, $level, $tag, $audit) = @_;
+
+    warning_message "dropInvalid is deprecated in favor of Invalid(DROP)";
+
+    my $target = require_audit( 'DROP', $audit );
+
+    log_rule_limit $level, $chainref, 'dropInvalid' , 'DROP', '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
+    add_ijump $chainref , j => $target, state_imatch 'INVALID';
+}
+
+sub allowInvalid ( $$$$ ) {
+    my ($chainref, $level, $tag, $audit) = @_;
+
+    warning_message "allowInvalid is deprecated in favor of Invalid(ACCEPT)";
+
+    my $target = require_audit( 'ACCEPT', $audit );
+
+    log_rule_limit $level, $chainref, 'allowInvalid' , 'ACCEPT', '', $tag, 'add', "$globals{STATEMATCH} INVALID " if $level ne '';
+    add_ijump $chainref , j => $target, state_imatch 'INVALID';
 }
 
 sub forwardUPnP ( $$$$ ) {
@@ -1580,6 +1604,8 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'allowBcast'     => \&allowBcast,
 		   'dropNotSyn'     => \&dropNotSyn,
 		   'rejNotSyn'      => \&rejNotSyn,
+		   'dropInvalid'    => \&dropInvalid,
+		   'allowInvalid'   => \&allowInvalid,
 		   'allowinUPnP'    => \&allowinUPnP,
 		   'forwardUPnP'    => \&forwardUPnP,
 		   'Limit'          => \&Limit,
@@ -1833,7 +1859,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error( "Invalid Action ($mtarget) in macro") unless $actiontype;
+	fatal_error( "Invalid Action ($mtarget) in macro") unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {

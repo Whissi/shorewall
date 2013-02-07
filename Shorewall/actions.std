@@ -15,19 +15,11 @@
 #    dropBcast		# Silently Drop Broadcast/multicast
 #    dropNotSyn		# Silently Drop Non-syn TCP packets
 #    rejNotSyn		# Silently Reject Non-syn TCP packets
-#    dropInvalid	# Silently Drop packets that are in the INVALID
-#			# conntrack state.
-#    allowInvalid	# Accept packets that are in the INVALID
-#			# conntrack state.
 #    allowoutUPnP	# Allow traffic from local command 'upnpd' (does not
 #                       # work with kernel 2.6.14 and later).
 #    allowinUPnP	# Allow UPnP inbound (to firewall) traffic
 #    forwardUPnP	# Allow traffic that upnpd has redirected from
 #			# 'upnp' interfaces.
-#    drop1918src        # Drop packets with an RFC 1918 source address
-#    drop1918dst        # Drop packets with an RFC 1918 original dest address
-#    rej1918src         # Reject packets with an RFC 1918 source address
-#    rej1918dst         # Reject packets with an RFC 1918 original dest address
 #    Limit              # Limit the rate of connections from each individual
 #                       # IP address
 #
@@ -35,15 +27,17 @@
 #ACTION
 A_Drop 		                # Audited Default Action for DROP policy
 A_Reject	                # Audited Default action for REJECT policy
-Broadcast   noinline            # Handles Broadcast/Multicast/Anycast
+allowInvalid inline		# Accepts packets in the INVALID conntrack state
+Broadcast    noinline           # Handles Broadcast/Multicast/Anycast
 Drop		                # Default Action for DROP policy
-DropSmurfs  noinline            # Drop smurf packets
-Established inline		# Handles packets in the ESTABLISHED state
-Invalid     inline              # Handles packets in the INVALID conntrack state
-New	    inline              # Handles packets in the NEW conntrack state
-NotSyn      inline              # Handles TCP packets which do not have SYN=1 and ACK=0
+dropInvalid  inline		# Drops packets in the INVALID conntrack state
+DropSmurfs   noinline           # Drop smurf packets
+Established  inline		# Handles packets in the ESTABLISHED state
+Invalid      inline             # Handles packets in the INVALID conntrack state
+New	     inline             # Handles packets in the NEW conntrack state
+NotSyn       inline             # Handles TCP packets which do not have SYN=1 and ACK=0
 Reject                          # Default Action for REJECT policy
-Related     inline              # Handles packets in the RELATED conntrack state
-RST	    inline              # Handle packets with RST set
+Related      inline             # Handles packets in the RELATED conntrack state
+RST	     inline             # Handle packets with RST set
 TCPFlags    			# Handle bad flag combinations.
 Untracked   inline              # Handles packets in the UNTRACKED conntrack state

@@ -12,10 +12,6 @@
 #    dropBcasts         # Silently Drop multicast and anycast packets
 #    dropNotSyn		# Silently Drop Non-syn TCP packets
 #    rejNotSyn		# Silently Reject Non-syn TCP packets
-#    dropInvalid	# Silently Drop packets that are in the INVALID
-#			# conntrack state.
-#    allowInvalid	# Accept packets that are in the INVALID
-#			# conntrack state.
 #
 ###############################################################################
 #ACTION
@@ -23,15 +19,17 @@ A_Drop	                        # Audited Default Action for DROP policy
 A_Reject	                # Audited Default Action for REJECT policy
 A_AllowICMPs	                # Audited Accept needed ICMP6 types
 AllowICMPs   	                # Accept needed ICMP6 types
-Broadcast   noinline      	# Handles Broadcast/Multicast/Anycast
+allowInvalid inline		# Accepts packets in the INVALID conntrack state
+Broadcast    noinline      	# Handles Broadcast/Multicast/Anycast
 Drop		        	# Default Action for DROP policy
-DropSmurfs  noinline     	# Handles packets with a broadcast source address
-Established inline		# Handles packets in the ESTABLISHED state
-Invalid	    inline		# Handles packets in the INVALID conntrack state
-New	    inline              # Handles packets in the NEW conntrack state
-NotSyn	    inline 		# Handles TCP packets that do not have SYN=1 and ACK=0
+dropInvalid  inline		# Drops packets in the INVALID conntrack state
+DropSmurfs   noinline     	# Handles packets with a broadcast source address
+Established  inline		# Handles packets in the ESTABLISHED state
+Invalid	     inline		# Handles packets in the INVALID conntrack state
+New	     inline             # Handles packets in the NEW conntrack state
+NotSyn	     inline 		# Handles TCP packets that do not have SYN=1 and ACK=0
 Reject		        	# Default Action for REJECT policy
-Related     inline              # Handles packets in the RELATED conntrack state
-RST	    inline              # Handle packets with RST set
+Related      inline             # Handles packets in the RELATED conntrack state
+RST	     inline             # Handle packets with RST set
 TCPFlags    			# Handles bad flags combinations
-Untracked   inline              # Handles packets in the UNTRACKED conntrack state
+Untracked    inline             # Handles packets in the UNTRACKED conntrack state

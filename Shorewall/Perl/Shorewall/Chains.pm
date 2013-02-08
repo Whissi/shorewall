@@ -565,7 +565,9 @@ use constant { UNIQUE      => 1,
 	       TARGET      => 2,
 	       EXCLUSIVE   => 4,
 	       MATCH       => 8,
-	       CONTROL     => 16 };
+	       CONTROL     => 16,
+	       COMPLEX     => 32
+	   };
 
 our %opttype = ( rule          => CONTROL,
 		 cmd           => CONTROL,
@@ -590,6 +592,8 @@ our %opttype = ( rule          => CONTROL,
 
 		 policy        => MATCH,
 		 state         => EXCLUSIVE,
+
+		 conntrack     => COMPLEX,
 
 		 jump          => TARGET,
 		 target        => TARGET,
@@ -729,6 +733,25 @@ sub set_rule_option( $$$ ) {
     $ruleref->{simple} = 0;
 
     my $opttype = $opttype{$option} || MATCH;
+
+    if ( $opttype == COMPLEX ) {
+	#
+	# Consider each subtype as a separate type
+	#
+	my ( $invert, $subtype, $val, $rest ) = split ' ', $value;
+
+	if ( $invert eq '!' ) {
+	    assert( ! supplied $rest );
+	    $option = join( ' ', $option, $invert, $subtype );
+	    $value  = $val;
+	} else {
+	    assert( ! supplied $val );
+	    $option  = join( ' ', $option, $invert );
+	    $value   = $subtype;
+	}
+
+	$opttype = EXCLUSIVE;
+    }
 
     if ( exists $ruleref->{$option} ) {
 	assert( defined( my $value1 = $ruleref->{$option} ) , $ruleref );
@@ -3472,13 +3495,13 @@ sub combine_dports {
 # using any of these matches, because an intervening rule could modify the result of the match
 # of the second duplicate
 #
-my %bad_match = ( conntrack => 1, 
-		  dscp      => 1,
-		  ecn       => 1,
-		  mark      => 1,
-		  set       => 1,
-		  tos       => 1,
-		  u32       => 1 );
+my %bad_match = ( 'conntrack --ctstate' => 1, 
+		  dscp                  => 1,
+		  ecn                   => 1,
+		  mark                  => 1,
+		  set                   => 1,
+		  tos                   => 1,
+		  u32                   => 1 );
 #
 # Delete duplicate rules from the passed chain.
 #
@@ -3569,15 +3592,13 @@ sub delete_duplicates {
 #
 sub get_conntrack( $ ) {
     my $ruleref = $_[0];
-    if ( my $states = $ruleref->{conntrack} ) {
-	if ( $states =~ s/--ctstate // ) {
-	    #
-	    # Normalize the rule and return the states.
-	    #
-	    delete $ruleref->{targetopts} unless $ruleref->{targetopts};
-	    $ruleref->{simple} = ''       unless $ruleref->{simple};
-	    return $states 
-	}
+    if ( my $states = $ruleref->{'conntrack --ctstate'} ) {
+	#
+	# Normalize the rule and return the states.
+	#
+	delete $ruleref->{targetopts} unless $ruleref->{targetopts};
+	$ruleref->{simple} = ''       unless $ruleref->{simple};
+	return $states 
     }
 
     '';
@@ -3587,7 +3608,7 @@ sub get_conntrack( $ ) {
 # Return an array of keys for the passed rule. 'conntrack' and 'comment' are omitted;
 #
 sub get_keys1( $ ) {
-    sort grep $_ ne 'conntrack' && $_ ne 'comment',  keys %{$_[0]};
+    sort grep $_ ne 'conntrack --ctstate' && $_ ne 'comment',  keys %{$_[0]};
 }
 
 #
@@ -3688,7 +3709,7 @@ sub combine_states {
 		}
 
 		if ( @states > $origstates ) {
-		    $baseref->{conntrack} = '--ctstate ' . join( ',', @states );
+		    $baseref->{'conntrack --ctstate'} = join( ',', @states );
 		    trace ( $chainref, 'R', $basenum, $baseref ) if $debug;
 		}
 	    }
@@ -4037,7 +4058,7 @@ sub state_imatch( $ ) {
     my $state = shift;
 
     unless ( $state eq 'ALL' ) {
-	have_capability 'CONNTRACK_MATCH' ? ( conntrack => "--ctstate $state" ) : ( state => "--state $state" );
+	have_capability 'CONNTRACK_MATCH' ? ( 'conntrack --ctstate' => $state ) : ( state => "--state $state" );
     } else {
 	();
     }

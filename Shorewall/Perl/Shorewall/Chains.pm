@@ -95,6 +95,7 @@ our @EXPORT = ( qw(
 		    HELPER
 		    INLINE
 		    TERMINATING
+		    STATEMATCH
 
 		    %chain_table
 		    %targets
@@ -346,22 +347,23 @@ our %nfobjects;
 #
 # Target Types
 #
-use constant { STANDARD    =>    0x1,       #defined by Netfilter
-	       NATRULE     =>    0x2,       #Involves NAT
-	       BUILTIN     =>    0x4,       #A built-in action
-	       NONAT       =>    0x8,       #'NONAT' or 'ACCEPT+'
-	       NATONLY     =>   0x10,       #'DNAT-' or 'REDIRECT-'
-	       REDIRECT    =>   0x20,       #'REDIRECT'
-	       ACTION      =>   0x40,       #An action (may be built-in)
-	       MACRO       =>   0x80,       #A Macro
-	       LOGRULE     =>  0x100,       #'LOG','NFLOG'
-	       NFQ         =>  0x200,       #'NFQUEUE'
-	       CHAIN       =>  0x400,       #Manual Chain
-	       SET         =>  0x800,       #SET
-	       AUDIT       => 0x1000,       #A_ACCEPT, etc
-	       HELPER      => 0x2000,       #CT:helper
-	       NFLOG       => 0x4000,       #NFLOG or ULOG
-	       INLINE      => 0x8000,       #Inline action
+use constant { STANDARD     =>     0x1,       #defined by Netfilter
+	       NATRULE      =>     0x2,       #Involves NAT
+	       BUILTIN      =>     0x4,       #A built-in action
+	       NONAT        =>     0x8,       #'NONAT' or 'ACCEPT+'
+	       NATONLY      =>    0x10,       #'DNAT-' or 'REDIRECT-'
+	       REDIRECT     =>    0x20,       #'REDIRECT'
+	       ACTION       =>    0x40,       #An action (may be built-in)
+	       MACRO        =>    0x80,       #A Macro
+	       LOGRULE      =>   0x100,       #'LOG','NFLOG'
+	       NFQ          =>   0x200,       #'NFQUEUE'
+	       CHAIN        =>   0x400,       #Manual Chain
+	       SET          =>   0x800,       #SET
+	       AUDIT        =>  0x1000,       #A_ACCEPT, etc
+	       HELPER       =>  0x2000,       #CT:helper
+	       NFLOG        =>  0x4000,       #NFLOG or ULOG
+	       INLINE       =>  0x8000,       #Inline action
+	       STATEMATCH   => 0x10000,       #action.Invalid, action.Related, etc.
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above

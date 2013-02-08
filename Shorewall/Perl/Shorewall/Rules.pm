@@ -1664,7 +1664,7 @@ sub process_actions() {
 
 }
 
-sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
+sub process_rule ( $$$$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1720,7 +1720,6 @@ sub process_action($$) {
 
 	process_rule( $chainref,
 		      '',
-		      0,
 		      $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
 		      '',
 		      $source,
@@ -1866,7 +1865,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 	$generated |= process_rule(
 				   $chainref,
 				   $matches,
-				   0,
 				   $mtarget,
 				   $param,
 				   $msource,
@@ -1986,7 +1984,6 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 	$generated |= process_rule(
 				   $chainref,
 				   $matches,
-				   0,
 				   $mtarget,
 				   $param,
 				   $msource,
@@ -2039,10 +2036,9 @@ sub verify_audit($;$$) {
 # reference is also passed when rules are being generated during processing of a macro used as a default action.
 #
 
-sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
+sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     my ( $chainref,   #reference to Action Chain if we are being called from process_action(); undef otherwise
 	 $rule,       #Matches
-	 $actiontype,
 	 $target,
 	 $current_param,
 	 $source,
@@ -2064,6 +2060,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my ( $action, $loglevel)    = split_action $target;
     my ( $basictarget, $param ) = get_target_param $action;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 5 ) : 0;
+    my $actiontype;
     my $inaction  = ''; # Set to true when we are process rules in an action file
     my $inchain   = ''; # Set to true when a chain reference is passed.
     my $normalized_target;
@@ -2080,7 +2077,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    $actiontype = ( $targets{$basictarget} || find_macro ( $basictarget ) ) unless $actiontype;
+    $actiontype = ( $targets{$basictarget} || find_macro ( $basictarget ) );
 
     if ( $config{ MAPOLDACTIONS } ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || supplied $param;
@@ -2755,26 +2752,33 @@ sub merge_target( $$ ) {
 # May be called by Perl code in action bodies (regular and inline) to generate a rule.
 #
 sub perl_action_helper($$;$) {
-    my ( $target, $matches, $actiontype ) = @_;
+    my ( $target, $matches, $isstatematch ) = @_;
     my $action   = $actparms{action};
     my $chainref = $actparms{0};
     my $result;
+
+    our $statematch;
 
     assert( $chainref );
 
     $matches .= ' ' unless $matches =~ /^(?:.+\s)?$/;
 
+    if ( $isstatematch ) {
+	return if $statematch;
+	$statematch = 1;
+    }
+
     if ( my $ref = $inlines{$action} ) {
 	$result = &process_rule( $chainref,
 				 $matches,
-				 $actiontype || 0,
 				 merge_target( $ref, $target ),
 				 '',                              # CurrentParam
 				 @columns );
     } else {
+	assert $actions{$action};
+
 	$result = process_rule( $chainref,
 				$matches,
-				$actiontype || 0,
 				merge_target( $actions{$action}, $target ),
 				'',                               # Current Param
 				'-',                              # Source
@@ -2799,6 +2803,8 @@ sub perl_action_helper($$;$) {
     # Record that we generated a rule to avoid bogus warning
     #
     $actionresult ||= $result;
+
+    $statematch = 0 if $isstatematch;
 }
 
 #
@@ -2822,7 +2828,6 @@ sub perl_action_tcp_helper($$) {
 	if ( my $ref = $inlines{$action} ) {
 	    $result = &process_rule( $chainref,
 				     $proto,
-				     0,
 				     merge_target( $ref, $target ),
 				     '',
 				     @columns[0,1],
@@ -2832,7 +2837,6 @@ sub perl_action_tcp_helper($$) {
 	} else {
 	    $result = process_rule( $chainref,
 				    $proto,
-				    0,
 				    merge_target( $actions{$action}, $target ),
 				    '',                               # Current Param
 				    '-',                              # Source
@@ -2991,6 +2995,8 @@ sub process_raw_rule ( ) {
     my @users     = split_list1 $users, 'USER/GROUP';
     my $generated = 0;
 
+    our $statematch = 0;
+
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 
     if ( @protos > 1 ) {
@@ -3007,7 +3013,6 @@ sub process_raw_rule ( ) {
 		    for my $user ( @users ) {
 			if ( process_rule( undef,
 					   '',
-					   0,
 					   $target,
 					   '',
 					   $source,

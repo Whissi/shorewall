@@ -41,7 +41,7 @@ use Shorewall::Rules;
 my ( $action ) = get_action_params( 1 );
 
 if ( my $check = check_state( 'ESTABLISHED' ) ) {
-    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} ESTABLISHED" : '' );
+    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} ESTABLISHED" : '', 1 );
 }
 
 1;

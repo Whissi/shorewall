@@ -179,7 +179,10 @@ our $actionresult;
 # See process_rules() and finish_chain_section().
 #
 our %statetable;
-
+#
+# Tracks which of the state match actions (action.Invalid, etc.) that is currently being expanded
+#
+our $statematch;
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -2415,6 +2418,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    # First reference to this tuple
 	    #
+	    my $savestatematch = $statematch;
+	    $statematch        = '';
+
 	    $delete_action = process_action( $ref, $chain );
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
@@ -2424,6 +2430,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
 	    ensure_chain( 'raw', $ref->{name} ) if ( $actiontype & HELPER );
+
+	    $statematch = $savestatematch;
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.
@@ -2757,15 +2765,26 @@ sub perl_action_helper($$;$) {
     my $chainref = $actparms{0};
     my $result;
 
-    our $statematch;
-
     assert( $chainref );
 
     $matches .= ' ' unless $matches =~ /^(?:.+\s)?$/;
 
     if ( $isstatematch ) {
-	return if $statematch;
-	$statematch = 1;
+	if ( $statematch ) {
+	    if ( $statematch eq $isstatematch ) {
+		#
+		# Same match -- pretend this isn't a state match
+		#
+		$isstatematch = '';
+	    } else {
+		#
+		# Different state -- can't possibly match
+		#
+		return;
+	    }
+	} else {
+	    $statematch = $isstatematch;
+	}
     }
 
     if ( my $ref = $inlines{$action} ) {
@@ -2804,7 +2823,7 @@ sub perl_action_helper($$;$) {
     #
     $actionresult ||= $result;
 
-    $statematch = 0 if $isstatematch;
+    $statematch = '' if $isstatematch;
 }
 
 #
@@ -2995,7 +3014,7 @@ sub process_raw_rule ( ) {
     my @users     = split_list1 $users, 'USER/GROUP';
     my $generated = 0;
 
-    our $statematch = 0;
+    $statematch = '';
 
     fatal_error "Invalid or missing ACTION ($target)" unless defined $action;
 

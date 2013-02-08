@@ -41,7 +41,7 @@ use Shorewall::Rules;
 my ( $action ) = get_action_params( 1 );
 
 if ( my $check = check_state( 'NEW' ) ) {
-    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} NEW" : '' );
+    perl_action_helper( $action, $check == 1 ? "$globals{STATEMATCH} NEW" : '' , 'NEW' );
 }
 
 allow_optimize( get_action_chain );

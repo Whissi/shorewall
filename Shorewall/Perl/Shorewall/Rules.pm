@@ -2691,8 +2691,8 @@ sub check_state( $ ) {
 	#
 	# This is a state chain
 	#
-	return $state eq 'RELATED'   ? 2 : 0 if $_ eq '+';
-	return $state eq 'INVALID'   ? 2 : 0 if $_ eq '_';
+	return $state eq 'RELATED'   ? 2 : 0 if $1 eq '+';
+	return $state eq 'INVALID'   ? 2 : 0 if $1 eq '_';
 	return $state eq 'UNTRACKED' ? 2 : 0;
     }
 

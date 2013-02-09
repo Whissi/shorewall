@@ -637,16 +637,17 @@ sub initialize( $;$$) {
     #
     # Misc Globals
     #
-    %globals  =   ( SHAREDIRPL => '' ,
-		    CONFDIR    => '',         # Run-time configuration directory
-		    CONFIGDIR  => '',         # Compile-time configuration directory (location of $product.conf)
-		    LOGPARMS   => '',
-		    TC_SCRIPT  => '',
-		    EXPORT     => 0,
-		    KLUDGEFREE => '',
-		    STATEMATCH => '-m state --state',
-		    VERSION    => "4.5.13-Beta3",
-		    CAPVERSION => 40512 ,
+    %globals  =   ( SHAREDIRPL              => '' ,
+		    CONFDIR                 => '',         # Run-time configuration directory
+		    CONFIGDIR               => '',         # Compile-time configuration directory (location of $product.conf)
+		    ESTABLISHED_DISPOSITION => 'ACCEPT',
+		    LOGPARMS                => '',
+		    TC_SCRIPT               => '',
+		    EXPORT                  => 0,
+		    KLUDGEFREE              => '',
+		    STATEMATCH              => '-m state --state',
+		    VERSION                 => "4.5.13-Beta3",
+		    CAPVERSION              => 40512 ,
 		  );
     #
     # From shorewall.conf file

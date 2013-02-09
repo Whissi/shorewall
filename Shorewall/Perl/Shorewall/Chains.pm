@@ -134,6 +134,7 @@ our %EXPORT_TAGS = (
 				       forward_option_chain
 				       rules_chain
 				       blacklist_chain
+				       established_chain
 				       related_chain
 				       invalid_chain
 				       untracked_chain
@@ -333,7 +334,43 @@ our $VERSION = 'MODULEVERSION';
 #      Used when blacklisting is involved for enforcing interface options that require Netfilter rules. When these chains are not used,
 #      any rules that they contained are moved to the corresponding interface chains.
 #
-
+###########################################################################################################################################
+#
+# Constructed chain names
+#
+#   Interface Chains for device <dev>
+#
+#      OUTPUT          - <dev>_out
+#      PREROUTING      - <dev>_pre
+#      POSTROUTING     - <dev>_post
+#      MASQUERADE      - <dev>_masq
+#      MAC filtering   - <dev>_mac
+#      MAC Recent      - <dev>_rec
+#      SNAT            - <dev>_snat
+#      ECN             - <dev>_ecn
+#      FORWARD Options - <dev>_fop
+#      OUTPUT Options  - <dev>_oop
+#      FORWARD Options - <dev>_fop
+#
+#   Zone Chains for zone <z>
+#
+#      INPUT           - <z>_input
+#      OUTPUT          - <z>_output
+#      FORWARD         - <z>_frwd
+#      DNAT            - <z>_dnat
+#      Conntrack       - <z>_ctrk
+#
+#   Provider Chains for provider <p>
+#      Load Balance    - ~<p>
+#
+#   Zone-pair chains for rules chain <z12z2>
+#
+#      Syn Flood       - @<z12z2>
+#      Blacklist       - ~<z12z2>
+#      Established     - ^<z12z2>
+#      Related         - +<z12z2>
+#      Invalid         - _<z12z2>
+#      Untracked       - &<z12z2>
 our %chain_table;
 our $raw_table;
 our $rawpost_table;
@@ -1659,6 +1696,13 @@ sub rules_chain ($$) {
 #
 sub blacklist_chain($$) {
     &rules_chain(@_) . '~';
+}
+
+#
+# Name of the established chain between an ordered pair of zones
+#
+sub established_chain($$) {
+    '^' . &rules_chain(@_)
 }
 
 #

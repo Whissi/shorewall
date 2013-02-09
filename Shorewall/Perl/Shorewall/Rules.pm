@@ -912,7 +912,7 @@ sub finish_chain_section ($$$) {
 
     $chain1ref->{sections}{$_} = 1 for keys %state;
 
-    for ( qw( RELATED INVALID UNTRACKED ) ) {
+    for ( qw( ESTABLISHED RELATED INVALID UNTRACKED ) ) {
 	if ( $state{$_} ) {
 	    my ( $char, $level, $target ) = @{$statetable{$_}};
 	    my $twochains = substr( $chainref->{name}, 0, 1 ) eq $char;
@@ -941,20 +941,19 @@ sub finish_chain_section ($$$) {
 
 		if ( $twochains ) {
 		    add_ijump $chainref, g => $target if $target;
-		    %state = ();
+		    delete $state{$_};
 		    last;
 		}
 
 		if ( $target ) {
+		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
 		    #
 		    # Always handle ESTABLISHED first
 		    #
-		    if ( $state{ESTABLISHED} ) {
+		    if ( $state{ESTABLISHED} && $_ ne 'ESTABLISHED' ) {
 			add_ijump( $chain1ref, j => 'ACCEPT', state_imatch 'ESTABLISHED' );
 			delete $state{ESTABLISHED};
 		    }
-		    
-		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
 
 		    add_ijump( $chainref, j => $target, state_imatch $_ );
 		}
@@ -1050,6 +1049,8 @@ sub finish_section ( $ ) {
 	$function = \&invalid_chain;
     } elsif ( $section == UNTRACKED_SECTION ) {
 	$function = \&untracked_chain;
+    } elsif ( $section == ESTABLISHED_SECTION ) {
+	$function = \&established_chain;
     } else {
 	$function = \&rules_chain;
     }
@@ -2357,9 +2358,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    $chainref = ensure_rules_chain $chain;
 	    #
-	    # Handle rules in the BLACKLIST, RELATED and INVALID sections
+	    # Handle rules in the BLACKLIST, ESTABLISHED, RELATED and INVALID sections
 	    #
-	    if ( $section & ( BLACKLIST_SECTION | RELATED_SECTION | INVALID_SECTION | UNTRACKED_SECTION ) ) {
+	    if ( $section & ( BLACKLIST_SECTION | ESTABLISHED_SECTION | RELATED_SECTION | INVALID_SECTION | UNTRACKED_SECTION ) ) {
 		my $auxchain;
 		my $auxref;
 
@@ -2369,8 +2370,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		    $auxchain = invalid_chain( ${sourcezone}, ${destzone} );
 		} elsif ( $section == UNTRACKED_SECTION ) {
 		    $auxchain = untracked_chain( ${sourcezone}, ${destzone} );
-		} else {
+		} elsif ( $section == RELATED_SECTION ) {
 		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
+		} else {
+		    $auxchain = established_chain( ${sourcezone}, ${destzone} );
 		}
 
 		$auxref = $filter_table->{$auxchain};
@@ -2387,9 +2390,11 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 			@state = state_imatch( 'INVALID' );
 		    } elsif ( $section == UNTRACKED_SECTION ) {
 			@state = state_imatch( 'UNTRACKED' );
-		    } else {
+		    } elsif ( $section == RELATED_SECTION ) {
 			@state = state_imatch 'RELATED';
-		    };
+		    } else {
+			@state = state_imatch 'ESTABLISHED';
+		    }
 
 		    add_ijump( $chainref, j => $auxref, @state );
 		}
@@ -2496,7 +2501,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		       do_headers( $headers ) ,
 		       do_condition( $condition , $chain ) ,
 		     );
-    } elsif ( $section & ( INVALID_SECTION | RELATED_SECTION | UNTRACKED_SECTION ) ) {
+    } elsif ( $section & ( ESTABLISHED_SECTION | INVALID_SECTION | RELATED_SECTION | UNTRACKED_SECTION ) ) {
 	$rule .= join( '',
 		       do_proto($proto, $ports, $sports),
 		       do_ratelimit( $ratelimit, $basictarget ) ,
@@ -2697,7 +2702,7 @@ sub check_state( $ ) {
 	return ( $sectionref && $sectionref->{$state} ) ? 0 : $section == ESTABLISHED_SECTION ? 2 : 1;
     }
 
-    if ( $state =~ /^(?:INVALID|UNTRACKED|RELATED)$/ && $globals{"${state}_TARGET"} ) {
+    if ( $state =~ /^(?:INVALID|UNTRACKED|RELATED|ESTABLISHED)$/ && $globals{"${state}_TARGET"} ) {
 	#
 	# One of the states that has its own state chain -- get the current action's chain
 	#
@@ -3140,9 +3145,10 @@ sub process_rules( $ ) {
     #
     # Populate the state table
     #
-    %statetable          = ( RELATED   => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_TARGET} ] ,
-			     INVALID   => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
-			     UNTRACKED => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
+    %statetable          = ( ESTABLISHED => [ '^', '',                           'ACCEPT'                 ] ,
+			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_TARGET} ] ,
+			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
+			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
 			   );
     #
     # Generate jumps to the classic blacklist chains

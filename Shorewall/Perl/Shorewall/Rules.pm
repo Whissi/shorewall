@@ -973,7 +973,7 @@ sub finish_chain_section ($$$) {
 	    }
 	}
 
-	push @state, 'UNTRACKED' if $state{UNTRACKED};
+	push( @state, 'UNTRACKED' ),if $state{UNTRACKED} && $globals{UNTRACKED_TARGET} eq 'ACCEPT';
 
 	add_ijump( $chain1ref, j => 'ACCEPT', state_imatch join(',', @state ) ) if @state;
     }

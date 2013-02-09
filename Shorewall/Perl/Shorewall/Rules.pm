@@ -2121,8 +2121,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	return $generated;
 
-    } elsif ( $actiontype & ( ACTION | INLINE ) ) {
-	split_list1 $param, 'Action parameter';
     } elsif ( $actiontype & NFQ ) {
 	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
 	my $paramval = $param eq '' ? 0 : numeric_value( $param );
@@ -2140,7 +2138,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	validate_level( $action );
 	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
 	$action   = 'LOG';
-    } else {
+    } elsif ( ! ( $actiontype & (ACTION | INLINE) ) ) {
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
 

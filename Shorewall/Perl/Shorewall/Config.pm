@@ -1812,8 +1812,12 @@ sub split_list2( $$ ) {
 
 sub split_list3( $$ ) {
     my ($list, $type ) = @_;
-
-    fatal_error "Invalid $type ($list)" if $list =~ /^,|,,/;
+    #
+    # We allow omitted arguments in action invocations.
+    #
+    $list =~ s/^,/-,/;
+    $list =~ s/,$/,-/;
+    $list =~ s/,,/,-,/g;
 
     my @list1 = split /,/, $list;
     my @list2;

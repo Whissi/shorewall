@@ -394,6 +394,13 @@ REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
 
       <para>In the above example, $2 would expand to nothing.</para>
 
+      <para>Beginning with Shorewall 4.5.13, completely omitting a arameter is
+      equivalent to passing '-'.</para>
+
+      <para>Example: ACTION(REDIRECT,,info)</para>
+
+      <para>This example behaves the same as the one shown above.</para>
+
       <para>If you want to make '-' a parameter value, use '--' (e.g.,
       ACTION(REDIRECT,--.info)).</para>
 
@@ -406,10 +413,6 @@ REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
       first parameter, <replaceable>def2</replaceable> is the default value
       for the second parameter and so on. You can specify an empty default
       using '-' (e.g. DEFAULTS DROP,-,audit).</para>
-
-      <para>The DEFAULTS directive also determines the maximum number of
-      parameters that an action may have. If more parameters are passed than
-      have default values, an error message is issued.</para>
 
       <para>For additional information about actions, see the <ulink
       url="configuration_file_basics.htm#ActionVariables">Action Variables

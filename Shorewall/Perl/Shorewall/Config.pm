@@ -2933,13 +2933,14 @@ sub expand_variables( \$ ) {
 	if ( $var =~ /^\d+$/ ) {
 	    fatal_error "Action parameters (\$$var) may only be referenced within the body of an action" unless $chain;
 
-	    unless ( $config{IGNOREUNKNOWNVARIABLES} ) {
+	    if ( $config{IGNOREUNKNOWNVARIABLES} ) {
+		fatal_error "Invalid action parameter (\$$var)" if ( length( $var ) > 1 && $var =~ /^0/ );
+	    } else {
 		fatal_error "Undefined parameter (\$$var)" unless ( defined $actparms{$var} &&
 								    ( length( $var ) == 1 ||
 								      $var !~ /^0/ ) );
 	    }
 
-	    fatal_error "Invalid action parameter (\$$var)" if ( ! defined $actparms{$var} ) || ( length( $var ) > 1 && $var =~ /^0/ );
 	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
 	} elsif ( exists $variables{$var} ) {
 	    $val = $variables{$var};

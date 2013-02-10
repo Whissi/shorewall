@@ -75,6 +75,16 @@ use constant { NULL_SECTION          => 0x00,
 	       NEW_SECTION           => 0x40,
 	       DEFAULTACTION_SECTION => 0x80 };
 #
+# Section => name function 
+#
+our %section_functions = ( ALL_SECTION ,        \&rules_chain,
+			   BLACKLIST_SECTION ,  \&blacklist_chain,
+			   ESTABLISHED_SECTION, \&established_chain,
+			   RELATED_SECTION,     \&related_chain,
+			   INVALID_SECTION,     \&invalid_chain,
+			   UNTRACKED_SECTION,   \&untracked_chain,
+			   NEW_SECTION,         \&rules_chain );
+#
 # These are the sections that may appear in a section header
 #
 our %section_map = ( ALL           => ALL_SECTION,
@@ -93,6 +103,7 @@ our %section_rmap = ( ALL_SECTION ,        'ALL',
 		      INVALID_SECTION,     'INVALID',
 		      UNTRACKED_SECTION,   'UNTRACKED',
 		      NEW_SECTION,         'NEW' );
+
 
 our @policy_chains;
 
@@ -1041,19 +1052,7 @@ sub finish_section ( $ ) {
 
     $sections{$_} = 1 for split /,/, $sections;
 
-    my $function;
-
-    if ( $section == RELATED_SECTION ) {
-	$function = \&related_chain;
-    } elsif ( $section == INVALID_SECTION ) {
-	$function = \&invalid_chain;
-    } elsif ( $section == UNTRACKED_SECTION ) {
-	$function = \&untracked_chain;
-    } elsif ( $section == ESTABLISHED_SECTION ) {
-	$function = \&established_chain;
-    } else {
-	$function = \&rules_chain;
-    }
+    my $function = $section_functions{$section} || \&rules_chain;
 
     for my $zone ( all_zones ) {
 	for my $zone1 ( all_zones ) {
@@ -2360,22 +2359,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    # Handle rules in the BLACKLIST, ESTABLISHED, RELATED and INVALID sections
 	    #
 	    if ( $section & ( BLACKLIST_SECTION | ESTABLISHED_SECTION | RELATED_SECTION | INVALID_SECTION | UNTRACKED_SECTION ) ) {
-		my $auxchain;
-		my $auxref;
-
-		if ( $blacklist ) {
-		    $auxchain = blacklist_chain( ${sourcezone}, ${destzone} );
-		} elsif ( $section == INVALID_SECTION ) {
-		    $auxchain = invalid_chain( ${sourcezone}, ${destzone} );
-		} elsif ( $section == UNTRACKED_SECTION ) {
-		    $auxchain = untracked_chain( ${sourcezone}, ${destzone} );
-		} elsif ( $section == RELATED_SECTION ) {
-		    $auxchain = related_chain( ${sourcezone}, ${destzone} );
-		} else {
-		    $auxchain = established_chain( ${sourcezone}, ${destzone} );
-		}
-
-		$auxref = $filter_table->{$auxchain};
+		my $auxchain = $section_functions{$section}->( $sourcezone, $destzone );
+		my $auxref   = $filter_table->{$auxchain};
 
 		unless ( $auxref ) {
 		    my @state;

@@ -672,9 +672,12 @@ sub policy_rules( $$$$$ ) {
 	if ( $default && $default ne 'none' ) {
 	    my ( $action ) = split ':', $default;
 
-	    my ( $basicaction, $param ) = get_target_param $action;
-
-	    if ( ( $targets{$basicaction} || 0 ) == INLINE ) {
+	    if ( ( $targets{$action} || 0 ) == ACTION ) {
+		#
+		# Default action is a regular action -- jump to the action chain
+		#
+		add_ijump $chainref, j => use_policy_action( $default, $chainref->{name} );
+	    } else {
 		#
 		# Default action is an inline 
 		#
@@ -702,11 +705,6 @@ sub policy_rules( $$$$$ ) {
 				'-',          #Helper
 				0,            #Wildcard
 			      );
-	    } else {
-		#
-		# Default action is a regular action -- jump to the action chain
-		#
-		add_ijump $chainref, j => use_policy_action( $default, $chainref->{name} );
 	    }
 	}
  

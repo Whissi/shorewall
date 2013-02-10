@@ -672,7 +672,9 @@ sub policy_rules( $$$$$ ) {
 	if ( $default && $default ne 'none' ) {
 	    my ( $action ) = split ':', $default;
 
-	    if ( ( $targets{$action} || 0 ) == INLINE ) {
+	    my ( $basicaction, $param ) = get_target_param $action;
+
+	    if ( ( $targets{$basicaction} || 0 ) == INLINE ) {
 		#
 		# Default action is an inline 
 		#
@@ -1763,9 +1765,8 @@ sub process_action($$) {
 #
 sub use_policy_action( $$ ) {
     my $ref = use_action( $_[0] );
-
     if ( $ref ) {
-	process_action( $ref, $_[1] );
+	delete $usedactions{$ref->{action}} if process_action( $ref, $_[1] );
     } else {
 	$ref = $usedactions{$_[0]};
     }

@@ -2218,7 +2218,7 @@ sub reset_optflags( $$ ) {
 
     my $chainref = reftype $chain ? $chain : $filter_table->{$chain};
 
-    $chainref->{optflags} ^= $flags;
+    $chainref->{optflags} ^= ( $flags & $chainref->{optflags} );
 
     trace( $chainref, "O${flags}", undef, '' ) if $debug;
 

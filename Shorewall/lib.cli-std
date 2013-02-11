@@ -35,7 +35,11 @@ get_config() {
     ensure_config_path
 
     if [ "$1" = Yes ]; then
-	params=$(find_file params)
+	if [ "$(id -u)" -eq 0 ]; then 
+	    params=$(find_file params)
+	else
+	    params="$g_shorewalldir/params"
+	fi
 
 	if [ -f $params ]; then
 	    . $params

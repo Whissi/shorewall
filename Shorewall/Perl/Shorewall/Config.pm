@@ -2213,7 +2213,9 @@ sub evaluate_expression( $$$ ) {
 
     print "EXPR=> $expression\n" if $debug;
 
-    unless ( $expression =~ /^\d+$/ ) {
+    if ( $expression =~ /^\d+$/ ) {
+	$val = $expression
+    } else {
 	#
 	# Not a simple one-term expression -- compile it
 	#

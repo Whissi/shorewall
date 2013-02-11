@@ -84,6 +84,11 @@ our %section_functions = ( ALL_SECTION ,        \&rules_chain,
 			   INVALID_SECTION,     \&invalid_chain,
 			   UNTRACKED_SECTION,   \&untracked_chain,
 			   NEW_SECTION,         \&rules_chain );
+
+#
+# Section => STATE map
+#
+our %section_states;
 #
 # These are the sections that may appear in a section header
 #
@@ -2356,31 +2361,17 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    $chainref = ensure_rules_chain $chain;
 	    #
-	    # Handle rules in the BLACKLIST, ESTABLISHED, RELATED and INVALID sections
+	    # Handle rules in the BLACKLIST, ESTABLISHED, RELATED, INVALID and UNTRACKED sections
 	    #
 	    if ( $section & ( BLACKLIST_SECTION | ESTABLISHED_SECTION | RELATED_SECTION | INVALID_SECTION | UNTRACKED_SECTION ) ) {
 		my $auxchain = $section_functions{$section}->( $sourcezone, $destzone );
 		my $auxref   = $filter_table->{$auxchain};
 
 		unless ( $auxref ) {
-		    my @state;
-
 		    $auxref = new_chain 'filter', $auxchain;
-			
-		    if ( $blacklist ) {
-			@state = state_imatch( $globals{BLACKLIST_STATES} );
-			$auxref->{blacklistsection} = 1;
-		    } elsif ( $section == INVALID_SECTION ) {
-			@state = state_imatch( 'INVALID' );
-		    } elsif ( $section == UNTRACKED_SECTION ) {
-			@state = state_imatch( 'UNTRACKED' );
-		    } elsif ( $section == RELATED_SECTION ) {
-			@state = state_imatch 'RELATED';
-		    } else {
-			@state = state_imatch 'ESTABLISHED';
-		    }
+		    $auxref->{blacklistsection} = 1 if $blacklist;
 
-		    add_ijump( $chainref, j => $auxref, @state );
+		    add_ijump( $chainref, j => $auxref, state_imatch( $section_states{$section} ) );
 		}
 
 		$chain    = $auxchain;
@@ -3134,6 +3125,11 @@ sub process_rules( $ ) {
 			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
 			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
 			   );
+    %section_states = ( BLACKLIST_SECTION ,  $globals{BLACKLIST_STATES},
+			ESTABLISHED_SECTION, 'ESTABLISHED',
+			RELATED_SECTION,     'RELATED',
+			INVALID_SECTION,     'INVALID',
+			UNTRACKED_SECTION,   'UNTRACKED' );
     #
     # Generate jumps to the classic blacklist chains
     #

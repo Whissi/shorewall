@@ -199,7 +199,7 @@ sub setup_blacklist() {
     my $zones1 = find_zones_by_option 'blacklist', 'out';
     my $chainref;
     my $chainref1;
-    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' };
     my $audit       = $disposition =~ /^A_/;
     my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
     my $orig_target = $target;
@@ -379,7 +379,7 @@ sub remove_blacklist( $ ) {
 sub convert_blacklist() {
     my $zones  = find_zones_by_option 'blacklist', 'in';
     my $zones1 = find_zones_by_option 'blacklist', 'out';
-    my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+    my ( $level, $disposition ) = @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' };
     my $audit       = $disposition =~ /^A_/;
     my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
     my $orig_target = $target;
@@ -766,7 +766,7 @@ sub add_common_rules ( $ ) {
 
     my @state     = state_imatch( $globals{BLACKLIST_STATES} );
     my $faststate = $config{RELATED_DISPOSITION} eq 'ACCEPT' && $config{RELATED_LOG_LEVEL} eq '' ? 'ESTABLISHED,RELATED' : 'ESTABLISHED';
-    my $level     = $config{BLACKLIST_LOGLEVEL};
+    my $level     = $config{BLACKLIST_LOG_LEVEL};
     my $rejectref = $filter_table->{reject};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {

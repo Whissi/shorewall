@@ -341,10 +341,7 @@
           be dropped or REJECT if the packets are to be replied with an ICMP
           port unreachable reply or a TCP RST (tcp only). If you do not assign
           a value or if you assign an empty value then DROP is assumed. The
-          BLACKLIST_DISPOSITION setting has no effect on entries in the
-          BLACKLIST section of <ulink
-          url="shorewall6-rules.html">shorewall6-rules</ulink> (5). It
-          determines the disposition of packets sent to the <emphasis
+          setting determines the disposition of packets sent to the <emphasis
           role="bold">blacklog</emphasis> target of <ulink
           url="shorewall6-blrules.html">shorewall6-blrules</ulink>(5).</para>
         </listitem>
@@ -352,19 +349,17 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">BLACKLIST_LOGLEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+        role="bold">BLACKLIST_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
 
         <listitem>
-          <para>This parameter determines if packets from blacklisted hosts
-          are logged and it determines the syslog level that they are to be
-          logged at. Its value is a syslog level (Example:
-          BLACKLIST_LOGLEVEL=debug). If you do not assign a value or if you
-          assign an empty value then packets from blacklisted hosts are not
-          logged. The BLACKLIST_LOGLEVEL setting has no effect on entries in
-          the BLACKLIST section of <ulink
-          url="shorewall6-rules.html">shorewall6-rules</ulink> (5). It
-          determines the log level of packets sent to the <emphasis
-          role="bold">blacklog</emphasis> target of <ulink
+          <para>Formerly named BLACKLIST_LOGLEVEL. This parameter determines
+          if packets from blacklisted hosts are logged and it determines the
+          syslog level that they are to be logged at. Its value is a syslog
+          level (Example: BLACKLIST_LOG_LEVEL=debug). If you do not assign a
+          value or if you assign an empty value then packets from blacklisted
+          hosts are not logged. The setting determines the log level of
+          packets sent to the <emphasis role="bold">blacklog</emphasis> target
+          of <ulink
           url="shorewall6-blrules.html">shorewall6-blrules</ulink>(5).</para>
         </listitem>
       </varlistentry>

@@ -3143,7 +3143,7 @@ sub process_rules( $ ) {
 
     if ( $fn ) {
 	first_entry( sub () {
-			 my ( $level, $disposition ) = @config{'BLACKLIST_LOGLEVEL', 'BLACKLIST_DISPOSITION' };
+			 my ( $level, $disposition ) = @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' };
 			 my  $audit       = $disposition =~ /^A_/;
 			 my  $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
 

@@ -269,7 +269,7 @@ our %config;
 #
 # Entries in shorewall.conf that have been renamed
 #
-our %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT' );
+our %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT', BLACKLIST_LOGLEVEL => 'BLACKLIST_LOG_LEVEL' );
 #
 # Config options and global settings that are to be copied to output script
 #
@@ -665,7 +665,7 @@ sub initialize( $;$$) {
 	  LOGRATE => undef,
 	  LOGBURST => undef,
 	  LOGALLNEW => undef,
-	  BLACKLIST_LOGLEVEL => undef,
+	  BLACKLIST_LOG_LEVEL => undef,
 	  RELATED_LOG_LEVEL => undef,
 	  RFC1918_LOG_LEVEL => undef,
 	  MACLIST_LOG_LEVEL => undef,
@@ -5286,13 +5286,13 @@ sub get_configuration( $$$$ ) {
 
     require_capability 'AUDIT_TARGET', "SMURF_DISPOSITION=$val", 's' if $val =~ /^A_/;
 
-    default_log_level 'BLACKLIST_LOGLEVEL',  '';
-    default_log_level 'MACLIST_LOG_LEVEL',   '';
-    default_log_level 'TCP_FLAGS_LOG_LEVEL', '';
-    default_log_level 'RFC1918_LOG_LEVEL',   '';
-    default_log_level 'RELATED_LOG_LEVEL',   '';
-    default_log_level 'INVALID_LOG_LEVEL',   '';
-    default_log_level 'UNTRACKED_LOG_LEVEL', '';
+    default_log_level 'BLACKLIST_LOG_LEVEL',  '';
+    default_log_level 'MACLIST_LOG_LEVEL',    '';
+    default_log_level 'TCP_FLAGS_LOG_LEVEL',  '';
+    default_log_level 'RFC1918_LOG_LEVEL',    '';
+    default_log_level 'RELATED_LOG_LEVEL',    '';
+    default_log_level 'INVALID_LOG_LEVEL',    '';
+    default_log_level 'UNTRACKED_LOG_LEVEL',  '';
 
     warning_message "RFC1918_LOG_LEVEL=$config{RFC1918_LOG_LEVEL} ignored. The 'norfc1918' interface/host option is no longer supported" if $config{RFC1918_LOG_LEVEL};
 

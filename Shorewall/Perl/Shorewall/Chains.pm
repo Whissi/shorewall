@@ -6328,24 +6328,32 @@ sub isolate_source_interface( $ ) {
 	} else {
 	    $iiface = $source;
 	}
-    } elsif  ( $source =~ /^(.+?):<(.+)>\s*$/   ||
-	       $source =~ /^(.+?):\[(.+)\]\s*$/ ||
-	       $source =~ /^(.+?):(!?\+.+)$/    ||
-	       $source =~ /^(.+?):(!?[&%].+)$/  ||
-	       $source =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
-	     ) {
-	$iiface = $1;
-	$inets  = $2;
-    } elsif ( $source =~ /:/ ) {
-	if ( $source =~ /^<(.+)>$/ || $source =~ /^\[(.+)\]$/ ) {
-	    $inets = $1;
-	} else {
-	    $inets = $source;
-	}
-    } elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || $source =~ /^!?\^/ ) {
-	$inets = $source;
     } else {
-	$iiface = $source;
+	$source =~ tr/<>/[]/;
+
+	if ( $source =~ /^(.+?):(\[(?:.+)\],\[(?:.+)\])$/ ) {
+	    $iiface = $1;
+	    $inets  = $2;
+	} elsif ( $source =~ /^(.+?):\[(.+)\]\s*$/ ||
+		  $source =~ /^(.+?):(!?\+.+)$/    ||
+		  $source =~ /^(.+?):(!?[&%].+)$/  ||
+		  $source =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
+		) {
+	    $iiface = $1;
+	    $inets  = $2;
+	} elsif ( $source =~ /:/ ) {
+	    if ( $source =~ /^\[(?:.+)\],\[(?:.+)\]$/ ){
+		$inets = $source;
+	    } elsif ( $source =~ /^\[(.+)\]$/ ) {
+		$inets = $1;
+	    } else {
+		$inets = $source;
+	    }
+	} elsif ( $source =~ /(?:\+|&|%|~|\..*\.)/ || $source =~ /^!?\^/ ) {
+	    $inets = $source;
+	} else {
+	    $iiface = $source;
+	}
     }
 
     ( $iiface, $inets );
@@ -6438,24 +6446,32 @@ sub isolate_dest_interface( $$$$ ) {
 	} else {
 	    $diface = $dest;
 	}
-    } elsif ( $dest =~ /^(.+?):<(.+)>\s*$/   || 
-	      $dest =~ /^(.+?):\[(.+)\]\s*$/ ||
-	      $dest =~ /^(.+?):(!?\+.+)$/    ||
-	      $dest =~ /^(.+?):(!?[&%].+)$/  ||
-	      $dest =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
-	    ) {
-	$diface = $1;
-	$dnets  = $2;
-    } elsif ( $dest =~ /:/ ) {
-	if ( $dest =~ /^<(.+)>$/ || $dest =~ /^\[(.+)\]$/ ) {
-	    $dnets = $1;
-	} else {
-	    $dnets = $dest;
-	}
-    } elsif ( $dest =~ /(?:\+|&|\..*\.)/ || $dest =~ /^!?\^/ ) {
-	$dnets = $dest;
     } else {
-	$diface = $dest;
+	$dest =~ tr/<>/[]/;
+
+	if ( $dest =~ /^(.+?):(\[(?:.+)\],\[(?:.+)\])$/ ) {
+	    $diface = $1;
+	    $dnets  = $2;
+	} elsif (  $dest =~ /^(.+?):\[(.+)\]\s*$/ ||
+		   $dest =~ /^(.+?):(!?\+.+)$/    ||
+		   $dest =~ /^(.+?):(!?[&%].+)$/  ||
+		   $dest =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
+		) {
+	    $diface = $1;
+	    $dnets  = $2;
+	} elsif ( $dest =~ /:/ ) {
+	    if ( $dest =~ /^\[(?:.+)\],\[(?:.+)\]$/ ){
+		$dnets = $dest;
+	    } elsif ( $dest =~ /^\[(.+)\]$/ ) {
+		$dnets = $1;
+	    } else {
+		$dnets = $dest;
+	    }
+	} elsif ( $dest =~ /(?:\+|&|\..*\.)/ || $dest =~ /^!?\^/ ) {
+	    $dnets = $dest;
+	} else {
+	    $diface = $dest;
+	}
     }
 
     ( $diface, $dnets, $rule );

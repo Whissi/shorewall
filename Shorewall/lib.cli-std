@@ -46,7 +46,11 @@ get_config() {
 	fi
     fi
 
-    config=$(find_file $g_program.conf)
+    if [ "$(id -u)" -eq 0 ]; then 
+	config=$(find_file $g_program.conf)
+    else
+	config="$g_shorewalldir/$g_program.conf"
+    fi
 
     if [ -f $config ]; then
 	if [ -r $config ]; then

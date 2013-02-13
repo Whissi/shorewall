@@ -676,7 +676,11 @@ find_file()
 		fi
 	    done
 
-	    echo ${g_confdir}/$1
+	    if [ -n "$g_shorewalldir" ]; then
+		echo ${g_shorewalldir}/$1
+	    else
+		echo ${g_confdir}/$1
+	    fi
 	    ;;
     esac
 }

@@ -46,9 +46,10 @@ get_config() {
 	fi
     fi
 
-    if [ "$(id -u)" -eq 0 ]; then 
+    if [ "$(id -u)" -eq 0 ]; then
 	config=$(find_file $g_program.conf)
     else
+	[ -n "$g_shorewalldir" ] || fatal_error "Ordinary users may not $COMMAND the $CONFDIR/$g_program configuration"
 	config="$g_shorewalldir/$g_program.conf"
     fi
 
@@ -381,7 +382,7 @@ compiler() {
 
     if [ $(id -u) -ne 0 ]; then
 	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = /etc/$g_program ]; then
-	    startup_error "Ordinary users may not compile the /etc/$g_program configuration"
+	    startup_error "Ordinary users may not $COMMAND the $CONFDIR/$g_program configuration"
 	fi
     fi
     #
@@ -413,7 +414,7 @@ compiler() {
     shift
 
     shorewallrc=${g_basedir}/shorewallrc
-    
+
     if [ -n "$g_export" ]; then
 	shorewallrc1=$(find_file shorewallrc)
 	[ -f "$shorewallrc1" ] || fatal_error "Compiling for export requires a shorewallrc file"

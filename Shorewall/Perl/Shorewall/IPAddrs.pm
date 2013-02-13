@@ -646,8 +646,15 @@ sub resolve_6dnsname( $ ) {
 } 
 
 sub validate_6net( $$ ) {
-    my ($net, $vlsm, $rest) = split( '/', $_[0], 3 );
-    my $allow_name = $_[0];
+    my ( $net, $allow_name ) = @_;
+
+    if ( $net =~ /^\[(.*)]$/ ) {
+	$net = $1;
+    } elsif ( $net =~ /^\[(.*)\]\/(\d+)$/ ) {
+	$net = join( '/', $1, $2 );
+    }
+
+    ($net, my $vlsm, my $rest) = split( '/', $net, 3 );
 
     if ( $net =~ /\+(\[?)/ ) {
 	if ( $1 ) {
@@ -661,7 +668,6 @@ sub validate_6net( $$ ) {
 
     fatal_error "Invalid Network address ($_[0])" unless supplied $net;
 
-    $net = $1 if $net =~ /^\[(.*)\]$/;
 
     if ( defined $vlsm ) {
         fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 128;

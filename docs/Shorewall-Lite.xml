@@ -149,20 +149,26 @@
         </listitem>
 
         <listitem>
-          <para>The <filename>/etc/shorewall/shorewall.conf</filename> file is
-          used to determine the VERBOSITY setting which determines how much
-          output the compiler generates. All other settings are taken from the
+          <para>Prior to Shorewall 4.5.8, the
+          <filename>/etc/shorewall/shorewall.conf</filename> file was used to
+          determine the VERBOSITY setting which determines how much output the
+          compiler generates. All other settings were taken from the
           <filename>shorewall.conf </filename>file in the remote systems
           export directory.</para>
 
           <caution>
-            <para>If you want to be able to allow non-root users to manage
-            remote firewall systems, then the files
+            <para>Prior to Shorewall 4.5.8, if you want to be able to allow
+            non-root users to manage remote firewall systems, then the files
             <filename>/etc/shorewall/params</filename> and
             <filename>/etc/shorewall/shorewall.conf</filename> must be
             readable by all users on the administrative system. Not all
             packages secure the files that way and you may have to change the
             file permissions yourself.</para>
+
+            <para>Prior to Shorewall 4.5.14,
+            <filename>/etc/shorewall/params</filename> must be readable by
+            non-root users or each export directory must have its own params
+            file.</para>
           </caution>
         </listitem>
 

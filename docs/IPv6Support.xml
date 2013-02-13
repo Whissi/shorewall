@@ -400,15 +400,18 @@
         <term>Specifying Addresses</term>
 
         <listitem>
+          <para>Shorewall follows the usual convention of distinguishing IPv6
+          address by enclosing them in square brackets ("[" and "]").</para>
+
           <para>Anywhere that an address or address list follows a colon
-          (":"), the address or list may be enclosed in angled brackets
-          ("&lt;" and "&gt;") to improve readability.</para>
+          (":"), the address or list may be enclosed in square brackets to
+          improve readability.</para>
 
           <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
 
           <programlisting>#ACTION        SOURCE              DEST                        PROTO          DEST
 #                                                                             PORT(S)
-ACCEPT         net                 $FW:&lt;2002:ce7c:92b4::3&gt;     tcp            22</programlisting>
+ACCEPT         net                 $FW:[2002:ce7c:92b4::3]     tcp            22</programlisting>
 
           <para>When the colon is preceeded by an interface name,
           <emphasis>the angle brackets are required</emphasis>. This is true
@@ -418,22 +421,28 @@ ACCEPT         net                 $FW:&lt;2002:ce7c:92b4::3&gt;     tcp        
 
           <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
 #                                                                             PORT(S)
-ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                         22</programlisting>
+ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                          22</programlisting>
 
-          <para>Beginning with Shorewall 4.4.6 and 4.5.4, square brackets ("["
-          and "]") may also be used.</para>
+          <para>Prior to Shorewall 4.5.4, angled brackets ("&lt;" and "&gt;")
+          were used. While these are still accepted, their use is deprecated
+          in favor of square brackets.</para>
 
           <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
 
           <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
 #                                                                             PORT(S)
-ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                         22</programlisting>
+ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                          22</programlisting>
 
           <para>Prior to Shorewall 4.5.9, network addresses were required to
           be enclosed in either angle brackets or square brackets (e.g.
           [2001:470:b:787::/64]). Beginning with Shorewall 4.5.9, the more
           common representation that places the VLSM outside the brackets is
-          also accepted (e.g., [2001:470:b:787::]/64).</para>
+          accepted and preferred (e.g., [2001:470:b:787::]/64).</para>
+
+          <para>Beginning with Shorewall 4.5.14, the rules compiler translates
+          "&lt;" and "&gt;" to "[" and "]" respectively before parsing. So
+          square brackets may appear in error messages even when angled
+          brackets were used.</para>
         </listitem>
       </varlistentry>
 

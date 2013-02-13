@@ -648,13 +648,17 @@ sub resolve_6dnsname( $ ) {
 sub validate_6net( $$ ) {
     my ( $net, $allow_name ) = @_;
 
-    if ( $net =~ /^\[(.*)]$/ ) {
+    if ( $net =~ /^\[(.+)]$/ ) {
 	$net = $1;
-    } elsif ( $net =~ /^\[(.*)\]\/(\d+)$/ ) {
+    } elsif ( $net =~ /^\[(.+)\]\/(\d+)$/ ) {
 	$net = join( '/', $1, $2 );
     }
 
+    fatal_error "Invalid Network Address($net)" if $net =~ /\[/;
+
     ($net, my $vlsm, my $rest) = split( '/', $net, 3 );
+
+    fatal_error 'Invalid Network Address(' . join( '/', $net, $vlsm, $rest ) if defined $rest;
 
     if ( $net =~ /\+(\[?)/ ) {
 	if ( $1 ) {

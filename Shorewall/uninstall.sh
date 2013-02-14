@@ -145,8 +145,7 @@ done
 
 rm -f  ${CONFDIR}/logrotate.d/shorewall
 
-if [ -n "$SYSTEMD" ]; THEN
-rm -f  ${SYSTEMD}/shorewall.service
+[ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/shorewall.service
 
 echo "Shorewall Uninstalled"
 

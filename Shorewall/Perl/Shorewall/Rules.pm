@@ -86,7 +86,7 @@ our %section_functions = ( ALL_SECTION ,        \&rules_chain,
 			   NEW_SECTION,         \&rules_chain );
 
 #
-# Section => STATE map
+# Section => STATE map - initialized in process_rules().
 #
 our %section_states;
 #

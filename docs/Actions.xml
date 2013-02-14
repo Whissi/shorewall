@@ -948,10 +948,51 @@ bar:debug</programlisting>
           </note>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Rules::perl_action_tcp_helper( $target, $proto
+        )</term>
+
+        <listitem>
+          <para>This function is similar to
+          Shorewall::Rules::perl_action_helper but is taylored for specifying
+          options to "-p tcp".</para>
+
+          <para>To use this function, you must include:</para>
+
+          <simplelist>
+            <member><emphasis role="bold">use
+            Shorewall::Rules;</emphasis></member>
+          </simplelist>
+
+          <para>Arguments are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>$target</term>
+
+              <listitem>
+                <para>The target of the rule. Legal values are anything that
+                can appear in the TARGET column of in an action body and may
+                include log level, tag, and parameters.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>$proto</term>
+
+              <listitem>
+                <para>The '-p' part of the rule to be generated (e.g., "-p tcp
+                --tcp-flags RST RST").</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
     </variablelist>
 
-    <para>For an example of using these services, look at the standard action
-    <filename>/usr/share/shorewall/action.TCPFlags</filename>.</para>
+    <para>For examples of using these services, look at the standard actions
+    in <filename>/usr/share/shorewall/action.*</filename>.</para>
   </section>
 
   <section id="Extension">

@@ -3,11 +3,4 @@
 #
 # /usr/share/shorewall6/configpath
 #
-# Note to maintainers.
-#
-#	The CONFDIR variable is normally set to /etc/shorewall6 but when
-#	the command is "compile -e" then CONFDIR is set to
-#	/usr/share/shorewall6/configfiles/. This prevents 'compile -e'
-#	from trying to use configuration information from /etc/shorewall.
-
-CONFIG_PATH=${CONFDIR}:/usr/share/shorewall6:/usr/share/shorewall
+CONFIG_PATH=${CONFDIR}/shorewall6:${SHAREDIR}/shorewall6:${SHAREDIR}/shorewall

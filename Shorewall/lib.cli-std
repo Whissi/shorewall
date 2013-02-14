@@ -57,12 +57,10 @@ get_config() {
 	if [ -r $config ]; then
 	    . $config
 	else
-	    echo "Cannot read $config! (Hint: Are you root?)" >&2
-	    exit 1
+	    fatal_error "Cannot read $config! (Hint: Are you root?)"
 	fi
     else
-	echo "$config does not exist!" >&2
-	exit 2
+	fatal_error "$config does not exist!"
     fi
 
     ensure_config_path

@@ -229,10 +229,19 @@
                 </listitem>
 
                 <listitem>
-                  <para>The export directory should contain a
-                  <filename>params</filename> file, even if it is empty.
-                  Otherwise, <filename>/sbin/shorewall</filename> will attempt
-                  to read<filename> /etc/shorewall/params</filename>.</para>
+                  <para>Prior to Shorewall 4.5.14, the export directory should
+                  contain a <filename>params</filename> file, even if it is
+                  empty. Otherwise, <filename>/sbin/shorewall</filename> will
+                  attempt to read<filename>
+                  /etc/shorewall/params</filename>.</para>
+                </listitem>
+
+                <listitem>
+                  <para>If the remote system has a different directory layout
+                  from the administrative system, then the export directory
+                  should contain a copy of the remote system's shorewallrc
+                  file (normally found in
+                  /usr/share/shorewall/shorewallrc).</para>
                 </listitem>
               </itemizedlist>
             </listitem>

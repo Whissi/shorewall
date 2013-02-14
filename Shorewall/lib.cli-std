@@ -1367,20 +1367,19 @@ reload_command() # $* = original arguments less the command.
     local saveit
     saveit=
     local result
-    local directory
     local system
     local getcaps
     getcaps=
     local root
     root=root
     local libexec
-    libexec=/usr/share
+    libexec=${LIBEXECDIR}
     local confdir
-    confdir=/etc
+    confdir=${CONFDIR}
     local sbindir
-    sbindir=/sbin
+    sbindir=${SBINDIR}
 
-    litedir=/var/lib/${g_program}-lite
+    litedir=${VARLIB}/${g_program}-lite
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1427,11 +1426,11 @@ reload_command() # $* = original arguments less the command.
 
     case $# in
 	1)
-	    directory="."
+	    g_directory="."
 	    system=$1
 	    ;;
 	2)
-	    directory=$1
+	    g_directory=$1
 	    system=$2
 	    ;;
 	*)
@@ -1439,46 +1438,33 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
-
-    [ -n "$temp" ] && litedir="$temp"
-
-    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^LIBEXEC | sed 's/LIBEXEC is //')
-
-    if [ -n "$temp" ]; then
-	case $temp in
-	    /*)
-		libexec="$temp"
-		;;
-	    *)
-		libexec=/usr/$temp
-		;;
-	esac
+    if [ -f $g_directory/shorewallrc ]; then
+	. $g_directory/shorewallrc
+	sbindir="$SBINDIR"
+	confdir="$CONFDIR"
+	libexec="$LIBEXECDIR"
+	. $SHAREDIR/shorewall/shorewallrc
+    else
+	error_message "   WARNING: $g_directory/shorewallrc does not exist; using settings from $SHAREDIR/shorewall" >&2
     fi
 
-    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^SBINDIR | sed 's/SBINDIR is //')
-
-    [ -n "$temp" ] && sbindir="$temp"
-
-    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^CONFDIR | sed 's/CONFDIR is //')
-
-    [ -n "$temp" ] && confdir="$temp"
-
     if [ -z "$getcaps" ]; then
-	g_shorewalldir=$(resolve_file $directory)
+	g_shorewalldir=$(resolve_file $g_directory)
 	ensure_config_path
 	capabilities=$(find_file capabilities)
 	[ -f $capabilities ] || getcaps=Yes
     fi
 
-    if [ -f $directory/${g_program}.conf ]; then
-	if [ -f $directory/params ]; then
-	    . $directory/params
+    if [ -f $g_directory/${g_program}.conf ]; then
+	if [ -f $g_directory/params ]; then
+	    . $g_directory/params
 	fi
 
-	. $directory/$g_program.conf
+	. $g_directory/$g_program.conf
 
 	ensure_config_path
+    else
+	fatal_error "$g_directory/$g_program.conf does not exist"
     fi
 
     if [ -n "$getcaps" ]; then
@@ -1486,21 +1472,21 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message "Getting Capabilities on system $system..."
 	if [ $g_family -eq 4 ]; then
-	    if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $directory/capabilities; then
+	    if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_directory/capabilities; then
 	        fatal_error "Capturing capabilities on system $system failed"
 	    fi
-	elif ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $directory/capabilities; then
+	elif ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $g_directory/capabilities; then
 	    fatal_error "Capturing capabilities on system $system failed"
 	fi
     fi
 
-    file=$(resolve_file $directory/firewall)
+    file=$(resolve_file $g_directory/firewall)
 
     [ -n "$g_timestamp" ] && timestamp='-t' || timestamp=
 
-    if $g_program $g_debugging $verbose $timestamp compile -e $directory $directory/firewall && \
+    if $g_program $g_debugging $verbose $timestamp compile -e $g_directory $g_directory/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
-	rcp_command "$directory/firewall $directory/firewall.conf" ${litedir}
+	rcp_command "$g_directory/firewall $g_directory/firewall.conf" ${litedir}
     then
 	save=$(find_file save);
 
@@ -1534,7 +1520,6 @@ export_command() # $* = original arguments less the command.
     file=
     local finished
     finished=0
-    local directory
     local target
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
@@ -1564,11 +1549,11 @@ export_command() # $* = original arguments less the command.
 
     case $# in
 	1)
-	    directory="."
+	    g_directory="."
 	    target=$1
 	    ;;
 	2)
-	    directory=$1
+	    g_directory=$1
 	    target=$2
 	    ;;
 	*)
@@ -1584,11 +1569,11 @@ export_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    file=$(resolve_file $directory/firewall)
+    file=$(resolve_file $g_directory/firewall)
 
-    if $g_program $g_debugging $verbose compile -e $directory $directory/firewall && \
+    if $g_program $g_debugging $verbose compile -e $g_directory $g_directory/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
-	scp $directory/firewall $directory/firewall.conf $target
+	scp $g_directory/firewall $g_directory/firewall.conf $target
     then
 	save=$(find_file save);
 
@@ -1704,12 +1689,10 @@ compiler_command() {
 	    update_command $@
 	    ;;
 	load|reload)
-	    get_config Yes
 	    shift
 	    reload_command $@
 	    ;;
 	export)
-	    get_config Yes
 	    shift
 	    export_command $@
 	    ;;

@@ -1606,7 +1606,12 @@ usage() # $1 = exit status
 	echo "   iprange <address>-<address>"
     fi
 
-    echo "   iptrace <iptables match expression>"
+    if [ $g_family -eq 4 ]; then
+	echo "   iptrace <iptables match expression>"
+    else
+	echo "   iptrace <ip6tables match expression>"
+    fi
+
     echo "   load [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."

@@ -131,6 +131,7 @@ rm -f  ${SHAREDIR}/shorewall/prog.*
 rm -f  ${SHAREDIR}/shorewall/module*
 rm -f  ${SHAREDIR}/shorewall/helpers
 rm -f  ${SHAREDIR}/shorewall/action*
+rm -f  ${SHAREDIR}/shorewall/macro.*
 rm -f  ${SHAREDIR}/shorewall/init
 
 for f in ${MANDIR}/man5/shorewall* ${MANDIR}/man8/shorewall*; do

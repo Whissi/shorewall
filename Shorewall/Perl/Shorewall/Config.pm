@@ -638,7 +638,6 @@ sub initialize( $;$$) {
     # Misc Globals
     #
     %globals  =   ( SHAREDIRPL              => '' ,
-		    CONFDIR                 => '',         # Run-time configuration directory
 		    CONFIGDIR               => '',         # Compile-time configuration directory (location of $product.conf)
 		    ESTABLISHED_DISPOSITION => 'ACCEPT',
 		    LOGPARMS                => '',
@@ -1032,14 +1031,12 @@ sub initialize( $;$$) {
 
     if ( $family == F_IPV4 ) {
 	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall";
-	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall";
 	$globals{PRODUCT}       = 'shorewall';
 	$config{IPTABLES}       = undef;
 	$config{ARPTABLES}      = undef;
 	$validlevels{ULOG}      = 'ULOG';
     } else {
 	$globals{SHAREDIR}      = "$shorewallrc{SHAREDIR}/shorewall6";
-	$globals{CONFDIR}       = "$shorewallrc{CONFDIR}/shorewall6";
 	$globals{PRODUCT}       = 'shorewall6';
 	$config{IP6TABLES}      = undef;
 	delete $config{ARPTABLES};
@@ -4295,14 +4292,10 @@ sub ensure_config_path() {
 
     my $f = "$globals{SHAREDIR}/configpath";
 
-    $globals{CONFDIR} = "$shorewallrc{SHAREDIR}/$product/configfiles/" if $> != 0;
-
     unless ( $config{CONFIG_PATH} ) {
 	fatal_error "$f does not exist" unless -f $f;
 
 	open_file $f;
-
-	add_param( CONFDIR => $globals{CONFDIR} );
 
 	while ( read_a_line( NORMAL_READ ) ) {
 	    if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {

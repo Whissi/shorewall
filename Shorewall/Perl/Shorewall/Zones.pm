@@ -891,7 +891,7 @@ sub firewall_zone() {
 # Determine if the passed physical device is a bridge
 #
 sub is_a_bridge( $ ) {
-    which 'brctl' && qt( "brctl show | tail -n+2 | grep -q '^$_[0]\[\[:space:\]\]'" );
+    qt which 'brctl' && qt( "brctl show | tail -n+2 | grep -q '^$_[0]\[\[:space:\]\]'" );
 }
 
 #

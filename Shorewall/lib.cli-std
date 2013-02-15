@@ -1378,6 +1378,8 @@ reload_command() # $* = original arguments less the command.
     confdir=${CONFDIR}
     local sbindir
     sbindir=${SBINDIR}
+    local sharedir
+    sharedir=${SHAREDIR}
 
     litedir=${VARLIB}/${g_program}-lite
 
@@ -1443,7 +1445,7 @@ reload_command() # $* = original arguments less the command.
 	sbindir="$SBINDIR"
 	confdir="$CONFDIR"
 	libexec="$LIBEXECDIR"
-	. $SHAREDIR/shorewall/shorewallrc
+	. $sharedir/shorewall/shorewallrc
     else
 	error_message "   WARNING: $g_directory/shorewallrc does not exist; using settings from $SHAREDIR/shorewall" >&2
     fi

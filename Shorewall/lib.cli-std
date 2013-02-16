@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999-2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999-2013 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -76,8 +76,7 @@ get_config() {
 		elif [ -r $LOGFILE ]; then
 		    g_logread="tac $LOGFILE"
 		else
-		    echo "LOGFILE ($LOGFILE) does not exist!" >&2
-		    exit 2
+		    fatal_error "LOGFILE ($LOGFILE) does not exist!"
 		fi
 	    fi
 	fi
@@ -85,14 +84,12 @@ get_config() {
 	if [ $g_family -eq 4 ]; then
 	    if [ -n "$IPTABLES" ]; then
 		if [ ! -x "$IPTABLES" ]; then
-		    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
-		    exit 2
+		    fatal_error "The program specified in IPTABLES does not exist or is not executable"
 		fi
 	    else
 		IPTABLES=$(mywhich iptables 2> /dev/null)
 		if [ -z "$IPTABLES" ] ; then
-		    echo "   ERROR: Can't find iptables executable" >&2
-		    exit 2
+		    fatal_error "Can't find iptables executable"
 		fi
 	    fi
 
@@ -100,14 +97,12 @@ get_config() {
 	else
 	    if [ -n "$IP6TABLES" ]; then
 		if [ ! -x "$IP6TABLES" ]; then
-		    echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
-		    exit 2
+		    fatal_error "The program specified in IP6TABLES does not exist or is not executable"
 		fi
 	    else
 		IP6TABLES=$(mywhich ip6tables 2> /dev/null)
 		if [ -z "$IP6TABLES" ] ; then
-		    echo "   ERROR: Can't find ip6tables executable" >&2
-		    exit 2
+		    fatal_error "Can't find ip6tables executable"
 		fi
 	    fi
 
@@ -118,15 +113,13 @@ get_config() {
 	    case "$IP" in
 		*/*)
 		    if [ ! -x "$IP" ] ; then
-			echo "   ERROR: The program specified in IP ($IP) does not exist or is not executable" >&2
-			exit 2
+			fatal_error "The program specified in IP ($IP) does not exist or is not executable"
 		    fi
 		    ;;
 		*)
 		    prog="$(mywhich $IP 2> /dev/null)"
 		    if [ -z "$prog" ] ; then
-			echo "   ERROR: Can't find $IP executable" >&2
-			exit 2
+			fatal_error "Can't find $IP executable"
 		    fi
 		    IP=$prog
 		    ;;
@@ -139,8 +132,7 @@ get_config() {
 	    case "$IPSET" in
 		*/*)
 		    if [ ! -x "$IPSET" ] ; then
-			echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
-			exit 2
+			fatal_error "The program specified in IPSET ($IPSET) does not exist or is not executable"
 		    fi
 		    ;;
 		ipset)
@@ -152,8 +144,7 @@ get_config() {
 		*)
 		    prog="$(mywhich $IPSET 2> /dev/null)"
 		    if [ -z "$prog" ] ; then
-			echo "   ERROR: Can't find $IPSET executable" >&2
-			exit 2
+			fatal_error "Can't find $IPSET executable"
 		    fi
 		    IPSET=$prog
 		    ;;
@@ -166,15 +157,13 @@ get_config() {
 	    case "$TC" in
 		*/*)
 		    if [ ! -x "$TC" ] ; then
-			echo "   ERROR: The program specified in TC ($TC) does not exist or is not executable" >&2
-			exit 2
+			fatal_error "The program specified in TC ($TC) does not exist or is not executable"
 		    fi
 		    ;;
 		*)
 		    prog="$(mywhich $TC 2> /dev/null)"
 		    if [ -z "$prog" ] ; then
-			echo "   ERROR: Can't find $TC executable" >&2
-			exit 2
+			fatal_error "Can't find $TC executable"
 		    fi
 		    TC=$prog
 		    ;;
@@ -192,14 +181,13 @@ get_config() {
 	if [ "$2" = Yes ]; then
 	    case $STARTUP_ENABLED in
 		No|no|NO)
-		    echo "   ERROR: $g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${g_confdir}/${g_program}.conf" >&2
-		    exit 2
+		    fatal_error "$g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${g_confdir}/${g_program}.conf"
 		    ;;
 		Yes|yes|YES)
 		    ;;
 		*)
 		    if [ -n "$STARTUP_ENABLED" ]; then
-			echo "   ERROR: Invalid Value for STARTUP_ENABLED: $STARTUP_ENABLED" >&2
+			fatal_error "Invalid Value for STARTUP_ENABLED: $STARTUP_ENABLED"
 			exit 2
 		    fi
 		    ;;
@@ -213,8 +201,7 @@ get_config() {
 		echo "   WARNING: SHOREWALL_COMPILER=shell ignored. Shorewall-shell support has been removed in this release" >&2
 		;;
 	    *)
-		echo "   ERROR: Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER" >&2
-		exit 2
+		fatal_error "Invalid value ($SHOREWALL_COMPILER) for SHOREWALL_COMPILER"
 		;;
 	esac
 
@@ -236,8 +223,7 @@ get_config() {
 		    0|1|2)
 			;;
 		    *)
-		        echo "  ERROR: Invalid LOG_VERBOSITY ($LOG_VERBOSITY)" >&2
-			exit 2;
+		        fatal_error "Invalid LOG_VERBOSITY ($LOG_VERBOSITY)"
 			;;
 		esac
 	    else
@@ -264,8 +250,7 @@ get_config() {
 	    ;;
 	*)
 	    if [ -n "$VERBOSITY" ]; then
-		echo "   ERROR: Invalid VERBOSITY setting ($VERBOSITY)" >&2
-		exit 2
+		fatal_error "Invalid VERBOSITY setting ($VERBOSITY)"
 	    else
 		VERBOSITY=2
 	    fi
@@ -293,8 +278,7 @@ get_config() {
 	    ;;
 	*)
 	    if [ -n "$MANGLE_ENABLED" ]; then
-		echo "   ERROR: Invalid MANGLE_ENABLED setting ($MANGLE_ENABLED)" >&2
-		exit 2
+		fatal_error "Invalid MANGLE_ENABLED setting ($MANGLE_ENABLED)"
 	    fi
 	    ;;
     esac
@@ -307,8 +291,7 @@ get_config() {
 	    ;;
 	*)
 	    if [ -n "$AUTOMAKE" ]; then
-		echo "   ERROR: Invalid AUTOMAKE setting ($AUTOMAKE)" >&2
-		exit 1
+		fatal_error "Invalid AUTOMAKE setting ($AUTOMAKE)"
 	    fi
 	    ;;
     esac
@@ -321,8 +304,7 @@ get_config() {
 	    ;;
 	*)
 	    if [ -n "$LOAD_HELPERS_ONLY" ]; then
-		echo "   ERROR: Invalid LOAD_HELPERS_ONLY setting ($LOAD_HELPERS_ONLY)" >&2
-		exit 1
+		fatal_error "Invalid LOAD_HELPERS_ONLY setting ($LOAD_HELPERS_ONLY)"
 	    fi
 	    ;;
     esac
@@ -335,8 +317,7 @@ get_config() {
 	    ;;
 	*)
 	    if [ -n "$LEGACY_FASTSTART" ]; then
-		echo "   ERROR: Invalid LEGACY_FASTSTART setting ($LEGACY_FASTSTART)" >&2
-		exit 1
+		fatal_error "Invalid LEGACY_FASTSTART setting ($LEGACY_FASTSTART)"
 	    fi
 
 	    LEGACY_FASTSTART=Yes
@@ -563,9 +544,9 @@ start_command() {
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
+		    fatal_error "$1 is not a directory"
 		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
+		    fatal_error "Directory $1 does not exist"
 		fi
 	    fi
 
@@ -676,16 +657,16 @@ compile_command() {
 	    ;;
 	1)
 	    file=$1
-	    [ -d $file ] && echo "   ERROR: $file is a directory" >&2 && exit 2;
+	    [ -d $file ] && fatal_error "$file is a directory"
 	    ;;
 	2)
 	    [ -n "$g_shorewalldir" -a -z "$g_export" ] && usage 2
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
+		    fatal_error "$1 is not a directory"
 		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
+		    fatal_error "Directory $1 does not exist"
 		fi
 	    fi
 
@@ -763,9 +744,9 @@ check_command() {
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
+		    fatal_error "$1 is not a directory"
 		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
+		    fatal_error "Directory $1 does not exist"
 		fi
 	    fi
 
@@ -855,9 +836,9 @@ update_command() {
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
+		    fatal_error "$1 is not a directory"
 		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
+		    fatal_error "Directory $1 does not exist"
 		fi
 	    fi
 
@@ -941,9 +922,9 @@ restart_command() {
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
+		    fatal_error "$1 is not a directory"
 		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
+		    fatal_error "Directory $1 does not exist"
 		fi
 	    fi
 
@@ -1023,7 +1004,7 @@ refresh_command() {
 				option=
 				shift
 			    else
-				fatal_error "ERROR: the -D option requires a directory name"
+				fatal_error "The -D option requires a directory name"
 			    fi
 			    ;;
 			*)
@@ -1131,9 +1112,9 @@ safe_commands() {
 
 	    if [ ! -d $1 ]; then
 		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
+		    fatal_error "$1 is not a directory"
 		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
+		    fatal_error "Directory $1 does not exist"
 		fi
 	    fi
 
@@ -1228,9 +1209,9 @@ try_command() {
 
 	if [ ! -d $1 ]; then
 	    if [ -e $1 ]; then
-		echo "$1 is not a directory" >&2 && exit 2
+		fatal_error "$1 is not a directory"
 	    else
-		echo "Directory $1 does not exist" >&2 && exit 2
+		fatal_error "Directory $1 does not exist"
 	    fi
 	fi
 

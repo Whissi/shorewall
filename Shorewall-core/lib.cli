@@ -3,7 +3,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 1999-2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999-2013 - Tom Eastep (teastep@shorewall.net)
 #
 #	Complete documentation is available at http://shorewall.net
 #
@@ -277,8 +277,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	elif [ -r $LOGFILE ]; then
 	    g_logread="tac $LOGFILE"
 	else
-	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
-	    exit 2
+	    fatal_error "LOGFILE ($LOGFILE) does not exist!"
 	fi
     fi
 
@@ -472,7 +471,10 @@ save_config() {
 		    ;;
 		*)
 		    validate_restorefile RESTOREFILE
-		    do_save && rm -f ${VARDIR}/save
+		    if do_save; then
+			rm -f ${VARDIR}/save
+			result=0
+		    fi
 		    ;;
 	    esac
 	fi
@@ -480,7 +482,7 @@ save_config() {
 	echo "$g_product isn't started" >&2
     fi
 
-    return 0
+    return $result
 
 }
 
@@ -914,8 +916,7 @@ show_command() {
 		elif [ -r $LOGFILE ]; then
 		    g_logread="tac $LOGFILE"
 		else
-		    echo "LOGFILE ($LOGFILE) does not exist!" >&2
-		    exit 2
+		    fatal_error "LOGFILE ($LOGFILE) does not exist!"
 		fi
 	    fi
 
@@ -969,8 +970,7 @@ show_command() {
 		done < ${VARDIR}/zones
 		echo
 	    else
-		echo "   ERROR: ${VARDIR}/zones does not exist" >&2
-		exit 1
+		fatal_error "${VARDIR}/zones does not exist"
 	    fi
 	    ;;
 	capabilities)
@@ -1276,8 +1276,7 @@ do_dump_command() {
 	elif [ -r $LOGFILE ]; then
 	    g_logread="tac $LOGFILE"
 	else
-	    echo "LOGFILE ($LOGFILE) does not exist! - See http://www.shorewall.net/shorewall_logging.html" >&2
-	    exit 2
+	    fatal_error "LOGFILE ($LOGFILE) does not exist! - See http://www.shorewall.net/shorewall_logging.html"
 	fi
     fi
 
@@ -1720,8 +1719,7 @@ separate_list() {
 add_command() {
     local interface host hostlist zone ipset
     if ! product_is_started ; then
-	echo "$g_product Not Started" >&2
-	exit 2
+	fatal_error "$g_product Not Started"
     fi
 
     determine_ipset_version
@@ -1809,8 +1807,7 @@ add_command() {
 delete_command() {
     local interface host hostent hostlist zone ipset
     if ! product_is_started ; then
-	echo "$g_product Not Started" >&2
-	exit 2;
+	fatal_error "$g_product Not Started"
     fi
 
     determine_ipset_version
@@ -1995,8 +1992,7 @@ allow_command() {
 	range='--src-range'
 
 	if ! chain_exists dynamic; then
-	    echo "Dynamic blacklisting is not enabled in the current $g_product configuration" >&2
-	    exit 2
+	    fatal_error "Dynamic blacklisting is not enabled in the current $g_product configuration"
 	fi
 
 	[ -n "$g_nolock" ] || mutex_on
@@ -2118,8 +2114,7 @@ determine_capabilities() {
 	g_tool=$(mywhich $tool)
 
 	if [ -z "$g_tool" ]; then
-	    echo "   ERROR: No executable $tool binary can be found on your PATH" >&2
-	    exit 1
+	    fatal-error "No executable $tool binary can be found on your PATH"
 	fi
     fi
 
@@ -2239,8 +2234,7 @@ determine_capabilities() {
     qt $g_tool -F $chain
     qt $g_tool -X $chain
     if ! $g_tool -N $chain; then
-	echo "   ERROR: The command \"$g_tool -N $chain\" failed" >&2
-	exit 1
+	fatal_error "The command \"$g_tool -N $chain\" failed"
     fi
 
     chain1=${chain}1
@@ -2249,16 +2243,14 @@ determine_capabilities() {
     qt $g_tool -X $chain1
     if ! $g_tool -N $chain1; then
 	qt $g_tool -X $CHAIN
-	echo "   ERROR: The command \"$g_tool -N $chain1\" failed" >&2
-	exit 1
+	fatal_error "The command \"$g_tool -N $chain1\" failed"
     fi
 
     if ! qt $g_tool -A $chain -m state --state ESTABLISHED,RELATED -j ACCEPT &&
        ! qt $g_tool -A $chain -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; then
 	qt $g_tool -x $chain
 	qt $g_tool -x $chain1
-	echo "   ERROR: Your kernel lacks connection tracking and/or state matching -- $g_product will not run on this system" >&2
-	exit 1
+	fatal_error "Your kernel lacks connection tracking and/or state matching -- $g_product will not run on this system"
     fi
 
     if [ $g_family -eq 4 ]; then
@@ -2896,7 +2888,7 @@ ipcalc_command() {
     valid_address $address || fatal_error "Invalid IP address: $address"
     [ -z "$vlsm" ] && usage 2
     [ "x$address" = "x$vlsm" ] && usage 2
-    [ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
+    [ $vlsm -gt 32 ] && fatal_error "Invalid VLSM: /$vlsm"
 
     address=$address/$vlsm
 
@@ -2978,12 +2970,10 @@ get_config() {
 	if [ -r $config ]; then
 	    . $config
 	else
-	    echo "Cannot read $config! (Hint: Are you root?)" >&2
-	    exit 1
+	    fatal_error "Cannot read $config! (Hint: Are you root?)"
 	fi
     else
-	echo "$config does not exist!" >&2
-	exit 2
+	fatal_error "$config does not exist!"
     fi
 
     ensure_config_path
@@ -2999,8 +2989,7 @@ get_config() {
     elif [ -r $LOGFILE ]; then
 	g_logread="tac $LOGFILE"
     else
-	echo "LOGFILE ($LOGFILE) does not exist!" >&2
-	exit 2
+	fatal_error "LOGFILE ($LOGFILE) does not exist!"
     fi
     #
     # See if we have a real version of "tail" -- use separate redirection so
@@ -3017,14 +3006,12 @@ get_config() {
     if [ $g_family -eq 4 ]; then
 	if [ -n "$IPTABLES" ]; then
 	    if [ ! -x "$IPTABLES" ]; then
-		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
-		exit 2
+		fatal_error "The program specified in IPTABLES does not exist or is not executable"
 	    fi
 	else
 	    IPTABLES=$(mywhich iptables 2> /dev/null)
 	    if [ -z "$IPTABLES" ] ; then
-		echo "   ERROR: Can't find iptables executable" >&2
-		exit 2
+		fatal_error "Can't find iptables executable"
 	    fi
 	fi
 
@@ -3032,14 +3019,12 @@ get_config() {
     else
 	if [ -n "$IP6TABLES" ]; then
 	    if [ ! -x "$IP6TABLES" ]; then
-		echo "   ERROR: The program specified in IP6TABLES does not exist or is not executable" >&2
-		exit 2
+		fatal_error "The program specified in IP6TABLES does not exist or is not executable"
 	    fi
 	else
 	    IP6TABLES=$(mywhich ip6tables 2> /dev/null)
 	    if [ -z "$IP6TABLES" ] ; then
-		echo "   ERROR: Can't find ip6tables executable" >&2
-		exit 2
+		fatal_error "Can't find ip6tables executable"
 	    fi
 	fi
 
@@ -3071,23 +3056,20 @@ get_config() {
 
     IP=$(mywhich ip 2> /dev/null)
     if [ -z "$IP" ] ; then
-	echo "   ERROR: Can't find ip executable" >&2
-	exit 2
+	fatal_error "Can't find ip executable"
     fi
 
     if [ -n "$IPSET" ]; then
 	case "$IPSET" in
 	    */*)
 		if [ ! -x "$IPSET" ] ; then
-		    echo "   ERROR: The program specified in IPSET ($IPSET) does not exist or is not executable" >&2
-		    exit 2
+		    fatal_error "The program specified in IPSET ($IPSET) does not exist or is not executable"
 		fi
 		;;
 	    *)
 		prog="$(mywhich $IPSET 2> /dev/null)"
 		if [ -z "$prog" ] ; then
-		    echo "   ERROR: Can't find $IPSET executable" >&2
-		    exit 2
+		    fatal_error "Can't find $IPSET executable"
 		fi
 		IPSET=$prog
 		;;
@@ -3390,9 +3372,9 @@ shorewall_cli() {
 
 			    if [ ! -d $2 ]; then
 				if [ -e $2 ]; then
-				    echo "$2 is not a directory" >&2 && exit 2
+				    fatal_error "$2 is not a directory"
 				else
-				    echo "Directory $2 does not exist" >&2 && exit 2
+				    fatal_error "Directory $2 does not exist"
 				fi
 			    fi
 

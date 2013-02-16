@@ -670,7 +670,7 @@ version_command() {
     [ $# -gt 0 ] && usage 1
 
     if [ -n "$all" ]; then
-	echo "shorewall-core: $(cat $g_sharedir/coreversion)"
+	echo "shorewall-core: $(cat ${SHAREDIR}/shorewall/coreversion)"
 
 	for product in shorewall shorewall6 shorewall-lite shorewall6-lite shorewall-init; do
 	    if [ -f ${SHAREDIR}/$product/version ]; then

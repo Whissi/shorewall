@@ -49,7 +49,9 @@ use Getopt::Long;
 
 sub usage( $ ) {
 
-    print STDERR 'usage: compiler.pl [ <option> ... ] [ <filename> ]
+    print STDERR << '_EOF_';
+
+usage: compiler.pl [ <option> ... ] [ <filename> ]
 
   options are:
     [ --export ]
@@ -71,7 +73,8 @@ sub usage( $ ) {
     [ --shorewallrc=<pathname> ]
     [ --shorewallrc1=<pathname> ]
     [ --config_path=<path-list> ]
-';
+
+_EOF_
 
     exit shift @_;
 }

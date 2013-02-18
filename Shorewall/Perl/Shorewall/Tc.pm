@@ -2406,7 +2406,7 @@ sub setup_tc() {
 	add_ijump $mangle_table->{OUTPUT} ,     j => 'tcout', @mark_part;
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    my $mask = have_capability 'EXMARK' ? have_capability 'FWMARK_RT_MASK' ? '/' . in_hex $globals{PROVIDER_MASK} : '' : '';
+	    my $mask = have_capability( 'EXMARK' ) ? have_capability( 'FWMARK_RT_MASK' ) ? '/' . in_hex $globals{PROVIDER_MASK} : '' : '';
 
 	    add_ijump $mangle_table->{FORWARD},      j => "MARK --set-mark 0${mask}" if $config{FORWARD_CLEAR_MARK};
 	    add_ijump $mangle_table->{FORWARD} ,     j => 'tcfor';

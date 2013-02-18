@@ -4094,7 +4094,7 @@ sub state_match( $ ) {
     if ( $state eq 'ALL' ) {
 	''
     } else {
-	have_capability 'CONNTRACK_MATCH' ? ( "-m conntrack --ctstate $state " ) : ( "-m state --state $state " );
+	have_capability( 'CONNTRACK_MATCH' ) ? ( "-m conntrack --ctstate $state " ) : ( "-m state --state $state " );
     }
 }
 
@@ -4102,7 +4102,7 @@ sub state_imatch( $ ) {
     my $state = shift;
 
     unless ( $state eq 'ALL' ) {
-	have_capability 'CONNTRACK_MATCH' ? ( 'conntrack --ctstate' => $state ) : ( state => "--state $state" );
+	have_capability( 'CONNTRACK_MATCH' ) ? ( 'conntrack --ctstate' => $state ) : ( state => "--state $state" );
     } else {
 	();
     }
@@ -4156,7 +4156,7 @@ sub do_proto( $$$;$ )
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
+			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT',1 );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 
 			    if ( port_count ( $ports ) > 15 ) {
@@ -4346,7 +4346,7 @@ sub do_iproto( $$$ )
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' );
+			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' , 1 );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 
 			    if ( port_count ( $ports ) > 15 ) {
@@ -5188,7 +5188,7 @@ sub get_set_flags( $$ ) {
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z][-\w]*/;
 
-    have_capability 'OLD_IPSET_MATCH' ? "--set $setname $options " : "--match-set $setname $options ";
+    have_capability( 'OLD_IPSET_MATCH' ) ? "--set $setname $options " : "--match-set $setname $options ";
 
 }
 

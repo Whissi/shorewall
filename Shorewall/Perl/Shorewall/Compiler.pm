@@ -60,7 +60,7 @@ sub initialize_package_globals( $$$ ) {
     Shorewall::Config::initialize($family, $_[1], $_[2]);
     Shorewall::Chains::initialize ($family, 1, $export );
     Shorewall::Zones::initialize ($family, $_[0]);
-    Shorewall::Nat::initialize;
+    Shorewall::Nat::initialize($family);
     Shorewall::Providers::initialize($family);
     Shorewall::Tc::initialize($family);
     Shorewall::Accounting::initialize;
@@ -799,16 +799,15 @@ sub compiler {
 	# ECN
 	#
 	setup_ecn if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
-	#
-	# Setup Masquerading/SNAT
-	#
-	setup_masq;
-	#
-	# Setup Nat
-	#
-	setup_nat;
     }
-
+    #
+    # Setup Masquerading/SNAT
+    #
+    setup_masq;
+    #
+    # Setup Nat
+    #
+    setup_nat;
     #
     # Setup NETMAP
     #

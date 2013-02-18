@@ -1972,6 +1972,8 @@ sub format_warning() {
 #
 # Process a COMMENT line (in $currentline)
 #
+sub have_capability( $;$ );
+
 sub process_comment() {
     if ( have_capability( 'COMMENTS' ) ) {
 	warning_message "'COMMENT' is deprecated in favor of '?COMMENT' - consider running '$product update -D'" unless $warningcount1++; 
@@ -2121,7 +2123,6 @@ sub close_file() {
 #
 # Process an ?IF, ?ELSIF, ?ELSE or ?END directive
 #
-sub have_capability( $ );
 
 #
 # Report an error or warning from process_compiler_directive()
@@ -3545,7 +3546,7 @@ sub Nat_Enabled() {
 }
 
 sub Persistent_Snat() {
-    have_capability 'NAT_ENABLED' || return '';
+    have_capability( 'NAT_ENABLED' ) || return '';
 
     my $result = '';
 
@@ -3574,7 +3575,7 @@ sub Conntrack_Match() {
 }
 
 sub New_Conntrack_Match() {
-    have_capability 'CONNTRACK_MATCH' && qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
+    have_capability( 'CONNTRACK_MATCH' ) && qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
 }
 
 sub Old_Conntrack_Match() {
@@ -3586,11 +3587,11 @@ sub Multiport() {
 }
 
 sub Kludgefree1() {
-    have_capability 'MULTIPORT' && qt1( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
+    have_capability( 'MULTIPORT' ) && qt1( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
 }
 
 sub Kludgefree2() {
-    have_capability 'PHYSDEV_MATCH' && qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
+    have_capability( 'PHYSDEV_MATCH' ) && qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
 }
 
 sub Kludgefree3() {
@@ -3648,7 +3649,7 @@ sub Connmark_Match() {
 }
 
 sub Xconnmark_Match() {
-    have_capability 'CONNMARK_MATCH' && qt1( "$iptables -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
+    have_capability( 'CONNMARK_MATCH' ) && qt1( "$iptables -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
 }
 
 sub Ipp2p_Match() {
@@ -3688,39 +3689,39 @@ sub Old_Hashlimit_Match() {
 }
 
 sub Mark() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" );
 }
 
 sub Xmark() {
-    have_capability 'MARK' && qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
+    have_capability( 'MARK' ) && qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
 }
 
 sub Exmark() {
-    have_capability 'MARK' && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
+    have_capability( 'MARK' ) && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
 }
 
 sub Connmark() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" );
 }
 
 sub Xconnmark() {
-    have_capability 'XCONNMARK_MATCH' && have_capability 'XMARK' && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
+    have_capability( 'XCONNMARK_MATCH' ) && have_capability( 'XMARK' ) && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
 }
 
 sub Classify_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
 }
 
 sub IPMark_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
 }
 
 sub Tproxy_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
 }
 
 sub Mangle_Forward() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -L FORWARD -n" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -L FORWARD -n" );
 }
 
 sub Raw_Table() {
@@ -3977,19 +3978,19 @@ sub Statistic_Match() {
 
 
 sub Imq_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
 }
 
 sub Dscp_Match() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -m dscp --dscp 0" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -m dscp --dscp 0" );
 }
 
 sub Dscp_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j DSCP --set-dscp 0" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j DSCP --set-dscp 0" );
 }
 
 sub RPFilter_Match() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -m rpfilter" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -m rpfilter" );
 }
 
 sub NFAcct_Match() {
@@ -4009,7 +4010,7 @@ sub GeoIP_Match() {
 }
 
 sub Checksum_Target() {
-    have_capability 'MANGLE_ENABLED' && qt1( "$iptables -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
 }
 
 sub Arptables_JF() {
@@ -4123,15 +4124,15 @@ sub detect_capability( $ ) {
 #
 # Report the passed capability
 #
-sub have_capability( $ ) {
-    my $capability = shift;
+sub have_capability( $;$ ) {
+    my ( $capability, $required ) = @_;
     our %detect_capability;
 
     my $setting = $capabilities{ $capability };
 
     $setting = $capabilities{ $capability } = detect_capability( $capability ) unless defined $setting;
 
-    $used{$capability} = 1 if $setting;
+    $used{$capability} = $required ? 2 : 1 if $setting;
 
     $setting;
 }
@@ -4280,9 +4281,7 @@ sub determine_capabilities() {
 sub require_capability( $$$ ) {
     my ( $capability, $description, $singular ) = @_;
 
-    fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless have_capability $capability;
-
-    $used{$capability} = 2;
+    fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless have_capability $capability, 1;
 }
 
 #
@@ -5175,7 +5174,8 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'AUTOCOMMENT'                , 'Yes';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
-    default_yes_no 'MANGLE_ENABLED'             , have_capability 'MANGLE_ENABLED' ? 'Yes' : '';
+
+    default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
     default_yes_no 'NULL_ROUTE_RFC1918'         , '';
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
@@ -5195,7 +5195,7 @@ sub get_configuration( $$$$ ) {
 
     default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
     default_yes_no 'REQUIRE_INTERFACE'          , '';
-    default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability 'MARK' ? 'Yes' : '';
+    default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability( 'MARK' ) ? 'Yes' : '';
     default_yes_no 'COMPLETE'                   , '';
     default_yes_no 'EXPORTMODULES'              , '';
     default_yes_no 'LEGACY_FASTSTART'           , 'Yes';

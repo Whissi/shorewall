@@ -712,7 +712,7 @@ CEOF
 
     if ( $mark ne '-' ) {
 	my $hexmark = in_hex( $mark );
-	my $mask = have_capability 'FWMARK_RT_MASK' ? '/' . in_hex( $globals{ $tproxy && ! $local ? 'TPROXY_MARK' : 'PROVIDER_MASK' } ) : '';
+	my $mask = have_capability( 'FWMARK_RT_MASK' ) ? '/' . in_hex( $globals{ $tproxy && ! $local ? 'TPROXY_MARK' : 'PROVIDER_MASK' } ) : '';
 
 	emit ( "qt \$IP -$family rule del fwmark ${hexmark}${mask}" ) if $config{DELETE_THEN_ADD};
 

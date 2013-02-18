@@ -903,6 +903,10 @@ sub compiler {
 	# And generate the auxilary config file
 	#
 	enable_script, generate_aux_config if $export;
+	#
+	# Report used/required capabilities
+	#
+	report_used_capabilities;
     } else {
 	#
 	# Just checking the configuration
@@ -954,6 +958,10 @@ sub compiler {
 	    process_routestopped;
 	    process_stoppedrules;
 	}
+	#
+	# Report used/required capabilities
+	#
+	report_used_capabilities;
 
 	if ( $family == F_IPV4 ) {
 	    progress_message3 "Shorewall configuration verified";

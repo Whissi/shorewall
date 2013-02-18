@@ -66,6 +66,7 @@ our @EXPORT = qw(
 
 		 have_capability
 		 require_capability
+		 report_used_capabilities
 		 kernel_version
                 );
 
@@ -379,6 +380,8 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CAPVERSION      => 'Capability Version',
 		 KERNELVERSION   => 'Kernel Version',
 	       );
+
+our %used;
 
 use constant {
 	       ICMP                => 1,
@@ -4128,6 +4131,8 @@ sub have_capability( $ ) {
 
     $setting = $capabilities{ $capability } = detect_capability( $capability ) unless defined $setting;
 
+    $used{$capability} = 1 if $setting;
+
     $setting;
 }
 
@@ -4276,6 +4281,8 @@ sub require_capability( $$$ ) {
     my ( $capability, $description, $singular ) = @_;
 
     fatal_error "$description require${singular} $capdesc{$capability} in your kernel and iptables" unless have_capability $capability;
+
+    $used{$capability} = 2;
 }
 
 #
@@ -4574,7 +4581,8 @@ sub read_capabilities() {
 #
 # Get the system's capabilities, either by probing or by reading a capabilities file
 #
-sub get_capabilities( $ ) {
+sub get_capabilities( $ ) 
+{
     my $export = $_[0];
 
     if ( ! $export && $> == 0 ) { # $> == $EUID
@@ -4937,8 +4945,17 @@ sub get_configuration( $$$$ ) {
     $helpers_aliases{sip}  = 'sip-0',  $capabilities{SIP_HELPER}  = 1 if $capabilities{SIP0_HELPER};
     $helpers_aliases{tftp} = 'tftp-0', $capabilities{TFTP_HELPER} = 1 if $capabilities{TFTP0_HELPER};
 
-    $globals{STATEMATCH} = '-m conntrack --ctstate' if have_capability 'CONNTRACK_MATCH';
+    #
+    # Now initialize the used capabilities hash
+    #
+    %used     = ();
 
+    if ( have_capability 'CONNTRACK_MATCH') {
+	$globals{STATEMATCH} = '-m conntrack --ctstate';
+	$used{CONNTRACK_MATCH} = 2;
+    } else {
+	$used{STATE_MATCH} = 2;
+    }
     #
     # The following is not documented as it is not likely useful to the user base in general 
     # Going forward, it allows me to create a configuration that will work on multiple
@@ -5765,6 +5782,20 @@ sub dump_mark_layout() {
 	     $globals{TPROXY_MARK},
 	     $globals{TPROXY_MARK},
 	     $globals{TPROXY_MARK} );
+}
+
+sub report_used_capabilities() {
+    if ( $verbosity > 1 ) {
+	progress_message2 "Configuration uses these capabilities ('*' denotes required):";
+
+	for ( sort grep $_ ne 'KERNELVERSION', keys %used ) {
+	    if ( $used{$_} > 1 ) {
+		progress_message2 "   $_*";
+	    } else { 
+		progress_message2 "   $_";
+	    }
+	}
+    }
 }
 
 END {

@@ -394,15 +394,14 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>If this option is not specified for an interface, then
                 source-routed packets will not be accepted from that interface
-                (sets
-                /proc/sys/net/ipv6/conf/<emphasis>interface</emphasis>/accept_source_route
-                to 1). Only set this option if you know what you are doing.
-                This might represent a security risk and is not usually
+                unless explicitly enabled via sysconf. Only set this option to
+                1 (enable source routing) if you know what you are doing. This
+                might represent a security risk and is not usually
                 needed.</para>
 
                 <para>Only those interfaces with the
                 <option>sourceroute</option> option will have their setting
-                changes; the value assigned to the setting will be the value
+                changed; the value assigned to the setting will be the value
                 specified (if any) or 1 if no value is given.</para>
 
                 <note>

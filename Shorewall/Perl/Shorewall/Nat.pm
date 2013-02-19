@@ -332,9 +332,11 @@ sub process_one_masq( )
 #
 sub setup_masq()
 {
-    if ( my $fn = open_file( 'masq', 1, 1 ) ) {
+    my $name = $family == F_IPV4 ? 'masq' : 'snat';
 
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty masq file' , 's'; } );
+    if ( my $fn = open_file( $name, 1, 1 ) ) {
+
+	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty $name file' , 's'; } );
 
 	process_one_masq while read_a_line( NORMAL_READ );
     }

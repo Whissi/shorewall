@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry>
+  <refmeta>
+    <refentrytitle>shorewall6-masq</refentrytitle>
+
+    <manvolnum>5</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>masq</refname>
+
+    <refpurpose>Shorewall6 SNAT definition file</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>/etc/shorewall/masq</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+
+    <para>Use this file to define Source NAT (SNAT).</para>
+
+    <note>
+      <para>Unlike with IPv4, Netfilter does not support the MASQUERADE target
+      with IPv6.</para>
+    </note>
+
+    <warning>
+      <para>The entries in this file are order-sensitive. The first entry that
+      matches a particular connection will be the one that is used.</para>
+    </warning>
+
+    <warning>
+      <para>If you have more than one ISP link, adding entries to this file
+      will <emphasis role="bold">not</emphasis> force connections to go out
+      through a particular link. You must use entries in <ulink
+      url="shorewall6-rtrules.html">shorewall6-rtrules</ulink>(5) or
+      PREROUTING entries in <ulink
+      url="shorewall6-tcrules.html">shorewall-tcrules</ulink>(5) to do
+      that.</para>
+    </warning>
+
+    <para>The columns in the file are as follows.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><emphasis role="bold">INTERFACE:DEST</emphasis> - {[<emphasis
+        role="bold">+</emphasis>]<emphasis>interfacelist</emphasis>|[?]COMMENT}</term>
+
+        <listitem>
+          <para>Outgoing <emphasis>interfacelist</emphasis>. This may be a
+          comma-separated list of interface names. This is usually your
+          internet interface.</para>
+
+          <para>Each interface must match an entry in <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
+          Shorewall allows loose matches to wildcard entries in <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
+          For example, <filename class="devicefile">ppp0</filename> in this
+          file will match a <ulink
+          url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
+          entry that defines <filename
+          class="devicefile">ppp+</filename>.</para>
+
+          <para>Where <ulink
+          url="http://www.shorewall.net/4.4/MultiISP.html#Shared">more that
+          one internet provider share a single interface</ulink>, the provider
+          is specified by including the provider name or number in
+          parentheses:</para>
+
+          <programlisting>        eth0(Avvanta)</programlisting>
+
+          <para>In that case, you will want to specify the interfaces's
+          address for that provider in the ADDRESS column.</para>
+
+          <para>The interface may be qualified by adding the character ":"
+          followed by a comma-separated list of destination host or subnet
+          addresses to indicate that you only want to change the source IP
+          address for packets being sent to those particular destinations.
+          Exclusion is allowed (see <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)) as
+          are ipset names preceded by a plus sign '+';</para>
+
+          <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
+          entry then include the ":" but omit the digit:</para>
+
+          <programlisting>        eth0(Avvanta):
+        eth2::192.0.2.32/27</programlisting>
+
+          <para>Normally Masq/SNAT rules are evaluated after those for
+          one-to-one NAT (defined in <ulink
+          url="shorewall-nat.html">shorewall-nat</ulink>(5)). If you want the
+          rule to be applied before one-to-one NAT rules, prefix the interface
+          name with "+":</para>
+
+          <programlisting>        +eth0
+        +eth0:192.0.2.32/27
+        +eth0:2</programlisting>
+
+          <para>This feature should only be required if you need to insert
+          rules in this file that preempt entries in <ulink
+          url="shorewall-nat.html">shorewall-nat</ulink>(5).</para>
+
+          <para>Comments may be attached to Netfilter rules generated from
+          entries in this file through the use of COMMENT lines. These lines
+          begin with the word COMMENT; the remainder of the line is treated as
+          a comment which is attached to subsequent rules until another
+          COMMENT line is found or until the end of the file is reached. To
+          stop adding comments to rules, use a line with only the word
+          COMMENT.</para>
+
+          <note>
+            <para>Beginning with Shorewall 4.5.11, ?COMMENT is a synonym for
+            COMMENT and is preferred.</para>
+          </note>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> -
+        {<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address</emphasis>][<emphasis>exclusion</emphasis>]}</term>
+
+        <listitem>
+          <para>Set of hosts that you wish to SNAT; one or more host or
+          network addresses separated by comma. You may use ipset names
+          preceded by a plus sign (+) to specify a set of hosts.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">ADDRESS</emphasis> -
+        {<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
+        role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
+        role="bold">:random</emphasis>][:persistent]|}</term>
+
+        <listitem>
+          <para>The address specified here will be used as the source address.
+          If you simply wish to use the IPv6 address of the
+          <replaceable>interface</replaceable> in the first column, enter the
+          name of that interface preceded by an apersand ('&amp;') - e.g.,
+          &amp;sit1.</para>
+
+          <para>You may also specify a range of up to 256 IP addresses if you
+          want the SNAT address to be assigned from that range in a
+          round-robin fashion by connection. The range is specified by
+          <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.
+          The address or address range may be optionally followed by a port
+          range. When this is done, you must enclose the IPv6 address(es) in
+          square brackets. You may follow the port range with<emphasis
+          role="bold"> :random</emphasis> in which case assignment of ports
+          from the range will be random.</para>
+
+          <para>Example:
+          [2001:470:a:227::2]-[2001:470:a:227::10]::1000-1010</para>
+
+          <para>You may follow the port range (or <emphasis
+          role="bold">:random</emphasis>) with <emphasis
+          role="bold">:persistent</emphasis>. This is only useful when an
+          address range is specified and causes a client to be given the same
+          source/destination IP pair.</para>
+
+          <para>Finally, you may also specify a comma-separated list of ranges
+          and/or addresses in this column.</para>
+
+          <para>This column may not contain DNS Names.</para>
+
+          <para>Normally, Netfilter will attempt to retain the source port
+          number. You may cause netfilter to remap the source port by
+          following an address or range (if any) by ":" and a port range with
+          the format
+          <emphasis>lowport</emphasis>-<emphasis>highport</emphasis>. If this
+          is done, you must specify "tcp" or "udp" in the PROTO column.</para>
+
+          <para>Examples:</para>
+
+          <programlisting>        [2001:470:a:787::2]:5000-6000</programlisting>
+
+          <para>If you simply place <emphasis role="bold">NONAT</emphasis> in
+          this column, no rewriting of the source IP address or port number
+          will be performed. This is useful if you want particular traffic to
+          be exempt from the entries that follow in the file.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PROTO</emphasis> (Optional) - {<emphasis
+        role="bold">-</emphasis>|[!]{<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>}[,...]}</term>
+
+        <listitem>
+          <para>If you wish to restrict this entry to a particular protocol
+          then enter the protocol name (from protocols(5)) or number
+          here.</para>
+
+          <para>Beginning with Shorewall 4.5.12, this column can accept a
+          comma-separated list of protocols.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">PORT(S)</emphasis> (Optional) -
+        [[!]<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...]</term>
+
+        <listitem>
+          <para>If the PROTO column specifies TCP (6), UDP (17), DCCP (33),
+          SCTP (132) or UDPLITE (136) then you may list one or more port
+          numbers (or names from services(5)) or port ranges separated by
+          commas.</para>
+
+          <para>Port ranges are of the form
+          <emphasis>lowport</emphasis>:<emphasis>highport</emphasis>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">IPSEC</emphasis> (Optional) -
+        [<emphasis>option</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>option</emphasis>]...]</term>
+
+        <listitem>
+          <para>If you specify a value other than "-" in this column, you must
+          be running kernel 2.6 and your kernel and iptables must include
+          policy match support.</para>
+
+          <para>Comma-separated list of options from the following. Only
+          packets that will be encrypted via an SA that matches these options
+          will have their source address changed.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold">reqid=</emphasis><emphasis>number</emphasis></term>
+
+              <listitem>
+                <para>where <emphasis>number</emphasis> is specified using
+                setkey(8) using the 'unique:<emphasis>number</emphasis> option
+                for the SPD level.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">spi=</emphasis>&lt;number&gt;</term>
+
+              <listitem>
+                <para>where <emphasis>number</emphasis> is the SPI of the SA
+                used to encrypt/decrypt packets.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proto=</emphasis><emphasis
+              role="bold">ah</emphasis>|<emphasis
+              role="bold">esp</emphasis>|<emphasis
+              role="bold">ipcomp</emphasis></term>
+
+              <listitem>
+                <para>IPSEC Encapsulation Protocol</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">mss=</emphasis><emphasis>number</emphasis></term>
+
+              <listitem>
+                <para>sets the MSS field in TCP packets</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">mode=</emphasis><emphasis
+              role="bold">transport</emphasis>|<emphasis
+              role="bold">tunnel</emphasis></term>
+
+              <listitem>
+                <para>IPSEC mode</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tunnel-src=</emphasis><emphasis>address</emphasis>[/<emphasis>mask</emphasis>]</term>
+
+              <listitem>
+                <para>only available with mode=tunnel</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">tunnel-dst=</emphasis><emphasis>address</emphasis>[/<emphasis>mask</emphasis>]</term>
+
+              <listitem>
+                <para>only available with mode=tunnel</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">strict</emphasis></term>
+
+              <listitem>
+                <para>Means that packets must match all rules.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">next</emphasis></term>
+
+              <listitem>
+                <para>Separates rules; can only be used with strict</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">yes</emphasis></term>
+
+              <listitem>
+                <para>When used by itself, causes all traffic that will be
+                encrypted/encapsulated to match the rule.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">MARK</emphasis> - [<emphasis
+        role="bold">!</emphasis>]<emphasis>value</emphasis>[/<emphasis>mask</emphasis>][<emphasis
+        role="bold">:C</emphasis>]</term>
+
+        <listitem>
+          <para>Defines a test on the existing packet or connection mark. The
+          rule will match only if the test returns true.</para>
+
+          <para>If you don't want to define a test but need to specify
+          anything in the following columns, place a "-" in this field.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>!</term>
+
+              <listitem>
+                <para>Inverts the test (not equal)</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>value</emphasis></term>
+
+              <listitem>
+                <para>Value of the packet or connection mark.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis>mask</emphasis></term>
+
+              <listitem>
+                <para>A mask to be applied to the mark before testing.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">:C</emphasis></term>
+
+              <listitem>
+                <para>Designates a connection mark. If omitted, the packet
+                mark's value is tested.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">USER/GROUP</emphasis> (Optional) -
+        [<emphasis
+        role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
+        role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
+        role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
+
+        <listitem>
+          <para>Only locally-generated connections will match if this column
+          is non-empty.</para>
+
+          <para>When this column is non-empty, the rule matches only if the
+          program generating the output is running under the effective
+          <emphasis>user</emphasis> and/or <emphasis>group</emphasis>
+          specified (or is NOT running under that id if "!" is given).</para>
+
+          <para>Examples:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>joe</term>
+
+              <listitem>
+                <para>program must be run by joe</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>:kids</term>
+
+              <listitem>
+                <para>program must be run by a member of the 'kids'
+                group</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>!:kids</term>
+
+              <listitem>
+                <para>program must not be run by a member of the 'kids'
+                group</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>+upnpd</term>
+
+              <listitem>
+                <para>#program named upnpd</para>
+
+                <important>
+                  <para>The ability to specify a program name was removed from
+                  Netfilter in kernel version 2.6.14.</para>
+                </important>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SWITCH -
+        [!]<replaceable>switch-name</replaceable>[={0|1}]</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.1 and allows enabling and disabling the
+          rule without requiring <command>shorewall restart</command>.</para>
+
+          <para>The rule is enabled if the value stored in
+          <filename>/proc/net/nf_condition/<replaceable>switch-name</replaceable></filename>
+          is 1. The rule is disabled if that file contains 0 (the default). If
+          '!' is supplied, the test is inverted such that the rule is enabled
+          if the file contains 0.</para>
+
+          <para>Within the <replaceable>switch-name</replaceable>, '@0' and
+          '@{0}' are replaced by the name of the chain to which the rule is a
+          added. The <replaceable>switch-name</replaceable> (after '@...'
+          expansion) must begin with a letter and be composed of letters,
+          decimal digits, underscores or hyphens. Switch names must be 30
+          characters or less in length.</para>
+
+          <para>Switches are normally <emphasis role="bold">off</emphasis>. To
+          turn a switch <emphasis role="bold">on</emphasis>:</para>
+
+          <simplelist>
+            <member><command>echo 1 &gt;
+            /proc/net/nf_condition/<replaceable>switch-name</replaceable></command></member>
+          </simplelist>
+
+          <para>To turn it <emphasis role="bold">off</emphasis> again:</para>
+
+          <simplelist>
+            <member><command>echo 0 &gt;
+            /proc/net/nf_condition/<replaceable>switch-name</replaceable></command></member>
+          </simplelist>
+
+          <para>Switch settings are retained over <command>shorewall
+          restart</command>.</para>
+
+          <para>Beginning with Shoreawll 4.5.10, when the
+          <replaceable>switch-name</replaceable> is followed by
+          <option>=0</option> or <option>=1</option>, then the switch is
+          initialized to off or on respectively by the
+          <command>start</command> command. Other commands do not affect the
+          switch setting.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (origdest) -
+        [<emphasis
+        role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>]</term>
+
+        <listitem>
+          <para>(Optional) Added in Shorewall 4.5.6. This column may be
+          included and may contain one or more addresses (host or network)
+          separated by commas. Address ranges are not allowed. When this
+          column is supplied, rules are generated that require that the
+          original destination address matches one of the listed addresses. It
+          is useful for specifying that SNAT should occur only for connections
+          that were acted on by a DNAT when they entered the firewall.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Example 1:</term>
+
+        <listitem>
+          <para>You have a simple 'masquerading' setup where eth0 connects to
+          a DSL or cable modem and eth1 connects to your local network with
+          subnet 2001:470:b:787::0/64</para>
+
+          <para>Your entry in the file will be:</para>
+
+          <programlisting>        #INTERFACE   SOURCE                  ADDRESS
+        eth0         2001:470:b:787::0/64    &amp;eth0</programlisting>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>FILES</title>
+
+    <para>/etc/shorewall6/masq</para>
+  </refsect1>
+</refentry>

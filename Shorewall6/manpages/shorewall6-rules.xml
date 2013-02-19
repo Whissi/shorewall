@@ -174,6 +174,19 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">ACCEPT+</emphasis></term>
+
+              <listitem>
+                <para>like ACCEPT but also excludes the connection from any
+                subsequent matching <emphasis
+                role="bold">DNAT</emphasis>[<emphasis
+                role="bold">-</emphasis>] or <emphasis
+                role="bold">REDIRECT</emphasis>[<emphasis
+                role="bold">-</emphasis>] rules.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">ACCEPT!</emphasis></term>
 
               <listitem>
@@ -334,6 +347,28 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">DNAT</emphasis></term>
+
+              <listitem>
+                <para>Forward the request to another system (and optionally
+                another port).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">DNAT-</emphasis></term>
+
+              <listitem>
+                <para>Advanced users only.</para>
+
+                <para>Like <emphasis role="bold">DNAT</emphasis> but only
+                generates the <emphasis role="bold">DNAT</emphasis> iptables
+                rule and not the companion <emphasis
+                role="bold">ACCEPT</emphasis> rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">DROP</emphasis></term>
 
               <listitem>
@@ -467,6 +502,28 @@
                 <para>like QUEUE but exempts the rule from being suppressed by
                 OPTIMIZE=1 in <ulink
                 url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">REDIRECT</emphasis></term>
+
+              <listitem>
+                <para>Redirect the request to a server running on the
+                firewall.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">REDIRECT-</emphasis></term>
+
+              <listitem>
+                <para>Advanced users only.</para>
+
+                <para>Like <emphasis role="bold">REDIRECT</emphasis> but only
+                generates the <emphasis role="bold">REDIRECT</emphasis>
+                iptables rule and not the companion <emphasis
+                role="bold">ACCEPT</emphasis> rule.</para>
               </listitem>
             </varlistentry>
 

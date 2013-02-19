@@ -2637,9 +2637,12 @@ sub initialize_chain_table($) {
 	#   As new targets (Actions, Macros and Manual Chains) are discovered, they are added to the table
 	#
 	%targets = ('ACCEPT'          => STANDARD,
+		    'ACCEPT+'         => STANDARD  + NONAT,
 		    'ACCEPT!'         => STANDARD,
+		    'A_ACCEPT+'       => STANDARD  + NONAT + AUDIT,
 		    'AUDIT'           => STANDARD  + AUDIT,
 		    'A_ACCEPT'        => STANDARD  + AUDIT,
+		    'NONAT'           => STANDARD  + NONAT + NATONLY,
 		    'DROP'            => STANDARD,
 		    'DROP!'           => STANDARD,
 		    'A_DROP'          => STANDARD + AUDIT,
@@ -2648,6 +2651,10 @@ sub initialize_chain_table($) {
 		    'REJECT!'         => STANDARD,
 		    'A_REJECT'        => STANDARD + AUDIT,
 		    'A_REJECT!'       => STANDARD + AUDIT,
+		    'DNAT'            => NATRULE,
+		    'DNAT-'           => NATRULE  + NATONLY,
+		    'REDIRECT'        => NATRULE  + REDIRECT,
+		    'REDIRECT-'       => NATRULE  + REDIRECT + NATONLY,
 		    'LOG'             => STANDARD + LOGRULE,
 		    'CONTINUE'        => STANDARD,
 		    'CONTINUE!'       => STANDARD,

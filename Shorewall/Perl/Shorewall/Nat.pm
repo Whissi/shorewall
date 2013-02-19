@@ -44,11 +44,13 @@ our $VERSION = 'MODULEVERSION';
 
 our @addresses_to_add;
 our %addresses_to_add;
+our $family;
 
 #
 # Called by the compiler
 #
-sub initialize() {
+sub initialize($) {
+    $family = shift;
     @addresses_to_add = ();
     %addresses_to_add = ();
 }
@@ -61,7 +63,7 @@ sub process_one_masq1( $$$$$$$$$$ )
     my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest ) = @_;
 
     my $pre_nat;
-    my $add_snat_aliases = $config{ADD_SNAT_ALIASES};
+    my $add_snat_aliases = $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
     my $destnets = '';
     my $baserule = '';
 
@@ -72,28 +74,30 @@ sub process_one_masq1( $$$$$$$$$$ )
     #
     # Parse the remaining part of the INTERFACE column
     #
-    if ( $interfacelist =~ /^([^:]+)::([^:]*)$/ ) {
-	$add_snat_aliases = 0;
-	$destnets = $2;
-	$interfacelist = $1;
-    } elsif ( $interfacelist =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
-	$destnets = $2;
-	$interfacelist = $1;
-    } elsif ( $interfacelist =~ /^([^:]+):$/ ) {
-	$add_snat_aliases = 0;
-	$interfacelist = $1;
-    } elsif ( $interfacelist =~ /^([^:]+):([^:]*)$/ ) {
-	my ( $one, $two ) = ( $1, $2 );
-	if ( $2 =~ /\./ || $2 =~ /^%/ ) {
-	    $interfacelist = $one;
-	    $destnets = $two;
+    if ( $family == F_IPV4 ) {
+	if ( $interfacelist =~ /^([^:]+)::([^:]*)$/ ) {
+	    $add_snat_aliases = 0;
+	    $destnets = $2;
+	    $interfacelist = $1;
+	} elsif ( $interfacelist =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
+	    $destnets = $2;
+	    $interfacelist = $1;
+	} elsif ( $interfacelist =~ /^([^:]+):$/ ) {
+	    $add_snat_aliases = 0;
+	    $interfacelist = $1;
+	} elsif ( $interfacelist =~ /^([^:]+):([^:]*)$/ ) {
+	    my ( $one, $two ) = ( $1, $2 );
+	    if ( $2 =~ /\./ || $2 =~ /^%/ ) {
+		$interfacelist = $one;
+		$destnets = $two;
+	    }
 	}
     }
     #
     # If there is no source or destination then allow all addresses
     #
-    $networks = ALLIPv4 if $networks eq '-';
-    $destnets = ALLIPv4 if $destnets eq '-';
+    $networks = ALLIP if $networks eq '-';
+    $destnets = ALLIP if $destnets eq '-';
 
     #
     # Handle IPSEC options, if any
@@ -162,6 +166,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 	#
 	if ( $addresses ne '-' ) {
 	    if ( $addresses eq 'random' ) {
+		fatal_error 'Invalid IPv6 address (random)' if $family == F_IPV6;
 		$randomize = '--random ';
 	    } else {
 		$addresses =~ s/:persistent$// and $persistent = ' --persistent ';
@@ -187,7 +192,9 @@ sub process_one_masq1( $$$$$$$$$$ )
 		    $add_snat_aliases = 0;
 		} else {
 		    my $addrlist = '';
-		    for my $addr ( split_list $addresses , 'address' ) {
+		    my @addrs = split_list $addresses, 'address';
+
+		    for my $addr ( @addrs ) {
 			if ( $addr =~ /^([&%])(.+)$/ ) {
 			    my ( $type, $interface ) = ( $1, $2 );
 			    $target = 'SNAT ';
@@ -199,22 +206,57 @@ sub process_one_masq1( $$$$$$$$$$ )
 			    } else {
 				$addrlist .= '--to-source ' . record_runtime_address( $type, $interface );
 			    }
-			} elsif ( $addr =~ /^.*\..*\..*\./ ) {
-			    $target = 'SNAT ';
-			    my ($ipaddr, $rest) = split ':', $addr;
-			    if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
-				validate_range( $1, $2 );
+			} elsif ( $family == F_IPV4 ) {
+			    if ( $addr =~ /^.*\..*\..*\./ ) {
+				$target = 'SNAT ';
+				my ($ipaddr, $rest) = split ':', $addr;
+				if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
+				    validate_range( $1, $2 );
+				} else {
+				    validate_address $ipaddr, 0;
+				}
+				$addrlist .= "--to-source $addr ";
+				$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			    } else {
-				validate_address $ipaddr, 0;
+				my $ports = $addr;
+				$ports =~ s/^://;
+				validate_portpair1( $proto, $ports );
+				$addrlist .= "--to-ports $ports ";
+				$exceptionrule = do_proto( $proto, '', '' );
 			    }
-			    $addrlist .= "--to-source $addr ";
-			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {
-			    my $ports = $addr;
-			    $ports =~ s/^://;
-			    validate_portpair1( $proto, $ports );
-			    $addrlist .= "--to-ports $ports ";
-			    $exceptionrule = do_proto( $proto, '', '' );
+			    fatal_error "Only one IPv6 ADDRESS may be specified" if @addrs > 1;
+
+			    $target = 'SNAT ';
+
+			    if ( $addr =~ /^\[/ ) {
+				#
+				# Can have ports specified
+				#
+				my $ports;
+
+				if ( $addr =~ s/:([^]]+)$// ) {
+				    $ports = $1;
+				}
+
+				fatal_error "Invalid IPv6 Address ($addr)" unless $addr =~ /^\[(.+)\]$/;
+
+				$addr = $1;
+
+				if ( $addr =~ /^(.+)-(.+)$/ ) {
+				    validate_range( $1, $2 );
+				} else {
+				    validate_address $addr, 0;
+				}
+
+				$addrlist .= "--to-source $addr ";
+
+				if ( supplied $ports ) {
+				    validate_portpair( $proto, $ports );
+				    $exceptionrule = do_proto( $proto, '', '' );
+				    $addrlist .= "--toports $ports ";
+				}
+			    }
 			}
 		    }
 
@@ -225,6 +267,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 	    $target .= $randomize;
 	    $target .= $persistent;
 	} else {
+	    fatal_error "IPv6 does does not support MASQUERADE -- you must use SNAT" if $family == F_IPV6;
 	    $add_snat_aliases = 0;
 	}
 	#
@@ -597,9 +640,18 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 	if ( $server eq '' ) {
 	    fatal_error "A server and/or port must be specified in the DEST column in $action rules" unless $serverport;
 	} elsif ( $server =~ /^(.+)-(.+)$/ ) {
-	    validate_range( $1, $2 );
+	    if ( $family == F_IPV4 ) {
+		validate_range( $1, $2 );
+	    } else {
+		my ( $addr1, $addr2 ) = ( $1, $2 );
+		$addr1 = $1 if $addr1 =~ /^\[(.+)\]$/;
+		$addr2 = $1 if $addr2 =~ /^\[(.+)\]$/;
+		validate_range( $addr1, $addr2 );
+		$server = join '-', $addr1, $addr2
+	    }
 	} else {
 	    unless ( $server eq ALLIP ) {
+		$server = $1 if $family == F_IPV6 && $server =~ /^\[(.+)\]$/;
 		my @servers = validate_address $server, 1;
 		$server = join ',', @servers;
 	    }
@@ -609,8 +661,15 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 	    $target = $action;
 	    if ( $server ) {
 		$serverport = ":$serverport" if $serverport;
-		for my $serv ( split /,/, $server ) {
-		    $target .= " --to-destination ${serv}${serverport}";
+		if ( $family == F_IPV4 ) {
+		    for my $serv ( split /,/, $server ) {
+			$target .= " --to-destination ${serv}${serverport}";
+		    }
+		} else {
+		    for my $serv ( split /,/, $server ) {
+			$serv =~ s/-/]-[/; #In case this is a range.
+			$target .= " --to-destination [${serv}]${serverport}";
+		    }
 		}
 	    } else {
 		$target .= " --to-destination :$serverport";

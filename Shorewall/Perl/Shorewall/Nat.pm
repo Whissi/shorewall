@@ -92,6 +92,9 @@ sub process_one_masq1( $$$$$$$$$$ )
 		$destnets = $two;
 	    }
 	}
+    } elsif ( $interfacelist =~ /^(.+?):(.+)$/ ) {
+	$interfacelist = $1;
+	$destnets      = $2;
     }
     #
     # If there is no source or destination then allow all addresses

@@ -16,14 +16,15 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/masq</command>
+      <command>/etc/shorewall6/masq</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>Use this file to define Source NAT (SNAT).</para>
+    <para>Use this file to define Source NAT (SNAT). Requires Shorewall 4.5.14
+    or later.</para>
 
     <note>
       <para>Unlike with IPv4, Netfilter does not support the MASQUERADE target
@@ -50,7 +51,9 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">INTERFACE:DEST</emphasis> - {[<emphasis
-        role="bold">+</emphasis>]<emphasis>interfacelist</emphasis>|[?]COMMENT}</term>
+        role="bold">+</emphasis>]<emphasis>interfacelist</emphasis>|[<emphasis
+        role="bold">:</emphasis>[<emphasis>dest-address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>dest-address</emphasis>]...[<emphasis>exclusion</emphasis>]]|[?]COMMENT}</term>
 
         <listitem>
           <para>Outgoing <emphasis>interfacelist</emphasis>. This may be a
@@ -83,28 +86,8 @@
           addresses to indicate that you only want to change the source IP
           address for packets being sent to those particular destinations.
           Exclusion is allowed (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)) as
-          are ipset names preceded by a plus sign '+';</para>
-
-          <para>If you wish to inhibit the action of ADD_SNAT_ALIASES for this
-          entry then include the ":" but omit the digit:</para>
-
-          <programlisting>        eth0(Avvanta):
-        eth2::192.0.2.32/27</programlisting>
-
-          <para>Normally Masq/SNAT rules are evaluated after those for
-          one-to-one NAT (defined in <ulink
-          url="shorewall-nat.html">shorewall-nat</ulink>(5)). If you want the
-          rule to be applied before one-to-one NAT rules, prefix the interface
-          name with "+":</para>
-
-          <programlisting>        +eth0
-        +eth0:192.0.2.32/27
-        +eth0:2</programlisting>
-
-          <para>This feature should only be required if you need to insert
-          rules in this file that preempt entries in <ulink
-          url="shorewall-nat.html">shorewall-nat</ulink>(5).</para>
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)) as
+          are ipset names preceded by a plus sign '+'.</para>
 
           <para>Comments may be attached to Netfilter rules generated from
           entries in this file through the use of COMMENT lines. These lines
@@ -492,13 +475,13 @@
         role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
-          <para>(Optional) Added in Shorewall 4.5.6. This column may be
-          included and may contain one or more addresses (host or network)
-          separated by commas. Address ranges are not allowed. When this
-          column is supplied, rules are generated that require that the
-          original destination address matches one of the listed addresses. It
-          is useful for specifying that SNAT should occur only for connections
-          that were acted on by a DNAT when they entered the firewall.</para>
+          <para>(Optional) This column may be included and may contain one or
+          more addresses (host or network) separated by commas. Address ranges
+          are not allowed. When this column is supplied, rules are generated
+          that require that the original destination address matches one of
+          the listed addresses. It is useful for specifying that SNAT should
+          occur only for connections that were acted on by a DNAT when they
+          entered the firewall.</para>
         </listitem>
       </varlistentry>
     </variablelist>

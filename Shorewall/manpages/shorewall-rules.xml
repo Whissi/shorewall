@@ -893,88 +893,79 @@
               </listitem>
             </orderedlist></para>
 
-          <blockquote>
-            <para/>
+          <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
+          role="bold">+]|[-</emphasis>] is specified, the server may be
+          further restricted to a particular network, host or interface by
+          appending ":" and the network, host or interface. See <emphasis
+          role="bold">SOURCE</emphasis> above.</para>
 
-            <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
-            role="bold">+]|[-</emphasis>] is specified, the server may be
-            further restricted to a particular network, host or interface by
-            appending ":" and the network, host or interface. See <emphasis
-            role="bold">SOURCE</emphasis> above.</para>
+          <para>You may exclude certain hosts from the set already defined
+          through use of an <emphasis>exclusion</emphasis> (see <ulink
+          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
 
-            <para>You may exclude certain hosts from the set already defined
-            through use of an <emphasis>exclusion</emphasis> (see <ulink
-            url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+          <para>Restriction: MAC addresses are not allowed (this is a
+          Netfilter restriction).</para>
 
-            <para>Restrictions:</para>
+          <para>Like in the <emphasis role="bold">SOURCE</emphasis> column,
+          you may specify a range of IP addresses using the syntax
+          <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.
+          When the <emphasis role="bold">ACTION</emphasis> is <emphasis
+          role="bold">DNAT</emphasis> or <emphasis
+          role="bold">DNAT-</emphasis>, the connections will be assigned to
+          addresses in the range in a round-robin fashion.</para>
 
-            <para>1. MAC addresses are not allowed (this is a Netfilter
-            restriction).</para>
+          <para>If you kernel and iptables have ipset match support then you
+          may give the name of an ipset prefaced by "+". The ipset name may be
+          optionally followed by a number from 1 to 6 enclosed in square
+          brackets ([]) to indicate the number of levels of destination
+          bindings to be matched. Only one of the <emphasis
+          role="bold">SOURCE</emphasis> and <emphasis
+          role="bold">DEST</emphasis> columns may specify an ipset
+          name.</para>
 
-            <para>2. You may not specify both an interface and an
-            address.</para>
+          <para>Beginning with Shorewall 4.4.17, the primary IP address of a
+          firewall interface can be specified by an apersand ('&amp;')
+          followed by the logical name of the interface as found in the
+          INTERFACE column of <ulink
+          url="shorewall-interfaces.html">shorewall-interfaces</ulink>
+          (5).</para>
 
-            <para>Like in the <emphasis role="bold">SOURCE</emphasis> column,
-            you may specify a range of IP addresses using the syntax
-            <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.
-            When the <emphasis role="bold">ACTION</emphasis> is <emphasis
-            role="bold">DNAT</emphasis> or <emphasis
-            role="bold">DNAT-</emphasis>, the connections will be assigned to
-            addresses in the range in a round-robin fashion.</para>
+          <para>The <replaceable>port</replaceable> that the server is
+          listening on may be included and separated from the server's IP
+          address by ":". If omitted, the firewall will not modifiy the
+          destination port. A destination port may only be included if the
+          <emphasis role="bold">ACTION</emphasis> is <emphasis
+          role="bold">DNAT</emphasis> or <emphasis
+          role="bold">REDIRECT</emphasis>.</para>
 
-            <para>If you kernel and iptables have ipset match support then you
-            may give the name of an ipset prefaced by "+". The ipset name may
-            be optionally followed by a number from 1 to 6 enclosed in square
-            brackets ([]) to indicate the number of levels of destination
-            bindings to be matched. Only one of the <emphasis
-            role="bold">SOURCE</emphasis> and <emphasis
-            role="bold">DEST</emphasis> columns may specify an ipset
-            name.</para>
+          <variablelist>
+            <varlistentry>
+              <term>Example:</term>
 
-            <para>Beginning with Shorewall 4.4.17, the primary IP address of a
-            firewall interface can be specified by an apersand ('&amp;')
-            followed by the logical name of the interface as found in the
-            INTERFACE column of <ulink
-            url="shorewall-interfaces.html">shorewall-interfaces</ulink>
-            (5).</para>
+              <listitem>
+                <para><emphasis role="bold">loc:192.168.1.3:3128</emphasis>
+                specifies a local server at IP address 192.168.1.3 and
+                listening on port 3128.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
 
-            <para>The <replaceable>port</replaceable> that the server is
-            listening on may be included and separated from the server's IP
-            address by ":". If omitted, the firewall will not modifiy the
-            destination port. A destination port may only be included if the
-            <emphasis role="bold">ACTION</emphasis> is <emphasis
-            role="bold">DNAT</emphasis> or <emphasis
-            role="bold">REDIRECT</emphasis>.</para>
+          <para>The <emphasis>port</emphasis> may be specified as a service
+          name. You may specify a port range in the form
+          <emphasis>lowport-highport</emphasis> to cause connections to be
+          assigned to ports in the range in round-robin fashion. When a port
+          range is specified, <emphasis>lowport</emphasis> and
+          <emphasis>highport</emphasis> must be given as integers; service
+          names are not permitted. Additionally, the port range may be
+          optionally followed by <emphasis role="bold">:random</emphasis>
+          which causes assignment to ports in the list to be random.</para>
 
-            <variablelist>
-              <varlistentry>
-                <term>Example:</term>
-
-                <listitem>
-                  <para><emphasis role="bold">loc:192.168.1.3:3128</emphasis>
-                  specifies a local server at IP address 192.168.1.3 and
-                  listening on port 3128.</para>
-                </listitem>
-              </varlistentry>
-            </variablelist>
-
-            <para>The <emphasis>port</emphasis> may be specified as a service
-            name. You may specify a port range in the form
-            <emphasis>lowport-highport</emphasis> to cause connections to be
-            assigned to ports in the range in round-robin fashion. When a port
-            range is specified, <emphasis>lowport</emphasis> and
-            <emphasis>highport</emphasis> must be given as integers; service
-            names are not permitted. Additionally, the port range may be
-            optionally followed by <emphasis role="bold">:random</emphasis>
-            which causes assignment to ports in the list to be random.</para>
-
-            <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
-            role="bold">REDIRECT</emphasis> or <emphasis
-            role="bold">REDIRECT-</emphasis>, this column needs only to
-            contain the port number on the firewall that the request should be
-            redirected to. That is equivalent to specifying
-            <option>$FW</option>::<replaceable>port</replaceable>.</para>
-          </blockquote>
+          <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
+          role="bold">REDIRECT</emphasis> or <emphasis
+          role="bold">REDIRECT-</emphasis>, this column needs only to contain
+          the port number on the firewall that the request should be
+          redirected to. That is equivalent to specifying
+          <option>$FW</option>::<replaceable>port</replaceable>.</para>
         </listitem>
       </varlistentry>
 

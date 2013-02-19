@@ -182,7 +182,8 @@
                 role="bold">DNAT</emphasis>[<emphasis
                 role="bold">-</emphasis>] or <emphasis
                 role="bold">REDIRECT</emphasis>[<emphasis
-                role="bold">-</emphasis>] rules.</para>
+                role="bold">-</emphasis>] rules. Requires Shorewall 4.5.14 or
+                later.</para>
               </listitem>
             </varlistentry>
 
@@ -351,7 +352,7 @@
 
               <listitem>
                 <para>Forward the request to another system (and optionally
-                another port).</para>
+                another port). Requires Shorewall 4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -364,7 +365,8 @@
                 <para>Like <emphasis role="bold">DNAT</emphasis> but only
                 generates the <emphasis role="bold">DNAT</emphasis> iptables
                 rule and not the companion <emphasis
-                role="bold">ACCEPT</emphasis> rule.</para>
+                role="bold">ACCEPT</emphasis> rule. Requires Shorewall 4.5.14
+                or later.</para>
               </listitem>
             </varlistentry>
 
@@ -481,7 +483,8 @@
                 <para>Excludes the connection from any subsequent <emphasis
                 role="bold">DNAT</emphasis>[-] or <emphasis
                 role="bold">REDIRECT</emphasis>[-] rules but doesn't generate
-                a rule to accept the traffic.</para>
+                a rule to accept the traffic. Requires Shorewall 4.5.14 or
+                later.</para>
               </listitem>
             </varlistentry>
 
@@ -510,7 +513,7 @@
 
               <listitem>
                 <para>Redirect the request to a server running on the
-                firewall.</para>
+                firewall. Requires Shorewall 4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -523,7 +526,8 @@
                 <para>Like <emphasis role="bold">REDIRECT</emphasis> but only
                 generates the <emphasis role="bold">REDIRECT</emphasis>
                 iptables rule and not the companion <emphasis
-                role="bold">ACCEPT</emphasis> rule.</para>
+                role="bold">ACCEPT</emphasis> rule. Requires Shorewall 4.5.14
+                or later.</para>
               </listitem>
             </varlistentry>
 
@@ -780,7 +784,8 @@
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
         role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>|^<emphasis>countrycode-list</emphasis>}</emphasis></term>
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|^<emphasis>countrycode-list</emphasis>}[<option>:</option><replaceable>port</replaceable>[:<emphasis
+        role="bold">random</emphasis>]]</emphasis></term>
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
@@ -845,31 +850,65 @@
               </listitem>
             </orderedlist></para>
 
-          <blockquote>
-            <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
-            role="bold">+]|[-</emphasis>] is specified, the server may be
-            further restricted to a particular network, host or interface by
-            appending ":" and the network, host or interface. See <emphasis
-            role="bold">SOURCE</emphasis> above.</para>
+          <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
+          role="bold">+]|[-</emphasis>] is specified, the server may be
+          further restricted to a particular network, host or interface by
+          appending ":" and the network, host or interface. See <emphasis
+          role="bold">SOURCE</emphasis> above.</para>
 
-            <para>You may exclude certain hosts from the set already defined
-            through use of an <emphasis>exclusion</emphasis> (see <ulink
-            url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+          <para>You may exclude certain hosts from the set already defined
+          through use of an <emphasis>exclusion</emphasis> (see <ulink
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
 
-            <para>Restrictions:</para>
+          <para>Restriction: MAC addresses are not allowed (this is a
+          Netfilter restriction).</para>
 
-            <para>1. MAC addresses are not allowed (this is a Netfilter
-            restriction).</para>
+          <para>If you kernel and ip6tables have ipset match support then you
+          may give the name of an ipset prefaced by "+". The ipset name may be
+          optionally followed by a number from 1 to 6 enclosed in square
+          brackets ([]) to indicate the number of levels of destination
+          bindings to be matched. Only one of the <emphasis
+          role="bold">SOURCE</emphasis> and <emphasis
+          role="bold">DEST</emphasis> columns may specify an ipset
+          name.</para>
 
-            <para>If you kernel and ip6tables have ipset match support then
-            you may give the name of an ipset prefaced by "+". The ipset name
-            may be optionally followed by a number from 1 to 6 enclosed in
-            square brackets ([]) to indicate the number of levels of
-            destination bindings to be matched. Only one of the <emphasis
-            role="bold">SOURCE</emphasis> and <emphasis
-            role="bold">DEST</emphasis> columns may specify an ipset
-            name.</para>
-          </blockquote>
+          <para>The <replaceable>port</replaceable> that the server is
+          listening on may be included and separated from the server's IP
+          address by ":". If omitted, the firewall will not modifiy the
+          destination port. A destination port may only be included if the
+          <emphasis role="bold">ACTION</emphasis> is <emphasis
+          role="bold">DNAT</emphasis> or <emphasis
+          role="bold">REDIRECT</emphasis>.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>Example:</term>
+
+              <listitem>
+                <para><emphasis
+                role="bold">loc:[2001:470:b:227::44]:3128</emphasis> specifies
+                a local server at IP address 2001:470:b:227::44 and listening
+                on port 3128.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>The <emphasis>port</emphasis> may be specified as a service
+          name. You may specify a port range in the form
+          <emphasis>lowport-highport</emphasis> to cause connections to be
+          assigned to ports in the range in round-robin fashion. When a port
+          range is specified, <emphasis>lowport</emphasis> and
+          <emphasis>highport</emphasis> must be given as integers; service
+          names are not permitted. Additionally, the port range may be
+          optionally followed by <emphasis role="bold">:random</emphasis>
+          which causes assignment to ports in the list to be random.</para>
+
+          <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
+          role="bold">REDIRECT</emphasis> or <emphasis
+          role="bold">REDIRECT-</emphasis>, this column needs only to contain
+          the port number on the firewall that the request should be
+          redirected to. That is equivalent to specifying
+          <option>$FW</option>::<replaceable>port</replaceable>.</para>
         </listitem>
       </varlistentry>
 

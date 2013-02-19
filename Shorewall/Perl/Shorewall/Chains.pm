@@ -2673,7 +2673,6 @@ sub initialize_chain_table($) {
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
 	    new_builtin_chain( 'raw', $chain, 'ACCEPT' )->{insert} = 0;
-	    
 	}
 
 	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
@@ -7264,7 +7263,7 @@ sub emitr( $$ ) {
 #
 sub enter_cat_mode1() {
     print "\n";
-    emitstd "cat << __EOF__";
+    emitstd "cat << __EOF__ >&3";
     $mode = CAT_MODE;
 }
 

@@ -793,13 +793,10 @@ sub compiler {
     #       (Produces no output to the compiled script -- rules are stored in the chain table)
     #
     process_tos;
-
-    if ( $family == F_IPV4 ) {
-	#
-	# ECN
-	#
-	setup_ecn if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
-    }
+    #
+    # ECN
+    #
+    setup_ecn if $family == F_IPV4 && have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     #
     # Setup Masquerading/SNAT
     #

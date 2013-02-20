@@ -1444,10 +1444,7 @@ reload_command() # $* = original arguments less the command.
     fi
 
     if [ -z "$getcaps" ]; then
-	g_shorewalldir=$(resolve_file $g_directory)
-	ensure_config_path
-	capabilities=$(find_file capabilities)
-	[ -f $capabilities ] || getcaps=Yes
+	[ -f $directory/capabilities ] || getcaps=Yes
     fi
 
     if [ -f $g_directory/${g_program}.conf ]; then

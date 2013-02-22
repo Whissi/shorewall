@@ -1421,11 +1421,11 @@ reload_command() # $* = original arguments less the command.
 
     case $# in
 	1)
-	    g_directory="."
+	    g_shorewalldir="."
 	    system=$1
 	    ;;
 	2)
-	    g_directory=$1
+	    g_shorewalldir=$1
 	    system=$2
 	    ;;
 	*)
@@ -1433,30 +1433,30 @@ reload_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    if [ -f $g_directory/shorewallrc ]; then
-	. $g_directory/shorewallrc
+    if [ -f $g_shorewalldir/shorewallrc ]; then
+	. $g_shorewalldir/shorewallrc
 	sbindir="$SBINDIR"
 	confdir="$CONFDIR"
 	libexec="$LIBEXECDIR"
 	. $sharedir/shorewall/shorewallrc
     else
-	error_message "   WARNING: $g_directory/shorewallrc does not exist; using settings from $SHAREDIR/shorewall" >&2
+	error_message "   WARNING: $g_shorewalldir/shorewallrc does not exist; using settings from $SHAREDIR/shorewall" >&2
     fi
 
     if [ -z "$getcaps" ]; then
-	[ -f $g_directory/capabilities ] || getcaps=Yes
+	[ -f $g_shorewalldir/capabilities ] || getcaps=Yes
     fi
 
-    if [ -f $g_directory/${g_program}.conf ]; then
-	if [ -f $g_directory/params ]; then
-	    . $g_directory/params
+    if [ -f $g_shorewalldir/${g_program}.conf ]; then
+	if [ -f $g_shorewalldir/params ]; then
+	    . $g_shorewalldir/params
 	fi
 
-	. $g_directory/$g_program.conf
+	. $g_shorewalldir/$g_program.conf
 
 	ensure_config_path
     else
-	fatal_error "$g_directory/$g_program.conf does not exist"
+	fatal_error "$g_shorewalldir/$g_program.conf does not exist"
     fi
 
     if [ -n "$getcaps" ]; then
@@ -1464,21 +1464,21 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message "Getting Capabilities on system $system..."
 	if [ $g_family -eq 4 ]; then
-	    if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_directory/capabilities; then
+	    if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_shorewalldir/capabilities; then
 	        fatal_error "Capturing capabilities on system $system failed"
 	    fi
-	elif ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $g_directory/capabilities; then
+	elif ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $g_shorewalldir/capabilities; then
 	    fatal_error "Capturing capabilities on system $system failed"
 	fi
     fi
 
-    file=$(resolve_file $g_directory/firewall)
+    file=$(resolve_file $g_shorewalldir/firewall)
 
     [ -n "$g_timestamp" ] && timestamp='-t' || timestamp=
 
-    if $g_program $g_debugging $verbose $timestamp compile -e $g_directory $g_directory/firewall && \
+    if $g_program $g_debugging $verbose $timestamp compile -e $g_shorewalldir $g_shorewalldir/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
-	rcp_command "$g_directory/firewall $g_directory/firewall.conf" ${litedir}
+	rcp_command "$g_shorewalldir/firewall $g_shorewalldir/firewall.conf" ${litedir}
     then
 	save=$(find_file save);
 
@@ -1541,11 +1541,11 @@ export_command() # $* = original arguments less the command.
 
     case $# in
 	1)
-	    g_directory="."
+	    g_shorewalldir="."
 	    target=$1
 	    ;;
 	2)
-	    g_directory=$1
+	    g_shorewalldir=$1
 	    target=$2
 	    ;;
 	*)
@@ -1561,11 +1561,11 @@ export_command() # $* = original arguments less the command.
 	    ;;
     esac
 
-    file=$(resolve_file $g_directory/firewall)
+    file=$(resolve_file $g_shorewalldir/firewall)
 
-    if $g_program $g_debugging $verbose compile -e $g_directory $g_directory/firewall && \
+    if $g_program $g_debugging $verbose compile -e $g_shorewalldir $g_shorewalldir/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
-	scp $g_directory/firewall $g_directory/firewall.conf $target
+	scp $g_shorewalldir/firewall $g_shorewalldir/firewall.conf $target
     then
 	save=$(find_file save);
 

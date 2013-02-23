@@ -367,7 +367,7 @@ compiler() {
     #
     # We've now set g_shorewalldir so recalculate CONFIG_PATH
     #
-    ensure_config_path
+    [ -n "$g_haveconfig" ] || ensure_config_path
     #
     # Get the config from $g_shorewalldir
     #
@@ -1431,20 +1431,23 @@ reload_command() # $* = original arguments less the command.
 	error_message "   WARNING: $g_shorewalldir/shorewallrc does not exist; using settings from $SHAREDIR/shorewall" >&2
     fi
 
-    if [ -z "$getcaps" ]; then
-	[ -f $g_shorewalldir/capabilities ] || getcaps=Yes
-    fi
-
     if [ -f $g_shorewalldir/${g_program}.conf ]; then
 	if [ -f $g_shorewalldir/params ]; then
 	    . $g_shorewalldir/params
 	fi
 
-	. $g_shorewalldir/$g_program.conf
-
 	ensure_config_path
+
+	get_config No
+
+	g_haveconfig=Yes
     else
 	fatal_error "$g_shorewalldir/$g_program.conf does not exist"
+    fi
+
+    if [ -z "$getcaps" ]; then
+	capabilities=$(find_file capabilities)
+	[ -f $capabilities ] || getcaps=Yes
     fi
 
     if [ -n "$getcaps" ]; then
@@ -1462,9 +1465,9 @@ reload_command() # $* = original arguments less the command.
 
     file=$(resolve_file $g_shorewalldir/firewall)
 
-    [ -n "$g_timestamp" ] && timestamp='-t' || timestamp=
+    g_export=Yes
 
-    if $g_program $g_debugging $verbose $timestamp compile -e $g_shorewalldir $g_shorewalldir/firewall && \
+    if compiler $g_debugging compiler $g_shorewalldir/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
 	rcp_command "$g_shorewalldir/firewall $g_shorewalldir/firewall.conf" ${litedir}
     then
@@ -1551,7 +1554,9 @@ export_command() # $* = original arguments less the command.
 
     file=$(resolve_file $g_shorewalldir/firewall)
 
-    if $g_program $g_debugging $verbose compile -e $g_shorewalldir $g_shorewalldir/firewall && \
+    g_export=Yes
+
+    if compiler $g_debugging compile $g_shorewalldir/firewall && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $g_shorewalldir/firewall $g_shorewalldir/firewall.conf $target
     then

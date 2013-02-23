@@ -336,7 +336,7 @@ sub setup_masq()
 
     if ( my $fn = open_file( $name, 1, 1 ) ) {
 
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , 'a non-empty $name file' , 's'; } );
+	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty $name file" , 's'; } );
 
 	process_one_masq while read_a_line( NORMAL_READ );
     }

@@ -3542,7 +3542,7 @@ sub determine_kernelversion() {
 # Capability Reporting and detection.
 #
 sub Nat_Enabled() {
-    $family == F_IPV4 ? qt1( "$iptables -t nat -L -n" ) : '';
+    qt1( "$iptables -t nat -L -n" );
 }
 
 sub Persistent_Snat() {

@@ -3549,9 +3549,10 @@ sub Persistent_Snat() {
     have_capability( 'NAT_ENABLED' ) || return '';
 
     my $result = '';
+    my $address = $family == F_IPV4 ? '1.2.3.4' : '2001::1';
 
     if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	$result = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source 1.2.3.4 --persistent" );
+	$result = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source $address --persistent" );
 	qt1( "$iptables -t nat -F $sillyname" );
 	qt1( "$iptables -t nat -X $sillyname" );
 

@@ -2225,6 +2225,8 @@ determine_capabilities() {
 	if qt $g_tool -t nat -N $chain; then
 	    if [ $g_family -eq 4 ]; then
 		qt $g_tool -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
+	    else
+		qt $g_tool -t nat -A $chain -j SNAT --to-source 2001::1 --persistent && PERSISTENT_SNAT=Yes
 	    fi
 	    qt $g_tool -t nat -F $chain
 	    qt $g_tool -t nat -X $chain

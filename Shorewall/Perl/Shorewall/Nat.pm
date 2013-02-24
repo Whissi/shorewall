@@ -140,6 +140,9 @@ sub process_one_masq1( $$$$$$$$$$ )
 	if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
 	    $interface = $1;
 	    my $provider  = $2;
+
+	    fatal_error "Missing Provider ($fullinterface)" unless supplied $provider;
+
 	    $fullinterface =~ s/[(]\w*[)]//;
 	    my $realm = lookup_provider( $provider );
 

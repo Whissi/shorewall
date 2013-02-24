@@ -3534,7 +3534,7 @@ shorewall_cli() {
 	    if product_is_started; then
 		run_it ${VARDIR}/firewall $g_debugging $@
 	    else
-		fatal_error "Shorewall is not running"
+		fatal_error "$g_product is not running"
 	    fi
 	    ;;
 	show|list)

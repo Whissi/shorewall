@@ -283,13 +283,14 @@ sub process_one_masq1( $$$$$$$$$$ )
 				    validate_address $addr, 0;
 				}
 
-				$addrlist .= "--to-source $addr ";
 
 				if ( supplied $ports ) {
-				    validate_portpair( $proto, $ports );
+				    validate_portpair1( $proto, $ports );
 				    $exceptionrule = do_proto( $proto, '', '' );
-				    $addrlist .= "--toports $ports ";
+				    $addr = "[$addr]:$ports";
 				}
+
+				$addrlist .= "--to-source $addr ";
 			    } else {
 				if ( $addr =~ /^(.+)-(.+)$/ ) {
 				    validate_range( $1, $2 );

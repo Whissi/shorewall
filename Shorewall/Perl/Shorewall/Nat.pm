@@ -262,6 +262,14 @@ sub process_one_masq1( $$$$$$$$$$ )
 				    $exceptionrule = do_proto( $proto, '', '' );
 				    $addrlist .= "--toports $ports ";
 				}
+			    } else {
+				if ( $addr =~ /^(.+)-(.+)$/ ) {
+				    validate_range( $1, $2 );
+				} else {
+				    validate_address $addr, 0;
+				}
+
+				$addrlist .= "--to-source $addr ";
 			    }
 			}
 		    }

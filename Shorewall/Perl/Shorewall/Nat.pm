@@ -200,17 +200,47 @@ sub process_one_masq1( $$$$$$$$$$ )
 		    my $addrlist = '';
 		    my @addrs = split_list $addresses, 'address';
 
+		    fatal_error "Only one IPv6 ADDRESS may be specified" if $family == F_IPV6 && @addrs > 1;
+
 		    for my $addr ( @addrs ) {
 			if ( $addr =~ /^([&%])(.+)$/ ) {
 			    my ( $type, $interface ) = ( $1, $2 );
+
+			    my $ports = '';
+
+			    if ( $interface =~ s/:(.+)$// ) {
+				validate_portpair1( $proto, $1 );
+				$ports = ":$1";
+			    }
+			    #
+			    # Address Variable
+			    #
 			    $target = 'SNAT ';
 			    if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+				#
+				# User-defined address variable
+				#
 				$conditional = conditional_rule( $chainref, $addr );
-				$addrlist .= '--to-source ' . "\$$1 ";
-			    } elsif ( $conditional = conditional_rule( $chainref, $addr ) ) {
-				$addrlist .= '--to-source ' . get_interface_address $interface;
+				$addrlist .= '--to-source ' . "\$${1}${ports} ";
 			    } else {
-				$addrlist .= '--to-source ' . record_runtime_address( $type, $interface );
+				if ( $conditional = conditional_rule( $chainref, $addr ) ) {
+				    #
+				    # Optional Interface -- rule is conditional
+				    #
+				    $addr = get_interface_address $interface;
+				} else {
+				    #
+				    # Interface is not optional
+				    #
+				    $addr = record_runtime_address( $type, $interface );
+				}
+
+				if ( $ports ) {
+				    $addr =~ s/ $//;
+				    $addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
+				}
+
+				$addrlist .= '--to-source ' . $addr;
 			    }
 			} elsif ( $family == F_IPV4 ) {
 			    if ( $addr =~ /^.*\..*\..*\./ ) {
@@ -231,8 +261,6 @@ sub process_one_masq1( $$$$$$$$$$ )
 				$exceptionrule = do_proto( $proto, '', '' );
 			    }
 			} else {
-			    fatal_error "Only one IPv6 ADDRESS may be specified" if @addrs > 1;
-
 			    $target = 'SNAT ';
 
 			    if ( $addr =~ /^\[/ ) {

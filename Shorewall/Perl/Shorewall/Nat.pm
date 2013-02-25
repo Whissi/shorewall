@@ -277,7 +277,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 
 				$addr = $1;
 
-				if ( $addr =~ /^(.+)-(.+)$/ ) {
+				if ( $addr =~ /^(.+)]-\[(.+)$/ ) {
 				    validate_range( $1, $2 );
 				} else {
 				    validate_address $addr, 0;

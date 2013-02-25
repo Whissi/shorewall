@@ -269,7 +269,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 				#
 				my $ports;
 
-				if ( $addr =~ s/:([^]]+)$// ) {
+				if ( $addr =~ s/:([^]:]+)$// ) {
 				    $ports = $1;
 				}
 

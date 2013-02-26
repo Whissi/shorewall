@@ -690,10 +690,16 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 		validate_range( $1, $2 );
 	    } else {
 		my ( $addr1, $addr2 ) = ( $1, $2 );
-		$addr1 = $1 if $addr1 =~ /^\[(.+)\]$/;
-		$addr2 = $1 if $addr2 =~ /^\[(.+)\]$/;
+
+		if ( $server =~ /^\[(.+)\]$/ ) {
+		    $server = $1;
+		    fatal_error "Correct address range syntax is '[<addr1>-<addr2>]'" if $server =~ /]-\[/;
+		    assert( $server =~ /^(.+)-(.+)$/ );
+		    ( $addr1, $addr2 ) = ( $1, $2 );
+		}
+
 		validate_range( $addr1, $addr2 );
-		$server = join '-', $addr1, $addr2
+		$server = join( '-', $addr1, $addr2 );
 	    }
 	} else {
 	    unless ( $server eq ALLIP ) {
@@ -713,7 +719,6 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 		    }
 		} else {
 		    for my $serv ( split /,/, $server ) {
-			$serv =~ s/-/]-[/; #In case this is a range.
 			$target .= " --to-destination [${serv}]${serverport}";
 		    }
 		}

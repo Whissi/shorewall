@@ -277,8 +277,10 @@ sub process_one_masq1( $$$$$$$$$$ )
 
 				$addr = $1;
 
-				if ( $addr =~ /^(.+)]-\[(.+)$/ ) {
+				if ( $addr =~ /^(.+)-(.+)$/ ) {
+				    fatal_error "Correct address range syntax is '[<addr1>-<addr2>]'" if $addr =~ /]-\[/;
 				    validate_range( $1, $2 );
+				    $addr =~ s/]-\[/-/;
 				} else {
 				    validate_address $addr, 0;
 				}

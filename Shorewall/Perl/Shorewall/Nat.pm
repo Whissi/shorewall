@@ -308,7 +308,8 @@ sub process_one_masq1( $$$$$$$$$$ )
 
 		    $target .= $addrlist;
 		} else {
-		    require_capability( 'MASQUERADE_TGT', 'Masquerade rules', '' )  if $family == F_IPV6;
+		    fatal_error( "':persistent' is not allowed in a MASQUERADE rule" ) if $persistent;
+		    require_capability( 'MASQUERADE_TGT', 'Masquerade rules', '' )     if $family == F_IPV6;
 		}
 	    }
 

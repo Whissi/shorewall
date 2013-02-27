@@ -3,20 +3,20 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall6-snat</refentrytitle>
+    <refentrytitle>shorewall6-masq</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
 
   <refnamediv>
-    <refname>snat</refname>
+    <refname>masq</refname>
 
-    <refpurpose>Shorewall6 SNAT definition file</refpurpose>
+    <refpurpose>Shorewall6 Masquerade/SNAT definition file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall6/snat</command>
+      <command>/etc/shorewall6/masq</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -25,11 +25,6 @@
 
     <para>Use this file to define Source NAT (SNAT). Requires Shorewall 4.5.14
     or later.</para>
-
-    <note>
-      <para>Unlike with IPv4, Netfilter does not support the MASQUERADE target
-      with IPv6.</para>
-    </note>
 
     <warning>
       <para>The entries in this file are order-sensitive. The first entry that
@@ -117,27 +112,32 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ADDRESS</emphasis> -
-        {<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
+        <term><emphasis role="bold">ADDRESS</emphasis> (Optional) - [<emphasis
+        role="bold">-</emphasis>|<emphasis
+        role="bold">NONAT</emphasis>|[<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
         role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
-        role="bold">:random</emphasis>][:persistent]|}</term>
+        role="bold">:random</emphasis>][:persistent]|<emphasis
+        role="bold">detect</emphasis>|<emphasis
+        role="bold">random</emphasis>]</term>
 
         <listitem>
-          <para>The address specified here will be used as the source address.
-          If you simply wish to use the IPv6 address of the
-          <replaceable>interface</replaceable> in the first column, enter the
-          name of that interface preceded by an apersand ('&amp;') - e.g.,
-          &amp;sit1.</para>
+          <para>If you do not specify an address or address range,
+          masquerading will be performed. This requires <firstterm>Masquerade
+          Target</firstterm> support in your kernel and ip6tables.</para>
+
+          <para>If you specify an address here, SNAT will be used and this
+          will be the source address.</para>
 
           <para>You may also specify a range of up to 256 IP addresses if you
           want the SNAT address to be assigned from that range in a
           round-robin fashion by connection. The range is specified by
           <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.
-          The address or address range may be optionally followed by a port
-          range. When this is done, you must enclose the IPv6 address(es) in
-          square brackets. You may follow the port range with<emphasis
-          role="bold"> :random</emphasis> in which case assignment of ports
-          from the range will be random.</para>
+          You may follow the port range with<emphasis
+          role="bold">:random</emphasis> in which case assignment of ports
+          from the list will be random. <emphasis
+          role="bold">random</emphasis> may also be specified by itself in
+          this column in which case random local port assignments are made for
+          the outgoing connections.</para>
 
           <para>Example:
           [2001:470:a:227::2]-[2001:470:a:227::10]:1000-1010</para>
@@ -147,9 +147,6 @@
           role="bold">:persistent</emphasis>. This is only useful when an
           address range is specified and causes a client to be given the same
           source/destination IP pair.</para>
-
-          <para>Finally, you may also specify a comma-separated list of ranges
-          and/or addresses in this column.</para>
 
           <para>This column may not contain DNS Names.</para>
 
@@ -502,7 +499,7 @@
           <para>Your entry in the file will be:</para>
 
           <programlisting>        #INTERFACE   SOURCE                  ADDRESS
-        eth0         2001:470:b:787::0/64    &amp;eth0</programlisting>
+        eth0         2001:470:b:787::0/64    -</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -511,6 +508,6 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall6/snat</para>
+    <para>/etc/shorewall6/masq</para>
   </refsect1>
 </refentry>

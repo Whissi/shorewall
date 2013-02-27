@@ -172,7 +172,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 	#
 	if ( $addresses ne '-' ) {
 	    if ( $addresses eq 'random' ) {
-		fatal_error 'Invalid IPv6 address (random)' if $family == F_IPV6;
+		require_capability( 'MASQUERADE_TGT', 'Masquerade rules', '') if $family == F_IPV6;
 		$randomize = '--random ';
 	    } else {
 		$addresses =~ s/:persistent$// and $persistent = ' --persistent ';
@@ -194,9 +194,11 @@ sub process_one_masq1( $$$$$$$$$$ )
 			$detectaddress = 1;
 		    }
 		} elsif ( $addresses eq 'NONAT' ) {
+		    fatal_error "'persistent' may not be specified with 'NONAT'" if $persistent;
+		    fatal_error "'random' may not be specified with 'NONAT'"     if $randomize;
 		    $target = 'RETURN';
 		    $add_snat_aliases = 0;
-		} else {
+		} elsif ( $addresses ) {
 		    my $addrlist = '';
 		    my @addrs = split_list $addresses, 'address';
 
@@ -305,13 +307,15 @@ sub process_one_masq1( $$$$$$$$$$ )
 		    }
 
 		    $target .= $addrlist;
+		} else {
+		    require_capability( 'MASQUERADE_TGT', 'Masquerade rules', '' )  if $family == F_IPV6;
 		}
 	    }
 
 	    $target .= $randomize;
 	    $target .= $persistent;
 	} else {
-	    fatal_error "IPv6 does does not support MASQUERADE -- you must use SNAT" if $family == F_IPV6;
+	    require_capability( 'MASQUERADE_TGT', 'Masquerade rules', '' )  if $family == F_IPV6;
 	    $add_snat_aliases = 0;
 	}
 	#
@@ -373,11 +377,9 @@ sub process_one_masq( )
 #
 sub setup_masq()
 {
-    my $name = $family == F_IPV4 ? 'masq' : 'snat';
+    if ( my $fn = open_file( 'masq', 1, 1 ) ) {
 
-    if ( my $fn = open_file( $name, 1, 1 ) ) {
-
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty $name file" , 's'; } );
+	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty masq file" , 's'; } );
 
 	process_one_masq while read_a_line( NORMAL_READ );
     }

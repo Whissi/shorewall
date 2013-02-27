@@ -357,6 +357,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 NFACCT_MATCH    => 'NFAcct Match',
 		 CHECKSUM_TARGET => 'Checksum Target',
 		 ARPTABLESJF     => 'Arptables JF',
+		 MASQUERADE_TGT  => 'MASQUERADE Target',
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -649,7 +650,7 @@ sub initialize( $;$$) {
 		    KLUDGEFREE              => '',
 		    STATEMATCH              => '-m state --state',
 		    VERSION                 => "4.5.13-Beta3",
-		    CAPVERSION              => 40512 ,
+		    CAPVERSION              => 40514 ,
 		  );
     #
     # From shorewall.conf file
@@ -901,6 +902,7 @@ sub initialize( $;$$) {
 	       NFACCT_MATCH => undef,
 	       CHECKSUM_TARGET => undef,
 	       ARPTABLESJF => undef,
+	       MASQUERADE_TGT => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -3561,6 +3563,22 @@ sub Persistent_Snat() {
     $result;
 }
 
+sub Masquerade_Tgt() {
+    have_capability( 'NAT_ENABLED' ) || return '';
+
+    my $result = '';
+    my $address = $family == F_IPV4 ? '1.2.3.4' : '2001::1';
+
+    if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
+	$result = qt1( "$iptables -t nat -A $sillyname -j MASQUERADE" );
+	qt1( "$iptables -t nat -F $sillyname" );
+	qt1( "$iptables -t nat -X $sillyname" );
+
+    }
+
+    $result;
+}
+
 sub Mangle_Enabled() {
     if ( qt1( "$iptables -t mangle -L -n" ) ) {
 	system( "$iptables -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
@@ -4075,6 +4093,7 @@ our %detect_capability =
       MANGLE_FORWARD => \&Mangle_Forward,
       MARK => \&Mark,
       MARK_ANYWHERE => \&Mark_Anywhere,
+      MASQUERADE_TGT => \&Masquerade_Tgt,
       MULTIPORT => \&Multiport,
       NAT_ENABLED => \&Nat_Enabled,
       NETBIOS_NS_HELPER => \&Netbios_ns_Helper,

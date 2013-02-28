@@ -401,10 +401,11 @@ sub validate_portpair( $$ ) {
 	$what = 'port';
     }
 
-    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless
-	defined $protonum && ( $protonum == TCP  ||
-			       $protonum == UDP  ||
-			       $protonum == SCTP ||
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, UDPLITE, SCTP or DCCP" unless
+	defined $protonum && ( $protonum == TCP     ||
+			       $protonum == UDP     ||
+			       $protonum == UDPLITE ||
+			       $protonum == SCTP    ||
 			       $protonum == DCCP );
     join ':', @ports;
 

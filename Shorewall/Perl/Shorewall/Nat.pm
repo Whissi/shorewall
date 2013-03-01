@@ -634,7 +634,7 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
     #
     # Isolate server port
     #
-    if ( $dest =~ /^(.*)(?::(.+))$/ ) {
+    if ( ( $family == F_IPV4 && $dest =~ /^(.*)(?::(.+))$/ ) || ( $family == F_IPV6 && $dest =~ /^\[(.*)]:(.+)$/ ) ) {
 	#
 	# Server IP and Port
 	#

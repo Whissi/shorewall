@@ -714,19 +714,20 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 
 	if ( $action eq 'DNAT' ) {
 	    $target = $action;
+	    my $option = $family == F_IPV4 ? '--to-destination' : '--to-dest';
 	    if ( $server ) {
 		$serverport = ":$serverport" if $serverport;
 		if ( $family == F_IPV4 ) {
 		    for my $serv ( split /,/, $server ) {
-			$target .= " --to-destination ${serv}${serverport}";
+			$target .= " $option ${serv}${serverport}";
 		    }
 		} else {
 		    for my $serv ( split /,/, $server ) {
-			$target .= " --to-destination [${serv}]${serverport}";
+			$target .= " $option \[${serv}]${serverport}";
 		    }
 		}
 	    } else {
-		$target .= " --to-destination :$serverport";
+		$target .= " $option :$serverport";
 	    }
 	}
 

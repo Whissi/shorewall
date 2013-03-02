@@ -704,12 +704,12 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 		validate_range( $addr1, $addr2 );
 		$server = join( '-', $addr1, $addr2 );
 	    }
+	} elsif ( $server eq ALLIP || $server eq NILIP ) {
+	    fatal_error "Invalid or missing server IP address";
 	} else {
-	    unless ( $server eq ALLIP ) {
-		$server = $1 if $family == F_IPV6 && $server =~ /^\[(.+)\]$/;
-		my @servers = validate_address $server, 1;
-		$server = join ',', @servers;
-	    }
+	    $server = $1 if $family == F_IPV6 && $server =~ /^\[(.+)\]$/;
+	    my @servers = validate_address $server, 1;
+	    $server = join ',', @servers;
 	}
 
 	if ( $action eq 'DNAT' ) {

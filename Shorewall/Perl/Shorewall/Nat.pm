@@ -708,6 +708,7 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 	    fatal_error "Invalid or missing server IP address";
 	} else {
 	    $server = $1 if $family == F_IPV6 && $server =~ /^\[(.+)\]$/;
+	    fatal_error "Invalid server IP address ($server)" if $server eq ALLIP || $server eq NILIP;
 	    my @servers = validate_address $server, 1;
 	    $server = join ',', @servers;
 	}

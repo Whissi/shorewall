@@ -2192,11 +2192,23 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	      REDIRECT => sub () {
 		  my $z = $actiontype & NATONLY ? '' : firewall_zone;
 		  if ( $dest eq '-' ) {
-		      $dest = ( $inchain ) ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+		      if ( $family == F_IPV4 ) {
+			  $dest = ( $inchain ) ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
+		      } else {
+			  $dest = ( $inchain ) ? '' : join( '', $z, ':[]:' , $ports =~ /[:,]/ ? '' : $ports );
+		      }
 		  } elsif ( $inchain ) {
-		      $dest = ":$dest";
+		      if ( $family == F_IPV4 ) {
+			  $dest = ":$dest";
+		      } else {
+			  $dest = "[]:$dest";
+		      }
 		  } else {
-		      $dest = join( '', $z, '::', $dest ) unless $dest =~ /^[^\d].*:/;
+		      if ( $family == F_IPV4 ) {
+			  $dest = join( '', $z, '::', $dest )   unless $dest =~ /^[^\d].*:/;
+		      } else {
+			  $dest = join( '', $z, ':[]:', $dest ) unless $dest =~ /^[^\d].*:/;
+		      }
 		  }
 	      } ,
 

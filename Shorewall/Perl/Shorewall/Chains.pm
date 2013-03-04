@@ -4158,9 +4158,12 @@ sub do_proto( $$$;$ )
 	    {
 		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
 		    my $multiport = 0;
+		    my $srcndst   = 0;
 
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
+			$sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
+
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT',1 );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
@@ -4174,18 +4177,19 @@ sub do_proto( $$$;$ )
 			    }
 
 			    $ports = validate_port_list $pname , $ports;
-			    $output .= "-m multiport ${invert}--dports ${ports} ";
+			    $output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "-m multiport ${invert}--dports ${ports} " );
 			    $multiport = 1;
 			}  else {
 			    fatal_error "Missing DEST PORT" unless supplied $ports;
 			    $ports   = validate_portpair $pname , $ports;
-			    $output .= "${invert}--dport ${ports} ";
+			    $output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "${invert}--dport ${ports} " );
 			}
 		    } else {
 			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
 		    }
 
 		    if ( $sports ne '' ) {
+			fatal_error "'=' in the SOURCE PORT(S) column requires one or more ports in the DEST PORT(S) column" if $sports eq '=';
 			$invert = $sports =~ s/^!// ? '! ' : '';
 			if ( $multiport ) {
 
@@ -4348,9 +4352,12 @@ sub do_iproto( $$$ )
 	    {
 		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
 		    my $multiport = 0;
+		    my $srcndst   = 0;
 
 		    if ( $ports ne '' ) {
-			$invert = $ports =~ s/^!// ? '! ' : '';
+			$invert  = $ports =~ s/^!// ? '! ' : '';
+			$sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
+
 			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' , 1 );
 			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
@@ -4364,18 +4371,24 @@ sub do_iproto( $$$ )
 			    }
 
 			    $ports = validate_port_list $pname , $ports;
-			    push @output, multiport => "${invert}--dports ${ports}";
+			    push @output, multiport => ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "-m multiport ${invert}--dports ${ports} " );
 			    $multiport = 1;
 			}  else {
 			    fatal_error "Missing DEST PORT" unless supplied $ports;
 			    $ports   = validate_portpair $pname , $ports;
-			    push @output, dport => "${invert}${ports}";
+
+			    if ( $srcndst ) {
+				push @output, multiport => "${invert}--ports ${ports}";
+			    } else {
+				push @output, dport => "${invert}${ports}";
+			    }
 			}
 		    } else {
 			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
 		    }
 
 		    if ( $sports ne '' ) {
+			fatal_error "'=' in the SOURCE PORT(S) column requires one or more ports in the DEST PORT(S) column" if $sports eq '=';
 			$invert = $sports =~ s/^!// ? '! ' : '';
 			if ( $multiport ) {
 
@@ -4447,7 +4460,6 @@ sub do_iproto( $$$ )
 		    fatal_error 'SOURCE PORT(S) not permitted with IPv6-ICMP' if $sports ne '';
 
 		    last PROTO; }
-
 
 		fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO $pname" if $ports ne '' || $sports ne '';
 

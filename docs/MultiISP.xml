@@ -279,9 +279,10 @@
           <listitem>
             <para>Gives the name or number of a routing table to duplicate.
             May be 'main' or the name or number of a previously declared
-            provider. For most applications, you want to specify 'main' here.
-            This field should be be specified as '-' when USE_DEFAULT_RT=Yes
-            in <filename>shorewall.conf</filename></para>
+            provider. This field should be be specified as '-' when
+            USE_DEFAULT_RT=Yes in <filename>shorewall.conf. When
+            USE_DEFAULT_RT=No (not recommended), this column is normally
+            specified as <option>main</option>.</filename></para>
           </listitem>
         </varlistentry>
 
@@ -563,16 +564,12 @@
           <term>COPY</term>
 
           <listitem>
-            <para>A comma-separated list of interface names. Wildcards
-            specified using an asterisk ("*") are permitted (e.g., tun*
-            ).</para>
-
-            <para>When you specify an existing table in the DUPLICATE column,
-            Shorewall copies all routes through the interface specified in the
-            INTERFACE column plus the interfaces listed in this column.
-            Normally, you will list all interfaces on your firewall in this
-            column except those Internet interfaces specified in the INTERFACE
-            column of entries in this file.</para>
+            <para>A comma-separated list of other interfaces on your firewall.
+            Wildcards specified using an asterisk ("*") are permitted (e.g.,
+            tun* ). Usually used only when DUPLICATE is <option>main</option>.
+            Only copy routes through INTERFACE and through interfaces listed
+            here. If you only wish to copy routes through INTERFACE, enter
+            <option>none</option> in this column.</para>
 
             <note>
               <para>Beginning with Shorewall 4.4.15, provider routing tables

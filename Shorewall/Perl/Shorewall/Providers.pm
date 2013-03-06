@@ -269,6 +269,9 @@ sub copy_and_edit_table( $$$$ ) {
     }
 
     emit (  '                    ;;',
+            '                *)',
+	    "                    [ \$net = blackhole ] && run_ip route add table $number \$net \$route $realm",
+	    '                    ;;',
 	    '            esac',
 	    '            ;;',
 	    '    esac',

@@ -1104,7 +1104,11 @@ sub add_a_route( ) {
     fatal_error 'DEST must be specified' if $dest eq '-';
     $dest = validate_net ( $dest, 0 );
 
-    validate_address ( $gateway, 1 ) if $gateway ne '-';
+    if ( $gateway eq 'blackhole' ) {
+	fatal_error q('blackhole' routes may not specify a DEVICE) unless $device eq '-';
+    } else {
+	validate_address ( $gateway, 1 ) if $gateway ne '-';
+    }
 
     my $providerref = $providers{$provider};
     my $number = $providerref->{number};
@@ -1117,6 +1121,9 @@ sub add_a_route( ) {
 	if ( $device ne '-' ) {
 	    push @$routes, qq(run_ip route add $dest via $gateway dev $physical table $number);
 	    emit qq(echo "qt \$IP -$family route del $dest via $gateway dev $physical table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
+	} elsif ( $gateway eq 'blackhole' ) {
+	    push @$routes, qq(run_ip route add blackhole $dest table $number);
+	    emit qq(echo "\$IP -$family route del blackhole $dest table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
 	    push @$routes, qq(run_ip route add $dest via $gateway table $number);
 	    emit qq(echo "\$IP -$family route del $dest via $gateway table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;

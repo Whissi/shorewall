@@ -53,6 +53,9 @@
         <listitem>
           <para>If specified, gives the IP address of the gateway to the
           DEST.</para>
+
+          <para>Beginning with Shorewall 4.5.15, you may specify blackhole in
+          this column to create a <option>blackhole</option> route. </para>
         </listitem>
       </varlistentry>
 
@@ -62,8 +65,9 @@
         <listitem>
           <para>Specifies the device route. If neither DEVICE nor GATEWAY is
           given, then the INTERFACE specified for the PROVIDER in <ulink
-          url="shorewall-providers.html">shorewall-providers</ulink>
-          (5).</para>
+          url="shorewall-providers.html">shorewall-providers</ulink> (5). This
+          column must be omitted if <option>blackhole</option> is specified in
+          the GATEWAY column.</para>
         </listitem>
       </varlistentry>
     </variablelist>

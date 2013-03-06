@@ -867,7 +867,6 @@ CEOF
 
 	emit "fi\n";
     } else {
-	emit( qq(echo 0 > \${VARDIR}/${physical}.status) );
 	emit( qq(progress_message "Provider $table ($number) Started") );
     }
 

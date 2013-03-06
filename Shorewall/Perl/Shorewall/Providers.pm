@@ -221,10 +221,21 @@ sub copy_and_edit_table( $$$$ ) {
     my ( $duplicate, $number, $copy, $realm) = @_;
 
     my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
+    my %copied;
+    my @copy;
+    #
+    # Remove duplicates
+    #
+    for ( split ',', $copy ) {
+	unless ( $copied{$_} ) {
+	    push @copy, $_;
+	    $copied{$_} = 1;
+	}
+    }
     #
     # Map physical names in $copy to logical names
     #
-    $copy = join( '|' , map( physical_name($_) , split( ',' , $copy ) ) );
+    $copy = join( '|' , map( physical_name($_) , @copy ) );
     #
     # Shell and iptables use a different wildcard character
     #

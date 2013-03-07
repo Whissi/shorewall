@@ -252,6 +252,9 @@ sub copy_and_edit_table( $$$$ ) {
     emit (  '    case $net in',
 	    '        default)',
 	    '            ;;',
+	    '        blackhole)',
+	    "            run_ip route add table $number blackhole \$route $realm",
+	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',
 	    "                $copy)" );
@@ -269,9 +272,6 @@ sub copy_and_edit_table( $$$$ ) {
     }
 
     emit (  '                    ;;',
-            '                *)',
-	    "                    [ \$net = blackhole ] && run_ip route add table $number \$net \$route $realm",
-	    '                    ;;',
 	    '            esac',
 	    '            ;;',
 	    '    esac',

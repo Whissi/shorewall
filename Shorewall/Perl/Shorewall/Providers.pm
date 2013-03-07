@@ -228,6 +228,7 @@ sub copy_and_edit_table( $$$$ ) {
     #
     for ( split ',', $copy ) {
 	unless ( $copied{$_} ) {
+	    fatal_error "Unknown interface ($_)" unless known_interface($_);
 	    push @copy, $_;
 	    $copied{$_} = 1;
 	}

@@ -1045,6 +1045,13 @@
           port is acceptable. Specified as a comma- separated list of port
           names, port numbers or port ranges.</para>
 
+          <para>Beginning with Shorewall 4.5.15, you may place '=' in this
+          column, provided that the DEST PORT(S) column is non-empty. This
+          causes the rule to match when either the source port or the
+          destination port in a packet matches one of the ports specified in
+          DEST PORTS(S). Use of '=' requires multiport match in your iptables
+          and kernel.</para>
+
           <warning>
             <para>Unless you really understand IP, you should leave this
             column empty or place a dash (<emphasis role="bold">-</emphasis>)
@@ -1052,20 +1059,18 @@
             wrong.</para>
           </warning>
 
-          <blockquote>
-            <para>If you don't want to restrict client ports but need to
-            specify an <emphasis role="bold">ORIGINAL DEST</emphasis> in the
-            next column, then place "-" in this column.</para>
+          <para>If you don't want to restrict client ports but need to specify
+          an <emphasis role="bold">ORIGINAL DEST</emphasis> in the next
+          column, then place "-" in this column.</para>
 
-            <para>If your kernel contains multi-port match support, then only
-            a single Netfilter rule will be generated if in this list and the
-            <emphasis role="bold">DEST PORT(S)</emphasis> list above:</para>
+          <para>If your kernel contains multi-port match support, then only a
+          single Netfilter rule will be generated if in this list and the
+          <emphasis role="bold">DEST PORT(S)</emphasis> list above:</para>
 
-            <para>1. There are 15 or less ports listed.</para>
+          <para>1. There are 15 or less ports listed.</para>
 
-            <para>2. No port ranges are included or your kernel and iptables
-            contain extended multiport match support.</para>
-          </blockquote>
+          <para>2. No port ranges are included or your kernel and iptables
+          contain extended multiport match support.</para>
         </listitem>
       </varlistentry>
 

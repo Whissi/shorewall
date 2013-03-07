@@ -809,6 +809,13 @@ Normal-Service       =&gt; 0x00</programlisting>
           <para>An entry in this field requires that the PROTO column specify
           tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if any of
           the following fields is supplied.</para>
+
+          <para>Beginning with Shorewall 4.5.15, you may place '=' in this
+          column, provided that the DEST PORT(S) column is non-empty. This
+          causes the rule to match when either the source port or the
+          destination port in a packet matches one of the ports specified in
+          DEST PORTS(S). Use of '=' requires multiport match in your iptables
+          and kernel.</para>
         </listitem>
       </varlistentry>
 

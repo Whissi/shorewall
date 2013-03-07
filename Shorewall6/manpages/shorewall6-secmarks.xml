@@ -269,6 +269,13 @@
           <para>Optional source port(s). If omitted, any source port is
           acceptable. Specified as a comma-separated list of port names, port
           numbers or port ranges.</para>
+
+          <para>Beginning with Shorewall 4.5.15, you may place '=' in this
+          column, provided that the DEST PORT(S) column is non-empty. This
+          causes the rule to match when either the source port or the
+          destination port in a packet matches one of the ports specified in
+          DEST PORTS(S). Use of '=' requires multiport match in your iptables
+          and kernel.</para>
         </listitem>
       </varlistentry>
 

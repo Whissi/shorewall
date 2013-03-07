@@ -252,6 +252,9 @@ sub copy_and_edit_table( $$$$ ) {
     emit (  '    case $net in',
 	    '        default)',
 	    '            ;;',
+	    '        blackhole)',
+	    "            run_ip route add table $number blackhole \$route $realm",
+	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',
 	    "                $copy)" );
@@ -269,9 +272,6 @@ sub copy_and_edit_table( $$$$ ) {
     }
 
     emit (  '                    ;;',
-            '                *)',
-	    "                    [ \$net = blackhole ] && run_ip route add table $number \$net \$route $realm",
-	    '                    ;;',
 	    '            esac',
 	    '            ;;',
 	    '    esac',
@@ -1456,6 +1456,8 @@ sub setup_providers() {
 
 	start_providers;
 
+	setup_null_routing if $config{NULL_ROUTE_RFC1918};
+
 	emit '';
 
 	emit "start_$providers{$_}->{what}_$_" for @providers;
@@ -1464,7 +1466,6 @@ sub setup_providers() {
 
 	finish_providers;
 
-	setup_null_routing if $config{NULL_ROUTE_RFC1918};
 	emit "\nrun_ip route flush cache";
 
 	pop_indent;

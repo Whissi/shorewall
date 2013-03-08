@@ -4376,7 +4376,7 @@ sub do_iproto( $$$ )
 			    }
 
 			    $ports = validate_port_list $pname , $ports;
-			    push @output, multiport => ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "-m multiport ${invert}--dports ${ports} " );
+			    push @output, multiport => ( $srcndst ? "${invert}--ports ${ports} " : "${invert}--dports ${ports} " );
 			    $multiport = 1;
 			}  else {
 			    fatal_error "Missing DEST PORT" unless supplied $ports;

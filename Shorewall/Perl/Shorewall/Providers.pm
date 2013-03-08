@@ -1116,23 +1116,19 @@ sub add_a_route( ) {
     my $physical = $device eq '-' ? $providers{$provider}{physical} : physical_name( $device );
     my $routes = $providerref->{routes};
 
-    fatal_error "You may not add routes to the $provider table" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
+    fatal_error "You may not add routes to the $provider table" if $number == UNSPEC_TABLE || $number >= DEFAULT_TABLE;
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
 	    push @$routes, qq(run_ip route add $dest via $gateway dev $physical table $number);
-	    emit qq(echo "qt \$IP -$family route del $dest via $gateway dev $physical table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} elsif ( $gateway eq 'blackhole' ) {
 	    push @$routes, qq(run_ip route add blackhole $dest table $number);
-	    emit qq(echo "\$IP -$family route del blackhole $dest table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
 	    push @$routes, qq(run_ip route add $dest via $gateway table $number);
-	    emit qq(echo "\$IP -$family route del $dest via $gateway table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	}
     } else {
 	fatal_error "You must specify a device for this route" unless $physical;
 	push @$routes, qq(run_ip route add $dest dev $physical table $number);
-	emit qq(echo "\$IP -$family route del $dest dev $physical table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
     }
 
     progress_message "   Route \"$currentline\" $done";

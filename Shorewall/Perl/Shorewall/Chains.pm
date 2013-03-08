@@ -1247,6 +1247,11 @@ sub add_rule($$;$) {
 	    # Rule has a --sports specification
 	    #
 	    handle_port_list( $chainref, $rule, 0, $1, $2, $3 )
+	} elsif ( $rule =~  /^(.* --ports\s+)([^ ]+)(.*)$/ ) {
+	    #
+	    # Rule has a --ports specification
+	    #
+	    handle_port_list( $chainref, $rule, 0, $1, $2, $3 )
 	} elsif ( $rule =~ /^(.* --icmp(?:v6)?-type\s*)([^ ]+)(.*)$/ ) {
 	    #
 	    # ICMP rule -- split it up if necessary

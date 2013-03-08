@@ -512,6 +512,8 @@ sub process_a_provider( $ ) {
 	$maxload += $load;
     }
 
+    fatal_error "A provider interface must have at least one associated zone" unless $tproxy || %{interface_zones($interface)};
+
     if ( $local ) {
 	fatal_error "GATEWAY not valid with 'local' provider"  unless $gatewaycase eq 'none';
 	fatal_error "'track' not valid with 'local'"           if $track;

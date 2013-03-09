@@ -29,7 +29,7 @@ use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::IPAddrs;
 use Shorewall::Zones;
 use Shorewall::Chains qw(:DEFAULT :internal);
-use Shorewall::Providers qw( lookup_provider );
+use Shorewall::Providers qw( provider_realm );
 
 use strict;
 
@@ -144,7 +144,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 	    fatal_error "Missing Provider ($fullinterface)" unless supplied $provider;
 
 	    $fullinterface =~ s/[(]\w*[)]//;
-	    my $realm = lookup_provider( $provider );
+	    my $realm = provider_realm( $provider );
 
 	    fatal_error "$provider is not a shared-interface provider" unless $realm;
 

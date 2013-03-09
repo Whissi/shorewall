@@ -43,7 +43,7 @@ our @EXPORT = qw( process_providers
 		  setup_load_distribution
 		  have_providers
 	       );
-our @EXPORT_OK = qw( initialize lookup_provider );
+our @EXPORT_OK = qw( initialize provider_realm );
 our $VERSION = '4.4_24';
 
 use constant { LOCAL_TABLE   => 255,
@@ -378,6 +378,26 @@ sub start_provider( $$$$ ) {
 }
 
 #
+# Look up a provider and return it's number. If unknown provider, 0 is returned
+#
+sub lookup_provider( $ ) {
+    my $provider    = $_[0];
+    my $providerref = $providers{ $provider };
+
+    unless ( $providerref ) {
+	my $provider_number = numeric_value $provider;
+
+	if ( defined $provider_number ) {
+	    for ( values %providers ) {
+		$providerref = $_, last if $_->{number} == $provider_number;
+	    }
+	}
+    }
+
+    $providerref ? $providerref->{number} : 0;
+}
+
+#
 # Process a record in the providers file
 #
 sub process_a_provider( $ ) {
@@ -572,6 +592,8 @@ sub process_a_provider( $ ) {
 
     if ( $duplicate ne '-' ) {
 	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
+	my $p = lookup_provider( $duplicate );
+	warning_message "Unknown routing table ($duplicate)" unless $p && ( $p == MAIN_TABLE || $p < BALANCE_TABLE );
     } elsif ( $copy ne '-' ) {
 	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' unless $copy eq 'none';
@@ -1717,7 +1739,11 @@ sub compile_updown() {
 	);
 }
 
-sub lookup_provider( $ ) {
+#
+# Lookup the passed provider. Raise a fatal error if provider is unknown. 
+# Return the provider's realm if it is a shared provider; otherwise, return zero
+#
+sub provider_realm( $ ) {
     my $provider    = $_[0];
     my $providerref = $providers{ $provider };
 

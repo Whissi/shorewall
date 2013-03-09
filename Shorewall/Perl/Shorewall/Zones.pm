@@ -1402,6 +1402,7 @@ sub known_interface($)
 						   number   => $interfaceref->{number} ,
 						   physical => $physical ,
 						   base     => var_base( $physical ) ,
+						   zones    => $interfaceref->{zones} ,
 						 };
 	    }
 	}
@@ -1496,9 +1497,10 @@ sub source_port_to_bridge( $ ) {
 # Returns a hash reference for the zones interface through the interface
 #
 sub interface_zones( $ ) {
-    my $interfaceref = $interfaces{(shift)};
+    my $interfaceref = known_interface( $_[0] );
 
-    $interfaceref->{zones};
+    fatal_error "Unknown interface(@_)" unless $interfaceref;
+    $interfaceref->{zones} || {};
 }
 
 #

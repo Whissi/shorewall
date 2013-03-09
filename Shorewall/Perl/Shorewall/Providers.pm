@@ -572,7 +572,7 @@ sub process_a_provider( $ ) {
 	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
     } elsif ( $copy ne '-' ) {
 	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
-	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column';
+	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' unless $copy eq 'none';
     }
 
     $providers{$table} = { provider    => $table,

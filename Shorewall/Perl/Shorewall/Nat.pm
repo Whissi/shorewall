@@ -641,6 +641,10 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 	$server = $1;      # May be empty
 	$serverport = $2;  # Not Empty due to RE
 
+	my ( $p ) = split( ':', $proto ); # Might be "tcp:syn"
+
+	fatal_error "Port-redirection is not supported for UDPLITE" if resolve_proto( $p ) == UDPLITE; 
+
 	$origdstports = validate_port( $proto, $ports )	if $ports && $ports ne '-' && port_count( $ports ) == 1;
 
 	if ( $serverport =~ /^(\d+)-(\d+)$/ ) {

@@ -2217,7 +2217,7 @@ determine_capabilities() {
 
     resolve_arptables
 
-    if [ -n "$arptables" -a -x $arptables ]; then
+    if [ -n "$arptables" -a -x "$arptables" ]; then
 	qt $arptables -L OUT && ARPTABLESJF=Yes
     fi
 

@@ -359,6 +359,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CHECKSUM_TARGET => 'Checksum Target',
 		 ARPTABLESJF     => 'Arptables JF',
 		 MASQUERADE_TGT  => 'MASQUERADE Target',
+		 UDPLITEREDIRECT => 'UDPLITE Port Redirection',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -906,6 +907,7 @@ sub initialize( $;$$) {
 	       CHECKSUM_TARGET => undef,
 	       ARPTABLESJF => undef,
 	       MASQUERADE_TGT => undef,
+	       UDPLITEREDIRECT => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -3582,6 +3584,22 @@ sub Masquerade_Tgt() {
     $result;
 }
 
+sub Udpliteredirect() {
+    have_capability( 'NAT_ENABLED' ) || return '';
+
+    my $result = '';
+    my $address = $family == F_IPV4 ? '1.2.3.4' : '2001::1';
+
+    if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
+	$result = qt1( "$iptables -t nat -A $sillyname -p udplite -m multiport --dports 33 -j REDIRECT --to-port 22" );
+	qt1( "$iptables -t nat -F $sillyname" );
+	qt1( "$iptables -t nat -X $sillyname" );
+
+    }
+
+    $result;
+}
+
 sub Mangle_Enabled() {
     if ( qt1( "$iptables -t mangle -L -n" ) ) {
 	system( "$iptables -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
@@ -4134,6 +4152,7 @@ our %detect_capability =
       TFTP0_HELPER => \&TFTP0_Helper,
       TIME_MATCH => \&Time_Match,
       TPROXY_TARGET => \&Tproxy_Target,
+      UDPLITEREDIRECT => \&Udpliteredirect,
       USEPKTTYPE => \&Usepkttype,
       XCONNMARK_MATCH => \&Xconnmark_Match,
       XCONNMARK => \&Xconnmark,
@@ -4273,6 +4292,8 @@ sub determine_capabilities() {
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
 	$capabilities{CHECKSUM_TARGET} = detect_capability( 'CHECKSUM_TARGET' );
+	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
+	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	
 	if ( have_capability 'CT_TARGET' ) {
 	    $capabilities{$_} = detect_capability $_ for ( values( %helpers_map ) );

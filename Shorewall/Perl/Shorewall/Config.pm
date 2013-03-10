@@ -286,6 +286,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MANGLE_ENABLED  => 'Packet Mangling',
 		 MULTIPORT       => 'Multi-port Match' ,
 		 XMULTIPORT      => 'Extended Multi-port Match',
+		 EMULTIPORT      => 'Enhanced Multi-port Match',
 		 CONNTRACK_MATCH => 'Connection Tracking Match',
 		 OLD_CONNTRACK_MATCH =>
 		                    'Old conntrack match syntax',
@@ -358,6 +359,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CHECKSUM_TARGET => 'Checksum Target',
 		 ARPTABLESJF     => 'Arptables JF',
 		 MASQUERADE_TGT  => 'MASQUERADE Target',
+
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -835,6 +837,7 @@ sub initialize( $;$$) {
 	       MANGLE_ENABLED => undef,
 	       MULTIPORT => undef,
 	       XMULTIPORT => undef,
+	       EMULTIPORT => undef,
 	       CONNTRACK_MATCH => undef,
 	       NEW_CONNTRACK_MATCH => undef,
 	       OLD_CONNTRACK_MATCH => undef,
@@ -3629,6 +3632,10 @@ sub Xmultiport() {
     qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
 }
 
+sub Emultiport() {
+    qt1( "$iptables -A $sillyname -p sctp -m multiport --dports 21,22 -j ACCEPT" );
+}
+
 sub Policy_Match() {
     qt1( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
 }
@@ -4062,6 +4069,7 @@ our %detect_capability =
       DSCP_MATCH => \&Dscp_Match,
       DSCP_TARGET => \&Dscp_Target,
       ENHANCED_REJECT => \&Enhanced_Reject,
+      EMULTIPORT => \&Emultiport,
       EXMARK => \&Exmark,
       FLOW_FILTER => \&Flow_Filter,
       FTP_HELPER => \&FTP_Helper,
@@ -4200,6 +4208,7 @@ sub determine_capabilities() {
 
 	$capabilities{ MULTIPORT } = detect_capability( 'MULTIPORT' );
 	$capabilities{XMULTIPORT}   = detect_capability( 'XMULTIPORT' );
+	$capabilities{EMULTIPORT}   = detect_capability( 'EMULTIPORT' );
 	$capabilities{POLICY_MATCH} = detect_capability( 'POLICY_MATCH' );
 
 	if ( $capabilities{PHYSDEV_MATCH} = detect_capability( 'PHYSDEV_MATCH' ) ) {

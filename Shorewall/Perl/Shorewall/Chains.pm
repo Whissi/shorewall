@@ -4162,16 +4162,15 @@ sub do_proto( $$$;$ )
 	  PROTO:
 	    {
 		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
-		    my $multiport = 0;
+		    my $multiport = ( $proto == UDPLITE );
 		    my $srcndst   = 0;
 
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
 			$sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
 
-			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
+			if ( $multiport || $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT',1 );
-			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 
 			    if ( port_count ( $ports ) > 15 ) {
 				if ( $restricted ) {
@@ -4190,7 +4189,11 @@ sub do_proto( $$$;$ )
 			    $output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "${invert}--dport ${ports} " );
 			}
 		    } else {
-			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
+			$multiport ||= ( $sports =~ tr/,/,/ ) > 0 ;;
+		    }
+
+		    if ( $multiport && $proto != TCP && $proto != UDP ) {
+			require_capability( 'EMULTIPORT', 'Protocol ' . ( $pname || $proto ), 's' );
 		    }
 
 		    if ( $sports ne '' ) {
@@ -4356,16 +4359,15 @@ sub do_iproto( $$$ )
 	  PROTO:
 	    {
 		if ( $proto == TCP || $proto == UDP || $proto == SCTP || $proto == DCCP || $proto == UDPLITE ) {
-		    my $multiport = 0;
+		    my $multiport = ( $proto == UDPLITE );
 		    my $srcndst   = 0;
 
 		    if ( $ports ne '' ) {
 			$invert  = $ports =~ s/^!// ? '! ' : '';
 			$sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
 
-			if ( $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 || $proto == UDPLITE ) {
+			if ( $multiport || $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
 			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' , 1 );
-			    fatal_error "Multiple ports not supported with SCTP" if $proto == SCTP;
 
 			    if ( port_count ( $ports ) > 15 ) {
 				if ( $restricted ) {
@@ -4389,7 +4391,7 @@ sub do_iproto( $$$ )
 			    }
 			}
 		    } else {
-			$multiport = ( ( $sports =~ tr/,/,/ ) > 0 || $proto == UDPLITE );
+			$multiport ||= ( ( $sports =~ tr/,/,/ ) > 0 );
 		    }
 
 		    if ( $sports ne '' ) {

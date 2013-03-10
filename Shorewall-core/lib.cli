@@ -2134,6 +2134,7 @@ determine_capabilities() {
     OLD_CONNTRACK_MATCH=
     MULTIPORT=
     XMULTIPORT=
+    EMULTIPORT=
     POLICY_MATCH=
     PHYSDEV_MATCH=
     PHYSDEV_BRIDGE=
@@ -2278,7 +2279,8 @@ determine_capabilities() {
 	qt $g_tool -A $chain -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT && KLUDEFREE=Yes
     fi
 
-    qt $g_tool -A $chain -p tcp -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $g_tool -A $chain -p tcp  -m multiport --dports 21:22 -j ACCEPT           && XMULTIPORT=Yes
+    qt $g_tool -A $chain -p sctp -m multiport --dports 21,22 -j ACCEPT           && EMULTIPORT=Yes
     qt $g_tool -A $chain -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT && POLICY_MATCH=Yes
 
     if qt $g_tool -A $chain -m physdev --physdev-out eth0 -j ACCEPT; then
@@ -2535,7 +2537,8 @@ report_capabilities_unsorted() {
     report_capability "NAT (NAT_ENABLED)" $NAT_ENABLED
     report_capability "Packet Mangling (MANGLE_ENABLED)" $MANGLE_ENABLED
     report_capability "Multi-port Match (MULTIPORT)" $MULTIPORT
-    [ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match (XMULIPORT)" $XMULTIPORT
+    [ -n "$MULTIPORT" ]  && report_capability "Extended Multi-port Match (XMULIPORT)" $XMULTIPORT
+    [ -n "$EMULTIPORT" ] && report_capability "Enhanced Multi-port Match (EMULIPORT)" $EMULTIPORT
     report_capability "Connection Tracking Match (CONNTRACK_MATCH)" $CONNTRACK_MATCH
     if [ -n "$CONNTRACK_MATCH" ]; then
 	report_capability "Extended Connection Tracking Match Support (NEW_CONNTRACK_MATCH)" $NEW_CONNTRACK_MATCH
@@ -2656,6 +2659,7 @@ report_capabilities_unsorted1() {
     report_capability1 MANGLE_ENABLED
     report_capability1 MULTIPORT
     report_capability1 XMULTIPORT
+    report_capability1 EMULTIPORT
     report_capability1 CONNTRACK_MATCH
     report_capability1 NEW_CONNTRACK_MATCH
     report_capability1 OLD_CONNTRACK_MATCH

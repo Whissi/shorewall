@@ -102,9 +102,6 @@ require()
 
 cd "$(dirname $0)"
 
-#
-# Load packager's settings if any
-#
 if [ -f shorewall ]; then
     PRODUCT=shorewall
     Product=Shorewall

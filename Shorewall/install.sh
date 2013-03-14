@@ -102,9 +102,6 @@ require()
 
 cd "$(dirname $0)"
 
-#
-# Load packager's settings if any
-#
 if [ -f shorewall ]; then
     PRODUCT=shorewall
     Product=Shorewall
@@ -743,10 +740,6 @@ if [ -f findgw ]; then
 fi
 
 #
-# Delete the Routes file
-#
-delete_file ${DESTDIR}${CONFDIR}/$PRODUCT/routes
-#
 # Delete the tcstart file
 #
 
@@ -987,6 +980,17 @@ run_install $OWNERSHIP -m 0644 actions.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/actions ]; then
     run_install $OWNERSHIP -m 0644 actions${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/actions
     echo "Actions file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/actions"
+fi
+
+#
+# Install the Routes file
+#
+run_install $OWNERSHIP -m 0644 routes           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 routes.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/routes ]; then
+    run_install $OWNERSHIP -m 0644 routes${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/routes
+    echo "Routes file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/routes"
 fi
 
 cd ..

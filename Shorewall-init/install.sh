@@ -394,11 +394,23 @@ case $HOST in
 	fi
 	;;
     redhat)
-	if [ -f ${DESTDIR}${SBINDIR}/ifup-local -o -f ${DESTDIR}${SBINDIR}/ifdown-local ]; then
-	    echo "WARNING: ${SBINDIR}/ifup-local and/or ${SBINDIR}/ifdown-local already exist; up/down events will not be handled"
-	elif [ -z "$DESTDIR" ]; then
-	    install_file ifupdown ${DESTDIR}${SBINDIR}/ifup-local 0544
-	    install_file ifupdown ${DESTDIR}${SBINDIR}/ifdown-local 0544
+	if [ -z "$DESTDIR" ]; then
+	    install_local=
+
+	    if [ -f ${SBINDIR}/ifup-local -o -f ${SBINDIR}/ifdown-local ]; then
+		if ! fgrep -q Shorewall-based ${SBINDIR}/ifup-local || ! fgrep -q Shorewall-based ${SBINDIR}/ifdown-local; then
+		    echo "WARNING: ${SBINDIR}/ifup-local and/or ${SBINDIR}/ifdown-local already exist; up/down events will not be handled"
+		else
+		    install_local=Yes
+		fi
+	    else
+		install_local=Yes
+	    fi
+
+	    if [ -n "$install_local" ]; then
+		install_file ifupdown ${DESTDIR}${SBINDIR}/ifup-local 0544
+		install_file ifupdown ${DESTDIR}${SBINDIR}/ifdown-local 0544
+	    fi
 	fi
 	;;
 esac

@@ -342,6 +342,7 @@ if [ $HOST = debian ]; then
 	fi
 
 	install_file sysconfig ${DESTDIR}/etc/default/shorewall-init 0644
+	IFUPDOWN=ifupdown.debian.sh
     fi
 else
     if [ -n "$DESTDIR" ]; then
@@ -359,14 +360,16 @@ else
 
     if [ -d ${DESTDIR}${SYSCONFDIR} -a ! -f ${DESTDIR}${SYSCONFDIR}/shorewall-init ]; then
 	install_file sysconfig ${DESTDIR}${SYSCONFDIR}/shorewall-init 0644
-    fi 
+    fi
+
+    [ $HOST = suse ] && IFUPDOWN=ifupdown.suse.sh || IFUPDOWN=ifupdown.fedora.sh
 fi
 
 #
 # Install the ifupdown script
 #
 
-cp ifupdown.sh ifupdown
+cp $IFUPDOWN ifupdown
 
 [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
 

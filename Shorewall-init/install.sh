@@ -342,8 +342,9 @@ if [ $HOST = debian ]; then
 	fi
 
 	install_file sysconfig ${DESTDIR}/etc/default/shorewall-init 0644
-	IFUPDOWN=ifupdown.debian.sh
     fi
+
+    IFUPDOWN=ifupdown.debian.sh
 else
     if [ -n "$DESTDIR" ]; then
 	mkdir -p ${DESTDIR}${SYSCONFDIR}

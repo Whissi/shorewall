@@ -1160,6 +1160,20 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
           <listitem>
             <para>If specified, gives the IP address of the gateway to the
             DEST.</para>
+
+            <para>Beginning with Shorewall 4.5.14, you may specify
+            <option>blackhole</option> in this column to create a
+            <firstterm>blackhole</firstterm> route. When
+            <option>blackhole</option> is specified, the DEVICE column must be
+            empty.</para>
+
+            <para>Beginning with Shorewall 4.5.15, you may specify
+            <option>prohibit</option> or <option>unreachable</option> to
+            create a <firstterm>prohibit</firstterm> or
+            <firstterm>unreachable</firstterm> route respectively. Again, the
+            DEVICE column must be empty.</para>
+
+            <para>See the next section for additional information.</para>
           </listitem>
         </varlistentry>
 
@@ -1189,6 +1203,334 @@ Comcast      1     -    xxx             eth2            ....     </programlistin
 Comcast       172.20.1.0/24    -               eth0          | ip -4 route add 172.20.1.0/24 dev eth0 table 1
 Comcast       192.168.4.0/24   172.20.1.1                    | ip -4 route add 192.168.1.0/24 via 172.20.1.1 table 1
 Comcast       192.168.4.0/24                                 | ip -4 route add 192.168.4.0/24 dev eth2 table 1 </programlisting>
+    </section>
+
+    <section id="null_routing">
+      <title>Null Routing</title>
+
+      <para>Null routing is a type of routing which discards a given packet
+      instead of directing it through a specific predefined route. Generally
+      speaking there are 3 different types of Null routing as indicated
+      below:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Unreachable routes</para>
+
+          <para>When used, a request for a routing decision returns a
+          destination with an unreachable route type, an ICMP unreachable is
+          generated (icmp code 3) and returned to the source address.</para>
+
+          <para>Example:</para>
+
+          <programlisting>ip route add unreachable 10.22.0.12
+ip route add unreachable 192.168.14.0/26
+ip route add unreachable 82.32.0.0/12
+</programlisting>
+
+          <para>Unreachable routes are usually indicated by a dash ("-") in
+          the "Iface" column when "route -n" is executed:</para>
+
+          <programlisting>~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+10.22.0.12      -               255.255.255.255 !H    0      -        0 -
+192.168.14.0    -               255.255.255.192 !     0      -        0 -
+82.32.0.0       -               255.240.0.0     !     0      -        0 -
+</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Prohibit routes</para>
+
+          <para>Similar to "unreachable" routes above, when a request for a
+          routing decision returns a destination with a prohibit route type,
+          the kernel generates an ICMP prohibited to return to the source
+          address.</para>
+
+          <para>Example:</para>
+
+          <programlisting>ip route add prohibit 10.22.0.12
+ip route add prohibit 192.168.14.0/26
+ip route add prohibit 82.32.0.0/12</programlisting>
+
+          <para>"Prohibit" type routes are also indicated by a dash in the
+          "Iface" column as indicated above.</para>
+        </listitem>
+
+        <listitem>
+          <para>Blackhole routes</para>
+
+          <para>The difference between this type of routing and the previous
+          two listed above is that a packet matching a route with the route
+          type blackhole is discarded. No ICMP is sent and no packet is
+          forwarded.</para>
+
+          <para>Example:</para>
+
+          <programlisting>ip route add blackhole 10.22.0.12
+ip route add blackhole 192.168.14.0/26
+ip route add blackhole 82.32.0.0/12</programlisting>
+
+          <para>Blackhole routes are usually indicated with a start ("*") in
+          the "Iface" column:</para>
+
+          <programlisting>~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+10.22.0.12      0.0.0.0         255.255.255.255 UH    0      0        0 *
+192.168.14.0    0.0.0.0         255.255.255.192 U     0      0        0 *
+82.32.0.0       0.0.0.0         255.240.0.0     U     0      0        0 *</programlisting>
+        </listitem>
+      </orderedlist>
+
+      <section>
+        <title>Null Routing Implementation in Shorewall</title>
+
+        <para>As of Shorewall 4.5.14, the only type of null routing
+        implemented in Shorewall is "blackhole" routing. This can be specified
+        in two different ways as described below. </para>
+
+        <orderedlist>
+          <listitem>
+            <para>Null Routing with NULL_ROUTE_RFC1918 shorewall.conf
+            configuration option.</para>
+
+            <para>When NULL_ROUTE_RFC1918 is set to Yes, it causes Shorewall
+            to null-route the IPv4 address ranges reserved by RFC1918 (private
+            networks).</para>
+
+            <para>When combined with route filtering (ROUTE_FILTER=Yes or
+            routefilter in shorewall-interfaces(5)), this option ensures that
+            packets with an RFC1918 source address are only accepted from
+            interfaces having known routes to networks using such
+            addresses.</para>
+
+            <para>When this option is used, the blackhole routes for all
+            RFC1918 subnets are defined for the "main" routing table only.
+            These, however, can be copied over to different routing tables or
+            further customised and fine-tuned to suit individual needs by
+            using the "routes" file (see below).</para>
+
+            <para>For example, by specifying NULL_ROUTE_RFC1918=Yes in
+            shorewall.conf, Shorewall generates 3 different route statements
+            to be executed at Shorewall startup: </para>
+
+            <programlisting>ip route replace blackhole 10.0.0.0/8
+ip route replace blackhole 172.16.0.0/12
+ip replace blackhole 192.168.0.0/16
+</programlisting>
+
+            <important>
+              <para>When NULL_ROUTE_RFC1918=Yes is used, Shorewall creates a
+              shell script file in ${VARDIR}/undo_rfc1918_routing to undo the
+              null routing, if needed (see below as to some instances when
+              this may be necessary). </para>
+            </important>
+          </listitem>
+
+          <listitem>
+            <para>Null Routing Using Shorewall "routes" (added in Shorewall
+            4.5.14)</para>
+
+            <para>By definition, entries in this file are used to define
+            routes to be added to provider routing tables, including the
+            default routing table (main).</para>
+
+            <para>This option allows for a better control over what is defined
+            as a null route in Shorewall and also allows for custom-defined
+            subnets (in addition to RFC1918 type networks) to be defined.
+            Blackhole routes defined in this way need to include the word
+            "blackhole" in the GATEWAY column and the DEVICE column must also
+            be ommitted (see example below). </para>
+
+            <para>It is worth noting that blackhole routes created in such a
+            way cannot be "undone" automatically and have to be deleted
+            manually using the "ip route del" command.</para>
+
+            <para>Example of use
+            (<filename>/etc/shorewall/routes</filename>):</para>
+
+            <programlisting>#PROVIDER       DEST            GATEWAY         DEVICE
+main            10.0.0.0/8      blackhole
+dmz             82.32.0.0/12    blackhole
+dmz             192.168.14.0/26 blackhole
+</programlisting>
+
+            <para>The above generates the following 3 statements for execution
+            upon Shorewall startup: </para>
+
+            <programlisting>ip route replace blackhole 10.0.0.0/8 table main
+ip route replace blackhole 82.32.0.0/12 table dmz
+ip route replace blackhole 192.168.14.0/26 table dmz</programlisting>
+          </listitem>
+        </orderedlist>
+
+        <para>Beginning with Shorewall 4.5.15, Shorewall also supports
+        "unreachable" and "prohibit" routing.</para>
+
+        <orderedlist>
+          <listitem>
+            <para>The NULL_ROUTE_RFC1918 option may be set to "blackhole",
+            "prohibit" or "unreachable" in addition to "Yes" and "No".</para>
+
+            <para>Shorewall will create the three route statements using the
+            specified type type. For compatibility with earlier releases,
+            "Yes" is equivalent to "blackhole".</para>
+
+            <para>For example, if NULL_ROUTE_RFC1918=prohibit, then the
+            following three route statements will be executed at Shorewall
+            startup:</para>
+
+            <programlisting>ip route replace prohibit 10.0.0.0/8
+ip route replace prohibit 172.16.0.0/12
+ip replace prohibit 192.168.0.0/16
+</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>The words "prohibit" and "unreachable" may be placed in the
+            GATEWAY column of
+            <filename>/etc/shorewall/routes</filename>.</para>
+
+            <para>The DEVICE column must be omitted.</para>
+
+            <para>Example of use
+            (<filename>/etc/shorewall/routes</filename>):</para>
+
+            <programlisting>#PROVIDER       DEST            GATEWAY         DEVICE
+main            10.0.0.0/8      unreachable
+dmz             82.32.0.0/12    unreachable
+dmz             192.168.14.0/26 unreachable
+</programlisting>
+
+            <para>The above generates the following 3 statements for execution
+            upon Shorewall startup:</para>
+
+            <programlisting>ip route replace unreachable 10.0.0.0/8 table main
+ip route replace unreachable 82.32.0.0/12 table dmz
+ip route replace unreachable 192.168.14.0/26 table dmz</programlisting>
+          </listitem>
+        </orderedlist>
+      </section>
+
+      <section>
+        <title>Important Points To Remember When Using Null Routing in
+        Shorewall </title>
+
+        <orderedlist>
+          <listitem>
+            <para>In order to create "pinhole" in a particular blackhole
+            route, at least one route needs to be defined in addition to the
+            null route.</para>
+
+            <para>Lets take the following example: We need to null-route all
+            addresses from the 10.0.0.0/8 range, *except* 10.1.0.0/24. In such
+            a case we need to define two routes in our "routes" file (assuming
+            the default "main" routing table is used and also assuming that
+            10.1.0.0/24 is routed via the default gateway on eth0).</para>
+
+            <para><filename>/etc/shorewall/routes</filename>:</para>
+
+            <programlisting>#PROVIDER       DEST            GATEWAY         DEVICE
+main            10.0.0.0/8      blackhole
+main            10.1.0.0/24     -               eth0</programlisting>
+
+            <para>The above will generate 2 statements for execution when
+            Shorewall starts: </para>
+
+            <programlisting>ip route replace blackhole 10.0.0.0/8 table main
+ip route replace 10.1.0.0/24 table main
+</programlisting>
+
+            <para>The order in which the two routes above are defined in
+            "routes" is not important, simply because, by definition, routes
+            with lower mask value are always traversed first. In that way,
+            packets originating from or destined to 10.1.0.0/24 will always be
+            processed before the 10.0.0.0/8 blackhole route.</para>
+          </listitem>
+
+          <listitem>
+            <para>Null routes, by their definition, are not attached to any
+            network device. What this means in reality is that when the status
+            of a particular device changes (either going up or down), that has
+            absolutely NO effect on the null routes defined (as already
+            indicated, these are "static" and can only be removed by executing
+            "ip route del").</para>
+
+            <para>This sometimes may lead to undesirable side effect: when a
+            network interface goes down (even temporarily), then ALL routes
+            defined or attached to that interface are simply deleted from the
+            routing table by the kernel, while the blackhole routes are
+            untouched.</para>
+
+            <para>Lets take our example above: when eth0 goes down, then the
+            route we defined in "routes" for our private subnet (10.1.0.0/24)
+            will be deleted from the routing table. As soon as eth0 goes back
+            up again, unless the route for our private 10.1.0.0/24 subnet is
+            defined again, all packets originating from or destined to
+            10.1.0.0/24 will simply be dropped by the kernel!</para>
+
+            <para>An indication of this type of behaviour is getting endless
+            "martian" packets reported in the system log, like so: </para>
+
+            <programlisting>IPv4: martian source 10.1.0.7 from 10.1.0.1, on dev eth0</programlisting>
+
+            <para>There are currently two possible solutions to this
+            particular problem:</para>
+
+            <orderedlist numeration="upperalpha">
+              <listitem>
+                <para>Add all network-interface dependent routes (the ones
+                which are deleted when that interface goes down) to your
+                distribution's network configuration system. On Redhat and
+                derivatives, that would be
+                <filename>/etc/sysconfig/network-scripts/route-X</filename>
+                (where "X" is the name of the interface in question). On
+                Debian and derivatives, it is
+                <filename>/etc/network/interfaces</filename>.</para>
+
+                <para>That way, when the network device goes back up, the
+                Linux OS will add these routes "automatically". Using our
+                example above - to add a route to 10.1.0.0/24 using the
+                default gateway on eth0 and also using the main routing table,
+                the following needs to be added to
+                <filename>/etc/sysconfig/network-scripts/route-eth0</filename>
+                (Redhat and derivatives):</para>
+
+                <programlisting>10.1.0.0/24 dev eth0 table main
+</programlisting>
+
+                <para>On Debian and derivatives (in the eth0 stanza of
+                <filename>/etc/network/interfaces</filename>):</para>
+
+                <programlisting>        post-up ip route add 10.1.0.0/24 dev eth0 table main</programlisting>
+              </listitem>
+
+              <listitem>
+                <para>A more elegant solution to this particular problem is,
+                in addition to the "standard" shorewall package
+                (shorewall-lite, shorewall, etc), to add <ulink
+                url="Shorewall-init.html">shorewall-init</ulink> to take care
+                of this automatically.</para>
+
+                <para>With this approach, when the network interface is
+                brought back up, the OS passes control to /sbin/ifup-local,
+                which forms part of the shorewall-init package, and that
+                script, in turn, executes the appropriate command to reload
+                the network device settings in the already-compiled
+                ${VARDIR}/firewall file.</para>
+
+                <para>When shorewall-init is used, all configuration settings
+                (routes, interface options etc) are kept in one place and do
+                not have to be defined separately (via
+                /etc/sysconfig/network-scripts/route-X for example), which
+                eases maintenance efforts quite considerably. </para>
+              </listitem>
+            </orderedlist>
+          </listitem>
+        </orderedlist>
+      </section>
     </section>
 
     <section>

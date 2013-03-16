@@ -59,6 +59,11 @@
           <para>Beginning with Shorewall 4.5.14, you may specify
           <option>blackhole</option> in this column to create a blackhole
           route.</para>
+
+          <para>Beginning with Shorewall 4.5.15, you may specify
+          <option>prohibit</option> or <option>unreachable</option> in this
+          column to create a <firstterm>prohibit</firstterm> or
+          <firstterm>unreachable</firstterm> route respectively.</para>
         </listitem>
       </varlistentry>
 
@@ -68,8 +73,9 @@
         <listitem>
           <para>Specifies the device route. If neither DEVICE nor GATEWAY is
           given, then the INTERFACE specified for the PROVIDER in <ulink
-          url="shorewall6-providers.html">shorewall6-providers</ulink> (5).
-          This column must be omitted if <option>blackhole</option> is
+          url="shorewall6-providers.html">shorewall6-providers</ulink>
+          (5).This column must be omitted if <option>blackhole</option>,
+          <option>prohibit</option> or <option>unreachable</option> is
           specified in the GATEWAY column.</para>
         </listitem>
       </varlistentry>
@@ -77,7 +83,7 @@
   </refsect1>
 
   <refsect1>
-    <title>FILES</title>
+    <title>Files</title>
 
     <para>/etc/shorewall6/routes</para>
   </refsect1>

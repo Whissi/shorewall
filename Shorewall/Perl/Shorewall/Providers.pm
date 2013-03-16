@@ -1129,8 +1129,11 @@ sub add_a_route( ) {
     fatal_error 'DEST must be specified' if $dest eq '-';
     $dest = validate_net ( $dest, 0 );
 
-    if ( $gateway eq 'blackhole' ) {
-	fatal_error q('blackhole' routes may not specify a DEVICE) unless $device eq '-';
+    my $null;
+
+    if ( $gateway =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
+	fatal_error q('$gateway' routes may not specify a DEVICE) unless $device eq '-';
+	$null = $gateway;
     } else {
 	validate_address ( $gateway, 1 ) if $gateway ne '-';
     }
@@ -1146,9 +1149,9 @@ sub add_a_route( ) {
 	if ( $device ne '-' ) {
 	    push @$routes, qq(run_ip route add $dest via $gateway dev $physical table $number);
 	    push @$routes, q(echo "qt $IP ) . qq(-$family route del $dest via $gateway dev $physical table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
-	} elsif ( $gateway eq 'blackhole' ) {
-	    push @$routes, qq(run_ip route add blackhole $dest table $number);
-	    push @$routes, q(echo "qt $IP ) . qq(-$family route del blackhole $dest table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
+	} elsif ( $null ) {
+	    push @$routes, qq(run_ip route add $null $dest table $number);
+	    push @$routes, q(echo "qt $IP ) . qq(-$family route del $null $dest table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
 	    push @$routes, qq(run_ip route add $dest via $gateway table $number);
 	    push @$routes, q(echo "qt $IP ) . qq(-$family route del $dest via $gateway table $number" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
@@ -1163,12 +1166,14 @@ sub add_a_route( ) {
 }
 
 sub setup_null_routing() {
+    my $type = $config{NULL_ROUTE_RFC1918};
+
     save_progress_message "Null Routing the RFC 1918 subnets";
     emit "> \${VARDIR}/undo_rfc1918_routing\n";
     for ( rfc1918_networks ) {
 	emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
-	      qq(    run_ip route replace blackhole $_),
-	      qq(    echo "qt \$IP -4 route del blackhole $_" >> \${VARDIR}/undo_rfc1918_routing),
+	      qq(    run_ip route replace $type $_),
+	      qq(    echo "qt \$IP -4 route del $type $_" >> \${VARDIR}/undo_rfc1918_routing),
 	      qq(fi\n) );
     }
 }

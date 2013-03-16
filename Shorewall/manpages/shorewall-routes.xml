@@ -57,8 +57,13 @@
           DEST.</para>
 
           <para>Beginning with Shorewall 4.5.14, you may specify
-          <option>blackhole</option> in this column to create a blackhole
-          route.</para>
+          <option>blackhole</option> in this column to create a
+          <firstterm>blackhole</firstterm> route.</para>
+
+          <para>Beginning with Shorewall 4.5.15, you may specify
+          <option>prohibit</option> or <option>unreachable</option> in this
+          column to create a <firstterm>prohibit</firstterm> or
+          <firstterm>unreachable</firstterm> route respectively.</para>
         </listitem>
       </varlistentry>
 
@@ -69,8 +74,9 @@
           <para>Specifies the device route. If neither DEVICE nor GATEWAY is
           given, then the INTERFACE specified for the PROVIDER in <ulink
           url="shorewall-providers.html">shorewall-providers</ulink> (5). This
-          column must be omitted if <option>blackhole</option> is specified in
-          the GATEWAY column.</para>
+          column must be omitted if <option>blackhole</option>,
+          <option>prohibit</option> or <option>unreachable</option> is
+          specified in the GATEWAY column.</para>
         </listitem>
       </varlistentry>
     </variablelist>

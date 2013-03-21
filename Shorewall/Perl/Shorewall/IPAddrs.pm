@@ -690,7 +690,7 @@ sub validate_6net( $$ ) {
 	    assert( ! $allow_name );
 	    ( $net , $vlsm );
 	} elsif ( valid_6address ( $net ) ) {
-	    $vlsm == 32 ? $net : "$net/$vlsm";
+	    $vlsm == 128 ? $net : "$net/$vlsm";
 	} else {
 	    $net;
 	}

@@ -740,12 +740,6 @@ if [ -f findgw ]; then
 fi
 
 #
-# Delete the tcstart file
-#
-
-delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/tcstart
-
-#
 # Delete the Limits Files
 #
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/action.Limit

@@ -116,6 +116,10 @@ case $0 in
 	INTERFACE="$2"
 
 	case $0 in
+	    *dispatcher.d*)
+		INTERFACE="$1"
+		COMMAND="$2"
+		;;
 	    *if-up.d*)
 		COMMAND=up
 		;;

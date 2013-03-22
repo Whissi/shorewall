@@ -1147,18 +1147,18 @@ sub add_a_route( ) {
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
-	    push @$routes, qq(run_ip route add $dest via $gateway dev $physical table $number);
+	    push @$routes, qq(run_ip route replace $dest via $gateway dev $physical table $number);
 	    push @$routes, q(echo "$IP ) . qq(-$family route del $dest via $gateway dev $physical table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} elsif ( $null ) {
-	    push @$routes, qq(run_ip route add $null $dest table $number);
+	    push @$routes, qq(run_ip route replace $null $dest table $number);
 	    push @$routes, q(echo "$IP ) . qq(-$family route del $null $dest table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
-	    push @$routes, qq(run_ip route add $dest via $gateway table $number);
+	    push @$routes, qq(run_ip route replace $dest via $gateway table $number);
 	    push @$routes, q(echo "$IP ) . qq(-$family route del $dest via $gateway table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	}
     } else {
 	fatal_error "You must specify a device for this route" unless $physical;
-	push @$routes, qq(run_ip route add $dest dev $physical table $number);
+	push @$routes, qq(run_ip route replace $dest dev $physical table $number);
 	push @$routes, q(echo "$IP ) . qq(-$family route del $dest dev $physical table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
     }
 

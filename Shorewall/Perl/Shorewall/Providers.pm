@@ -105,11 +105,11 @@ sub initialize( $ ) {
     $maxload                = 0;
     $tproxies               = 0;
 
-    %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
-		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
-		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
-		    balance => { number => BALANCE_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] } ,
-		    unspec  => { number => UNSPEC_TABLE  , mark => 0 , optional => 0 ,routes => [], rules => [] } );
+    %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    balance => { number => BALANCE_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    unspec  => { number => UNSPEC_TABLE  , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } );
     @providers = ();
 }
 
@@ -625,6 +625,7 @@ sub process_a_provider( $ ) {
 			   what        => $what ,
 			   rules       => [] ,
 			   routes      => [] ,
+			   routedests  => {} ,
 			 };
 
     $provider_interfaces{$interface} = $table unless $shared;
@@ -1142,8 +1143,17 @@ sub add_a_route( ) {
     my $number = $providerref->{number};
     my $physical = $device eq '-' ? $providers{$provider}{physical} : physical_name( $device );
     my $routes = $providerref->{routes};
+    my $routedests = $providerref->{routedests};
 
     fatal_error "You may not add routes to the $provider table" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
+
+    $dest .= join( '', '/', $family == 4 ? '32' : '128' ) unless $dest =~ '/';
+
+    if ( $routedests->{$dest} ) {
+	fatal_error "Duplicate DEST ($dest) in table ($provider)";
+    } else {
+	$routedests->{$dest} = 1;
+    }
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
@@ -1171,10 +1181,14 @@ sub setup_null_routing() {
     save_progress_message "Null Routing the RFC 1918 subnets";
     emit "> \${VARDIR}/undo_rfc1918_routing\n";
     for ( rfc1918_networks ) {
-	emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
-	      qq(    run_ip route replace $type $_),
-	      qq(    echo "\$IP -4 route del $type $_ > /dev/null 2>&1" >> \${VARDIR}/undo_rfc1918_routing),
-	      qq(fi\n) );
+	if ( $providers{main}{routedests}{$_} ) {
+	    warning_message "No NULL_ROUTE_RFC1918 route added for $_; there is already a route to that network defined in the routes file";
+	} else {
+	    emit( qq(if ! \$IP -4 route ls | grep -q '^$_.* dev '; then),
+		  qq(    run_ip route replace $type $_),
+		  qq(    echo "\$IP -4 route del $type $_ > /dev/null 2>&1" >> \${VARDIR}/undo_rfc1918_routing),
+		  qq(fi\n) );
+	}
     }
 }
 

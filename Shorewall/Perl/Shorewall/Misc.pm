@@ -1039,7 +1039,7 @@ sub add_common_rules ( $ ) {
 		add_ijump( $filter_table->{input_chain( $interface ) } ,
 			   j => 'ACCEPT' ,
 			   p => "udp --dport $ports" ,
-			   s => NILIPv4 . '/32' );
+			   s => NILIPv4 . '/' . VLSMv4 );
 	    }
 	}
     }

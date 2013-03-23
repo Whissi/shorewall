@@ -1147,7 +1147,7 @@ sub add_a_route( ) {
 
     fatal_error "You may not add routes to the $provider table" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
 
-    $dest .= join( '', '/', $family == 4 ? '32' : '128' ) unless $dest =~ '/';
+    $dest .= join( '', '/', VLSM ) unless $dest =~ '/';
 
     if ( $routedests->{$dest} ) {
 	fatal_error "Duplicate DEST ($dest) in table ($provider)";

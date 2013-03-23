@@ -48,6 +48,9 @@ our @EXPORT = ( qw( ALLIPv4
 		  ALLIP
 		  NILIP
 		  ALL
+		  VLSMv4
+		  VLSMv6
+		  VLSM
 
 		  valid_address
 		  validate_address
@@ -89,6 +92,7 @@ our @nilipv4 = ( '0.0.0.0' );
 our @nilipv6 = ( '::' );
 our $nilip;
 our @nilip;
+our $vlsm_width;
 our $valid_address;
 our $validate_address;
 our $validate_net;
@@ -110,6 +114,8 @@ use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       IPv6_LINK_ALLRTRS   => 'ff01::2' ,
 	       IPv6_SITE_ALLNODES  => 'ff02::1' ,
 	       IPv6_SITE_ALLRTRS   => 'ff02::2' ,
+	       VLSMv4              => 32,
+	       VLSMv6              => 128,
 	   };
 
 our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
@@ -120,7 +126,7 @@ our @rfc1918_networks = ( "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" );
 sub vlsm_to_mask( $ ) {
     my $vlsm = $_[0];
 
-    in_hex8 ( ( 0xFFFFFFFF << ( 32 - $vlsm ) ) & 0xFFFFFFFF );
+    in_hex8 ( ( 0xFFFFFFFF << ( VLSMv4 - $vlsm ) ) & 0xFFFFFFFF );
 }
 
 sub valid_4address( $ ) {
@@ -215,14 +221,14 @@ sub validate_4net( $$ ) {
     }
 
     if ( defined $vlsm ) {
-        fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= 32;
+        fatal_error "Invalid VLSM ($vlsm)"            unless $vlsm =~ /^\d+$/ && $vlsm <= VLSMv4;
 	fatal_error "Invalid Network address ($_[0])" if defined $rest;
 	fatal_error "Invalid IP address ($net)"       unless valid_4address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/' || ! defined $net;
 	my $net1 = validate_4address $net, $allow_name;
 	$net  = $net1 unless $config{DEFER_DNS_RESOLUTION};
-	$vlsm = 32;
+	$vlsm = VLSMv4;
     }
 
     if ( defined wantarray ) {
@@ -230,7 +236,7 @@ sub validate_4net( $$ ) {
 	    assert( ! $allow_name );
 	    ( decodeaddr( $net ) , $vlsm );
 	} elsif ( valid_4address $net ) {
-	    $vlsm == 32 ? $net : "$net/$vlsm";
+	    $vlsm == VLSMv4 ? $net : "$net/$vlsm";
 	} else {
 	    $net;
 	}
@@ -675,14 +681,14 @@ sub validate_6net( $$ ) {
 
 
     if ( defined $vlsm ) {
-        fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= 128;
+        fatal_error "Invalid VLSM ($vlsm)"              unless $vlsm =~ /^\d+$/ && $vlsm <= VLSMv6;
 	fatal_error "Invalid Network address ($_[0])"   if defined $rest;
 	fatal_error "Invalid IPv6 address ($net)"       unless valid_6address $net;
     } else {
 	fatal_error "Invalid Network address ($_[0])" if $_[0] =~ '/';
 	my $net1 = validate_6address $net, $allow_name;
 	$net  = $net1 unless $config{DEFER_DNS_RESOLUTION};
-	$vlsm = 128;
+	$vlsm = VLSMv6;
     }
 
     if ( defined wantarray ) {
@@ -690,7 +696,7 @@ sub validate_6net( $$ ) {
 	    assert( ! $allow_name );
 	    ( $net , $vlsm );
 	} elsif ( valid_6address ( $net ) ) {
-	    $vlsm == 128 ? $net : "$net/$vlsm";
+	    $vlsm == VLSMv6 ? $net : "$net/$vlsm";
 	} else {
 	    $net;
 	}
@@ -812,6 +818,10 @@ sub nilip() {
     @nilip;
 }
 
+sub VLSM() {
+    $vlsm_width;
+}
+
 sub valid_address ( $ ) {
     $valid_address->(@_);
 }
@@ -854,6 +864,7 @@ sub initialize( $ ) {
 	@allip            = @allipv4;
 	$nilip            = NILIPv4;
 	@nilip            = @nilipv4;
+	$vlsm_width       = VLSMv4;
 	$valid_address    = \&valid_4address;
 	$validate_address = \&validate_4address;
 	$validate_net     = \&validate_4net;
@@ -865,6 +876,7 @@ sub initialize( $ ) {
 	@allip            = @allipv6;
 	$nilip            = NILIPv6;
 	@nilip            = @nilipv6;
+	$vlsm_width       = VLSMv6;
 	$valid_address    = \&valid_6address;
 	$validate_address = \&validate_6address;
 	$validate_net     = \&validate_6net;

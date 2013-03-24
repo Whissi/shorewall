@@ -105,12 +105,22 @@ sub initialize( $ ) {
     $maxload                = 0;
     $tproxies               = 0;
 
-    %providers  = ( local   => { number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
-		    main    => { number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
-		    default => { number => DEFAULT_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
-		    balance => { number => BALANCE_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
-		    unspec  => { number => UNSPEC_TABLE  , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } );
+    %providers  = ( local   => { provider => 'local',   number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    main    => { provider => 'main',    number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    default => { provider => 'default', number => DEFAULT_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    balance => { provider => 'balance', number => BALANCE_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
+		    unspec  => { provider => 'unspec',  number => UNSPEC_TABLE  , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } );
     @providers = ();
+
+    unless ( $config{USE_RT_NAMES} ) {
+	for ( values %providers ) {
+	    $_->{id} = $_->{number};
+	}
+    } else {
+	for ( values %providers ) {
+	    $_->{id} = $_->{provider};
+	}
+    }
 }
 
 #
@@ -353,8 +363,8 @@ sub balance_fallback_route( $$$$ ) {
     }
 }
 
-sub start_provider( $$$$ ) {
-    my ($what, $table, $number, $test ) = @_;
+sub start_provider( $$$$$ ) {
+    my ($what, $table, $number, $id, $test ) = @_;
 
     emit "\n#\n# Add $what $table ($number)\n#";
 
@@ -371,7 +381,7 @@ sub start_provider( $$$$ ) {
 
     if ( $number ) {
 	emit "qt ip -$family route flush table $number";
-	emit "echo \"\$IP -$family route flush table $number > /dev/null 2>&1\" > \${VARDIR}/undo_${table}_routing";
+	emit "echo \"\$IP -$family route flush table $id > /dev/null 2>&1\" > \${VARDIR}/undo_${table}_routing";
     } else {
 	emit( "> \${VARDIR}/undo_${table}_routing" );
     }
@@ -601,6 +611,7 @@ sub process_a_provider( $ ) {
 
     $providers{$table} = { provider    => $table,
 			   number      => $number ,
+			   id          => $config{USE_RT_NAMES} ? $table : $number,
 			   rawmark     => $mark ,
 			   mark        => $val ? in_hex($val) : $val ,
 			   interface   => $interface ,
@@ -675,6 +686,7 @@ sub add_a_provider( $$ ) {
 
     my $table       = $providerref->{provider};
     my $number      = $providerref->{number};
+    my $id          = $providerref->{id};
     my $mark        = $providerref->{rawmark};
     my $interface   = $providerref->{interface};
     my $physical    = $providerref->{physical};
@@ -705,24 +717,24 @@ sub add_a_provider( $$ ) {
     if ( $shared ) {
 	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
 	$realm = "realm $number";
-	start_provider( $label , $table, $number, qq(if interface_is_usable $physical && [ -n "$variable" ]; then) );
+	start_provider( $label , $table, $number, $id, qq(if interface_is_usable $physical && [ -n "$variable" ]; then) );
     } elsif ( $pseudo ) {
-	start_provider( $label , $table, $number, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
+	start_provider( $label , $table, $number, $id, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
     } else {
 	if ( $optional ) {
-	    start_provider( $label, $table , $number, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
+	    start_provider( $label, $table , $number, $id, qq(if [ -n "\$SW_${base}_IS_USABLE" ]; then) );
 	} elsif ( $gatewaycase eq 'detect' ) {
-	    start_provider( $label, $table, $number, qq(if interface_is_usable $physical && [ -n "$gateway" ]; then) );
+	    start_provider( $label, $table, $number, $id, qq(if interface_is_usable $physical && [ -n "$gateway" ]; then) );
 	} else {
-	    start_provider( $label, $table, $number, "if interface_is_usable $physical; then" );
+	    start_provider( $label, $table, $number, $id, "if interface_is_usable $physical; then" );
 	}
 	$provider_interfaces{$interface} = $table;
 
 	if ( $gatewaycase eq 'none' ) {
 	    if ( $tproxy ) {
-		emit 'run_ip route add local ' . ALLIP . " dev $physical table $number";
+		emit 'run_ip route add local ' . ALLIP . " dev $physical table $id";
 	    } else {
-		emit "run_ip route add default dev $physical table $number";
+		emit "run_ip route add default dev $physical table $id";
 	    }
 	}
     }
@@ -756,7 +768,7 @@ CEOF
 
 	emit ( "qt \$IP -$family rule del fwmark ${hexmark}${mask}" ) if $config{DELETE_THEN_ADD};
 
-	emit ( "run_ip rule add fwmark ${hexmark}${mask} pref $pref table $number",
+	emit ( "run_ip rule add fwmark ${hexmark}${mask} pref $pref table $id",
 	       "echo \"\$IP -$family rule del fwmark ${hexmark}${mask} > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing"
 	     );
     }
@@ -779,14 +791,14 @@ CEOF
 	$address = get_interface_address $interface unless $address;
 	if ( $family == F_IPV4 ) {
 	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
-	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $number $realm";
+	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm";
 	} else {
 	    emit "qt \$IP -6 route add $gateway src $address dev $physical ${mtu}";
-	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $number $realm";
-	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $number $realm";
+	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm";
+	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $id $realm";
 	}
 
-	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $number $realm";
+	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $id $realm";
     }
 
     if ( $balance ) {
@@ -794,20 +806,21 @@ CEOF
     } elsif ( $default > 0 ) {
 	balance_fallback_route( $default , $gateway, $physical, $realm );
     } elsif ( $default ) {
+	my $id = $providers{default}->{id};
 	emit '';
 	if ( $gateway ) {
 	    if ( $family == F_IPV4 ) {
-		emit qq(run_ip route replace $gateway/32 dev $physical table ) . DEFAULT_TABLE;
-		emit qq(run_ip route replace default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
+		emit qq(run_ip route replace $gateway/32 dev $physical table $id);
+		emit qq(run_ip route replace default via $gateway src $address dev $physical table $id metric $number);
 	    } else {
-		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
-		emit qq(run_ip route add default via $gateway src $address dev $physical table ) . DEFAULT_TABLE . qq( metric $number);
+		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table $id metric $number);
+		emit qq(run_ip route add default via $gateway src $address dev $physical table $id metric $number);
 	    }
-	    emit qq(echo "\$IP -$family route del default via $gateway table ) . DEFAULT_TABLE . qq( > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
-	    emit qq(echo "\$IP -4  route del $gateway/32 dev $physical table ) . DEFAULT_TABLE . qq( > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing) if $family == F_IPV4;
+	    emit qq(echo "\$IP -$family route del default via $gateway table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
+	    emit qq(echo "\$IP -4  route del $gateway/32 dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing) if $family == F_IPV4;
 	} else {
-	    emit qq(run_ip route add default table ) . DEFAULT_TABLE . qq( dev $physical metric $number);
-	    emit qq(echo "\$IP -$family route del default dev $physical table ) . DEFAULT_TABLE . qq( > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
+	    emit qq(run_ip route add default table $id dev $physical metric $number);
+	    emit qq(echo "\$IP -$family route del default dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 	}
 
 	$metrics = 1;
@@ -815,7 +828,7 @@ CEOF
 
     emit( qq(\n) ,
 	  qq(if ! \$IP -6 rule ls | egrep -q "32767:[[:space:]]+from all lookup (default|253)"; then) ,
-	  qq(    qt \$IP -6 rule add from all table ) . DEFAULT_TABLE . qq( prio 32767\n) ,
+	  qq(    qt \$IP -6 rule add from all table $providers{default}->{id} prio 32767\n) ,
 	  qq(fi) ) if $family == F_IPV6;
 
     unless ( $tproxy ) {
@@ -830,12 +843,12 @@ CEOF
 	    }
 	} elsif ( $shared ) {
 	    emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
-	    emit( "run_ip rule add from $address pref 20000 table $number" ,
+	    emit( "run_ip rule add from $address pref 20000 table $id" ,
 		  "echo \"\$IP -$family rule del from $address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
 	} elsif ( ! $pseudo ) {
 	    emit  ( "find_interface_addresses $physical | while read address; do" );
 	    emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
-	    emit  ( "    run_ip rule add from \$address pref 20000 table $number",
+	    emit  ( "    run_ip rule add from \$address pref 20000 table $id",
 		    "    echo \"\$IP -$family rule del from \$address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
 		    '    rulenum=$(($rulenum + 1))',
 		    'done'
@@ -866,7 +879,7 @@ CEOF
 	push_indent;
 
 	if ( $balance || $default > 0 ) {
-	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
+	    $tbl    = $providers{$default ? 'default' : $config{USE_DEFAULT_RT} ? 'balance' : 'main'}->{id};
 	    $weight = $balance ? $balance : $default;
 
 	    if ( $family == F_IPV4 ) {
@@ -958,7 +971,7 @@ CEOF
 	push_indent;
 
 	if ( $balance || $default > 0 ) {
-	    $tbl    = $default ? DEFAULT_TABLE : $config{USE_DEFAULT_RT} ? BALANCE_TABLE : MAIN_TABLE;
+	    $tbl    = $providers{$default ? 'default' : $config{USE_DEFAULT_RT} ? 'balance' : 'main'}->{id};
 	    $weight = $balance ? $balance : $default;
 
 	    my $via;
@@ -1039,6 +1052,7 @@ sub add_an_rtrule( ) {
     my $providerref = $providers{$provider};
 
     my $number = $providerref->{number};
+    my $id     = $providerref->{id};
 
     fatal_error "You may not add rules for the $provider provider" if $number == LOCAL_TABLE || $number == UNSPEC_TABLE;
     fatal_error "You must specify either the source or destination in a rtrules entry" if $source eq '-' && $dest eq '-';
@@ -1096,7 +1110,7 @@ sub add_an_rtrule( ) {
     $priority = "priority $priority";
 
     push @{$providerref->{rules}}, "qt \$IP -$family rule del $source ${dest}${mark} $priority" if $config{DELETE_THEN_ADD};
-    push @{$providerref->{rules}}, "run_ip rule add $source ${dest}${mark} $priority table $number";
+    push @{$providerref->{rules}}, "run_ip rule add $source ${dest}${mark} $priority table $id";
     push @{$providerref->{rules}}, "echo \"\$IP -$family rule del $source ${dest}${mark} $priority > /dev/null 2>&1\" >> \${VARDIR}/undo_${provider}_routing";
 
     progress_message "   Routing rule \"$currentline\" $done";
@@ -1141,6 +1155,7 @@ sub add_a_route( ) {
 
     my $providerref = $providers{$provider};
     my $number = $providerref->{number};
+    my $id     = $providerref->{id};
     my $physical = $device eq '-' ? $providers{$provider}{physical} : physical_name( $device );
     my $routes = $providerref->{routes};
     my $routedests = $providerref->{routedests};
@@ -1157,19 +1172,19 @@ sub add_a_route( ) {
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
-	    push @$routes, qq(run_ip route replace $dest via $gateway dev $physical table $number);
-	    push @$routes, q(echo "$IP ) . qq(-$family route del $dest via $gateway dev $physical table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
+	    push @$routes, qq(run_ip route replace $dest via $gateway dev $physical table $id);
+	    push @$routes, q(echo "$IP ) . qq(-$family route del $dest via $gateway dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} elsif ( $null ) {
-	    push @$routes, qq(run_ip route replace $null $dest table $number);
-	    push @$routes, q(echo "$IP ) . qq(-$family route del $null $dest table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
+	    push @$routes, qq(run_ip route replace $null $dest table $id);
+	    push @$routes, q(echo "$IP ) . qq(-$family route del $null $dest table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
-	    push @$routes, qq(run_ip route replace $dest via $gateway table $number);
-	    push @$routes, q(echo "$IP ) . qq(-$family route del $dest via $gateway table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
+	    push @$routes, qq(run_ip route replace $dest via $gateway table $id);
+	    push @$routes, q(echo "$IP ) . qq(-$family route del $dest via $gateway table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	}
     } else {
 	fatal_error "You must specify a device for this route" unless $physical;
-	push @$routes, qq(run_ip route replace $dest dev $physical table $number);
-	push @$routes, q(echo "$IP ) . qq(-$family route del $dest dev $physical table $number > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
+	push @$routes, qq(run_ip route replace $dest dev $physical table $id);
+	push @$routes, q(echo "$IP ) . qq(-$family route del $dest dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
     }
 
     progress_message "   Route \"$currentline\" $done";
@@ -1199,12 +1214,28 @@ sub start_providers() {
 	    'undo_routing' );
 
     unless ( $config{KEEP_RT_TABLES} ) {
-	emit  (
-	       '#',
-	       '# Save current routing table database so that it can be restored later',
-	       '#',
-	       'cp /etc/iproute2/rt_tables ${VARDIR}/' );
+	emit( "\n#\n# Update the routing table database\n#",
+	      'if [ -w /etc/iproute2/rt_tables ]; then',
+	      '    cat > /etc/iproute2/rt_tables <<EOF' );
 
+	emit_unindented join( "\n",
+			      '#',
+			      '# reserved values',
+			      '#',
+			      LOCAL_TABLE   . "\tlocal",
+			      MAIN_TABLE    . "\tmain",
+			      $config{USE_DEFAULT_RT} ? ( DEFAULT_TABLE . "\tdefault\n" . BALANCE_TABLE . "\tbalance" ) : DEFAULT_TABLE . "\tdefault",
+			      "0\tunspec",
+			      '#',
+			      '# local',
+			      '#' );
+	for ( @providers ) {
+	    emit_unindented "$providers{$_}{number}\t$_" unless $providers{$_}{pseudo};
+	}
+
+	emit_unindented "EOF\n";
+
+	emit "fi\n";
     }
 
     emit  ( '#',
@@ -1229,17 +1260,20 @@ sub start_providers() {
 }
 
 sub finish_providers() {
-    my $table = MAIN_TABLE;
+    my $main    = $providers{main}->{id};
+    my $table   = $main;
+    my $balance = $providers{balance}->{id};
+    my $default = $providers{default}->{id};
 
     if ( $config{USE_DEFAULT_RT} ) {
-	emit ( 'run_ip rule add from ' . ALLIP . ' table ' . MAIN_TABLE .    ' pref 999',
-	       'run_ip rule add from ' . ALLIP . ' table ' . BALANCE_TABLE . ' pref 32765',
-	       "\$IP -$family rule del from " . ALLIP . ' table ' . MAIN_TABLE . ' pref 32766',
-	       qq(echo "\$IP -$family rule add from ) . ALLIP . ' table ' . MAIN_TABLE .    ' pref 32766 > /dev/null 2>&1" >> ${VARDIR}/undo_main_routing',
-	       qq(echo "\$IP -$family rule del from ) . ALLIP . ' table ' . MAIN_TABLE .    ' pref 999 > /dev/null 2>&1" >> ${VARDIR}/undo_main_routing',
-	       qq(echo "\$IP -$family rule del from ) . ALLIP . ' table ' . BALANCE_TABLE . ' pref 32765 > /dev/null 2>&1" >> ${VARDIR}/undo_balance_routing',
+	emit ( 'run_ip rule add from ' . ALLIP . " table $main pref 999",
+	       'run_ip rule add from ' . ALLIP . " table $balance pref 32765",
+	       "\$IP -$family rule del from " . ALLIP . " table $main pref 32766",
+	       qq(echo "\$IP -$family rule add from ) . ALLIP . qq( table $main pref 32766 > /dev/null 2>&1")    . ' >> ${VARDIR}/undo_main_routing',
+	       qq(echo "\$IP -$family rule del from ) . ALLIP . qq( table $main pref 999 > /dev/null 2>&1")      . ' >> ${VARDIR}/undo_main_routing',
+	       qq(echo "\$IP -$family rule del from ) . ALLIP . qq( table $balance pref 32765 > /dev/null 2>&1") . ' >> ${VARDIR}/undo_balance_routing',
 	       '' );
-	$table = BALANCE_TABLE;
+	$table = $providers{balance}->{id};
     }
 
     if ( $balancing ) {
@@ -1252,7 +1286,7 @@ sub finish_providers() {
 	}
 
 	if ( $config{USE_DEFAULT_RT} ) {
-	    emit  ( "    while qt \$IP -$family route del default table " . MAIN_TABLE . '; do',
+	    emit  ( "    while qt \$IP -$family route del default table $main; do",
 		    '        true',
 		    '    done',
 		    ''
@@ -1279,17 +1313,17 @@ sub finish_providers() {
 	       '#',
 	       '# And delete any routes in the \'balance\' table',
 	       '#',
-	       "qt \$IP -$family route del default table " . BALANCE_TABLE,
+	       "qt \$IP -$family route del default table $balance",
 	       '' );
     }
 
     if ( $fallback ) {
 	emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' );
 	if ( $family == F_IPV4 ) {
-	    emit( "    run_ip route replace default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" );
+	    emit( "    run_ip route replace default scope global table $default \$FALLBACK_ROUTE" );
 	} else {
-	    emit( "    qt \$IP -6 route del default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" );
-	    emit( "    run_ip route add default scope global table " . DEFAULT_TABLE . " \$FALLBACK_ROUTE" );
+	    emit( "    qt \$IP -6 route del default scope global table $default \$FALLBACK_ROUTE" );
+	    emit( "    run_ip route add default scope global table $default \$FALLBACK_ROUTE" );
 	}
 
 	emit( "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
@@ -1297,34 +1331,13 @@ sub finish_providers() {
 	      '    #',
 	      '    # We don\'t have any \'fallback\' providers so we delete any default routes in the default table',
 	      '    #',
-	      '    delete_default_routes ' . DEFAULT_TABLE,
+	      "    delete_default_routes $default",
 	      'fi',
 	      '' );
     } elsif ( $config{USE_DEFAULT_RT} ) {
-	emit( 'delete_default_routes ' . DEFAULT_TABLE,
+	emit( "delete_default_routes $default",
 	      ''
 	    );
-    }
-
-    unless ( $config{KEEP_RT_TABLES} ) {
-	emit( 'if [ -w /etc/iproute2/rt_tables ]; then',
-	      '    cat > /etc/iproute2/rt_tables <<EOF' );
-
-	emit_unindented join( "\n",
-			      '#',
-			      '# reserved values',
-			      '#',
-			      LOCAL_TABLE   . "\tlocal",
-			      MAIN_TABLE    . "\tmain",
-			      $config{USE_DEFAULT_RT} ? ( DEFAULT_TABLE . "\tdefault\n" . BALANCE_TABLE . "\tbalance" ) : DEFAULT_TABLE . "\tdefault",
-			      "0\tunspec",
-			      '#',
-			      '# local',
-			      '#' );
-	emit_unindented "$providers{$_}{number}\t$_" for @providers;
-	emit_unindented "EOF\n";
-
-	emit "fi\n";
     }
 }
 

@@ -785,6 +785,7 @@ sub initialize( $;$$) {
 	  IGNOREUNKNOWNVARIABLES => undef,
 	  WARNOLDCAPVERSION => undef,
 	  DEFER_DNS_RESOLUTION => undef,
+	  USE_RT_NAMES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -5220,6 +5221,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'EXPORTPARAMS'               , '';
     default_yes_no 'EXPAND_POLICIES'            , '';
     default_yes_no 'KEEP_RT_TABLES'             , '';
+    default_yes_no 'USE_RT_NAMES'               , '';
     default_yes_no 'DELETE_THEN_ADD'            , 'Yes';
     default_yes_no 'AUTOCOMMENT'                , 'Yes';
     default_yes_no 'MULTICAST'                  , '';

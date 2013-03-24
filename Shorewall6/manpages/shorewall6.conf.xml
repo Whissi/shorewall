@@ -2264,6 +2264,39 @@ LOG:info:,bar                        net                    fw</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">USE_RT_NAMES=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.15. When set to 'Yes', Shorewall will
+          use routing table (provider) names in the generated script rather
+          than table numbers. When set to 'No' (the default), routing table
+          numbers will be used.</para>
+
+          <caution>
+            <para>If you set USE_RT_NAMES=Yes and KEEP_RT_TABLES=Yes, then you
+            must insure that all of your providers have entries in
+            /etc/iproute2/rt_tables as well as the following entries:</para>
+
+            <simplelist>
+              <member>255 local</member>
+
+              <member>254 main</member>
+
+              <member>253 default</member>
+
+              <member>250 balance</member>
+
+              <member>0 unspec</member>
+            </simplelist>
+
+            <para>Without these entries, the firewall will fail to
+            start.</para>
+          </caution>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
 

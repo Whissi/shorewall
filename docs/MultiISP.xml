@@ -1357,19 +1357,11 @@ dmz             192.168.14.0/26 blackhole
 </programlisting>
 
             <para>The above generates the following 3 statements for execution
-            upon Shorewall startup.</para>
-
-            <para>Shorewall 4.5.14:</para>
+            upon Shorewall startup:</para>
 
             <programlisting>ip route add blackhole 10.0.0.0/8 table main
 ip route add blackhole 82.32.0.0/12 table dmz
 ip route add blackhole 192.168.14.0/26 table dmz</programlisting>
-
-            <para>Shorewall 4.5.15 and later:</para>
-
-            <programlisting>ip route replace blackhole 10.0.0.0/8 table main
-ip route replace blackhole 82.32.0.0/12 table dmz
-ip route replace blackhole 192.168.14.0/26 table dmz</programlisting>
 
             <important>
               <para>When blackhole routes are added to a
@@ -1423,9 +1415,9 @@ dmz             192.168.14.0/26 unreachable
             <para>The above generates the following 3 statements for execution
             upon Shorewall startup:</para>
 
-            <programlisting>ip route replace unreachable 10.0.0.0/8 table main
-ip route replace unreachable 82.32.0.0/12 table dmz
-ip route replace unreachable 192.168.14.0/26 table dmz</programlisting>
+            <programlisting>ip route add unreachable 10.0.0.0/8 table main
+ip route add unreachable 82.32.0.0/12 table dmz
+ip route add unreachable 192.168.14.0/26 table dmz</programlisting>
 
             <important>
               <para>When prohibit or unreachable routes are added to a

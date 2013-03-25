@@ -380,7 +380,7 @@ sub start_provider( $$$$$ ) {
 
 
     if ( $number ) {
-	emit "qt ip -$family route flush table $number";
+	emit "qt ip -$family route flush table $id";
 	emit "echo \"\$IP -$family route flush table $id > /dev/null 2>&1\" > \${VARDIR}/undo_${table}_routing";
     } else {
 	emit( "> \${VARDIR}/undo_${table}_routing" );
@@ -791,7 +791,7 @@ CEOF
 	$address = get_interface_address $interface unless $address;
 	if ( $family == F_IPV4 ) {
 	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
-	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm";
+	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $id $realm";
 	} else {
 	    emit "qt \$IP -6 route add $gateway src $address dev $physical ${mtu}";
 	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm";
@@ -810,8 +810,8 @@ CEOF
 	emit '';
 	if ( $gateway ) {
 	    if ( $family == F_IPV4 ) {
-		emit qq(run_ip route replace $gateway/32 dev $physical table $id);
-		emit qq(run_ip route replace default via $gateway src $address dev $physical table $id metric $number);
+		emit qq(run_ip route add $gateway/32 dev $physical table $id);
+		emit qq(run_ip route add default via $gateway src $address dev $physical table $id metric $number);
 	    } else {
 		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table $id metric $number);
 		emit qq(run_ip route add default via $gateway src $address dev $physical table $id metric $number);

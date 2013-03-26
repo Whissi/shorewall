@@ -220,8 +220,8 @@ sub copy_table( $$$ ) {
 	 );
 }
 
-sub copy_and_edit_table( $$$$ ) {
-    my ( $duplicate, $number, $copy, $realm) = @_;
+sub copy_and_edit_table( $$$$$ ) {
+    my ( $duplicate, $number, $id, $copy, $realm) = @_;
 
     my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
     my %copied;
@@ -256,8 +256,8 @@ sub copy_and_edit_table( $$$$ ) {
     emit (  '    case $net in',
 	    '        default)',
 	    '            ;;',
-	    '        blackhole)',
-	    "            run_ip route add table $number blackhole \$route $realm",
+	    '        blackhole|prohibit|unreachable)',
+	    "            run_ip route add table $id \$net \$route $realm",
 	    '            ;;',
 	    '        *)',
 	    '            case $(find_device $route) in',
@@ -267,12 +267,12 @@ sub copy_and_edit_table( $$$$ ) {
 		'                        255.255.255.255*)',
 		'                            ;;',
 		'                        *)',
-		"                            run_ip route add table $number \$net \$route $realm",
+		"                            run_ip route add table $id \$net \$route $realm",
 		'                            ;;',
 		'                    esac',
 	     );
     } else {
-	emit (  "                    run_ip route add table $number \$net \$route $realm" );
+	emit (  "                    run_ip route add table $id \$net \$route $realm" );
     }
 
     emit (  '                    ;;',
@@ -370,7 +370,6 @@ sub start_provider( $$$$$ ) {
     push_indent;
     emit $test;
     push_indent;
-
 
     if ( $number ) {
 	emit "qt ip -$family route flush table $id";
@@ -776,7 +775,7 @@ CEOF
 		$copy = "$interface,$copy";
 	    }
 
-	    copy_and_edit_table( $duplicate, $number ,$copy , $realm);
+	    copy_and_edit_table( $duplicate, $number, $id, $copy, $realm);
 	}
     }
 

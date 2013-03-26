@@ -810,7 +810,7 @@ CEOF
 	emit '';
 	if ( $gateway ) {
 	    if ( $family == F_IPV4 ) {
-		emit qq(run_ip route add $gateway/32 dev $physical table $id);
+		emit qq(run_ip route replace $gateway/32 dev $physical table $id);
 		emit qq(run_ip route add default via $gateway src $address dev $physical table $id metric $number);
 	    } else {
 		emit qq(qt \$IP -6 route del default via $gateway src $address dev $physical table $id metric $number);

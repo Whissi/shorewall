@@ -104,7 +104,9 @@ sub initialize( $ ) {
     $first_fallback_route   = 1;
     $maxload                = 0;
     $tproxies               = 0;
-
+    #
+    # The 'id' member is initialized in process_providers(), after the .conf file has been processed
+    #
     %providers  = ( local   => { provider => 'local',   number => LOCAL_TABLE   , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
 		    main    => { provider => 'main',    number => MAIN_TABLE    , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
 		    default => { provider => 'default', number => DEFAULT_TABLE , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } ,
@@ -112,15 +114,6 @@ sub initialize( $ ) {
 		    unspec  => { provider => 'unspec',  number => UNSPEC_TABLE  , mark => 0 , optional => 0 ,routes => [], rules => [] , routedests => {} } );
     @providers = ();
 
-    unless ( $config{USE_RT_NAMES} ) {
-	for ( values %providers ) {
-	    $_->{id} = $_->{number};
-	}
-    } else {
-	for ( values %providers ) {
-	    $_->{id} = $_->{provider};
-	}
-    }
 }
 
 #
@@ -1346,6 +1339,16 @@ sub process_providers( $ ) {
 
     our $providers = 0;
     our $pseudoproviders = 0;
+
+    unless ( $config{USE_RT_NAMES} ) {
+	for ( values %providers ) {
+	    $_->{id} = $_->{number};
+	}
+    } else {
+	for ( values %providers ) {
+	    $_->{id} = $_->{provider};
+	}
+    }
 
     $lastmark = 0;
 

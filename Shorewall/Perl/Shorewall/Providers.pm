@@ -1338,7 +1338,9 @@ sub process_providers( $ ) {
 
     our $providers = 0;
     our $pseudoproviders = 0;
-
+    #
+    # We defer initialization of the 'id' member until now so that the setting of USE_RT_NAMES will have been established.
+    #
     unless ( $config{USE_RT_NAMES} ) {
 	for ( values %providers ) {
 	    $_->{id} = $_->{number};

@@ -5054,7 +5054,7 @@ sub do_dscp( $ ) {
     my $invert = $dscp =~ s/^!// ? '! ' : '';
     my $value  = numeric_value( $dscp );
 
-    $value = $dscpmap{$value} unless defined $value;
+    $value = $dscpmap{$dscp} unless defined $value;
 
     fatal_error( "Invalid DSCP ($dscp)" ) unless defined $value && $value < 0x2f && ! ( $value & 1 );
 

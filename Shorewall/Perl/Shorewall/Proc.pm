@@ -38,6 +38,7 @@ our @EXPORT = qw(
 		 setup_route_filtering
 		 setup_martian_logging
 		 setup_source_routing
+		 setup_accept_ra
 		 setup_forwarding
 		 );
 our @EXPORT_OK = qw( setup_interface_proc );
@@ -214,6 +215,35 @@ sub setup_source_routing( $ ) {
     }
 }
 
+#
+# Source Routing
+#
+sub setup_accept_ra() {
+
+    my $interfaces = find_interfaces_by_option 'accept_ra';
+
+    if ( @$interfaces ) {
+	progress_message2 "$doing Accept Routing Advertisements...";
+
+	save_progress_message 'Setting up Accept Routing Advertisements...';
+
+	for my $interface ( @$interfaces ) {
+	    my $value = get_interface_option $interface, 'accept_ra';
+	    my $optional = interface_is_optional $interface;
+
+	    $interface = get_physical $interface;
+
+	    my $file = "/proc/sys/net/ipv6/conf/$interface/accept_ra";
+
+	    emit ( "if [ -f $file ]; then" ,
+		   "    echo $value > $file" );
+	    emit ( 'else' ,
+		   "    error_message \"WARNING: Cannot set Accept Source Routing on $interface\"" ) unless $optional;
+	    emit   "fi\n";
+	}
+    }
+}
+
 sub setup_forwarding( $$ ) {
     my ( $family, $first ) = @_;
 
@@ -297,8 +327,8 @@ sub setup_interface_proc( $ ) {
 	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
     }
 
-    if ( interface_has_option( $interface, 'sourceroute' , $value ) ) {
-	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
+    if ( interface_has_option( $interface, 'accept_ra' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv6/conf/$physical/accept_ra";
     }
 
     if ( @emitted ) {

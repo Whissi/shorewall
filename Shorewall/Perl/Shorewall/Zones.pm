@@ -234,9 +234,9 @@ use constant { NO_UPDOWN   => 1,
 
 our %validinterfaceoptions;
 
-our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60 );
+our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60, accept_ra => 1 );
 
-our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN );
+our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN, accept_ra => 2 );
 
 our %validhostoptions;
 
@@ -334,7 +334,8 @@ sub initialize( $$ ) {
 			    );
 	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver' );
     } else {
-	%validinterfaceoptions = (  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
+				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,

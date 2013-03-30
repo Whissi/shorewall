@@ -741,6 +741,8 @@ sub compiler {
 	  ''
 	);
 
+    setup_accept_ra if $family == F_IPV6;
+
     if ( $scriptfilename || $debug ) {
 	emit 'return 0';
 	pop_indent;

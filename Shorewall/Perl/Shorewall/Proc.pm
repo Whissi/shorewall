@@ -297,8 +297,8 @@ sub setup_interface_proc( $ ) {
 	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
     }
 
-    if ( interface_has_option( $interface, 'sourceroute' , $value ) ) {
-	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
+    if ( interface_has_option( $interface, 'forward' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv6/conf/$physical/forwarding";
     }
 
     if ( @emitted ) {

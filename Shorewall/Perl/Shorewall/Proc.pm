@@ -332,7 +332,9 @@ sub setup_interface_proc( $ ) {
     }
 
     if ( interface_has_option( $interface, 'accept_ra' , $value ) ) {
-	push @emitted, "echo $value > /proc/sys/net/ipv6/conf/$physical/accept_ra";
+	push @emitted, "if [ -f /proc/sys/net/ipv6/conf/$physical/accept_ra ]; then";
+	push @emitted, "    echo $value > /proc/sys/net/ipv6/conf/$physical/accept_ra";
+	push @emitted, 'fi';
     }
 	
     if ( @emitted ) {

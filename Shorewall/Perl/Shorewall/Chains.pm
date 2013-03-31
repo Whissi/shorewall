@@ -5056,7 +5056,7 @@ sub do_dscp( $ ) {
 
     $value = $dscpmap{$dscp} unless defined $value;
 
-    fatal_error( "Invalid DSCP ($dscp)" ) unless defined $value && $value < 0x2f && ! ( $value & 1 );
+    fatal_error( "Invalid DSCP ($dscp)" ) unless defined $value && $value < 0x3f && ! ( $value & 1 );
 
     "-m dscp ${invert}--dscp $value ";
 }

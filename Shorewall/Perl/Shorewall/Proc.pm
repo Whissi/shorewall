@@ -327,10 +327,14 @@ sub setup_interface_proc( $ ) {
 	push @emitted, "echo $value > /proc/sys/net/ipv4/conf/$physical/accept_source_route";
     }
 
+    if ( interface_has_option( $interface, 'forward' , $value ) ) {
+	push @emitted, "echo $value > /proc/sys/net/ipv6/conf/$physical/forwarding";
+    }
+
     if ( interface_has_option( $interface, 'accept_ra' , $value ) ) {
 	push @emitted, "echo $value > /proc/sys/net/ipv6/conf/$physical/accept_ra";
     }
-
+	
     if ( @emitted ) {
 	emit( 'if [ $COMMAND = enable ]; then' );
 	push_indent;

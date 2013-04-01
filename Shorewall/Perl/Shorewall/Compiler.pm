@@ -754,14 +754,14 @@ sub compiler {
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
     #
+    enable_script;
+    #
     # Validate the TC files so that the providers will know what interfaces have TC
     #
     my $tcinterfaces = process_tc;
     #
     # Generate a function to bring up each provider
     #
-    enable_script;
-
     process_providers( $tcinterfaces );
     #
     # [Re-]establish Routing

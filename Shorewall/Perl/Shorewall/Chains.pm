@@ -315,12 +315,11 @@ our $VERSION = 'MODULEVERSION';
 #       'loglevel', 'synparams', 'synchain', 'audit' and 'default' only apply to policy chains.
 ###########################################################################################################################################
 #
-# For each ordered pair of zones, there may exist a 'canonical rules chain' in the filter table; the name if this chain is formed by
+# For each ordered pair of zones, there may exist a 'canonical rules chain' in the filter table; the name of this chain is formed by
 # joining the names of the zones using the ZONE_SEPARATOR ('2' or '-'). This chain contains the rules that specifically deal with
 # connections from the first zone to the second. These chains will end with the policy rules when EXPAND_POLICIES=Yes and when there is an
 # explicit policy for the order pair. Otherwise, unless the applicable policy is CONTINUE, the chain will terminate with a jump to a
 # wildcard policy chain (all[2-]zone, zone[2-]all, or all[2-]all).
-#
 #
 # Except in the most trivial one-interface configurations, each zone has a "forward chain" which is branched to from the filter table
 # FORWARD chain. 
@@ -366,11 +365,12 @@ our $VERSION = 'MODULEVERSION';
 #   Zone-pair chains for rules chain <z12z2>
 #
 #      Syn Flood       - @<z12z2>
-#      Blacklist       - ~<z12z2>
+#      Blacklist       - <z12z2>~
 #      Established     - ^<z12z2>
 #      Related         - +<z12z2>
 #      Invalid         - _<z12z2>
 #      Untracked       - &<z12z2>
+#
 our %chain_table;
 our $raw_table;
 our $rawpost_table;

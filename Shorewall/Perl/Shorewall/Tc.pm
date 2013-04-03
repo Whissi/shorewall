@@ -2026,6 +2026,7 @@ sub process_traffic_shaping() {
 	my $defmark = in_hexp ( $devref->{default} || 0 );
 	my $devnum  = in_hexp $devref->{number};
 	my $r2q     = int calculate_r2q $devref->{out_bandwidth};
+	my $qdisc   = $devref->{qdisc};
 
 	fatal_error "No default class defined for device $devname" unless defined $devref->{default};
 
@@ -2048,10 +2049,11 @@ sub process_traffic_shaping() {
 	    push_indent;
 
 	    emit ( "qt \$TC qdisc del dev $device root",
-		   "qt \$TC qdisc del dev $device ingress",
-		   "${dev}_mtu=\$(get_device_mtu $device)",
+		   "qt \$TC qdisc del dev $device ingress" );
+
+	    emit ( "${dev}_mtu=\$(get_device_mtu $device)",
 		   "${dev}_mtu1=\$(get_device_mtu1 $device)"
-		 );
+		 ) if $qdisc eq 'htb';
 
 	    my $stab;
 
@@ -2064,7 +2066,7 @@ sub process_traffic_shaping() {
 		$stab = '';
 	    }
 
-	    if ( $devref->{qdisc} eq 'htb' ) {
+	    if ( $qdisc eq 'htb' ) {
 		emit ( "run_tc qdisc add dev $device ${stab}root handle $devnum: htb default $defmark r2q $r2q" ,
 		       "run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $devref->{out_bandwidth} \$${dev}_mtu1" );
 	    } else {
@@ -2118,15 +2120,15 @@ sub process_traffic_shaping() {
 		my $rawrate  = $tcref->{rate};
 		my $rate     = "${rawrate}kbit";
 		my $lsceil   = $tcref->{lsceil};
-		my $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
+		my $quantum;
 
 		$classids{$classid}=$devname;
 
 		my $parent   = in_hexp $tcref->{parent};
 
-		emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
-
 		if ( $devref->{qdisc} eq 'htb' ) {
+		    $quantum  = calculate_quantum $rate, calculate_r2q( $devref->{out_bandwidth} );
+		    emit ( "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" );
 		    emit ( "run_tc class add dev $device parent $devicenumber:$parent classid $classid htb rate $rate ceil $tcref->{ceiling}kbit prio $tcref->{priority} \$${dev}_mtu1 quantum \$quantum" );
 		} else {
 		    my $dmax = $tcref->{dmax};
@@ -2186,7 +2188,7 @@ sub process_traffic_shaping() {
 			1 while $devnums[++$sfq];
 
 			$sfqinhex = in_hexp( $sfq);
-			if ( $devref->{qdisc} eq 'htb' ) {
+			if ( $qdisc eq 'htb' ) {
 			    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq quantum \$quantum limit $tcref->{limit} perturb 10" );
 			} else {
 			    emit( "run_tc qdisc add dev $device parent $classid handle $sfqinhex: sfq limit $tcref->{limit} perturb 10" );

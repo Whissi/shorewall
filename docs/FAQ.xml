@@ -2387,6 +2387,23 @@ root@gateway:/etc/shorewall#
 
       <programlisting><emphasis role="bold">ethtool -K eth</emphasis>N <emphasis
           role="bold">gro off</emphasis></programlisting>
+
+      <para>Beginning with Shorewall 4.4.25, another option is available in
+      the form of a <firstterm>rate-estimated policing
+      filter</firstterm>.</para>
+
+      <para>Example from /etc/shorewall/tcdevices:</para>
+
+      <programlisting>#NUMBER:        IN-BANDWIDTH            OUT-BANDWIDTH   OPTIONS
+#INTERFACE
+1:COMB_IF       <emphasis role="bold">~20mbit:250ms:4sec</emphasis>      ${UPLOAD}kbit   hfsc,linklayer=ethernet,overhead=0</programlisting>
+
+      <para>To create a rate-estimated filter, precede the bandwidth with a
+      tilde ("~"). The optional interval and decay_interval determine how
+      often the rate is estimated and how many samples are retained for
+      estimating. Please see <ulink
+      url="http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt">http://ace-host.stuart.id.au/russell/files/tc/doc/estimators.txt</ulink>
+      for details.</para>
     </section>
   </section>
 

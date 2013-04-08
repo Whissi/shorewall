@@ -252,6 +252,7 @@ our %EXPORT_TAGS = (
 				       create_stop_load
 				       initialize_switches
 				       %targets
+				       %builtin_target
 				       %dscpmap
 				       %nfobjects
 				     ) ],

@@ -1621,6 +1621,7 @@ sub process_actions() {
 	    my $type     = ACTION;
 	    my $noinline = 0;
 	    my $nolog    = 0;
+	    my $builtin  = 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1637,6 +1638,8 @@ sub process_actions() {
 			$noinline = 1;
 		    } elsif ( $_ eq 'nolog' ) {
 			$nolog = 1;
+		    } elsif ( $_ eq 'builtin' ) {
+			$builtin = 1;
 		    } else {
 			fatal_error "Invalid option ($_)";
 		    }
@@ -1660,13 +1663,18 @@ sub process_actions() {
 		}
 	    }
 
-	    new_action $action, $type, $noinline, $nolog;
+	    if ( $builtin ) {
+		$targets{$action}         = STANDARD;
+		$builtin_target{$action}  = 1;
+	    } else {
+		new_action $action, $type, $noinline, $nolog;
 
-	    my $actionfile = find_file( "action.$action" );
+		my $actionfile = find_file( "action.$action" );
 
-	    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-	    $inlines{$action} = { file => $actionfile, nolog => $nolog } if $type == INLINE;
+		$inlines{$action} = { file => $actionfile, nolog => $nolog } if $type == INLINE;
+	    }
 	}
     }
 

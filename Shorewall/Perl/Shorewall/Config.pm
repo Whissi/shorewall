@@ -63,6 +63,7 @@ our @EXPORT = qw(
 		 get_action_logging
 		 get_action_disposition
 		 set_action_param
+		 get_inline_matches
 
 		 have_capability
 		 require_capability
@@ -154,6 +155,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $debug
 				       $file_format
 				       $comment
+
 				       %config
 				       %globals
 				       %config_files
@@ -495,6 +497,7 @@ our %compiler_params;
 #
 our %actparms;
 our $parmsmodified;
+our $inline_matches;
 
 our $currentline;            # Current config file line image
 our $currentfile;            # File handle reference
@@ -1948,18 +1951,22 @@ sub split_line1( $$;$$ ) {
 	$pairs =~ s/^\s*//;
 	$pairs =~ s/\s*$//;
 
-	my @pairs = split( /,?\s+/, $pairs );
+	if ( $first eq 'INLINE') {
+	    $inline_matches = $pairs;
+	} else {
+	    my @pairs = split( /,?\s+/, $pairs );
 
-	for ( @pairs ) {
-	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
-	    my ( $column, $value ) = ( lc $1, $2 );
-	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
-	    $column = $columnsref->{$column};
-	    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
-	    $value = $1 if $value =~ /^"([^"]+)"$/;
-	    fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
-	    fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
-	    $line[$column] = $value;
+	    for ( @pairs ) {
+		fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
+		my ( $column, $value ) = ( lc $1, $2 );
+		fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
+		$column = $columnsref->{$column};
+		fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+		$value = $1 if $value =~ /^"([^"]+)"$/;
+		fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
+		fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
+		$line[$column] = $value;
+	    }
 	}
     }
 
@@ -2825,6 +2832,13 @@ sub embedded_perl( $ ) {
 	$currentlinenumber = 0;
 	$ifstack = @ifstack;
     }
+}
+
+#
+# Return inline matches
+#
+sub get_inline_matches() {
+    $inline_matches;
 }
 
 #

@@ -1165,7 +1165,7 @@ sub setup_mac_lists( $ ) {
     my $target      = $globals{MACLIST_TARGET};
     my $level       = $config{MACLIST_LOG_LEVEL};
     my $disposition = $config{MACLIST_DISPOSITION};
-    my $audit       = $disposition =~ /^A_/;
+    my $audit       = $disposition =~ s/^A_//;
     my $ttl         = $config{MACLIST_TTL};
 
     progress_message2 "$doing MAC Filtration -- Phase $phase...";
@@ -1281,6 +1281,8 @@ sub setup_mac_lists( $ ) {
 	#
 	# Phase II
 	#
+	ensure_audit_chain( $target, $disposition, undef, $table ) if $audit;
+
 	for my $interface ( @maclist_interfaces ) {
 	    my $chainref = $chain_table{$table}{( $ttl ? macrecent_target $interface : mac_chain $interface )};
 	    my $chain    = $chainref->{name};

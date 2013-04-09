@@ -2520,15 +2520,15 @@ sub ensure_audit_blacklog_chain( $$$ ) {
 # Create and populate the passed AUDIT chain if it doesn't exist. Return chain name
 #
 
-sub ensure_audit_chain( $;$$ ) {
-    my ( $target, $action, $tgt ) = @_;
+sub ensure_audit_chain( $;$$$ ) {
+    my ( $target, $action, $tgt, $table ) = @_;
 
     my $save_comment = push_comment;
 
     my $ref = $filter_table->{$target};
 
     unless ( $ref ) {
-	$ref = new_chain 'filter', $target;
+	$ref = new_chain( $table || 'filter', $target );
 
 	unless ( $action ) {
 	    $action = $target;

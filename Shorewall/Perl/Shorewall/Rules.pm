@@ -1664,7 +1664,7 @@ sub process_actions() {
 	    }
 
 	    if ( $builtin ) {
-		$targets{$action}         = STANDARD;
+		$targets{$action}         = USERBUILTIN;
 		$builtin_target{$action}  = 1;
 	    } else {
 		new_action $action, $type, $noinline, $nolog;
@@ -2151,6 +2151,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
 	$action   = 'LOG';
     } elsif ( ! ( $actiontype & (ACTION | INLINE) ) ) {
+	fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
 

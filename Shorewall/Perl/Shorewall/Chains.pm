@@ -96,6 +96,7 @@ our @EXPORT = ( qw(
 		    INLINE
 		    TERMINATING
 		    STATEMATCH
+		    USERBUILTIN
 
 		    %chain_table
 		    %targets
@@ -402,6 +403,7 @@ use constant { STANDARD     =>     0x1,       #defined by Netfilter
 	       NFLOG        =>  0x4000,       #NFLOG or ULOG
 	       INLINE       =>  0x8000,       #Inline action
 	       STATEMATCH   => 0x10000,       #action.Invalid, action.Related, etc.
+	       USERBUILTIN  => 0x20000,       #Builtin action from user's actions file.
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -2119,7 +2121,9 @@ sub add_jump( $$$;$$$ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
+	my ( $target ) = split ' ', $to;
+	$toref = $chain_table{$fromref->{table}}{$target};
+	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
     }
 
     #
@@ -2170,7 +2174,9 @@ sub add_ijump( $$$;@ ) {
 	#
 	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
 	#
-	$toref = ensure_chain( $fromref->{table} , $to ) unless $builtin_target{$to} || $to =~ / --/; #If the target has options, it must be a builtin.
+	my ( $target ) = split ' ', $to;
+	$toref = $chain_table{$fromref->{table}}{$target};
+	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
     }
 
     #

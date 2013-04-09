@@ -1947,6 +1947,8 @@ sub split_line1( $$;$$ ) {
 
     push @line, '-' while @line < $maxcolumns;
 
+    $inline_matches = '';
+
     if ( supplied $pairs ) {
 	$pairs =~ s/^\s*//;
 	$pairs =~ s/\s*$//;

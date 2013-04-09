@@ -362,6 +362,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 ARPTABLESJF     => 'Arptables JF',
 		 MASQUERADE_TGT  => 'MASQUERADE Target',
 		 UDPLITEREDIRECT => 'UDPLITE Port Redirection',
+		 NEW_TOS_MATCH   => 'New tos Match',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -656,7 +657,7 @@ sub initialize( $;$$) {
 		    KLUDGEFREE              => '',
 		    STATEMATCH              => '-m state --state',
 		    VERSION                 => "4.5.13-Beta3",
-		    CAPVERSION              => 40514 ,
+		    CAPVERSION              => 40515 ,
 		  );
     #
     # From shorewall.conf file
@@ -912,6 +913,7 @@ sub initialize( $;$$) {
 	       ARPTABLESJF => undef,
 	       MASQUERADE_TGT => undef,
 	       UDPLITEREDIRECT => undef,
+	       NEW_TOS_MATCH => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -3769,6 +3771,10 @@ sub Xconnmark() {
     have_capability( 'XCONNMARK_MATCH' ) && have_capability( 'XMARK' ) && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
 }
 
+sub New_Tos_Match() {
+    qt1( "$iptables -t mangle -A $sillyname -m tos --tos 0x10/0xff" );
+}
+
 sub Classify_Target() {
     have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
 }
@@ -4146,6 +4152,7 @@ our %detect_capability =
       OLD_CONNTRACK_MATCH => \&Old_Conntrack_Match,
       OLD_HL_MATCH => \&Old_Hashlimit_Match,
       OLD_IPP2P_MATCH => \&Old_Ipp2p_Match,
+      NEW_TOS_MATCH => \&New_Tos_Match,
       OWNER_MATCH => \&Owner_Match,
       OWNER_NAME_MATCH => \&Owner_Name_Match,
       PERSISTENT_SNAT => \&Persistent_Snat,
@@ -4311,6 +4318,7 @@ sub determine_capabilities() {
 	$capabilities{CHECKSUM_TARGET} = detect_capability( 'CHECKSUM_TARGET' );
 	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
+	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
 	
 	if ( have_capability 'CT_TARGET' ) {
 	    $capabilities{$_} = detect_capability $_ for ( values( %helpers_map ) );

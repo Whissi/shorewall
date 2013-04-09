@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40514
+SHOREWALL_CAPVERSION=40515
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -2200,6 +2200,7 @@ determine_capabilities() {
     ARPTABLESJF=
     MASQUERADE_TGT=
     UDPLITEREDIRECT=
+    NEW_TOS_MATCH=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -2371,6 +2372,7 @@ determine_capabilities() {
 	qt $g_tool -t mangle -A $chain -j DSCP --set-dscp 0 && DSCP_TARGET=Yes
 	qt $g_tool -t mangle -A $chain -m rpfilter && RPFILTER_MATCH=Yes
 	qt $g_tool -t mangle -A $chain -j CHECKSUM --checksum-fill && CHECKSUM_TARGET=Yes
+	qt $g_tool -t mangle -A $chain -m tos --tos 0x10/0xff && NEW_TOS_MATCH=Yes
 
 	qt $g_tool -t mangle -F $chain
 	qt $g_tool -t mangle -X $chain
@@ -2612,6 +2614,7 @@ report_capabilities_unsorted() {
     report_capability "Arptables JF" $ARPTABLESJF
     report_capability "MASQUERADE Target" $MASQUERADE_TGT
     report_capability "UDPLITE Port Redirection" $UDPLITEREDIRECT
+    report_capability "New tos Match" $NEW_TOS_MATCH
 
     report_capability "Amanda Helper" $AMANDA_HELPER
     report_capability "FTP Helper" $FTP_HELPER
@@ -2733,6 +2736,7 @@ report_capabilities_unsorted1() {
     report_capability1 ARPTABLESJF
     report_capability1 MASQUERADE_TGT
     report_capability1 UDPLITEREDIRECT
+    report_capability1 NEW_TOS_MATCH
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

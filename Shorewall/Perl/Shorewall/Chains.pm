@@ -2516,6 +2516,9 @@ sub ensure_audit_blacklog_chain( $$$ ) {
 	log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target );
+
+	$target =~ s/^A_//;
+ 
 	add_ijump( $logchainref, g => $target );
     }
 

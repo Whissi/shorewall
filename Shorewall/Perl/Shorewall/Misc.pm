@@ -1165,7 +1165,7 @@ sub setup_mac_lists( $ ) {
     my $target      = $globals{MACLIST_TARGET};
     my $level       = $config{MACLIST_LOG_LEVEL};
     my $disposition = $config{MACLIST_DISPOSITION};
-    my $audit       = $disposition =~ s/^A_//;
+    my $audit       = ( $disposition =~ s/^A_// );
     my $ttl         = $config{MACLIST_TTL};
 
     progress_message2 "$doing MAC Filtration -- Phase $phase...";

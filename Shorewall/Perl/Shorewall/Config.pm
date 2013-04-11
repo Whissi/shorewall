@@ -1904,6 +1904,8 @@ sub split_line1( $$;$$ ) {
 	my @maxcolumns = ( keys %$columnsref );
 	$maxcolumns = @maxcolumns;
     }
+
+    $inline_matches = '';
     #
     # First see if there is a semicolon on the line; what follows will be column/value paris
     #
@@ -1914,6 +1916,20 @@ sub split_line1( $$;$$ ) {
 	# Found it -- be sure there wasn't more than one.
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
+
+	if ( $currentline =~ /^\s*INLINE(?:\(.*\))?\s/) {
+	    $inline_matches = $pairs;
+
+	    if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
+		#
+		# Pairs are enclosed in curly brackets.
+		#
+		$columns = $1;
+		$pairs   = $2;
+	    } else {
+		$pairs = '';
+	    }
+	}
     } elsif ( $currentline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
 	#
 	# Pairs are enclosed in curly brackets.
@@ -1949,28 +1965,22 @@ sub split_line1( $$;$$ ) {
 
     push @line, '-' while @line < $maxcolumns;
 
-    $inline_matches = '';
-
     if ( supplied $pairs ) {
 	$pairs =~ s/^\s*//;
 	$pairs =~ s/\s*$//;
 
-	if ( $first =~ /^INLINE(?:\(.*\))?$/) {
-	    $inline_matches = $pairs;
-	} else {
-	    my @pairs = split( /,?\s+/, $pairs );
+	my @pairs = split( /,?\s+/, $pairs );
 
-	    for ( @pairs ) {
-		fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
-		my ( $column, $value ) = ( lc $1, $2 );
-		fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
-		$column = $columnsref->{$column};
-		fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
-		$value = $1 if $value =~ /^"([^"]+)"$/;
-		fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
-		fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
-		$line[$column] = $value;
-	    }
+	for ( @pairs ) {
+	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
+	    my ( $column, $value ) = ( lc $1, $2 );
+	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
+	    $column = $columnsref->{$column};
+	    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+	    $value = $1 if $value =~ /^"([^"]+)"$/;
+	    fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
+	    fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
+	    $line[$column] = $value;
 	}
     }
 

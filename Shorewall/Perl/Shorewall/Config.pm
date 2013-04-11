@@ -207,7 +207,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.5_12';
+our $VERSION = 'MODULEVERSION';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -1955,7 +1955,7 @@ sub split_line1( $$;$$ ) {
 	$pairs =~ s/^\s*//;
 	$pairs =~ s/\s*$//;
 
-	if ( $first eq 'INLINE') {
+	if ( $first =~ /^INLINE(?:\(.*\))?$/) {
 	    $inline_matches = $pairs;
 	} else {
 	    my @pairs = split( /,?\s+/, $pairs );

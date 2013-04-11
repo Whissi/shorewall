@@ -2089,6 +2089,27 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
     $param = '' unless defined $param;
 
+    if ( $basictarget eq 'INLINE' ) {
+	my $inline_matches = get_inline_matches;
+
+	if ( $inline_matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+	    $matches .= $1;
+	    $action = $2;
+	    fatal_error "INLINE may not have a parameter when '-j' is specified in the free-form area" if $param ne '';
+	} else {
+	    $matches .= "$inline_matches ";
+
+	    if ( $param eq '' ) {
+		$action = '';
+	    } else {
+		( $action, $loglevel )   = split_action $param;
+		( $basictarget, $param ) = get_target_param $action;
+		$param = '' unless defined $param;
+	    }
+	}
+
+	$rule = $matches;
+    }
     #
     # Determine the validity of the action
     #
@@ -2238,20 +2259,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		  fatal_error "HELPER requires require that the helper be specified in the HELPER column" if $helper eq '-';
 		  fatal_error "HELPER rules may only appear in the NEW section" unless $section == NEW_SECTION;
 		  $action = ''; } ,
-
-             INLINE => sub {
-		 my $inline_matches = get_inline_matches;
-
-		 if ( $inline_matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
-		     $matches .= $1;
-		     $action = $2;
-		 } else {
-		     $matches .= "$inline_matches ";
-		     $action = '';
-		 }
-
-		 $rule = $matches;
-	     } ,
 	    );
 
 	my $function = $functions{ $bt };

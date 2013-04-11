@@ -97,6 +97,7 @@ our @EXPORT = ( qw(
 		    TERMINATING
 		    STATEMATCH
 		    USERBUILTIN
+		    INLINERULE
 
 		    %chain_table
 		    %targets
@@ -404,6 +405,7 @@ use constant { STANDARD     =>     0x1,       #defined by Netfilter
 	       INLINE       =>  0x8000,       #Inline action
 	       STATEMATCH   => 0x10000,       #action.Invalid, action.Related, etc.
 	       USERBUILTIN  => 0x20000,       #Builtin action from user's actions file.
+	       INLINERULE   => 0x40000,       #INLINE
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -2624,6 +2626,7 @@ sub initialize_chain_table($) {
 		    'DEL'             => STANDARD + SET,
 		    'WHITELIST'       => STANDARD,
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
+		    'INLINE'          => INLINERULE,
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
@@ -2686,6 +2689,7 @@ sub initialize_chain_table($) {
 		    'DEL'             => STANDARD + SET,
 		    'WHITELIST'       => STANDARD,
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
+		    'INLINE'          => INLINERULE,
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {

@@ -2238,6 +2238,20 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		  fatal_error "HELPER requires require that the helper be specified in the HELPER column" if $helper eq '-';
 		  fatal_error "HELPER rules may only appear in the NEW section" unless $section == NEW_SECTION;
 		  $action = ''; } ,
+
+             INLINE => sub {
+		 my $inline_matches = get_inline_matches;
+
+		 if ( $inline_matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+		     $matches .= $1;
+		     $action = $2;
+		 } else {
+		     $matches .= "$inline_matches ";
+		     $action = '';
+		 }
+
+		 $rule = $matches;
+	     } ,
 	    );
 
 	my $function = $functions{ $bt };

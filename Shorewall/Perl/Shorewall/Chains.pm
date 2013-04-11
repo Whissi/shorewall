@@ -2534,10 +2534,12 @@ sub ensure_audit_chain( $;$$$ ) {
 
     my $save_comment = push_comment;
 
-    my $ref = $filter_table->{$target};
+    $table = $table || 'filter';
+
+    my $ref = $chain_table{$table}{$target};
 
     unless ( $ref ) {
-	$ref = new_chain( $table || 'filter', $target );
+	$ref = new_chain( $table, $target );
 
 	unless ( $action ) {
 	    $action = $target;

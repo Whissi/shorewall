@@ -1394,7 +1394,7 @@ sub generate_source_rules( $$$;@ ) {
     my ( $outchainref, $z1, $z2, @matches ) = @_;
     my $chain = rules_target ( $z1, $z2 );
 
-    if ( $chain ) {
+    if ( $chain && $chain ne 'NONE' ) {
 	#
 	# Not a CONTINUE policy with no rules
 	#

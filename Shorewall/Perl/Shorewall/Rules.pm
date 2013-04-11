@@ -2100,7 +2100,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    $matches .= "$inline_matches ";
 
 	    if ( $param eq '' ) {
-		$action = '';
+		$action = $loglevel ? 'LOG' : '';
 	    } else {
 		( $action, $loglevel )   = split_action $param;
 		( $basictarget, $param ) = get_target_param $action;

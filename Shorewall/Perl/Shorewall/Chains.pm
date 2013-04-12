@@ -513,7 +513,7 @@ our $mode;
 #
 # A reference to this rule is returned when we try to push a rule onto a 'complete' chain
 #
-our $dummyrule = { simple => 1, mode => CAT_MODE };
+our $dummyrule = { simple => 1, matches => [], mode => CAT_MODE };
 
 #
 # Address Family
@@ -619,6 +619,7 @@ our %opttype = ( rule          => CONTROL,
 		 mode          => CONTROL,
 		 cmdlevel      => CONTROL,
 		 simple        => CONTROL,
+		 matches       => CONTROL,
 
 		 i             => UNIQUE,
 		 s             => UNIQUE,
@@ -634,6 +635,8 @@ our %opttype = ( rule          => CONTROL,
 
 		 policy        => MATCH,
 		 state         => EXCLUSIVE,
+		 'conntrack --ctstate' =>
+		                  EXCLUSIVE,
 
 		 conntrack     => COMPLEX,
 
@@ -831,12 +834,13 @@ sub set_rule_option( $$$ ) {
 	}
     } else {
 	$ruleref->{$option} = $value;
+	push @{$ruleref->{matches}}, $option;
     }
 }
 
 sub transform_rule( $;\$ ) {
     my ( $input, $completeref ) = @_;
-    my $ruleref  = { mode => CAT_MODE, target => '' };
+    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' };
     my $simple   = 1;
     my $target   = '';
     my $jump     = '';
@@ -950,10 +954,16 @@ sub format_option( $$ ) {
     $rule;
 }
 
+sub debug() {
+    return 1;
+}
+
 sub format_rule( $$;$ ) {
     my ( $chainref, $ruleref, $suppresshdr ) = @_;
 
     return $ruleref->{cmd} if exists $ruleref->{cmd};
+
+    debug if $chainref->{name} eq 'drct-net';
 
     my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
 
@@ -971,10 +981,19 @@ sub format_rule( $$;$ ) {
 	}
     }
 
-    $rule .= format_option( 'state',   $ruleref->{state} )   if defined $ruleref->{state};
     $rule .= format_option( 'policy',  $ruleref->{policy} )  if defined $ruleref->{policy};
 
-    $rule .= format_option( $_, $ruleref->{$_} ) for sort ( grep ! $opttype{$_}, keys %{$ruleref} );
+    if ( defined ( my $state = $ruleref->{'conntrack --ctstate'} ) ) {
+	$rule .= format_option( 'conntrack --ctstate' , $state );
+    } elsif ( defined $ruleref->{state} ) {
+	$rule .= format_option( 'state',   $ruleref->{state} );
+    }
+
+    my %done;
+
+    for ( grep ! $opttype{$_}, @{$ruleref->{matches}} ) {
+	$rule .= format_option( $_, $ruleref->{$_} ) unless $done{$_}++;
+    }
 
     if ( $ruleref->{target} ) {
 	$rule .= join( ' ', " -$ruleref->{jump}", $ruleref->{target} );
@@ -1039,6 +1058,12 @@ sub merge_rules( $$$ ) {
 
     unless ( $toref->{state} ) {
 	set_rule_option ( $toref, 'state',   $fromref->{state} ) if $fromref->{state};
+    }
+
+    unless ( $toref->{'conntrack --ctstate'} ) {
+	set_rule_option( $toref,
+			 'conntrack --ctstate',
+			 $fromref->{'conntrack --ctstate'} ) if $fromref->{'conntrack --ctstate'};
     }
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
@@ -1302,6 +1327,7 @@ sub push_matches {
 	} else {
 	    $ruleref->{$option} = $value;
 	    $dont_optimize ||= $option =~ /^[piosd]$/ && $value =~ /^!/;
+	    push @{$ruleref->{matches}}, $option;
 	}
     }
 
@@ -1313,7 +1339,7 @@ sub push_irule( $$$;@ ) {
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
 
-    my $ruleref       = {};
+    my $ruleref       = { matches => [] };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1476,7 +1502,12 @@ sub clone_rule( $ ) {
     my $newruleref = {};
 
     while ( my ( $key, $value ) = each %$oldruleref ) {
-	$newruleref->{$key} = $value;
+	if ( reftype $value ) {
+	    my @array = @$value;
+	    $newruleref->{$key} = \@array;
+	} else {
+	    $newruleref->{$key} = $value;
+	}
     }
 
     $newruleref;
@@ -3546,6 +3577,20 @@ sub combine_dports {
 			$baseref->{multiport} = [ '--sports ' . $multi_sports , '--dports ' . join(',', @ports ) ];
 		    } else {
 			$baseref->{'multiport'} = '--dports ' . join( ',' , @ports  );
+		    }
+
+		    my @matches = @{$baseref->{matches}};
+
+		    $baseref->{matches} = [];
+
+		    my $switched = 0;
+
+		    for ( @matches ) {
+			if ( $_ eq 'dport' || $_ eq 'sport' ) {
+			    push @{$baseref->{matches}}, 'multiport' unless $switched++;
+			} else {
+			    push @{$baseref->{matches}}, $_;
+			}
 		    }
 
 		    $baseref->{comment} = $comment if $comment;

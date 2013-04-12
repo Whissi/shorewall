@@ -1965,12 +1965,14 @@ sub handle_stickiness( $ ) {
 			$rule2 = clone_rule( $_ );
 
 			clear_rule_target( $rule2 );
-			set_rule_option( $rule2, 'mark', "--mark 0/$mask -m recent --name $list --remove" );
+			set_rule_option( $rule2, 'mark',   "--mark 0\/$mask" );
+			set_rule_option( $rule2, 'recent', "--name $list --remove" );
 		    } else {
 			$rule1 = clone_rule( $_ );
 
 			clear_rule_target( $rule1 );
-			set_rule_option( $rule1, 'mark', "--mark $mark\/$mask -m recent --name $list --set" );
+			set_rule_option( $rule1, 'mark',   "--mark $mark\/$mask" );
+			set_rule_option( $rule1, 'recent', "--name $list --set" );
 
 			$rule2 = '';
 		    }
@@ -1990,32 +1992,22 @@ sub handle_stickiness( $ ) {
 
 		for my $chainref ( $stickoref, $setstickoref ) {
 		    if ( $chainref->{name} eq 'sticko' ) {
-			$rule1 = {};
-
-			while ( my ( $key, $value ) = each %$_ ) {
-			    $rule1->{$key} = $value;
-			}
+			$rule1 = clone_rule $_;
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
 			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300" );
 
-			$rule2 = {};
-
-			while ( my ( $key, $value ) = each %$_ ) {
-			    $rule2->{$key} = $value;
-			}
+			$rule2 = clone_rule $_;
 
 			clear_rule_target( $rule2 );
-			set_rule_option  ( $rule2, 'mark', "--mark 0\/$mask -m recent --name $list --rdest --remove" );
+			set_rule_option  ( $rule2, 'mark',   "--mark 0\/$mask" );
+			set_rule_option  ( $rule2, 'recent', "--name $list --rdest --remove" );
 		    } else {
-			$rule1 = {};
-
-			while ( my ( $key, $value ) = each %$_ ) {
-			    $rule1->{$key} = $value;
-			}
+			$rule1 = clone_rule $_;
 
 			clear_rule_target( $rule1 );
-			set_rule_option  ( $rule1, 'mark', "--mark $mark -m recent --name $list --rdest --set" );
+			set_rule_option  ( $rule1, 'mark',   "--mark $mark" );
+			set_rule_option  ( $rule1, 'recent', "--name $list --rdest --set" );
 
 			$rule2 = '';
 		    }

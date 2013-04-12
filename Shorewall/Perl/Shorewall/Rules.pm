@@ -2080,8 +2080,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     my $inchain   = ''; # Set to true when a chain reference is passed.
     my $normalized_target;
     my $normalized_action;
-    my $blacklist = ( $section == BLACKLIST_SECTION );
-    my $matches   = $rule;
+    my $blacklist   = ( $section == BLACKLIST_SECTION );
+    my $matches     = $rule;
+    my $raw_matches = '';
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2093,13 +2094,13 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	my $inline_matches = get_inline_matches;
 
 	if ( $inline_matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
-	    $matches .= $1;
+	    $raw_matches .= $1;
 	    $action = $2;
 	    my ( $target ) = split ' ', $action;
 	    fatal_error "Unknown jump target ($action)" unless $targets{$target};
 	    fatal_error "INLINE may not have a parameter when '-j' is specified in the free-form area" if $param ne '';
 	} else {
-	    $matches .= "$inline_matches ";
+	    $raw_matches .= "$inline_matches ";
 
 	    if ( $param eq '' ) {
 		$action = $loglevel ? 'LOG' : '';
@@ -2109,8 +2110,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		$param = '' unless defined $param;
 	    }
 	}
-
-	$rule = $matches;
     }
     #
     # Determine the validity of the action
@@ -2133,7 +2132,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	my $generated = process_macro( $basictarget,
 				       $chainref,
-				       $rule,
+				       $rule . $raw_matches,
 				       $target,
 				       $current_param,
 				       $source,
@@ -2477,7 +2476,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	my $generated = process_inline( $basictarget,
 					$chainref,
-					$rule,
+					$rule . $raw_matches,
 					$loglevel,
 					$target,
 					$current_param,
@@ -2519,6 +2518,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		       do_time( $time ) ,
 		       do_headers( $headers ) ,
 		       do_condition( $condition , $chain ) ,
+		       $raw_matches ,
 		     );
     } elsif ( $section & ( ESTABLISHED_SECTION | INVALID_SECTION | RELATED_SECTION | UNTRACKED_SECTION ) ) {
 	$rule .= join( '',
@@ -2531,6 +2531,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		       do_headers( $headers ) ,
 		       do_condition( $condition , $chain ) ,
 		       do_helper( $helper ) ,
+		       $raw_matches ,
 		     );
     } else {
 	$rule .= join( '',
@@ -2542,6 +2543,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		       do_time( $time ) ,
 		       do_headers( $headers ) ,
 		       do_condition( $condition , $chain ) ,
+		       $raw_matches ,
 		     );
     }
 
@@ -2615,7 +2617,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 			  do_ratelimit( $ratelimit, 'ACCEPT' ),
 			  do_user $user,
 			  do_test( $mark , $globals{TC_MASK} ),
-			  do_condition( $condition , $chain )
+			  do_condition( $condition , $chain ),
+			  $raw_matches,
 			);
 	    $loglevel = '';
 	    $action   = 'ACCEPT';

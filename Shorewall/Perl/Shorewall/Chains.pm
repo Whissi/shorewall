@@ -868,7 +868,7 @@ sub transform_rule( $;\$ ) {
 	} else {
 	    $simple = 0;
 	    if ( $option eq 'm' ) {
-		$input =~ s/(\w+)\s*//;
+		$input =~ s/([\w-]+)\s*//;
 		$option = $1;
 	    }
 	}

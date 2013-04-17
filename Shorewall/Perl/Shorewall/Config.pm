@@ -1917,7 +1917,7 @@ sub split_line1( $$;$$ ) {
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
 
-	if ( $currentline =~ /^\s*INLINE(?:\(.*\))?\s/) {
+	if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
 	    $inline_matches = $pairs;
 
 	    if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {

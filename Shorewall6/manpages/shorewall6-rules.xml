@@ -403,6 +403,47 @@
 
             <varlistentry>
               <term><emphasis
+              role="bold">INLINE</emphasis>[(<replaceable>action</replaceable>)]</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.16. This action allows you to
+                construct most of the rule yourself using ip6tables syntax.
+                The part that you specify must follow a semicolon (';') and is
+                completely free-form. If the target of the rule (the part
+                following 'j') is something that Shorewall supports in the
+                ACTION column, then you may enclose it in parentheses (e.g.,
+                INLINE(ACCEPT)). Otherwise, you can include it after the
+                semicolon. In this case, you must declare the target as a
+                builtin action in <ulink
+                url="shorewall6-actions.html">shorewall6-actions</ulink>(5).</para>
+
+                <para>Some considerations when using INLINE:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>The <option>p</option>, <option>s</option>,
+                    <option>d</option>, <option>i</option>,
+                    <option>o</option>, <option>policy</option>, and state
+                    match (<option>state</option> or <option>conntrack
+                    --ctstate</option>) matches will always appear in the
+                    front of the rule in that order.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>When multiple matches are specified, the compiler
+                    will keep them in the order in which they appear
+                    (excluding the above listed ones), but they will not
+                    necessarily be at the end of the generated rule. For
+                    example, if addresses are specified in the SOURCE and/or
+                    DEST columns, their generated matches will appear after
+                    those specified using ';'.</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
               role="bold">LOG:<replaceable>level</replaceable></emphasis></term>
 
               <listitem>
@@ -1557,6 +1598,30 @@
           <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
         #                                                                         PORT(S)
         DROP                          net:^ZZ          fw             tcp         25</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 8:</term>
+
+        <listitem>
+          <para>You want to generate your own rule involving ip6tables targets
+          and matches not supported by Shorewall.</para>
+
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
+        #                                                                         PORT(S)
+        INLINE                        $FW              net ; -p 6 -m mickey-mouse --name test -m set --match-set set1 src -m mickey-mouse --name test2 -j SECCTX --name test3</programlisting>
+
+          <para>The above will generate the following ip6tables-restore
+          input:</para>
+
+          <programlisting>        -A fw2net -p 6 -m mickey-mouse --name test -m set --match-set set1 src -m mickey-mouse --name test2 -j SECCTX --name test3</programlisting>
+
+          <para>Note that SECCTX must be defined as a builtin action in <ulink
+          url="shorewall6-actions.html">shorewall6-actions</ulink>(5):</para>
+
+          <programlisting>        #ACTION            OPTIONS
+        SECCTX             builtin</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

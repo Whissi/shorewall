@@ -834,8 +834,9 @@ sub set_rule_option( $$$ ) {
 	}
     } else {
 	$ruleref->{$option} = $value;
-	push @{$ruleref->{matches}}, $option;
     }
+    
+    push @{$ruleref->{matches}}, $option;
 }
 
 sub transform_rule( $;\$ ) {
@@ -945,27 +946,37 @@ sub set_rule_target( $$$ ) {
 sub format_option( $$ ) {
     my ( $option, $value ) = @_;
 
-    my $list = reftype $value ? $value : [ $value ];
+    assert( ! reftype $value );
 
     my $rule = '';
 
-    s/\s*$//, $rule .= join( ' ' , ' -m', $option, $_ ) for @$list;
+    $value =~ s/\s*$//;
+
+    $rule .= join( ' ' , ' -m', $option, $value );
 
     $rule;
 }
 
-sub debug() {
-    return 1;
+#
+# And one that 'pops' an option value
+#
+sub pop_match( $$ ) {
+    my ( $ruleref, $option ) = @_;
+    my $value = $ruleref->{$option};
+
+    $value = shift @{$ruleref->{$option}} if reftype $value;
+
+    $value;
 }
 
 sub format_rule( $$;$ ) {
-    my ( $chainref, $ruleref, $suppresshdr ) = @_;
+    my ( $chainref, $rulerefp, $suppresshdr ) = @_;
 
-    return $ruleref->{cmd} if exists $ruleref->{cmd};
-
-    debug if $chainref->{name} eq 'drct-net';
+    return $rulerefp->{cmd} if exists $rulerefp->{cmd};
 
     my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
+
+    my $ruleref = clone_rule( $rulerefp );
 
     for ( @unique_options ) {
 	if ( exists $ruleref->{$_} ) {
@@ -989,10 +1000,8 @@ sub format_rule( $$;$ ) {
 	$rule .= format_option( 'state',   $ruleref->{state} );
     }
 
-    my %done;
-
     for ( grep ! $opttype{$_}, @{$ruleref->{matches}} ) {
-	$rule .= format_option( $_, $ruleref->{$_} ) unless $done{$_}++;
+	$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
     }
 
     if ( $ruleref->{target} ) {
@@ -1327,8 +1336,9 @@ sub push_matches {
 	} else {
 	    $ruleref->{$option} = $value;
 	    $dont_optimize ||= $option =~ /^[piosd]$/ && $value =~ /^!/;
-	    push @{$ruleref->{matches}}, $option;
 	}
+
+	push @{$ruleref->{matches}}, $option;
     }
 
     DONT_OPTIMIZE if $dont_optimize;

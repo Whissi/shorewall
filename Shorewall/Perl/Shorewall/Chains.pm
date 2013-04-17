@@ -620,6 +620,7 @@ our %opttype = ( rule          => CONTROL,
 		 cmdlevel      => CONTROL,
 		 simple        => CONTROL,
 		 matches       => CONTROL,
+		 complex       => CONTROL,
 
 		 i             => UNIQUE,
 		 s             => UNIQUE,
@@ -813,6 +814,7 @@ sub set_rule_option( $$$ ) {
 
 		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 		push @{$ruleref->{matches}}, $option;
+		$ruleref->{complex} = 1;
 	    } else {
 		assert( ! reftype $value );
 		$ruleref->{$option} = join(' ', $value1, $value ) unless $value1 eq $value;
@@ -964,10 +966,10 @@ sub pop_match( $$ ) {
     my ( $ruleref, $option ) = @_;
     my $value = $ruleref->{$option};
 
-    $value = shift @{$ruleref->{$option}} if reftype $value;
-
-    $value;
+    reftype $value ? shift @{$ruleref->{$option}} : $value;
 }
+
+sub clone_rule( $ );
 
 sub format_rule( $$;$ ) {
     my ( $chainref, $rulerefp, $suppresshdr ) = @_;
@@ -975,8 +977,10 @@ sub format_rule( $$;$ ) {
     return $rulerefp->{cmd} if exists $rulerefp->{cmd};
 
     my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
-
-    my $ruleref = clone_rule( $rulerefp );
+    #
+    # The code the follows can be destructive of the rule so we clone it
+    #
+    my $ruleref = $rulerefp->{complex} ? clone_rule( $rulerefp ) : $rulerefp;
 
     for ( @unique_options ) {
 	if ( exists $ruleref->{$_} ) {
@@ -996,8 +1000,8 @@ sub format_rule( $$;$ ) {
 
     if ( defined ( my $state = $ruleref->{'conntrack --ctstate'} ) ) {
 	$rule .= format_option( 'conntrack --ctstate' , $state );
-    } elsif ( defined $ruleref->{state} ) {
-	$rule .= format_option( 'state',   $ruleref->{state} );
+    } elsif ( defined ( $state = $ruleref->{state} ) ) {
+	$rule .= format_option( 'state',   $state );
     }
 
     for ( grep ! $opttype{$_}, @{$ruleref->{matches}} ) {
@@ -1331,6 +1335,7 @@ sub push_matches {
 		$ruleref->{$option} = [ $curvalue ] unless reftype $curvalue;
 		push @{$ruleref->{$option}}, reftype $value ? @$value : $value;
 		push @{$ruleref->{matches}}, $option;
+		$ruleref->{complex} = 1;
 	    } else {
 		$ruleref->{$option} = join( '', $curvalue, $value );
 	    }

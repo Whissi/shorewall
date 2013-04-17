@@ -812,6 +812,7 @@ sub set_rule_option( $$$ ) {
 		}
 
 		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
+		push @{$ruleref->{matches}}, $option;
 	    } else {
 		assert( ! reftype $value );
 		$ruleref->{$option} = join(' ', $value1, $value ) unless $value1 eq $value;
@@ -834,9 +835,8 @@ sub set_rule_option( $$$ ) {
 	}
     } else {
 	$ruleref->{$option} = $value;
+	push @{$ruleref->{matches}}, $option;
     }
-    
-    push @{$ruleref->{matches}}, $option;
 }
 
 sub transform_rule( $;\$ ) {
@@ -1330,15 +1330,16 @@ sub push_matches {
 	    if ( $globals{KLUDGEFREE} ) {
 		$ruleref->{$option} = [ $curvalue ] unless reftype $curvalue;
 		push @{$ruleref->{$option}}, reftype $value ? @$value : $value;
+		push @{$ruleref->{matches}}, $option;
 	    } else {
 		$ruleref->{$option} = join( '', $curvalue, $value );
 	    }
 	} else {
 	    $ruleref->{$option} = $value;
 	    $dont_optimize ||= $option =~ /^[piosd]$/ && $value =~ /^!/;
+	    push @{$ruleref->{matches}}, $option;
 	}
 
-	push @{$ruleref->{matches}}, $option;
     }
 
     DONT_OPTIMIZE if $dont_optimize;

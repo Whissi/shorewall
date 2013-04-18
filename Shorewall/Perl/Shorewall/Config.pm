@@ -5029,10 +5029,10 @@ sub get_configuration( $$$$ ) {
 
     if ( supplied ( $val = $config{HELPERS} ) ) {
 	if ( $val eq 'none' ) {
-	    $val = $config{HELPERS} = '';
+	    $val = '';
 	}
     }  else {
-	$val = $config{HELPERS} = join( ',', grep $_ !~ /-0$/, keys %helpers_enabled );
+	$val = join( ',', grep $_ !~ /-0$/, keys %helpers_enabled );
 	$all = 1;
     }
 

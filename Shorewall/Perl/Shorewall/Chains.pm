@@ -807,7 +807,7 @@ sub set_rule_option( $$$ ) {
     if ( exists $ruleref->{$option} ) {
 	assert( defined( my $value1 = $ruleref->{$option} ) , $ruleref );
 
-	if ( $opttype == MATCH ) {
+	if ( $opttype == MATCH || $opttype == LAST ) {
 	    if ( $globals{KLUDGEFREE} ) {
 		unless ( reftype $value1 ) {
 		    unless ( reftype $value ) {

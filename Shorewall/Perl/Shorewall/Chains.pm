@@ -610,7 +610,8 @@ use constant { UNIQUE      => 1,
 	       EXCLUSIVE   => 4,
 	       MATCH       => 8,
 	       CONTROL     => 16,
-	       COMPLEX     => 32
+	       COMPLEX     => 32,
+	       LAST        => 64,
 	   };
 
 our %opttype = ( rule          => CONTROL,
@@ -646,6 +647,8 @@ our %opttype = ( rule          => CONTROL,
 		 jump          => TARGET,
 		 target        => TARGET,
 		 targetopts    => TARGET,
+
+		 nfacct        => LAST,
 	       );
 
 our %aliases = ( protocol        => 'p',
@@ -1011,6 +1014,10 @@ sub format_rule( $$;$ ) {
     }
 
     for ( grep ! $opttype{$_}, @{$ruleref->{matches}} ) {
+	$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
+    }
+
+    for ( grep( ( $opttype{$_} || 0 ) == LAST , @{$ruleref->{matches}} ) ) {
 	$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
     }
 

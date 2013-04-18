@@ -224,10 +224,9 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	    $target = validate_level $action;
 	} elsif ( $action =~ /^NFACCT\(([\w,]+)\)$/ ) {
 	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
-	    $nfobjects{$1} = 1;
 	    $target = '';
 	    my @objects = split_list $1, 'nfacct';
-	    $rule .= "-m nfacct --nfacct-name $_ " for @objects;
+	    $rule .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 

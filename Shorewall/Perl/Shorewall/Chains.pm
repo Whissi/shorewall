@@ -98,6 +98,7 @@ our @EXPORT = ( qw(
 		    STATEMATCH
 		    USERBUILTIN
 		    INLINERULE
+		    OPTIONS
 
 		    %chain_table
 		    %targets
@@ -406,6 +407,7 @@ use constant { STANDARD     =>     0x1,       #defined by Netfilter
 	       STATEMATCH   => 0x10000,       #action.Invalid, action.Related, etc.
 	       USERBUILTIN  => 0x20000,       #Builtin action from user's actions file.
 	       INLINERULE   => 0x40000,       #INLINE
+	       OPTIONS      => 0x80000,       #Target Accepts Options
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -904,6 +906,10 @@ sub transform_rule( $;\$ ) {
 
     if ( ( $ruleref->{simple} = $simple ) && $completeref ) {
 	$$completeref = 1 if $jump eq 'g' || $terminating{$target};
+    }
+
+    if ( $ruleref->{targetopts} && $targets{$target} ) {
+	fatal_error "The $target target does not accept options" unless $targets{$target} & OPTIONS;
     }
 
     $ruleref;
@@ -2647,7 +2653,7 @@ sub initialize_chain_table($) {
 		    'A_ACCEPT+'       => STANDARD  + NONAT + AUDIT,
 		    'A_ACCEPT!'       => STANDARD  + AUDIT,
 		    'NONAT'           => STANDARD  + NONAT + NATONLY,
-		    'AUDIT'           => STANDARD  + AUDIT,
+		    'AUDIT'           => STANDARD  + AUDIT + OPTIONS,
 		    'DROP'            => STANDARD,
 		    'DROP!'           => STANDARD,
 		    'A_DROP'          => STANDARD + AUDIT,
@@ -2656,20 +2662,20 @@ sub initialize_chain_table($) {
 		    'REJECT!'         => STANDARD,
 		    'A_REJECT'        => STANDARD + AUDIT,
 		    'A_REJECT!'       => STANDARD + AUDIT,
-		    'DNAT'            => NATRULE,
+		    'DNAT'            => NATRULE  + OPTIONS,
 		    'DNAT-'           => NATRULE  + NATONLY,
-		    'REDIRECT'        => NATRULE  + REDIRECT,
+		    'REDIRECT'        => NATRULE  + REDIRECT + OPTIONS,
 		    'REDIRECT-'       => NATRULE  + REDIRECT + NATONLY,
-		    'LOG'             => STANDARD + LOGRULE,
+		    'LOG'             => STANDARD + LOGRULE  + OPTIONS,
 		    'CONTINUE'        => STANDARD,
 		    'CONTINUE!'       => STANDARD,
 		    'COUNT'           => STANDARD,
-		    'QUEUE'           => STANDARD,
+		    'QUEUE'           => STANDARD + OPTIONS,
 		    'QUEUE!'          => STANDARD,
-		    'NFLOG'           => STANDARD + LOGRULE + NFLOG,
-		    'NFQUEUE'         => STANDARD + NFQ,
+		    'NFLOG'           => STANDARD + LOGRULE + NFLOG + OPTIONS,
+		    'NFQUEUE'         => STANDARD + NFQ + OPTIONS,
 		    'NFQUEUE!'        => STANDARD + NFQ,
-		    'ULOG'            => STANDARD + LOGRULE + NFLOG,
+		    'ULOG'            => STANDARD + LOGRULE + NFLOG + OPTIONS,
 		    'ADD'             => STANDARD + SET,
 		    'DEL'             => STANDARD + SET,
 		    'WHITELIST'       => STANDARD,
@@ -2709,7 +2715,7 @@ sub initialize_chain_table($) {
 		    'ACCEPT!'         => STANDARD,
 		    'A_ACCEPT+'       => STANDARD  + NONAT + AUDIT,
 		    'A_ACCEPT!'       => STANDARD  + AUDIT,
-		    'AUDIT'           => STANDARD  + AUDIT,
+		    'AUDIT'           => STANDARD  + AUDIT + OPTIONS,
 		    'A_ACCEPT'        => STANDARD  + AUDIT,
 		    'NONAT'           => STANDARD  + NONAT + NATONLY,
 		    'DROP'            => STANDARD,
@@ -2720,18 +2726,18 @@ sub initialize_chain_table($) {
 		    'REJECT!'         => STANDARD,
 		    'A_REJECT'        => STANDARD + AUDIT,
 		    'A_REJECT!'       => STANDARD + AUDIT,
-		    'DNAT'            => NATRULE,
+		    'DNAT'            => NATRULE  + OPTIONS,
 		    'DNAT-'           => NATRULE  + NATONLY,
-		    'REDIRECT'        => NATRULE  + REDIRECT,
+		    'REDIRECT'        => NATRULE  + REDIRECT + OPTIONS,
 		    'REDIRECT-'       => NATRULE  + REDIRECT + NATONLY,
-		    'LOG'             => STANDARD + LOGRULE,
+		    'LOG'             => STANDARD + LOGRULE  + OPTIONS,
 		    'CONTINUE'        => STANDARD,
 		    'CONTINUE!'       => STANDARD,
 		    'COUNT'           => STANDARD,
-		    'QUEUE'           => STANDARD,
+		    'QUEUE'           => STANDARD + OPTIONS,
 		    'QUEUE!'          => STANDARD,
-		    'NFLOG'           => STANDARD + LOGRULE + NFLOG,
-		    'NFQUEUE'         => STANDARD + NFQ,
+		    'NFLOG'           => STANDARD + LOGRULE + NFLOG + OPTIONS,
+		    'NFQUEUE'         => STANDARD + NFQ + OPTIONS,
 		    'NFQUEUE!'        => STANDARD + NFQ,
 		    'ULOG'            => STANDARD + LOGRULE + NFLOG,
 		    'ADD'             => STANDARD + SET,

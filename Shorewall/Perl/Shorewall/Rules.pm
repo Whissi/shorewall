@@ -1664,7 +1664,7 @@ sub process_actions() {
 	    }
 
 	    if ( $builtin ) {
-		$targets{$action}         = USERBUILTIN;
+		$targets{$action}         = USERBUILTIN + OPTIONS;
 		$builtin_target{$action}  = 1;
 	    } else {
 		new_action $action, $type, $noinline, $nolog;

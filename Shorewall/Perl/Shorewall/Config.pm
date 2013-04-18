@@ -3919,7 +3919,7 @@ sub FTP0_Helper() {
 }
 
 sub FTP_Helper() {
-    have_helper( 'ftp', 'tcp', 21 ) || FTP0_Helper;
+    have_helper( 'ftp', 'tcp', 21 ) || have_capability 'FTP0_HELPER';
 }
 
 sub H323_Helpers() {
@@ -3947,7 +3947,7 @@ sub SANE0_Helper() {
 }
 
 sub SANE_Helper() {
-    have_helper( 'sane', 'tcp', 6566 ) || SANE0_Helper;
+    have_helper( 'sane', 'tcp', 6566 ) || have_capability 'SANE0_HELPER';
 }
 
 sub SIP0_Helper() {
@@ -3955,7 +3955,7 @@ sub SIP0_Helper() {
 }
 
 sub SIP_Helper() {
-    have_helper( 'sip', 'udp', 5060 ) || SIP0_Helper;
+    have_helper( 'sip', 'udp', 5060 ) || have_capability 'SIP0_HELPER';
 }
 
 sub SNMP_Helper() {
@@ -3967,7 +3967,7 @@ sub TFTP0_Helper() {
 }
 
 sub TFTP_Helper() {
-    have_helper( 'tftp', 'udp', 69 ) || TFTP0_Helper;
+    have_helper( 'tftp', 'udp', 69 ) || have_capability 'TFTP0_HELPER';
 }
 
 sub Connlimit_Match() {
@@ -4330,9 +4330,7 @@ sub determine_capabilities() {
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
 	
-	if ( have_capability 'CT_TARGET' ) {
-	    $capabilities{$_} = detect_capability $_ for ( values( %helpers_map ) );
-	} else {
+	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
 	}
 
@@ -4653,6 +4651,12 @@ sub read_capabilities() {
 	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
 	$capabilities{KERNELVERSION} = 20630;
     }
+
+    $helpers_aliases{ftp}  = 'ftp-0',  $capabilities{FTP_HELPER}  = 1 if $capabilities{FTP0_HELPER};
+    $helpers_aliases{irc}  = 'irc-0',  $capabilities{IRC_HELPER}  = 1 if $capabilities{IRC0_HELPER};
+    $helpers_aliases{sane} = 'sane-0', $capabilities{SANE_HELPER} = 1 if $capabilities{SANE0_HELPER};
+    $helpers_aliases{sip}  = 'sip-0',  $capabilities{SIP_HELPER}  = 1 if $capabilities{SIP0_HELPER};
+    $helpers_aliases{tftp} = 'tftp-0', $capabilities{TFTP_HELPER} = 1 if $capabilities{TFTP0_HELPER};
 
     for ( keys %capabilities ) {
 	$capabilities{$_} = '' unless defined $capabilities{$_};
@@ -5021,13 +5025,53 @@ sub get_configuration( $$$$ ) {
 
     get_capabilities( $export );
 
-    report_capabilities unless $config{LOAD_HELPERS_ONLY};
+    my ( $val, $all );
 
-    $helpers_aliases{ftp}  = 'ftp-0',  $capabilities{FTP_HELPER}  = 1 if $capabilities{FTP0_HELPER};
-    $helpers_aliases{irc}  = 'irc-0',  $capabilities{IRC_HELPER}  = 1 if $capabilities{IRC0_HELPER};
-    $helpers_aliases{sane} = 'sane-0', $capabilities{SANE_HELPER} = 1 if $capabilities{SANE0_HELPER};
-    $helpers_aliases{sip}  = 'sip-0',  $capabilities{SIP_HELPER}  = 1 if $capabilities{SIP0_HELPER};
-    $helpers_aliases{tftp} = 'tftp-0', $capabilities{TFTP_HELPER} = 1 if $capabilities{TFTP0_HELPER};
+    if ( supplied ( $val = $config{HELPERS} ) ) {
+	if ( $val eq 'none' ) {
+	    $val = $config{HELPERS} = '';
+	}
+    }  else {
+	$val = $config{HELPERS} = join( ',', grep $_ !~ /-0$/, keys %helpers_enabled );
+	$all = 1;
+    }
+
+    if ( supplied $val ) {
+	my %helpers_temp = %helpers_enabled;
+
+	$helpers_temp{$_} = 0 for keys %helpers_temp;
+
+	my @helpers = split_list ( $val, 'helper' );
+
+	for ( split_list $config{HELPERS} , 'helper' ) {
+	    my $name = $_;
+	    if ( exists $helpers_enabled{$name} ) {
+		s/-/_/;
+
+		if ( $all ) {
+		    $helpers_temp{$name} = 1 if have_capability uc( $_ ) . '_HELPER' , 1;
+		} else {
+		    require_capability( uc( $_ ) . '_HELPER' , "The $name helper", 's' );
+		    $helpers_temp{$name} = 1;
+		}
+	    } else {
+		fatal_error "Unknown Helper ($_)";
+	    }
+	}
+
+	%helpers_enabled = %helpers_temp;
+
+	while ( my ( $helper, $enabled ) = each %helpers_enabled ) {
+	    $helper =~ s/-0/0/;
+	    $helper =~ s/-/_/;
+	    $capabilities{uc($helper) . '_HELPER'} = 0 unless $enabled; 
+	}
+    } elsif ( have_capability 'CT_TARGET' ) {
+	$helpers_enabled{$_} = 0 for keys %helpers_enabled;
+	$capabilities{$_}    = 0 for grep /_HELPER/ , keys %capabilities;
+    }
+
+    report_capabilities unless $config{LOAD_HELPERS_ONLY};
 
     #
     # Now initialize the used capabilities hash
@@ -5117,8 +5161,6 @@ sub get_configuration( $$$$ ) {
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );
-
-    my $val;
 
     if ( have_capability( 'KERNELVERSION' ) < 20631 ) {
 	check_trivalue ( 'ROUTE_FILTER',  '' );
@@ -5298,29 +5340,6 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'DEFER_DNS_RESOLUTION'       , 'Yes';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
-
-    if ( supplied $config{HELPERS} ) {
-	my %helpers_temp = %helpers_enabled;
-
-	$helpers_temp{$_} = 0 for keys %helpers_temp;
-
-	for ( split_list $config{HELPERS} , 'helper' ) {
-	    my $name = $_;
-	    if ( exists $helpers_enabled{$name} ) {
-		s/-/_/;
-		require_capability( uc( $_ ) . '_HELPER' , "The $name helper", 's' );
-		$helpers_temp{$name} = 1;
-	    } else {
-		fatal_error "Unknown Helper ($_)";
-	    }
-	}
-	
-	%helpers_enabled = %helpers_temp;
-
-	while ( my ( $helper, $enabled ) = each %helpers_enabled ) {
-	    $capabilities{uc($helper) . '_HELPER'} = 0 unless $enabled; 
-	}
-    }
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

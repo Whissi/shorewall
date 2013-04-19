@@ -6951,7 +6951,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 {
     my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
-	$rule,         # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST
+	$callersrule,  # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST
 	$source,       # SOURCE
 	$dest,         # DEST
 	$origdest,     # ORIGINAL DEST
@@ -6971,6 +6971,7 @@ sub expand_rule( $$$$$$$$$$;$ )
     my ( $jump, $mac,  $targetref, $basictarget );
     our @ends = ();
     my $deferdns = $config{DEFER_DNS_RESOLUTION};
+    my $rule = '';
 
     if ( $target ) {
 	( $basictarget, my $rest ) = split ' ', $target, 2;
@@ -7077,7 +7078,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	( $rule, $done ) = handle_exclusion( $disposition,
 					     $table,
-					     $rule,
+					     $rule . $callersrule,
 					     $restriction,
 					     $inets,
 					     $iexcl,
@@ -7114,7 +7115,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		for my $dnet ( split_host_list( $dnets, $deferdns ) ) {
 		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet, $restriction );
-		    my $matches = join( '', $rule, $source_match, $dest_match, $onet );
+		    my $matches = join( '', $source_match, $dest_match, $onet, $rule, $callersrule );
 
 		    my $cond3 = conditional_rule( $chainref, $dnet );
 

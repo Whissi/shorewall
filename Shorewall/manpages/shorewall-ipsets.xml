@@ -62,7 +62,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>In a DEST column, the following paris are equivalent:</para>
+    <para>In a DEST column, the following pairs are equivalent:</para>
 
     <itemizedlist>
       <listitem>
@@ -77,6 +77,20 @@
 
     <para>For information about set lists and exclusion, see <ulink
     url="shorewall-exclusion.html">shorewall-exclusion</ulink> (5).</para>
+
+    <para>Beginning with Shorewall 4.5.16, you can increment one or more
+    nfacct objects each time a packet matches an ipset. You do that by listing
+    the objects separated by commas within parentheses.</para>
+
+    <para>Example:</para>
+
+    <simplelist>
+      <member>+myset[src](myobject)</member>
+    </simplelist>
+
+    <para>In that example, when the source address of a packet matches the
+    <emphasis role="bold">myset</emphasis> ipset, the <emphasis
+    role="bold">myobject</emphasis> nfacct counter will be incremented.</para>
   </refsect1>
 
   <refsect1>

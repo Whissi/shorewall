@@ -649,6 +649,7 @@ our %opttype = ( rule          => CONTROL,
 		 targetopts    => TARGET,
 
 		 nfacct        => LAST,
+		 set           => LAST,
 	       );
 
 our %aliases = ( protocol        => 'p',
@@ -5430,8 +5431,15 @@ sub match_source_net( $;$\$ ) {
 	return do_mac $net;
     }
 
-    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?/ ) {
-	return join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
+	my $result = join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'src' ) );
+	if ( $3 ) {
+	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+	    my @objects = split_list $3, 'nfacct';
+	    $result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	}
+
+	return $result;
     }
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
@@ -5441,8 +5449,13 @@ sub match_source_net( $;$\$ ) {
 	fatal_error "Multiple ipset matches require the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
-	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'src' ) );
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
+	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'src' ) );
+	    if ( $3 ) {
+		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+		my @objects = split_list $3, 'nfacct';
+		$result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	    }
 	}
 
 	return $result;
@@ -5503,8 +5516,15 @@ sub imatch_source_net( $;$\$ ) {
 	return do_imac $net;
     }
 
-    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?/ ) {
-	return ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) ) );
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
+	my @result = ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'src' ) ) );
+	if ( $3 ) {
+	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+	    my @objects = split_list $3, 'nfacct';
+	    push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+	}
+
+	return @result;
     }
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
@@ -5514,11 +5534,16 @@ sub imatch_source_net( $;$\$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
-	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'src' ) ) );
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
+	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'src' ) ) );
+	    if ( $3 ) {
+		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+		my @objects = split_list $3, 'nfacct';
+		push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+	    }
 	}
 
-	return \@result;
+	return @result;
     }
 
     if ( $net =~ /^(!?)\^([A-Z\d]{2})$/ || $net =~ /^(!?)\^\[([A-Z,\d]+)\]$/) {
@@ -5572,8 +5597,15 @@ sub match_dest_net( $;$ ) {
 	return iprange_match . "${invert}--dst-range $net ";
     }
 
-    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?$/ ) {
-	return join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) );
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
+	my $result = join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $2, 'dst' ) );
+	if ( $3 ) {
+	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+	    my @objects = split_list $3, 'nfacct';
+	    $result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	}
+
+	return $result;
     }
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
@@ -5583,8 +5615,14 @@ sub match_dest_net( $;$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
-	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) );
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
+	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) );
+	}
+
+	if ( $3 ) {
+	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+	    my @objects = split_list $3, 'nfacct';
+	    $result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
 	}
 
 	return $result;
@@ -5639,8 +5677,15 @@ sub imatch_dest_net( $;$ ) {
 	return ( iprange => "${invert}--dst-range $net" );
     }
 
-    if ( $net =~ /^(!?)\+(6_)?[a-zA-Z][-\w]*(\[.*\])?$/ ) {
-	return ( set => join( '', $1 ? '! ' : '',  get_set_flags( $net, 'dst' ) ) );
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
+	my @result = ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) ) );
+	if ( $3 ) {
+	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+	    my @objects = split_list $3, 'nfacct';
+	    push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+	}
+
+	return @result;
     }
 
     if ( $net =~ /^\+\[(.+)\]$/ ) {
@@ -5650,8 +5695,13 @@ sub imatch_dest_net( $;$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(\+?)(6_)?[a-zA-Z][-\w]*(\[.*\])?/;
-	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $net, 'dst' ) ) );
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
+	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) ) );
+	    if ( $3 ) {
+		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+		my @objects = split_list $3, 'nfacct';
+		push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+	    }
 	}
 
 	return \@result;

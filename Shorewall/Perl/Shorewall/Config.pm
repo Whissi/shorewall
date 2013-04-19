@@ -5043,7 +5043,7 @@ sub get_configuration( $$$$ ) {
 
 	my @helpers = split_list ( $val, 'helper' );
 
-	for ( split_list $config{HELPERS} , 'helper' ) {
+	for ( @helpers ) {
 	    my $name = $_;
 	    if ( exists $helpers_enabled{$name} ) {
 		s/-/_/;

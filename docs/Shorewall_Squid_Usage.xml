@@ -277,12 +277,62 @@ loc     eth1         detect       <emphasis role="bold">routeback,routefilter=0,
         <para>You have a single system in your DMZ with IP address
         192.0.2.177. You want to run both a web server and Squid on that
         system.</para>
+      </section>
+
+      <section>
+        <title>Simple Configuration</title>
 
         <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
         <programlisting>#ACTION  SOURCE   DEST                 PROTO    DEST PORT(S)    SOURCE     ORIGINAL
 #                                                               PORT(S)    DEST
 DNAT     loc      dmz:192.0.2.177:3128 tcp      80              -          !192.0.2.177</programlisting>
+      </section>
+
+      <section>
+        <title>More Complex configuration</title>
+
+        <para>Assume that the dmz is connected through eth2 and that your
+        local lan interfaces through eth1</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Add this entry to your /etc/shorewall/providers file.</para>
+
+            <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
+Squid   1       202     -               eth2            192.0.2.177     loose,notrack</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>In <filename>/etc/shorewall/tcrules</filename> add:</para>
+
+            <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
+#                                                 PORT(S)
+202:P    eth1                0.0.0.0/0   tcp      80</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>In <filename> <filename>/etc/shorewall/interfaces</filename>
+            </filename>:</para>
+
+            <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
+loc     eth2         detect       <emphasis role="bold">routefilter=0,logmartians=0</emphasis>        </programlisting>
+          </listitem>
+
+          <listitem>
+            <para>On 172.0.2.177, arrange for the following command to be
+            executed after networking has come up</para>
+
+            <programlisting><command>iptables -t nat -A PREROUTING -i eth0 ! -d 192.0.2.177 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command>          </programlisting>
+
+            <para>If you are running RedHat on the server, you can simply
+            execute the following commands after you have typed the iptables
+            command above:</para>
+
+            <programlisting><command>iptables-save &gt; /etc/sysconfig/iptables
+ chkconfig --level 35 iptables on</command>         </programlisting>
+          </listitem>
+        </orderedlist>
       </section>
     </section>
   </section>

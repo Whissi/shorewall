@@ -118,6 +118,7 @@ sub process_tos() {
 	    expand_rule
 		$chainref ,
 		$restriction ,
+		'',
 		do_proto( $proto, $ports, $sports ) . do_test( $mark , $globals{TC_MASK} ) ,
 		$src ,
 		$dst ,
@@ -283,6 +284,7 @@ sub setup_blacklist() {
 				expand_rule(
 					    $chainref ,
 					    NO_RESTRICT ,
+					    '' ,
 					    do_proto( $protocol , $ports, '' ) ,
 					    $networks,
 					    '',
@@ -303,6 +305,7 @@ sub setup_blacklist() {
 				expand_rule(
 					    $chainref1 ,
 					    NO_RESTRICT ,
+					    '' ,
 					    do_proto( $protocol , $ports, '' ) ,
 					    '',
 					    $networks,
@@ -733,6 +736,7 @@ sub process_stoppedrules() {
 		for my $proto ( split_list $protos, 'Protocol' ) {
 		    expand_rule( $chainref ,
 				 $restriction ,
+				 '' ,
 				 do_proto( $proto, $ports, $sports ) ,
 				 $source ,
 				 $dest ,

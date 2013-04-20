@@ -257,7 +257,6 @@ our %EXPORT_TAGS = (
 				       %targets
 				       %builtin_target
 				       %dscpmap
-				       %nfobjects
 				     ) ],
 		   );
 
@@ -611,13 +610,13 @@ use constant { UNIQUE      => 1,
 	       MATCH       => 8,
 	       CONTROL     => 16,
 	       COMPLEX     => 32,
-	       LAST        => 64,
+	       NFACCT      => 64,
 	   };
 
 our %opttype = ( rule          => CONTROL,
 		 cmd           => CONTROL,
 
-		 dhcp          => UNIQUE,
+		 dhcp          => CONTROL,
 
 		 mode          => CONTROL,
 		 cmdlevel      => CONTROL,
@@ -642,14 +641,13 @@ our %opttype = ( rule          => CONTROL,
 		 'conntrack --ctstate' =>
 		                  EXCLUSIVE,
 
+		 nfacct        => NFACCT,
+
 		 conntrack     => COMPLEX,
 
 		 jump          => TARGET,
 		 target        => TARGET,
 		 targetopts    => TARGET,
-
-		 nfacct        => LAST,
-		 set           => LAST,
 	       );
 
 our %aliases = ( protocol        => 'p',
@@ -775,7 +773,14 @@ sub decr_cmd_level( $ ) {
 # iptables command strings which are converted into the new form by
 # transform_rule()
 #
-# First a helper for setting an individual option
+# First a helper for recording an nfacct object name
+#
+sub record_nfobject( $ ) {
+    my @value = split ' ', $_[0];
+    $nfobjects{$value[-1]} = 1;
+}
+
+# # Next a helper for setting an individual option
 #
 sub set_rule_option( $$$ ) {
     my ( $ruleref, $option, $value ) = @_;
@@ -808,7 +813,7 @@ sub set_rule_option( $$$ ) {
     if ( exists $ruleref->{$option} ) {
 	assert( defined( my $value1 = $ruleref->{$option} ) , $ruleref );
 
-	if ( $opttype == MATCH || $opttype == LAST ) {
+	if ( $opttype & ( MATCH | NFACCT ) ) {
 	    if ( $globals{KLUDGEFREE} ) {
 		unless ( reftype $value1 ) {
 		    unless ( reftype $value ) {
@@ -821,6 +826,8 @@ sub set_rule_option( $$$ ) {
 		push @{$ruleref->{$option}}, ( reftype $value ? @$value : $value );
 		push @{$ruleref->{matches}}, $option;
 		$ruleref->{complex} = 1;
+
+		record_nfobject( $value ) if $opttype == NFACCT;
 	    } else {
 		assert( ! reftype $value );
 		$ruleref->{$option} = join(' ', $value1, $value ) unless $value1 eq $value;
@@ -844,6 +851,7 @@ sub set_rule_option( $$$ ) {
     } else {
 	$ruleref->{$option} = $value;
 	push @{$ruleref->{matches}}, $option;
+	record_nfobject( $value ) if $opttype == NFACCT;
     }
 }
 
@@ -992,8 +1000,12 @@ sub format_rule( $$;$ ) {
     #
     my $ruleref = $rulerefp->{complex} ? clone_rule( $rulerefp ) : $rulerefp;
 
-    for ( @unique_options ) {
-	if ( exists $ruleref->{$_} ) {
+    for ( @{$ruleref->{matches}} ) {
+	my $type = $opttype{$_} || 0;
+
+	next if $type & ( CONTROL | TARGET );
+
+	if ( $type == UNIQUE ) {
 	    my $value = $ruleref->{$_};
 
 	    $rule .= ' !' if $value =~ s/^! //;
@@ -1003,23 +1015,11 @@ sub format_rule( $$;$ ) {
 	    } else {
 		$rule .= join( '' , ' --', $_, ' ', $value );
 	    }
+
+	    next;
+	} else {
+	    $rule .= format_option( $_, pop_match( $ruleref, $_ ) );
 	}
-    }
-
-    $rule .= format_option( 'policy',  $ruleref->{policy} )  if defined $ruleref->{policy};
-
-    if ( defined ( my $state = $ruleref->{'conntrack --ctstate'} ) ) {
-	$rule .= format_option( 'conntrack --ctstate' , $state );
-    } elsif ( defined ( $state = $ruleref->{state} ) ) {
-	$rule .= format_option( 'state',   $state );
-    }
-
-    for ( grep ! $opttype{$_}, @{$ruleref->{matches}} ) {
-	$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
-    }
-
-    for ( grep( ( $opttype{$_} || 0 ) == LAST , @{$ruleref->{matches}} ) ) {
-	$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
     }
 
     if ( $ruleref->{target} ) {
@@ -1075,8 +1075,13 @@ sub merge_rules( $$$ ) {
 
     my $target = $fromref->{target};
 
+    my %added;
+
     for my $option ( @unique_options ) {
-	$toref->{$option} = $fromref->{$option} if exists $fromref->{$option};
+	if ( exists $fromref->{$option} ) {
+	    push( @{$toref->{matches}}, $option ) unless exists $toref->{$option};
+	    $toref->{$option} = $fromref->{$option};
+	}
     }
 
     for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
@@ -1094,10 +1099,6 @@ sub merge_rules( $$$ ) {
     }
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
-
-    for my $option ( grep( ( $opttype{$_} || 0 ) == LAST, keys %$fromref ) ) {
-	set_rule_option( $toref, $option, $fromref->{$option} );
-    }
 
     unless ( $toref->{comment} ) {
 	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
@@ -5436,7 +5437,7 @@ sub match_source_net( $;$\$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    my @objects = split_list $3, 'nfacct';
-	    $result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	    $result .= "-m nfacct --nfacct-name $_ " for @objects;
 	}
 
 	return $result;
@@ -5454,7 +5455,7 @@ sub match_source_net( $;$\$ ) {
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 		my @objects = split_list $3, 'nfacct';
-		$result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+		$result .= "-m nfacct --nfacct-name $_ " for @objects;
 	    }
 	}
 
@@ -5602,7 +5603,7 @@ sub match_dest_net( $;$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    my @objects = split_list $3, 'nfacct';
-	    $result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	    $result .= "-m nfacct --nfacct-name $_ " for @objects;
 	}
 
 	return $result;
@@ -5622,7 +5623,7 @@ sub match_dest_net( $;$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    my @objects = split_list $3, 'nfacct';
-	    $result .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	    $result .= "-m nfacct --nfacct-name $_ " for @objects;
 	}
 
 	return $result;
@@ -6803,9 +6804,10 @@ sub handle_original_dest( $$$ ) {
 #
 # Handles non-trivial exclusion. Updates the passed rule and returns ( $rule, $done )
 #
-sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
+sub handle_exclusion( $$$$$$$$$$$$$$$$$$$ ) {
     my ( $disposition, 
 	 $table,
+	 $prerule,
 	 $rule,
 	 $restriction, 
 	 $inets,
@@ -6887,7 +6889,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 
 		for my $dnet ( split_host_list( $dnets, $config{DEFER_DNS_RESOLUTION} ) ) {
 		    $source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
-		    add_expanded_jump( $chainref, $echainref, 0, join( '', $rule, $source_match, match_dest_net( $dnet, $restriction ), $onet ) );
+		    add_expanded_jump( $chainref, $echainref, 0, join( '', $prerule, $source_match, match_dest_net( $dnet, $restriction ), $onet, $rule ) );
 		}
 
 		conditional_rule_end( $chainref ) if $cond;
@@ -6947,11 +6949,12 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$ ) {
 #
 # Returns the destination interface specified in the rule, if any.
 #
-sub expand_rule( $$$$$$$$$$;$ )
+sub expand_rule( $$$$$$$$$$$;$ )
 {
     my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
-	$callersrule,  # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST
+	$prerule,      # Matches that go at the front of the rule
+	$rule,         # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST
 	$source,       # SOURCE
 	$dest,         # DEST
 	$origdest,     # ORIGINAL DEST
@@ -6971,7 +6974,6 @@ sub expand_rule( $$$$$$$$$$;$ )
     my ( $jump, $mac,  $targetref, $basictarget );
     our @ends = ();
     my $deferdns = $config{DEFER_DNS_RESOLUTION};
-    my $rule = '';
 
     if ( $target ) {
 	( $basictarget, my $rest ) = split ' ', $target, 2;
@@ -7078,7 +7080,8 @@ sub expand_rule( $$$$$$$$$$;$ )
 	#
 	( $rule, $done ) = handle_exclusion( $disposition,
 					     $table,
-					     $rule . $callersrule,
+					     $prerule,
+					     $rule,
 					     $restriction,
 					     $inets,
 					     $iexcl,
@@ -7115,7 +7118,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 		for my $dnet ( split_host_list( $dnets, $deferdns ) ) {
 		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet, $restriction );
-		    my $matches = join( '', $source_match, $dest_match, $onet, $rule, $callersrule );
+		    my $matches = join( '', $source_match, $dest_match, $onet, $rule );
 
 		    my $cond3 = conditional_rule( $chainref, $dnet );
 
@@ -7126,7 +7129,7 @@ sub expand_rule( $$$$$$$$$$;$ )
 			if ( $targetref ) {
 			    add_expanded_jump( $chainref, $targetref , 0, $matches );
 			} else {
-			    add_rule( $chainref, $matches . $jump , 1 );
+			    add_rule( $chainref, $prerule . $matches . $jump , 1 );
 			}
 		    } elsif ( $disposition eq 'LOG' || $disposition eq 'COUNT' ) {
 			#

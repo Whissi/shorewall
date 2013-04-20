@@ -190,6 +190,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
     fatal_error "USER/GROUP may only be specified in the OUTPUT section" unless $user eq '-' || $asection == OUTPUT;
 
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_test ( $mark, $globals{TC_MASK} ) . do_headers( $headers );
+    my $prerule = '';
     my $rule2 = 0;
     my $jump  = 0;
 
@@ -222,11 +223,17 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	    }
 	} elsif ( $action =~ /^NFLOG/ ) {
 	    $target = validate_level $action;
-	} elsif ( $action =~ /^NFACCT\(([\w,]+)\)$/ ) {
+	} elsif ( $action =~ /^NFACCT\(([\w,]+)\)(!)?$/ ) {
 	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
 	    $target = '';
 	    my @objects = split_list $1, 'nfacct';
-	    $rule .= "-m nfacct --nfacct-name $_ ", $nfobjects{$_} = 1 for @objects;
+	    if ( $2 ) {
+		$prerule .= "-m nfacct --nfacct-name $_ " for @objects;
+	    } else {
+		$rule .= "-m nfacct --nfacct-name $_ " for @objects;
+	    }
+	} elsif ( $action eq 'INLINE' ) {
+	    $rule .= get_inline_matches;
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 
@@ -267,6 +274,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 		expand_rule(
 			    ensure_rules_chain ( 'accountout' ) ,
 			    OUTPUT_RESTRICT ,
+			    $prerule ,
 			    $rule ,
 			    $source ,
 			    $dest = ALLIP ,
@@ -360,6 +368,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
     expand_rule
 	$chainref ,
 	$restriction ,
+	$prerule ,
 	$rule ,
 	$source ,
 	$dest ,
@@ -385,17 +394,18 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
     }
 
     if ( $rule2 ) {
-	expand_rule
-	    $jumpchainref ,
-	    $restriction ,
-	    $rule ,
-	    $source ,
-	    $dest ,
-	    '' ,
-	    '' ,
-	    '' ,
-	    '' ,
-	    '' ;
+	expand_rule(
+		    $jumpchainref ,
+		    $restriction ,
+		    $prerule ,
+		    $rule ,
+		    $source ,
+		    $dest ,
+		    '' ,
+		    '' ,
+		    '' ,
+		    '' ,
+		    '' );
     }
 
     return 1;

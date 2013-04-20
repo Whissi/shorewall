@@ -143,6 +143,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 
     expand_rule( $chainref ,
 		 $restriction ,
+		 '',
 		 $rule,
 		 $source ,
 		 $dest ,
@@ -185,6 +186,7 @@ sub handle_helper_rule( $$$$$$$$$$$ ) {
 	    #
 	    expand_rule( ensure_raw_chain( $actionchain ) ,
 			 PREROUTE_RESTRICT ,
+			 '',
 			 $rule ,
 			 $source ,
 			 $dest ,
@@ -198,6 +200,7 @@ sub handle_helper_rule( $$$$$$$$$$$ ) {
 			 ( $sourceref->{type} == FIREWALL || $sourceref->{type} == VSERVER ?
 			   OUTPUT_RESTRICT :
 			   PREROUTE_RESTRICT ) ,
+			 '' ,
 			 $rule ,
 			 $source ,
 			 $dest ,

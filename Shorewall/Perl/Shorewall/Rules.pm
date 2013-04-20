@@ -2666,6 +2666,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	expand_rule( $chainref ,
 		     $restriction ,
+		     '' ,
 		     $rule ,
 		     $source ,
 		     $dest ,

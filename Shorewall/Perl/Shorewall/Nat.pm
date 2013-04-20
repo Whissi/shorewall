@@ -324,6 +324,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 	#
 	expand_rule( $chainref ,
 		     POSTROUTE_RESTRICT ,
+		     '' ,
 		     $baserule . $rule ,
 		     $networks ,
 		     $destnets ,
@@ -757,6 +758,7 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 				  $firewallsource ? 'OUTPUT' :
 				  dnat_chain $sourceref->{name} ) ) ,
 		  $firewallsource ? OUTPUT_RESTRICT : PREROUTE_RESTRICT ,
+		  '' ,
 		  $rule ,
 		  $source ,
 		  $origdest ,
@@ -826,6 +828,7 @@ sub handle_nonat_rule( $$$$$$$$$$ ) {
 	    #
 	    expand_rule( $chn,
 			 PREROUTE_RESTRICT,
+			 '', # Prerule
 			 '', # Rule
 			 '', # Source
 			 '', # Dest
@@ -844,6 +847,7 @@ sub handle_nonat_rule( $$$$$$$$$$ ) {
 
     expand_rule( $nonat_chain ,
 		 PREROUTE_RESTRICT ,
+		 '' ,
 		 $rule ,
 		 $source ,
 		 $dest ,

@@ -634,6 +634,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
 	    expand_rule( $chainref,
 			 $restrictions{$chain} | $restriction,
+			 '' ,
 			 $match .
 			 do_user( $user ) .
 			 do_test( $testval, $globals{TC_MASK} ) .
@@ -656,6 +657,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	}
     } elsif ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
 					  $restrictions{$chain} | $restriction,
+					  '',
 					  do_proto( $proto, $ports, $sports) . $matches .
 					  do_user( $user ) .
 					  do_test( $testval, $globals{TC_MASK} ) .
@@ -2344,6 +2346,7 @@ sub process_secmark_rule1( $$$$$$$$$ ) {
 
     expand_rule( ensure_mangle_chain( $chain1 ) ,
 		 $restrictions{$chain1} ,
+		 '' ,
 		 $state .
 		 do_proto( $proto, $dport, $sport ) .
 		 do_user( $user ) .

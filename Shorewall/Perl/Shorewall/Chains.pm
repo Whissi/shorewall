@@ -788,6 +788,7 @@ sub set_rule_option( $$$ ) {
     assert( defined $value && reftype $ruleref , $value, $ruleref );
 
     $ruleref->{simple} = 0;
+    $ruleref->{complex} = 1 if reftype $value;
 
     my $opttype = $opttype{$option} || MATCH;
 

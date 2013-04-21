@@ -216,8 +216,11 @@
               <listitem>
                 <para>Where <emphasis>chain</emphasis> is the name of a chain;
                 shorewall6 will create the chain automatically if it doesn't
-                already exist. Causes a jump to that chain to be added to the
-                chain specified in the CHAIN column. If <emphasis
+                already exist. If a second chain is mentioned in the CHAIN
+                column, the a jump from this second chain to
+                <replaceable>chain</replaceable> is created. If no chain is
+                named in the CHAIN column, then a jump from the default chain
+                to <replaceable>chain</replaceable> is created. If <emphasis
                 role="bold">:COUNT</emphasis> is included, a counting rule
                 matching this entry will be added to
                 <emphasis>chain</emphasis>. The <emphasis>chain</emphasis> may

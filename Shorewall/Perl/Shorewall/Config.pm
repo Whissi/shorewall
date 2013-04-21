@@ -790,6 +790,7 @@ sub initialize( $;$$) {
 	  WARNOLDCAPVERSION => undef,
 	  DEFER_DNS_RESOLUTION => undef,
 	  USE_RT_NAMES => undef,
+	  CHAIN_SCRIPTS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -5302,6 +5303,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'AUTOCOMMENT'                , 'Yes';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
+    default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
 
     default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
     default_yes_no 'USE_DEFAULT_RT'             , '';
@@ -5703,7 +5705,7 @@ sub run_user_exit( $ ) {
     my $chainref = $_[0];
     my $file = find_file $chainref->{name};
 
-    if ( -f $file ) {
+    if ( $config{CHAIN_SCRIPTS} && -f $file ) {
 	progress_message2 "Running $file...";
 
 	my $command = qq(package Shorewall::User;\nno strict;\n# line 1 "$file"\n) . `cat $file`;
@@ -5756,7 +5758,7 @@ sub run_user_exit1( $ ) {
 sub run_user_exit2( $$ ) {
     my ($file, $chainref) = ( find_file $_[0], $_[1] );
 
-    if ( -f $file ) {
+    if ( $config{CHAIN_SCRIPTS} && -f $file ) {
 	progress_message2 "Running $file...";
 	#
 	# File may be empty -- in which case eval would fail

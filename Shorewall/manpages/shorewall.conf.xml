@@ -467,6 +467,22 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">CHAIN_SCRIPTS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.16. Prior to the availability of BEGIN
+          PERL....END PERL in configuration files, the only way to execute a
+          chain-specific script was to create a script file with the same name
+          as the chain and place it in a directory on the CONFIG_PATH. That
+          facility has the drawback that the compiler will attempt to run a
+          non-script file just because it has the same name as a chain. To
+          disable this facility, set CHAIN_SCRIPTS=No. If not specified or
+          specified as the empty value, CHAIN_SCRIPTS=Yes is assumed. </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">CLAMPMSS=[</emphasis><emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis>value</emphasis>]</term>

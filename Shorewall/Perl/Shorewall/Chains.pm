@@ -6025,7 +6025,6 @@ sub split_host_list( $$;$ ) {
 
     my @input = split_list $input, 'host';
 
-
     my $exclude = 0;
 
     my @result;

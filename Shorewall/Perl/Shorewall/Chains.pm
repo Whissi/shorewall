@@ -6016,8 +6016,8 @@ sub addnatjump( $$;@ ) {
 }
 
 #
-# Split a comma-separated source or destination host list but keep [...] together. Used for spliting address lists
-# where an element of the list might be +ipset[flag,...] or +[ipset[flag,...],...]. The second argument ($deferresolve)
+# Split a comma-separated source or destination host list but keep [...] and (...) together. Used for spliting address lists
+# where an element of the list might be +ipset[flag,...](obj) or +[ipset[flag,...](obj),...]. The second argument ($deferresolve)
 # should be 'true' when the passed input list may include exclusion.
 #
 sub split_host_list( $$;$ ) {
@@ -6054,6 +6054,33 @@ sub split_host_list( $$;$ ) {
 	}
     } else {
 	@result = @input;
+    }
+
+    if ( $input =~ /\(/ ) {
+	@input  = @result;
+	@result = ();
+
+	while ( @input ) {
+	    my $element = shift @input;
+
+	    if ( $element =~ /\(/ ) {
+		while ( $element =~ tr/(/(/ > $element =~ tr/)/)/ ) {
+		    fatal_error "Missing ')' ($element)" unless @input;
+		    $element .= ( ',' . shift @input );
+		}
+
+		unless ( $loose ) {
+		    fatal_error "Invalid host list ($input)" if $exclude && $element =~ /!/;
+		    $exclude ||= $element =~ /^!/ || $element =~ /\)!/;
+		}
+
+		fatal_error "Mismatched (...) ($element)" unless $element =~ tr/(/(/ == $element =~ tr/)/)/;
+	    } else {
+		$exclude ||= $element =~ /!/ unless $loose;
+	    }
+
+	    push @result, $element;
+	}
     }
 
     unless ( $deferresolve ) {

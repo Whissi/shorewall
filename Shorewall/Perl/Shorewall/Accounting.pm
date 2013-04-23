@@ -138,6 +138,14 @@ sub process_section ($) {
     $asection = $newsect;
 }
 
+sub split_nfacct_list( $$;$ ) {
+    my ($list, $type, $origlist ) = @_;
+
+    fatal_error( "Invalid $type list (" . ( $origlist ? $origlist : $list ) . ')' ) if $list =~ /^,|,$|,,$/;
+
+    split /,/, $list;
+}
+
 #
 # Accounting
 #
@@ -223,14 +231,20 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	    }
 	} elsif ( $action =~ /^NFLOG/ ) {
 	    $target = validate_level $action;
-	} elsif ( $action =~ /^NFACCT\(([\w,]+)\)(!)?$/ ) {
+	} elsif ( $action =~ /^NFACCT\(([\w,!]+)\)$/ ) {
 	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
 	    $target = '';
-	    my @objects = split_list $1, 'nfacct';
+	    my @objects = split_nfacct_list $1, 'nfacct';
+	    for ( @objects ) {
+	       if ( $_ =~ /^([\w]+)(!)?$/ ) {
 	    if ( $2 ) {
-		$prerule .= "-m nfacct --nfacct-name $_ " for @objects;
+		   $prerule .= "-m nfacct --nfacct-name $1 ";
 	    } else {
-		$rule .= "-m nfacct --nfacct-name $_ " for @objects;
+		   $rule .= "-m nfacct --nfacct-name $1 ";
+		 }
+	       } else {
+		accounting_error;
+	       }
 	    }
 	} elsif ( $action eq 'INLINE' ) {
 	    $rule .= get_inline_matches;

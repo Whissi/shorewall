@@ -207,7 +207,106 @@ sub initialize( $ ) {
 sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
-    our %tccmd;
+our  %tccmd;
+
+    unless ( %tccmd ) {
+	%tccmd = ( SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
+				 target    => 'CONNMARK --save-mark --mask' ,
+				 mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK,
+				 mask      => in_hex( $globals{TC_MASK} ) ,
+				 connmark  => 1
+			       } ,
+		   RESTORE =>  { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
+				 target    => 'CONNMARK --restore-mark --mask' ,
+				 mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK ,
+				 mask      => in_hex( $globals{TC_MASK} ) ,
+				 connmark  => 1
+			       } ,
+		   CONTINUE => { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
+				 target    => 'RETURN' ,
+				 mark      => NOMARK ,
+				 mask      => '' ,
+				 connmark  => 0
+			       } ,
+		   SAME =>     { match     => sub ( $ ) { $_[0] eq 'SAME' },
+				 target    => 'sticky' ,
+				 mark      => NOMARK ,
+				 mask      => '' ,
+				 connmark  => 0
+			       } ,
+		   IPMARK =>   { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
+				 target    => 'IPMARK' ,
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       } ,
+		   '|' =>      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
+				 target    => 'MARK --or-mark' ,
+				 mark      => HIGHMARK ,
+				 mask      => ''
+			       } ,
+		   '&' =>      { match     => sub ( $ ) { $_[0] =~ '&.*' },
+				 target    => 'MARK --and-mark' ,
+				 mark      => HIGHMARK ,
+				 mask      => '' ,
+				 connmark  => 0
+			       } ,
+		   TPROXY =>   { match     => sub ( $ ) { $_[0] =~ /^TPROXY/ },
+				 target    => 'TPROXY',
+				 mark      => HIGHMARK,
+				 mask      => '',
+				 connmark  => ''
+			       },
+		   DIVERT =>   { match     => sub( $ ) { $_[0] =~ /^DIVERT/ },
+				 target    => 'DIVERT',
+				 mark      => HIGHMARK,
+				 mask      => '',
+				 connmark  => ''
+			       },
+		   TTL =>      { match     => sub( $ ) { $_[0] =~ /^TTL/ },
+				 target    => 'TTL',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       },
+		   HL =>       { match     => sub( $ ) { $_[0] =~ /^HL/ },
+				 target    => 'HL',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       },
+		   IMQ =>      { match     => sub( $ ) { $_[0] =~ /^IMQ\(\d+\)$/ },
+				 target    => 'IMQ',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       },
+		   DSCP =>     { match     => sub( $ ) { $_[0] =~ /^DSCP\(\w+\)$/ },
+				 target    => 'DSCP',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       },
+		   TOS =>      { match     => sub( $ ) { $_[0] =~ /^TOS\(.+\)$/ },
+				 target    => 'TOS',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       },
+		   CHECKSUM => { match     => sub( $ ) { $_[0] eq 'CHECKSUM' },
+				 target    => 'CHECKSUM' ,
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0,
+			       },
+		   INLINE   => { match     => sub( $ ) { $_[0] eq 'INLINE' },
+				 target    => 'INLINE',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0,
+			       }
+		 );
+    }
 
     fatal_error 'MARK must be specified' if $originalmark eq '-';
 
@@ -447,6 +546,18 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 		                        {  require_capability 'CHECKSUM_TARGET', 'The CHECKSUM action', 's';
 					   $target .= ' --checksum-fill';
 				       },
+		       INLINE   => sub()
+		                       {
+					   assert ( $cmd eq 'INLINE' );
+					   $matches = get_inline_matches;
+
+					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+					       $matches = $1;
+					       $target  = $2;
+					   }
+
+					   $cmd = '';
+				       }
 		     );
 
     if ( $source ) {
@@ -2429,96 +2540,6 @@ sub setup_tc() {
     }
 
     if ( $config{MANGLE_ENABLED} ) {
-	our  %tccmd = ( SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
-				      target    => 'CONNMARK --save-mark --mask' ,
-				      mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK,
-				      mask      => in_hex( $globals{TC_MASK} ) ,
-				      connmark  => 1
-				    } ,
-			RESTORE =>  { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
-				      target    => 'CONNMARK --restore-mark --mask' ,
-				      mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK ,
-				      mask      => in_hex( $globals{TC_MASK} ) ,
-				      connmark  => 1
-				    } ,
-			CONTINUE => { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
-				      target    => 'RETURN' ,
-				      mark      => NOMARK ,
-				      mask      => '' ,
-				      connmark  => 0
-				    } ,
-			SAME =>     { match     => sub ( $ ) { $_[0] eq 'SAME' },
-				      target    => 'sticky' ,
-				      mark      => NOMARK ,
-				      mask      => '' ,
-				      connmark  => 0
-				    } ,
-			IPMARK =>   { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
-				      target    => 'IPMARK' ,
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0
-				    } ,
-			'|' =>      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
-				      target    => 'MARK --or-mark' ,
-				      mark      => HIGHMARK ,
-				      mask      => ''
-				    } ,
-			'&' =>      { match     => sub ( $ ) { $_[0] =~ '&.*' },
-				      target    => 'MARK --and-mark' ,
-				      mark      => HIGHMARK ,
-				      mask      => '' ,
-				      connmark  => 0
-				    } ,
-			TPROXY =>   { match     => sub ( $ ) { $_[0] =~ /^TPROXY/ },
-				      target    => 'TPROXY',
-				      mark      => HIGHMARK,
-				      mask      => '',
-				      connmark  => ''
-				    },
-			DIVERT =>   { match     => sub( $ ) { $_[0] =~ /^DIVERT/ },
-				      target    => 'DIVERT',
-				      mark      => HIGHMARK,
-				      mask      => '',
-				      connmark  => ''
-				    },
-			TTL =>      { match     => sub( $ ) { $_[0] =~ /^TTL/ },
-				      target    => 'TTL',
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0
-			            },
-			HL =>       { match     => sub( $ ) { $_[0] =~ /^HL/ },
-				      target    => 'HL',
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0
-			            },
-			IMQ =>      { match     => sub( $ ) { $_[0] =~ /^IMQ\(\d+\)$/ },
-				      target    => 'IMQ',
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0
-			            },
-			DSCP =>     { match     => sub( $ ) { $_[0] =~ /^DSCP\(\w+\)$/ },
-				      target    => 'DSCP',
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0
-				    },
-			TOS =>      { match     => sub( $ ) { $_[0] =~ /^TOS\(.+\)$/ },
-				      target    => 'TOS',
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0
-				    },
-			CHECKSUM => { match     => sub( $ ) { $_[0] eq 'CHECKSUM' },
-				      target    => 'CHECKSUM' ,
-				      mark      => NOMARK,
-				      mask      => '',
-				      connmark  => 0,
-				    }
-		      );
 
 	if ( my $fn = open_file( 'tcrules' , 2, 1 ) ) {
 

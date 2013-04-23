@@ -251,7 +251,7 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">NFACCT</emphasis>(<replaceable>object</replaceable>[,...])[!]</term>
+              role="bold">NFACCT</emphasis>({<replaceable>object</replaceable>[!]}[,...])</term>
 
               <listitem>
                 <para>Added in Shorewall 4.5.7. Provides a form of accounting
@@ -269,12 +269,14 @@
                 Beginning with Shorewall 4.5.16, an arbitrary number of
                 objects may be given.</para>
 
-                <para>With Shorewall 4.5.16 or later, <emphasis
-                role="bold">!</emphasis> may be specified to indicate that the
-                nfacct <replaceable>object</replaceable>(s) will be
-                incremented unconditionally. When omitted, the
-                <replaceable>object</replaceable>(s) will be incremented only
-                if all of the matches in the rule succeed.</para>
+                <para>With Shorewall 4.5.16 or later, an nfacct
+                <replaceable>object</replaceable> in the list may optionally
+                be followed by <emphasis role="bold">!</emphasis> to indicate
+                that the nfacct <replaceable>object</replaceable> will be
+                incremented unconditionally for each packet. When <emphasis
+                role="bold">!</emphasis> is omitted, the
+                <replaceable>object</replaceable> will be incremented only if
+                all of the matches in the rule succeed.</para>
               </listitem>
             </varlistentry>
 

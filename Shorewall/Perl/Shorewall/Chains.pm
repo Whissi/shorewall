@@ -5439,8 +5439,11 @@ sub match_source_net( $;$\$ ) {
 	my $result = join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'src' ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-	    my @objects = split_list $3, 'nfacct';
-	    $result .= "-m nfacct --nfacct-name $_ " for @objects;
+	    for ( my @objects = split_list $3, 'nfacct' ) {
+		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		$result .= "-m nfacct --nfacct-name $_ ";
+		$nfobjects{$_} = 1;
+	    }
 	}
 
 	return $result;
@@ -5457,8 +5460,11 @@ sub match_source_net( $;$\$ ) {
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'src' ) );
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-		my @objects = split_list $3, 'nfacct';
-		$result .= "-m nfacct --nfacct-name $_ " for @objects;
+		for ( my @objects = split_list $3, 'nfacct' ) {
+		    fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		    $result .= "-m nfacct --nfacct-name $_ ";
+		    $nfobjects{$_} = 1;
+		}
 	    }
 	}
 
@@ -5524,8 +5530,11 @@ sub imatch_source_net( $;$\$ ) {
 	my @result = ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'src' ) ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-	    my @objects = split_list $3, 'nfacct';
-	    push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+	    for ( my @objects = split_list $3, 'nfacct' ) {
+		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		push( @result, ( nfacct => "--nfacct-name $_" ) );
+		$nfobjects{$_} = 1;
+	    }
 	}
 
 	return @result;
@@ -5542,8 +5551,11 @@ sub imatch_source_net( $;$\$ ) {
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'src' ) ) );
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-		my @objects = split_list $3, 'nfacct';
-		push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+		for ( my @objects = split_list $3, 'nfacct' ) {
+		    fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		    push( @result, ( nfacct => "--nfacct-name $_" ) );
+		    $nfobjects{$_} = 1;
+		}
 	    }
 	}
 
@@ -5605,8 +5617,11 @@ sub match_dest_net( $;$ ) {
 	my $result = join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $2, 'dst' ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-	    my @objects = split_list $3, 'nfacct';
-	    $result .= "-m nfacct --nfacct-name $_ " for @objects;
+	    for ( my @objects = split_list $3, 'nfacct' ) {
+		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		$result .= "-m nfacct --nfacct-name $_ ";
+		$nfobjects{$_} = 1;
+	    }
 	}
 
 	return $result;
@@ -5625,8 +5640,11 @@ sub match_dest_net( $;$ ) {
 
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-	    my @objects = split_list $3, 'nfacct';
-	    $result .= "-m nfacct --nfacct-name $_ " for @objects;
+	    for ( my @objects = split_list $3, 'nfacct' ) {
+		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		$result .= "-m nfacct --nfacct-name $_ ";
+		$nfobjects{$_} = 1;
+	    }
 	}
 
 	return $result;
@@ -5685,8 +5703,11 @@ sub imatch_dest_net( $;$ ) {
 	my @result = ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-	    my @objects = split_list $3, 'nfacct';
-	    push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+	    for ( my @objects = split_list $3, 'nfacct' ) {
+		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		push( @result, ( nfacct => "--nfacct-name $_" ) );
+		$nfobjects{$_} = 1;
+	    }
 	}
 
 	return @result;
@@ -5703,8 +5724,11 @@ sub imatch_dest_net( $;$ ) {
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) ) );
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-		my @objects = split_list $3, 'nfacct';
-		push( @result, ( nfacct => "--nfacct-name $_" ) ), $nfobjects{$_} = 1 for @objects;
+		for ( my @objects = split_list $3, 'nfacct' ) {
+		    fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		    push( @result, ( nfacct => "--nfacct-name $_" ) );
+		    $nfobjects{$_} = 1;
+		}
 	    }
 	}
 

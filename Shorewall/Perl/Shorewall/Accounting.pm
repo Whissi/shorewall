@@ -231,19 +231,19 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	    }
 	} elsif ( $action =~ /^NFLOG/ ) {
 	    $target = validate_level $action;
-	} elsif ( $action =~ /^NFACCT\(([\w,!]+)\)$/ ) {
+	} elsif ( $action =~ /^NFACCT\((.+)\)$/ ) {
 	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
 	    $target = '';
 	    my @objects = split_nfacct_list $1;
 	    for ( @objects ) {
-	       if ( $_ =~ /^([\w]+)(!)?$/ ) {
+	       if ( $_ =~ /^([\w%&@~]+)(!)?$/ ) {
 		   if ( $2 ) {
 		       $prerule .= "-m nfacct --nfacct-name $1 ";
 		   } else {
 		       $rule .= "-m nfacct --nfacct-name $1 ";
 		   }
 	       } else {
-		   accounting_error;
+		   fatal_error "Invalid nfacct object name ($_)";
 	       }
 	    }
 	} elsif ( $action eq 'INLINE' ) {

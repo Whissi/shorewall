@@ -248,6 +248,7 @@ our %EXPORT_TAGS = (
 				       set_global_variables
 				       save_dynamic_chains
 				       load_ipsets
+				       validate_nfobject
 				       create_nfobjects
 				       create_netfilter_load
 				       preview_netfilter_load
@@ -778,6 +779,17 @@ sub decr_cmd_level( $ ) {
 sub record_nfobject( $ ) {
     my @value = split ' ', $_[0];
     $nfobjects{$value[-1]} = 1;
+}
+
+#
+# Validate and register an nfacct object name
+#
+
+sub validate_nfobject( $;$ ) {
+    my ( $name, $allowbang ) = @_;
+
+    fatal_error "Invalid nfacct object name ($name)" unless $name =~ /^[-\w%&@~]+(!)?$/ && ( $allowbang || ! $1 );
+    $nfobjects{$_} = 1;
 }
 
 # # Next a helper for setting an individual option
@@ -5440,9 +5452,8 @@ sub match_source_net( $;$\$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
-		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		validate_nfobject( $_ );
 		$result .= "-m nfacct --nfacct-name $_ ";
-		$nfobjects{$_} = 1;
 	    }
 	}
 
@@ -5461,9 +5472,8 @@ sub match_source_net( $;$\$ ) {
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 		for ( my @objects = split_list $3, 'nfacct' ) {
-		    fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		    validate_nfobject( $_ );
 		    $result .= "-m nfacct --nfacct-name $_ ";
-		    $nfobjects{$_} = 1;
 		}
 	    }
 	}
@@ -5531,9 +5541,8 @@ sub imatch_source_net( $;$\$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
-		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		validate_nfobject( $_ );
 		push( @result, ( nfacct => "--nfacct-name $_" ) );
-		$nfobjects{$_} = 1;
 	    }
 	}
 
@@ -5552,9 +5561,8 @@ sub imatch_source_net( $;$\$ ) {
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 		for ( my @objects = split_list $3, 'nfacct' ) {
-		    fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		    validate_nfobject( $_ );
 		    push( @result, ( nfacct => "--nfacct-name $_" ) );
-		    $nfobjects{$_} = 1;
 		}
 	    }
 	}
@@ -5618,9 +5626,8 @@ sub match_dest_net( $;$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
-		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		validate_nfobject( $_ );
 		$result .= "-m nfacct --nfacct-name $_ ";
-		$nfobjects{$_} = 1;
 	    }
 	}
 
@@ -5641,9 +5648,8 @@ sub match_dest_net( $;$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
-		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		validate_nfobject( $_ );
 		$result .= "-m nfacct --nfacct-name $_ ";
-		$nfobjects{$_} = 1;
 	    }
 	}
 
@@ -5704,9 +5710,8 @@ sub imatch_dest_net( $;$ ) {
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
-		fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		validate_nfobject( $_ );
 		push( @result, ( nfacct => "--nfacct-name $_" ) );
-		$nfobjects{$_} = 1;
 	    }
 	}
 
@@ -5725,9 +5730,8 @@ sub imatch_dest_net( $;$ ) {
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 		for ( my @objects = split_list $3, 'nfacct' ) {
-		    fatal_error "Invalid nfacct object name ($_)" unless /^[\w%&@~]+$/;
+		    validate_nfobject( $_ );
 		    push( @result, ( nfacct => "--nfacct-name $_" ) );
-		    $nfobjects{$_} = 1;
 		}
 	    }
 	}

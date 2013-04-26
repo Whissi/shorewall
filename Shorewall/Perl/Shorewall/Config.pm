@@ -2853,7 +2853,7 @@ sub embedded_perl( $ ) {
 # Return inline matches
 #
 sub get_inline_matches() {
-    $inline_matches;
+    "$inline_matches ";
 }
 
 #

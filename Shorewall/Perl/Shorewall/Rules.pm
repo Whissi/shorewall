@@ -2097,14 +2097,14 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     if ( $basictarget eq 'INLINE' ) {
 	my $inline_matches = get_inline_matches;
 
-	if ( $inline_matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+	if ( $inline_matches =~ /^(.*\s+)-j\s+(.+) $/ ) {
 	    $raw_matches .= $1;
 	    $action = $2;
 	    my ( $target ) = split ' ', $action;
 	    fatal_error "Unknown jump target ($action)" unless $targets{$target};
 	    fatal_error "INLINE may not have a parameter when '-j' is specified in the free-form area" if $param ne '';
 	} else {
-	    $raw_matches .= "$inline_matches ";
+	    $raw_matches .= $inline_matches;
 
 	    if ( $param eq '' ) {
 		$action = $loglevel ? 'LOG' : '';

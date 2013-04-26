@@ -235,15 +235,12 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
 	    $target = '';
 	    for ( my @objects = split_nfacct_list $1 ) {
-	       if ( $_ =~ /^([\w%&@~]+)(!)?$/ ) {
-		   if ( $2 ) {
-		       $prerule .= "-m nfacct --nfacct-name $1 ";
-		   } else {
-		       $rule .= "-m nfacct --nfacct-name $1 ";
-		   }
-	       } else {
-		   fatal_error "Invalid nfacct object name ($_)";
-	       }
+		validate_nfobject( $_, 1 );
+		if ( s/!$// ) {
+		    $prerule .= "-m nfacct --nfacct-name $_ ";
+		} else {
+		    $rule .= "-m nfacct --nfacct-name $_ ";
+		}
 	    }
 	} elsif ( $action eq 'INLINE' ) {
 	    $rule .= get_inline_matches;

@@ -234,8 +234,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	} elsif ( $action =~ /^NFACCT\((.+)\)$/ ) {
 	    require_capability 'NFACCT_MATCH', 'The NFACCT action', 's';
 	    $target = '';
-	    my @objects = split_nfacct_list $1;
-	    for ( @objects ) {
+	    for ( my @objects = split_nfacct_list $1 ) {
 	       if ( $_ =~ /^([\w%&@~]+)(!)?$/ ) {
 		   if ( $2 ) {
 		       $prerule .= "-m nfacct --nfacct-name $1 ";

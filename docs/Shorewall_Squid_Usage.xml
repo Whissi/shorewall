@@ -412,6 +412,18 @@ TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
     for request packets after the connection is established and to direct
     response packets back to Squid3.</para>
 
+    <note>
+      <para>If you run a web server on the Shorewall system that also listens
+      on port 80, then you need to exclude it from TPROXY. Suppose that your
+      web server listens on 192.0.2.144; then:</para>
+
+      <programlisting><emphasis role="bold">FORMAT 2</emphasis>
+#MARK           SOURCE              DEST        PROTO      DEST        SOURCE
+#                                                          PORT(S)     PORT(S)
+DIVERT          eth0                0.0.0.0/0   tcp        -           80
+TPROXY(3129)    eth1:!192.0.2.144   0.0.0.0/0   tcp        80</programlisting>
+    </note>
+
     <para>/etc/shorewall/rules:</para>
 
     <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)

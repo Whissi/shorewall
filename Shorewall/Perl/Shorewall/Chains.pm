@@ -211,6 +211,7 @@ our %EXPORT_TAGS = (
 				       do_probability
 				       do_condition
 				       do_dscp
+				       do_nfacct
 				       have_ipset_rules
 				       record_runtime_address
 				       verify_address_variables
@@ -5176,6 +5177,13 @@ sub do_dscp( $ ) {
 }
 
 #
+# Return nfacct match
+#
+sub do_nfacct( $ ) {
+    "-m nfacct --nfacct-name @_ ";
+}
+
+#
 # Match Source Interface
 #
 sub match_source_dev( $;$ ) {
@@ -5453,7 +5461,7 @@ sub match_source_net( $;$\$ ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
 		validate_nfobject( $_ );
-		$result .= "-m nfacct --nfacct-name $_ ";
+		$result .= do_nfacct( $_ );
 	    }
 	}
 
@@ -5473,7 +5481,7 @@ sub match_source_net( $;$\$ ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 		for ( my @objects = split_list $3, 'nfacct' ) {
 		    validate_nfobject( $_ );
-		    $result .= "-m nfacct --nfacct-name $_ ";
+		    $result .= do_nfacct( $_ );
 		}
 	    }
 	}
@@ -5627,7 +5635,7 @@ sub match_dest_net( $;$ ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
 		validate_nfobject( $_ );
-		$result .= "-m nfacct --nfacct-name $_ ";
+		$result .= do_nfacct( $_ );
 	    }
 	}
 
@@ -5649,7 +5657,7 @@ sub match_dest_net( $;$ ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
 	    for ( my @objects = split_list $3, 'nfacct' ) {
 		validate_nfobject( $_ );
-		$result .= "-m nfacct --nfacct-name $_ ";
+		$result .= do_nfacct( $_ );
 	    }
 	}
 

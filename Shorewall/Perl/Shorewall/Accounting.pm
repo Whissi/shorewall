@@ -237,9 +237,9 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	    for ( my @objects = split_nfacct_list $1 ) {
 		validate_nfobject( $_, 1 );
 		if ( s/!$// ) {
-		    $prerule .= "-m nfacct --nfacct-name $_ ";
+		    $prerule .= do_nfacct( $_ );
 		} else {
-		    $rule .= "-m nfacct --nfacct-name $_ ";
+		    $rule .= do_nfacct( $_ );
 		}
 	    }
 	} elsif ( $action eq 'INLINE' ) {

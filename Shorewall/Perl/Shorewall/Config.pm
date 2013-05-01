@@ -1137,6 +1137,38 @@ sub warning_message
     $| = 0; #Re-allow output buffering
 }
 
+#
+# Delete the test chains
+#
+sub cleanup_iptables() {
+    qt1( "$iptables -F $sillyname" );
+    qt1( "$iptables -X $sillyname" );
+    qt1( "$iptables -F $sillyname1" );
+    qt1( "$iptables -X $sillyname1" );
+
+    if ( $capabilities{MANGLE_ENABLED} ) {
+	qt1( "$iptables -t mangle -F $sillyname" );
+	qt1( "$iptables -t mangle -X $sillyname" );
+    }
+
+    if ( $capabilities{NAT_ENABLED} ) {
+	qt1( "$iptables -t nat -F $sillyname" );
+	qt1( "$iptables -t nat -X $sillyname" );
+    }
+
+    if ( $capabilities{RAW_TABLE} ) {
+	qt1( "$iptables -t raw -F $sillyname" );
+	qt1( "$iptables -t raw -X $sillyname" );
+    }
+
+    $sillyname = $sillyname1 = undef;
+
+    $sillyname = '';
+}
+
+#
+# Clean up after the compiler exits
+#
 sub cleanup() {
     #
     # Close files first in case we're running under Cygwin
@@ -1177,34 +1209,7 @@ sub cleanup() {
     #
     # Delete temporary chains
     #
-    if ( $sillyname ) {
-	#
-	# We went through determine_capabilities()
-	#
-	qt1( "$iptables -F $sillyname" );
-	qt1( "$iptables -X $sillyname" );
-	qt1( "$iptables -F $sillyname1" );
-	qt1( "$iptables -X $sillyname1" );
-
-	if ( $capabilities{MANGLE_ENABLED} ) {
-	    qt1( "$iptables -t mangle -F $sillyname" );
-	    qt1( "$iptables -t mangle -X $sillyname" );
-	}
-
-	if ( $capabilities{NAT_ENABLED} ) {
-	    qt1( "$iptables -t nat -F $sillyname" );
-	    qt1( "$iptables -t nat -X $sillyname" );
-	}
-
-	if ( $capabilities{RAW_TABLE} ) {
-	    qt1( "$iptables -t raw -F $sillyname" );
-	    qt1( "$iptables -t raw -X $sillyname" );
-	}
-
-	$sillyname = $sillyname1 = undef;
-
-	$sillyname = '';
-    }
+    cleanup_iptables if $sillyname;
 }
 
 #
@@ -5638,6 +5643,8 @@ sub get_configuration( $$$$ ) {
     }
 
     convert_to_directives if $directives;
+
+    cleanup_iptables if $sillyname && ! $config{LOAD_HELPERS_ONLY};
 }
 
 #

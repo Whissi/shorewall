@@ -554,6 +554,8 @@ our  %tccmd;
 					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
 					       $matches = $1;
 					       $target  = $2;
+					   } else {
+					       $target = '';
 					   }
 
 					   $cmd = '';

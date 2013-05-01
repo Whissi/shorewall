@@ -1185,14 +1185,24 @@ sub cleanup() {
 	qt1( "$iptables -X $sillyname" );
 	qt1( "$iptables -F $sillyname1" );
 	qt1( "$iptables -X $sillyname1" );
-	qt1( "$iptables -t mangle -F $sillyname" );
-	qt1( "$iptables -t mangle -X $sillyname" );
-	qt1( "$iptables -t nat -F $sillyname" );
-	qt1( "$iptables -t nat -X $sillyname" );
-	qt1( "$iptables -t raw -F $sillyname" );
-	qt1( "$iptables -t raw -X $sillyname" );
-	qt1( "$iptables -t rawpost -F $sillyname" );
-	qt1( "$iptables -t rawpost -X $sillyname" );
+
+	if ( $capabilities{MANGLE_ENABLED} ) {
+	    qt1( "$iptables -t mangle -F $sillyname" );
+	    qt1( "$iptables -t mangle -X $sillyname" );
+	}
+
+	if ( $capabilities{NAT_ENABLED} ) {
+	    qt1( "$iptables -t nat -F $sillyname" );
+	    qt1( "$iptables -t nat -X $sillyname" );
+	}
+
+	if ( $capabilities{RAW_TABLE} ) {
+	    qt1( "$iptables -t raw -F $sillyname" );
+	    qt1( "$iptables -t raw -X $sillyname" );
+	}
+
+	$sillyname = $sillyname1 = undef;
+
 	$sillyname = '';
     }
 }
@@ -4335,27 +4345,6 @@ sub determine_capabilities() {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
 	}
 
-	qt1( "$iptables -F $sillyname" );
-	qt1( "$iptables -X $sillyname" );
-	qt1( "$iptables -F $sillyname1" );
-	qt1( "$iptables -X $sillyname1" );
-
-	if ( $capabilities{MANGLE_ENABLED} ) {
-	    qt1( "$iptables -t mangle -F $sillyname" );
-	    qt1( "$iptables -t mangle -X $sillyname" );
-	}
-
-	if ( $capabilities{NAT_ENABLED} ) {
-	    qt1( "$iptables -t nat -F $sillyname" );
-	    qt1( "$iptables -t nat -X $sillyname" );
-	}
-
-	if ( $capabilities{RAW_TABLE} ) {
-	    qt1( "$iptables -t raw -F $sillyname" );
-	    qt1( "$iptables -t raw -X $sillyname" );
-	}
-
-	$sillyname = $sillyname1 = undef;
     }
 }
 

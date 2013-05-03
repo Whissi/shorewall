@@ -187,13 +187,13 @@
           <replaceable>dmax</replaceable>, the maximum delay in milliseconds
           that the first queued packet for this class should experience. May
           be expressed as an integer, optionally followed by 'ms' with no
-          intervening white space (e.g., 10ms).</para>
+          intervening white-space (e.g., 10ms).</para>
 
           <para>HFSC leaf classes may also specify
           <replaceable>umax</replaceable>, the largest packet expected in this
           class. May be expressed as an integer. The unit of measure is
           <emphasis>bytes</emphasis> and the integer may be optionally
-          followed by 'b' with no intervening white space (e.g., 800b).
+          followed by 'b' with no intervening white-space (e.g., 800b).
           <replaceable>umax</replaceable> may only be given if
           <replaceable>dmax</replaceable> is also given.</para>
 
@@ -436,7 +436,7 @@
                 than a system having only a single active connection. The
                 <option>flow</option> classifier (module cls_flow) works
                 around this by letting you define what a 'flow' is. The
-                clasifier must be used carefully or it can block off all
+                classifier must be used carefully or it can block off all
                 traffic on an interface! The flow option can be specified for
                 an HTB leaf class (one that has no sub-classes). We recommend
                 that you use the following:</para>
@@ -473,7 +473,7 @@
               <term>pfifo</term>
 
               <listitem>
-                <para>When specified for a leaf class, the pfifo queing
+                <para>When specified for a leaf class, the pfifo queuing
                 discipline is applied to the class rather than the sfq queuing
                 discipline.</para>
               </listitem>
@@ -687,7 +687,7 @@
                     <listitem>
                       <para>can be used to mark packets instead of dropping
                       them. If ecn has been enabled, noecn can be used to turn
-                      it off and vice-a-versa. By default, ecn is
+                      it off and vice-versa. By default, ecn is
                       enabled.</para>
                     </listitem>
                   </varlistentry>
@@ -719,8 +719,8 @@
           minimum of 100kbps and always be serviced first (because of the low
           priority number, giving less delay) and will be granted excess
           bandwidth (up to 180kbps, the class ceiling) first, before any other
-          traffic. A single VOIP stream, depending upon codecs, after
-          encapsulation, can take up to 80kbps on a PPOE/DSL link, so we pad a
+          traffic. A single VoIP stream, depending upon codecs, after
+          encapsulation, can take up to 80kbps on a PPPoE/DSL link, so we pad a
           little bit just in case. (TOS byte values 0xb8 and 0x68 are DiffServ
           classes EF and AFF3-1 respectively and are often used by VOIP
           devices).</para>

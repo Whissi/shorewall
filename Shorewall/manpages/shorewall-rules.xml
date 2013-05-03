@@ -24,7 +24,7 @@
     <title>Description</title>
 
     <para>Entries in this file govern connection establishment by defining
-    exceptions to the policies layed out in <ulink
+    exceptions to the policies laid out in <ulink
     url="shorewall-policy.html">shorewall-policy</ulink>(5). By default,
     subsequent requests and responses are automatically allowed using
     connection tracking. For any particular (source,dest) pair of zones, the
@@ -146,7 +146,7 @@
       role="bold">RELATED</emphasis> sections must be empty.</para>
 
       <para>An except is made if you are running Shorewall 4.4.27 or later and
-      you have specified a non-defualt value for RELATED_DISPOSITION or
+      you have specified a non-default value for RELATED_DISPOSITION or
       RELATED_LOG_LEVEL. In that case, you may have rules in the RELATED
       section of this file.</para>
     </warning>
@@ -243,7 +243,7 @@
                 <para>Added in Shorewall 4.4.12. Causes addresses and/or port
                 numbers to be added to the named
                 <replaceable>ipset</replaceable>. The
-                <replaceable>flags</replaceable> specify the address or tupple
+                <replaceable>flags</replaceable> specify the address or tuple
                 to be added to the set and must match the type of ipset
                 involved. For example, for an iphash ipset, either the SOURCE
                 or DESTINATION address can be added using
@@ -360,10 +360,10 @@
               <listitem>
                 <para>Added in Shorewall 4.4.12. Causes an entry to be deleted
                 from the named <replaceable>ipset</replaceable>. The
-                <replaceable>flags</replaceable> specify the address or tupple
+                <replaceable>flags</replaceable> specify the address or tuple
                 to be deleted from the set and must match the type of ipset
                 involved. For example, for an iphash ipset, either the SOURCE
-                or DESTINATION address can be deletec using
+                or DESTINATION address can be deleted using
                 <replaceable>flags</replaceable> <emphasis
                 role="bold">src</emphasis> or <emphasis
                 role="bold">dst</emphasis> respectively (see the -D command in
@@ -508,7 +508,7 @@
 
               <listitem>
                 <para>Added in Shorewall 4.5.9.3. Queues matching packets to a
-                backend logging daemon via a netlink socket then continues to
+                back end logging daemon via a netlink socket then continues to
                 the next rule. See <ulink
                 url="http://www.shorewall.net/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
 
@@ -621,7 +621,7 @@
 
               <listitem>
                 <para>Added in Shorewall 4.5.10. Queues matching packets to a
-                backend logging daemon via a netlink socket then continues to
+                back end logging daemon via a netlink socket then continues to
                 the next rule. See <ulink
                 url="http://www.shorewall.net/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
 
@@ -706,7 +706,7 @@
           <para>Beginning with Shorewall 4.4.13, you may use a
           <replaceable>zone-list </replaceable>which consists of a
           comma-separated list of zones declared in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink> (5). Ths
+          url="shorewall-zones.html">shorewall-zones</ulink> (5). This
           <replaceable>zone-list</replaceable> may be optionally followed by
           "+" to indicate that the rule is to apply to intra-zone traffic as
           well as inter-zone traffic.</para>
@@ -762,8 +762,8 @@
           bindings to be matched.</para>
 
           <para>Beginning with Shorewall 4.4.17, the primary IP address of a
-          firewall interface can be specified by an apersand ('&amp;')
-          followed by the logican name of the interface as found in the
+          firewall interface can be specified by an ampersand ('&amp;')
+          followed by the logical name of the interface as found in the
           INTERFACE column of <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>
           (5).</para>
@@ -880,7 +880,7 @@
           <para>Beginning with Shorewall 4.4.13, you may use a
           <replaceable>zone-list </replaceable>which consists of a
           comma-separated list of zones declared in <ulink
-          url="shorewall-zones.html">shorewall-zones</ulink> (5). Ths
+          url="shorewall-zones.html">shorewall-zones</ulink> (5). This
           <replaceable>zone-list</replaceable> may be optionally followed by
           "+" to indicate that the rule is to apply to intra-zone traffic as
           well as inter-zone traffic.</para>
@@ -965,7 +965,7 @@
           name.</para>
 
           <para>Beginning with Shorewall 4.4.17, the primary IP address of a
-          firewall interface can be specified by an apersand ('&amp;')
+          firewall interface can be specified by an ampersand ('&amp;')
           followed by the logical name of the interface as found in the
           INTERFACE column of <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>
@@ -973,7 +973,7 @@
 
           <para>The <replaceable>port</replaceable> that the server is
           listening on may be included and separated from the server's IP
-          address by ":". If omitted, the firewall will not modifiy the
+          address by ":". If omitted, the firewall will not modify the
           destination port. A destination port may only be included if the
           <emphasis role="bold">ACTION</emphasis> is <emphasis
           role="bold">DNAT</emphasis> or <emphasis
@@ -1043,11 +1043,11 @@
           names (from services(5)), port numbers or port ranges; if the
           protocol is <emphasis role="bold">icmp</emphasis>, this column is
           interpreted as the destination icmp-type(s). ICMP types may be
-          specified as a numeric type, a numberic type and code separated by a
+          specified as a numeric type, a numeric type and code separated by a
           slash (e.g., 3/4), or a typename. See <ulink
           url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.
           Note that prior to Shorewall 4.4.19, only a single ICMP type may be
-          listsed.</para>
+          listed.</para>
 
           <para>If the protocol is <emphasis role="bold">ipp2p</emphasis>,
           this column is interpreted as an ipp2p option without the leading
@@ -1071,7 +1071,7 @@
           <para>1. There are 15 or less ports listed.</para>
 
           <para>2. No port ranges are included or your kernel and iptables
-          contain extended multiport match support.</para>
+          contain extended multi-port match support.</para>
         </listitem>
       </varlistentry>
 
@@ -1090,7 +1090,7 @@
           column, provided that the DEST PORT(S) column is non-empty. This
           causes the rule to match when either the source port or the
           destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multiport match in your iptables
+          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
           and kernel.</para>
 
           <warning>
@@ -1111,7 +1111,7 @@
           <para>1. There are 15 or less ports listed.</para>
 
           <para>2. No port ranges are included or your kernel and iptables
-          contain extended multiport match support.</para>
+          contain extended multi-port match support.</para>
         </listitem>
       </varlistentry>
 
@@ -1139,7 +1139,7 @@
           not match any of the addresses listed.</para>
 
           <para>Beginning with Shorewall 4.4.17, the primary IP address of a
-          firewall interface can be specified by an apersand ('&amp;')
+          firewall interface can be specified by an ampersand ('&amp;')
           followed by the logical name of the interface as found in the
           INTERFACE column of <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>
@@ -1187,7 +1187,7 @@
           interval (<emphasis role="bold">sec</emphasis> or <emphasis
           role="bold">min</emphasis>) and <emphasis>burst</emphasis> is the
           largest burst permitted. If no <emphasis>burst</emphasis> is given,
-          a value of 5 is assumed. There may be no no whitespace embedded in
+          a value of 5 is assumed. There may be no no white-space embedded in
           the specification.</para>
 
           <para>Example: <emphasis role="bold">10/sec:20</emphasis></para>
@@ -1338,7 +1338,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">TIME</emphasis> -
-        <emphasis>timeelement</emphasis>[&amp;<emphasis>timelement</emphasis>...]</term>
+        <emphasis>timeelement</emphasis>[&amp;<emphasis>timeelement</emphasis>...]</term>
 
         <listitem>
           <para>May be used to limit the rule to a particular time period each
@@ -1482,7 +1482,7 @@
           <para>Switch settings are retained over <command>shorewall
           restart</command>.</para>
 
-          <para>Beginning with Shoreawll 4.5.10, when the
+          <para>Beginning with Shorewall 4.5.10, when the
           <replaceable>switch-name</replaceable> is followed by
           <option>=0</option> or <option>=1</option>, then the switch is
           initialized to off or on respectively by the
@@ -1707,7 +1707,7 @@
         <term>Example 10:</term>
 
         <listitem>
-          <para>Add the tupple (source IP, dest port, dest IP) of an incoming
+          <para>Add the tuple (source IP, dest port, dest IP) of an incoming
           SSH connection to the ipset S:</para>
 
           <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
@@ -1800,7 +1800,7 @@
     url="http://www.shorewall.net/shorewall_logging.html">http://www.shorewall.net/shorewall_logging.html</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorweall-blrules(5), shorewall-hosts(5),
+    shorewall-blacklist(5), shorewall-blrules(5), shorewall-hosts(5),
     shorewall_interfaces(5), shorewall-ipsets(5), shorewall-maclist(5),
     shorewall-masq(5), shorewall-nat(5), shorewall-netmap(5),
     shorewall-params(5), shorewall-policy(5), shorewall-providers(5),

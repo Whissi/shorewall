@@ -28,7 +28,7 @@
     <para>The file consists of Shell comments (lines beginning with '#'),
     blank lines and assignment statements
     (<emphasis>variable</emphasis>=<emphasis>value</emphasis>). If the
-    <emphasis>value</emphasis> contains shell metacharacters or white-space,
+    <emphasis>value</emphasis> contains shell meta characters or white-space,
     then it must be enclosed in quotes. Example:
     MACLIST_LOG_LEVEL="NFLOG(1,0,1)".</para>
   </refsect1>
@@ -455,7 +455,7 @@
 
           <para>When set to <emphasis role="bold">No</emphasis> or <emphasis
           role="bold">no</emphasis>, blacklists are consulted for every packet
-          (will slow down your firewall noticably if you have large
+          (will slow down your firewall noticeably if you have large
           blacklists). If the BLACKLISTNEWONLY option is not set or is set to
           the empty value then BLACKLISTNEWONLY=No is assumed.</para>
 
@@ -771,7 +771,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           the 'net' zone, ESTABLISHED/RELATED packets are ACCEPTED in the
           'loc2net' chain.</para>
 
-          <para>If you set FASTACCEPT=Yes, then ESTABLISHED/RELEATED packets
+          <para>If you set FASTACCEPT=Yes, then ESTABLISHED/RELATED packets
           are accepted early in the INPUT, FORWARD and OUTPUT chains. If you
           set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
           or RELATED sections of <ulink
@@ -1177,7 +1177,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <filename>/etc/shorewall</filename> are compare with that of
           <filename>/var/lib/shorewall/restore)</filename>. If set to No, then
           the times are compared with that of /var/lib/shorewall/firewall,
-          which is consistant with the way that <command>restart -f</command>
+          which is consistent with the way that <command>restart -f</command>
           works.</para>
         </listitem>
       </varlistentry>
@@ -1712,7 +1712,7 @@ LOG:info:,bar                        net                    fw</programlisting>
 
         <listitem>
           <para>Added in Shorewall 4.5.7. Specifies the pathname of the nfacct
-          utiliity. If not specified, Shorewall will use the PATH settting to
+          utility. If not specified, Shorewall will use the PATH setting to
           find the program.</para>
         </listitem>
       </varlistentry>
@@ -1780,7 +1780,7 @@ LOG:info:,bar                        net                    fw</programlisting>
               <para>Optimization category 2 - Added in Shorewall 4.4.7. When
               set, suppresses superfluous ACCEPT rules in a policy chain that
               implements an ACCEPT policy. Any ACCEPT rules that immediately
-              preceed the final blanket ACCEPT rule in the chain are now
+              precede the final blanket ACCEPT rule in the chain are now
               omitted.</para>
             </listitem>
 
@@ -1875,7 +1875,7 @@ LOG:info:,bar                        net                    fw</programlisting>
               compatible if they differ only in their destination ports and
               comments.</para>
 
-              <para>A sequence of combatible rules is often generated when
+              <para>A sequence of compatible rules is often generated when
               macros are invoked in sequence.</para>
 
               <para>The ability to combine adjacent rules is limited by two
@@ -1890,12 +1890,12 @@ LOG:info:,bar                        net                    fw</programlisting>
 
                 <listitem>
                   <para>Rules may only be combined until the length of their
-                  concatinated comment reaches 255 characters.</para>
+                  concatenated comment reaches 255 characters.</para>
                 </listitem>
               </itemizedlist>
 
               <para>When either of these limits would be exceeded, the current
-              combined rule is emitted and the compiler attemts to combine
+              combined rule is emitted and the compiler attempts to combine
               rules beginning with the one that would have exceeded the limit.
               Adjacent combined comments are separated by ', '. Empty comments
               at the front of a group of combined comments are replaced by
@@ -1927,7 +1927,7 @@ LOG:info:,bar                        net                    fw</programlisting>
 
                   <listitem>
                     <para>Rules with comments &lt;empty&gt;, "FOO" and "BAR"
-                    would reult in the combined comment "Others and FOO, BAR".
+                    would result in the combined comment "Others and FOO, BAR".
                     Note: Optimize level 16 requires "Extended Multi-port
                     Match" in your iptables and kernel.</para>
                   </listitem>
@@ -2018,7 +2018,7 @@ LOG:info:,bar                        net                    fw</programlisting>
         role="bold">"</emphasis></term>
 
         <listitem>
-          <para>Eariler generations of Shorewall Lite required that remote
+          <para>Earlier generations of Shorewall Lite required that remote
           root login via ssh be enabled in order to use the
           <command>load</command> and <command>reload</command> commands.
           Beginning with release 3.9.5, you may define an alternative means
@@ -2034,7 +2034,7 @@ LOG:info:,bar                        net                    fw</programlisting>
               <member>RCP_COMMAND: scp ${files}
               ${root}@${system}:${destination}</member>
             </simplelist>Shell variables that will be set when the commands
-          are envoked are as follows:<simplelist>
+          are invoked are as follows:<simplelist>
               <member><replaceable>root</replaceable> - root user. Normally
               <option>root</option> but may be overridden using the '-r'
               option.</member>
@@ -2359,7 +2359,7 @@ LOG:info:,bar                        net                    fw</programlisting>
           stops. Creating and removing this file allows Shorewall to work with
           your distribution's initscripts. For RedHat and OpenSuSE, this
           should be set to /var/lock/subsys/shorewall. For Debian, the value
-          is /var/lock/shorewall and in LEAF it is /var/run/shorwall.</para>
+          is /var/lock/shorewall and in LEAF it is /var/run/shorewall.</para>
         </listitem>
       </varlistentry>
 
@@ -2600,7 +2600,7 @@ LOG:info:,bar                        net                    fw</programlisting>
                   <para><emphasis role="bold">detect</emphasis> may be
                   specified for interfaces whose configuration is managed by
                   dhcpcd. Shorewall will use dhcpcd's database to find the
-                  interfaces's gateway.</para>
+                  interface's gateway.</para>
                 </note></para>
             </listitem>
 
@@ -2625,7 +2625,7 @@ LOG:info:,bar                        net                    fw</programlisting>
         <listitem>
           <para>Added in Shorewall 4.4.27. Normally, when Shorewall creates a
           Netfilter chain that relates to an interface, it uses the
-          interfaces's logical name as the base of the chain name. For
+          interface's logical name as the base of the chain name. For
           example, if the logical name for an interface is OAKLAND, then the
           input chain for traffic arriving on that interface would be
           'OAKLAND_in'. If this option is set to Yes, then the physical name

@@ -171,7 +171,7 @@
                   <term>CT</term>
 
                   <listitem>
-                    <para>Mark the connecdtion in the POSTROUTING chain</para>
+                    <para>Mark the connection in the POSTROUTING chain</para>
                   </listitem>
                 </varlistentry>
 
@@ -273,7 +273,7 @@
                   <term>CT</term>
 
                   <listitem>
-                    <para>Mark the connecdtion in the POSTROUTING chain</para>
+                    <para>Mark the connection in the POSTROUTING chain</para>
                   </listitem>
                 </varlistentry>
 
@@ -388,7 +388,7 @@
               <para><emphasis role="bold">DIVERT</emphasis></para>
 
               <para>Added in Shorewall 4.5.4 and only available when FORMAT is
-              2. Two DIVERT rule should preceed the TPROXY rule and should
+              2. Two DIVERT rule should precede the TPROXY rule and should
               select DEST PORT tcp 80 and SOURCE PORT tcp 80 respectively
               (assuming that tcp port 80 is being proxied). DIVERT avoids
               sending packets to the TPROXY target once a socket connection to
@@ -565,7 +565,7 @@
               to produce class IDs 1:1 through 1:6. But 1:1 is an invalid
               class ID since the <replaceable>major</replaceable> and
               <replaceable>minor</replaceable> classes are equal. So you might
-              chose instent to use IPMARK(src,0xFF,0x10100) as in the example
+              choose instead to use IPMARK(src,0xFF,0x10100) as in the example
               above so that all of your <replaceable>minor</replaceable>
               classes will have a value &gt; 256.</para>
             </listitem>
@@ -903,7 +903,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           <emphasis>port range</emphasis>s; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
-          type, a numberic type and code separated by a slash (e.g., 3/4), or
+          type, a numeric type and code separated by a slash (e.g., 3/4), or
           a typename. See <ulink
           url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
 
@@ -938,7 +938,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           column, provided that the DEST PORT(S) column is non-empty. This
           causes the rule to match when either the source port or the
           destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multiport match in your iptables
+          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
           and kernel.</para>
         </listitem>
       </varlistentry>
@@ -1139,7 +1139,7 @@ Normal-Service       =&gt; 0x00</programlisting>
         </emphasis><emphasis>helper</emphasis></term>
 
         <listitem>
-          <para>Names a Netfiler protocol <firstterm>helper</firstterm> module
+          <para>Names a Netfilter protocol <firstterm>helper</firstterm> module
           such as <option>ftp</option>, <option>sip</option>,
           <option>amanda</option>, etc. A packet will match if it was accepted
           by the named helper module.</para>
@@ -1233,7 +1233,7 @@ Normal-Service       =&gt; 0x00</programlisting>
        4:T         0.0.0.0/0 0.0.0.0/0   ipp2p:all
        SAVE:T      0.0.0.0/0 0.0.0.0/0   all     -             -       -       !0</programlisting>
 
-          <para>If a packet hasn't been classifed (packet mark is 0), copy the
+          <para>If a packet hasn't been classified (packet mark is 0), copy the
           connection mark to the packet mark. If the packet mark is set, we're
           done. If the packet is P2P, set the packet mark to 4. If the packet
           mark has been set, save it to the connection mark.</para>

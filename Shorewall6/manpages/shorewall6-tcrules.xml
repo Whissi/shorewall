@@ -279,7 +279,7 @@
                   <term>CT</term>
 
                   <listitem>
-                    <para>Mark the connecdtion in the POSTROUTING chain</para>
+                    <para>Mark the connection in the POSTROUTING chain</para>
                   </listitem>
                 </varlistentry>
 
@@ -393,7 +393,7 @@
             <listitem>
               <para><emphasis role="bold">DIVERT</emphasis></para>
 
-              <para>Added in Shorewall 4.5.3. Two DIVERT rule should preceed
+              <para>Added in Shorewall 4.5.3. Two DIVERT rule should precede
               the TPROXY rule and should select DEST PORT tcp 80 and SOURCE
               PORT tcp 80 respectively (assuming that tcp port 80 is being
               proxied). DIVERT avoids sending packets to the TPROXY target
@@ -731,7 +731,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           iprange match support, IP address ranges are also allowed. List
           elements may also consist of an interface name followed by ":" and
           an address (e.g., eth1:&lt;2002:ce7c:92b4::/48&gt;). If the
-          <emphasis role="bold">ACTION</emphasis> column specificies a
+          <emphasis role="bold">ACTION</emphasis> column specifies a
           classification of the form
           <emphasis>major</emphasis>:<emphasis>minor</emphasis> then this
           column may also contain an interface name.</para>
@@ -779,7 +779,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           <emphasis>port range</emphasis>s; if the protocol is <emphasis
           role="bold">ipv6-icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
-          type, a numberic type and code separated by a slash (e.g., 3/4), or
+          type, a numeric type and code separated by a slash (e.g., 3/4), or
           a typename. See <ulink
           url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
 
@@ -814,7 +814,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           column, provided that the DEST PORT(S) column is non-empty. This
           causes the rule to match when either the source port or the
           destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multiport match in your iptables
+          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
           and kernel.</para>
         </listitem>
       </varlistentry>
@@ -1001,7 +1001,7 @@ Normal-Service       =&gt; 0x00</programlisting>
         </emphasis><emphasis>helper</emphasis></term>
 
         <listitem>
-          <para>Optional. Names a Netfiler protocol
+          <para>Optional. Names a Netfilter protocol
           <firstterm>helper</firstterm> module such as <option>ftp</option>,
           <option>sip</option>, <option>amanda</option>, etc. A packet will
           match if it was accepted by the named helper module.</para>
@@ -1151,7 +1151,7 @@ Normal-Service       =&gt; 0x00</programlisting>
        4         ::/0      ::/0         ipp2p:all
        SAVE      ::/0      ::/0         all     -             -       -       !0</programlisting>
 
-          <para>If a packet hasn't been classifed (packet mark is 0), copy the
+          <para>If a packet hasn't been classified (packet mark is 0), copy the
           connection mark to the packet mark. If the packet mark is set, we're
           done. If the packet is P2P, set the packet mark to 4. If the packet
           mark has been set, save it to the connection mark.</para>
@@ -1184,7 +1184,7 @@ Normal-Service       =&gt; 0x00</programlisting>
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-ecn(5), shorewall6-exclusion(5),
     shorewall6-hosts(5), shorewall6-interfaces(5), shorewall6-maclist(5),
-    shoewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
     shorewall6-providers(5), shorewall6-rtrules(5),
     shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
     shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),

@@ -551,7 +551,7 @@ our  %tccmd;
 					   assert ( $cmd eq 'INLINE' );
 					   $matches = get_inline_matches;
 
-					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+					   if ( $matches =~ /^(.*\s+)-j\s+(.+) $/ ) {
 					       $matches = $1;
 					       $target  = $2;
 					   } else {

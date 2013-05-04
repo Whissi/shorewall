@@ -442,6 +442,7 @@ sub process_a_provider( $ ) {
     ( $interface, my $address ) = split /:/, $interface;
 
     my $shared = 0;
+    my $noautosrc = 0;
 
     if ( defined $address ) {
 	validate_address $address, 0;
@@ -530,6 +531,10 @@ sub process_a_provider( $ ) {
 	    } elsif ( $option =~ /^load=(0?\.\d{1,8})/ ) {
 		$load = $1;
 		require_capability 'STATISTIC_MATCH', "load=$load", 's';
+	    } elsif ( $option eq 'autosrc' ) {
+		$noautosrc = 0;
+	    } elsif ( $option eq 'noautosrc' ) {
+		$noautosrc = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -627,6 +632,7 @@ sub process_a_provider( $ ) {
 			   balance     => $balance ,
 			   pref        => $pref ,
 			   mtu         => $mtu ,
+			   noautosrc   => $noautosrc ,
 			   track       => $track ,
 			   loose       => $loose ,
 			   duplicate   => $duplicate ,
@@ -701,6 +707,7 @@ sub add_a_provider( $$ ) {
     my $balance     = $providerref->{balance};
     my $pref        = $providerref->{pref};
     my $mtu         = $providerref->{mtu};
+    my $noautosrc   = $providerref->{noautosrc};
     my $track       = $providerref->{track};
     my $loose       = $providerref->{loose};
     my $duplicate   = $providerref->{duplicate};
@@ -843,18 +850,20 @@ CEOF
 		       'done'
 		     );
 	    }
-	} elsif ( $shared ) {
-	    emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
-	    emit( "run_ip rule add from $address pref 20000 table $id" ,
-		  "echo \"\$IP -$family rule del from $address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
-	} elsif ( ! $pseudo ) {
-	    emit  ( "find_interface_addresses $physical | while read address; do" );
-	    emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
-	    emit  ( "    run_ip rule add from \$address pref 20000 table $id",
-		    "    echo \"\$IP -$family rule del from \$address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
-		    '    rulenum=$(($rulenum + 1))',
-		    'done'
-		  );
+	} elsif ( ! $noautosrc ) {
+	    if ( $shared ) {
+		emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
+		emit( "run_ip rule add from $address pref 20000 table $id" ,
+		      "echo \"\$IP -$family rule del from $address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
+	    } elsif ( ! $pseudo ) {
+		emit  ( "find_interface_addresses $physical | while read address; do" );
+		emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
+		emit  ( "    run_ip rule add from \$address pref 20000 table $id",
+			"    echo \"\$IP -$family rule del from \$address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
+			'    rulenum=$(($rulenum + 1))',
+			'done'
+		      );
+	    }
 	}
     }
 

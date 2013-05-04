@@ -1118,7 +1118,7 @@ sub add_an_rtrule( ) {
 
     fatal_error "Invalid priority ($priority)" unless $priority && $priority =~ /^\d{1,5}$/;
 
-    $priority = "priority $priority";
+    $priority = "pref $priority";
 
     push @{$providerref->{rules}}, "qt \$IP -$family rule del $source ${dest}${mark} $priority" if $config{DELETE_THEN_ADD};
     push @{$providerref->{rules}}, "run_ip rule add $source ${dest}${mark} $priority table $id";

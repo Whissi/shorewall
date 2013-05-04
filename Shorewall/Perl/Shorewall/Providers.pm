@@ -226,16 +226,24 @@ sub copy_and_edit_table( $$$$$ ) {
     my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
     my %copied;
     my @copy;
+    my @bup_copy;
+    my $bup_copy;
     #
     # Remove duplicates
     #
     for ( split ',', $copy ) {
 	unless ( $copied{$_} ) {
-	    fatal_error "Unknown interface ($_)" unless known_interface($_);
-	    push @copy, $_;
+	    if ( known_inerface($_) ) {
+		push @copy, $;    
+	    } elsif ( $_ =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
+		push @bup_copy, $_ ;
+            } else {
+		fatal_error "Unknown interface ($_)";
+            }
 	    $copied{$_} = 1;
 	}
     }
+    $bup_copy = join( '|' , @bup_copy );
     #
     # Map physical names in $copy to logical names
     #
@@ -255,11 +263,13 @@ sub copy_and_edit_table( $$$$$ ) {
 
     emit (  '    case $net in',
 	    '        default)',
-	    '            ;;',
-	    '        blackhole|prohibit|unreachable)',
+	    '            ;;' );
+    if ( $bup_copy ) {
+      emit ("        $bup_copy)",
 	    "            run_ip route add table $id \$net \$route $realm",
-	    '            ;;',
-	    '        *)',
+	    '            ;;' );
+    }
+    emit (  '        *)',
 	    '            case $(find_device $route) in',
 	    "                $copy)" );
     if ( $family == F_IPV4 ) {

@@ -233,10 +233,10 @@ sub copy_and_edit_table( $$$$$ ) {
     #
     for ( split ',', $copy ) {
 	unless ( $copied{$_} ) {
-	    if ( known_inerface($_) ) {
-		push @copy, $;    
+	    if ( known_interface($_) ) {
+		push @copy, $_;    
 	    } elsif ( $_ =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
-		push @bup_copy, $_ ;
+		push @bup_copy, $_;
             } else {
 		fatal_error "Unknown interface ($_)";
             }

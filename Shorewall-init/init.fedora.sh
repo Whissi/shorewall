@@ -45,10 +45,9 @@ setstatedir() {
     fi
 
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
-
-    if [ ! -x $STATEDIR/firewall ]; then
-	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	    ${SBINDIR}/$PRODUCT compile
+    if [ ! -x "${STATEDIR}/firewall" ]; then
+	if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
+	    ${SBINDIR}/$PRODUCT $OPTIONS compile
 	fi
     fi
 }
@@ -65,23 +64,24 @@ start () {
     fi
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
+    retval=0
     for PRODUCT in $PRODUCTS; do
 	setstatedir
 
-	if [ ! -x ${VARDIR}/firewall ]; then
-	    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-		${SBINDIR}/$PRODUCT compile
+	if [ ! -x "${STATEDIR}/firewall" ]; then
+	    if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
+		${SBINDIR}/$PRODUCT $OPTIONS compile
 	    fi
 	fi
 
-	if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
-	    ${VARDIR}/$PRODUCT/firewall stop 2>&1 | $logger
+	if [ -x "${STATEDIR}/firewall" ]; then
+	    ${STATEDIR}/firewall stop 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
 	    [ $retval -ne 0 ] && break
 	fi
     done
 
-    if [ retval -eq 0 ]; then
+    if [ $retval -eq 0 ]; then
 	touch $lockfile 
 	success
     else
@@ -97,23 +97,24 @@ stop () {
     local vardir
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
+    retval=0
     for PRODUCT in $PRODUCTS; do
 	setstatedir
 
-	if [ ! -x ${VARDIR}/firewall ]; then
-	    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-		${SBINDIR}/$PRODUCT compile
+	if [ ! -x "${STATEDIR}/firewall" ]; then
+	    if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
+		${SBINDIR}/$PRODUCT $OPTIONS compile
 	    fi
 	fi
 
-	if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
-	    ${VARDIR}/$PRODUCT/firewall clear 2>&1 | $logger
+	if [ -x "${STATEDIR}/firewall" ]; then
+	    ${STATEDIR}/firewall clear 2>&1 | $logger
 	    retval=${PIPESTATUS[0]}
 	    [ $retval -ne 0 ] && break
 	fi
     done
 
-    if [ retval -eq 0 ]; then
+    if [ $retval -eq 0 ]; then
 	rm -f $lockfile
 	success
     else

@@ -22,6 +22,9 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+# Get startup options (override default)
+OPTIONS=
+
 setstatedir() {
     local statedir
     if [ -f ${CONFDIR}/${PRODUCT}/vardir ]; then
@@ -30,9 +33,9 @@ setstatedir() {
 
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
 
-    if [ ! -x $STATEDIR/firewall ]; then
-	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	    ${SBINDIR}/$PRODUCT compile
+    if [ ! -x "$STATEDIR/firewall" ]; then
+	if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
+	    ${SBINDIR}/$PRODUCT $OPTIONS compile
 	fi
     fi
 }
@@ -99,8 +102,9 @@ esac
 for PRODUCT in $PRODUCTS; do
     setstatedir
 
-    if [ -x $VARLIB/$PRODUCT/firewall ]; then
-	  ( ${VARLIB}/$PRODUCT/firewall -V0 $COMMAND $INTERFACE >> $LOGFILE 2>&1 ) || true
+    if [ -x "$STATEDIR/firewall" ]; then
+	  echo "`date --rfc-3339=seconds` $0: Executing $STATEDIR/firewall $OPTIONS $COMMAND $INTERFACE" >> $LOGFILE 2>&1
+	  ( $STATEDIR/firewall $OPTIONS $COMMAND $INTERFACE >> $LOGFILE 2>&1 ) || true
     fi
 done
 

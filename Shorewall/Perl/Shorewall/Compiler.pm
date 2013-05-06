@@ -534,7 +534,8 @@ EOF
     run_start_exit
     do_iptables -N shorewall
     set_state Started $config_dir
-    [ \$0 = \${VARDIR}/firewall ] || cp -f \$(my_pathname) \${VARDIR}/firewall
+    my_pathname=\$(my_pathname)
+    [ \$my_pathname = \${VARDIR}/firewall ] || cp -f \$my_pathname \${VARDIR}/firewall
     run_started_exit
 fi
 EOF

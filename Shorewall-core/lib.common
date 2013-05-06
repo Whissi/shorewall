@@ -272,8 +272,11 @@ shorewall6_is_started() {
 # Echos the fully-qualified name of the calling shell program
 #
 my_pathname() {
+    local pwd
+    pwd=$PWD
     cd $(dirname $0)
     echo $PWD/$(basename $0)
+    cd $pwd
 }
 
 #

@@ -106,19 +106,13 @@ shorewall_start () {
   for PRODUCT in $PRODUCTS; do
       setstatedir
 
-      if [ ! -x ${VARDIR}/$PRODUCT/firewall ]; then
-	  if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	      ${SBINDIR}/$PRODUCT compile
-	  fi
-      fi
-
-      if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
+      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
 	  #
 	  # Run in a sub-shell to avoid name collisions
 	  #
 	  ( 
-	      if ! ${VARDIR}/$PRODUCT/firewall status > /dev/null 2>&1; then
-		  ${VARDIR}/$PRODUCT/firewall stop || echo_notdone
+	      if ! ${STATE}/$PRODUCT/firewall status > /dev/null 2>&1; then
+		  ${STATE}/$PRODUCT/firewall stop || echo_notdone
 	      fi
 	  )
       fi
@@ -138,14 +132,8 @@ shorewall_stop () {
   for PRODUCT in $PRODUCTS; do
       setstatedir
 
-      if [ ! -x ${VARDIR}/$PRODUCT/firewall ]; then
-	  if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	      ${SBINDIR}/$PRODUCT compile
-	  fi
-      fi
-
-      if [ -x ${VARDIR}/$PRODUCT/firewall ]; then
-	  ${VARDIR}/$PRODUCT/firewall clear || echo_notdone
+      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
+	  ${STATEDIR}/$PRODUCT/firewall clear || echo_notdone
       fi
   done
 

@@ -1940,11 +1940,9 @@ ComcastC 2      -    -          eth0      detect        loose,fallback,load=0.33
     <section id="LinkMonitor">
       <title>Gateway Monitoring and Failover</title>
 
-      <para>There are a couple of options available for monitoring the status
-      of provider links and taking action when a failure occurs. Both of these
-      options assume that each provider has a unique nexthop gateway; if two
-      or more providers use the same gateway router then neither option is
-      suitable.</para>
+      <para>There is an option (LSM) available for monitoring the status of
+      provider links and taking action when a failure occurs. LSM assumes that
+      each provider has a unique nexthop gateway.</para>
 
       <para>You specify the <option>optional</option> option in
       <filename>/etc/shorewall/interfaces</filename>:</para>
@@ -1953,201 +1951,13 @@ ComcastC 2      -    -          eth0      detect        loose,fallback,load=0.33
 net      eth0         detect          <emphasis role="bold">optional</emphasis>         
 net      eth1         detect          <emphasis role="bold">optional</emphasis></programlisting>
 
-      <section id="swping">
-        <title>SWPING</title>
-
-        <para>Shorewall includes a sample monitoring script
-        <filename>swping</filename>. The <filename>swping</filename> file is
-        available in the main directory contained in the Shorewall-common
-        tarball and is included in the Shorewall-common documentation
-        directory in the Shorewall-common RPM. The script is inspired by
-        Angsuman Chakraborty's <ulink
-        url="http://blog.taragana.com/index.php/archive/how-to-load-balancing-failover-with-dual-multi-wan-adsl-cable-connections-on-linux/">gwping</ulink>
-        script.</para>
-
-        <important>
-          <para>These samples are offered <emphasis>as is</emphasis> — they
-          work for me but I don't make any claim that they will work for
-          anyone else. But if you have a need for automated link monitoring,
-          they offer you a place to start.</para>
-        </important>
-
-        <important>
-          <para>If you have installed Shorewall-init, you should disable its
-          ifup/ifdown/NetworkManager integration (set IFUPDOWN=0 in the <ulink
-          url="Manpages/shorewall-init.html">Shorewall-init configuration
-          file</ulink>).</para>
-        </important>
-
-        <para>The script should be copied to a directory on root's PATH such
-        as <filename>/usr/local/sbin/</filename>.</para>
-
-        <para>The script works by sending pings to <emphasis>target</emphasis>
-        IP addresses through each external interface. These targets must not
-        depend on any routes other than those that are present in the main
-        routing table. That ensures that a route is available to the target
-        even when the target's interface is not working and Shorewall has
-        omitted it from the routing configuration. An interface is assumed to
-        be <firstterm>up</firstterm> when a specified number (UP_COUNT) of
-        consecutive ping operations succeed. Similarly, an interface is
-        assumed to be <firstterm>down</firstterm> when a specified number
-        (DOWN_COUNT) of consecutive ping operations fail. You can specify the
-        interval between pings (PING_INTERVAL).</para>
-
-        <para>The script monitors two interfaces but it is a trivial exercise
-        to extend it to more than two. At the top are a number of variables to
-        set:</para>
-
-        <programlisting>#
-# IP family -- 4 or 6
-#
-FAMILY=4
-#
-# The commands to run when the status of a line changes. Multiple commands may be specified 
-# when separated by semicolons (";")
-#
-COMMAND=
-
-...
-#
-# Interfaces to monitor -- you may use shell variables from your params file
-#
-IF1=eth0
-IF2=eth1
-#
-# Sites to Ping. Must depend only on routes in the 'main' routing table. If not specified,
-# the interface is assumed to be managed by dhcpcd and the script uses the gateway address
-# from /var/lib/dhcpcd/dhcpcd-${IFx}.info
-#
-TARGET1=
-TARGET2=
-#
-# How often to ping
-#
-PING_INTERVAL=5
-#
-# Value for ping's -W option
-#
-PING_TIMEOUT=2
-#
-# This many successive pings must succeed for the interface to be marked up when it is down
-#
-UP_COUNT=5
-#
-# This many successive pings must fail for the interface to be marked down when it is up
-#
-DOWN_COUNT=2</programlisting>
-
-        <para>If you leave COMMAND empty, the script sets its value
-        automatically depending on whether Shorewall-lite is installed.</para>
-
-        <para>When the status of an interface changes:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>For each interface, a file is placed in ${VARDIR} (normally
-            /var/lib/shorewall) to record the status of the interface: either
-            0 (UP) or 1 (DOWN). The name of the file is
-            <filename><replaceable>interface</replaceable>.status</filename>
-            where <replaceable>interface</replaceable> is the interface (e.g.,
-            <filename>eth0.status</filename>).</para>
-
-            <important>
-              <para>Beginning with Shorewall 4.5.0, the generated script
-              automatically maintains this .status file.</para>
-            </important>
-          </listitem>
-
-          <listitem>
-            <para>A <command>shorewall -f restart</command> command is
-            executed (<command>shorewall-lite restart</command>, if
-            Shorewall-lite is installed).</para>
-          </listitem>
-
-          <listitem>
-            <para>The contents of the main routing table are displayed.</para>
-          </listitem>
-        </itemizedlist>
-
-        <para>The .status files are intended to be used with the following
-        <filename>/etc/shorewall/isusable</filename> script.<programlisting>local status=0
-
-[ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
-
-return $status</programlisting></para>
-
-        <para>The above script is installed in <filename
-        class="directory">/etc/shorewall</filename> in Shorewall releases
-        4.3.11 - 4.5.0. Beginning with Shorewall 4.5.1, it is no longer
-        installed in <filename class="directory">/etc/shorewall</filename>,
-        but may be copied there from <filename
-        class="directory">/usr/share/shorewall/configfiles</filename>.</para>
-
-        <para>Also included is a sample init script
-        (<filename>swping.init</filename>) to start the monitoring daemon.
-        Copy it to<filename> /etc/init.d/swping</filename> and use your
-        distribution's SysV init tools to cause it to be run at boot. It works
-        on <trademark>OpenSuSE</trademark> 11.0 -- YMMV. Modify the PROG and
-        STATEDIR variables as needed.</para>
-
-        <para>As an alternative to using the init script, you can add the
-        following to <filename>/etc/shorewall/started</filename>:</para>
-
-        <programlisting>if [ "$COMMAND" = start ]; then
-   killall -9 swping 2&gt; /dev/null #be sure that there are none left running
-   /usr/local/sbin/swping &amp;
-fi</programlisting>
-
-        <para>and add this to
-        <filename>/etc/shorewall/stopped</filename>.</para>
-
-        <para><programlisting>if [ "$COMMAND" = stop -o "$COMMAND" = clear ]; then
-   killall -9 swping 2&gt; /dev/null
-fi</programlisting></para>
-
-        <para>This simple script has a number of limitations:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>It only works on IPv4 or IPv6 but not both at once. So if
-            you want to monitor both IPv4 and IPv6, you need to clone the
-            script are run two copies; one for IPv4 and one for IPv6.</para>
-          </listitem>
-
-          <listitem>
-            <para>It can only detect the gateway for interfaces managed by
-            dhcpcd.</para>
-          </listitem>
-
-          <listitem>
-            <para>It's method of determining whether an interface is up or
-            down is crude. You will normally specify the default gateway for
-            each provider as the sites to ping and being able to ping the
-            default gateway is not a surefire indication that the provider is
-            usable. The method of determining whether a site is up or down is
-            also crude.</para>
-          </listitem>
-
-          <listitem>
-            <para>Because of the crudeness of the algorithm, hysteresis may
-            occur.</para>
-          </listitem>
-
-          <listitem>
-            <para>It is tricky to configure a system such that the system
-            works correctly when one of its providers is down unless you
-            largely don't care which interface is used.</para>
-          </listitem>
-        </orderedlist>
-      </section>
-
       <section id="lsm">
         <title>Link Status Monitor (LSM)</title>
 
         <para><ulink url="http://lsm.foobar.fi/">Link Status Monitor</ulink>
         was written by Mika Ilmaranta &lt;ilmis at nullnet.fi&gt; and performs
-        more sophisticated monitoring than the simple swping script described
-        in the preceding section.</para>
+        more sophisticated monitoring than the simple SWPING script that
+        preceded it.</para>
 
         <important>
           <para>If you have installed Shorewall-init, you should disable its

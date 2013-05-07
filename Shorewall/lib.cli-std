@@ -337,7 +337,7 @@ uptodate() {
     ifs="$IFS"
     IFS=':'
 
-    for dir in $CONFIG_PATH; do
+    for dir in $g_shorewalldir $CONFIG_PATH; do
 	if [ -n "$(find ${dir} -newer $1)" ]; then
 	    IFS="$ifs"
 	    return 1;
@@ -599,6 +599,7 @@ start_command() {
 compile_command() {
     local finished
     finished=0
+    local conditional
 
     while [ $finished -eq 0 ]; do
 	[ $# -eq 0 ] && break
@@ -628,6 +629,10 @@ compile_command() {
 			d*)
 			    g_debug=Yes;
 			    option=${option#d}
+			    ;;
+			c*)
+			    conditional=Yes;
+			    option=${option#c}
 			    ;;
 			T*)
 			    g_confess=Yes
@@ -678,9 +683,14 @@ compile_command() {
 	    ;;
     esac
 
-    [ "x$file" = x- ] || progress_message3 "Compiling..."
+    if [ -n "$conditional" ] && uptodate $file; then
+	echo "$file is up to date -- no compilation required"
+	return 0
+    else
+	[ "x$file" = x- ] || progress_message3 "Compiling..."
 
-    compiler $g_debugging compile $file && run_postcompile $file
+	compiler $g_debugging compile $file && run_postcompile $file
+    fi
 }
 
 #
@@ -1579,7 +1589,7 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   check [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ <directory> ]"
     echo "   clear"
-    echo "   compile [ -e ] [ -p ] [ -t ] [ -d ] [ -T ] [ <directory name> ] [ <path name> ]"
+    echo "   compile [ -e ] [ -p ] [ -t ] [ -c ] [ -d ] [ -T ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   disable <interface>"
     echo "   drop <address> ..."

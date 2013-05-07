@@ -762,7 +762,17 @@
           which may be produced using the command <emphasis
           role="bold">shorewall6-lite show -f capabilities &gt;
           capabilities</emphasis> on a system with Shorewall6 Lite
-          installed</para>
+          installed.</para>
+
+          <para>The <emphasis role="bold">-c</emphasis> option was added in
+          Shorewall 4.5.17 and causes conditional compilation of a script. The
+          script specified by <replaceable>pathname</replaceable> (or implied
+          if <emphasis role="bold">pathname</emphasis> is omitted) is compiled
+          if it doesn't exist or if there is any file in the
+          <replaceable>directory</replaceable> or in a directory on the
+          CONFIG_PATH that has a modification time later than the file to be
+          compiled. When no compilation is needed, a message is issued and an
+          exit status of zero is returned.</para>
 
           <para>The <option>-d</option> option causes the compiler to be run
           under control of the Perl debugger.</para>

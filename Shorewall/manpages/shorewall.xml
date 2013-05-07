@@ -92,6 +92,8 @@
 
       <arg><option>-e</option></arg>
 
+      <arg><option>-c</option></arg>
+
       <arg><option>-d</option></arg>
 
       <arg><option>-p</option></arg>
@@ -832,8 +834,9 @@
 
         <listitem>
           <para>Compiles the current configuration into the executable file
-          <emphasis>pathname</emphasis>. If a directory is supplied, Shorewall
-          will look in that directory first for configuration files. If the
+          <emphasis>pathname</emphasis>. If a
+          <replaceable>directory</replaceable> is supplied, Shorewall will
+          look in that directory first for configuration files. If the
           <emphasis>pathname</emphasis> is omitted, the file
           <filename>firewall</filename> in the VARDIR (normally <filename
           class="directory">/var/lib/shorewall/</filename>) is assumed. A
@@ -852,6 +855,16 @@
           role="bold">shorewall-lite show -f capabilities &gt;
           capabilities</emphasis> on a system with Shorewall Lite
           installed</para>
+
+          <para>The <emphasis role="bold">-c</emphasis> option was added in
+          Shorewall 4.5.17 and causes conditional compilation of a script. The
+          script specified by <replaceable>pathname</replaceable> (or implied
+          if <emphasis role="bold">pathname</emphasis> is omitted) is compiled
+          if it doesn't exist or if there is any file in the
+          <replaceable>directory</replaceable> or in a directory on the
+          CONFIG_PATH that has a modification time later than the file to be
+          compiled. When no compilation is needed, a message is issued and an
+          exit status of zero is returned.</para>
 
           <para>The <option>-d</option> option causes the compiler to be run
           under control of the Perl debugger.</para>

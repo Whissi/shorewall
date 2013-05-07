@@ -152,6 +152,18 @@
 
           <variablelist>
             <varlistentry>
+              <term>autosrc</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.17. Causes a host route to the
+                provider's gateway router to be added to the provider's
+                routing table. This is the default behavior unless overridden
+                by a following <emphasis role="bold">noautosrc</emphasis>
+                option.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">track</emphasis></term>
 
               <listitem>
@@ -197,6 +209,17 @@
                 that IP address to be sent using the routing table for that
                 interface. Setting <option>loose</option> prevents creation of
                 such rules on this interface.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>noautosrc</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.17. Prevents the addition of a
+                host route to the provider's gateway router from being added
+                to the provider's routing table. This option must be used with
+                caution as it can cause start and restart failures.</para>
               </listitem>
             </varlistentry>
 
@@ -300,6 +323,13 @@
           Only copy routes through INTERFACE and through interfaces listed
           here. If you only wish to copy routes through INTERFACE, enter
           <option>none</option> in this column.</para>
+
+          <para>Beginning with Shorewall 4.5.17, blackhole, unreachable and
+          prohibit routes are no longer copied by default but may be copied by
+          including <emphasis role="bold">blackhole</emphasis>,<emphasis
+          role="bold">unreachable</emphasis> and <emphasis
+          role="bold">prohibit</emphasis> respectively in the COPY
+          list.</para>
         </listitem>
       </varlistentry>
     </variablelist>

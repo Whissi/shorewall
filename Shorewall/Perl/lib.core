@@ -419,6 +419,7 @@ fatal_error()
 
     stop_firewall
     [ -n "$TEMPFILE" ] && rm -f $TEMPFILE
+    mutex_off
     exit 2
 }
 

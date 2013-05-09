@@ -399,6 +399,11 @@ compiler() {
 	[ -f "$shorewallrc1" ] || fatal_error "Compiling for export requires a shorewallrc file"
     fi
 
+    if [ -n "$g_conditional" ] && uptodate $g_file; then
+	echo "$g_file is up to date -- no compilation required"
+	return 0
+    fi
+
     options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH --shorewallrc=${shorewallrc}"
     [ -n "$shorewallrc1" ] && options="$options --shorewallrc1=${shorewallrc1}"
     [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
@@ -599,7 +604,6 @@ start_command() {
 compile_command() {
     local finished
     finished=0
-    local conditional
 
     while [ $finished -eq 0 ]; do
 	[ $# -eq 0 ] && break
@@ -631,7 +635,7 @@ compile_command() {
 			    option=${option#d}
 			    ;;
 			c*)
-			    conditional=Yes;
+			    g_conditional=Yes;
 			    option=${option#c}
 			    ;;
 			T*)
@@ -654,15 +658,15 @@ compile_command() {
 	esac
     done
 
-    file=
+    g_file=
 
     case $# in
 	0)
-	    [ -n "$g_export" ] && file=firewall || file=${VARDIR}/firewall
+	    [ -n "$g_export" ] && g_file=firewall || g_file=${VARDIR}/firewall
 	    ;;
 	1)
-	    file=$1
-	    [ -d $file ] && fatal_error "$file is a directory"
+	    g_file=$1
+	    [ -d $g_file ] && fatal_error "$g_file is a directory"
 	    ;;
 	2)
 	    [ -n "$g_shorewalldir" -a -z "$g_export" ] && usage 2
@@ -676,21 +680,16 @@ compile_command() {
 	    fi
 
 	    g_shorewalldir=$(resolve_file $1)
-	    file=$2
+	    g_file=$2
 	    ;;
 	*)
 	    usage 1
 	    ;;
     esac
 
-    if [ -n "$conditional" ] && uptodate $file; then
-	echo "$file is up to date -- no compilation required"
-	return 0
-    else
-	[ "x$file" = x- ] || progress_message3 "Compiling..."
+    [ "x$g_file" = x- ] || progress_message3 "Compiling..."
 
-	compiler $g_debugging compile $file && run_postcompile $file
-    fi
+    compiler $g_debugging compile $g_file && run_postcompile $g_file
 }
 
 #

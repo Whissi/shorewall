@@ -48,6 +48,8 @@ setstatedir() {
 
     if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
 	${SBINDIR}/$PRODUCT $OPTIONS compile -c
+    else
+	return 0
     fi
 }
 
@@ -63,14 +65,23 @@ start () {
     fi
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
+
     retval=0
     for PRODUCT in $PRODUCTS; do
 	setstatedir
+	retval=$?
 
-	if [ -x "${STATEDIR}/firewall" ]; then
-	    ${STATEDIR}/firewall stop 2>&1 | $logger
-	    retval=${PIPESTATUS[0]}
-	    [ $retval -ne 0 ] && break
+	if [ $retval eq 0 ]; then
+	    if [ -x "${STATEDIR}/firewall" ]; then
+		${STATEDIR}/firewall stop 2>&1 | $logger
+		retval=${PIPESTATUS[0]}
+		[ $retval -ne 0 ] && break
+	    else
+		retval=6 #Product not configured
+		break
+	    fi
+	else
+	    break
 	fi
     done
 
@@ -91,13 +102,22 @@ stop () {
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
     retval=0
+
     for PRODUCT in $PRODUCTS; do
 	setstatedir
+	retval=$?
 
-	if [ -x "${STATEDIR}/firewall" ]; then
-	    ${STATEDIR}/firewall clear 2>&1 | $logger
-	    retval=${PIPESTATUS[0]}
-	    [ $retval -ne 0 ] && break
+	if [ $retval -eq 0 ]; then
+	    if [ -x "${STATEDIR}/firewall" ]; then
+		${STATEDIR}/firewall clear 2>&1 | $logger
+		retval=${PIPESTATUS[0]}
+		[ $retval -ne 0 ] && break
+	    else
+		retval=6 #Product not configured
+		break
+	    fi
+	else
+	    break
 	fi
     done
 

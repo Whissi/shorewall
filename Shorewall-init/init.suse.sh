@@ -34,22 +34,35 @@
 #                    prior to bringing up the network.  
 ### END INIT INFO
 
+#Return values acc. to LSB for all commands but status:
+# 0 - success
+# 1 - generic or unspecified error
+# 2 - invalid or excess argument(s)
+# 3 - unimplemented feature (e.g. "reload")
+# 4 - insufficient privilege
+# 5 - program is not installed
+# 6 - program is not configured
+# 7 - program is not running
+
 if [ "$(id -u)" != "0" ]
 then
   echo "You must be root to start, stop or restart \"Shorewall \"."
-  exit 1
+  exit 4
 fi
 
 # check if shorewall-init is configured or not
 if [ -f "/etc/sysconfig/shorewall-init" ]
 then
-	. /etc/sysconfig/shorewall-init
-	if [ -z "$PRODUCTS" ]
-	then
-		exit 0
-	fi
+    . /etc/sysconfig/shorewall-init
+
+    if [ -z "$PRODUCTS" ]
+    then
+	echo "No PRODUCTS configured"
+	exit 6
+    fi
 else
-	exit 0
+    echo "/etc/sysconfig/shorewall-init not found"
+    exit 6
 fi
 
 #
@@ -67,7 +80,7 @@ setstatedir() {
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
 
     if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	${SBINDIR}/$PRODUCT compile -c
+	${SBINDIR}/$PRODUCT compile -c || exit
     fi
 }
 
@@ -82,16 +95,16 @@ shorewall_start () {
 
       if [ -x $STATEDIR/firewall ]; then
 	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
-	      $STATEDIR/$PRODUCT/firewall stop || echo_notdone
+	      $STATEDIR/$PRODUCT/firewall stop || exit
 	  fi
+      else
+	  exit 6
       fi
   done
 
   if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
       ipset -R < "$SAVE_IPSETS"
   fi
-
-  return 0
 }
 
 # Clear the firewall
@@ -104,7 +117,9 @@ shorewall_stop () {
       setstatedir
 
       if [ -x ${STATEDIR}/firewall ]; then
-	  ${STATEDIR}/firewall clear || exit 1
+	  ${STATEDIR}/firewall clear || exit
+      else
+	  exit 6
       fi
   done
 
@@ -114,20 +129,21 @@ shorewall_stop () {
 	  grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
       fi
   fi
-
-  return 0
 }
 
 case "$1" in
-  start)
-     shorewall_start
-     ;;
-  stop)
-     shorewall_stop
-     ;;
-  *)
-     echo "Usage: /etc/init.d/shorewall-init {start|stop}"
-     exit 1
+    start)
+	shorewall_start
+	;;
+    stop)
+	shorewall_stop
+	;;
+    reload|forced-reload)
+	;;
+    *)
+	echo "Usage: /etc/init.d/shorewall-init {start|stop}"
+	exit 1
+	;;
 esac
 
 exit 0

@@ -45,10 +45,9 @@ setstatedir() {
     fi
 
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
-    if [ ! -x "${STATEDIR}/firewall" ]; then
-	if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
-	    ${SBINDIR}/$PRODUCT $OPTIONS compile
-	fi
+
+    if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
+	${SBINDIR}/$PRODUCT $OPTIONS compile -c
     fi
 }
 
@@ -67,12 +66,6 @@ start () {
     retval=0
     for PRODUCT in $PRODUCTS; do
 	setstatedir
-
-	if [ ! -x "${STATEDIR}/firewall" ]; then
-	    if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
-		${SBINDIR}/$PRODUCT $OPTIONS compile
-	    fi
-	fi
 
 	if [ -x "${STATEDIR}/firewall" ]; then
 	    ${STATEDIR}/firewall stop 2>&1 | $logger
@@ -100,12 +93,6 @@ stop () {
     retval=0
     for PRODUCT in $PRODUCTS; do
 	setstatedir
-
-	if [ ! -x "${STATEDIR}/firewall" ]; then
-	    if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
-		${SBINDIR}/$PRODUCT $OPTIONS compile
-	    fi
-	fi
 
 	if [ -x "${STATEDIR}/firewall" ]; then
 	    ${STATEDIR}/firewall clear 2>&1 | $logger

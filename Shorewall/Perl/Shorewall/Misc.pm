@@ -2168,7 +2168,7 @@ sub generate_matrix() {
 			    #
 			    # FORWARDING Jump for non-IPSEC host group
 			    #
-			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec';
+			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && ( $hostref->{ipsec} ne 'ipsec' && ! $hostref->{options}{local} );
 			}
 		    } # Subnet Loop
 		} # Hostref Loop

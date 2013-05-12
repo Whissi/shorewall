@@ -1270,8 +1270,6 @@ sub process_interface( $$ ) {
 	$options{ignore} ||= 0;
     }
 
-    $hostoptionsref->{destonly} = 1 if $hostoptionsref->{local};
-
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
 						       bridge     => $bridge ,
 						       filter     => $filterref ,

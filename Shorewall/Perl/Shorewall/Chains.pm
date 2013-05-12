@@ -3055,15 +3055,22 @@ sub optimize_level0() {
     for my $table ( qw/raw rawpost mangle nat filter/ ) {
 	next if $family == F_IPV6 && $table eq 'nat';
 	my $tableref = $chain_table{$table};
-	my @chains  = grep $_->{referenced}, values %$tableref;
-	my $chains  = @chains;
 
-	for my $chainref ( @chains ) {
-	    #
-	    # If the chain isn't branched to, then delete it
-	    #
-	    unless ( $chainref->{optflags} & DONT_DELETE || keys %{$chainref->{references}} ) {
-		delete_chain $chainref if $chainref->{referenced};
+	my $progress = 1;
+
+	while ( $progress ) {
+	    my @chains  = grep $_->{referenced}, values %$tableref;
+	    my $chains  = @chains;
+
+	    $progress = 0;
+
+	    for my $chainref ( @chains ) {
+		#
+		# If the chain isn't branched to, then delete it
+		#
+		unless ( $chainref->{optflags} & DONT_DELETE || keys %{$chainref->{references}} ) {
+		    delete_chain_and_references $chainref, $progress = 1 if $chainref->{referenced};
+		}
 	    }
 	}
     }
@@ -3098,7 +3105,7 @@ sub optimize_level4( $$ ) {
 	    # If the chain isn't branched to, then delete it
 	    #
 	    unless ( ( $optflags & DONT_DELETE ) || keys %{$chainref->{references}} ) {
-		delete_chain $chainref if $chainref->{referenced};
+		delete_chain_and_references $chainref if $chainref->{referenced};
 		next;
 	    }
 

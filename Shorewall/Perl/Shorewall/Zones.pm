@@ -302,6 +302,7 @@ sub initialize( $$ ) {
 				  dhcp        => SIMPLE_IF_OPTION,
 				  ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  local       => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				  norfc1918   => OBSOLETE_IF_OPTION,
@@ -339,6 +340,7 @@ sub initialize( $$ ) {
 				    bridge      => SIMPLE_IF_OPTION,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
+				    local       => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -1267,6 +1269,8 @@ sub process_interface( $$ ) {
 	#
 	$options{ignore} ||= 0;
     }
+
+    $hostoptionsref->{destonly} = 1 if $hostoptionsref->{local};
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
 						       bridge     => $bridge ,

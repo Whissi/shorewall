@@ -1628,6 +1628,8 @@ sub handle_complex_zone( $$ ) {
 	    my @interfacematch;
 	    my $interfaceref = find_interface $interface;
 
+	    next if $interfaceref->{options}{destonly};
+
 	    if ( use_forward_chain( $interface, $sourcechainref ) ) {
 		#
 		# Use the interface forward chain
@@ -2213,7 +2215,7 @@ sub generate_matrix() {
 		for my $typeref ( values %{$zone1ref->{hosts}} ) {
 		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 			for my $hostref ( @{$typeref->{$interface}} ) {
-			    next if $hostref->{options}{sourceonly};
+			    next if $hostref->{options}{sourceonly} || $hostref->{options}{local};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my @ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				my $dest_exclusion = dest_exclusion( $hostref->{exclusions}, $chain);

@@ -3053,8 +3053,8 @@ sub check_optimization( $ ) {
 # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
 sub optimize_level0() {
     for my $table ( qw/raw rawpost mangle nat filter/ ) {
-	next if $family == F_IPV6 && $table eq 'nat';
 	my $tableref = $chain_table{$table};
+	next unless $tableref;
 
 	my $progress = 1;
 

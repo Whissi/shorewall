@@ -1517,9 +1517,10 @@ sub add_interface_jumps {
     our %input_jump_added;
     our %output_jump_added;
     our %forward_jump_added;
-    my  $lo_jump_added = 0;
     my @interfaces = grep $_ ne '%vserver%', @_;
     my $dummy;
+    my $loref = known_interface('lo');
+    my $lo_jump_added =  $loref && $loref->{options}{local};
     #
     # Add Nat jumps
     #

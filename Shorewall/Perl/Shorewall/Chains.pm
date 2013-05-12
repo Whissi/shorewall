@@ -1639,8 +1639,8 @@ sub decrement_reference_count( $$ ) {
 
     if ( $toref && $toref->{referenced} ) {
 	assert($toref->{references}{$chain} > 0 , $toref, $chain );
-	delete $toref->{references}{$chain} unless --$toref->{references}{$chain};
-	delete_chain( $toref )              unless ( keys %{$toref->{references}} );
+	delete $toref->{references}{$chain}    unless --$toref->{references}{$chain};
+	delete_chain_and_references ( $toref ) unless ( keys %{$toref->{references}} );
     }
 }
 

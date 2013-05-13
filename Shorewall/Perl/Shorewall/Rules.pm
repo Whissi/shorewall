@@ -351,9 +351,7 @@ sub set_policy_chain($$$$$$)
     my $chainref1 = $filter_table->{$chain1};
 
     if ( $chainref ) {
-	if ( $intrazone       &&
-	     $source eq $dest &&
-	     $chainref1->{provisional} ) {
+	if ( $intrazone && $source eq $dest && $chainref1->{provisional} ) {
 	    $chainref1->{policychain} = '';
 	    $chainref1->{provisional} = '';
 	}

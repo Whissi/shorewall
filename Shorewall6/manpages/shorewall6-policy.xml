@@ -42,8 +42,9 @@
       <para>For $FW and for all of the zones defined in /etc/shorewall6/zones,
       the POLICY for connections from the zone to itself is ACCEPT (with no
       logging or TCP connection rate limiting but may be overridden by an
-      entry in this file. The overriding entry must be explicit (cannot use
-      "all" in the SOURCE or DEST).</para>
+      entry in this file. The overriding entry must be explicit (specifying
+      the zone name on both SOURCE and DEST) or it must use "all+ or it must
+      use "all+" (Shorewall 4.5.17 or later).</para>
 
       <para>Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall6.conf,
       then the implicit policy to/from any sub-zone is CONTINUE. These

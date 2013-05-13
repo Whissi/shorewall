@@ -66,12 +66,11 @@ start () {
 
     echo -n "Initializing \"Shorewall-based firewalls\": "
 
-    retval=0
     for PRODUCT in $PRODUCTS; do
 	setstatedir
 	retval=$?
 
-	if [ $retval eq 0 ]; then
+	if [ $retval -eq 0 ]; then
 	    if [ -x "${STATEDIR}/firewall" ]; then
 		${STATEDIR}/firewall stop 2>&1 | $logger
 		retval=${PIPESTATUS[0]}
@@ -101,7 +100,6 @@ stop () {
     local vardir
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
-    retval=0
 
     for PRODUCT in $PRODUCTS; do
 	setstatedir
@@ -152,7 +150,7 @@ case "$1" in
 	status $prog
 	;;
   *)
-	echo "Usage: /etc/init.d/shorewall-init {start|stop|status}"
+	echo "Usage: $0 {start|stop|status}"
 	exit 1
 esac
 

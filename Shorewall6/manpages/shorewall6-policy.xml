@@ -59,26 +59,39 @@
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> -
         <emphasis>zone</emphasis>|<emphasis
-        role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
+        role="bold">$FW</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis
+        role="bold">all+</emphasis></term>
 
         <listitem>
           <para>Source zone. Must be the name of a zone defined in <ulink
-          url="shorewall6-zones.html">shorewall6-zones</ulink>(5), $FW or
-          "all".</para>
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW, "all" or
+          "all+".</para>
+
+          <para>Support for "all+" was added in Shorewall 4.5.17. "all" does
+          not override the implicit intra-zone ACCEPT policy while "all+"
+          does.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> -
         <emphasis>zone</emphasis>|<emphasis
-        role="bold">$FW</emphasis>|<emphasis role="bold">all</emphasis></term>
+        role="bold">$FW</emphasis>|<emphasis
+        role="bold">all</emphasis>|<emphasis
+        role="bold">all+</emphasis></term>
 
         <listitem>
           <para>Destination zone. Must be the name of a zone defined in <ulink
-          url="shorewall6-zones.html">shorewall6-zones</ulink>(5), $FW or
-          "all". If the DEST is a bport zone, then the SOURCE must be "all",
-          another bport zone associated with the same bridge, or it must be an
-          ipv6 zone that is associated with only the same bridge.</para>
+          url="shorewall-zones.html">shorewall-zones</ulink>(5), $FW, "all" or
+          "all+". If the DEST is a bport zone, then the SOURCE must be "all",
+          "all+", another bport zone associated with the same bridge, or it
+          must be an ipv4 zone that is associated with only the same
+          bridge.</para>
+
+          <para>Support for "all+" was added in Shorewall 4.5.17. "all" does
+          not override the implicit intra-zone ACCEPT policy while "all+"
+          does.</para>
         </listitem>
       </varlistentry>
 

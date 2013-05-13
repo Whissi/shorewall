@@ -344,13 +344,20 @@ sub new_policy_chain($$$$$)
 #
 # Set the passed chain's policychain and policy to the passed values.
 #
-sub set_policy_chain($$$$$)
+sub set_policy_chain($$$$$$)
 {
-    my ($source, $dest, $chain1, $chainref, $policy ) = @_;
+    my ($source, $dest, $chain1, $chainref, $policy, $intrazone) = @_;
 
     my $chainref1 = $filter_table->{$chain1};
 
     $chainref1 = new_rules_chain $chain1 unless $chainref1;
+
+    if ( $intrazone       &&
+	 $source eq $dest &&
+	 $chainref1->{provisional} ) {
+	$chainref1->{policychain} = '';
+	$chainref1->{provisional} = '';
+    }
 
     unless ( $chainref1->{policychain} ) {
 	if ( $config{EXPAND_POLICIES} ) {
@@ -477,11 +484,13 @@ sub process_a_policy() {
     fatal_error 'DEST must be specified'   if $server eq '-';
     fatal_error 'POLICY must be specified' if $originalpolicy eq '-';
 
-    my $clientwild = ( "\L$client" eq 'all' );
+    my $clientwild = ( "\L$client" =~ /^all(\+)?$/ );
+    my $intrazone  = $clientwild && $1;
 
     fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
 
-    my $serverwild = ( "\L$server" eq 'all' );
+    my $serverwild = ( "\L$server" =~ /^all(\+)?/ );
+    $intrazone ||= $serverwild && $1;
 
     fatal_error "Undefined zone ($server)" unless $serverwild || defined_zone( $server );
 
@@ -568,19 +577,19 @@ sub process_a_policy() {
 	if ( $serverwild ) {
 	    for my $zone ( @zonelist ) {
 		for my $zone1 ( @zonelist ) {
-		    set_policy_chain $client, $server, rules_chain( ${zone}, ${zone1} ), $chainref, $policy;
+		    set_policy_chain $client, $server, rules_chain( ${zone}, ${zone1} ), $chainref, $policy, $intrazone;
 		    print_policy $zone, $zone1, $policy, $chain;
 		}
 	    }
 	} else {
 	    for my $zone ( all_zones ) {
-		set_policy_chain $client, $server, rules_chain( ${zone}, ${server} ), $chainref, $policy;
+		set_policy_chain $client, $server, rules_chain( ${zone}, ${server} ), $chainref, $policy, $intrazone;
 		print_policy $zone, $server, $policy, $chain;
 	    }
 	}
     } elsif ( $serverwild ) {
 	for my $zone ( @zonelist ) {
-	    set_policy_chain $client, $server, rules_chain( ${client}, ${zone} ), $chainref, $policy;
+	    set_policy_chain $client, $server, rules_chain( ${client}, ${zone} ), $chainref, $policy, $intrazone;
 	    print_policy $client, $zone, $policy, $chain;
 	}
 

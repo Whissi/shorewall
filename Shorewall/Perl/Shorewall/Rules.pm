@@ -2376,8 +2376,17 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	#
 	# If we are processing an inline action, we need the source zone for NAT.
 	#
-	$sourceref = find_zone( $chainref->{sourcezone} ) if $chainref->{sourcezone}; 
+	if ( $chainref->{sourcezone} ) { 
+	    $sourceref = find_zone( $chainref->{sourcezone} );
+	    unless ( $wildcard ) {
+		warning_message "The SOURCE in this rule is 'destonly'" if $sourceref->{destonly} && ! $sourceref->{complex};
+	    }
+	}
     } else {
+	unless ( $wildcard ) {
+	    warning_message "The SOURCE zone in this rule is 'destonly'" if $sourceref->{destonly} && ! $sourceref->{complex};
+	}
+
 	unless ( $actiontype & NATONLY ) {
 	    #
 	    # Check for illegal bridge port rule

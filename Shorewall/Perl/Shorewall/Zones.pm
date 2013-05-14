@@ -747,8 +747,11 @@ sub add_group_to_zone($$$$$)
     my $zoneref  = $zones{$zone};
     my $zonetype = $zoneref->{type};
 
-
+    $interfaceref = $interfaces{$interface};
     $zoneref->{interfaces}{$interface} = 1;
+    $zoneref->{destonly} ||= $interfaceref->{options}{destonly};
+
+    $interfaceref->{zones}{$zone} = 1;
 
     my @newnetworks;
     my @exclusions = ();
@@ -757,10 +760,6 @@ sub add_group_to_zone($$$$$)
     my $allip    = 0;
 
     for my $host ( @$networks ) {
-	$interfaceref = $interfaces{$interface};
-
-	$interfaceref->{zones}{$zone} = 1;
-
 	$interfaceref->{nets}++;
 
 	fatal_error "Invalid Host List" unless supplied $host;

@@ -9,7 +9,7 @@
 #	of the action is:
 #
 #	a) Avoid logging lots of useless cruft.
-#	b) Ensure that 'auth' requests are rejected, even if the policy is
+#	b) Allow 'auth' requests rejected rejected, even if the policy is
 #	   DROP. Otherwise, you may experience problems establishing
 #	   connections with servers that use auth.
 #	c) Ensure that certain ICMP packets that are necessary for successful
@@ -19,8 +19,8 @@
 #
 #	1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
 #           actions.
-#       2 - Action to take with Auth requests. Default is REJECT or A_REJECT,
-#           depending on the setting of the first parameter.
+#       2 - Action to take with Auth requests. Default is to do nothing special
+#	    with them.
 #	3 - Action to take with SMB requests. Default is DROP or A_DROP,
 #           depending on the setting of the first parameter.
 #       4 - Action to take with required ICMP packets. Default is ACCEPT or
@@ -43,7 +43,6 @@ my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
 
 if ( defined $p1 ) {
     if ( $p1 eq 'audit' ) {
-	set_action_param( 2, 'A_REJECT')   unless supplied $p2;
 	set_action_param( 3, 'A_DROP')     unless supplied $p3;
 	set_action_param( 4, 'A_ACCEPT' )  unless supplied $p4;
 	set_action_param( 5, 'A_DROP' )    unless supplied $p5;
@@ -56,7 +55,7 @@ if ( defined $p1 ) {
 
 ?END PERL;
 
-DEFAULTS -,REJECT,DROP,ACCEPT,DROP
+DEFAULTS -,-,DROP,ACCEPT,DROP
 
 #TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
 #
@@ -64,9 +63,11 @@ DEFAULTS -,REJECT,DROP,ACCEPT,DROP
 #
 COUNT
 #
-# Reject 'auth'
+# Special Handling for Auth
 #
+?if @2 ne '-'
 Auth(@2)
+?endif
 #
 # Don't log broadcasts
 #

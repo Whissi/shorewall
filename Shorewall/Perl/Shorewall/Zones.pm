@@ -750,6 +750,7 @@ sub add_group_to_zone($$$$$)
     $interfaceref = $interfaces{$interface};
     $zoneref->{interfaces}{$interface} = 1;
     $zoneref->{destonly} ||= $interfaceref->{options}{destonly};
+    $zoneref->{local}    ||= $interfaceref->{options}{local};
 
     $interfaceref->{zones}{$zone} = 1;
 

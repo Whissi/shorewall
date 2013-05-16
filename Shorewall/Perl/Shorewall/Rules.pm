@@ -2376,17 +2376,12 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	#
 	# If we are processing an inline action, we need the source zone for NAT.
 	#
-	if ( $chainref->{sourcezone} ) { 
-	    $sourceref = find_zone( $chainref->{sourcezone} );
-	    unless ( $wildcard ) {
-		warning_message "The SOURCE in this rule is 'destonly'" if $sourceref->{destonly} && ! $sourceref->{complex};
-	    }
-	}
+	$sourceref = find_zone( $chainref->{sourcezone} ) if $chainref->{sourcezone};
+	#
+	# And we need the dest zone for local/off-firewall/destonly checks
+	#
+	$destref   = find_zone( $chainref->{destzone}   ) if $chainref->{destzone};
     } else {
-	unless ( $wildcard ) {
-	    warning_message "The SOURCE zone in this rule is 'destonly'" if $sourceref->{destonly} && ! $sourceref->{complex};
-	}
-
 	unless ( $actiontype & NATONLY ) {
 	    #
 	    # Check for illegal bridge port rule
@@ -2403,6 +2398,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    # Ensure that the chain exists but don't mark it as referenced until after optimization is checked
 	    #
 	    ( $chainref  = ensure_chain( 'filter', $chain ) )->{sourcezone} = $sourcezone;
+	    $chainref->{destzone} = $destzone;
 
 	    my $policy = $chainref->{policy};
 
@@ -2441,6 +2437,19 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 		$chain    = $auxchain;
 		$chainref = $auxref;
+	    }
+	}
+    }
+    #
+    # Handle 'local' zone warnings
+    #
+    unless ( $wildcard ) {
+	if ( $sourceref ) {
+	    warning_message( "The SOURCE zone in this rule is 'destonly'" )                   if $sourceref->{destonly};
+
+	    if ( $destref ) {
+		warning_message( "The SOURCE zone is local and the DEST zone is off-firewall" )   if $sourceref->{local} && ! ( $destref->{type} & ( FIREWALL | VSERVER ) );
+		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'local'" ) if $destref->{local} && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
 	    }
 	}
     }

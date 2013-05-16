@@ -3421,8 +3421,16 @@ shorewall_cli() {
 			    g_fast=Yes
 			    option=${option#f}
 			    ;;
-			v*)
-			    option=${option#v}
+			[vV]*)
+			    case $option in
+				v*)
+				    option=${option#v}
+				    ;;
+				*)
+				    option=${option#V}
+				    ;;
+			    esac
+
 			    case $option in
 				-1*)
 				    g_use_verbosity=-1

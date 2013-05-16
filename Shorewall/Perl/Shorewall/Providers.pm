@@ -1409,17 +1409,15 @@ sub process_providers( $ ) {
 	}
     }
 
-    if ( $providers || $pseudoproviders ) {
-	my $fn = open_file 'routes';
+    my $fn = open_file 'routes';
 
-	if ( $fn ) {
-	    first_entry "$doing $fn...";
-	    emit '';
-	    add_a_route while read_a_line( NORMAL_READ );
-	}
-
-	add_a_provider( $providers{$_}, $tcdevices ) for @providers;
+    if ( $fn ) {
+	first_entry "$doing $fn...";
+	emit '';
+	add_a_route while read_a_line( NORMAL_READ );
     }
+
+    add_a_provider( $providers{$_}, $tcdevices ) for @providers;
 
     emit << 'EOF';;
 

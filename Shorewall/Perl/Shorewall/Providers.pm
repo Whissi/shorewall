@@ -1558,8 +1558,23 @@ sub setup_providers() {
 	emit "\nundo_routing";
 	emit "restore_default_route $config{USE_DEFAULT_RT}";
 
+	my $standard_routes = @{$providers{main}{routes}} || @{$providers{default}{routes}};
+
 	if ( $config{NULL_ROUTE_RFC1918} ) {
 	    setup_null_routing;
+	    emit "\nrun_ip route flush cache" unless $standard_routes;
+	}
+
+	if ( $standard_routes ) {
+	    for my $provider ( qw/main default/ ) {
+		emit '';
+		emit qq(> \${VARDIR}/undo_${provider}_routing );
+		emit '';
+		emit $_ for @{$providers{$provider}{routes}};
+		emit '';
+		emit $_ for @{$providers{$provider}{rules}};
+	    }
+
 	    emit "\nrun_ip route flush cache";
 	}
 

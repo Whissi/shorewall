@@ -418,10 +418,10 @@ TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
       web server listens on 192.0.2.144; then:</para>
 
       <programlisting><emphasis role="bold">FORMAT 2</emphasis>
-#MARK           SOURCE              DEST        PROTO      DEST        SOURCE
-#                                                          PORT(S)     PORT(S)
-DIVERT          eth0                0.0.0.0/0   tcp        -           80
-TPROXY(3129)    eth1:!192.0.2.144   0.0.0.0/0   tcp        80</programlisting>
+#MARK           SOURCE              DEST           PROTO      DEST        SOURCE
+#                                                             PORT(S)     PORT(S)
+DIVERT          eth0                0.0.0.0/0      tcp        -           80
+TPROXY(3129)    eth1                !192.0.2.144   tcp        80          -</programlisting>
     </note>
 
     <para>/etc/shorewall/rules:</para>

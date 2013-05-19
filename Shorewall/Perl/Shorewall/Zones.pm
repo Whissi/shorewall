@@ -38,6 +38,7 @@ our @EXPORT = ( qw( NOTHING
 		    IPSECMODE
 		    FIREWALL
 		    VSERVER
+		    LOCAL
 		    IP
 		    BPORT
 		    IPSEC
@@ -50,6 +51,7 @@ our @EXPORT = ( qw( NOTHING
 		    dump_zone_contents
 		    find_zone
 		    firewall_zone
+		    local_zone
 		    defined_zone
 		    zone_type
 		    zone_interfaces
@@ -58,6 +60,7 @@ our @EXPORT = ( qw( NOTHING
 		    all_parent_zones
 		    complex_zones
 		    vserver_zones
+		    local_zone
 		    on_firewall_zones
 		    off_firewall_zones
 		    non_firewall_zones
@@ -152,6 +155,7 @@ our @zones;
 our %zones;
 our %zonetypes;
 our $firewall_zone;
+our $local_zone;
 
 our %reservedName = ( all => 1,
 		      any => 1,
@@ -211,7 +215,9 @@ use constant { FIREWALL => 1,
 	       IP       => 2,
 	       BPORT    => 4,
 	       IPSEC    => 8,
-	       VSERVER  => 16 };
+	       VSERVER  => 16,
+	       LOCAL    => 32
+	   };
 
 use constant { SIMPLE_IF_OPTION   => 1,
 	       BINARY_IF_OPTION   => 2,
@@ -278,6 +284,7 @@ sub initialize( $$ ) {
     @zones = ();
     %zones = ();
     $firewall_zone = '';
+    $local_zone    = '';
     $have_ipsec = undef;
 
     @interfaces = ();
@@ -303,7 +310,6 @@ sub initialize( $$ ) {
 				  dhcp        => SIMPLE_IF_OPTION,
 				  ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
-				  local       => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				  norfc1918   => OBSOLETE_IF_OPTION,
@@ -334,7 +340,7 @@ sub initialize( $$ ) {
 			     sourceonly => 1,
 			     mss => 1,
 			    );
-	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver' );
+	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver', 32 => 'local' );
     } else {
 	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
 				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -342,7 +348,6 @@ sub initialize( $$ ) {
 				    destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
-				    local       => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -384,6 +389,8 @@ sub parse_zone_option_list($$\$$)
     my $fmt;
 
     if ( $list ne '-' ) {
+	fatal_error "The 'local' zone may not have $column OPTIONS" if $zonetype == LOCAL;
+
 	for my $e ( split_list $list, 'option' ) {
 	    my $val    = undef;
 	    my $invert = '';
@@ -491,6 +498,11 @@ sub process_zone( \$ ) {
     } elsif ( $type eq '-' ) {
 	$type = IP;
 	$$ip = 1;
+    } elsif ( $type eq 'local' ) {
+	fatal_error 'The local zone may not be nested' if @parents;
+	fatal_error "Only one local zone may be defined ($zone)" if $local_zone;
+	$local_zone = $zone;
+	$type = LOCAL;
     } else {
 	fatal_error "Invalid zone type ($type)";
     }
@@ -568,6 +580,8 @@ sub process_zone( \$ ) {
 #
 # Parse the zones file.
 #
+sub vserver_zones();
+
 sub determine_zones()
 {
     my @z;
@@ -586,6 +600,7 @@ sub determine_zones()
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
     fatal_error "No IP zones defined" unless $ip;
+    fatal_error "The local zone and vserver zones are mutually exclusive" if $local_zone && vserver_zones;
     #
     # Topological sort to place sub-zones before all of their parents
     #
@@ -750,7 +765,6 @@ sub add_group_to_zone($$$$$)
     $interfaceref = $interfaces{$interface};
     $zoneref->{interfaces}{$interface} = 1;
     $zoneref->{destonly} ||= $interfaceref->{options}{destonly};
-    $zoneref->{local}    ||= $interfaceref->{options}{local};
 
     $interfaceref->{zones}{$zone} = 1;
 
@@ -890,6 +904,10 @@ sub vserver_zones() {
 
 sub firewall_zone() {
     $firewall_zone;
+}
+
+sub local_zone() {
+    $local_zone;
 }
 
 #
@@ -1287,6 +1305,37 @@ sub process_interface( $$ ) {
 						     };
 
     if ( $zone ) {
+	if ( $physical eq 'lo' ) {
+	    fatal_error "Only a local zone may be assigned to 'lo'"       unless $zoneref->{type} == LOCAL;
+	    fatal_error "The local zone may not have nets specified"      if $netsref;
+	    fatal_error "Invalid definition of 'lo'"                      if $bridge ne $interface;
+	    
+	    for ( qw/arp_filter
+		     arp_ignore
+		     blacklist
+		     bridge
+		     detectnets
+		     dhcp
+		     maclist
+		     logmartians
+		     norfc1918
+		     nosmurts
+		     proxyarp
+		     routeback
+		     routefilter
+		     rpfilter
+		     sfilter
+		     sourceroute
+		     upnp
+		     upnpclient
+		     mss
+		    / ) {
+		fatal_error "The 'lo' interface may not specify the '$_' option" if supplied $options{$_};
+	    }
+	} else {
+	    fatal_error "The local zone may only be assigned to 'lo'" if $zoneref->{type} == LOCAL;
+	}
+
 	$netsref ||= [ allip ];
 	add_group_to_zone( $zone, $zoneref->{type}, $interface, $netsref, $hostoptionsref );
 	add_group_to_zone( $zone,

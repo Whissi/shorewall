@@ -836,7 +836,7 @@ sub add_common_rules ( $ ) {
 
 	my $interfaceref = find_interface $interface;
 
-	unless ( $interfaceref->{options}{ignore} & NO_SFILTER || $interfaceref->{options}{rpfilter} ) {
+	unless ( $interfaceref->{options}{ignore} & NO_SFILTER || $interfaceref->{options}{rpfilter} || $interfaceref->{physical} eq 'lo' ) {
 
 	    my @filters = @{$interfaceref->{filter}};
 
@@ -1520,7 +1520,7 @@ sub add_interface_jumps {
     my @interfaces = grep $_ ne '%vserver%', @_;
     my $dummy;
     my $loref = known_interface('lo');
-    my $lo_jump_added =  $loref && $loref->{options}{local} && ! $loref->{options}{destonly};
+    my $lo_jump_added = local_zone;
     #
     # Add Nat jumps
     #
@@ -2169,12 +2169,14 @@ sub generate_matrix() {
 			    #
 			    # FORWARDING Jump for non-IPSEC host group
 			    #
-			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && ( $hostref->{ipsec} ne 'ipsec' && ! $hostref->{options}{local} );
+			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec' && $zoneref->{type} ne LOCAL;
 			}
 		    } # Subnet Loop
 		} # Hostref Loop
 	    } # Interface Loop
 	} #Type Loop
+
+	next if $zoneref->{type} == LOCAL;
 
 	if ( $frwd_ref ) {
 	    #
@@ -2197,6 +2199,8 @@ sub generate_matrix() {
 
 		next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
+		next if $zone1ref->{type} == LOCAL;
+
 		my $chain = rules_target $zone, $zone1;
 
 		next unless $chain; # CONTINUE policy with no rules
@@ -2216,7 +2220,7 @@ sub generate_matrix() {
 		for my $typeref ( values %{$zone1ref->{hosts}} ) {
 		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 			for my $hostref ( @{$typeref->{$interface}} ) {
-			    next if $hostref->{options}{sourceonly} || $hostref->{options}{local};
+			    next if $hostref->{options}{sourceonly};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {
 				my @ipsec_out_match = match_ipsec_out $zone1 , $hostref;
 				my $dest_exclusion = dest_exclusion( $hostref->{exclusions}, $chain);

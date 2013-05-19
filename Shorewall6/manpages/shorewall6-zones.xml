@@ -133,8 +133,8 @@ c:a,b     ipv6</programlisting>
                 <para>This is the standard Shorewall6 zone type and is the
                 default if you leave this column empty or if you enter "-" in
                 the column. Communication with some zone hosts may be
-                encrypted. Encrypted hosts are designated using the
-                'ipsec' option in <ulink
+                encrypted. Encrypted hosts are designated using the 'ipsec'
+                option in <ulink
                 url="shorewall6-hosts.html">shorewall6-hosts</ulink>(5).</para>
               </listitem>
             </varlistentry>
@@ -183,6 +183,71 @@ c:a,b     ipv6</programlisting>
 
                 <para>Vserver zones are implicitly handled as subzones of the
                 firewall zone.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">local</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.17.</para>
+
+                <para>Normally, Shorewall treats the loopback interface (lo)
+                in the following way:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>By default, all traffic through the interface is
+                    ACCEPTed.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>If a $FW -&gt; $FW policy is defined or $FW -&gt;
+                    $FW rules are defined, they are placed in a chain named
+                    ${FW}2${F2} or ${FW}-${FW} (e.g., 'fw2fw' or 'fw-fw' )
+                    depending on the ZONE2ZONE setting in <ulink
+                    url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>$FW -&gt; $FW traffic is only filtered in the OUTPUT
+                    chain.</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para>By defining a <emphasis role="bold">local</emphasis>
+                zone and associating it with the loopback interface in
+                shorewall-interfaces(5), you can effect a slightly different
+                model. Suppose that the <emphasis role="bold">local</emphasis>
+                zone name is 'local'; then:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>Both $FW -&gt; local and local -&gt; $FW chains are
+                    created.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The $FW -&gt; local and local -&gt; $FW policies may
+                    be different.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Both $FW -&gt; local and local -&gt; $FW rules may
+                    be specified.</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para>Rules to/from the <emphasis role="bold">local</emphasis>
+                zone and any zone other than the firewall zone are ignored
+                with a warning.</para>
+
+                <para>Only one <emphasis role="bold">local</emphasis> zone may
+                be defined.</para>
+
+                <para>When a local zone is defined, you should ensure that the
+                $FW -&gt; $FW policy is ACCEPT; otherwise, extraneous chains
+                and rules will be created.</para>
               </listitem>
             </varlistentry>
           </variablelist>

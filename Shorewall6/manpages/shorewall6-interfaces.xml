@@ -84,6 +84,11 @@
 loc     eth1            -
 loc     eth2            -</programlisting>
           </blockquote>
+
+          <para>Beginning with Shorewall 4.5.17, if you specify a zone for the
+          'lo' interface, then that zone must be defined as type
+          <option>local</option> in <ulink
+          url="shorewall6-zones.html">shorewall6-zones</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -312,16 +317,6 @@ loc     eth2            -</programlisting>
                 filtering is still applied. In this case, the above
                 restrictions on the ZONE and OPTIONS columns are
                 lifted.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">local</emphasis></term>
-
-              <listitem>
-                <para>Added in Shorewall 4.5.17. Causes the compiler to omit
-                rules from this interface to other interfaces and from other
-                interfaces to this interface.</para>
               </listitem>
             </varlistentry>
 

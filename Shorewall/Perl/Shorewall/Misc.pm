@@ -1427,6 +1427,7 @@ sub handle_loopback_traffic() {
     my $natout  = $nat_table->{OUTPUT};
     my $rawout  = $raw_table->{OUTPUT};
     my $rulenum = 0;
+    my $local   = local_zone;
 
     my $outchainref;
     my @rule;
@@ -1455,6 +1456,8 @@ sub handle_loopback_traffic() {
 	#
 	if ( $type1 == FIREWALL ) {
 	    for my $z2 ( @zones ) {
+		next if $local && $z1 eq $z2;
+
 		my $chain = rules_target( $z1, $z2 );
 
 		generate_dest_rules( $outchainref, $chain, $z2, @rule ) if $chain;

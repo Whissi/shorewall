@@ -2448,8 +2448,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    warning_message( "The SOURCE zone in this rule is 'destonly'" )                   if $sourceref->{destonly};
 
 	    if ( $destref ) {
-		warning_message( "The SOURCE zone is local and the DEST zone is off-firewall" )   if $sourceref->{type} == LOCAL && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
-		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'local'" ) if $destref->{type}   == LOCAL && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
+		warning_message( "The SOURCE zone is local and the DEST zone is off-firewall" )          if $sourceref->{type} == LOCAL && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
+		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'local'" )        if $destref->{type}   == LOCAL && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
+		warning_message( "\$FW to \$FW rules are ignored when there is a defined 'local' zone" ) if local_zone && $sourceref->{type} == FIREWALL && $destref->{type} == FIREWALL;
 	    }
 	}
     }

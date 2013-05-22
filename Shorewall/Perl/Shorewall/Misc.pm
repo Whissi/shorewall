@@ -1519,8 +1519,7 @@ sub add_interface_jumps {
     our %forward_jump_added;
     my @interfaces = grep $_ ne '%vserver%', @_;
     my $dummy;
-    my $loref = known_interface('lo');
-    my $lo_jump_added = local_zone;
+    my $lo_jump_added = local_zone && ! get_interface_option( 'lo', 'destonly' );
     #
     # Add Nat jumps
     #

@@ -6876,10 +6876,12 @@ sub handle_original_dest( $$$ ) {
 #
 # Handles non-trivial exclusion. Updates the passed rule and returns ( $rule, $done )
 #
-sub handle_exclusion( $$$$$$$$$$$$$$$$$$$ ) {
+sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
     my ( $disposition, 
 	 $table,
 	 $prerule,
+	 $sprerule,
+	 $dprerule,
 	 $rule,
 	 $restriction, 
 	 $inets,
@@ -6961,7 +6963,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$ ) {
 
 		for my $dnet ( split_host_list( $dnets, $config{DEFER_DNS_RESOLUTION} ) ) {
 		    $source_match = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
-		    add_expanded_jump( $chainref, $echainref, 0, join( '', $prerule, $source_match, match_dest_net( $dnet, $restriction ), $onet, $rule ) );
+		    add_expanded_jump( $chainref, $echainref, 0, join( '', $prerule, $source_match, $sprerule, match_dest_net( $dnet, $restriction ), $dprerule, $onet, $rule ) );
 		}
 
 		conditional_rule_end( $chainref ) if $cond;
@@ -7109,13 +7111,15 @@ sub expand_rule( $$$$$$$$$$$;$ )
     #
     # Determine if there is Source Exclusion
     #
+    my ( $sprerule, $dprerule ) = ( '', '' );
+
     if ( $inets ) {
 	( $inets, $iexcl ) = handle_network_list( $inets, 'SOURCE' );
 
 	unless ( $inets || $iexcl =~ /^\+\[/ || ( $iiface && $restriction & POSTROUTE_RESTRICT ) ) {
 	    my @iexcl = split_host_list( $iexcl, $deferdns, 1 );
 	    if ( @iexcl == 1 ) {
-		$rule .= match_source_net "!$iexcl" , $restriction;
+		$sprerule = match_source_net "!$iexcl" , $restriction;
 		$iexcl = '';
 		$trivialiexcl = 1;
 	    }
@@ -7130,7 +7134,7 @@ sub expand_rule( $$$$$$$$$$$;$ )
 	unless ( $dnets || $dexcl =~ /^\+\[/ ) {
 	    my @dexcl = split_host_list( $dexcl, $deferdns, 1 );
 	    if ( @dexcl == 1 ) {
-		$rule .= match_dest_net "!$dexcl", $restriction;
+		$dprerule = match_dest_net "!$dexcl", $restriction;
 		$dexcl = '';
 		$trivialdexcl = 1;
 	    }
@@ -7153,6 +7157,8 @@ sub expand_rule( $$$$$$$$$$$;$ )
 	( $rule, $done ) = handle_exclusion( $disposition,
 					     $table,
 					     $prerule,
+					     $sprerule,
+					     $dprerule,
 					     $rule,
 					     $restriction,
 					     $inets,
@@ -7190,7 +7196,7 @@ sub expand_rule( $$$$$$$$$$$;$ )
 		for my $dnet ( split_host_list( $dnets, $deferdns ) ) {
 		    $source_match  = match_source_net( $inet, $restriction, $mac ) unless $globals{KLUDGEFREE};
 		    my $dest_match = match_dest_net( $dnet, $restriction );
-		    my $matches = join( '', $source_match, $dest_match, $onet, $rule );
+		    my $matches = join( '', $source_match, $sprerule, $dest_match, $dprerule, $onet, $rule );
 
 		    my $cond3 = conditional_rule( $chainref, $dnet );
 

@@ -2445,7 +2445,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     #
     unless ( $wildcard ) {
 	if ( $sourceref ) {
-	    warning_message( "The SOURCE zone in this rule is 'destonly'" )                   if $sourceref->{destonly};
+	    warning_message( "The SOURCE zone in this rule is 'destonly'" ) if $sourceref->{destonly};
 
 	    if ( $destref ) {
 		warning_message( "The SOURCE zone is local and the DEST zone is off-firewall" )          if $sourceref->{type} == LOCAL && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );

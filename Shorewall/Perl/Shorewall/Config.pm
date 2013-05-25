@@ -4941,23 +4941,26 @@ sub convert_to_directives() {
     progress_message3 "Converting 'FORMAT' and 'COMMENT' lines to compiler directives...";
 
     for my $dir ( @path ) {
-	unless ( $dir =~ /$dirtest/ || ! -w $dir ) {
-	    $dir =~ s|/+$||;
+	unless ( $dir =~ /$dirtest/ ) {
+	    if ( ! -w $dir ) {
+		warning_message "$dir not processed (not writeable)";
+	    } else {
+		$dir =~ s|/+$||;
 
-	    opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
+		opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
 
-	    while ( my $file = readdir( $dirhandle ) ) {
-		unless ( $file eq 'capabilities'       ||
-			 $file eq 'params'             ||
-			 $file =~ /^shorewall6?.conf$/ ||
-			 $file =~ /\.bak$/ ) {
-		    $file = "$dir/$file";
+		while ( my $file = readdir( $dirhandle ) ) {
+		    unless ( $file eq 'capabilities'       ||
+			     $file eq 'params'             ||
+			     $file =~ /^shorewall6?.conf$/ ||
+			     $file =~ /\.bak$/ ) {
+			$file = "$dir/$file";
 		
-		    if ( -f $file && -w _ ) {
-			#
-			# writeable regular file
-			#
-			my $result = system << "EOF";
+			if ( -f $file && -w _ ) {
+			    #
+			    # writeable regular file
+			    #
+			    my $result = system << "EOF";
 perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
                  if ( /^\\s*COMMENT\\s+/ ) {
                      s/COMMENT/?COMMENT/;
@@ -4965,20 +4968,25 @@ perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
                      s/COMMENT/?COMMENT/;
                  }' $file
 EOF
-			if ( $result == 0 ) {
-			    if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
-				progress_message3 "   File $file updated - old file renamed ${file}.bak";
-			    } elsif ( ! rename "${file}.bak" , $file ) {
-				warning message "Unable to rename ${file}.bak to $file:$!";
+			    if ( $result == 0 ) {
+				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
+				    progress_message3 "   File $file updated - old file renamed ${file}.bak";
+				} elsif ( rename "${file}.bak" , $file ) {
+				    progress_message "   File $file not updated -- no bare 'COMMENT' or 'FORMAT' lines found";
+				} else {
+				    warning message "Unable to rename ${file}.bak to $file:$!";
+				}
+			    } else {
+				warning_message ("Unable to update file ${file}.bak:$!" );
 			    }
 			} else {
-			    warning_message ("Unable to update file ${file}.bak:$!" );
+			    warning_message( "$file skipped (not writeable)" ) unless -d _;
 			}
 		    }
 		}
-	    }
 
-	    closedir $dirhandle;
+		closedir $dirhandle;
+	    }
 	}
     }
 }

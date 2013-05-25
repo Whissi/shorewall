@@ -4435,8 +4435,8 @@ sub conditional_quote( $ ) {
 #
 # Update the shorewall[6].conf file. Save the current file with a .bak suffix.
 #
-sub update_config_file( $ ) {
-    my $annotate = shift;
+sub update_config_file( $$ ) {
+    my ( $annotate, $directives ) = @_;
 
     sub is_set( $ ) {
 	my $value = $_[0];
@@ -4554,7 +4554,7 @@ EOF
 		progress_message3 "No update required to configuration file $configfile";
 	    }
 
-	    exit 0 unless -f find_file 'blacklist';
+	    exit 0 unless $directives || -f find_file 'blacklist';
 	}
     } else {
 	fatal_error "$fn does not exist";
@@ -4564,8 +4564,8 @@ EOF
 #
 # Small functions called by get_configuration. We separate them so profiling is more useful
 #
-sub process_shorewall_conf( $$ ) {
-    my ( $update, $annotate ) = @_;
+sub process_shorewall_conf( $$$ ) {
+    my ( $update, $annotate, $directives ) = @_;
     my $file   = find_file "$product.conf";
 
     if ( -f $file ) {
@@ -4610,7 +4610,7 @@ sub process_shorewall_conf( $$ ) {
     #
     # Now update the config file if asked
     #
-    update_config_file( $annotate) if $update;
+    update_config_file( $annotate, $directives ) if $update;
     #
     # Config file update requires that the option values not have
     # Shell variables expanded. We do that now.
@@ -5011,7 +5011,7 @@ sub get_configuration( $$$$ ) {
 
     get_params;
 
-    process_shorewall_conf( $update, $annotate );
+    process_shorewall_conf( $update, $annotate, $directives );
 
     ensure_config_path;
 

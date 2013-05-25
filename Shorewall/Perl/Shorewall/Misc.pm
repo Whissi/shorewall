@@ -2444,7 +2444,7 @@ EOF
     #
     # Enable automatic helper association on kernel 3.5.0 and later
     #
-    if [ -f /proc/sys/net/netfilter/nf_conntrack_helper ]; then
+    if [ $COMMAND = clear -a -f /proc/sys/net/netfilter/nf_conntrack_helper ]; then
         echo 1 > /proc/sys/net/netfilter/nf_conntrack_helper
     fi
 

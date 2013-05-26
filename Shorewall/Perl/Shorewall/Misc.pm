@@ -1423,11 +1423,11 @@ sub generate_source_rules( $$$;@ ) {
 # Loopback traffic -- this is where we assemble the intra-firewall chains
 #
 sub handle_loopback_traffic() {
-    my @zones   = ( vserver_zones, firewall_zone );
-    my $natout  = $nat_table->{OUTPUT};
-    my $rawout  = $raw_table->{OUTPUT};
-    my $rulenum = 0;
-    my $local   = local_zone;
+    my @zones    = ( vserver_zones, firewall_zone );
+    my $natout   = $nat_table->{OUTPUT};
+    my $rawout   = $raw_table->{OUTPUT};
+    my $rulenum  = 0;
+    my $loopback = loopback_zones;
 
     my $outchainref;
     my @rule;
@@ -1456,7 +1456,7 @@ sub handle_loopback_traffic() {
 	#
 	if ( $type1 == FIREWALL ) {
 	    for my $z2 ( @zones ) {
-		next if $local && $z1 eq $z2;
+		next if $loopback && $z1 eq $z2;
 
 		my $chain = rules_target( $z1, $z2 );
 
@@ -1522,7 +1522,7 @@ sub add_interface_jumps {
     our %forward_jump_added;
     my @interfaces = grep $_ ne '%vserver%', @_;
     my $dummy;
-    my $lo_jump_added = local_zone && ! get_interface_option( 'lo', 'destonly' );
+    my $lo_jump_added = interface_zone( 'lo' ) && ! get_interface_option( 'lo', 'destonly' );
     #
     # Add Nat jumps
     #
@@ -2121,6 +2121,7 @@ sub generate_matrix() {
 	my $nested           = @{$zoneref->{parents}};
 	my $parenthasnat     = 0;
 	my $parenthasnotrack = 0;
+	my $type             = $zoneref->{type};
 	#
 	# Create the zone's dnat chain
 	#
@@ -2171,14 +2172,14 @@ sub generate_matrix() {
 			    #
 			    # FORWARDING Jump for non-IPSEC host group
 			    #
-			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec' && $zoneref->{type} ne LOCAL;
+			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec' && $type ne LOOPBACK;
 			}
 		    } # Subnet Loop
 		} # Hostref Loop
 	    } # Interface Loop
 	} #Type Loop
 
-	next if $zoneref->{type} == LOCAL;
+	next if $type == LOOPBACK;
 
 	if ( $frwd_ref ) {
 	    #
@@ -2198,10 +2199,14 @@ sub generate_matrix() {
 	    #
 	    for my $zone1 ( @dest_zones ) {
 		my $zone1ref = find_zone( $zone1 );
+		my $type1    = $zone1ref->{type};
 
 		next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
-		next if $zone1ref->{type} == LOCAL;
+		next if $type1 == LOOPBACK;
+
+		next if $type  == LOCAL && $type1 != LOCAL;
+		next if $type1 == LOCAL && $type  != LOCAL;
 
 		my $chain = rules_target $zone, $zone1;
 
@@ -2213,7 +2218,7 @@ sub generate_matrix() {
 		    next if ( $num_ifaces = scalar( keys ( %{$zoneref->{interfaces}} ) ) ) < 2 && ! $zoneref->{options}{in_out}{routeback};
 		}
 
-		if ( $zone1ref->{type} & BPORT ) {
+		if ( $type1 & BPORT ) {
 		    next unless $zoneref->{bridge} eq $zone1ref->{bridge};
 		}
 

@@ -187,7 +187,7 @@ c:a,b     ipv6</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">local</emphasis></term>
+              <term><emphasis role="bold">loopback</emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.5.17.</para>
@@ -215,11 +215,12 @@ c:a,b     ipv6</programlisting>
                   </listitem>
                 </itemizedlist>
 
-                <para>By defining a <emphasis role="bold">local</emphasis>
+                <para>By defining a <emphasis role="bold">loopback</emphasis>
                 zone and associating it with the loopback interface in
                 shorewall-interfaces(5), you can effect a slightly different
-                model. Suppose that the <emphasis role="bold">local</emphasis>
-                zone name is 'local'; then:</para>
+                model. Suppose that the <emphasis
+                role="bold">loopback</emphasis> zone name is 'local';
+                then:</para>
 
                 <itemizedlist>
                   <listitem>
@@ -238,12 +239,27 @@ c:a,b     ipv6</programlisting>
                   </listitem>
                 </itemizedlist>
 
-                <para>Rules to/from the <emphasis role="bold">local</emphasis>
-                zone and any zone other than the firewall zone are ignored
-                with a warning.</para>
+                <para>Rules to/from the <emphasis
+                role="bold">loopback</emphasis> zone and any zone other than
+                the firewall zone are ignored with a warning.</para>
 
-                <para>Only one <emphasis role="bold">local</emphasis> zone may
-                be defined.</para>
+                <para><emphasis role="bold">loopback</emphasis> zones may be
+                nested within other <emphasis role="bold">loopback</emphasis>
+                zones.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>local</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.17. <emphasis
+                role="bold">local</emphasis> is the same as <emphasis
+                role="bold">ipv6</emphasis> with the exception that the zone
+                is only accessible from the <emphasis
+                role="bold">firewall</emphasis>, <emphasis
+                role="bold">vserver</emphasis> and other <emphasis
+                role="bold">local</emphasis> zones.</para>
               </listitem>
             </varlistentry>
           </variablelist>

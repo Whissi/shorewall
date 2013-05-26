@@ -38,6 +38,7 @@ our @EXPORT = ( qw( NOTHING
 		    IPSECMODE
 		    FIREWALL
 		    VSERVER
+		    LOOPBACK
 		    LOCAL
 		    IP
 		    BPORT
@@ -51,7 +52,8 @@ our @EXPORT = ( qw( NOTHING
 		    dump_zone_contents
 		    find_zone
 		    firewall_zone
-		    local_zone
+		    loopback_zones
+		    local_zones
 		    defined_zone
 		    zone_type
 		    zone_interfaces
@@ -60,7 +62,6 @@ our @EXPORT = ( qw( NOTHING
 		    all_parent_zones
 		    complex_zones
 		    vserver_zones
-		    local_zone
 		    on_firewall_zones
 		    off_firewall_zones
 		    non_firewall_zones
@@ -87,6 +88,7 @@ our @EXPORT = ( qw( NOTHING
 		    interface_has_option
 		    set_interface_option
 		    set_interface_provider
+		    interface_zone
 		    interface_zones
 		    verify_required_interfaces
 		    validate_hosts_file
@@ -155,7 +157,8 @@ our @zones;
 our %zones;
 our %zonetypes;
 our $firewall_zone;
-our $local_zone;
+our @loopback_zones;
+our @local_zones;
 
 our %reservedName = ( all => 1,
 		      any => 1,
@@ -216,7 +219,8 @@ use constant { FIREWALL => 1,
 	       BPORT    => 4,
 	       IPSEC    => 8,
 	       VSERVER  => 16,
-	       LOCAL    => 32
+	       LOOPBACK => 32,
+	       LOCAL    => 64,
 	   };
 
 use constant { SIMPLE_IF_OPTION   => 1,
@@ -283,8 +287,9 @@ sub initialize( $$ ) {
     ( $family , $upgrade ) = @_;
     @zones = ();
     %zones = ();
+    @loopback_zones = ();
+    @local_zones = ();
     $firewall_zone = '';
-    $local_zone    = '';
     $have_ipsec = undef;
 
     @interfaces = ();
@@ -340,7 +345,7 @@ sub initialize( $$ ) {
 			     sourceonly => 1,
 			     mss => 1,
 			    );
-	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver', 32 => 'local' );
+	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver', 32 => 'loopback', 64 => 'local' );
     } else {
 	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
 				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -371,7 +376,7 @@ sub initialize( $$ ) {
 			     tcpflags => 1,
 			     mss => 1,
 			    );
-	%zonetypes = ( 1 => 'firewall', 2 => 'ipv6', 4 => 'bport6', 8 => 'ipsec4', 16 => 'vserver' );
+	%zonetypes = ( 1 => 'firewall', 2 => 'ipv6', 4 => 'bport6', 8 => 'ipsec4', 16 => 'vserver', 32 => 'loopback', 64 => 'local' );
     }
 }
 
@@ -389,7 +394,7 @@ sub parse_zone_option_list($$\$$)
     my $fmt;
 
     if ( $list ne '-' ) {
-	fatal_error "The 'local' zone may not have $column OPTIONS" if $zonetype == LOCAL;
+	fatal_error "The 'loopback' zone may not have $column OPTIONS" if $zonetype == LOOPBACK;
 
 	for my $e ( split_list $list, 'option' ) {
 	    my $val    = undef;
@@ -499,10 +504,11 @@ sub process_zone( \$ ) {
 	$type = IP;
 	$$ip = 1;
     } elsif ( $type eq 'local' ) {
-	fatal_error 'The local zone may not be nested' if @parents;
-	fatal_error "Only one local zone may be defined ($zone)" if $local_zone;
-	$local_zone = $zone;
+	push @local_zones, $zone;
 	$type = LOCAL;
+    } elsif ( $type eq 'loopback' ) {
+	push @loopback_zones, $zone;
+	$type = LOOPBACK;
     } else {
 	fatal_error "Invalid zone type ($type)";
     }
@@ -515,6 +521,8 @@ sub process_zone( \$ ) {
 
 	fatal_error 'Subzones of a Vserver zone not allowed' if $ptype & VSERVER;
 	fatal_error 'Subzones of firewall zone not allowed'  if $ptype & FIREWALL;
+	fatal_error 'Loopback zones may only be subzones of other loopback zones' if ( $type | $ptype ) & LOOPBACK && $type != $ptype;
+	fatal_error 'Local zones may only be subzones of other local zones'       if ( $type | $ptype ) & LOCAL    && $type != $ptype;
 
 	set_super( $zones{$p} ) if $type & IPSEC && ! ( $ptype & IPSEC );
 
@@ -600,7 +608,7 @@ sub determine_zones()
 
     fatal_error "No firewall zone defined" unless $firewall_zone;
     fatal_error "No IP zones defined" unless $ip;
-    fatal_error "The local zone and vserver zones are mutually exclusive" if $local_zone && vserver_zones;
+    fatal_error "Loopback zones and vserver zones are mutually exclusive" if @loopback_zones && vserver_zones;
     #
     # Topological sort to place sub-zones before all of their parents
     #
@@ -765,6 +773,7 @@ sub add_group_to_zone($$$$$)
     $interfaceref = $interfaces{$interface};
     $zoneref->{interfaces}{$interface} = 1;
     $zoneref->{destonly} ||= $interfaceref->{options}{destonly};
+    $options->{destonly} ||= $interfaceref->{options}{destonly};
 
     $interfaceref->{zones}{$zone} = 1;
 
@@ -906,8 +915,12 @@ sub firewall_zone() {
     $firewall_zone;
 }
 
-sub local_zone() {
-    $local_zone;
+sub loopback_zones() {
+    @loopback_zones;
+}
+
+sub local_zones() {
+    @local_zones;
 }
 
 #
@@ -1307,9 +1320,8 @@ sub process_interface( $$ ) {
 
     if ( $zone ) {
 	if ( $physical eq 'lo' ) {
-	    fatal_error "Only a local zone may be assigned to 'lo'"       unless $zoneref->{type} == LOCAL;
-	    fatal_error "The local zone may not have nets specified"      if $netsref;
-	    fatal_error "Invalid definition of 'lo'"                      if $bridge ne $interface;
+	    fatal_error "Only a loopback zone may be assigned to 'lo'" unless $zoneref->{type} == LOOPBACK;
+	    fatal_error "Invalid definition of 'lo'"                   if $bridge ne $interface;
 	    
 	    for ( qw/arp_filter
 		     arp_ignore
@@ -1334,7 +1346,7 @@ sub process_interface( $$ ) {
 		fatal_error "The 'lo' interface may not specify the '$_' option" if supplied $options{$_};
 	    }
 	} else {
-	    fatal_error "The local zone may only be assigned to 'lo'" if $zoneref->{type} == LOCAL;
+	    fatal_error "A loopback zone may only be assigned to 'lo'" if $zoneref->{type} == LOOPBACK;
 	}
 
 	$netsref ||= [ allip ];
@@ -1556,6 +1568,15 @@ sub interface_zones( $ ) {
 
     fatal_error "Unknown interface(@_)" unless $interfaceref;
     $interfaceref->{zones} || {};
+}
+
+#
+# Returns the 'zone' member of the passed interface, if any
+#
+sub interface_zone( $ ) {
+    my $interfaceref = known_interface( $_[0] );
+
+    $interfaceref ? $interfaceref->{zone} : '';
 }
 
 #
@@ -1877,6 +1898,7 @@ sub process_host( ) {
 	$hosts = $2;
 
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
+	fatal_error "Loopback zones may only be associated with the loopback interface (lo)" if $type == LOOPBACK && $interfaceref->{name} ne 'lo';
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts"
     }

@@ -613,6 +613,7 @@ use constant { UNIQUE      => 1,
 	       CONTROL     => 16,
 	       COMPLEX     => 32,
 	       NFACCT      => 64,
+	       EXPENSIVE   => 128,
 	   };
 
 our %opttype = ( rule          => CONTROL,
@@ -644,6 +645,9 @@ our %opttype = ( rule          => CONTROL,
 		                  EXCLUSIVE,
 
 		 nfacct        => NFACCT,
+
+		 set           => EXPENSIVE,
+		 geoip         => EXPENSIVE,
 
 		 conntrack     => COMPLEX,
 
@@ -827,7 +831,7 @@ sub set_rule_option( $$$ ) {
     if ( exists $ruleref->{$option} ) {
 	assert( defined( my $value1 = $ruleref->{$option} ) , $ruleref );
 
-	if ( $opttype & ( MATCH | NFACCT ) ) {
+	if ( $opttype & ( MATCH | NFACCT | EXPENSIVE ) ) {
 	    if ( $globals{KLUDGEFREE} ) {
 		unless ( reftype $value1 ) {
 		    unless ( reftype $value ) {
@@ -1013,6 +1017,8 @@ sub format_rule( $$;$ ) {
     # The code the follows can be destructive of the rule so we clone it
     #
     my $ruleref = $rulerefp->{complex} ? clone_rule( $rulerefp ) : $rulerefp;
+    my $nfacct  = $rulerefp->{nfacct};
+    my $expensive;
 
     for ( @{$ruleref->{matches}} ) {
 	my $type = $opttype{$_} || 0;
@@ -1031,7 +1037,24 @@ sub format_rule( $$;$ ) {
 	    }
 
 	    next;
+	} elsif ( $type == EXPENSIVE ) {
+	    #
+	    # Only emit expensive matches now if there are '-m nfacct' matches in the rule
+	    #
+	    if ( $nfacct ) {	    
+		$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
+	    } else {
+		$expensive = 1;
+	    }
 	} else {
+	    $rule .= format_option( $_, pop_match( $ruleref, $_ ) );
+	}
+    }
+    #
+    # Emit expensive matches last unless we had '-m nfacct' matches in the rule.
+    #
+    if ( $expensive ) {
+	for ( grep( ( $opttype{$_} || 0 ) == EXPENSIVE, @{$ruleref->{matches}} ) ) {
 	    $rule .= format_option( $_, pop_match( $ruleref, $_ ) );
 	}
     }

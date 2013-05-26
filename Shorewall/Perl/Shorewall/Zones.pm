@@ -1232,6 +1232,7 @@ sub process_interface( $$ ) {
 
 		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value && $value !~ /%/;
+		    fatal_error "Virtual interfaces ($value) are not supported" if $value =~ /:\d+$/;
 
 		    fatal_error "Duplicate physical interface name ($value)" if ( $physical{$value} && ! $port );
 

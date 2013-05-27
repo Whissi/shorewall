@@ -57,6 +57,8 @@ our @EXPORT = qw(
 		 supplied
 		 split_list
 
+		 shorewall
+
 		 get_action_params
 		 get_action_chain
 		 get_action_chain_name

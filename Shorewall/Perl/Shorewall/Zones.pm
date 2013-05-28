@@ -1899,7 +1899,11 @@ sub process_host( ) {
 	$hosts = $2;
 
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
-	fatal_error "Loopback zones may only be associated with the loopback interface (lo)" if $type == LOOPBACK && $interfaceref->{name} ne 'lo';
+	if ( $interfaceref->{name} eq 'lo' ) {
+	    fatal_error "Only a loopback zone may be associated with the loopback interface (lo)" if $type != LOOPBACK;
+	} else {
+	    fatal_error "Loopback zones may only be associated with the loopback interface (lo)" if $type == LOOPBACK;
+	}
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts"
     }

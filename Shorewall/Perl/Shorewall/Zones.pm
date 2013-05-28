@@ -506,6 +506,7 @@ sub process_zone( \$ ) {
     } elsif ( $type eq 'local' ) {
 	push @local_zones, $zone;
 	$type = LOCAL;
+	$$ip  = 1;
     } elsif ( $type eq 'loopback' ) {
 	push @loopback_zones, $zone;
 	$type = LOOPBACK;

@@ -2448,10 +2448,11 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    warning_message( "The SOURCE zone in this rule is 'destonly'" ) if $sourceref->{destonly};
 
 	    if ( $destref ) {
-		warning_message( "The SOURCE zone is loopback and the DEST zone is off-firewall" )          if $sourceref->{type} == LOOPBACK && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
-		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'loopback'" )        if $destref->{type}   == LOOPBACK && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
-		warning_message( "The SOURCE zone is 'local' and the DEST zone is off-firewall" )           if $sourceref->{type} == LOCAL    && ! ( $destref->{type}   & ( FIREWALL | VSERVER | LOCAL) );
-		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'loopback'" )        if $destref->{type}   == LOCAL    && ! ( $sourceref->{type} & ( FIREWALL | VSERVER | LOCAL) );
+		warning_message( "The SOURCE zone is loopback and the DEST zone is off-firewall" )   if $sourceref->{type} == LOOPBACK && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
+		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'loopback'" ) if $destref->{type}   == LOOPBACK && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
+		warning_message( "The SOURCE zone is 'local' and the DEST zone is off-firewall" )    if $sourceref->{type} == LOCAL    && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
+		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'local'" )    if $destref->{type}   == LOCAL    && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
+
 		warning_message( "\$FW to \$FW rules are ignored when there is a defined 'loopback' zone" ) if loopback_zones && $sourceref->{type} == FIREWALL && $destref->{type} == FIREWALL;
 	    }
 	}

@@ -2179,7 +2179,7 @@ sub generate_matrix() {
 	    } # Interface Loop
 	} #Type Loop
 
-	next if $type == LOOPBACK;
+	next if $type & ( LOOPBACK | LOCAL );
 
 	if ( $frwd_ref ) {
 	    #
@@ -2203,10 +2203,7 @@ sub generate_matrix() {
 
 		next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
 
-		next if $type1 == LOOPBACK;
-
-		next if $type  == LOCAL && $type1 != LOCAL;
-		next if $type1 == LOCAL && $type  != LOCAL;
+		next if $type1 & ( LOOPBACK | LOCAL );
 
 		my $chain = rules_target $zone, $zone1;
 

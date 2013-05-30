@@ -7062,7 +7062,10 @@ sub expand_rule( $$$$$$$$$$$;$ )
 	$logname,      # Name of chain to name in log messages
        ) = @_;
 
-    return '' if $chainref->{complete};
+    if ( $chainref->{complete} ) {
+	warning_message "Chain $chainref->{name} is complete - unreachable netfilter rule(s) discarded";
+	return '';
+    }
 
     my ( $iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl ) = 
        ( '',      '',      '',     '',     '',     '',     '',      '',     '',            '' );

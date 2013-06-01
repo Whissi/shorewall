@@ -332,7 +332,8 @@ sub process_one_masq1( $$$$$$$$$$ )
 		     $target ,
 		     '' ,
 		     '' ,
-		     $exceptionrule );
+		     $exceptionrule )
+	    unless unreachable_warning( 0, $chainref );
 
 	conditional_rule_end( $chainref ) if $detectaddress || $conditional;
 
@@ -614,7 +615,7 @@ sub setup_netmap() {
 #
 # Called from process_rule1 to add a rule to the NAT table
 #
-sub handle_nat_rule( $$$$$$$$$$$$ ) {
+sub handle_nat_rule( $$$$$$$$$$$$$ ) {
     my ( $dest,           # <server>[:port]
 	 $proto,          # Protocol
 	 $ports,          # Destination port list
@@ -627,6 +628,7 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 	 $source,         # Source Address
 	 $loglevel,       # [<level>[:<tag>]]
 	 $log_action,     # Action name to include in the log message
+	 $wildcard        # Part of a wildcard rule
        ) = @_;
 
     my ( $server, $serverport , $origdstports ) = ( '', '', '' );
@@ -753,10 +755,11 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
     #
     my $firewallsource = $sourceref && ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
 
-    expand_rule ( ensure_chain ('nat' ,
+    my $chainref = ensure_chain ('nat' ,
 				( $action_chain   ? $action_chain :
 				  $firewallsource ? 'OUTPUT' :
-				  dnat_chain $sourceref->{name} ) ) ,
+				  dnat_chain $sourceref->{name} ) );
+    expand_rule ( $chainref,
 		  $firewallsource ? OUTPUT_RESTRICT : PREROUTE_RESTRICT ,
 		  '' ,
 		  $rule ,
@@ -767,7 +770,8 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 		  $loglevel ,
 		  $log_action ,
 		  $serverport ? do_proto( $proto, '', '' ) : '',
-		);
+		)
+	unless unreachable_warning( $wildcard, $chainref );
 
     ( $ports, $origdstports, $server );
 }
@@ -775,8 +779,8 @@ sub handle_nat_rule( $$$$$$$$$$$$ ) {
 #
 # Called from process_rule1() to handle the nat table part of the NONAT and ACCEPT+ actions
 #
-sub handle_nonat_rule( $$$$$$$$$$ ) {
-    my ( $action, $source, $dest, $origdest, $sourceref, $inaction, $chain, $loglevel, $log_action, $rule ) = @_;
+sub handle_nonat_rule( $$$$$$$$$$$ ) {
+    my ( $action, $source, $dest, $origdest, $sourceref, $inaction, $chain, $loglevel, $log_action, $rule, $wildcard ) = @_;
 
     my $sourcezone = $sourceref->{name};
     #
@@ -837,7 +841,9 @@ sub handle_nonat_rule( $$$$$$$$$$ ) {
 			 $loglevel,
 			 $log_action,
 			 '',
-			 dnat_chain( $sourcezone  ) );
+			 dnat_chain( $sourcezone  ) )
+		unless unreachable_warning( $wildcard, $chn );
+
 	    $loglevel = '';
 	    $tgt = $chn->{name};
 	} else {
@@ -856,7 +862,8 @@ sub handle_nonat_rule( $$$$$$$$$$ ) {
 		 $loglevel ,
 		 $log_action ,
 		 '',
-	       );
+	       )
+	unless unreachable_warning( $wildcard, $nonat_chain );
 }
 
 sub add_addresses () {

@@ -2636,6 +2636,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 				     $source,
 				     ( $actiontype & ACTION ) ? '' : $loglevel,
 				     $log_action,
+				     $wildcard
 				   );
 
 	#
@@ -2673,7 +2674,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 			   $chain,
 			   $loglevel,
 			   $log_action,
-			   $rule
+			   $rule,
+			   $wildcard
 			 );
     }
 
@@ -2699,6 +2701,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	verify_audit( $action ) if $actiontype & AUDIT;
 
+	
 	expand_rule( $chainref ,
 		     $restriction ,
 		     '' ,
@@ -2709,7 +2712,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		     $action ,
 		     $loglevel ,
 		     $log_action ,
-		     '' );
+		     '' )
+	    unless unreachable_warning( $wildcard || $section == DEFAULTACTION_SECTION, $chainref );
     }
 
     delete $usedactions{$normalized_target} if $delete_action;

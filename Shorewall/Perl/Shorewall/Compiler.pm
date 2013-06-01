@@ -829,6 +829,10 @@ sub compiler {
     #
     setup_tunnels;
     #
+    # Clear the current filename
+    #
+    clear_currentfilename;
+    #
     # MACLIST Filtration again
     #
     setup_mac_lists 2;

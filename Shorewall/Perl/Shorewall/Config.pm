@@ -48,6 +48,7 @@ our @EXPORT = qw(
 		 fatal_error
 		 assert
 		 currentlineinfo
+		 clear_currentfilename
 
 		 progress_message
 		 progress_message_nocompress
@@ -658,7 +659,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    STATEMATCH              => '-m state --state',
-		    VERSION                 => "4.5.13-Beta3",
+		    VERSION                 => "4.5.18-Beta1",
 		    CAPVERSION              => 40515 ,
 		  );
     #
@@ -2165,6 +2166,13 @@ sub close_file() {
 
 	$first_entry      = 0;
     }
+}
+
+#
+# Clear the current filename
+#
+sub clear_currentfilename() {
+    $currentfilename = '';
 }
 
 #

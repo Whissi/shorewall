@@ -3247,7 +3247,7 @@ sub optimize_level4( $$ ) {
 			    while ( @$rulesref ) {
 				my $rule1ref = $rulesref->[-1];
 
-				last unless ( $rule1ref->{target} || '' ) eq $target && ! $rule1ref->{targetopts};
+				last unless ( $rule1ref->{target} || '' ) eq $target && ! ( $rule1ref->{targetopts} || $rule1ref->{nfacct} );
 
 				trace ( $chainref, 'D', $rule, $rule1ref ) if $debug;
 

@@ -1122,7 +1122,7 @@ sub merge_rules( $$$ ) {
 	}
     }
 
-    for my $option ( grep ! $opttype{$_}, keys %$fromref ) {
+    for my $option ( grep ! $opttype{$_} || $_ eq 'nfacct', keys %$fromref ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 
@@ -1137,6 +1137,10 @@ sub merge_rules( $$$ ) {
     }
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
+
+    for my $option ( grep( ( $opttype{$_} || 0 ) == EXPENSIVE, keys %$fromref ) ) {
+	set_rule_option( $toref, $option, $fromref->{$option} );
+    }
 
     unless ( $toref->{comment} ) {
 	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};

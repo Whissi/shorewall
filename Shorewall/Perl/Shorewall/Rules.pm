@@ -658,6 +658,27 @@ sub process_policies()
 	push @policy_chains, ( new_policy_chain firewall_zone, $zone, 'NONE',   PROVISIONAL, 0 ) if zone_type( $zone ) & BPORT;
 
 	my $zoneref = find_zone( $zone );
+	my $type    = $zoneref->{type};
+
+	if ( $type == LOCAL ) {
+	    for my $zone1 ( off_firewall_zones ) {
+		unless ( $zone eq $zone1 ) {
+		    my $name  = rules_chain( $zone,  $zone1 );
+		    my $name1 = rules_chain( $zone1, $zone  );
+		    set_policy_chain( $zone,  $zone1, $name,  ensure_rules_chain( $name  ), 'NONE', 0 );
+		    set_policy_chain( $zone1, $zone,  $name1, ensure_rules_chain( $name1 ), 'NONE', 0 );
+		}
+	    }
+	} elsif ( $type == LOOPBACK ) {
+	    for my $zone1 ( off_firewall_zones ) {
+		unless ( $zone eq $zone1 || zone_type( $zone1 ) == LOOPBACK ) {
+		    my $name  = rules_chain( $zone,  $zone1 );
+		    my $name1 = rules_chain( $zone1, $zone  );
+		    set_policy_chain( $zone,  $zone1, $name,  ensure_rules_chain( $name  ), 'NONE', 0 );
+		    set_policy_chain( $zone1, $zone,  $name1, ensure_rules_chain( $name1 ), 'NONE', 0 );
+		}
+	    }
+	}
 
 	if ( $config{IMPLICIT_CONTINUE} && ( @{$zoneref->{parents}} || $zoneref->{type} & VSERVER ) ) {
 	    for my $zone1 ( all_zones ) {
@@ -2448,11 +2469,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	    warning_message( "The SOURCE zone in this rule is 'destonly'" ) if $sourceref->{destonly};
 
 	    if ( $destref ) {
-		warning_message( "The SOURCE zone is loopback and the DEST zone is off-firewall" )   if $sourceref->{type} == LOOPBACK && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
-		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'loopback'" ) if $destref->{type}   == LOOPBACK && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
-		warning_message( "The SOURCE zone is 'local' and the DEST zone is off-firewall" )    if $sourceref->{type} == LOCAL    && ! ( $destref->{type}   & ( FIREWALL | VSERVER ) );
-		warning_message( "The SOURCE zone is off-firewall and the DEST zone is 'local'" )    if $destref->{type}   == LOCAL    && ! ( $sourceref->{type} & ( FIREWALL | VSERVER ) );
-
 		warning_message( "\$FW to \$FW rules are ignored when there is a defined 'loopback' zone" ) if loopback_zones && $sourceref->{type} == FIREWALL && $destref->{type} == FIREWALL;
 	    }
 	}

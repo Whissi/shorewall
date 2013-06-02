@@ -2172,14 +2172,12 @@ sub generate_matrix() {
 			    #
 			    # FORWARDING Jump for non-IPSEC host group
 			    #
-			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec' && ! ( $type & ( LOOPBACK | LOCAL ) );
+			    add_forward_jump( $zone, $interface, $hostref, $net, $exclusions, $frwd_ref, $isport, $bridge ) if $frwd_ref && $hostref->{ipsec} ne 'ipsec';
 			}
 		    } # Subnet Loop
 		} # Hostref Loop
 	    } # Interface Loop
 	} #Type Loop
-
-	next if $type & ( LOOPBACK | LOCAL );
 
 	if ( $frwd_ref ) {
 	    #
@@ -2202,8 +2200,6 @@ sub generate_matrix() {
 		my $type1    = $zone1ref->{type};
 
 		next if $filter_table->{rules_chain( ${zone}, ${zone1} )}->{policy}  eq 'NONE';
-
-		next if $type1 & ( LOOPBACK | LOCAL );
 
 		my $chain = rules_target $zone, $zone1;
 

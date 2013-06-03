@@ -345,7 +345,14 @@ sub initialize( $$ ) {
 			     sourceonly => 1,
 			     mss => 1,
 			    );
-	%zonetypes = ( 1 => 'firewall', 2 => 'ipv4', 4 => 'bport4', 8 => 'ipsec4', 16 => 'vserver', 32 => 'loopback', 64 => 'local' );
+
+	%zonetypes = ( 1   => 'firewall',
+		       2   => 'ipv4',
+		       4   => 'bport4',
+		       8   => 'ipsec4',
+		       16  => 'vserver',
+		       32  => 'loopback',
+		       64  => 'local' );
     } else {
 	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
 				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -376,7 +383,14 @@ sub initialize( $$ ) {
 			     tcpflags => 1,
 			     mss => 1,
 			    );
-	%zonetypes = ( 1 => 'firewall', 2 => 'ipv6', 4 => 'bport6', 8 => 'ipsec4', 16 => 'vserver', 32 => 'loopback', 64 => 'local' );
+
+	%zonetypes = ( 1   => 'firewall',
+		       2   => 'ipv6',
+		       4   => 'bport6',
+		       8   => 'ipsec4',
+		       16  => 'vserver',
+		       32  => 'loopback',
+		       64  => 'local' );
     }
 }
 

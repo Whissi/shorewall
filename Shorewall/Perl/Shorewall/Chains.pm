@@ -798,6 +798,13 @@ sub validate_nfobject( $;$ ) {
     $nfobjects{$_} = 1;
 }
 
+#
+# Get a rule option's type
+#
+sub get_opttype( $$ ) { # $option, $default
+    $opttype{$_[0]} || $_[1];
+}
+
 # # Next a helper for setting an individual option
 #
 sub set_rule_option( $$$ ) {
@@ -808,7 +815,7 @@ sub set_rule_option( $$$ ) {
     $ruleref->{simple} = 0;
     $ruleref->{complex} = 1 if reftype $value;
 
-    my $opttype = $opttype{$option} || MATCH;
+    my $opttype = get_opttype( $option, MATCH );
 
     if ( $opttype == COMPLEX ) {
 	#
@@ -1022,7 +1029,7 @@ sub format_rule( $$;$ ) {
     my $expensive;
 
     for ( @{$ruleref->{matches}} ) {
-	my $type = $opttype{$_} || 0;
+	my $type = get_opttype( $_, 0 );
 
 	next if $type & ( CONTROL | TARGET );
 
@@ -1055,7 +1062,7 @@ sub format_rule( $$;$ ) {
     # Emit expensive matches last unless we had '-m nfacct' matches in the rule.
     #
     if ( $expensive ) {
-	for ( grep( ( $opttype{$_} || 0 ) == EXPENSIVE, @{$ruleref->{matches}} ) ) {
+	for ( grep( get_opttype( $_, 0 ) == EXPENSIVE, @{$ruleref->{matches}} ) ) {
 	    $rule .= format_option( $_, pop_match( $ruleref, $_ ) );
 	}
     }
@@ -1138,7 +1145,7 @@ sub merge_rules( $$$ ) {
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
 
-    for my $option ( grep( ( $opttype{$_} || 0 ) == EXPENSIVE, keys %$fromref ) ) {
+    for my $option ( grep( get_opttype( $_, 0 ) == EXPENSIVE, keys %$fromref ) ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 

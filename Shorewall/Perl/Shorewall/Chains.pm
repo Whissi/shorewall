@@ -1120,8 +1120,6 @@ sub merge_rules( $$$ ) {
 
     my $target = $fromref->{target};
 
-    my %added;
-
     for my $option ( @unique_options ) {
 	if ( exists $fromref->{$option} ) {
 	    push( @{$toref->{matches}}, $option ) unless exists $toref->{$option};

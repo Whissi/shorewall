@@ -5075,9 +5075,11 @@ sub get_configuration( $$$$ ) {
 	%helpers_enabled = %helpers_temp;
 
 	while ( my ( $helper, $enabled ) = each %helpers_enabled ) {
-	    $helper =~ s/-0/0/;
-	    $helper =~ s/-/_/;
-	    $capabilities{uc($helper) . '_HELPER'} = 0 unless $enabled; 
+	    unless ( $enabled ) {
+		$helper =~ s/-0/0/;
+		$helper =~ s/-/_/;
+		$capabilities{uc($helper) . '_HELPER'} = 0;
+	    } 
 	}
     } elsif ( have_capability 'CT_TARGET' ) {
 	$helpers_enabled{$_} = 0 for keys %helpers_enabled;

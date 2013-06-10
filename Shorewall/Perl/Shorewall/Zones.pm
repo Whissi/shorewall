@@ -72,6 +72,8 @@ our @EXPORT = ( qw( NOTHING
 		    all_real_interfaces
 		    all_plain_interfaces
 		    all_bridges
+		    managed_interfaces
+		    unmanaged_interfaces
 		    interface_number
 		    find_interface
 		    known_interface
@@ -244,9 +246,28 @@ use constant { NO_UPDOWN   => 1,
 
 our %validinterfaceoptions;
 
-our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60, accept_ra => 1 );
+our %prohibitunmanaged = (
+			  blacklist      => 1,
+			  bridge         => 1,
+			  destonly       => 1,
+			  detectnets     => 1,
+			  dhcp           => 1,
+			  maclist        => 1,
+			  nets           => 1,
+			  norfc1918      => 1,
+			  nosmurfs       => 1,
+			  optional       => 1,
+			  routeback      => 1,
+			  rpfilter       => 1,
+			  sfilter        => 1,
+			  tcpflags       => 1,
+			  upnp           => 1,
+			  upnpclient     => 1,
+			 );
 
-our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN, accept_ra => 2 );
+our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60, accept_ra => 1 , ignore => 3 );
+
+our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN | NO_SFILTER, accept_ra => 2 );
 
 our %validhostoptions;
 
@@ -332,6 +353,7 @@ sub initialize( $$ ) {
 				  upnpclient  => SIMPLE_IF_OPTION,
 				  mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				  physical    => STRING_IF_OPTION  + IF_OPTION_HOST,
+				  unmanaged   => SIMPLE_IF_OPTION,
 				  wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (
@@ -374,6 +396,7 @@ sub initialize( $$ ) {
 				    mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				    forward     => BINARY_IF_OPTION,
 				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
+				    unmanaged   => SIMPLE_IF_OPTION,
 				    wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (
@@ -1305,7 +1328,7 @@ sub process_interface( $$ ) {
 	    $hostoptions{routeback} = $options{routeback} = 1;
 	}
 
-	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback};
+	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback} || $options{unmanaged};
 
 	$hostoptionsref = \%hostoptions;
     } else {
@@ -1317,6 +1340,14 @@ sub process_interface( $$ ) {
 	# And give the 'ignore' option a defined value
 	#
 	$options{ignore} ||= 0;
+    }
+
+    if ( $options{unmanaged} ) {
+	fatal_error "The 'lo' interface may not be unmanaged when there are vserver zones" if $physical eq 'lo' && vserver_zones;
+
+	while ( my ( $option, $value ) = each( %options ) ) {
+	    fatal_error "The $option option may not be specified with 'unmanaged'" if $prohibitunmanaged{$option};
+	}
     }
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
@@ -1334,6 +1365,8 @@ sub process_interface( $$ ) {
 						     };
 
     if ( $zone ) {
+	fatal_error "Unmanaged interfaces may not be associated with a zone" if $options{unmanaged};
+
 	if ( $physical eq 'lo' ) {
 	    fatal_error "Only a loopback zone may be assigned to 'lo'" unless $zoneref->{type} == LOOPBACK;
 	    fatal_error "Invalid definition of 'lo'"                   if $bridge ne $interface;
@@ -1490,7 +1523,7 @@ sub known_interface($)
 	}
     }
 
-    0;
+    $physical{$interface} || 0;
 }
 
 #
@@ -1508,10 +1541,10 @@ sub all_interfaces() {
 }
 
 #
-# Return all non-vserver interfaces
+# Return all managed non-vserver interfaces
 #
 sub all_real_interfaces() {
-    grep $_ ne '%vserver%', @interfaces;
+    grep $_ ne '%vserver%' && ! $interfaces{$_}{options}{unmanaged}, @interfaces;
 }
 
 #
@@ -1519,6 +1552,20 @@ sub all_real_interfaces() {
 #
 sub all_bridges() {
     grep ( $interfaces{$_}{options}{bridge} , @interfaces );
+}
+
+#
+# Return a list of managed interfaces
+#
+sub managed_interfaces() {
+    grep (! $interfaces{$_}{options}{unmanaged} , @interfaces );
+}
+
+#
+# Return a list of unmanaged interfaces (skip 'lo' since it is implicitly unmanaged when there are no loopback zones).
+#
+sub unmanaged_interfaces() {
+    grep ( $interfaces{$_}{options}{unmanaged} && $_ ne 'lo', @interfaces );
 }
 
 #
@@ -1913,6 +1960,8 @@ sub process_host( ) {
 	$hosts = $2;
 
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
+	fatal_error "Unmanaged interfaces may not be associated with a zone" if $interfaceref->{unmanaged};
+
 	if ( $interfaceref->{name} eq 'lo' ) {
 	    fatal_error "Only a loopback zone may be associated with the loopback interface (lo)" if $type != LOOPBACK;
 	} else {

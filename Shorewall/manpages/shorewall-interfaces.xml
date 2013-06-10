@@ -210,7 +210,7 @@ loc     eth2            -</programlisting>
                 changed; the value assigned to the setting will be the value
                 specified (if any) or 1 if no value is given.</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -244,7 +244,7 @@ loc     eth2            -</programlisting>
 
                 <para>8 - do not reply for all local addresses</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -252,7 +252,7 @@ loc     eth2            -</programlisting>
                   the INTERFACE column.</para>
                 </note>
 
-                <para></para>
+                <para/>
 
                 <warning>
                   <para>Do not specify <emphasis
@@ -411,7 +411,7 @@ loc     eth2            -</programlisting>
         1
         teastep@lists:~$ </programlisting>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>This option does not work with a wild-card
@@ -716,6 +716,55 @@ loc     eth2            -</programlisting>
                 have such a combination of flags are handled according to the
                 setting of TCP_FLAGS_DISPOSITION after having been logged
                 according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>unmanaged</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.18. Causes all traffic between
+                the firewall and hosts on the interface to be accepted. When
+                this option is given:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>The ZONE column must contain '-'.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Only the following other options are allowed with
+                    <emphasis role="bold">unmanaged</emphasis>:</para>
+
+                    <simplelist>
+                      <member><emphasis
+                      role="bold">arp_filter</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">arp_ignore</emphasis></member>
+
+                      <member><emphasis role="bold">ignore</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">routefilter</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">optional</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">physical</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">routefilter</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">sourceroute</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">proxyndp</emphasis></member>
+                    </simplelist>
+                  </listitem>
+                </itemizedlist>
               </listitem>
             </varlistentry>
 

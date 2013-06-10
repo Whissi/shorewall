@@ -1428,7 +1428,9 @@ sub handle_loopback_traffic() {
     my $rawout   = $raw_table->{OUTPUT};
     my $rulenum  = 0;
     my $loopback = loopback_zones;
+    my $loref    = known_interface('lo');
 
+    my $unmanaged;
     my $outchainref;
     my @rule;
 
@@ -1442,8 +1444,13 @@ sub handle_loopback_traffic() {
 	#
 	# Only the firewall -- just use the OUTPUT chain
 	#
-	$outchainref = $filter_table->{OUTPUT};
-	@rule = ( o => 'lo');
+	if ( $unmanaged = $loref && $loref->{options}{unmanaged} ) {
+	    add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => 'lo' );
+	    add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => 'lo' );
+	} else {
+	    $outchainref = $filter_table->{OUTPUT};
+	    @rule = ( o => 'lo');
+	}
     }
 
     for my $z1 ( @zones ) {
@@ -1456,10 +1463,9 @@ sub handle_loopback_traffic() {
 	#
 	if ( $type1 == FIREWALL ) {
 	    for my $z2 ( @zones ) {
-		next if $loopback && $z1 eq $z2;
+		next if $z1 eq $z2 && ( $loopback || $unmanaged );
 
 		my $chain = rules_target( $z1, $z2 );
-
 		generate_dest_rules( $outchainref, $chain, $z2, @rule ) if $chain;
 	    }
 	    #
@@ -2081,7 +2087,7 @@ sub optimize1_zones( $$@ ) {
 # nat-table rules.
 #
 sub generate_matrix() {
-    my @interfaces = ( all_interfaces );
+    my @interfaces = ( managed_interfaces );
     #
     # Should this be the real PREROUTING chain?
     #
@@ -2250,17 +2256,23 @@ sub generate_matrix() {
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
-    my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
-		     nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
-		     filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
-
     unless ( $config{COMPLETE} ) {
+	for ( unmanaged_interfaces ) {
+	    my $physical = get_physical $_;
+	    add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => $physical );
+	    add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => $physical );
+	}
+
 	complete_standard_chain $filter_table->{INPUT}   , 'all' , firewall_zone , 'DROP';
 	complete_standard_chain $filter_table->{OUTPUT}  , firewall_zone , 'all', 'REJECT';
 	complete_standard_chain $filter_table->{FORWARD} , 'all' , 'all', 'REJECT';
     }
 
     if ( $config{LOGALLNEW} ) {
+	my %builtins = ( mangle => [ qw/PREROUTING INPUT FORWARD POSTROUTING/ ] ,
+			 nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
+			 filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
+
 	for my $table ( qw/mangle nat filter/ ) {
 	    for my $chain ( @{$builtins{$table}} ) {
 		log_rule_limit

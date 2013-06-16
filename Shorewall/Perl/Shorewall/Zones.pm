@@ -265,7 +265,7 @@ our %prohibitunmanaged = (
 			  upnpclient     => 1,
 			 );
 
-our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60, accept_ra => 1 , ignore => 3 );
+our %defaultinterfaceoptions = ( routefilter => 1 , wait => 60, accept_ra => 1 , ignore => 3, routeback => 1 );
 
 our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore => NO_UPDOWN | NO_SFILTER, accept_ra => 2 );
 
@@ -343,7 +343,7 @@ sub initialize( $$ ) {
 				  optional    => SIMPLE_IF_OPTION,
 				  proxyarp    => BINARY_IF_OPTION,
 				  required    => SIMPLE_IF_OPTION,
-				  routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
+				  routeback   => BINARY_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				  routefilter => NUMERIC_IF_OPTION ,
 				  rpfilter    => SIMPLE_IF_OPTION,
 				  sfilter     => IPLIST_IF_OPTION,
@@ -388,7 +388,7 @@ sub initialize( $$ ) {
 				    optional    => SIMPLE_IF_OPTION,
 				    proxyndp    => BINARY_IF_OPTION,
 				    required    => SIMPLE_IF_OPTION,
-				    routeback   => SIMPLE_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
+				    routeback   => BINARY_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				    rpfilter    => SIMPLE_IF_OPTION,
 				    sfilter     => IPLIST_IF_OPTION,
 				    sourceroute => BINARY_IF_OPTION,
@@ -1218,7 +1218,7 @@ sub process_interface( $$ ) {
 	    } elsif ( $type == BINARY_IF_OPTION ) {
 		$value = 1 unless defined $value;
 		fatal_error "Option value for '$option' must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
-		fatal_error "The '$option' option may not be used with a wild-card interface name" if $wildcard;
+		fatal_error "The '$option' option may not be used with a wild-card interface name" if $wildcard && ! $type && IF_OPTION_WILDOK;
 		$options{$option} = $value;
 		$hostoptions{$option} = $value if $hostopt;
 	    } elsif ( $type == ENUM_IF_OPTION ) {
@@ -1325,10 +1325,10 @@ sub process_interface( $$ ) {
 	if ( $options{bridge} ) {
 	    require_capability( 'PHYSDEV_MATCH', 'The "bridge" option', 's');
 	    fatal_error "Bridges may not have wildcard names" if $wildcard;
-	    $hostoptions{routeback} = $options{routeback} = 1;
+	    $hostoptions{routeback} = $options{routeback} = 1 unless supplied $options{routeback};
 	}
 
-	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || $options{routeback} || $options{unmanaged};
+	$hostoptions{routeback} = $options{routeback} = is_a_bridge( $physical ) unless $export || supplied $options{routeback} || $options{unmanaged};
 
 	$hostoptionsref = \%hostoptions;
     } else {

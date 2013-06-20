@@ -27,12 +27,12 @@
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
-?FORMAT 2
+?format 2
 #
 # The following magic provides different defaults for @2 thru @5, when @1 is
 # 'audit'.
 #
-?BEGIN PERL;
+?begin perl;
 use Shorewall::Config;
 
 my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
@@ -49,7 +49,7 @@ if ( defined $p1 ) {
 
 1;
 
-?END PERL;
+?end perl;
 
 DEFAULTS -,-,REJECT,ACCEPT,DROP
 

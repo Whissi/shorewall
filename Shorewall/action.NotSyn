@@ -27,11 +27,11 @@
 #       Default action is DROP
 #
 ##########################################################################################
-?FORMAT 2
+?format 2
 
 DEFAULTS DROP,-
 
-?BEGIN PERL;
+?begin perl;
 
 use strict;
 use Shorewall::IPAddrs;
@@ -50,4 +50,4 @@ perl_action_tcp_helper( $action, '-p 6 ! --syn' );
 
 1;
 
-?END PERL;
+?end perl;

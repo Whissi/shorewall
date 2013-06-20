@@ -27,11 +27,11 @@
 #       Default action is DROP
 #
 ##########################################################################################
-?FORMAT 2
+?format 2
 
 DEFAULTS DROP,-
 
-?BEGIN PERL;
+?begin perl;
 
 use Shorewall::Config;
 use Shorewall::Chains;
@@ -48,4 +48,4 @@ perl_action_tcp_helper( $action, '-p 6 --tcp-flags RST RST' );
 
 1;
 
-?END PERL;
+?end perl;

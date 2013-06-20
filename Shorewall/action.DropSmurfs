@@ -9,11 +9,11 @@
 #          audit = Audit dropped packets.
 #
 #################################################################################
-?FORMAT 2
+?format 2
 
 DEFAULTS -
 
-?BEGIN PERL;
+?begin perl;
 use strict;
 use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
 use Shorewall::IPAddrs qw( IPv6_MULTICAST );
@@ -79,7 +79,7 @@ if ( $family == F_IPV4 ) {
     add_ijump( $chainref, g => $target, s => IPv6_MULTICAST );
 }
 
-?END PERL;
+?end perl;
 
 
 

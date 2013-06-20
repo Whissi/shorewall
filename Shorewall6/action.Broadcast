@@ -27,11 +27,11 @@
 #       Default action is DROP
 #
 ##########################################################################################
-?FORMAT 2
+?format 2
 
 DEFAULTS DROP,-
 
-?BEGIN PERL;
+?begin perl;
 
 use Shorewall::IPAddrs;
 use Shorewall::Config;
@@ -68,4 +68,4 @@ add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
 
 1;
 
-?END PERL;
+?end perl;

@@ -9,11 +9,11 @@
 #          audit = Audit dropped packets.
 #
 #################################################################################
-?FORMAT 2
+?format 2
 
 DEFAULTS -
 
-?BEGIN PERL;
+?begin perl;
 use strict;
 use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
 use Shorewall::Chains;
@@ -34,7 +34,7 @@ perl_action_tcp_helper( $action, '-p tcp --tcp-flags SYN,RST SYN,RST' );
 perl_action_tcp_helper( $action, '-p tcp --tcp-flags SYN,FIN SYN,FIN' );
 perl_action_tcp_helper( $action, '-p tcp --syn --sport 0' );
 
-?END PERL;
+?end perl;
 
 
 

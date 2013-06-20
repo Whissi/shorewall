@@ -27,11 +27,11 @@
 #       Default action is ACCEPT
 #
 ##########################################################################################
-?FORMAT 2
+?format 2
 
 DEFAULTS ACCEPT
 
-?BEGIN PERL;
+?begin perl;
 
 use Shorewall::IPAddrs;
 use Shorewall::Config;
@@ -46,4 +46,4 @@ if ( my $check = check_state( 'ESTABLISHED' ) ) {
 
 1;
 
-?END PERL;
+?end perl;

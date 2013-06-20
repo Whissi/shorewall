@@ -6535,7 +6535,7 @@ sub unreachable_warning( $$ ) {
     my ( $ignore, $chainref ) = @_;
     unless ( $ignore ) {
 	if ( $chainref->{complete} ) {
-	    warning_message "Unreachable rule(s) in chain $chainref->{name} have been discarded" unless $chainref->{unreachable_warned}++;
+	    warning_message "One or more unreachable rules in chain $chainref->{name} have been discarded" unless $chainref->{unreachable_warned}++;
 	    return 1;
 	}
     }

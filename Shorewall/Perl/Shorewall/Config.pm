@@ -3739,6 +3739,7 @@ sub Owner_Match() {
 
 sub Owner_Name_Match() {
     if ( my $name = `id -un 2> /dev/null` ) {
+	chomp $name;
 	qt1( "$iptables -A $sillyname -m owner --uid-owner $name -j ACCEPT" );
     }
 }

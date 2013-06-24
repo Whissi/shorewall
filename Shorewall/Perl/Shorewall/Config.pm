@@ -1141,6 +1141,32 @@ sub warning_message
 }
 
 #
+# Q[uie]t version of system(). Returns true for success
+#
+sub qt( $ ) {
+    if ( $debug ) {
+	print "SYS----> @_\n";
+	system( "@_ 2>&1 < /dev/null" ) == 0;
+    } else {
+	system( "@_ > /dev/null 2>&1 < /dev/null" ) == 0;
+    }
+}
+
+sub qt0( $ ) {
+    if ( $debug ) {
+	print "SYS----> @_\n";
+	system( "@_ 2>&1 < /dev/null" );
+    } else {
+	system( "@_ > /dev/null 2>&1 < /dev/null" );
+    }
+}
+
+sub qt1( $ ) {
+    1 while qt0( "@_" ) == 4;
+    $? == 0;
+}
+
+#
 # Delete the test chains
 #
 sub cleanup_iptables() {
@@ -3569,23 +3595,6 @@ sub load_kernel_modules( ) {
 }
 
 #
-# Q[uie]t version of system(). Returns true for success
-#
-sub qt( $ ) {
-    if ( $debug ) {
-	print "SYS----> @_\n";
-	system( "@_ 2>&1" ) == 0;
-    } else {
-	system( "@_ > /dev/null 2>&1 < /dev/null" ) == 0;
-    }
-}
-
-sub qt1( $ ) {
-    1 while qt( "@_" ) == 4;
-    $? == 0;
-}
-
-#
 # Get the current kernel version
 #
 sub determine_kernelversion() {
@@ -4356,7 +4365,7 @@ sub determine_capabilities() {
 	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
-	
+
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
 	}

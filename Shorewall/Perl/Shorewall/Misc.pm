@@ -2283,7 +2283,7 @@ sub generate_matrix() {
 		    '' ,
 		    '' ,
 		    'insert' ,
-		    "$globals{STATEMATCH} NEW ";
+		    state_match('NEW');
 	    }
 	}
     }

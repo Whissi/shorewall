@@ -662,8 +662,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    STATEMATCH              => '-m state --state',
-		    VERSION                 => "4.5.18-Beta1",
+		    VERSION                 => "4.5.19-Beta1",
 		    CAPVERSION              => 40515 ,
 		  );
     #
@@ -5108,7 +5107,6 @@ sub get_configuration( $$$$ ) {
     %used     = ();
 
     if ( have_capability 'CONNTRACK_MATCH') {
-	$globals{STATEMATCH} = '-m conntrack --ctstate';
 	$used{CONNTRACK_MATCH} = REQUIRED;
     } else {
 	$used{STATE_MATCH} = REQUIRED;

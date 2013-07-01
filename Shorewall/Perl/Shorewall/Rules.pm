@@ -2609,7 +2609,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	     }
 
 	fatal_error "$basictarget rules are not allowed in the $section_rmap{$section} SECTION" if $actiontype & ( NATRULE | NONAT );
-	$rule .= "$globals{STATEMATCH} ESTABLISHED " if $section == ESTABLISHED_SECTION;
+	$rule .= state_match('ESTABLISHED') if $section == ESTABLISHED_SECTION;
     }
     #
     # Generate CT rules(s), if any

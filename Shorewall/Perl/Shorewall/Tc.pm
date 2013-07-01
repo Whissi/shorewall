@@ -2446,7 +2446,7 @@ sub process_secmark_rule1( $$$$$$$$$ ) {
     if ( ( $state ||= '' ) ne '' ) {
 	my $state1;
 	fatal_error "Invalid STATE ( $state )" unless $state1 = $state{$state};
-	$state = "$globals{STATEMATCH} $state1 ";
+	$state = state_match( $state1 );
     }
 
     my $target = $secmark eq 'SAVE'    ? 'CONNSECMARK --save' :

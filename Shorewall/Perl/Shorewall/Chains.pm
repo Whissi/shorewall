@@ -77,6 +77,8 @@ our @EXPORT = ( qw(
 		    dont_delete
 		    dont_move
 		    add_interface_options
+		    state_match
+		    state_imatch
 
 		    STANDARD
 		    NATRULE

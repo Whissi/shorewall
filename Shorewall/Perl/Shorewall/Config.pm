@@ -394,6 +394,10 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 our %used;
 
 use constant {
+               USED     => 1,
+	       REQUIRED => 2 };
+
+use constant {
 	       ICMP                => 1,
 	       TCP                 => 6,
 	       UDP                 => 17,
@@ -5105,9 +5109,9 @@ sub get_configuration( $$$$ ) {
 
     if ( have_capability 'CONNTRACK_MATCH') {
 	$globals{STATEMATCH} = '-m conntrack --ctstate';
-	$used{CONNTRACK_MATCH} = 2;
+	$used{CONNTRACK_MATCH} = REQUIRED;
     } else {
-	$used{STATE_MATCH} = 2;
+	$used{STATE_MATCH} = REQUIRED;
     }
     #
     # The following is not documented as it is not likely useful to the user base in general 
@@ -5926,7 +5930,7 @@ sub report_used_capabilities() {
 	progress_message2 "Configuration uses these capabilities ('*' denotes required):";
 
 	for ( sort grep $_ ne 'KERNELVERSION', keys %used ) {
-	    if ( $used{$_} > 1 ) {
+	    if ( ( $used{$_} || 0 ) & REQUIRED ) {
 		progress_message2 "   $_*";
 	    } else { 
 		progress_message2 "   $_";

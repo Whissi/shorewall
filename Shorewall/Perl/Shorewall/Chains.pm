@@ -2608,7 +2608,6 @@ sub ensure_manual_chain($) {
     $chainref;
 }
 
-sub log_rule_limit( $$$$$$$$ );
 sub log_irule_limit( $$$$$$$@ );
 
 sub ensure_blacklog_chain( $$$$ ) {
@@ -6140,12 +6139,12 @@ sub log_irule_limit( $$$$$$$@ ) {
 	}
 
 	if ( $level =~ '^ULOG' ) {
-	    $prefix = "$level --ulog-prefix \"$prefix\" ";
+	    $prefix = "$level --ulog-prefix \"$prefix\"";
 	} elsif  ( $level =~ /^NFLOG/ ) {
-	    $prefix = "$level --nflog-prefix \"$prefix\" ";
+	    $prefix = "$level --nflog-prefix \"$prefix\"";
 	} elsif ( $level =~ '^LOGMARK' ) {
 	    $prefix = join( '', substr( $prefix, 0, 12 ) , ':' ) if length $prefix > 13;
-	    $prefix = "$level --log-prefix \"$prefix\" ";
+	    $prefix = "$level --log-prefix \"$prefix\"";
 	} else {
 	    my $options = $globals{LOGPARMS};
 
@@ -6158,8 +6157,6 @@ sub log_irule_limit( $$$$$$$@ ) {
 	    $prefix = "LOG ${options}--log-level $level --log-prefix \"$prefix\"";
 	}
     }
-
-    $prefix =~ s/ $//;
 
     if ( $command eq 'add' ) {
 	add_ijump ( $chainref, j => $prefix , @matches );

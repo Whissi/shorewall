@@ -373,6 +373,8 @@ compiler() {
     #
     get_config Yes
 
+    progress_message3 "$g_doing..."
+
     case $COMMAND in
 	*start|try|refresh)
 	    ;;
@@ -471,7 +473,7 @@ start_command() {
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    progress_message3 "Compiling..."
+	    g_doing="Compiling"
 
 	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
 		run_postcompile ${VARDIR}/.start
@@ -687,7 +689,7 @@ compile_command() {
 	    ;;
     esac
 
-    [ "x$g_file" = x- ] || progress_message3 "Compiling..."
+    [ "x$g_file" = x- ] || g_doing="Compiling"
 
     compiler $g_debugging compile $g_file && run_postcompile $g_file
 }
@@ -766,7 +768,7 @@ check_command() {
 	    ;;
     esac
 
-    progress_message3 "Checking..."
+    g_doing="Checking"
 
     compiler $g_debugging $nolock check
 }
@@ -858,7 +860,7 @@ update_command() {
 	    ;;
     esac
 
-    progress_message3 "Updating..."
+    g_doing="Updating..."
 
     compiler $g_debugging $nolock check
 }
@@ -953,7 +955,7 @@ restart_command() {
     fi
 
     if [ -z "$g_fast" ]; then
-	progress_message3 "Compiling..."
+	g_doing="Compiling"
 
 	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
 	    run_postcompile ${VARDIR}/.restart
@@ -1045,7 +1047,7 @@ refresh_command() {
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
 
-    progress_message3 "Compiling..."
+    g_doing="Compiling"
 
     if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	run_postcompile ${VARDIR}/.refresh
@@ -1156,7 +1158,7 @@ safe_commands() {
 	command="restart"
     fi
 
-    progress_message3 "Compiling..."
+    g_doing="Compiling"
 
     if ! compiler $g_debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
@@ -1289,7 +1291,7 @@ try_command() {
 	command="restart"
     fi
 
-    progress_message3 "Compiling..."
+    g_doing="Compiling"
 
     if ! compiler $g_debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?

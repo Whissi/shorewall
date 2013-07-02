@@ -1989,18 +1989,18 @@ sub handle_stickiness( $ ) {
 
 		for my $chainref ( $stickyref, $setstickyref ) {
 		    if ( $chainref->{name} eq 'sticky' ) {
-			$rule1 = clone_rule( $_ );
+			$rule1 = clone_irule( $_ );
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
 			set_rule_option( $rule1, 'recent', "--name $list --update --seconds 300" );
 
-			$rule2 = clone_rule( $_ );
+			$rule2 = clone_irule( $_ );
 
 			clear_rule_target( $rule2 );
 			set_rule_option( $rule2, 'mark',   "--mark 0\/$mask" );
 			set_rule_option( $rule2, 'recent', "--name $list --remove" );
 		    } else {
-			$rule1 = clone_rule( $_ );
+			$rule1 = clone_irule( $_ );
 
 			clear_rule_target( $rule1 );
 			set_rule_option( $rule1, 'mark',   "--mark $mark\/$mask" );
@@ -2024,18 +2024,18 @@ sub handle_stickiness( $ ) {
 
 		for my $chainref ( $stickoref, $setstickoref ) {
 		    if ( $chainref->{name} eq 'sticko' ) {
-			$rule1 = clone_rule $_;
+			$rule1 = clone_irule $_;
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
 			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300" );
 
-			$rule2 = clone_rule $_;
+			$rule2 = clone_irule $_;
 
 			clear_rule_target( $rule2 );
 			set_rule_option  ( $rule2, 'mark',   "--mark 0\/$mask" );
 			set_rule_option  ( $rule2, 'recent', "--name $list --rdest --remove" );
 		    } else {
-			$rule1 = clone_rule $_;
+			$rule1 = clone_irule $_;
 
 			clear_rule_target( $rule1 );
 			set_rule_option  ( $rule1, 'mark',   "--mark $mark" );

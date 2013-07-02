@@ -47,7 +47,7 @@ our @EXPORT = ( qw(
 		    add_ijump
 		    insert_rule
 		    insert_irule
-		    clone_rule
+		    clone_irule
 		    insert_ijump
 		    rule_target
 		    clear_rule_target
@@ -1017,7 +1017,7 @@ sub pop_match( $$ ) {
     reftype $value ? shift @{$ruleref->{$option}} : $value;
 }
 
-sub clone_rule( $ );
+sub clone_irule( $ );
 
 sub format_rule( $$;$ ) {
     my ( $chainref, $rulerefp, $suppresshdr ) = @_;
@@ -1028,7 +1028,7 @@ sub format_rule( $$;$ ) {
     #
     # The code the follows can be destructive of the rule so we clone it
     #
-    my $ruleref = $rulerefp->{complex} ? clone_rule( $rulerefp ) : $rulerefp;
+    my $ruleref = $rulerefp->{complex} ? clone_irule( $rulerefp ) : $rulerefp;
     my $nfacct  = $rulerefp->{nfacct};
     my $expensive;
 
@@ -1248,6 +1248,13 @@ sub add_trule( $$ ) {
     trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
 
     $ruleref;
+}
+
+#
+# Return the number of ports represented by the passed list
+#
+sub port_count( $ ) {
+    ( $_[0] =~ tr/,:/,:/ ) + 1;
 }
 
 #
@@ -1583,7 +1590,7 @@ sub insert_irule( $$$$;@ ) {
 # Clone an existing rule. Only the rule hash itself is cloned; reference values are shared between the new rule
 # reference and the old.
 #
-sub clone_rule( $ ) {
+sub clone_irule( $ ) {
     my $oldruleref = $_[0];
     my $newruleref = {};
 
@@ -4244,13 +4251,6 @@ sub dest_iexclusion( $$$$$;@ ) {
 
 sub clearrule() {
     $iprangematch = 0;
-}
-
-#
-# Return the number of ports represented by the passed list
-#
-sub port_count( $ ) {
-    ( $_[0] =~ tr/,:/,:/ ) + 1;
 }
 
 #

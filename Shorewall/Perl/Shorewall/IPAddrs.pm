@@ -174,7 +174,6 @@ sub resolve_4dnsname( $ ) {
 
     @addrs;
 } 
-    
 
 sub decodeaddr( $ ) {
     my $address = $_[0];

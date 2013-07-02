@@ -5187,6 +5187,13 @@ sub get_configuration( $$$$ ) {
 	$globals{LOGLIMIT} = '';
     }
 
+    if ( $globals{LOGLIMIT} ) {
+	my $loglimit = $globals{LOGLIMIT};
+	$loglimit =~ s/ $//;
+	my @loglimit = ( split ' ', $loglimit, 3 )[1,2];
+	$globals{LOGILIMIT} = \@loglimit;
+    }
+
     check_trivalue ( 'IP_FORWARDING', 'on' );
 
     if ( have_capability( 'KERNELVERSION' ) < 20631 ) {

@@ -2609,6 +2609,7 @@ sub ensure_manual_chain($) {
 }
 
 sub log_rule_limit( $$$$$$$$ );
+sub log_irule_limit( $$$$$$$@ );
 
 sub ensure_blacklog_chain( $$$$ ) {
     my ( $target, $disposition, $level, $audit ) = @_;
@@ -2619,7 +2620,7 @@ sub ensure_blacklog_chain( $$$$ ) {
 	$target =~ s/A_//;
 	$target = 'reject' if $target eq 'REJECT';
 
-	log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
 	add_ijump( $logchainref, g => $target );
@@ -2634,7 +2635,7 @@ sub ensure_audit_blacklog_chain( $$$ ) {
     unless ( $filter_table->{A_blacklog} ) {
 	my $logchainref = new_manual_chain 'A_blacklog';
 
-	log_rule_limit( $level , $logchainref , 'blacklst' , $disposition , "$globals{LOGLIMIT}" , '', 'add',	'' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target );
 
@@ -4100,15 +4101,14 @@ sub logchain( $$$$$$ ) {
 	#
 	# Now add the log rule and target rule without matches to the log chain.
 	#
-	log_rule_limit(
+	log_irule_limit(
 		       $loglevel ,
 		       $logchainref ,
 		       $chainref->{name} ,
 		       $disposition ,
-		       '',
+		       [] ,
 		       $logtag,
-		       'add',
-		       '' );
+		       'add' );
 	add_jump( $logchainref, $target, 0, $exceptionrule );
     }
 
@@ -6074,7 +6074,7 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 }
 
-sub log_irule_limit( $$$$\@$$@ ) {
+sub log_irule_limit( $$$$$$$@ ) {
     my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, @matches ) = @_;
 
     my $prefix = '';
@@ -6084,7 +6084,7 @@ sub log_irule_limit( $$$$\@$$@ ) {
 
     return 1 if $level eq '';
 
-    %matches = %{transform_rule(@matches)} if @matches;
+    %matches = @matches;
 
     unless ( $matches{limit} || $matches{hashlimit} ) {
 	$limit = $globals{LOGILIMIT} unless @$limit;
@@ -6155,9 +6155,11 @@ sub log_irule_limit( $$$$\@$$@ ) {
 		$options =~ s/,/ /g;
 	    }
 
-	    $prefix = "LOG ${options}--log-level $level --log-prefix \"$prefix\" ";
+	    $prefix = "LOG ${options}--log-level $level --log-prefix \"$prefix\"";
 	}
     }
+
+    $prefix =~ s/ $//;
 
     if ( $command eq 'add' ) {
 	add_ijump ( $chainref, j => $prefix , @matches );
@@ -6175,7 +6177,7 @@ sub log_rule( $$$$ ) {
 sub log_irule( $$$;@ ) {
     my ( $level, $chainref, $disposition, @matches ) = @_;
 
-    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, @{$globals{LOGLIMIT}} , '', 'add', @matches;
+    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGILIMIT} , '', 'add', @matches;
 }
 
 #
@@ -7144,14 +7146,13 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
 	#
 	# Log rule
 	#
-	log_rule_limit( $loglevel ,
-			$echainref ,
-			$chain,
-			$actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
-			'' ,
-			$logtag ,
-			'add' ,
-			'' )
+	log_irule_limit( $loglevel ,
+			 $echainref ,
+			 $chain ,
+			 $actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
+			 [] ,
+			 $logtag ,
+			 'add' )
 	    if $loglevel;
 	#
 	# Generate Final Rule

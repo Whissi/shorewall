@@ -901,14 +901,13 @@ sub setup_syn_flood_chains() {
 		    new_chain 'filter' , syn_flood_chain $chainref :
 		    new_chain( 'filter' , '@' . $chainref->{name} );
 	    add_rule $synchainref , "${limit}-j RETURN";
-	    log_rule_limit( $level ,
-			    $synchainref ,
-			    $chainref->{name} ,
-			    'DROP',
-			    $globals{LOGLIMIT} || '-m limit --limit 5/min --limit-burst 5 ' ,
+	    log_irule_limit( $level ,
+			     $synchainref ,
+			     $chainref->{name} ,
+			     'DROP',
+			     @{$globals{LOGILIMIT}} ? $globals{LOGILIMIT} : [ limit => "--limit 5/min --limit-burst 5" ] ,
 			    '' ,
-			    'add' ,
-			    '' )
+			    'add' )
 		if $level ne '';
 	    add_ijump $synchainref, j => 'DROP';
 	}
@@ -1471,11 +1470,11 @@ sub dropBcast( $$$$ ) {
 
     if ( have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
+	    log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', addrtype => '--dst-type BROADCAST' );
 	    if ( $family == F_IPV4 ) {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ';
+		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => '224.0.0.0/4' );
 	    } else {
-		log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST , '-j DROP ' );
+		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => IPv6_MULTICAST );
 	    }
 	}
 
@@ -1488,17 +1487,17 @@ sub dropBcast( $$$$ ) {
 	}
 
 	incr_cmd_level $chainref;
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d $address ' if $level ne '';
+	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => '$address' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '$address';
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+	log_irule_limit $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => '224.0.0.0/4' if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
-	log_rule_limit $level, $chainref, 'dropBcast' , 'DROP', '', $tag, 'add', join( ' ', ' -d' , IPv6_MULTICAST . ' ' ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => IPv6_MULTICAST ) if $level ne '';
 	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
     }
 }
@@ -1510,8 +1509,8 @@ sub allowBcast( $$$$ ) {
 
     if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-	    log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ';
+	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', addrtype => '--dst-type BROADCAST' );
+	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => '224.0.0.0/4' );
 	}
 
 	add_ijump $chainref, j => $target, addrtype => '--dst-type BROADCAST';
@@ -1523,17 +1522,17 @@ sub allowBcast( $$$$ ) {
 	}
 
 	incr_cmd_level $chainref;
-	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d $address ' if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => '$address' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '$address';
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
-	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => 224.0.0.0/4 ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
-	log_rule_limit $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add', ' -d ' . IPv6_MULTICAST . ' ' if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add',  d => IPv6_MULTICAST ) if $level ne '';
 	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
     }
 }
@@ -1543,7 +1542,7 @@ sub dropNotSyn ( $$$$ ) {
 
     my $target = require_audit( 'DROP', $audit );
 
-    log_rule_limit $level, $chainref, 'dropNotSyn' , 'DROP', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
+    log_irule_limit( $level, $chainref, 'dropNotSyn' , 'DROP', [], $tag, 'add', p => '6 ! --syn' ) if $level ne '';
     add_ijump $chainref , j => $target, p => '6 ! --syn';
 }
 
@@ -1558,7 +1557,7 @@ sub rejNotSyn ( $$$$ ) {
 	$target = require_audit( 'REJECT' , $audit );
     }
 
-    log_rule_limit $level, $chainref, 'rejNotSyn' , 'REJECT', '', $tag, 'add', '-p 6 ! --syn ' if $level ne '';
+    log_irule_limit( $level, $chainref, 'rejNotSyn' , 'REJECT', [], $tag, 'add', p => '6 ! --syn' ) if $level ne '';
     add_ijump $chainref , j => $target, p => '6 ! --syn';
 }
 
@@ -1574,8 +1573,8 @@ sub allowinUPnP ( $$$$ ) {
     my $target = require_audit( 'ACCEPT', $audit );
 
     if ( $level ne '' ) {
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 17 --dport 1900 ';
-	log_rule_limit $level, $chainref, 'allowinUPnP' , 'ACCEPT', '', $tag, 'add', '-p 6 --dport 49152 ';
+	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', p => '17 --dport 1900' );
+	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', p => '6 --dport 49152' );
     }
 
     add_ijump $chainref, j => $target, p => '17 --dport 1900';
@@ -1610,7 +1609,7 @@ sub Limit( $$$$ ) {
 
     if ( $level ne '' ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_rule_limit $level, $xchainref, $param[0], 'DROP', '', $tag, 'add', '';
+	log_irule_limit( $level, $xchainref, $param[0], 'DROP', [], $tag, 'add' );
 	add_ijump $xchainref, j => 'DROP';
 	add_ijump $chainref,  j => $xchainref, recent => "--name $set --update --seconds $param[2] --hitcount $count";
     } else {

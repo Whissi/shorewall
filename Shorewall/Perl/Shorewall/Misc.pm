@@ -926,14 +926,13 @@ sub add_common_rules ( $ ) {
 	if ( supplied $config{SMURF_LOG_LEVEL} ) {
 	    my $smurfref = new_chain( 'filter', 'smurflog' );
 
-	    log_rule_limit( $config{SMURF_LOG_LEVEL},
-			    $smurfref,
-			    'smurfs' ,
-			    'DROP',
-			    $globals{LOGLIMIT},
-			    '',
-			    'add',
-			    '' );
+	    log_irule_limit( $config{SMURF_LOG_LEVEL},
+			     $smurfref,
+			     'smurfs' ,
+			     'DROP',
+			     $globals{LOGILIMIT},
+			     '',
+			     'add' );
 	    add_ijump( $smurfref, j => 'AUDIT', targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
 	    add_ijump( $smurfref, j => 'DROP' );
 
@@ -1334,7 +1333,7 @@ sub setup_mac_lists( $ ) {
 
 	    run_user_exit2( 'maclog', $chainref );
 
-	    log_rule_limit $level, $chainref , $chain , $disposition, '', '', 'add', '' if $level ne '';
+	    log_irule_limit $level, $chainref , $chain , $disposition, [], '', 'add' if $level ne '';
 	    add_ijump $chainref, j => $target;
 	}
     }

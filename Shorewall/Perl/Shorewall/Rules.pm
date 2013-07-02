@@ -1605,6 +1605,8 @@ sub Limit( $$$$ ) {
 
     require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
 
+    warning_message "The Limit action is deprecated in favor of per-IP rate limiting using the RATE LIMIT column";
+
     add_irule $chainref, recent => "--name $set --set";
 
     if ( $level ne '' ) {

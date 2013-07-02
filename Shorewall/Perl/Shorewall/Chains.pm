@@ -67,6 +67,7 @@ our @EXPORT = ( qw(
 		    require_audit
 		    newlogchain
 		    log_rule_limit
+		    log_irule_limit
 		    allow_optimize
 		    allow_delete
 		    allow_move
@@ -235,6 +236,7 @@ our %EXPORT_TAGS = (
 				       do_ipsec_options
 				       do_ipsec
 				       log_rule
+				       log_irule
 				       handle_network_list
 				       expand_rule
 				       addnatjump
@@ -6072,10 +6074,108 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 }
 
+sub log_irule_limit( $$$$\@$$@ ) {
+    my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, @matches ) = @_;
+
+    my $prefix = '';
+    my %matches;
+
+    $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
+
+    return 1 if $level eq '';
+
+    %matches = %{transform_rule(@matches)} if @matches;
+
+    unless ( $matches{limit} || $matches{hashlimit} ) {
+	$limit = $globals{LOGILIMIT} unless @$limit;
+	push @matches, @$limit if @$limit;
+    }
+
+    if ( $config{LOGFORMAT} =~ /^\s*$/ ) {
+	if ( $level =~ '^ULOG' ) {
+	    $prefix = "$level";
+	} elsif  ( $level =~ /^NFLOG/ ) {
+	    $prefix = "$level";
+	} else {
+	    my $flags = $globals{LOGPARMS};
+
+	    if ( $level =~ /^(.+)\((.*)\)$/ ) {
+		$level = $1;
+		$flags = join( ' ', $flags, $2 ) . ' ';
+		$flags =~ s/,/ /g;
+	    }
+
+	    $prefix = "LOG ${flags}--log-level $level";
+	}
+    } else {
+	if ( $tag ) {
+	    if ( $config{LOGTAGONLY} && $tag ne ',' ) {
+		if ( $tag =~ /^,/ ) {
+		    ( $disposition = $tag ) =~ s/,//;
+		} elsif ( $tag =~ /,/ ) {
+		    ( $chain, $disposition ) = split ',', $tag;
+		} else { 
+		    $chain = $tag;
+		}
+
+		$tag   = '';
+	    } else {
+		$tag .= ' ';
+	    }
+	} else {
+	    $tag = '' unless defined $tag;
+	}
+
+	$disposition =~ s/\s+.*//;
+
+	if ( $globals{LOGRULENUMBERS} ) {
+	    $prefix = (sprintf $config{LOGFORMAT} , $chain , $chainref->{log}++, $disposition ) . $tag;
+	} else {
+	    $prefix = (sprintf $config{LOGFORMAT} , $chain , $disposition) . $tag;
+	}
+
+	if ( length $prefix > 29 ) {
+	    $prefix = substr( $prefix, 0, 28 ) . ' ';
+	    warning_message "Log Prefix shortened to \"$prefix\"";
+	}
+
+	if ( $level =~ '^ULOG' ) {
+	    $prefix = "$level --ulog-prefix \"$prefix\" ";
+	} elsif  ( $level =~ /^NFLOG/ ) {
+	    $prefix = "$level --nflog-prefix \"$prefix\" ";
+	} elsif ( $level =~ '^LOGMARK' ) {
+	    $prefix = join( '', substr( $prefix, 0, 12 ) , ':' ) if length $prefix > 13;
+	    $prefix = "$level --log-prefix \"$prefix\" ";
+	} else {
+	    my $options = $globals{LOGPARMS};
+
+	    if ( $level =~ /^(.+)\((.*)\)$/ ) {
+		$level   = $1;
+		$options = join( ' ', $options, $2 ) . ' ';
+		$options =~ s/,/ /g;
+	    }
+
+	    $prefix = "LOG ${options}--log-level $level --log-prefix \"$prefix\" ";
+	}
+    }
+
+    if ( $command eq 'add' ) {
+	add_ijump ( $chainref, j => $prefix , @matches );
+    } else {
+	insert_ijump ( $chainref, j => $prefix, 0 , @matches );
+    }
+}
+
 sub log_rule( $$$$ ) {
     my ( $level, $chainref, $disposition, $matches ) = @_;
 
     log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGLIMIT}, '', 'add', $matches;
+}
+
+sub log_irule( $$$;@ ) {
+    my ( $level, $chainref, $disposition, @matches ) = @_;
+
+    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, @{$globals{LOGLIMIT}} , '', 'add', @matches;
 }
 
 #

@@ -5192,6 +5192,8 @@ sub get_configuration( $$$$ ) {
 	$loglimit =~ s/ $//;
 	my @loglimit = ( split ' ', $loglimit, 3 )[1,2];
 	$globals{LOGILIMIT} = \@loglimit;
+    } else {
+	$globals{LOGILIMIT} = [];
     }
 
     check_trivalue ( 'IP_FORWARDING', 'on' );

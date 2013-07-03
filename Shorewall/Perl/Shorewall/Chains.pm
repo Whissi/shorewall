@@ -1467,7 +1467,7 @@ sub create_irule( $$$;@ ) {
 	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
-    push_irule( $chainref, $ruleref );
+    $ruleref;
 }
 
 #
@@ -1488,6 +1488,62 @@ sub clone_irule( $ ) {
     }
 
     $newruleref;
+}
+
+sub handle_port_ilist( $$$ );
+
+sub handle_port_ilist( $$$ ) {
+    my ($chainref, $ruleref, $dport) = @_;
+
+    our $splitcount;
+
+    my $ports = $ruleref->{$dport ? 'dports' : 'sports'};
+
+    if ( $ports && port_count( $ports ) > 15 ) {
+	#
+	# More than 15 ports specified
+	#
+	my @ports = split '([,:])', $ports;
+
+	while ( @ports ) {
+	    my $count = 0;
+	    my $newports = '';
+
+	    while ( @ports && $count < 15 ) {
+		my ($port, $separator) = ( shift @ports, shift @ports );
+
+		$separator ||= '';
+
+		if ( ++$count == 15 ) {
+		    if ( $separator eq ':' ) {
+			unshift @ports, $port, ':';
+			chop $newports;
+			last;
+		    } else {
+			$newports .= $port;
+		    }
+		} else {
+		    $newports .= "${port}${separator}";
+		}
+	    }
+
+	    my $newruleref = clone_irule( $ruleref );
+
+	    $newruleref->{$dport} = $newports;
+
+	    if ( $dport ) {
+		handle_port_ilist( $chainref, $newruleref, 0 );
+	    } else {
+		push_irule( $chainref, $newruleref );
+		$splitcount++;
+	    }
+	}
+    } elsif ( $dport ) {
+	handle_port_ilist( $chainref, $ruleref, 0 );
+    } else {
+	push_irule ( $chainref, $ruleref );
+	$splitcount++;
+    }
 }
 
 #
@@ -1511,7 +1567,7 @@ sub compare_values( $$ ) {
 sub add_irule( $;@ ) {
     my ( $chainref, @matches ) = @_;
 
-    create_irule( $chainref, '' => '', @matches );
+    push_irule( $chainref, create_irule( $chainref, '' => '', @matches ) );
 
 }
 
@@ -2327,7 +2383,50 @@ sub add_ijump( $$$;@ ) {
 	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
     }
 
-    $ruleref;
+    push_irule( $fromref, $ruleref );
+}
+
+sub add_expanded_ijump( $$$;@ ) {
+    my ( $fromref, $jump, $to, @matches ) = @_;
+
+    return $dummyrule if $fromref->{complete};
+
+    our $splitcount = 0;
+
+    my $toref;
+    my $ruleref;
+    #
+    # The second argument may be a scalar (chain name or builtin target) or a chain reference
+    #
+    if ( reftype $to ) {
+	$toref = $to;
+	$to    = $toref->{name};
+    } else {
+	#
+	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
+	#
+	my ( $target ) = split ' ', $to;
+	$toref = $chain_table{$fromref->{table}}{$target};
+	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
+    }
+
+    #
+    # If the destination is a chain, mark it referenced
+    #
+    if ( $toref ) {
+	$toref->{referenced} = 1;
+	add_reference $fromref, $toref;
+	$jump = 'j' unless have_capability 'GOTO_TARGET';
+	$ruleref = create_irule ($fromref, $jump => $to, @matches );
+    } else {
+	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
+    }
+
+    if ( $ruleref->{simple} ) {
+	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
+    }
+
+    handle_port_ilist( $fromref, $ruleref, 1 );
 }
 
 sub insert_ijump( $$$$;@ ) {

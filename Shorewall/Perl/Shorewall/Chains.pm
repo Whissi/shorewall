@@ -1427,7 +1427,17 @@ sub push_matches {
     DONT_OPTIMIZE if $dont_optimize;
 }
 
-sub push_irule( $$$;@ ) {
+sub push_irule( $$ ) {
+    my ( $chainref, $ruleref ) = @_;
+
+    push @{$chainref->{rules}}, $ruleref;
+
+    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
+
+    $ruleref;
+}
+
+sub create_irule( $$$;@ ) {
     my ( $chainref, $jump, $target, @matches ) = @_;
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
@@ -1457,11 +1467,27 @@ sub push_irule( $$$;@ ) {
 	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
-    push @{$chainref->{rules}}, $ruleref;
+    push_irule( $chainref, $ruleref );
+}
 
-    trace( $chainref, 'A', @{$chainref->{rules}}, format_rule( $chainref, $ruleref ) ) if $debug;
+#
+# Clone an existing rule. Only the rule hash itself is cloned; reference values are shared between the new rule
+# reference and the old.
+#
+sub clone_irule( $ ) {
+    my $oldruleref = $_[0];
+    my $newruleref = {};
 
-    $ruleref;
+    while ( my ( $key, $value ) = each %$oldruleref ) {
+	if ( reftype $value ) {
+	    my @array = @$value;
+	    $newruleref->{$key} = \@array;
+	} else {
+	    $newruleref->{$key} = $value;
+	}
+    }
+
+    $newruleref;
 }
 
 #
@@ -1485,7 +1511,7 @@ sub compare_values( $$ ) {
 sub add_irule( $;@ ) {
     my ( $chainref, @matches ) = @_;
 
-    push_irule( $chainref, '' => '', @matches );
+    create_irule( $chainref, '' => '', @matches );
 
 }
 
@@ -1584,26 +1610,6 @@ sub insert_irule( $$$$;@ ) {
     $chainref->{referenced} = 1;
 
     $ruleref;
-}
-
-#
-# Clone an existing rule. Only the rule hash itself is cloned; reference values are shared between the new rule
-# reference and the old.
-#
-sub clone_irule( $ ) {
-    my $oldruleref = $_[0];
-    my $newruleref = {};
-
-    while ( my ( $key, $value ) = each %$oldruleref ) {
-	if ( reftype $value ) {
-	    my @array = @$value;
-	    $newruleref->{$key} = \@array;
-	} else {
-	    $newruleref->{$key} = $value;
-	}
-    }
-
-    $newruleref;
 }
 
 # Do final work to 'delete' a chain. We leave it in the chain table but clear
@@ -2312,9 +2318,9 @@ sub add_ijump( $$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	$ruleref = push_irule ($fromref, $jump => $to, @matches );
+	$ruleref = create_irule ($fromref, $jump => $to, @matches );
     } else {
-	$ruleref = push_irule( $fromref, 'j' => $to, @matches );
+	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
     }
 
     if ( $ruleref->{simple} ) {

@@ -373,7 +373,7 @@ compiler() {
     #
     get_config Yes
 
-    progress_message3 "$g_doing..."
+    [ -n "$g_doing" ] && progress_message3 "$g_doing..."
 
     case $COMMAND in
 	*start|try|refresh)
@@ -473,8 +473,6 @@ start_command() {
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    g_doing="Compiling"
-
 	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
 		run_postcompile ${VARDIR}/.start
 		[ -n "$nolock" ] || mutex_on
@@ -689,7 +687,7 @@ compile_command() {
 	    ;;
     esac
 
-    [ "x$g_file" = x- ] || g_doing="Compiling"
+    [ "x$g_file" = x- ] && g_doing=''
 
     compiler $g_debugging compile $g_file && run_postcompile $g_file
 }
@@ -955,8 +953,6 @@ restart_command() {
     fi
 
     if [ -z "$g_fast" ]; then
-	g_doing="Compiling"
-
 	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
 	    run_postcompile ${VARDIR}/.restart
 	    [ -n "$nolock" ] || mutex_on
@@ -1046,8 +1042,6 @@ refresh_command() {
     product_is_started || fatal_error "$g_product is not running"
 
     [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
-
-    g_doing="Compiling"
 
     if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	run_postcompile ${VARDIR}/.refresh
@@ -1157,8 +1151,6 @@ safe_commands() {
 	# the command is safe-restart and the firewall is already running
 	command="restart"
     fi
-
-    g_doing="Compiling"
 
     if ! compiler $g_debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
@@ -1290,8 +1282,6 @@ try_command() {
 	# the firewall is already running
 	command="restart"
     fi
-
-    g_doing="Compiling"
 
     if ! compiler $g_debugging $nolock compile ${VARDIR}/.$command; then
 	status=$?

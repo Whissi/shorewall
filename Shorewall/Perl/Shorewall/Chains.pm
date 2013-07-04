@@ -7104,8 +7104,8 @@ sub verify_dest_interface( $$$$ ) {
 #
 # Handles the original destination. Updates the passed rule and returns ( $networks, $exclusion, $rule )
 #
-sub handle_original_dest( $$$ ) {
-    my ( $origdest, $chainref, $rule ) = @_;
+sub ihandle_original_dest( $$;@ ) {
+    my ( $origdest, $chainref, @rule ) = @_;
     my ( $onets, $oexcl );
 
     if ( $origdest eq '-' || ! have_capability( 'CONNTRACK_MATCH' ) ) {
@@ -7129,14 +7129,14 @@ sub handle_original_dest( $$$ ) {
 
 	    push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
 
-	    $rule .= '-m conntrack --ctorigdst $address ';
+	    push @rule, ( conntrack => '--ctoregdst $address' );
 	} else {
 	    my $interface = $interfaces[0];
 	    my $variable  = get_interface_address( $interface );
 
 	    push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi' ) if interface_is_optional( $interface );
 
-	    $rule .= "-m conntrack --ctorigdst $variable ";
+	    push @rule, ( conntrack => '--ctorigdst $variable' );
 	}
 
 	$onets = $oexcl = '';
@@ -7157,13 +7157,13 @@ sub handle_original_dest( $$$ ) {
 	unless ( $onets ) {
 	    my @oexcl = split_host_list( $oexcl, $config{DEFER_DNS_RESOLUTION} );
 	    if ( @oexcl == 1 ) {
-		$rule .= match_orig_dest( "!$oexcl" );
+		push @rule, imatch_orig_dest( "!$oexcl" );
 		$oexcl = '';
 	    }
 	}
     }
 
-    ( $onets, $oexcl, $rule );
+    ( $onets, $oexcl, @rule );
 }
 
 #

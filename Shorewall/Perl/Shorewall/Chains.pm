@@ -6944,6 +6944,45 @@ sub verify_source_interface( $$$$ ) {
     $rule;
 }
 
+sub iverify_source_interface( $$$$ ) {
+    my ( $iiface, $restriction, $table, $chainref ) = @_;
+
+    my @rule;
+
+    fatal_error "Unknown Interface ($iiface)" unless known_interface $iiface;
+
+    if ( $restriction & POSTROUTE_RESTRICT ) {
+	#
+	# An interface in the SOURCE column of a masq file
+	#
+	fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
+	fatal_error "A wildcard interface ( $iiface) is not allowed in this context" if $iiface =~ /\+$/;
+
+	if ( $table eq 'nat' ) {
+	    warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
+	} else {
+	    warning_message qq(Using an interface as the SOURCE in a T: rule requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount1++;
+	}
+
+	push_command $chainref, join( '', 'for source in ', get_interface_nets( $iiface) , '; do' ), 'done';
+
+	push @rule, ( s => '$source' );
+    } else {
+	if ( $restriction & OUTPUT_RESTRICT ) {
+	    if ( $chainref->{accounting} ) {
+		fatal_error "Source Interface ($iiface) not allowed in the $chainref->{name} chain";
+	    } else {
+		fatal_error "Source Interface ($iiface) not allowed when the SOURCE is the firewall";
+	    }
+	}
+
+	$chainref->{restricted} |= $restriction;
+	push @rule, imatch_source_dev( $iiface );
+    }
+
+    @rule;
+}
+
 #
 # Splits an interface:address pair. Updates that passed rule and returns ($rule, $interface, $address )
 #

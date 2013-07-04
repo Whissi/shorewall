@@ -7104,6 +7104,68 @@ sub verify_dest_interface( $$$$ ) {
 #
 # Handles the original destination. Updates the passed rule and returns ( $networks, $exclusion, $rule )
 #
+sub handle_original_dest( $$$ ) {
+    my ( $origdest, $chainref, $rule ) = @_;
+    my ( $onets, $oexcl );
+
+    if ( $origdest eq '-' || ! have_capability( 'CONNTRACK_MATCH' ) ) {
+	$onets = $oexcl = '';
+    } elsif ( $origdest =~ /^detect:(.*)$/ ) {
+	#
+	# Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
+	#
+	my @interfaces = split /\s+/, $1;
+
+	if ( @interfaces > 1 ) {
+	    my $list = "";
+	    my $optional;
+
+	    for my $interface ( @interfaces ) {
+		$optional++ if interface_is_optional $interface;
+		$list = join( ' ', $list , get_interface_address( $interface ) );
+	    }
+
+	    push_command( $chainref , "for address in $list; do" , 'done' );
+
+	    push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
+
+	    $rule .= '-m conntrack --ctorigdst $address ';
+	} else {
+	    my $interface = $interfaces[0];
+	    my $variable  = get_interface_address( $interface );
+
+	    push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi' ) if interface_is_optional( $interface );
+
+	    $rule .= "-m conntrack --ctorigdst $variable ";
+	}
+
+	$onets = $oexcl = '';
+    } else {
+	fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/ || $origdest =~ /.*!.*!/;
+
+	if ( $origdest =~ /^([^!]+)?!([^!]+)$/ ) {
+	    #
+	    # Exclusion
+	    #
+	    $onets = $1;
+	    $oexcl = $2;
+	} else {
+	    $oexcl = '';
+	    $onets = $origdest;
+	}
+
+	unless ( $onets ) {
+	    my @oexcl = split_host_list( $oexcl, $config{DEFER_DNS_RESOLUTION} );
+	    if ( @oexcl == 1 ) {
+		$rule .= match_orig_dest( "!$oexcl" );
+		$oexcl = '';
+	    }
+	}
+    }
+
+    ( $onets, $oexcl, $rule );
+}
+
 sub ihandle_original_dest( $$;@ ) {
     my ( $origdest, $chainref, @rule ) = @_;
     my ( $onets, $oexcl );

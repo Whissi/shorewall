@@ -1529,7 +1529,7 @@ sub allowBcast( $$$$ ) {
     }
 
     if ( $family == F_IPV4 ) {
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => 224.0.0.0/4 ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => '224.0.0.0/4' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
 	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add',  d => IPv6_MULTICAST ) if $level ne '';

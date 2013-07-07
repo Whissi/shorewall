@@ -1425,7 +1425,7 @@ sub emit {
 }
 
 #
-# Version of emit() that writes to standard out
+# Version of emit() that writes to standard out unconditionally
 #
 sub emitstd {
     for ( @_ ) {

@@ -2345,10 +2345,12 @@ sub add_expanded_jump( $$$$ ) {
     add_reference( $chainref, $toref ) while --$splitcount > 0;
 }
 
-sub add_ijump( $$$;@ ) {
-    my ( $fromref, $jump, $to, @matches ) = @_;
+sub add_ijump_internal( $$$$;@ ) {
+    my ( $fromref, $jump, $to, $expandports, @matches ) = @_;
 
     return $dummyrule if $fromref->{complete};
+
+    our $splitcount;
 
     my $toref;
     my $ruleref;
@@ -2383,50 +2385,12 @@ sub add_ijump( $$$;@ ) {
 	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
     }
 
-    push_irule( $fromref, $ruleref );
+    $expandports ? handle_port_ilist( $fromref, $ruleref, 1 ) : push_irule( $fromref, $ruleref );
 }
 
-sub add_expanded_ijump( $$$;@ ) {
+sub add_ijump( $$$;@ ) {
     my ( $fromref, $jump, $to, @matches ) = @_;
-
-    return $dummyrule if $fromref->{complete};
-
-    our $splitcount = 0;
-
-    my $toref;
-    my $ruleref;
-    #
-    # The second argument may be a scalar (chain name or builtin target) or a chain reference
-    #
-    if ( reftype $to ) {
-	$toref = $to;
-	$to    = $toref->{name};
-    } else {
-	#
-	# Ensure that we have the chain unless it is a builtin like 'ACCEPT'
-	#
-	my ( $target ) = split ' ', $to;
-	$toref = $chain_table{$fromref->{table}}{$target};
-	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
-    }
-
-    #
-    # If the destination is a chain, mark it referenced
-    #
-    if ( $toref ) {
-	$toref->{referenced} = 1;
-	add_reference $fromref, $toref;
-	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	$ruleref = create_irule ($fromref, $jump => $to, @matches );
-    } else {
-	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
-    }
-
-    if ( $ruleref->{simple} ) {
-	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
-    }
-
-    handle_port_ilist( $fromref, $ruleref, 1 );
+    add_ijump_internal( $fromref, $jump, $to, 0, @matches );
 }
 
 sub insert_ijump( $$$$;@ ) {
@@ -6264,7 +6228,7 @@ sub log_irule_limit( $$$$$$$@ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_ijump ( $chainref, j => $prefix , @matches );
+	add_ijump_internal ( $chainref, j => $prefix , 1, @matches );
     } else {
 	insert_ijump ( $chainref, j => $prefix, 0 , @matches );
     }

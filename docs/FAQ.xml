@@ -247,7 +247,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
         <itemizedlist>
           <listitem>
             <para>You are trying to test from inside your firewall (no, that
-            won't work -- see <xref linkend="faq2" />).</para>
+            won't work -- see <xref linkend="faq2"/>).</para>
           </listitem>
 
           <listitem>
@@ -811,12 +811,18 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
         <example id="Example1">
           <title>Example:</title>
 
-          <literallayout>Zone: dmz, Interface: eth2, Subnet: 192.168.2.0/24, Address: 192.168.2.254</literallayout>
+          <literallayout>Zone: dmz, Interface: eth2, Subnet: 192.168.2.0/24, Address of server 192.168.2.2</literallayout>
 
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
           <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
 dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis> </programlisting>
+
+          <para>In <filename>/etc/shorewall/masq</filename>:</para>
+
+          <programlisting>#INTERFACE:         SOURCE           ADDRESS
+#ADDRESS
+eth2:192.168.1.2    192.168.2.0/24</programlisting>
 
           <para>In <filename>/etc/shorewall/nat</filename>, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
@@ -2968,7 +2974,7 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Persistent SNAT: Available
 gateway:~# </programlisting>
 
-      <para></para>
+      <para/>
     </section>
 
     <section id="faq19">

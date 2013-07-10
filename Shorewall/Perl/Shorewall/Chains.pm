@@ -619,6 +619,7 @@ use constant { UNIQUE      => 1,
 	       COMPLEX     => 32,
 	       NFACCT      => 64,
 	       EXPENSIVE   => 128,
+	       RECENT      => 256,
 	   };
 
 our %opttype = ( rule          => CONTROL,
@@ -650,6 +651,7 @@ our %opttype = ( rule          => CONTROL,
 		                  EXCLUSIVE,
 
 		 nfacct        => NFACCT,
+		 recent        => RECENT,
 
 		 set           => EXPENSIVE,
 		 geoip         => EXPENSIVE,
@@ -843,7 +845,7 @@ sub set_rule_option( $$$ ) {
     if ( exists $ruleref->{$option} ) {
 	assert( defined( my $value1 = $ruleref->{$option} ) , $ruleref );
 
-	if ( $opttype & ( MATCH | NFACCT | EXPENSIVE ) ) {
+	if ( $opttype & ( MATCH | NFACCT | RECENT | EXPENSIVE ) ) {
 	    if ( $globals{KLUDGEFREE} ) {
 		unless ( reftype $value1 ) {
 		    unless ( reftype $value ) {
@@ -876,7 +878,7 @@ sub set_rule_option( $$$ ) {
 
 	    fatal_error "Multiple $option settings in one rule is prohibited";
 	} else {
-	    assert(0, $opttype );
+	    assert($opttype == TARGET, $opttype );
 	}
     } else {
 	$ruleref->{$option} = $value;
@@ -1030,6 +1032,7 @@ sub format_rule( $$;$ ) {
     #
     my $ruleref = $rulerefp->{complex} ? clone_irule( $rulerefp ) : $rulerefp;
     my $nfacct  = $rulerefp->{nfacct};
+    my $recent  = $rulerefp->{recent};
     my $expensive;
 
     for ( @{$ruleref->{matches}} ) {
@@ -1051,9 +1054,9 @@ sub format_rule( $$;$ ) {
 	    next;
 	} elsif ( $type == EXPENSIVE ) {
 	    #
-	    # Only emit expensive matches now if there are '-m nfacct' matches in the rule
+	    # Only emit expensive matches now if there are '-m nfacct' or '-m recent' matches in the rule
 	    #
-	    if ( $nfacct ) {	    
+	    if ( $nfacct || $recent ) {
 		$rule .= format_option( $_, pop_match( $ruleref, $_ ) );
 	    } else {
 		$expensive = 1;
@@ -1063,7 +1066,7 @@ sub format_rule( $$;$ ) {
 	}
     }
     #
-    # Emit expensive matches last unless we had '-m nfacct' matches in the rule.
+    # Emit expensive matches last unless we had '-m nfacct' pr '-m recent' matches in the rule.
     #
     if ( $expensive ) {
 	for ( grep( get_opttype( $_, 0 ) == EXPENSIVE, @{$ruleref->{matches}} ) ) {
@@ -1131,7 +1134,7 @@ sub merge_rules( $$$ ) {
 	}
     }
 
-    for my $option ( grep ! $opttype{$_} || $_ eq 'nfacct', keys %$fromref ) {
+    for my $option ( grep ! $opttype{$_} || $_ eq 'nfacct' || $_ eq 'recent', keys %$fromref ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 
@@ -3337,7 +3340,7 @@ sub optimize_level4( $$ ) {
 			    while ( @$rulesref ) {
 				my $rule1ref = $rulesref->[-1];
 
-				last unless ( $rule1ref->{target} || '' ) eq $target && ! ( $rule1ref->{targetopts} || $rule1ref->{nfacct} );
+				last unless ( $rule1ref->{target} || '' ) eq $target && ! ( $rule1ref->{targetopts} || $rule1ref->{nfacct} || $rule1ref->{recent} );
 
 				trace ( $chainref, 'D', $rule, $rule1ref ) if $debug;
 
@@ -6052,9 +6055,11 @@ sub do_ipsec($$) {
 # Generate a log message
 #
 sub log_rule_limit( $$$$$$$$ ) {
-    my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, $matches ) = @_;
+    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches ) = @_;
 
     my $prefix = '';
+    my $chain       = get_action_chain_name  || $chn;
+    my $disposition = get_action_disposition || $dispo;
 
     $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
 
@@ -6143,10 +6148,12 @@ sub log_rule_limit( $$$$$$$$ ) {
 }
 
 sub log_irule_limit( $$$$$$$@ ) {
-    my ($level, $chainref, $chain, $disposition, $limit, $tag, $command, @matches ) = @_;
+    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, @matches ) = @_;
 
     my $prefix = '';
     my %matches;
+    my $chain       = get_action_chain_name  || $chn;
+    my $disposition = get_action_disposition || $dispo;
 
     $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
 

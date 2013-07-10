@@ -33,11 +33,14 @@ Drop		                # Default Action for DROP policy
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
 DropSmurfs   noinline           # Drop smurf packets
 Established  inline		# Handles packets in the ESTABLISHED state
+IfTrigger    noinline           # Perform an action if a trigger is set
 Invalid      inline             # Handles packets in the INVALID conntrack state
 New	     inline             # Handles packets in the NEW conntrack state
 NotSyn       inline             # Handles TCP packets which do not have SYN=1 and ACK=0
 Reject                          # Default Action for REJECT policy
 Related      inline             # Handles packets in the RELATED conntrack state
+ResetTrigger inline		# Reset a Trigger
 RST	     inline             # Handle packets with RST set
+SetTrigger   inline		# Set a trigger for the packet's source IP
 TCPFlags    			# Handle bad flag combinations.
 Untracked    inline             # Handles packets in the UNTRACKED conntrack state

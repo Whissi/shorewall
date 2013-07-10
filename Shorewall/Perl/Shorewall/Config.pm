@@ -63,10 +63,13 @@ our @EXPORT = qw(
 		 get_action_params
 		 get_action_chain
 		 get_action_chain_name
+		 set_action_name_to_caller
 		 get_action_logging
 		 get_action_disposition
+		 set_action_disposition
 		 set_action_param
 		 get_inline_matches
+		 set_inline_matches
 
 		 have_capability
 		 require_capability
@@ -2910,6 +2913,10 @@ sub get_inline_matches() {
     "$inline_matches ";
 }
 
+sub set_inline_matches( $ ) {
+    $inline_matches = $_[0];
+}
+
 #
 # Push/pop acton params
 #
@@ -3000,8 +3007,16 @@ sub get_action_chain_name() {
     $actparms{chain};
 }
 
+sub set_action_name_to_caller() {
+    $actparms{chain} = $actparms{caller};
+}
+
 sub get_action_disposition() {
     $actparms{disposition};
+}
+
+sub set_action_disposition($) {
+    $actparms{disposition} = $_[0];
 }
 
 sub set_action_param( $$ ) {
@@ -5397,10 +5412,14 @@ sub get_configuration( $$$$ ) {
 	$globals{ZONE_OFFSET}     = $config{PROVIDER_BITS};
     }
 
+    #
+    # It is okay if the trigger mark is outsize of the a 32-bit integer. We check that in IfTrigger"
+    #
     fatal_error 'Invalid Packet Mark layout' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 30;
 
     $globals{EXCLUSION_MASK} = 1 << ( $globals{ZONE_OFFSET} + $config{ZONE_BITS} );
     $globals{TPROXY_MARK}    = $globals{EXCLUSION_MASK} << 1;
+    $globals{TRIGGER_MARK}   = $globals{TPROXY_MARK} << 1;
     $globals{PROVIDER_MIN}   = 1 << $config{PROVIDER_OFFSET};
 
     $globals{TC_MAX}         = make_mask( $config{TC_BITS} );

@@ -1,0 +1,86 @@
+#
+# Shorewall version 4 - Perform an Action based on a Trigger
+#
+# /etc/shorewall/action.IfTrigger
+#
+# Parameters:
+#    Trigger:      Must start with a letter and be composed of letters, digits, '-', and '_'.
+#    Action:       Anything that can appear in the ACTION column of a rule.
+#    Time Limit:   Amount of time the trigger is to remain armed in seconds"
+#    Hit Count:    Number of packets seen within the Timelimit -- default is 1
+#    Src or Dest:  'src' (default) or 'dst'. Determines if the trigger is associated with the source
+#                  address (src) or destination address (dst)
+#    Reset/update: '-' (default) 'reset', or 'update'. If 'reset', the trigger will be reset before
+#                  the Action is taken. If 'update', the timestamp associated with the trigger will
+#                  be updated and the action taken if the time limit/hitcount are matched.
+#                  If '-', the action will be taken if the limit/hitcount are matched but the
+#                  trigger's timestamp will not be updated.
+#    Disposition:  Disposition for any event generated.
+#
+#######################################################################################################
+#                                         DO NOT REMOVE THE FOLLOWING LINE
+?format 2
+#################################################################################################################################################################################################
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER
+#							PORT	PORT(S)		DEST		LIMIT		GROUP
+
+DEFAULTS -,ACCEPT,60,1,src,check,-
+
+?begin perl
+
+use Shorewall::Config qw(:DEFAULT :internal);
+use Shorewall::Chains;
+use Shorewall::Rules;
+use strict;
+
+my ( $trigger, $action, $timeout, $hitcount, $destination, $reset, $disposition ) = get_action_params( 7 );
+
+fatal_error "A trigger name is required"         unless supplied $trigger;
+fatal_error "Invalid trigger name ($trigger)"    unless $trigger =~ /^[a-zA-z][-\w]*$/;
+fatal_error "Invalid time limit ($timeout)"      unless $timeout =~ /^\d+$/;
+fatal_error "Invalid hit count ($hitcount)"      unless $hitcount =~ /^\d+$/;
+fatal_error "Invalid Src or Dest ($destination)" unless $destination =~ /^(?:src|dst)$/;
+fatal_error "Invalid reset flag ($reset)"        unless $reset =~ /^(?:reset|update|check)$/;
+
+set_action_disposition( $disposition) if supplied $disposition;
+set_action_name_to_caller;
+
+require_capability 'RECENT_MATCH', 'Use of triggers', 's';
+
+if ( $reset eq 'reset' ) {
+    require_capability 'MARK_ANYWHERE', 'Resetting a trigger', 's';
+
+    print "Resetting....\n";
+    
+    my $mark = $globals{TRIGGER_MARK};
+    #
+    # The trigger mark bit must be within 32 bits
+    #
+    fatal_error "The mark layout does not permit resetting of triggers" unless $mark & 0xffffffff;
+    #
+    # Reset the trigger mark bit
+    #
+    perl_action_helper( 'INLINE', '-j MARK --and-mark '. in_hex( (~ $mark ) & 0xffffffff ) );
+
+    $mark = in_hex $mark;
+    #
+    # Mark the packet if trigger is armed
+    #
+    if ( $destination eq 'dst' ) {
+	perl_action_helper( 'INLINE', "-m recent --rcheck --seconds $timeout --hitcount $hitcount --name $trigger --rdest -j MARK --or-mark $mark" );
+    } else {
+	perl_action_helper( 'INLINE', "-m recent --rcheck --seconds $timeout --hitcount $hitcount --name $trigger --rsource -j MARK --or-mark $mark" );
+    }
+    #
+    # if the trigger is armed, remove it and perform the action
+    #
+    perl_action_helper( $action , "-m mark --mark $mark/$mark -m recent --remove --name $trigger" );
+} elsif ( $reset eq 'update' ) {
+    perl_action_helper( $action, "-m recent --update --seconds $timeout --hitcount $hitcount --name $trigger" );
+} else {
+    perl_action_helper( $action, "-m recent --rcheck --seconds $timeout --hitcount $hitcount --name $trigger" );
+}
+
+1;
+
+?end perl

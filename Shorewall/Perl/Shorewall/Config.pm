@@ -5413,13 +5413,13 @@ sub get_configuration( $$$$ ) {
     }
 
     #
-    # It is okay if the trigger mark is outsize of the a 32-bit integer. We check that in IfTrigger"
+    # It is okay if the event mark is outside of the a 32-bit integer. We check that in IfEvent"
     #
     fatal_error 'Invalid Packet Mark layout' if $config{ZONE_BITS} + $globals{ZONE_OFFSET} > 30;
 
     $globals{EXCLUSION_MASK} = 1 << ( $globals{ZONE_OFFSET} + $config{ZONE_BITS} );
     $globals{TPROXY_MARK}    = $globals{EXCLUSION_MASK} << 1;
-    $globals{TRIGGER_MARK}   = $globals{TPROXY_MARK} << 1;
+    $globals{EVENT_MARK}     = $globals{TPROXY_MARK} << 1;
     $globals{PROVIDER_MIN}   = 1 << $config{PROVIDER_OFFSET};
 
     $globals{TC_MAX}         = make_mask( $config{TC_BITS} );

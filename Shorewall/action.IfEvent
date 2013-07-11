@@ -1,0 +1,106 @@
+#
+# Shorewall version 4 - Perform an Action based on a Event
+#
+# /etc/shorewall/action.IfEvent
+#
+# Parameters:
+#    Event:        Must start with a letter and be composed of letters, digits, '-', and '_'.
+#    Action:       Anything that can appear in the ACTION column of a rule.
+#    Duration:     Duration in seconds over which the event is to be tested.
+#    Hit Count:    Number of packets seen within the duration -- default is 1
+#    Src or Dest:  'src' (default) or 'dst'. Determines if the event is associated with the source
+#                  address (src) or destination address (dst)
+#    Command:      'check' (default) 'reset', or 'update'. If 'reset', the event will be reset before
+#                  the Action is taken. If 'update', the timestamp associated with the event will
+#                  be updated and the action taken if the time limit/hitcount are matched.
+#                  If '-', the action will be taken if the limit/hitcount are matched but the
+#                  event's timestamp will not be updated.
+#
+#                  If a duration is specified, then 'checkreap' and 'updatereap' may also
+#                  be used. These are like 'check' and 'update' respectively, but they also
+#                  remove any event entries for the IP address that are older than <duration>
+#                  seconds.
+#    Disposition:  Disposition for any event generated.
+#
+# For additional information, see http://www.shorewall.net/Events.html
+#
+#######################################################################################################
+#                                         DO NOT REMOVE THE FOLLOWING LINE
+?format 2
+#################################################################################################################################################################################################
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER
+#							PORT	PORT(S)		DEST		LIMIT		GROUP
+
+DEFAULTS -,ACCEPT,-,1,src,check,-
+
+?begin perl
+
+use Shorewall::Config qw(:DEFAULT :internal);
+use Shorewall::Chains;
+use Shorewall::Rules;
+use strict;
+
+my ( $event, $action, $duration, $hitcount, $destination, $command, $disposition ) = get_action_params( 7 );
+
+fatal_error "An event name is required"           unless supplied $event;
+fatal_error "Invalid event name ($event)"         unless $event =~ /^[a-zA-z][-\w]*$/;
+
+if ( supplied $duration ) {
+    fatal_error "Invalid time limit ($duration)"  unless $duration =~ /^\d+$/;
+    $duration = "--second $duration ";
+} else {
+    $duration = '';
+}
+
+fatal_error "Invalid hit count ($hitcount)"       unless $hitcount =~ /^\d+$/;
+fatal_error "Invalid Src or Dest ($destination)"  unless $destination =~ /^(?:src|dst)$/;
+fatal_error "Invalid reset flag ($command)"       unless $command =~ /^(?:reset|update|updatereap|check|checkreap)$/;
+
+set_action_disposition( $disposition) if supplied $disposition;
+set_action_name_to_caller;
+
+require_capability 'RECENT_MATCH', 'Use of events', 's';
+
+my $reap;
+
+fatal_error "${command}reap requires a time limit" if ( $reap = $command =~ s/reap$// ? '--reap ' : '' ) && ! $duration;
+
+$duration .= $reap;
+
+if ( $command eq 'reset' ) {
+    require_capability 'MARK_ANYWHERE', 'Resetting an event', 's';
+
+    print "Resetting....\n";
+    
+    my $mark = $globals{EVENT_MARK};
+    #
+    # The event mark bit must be within 32 bits
+    #
+    fatal_error "The mark layout does not permit resetting of events" unless $mark & 0xffffffff;
+    #
+    # Reset the event mark bit
+    #
+    perl_action_helper( 'INLINE', '-j MARK --and-mark '. in_hex( (~ $mark ) & 0xffffffff ) );
+
+    $mark = in_hex $mark;
+    #
+    # Mark the packet if event is armed
+    #
+    if ( $destination eq 'dst' ) {
+	perl_action_helper( 'INLINE', "-m recent --rcheck ${duration}--hitcount $hitcount --name $event --rdest -j MARK --or-mark $mark" );
+    } else {
+	perl_action_helper( 'INLINE', "-m recent --rcheck ${duration}--hitcount $hitcount --name $event --rsource -j MARK --or-mark $mark" );
+    }
+    #
+    # if the event is armed, remove it and perform the action
+    #
+    perl_action_helper( $action , "-m mark --mark $mark/$mark -m recent --remove --name $event" );
+} elsif ( $command eq 'update' ) {
+    perl_action_helper( $action, "-m recent --update ${duration}--hitcount $hitcount --name $event" );
+} else {
+    perl_action_helper( $action, "-m recent --rcheck ${duration}--hitcount $hitcount --name $event" );
+}
+
+1;
+
+?end perl

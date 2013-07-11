@@ -1,0 +1,51 @@
+#
+# Shorewall version 4 - Reset an Event
+#
+# /etc/shorewall/action.ResetEvent
+#
+# Parameters:
+#    Event:       Must start with a letter and be composed of letters, digits, '-', and '_'.
+#    Action:      Action to perform after setting the event. Default is ACCEPT
+#    Src or Dest: 'src' (default) or 'dst'. Determines if the event is associated with the source
+#                 address (src) or destination address (dst)
+#    Disposition: Disposition for any rule generated.
+#
+# For additional information, see http://www.shorewall.net/Events.html
+#
+#######################################################################################################
+#                                         DO NOT REMOVE THE FOLLOWING LINE
+?format 2
+#################################################################################################################################################################################################
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER
+#							PORT	PORT(S)		DEST		LIMIT		GROUP
+
+DEFAULTS -,ACCEPT,src,-
+
+?begin perl
+
+use Shorewall::Config;
+use Shorewall::Chains;
+use Shorewall::Rules;
+use strict;
+
+my ( $event, $action, $destination, $disposition ) = get_action_params( 4 );
+
+require_capability 'RECENT_MATCH', 'Use of events', 's';
+require_capability 'MARK_ANYWHERE', 'Use of events', 's';
+
+fatal_error "An event name is required"          unless supplied $event;
+fatal_error "Invalid event name ($event)"        unless $event =~ /^[a-zA-z][-\w]*$/;
+fatal_error "Invalid Src or Dest ($destination)" unless $destination =~ /^(?:src|dst)$/;
+
+set_action_disposition( $disposition) if supplied $disposition;
+set_action_name_to_caller;
+
+if ( $destination eq 'dst' ) {
+    perl_action_helper( $action, "-m recent --name $event --remove --rdest" );
+} else {
+    perl_action_helper( $action, "-m recent --name $event --remove --rsource" );
+}
+
+1;
+
+?end perl

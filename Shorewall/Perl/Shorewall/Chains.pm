@@ -269,7 +269,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 'MODULEVERSION';
+our $VERSION = '4.5_18';
 
 #
 # Chain Table
@@ -6915,45 +6915,6 @@ sub verify_source_interface( $$$$ ) {
     $rule;
 }
 
-sub iverify_source_interface( $$$$ ) {
-    my ( $iiface, $restriction, $table, $chainref ) = @_;
-
-    my @rule;
-
-    fatal_error "Unknown Interface ($iiface)" unless known_interface $iiface;
-
-    if ( $restriction & POSTROUTE_RESTRICT ) {
-	#
-	# An interface in the SOURCE column of a masq file
-	#
-	fatal_error "Bridge ports may not appear in the SOURCE column of this file" if port_to_bridge( $iiface );
-	fatal_error "A wildcard interface ( $iiface) is not allowed in this context" if $iiface =~ /\+$/;
-
-	if ( $table eq 'nat' ) {
-	    warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
-	} else {
-	    warning_message qq(Using an interface as the SOURCE in a T: rule requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount1++;
-	}
-
-	push_command $chainref, join( '', 'for source in ', get_interface_nets( $iiface) , '; do' ), 'done';
-
-	push @rule, ( s => '$source' );
-    } else {
-	if ( $restriction & OUTPUT_RESTRICT ) {
-	    if ( $chainref->{accounting} ) {
-		fatal_error "Source Interface ($iiface) not allowed in the $chainref->{name} chain";
-	    } else {
-		fatal_error "Source Interface ($iiface) not allowed when the SOURCE is the firewall";
-	    }
-	}
-
-	$chainref->{restricted} |= $restriction;
-	push @rule, imatch_source_dev( $iiface );
-    }
-
-    @rule;
-}
-
 #
 # Splits an interface:address pair. Updates that passed rule and returns ($rule, $interface, $address )
 #
@@ -7135,68 +7096,6 @@ sub handle_original_dest( $$$ ) {
     }
 
     ( $onets, $oexcl, $rule );
-}
-
-sub ihandle_original_dest( $$;@ ) {
-    my ( $origdest, $chainref, @rule ) = @_;
-    my ( $onets, $oexcl );
-
-    if ( $origdest eq '-' || ! have_capability( 'CONNTRACK_MATCH' ) ) {
-	$onets = $oexcl = '';
-    } elsif ( $origdest =~ /^detect:(.*)$/ ) {
-	#
-	# Either the filter part of a DNAT rule or 'detect' was given in the ORIG DEST column
-	#
-	my @interfaces = split /\s+/, $1;
-
-	if ( @interfaces > 1 ) {
-	    my $list = "";
-	    my $optional;
-
-	    for my $interface ( @interfaces ) {
-		$optional++ if interface_is_optional $interface;
-		$list = join( ' ', $list , get_interface_address( $interface ) );
-	    }
-
-	    push_command( $chainref , "for address in $list; do" , 'done' );
-
-	    push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
-
-	    push @rule, ( conntrack => '--ctoregdst $address' );
-	} else {
-	    my $interface = $interfaces[0];
-	    my $variable  = get_interface_address( $interface );
-
-	    push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi' ) if interface_is_optional( $interface );
-
-	    push @rule, ( conntrack => '--ctorigdst $variable' );
-	}
-
-	$onets = $oexcl = '';
-    } else {
-	fatal_error "Invalid ORIGINAL DEST" if  $origdest =~ /^([^!]+)?,!([^!]+)$/ || $origdest =~ /.*!.*!/;
-
-	if ( $origdest =~ /^([^!]+)?!([^!]+)$/ ) {
-	    #
-	    # Exclusion
-	    #
-	    $onets = $1;
-	    $oexcl = $2;
-	} else {
-	    $oexcl = '';
-	    $onets = $origdest;
-	}
-
-	unless ( $onets ) {
-	    my @oexcl = split_host_list( $oexcl, $config{DEFER_DNS_RESOLUTION} );
-	    if ( @oexcl == 1 ) {
-		push @rule, imatch_orig_dest( "!$oexcl" );
-		$oexcl = '';
-	    }
-	}
-    }
-
-    ( $onets, $oexcl, @rule );
 }
 
 #

@@ -374,7 +374,20 @@
       <arg choice="plain"><option>show</option></arg>
 
       <arg
-      choice="req"><option>classifiers|connections|config|filters|ip|ipa|zones|policies|marks</option></arg>
+      choice="req"><option>classifiers|connections|config|events|filters|ip|ipa|zones|policies|marks</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6-lite</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>show</option></arg>
+
+      <arg choice="plain"><option>event</option><arg
+      choice="plain"><replaceable>event</replaceable></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -883,6 +896,24 @@
               <listitem>
                 <para>Displays the IP connections currently being tracked by
                 the firewall.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">event</emphasis><replaceable>
+              event</replaceable></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.19. Displays the named
+                event.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">events</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.19. Displays all events.</para>
               </listitem>
             </varlistentry>
 

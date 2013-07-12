@@ -1992,7 +1992,7 @@ sub handle_stickiness( $ ) {
 			$rule1 = clone_irule( $_ );
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
-			set_rule_option( $rule1, 'recent', "--name $list --update --seconds 300" );
+			set_rule_option( $rule1, 'recent', "--name $list --update --seconds 300 --reap" );
 
 			$rule2 = clone_irule( $_ );
 
@@ -2027,7 +2027,7 @@ sub handle_stickiness( $ ) {
 			$rule1 = clone_irule $_;
 
 			set_rule_target( $rule1, 'MARK',   "--set-mark $mark" );
-			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300" );
+			set_rule_option( $rule1, 'recent', " --name $list --rdest --update --seconds 300 --reap" );
 
 			$rule2 = clone_irule $_;
 

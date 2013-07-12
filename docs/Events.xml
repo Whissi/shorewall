@@ -400,7 +400,7 @@
 
       <programlisting>#ACTION               OPTION                   DESCRIPTION
 SSHLIMIT                                       #Automatically blacklist hosts who exceed SSH connection limits
-SSH_BLACKLIST                                  #Helper for SSH</programlisting>
+</programlisting>
 
       <para><filename>/etc/shorewall/action.SSH_BLACKLIST</filename>:</para>
 
@@ -413,9 +413,9 @@ SSH_BLACKLIST                                  #Helper for SSH</programlisting>
 #
 # Log the Reject
 #
-LOG:$LOG:REJECT
+LOG:warn:REJECT
 #
-# And set the SSH_COUNTER trigger for the SOURCE IP address
+# And set the SSH_COUNTER event for the SOURCE IP address
 #
 SetEvent(SSH_COUNTER,REJECT,src)</programlisting>
 
@@ -439,13 +439,13 @@ IfEvent(SSH,SSH_BLACKLIST,60,5,src,checkreap)
 # Log and reject if the client has tried to connect
 # in the last two seconds
 #
-IfEvent(SSH,REJECT:$LOG:,2,1,-,update,Added)
+IfEvent(SSH,REJECT:warn:,2,1,-,update,Added)
 #
 # Un-blacklist the client
 #
-ResetEvent(SSH_COUNTER,LOG:$LOG,-,Removed)
+ResetEvent(SSH_COUNTER,LOG:warn,-,Removed)
 #
-# Set the 'SSH' trigger and accept the connection
+# Set the 'SSH' EVENT and accept the connection
 #
 SetEvent(SSH,ACCEPT,src)</programlisting>
 

@@ -728,6 +728,27 @@ show_nfacct() {
 	echo
     fi
 }
+
+show_events() {
+    if [ $# -gt 0 ]; then
+	for event in $@ ; do
+	    if [ -f /proc/net/xt_recent/$event ]; then
+		echo $event:
+		cat /proc/net/xt_recent/$event
+		echo
+	    else
+		error_message "WARNING: Event $event not found"
+	    fi
+	done
+    else
+	for file in /proc/net/xt_recent/*; do
+	    echo $(basename $file)
+	    cat $file
+	    echo
+	done
+    fi
+}
+
 #
 # Show Command Executor
 #
@@ -1066,6 +1087,19 @@ show_command() {
 		error_message "Cannot locate the arptables executable"
 	    fi
 	    ;;
+	event)
+	    [ $# -gt 1 ] || usage 1
+	    echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
+	    echo
+	    shift
+	    show_events $@
+	    ;;
+	events)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
+	    echo
+	    show_events
+	    ;;	    
 	*)
 	    case "$g_program" in
 		*-lite)
@@ -1359,6 +1393,9 @@ do_dump_command() {
 
     heading "NF Accounting"
     show_nfacct
+
+    heading "Events"
+    show_events
 
     if qt mywhich setkey; then
 	heading "PFKEY SPD"
@@ -3306,6 +3343,8 @@ usage() # $1 = exit status
     echo "   show classifiers"
     echo "   show config"
     echo "   show connections"
+    echo "   show event [ <event> ...]"
+    echo "   show events"
     echo "   show filters"
     echo "   show ip"
 

@@ -729,22 +729,60 @@ show_nfacct() {
     fi
 }
 
+show_event() {
+    local address
+    local ttl_label
+    local ttl
+    local last_seen
+    local last
+    local oldest_pkt
+    local oldest
+    local intimes
+    local outtimes1
+    local outtimes2
+    local time
+    local count
+
+    while read address ttl_label ttl last_seen last oldest_pkt oldest intimes; do
+	outtimes1=''
+	outtimes2=''
+	count=0
+	last=$((($currenttime - $last)/1000))
+	for time in $intimes; do
+	    time=${time%,}
+	    time=$((($currenttime - $time)/1000))
+	    if [ $count -lt $oldest ]; then
+		outtimes2="$outtimes2 $time"
+	    else
+		outtimes1="$outtimes1 $time"
+	    fi
+	    count=$(($count + 1))
+	done
+	echo "   $address :${outtimes1}${outtimes2}"
+    done < /proc/net/xt_recent/$1
+
+}
+
 show_events() {
     local file
     local base
+    local currenttime
 
     if [ -f /proc/net/xt_recent/%CURRENTTIME ]; then
 	echo -127.0.0.1 > /proc/net/xt_recent/%CURRENTTIME
 	echo +127.0.0.1 > /proc/net/xt_recent/%CURRENTTIME
-	echo Current time: $(cat /proc/net/xt_recent/%CURRENTTIME | cut -d ' ' -f 5 -)
-	echo
+	currenttime=$(cat /proc/net/xt_recent/%CURRENTTIME | cut -d ' ' -f 5 -)
+	# echo Current time: $currenttime
+	# echo
+    else
+	currenttime=0
     fi
 
     if [ $# -gt 0 ]; then
 	for event in $@ ; do
 	    if [ -f /proc/net/xt_recent/$event ]; then
 		echo $event:
-		cat /proc/net/xt_recent/$event
+		show_event $event
 		echo
 	    else
 		error_message "WARNING: Event $event not found"
@@ -755,8 +793,8 @@ show_events() {
 	    base=$(basename $file)
 
 	    if [ $base != %CURRENTTIME ]; then
-		echo $(basename $file)
-		cat $file
+		echo $base
+		show_event $base
 		echo
 	    fi
 	done

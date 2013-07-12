@@ -730,9 +730,14 @@ show_nfacct() {
 }
 
 show_events() {
+    local file
+    local base
+
     if [ -f /proc/net/xt_recent/%CURRENTTIME ]; then
 	echo -127.0.0.1 > /proc/net/xt_recent/%CURRENTTIME
 	echo +127.0.0.1 > /proc/net/xt_recent/%CURRENTTIME
+	echo Current time: $(cat /proc/net/xt_recent/%CURRENTTIME | cut -d ' ' -f 5 -)
+	echo
     fi
 
     if [ $# -gt 0 ]; then
@@ -747,9 +752,13 @@ show_events() {
 	done
     else
 	for file in /proc/net/xt_recent/*; do
-	    echo $(basename $file)
-	    cat $file
-	    echo
+	    base=$(basename $file)
+
+	    if [ $base != %CURRENTTIME ]; then
+		echo $(basename $file)
+		cat $file
+		echo
+	    fi
 	done
     fi
 }

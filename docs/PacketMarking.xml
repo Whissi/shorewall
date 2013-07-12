@@ -344,8 +344,6 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
 
     <graphic align="left" fileref="images/MarkGeometry.png" valign="top" />
 
-    <para></para>
-
     <para>The default values of these options are determined by the settings
     of other options as follows:</para>
 
@@ -405,6 +403,12 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <para>In Shorewall 4.5.4, a <firstterm>TPROXY mark</firstterm> was added
     for TPROXY support. It is a single bit wide and is to the immediate left
     of the exclusion mark.</para>
+
+    <para>The <firstterm>Event Mark</firstterm> bit was added in Shorewall
+    4.5.19. It is to the immediate left of the TPROXY mark, and it need not
+    fall within the 32-bit mark unless the <emphasis
+    role="bold">reset</emphasis> command is used in the <emphasis
+    role="bold">IfEvent</emphasis> action.</para>
   </section>
 
   <section id="Shorewall">

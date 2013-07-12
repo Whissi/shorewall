@@ -730,6 +730,11 @@ show_nfacct() {
 }
 
 show_events() {
+    if [ -f /proc/net/xt_recent/%CURRENTTIME ]; then
+	echo -127.0.0.1 > /proc/net/xt_recent/%CURRENTTIME
+	echo +127.0.0.1 > /proc/net/xt_recent/%CURRENTTIME
+    fi
+
     if [ $# -gt 0 ]; then
 	for event in $@ ; do
 	    if [ -f /proc/net/xt_recent/$event ]; then

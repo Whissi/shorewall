@@ -511,7 +511,9 @@ EOF
     #
     emit(
 '    run_refreshed_exit',
-'    do_iptables -N shorewall',
+'    do_iptables -N shorewall' );
+    emit ( '    do_iptables -A shorewall -m recent --set --name \%CURRENTTIME' ) if have_capability 'RECENT_MATCH';
+    emit(
 "    set_state Started $config_dir",
 '    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall',
 'else',
@@ -533,6 +535,11 @@ EOF
     emit<<"EOF";
     run_start_exit
     do_iptables -N shorewall
+EOF
+
+    emit ( '    do_iptables -A shorewall -m recent --set --name \%CURRENTTIME' ) if have_capability 'RECENT_MATCH';
+
+    emit<<"EOF";
     set_state Started $config_dir
     my_pathname=\$(my_pathname)
     [ \$my_pathname = \${VARDIR}/firewall ] || cp -f \$my_pathname \${VARDIR}/firewall

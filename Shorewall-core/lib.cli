@@ -744,23 +744,48 @@ show_event() {
     local count
 
     while read address ttl_label ttl last_seen last oldest_pkt oldest intimes; do
+	case $address in
+	    *.*)
+		[ $g_family -eq 4 ] || continue
+		;;
+	    *:*)
+		[ $g_family -eq 6 ] || continue
+		;;
+	    *)
+		continue
+		;;
+	esac
+
 	outtimes1=''
 	outtimes2=''
 	count=0
 	last=$((($currenttime - $last)/1000))
 	for time in $intimes; do
 	    time=${time%,}
-	    time=$((($currenttime - $time)/1000))
+	    time=$(($currenttime - $time))
+	    if [ $time -lt 10 ]; then
+		time="000$time"
+	    elif [ $time -lt 100 ]; then
+		time="00$time"
+	    elif [ $time -lt 1000 ]; then
+		time="0$time"
+	    fi
+
 	    if [ $count -lt $oldest ]; then
 		outtimes2="$outtimes2 $time"
 	    else
 		outtimes1="$outtimes1 $time"
 	    fi
+
 	    count=$(($count + 1))
 	done
-	echo "   $address :${outtimes1}${outtimes2}"
-    done < /proc/net/xt_recent/$1
 
+	outtimes1="${outtimes1}${outtimes2}"
+
+	[ -n "$outtimes1" ] && outtimes1=$(echo "$outtimes1 " | sed -r 's/([[:digit:]]{3}) /\.\1, /g') && outtimes1=${outtimes1%, }
+
+	echo "   $address : ${outtimes1}"
+    done < /proc/net/xt_recent/$1
 }
 
 show_events() {

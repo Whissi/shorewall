@@ -421,23 +421,26 @@
       the events listed in the command while <emphasis role="bold">show
       events</emphasis> lists the contents of all events.</para>
 
-      <programlisting>root@gateway:/usr/src/linux-source-3.2/net/netfilter# shorewall show events
-Shorewall 4.5.19-Beta2 events at gateway - Fri Jul 12 15:57:20 PDT 2013
+      <programlisting>root@gateway:~# shorewall show events
+Shorewall 4.5.19-Beta2 events at gateway - Sat Jul 13 07:17:59 PDT 2013
 
 SSH
-   src=125.46.13.163 : 3453
-   src=200.59.55.50 : 3900 3900
-   src=65.182.111.112 : 2946
+   src=75.101.251.91 : 2225.808, 2225.592 
+   src=218.87.16.135 : 2078.490 
 
 SSH_COUNTER
+   src=65.182.111.112 : 5755.790 
+   src=113.162.155.243 : 4678.249 
 
 sticky001
-   src=172.20.1.146 : 8 8 8 8 8 8 8 8 8 8 8 8 8 8 7 7 7 7 7 7
+   src=172.20.1.146 : 5.733, 5.728, 5.623, 5.611, 5.606, 5.606, 5.589, 5.588, 5.565, 5.551, 5.543, 5.521, 5.377, 5.347, 5.347, 5.345, 5.258, 5.148, 5.048, 4.949 
+   src=172.20.1.151 : 41.805, 41.800 
 
 sticky002
-   src=172.20.1.213 : 53 49 49 49 49 49 49 49 49 49 49 49 49 49 49 49 49 49 46 46
+   src=172.20.1.213 : 98.122, 98.105, 98.105, 98.105, 98.088, 98.088, 98.088, 98.088, 98.058, 98.058, 80.885, 53.528, 53.526, 53.526, 53.510, 53.383, 53.194, 53.138, 53.072, 3.119 
+   src=172.20.1.146 : 4.914, 4.914, 4.898, 4.897, 4.897, 4.896, 4.896, 4.896, 4.882, 4.881, 4.875, 4.875, 4.875, 4.875, 4.875, 4.875, 4.875, 4.874, 4.874, 4.874 
 
-root@gateway:/usr/src/linux-source-3.2/net/netfilter# </programlisting>
+root@gateway:~# </programlisting>
 
       <para>The SSH and SSH_COUNTER events are created using the following
       Automatic Blacklisting example. The sticky001 and sticky002 events are
@@ -446,12 +449,12 @@ root@gateway:/usr/src/linux-source-3.2/net/netfilter# </programlisting>
       <para>Each line represents one event. The list of numbers following the
       ':' represent the number of seconds ago that a matching packet triggered
       the event. The numbers are in chronological sequence, so In this event,
-      there were 20 packets from 172.20.1.213 that arrived between 53 and 46
-      seconds ago:</para>
+      there were 20 packets from 172.20.1.146 that arrived between 5.733 and
+      4.949 seconds ago:</para>
 
-      <programlisting>sticky002
-   src=172.20.1.213 : <emphasis role="bold">53</emphasis> 49 49 49 49 49 49 49 49 49 49 49 49 49 49 49 49 49 46 <emphasis
-          role="bold">46</emphasis></programlisting>
+      <programlisting>sticky001
+   src=172.20.1.146 : <emphasis role="bold">5.733</emphasis>, 5.728, 5.623, 5.611, 5.606, 5.606, 5.589, 5.588, 5.565, 5.551, 5.543, 5.521, 5.377, 5.347, 5.347, 5.345, 5.258, 5.148, 5.048, <emphasis
+          role="bold">4.949</emphasis> </programlisting>
 
       <para>Note that there may have been earlier packets that also matched,
       but the system where this example was captured used the default value of
@@ -460,7 +463,9 @@ root@gateway:/usr/src/linux-source-3.2/net/netfilter# </programlisting>
 
       <para>The output of these commands is produced by processing the
       contents of <filename>/proc/net/xt_recent/*</filename>. You can access
-      those files directly to see the raw data.</para>
+      those files directly to see the raw data. The raw times are the uptime
+      in milliseconds. The %CURRENTTIME entry is created by the <command>show
+      event[s]</command> commands to obtain the current uptime.</para>
     </section>
   </section>
 

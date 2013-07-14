@@ -54,20 +54,56 @@ if ( supplied $duration ) {
 
 fatal_error "Invalid hit count ($hitcount)"       unless $hitcount =~ /^\d+$/;
 fatal_error "Invalid Src or Dest ($destination)"  unless $destination =~ /^(?:src|dst)$/;
-fatal_error "Invalid reset flag ($command)"       unless $command =~ /^(?:reset|update|updatereap|check|checkreap)$/;
+
+my $srcdst = $destination eq 'src'? '--rsource' : '--rdest';
+
+our $commands_defined;
+
+#
+# Can't 'use constant' here
+#
+my ( $UPDATE_CMD, $CHECK_CMD, $RESET_CMD, $REAP_OPT, $TTL_OPT ) = ( 1, 2, 4, 8, 16 );
+
+my %command = ( check =>  $CHECK_CMD,
+		update => $UPDATE_CMD,
+		reset  => $RESET_CMD
+	      );
+
+my %commandopts = ( 
+		    reap   => $REAP_OPT,
+		    ttl    => $TTL_OPT
+		  );
+
+my @command = split(':', $command);
+
+$command = $command{shift @command} || 0;
+
+fatal_error "Command must be 'check', 'update' or 'reset" unless $command & ( $CHECK_CMD | $UPDATE_CMD | $RESET_CMD); 
+
+for ( @command ) {
+    fatal_error "Invalid command option ($_)" unless $commandopts{$_};
+    if ( $command & $commandopts{$_} ) {
+	warning_message "Duplicate command ($_)";
+    } else {
+	$command |= $commandopts{$_};
+    }
+}
+
+my $duplicate;
 
 set_action_disposition( $disposition) if supplied $disposition;
 set_action_name_to_caller;
 
 require_capability 'RECENT_MATCH', 'Use of events', 's';
 
-my $reap;
+if ( $command & $REAP_OPT ) {
+    fatal_error "${command}reap requires a time limit" if ! $duration;
+    $duration .= '--reap ';
+}
 
-fatal_error "${command}reap requires a time limit" if ( $reap = $command =~ s/reap$// ? '--reap ' : '' ) && ! $duration;
+$duration .= '--rttl ' if $command & $TTL_OPT;
 
-$duration .= $reap;
-
-if ( $command eq 'reset' ) {
+if ( $command & $RESET_CMD ) {
     require_capability 'MARK_ANYWHERE', '"reset"', 's';
 
     print "Resetting....\n";
@@ -86,19 +122,15 @@ if ( $command eq 'reset' ) {
     #
     # Mark the packet if event is armed
     #
-    if ( $destination eq 'dst' ) {
-	perl_action_helper( 'INLINE', "-m recent --rcheck ${duration}--hitcount $hitcount --name $event --rdest -j MARK --or-mark $mark" );
-    } else {
-	perl_action_helper( 'INLINE', "-m recent --rcheck ${duration}--hitcount $hitcount --name $event --rsource -j MARK --or-mark $mark" );
-    }
+    perl_action_helper( 'INLINE', "-m recent --rcheck ${duration}--hitcount $hitcount --name $event $srcdst -j MARK --or-mark $mark" );
     #
     # if the event is armed, remove it and perform the action
     #
     perl_action_helper( $action , "-m mark --mark $mark/$mark -m recent --remove --name $event" );
-} elsif ( $command eq 'update' ) {
-    perl_action_helper( $action, "-m recent --update ${duration}--hitcount $hitcount --name $event" );
+} elsif ( $command & $UPDATE_CMD ) {
+    perl_action_helper( $action, "-m recent --update ${duration}--hitcount $hitcount --name $event $srcdst" );
 } else {
-    perl_action_helper( $action, "-m recent --rcheck ${duration}--hitcount $hitcount --name $event" );
+    perl_action_helper( $action, "-m recent --rcheck ${duration}--hitcount $hitcount --name $event $srcdst" );
 }
 
 1;

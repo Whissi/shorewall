@@ -272,8 +272,8 @@
       [ <replaceable>duration</replaceable> ], [
       <replaceable>hitcount</replaceable> ], [
       <replaceable>src-dst</replaceable>], [
-      <replaceable>command</replaceable> ], [
-      <replaceable>disposition</replaceable> ] )</para>
+      <replaceable>command</replaceable>[:<replaceable>option</replaceable>]...,
+      [ <replaceable>disposition</replaceable> ] )</para>
 
       <variablelist>
         <varlistentry>
@@ -348,8 +348,9 @@
                 <listitem>
                   <para>Like <emphasis role="bold">check</emphasis>. If the
                   test succeeds, the <replaceable>event</replaceable> will be
-                  reset before the <replaceable>action</replaceable> is
-                  taken.</para>
+                  reset before the <replaceable>action</replaceable> is taken.
+                  Requires the <firstterm>Mark in filter table</firstterm>
+                  capability in your kernel and iptables.</para>
                 </listitem>
               </varlistentry>
 
@@ -364,36 +365,35 @@
                   <replaceable>event</replaceable>.</para>
                 </listitem>
               </varlistentry>
-
-              <varlistentry>
-                <term>checkreap</term>
-
-                <listitem>
-                  <para>Requires a <replaceable>duration</replaceable>. Like
-                  <emphasis role="bold">check</emphasis> but regardless of
-                  whether the test succeeds, entries for the
-                  <replaceable>src-dst</replaceable> IP address that are older
-                  than <replaceable>duration</replaceable> seconds will be
-                  deleted from the <replaceable>event</replaceable>.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>updatereap</term>
-
-                <listitem>
-                  <para>Requires a <replaceable>duration</replaceable>. Like
-                  <emphasis role="bold">update</emphasis> but regardless of
-                  whether the test succeeds, entries for the
-                  <replaceable>src-dst</replaceable> IP address that are older
-                  than <replaceable>duration</replaceable> seconds will be
-                  deleted from the <replaceable>event</replaceable>.</para>
-                </listitem>
-              </varlistentry>
             </variablelist>
 
             <para>The default is <emphasis
             role="bold">check</emphasis>.</para>
+
+            <para><replaceable>option</replaceable> may be one of:</para>
+
+            <variablelist>
+              <varlistentry>
+                <term>reap</term>
+
+                <listitem>
+                  <para>Regardless of whether the test succeeds, entries for
+                  the <replaceable>src-dst</replaceable> IP address that are
+                  older than <replaceable>duration</replaceable> seconds will
+                  be deleted from the <replaceable>event</replaceable>.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>ttl</term>
+
+                <listitem>
+                  <para>Constrains the test to require that the packet TTL
+                  match the ttl in the original packet that created the
+                  entry.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
           </listitem>
         </varlistentry>
 
@@ -521,7 +521,7 @@ IfEvent(SSH_COUNTER,REJECT,300,1)
 #
 # Blacklist if 5 attempts in the last minute
 #
-IfEvent(SSH,SSH_BLACKLIST,60,5,src,checkreap)
+IfEvent(SSH,SSH_BLACKLIST,60,5,src,check:reap)
 #
 # Log and reject if the client has tried to connect
 # in the last two seconds

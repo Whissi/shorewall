@@ -541,6 +541,14 @@ SetEvent(SSH,ACCEPT,src)</programlisting>
       <programlisting>#ACTION               SOURCE         DEST      PROTO      DEST
 #                                                         PORT(S)
 SSHLIMIT              net            $FW       tcp        22                        </programlisting>
+
+      <caution>
+        <para>The technique demonstrated in this example is not self-cleaning.
+        The SSH_COUNTER event can become full with blackisted addresses that
+        never attempt to connect again. When that happens and a new entry is
+        added via SetEvent, the least recently seen address in the table is
+        deleted.</para>
+      </caution>
     </section>
 
     <section>

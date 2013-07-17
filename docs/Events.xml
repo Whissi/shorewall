@@ -552,6 +552,107 @@ SSHLIMIT              net            $FW       tcp        22                    
     </section>
 
     <section>
+      <title>Generalized Automatic Blacklisting</title>
+
+      <para>The above two actions are generalized in the AutoBL and AutoBLL
+      actions released in Shorewall 4.5.19. Only AutoBL is invoked directly
+      from your rules file; AutoBL invoked AutoBLL internally.</para>
+
+      <section>
+        <title>AutoBL</title>
+
+        <para><emphasis role="bold">AutoBL</emphasis>(
+        <replaceable>event</replaceable>, [
+        <replaceable>Interval</replaceable> ], [
+        <replaceable>hitcount</replaceable> ], [
+        <replaceable>successive</replaceable> ], [
+        <replaceable>blacklist-time</replaceable> ], [
+        <replaceable>disposition </replaceable>], [
+        <replaceable>log_level</replaceable> ] )</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>event</term>
+
+            <listitem>
+              <para>Name of the event. The blacklisting event itself will be
+              <replaceable>event</replaceable>_BL (analogous to SSH_COUNTER
+              above).</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>interval</term>
+
+            <listitem>
+              <para>Interval, in seconds, over which hits are to be counted.
+              Default is 60 seconds.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>hitcount</term>
+
+            <listitem>
+              <para>Number of matching packets that will trigger automatic
+              blacklisting when they arrive in
+              <replaceable>interval</replaceable> seconds. Default is
+              5.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>successive</term>
+
+            <listitem>
+              <para>If a matching packet arrives within this many seconds of
+              the preceding one, it should be logged according to
+              <replaceable>log_level</replaceable> and handled according to
+              the <replaceable>disposition</replaceable>. If successive
+              packets are not to be considered, enter 0. Default is 2
+              seconds.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>blacklist-time</term>
+
+            <listitem>
+              <para>Time, in seconds, that the source IP address is to be
+              blacklisted. Default is 300 (5 minutes).</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>disposition</term>
+
+            <listitem>
+              <para>The disposition of blacklisted packets. Default is
+              DROP.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>log_level</term>
+
+            <listitem>
+              <para>Log level at which packets are to be logged. Default is
+              info.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>To duplicate the SSHLIMIT entry in
+        <filename>/etc/shorewall/rules</filename> shown above:</para>
+
+        <programlisting>#ACTION               SOURCE         DEST      PROTO      DEST
+#                                                         PORT(S)
+AutoBL(SSH,-,-,-,REJECT,warn)\
+                      net            $FW       tcp        22                </programlisting>
+      </section>
+    </section>
+
+    <section>
       <title>Port Knocking</title>
 
       <para>This example shows a different implementation of the one shown in

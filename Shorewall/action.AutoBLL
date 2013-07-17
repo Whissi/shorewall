@@ -1,0 +1,20 @@
+#
+# Shorewall version 4 - Auto Blacklisting Logger Action
+#
+# Arguments are
+#
+#    Event:       Name of the blacklisted event
+#    Disposition: What to do with packets
+#    Level:       Log level and optional tag for logging.
+###############################################################################
+#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
+#
+# Log the Reject
+#
+?if "$3" ne 'none'
+LOG:$3
+?endif
+#
+# And set the AutoBL Event for the SOURCE IP address
+#
+SetEvent(${1}_BL,$2,src)

@@ -49,6 +49,7 @@ our @EXPORT = qw(
 		 assert
 		 currentlineinfo
 		 clear_currentfilename
+		 validate_level
 
 		 progress_message
 		 progress_message_nocompress
@@ -128,7 +129,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       pop_action_params
 				       default_action_params
 				       read_a_line
-				       validate_level
 				       which
 				       qt
 				       ensure_config_path

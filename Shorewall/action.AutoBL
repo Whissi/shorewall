@@ -1,0 +1,59 @@
+#
+# Shorewall version 4 - Auto Blacklist Action
+#
+# Parameters are:
+#
+#    Event          - Name of the event to associate with this blacklist
+#    Interval
+#    Count          - Interval and number of Packets to trigger blacklisting
+#                     Default is 60 seconds and 5 packets.
+#    Successive     - If a matching packet arrives within this many
+#                     seconds of the preceding one, it should be logged
+#                     and dealt with according to the Disposition and
+#                     Log Level parameters below. Default is 2 seconds.
+#    Blacklist time - Number of seconds to blacklist
+#                     Default is 300 (5 minutes)
+#    Disposition    - Disposition of blacklisted packets
+#                     Default is DROP
+#    Log Level      - Level to Log Rejects
+#                     Default is info (6)
+#
+?format 2
+DEFAULTS -,60,5,2,300,DROP,info
+
+?begin perl
+my ( $event, $interval, $count, $successive, $bltime, $disposition, $level ) = get_action_params(7);
+
+fatal_error "The event name parameter to AutoBL is required"            unless supplied $event;
+fatal_error "Invalid interval ($interval) passed to AutoBL"             unless $interval =~ /^\d+$/ && $interval;
+fatal_error "Invalid successive interval ($succesive) passed to AutoBL" unless $successive =~ /^\d+$/;
+fatal_error "Invalid packet count ($count) passed to AutoBL"            unless $count =~ /^\d+$/ && $count;
+fatal_error "Invalid blacklist time ($bltime) passed to AutoBL"         unless $bltime =~ /^\d+$/ && $bltime;
+validate_level( $level );
+
+?end perl
+###############################################################################
+#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
+#
+# Silently reject the client if blacklisted
+#
+IfEvent(${1}_BL,$6,$5,1,src,check:reap)
+#
+# Blacklist if M attempts in the last N seconds
+#
+IfEvent($1,AutoBLL($1,$6,$7),$2,$3,src,check:reap)
+#
+# Log and reject if the client has tried to connect
+# in the last N seconds
+#
+?if $4
+IfEvent($1,$6:$7,$4,1,-,update,Added)
+?endif
+#
+# Un-blacklist the client
+#
+ResetEvent(${1}_BL,LOG:$7,-,Removed)
+#
+# Set the event and accept the connection
+#
+SetEvent($1,ACCEPT,src)

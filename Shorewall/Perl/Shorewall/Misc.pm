@@ -832,7 +832,8 @@ sub add_common_rules ( $ ) {
     }
 
     for $interface ( all_real_interfaces ) {
-	ensure_chain( 'filter', $_ ) for first_chains( $interface ), output_chain( $interface ), option_chains( $interface ), output_option_chain( $interface );
+	ensure_chain( 'filter', $_ )->{origin} = interface_origin( $interface )
+	    for first_chains( $interface ), output_chain( $interface ), option_chains( $interface ), output_option_chain( $interface );
 
 	my $interfaceref = find_interface $interface;
 
@@ -860,7 +861,7 @@ sub add_common_rules ( $ ) {
 
 	    for ( option_chains( $interface ) ) {
 		add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
-		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate ) if $config{FASTACCEPT};
+		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
 	    }
 	}
     }

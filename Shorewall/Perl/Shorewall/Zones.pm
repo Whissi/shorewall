@@ -75,6 +75,7 @@ our @EXPORT = ( qw( NOTHING
 		    managed_interfaces
 		    unmanaged_interfaces
 		    interface_number
+		    interface_origin
 		    find_interface
 		    known_interface
 		    get_physical
@@ -1362,6 +1363,7 @@ sub process_interface( $$ ) {
 						       physical   => $physical ,
 						       base       => var_base( $physical ),
 						       zones      => {},
+						       origin     => shortlineinfo(''),
 						     };
 
     if ( $zone ) {
@@ -1531,6 +1533,13 @@ sub known_interface($)
 #
 sub interface_number( $ ) {
     $interfaces{$_[0]}{number} || 256;
+}
+
+#
+# Return interface origin
+#
+sub interface_origin( $ ) {
+    $interfaces{$_[0]}->{origin};
 }
 
 #

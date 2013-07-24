@@ -383,6 +383,7 @@ sub set_policy_chain($$$$$$)
 
 	$chainref1->{policy} = $policy;
 	$chainref1->{policypair} = [ $source, $dest ];
+	$chainref1->{origin} = $chainref->{origin};
     }
 }
 
@@ -572,6 +573,8 @@ sub process_a_policy() {
     assert( $default );
     my $chainref1 = $usedactions{$default};
     $chainref->{default} = $chainref1 ? $chainref1->{name} : $default;
+
+    $chainref->{origin} = shortlineinfo('');
 
     if ( $clientwild ) {
 	if ( $serverwild ) {
@@ -880,10 +883,12 @@ sub complete_standard_chain ( $$$$ ) {
     $policychainref = $filter_table->{$ruleschainref->{policychain}} if $ruleschainref;
 
     if ( $policychainref ) {
-	( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' }
+	( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' };
+	$stdchainref->{origin} = $policychainref->{origin};
     } elsif ( $defaultaction !~ /:/ ) {
 	$defaultaction = join(":", $defaultaction, 'none', '', '' );
     }
+
 
     policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }

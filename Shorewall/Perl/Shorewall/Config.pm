@@ -48,6 +48,7 @@ our @EXPORT = qw(
 		 fatal_error
 		 assert
 		 currentlineinfo
+		 shortlineinfo
 		 clear_currentfilename
 		 validate_level
 
@@ -213,7 +214,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = 'MODULEVERSION';
+our $VERSION = '4.5.20-Beta1';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -800,6 +801,7 @@ sub initialize( $;$$) {
 	  DEFER_DNS_RESOLUTION => undef,
 	  USE_RT_NAMES => undef,
 	  CHAIN_SCRIPTS => undef,
+	  TRACK_RULES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -1113,6 +1115,22 @@ sub currentlineinfo() {
 
     } else {
 	'';
+    }
+}
+
+sub shortlineinfo( $ ) {
+    if ( $config{TRACK_RULES} ) {
+	if ( $currentfile ) {
+	    my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
+	    $comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
+	    $comment = '@@@ Filename Too Long @@@' if length $comment > 255;
+	    $comment;
+	} else {
+	    #
+	    # Alternate lineinfo may have been passed
+	    #
+	    $_[0] || ''
+	}
     }
 }
 
@@ -5354,6 +5372,9 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
+    default_yes_no 'TRACK_RULES'                , '';
+
+    require_capability 'COMMENTS', 'TRACK_RULES=Yes', 's' if $config{TRACK_RULES};
 
     default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
     default_yes_no 'USE_DEFAULT_RT'             , '';

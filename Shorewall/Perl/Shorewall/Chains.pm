@@ -287,6 +287,7 @@ our $VERSION = '4.5_18';
 #                                               policy       => <policy>
 #                                               policychain  => <name of policy chain> -- self-reference if this is a policy chain
 #                                               policypair   => [ <policy source>, <policy dest> ] -- Used for reporting duplicated policies
+#                                               origin       => <filename and line number of entry that created this policy chain>
 #                                               loglevel     => <level>
 #                                               synparams    => <burst/limit + connlimit>
 #                                               synchain     => <name of synparam chain>
@@ -322,7 +323,7 @@ our $VERSION = '4.5_18';
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
-#       'loglevel', 'synparams', 'synchain', 'audit' and 'default' only apply to policy chains.
+#       'loglevel', 'synparams', 'synchain', 'audit', 'default' abd 'origin' only apply to policy chains.
 ###########################################################################################################################################
 #
 # For each ordered pair of zones, there may exist a 'canonical rules chain' in the filter table; the name of this chain is formed by
@@ -1224,7 +1225,8 @@ sub push_rule( $$ ) {
     my $complete = 0;
     my $ruleref  = transform_rule( $_[1], $complete );
 
-    $ruleref->{comment}  = "$comment" if $comment;
+    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
+
     $ruleref->{mode}     = CMD_MODE   if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
 
     push @{$chainref->{rules}}, $ruleref;
@@ -1458,9 +1460,7 @@ sub create_irule( $$$;@ ) {
 	$ruleref->{target} = '';
     }
 
-    if ( $comment ) {
-	$ruleref->{comment} = $comment unless $ruleref->{comment};
-    }
+    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $ruleref->{comment} || $comment;
 
     $iprangematch = 0;
 
@@ -1616,7 +1616,8 @@ sub insert_rule1($$$)
 
     my $ruleref = transform_rule( $rule );
 
-    $ruleref->{comment}  = "$comment" if $comment;
+    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
+
     assert( ! ( $ruleref->{cmdlevel} = $chainref->{cmdlevel}) , $chainref->{name} );
     $ruleref->{mode} = CAT_MODE;
 
@@ -1656,9 +1657,8 @@ sub insert_irule( $$$$;@ ) {
 	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
-    if ( $comment ) {
-	$ruleref->{comment} = $comment unless $ruleref->{comment};
-    }
+    
+    $ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $ruleref->{comment} || $comment;
 
     splice( @{$chainref->{rules}}, $number, 0, $ruleref );
 
@@ -3027,8 +3027,8 @@ sub calculate_digest( $ ) {
 #
 # Replace jumps to the passed chain with jumps to the passed target
 #
-sub replace_references( $$$;$ ) {
-    my ( $chainref, $target, $targetopts, $digest ) = @_;
+sub replace_references( $$$$;$ ) {
+    my ( $chainref, $target, $targetopts, $comment, $digest ) = @_;
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     my $name      = $chainref->{name};
@@ -3045,6 +3045,7 @@ sub replace_references( $$$;$ ) {
 		if ( $_->{target} eq $name ) {
 		    $_->{target}     = $target;
 		    $_->{targetopts} = $targetopts if $targetopts;
+		    $_->{comment}    = $comment unless $_->{comment};
 
 		    if ( $targetref ) {
 			add_reference ( $fromref, $targetref );
@@ -3291,7 +3292,10 @@ sub optimize_level4( $$ ) {
 				#
 				# Replace all references to this chain with references to the target
 				#
-				replace_references $chainref, $firstrule->{target}, $firstrule->{targetopts};
+				replace_references( $chainref,
+						    $firstrule->{target},
+						    $firstrule->{targetopts},
+						    $firstrule->{comment} );
 				$progress = 1;
 			    }
 			} elsif ( $firstrule->{target} ) {
@@ -3511,7 +3515,7 @@ sub optimize_level8( $$$ ) {
 		if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		    progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		    $progress = 1;
-		    replace_references $chainref1, $chainref->{name}, undef, 1;
+		    replace_references $chainref1, $chainref->{name}, undef, '', 1;
 
 		    unless ( $chainref->{name} =~ /^~/ || $chainref1->{name} =~ /^%/ ) {
 			#
@@ -7599,7 +7603,9 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @input_interfaces ) {
 			    $chain1ref = $input_chains{$interface};
-			    add_ijump ( $chainref , j => $chain1ref->{name}, @input_interfaces > 1 ? imatch_source_dev( $interface ) : () ) if @{$chain1ref->{rules}};
+			    add_ijump ( $chainref ,
+					j => $chain1ref->{name},
+					@input_interfaces > 1 ? imatch_source_dev( $interface ) : () )->{comment} = interface_origin( $interface ) if @{$chain1ref->{rules}};
 			}
 		    }
 		} else {
@@ -7612,7 +7618,7 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @forward_interfaces ) {
 			    $chain1ref = $forward_chains{$interface};
-			    add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () ) if  @{$chain1ref->{rules}};
+			    add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () )->{comment} = interface_origin( $interface ) if  @{$chain1ref->{rules}};
 			}
 		    }
 		}

@@ -478,7 +478,7 @@
           facility has the drawback that the compiler will attempt to run a
           non-script file just because it has the same name as a chain. To
           disable this facility, set CHAIN_SCRIPTS=No. If not specified or
-          specified as the empty value, CHAIN_SCRIPTS=Yes is assumed. </para>
+          specified as the empty value, CHAIN_SCRIPTS=Yes is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -1927,9 +1927,9 @@ LOG:info:,bar                        net                    fw</programlisting>
 
                   <listitem>
                     <para>Rules with comments &lt;empty&gt;, "FOO" and "BAR"
-                    would result in the combined comment "Others and FOO, BAR".
-                    Note: Optimize level 16 requires "Extended Multi-port
-                    Match" in your iptables and kernel.</para>
+                    would result in the combined comment "Others and FOO,
+                    BAR". Note: Optimize level 16 requires "Extended
+                    Multi-port Match" in your iptables and kernel.</para>
                   </listitem>
                 </varlistentry>
               </variablelist>
@@ -2526,6 +2526,24 @@ LOG:info:,bar                        net                    fw</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">TRACK_RULES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.20. If set to <emphasis
+          role="bold">Yes</emphasis>, causes the compiler to add a comment to
+          iptables rules to indicate the file name and line number of the
+          configuration entry that generated the rule. If set to <emphasis
+          role="bold">No</emphasis> (the default), then no such comments are
+          added.</para>
+
+          <para>Setting this option to <emphasis role="bold">Yes</emphasis>
+          requires the <firstterm>Comments</firstterm> capability in iptables
+          and kernel.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">UNTRACKED_DISPOSITION=[ACCEPT|A_ACCEPT|A_DROP|A_REJECT|DROP|REJECT|CONTINUE]</emphasis></term>
 
@@ -2625,11 +2643,11 @@ LOG:info:,bar                        net                    fw</programlisting>
         <listitem>
           <para>Added in Shorewall 4.4.27. Normally, when Shorewall creates a
           Netfilter chain that relates to an interface, it uses the
-          interface's logical name as the base of the chain name. For
-          example, if the logical name for an interface is OAKLAND, then the
-          input chain for traffic arriving on that interface would be
-          'OAKLAND_in'. If this option is set to Yes, then the physical name
-          of the interface will be used the base of the chain name.</para>
+          interface's logical name as the base of the chain name. For example,
+          if the logical name for an interface is OAKLAND, then the input
+          chain for traffic arriving on that interface would be 'OAKLAND_in'.
+          If this option is set to Yes, then the physical name of the
+          interface will be used the base of the chain name.</para>
         </listitem>
       </varlistentry>
 

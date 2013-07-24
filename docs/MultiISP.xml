@@ -681,7 +681,23 @@
     </section>
 
     <section>
-      <title>/etc/shorewall/masq and Multi-ISP</title>
+      <title>What an entry in the Providers File Does Not Do</title>
+
+      <para>Shorewall itself provides no mechanism for dealing with provider
+      links that are in the up state but not responsive. If you want
+      transparent failover when a link is unresponsive, you must configure all
+      provider interfaces as <emphasis role="bold">optional</emphasis> (<ulink
+      url="manpages/shorewall-interfaces.html">shorewall-interfaces(5)</ulink>)
+      then <link linkend="LinkMonitor">install and configure
+      LSM</link>.</para>
+
+      <para><ulink url="Shorewall-init.html">Shorewall-init</ulink> provides
+      for handling links that go hard down and are later brought back
+      up.</para>
+    </section>
+
+    <section>
+      <title>./etc/shorewall/masq and Multi-ISP</title>
 
       <para>If you masquerade a local network, you will need to add masquerade
       rules for both external interfaces. Referring to the diagram above, if

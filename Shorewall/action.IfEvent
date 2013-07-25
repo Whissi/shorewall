@@ -47,7 +47,7 @@ fatal_error "Invalid event name ($event)"         unless $event =~ /^[a-zA-z][-\
 
 if ( supplied $duration ) {
     fatal_error "Invalid time limit ($duration)"  unless $duration =~ /^\d+$/;
-    $duration = "--second $duration ";
+    $duration = "--seconds $duration ";
 } else {
     $duration = '';
 }

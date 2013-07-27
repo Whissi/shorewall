@@ -624,9 +624,26 @@ loc     eth2            -</programlisting>
                   the INTERFACE column.</para>
                 </note>
 
-                <para>This option can also be enabled globally in the <ulink
+                <para>This option can also be enabled globally via the
+                ROUTE_FILTER option in the <ulink
                 url="shorewall.conf.html">shorewall.conf</ulink>(5)
                 file.</para>
+
+                <important>
+                  <para>If ROUTE_FILTER=Yes in <ulink
+                  url="shorewall.conf.html">shorewall.conf</ulink>(5), or if
+                  your distribution sets net.ipv4.conf.all.rp_filter=1 in
+                  <filename>/etc/sysctl.conf</filename>, then setting
+                  <emphasis role="bold">routefilter</emphasis>=0 in an
+                  <replaceable>interface</replaceable> entry will not disable
+                  route filtering on that
+                  <replaceable>interface</replaceable>! The effective setting
+                  for an <replaceable>interface</replaceable> is the maximum
+                  of the contents of
+                  <filename>/proc/sys/net/ipv4/conf/all/rp_filter</filename>
+                  and the routefilter setting specified in this file
+                  (/proc/sys/net/ipv4/conf/<replaceable>interface</replaceable>/rp_filter).</para>
+                </important>
 
                 <note>
                   <para>There are certain cases where

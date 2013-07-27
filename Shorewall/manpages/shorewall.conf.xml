@@ -2190,6 +2190,15 @@ LOG:info:,bar                        net                    fw</programlisting>
           role="bold">No</emphasis>, then route filtering is disabled on all
           interfaces except those specified in <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
+
+          <important>
+            <para>If you need to disable route filtering on any interface,
+            then you must set ROUTE_FILTER=No then set routefilter=1 or
+            routefilter=2 on those interfaces where you want route filtering.
+            See <ulink
+            url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+            for additional details.</para>
+          </important>
         </listitem>
       </varlistentry>
 

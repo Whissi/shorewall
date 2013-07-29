@@ -2434,7 +2434,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		fatal_error "Rules may not override a NONE policy";
 	    }
 	    #
-	    # Handle Optimization
+	    # Handle Optimization level 1 when specified alone
 	    #
 	    if ( $optimize == 1 && $section == NEW_SECTION ) {
 		my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};

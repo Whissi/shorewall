@@ -123,10 +123,6 @@ our %EXPORT_TAGS = (
 				       ALL_RESTRICT
 				       ALL_COMMANDS
 				       NOT_RESTORE
-				       OPTIMIZE_POLICY_MASK
-				       OPTIMIZE_POLICY_MASK2n4
-				       OPTIMIZE_RULESET_MASK
-				       OPTIMIZE_MASK
 
 				       unreachable_warning
 				       state_match
@@ -452,17 +448,6 @@ our $ipset_rules;
 # Determines the commands for which a particular interface-oriented shell variable needs to be set
 #
 use constant { ALL_COMMANDS => 1, NOT_RESTORE => 2 };
-
-#
-# Optimization masks
-#
-use constant {
-	       OPTIMIZE_POLICY_MASK    => 0x02 , # Call optimize_policy_chains()
-	       OPTIMIZE_POLICY_MASK2n4 => 0x06 ,
-	       OPTIMIZE_RULESET_MASK   => 0x1C , # Call optimize_ruleset()
-	     };
-
-use constant { OPTIMIZE_MASK => OPTIMIZE_POLICY_MASK | OPTIMIZE_RULESET_MASK };
 
 use constant { DONT_OPTIMIZE => 1 , DONT_DELETE => 2, DONT_MOVE => 4, RETURNS => 8, RETURNS_DONT_MOVE => 12 };
 
@@ -1226,8 +1211,7 @@ sub push_rule( $$ ) {
     my $ruleref  = transform_rule( $_[1], $complete );
 
     $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
-
-    $ruleref->{mode}     = CMD_MODE   if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
+    $ruleref->{mode}    = CMD_MODE if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
 
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
@@ -1957,7 +1941,7 @@ sub use_forward_chain($$) {
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
 
-    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
+    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & OPTIMIZE_USE_FIRST );
     #
     # Use it if we already have jumps to it
     #
@@ -2033,7 +2017,7 @@ sub use_input_chain($$) {
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
 
-    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
+    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & OPTIMIZE_USE_FIRST );
     #
     # We must use the interfaces's chain if the interface is associated with multiple Zones
     #
@@ -2113,7 +2097,7 @@ sub use_output_chain($$) {
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
 
-    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & 4096 );
+    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & OPTIMIZE_USE_FIRST );
     #
     # We must use the interfaces's chain if the interface is associated with multiple Zones
     #

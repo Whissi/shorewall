@@ -1516,6 +1516,10 @@ LOG:info:,bar                        net                    fw</programlisting>
           of two. To enable multiple optimization categories, simply add their
           corresponding numbers together.</para>
 
+          <para>Beginning with Shorewall 4.5.20, you may specify OPTIMIZE=All
+          to enable all optimization categories, and you may also specify
+          OPTIMIZE=None to disable optimization.</para>
+
           <itemizedlist>
             <listitem>
               <para>Optimization category 1 - Traditionally, Shorewall has
@@ -1535,6 +1539,12 @@ LOG:info:,bar                        net                    fw</programlisting>
               or DEST column). A wildcard rule is considered to be redundant
               when it has the same ACTION and Log Level as the applicable
               policy.</para>
+
+              <note>
+                <para>Optimization level 1 is ignored when optimization level
+                4 is also selected, since level 4 performs similar
+                optimizations in a more robust way.</para>
+              </note>
             </listitem>
 
             <listitem>

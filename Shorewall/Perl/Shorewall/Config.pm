@@ -199,6 +199,12 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       CONFIG_CONTINUATION
 				       DO_INCLUDE
 				       NORMAL_READ
+
+				       OPTIMIZE_POLICY_MASK
+				       OPTIMIZE_POLICY_MASK2n4
+				       OPTIMIZE_RULESET_MASK
+				       OPTIMIZE_USE_FIRST
+				       OPTIMIZE_ALL
 				     ) , ] ,
 		   protocols => [ qw (
 				       TCP
@@ -410,6 +416,17 @@ use constant {
 	       IPv6_ICMP           => 58,
 	       SCTP                => 132,
 	       UDPLITE             => 136,
+	     };
+#
+# Optimization masks
+#
+use constant {
+	       OPTIMIZE_POLICY_MASK    => 0x02 , # Call optimize_policy_chains()
+	       OPTIMIZE_POLICY_MASK2n4 => 0x06 ,
+	       OPTIMIZE_RULESET_MASK   => 0x1C , # Call optimize_ruleset()
+	       OPTIMIZE_ALL            => 0x1F , # Maximum value for documented categories.
+
+	       OPTIMIZE_USE_FIRST      => 0x1000 # Always use interface 'first' chains -- undocumented
 	     };
 
 our %helpers = ( amanda          => UDP,
@@ -5659,9 +5676,15 @@ sub get_configuration( $$$$ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
 
-    $val = numeric_value $config{OPTIMIZE};
+    if ( ( $val = $config{OPTIMIZE} ) =~ /^all$/i ) {
+	$config{OPTIMIZE} = $val = OPTIMIZE_ALL;
+    } elsif ( $val =~ /^none$/i ) {
+	$config{OPTIMIZE} = $val = 0;
+    } else {
+	$val = numeric_value $config{OPTIMIZE};
 
-    fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless supplied( $val ) && $val >= 0 && ( $val & ( 4096 ^ -1 ) ) <= 31;
+	fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless supplied( $val ) && $val >= 0 && ( $val & ~OPTIMIZE_USE_FIRST ) <= OPTIMIZE_ALL;
+    }
 
     require_capability 'XMULTIPORT', 'OPTIMIZE level 16', 's' if $val & 16;
 

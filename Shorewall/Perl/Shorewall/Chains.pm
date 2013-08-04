@@ -337,8 +337,9 @@ our $VERSION = '4.5_18';
 #      These are present when there is more than one zone associated with the interface. They are jumped to from the INPUT, OUTPUT and
 #      FORWARD chains respectively.
 # - Input Option, Output Option and Forward "Interface Option Chains"
-#      Used when blacklisting is involved for enforcing interface options that require Netfilter rules. When these chains are not used,
-#      any rules that they contained are moved to the corresponding interface chains.
+#      Used when blacklisting is involved for enforcing interface options that require Netfilter rules. This allows blacklisting to
+#      occur prior to interface option filtering. When these chains are not used, any rules that they contained are moved to the
+#      corresponding interface chains.
 #
 ###########################################################################################################################################
 #

@@ -1053,7 +1053,7 @@ sub format_rule( $$;$ ) {
 	}
     }
     #
-    # Emit expensive matches last unless we had '-m nfacct' pr '-m recent' matches in the rule.
+    # Emit expensive matches last unless we had '-m nfacct' or '-m recent' matches in the rule.
     #
     if ( $expensive ) {
 	for ( grep( get_opttype( $_, 0 ) == EXPENSIVE, @{$ruleref->{matches}} ) ) {

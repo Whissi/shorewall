@@ -1982,6 +1982,7 @@ sub supplied( $ ) {
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #    Handles all of the supported forms of column/pair specification
+#    Handles segragating raw iptables input in INLINE rules
 #
 sub split_line1( $$;$$ ) {
     my ( $description, $columnsref, $nopad, $maxcolumns ) = @_;
@@ -1993,7 +1994,7 @@ sub split_line1( $$;$$ ) {
 
     $inline_matches = '';
     #
-    # First see if there is a semicolon on the line; what follows will be column/value paris
+    # First see if there is a semicolon on the line; what follows will be column/value pairs or raw iptables input
     #
     my ( $columns, $pairs, $rest ) = split( ';', $currentline );
 

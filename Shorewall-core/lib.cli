@@ -3414,29 +3414,29 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
-    echo "   show [ -f ] capabilities"
-    echo "   show arptables"
-    echo "   show classifiers"
-    echo "   show config"
-    echo "   show connections"
-    echo "   show event [ <event> ...]"
-    echo "   show events"
-    echo "   show filters"
-    echo "   show ip"
+    echo "   [ show | list | ls ] [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   [ show | list | ls ] [ -f ] capabilities"
+    echo "   [ show | list | ls ] arptables"
+    echo "   [ show | list | ls ] classifiers"
+    echo "   [ show | list | ls ] config"
+    echo "   [ show | list | ls ] connections"
+    echo "   [ show | list | ls ] event [ <event> ...]"
+    echo "   [ show | list | ls ] events"
+    echo "   [ show | list | ls ] filters"
+    echo "   [ show | list | ls ] ip"
 
     if [ $g_family -eq 4 ]; then
-	echo "   show ipa"
+	echo "   [ show | list | ls ] ipa"
     fi
 
-    echo "   show [ -m ] log [<regex>]"
-    echo "   show [ -x ] mangle|nat|raw|rawpost"
-    echo "   show nfacct"
-    echo "   show policies"
-    echo "   show routing"
-    echo "   show tc [ device ]"
-    echo "   show vardir"
-    echo "   show zones"
+    echo "   [ show | list | ls ] [ -m ] log [<regex>]"
+    echo "   [ show | list | ls ] [ -x ] mangle|nat|raw|rawpost"
+    echo "   [ show | list | ls ] nfacct"
+    echo "   [ show | list | ls ] policies"
+    echo "   [ show | list | ls ] routing"
+    echo "   [ show | list | ls ] tc [ device ]"
+    echo "   [ show | list | ls ] vardir"
+    echo "   [ show | list | ls ] zones"
     echo "   start [ -f ] [ -p ] [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -3681,7 +3681,7 @@ shorewall_cli() {
 		fatal_error "$g_product is not running"
 	    fi
 	    ;;
-	show|list)
+	show|list|ls)
 	    get_config Yes No Yes
     	    shift
     	    show_command $@

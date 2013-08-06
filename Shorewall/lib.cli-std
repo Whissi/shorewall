@@ -1578,9 +1578,9 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ <directory> ]"
+    echo "   [ check | ck ] [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ <directory> ]"
     echo "   clear"
-    echo "   compile [ -e ] [ -p ] [ -t ] [ -c ] [ -d ] [ -T ] [ <directory name> ] [ <path name> ]"
+    echo "   [ compile | co ] [ -e ] [ -p ] [ -t ] [ -c ] [ -d ] [ -T ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   disable <interface>"
     echo "   drop <address> ..."
@@ -1623,31 +1623,31 @@ usage() # $1 = exit status
     echo "   safe-restart [ -t <timeout> ] [ <directory> ]"
     echo "   safe-start [ -t <timeout> ] [ <directory> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -t {filter|mangle|nat|raw|rawpost} ] [ {chain [<chain> [ <chain> ... ]"
-    echo "   show actions"
-    echo "   show [ -f ] capabilities"
-    echo "   show classifiers"
-    echo "   show config"
-    echo "   show connections"
-    echo "   show dynamic <zone>"
-    echo "   show filters"
-    echo "   show ip"
+    echo "   [ show | list | ls ] [ -x ] [ -t {filter|mangle|nat|raw|rawpost} ] [ {chain [<chain> [ <chain> ... ]"
+    echo "   [ show | list | ls ] actions"
+    echo "   [ show | list | ls ] [ -f ] capabilities"
+    echo "   [ show | list | ls ] classifiers"
+    echo "   [ show | list | ls ] config"
+    echo "   [ show | list | ls ] connections"
+    echo "   [ show | list | ls ] dynamic <zone>"
+    echo "   [ show | list | ls ] filters"
+    echo "   [ show | list | ls ] ip"
 
     if [ $g_family -eq 4 ]; then
-	echo "   show ipa"
+	echo "   [ show | list | ls ] ipa"
     fi
 
-    echo "   show [ -m ] log [<regex>]"
-    echo "   show macro <macro>"
-    echo "   show macros"
-    echo "   show marks"
-    echo "   show [ -x ] mangle|nat|raw|rawpost|routing"
-    echo "   show nfacct"
-    echo "   show policies"
-    echo "   show routing"
-    echo "   show tc [ device ]"
-    echo "   show vardir"
-    echo "   show zones"
+    echo "   [ show | list | ls ] [ -m ] log [<regex>]"
+    echo "   [ show | list | ls ] macro <macro>"
+    echo "   [ show | list | ls ] macros"
+    echo "   [ show | list | ls ] marks"
+    echo "   [ show | list | ls ] [ -x ] mangle|nat|raw|rawpost|routing"
+    echo "   [ show | list | ls ] nfacct"
+    echo "   [ show | list | ls ] policies"
+    echo "   [ show | list | ls ] routing"
+    echo "   [ show | list | ls ] tc [ device ]"
+    echo "   [ show | list | ls ] vardir"
+    echo "   [ show | list | ls ] zones"
     echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ -T ] [ <directory> ]"
     echo "   status"
     echo "   stop"
@@ -1661,7 +1661,7 @@ usage() # $1 = exit status
 compiler_command() {
 
     case $COMMAND in
-	compile)
+	compile|co)
 	    shift
 	    compile_command $@
 	    ;;
@@ -1670,7 +1670,7 @@ compiler_command() {
 	    shift
 	    refresh_command $@
 	    ;;
-	check)
+	check|ck)
 	    shift
 	    check_command $@
 	    ;;

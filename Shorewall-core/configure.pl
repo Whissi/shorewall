@@ -57,7 +57,7 @@ my $rcfile;
 my $rcfilename;
 
 unless ( defined $vendor ) {
-    if ( -f /etc/os-release) {
+    if ( -f '/etc/os-release' ) {
 	my $id = `cat /etc/os-release | grep ^ID`;
 
 	chomp $id;

@@ -112,19 +112,19 @@ if [ -z "$vendor" ]; then
 		;;
 	esac
 
-	$params[HOST]="$vendor"
+	params[HOST]="$vendor"
     fi
 fi
 
 if [ -z "vendor" ]; then
     case `uname` in
 	Darwin)
-	    $params[HOST]=apple
+	    params[HOST]=apple
 	    rcfile=shorewallrc.apple
 	    ;;
 
 	cygwin*)
-	    $params[HOST]=cygwin
+	    params[HOST]=cygwin
 	    rcfile=shorewallrc.cygwin
 	    ;;
 	*)

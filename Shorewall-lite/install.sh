@@ -200,7 +200,24 @@ if [ -z "$BUILD" ]; then
 	    BUILD=apple
 	    ;;
 	*)
-	    if [ -f ${CONFDIR}/debian_version ]; then
+	    if [ -f /etc/os-release ]; then
+		eval $(cat /etc/os-release | grep ^ID)
+
+		case $ID in
+		    fedora)
+			BUILD=redhat
+			;;
+		    debian)
+			BUILD=debian
+			;;
+		    opensuse)
+			BUILD=suse
+			;;
+		    *)
+			BUILD="$ID"
+			;;
+		esac
+	    elif [ -f ${CONFDIR}/debian_version ]; then
 		BUILD=debian
 	    elif [ -f ${CONFDIR}/redhat-release ]; then
 		BUILD=redhat

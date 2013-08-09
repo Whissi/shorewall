@@ -56,6 +56,26 @@ my $vendor = $params{HOST};
 my $rcfile;
 my $rcfilename;
 
+unless ( defined $vendor ) {
+    if ( -f /etc/os-release) {
+	my $id = `cat /etc/os-release | grep ^ID`;
+
+	chomp $id;
+
+	$id =~ s/ID=//;
+	
+	if ( $id eq 'fedora' ) {
+	    $vendor = 'redhat';
+	} elsif ( $id eq 'opensuse' ) {
+	    $vendor = 'suse';
+	} else {
+	    $vendor = $id;
+	}
+    }
+
+    $params{HOST} = $vendor;
+}
+
 if ( defined $vendor ) {
     $rcfilename = $vendor eq 'linux' ? 'shorewallrc.default' : 'shorewallrc.' . $vendor;
     die qq("ERROR: $vendor" is not a recognized host type) unless -f $rcfilename;

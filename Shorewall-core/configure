@@ -94,6 +94,29 @@ done
 vendor=${params[HOST]}
 
 if [ -z "$vendor" ]; then
+    if [ -f /etc/os-release ]; then
+	eval $(cat /etc/os-release | grep ^ID)
+
+	case $ID in
+	    fedora)
+		vendor=redhat
+		;;
+	    debian)
+		vendor=debian
+		;;
+	    opensuse)
+		vendor=suse
+		;;
+	    *)
+		vendor="$ID"
+		;;
+	esac
+
+	$params[HOST]="
+    fi
+fi
+
+if [ -z "vendor" ]; then
     case `uname` in
 	Darwin)
 	    $params[HOST]=apple

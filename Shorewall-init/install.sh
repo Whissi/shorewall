@@ -182,7 +182,24 @@ if [ -z "$BUILD" ]; then
 	    BUILD=apple
 	    ;;
 	*)
-	    if [ -f /etc/debian_version ]; then
+	    if [ -f /etc/os-release ]; then
+		eval $(cat /etc/os-release | grep ^ID)
+
+		case $ID in
+		    fedora)
+			BUILD=redhat
+			;;
+		    debian)
+			BUILD=debian
+			;;
+		    opensuse)
+			BUILD=suse
+			;;
+		    *)
+			BUILD="$ID"
+			;;
+		esac
+	    elif [ -f /etc/debian_version ]; then
 		BUILD=debian
 	    elif [ -f /etc/redhat-release ]; then
 		BUILD=redhat
@@ -222,7 +239,7 @@ case "$HOST" in
     debian)
 	echo "Installing Debian-specific configuration..."
 	;;
-    redhat|redhat)
+    redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
 	;;
     slackware)
@@ -233,7 +250,7 @@ case "$HOST" in
 	echo "Shorewall-init is currently not supported on Arch Linux" >&2
 	exit 1
 	;;
-    suse|suse)
+    suse)
 	echo "Installing SuSE-specific configuration..."
 	;;
     linux)

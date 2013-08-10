@@ -154,7 +154,6 @@ if [ -z "$vendor" ]; then
 elif [ $vendor = linux ]; then
     rcfile=shorewallrc.default;
 else
-    echo "Vendor is '$vendor'"
     rcfile=shorewallrc.$vendor
     if [ ! -f $rcfile ]; then
 	echo "ERROR: $vendor is not a recognized host type" >&2

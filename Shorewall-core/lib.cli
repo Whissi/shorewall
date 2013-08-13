@@ -2881,10 +2881,10 @@ report_capabilities1() {
 
 show_status() {
     if product_is_started ; then
-	echo "$g_product is running"
+	[ $VERBOSITY -ge 1 ] && echo "$g_product is running"
 	status=0
     else
-	echo "$g_product is stopped"
+	[ $VERBOSITY -ge 1 ] && echo "$g_product is stopped"
 	status=4
     fi
 
@@ -2898,14 +2898,13 @@ show_status() {
     else
 	state=Unknown
     fi
-    echo "State:$state"
+    [ $VERBOSITY -ge 1 ] && echo "State:$state"
 }
 
 status_command() {
-    echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)"
-    echo
+    [ $VERBOSITY -ge 1 ] && echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)" && echo
     show_status
-    echo
+    [ $VERBOSITY -ge 1 ] && echo
     exit $status
 }
 

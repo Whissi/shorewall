@@ -321,13 +321,12 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -ne 1 ] && usage 2
-	echo "$g_product-$SHOREWALL_VERSION Status at $(hostname) - $(date)"
-	echo
+	[ $VERBOSITY -ge 1 ] && echo "$g_product-$SHOREWALL_VERSION Status at $(hostname) - $(date)" &&	echo
 	if product_is_started; then
-	    echo "$g_product is running"
+	    [ $VERBOSITY -ge 1 ] && echo "$g_product is running"
 	    status=0
 	else
-	    echo "$g_product is stopped"
+	    [ $VERBOSITY -ge 1 ] && echo "$g_product is stopped"
 	    status=4
 	fi
 
@@ -341,8 +340,7 @@ case "$COMMAND" in
 	else
 	    state=Unknown
 	fi
-	echo "State:$state"
-	echo
+	[ $VERBOSITY -ge 1 ] && echo "State:$state" && echo
 	;;
     up|down)
 	[ $# -eq 1 ] && exit 0

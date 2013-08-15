@@ -182,6 +182,8 @@ for var in SHAREDIR LIBEXECDIRDIRDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 
+[ -n "${INITFILE}" ] && require INITSOURCE && require INITDIR
+
 PATH=${SBINDIR}:/bin:/usr${SBINDIR}:/usr/bin:/usr/local/bin:/usr/local${SBINDIR}
 
 #
@@ -358,13 +360,14 @@ if [ -n "$DESTDIR" ]; then
 fi
 
 if [ -n "$INITFILE" ]; then
+    if [ -f "${INITSOURCE}" ]; then
+	initfile="${DESTDIR}/${INITDIR}/${INITFILE}"
+	install_file ${INITSOURCE} "$initfile" 0544
 
-    initfile="${DESTDIR}/${INITDIR}/${INITFILE}"
-    install_file ${INITSOURCE} "$initfile" 0544
+	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' "$initfile"
 
-    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' "$initfile"
-
-    echo  "$Product init script installed in $initfile"
+	echo  "$Product init script installed in $initfile"
+    fi
 fi
 #
 # Install the .service file

@@ -379,9 +379,12 @@ echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 #
 if [ -n "$INITFILE" ]; then
     if [ -f "${INITSOURCE}" ]; then
-	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
-	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
-	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$INITFILE"
+	initfile="${DESTDIR}/${INITDIR}/${INITFILE}"
+	install_file $INITSOURCE "$initfile" 0544
+
+	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' "$initfile"
+
+	echo  "$Product script installed in $initfile"
     fi
 fi
 

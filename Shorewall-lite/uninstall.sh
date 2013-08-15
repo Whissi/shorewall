@@ -118,14 +118,14 @@ fi
 
 if [ -L ${SHAREDIR}/shorewall-lite/init ]; then
     FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall-lite/init)
-elIF [ -n "$INITFILE" ]; then
+elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
 fi
 
 if [ -f "$FIREWALL" ]; then
     if mywhich updaterc.d ; then
 	updaterc.d shorewall-lite remove
-    elif if mywhich insserv ; then
+    elif mywhich insserv ; then
         insserv -r $FIREWALL
     elif [ mywhich chkconfig ; then
 	chkconfig --del $(basename $FIREWALL)

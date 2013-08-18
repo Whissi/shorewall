@@ -308,9 +308,10 @@ fi
 #
 if [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}${SYSTEMD}
-    run_install $OWNERSHIP -m 600 shorewall-init.service ${DESTDIR}${SYSTEMD}/shorewall-init.service
-    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/shorewall-init.service
-    echo "Service file installed as ${DESTDIR}${SYSTEMD}/shorewall-init.service"
+    [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
+    run_install $OWNERSHIP -m 600 $SERVICEFILE ${DESTDIR}${SYSTEMD}/$PRODUCT.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/$PRODUCT.service
+    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMD}/$PRODUCT.service"
     if [ -n "$DESTDIR" ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}
         chmod 755 ${DESTDIR}${SBINDIR}

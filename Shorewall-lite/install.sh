@@ -374,11 +374,11 @@ fi
 #
 if [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}${SYSTEMD}
-    run_install $OWNERSHIP -m 600 $PRODUCT.service ${DESTDIR}/${SYSTEMD}/$PRODUCT.service
+    [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
+    run_install $OWNERSHIP -m 600 $SERVICEFILE ${DESTDIR}${SYSTEMD}/$PRODUCT.service
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/$PRODUCT.service
-    echo "Service file installed as ${DESTDIR}/lib/systemd/system/$PRODUCT.service"
+    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMD}/$PRODUCT.service"
 fi
-
 #
 # Install the config file
 #

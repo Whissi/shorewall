@@ -503,7 +503,7 @@ if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
 	chmod 755 ${DESTDIR}${SYSCONFDIR}
     fi
 
-    run_install $OWNERSHIP -m 0644 default.debian ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
+    run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
     echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 

@@ -58,6 +58,8 @@ fi
 #
 . /usr/share/shorewall/shorewallrc
 
+vardir=$VARDIR
+
 # Locate the current PRODUCT's statedir
 setstatedir() {
     local statedir
@@ -85,7 +87,7 @@ shorewall_start () {
 
       if [ -x ${STATEDIR}/firewall ]; then
 	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
-	      ${STATEDIR}/firewall stop || echo_notdone
+	      ${STATEDIR}/firewall stop || exit 1
 	  fi
       fi
   done

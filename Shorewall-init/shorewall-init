@@ -23,10 +23,26 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #########################################################################################
+# set the STATEDIR variable
+setstatedir() {
+    local statedir
+    if [ -f ${CONFDIR}/${PRODUCT}/vardir ]; then
+	statedir=$( . /${CONFDIR}/${PRODUCT}/vardir && echo $VARDIR )
+    fi
+
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
+
+    if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
+	${SBINDIR}/$PRODUCT compile -c || exit 1
+    fi
+}
+
 #
 # This is modified by the installer when ${SHAREDIR} <> /usr/share
 #
 . /usr/share/shorewall/shorewallrc
+
+vardir=$VARDIR
 
 # check if shorewall-init is configured or not
 if [ -f "$SYSCONFDIR/shorewall-init" ]; then
@@ -43,14 +59,25 @@ fi
 # Initialize the firewall
 shorewall_start () {
   local PRODUCT
-  local VARDIR
+  local STATEDIR
 
   echo -n "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      if [ -x ${VARDIR}/firewall ]; then
-	  if ! /sbin/$PRODUCT status > /dev/null 2>&1; then
-	      ${VARDIR}/firewall stop || exit 1
-	  fi
+      setstatedir
+
+      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
+          #
+	  # Run in a sub-shell to avoid name collisions
+	  #
+	  (
+	      if ! ${STATEDIR}/$PRODUCT/firewall status > /dev/null 2>&1; then
+		  ${STATEDIR}/$PRODUCT/firewall stop || exit 1
+	      else
+		  exit 1
+	      fi
+	  )
+      else
+	  exit 1
       fi
   done
 
@@ -64,14 +91,13 @@ shorewall_start () {
 # Clear the firewall
 shorewall_stop () {
   local PRODUCT
-  local VARDIR
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      VARDIR=/var/lib/$PRODUCT
-      [ -f /etc/$PRODUCT/vardir ] && . /etc/$PRODUCT/vardir 
-      if [ -x ${VARDIR}/firewall ]; then
-	  ${VARDIR}/firewall clear || exit 1
+      setstatedir
+
+      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
+	  ${STATEDIR}/$PRODUCT/firewall clear || exit 1
       fi
   done
 

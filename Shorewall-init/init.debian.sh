@@ -81,8 +81,6 @@ setstatedir() {
 #
 . /usr/share/shorewall/shorewallrc
 
-vardir=$VARDIR
-
 # check if shorewall-init is configured or not
 if [ -f "$SYSCONFDIR/shorewall-init" ]
 then
@@ -129,7 +127,7 @@ shorewall_start () {
 # Clear the firewall
 shorewall_stop () {
   local PRODUCT
-  local VARDIR
+  local STATEDIR
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do

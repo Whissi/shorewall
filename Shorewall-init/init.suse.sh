@@ -70,8 +70,6 @@ fi
 #
 . /usr/share/shorewall/shorewallrc
 
-vardir=$VARDIR
-
 # set the STATEDIR variable
 setstatedir() {
     local statedir

@@ -24,8 +24,6 @@ lockfile="/var/lock/subsys/shorewall-init"
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-vardir=$VARDIR
-
 # Get startup options (override default)
 OPTIONS=
 
@@ -56,7 +54,7 @@ setstatedir() {
 # Initialize the firewall
 start () {
     local PRODUCT
-    local vardir
+    local STATEDIR
 
     if [ -z "$PRODUCTS" ]; then
 	echo "No firewalls configured for shorewall-init"
@@ -97,7 +95,7 @@ start () {
 # Clear the firewall
 stop () {
     local PRODUCT
-    local vardir
+    local STATEDIR
 
     echo -n "Clearing \"Shorewall-based firewalls\": "
 

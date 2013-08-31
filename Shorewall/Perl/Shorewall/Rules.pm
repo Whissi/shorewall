@@ -1717,7 +1717,6 @@ sub process_actions() {
 	    }
 	}
     }
-
 }
 
 sub process_rule ( $$$$$$$$$$$$$$$$$$$ );

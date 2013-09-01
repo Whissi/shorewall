@@ -54,6 +54,7 @@ our @EXPORT = qw(
 		  perl_action_helper
 		  perl_action_tcp_helper
 		  check_state
+                  process_reject_action
 	       );
 
 our @EXPORT_OK = qw( initialize process_rule );
@@ -1635,90 +1636,6 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'Limit'          => \&Limit,
 		 );
 
-#
-# This function is called prior to processing of the policy file. It:
-#
-# - Adds the builtin actions to the target table
-# - Reads actions.std and actions (in that order) and for each entry:
-#   o Adds the action to the target table
-#   o Verifies that the corresponding action file exists
-#
-
-sub process_actions() {
-
-    progress_message2 "Locating Action Files...";
-    #
-    # Add built-in actions to the target table and create those actions
-    #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
-
-    for my $file ( qw/actions.std actions/ ) {
-	open_file( $file, 2 );
-
-	while ( read_a_line( NORMAL_READ ) ) {
-	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
-
-	    my $type     = ACTION;
-	    my $noinline = 0;
-	    my $nolog    = 0;
-	    my $builtin  = 0;
-
-	    if ( $action =~ /:/ ) {
-		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
-		$action =~ s/:.*$//;
-	    }
-
-	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*$/;
-
-	    if ( $options ne '-' ) {
-		for ( split_list( $options, 'option' ) ) {
-		    if ( $_ eq 'inline' ) {
-			$type = INLINE;
-		    } elsif ( $_ eq 'noinline' ) {
-			$noinline = 1;
-		    } elsif ( $_ eq 'nolog' ) {
-			$nolog = 1;
-		    } elsif ( $_ eq 'builtin' ) {
-			$builtin = 1;
-		    } else {
-			fatal_error "Invalid option ($_)";
-		    }
-		}
-	    }
-
-	    fatal_error "Conflicting OPTIONS ($options)" if $noinline && $type == INLINE; 
-
-	    if ( my $actiontype = $targets{$action} ) {
-		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
-		    if ( $actions{$action}->{noinline} ) {
-			warning_message "'inline' option ignored on action $action -- that action may not be in-lined";
-			next;
-		    }
-		    
-		    delete $actions{$action};
-		    delete $targets{$action};
-		} else {
-		    warning_message "Duplicate Action Name ($action) Ignored" unless $actiontype & ( ACTION | INLINE );
-		    next;
-		}
-	    }
-
-	    if ( $builtin ) {
-		$targets{$action}         = USERBUILTIN + OPTIONS;
-		$builtin_target{$action}  = 1;
-	    } else {
-		new_action $action, $type, $noinline, $nolog;
-
-		my $actionfile = find_file( "action.$action" );
-
-		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
-
-		$inlines{$action} = { file => $actionfile, nolog => $nolog } if $type == INLINE;
-	    }
-	}
-    }
-}
-
 sub process_rule ( $$$$$$$$$$$$$$$$$$$ );
 
 #
@@ -1810,6 +1727,96 @@ sub process_action($$) {
 }
 
 #
+# This function is called prior to processing of the policy file. It:
+#
+# - Adds the builtin actions to the target table
+# - Reads actions.std and actions (in that order) and for each entry:
+#   o Adds the action to the target table
+#   o Verifies that the corresponding action file exists
+#
+
+sub process_actions() {
+
+    progress_message2 "Locating Action Files...";
+    #
+    # Add built-in actions to the target table and create those actions
+    #
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
+
+    for my $file ( qw/actions.std actions/ ) {
+	open_file( $file, 2 );
+
+	while ( read_a_line( NORMAL_READ ) ) {
+	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
+
+	    my $type     = ACTION;
+	    my $noinline = 0;
+	    my $nolog    = ( $action eq $config{REJECT_ACTION} ) || 0;
+	    my $builtin  = 0;
+
+	    if ( $action =~ /:/ ) {
+		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
+		$action =~ s/:.*$//;
+	    }
+
+	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*$/;
+
+	    if ( $options ne '-' ) {
+		for ( split_list( $options, 'option' ) ) {
+		    if ( $_ eq 'inline' ) {
+			$type = INLINE;
+		    } elsif ( $_ eq 'noinline' ) {
+			$noinline = 1;
+		    } elsif ( $_ eq 'nolog' ) {
+			$nolog = 1;
+		    } elsif ( $_ eq 'builtin' ) {
+			$builtin = 1;
+		    } else {
+			fatal_error "Invalid option ($_)";
+		    }
+		}
+	    }
+
+	    fatal_error "Conflicting OPTIONS ($options)" if $noinline && $type == INLINE;
+
+	    if ( my $actiontype = $targets{$action} ) {
+		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
+		    if ( $actions{$action}->{noinline} ) {
+			warning_message "'inline' option ignored on action $action -- that action may not be in-lined";
+			next;
+		    }
+		    
+		    delete $actions{$action};
+		    delete $targets{$action};
+		} else {
+		    warning_message "Duplicate Action Name ($action) Ignored" unless $actiontype & ( ACTION | INLINE );
+		    next;
+		}
+	    }
+
+	    if ( $builtin ) {
+		$targets{$action}         = USERBUILTIN + OPTIONS;
+		$builtin_target{$action}  = 1;
+	    } else {
+		new_action $action, $type, $noinline, $nolog;
+
+		my $actionfile = find_file( "action.$action" );
+
+		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
+
+		$inlines{$action} = { file => $actionfile, nolog => $nolog } if $type == INLINE;
+	    }
+	}
+    }
+
+    if ( my $action = $config{REJECT_ACTION} ) {
+	my $type = $targets{$action};
+	fatal_error "REJECT_ACTION ($action) was not defined"  unless $type;
+	fatal_error "REJECT_ACTION ($action) is not an action" unless $type & (ACTION | INLINE);
+    }
+}
+
+#
 # Create a policy action if it doesn't already exist
 #
 sub use_policy_action( $$ ) {
@@ -1821,6 +1828,41 @@ sub use_policy_action( $$ ) {
     }
 
     $ref;
+}
+
+#
+# Process the REJECT_ACTION
+#
+sub process_reject_action() {
+    my $rejectref = $filter_table->{reject};
+    my $action    = $config{REJECT_ACTION};
+
+    if ( ( $targets{$action} || 0 ) == ACTION ) {
+	add_ijump $rejectref, j => use_policy_action( $action, $rejectref->{name} );
+    } else {
+	process_inline( $action,      #Inline
+			$rejectref,   #Chain
+			'',           #Matches
+			'',           #Log Level and Tag
+			$action,      #Target
+		        '',           #Param
+			'-',          #Source
+			'-',          #Dest
+			'-',          #Proto
+			'-',          #Ports
+			'-',          #Sports
+			'-',          #Original Dest
+			'-',          #Rate
+			'-',          #User
+			'-',          #Mark
+			'-',          #ConnLimit
+			'-',          #Time
+			'-',          #Headers
+			'-',          #Condition
+			'-',          #Helper
+			0,            #Wildcard
+	    );
+    }
 }
 
 ################################################################################
@@ -2007,7 +2049,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 
 	my $actiontype = $targets{$action} || find_macro( $action );
 
-	fatal_error( "Invalid Action ($mtarget) in inline action" ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN + INLINE );
+	fatal_error( "Invalid Action ($mtarget) in inline action" ) unless $actiontype & ( ACTION + STANDARD + NATRULE + MACRO + CHAIN + INLINE + INLINERULE );
 
 	if ( $msource ) {
 	    if ( $msource eq '-' ) {

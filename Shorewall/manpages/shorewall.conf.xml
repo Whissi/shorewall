@@ -2000,7 +2000,7 @@ LOG:info:,bar                        net                    fw</programlisting>
 
       <varlistentry>
         <term><emphasis
-        role="bold">PROVIDER_OFFSET</emphasis>=[<replaceable>number</replaceable>]</term>
+        role="bold">PROVIDER_OFFSET</emphasis>=[<replaceable>number</replaceable>]If</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.26. The offset from the right
@@ -2092,6 +2092,49 @@ LOG:info:,bar                        net                    fw</programlisting>
           url="shorewall-rules.html">shorewall-rules</ulink> (5) are logged at
           this level. The default value is empty which means no logging is
           performed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">REJECT_ACTION=</emphasis><emphasis>action</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.21. When a REJECT target is specified,
+          Shorewall normally handles the response as follows:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>If the destination address of the packet is a broadcast or
+              multicast address, the packet is dropped.</para>
+            </listitem>
+
+            <listitem>
+              <para>if the protocol is ICMP (2) then the packet is
+              dropped.</para>
+            </listitem>
+
+            <listitem>
+              <para>if the protocol is TCP (6) then the packet is rejected
+              with an RST.</para>
+            </listitem>
+
+            <listitem>
+              <para>if the protocol is ICMP (1) then the packet is rejected
+              with a 'host-unreachable' ICMP.</para>
+            </listitem>
+
+            <listitem>
+              <para>otherwise, the packet is rejected with a 'host-prohibited'
+              ICMP.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>You can modify this behavior by implementing your own
+          <replaceable>action</replaceable> that handles REJECT and specifying
+          it's name in this option. The <emphasis role="bold">nolog</emphasis>
+          option will automatically be assumed for the specified
+          <replaceable>action</replaceable>.</para>
         </listitem>
       </varlistentry>
 

@@ -819,6 +819,7 @@ sub initialize( $;$$) {
 	  USE_RT_NAMES => undef,
 	  CHAIN_SCRIPTS => undef,
 	  TRACK_RULES => undef,
+	  REJECT_ACTION => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -5391,6 +5392,12 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
     default_yes_no 'TRACK_RULES'                , '';
+
+    if ( $val = $config{REJECT_ACTION} ) {
+	fatal_error "Invalid Reject Action Name ($val)" unless $val =~ /^[a-zA-Z][\w-]*$/;
+    } else {
+	$config{REJECT_ACTION} = '';
+    }
 
     require_capability 'COMMENTS', 'TRACK_RULES=Yes', 's' if $config{TRACK_RULES};
 

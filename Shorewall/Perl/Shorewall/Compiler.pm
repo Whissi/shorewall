@@ -850,6 +850,10 @@ sub compiler {
     #
     apply_policy_rules;
     #
+    # Reject Action
+    #
+    process_reject_action if $config{REJECT_ACTION};
+    #
     # Accounting.
     #
     setup_accounting if $config{ACCOUNTING};

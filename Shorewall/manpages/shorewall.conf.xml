@@ -2135,6 +2135,26 @@ LOG:info:,bar                        net                    fw</programlisting>
           it's name in this option. The <emphasis role="bold">nolog</emphasis>
           option will automatically be assumed for the specified
           <replaceable>action</replaceable>.</para>
+
+          <para>The following action implements the standard behavior:</para>
+
+          <programlisting>?format 2
+#TARGET         SOURCE  DEST    PROTO
+Broadcast(DROP) -       -       -
+DROP            -       -       2
+INLINE          -       -       6       ; -j REJECT --reject-with tcp-reset
+?if __ENHANCED_REJECT
+INLINE          -       -       17      ; -j REJECT
+?if __IPV4
+INLINE          -       -       1       ; -j REJECT --reject-with icmp-host-unreachable
+INLINE          -       -       -       ; -j REJECT --reject-with icmp-host-prohibited
+?else
+INLINE          -       -       58      ; -j REJECT --reject-with icmp6-addr-unreachable
+INLINE          -       -       -       ; -j REJECT --reject-with icmp6-adm-prohibited
+?endif
+?else
+INLINE          -       -       -       ; -j REJECT
+?endif</programlisting>
         </listitem>
       </varlistentry>
 

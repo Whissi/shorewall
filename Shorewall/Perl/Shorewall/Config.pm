@@ -560,6 +560,7 @@ our $Product;                # $product with initial cap.
 our $sillyname;              # Name of temporary filter chains for testing capabilities
 our $sillyname1;
 our $iptables;               # Path to iptables/ip6tables
+our $iptablesw;              # True of iptables supports the -w option
 our $tc;                     # Path to tc
 our $ip;                     # Path to ip
 
@@ -1212,24 +1213,24 @@ sub qt1( $ ) {
 # Delete the test chains
 #
 sub cleanup_iptables() {
-    qt1( "$iptables -F $sillyname" );
-    qt1( "$iptables -X $sillyname" );
-    qt1( "$iptables -F $sillyname1" );
-    qt1( "$iptables -X $sillyname1" );
+    qt1( "$iptables $iptablesw -F $sillyname" );
+    qt1( "$iptables $iptablesw -X $sillyname" );
+    qt1( "$iptables $iptablesw -F $sillyname1" );
+    qt1( "$iptables $iptablesw -X $sillyname1" );
 
     if ( $capabilities{MANGLE_ENABLED} ) {
-	qt1( "$iptables -t mangle -F $sillyname" );
-	qt1( "$iptables -t mangle -X $sillyname" );
+	qt1( "$iptables $iptablesw -t mangle -F $sillyname" );
+	qt1( "$iptables $iptablesw -t mangle -X $sillyname" );
     }
 
     if ( $capabilities{NAT_ENABLED} ) {
-	qt1( "$iptables -t nat -F $sillyname" );
-	qt1( "$iptables -t nat -X $sillyname" );
+	qt1( "$iptables $iptablesw -t nat -F $sillyname" );
+	qt1( "$iptables $iptablesw -t nat -X $sillyname" );
     }
 
     if ( $capabilities{RAW_TABLE} ) {
-	qt1( "$iptables -t raw -F $sillyname" );
-	qt1( "$iptables -t raw -X $sillyname" );
+	qt1( "$iptables $iptablesw -t raw -F $sillyname" );
+	qt1( "$iptables $iptablesw -t raw -X $sillyname" );
     }
 
     $sillyname = $sillyname1 = undef;
@@ -3668,7 +3669,7 @@ sub determine_kernelversion() {
 # Capability Reporting and detection.
 #
 sub Nat_Enabled() {
-    qt1( "$iptables -t nat -L -n" );
+    qt1( "$iptables $iptablesw -t nat -L -n" );
 }
 
 sub Persistent_Snat() {
@@ -3677,10 +3678,10 @@ sub Persistent_Snat() {
     my $result = '';
     my $address = $family == F_IPV4 ? '1.2.3.4' : '2001::1';
 
-    if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	$result = qt1( "$iptables -t nat -A $sillyname -j SNAT --to-source $address --persistent" );
-	qt1( "$iptables -t nat -F $sillyname" );
-	qt1( "$iptables -t nat -X $sillyname" );
+    if ( qt1( "$iptables $iptablesw -t nat -N $sillyname" ) ) {
+	$result = qt1( "$iptables $iptablesw -t nat -A $sillyname -j SNAT --to-source $address --persistent" );
+	qt1( "$iptables $iptablesw -t nat -F $sillyname" );
+	qt1( "$iptables $iptablesw -t nat -X $sillyname" );
 
     }
 
@@ -3693,10 +3694,10 @@ sub Masquerade_Tgt() {
     my $result = '';
     my $address = $family == F_IPV4 ? '1.2.3.4' : '2001::1';
 
-    if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	$result = qt1( "$iptables -t nat -A $sillyname -j MASQUERADE" );
-	qt1( "$iptables -t nat -F $sillyname" );
-	qt1( "$iptables -t nat -X $sillyname" );
+    if ( qt1( "$iptables $iptablesw -t nat -N $sillyname" ) ) {
+	$result = qt1( "$iptables $iptablesw -t nat -A $sillyname -j MASQUERADE" );
+	qt1( "$iptables $iptablesw -t nat -F $sillyname" );
+	qt1( "$iptables $iptablesw -t nat -X $sillyname" );
 
     }
 
@@ -3709,10 +3710,10 @@ sub Udpliteredirect() {
     my $result = '';
     my $address = $family == F_IPV4 ? '1.2.3.4' : '2001::1';
 
-    if ( qt1( "$iptables -t nat -N $sillyname" ) ) {
-	$result = qt1( "$iptables -t nat -A $sillyname -p udplite -m multiport --dports 33 -j REDIRECT --to-port 22" );
-	qt1( "$iptables -t nat -F $sillyname" );
-	qt1( "$iptables -t nat -X $sillyname" );
+    if ( qt1( "$iptables $iptablesw -t nat -N $sillyname" ) ) {
+	$result = qt1( "$iptables $iptablesw -t nat -A $sillyname -p udplite -m multiport --dports 33 -j REDIRECT --to-port 22" );
+	qt1( "$iptables $iptablesw -t nat -F $sillyname" );
+	qt1( "$iptables $iptablesw -t nat -X $sillyname" );
 
     }
 
@@ -3720,44 +3721,44 @@ sub Udpliteredirect() {
 }
 
 sub Mangle_Enabled() {
-    if ( qt1( "$iptables -t mangle -L -n" ) ) {
+    if ( qt1( "$iptables $iptablesw -t mangle -L -n" ) ) {
 	system( "$iptables -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
     }
 }
 
 sub Conntrack_Match() {
     if ( $family == F_IPV4 ) {
-	qt1( "$iptables -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT" );
     } else {
-	qt1( "$iptables -A $sillyname -m conntrack --ctorigdst ::1 -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m conntrack --ctorigdst ::1 -j ACCEPT" );
     }
 }
 
 sub New_Conntrack_Match() {
-    have_capability( 'CONNTRACK_MATCH' ) && qt1( "$iptables -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
+    have_capability( 'CONNTRACK_MATCH' ) && qt1( "$iptables $iptablesw -A $sillyname -m conntrack -p tcp --ctorigdstport 22 -j ACCEPT" );
 }
 
 sub Old_Conntrack_Match() {
-    ! qt1( "$iptables -A $sillyname -m conntrack ! --ctorigdst 1.2.3.4" );
+    ! qt1( "$iptables $iptablesw -A $sillyname -m conntrack ! --ctorigdst 1.2.3.4" );
 }
 
 sub Multiport() {
-    qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp -m multiport --dports 21,22 -j ACCEPT" );
 }
 
 sub Kludgefree1() {
-    have_capability( 'MULTIPORT' ) && qt1( "$iptables -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
+    have_capability( 'MULTIPORT' ) && qt1( "$iptables $iptablesw -A $sillyname -p tcp -m multiport --sports 60 -m multiport --dports 99 -j ACCEPT" );
 }
 
 sub Kludgefree2() {
-    have_capability( 'PHYSDEV_MATCH' ) && qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
+    have_capability( 'PHYSDEV_MATCH' ) && qt1( "$iptables $iptablesw -A $sillyname -m physdev --physdev-in eth0 -m physdev --physdev-out eth0 -j ACCEPT" );
 }
 
 sub Kludgefree3() {
     if ( $family == F_IPV4 ) {
-	qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
     } else {
-	qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m iprange --src-range ::1-::2 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
     }
 }
 
@@ -3766,73 +3767,73 @@ sub Kludgefree() {
 }
 
 sub Xmultiport() {
-    qt1( "$iptables -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp -m multiport --dports 21:22 -j ACCEPT" );
 }
 
 sub Emultiport() {
-    qt1( "$iptables -A $sillyname -p sctp -m multiport --dports 21,22 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -p sctp -m multiport --dports 21,22 -j ACCEPT" );
 }
 
 sub Policy_Match() {
-    qt1( "$iptables -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT" );
 }
 
 sub Physdev_Match() {
-    qt1( "$iptables -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m physdev --physdev-in eth0 -j ACCEPT" );
 }
 
 sub Physdev_Bridge() {
-    qt1( "$iptables -A $sillyname -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth1 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m physdev --physdev-is-bridged --physdev-in eth0 --physdev-out eth1 -j ACCEPT" );
 }
 
 sub IPRange_Match() {
     if ( $family == F_IPV4 ) {
-	qt1( "$iptables -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT" );
     } else {
-	qt1( "$iptables -A $sillyname -m iprange --src-range ::1-::2 -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m iprange --src-range ::1-::2 -j ACCEPT" );
     }
 }
 
 sub Recent_Match() {
-    qt1( "$iptables -A $sillyname -m recent --update -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m recent --update -j ACCEPT" );
 }
 
 sub Owner_Match() {
-    qt1( "$iptables -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
 }
 
 sub Owner_Name_Match() {
     if ( my $name = `id -un 2> /dev/null` ) {
 	chomp $name;
-	qt1( "$iptables -A $sillyname -m owner --uid-owner $name -j ACCEPT" );
+	qt1( "$iptables $iptablesw -A $sillyname -m owner --uid-owner $name -j ACCEPT" );
     }
 }
 
 sub Connmark_Match() {
-    qt1( "$iptables -A $sillyname -m connmark --mark 2  -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m connmark --mark 2  -j ACCEPT" );
 }
 
 sub Xconnmark_Match() {
-    have_capability( 'CONNMARK_MATCH' ) && qt1( "$iptables -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
+    have_capability( 'CONNMARK_MATCH' ) && qt1( "$iptables $iptablesw -A $sillyname -m connmark --mark 2/0xFF -j ACCEPT" );
 }
 
 sub Ipp2p_Match() {
-    qt1( "$iptables -A $sillyname -p tcp -m ipp2p --edk -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp -m ipp2p --edk -j ACCEPT" );
 }
 
 sub Old_Ipp2p_Match() {
-    qt1( "$iptables -A $sillyname -p tcp -m ipp2p --ipp2p -j ACCEPT" ) if $capabilities{IPP2P_MATCH};
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp -m ipp2p --ipp2p -j ACCEPT" ) if $capabilities{IPP2P_MATCH};
 }
 
 sub Length_Match() {
-    qt1( "$iptables -A $sillyname -m length --length 10:20 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m length --length 10:20 -j ACCEPT" );
 }
 
 sub Enhanced_Reject() {
     if ( $family == F_IPV6 ) {
-	qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp6-adm-prohibited" );
+	qt1( "$iptables $iptablesw -A $sillyname -j REJECT --reject-with icmp6-adm-prohibited" );
     } else {
-	qt1( "$iptables -A $sillyname -j REJECT --reject-with icmp-host-prohibited" );
+	qt1( "$iptables $iptablesw -A $sillyname -j REJECT --reject-with icmp-host-prohibited" );
     }
 }
 
@@ -3841,7 +3842,7 @@ sub Comments() {
 }
 
 sub Hashlimit_Match() {
-    if ( qt1( "$iptables -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" ) ) {
+    if ( qt1( "$iptables $iptablesw -A $sillyname -m hashlimit --hashlimit-upto 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" ) ) {
 	! ( $capabilities{OLD_HL_MATCH} = 0 );
     } else {
 	have_capability 'OLD_HL_MATCH';
@@ -3849,55 +3850,55 @@ sub Hashlimit_Match() {
 }
 
 sub Old_Hashlimit_Match() {
-    qt1( "$iptables -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m hashlimit --hashlimit 3/min --hashlimit-burst 3 --hashlimit-name $sillyname --hashlimit-mode srcip -j ACCEPT" );
 }
 
 sub Mark() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j MARK --set-mark 1" );
 }
 
 sub Xmark() {
-    have_capability( 'MARK' ) && qt1( "$iptables -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
+    have_capability( 'MARK' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j MARK --and-mark 0xFF" );
 }
 
 sub Exmark() {
-    have_capability( 'MARK' ) && qt1( "$iptables -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
+    have_capability( 'MARK' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j MARK --set-mark 1/0xFF" );
 }
 
 sub Connmark() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j CONNMARK --save-mark" );
 }
 
 sub Xconnmark() {
-    have_capability( 'XCONNMARK_MATCH' ) && have_capability( 'XMARK' ) && qt1( "$iptables -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
+    have_capability( 'XCONNMARK_MATCH' ) && have_capability( 'XMARK' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j CONNMARK --save-mark --mask 0xFF" );
 }
 
 sub New_Tos_Match() {
-    qt1( "$iptables -t mangle -A $sillyname -m tos --tos 0x10/0xff" );
+    qt1( "$iptables $iptablesw -t mangle -A $sillyname -m tos --tos 0x10/0xff" );
 }
 
 sub Classify_Target() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j CLASSIFY --set-class 1:1" );
 }
 
 sub IPMark_Target() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j IPMARK --addr src" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j IPMARK --addr src" );
 }
 
 sub Tproxy_Target() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -p tcp -j TPROXY --on-port 0 --tproxy-mark 1" );
 }
 
 sub Mangle_Forward() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -L FORWARD -n" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -L FORWARD -n" );
 }
 
 sub Raw_Table() {
-    qt1( "$iptables -t raw -L -n" );
+    qt1( "$iptables $iptablesw -t raw -L -n" );
 }
 
 sub Rawpost_Table() {
-    qt1( "$iptables -t rawpost -L -n" );
+    qt1( "$iptables $iptablesw -t rawpost -L -n" );
 }
 
 sub Old_IPSet_Match() {
@@ -3910,8 +3911,8 @@ sub Old_IPSet_Match() {
 	qt( "$ipset -X $sillyname" );
 
 	if ( qt( "$ipset -N $sillyname iphash" ) ) {
-	    if ( qt1( "$iptables -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
-		qt1( "$iptables -F $sillyname" );
+	    if ( qt1( "$iptables $iptablesw -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
+		qt1( "$iptables $iptablesw -F $sillyname" );
 		$result = $capabilities{IPSET_MATCH} = 1;
 	    }
 
@@ -3933,8 +3934,8 @@ sub IPSet_Match() {
 	qt( "$ipset -X $sillyname" );
 
 	if ( qt( "$ipset -N $sillyname iphash" ) || qt( "$ipset -N $sillyname hash:ip family $fam") ) {
-	    if ( qt1( "$iptables -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
-		qt1( "$iptables -F $sillyname" );
+	    if ( qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
+		qt1( "$iptables $iptablesw -F $sillyname" );
 		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
 	    } else {
 		$result = have_capability 'OLD_IPSET_MATCH';
@@ -3966,27 +3967,27 @@ sub IPSET_V5() {
 }
 
 sub Usepkttype() {
-    qt1( "$iptables -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
 }
 
 sub Addrtype() {
-    qt1( "$iptables -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
 }
 
 sub Tcpmss_Match() {
-    qt1( "$iptables -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
 }
 
 sub Nfqueue_Target() {
-    qt1( "$iptables -A $sillyname -j NFQUEUE --queue-num 4" );
+    qt1( "$iptables $iptablesw -A $sillyname -j NFQUEUE --queue-num 4" );
 }
 
 sub Realm_Match() {
-    qt1( "$iptables -A $sillyname -m realm --realm 1" );
+    qt1( "$iptables $iptablesw -A $sillyname -m realm --realm 1" );
 }
 
 sub Helper_Match() {
-    qt1( "$iptables -A $sillyname -p tcp --dport 21 -m helper --helper ftp" );
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp --dport 21 -m helper --helper ftp" );
 }
 
 sub have_helper( $$$ ) {
@@ -3994,7 +3995,7 @@ sub have_helper( $$$ ) {
 
     if ( $helpers_enabled{$helper} ) {
 	if ( have_capability 'CT_TARGET' ) {
-	    qt1( "$iptables -t raw -A $sillyname -p $proto --dport $port -j CT --helper $helper" );
+	    qt1( "$iptables $iptablesw -t raw -A $sillyname -p $proto --dport $port -j CT --helper $helper" );
 	} else {
 	    have_capability 'HELPER_MATCH';
 	}
@@ -4062,31 +4063,31 @@ sub TFTP_Helper() {
 }
 
 sub Connlimit_Match() {
-    qt1( "$iptables -A $sillyname -m connlimit --connlimit-above 8" );
+    qt1( "$iptables $iptablesw -A $sillyname -m connlimit --connlimit-above 8" );
 }
 
 sub Time_Match() {
-    qt1( "$iptables -A $sillyname -m time --timestart 11:00" );
+    qt1( "$iptables $iptablesw -A $sillyname -m time --timestart 11:00" );
 }
 
 sub Goto_Target() {
-    qt1( "$iptables -A $sillyname -g $sillyname1" );
+    qt1( "$iptables $iptablesw -A $sillyname -g $sillyname1" );
 }
 
 sub Log_Target() {
-    qt1( "$iptables -A $sillyname -j LOG" );
+    qt1( "$iptables $iptablesw -A $sillyname -j LOG" );
 }
 
 sub Ulog_Target() {
-    qt1( "$iptables -A $sillyname -j ULOG" );
+    qt1( "$iptables $iptablesw -A $sillyname -j ULOG" );
 }
 
 sub NFLog_Target() {
-    qt1( "$iptables -A $sillyname -j NFLOG" );
+    qt1( "$iptables $iptablesw -A $sillyname -j NFLOG" );
 }
 
 sub Logmark_Target() {
-    qt1( "$iptables -A $sillyname -j LOGMARK" );
+    qt1( "$iptables $iptablesw -A $sillyname -j LOGMARK" );
 }
 
 sub Flow_Filter() {
@@ -4102,70 +4103,70 @@ sub Fwmark_Rt_Mask() {
 }
 
 sub Mark_Anywhere() {
-    qt1( "$iptables -A $sillyname -j MARK --set-mark 5" );
+    qt1( "$iptables $iptablesw -A $sillyname -j MARK --set-mark 5" );
 }
 
 sub Header_Match() {
-    qt1( "$iptables -A $sillyname -m ipv6header --header 255 -j ACCEPT" );
+    qt1( "$iptables $iptablesw -A $sillyname -m ipv6header --header 255 -j ACCEPT" );
 }
 
 sub Account_Target() {
     if ( $family == F_IPV4 ) {
-	qt1( "$iptables -A $sillyname -j ACCOUNT --addr 192.168.1.0/29 --tname $sillyname" );
+	qt1( "$iptables $iptablesw -A $sillyname -j ACCOUNT --addr 192.168.1.0/29 --tname $sillyname" );
     } else {
-	qt1( "$iptables -A $sillyname -j ACCOUNT --addr 1::/122 --tname $sillyname" );
+	qt1( "$iptables $iptablesw -A $sillyname -j ACCOUNT --addr 1::/122 --tname $sillyname" );
     }
 }
 
 sub Condition_Match() {
-    qt1( "$iptables -A $sillyname -m condition --condition foo" );
+    qt1( "$iptables $iptablesw -A $sillyname -m condition --condition foo" );
 }
 
 sub Audit_Target() {
-    qt1( "$iptables -A $sillyname -j AUDIT --type drop" );
+    qt1( "$iptables $iptablesw -A $sillyname -j AUDIT --type drop" );
 }
 
 sub Iptables_S() {
-    qt1( "$iptables -S INPUT" )
+    qt1( "$iptables $iptablesw -S INPUT" )
 }
 
 sub Ct_Target() {
     my $ct_target;
 
     if ( have_capability 'RAW_TABLE' ) {
-	qt1( "$iptables -t raw -N $sillyname" );
-	$ct_target = qt1( "$iptables -t raw -A $sillyname -j CT --notrack" );
+	qt1( "$iptables $iptablesw -t raw -N $sillyname" );
+	$ct_target = qt1( "$iptables $iptablesw -t raw -A $sillyname -j CT --notrack" );
     }
 
     $ct_target;
 }
 
 sub Statistic_Match() {
-    qt1( "$iptables -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
+    qt1( "$iptables $iptablesw -A $sillyname -m statistic --mode nth --every 2 --packet 1" );
 }
 
 
 sub Imq_Target() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j IMQ --todev 0" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j IMQ --todev 0" );
 }
 
 sub Dscp_Match() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -m dscp --dscp 0" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -m dscp --dscp 0" );
 }
 
 sub Dscp_Target() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j DSCP --set-dscp 0" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j DSCP --set-dscp 0" );
 }
 
 sub RPFilter_Match() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -m rpfilter" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -m rpfilter" );
 }
 
 sub NFAcct_Match() {
     my $result;
 
     if ( qt1( "nfacct add $sillyname" ) ) {
-	$result = qt1( "$iptables -A $sillyname -m nfacct --nfacct-name $sillyname" );
+	$result = qt1( "$iptables $iptablesw -A $sillyname -m nfacct --nfacct-name $sillyname" );
 	qt( "$iptables -D $sillyname -m nfacct --nfacct-name $sillyname" );
 	qt( "nfacct del $sillyname" );
     }
@@ -4174,11 +4175,11 @@ sub NFAcct_Match() {
 }
 
 sub GeoIP_Match() {
-    qt1( "$iptables -A $sillyname -m geoip --src-cc US" );
+    qt1( "$iptables $iptablesw -A $sillyname -m geoip --src-cc US" );
 }
 
 sub Checksum_Target() {
-    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
+    have_capability( 'MANGLE_ENABLED' ) && qt1( "$iptables $iptablesw -t mangle -A $sillyname -j CHECKSUM --checksum-fill" );
 }
 
 sub Arptables_JF() {
@@ -4323,13 +4324,13 @@ sub determine_capabilities() {
     $sillyname  = "fooX$pid";
     $sillyname1 = "foo1X$pid";
 
-    qt1( "$iptables -N $sillyname" );
-    qt1( "$iptables -N $sillyname1" );
+    qt1( "$iptables $iptablesw -N $sillyname" );
+    qt1( "$iptables $iptablesw -N $sillyname1" );
 
     fatal_error 'Your kernel/iptables do not include state match support. No version of Shorewall will run on this system'
 	unless
-	    qt1( "$iptables -A $sillyname -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT") ||
-	    qt1( "$iptables -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");;
+	    qt1( "$iptables $iptablesw -A $sillyname -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT") ||
+	    qt1( "$iptables $iptablesw -A $sillyname -m state --state ESTABLISHED,RELATED -j ACCEPT");;
 
     $globals{KLUDGEFREE} = $capabilities{KLUDGEFREE} = detect_capability 'KLUDGEFREE';
 
@@ -4751,6 +4752,10 @@ sub get_capabilities( $ )
 	} else {
 	    fatal_error "Can't find $toolname executable" unless $iptables = which $toolname;
 	}
+	#
+	# Determine if iptables supports the -w option
+	#
+	$iptablesw = qt1( "$iptables -w -L -n") ? '-w' : '';
 
 	my $iptables_restore=$iptables . '-restore';
 

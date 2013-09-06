@@ -3380,8 +3380,13 @@ my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
 #
 # Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"
 #
-sub level_error( $ ) {
-    fatal_error "Invalid log level ($_[0])";
+sub level_error( $;$ ) {
+    my ( $level , $option ) = @_;
+    if ( $option ) {
+	fatal_error "Invalid log level ($level) for option $option";
+    } else {
+	fatal_error "Invalid log level ($_[0])";
+    }
 }
 
 my %logoptions = ( tcp_sequence         => '--log-tcp-sequence',
@@ -3400,8 +3405,8 @@ my %logoptions = ( tcp_sequence         => '--log-tcp-sequence',
 		   '--log-macdecode'    => '--log-macdecode',
 		 );
 
-sub validate_level( $ ) {
-    my $rawlevel = $_[0];
+sub validate_level( $;$ ) {
+    my ( $rawlevel, $option ) = @_;
     my $level    = uc $rawlevel;
 
     if ( supplied ( $level ) ) {
@@ -3414,7 +3419,7 @@ sub validate_level( $ ) {
 		$value = $1;
 		$qualifier = $2;
 	    } elsif ( $value =~ /^([A-Za-z0-7]+)(.*)$/ ) {
-	        level_error( $level) unless defined( $value = $validlevels{$1} );
+	        level_error( $level, $option ) unless defined( $value = $validlevels{$1} );
 		$qualifier = $2;
 	}
 
@@ -3426,7 +3431,7 @@ sub validate_level( $ ) {
 		my $options = '';
 		my %options;
 
-		level_error ( $rawlevel ) unless $qualifier =~ /^\((.*)\)$/;
+		level_error ( $rawlevel , $option ) unless $qualifier =~ /^\((.*)\)$/;
 
 		for ( split_list lc $1, "log options" ) {
 		    my $option = $logoptions{$_};
@@ -3446,14 +3451,21 @@ sub validate_level( $ ) {
 		$value .= "($options)" if $options;
 	    }
 
-	    require_capability ( 'LOG_TARGET' , "Log level $level", 's' );
-
+	    if ( $option ) {
+		require_capability ( 'LOG_TARGET' , "Log level $level for option $option", 's' );
+	    } else {
+		require_capability ( 'LOG_TARGET' , "Log level $level", 's' );
+	    }
 	    return $value;
 	}
 
 	return '' unless $value;
 
-	require_capability( "${value}_TARGET", "Log level $level", 's' );
+	if ( $option ) {
+	    require_capability( "${value}_TARGET", "Log level $level for option $option", 's' );
+	} else {
+	    require_capability( "${value}_TARGET", "Log level $level", 's' );
+	}
 
 	if ( $value =~ /^(NFLOG|ULOG)$/ ) {
 	    my $olevel  = $value;
@@ -3463,11 +3475,11 @@ sub validate_level( $ ) {
 		my $prefix  = lc $olevel;
 		my $index   = $prefix eq 'ulog' ? 3 : 0;
 
-		level_error( $rawlevel ) if @options > 3;
+		level_error( $rawlevel , $option ) if @options > 3;
 
 		for ( @options ) {
 		    if ( supplied( $_ ) ) {
-			level_error( $rawlevel ) unless /^\d+/;
+			level_error( $rawlevel , $option ) unless /^\d+/;
 			$olevel .= " --${prefix}-$suffixes[$index] $_";
 		    }
 
@@ -3477,7 +3489,7 @@ sub validate_level( $ ) {
 	    } elsif ( $qualifier =~ /^ --/ ) {
 		return $rawlevel;
 	    } else {
-		level_error( $rawlevel ) if $qualifier;
+		level_error( $rawlevel , $option ) if $qualifier;
 	    }
 
 	    return $olevel;
@@ -3495,9 +3507,9 @@ sub validate_level( $ ) {
 		$sublevel = $1;
 
 		$sublevel = $validlevels{$sublevel} unless $sublevel =~ /^[0-7]$/;
-		level_error( $rawlevel ) unless defined $sublevel && $sublevel  =~ /^[0-7]$/;
+		level_error( $rawlevel , $option ) unless defined $sublevel && $sublevel  =~ /^[0-7]$/;
 	    } else {
-		level_error( $rawlevel );
+		level_error( $rawlevel , $option );
 	    }
 	} else {
 	    $sublevel = 6; # info
@@ -3518,9 +3530,9 @@ sub default_log_level( $$ ) {
     my $value = $config{$level};
 
     unless ( supplied $value ) {
-	$config{$level} = $default;
+	$config{$level} = validate_level $default, $level;
     } else {
-	$config{$level} = validate_level $value;
+	$config{$level} = validate_level $value, $level;
     }
 }
 

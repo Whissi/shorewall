@@ -377,9 +377,10 @@ else
 	fi
     fi
 
-    if [ -d ${DESTDIR}${SYSCONFDIR} -a ! -f ${DESTDIR}${SYSCONFDIR}/shorewall-init ]; then
-	install_file sysconfig ${DESTDIR}${SYSCONFDIR}/shorewall-init 0644
-    fi
+	if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
+		run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/$PRODUCT
+		echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
+	fi
 
     [ $HOST = suse ] && IFUPDOWN=ifupdown.suse.sh || IFUPDOWN=ifupdown.fedora.sh
 fi

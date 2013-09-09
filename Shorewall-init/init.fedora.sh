@@ -70,7 +70,7 @@ start () {
 
 	if [ $retval -eq 0 ]; then
 	    if [ -x "${STATEDIR}/firewall" ]; then
-		${STATEDIR}/firewall stop 2>&1 | $logger
+		${STATEDIR}/firewall ${OPTIONS} stop 2>&1 | $logger
 		retval=${PIPESTATUS[0]}
 		[ $retval -ne 0 ] && break
 	    else
@@ -105,7 +105,7 @@ stop () {
 
 	if [ $retval -eq 0 ]; then
 	    if [ -x "${STATEDIR}/firewall" ]; then
-		${STATEDIR}/firewall clear 2>&1 | $logger
+		${STATEDIR}/firewall ${OPTIONS} clear 2>&1 | $logger
 		retval=${PIPESTATUS[0]}
 		[ $retval -ne 0 ] && break
 	    else

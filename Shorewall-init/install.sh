@@ -317,6 +317,7 @@ if [ -n "$SYSTEMD" ]; then
         chmod 755 ${DESTDIR}${SBINDIR}
     fi
     run_install $OWNERSHIP -m 700 shorewall-init ${DESTDIR}${SBINDIR}/shorewall-init
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/shorewall-init
     echo "CLI installed as ${DESTDIR}${SBINDIR}/shorewall-init"
 fi
 

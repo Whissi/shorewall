@@ -33,7 +33,7 @@ setstatedir() {
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
 
     if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	${SBINDIR}/$PRODUCT compile -c || exit 1
+	${SBINDIR}/$PRODUCT ${OPTIONS} compile -c || exit 1
     fi
 }
 
@@ -69,7 +69,7 @@ shorewall_start () {
 	  #
 	  (
 	      if ! ${STATEDIR}/$PRODUCT/firewall status > /dev/null 2>&1; then
-		  ${STATEDIR}/$PRODUCT/firewall stop || exit 1
+		  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} stop || exit 1
 	      else
 		  exit 1
 	      fi
@@ -96,7 +96,7 @@ shorewall_stop () {
       setstatedir
 
       if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
-	  ${STATEDIR}/$PRODUCT/firewall clear || exit 1
+	  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} clear || exit 1
       fi
   done
 

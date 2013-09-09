@@ -300,7 +300,7 @@ if [ -n "$DESTDIR" ]; then
     install -d $OWNERSHIP -m 755 ${DESTDIR}/${SBINDIR}
     install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
 else
-    if [ ! -f /usr/share/shorewall/coreversion ]; then
+    if [ ! -f ${SHAREDIR}/coreversion ]; then
 	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
     fi
@@ -312,7 +312,7 @@ echo "Installing $Product Version $VERSION"
 # Check for ${CONFDIR}/$PRODUCT
 #
 if [ -z "$DESTDIR" -a -d ${CONFDIR}/$PRODUCT ]; then
-    if [ ! -f /usr/share/shorewall/coreversion ]; then
+    if [ ! -f ${SHAREDIR}/shorewall/coreversion ]; then
 	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
 	exit 1
     fi

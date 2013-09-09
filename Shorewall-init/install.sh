@@ -99,6 +99,8 @@ PRODUCT=shorewall-init
 #
 # Parse the run line
 #
+T='-T'
+
 finished=0
 
 while [ $finished -eq 0 ] ; do

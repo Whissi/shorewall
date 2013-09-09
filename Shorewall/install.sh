@@ -384,7 +384,7 @@ if [ -n "$INITFILE" ]; then
 
 	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' "$initfile"
 
-	echo  "$Product script installed in $initfile"
+	echo  "SysV init script $INITSOURCE installed in $initfile"
     fi
 fi
 

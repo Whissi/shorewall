@@ -300,7 +300,7 @@ if [ -n "$INITFILE" ]; then
 	install_file $INITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
     fi
 
-    echo  "Shorewall-init script installed in ${DESTDIR}${INITDIR}/$INITFILE"
+    echo  "SysV init script $INITSOURCE installed in ${DESTDIR}${INITDIR}/$INITFILE"
 fi
 
 #

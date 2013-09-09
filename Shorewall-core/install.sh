@@ -342,7 +342,7 @@ if [ -n "${INITFILE}" ]; then
     if [ -n "$AUXINITSOURCE" -a -f "$AUXINITSOURCE" ]; then
 	install_file $AUXINITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
 	[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$AUXINITFILE
-	echo  "$Product script installed in ${DESTDIR}${INITDIR}/$AUXINITFILE"
+	echo  "SysV init script $AUXINITSOURCE installed in ${DESTDIR}${INITDIR}/$AUXINITFILE"
     fi
 fi
 #

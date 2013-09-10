@@ -257,6 +257,7 @@ case "$HOST" in
 	;;
     linux)
 	echo "ERROR: Shorewall-init is not supported on this system" >&2
+	exit 1
 	;;
     *)
 	echo "ERROR: Unsupported HOST distribution: \"$HOST\"" >&2

@@ -1143,7 +1143,10 @@ if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
     echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
 fi
 
-if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
+#
+# Note -- not all packages will have the SYSCONFFILE so we need to check for its existance here
+#
+if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
     if [ ${DESTDIR} ]; then
 	mkdir -p ${DESTDIR}${SYSCONFDIR}
 	chmod 755 ${DESTDIR}${SYSCONFDIR}

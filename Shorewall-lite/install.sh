@@ -497,7 +497,10 @@ delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.common
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.cli
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/wait4ifup
 
-if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
+#
+# Note -- not all packages will have the SYSCONFFILE so we need to check for its existance here
+#
+if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
     if [ ${DESTDIR} ]; then
 	mkdir -p ${DESTDIR}${SYSCONFDIR}
 	chmod 755 ${DESTDIR}${SYSCONFDIR}

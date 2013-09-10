@@ -1749,9 +1749,9 @@ sub process_actions() {
 	while ( read_a_line( NORMAL_READ ) ) {
 	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
 
-	    my $type     = ACTION;
+	    my $type     = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
 	    my $noinline = 0;
-	    my $nolog    = ( $action eq $config{REJECT_ACTION} ) || 0;
+	    my $nolog    = ( $type == INLINE ) || 0;
 	    my $builtin  = 0;
 
 	    if ( $action =~ /:/ ) {
@@ -1812,7 +1812,7 @@ sub process_actions() {
     if ( my $action = $config{REJECT_ACTION} ) {
 	my $type = $targets{$action};
 	fatal_error "REJECT_ACTION ($action) was not defined"  unless $type;
-	fatal_error "REJECT_ACTION ($action) is not an action" unless $type & (ACTION | INLINE);
+	fatal_error "REJECT_ACTION ($action) is not an action" unless $type == INLINE;
     }
 }
 

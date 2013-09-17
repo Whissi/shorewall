@@ -1503,7 +1503,12 @@ do_dump_command() {
 
     if [ $g_family -eq 4 ]; then
 	heading "ARP"
-	arp -na
+	if qt mywhich arp; then
+	    arp -na
+	else
+	    ip -4 neigh ls
+	    ip -4 neigh ls proxy
+	fi
     else
 	heading "Neighbors"
 	ip -6 neigh ls

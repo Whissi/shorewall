@@ -204,6 +204,9 @@ if [ -z "$BUILD" ]; then
 		    debian)
 			BUILD=debian
 			;;
+		    gentoo)
+			BUILD=gentoo
+			;;
 		    opensuse)
 			BUILD=suse
 			;;
@@ -213,6 +216,8 @@ if [ -z "$BUILD" ]; then
 		esac
 	    elif [ -f /etc/debian_version ]; then
 		BUILD=debian
+	    elif [ -f /etc/gentoo-release ]; then
+		BUILD=gentoo
 	    elif [ -f /etc/redhat-release ]; then
 		BUILD=redhat
 	    elif [ -f /etc/slackware-version ] ; then
@@ -271,7 +276,7 @@ case "$HOST" in
     apple)
 	echo "Installing Mac-specific configuration...";
 	;;
-    debian|redhat|slackware|archlinux|linux|suse)
+    debian|gentoo|redhat|slackware|archlinux|linux|suse)
 	;;
     *)
 	echo "ERROR: Unknown HOST \"$HOST\"" >&2

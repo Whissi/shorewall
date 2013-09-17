@@ -222,6 +222,9 @@ if [ -z "$BUILD" ]; then
 		    debian)
 			BUILD=debian
 			;;
+		    gentoo)
+			BUILD=gentoo
+			;;
 		    opensuse)
 			BUILD=suse
 			;;
@@ -231,6 +234,8 @@ if [ -z "$BUILD" ]; then
 		esac
 	    elif [ -f /etc/debian_version ]; then
 		BUILD=debian
+	    elif [ -f /etc/gentoo-release ]; then
+		BUILD=gentoo
 	    elif [ -f /etc/redhat-release ]; then
 		BUILD=redhat
 	    elif [ -f /etc/slackware-version ] ; then
@@ -274,6 +279,9 @@ case "$HOST" in
 	;;
     debian)
 	echo "Installing Debian-specific configuration..."
+	;;
+    gentoo)
+	echo "Installing Gentoo-specific configuration..."
 	;;
     redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
@@ -499,6 +507,9 @@ if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
 	sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
     elif [ $HOST = debian ]; then
 	perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf${suffix}
+    elif [ $HOST = gentoo ]; then
+	# Adjust SUBSYSLOCK path (see https://bugs.gentoo.org/show_bug.cgi?id=459316)
+	perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/$PRODUCT|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf${suffix}
     fi
 
     echo "Config file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf"

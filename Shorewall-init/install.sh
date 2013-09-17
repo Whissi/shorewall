@@ -194,6 +194,9 @@ if [ -z "$BUILD" ]; then
 		    debian)
 			BUILD=debian
 			;;
+		    gentoo)
+			BUILD=gentoo
+			;;
 		    opensuse)
 			BUILD=suse
 			;;
@@ -203,6 +206,8 @@ if [ -z "$BUILD" ]; then
 		esac
 	    elif [ -f /etc/debian_version ]; then
 		BUILD=debian
+	    elif [ -f /etc/gentoo-release ]; then
+		BUILD=gentoo
 	    elif [ -f /etc/redhat-release ]; then
 		BUILD=redhat
 	    elif [ -f /etc/SuSE-release ]; then
@@ -225,7 +230,7 @@ case $BUILD in
     apple)
 	T=
 	;;
-    debian|redhat|suse|slackware|archlinux)
+    debian|gentoo|redhat|suse|slackware|archlinux)
 	;;
     *)
 	[ -n "$BUILD" ] && echo "ERROR: Unknown BUILD environment ($BUILD)" >&2 || echo "ERROR: Unknown BUILD environment"
@@ -240,6 +245,9 @@ OWNERSHIP="-o $OWNER -g $GROUP"
 case "$HOST" in
     debian)
 	echo "Installing Debian-specific configuration..."
+	;;
+    gentoo)
+	echo "Installing Gentoo-specific configuration..."
 	;;
     redhat)
 	echo "Installing Redhat/Fedora-specific configuration..."
@@ -375,6 +383,9 @@ else
 	    if [ $HOST = suse ]; then
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
 		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-down.d
+	    elif [ $HOST = gentoo ]; then
+		# Gentoo does not support if-{up,down}.d
+		return
 	    else
 		mkdir -p ${DESTDIR}/etc/NetworkManager/dispatcher.d
 	    fi
@@ -446,6 +457,10 @@ if [ -z "$DESTDIR" ]; then
 	    update-rc.d shorewall-init enable
 
 	    echo "Shorewall Init will start automatically at boot"
+	elif [ $HOST = gentoo ]; then
+	    # On Gentoo, a service must be enabled manually by the user,
+	    # not by the installer
+	    return
 	else
 	    if [ -n "$SYSTEMD" ]; then
 		if systemctl enable shorewall-init.service; then

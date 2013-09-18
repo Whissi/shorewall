@@ -474,14 +474,14 @@ sub process_a_provider( $ ) {
 	$gateway = '';
     }
 
-    my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what );
+    my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what, $hostroute );
 
     if ( $pseudo ) {	
-	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what ) =
-	( 0,      0                       , 0 ,        0,        0,                               1                                  , ''  , 0       , 0,      0,     'interface');
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what ,      $hostroute ) =
+	( 0,      0                       , 0 ,        0,        0,                               1                                  , ''  , 0       , 0,      0,     'interface', 0);
     } else {
-	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what )=
-	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider');
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what      , $hostroute )=
+	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider',  1);
     }
 
     unless ( $options eq '-' ) {
@@ -535,6 +535,10 @@ sub process_a_provider( $ ) {
 		$noautosrc = 0;
 	    } elsif ( $option eq 'noautosrc' ) {
 		$noautosrc = 1;
+	    } elsif ( $option eq 'hostroute' ) {
+		$hostroute = 1;
+	    } elsif ( $option eq 'nohostroute' ) {
+		$hostroute = 0;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -642,6 +646,7 @@ sub process_a_provider( $ ) {
 			   load        => $load ,
 			   pseudo      => $pseudo ,
 			   what        => $what ,
+			   hostroute   => $hostroute ,
 			   rules       => [] ,
 			   routes      => [] ,
 			   routedests  => {} ,
@@ -718,6 +723,7 @@ sub add_a_provider( $$ ) {
     my $pseudo      = $providerref->{pseudo};
     my $what        = $providerref->{what};
     my $label       = $pseudo ? 'Optional Interface' : 'Provider';
+    my $hostroute   = $providerref->{hostroute};
 
     my $dev         = var_base $physical;
     my $base        = uc $dev;
@@ -798,13 +804,16 @@ CEOF
 
     if ( $gateway ) {
 	$address = get_interface_address $interface unless $address;
-	if ( $family == F_IPV4 ) {
-	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
-	    emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm";
-	} else {
-	    emit "qt \$IP -6 route add $gateway src $address dev $physical ${mtu}";
-	    emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm";
-	    emit "run_ip route add $gateway src $address dev $physical ${mtu}table $id $realm";
+
+	if ( $hostroute ) {
+	    if ( $family == F_IPV4 ) {
+		emit "run_ip route replace $gateway src $address dev $physical ${mtu}";
+		emit "run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm";
+	    } else {
+		emit "qt \$IP -6 route add $gateway src $address dev $physical ${mtu}" if $hostroute;
+		emit "qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm";
+		emit "run_ip route add $gateway src $address dev $physical ${mtu}table $id $realm";
+	    }
 	}
 
 	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $id $realm";

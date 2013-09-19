@@ -74,7 +74,7 @@
 
         <mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/basics.png" format="PNG"/>
+            <imagedata align="center" fileref="images/basics.png" format="PNG" />
           </imageobject>
         </mediaobject>
       </figure> <caution>
@@ -88,7 +88,7 @@
         Shorewall. <itemizedlist>
             <listitem>
               <para><ulink
-              url="http://www.simtel.net/pub/pd/51438.html"><trademark>Windows</trademark>
+              url="http://www.sourceforge.net/projects/dos2unix"><trademark>Windows</trademark>
               Version of <command>dos2unix</command></ulink></para>
             </listitem>
 
@@ -121,18 +121,19 @@
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
-      with <inlinegraphic fileref="images/BD21298_.gif" format="GIF"/>.</para>
+      with <inlinegraphic fileref="images/BD21298_.gif"
+      format="GIF" />.</para>
 
       <para>Configuration notes that are unique to Debian and it's derivatives
       are marked with <inlinegraphic fileref="images/openlogo-nd-25.png"
-      format="GIF"/>.</para>
+      format="GIF" />.</para>
     </section>
   </section>
 
   <section id="PPTP">
     <title>PPTP/ADSL</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>If you have an <acronym>ADSL</acronym> Modem and you use
     <acronym>PPTP</acronym> to communicate with a server in that modem, you
@@ -145,7 +146,7 @@
   <section id="Concepts">
     <title>Shorewall Concepts</title>
 
-    <para/>
+    <para></para>
 
     <para>The configuration files for Shorewall are contained in the directory
     <filename class="directory">/etc/shorewall</filename> -- for simple
@@ -153,7 +154,7 @@
     this guide.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF"/><important>
+    format="GIF" /><important>
         <para>After you have <ulink url="Install.htm">installed
         Shorewall</ulink>, locate the two-interfaces samples:</para>
 
@@ -189,7 +190,7 @@
 
           <listitem>
             <para><graphic align="left"
-            fileref="images/openlogo-nd-25.png"/>If you installed using a
+            fileref="images/openlogo-nd-25.png" />If you installed using a
             Shorewall 4.x .deb, the samples are in <emphasis
             role="bold"><filename
             class="directory">/usr/share/doc/shorewall-common/examples/two-interfaces</filename>.</emphasis>
@@ -336,7 +337,7 @@ $FW        net         ACCEPT</programlisting> The above policy will:
 loc        $FW         ACCEPT
 $FW        loc         ACCEPT</programlisting>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>At this point, edit your <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
@@ -348,7 +349,7 @@ $FW        loc         ACCEPT</programlisting>
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/basics.png" format="PNG"/>
+        <imagedata align="center" fileref="images/basics.png" format="PNG" />
       </imageobject>
     </mediaobject>
 
@@ -392,7 +393,7 @@ root@lists:~# </programlisting>
       the external interface.</para>
     </caution>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>I<emphasis role="bold">f your external interface is <filename
     class="devicefile">ppp0</filename> or <filename
@@ -420,7 +421,7 @@ root@lists:~# </programlisting>
         internal interface.</emphasis> Your firewall should have exactly one
         default route via your ISP's Router.</para>
       </warning> <inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF"/></para>
+    format="GIF" /></para>
 
     <para>The Shorewall two-interface sample configuration assumes that the
     external interface is <filename class="devicefile">eth0</filename> and the
@@ -532,7 +533,7 @@ root@lists:~# </programlisting>
     directly. To communicate with systems outside of the subnetwork, systems
     send packets through a gateway (router).</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Your local computers (computer 1 and computer 2 in the above
     diagram) should be configured with their default gateway to be the
@@ -549,7 +550,7 @@ root@lists:~# </programlisting>
     <para id="Diagram">The remainder of this guide will assume that you have
     configured your network as shown here: <mediaobject>
         <imageobject>
-          <imagedata align="center" fileref="images/basics1.png" format="PNG"/>
+          <imagedata align="center" fileref="images/basics1.png" format="PNG" />
         </imageobject>
       </mediaobject> The default gateway for computer's 1 &amp; 2 would be
     <systemitem class="ipaddress">10.10.10.254</systemitem>. <warning>
@@ -606,7 +607,7 @@ root@lists:~# </programlisting>
     <acronym>IP</acronym> is dynamic and <acronym>SNAT</acronym> if the
     <acronym>IP</acronym> is static.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>If your external firewall interface is <filename
     class="devicefile">eth0</filename>, you do not need to modify the file
@@ -615,7 +616,7 @@ root@lists:~# </programlisting>
     class="directory">/etc/shorewall/</filename><filename>masq</filename> and
     change the first column to the name of your external interface.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>If your external <acronym>IP</acronym> is static, you can enter it
     in the third column in the <filename
@@ -625,7 +626,7 @@ root@lists:~# </programlisting>
     column 3 (SNAT) makes the processing of outgoing packets a little more
     efficient.</para>
 
-    <graphic align="left" fileref="images/openlogo-nd-25.png"/>
+    <graphic align="left" fileref="images/openlogo-nd-25.png" />
 
     <para>I<emphasis role="bold">f you are using the Debian package, please
     check your <filename>shorewall.conf</filename> file to ensure that the
@@ -688,7 +689,7 @@ root@lists:~# </programlisting>
       </listitem>
     </itemizedlist>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>If you are running a distribution that logs netfilter messages to a
     log other than <filename>/var/log/messages</filename>, then modify the
@@ -728,7 +729,7 @@ root@lists:~# </programlisting>
     <filename>/usr/share/shorewall/modules</filename> then copy the file to
     <filename>/etc/shorewall</filename> and modify the copy.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Modify the setting of LOAD_HELPER_ONLY as necessary.</para>
   </section>
@@ -826,7 +827,7 @@ FTP(DNAT)  net       loc:10.10.10.1</programlisting> For
 DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
         </listitem>
       </itemizedlist> <inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF"/></para>
+    format="GIF" /></para>
 
     <para>At this point, modify <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> to
@@ -874,7 +875,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
         </listitem>
 
         <listitem>
-          <para><anchor id="cachingdns"/> You can configure a
+          <para><anchor id="cachingdns" /> You can configure a
           <emphasis>Caching Name Server</emphasis> on your firewall.
           <trademark>Red Hat</trademark> has an <acronym>RPM</acronym> for a
           caching name server (the <acronym>RPM</acronym> also requires the
@@ -953,11 +954,11 @@ Web(ACCEPT) loc       $FW       </programlisting>Those two rules would of
         <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
 SSH(ACCEPT)  net       $FW</programlisting>
       </important> <inlinegraphic fileref="images/leaflogo.gif"
-    format="GIF"/>Bering users will want to add the following two rules to be
+    format="GIF" />Bering users will want to add the following two rules to be
     compatible with Jacques's Shorewall configuration.<programlisting>#ACTION    SOURCE    DEST    PROTO     DEST PORT(S)
 ACCEPT     loc       $FW     udp       53          #Allow DNS Cache to work
 ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</programlisting>
-    <inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Now edit your <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
@@ -1023,7 +1024,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
   <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
     configures your system to start Shorewall at system boot but startup is
@@ -1031,7 +1032,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     configuration is complete. Once you have completed configuration of your
     firewall, you must edit /etc/shorewall/shorewall.conf and set
     STARTUP_ENABLED=Yes.<graphic align="left"
-    fileref="images/openlogo-nd-25.png"/><important>
+    fileref="images/openlogo-nd-25.png" /><important>
         <para>Users of the .deb package must edit <filename
         class="directory">/etc/default/</filename><filename>shorewall</filename>
         and set <varname>startup=1</varname>.</para>
@@ -1051,7 +1052,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     of Shorewall from your Netfilter configuration, use
     <quote><command>shorewall clear</command></quote>.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The two-interface sample assumes that you want to enable routing
     to/from <filename class="devicefile">eth1</filename> (the local network)
@@ -1137,7 +1138,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
 
     <programlisting><command>systemctl disable iptables.service</command></programlisting>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
     <para>At this point, disable your existing firewall service.</para>
   </section>
@@ -1181,9 +1182,9 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
       </caution></para>
 
     <para>Your new network will look similar to what is shown in the following
-    figure.<graphic align="center" fileref="images/basics2.png"/></para>
+    figure.<graphic align="center" fileref="images/basics2.png" /></para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The first thing to note is that the computers in your wireless
     network will be in a different subnet from those on your wired local LAN.
@@ -1196,7 +1197,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     traffic may flow freely between the local wired network and the wireless
     network.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>There are only two changes that need to be made to the Shorewall
     configuration:</para>

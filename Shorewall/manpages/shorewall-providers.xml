@@ -307,6 +307,39 @@
                 <option>tproxy</option> provider is allowed.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">hostroute</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.21. This is the default behavior
+                that results in a host route to the defined <emphasis
+                role="bold">GATEWAY</emphasis> being inserted into the main
+                routing table and into the provider's routing table. <emphasis
+                role="bold">hostroute</emphasis> is required for older
+                distributions but <emphasis role="bold">nohostroute</emphasis>
+                (below) is appropriate for recent distributions. <emphasis
+                role="bold">hostroute</emphasis> may interfere with Zebra's
+                ability to add routes on some distributions such as Debian
+                7.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">nohostroute</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.21. nohostroute inhibits addition
+                of a host route to the defined <emphasis
+                role="bold">GATEWAY</emphasis> being inserted into the main
+                routing table and into the provider's routing table. <emphasis
+                role="bold">nohostroute</emphasis> is not appropriate for
+                older distributions but is appropriate for recent
+                distributions. <emphasis role="bold">nohostroute</emphasis>
+                allows Zebra's to correctly add routes on some distributions
+                such as Debian 7.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </listitem>
       </varlistentry>

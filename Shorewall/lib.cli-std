@@ -1362,8 +1362,7 @@ reload_command() # $* = original arguments less the command.
     sbindir=${SBINDIR}
     local sharedir
     sharedir=${SHAREDIR}
-
-    litedir=${VARLIB}/${g_program}-lite
+    local litedir
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1467,6 +1466,12 @@ reload_command() # $* = original arguments less the command.
     file=$(resolve_file $g_shorewalldir/firewall)
 
     g_export=Yes
+
+    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+
+    [ -n "$temp" ] && litedir="$temp"
+
+    [ -n "$litedir" ] || litedir=${VARLIB}/${g_program}-lite
 
     if compiler $g_debugging compiler $g_shorewalldir/firewall && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \

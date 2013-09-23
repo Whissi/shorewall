@@ -73,6 +73,10 @@ our @EXPORT = qw(
 		 get_inline_matches
 		 set_inline_matches
 
+                 set_comment
+		 push_comment
+		 pop_comment
+
 		 have_capability
 		 require_capability
 		 report_used_capabilities
@@ -147,8 +151,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       process_comment
 				       no_comment
 				       macro_comment
-				       push_comment
-				       pop_comment
 				       dump_mark_layout
 
 				       $product
@@ -2115,6 +2117,13 @@ sub no_comment() {
 sub clear_comment() {
     $comment   = '';
     $nocomment = 0;
+}
+
+#
+# Set the current comment
+#
+sub set_comment( $ ) {
+    ( $comment ) = @_;
 }
 
 #

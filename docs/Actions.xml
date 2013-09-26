@@ -739,6 +739,35 @@ bar:debug</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>Shorewall::Config::push_comment()</term>
+
+        <listitem>
+          <para>Prior to Shorewall 4.5.21, this required:</para>
+
+          <programlisting>use Shorewall::Config (:DEFAULT :internal);</programlisting>
+
+          <para>Returns the current rule comment to the caller and clears the
+          comment. The returned comment may be restored by calling either
+          pop_comment() or set_comment().</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shorewall::Config::pop_comment($comment) and
+        Shorewall::Config::set_comment($comment).</term>
+
+        <listitem>
+          <para>The set_comment() function was added in Shorewall 4.5.21.
+          Prior to that release, accessing pop_comment() required:</para>
+
+          <programlisting>use Shorewall::Config (:DEFAULT :internal);</programlisting>
+
+          <para>These functions are identical and set the current rule comment
+          to the contents of the passed simple variable.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>Shorewall::Chains::add_rule(
         <replaceable>$chainre</replaceable>f, <replaceable>$rule</replaceable>
         [, <replaceable>$expandports</replaceable> ] )</term>

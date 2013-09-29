@@ -527,20 +527,20 @@ if [ ${SHAREDIR} != /usr/share ]; then
 fi
 
 if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
-    if mywhich update-rc.d ; then
-	echo "$PRODUCT will start automatically at boot"
-	echo "Set startup=1 in ${SYSCONFDIR}/$PRODUCT to enable"
-	touch /var/log/$PRODUCT-init.log
-	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
-	update-rc.d $PRODUCT enable defaults
-    elif [ -n "$SYSTEMD" ]; then
+    if [ -n "$SYSTEMD" ]; then
 	if systemctl enable ${PRODUCT}.service; then
 	    echo "$Product will start automatically at boot"
 	fi
     elif mywhich insserv; then
 	if insserv ${INITDIR}/${INITFILE} ; then
 	    echo "$PRODUCT will start automatically at boot"
-	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/${PRODUCT}.conf to enable"
+	    if [ $HOST = debian ]; then
+		echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
+		touch /var/log/$PRODUCT-init.log
+		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+	    else
+		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
+	    fi
 	else
 	    cant_autostart
 	fi
@@ -555,7 +555,13 @@ if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
     elif mywhich rc-update ; then
 	if rc-update add $PRODUCT default; then
 	    echo "$PRODUCT will start automatically at boot"
-	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
+	    if [ $HOST = debian ]; then
+		echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
+		touch /var/log/$PRODUCT-init.log
+		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+	    else
+		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
+	    fi
 	else
 	    cant_autostart
 	fi

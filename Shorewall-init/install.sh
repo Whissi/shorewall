@@ -453,10 +453,17 @@ esac
 if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ $HOST = debian ]; then
-	    
-	    update-rc.d shorewall-init enable
-
-	    echo "Shorewall Init will start automatically at boot"
+	    if mywhich insserv; then
+		if insserv enable; then
+		    echo "Shorewall Init will start automatically at boot"
+		else
+		    cant_autostart
+		fi
+	    elif rc-update add $PRODUCT default; then
+		echo "Shorewall Init will start automatically at boot"
+	    else
+		cant_autostart
+	    fi
 	elif [ $HOST = gentoo ]; then
 	    # On Gentoo, a service must be enabled manually by the user,
 	    # not by the installer

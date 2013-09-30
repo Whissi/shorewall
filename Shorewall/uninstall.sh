@@ -116,8 +116,28 @@ fi
 
 rm -f ${SBINDIR}/shorewall
 
+if [ -f "$INITSCRIPT" ]; then
+    if mywhich updaterc.d ; then
+	updaterc.d ${PRODUCT} remove
+    elif mywhich insserv ; then
+        insserv -r $INITSCRIPT
+    elif mywhich chkconfig ; then
+	chkconfig --del $(basename $INITSCRIPT)
+    elif mywhich systemctl ; then
+	systemctl disable ${PRODUCT}
+    fi
+
+    remove_file $INITSCRIPT
+fi
+
 rm -rf ${SHAREDIR}/shorewall/version
 rm -rf ${CONFDIR}/shorewall
+
+if [ -n "$SYSCONFDIR" ]; then
+    [ -n "$SYSCONFFILE" ] || SYSCONFFILE=${PRODUCT};
+    rm -f ${SYSCONFDIR}/${SYSCONFFILE}
+fi
+
 rm -rf ${VARDIR}/shorewall
 rm -rf ${PERLLIB}/Shorewall/*
 rm -rf ${LIBEXEC}/shorewall

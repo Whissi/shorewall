@@ -140,6 +140,7 @@ remove_file ${CONFDIR}/NetworkManager/dispatcher.d/01-shorewall
 
 remove_file ${CONFDIR}/network/if-up.d/shorewall
 remove_file ${CONFDIR}/network/if-down.d/shorewall
+remove_file ${CONFDIR}/network/if-post-down.d/shorewall
 
 remove_file ${CONFDIR}/sysconfig/network/if-up.d/shorewall
 remove_file ${CONFDIR}/sysconfig/network/if-down.d/shorewall

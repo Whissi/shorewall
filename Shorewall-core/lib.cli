@@ -679,6 +679,11 @@ version_command() {
 		echo "$product: $(cat ${SHAREDIR}/$product/version)"
 	    fi
 	done
+
+	if [ -f $g_firewall ]; then
+	    echo $g_echo_n "$g_firewall was compiled by Shorewall version "
+	    $g_firewall version
+	fi
     else
 	echo $SHOREWALL_VERSION
     fi
@@ -2899,7 +2904,15 @@ show_status() {
     else
 	state=Unknown
     fi
-    [ $VERBOSITY -ge 1 ] && echo "State:$state"
+
+    if [ $VERBOSITY -ge 1 ]; then 
+	echo "State:$state"
+	if [ -f $g_firewall ]; then
+	    echo $g_echo_n "$g_firewall was compiled by Shorewall version "
+	    $g_firewall version
+	fi
+    fi
+
 }
 
 status_command() {

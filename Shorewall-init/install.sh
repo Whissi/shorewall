@@ -385,7 +385,7 @@ else
 		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-down.d
 	    elif [ $HOST = gentoo ]; then
 		# Gentoo does not support if-{up,down}.d
-		return
+		/bin/true
 	    else
 		mkdir -p ${DESTDIR}/etc/NetworkManager/dispatcher.d
 	    fi
@@ -467,7 +467,7 @@ if [ -z "$DESTDIR" ]; then
 	elif [ $HOST = gentoo ]; then
 	    # On Gentoo, a service must be enabled manually by the user,
 	    # not by the installer
-	    return
+	    /bin/true
 	else
 	    if [ -n "$SYSTEMD" ]; then
 		if systemctl enable shorewall-init.service; then

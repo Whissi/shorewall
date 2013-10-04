@@ -454,7 +454,7 @@ if [ -z "$DESTDIR" ]; then
     if [ -n "$first_install" ]; then
 	if [ $HOST = debian ]; then
 	    if mywhich insserv; then
-		if insserv enable; then
+		if insserv ${INITDIR}/shorewall-init; then
 		    echo "Shorewall Init will start automatically at boot"
 		else
 		    cant_autostart

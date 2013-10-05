@@ -36,6 +36,8 @@
 #                    bringing up the network
 ### END INIT INFO
 
+. /lib/lsb/init-functions
+
 export VERBOSITY=0
 
 if [ "$(id -u)" != "0" ]

@@ -97,7 +97,8 @@ set_action_name_to_caller;
 require_capability 'RECENT_MATCH', 'Use of events', 's';
 
 if ( $command & $REAP_OPT ) {
-    fatal_error "${command}reap requires a time limit" if ! $duration;
+    require_capability( 'REAP_OPTION', q(The 'reap' option), 's' );
+    fatal_error "${command}reap requires a time limit" unless $duration;
     $duration .= '--reap ';
 }
 

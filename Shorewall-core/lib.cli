@@ -2260,6 +2260,7 @@ determine_capabilities() {
     PHYSDEV_BRIDGE=
     IPRANGE_MATCH=
     RECENT_MATCH=
+    REAP_OPTION=
     OWNER_MATCH=
     OWNER_NAME_MATCH=
     IPSET_MATCH=
@@ -2429,7 +2430,11 @@ determine_capabilities() {
 	fi
     fi
 
-    qt $g_tool -A $chain -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    if qt $g_tool -A $chain -m recent --update -j ACCEPT; then
+	RECENT_MATCH=Yes
+	qt $g_tool -A $chain -m recent --rcheck --seconds 10 --reap && REAP_OPTION=Yes
+    fi
+
     qt $g_tool -A $chain -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
 
     local name
@@ -2676,6 +2681,7 @@ report_capabilities_unsorted() {
     report_capability "Packet length Match (LENGTH_MATCH)" $LENGTH_MATCH
     report_capability "IP range Match(IPRANGE_MATCH)" $IPRANGE_MATCH
     report_capability "Recent Match (RECENT_MATCH)" $RECENT_MATCH
+    [ -n "$RECENT_MATCH" ] && report_capability 'Recent Match "--reap" option'
     report_capability "Owner Match (OWNER_MATCH)" $OWNER_MATCH
     report_capability "Owner Name Match (OWNER_NAME_MATCH)" $OWNER_NAME_MATCH
     if [ -n "$IPSET_MATCH" ]; then
@@ -2797,6 +2803,7 @@ report_capabilities_unsorted1() {
     report_capability1 LENGTH_MATCH
     report_capability1 IPRANGE_MATCH
     report_capability1 RECENT_MATCH
+    report_capability1 REAP_OPTION
     report_capability1 OWNER_MATCH
     report_capability1 OWNER_NAME_MATCH
     report_capability1 IPSET_MATCH

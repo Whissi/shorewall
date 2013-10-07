@@ -316,6 +316,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 LENGTH_MATCH    => 'Packet length Match',
 		 IPRANGE_MATCH   => 'IP Range Match',
 		 RECENT_MATCH    => 'Recent Match',
+                 REAP_OPTION     => 'Recent Match "--reap" option',
 		 OWNER_MATCH     => 'Owner Match',
 		 OWNER_NAME_MATCH
 		                 => 'Owner Name Match',
@@ -947,6 +948,7 @@ sub initialize( $;$$) {
 	       MASQUERADE_TGT => undef,
 	       UDPLITEREDIRECT => undef,
 	       NEW_TOS_MATCH => undef,
+	       REAP_OPTION => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -3819,6 +3821,11 @@ sub Recent_Match() {
     qt1( "$iptables $iptablesw -A $sillyname -m recent --update -j ACCEPT" );
 }
 
+sub Reap_Option() {
+    ( have_capability( 'RECENT_MATCH' ) &&
+      qt1( "$iptables $iptablesw -A $sillyname -m recent --rcheck --seconds 10 --reap" ) );
+}
+
 sub Owner_Match() {
     qt1( "$iptables $iptablesw -A $sillyname -m owner --uid-owner 0 -j ACCEPT" );
 }
@@ -4286,6 +4293,7 @@ our %detect_capability =
       RAW_TABLE => \&Raw_Table,
       RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
+      REAP_OPTION => \&Reap_Option,
       RECENT_MATCH => \&Recent_Match,
       RPFILTER_MATCH => \&RPFilter_Match,
       SANE_HELPER => \&SANE_Helper,
@@ -4385,6 +4393,7 @@ sub determine_capabilities() {
 
 	$capabilities{IPRANGE_MATCH}   = detect_capability( 'IPRANGE_MATCH' );
 	$capabilities{RECENT_MATCH}    = detect_capability( 'RECENT_MATCH' );
+	$capabilities{REAP_OPTION}     = detect_capability( 'REAP_OPTION' );
 	$capabilities{OWNER_MATCH}     = detect_capability( 'OWNER_MATCH' );
 	$capabilities{OWNER_NAME_MATCH}
                                        = detect_capability( 'OWNER_NAME_MATCH' );

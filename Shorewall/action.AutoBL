@@ -22,6 +22,9 @@
 DEFAULTS -,60,5,2,300,DROP,info
 
 ?begin perl
+
+use Shorewall::Config;
+
 my ( $event, $interval, $count, $successive, $bltime, $disposition, $level ) = get_action_params(7);
 
 fatal_error "The event name parameter to AutoBL is required"            unless supplied $event;
@@ -37,11 +40,16 @@ validate_level( $level );
 #
 # Silently reject the client if blacklisted
 #
-IfEvent(${1}_BL,$6,$5,1,src,check:reap)
+?if $REAP_OPTION
+?set check_param 'check:reap'
+?else
+?set check_param 'check'
+?endif
+IfEvent(${1}_BL,$6,$5,1,src,$check_param)
 #
 # Blacklist if M attempts in the last N seconds
 #
-IfEvent($1,AutoBLL($1,$6,$7),$2,$3,src,check:reap)
+IfEvent($1,AutoBLL($1,$6,$7),$2,$3,src,$check_param)
 #
 # Log and reject if the client has tried to connect
 # in the last N seconds

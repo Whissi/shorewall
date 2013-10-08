@@ -5006,7 +5006,7 @@ sub decode_tos( $$ ) {
     my $mask = have_capability( 'NEW_TOS_MATCH' ) ? 0xff : '';
     my $value;
 
-    if ( $tos =~ m"^(.+)/(.+)$" ) {
+    if ( $tos =~ m|^(.+)/(.+)$| ) {
 	require_capability 'NEW_TOS_MATCH', 'A mask', 's';
 	$value = numeric_value $1;
 	$mask  = numeric_value $2;

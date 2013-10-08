@@ -4021,7 +4021,14 @@ sub Helper_Match() {
 sub have_helper( $$$ ) {
     my ( $helper, $proto, $port ) = @_;
 
-    if ( $helpers_enabled{$helper} ) {
+    my $helper_base = $helper;
+
+    $helper_base =~ s/-\d$//;
+    $helper_base =  $helpers_map{$helper_base};
+    $helper_base =~ s/_HELPER//;
+    $helper_base =~ s/_/-/;
+
+    if ( $helpers_enabled{lc $helper_base} ) {
 	if ( have_capability 'CT_TARGET' ) {
 	    qt1( "$iptables $iptablesw -t raw -A $sillyname -p $proto --dport $port -j CT --helper $helper" );
 	} else {

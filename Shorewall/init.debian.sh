@@ -10,6 +10,7 @@
 #                    /etc/shorewall
 ### END INIT INFO
 
+. /lib/lsb/init-functions
 
 SRWL=/sbin/shorewall
 SRWL_OPTS="-tvv"

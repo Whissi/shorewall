@@ -393,11 +393,12 @@ if [ -z "${DESTDIR}" ]; then
 
 	echo 'VARDIR=${VARLIB}/${PRODUCT}' >> $file
     fi
-
-    [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
 fi
 
 [ $file != "${DESTDIR}${SHAREDIR}/shorewall/shorewallrc" ] && cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
+
+
+[ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
 
 if [ ${SHAREDIR} != /usr/share ]; then
     for f in lib.*; do

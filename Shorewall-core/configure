@@ -95,13 +95,13 @@ vendor=${params[HOST]}
 
 if [ -z "$vendor" ]; then
     if [ -f /etc/os-release ]; then
-	eval $(cat /etc/os-release | grep ^ID)
+	eval $(cat /etc/os-release | grep ^ID=)
 
 	case $ID in
 	    fedora)
 		vendor=redhat
 		;;
-	    debian)
+	    debian|ubuntu)
 		vendor=debian
 		;;
 	    opensuse)

@@ -2536,7 +2536,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
   <section id="Complete">
     <title>A Complete Working Example</title>
 
-    <para>This section describes the network at shorewall.net in late 2012.
+    <para>This section describes the network at shorewall.net in late 2013.
     The configuration is as follows:</para>
 
     <itemizedlist>
@@ -2571,7 +2571,7 @@ wlan0                   192.168.0.0/24</programlisting><note>
 
     <para>The network is pictured in the following diagram:</para>
 
-    <graphic fileref="images/Network2012a.png" />
+    <graphic fileref="images/Network2013.png" />
 
     <section>
       <title>IPv4 Configuration</title>
@@ -2707,17 +2707,18 @@ dmz             ip           #LXC Containers</programlisting>
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>#ZONE  INTERFACE   OPTIONS
-loc    INT_IF      dhcp,physical=$INT_IF,required,wait=5,routefilter,nets=172.20.1.0/24
-net    COMB_IF     optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
-net    COMC_IF     optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
-vpn    TUN_IF+     physical=tun+,ignore=1
-dmz    br0         routeback,proxyarp=1
--      lo          ignore</programlisting>
+loc    INT_IF           dhcp,physical=$INT_IF,ignore=1,wait=5,routefilter,nets=172.20.1.0/24,routeback
+net    COMB_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
+net    COMC_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
+vpn    TUN_IF+          physical=tun+,ignore=1
+dmz    br0              routeback,proxyarp=1,required,wait=30
+</programlisting>
 
       <para><filename>/etc/shorewall/hosts:</filename></para>
 
       <programlisting>#ZONE   HOST(S)                                 OPTIONS
-smc     COMB_IF:10.1.10.0/24</programlisting>
+smc     COMB_IF:10.1.10.0/24
+smc     COMC_IF:10.0.0.0/24</programlisting>
 
       <para><filename>/etc/shorewall/providers</filename>:</para>
 
@@ -2746,26 +2747,26 @@ Squid             3        -       -          lo          -             tproxy
 70.90.191.121       -                ComcastB  1000
 70.90.191.123       -                ComcastB  1000
 &amp;COMC_IF            -                ComcastC  1000
-172.20.1.145        -                ComcastC  1000
-172.20.1.146        -                ComcastC  1000
-br0                 -                ComcastB  11000</programlisting>
+br0                 -                ComcastB  11000
+172.20.1.191        -                ComcastB  1000
+</programlisting>
 
       <para>For reference, this configuration generates these routing
       rules:</para>
 
       <programlisting>root@gateway:~# ip rule ls
-0:     from all lookup local 
-999:   from all lookup main 
-1000:  from 70.90.191.121 lookup ComcastB 
-1000:  from 70.90.191.123 lookup ComcastB 
-1000:  from 67.170.121.6 lookup ComcastC 
-1000:  from 172.20.1.145 lookup ComcastC 
-1000:  from 172.20.1.146 lookup ComcastC 
-10000: from all fwmark 0x10000/0x30000 lookup ComcastB 
-10001: from all fwmark 0x20000/0x30000 lookup ComcastC 
-11000: from all iif br0 lookup ComcastB 
-32765: from all lookup balance 
-32767: from all lookup default 
+0:      from all lookup local 
+1:      from all fwmark 0x80000/0x80000 lookup TProxy 
+999:    from all lookup main 
+1000:   from 70.90.191.121 lookup ComcastB 
+1000:   from 70.90.191.123 lookup ComcastB 
+1000:   from 172.20.1.191 lookup ComcastB 
+1000:   from 10.0.0.4 lookup ComcastC 
+10000:  from all fwmark 0x10000/0x30000 lookup ComcastB 
+10001:  from all fwmark 0x20000/0x30000 lookup ComcastC 
+11000:  from all iif br0 lookup ComcastB 
+32765:  from all lookup balance 
+32767:  from all lookup default 
 root@gateway:~# </programlisting>
 
       <para><filename>/etc/shorewall/tcrules</filename> is not used to support

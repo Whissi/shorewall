@@ -433,7 +433,7 @@ case $HOST in
 	    install_local=
 
 	    if [ -f ${SBINDIR}/ifup-local -o -f ${SBINDIR}/ifdown-local ]; then
-		if ! fgrep -q Shorewall-based ${SBINDIR}/ifup-local || ! fgrep -q Shorewall-based ${SBINDIR}/ifdown-local; then
+		if ! grep -qF Shorewall-based ${SBINDIR}/ifup-local || ! grep -qF Shorewall-based ${SBINDIR}/ifdown-local; then
 		    echo "WARNING: ${SBINDIR}/ifup-local and/or ${SBINDIR}/ifdown-local already exist; up/down events will not be handled"
 		else
 		    install_local=Yes
@@ -527,7 +527,7 @@ if [ -f ${DESTDIR}/etc/ppp ]; then
 	    for file in ip-up.local ip-down.local; do
 		FILE=${DESTDIR}/etc/ppp/$file
 		if [ -f $FILE ]; then
-		    if fgrep -q Shorewall-based $FILE ; then
+		    if grep -qF Shorewall-based $FILE ; then
 			cp -fp ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown $FILE
 		    else
 			echo "$FILE already exists -- ppp devices will not be handled"

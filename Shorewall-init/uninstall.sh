@@ -153,7 +153,7 @@ if [ -d ${CONFDIR}/ppp ]; then
     done
 
     for file in if-up.local if-down.local; do
-	if fgrep -q Shorewall-based ${CONFDIR}/ppp/$FILE; then
+	if grep -qF Shorewall-based ${CONFDIR}/ppp/$FILE; then
 	    remove_file ${CONFDIR}/ppp/$FILE
 	fi
     done

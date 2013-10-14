@@ -344,7 +344,7 @@ replace_default_route() # $1 = USE_DEFAULT_RT
 #
 delete_default_routes() # $1 = table number
 {
-    $IP -$g_family route ls table $1 | fgrep default | fgrep -v metric | while read route; do
+    $IP -$g_family route ls table $1 | grep -F default | grep -vF metric | while read route; do
 	qt $IP -$g_family route del $route
     done
 } 
@@ -377,7 +377,7 @@ restore_default_route() # $1 = USE_DEFAULT_RT
 	    #
 	    # We didn't restore a default route with metric 0
 	    #
-	    if $IP -$g_family -o route list 2> /dev/null | fgrep default | fgrep -qv metric; then
+	    if $IP -$g_family -o route list 2> /dev/null | grep -F default | grep -qvF metric; then
 	       #
 	       # But we added a default route with metric 0
 	       #
@@ -916,8 +916,8 @@ add_gateway() # $1 = Delta $2 = Table Number
     else
 	delta=$1
 
-	if ! echo $route | fgrep -q ' nexthop '; then
-	    if echo $route | fgrep -q via; then
+	if ! echo $route | grep -qF ' nexthop '; then
+	    if echo $route | grep -qF via; then
 		route=`echo $route | sed 's/via/nexthop via/'`
 	    else
 		route="nexthop $route"
@@ -947,7 +947,7 @@ delete_gateway() # $! = Description of the Gateway $2 = table number $3 = device
     gateway=$1
 
     if [ -n "$route" ]; then
-	if echo $route | fgrep -q ' nexthop '; then
+	if echo $route | grep -qF ' nexthop '; then
 	    gateway="nexthop $gateway"
 	    eval route=\`echo $route \| sed \'s/$gateway/ /\'\`
 	    run_ip route replace table $2 $route

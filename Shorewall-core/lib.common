@@ -605,7 +605,7 @@ find_first_interface_address() # $1 = interface
 	#
 	# get the line of output containing the first IP address
 	#
-	addr=$(${IP:-ip} -f inet6 addr show dev $1 2> /dev/null | fgrep 'inet6 ' | fgrep -v 'scope link' | head -n1)
+	addr=$(${IP:-ip} -f inet6 addr show dev $1 2> /dev/null | grep -F 'inet6 ' | grep -vF 'scope link' | head -n1)
 	#
 	# If there wasn't one, bail out now
 	#
@@ -634,7 +634,7 @@ find_first_interface_address_if_any() # $1 = interface
 	#
 	# get the line of output containing the first IP address
 	#
-	addr=$(${IP:-ip} -f inet6 addr show dev $1 2> /dev/null | fgrep 'inet6 ' | fgrep -v 'scope link' | head -n1)
+	addr=$(${IP:-ip} -f inet6 addr show dev $1 2> /dev/null | grep -F 'inet6 ' | grep -vF 'scope link' | head -n1)
 	#
 	# Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
 	# along with everything else on the line

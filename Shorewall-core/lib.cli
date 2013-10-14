@@ -559,7 +559,7 @@ show_routing() {
 	ip -$g_family rule list | find_tables | sort -u | while read table; do
 	    heading "Table $table:"
 	    if [ $g_family -eq 6 ]; then
-		ip -$g_family -o route list table $table | fgrep -v cache | sort_routes
+		ip -$g_family -o route list table $table | grep -vF cache | sort_routes
 	    else
 		ip -4 -o route list table $table | sort_routes
 	    fi
@@ -572,7 +572,7 @@ show_routing() {
     else
 	heading "Routing Table"
 	if [ $g_family -eq 6 ]; then
-	    ip -$g_family -o route list | fgrep -v cache | sort_routes
+	    ip -$g_family -o route list | grep -vF cache | sort_routes
 	else
 	    ip -4 -o route list table $table | sort_routes
 	fi

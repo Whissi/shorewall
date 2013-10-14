@@ -186,7 +186,7 @@ sub setup_route_marking() {
 sub copy_table( $$$ ) {
     my ( $duplicate, $number, $realm ) = @_;
 
-    my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
+    my $filter = $family == F_IPV6 ? q(grep -vF ' cache ' | sed 's/ via :: / /' | ) : '';
 
     emit '';
 
@@ -223,7 +223,7 @@ sub copy_table( $$$ ) {
 sub copy_and_edit_table( $$$$$ ) {
     my ( $duplicate, $number, $id, $copy, $realm) = @_;
 
-    my $filter = $family == F_IPV6 ? q(fgrep -v ' cache ' | sed 's/ via :: / /' | ) : '';
+    my $filter = $family == F_IPV6 ? q(grep -vF ' cache ' | sed 's/ via :: / /' | ) : '';
     my %copied;
     my @copy;
     my @bup_copy;

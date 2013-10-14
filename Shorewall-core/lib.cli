@@ -680,7 +680,7 @@ version_command() {
 	    fi
 	done
 
-	if [ -f $g_firewall ]; then
+	if [ "$(id -u)" -eq 0 -a -f $g_firewall ]; then
 	    echo $g_echo_n "$g_firewall was compiled by Shorewall version "
 	    $g_firewall version
 	fi

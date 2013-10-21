@@ -645,7 +645,7 @@ our  %tccmd;
 
     unless ( $classid ) {
 	{
-	    if ( $cmd =~ /^([[A-Z!&]+)/ ) {
+	    if ( $cmd =~ /^([[A-Z|&]+)/ ) {
 		if ( my $tccmd = $tccmd{$1} ) {
 		    fatal_error "Invalid $1 ACTION ($originalmark)" unless $tccmd->{match}($cmd); 
 		    fatal_error "$mark not valid with :C[FPT]" if $connmark;

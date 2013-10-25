@@ -463,6 +463,7 @@ if [ -z "$DESTDIR" ]; then
 		    echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
 		else
 		    cant_autostart
+		fi
 	    else
 		cant_autostart
 	    fi

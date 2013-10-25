@@ -59,7 +59,6 @@ mywhich() {
 
     for dir in $(split $PATH); do
 	if [ -x $dir/$1 ]; then
-	    echo $dir/$1
 	    return 0
 	fi
     done
@@ -175,6 +174,8 @@ done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
+[ -n "$BUILD" ] || BUILD=$HOST
+
 if [ -z "$BUILD" ]; then
     case $(uname) in
 	cygwin*)
@@ -193,9 +194,6 @@ if [ -z "$BUILD" ]; then
 			;;
 		    debian)
 			BUILD=debian
-			;;
-		    gentoo)
-			BUILD=gentoo
 			;;
 		    opensuse)
 			BUILD=suse
@@ -459,8 +457,12 @@ if [ -z "$DESTDIR" ]; then
 		else
 		    cant_autostart
 		fi
-	    elif rc-update add $PRODUCT default; then
-		echo "Shorewall Init will start automatically at boot"
+	    elif mywhich update-rc.d ; then
+		if update-rc.d $PRODUCT enable; then
+		    echo "$PRODUCT will start automatically at boot"
+		    echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
+		else
+		    cant_autostart
 	    else
 		cant_autostart
 	    fi

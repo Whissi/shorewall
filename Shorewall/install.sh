@@ -1193,6 +1193,12 @@ if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
 	else
 	    cant_autostart
 	fi
+    elif mywhich update-rc.d ; then
+	echo "$PRODUCT will start automatically at boot"
+	echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
+	touch /var/log/$PRODUCT-init.log
+	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+	update-rc.d $PRODUCT enable
     elif mywhich rc-update ; then
 	if rc-update add $PRODUCT default; then
 	    echo "$PRODUCT will start automatically at boot"

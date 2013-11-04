@@ -403,6 +403,13 @@
             </listitem>
 
             <listitem>
+              <para><emphasis role="bold">DROP</emphasis></para>
+
+              <para>Added in Shorewall 4.5.21.4. Causes matching packets to be
+              discarded.</para>
+            </listitem>
+
+            <listitem>
               <para><emphasis
               role="bold">DSCP</emphasis>(<replaceable>dscp</replaceable>)</para>
 
@@ -779,8 +786,8 @@ Normal-Service       =&gt; 0x00</programlisting>
           <emphasis>port range</emphasis>s; if the protocol is <emphasis
           role="bold">ipv6-icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s). ICMP types may be specified as a numeric
-          type, a numeric type and code separated by a slash (e.g., 3/4), or
-          a typename. See <ulink
+          type, a numeric type and code separated by a slash (e.g., 3/4), or a
+          typename. See <ulink
           url="http://www.shorewall.net/configuration_file_basics.htm#ICMP">http://www.shorewall.net/configuration_file_basics.htm#ICMP</ulink>.</para>
 
           <para>If the protocol is <emphasis role="bold">ipp2p</emphasis>,
@@ -1151,10 +1158,10 @@ Normal-Service       =&gt; 0x00</programlisting>
        4         ::/0      ::/0         ipp2p:all
        SAVE      ::/0      ::/0         all     -             -       -       !0</programlisting>
 
-          <para>If a packet hasn't been classified (packet mark is 0), copy the
-          connection mark to the packet mark. If the packet mark is set, we're
-          done. If the packet is P2P, set the packet mark to 4. If the packet
-          mark has been set, save it to the connection mark.</para>
+          <para>If a packet hasn't been classified (packet mark is 0), copy
+          the connection mark to the packet mark. If the packet mark is set,
+          we're done. If the packet is P2P, set the packet mark to 4. If the
+          packet mark has been set, save it to the connection mark.</para>
         </listitem>
       </varlistentry>
     </variablelist>

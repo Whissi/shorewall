@@ -304,7 +304,13 @@ our  %tccmd;
 				 mark      => NOMARK,
 				 mask      => '',
 				 connmark  => 0,
-			       }
+			       },
+		   DROP =>      { match     => sub( $ ) { $_[0] eq 'DROP' },
+				 target    => 'DROP',
+				 mark      => NOMARK,
+				 mask      => '',
+				 connmark  => 0
+			       },
 		 );
     }
 
@@ -559,7 +565,13 @@ our  %tccmd;
 					   }
 
 					   $cmd = '';
-				       }
+				       },
+		       DROP     => sub()
+		                       {
+					   assert ( $cmd eq 'DROP' );
+					   $target = 'DROP';
+					   $cmd = '';
+				       },
 		     );
 
     if ( $source ) {

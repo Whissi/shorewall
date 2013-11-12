@@ -1,5 +1,5 @@
 #
-# Shorewall 4 - Broadcast Action
+# Shorewall 4 - Multicast/Anycast Action
 #
 #    /usr/share/shorewall/action.Broadcast
 #
@@ -46,7 +46,6 @@ fatal_error "Invalid parameter to action Broadcast"   if supplied $audit && $aud
 
 if ( have_capability( 'ADDRTYPE' ) ) {
     if ( $level ne '' ) {
-	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type MULTICAST ';
 	log_rule_limit $level, $chainref, 'dropBcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type ANYCAST ';
     }
@@ -61,10 +60,10 @@ if ( have_capability( 'ADDRTYPE' ) ) {
     add_jump $chainref, $target, 0, "-d \$address ";
     decr_cmd_level $chainref;
     add_commands $chainref, 'done';
-}
 
-log_rule_limit( $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', join( ' ', '-d', IPv6_MULTICAST . ' ' ) )  if $level ne '';
-add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
+    log_rule_limit( $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', join( ' ', '-d', IPv6_MULTICAST . ' ' ) )  if $level ne '';
+    add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
+}
 
 1;
 

@@ -3331,9 +3331,13 @@ sub process_rules( $ ) {
 
     if ( $fn ) {
 
+	set_section_function( &process_section );
+
 	first_entry "$doing $fn...";
 
 	process_raw_rule while read_a_line( NORMAL_READ );
+
+	clear_section_function;
     }
     #
     # No need to finish the NEW section since no rules need to be generated

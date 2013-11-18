@@ -447,11 +447,15 @@ sub setup_accounting() {
 
     if ( my $fn = open_file 'accounting', 1, 1 ) {
 
+	set_section_function( &process_section );
+
 	first_entry "$doing $fn...";
 
 	my $nonEmpty = 0;
 
 	$nonEmpty |= process_accounting_rule while read_a_line( NORMAL_READ );
+
+	clear_section_function;
 
 	if ( $nonEmpty ) {
 	    my $tableref = $chain_table{$acctable};

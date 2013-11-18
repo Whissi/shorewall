@@ -152,6 +152,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       no_comment
 				       macro_comment
 				       dump_mark_layout
+                                       set_section_function
+                                       clear_section_function
 
 				       $product
 				       $Product
@@ -200,6 +202,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       SUPPRESS_WHITESPACE
 				       CONFIG_CONTINUATION
 				       DO_INCLUDE
+                                       DO_SECTION
 				       NORMAL_READ
 
 				       OPTIMIZE_POLICY_MASK
@@ -626,10 +629,13 @@ use constant { PLAIN_READ          => 0,     # No read_a_line options
 	       CONFIG_CONTINUATION => 32,    # Suppress leading whitespace if
                                              # continued line ends in ',' or ':'
 	       DO_INCLUDE          => 64,    # Look for INCLUDE <filename>
+               DO_SECTION          => 128,   # Look for [?]SECTION <section> 
                NORMAL_READ         => -1     # All options
 	   };
 
 our %variables; # Symbol table for expanding shell variables
+
+our $section_function; #Function Reference for handling ?section
 
 sub process_shorewallrc($$);
 sub add_variables( \% );
@@ -2151,6 +2157,17 @@ sub macro_comment( $ ) {
 }
 
 #
+# Set/clear $section_function
+#
+sub set_section_function( \& ) {
+    $section_function = $_[0];
+}
+
+sub clear_section_function() {
+    $section_function = undef;
+}
+
+#
 # Open a file, setting $currentfile. Returns the file's absolute pathname if the file
 # exists, is non-empty  and was successfully opened. Terminates with a fatal error
 # if the file exists, is non-empty, but the open fails.
@@ -2202,7 +2219,8 @@ sub push_include() {
 			  $file_format,
 			  $max_format,
 			  $comment,
-			  $nocomment ];
+			  $nocomment,
+			  $section_function ];
 }
 
 #
@@ -2225,11 +2243,13 @@ sub pop_include() {
 	  $file_format,
 	  $max_format,
 	  $comment,
-	  $nocomment ) = @$arrayref;
+	  $nocomment,
+	  $section_function ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
 	clear_comment;
+	clear_section_function;
     }
 }
 
@@ -2795,6 +2815,7 @@ EOF
 sub push_open( $;$$$ ) {
     my ( $file, $max , $ca, $nc ) = @_;
     push_include;
+    clear_section_function;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
@@ -3288,6 +3309,12 @@ sub read_a_line($) {
 		}
 
 		$currentline = '';
+            } elsif ( ( $options & DO_SECTION ) && $currentline =~ /^s*\??SECTION\s+(.*)/i ) {
+                my $sectionname = $1;
+                fatal_error "Invalid SECTION name ($sectionname)" unless $sectionname =~ /^[-_\da-zA-Z]+$/;
+                fatal_error "This file does not allow ?SECTION" unless $section_function;
+                $section_function->($sectionname);
+                $currentline = '';
 	    } else {
 		fatal_error "Non-ASCII gunk in file" if ( $options && CHECK_GUNK ) && $currentline =~ /[^\s[:print:]]/;
 		print "IN===> $currentline\n" if $debug;

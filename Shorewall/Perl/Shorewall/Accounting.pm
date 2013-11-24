@@ -432,6 +432,7 @@ sub process_accounting_rule( ) {
 	fatal_error 'ACTION must be specified' if $action eq '-';
 
 	if ( $action eq 'SECTION' ) {
+	    section_warning;
 	    process_section( $chain );
 	} else {
 	    for my $proto ( split_list $protos, 'Protocol' ) {

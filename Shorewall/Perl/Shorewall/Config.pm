@@ -153,6 +153,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       macro_comment
 				       dump_mark_layout
                                        set_section_function
+                                       section_warning
                                        clear_section_function
 
 				       $product
@@ -551,6 +552,7 @@ our $nocomment;              # When true, ignore [?]COMMENT in the current file
 our $warningcount;           # Used to suppress duplicate warnings about missing COMMENT support
 our $warningcount1;          # Used to suppress duplicate warnings about COMMENT being deprecated
 our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
+our $warningcount3;          # Used to suppress duplicate warnings about SECTION being deprecated
 
 our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
@@ -683,6 +685,7 @@ sub initialize( $;$$) {
     $warningcount  = 0;
     $warningcount1 = 0;
     $warningcount2 = 0;
+    $warningcount3 = 0;
     #
     # Misc Globals
     #
@@ -2166,6 +2169,13 @@ sub set_section_function( \& ) {
 sub clear_section_function() {
     $section_function = undef;
 }
+
+#
+# Generate a SECTION warning
+#
+sub section_warning() {
+    warning_message "'SECTION' is deprecated in favor of '?SECTION' - consider running '$product update -D'" unless $warningcount3++; 
+}    
 
 #
 # Open a file, setting $currentfile. Returns the file's absolute pathname if the file

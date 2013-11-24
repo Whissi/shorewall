@@ -5567,7 +5567,7 @@ sub get_configuration( $$$$ ) {
     if ( supplied ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;
     } else {
-	$config{ZONE2ZONE} = '2';
+	$config{ZONE2ZONE} = '-';
     }
 
     default 'BLACKLIST_DISPOSITION'    , 'DROP';

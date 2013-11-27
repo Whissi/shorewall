@@ -3319,7 +3319,7 @@ sub read_a_line($) {
 		}
 
 		$currentline = '';
-            } elsif ( ( $options & DO_SECTION ) && $currentline =~ /^s*\??SECTION\s+(.*)/i ) {
+            } elsif ( ( $options & DO_SECTION ) && $currentline =~ /^\s*\?SECTION\s+(.*)/i ) {
                 my $sectionname = $1;
                 fatal_error "Invalid SECTION name ($sectionname)" unless $sectionname =~ /^[-_\da-zA-Z]+$/;
                 fatal_error "This file does not allow ?SECTION" unless $section_function;

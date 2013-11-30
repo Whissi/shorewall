@@ -1982,6 +1982,57 @@ sub split_list3( $$ ) {
     @list2;
 }
 
+sub split_list4( $ ) {
+    my ($list) = @_;
+
+    return split ' ', $list unless $list =~ /\(/;
+
+    my @list1 = split ' ', $list;
+    my @list2;
+    my $element   = '';
+    my $opencount = 0;
+
+    for ( @list1 ) {
+	my $count;
+
+	if ( ( $count = tr/(/(/ ) > 0 ) {
+	    $opencount += $count;
+	    if ( $element eq '' ) {
+		$element = $_;
+	    } else {
+		$element = join( ',', $element, $_ );
+	    }
+
+	    if ( ( $count = tr/)/)/ ) > 0 ) {
+		if ( ! ( $opencount -= $count ) ) {
+		     push @list2 , $element;
+		     $element = '';
+		} else {
+		    fatal_error "Mismatched parentheses ($list)" if $opencount < 0;
+		}
+	    }
+	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
+	    $element = join (',', $element, $_ );
+	    if ( ! ( $opencount -= $count ) ) {
+		 push @list2 , $element;
+		 $element = '';
+	    } else {
+		fatal_error "Mismatched parentheses ($list)" if $opencount < 0;
+	    }
+	} elsif ( $element eq '' ) {
+	    push @list2 , $_;
+	} else {
+	    $element = join ',', $element , $_;
+	}
+    }
+
+    unless ( $opencount == 0 ) {
+	fatal_error "Mismatched parentheses ($list)";
+    }
+
+    @list2;
+}
+
 #
 # Determine if a value has been supplied
 #
@@ -2045,7 +2096,7 @@ sub split_line1( $$;$$ ) {
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 
-    my @line = split( ' ', $columns );
+    my @line = split_list4( $columns );
 
     $nopad = {} unless $nopad;
 

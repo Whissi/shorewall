@@ -1982,7 +1982,7 @@ sub split_list3( $$ ) {
     @list2;
 }
 
-sub split_list4( $ ) {
+sub split_columns( $ ) {
     my ($list) = @_;
 
     return split ' ', $list unless $list =~ /\(/;
@@ -2008,7 +2008,7 @@ sub split_list4( $ ) {
 		     push @list2 , $element;
 		     $element = '';
 		} else {
-		    fatal_error "Mismatched parentheses ($list)" if $opencount < 0;
+		    fatal_error "Mismatched parentheses ($_)" if $opencount < 0;
 		}
 	    }
 	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
@@ -2017,7 +2017,7 @@ sub split_list4( $ ) {
 		 push @list2 , $element;
 		 $element = '';
 	    } else {
-		fatal_error "Mismatched parentheses ($list)" if $opencount < 0;
+		fatal_error "Mismatched parentheses ($_)" if $opencount < 0;
 	    }
 	} elsif ( $element eq '' ) {
 	    push @list2 , $_;
@@ -2096,7 +2096,7 @@ sub split_line1( $$;$$ ) {
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 
-    my @line = split_list4( $columns );
+    my @line = split_columns( $columns );
 
     $nopad = {} unless $nopad;
 

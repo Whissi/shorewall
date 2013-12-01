@@ -207,7 +207,7 @@ sub initialize( $ ) {
 sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
-our  %tccmd;
+    our  %tccmd;
 
     unless ( %tccmd ) {
 	%tccmd = ( SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
@@ -315,6 +315,15 @@ our  %tccmd;
     }
 
     fatal_error 'MARK must be specified' if $originalmark eq '-';
+
+    my $inline;
+    my $raw = '';
+
+    if ( $inline = ( $originalmark =~ /^INLINE\((.+)\)(:.*)?$/ ) ) {
+	$originalmark = $1;
+	$originalmark .= $2 if $2;
+	$raw = get_inline_matches;
+    }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
@@ -557,9 +566,12 @@ our  %tccmd;
 					   assert ( $cmd eq 'INLINE' );
 					   $matches = get_inline_matches;
 
-					   if ( $matches =~ /^(.*\s+)-j\s+(.+) $/ ) {
-					       $matches = $1;
-					       $target  = $2;
+					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+					       $matches   = $1;
+					       $target    = $2;
+					       my $action = $target;
+					       $action = $1 if $action =~ /^(.+?)\s/;
+					       fatal_error "Unknown target ($action)" unless $targets{$action} || $builtin_target{$action};
 					   } else {
 					       $target = '';
 					   }

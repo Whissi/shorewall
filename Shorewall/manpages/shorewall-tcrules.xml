@@ -474,6 +474,33 @@
             </listitem>
 
             <listitem>
+              <para><emphasis
+              role="bold">INLINE</emphasis>[(<replaceable>action</replaceable>)]</para>
+
+              <para>Added in Shorewall 4.6.0. Allows you to place your own
+              ip[6]tables matches at the end of the line following a semicolon
+              (";"). If an <replaceable>action</replaceable> is specified, the
+              compiler procedes as if that <replaceable>action</replaceable>
+              had been specified in this column. If no action is specified,
+              then you may include your own jump ("-j
+              <replaceable>target</replaceable>
+              [<replaceable>option</replaceable>] ...") after any matches
+              specified at the end of the rule. If the target is not one known
+              to Shorewall, then it must be defined as a builtin action in
+              <ulink url="shorewall-actions.html">shorewall-actions</ulink>
+              (5).</para>
+
+              <para>The following rules are equivalent:</para>
+
+              <programlisting>2:P             eth0              -         tcp 22
+INLINE(2):P     eth0              -         tcp 22
+INLINE(2):P     eth0              -                 ; -p tcp
+INLINE          eth0              -         tcp 22  ; -j MARK --set-mark 2
+INLINE          eth0              -                 ; -p tcp -j MARK --set-mark 2
+</programlisting>
+            </listitem>
+
+            <listitem>
               <para><emphasis role="bold">IPMARK</emphasis> ‒ Assigns a mark
               to each matching packet based on the either the source or
               destination IP address. By default, it assigns a mark value

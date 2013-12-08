@@ -74,6 +74,20 @@
     and can be configured to log all Shorewall messages to their own log
     file.</para>
 
+    <note>
+      <para>If you want to specify parameters to ULOG or NFLOG (e.g.,
+      NFLOG(1,0,1)), then you must either quote the setting or you must escape
+      the parentheses.</para>
+
+      <para>Examples:</para>
+
+      <programlisting>MACLIST_LOG_LEVEL="NFLOG(1,0,1)"</programlisting>
+
+      <para>or</para>
+
+      <programlisting>MACLIST_LOG_LEVEL=NFLOG\(1,0,1\)</programlisting>
+    </note>
+
     <para>Beginning with Shorewall 4.4.22, LOGMARK is also a valid level which
     logs the packet's mark value along with the other usual information. The
     syntax is:</para>

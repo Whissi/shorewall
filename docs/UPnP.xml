@@ -22,6 +22,8 @@
 
       <year>2010</year>
 
+      <year>2013</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -120,6 +122,14 @@ forwardUPnP        net     loc</programlisting>
       <para>Shorewall versions prior to 4.4.10 do not retain the dynamic rules
       added by linux-idg over a <command>shorewall restart</command>.</para>
     </caution>
+
+    <para>If your firewall-&gt;loc policy is not ACCEPT, then you also need to
+    allow UDP traffic from the fireawll to the local zone.</para>
+
+    <programlisting>ACCEPT      $FW          loc        udp            -         &lt;<replaceable>dynamic port range</replaceable>&gt;</programlisting>
+
+    <para>The dynamic port range is obtained by <emphasis role="bold">cat
+    /proc/sys/net/ip_local_port_range</emphasis>.</para>
   </section>
 
   <section>

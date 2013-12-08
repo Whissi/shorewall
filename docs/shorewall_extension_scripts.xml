@@ -220,6 +220,13 @@ esac</programlisting><caution>
         <programlisting>#! /bin/sh
 cat -</programlisting>
       </listitem>
+
+      <listitem>
+        <para><filename>postcompile</filename> -- Added in Shorewall 4.5.8.
+        This shell script is invoked by<emphasis role="bold">
+        /sbin/shorewall</emphasis> after a script has been compiled. $1 is the
+        path name of the compiled script.</para>
+      </listitem>
     </itemizedlist>
 
     <para><emphasis role="bold">If your version of Shorewall doesn't have the
@@ -282,6 +289,13 @@ cat -</programlisting>
             <entry>maclog</entry>
 
             <entry>check, compile, export, refresh, restart, start</entry>
+          </row>
+
+          <row>
+            <entry>postcompile</entry>
+
+            <entry>compile, export, load, refresh, reload, restart, restore,
+            start</entry>
           </row>
 
           <row>
@@ -498,7 +512,7 @@ cat -</programlisting>
               </row>
 
               <row>
-                <entry></entry>
+                <entry>postcompile</entry>
 
                 <entry>started</entry>
               </row>
@@ -548,10 +562,11 @@ cat -</programlisting>
           </tgroup>
         </informaltable></para>
 
-      <para>Compile-time extension scripts are executed using the Perl 'eval
-      `cat &lt;<emphasis>file</emphasis>&gt;`' mechanism. Be sure that each
-      script returns a 'true' value; otherwise, the compiler will assume that
-      the script failed and will abort the compilation.</para>
+      <para>With the exception of postcompile, compile-time extension scripts
+      are executed using the Perl 'eval `cat
+      &lt;<emphasis>file</emphasis>&gt;`' mechanism. Be sure that each script
+      returns a 'true' value; otherwise, the compiler will assume that the
+      script failed and will abort the compilation.</para>
 
       <para>Each compile-time script is implicitly prefaced with:</para>
 

@@ -66,11 +66,19 @@ sub process_one_masq1( $$$$$$$$$$ )
     my $add_snat_aliases = $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
     my $destnets = '';
     my $baserule = '';
+    my $inlinematches = '';
 
     #
     # Leading '+'
     #
     $pre_nat = 1 if $interfacelist =~ s/^\+//;
+    #
+    # Check for INLINE
+    #
+    if ( $interfacelist =~ /^INLINE\((.+)\)$/ ) {
+	$interfacelist = $1;
+	$inlinematches = get_inline_matches;
+    }
     #
     # Parse the remaining part of the INTERFACE column
     #
@@ -325,7 +333,7 @@ sub process_one_masq1( $$$$$$$$$$ )
 	expand_rule( $chainref ,
 		     POSTROUTE_RESTRICT ,
 		     '' ,
-		     $baserule . $rule ,
+		     $baserule . $inlinematches . $rule ,
 		     $networks ,
 		     $destnets ,
 		     $origdest ,

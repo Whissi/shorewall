@@ -1675,11 +1675,16 @@ sub process_action($$) {
 
 	if ( $file_format == 1 ) {
 	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
-		split_line1 'action file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 }, $rule_commands;
+		split_line1( 
+		    'action file',
+		    { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 },
+		    $rule_commands );
 	    $origdest = $connlimit = $time = $headers = $condition = $helper = '-';
 	} else {
 	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
-		= split_line1 'action file', \%rulecolumns, $action_commands;
+		= split_line1( 'action file',
+			       \%rulecolumns,
+			       $action_commands );
 	}
 
 	fatal_error 'TARGET must be specified' if $target eq '-';
@@ -1746,7 +1751,11 @@ sub process_actions() {
 	open_file( $file, 2 );
 
 	while ( read_a_line( NORMAL_READ ) ) {
-	    my ( $action, $options ) = split_line 'action file' , { action => 0, options => 1 };
+	    my ( $action, $options ) = split_line2( 'action file',
+						    { action => 0, options => 1 },
+						    {},    #Nopad
+						    undef, #Columns
+						    1 );   #Allow inline matches
 
 	    my $type     = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
 	    my $noinline = 0;
@@ -1889,7 +1898,12 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
 
 	if ( $file_format == 1 ) {
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
+	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = 
+		split_line2( 'macro file',
+			     \%rulecolumns,
+			     $rule_commands,
+			     undef, #Columns
+			     1 );   #Allow inline matches
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = qw/- - - - - - -/;
 	} else {
 	    ( $mtarget,
@@ -1906,7 +1920,11 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 	      $mtime,
 	      $mheaders,
 	      $mcondition,
-	      $mhelper ) = split_line1 'macro file', \%rulecolumns, $rule_commands;
+	      $mhelper ) = split_line2( 'macro file',
+					\%rulecolumns,
+					$rule_commands,
+					undef, #Columns
+					1 );   #Allow inline matches
 	}
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
@@ -2031,7 +2049,12 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$) {
 	      $mtime,
 	      $mheaders,
 	      $mcondition,
-	      $mhelper ) = split_line1 'inline action file', \%rulecolumns, $rule_commands;
+	      $mhelper ) = split_line2( 'inline action file',
+					\%rulecolumns,
+					$rule_commands,
+					undef, #Columns
+					1 );   #Allow inline matches
+
 
 	fatal_error 'TARGET must be specified' if $mtarget eq '-';
 
@@ -2190,6 +2213,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		$param = '' unless defined $param;
 	    }
 	}
+    } elsif ( $config{INLINE_MATCHES} ) {
+	$raw_matches = get_inline_matches;
     }
     #
     # Determine the validity of the action
@@ -3116,7 +3141,12 @@ sub build_zone_list( $$$\$\$ ) {
 #
 sub process_raw_rule ( ) {
     my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
-	= split_line1 'rules file', \%rulecolumns, $rule_commands;
+	= split_line2( 'rules file',
+		       \%rulecolumns,
+		       $rule_commands,
+		       undef, #Columns
+		       1 );   #Allow inline matches
+
 
     fatal_error 'ACTION must be specified' if $target eq '-';
 

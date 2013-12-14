@@ -123,7 +123,9 @@ sub setup_proxy_arp() {
 	while ( read_a_line( NORMAL_READ ) ) {
 
 	    my ( $address, $interface, $external, $haveroute, $persistent ) =
-		split_line $file_opt . 'file ', { address => 0, interface => 1, external => 2, haveroute => 3, persistent => 4 };
+		split_line( $file_opt .
+			    'file ',
+			    { address => 0, interface => 1, external => 2, haveroute => 3, persistent => 4 } );
 
 	    if ( $first_entry ) {
 		progress_message2 "$doing $fn...";

@@ -240,7 +240,9 @@ sub setup_conntrack() {
 		my ( $source, $dest, $protos, $ports, $sports, $user, $switch );
 
 		if ( $file_format == 1 ) {
-		    ( $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 };
+		    ( $source, $dest, $protos, $ports, $sports, $user, $switch ) =
+			split_line1( 'Conntrack File',
+				     { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 } );
 		    $action = 'NOTRACK';
 		} else {
 		    ( $action, $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };

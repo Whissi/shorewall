@@ -125,6 +125,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       split_list2
 				       split_line
 				       split_line1
+				       split_line2
 				       first_entry
 				       open_file
 				       close_file
@@ -226,7 +227,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.5.20-Beta1';
+our $VERSION = '4.6.0-Beta1';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -833,6 +834,7 @@ sub initialize( $;$$) {
 	  CHAIN_SCRIPTS => undef,
 	  TRACK_RULES => undef,
 	  REJECT_ACTION => undef,
+	  INLINE_MATCHES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -2050,8 +2052,8 @@ sub supplied( $ ) {
 #    Handles all of the supported forms of column/pair specification
 #    Handles segragating raw iptables input in INLINE rules
 #
-sub split_line1( $$;$$ ) {
-    my ( $description, $columnsref, $nopad, $maxcolumns ) = @_;
+sub split_line2( $$;$$$ ) {
+    my ( $description, $columnsref, $nopad, $maxcolumns, $inline ) = @_;
 
     unless ( defined $maxcolumns ) {
 	my @maxcolumns = ( keys %$columnsref );
@@ -2070,18 +2072,25 @@ sub split_line1( $$;$$ ) {
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
 
-	if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
-	    $inline_matches = $pairs;
+	if ( $inline ) {
+	    #
+	    # This file supports INLINE
+	    #
+	    if ( $config{INLINE_MATCHES} || $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
+		$inline_matches = $pairs;
 
-	    if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
-		#
-		# Pairs are enclosed in curly brackets.
-		#
-		$columns = $1;
-		$pairs   = $2;
-	    } else {
-		$pairs = '';
-	    }
+		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
+		    #
+		    # Pairs are enclosed in curly brackets.
+		    #
+		    $columns = $1;
+		    $pairs   = $2;
+		} else {
+		    $pairs = '';
+		}
+	    } 
+	} else {
+	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)"
 	}
     } elsif ( $currentline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
 	#
@@ -2138,6 +2147,10 @@ sub split_line1( $$;$$ ) {
     }
 
     @line;
+}
+
+sub split_line1( $$;$$ ) {
+    &split_line2( @_, undef );
 }
 
 sub split_line($$) {
@@ -5522,6 +5535,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
     default_yes_no 'TRACK_RULES'                , '';
+    default_yes_no 'INLINE_MATCHES'             , '';
 
     if ( $val = $config{REJECT_ACTION} ) {
 	fatal_error "Invalid Reject Action Name ($val)" unless $val =~ /^[a-zA-Z][\w-]*$/;

@@ -142,7 +142,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term> (Formerly called SUBNET) -
+        <term>(Formerly called SUBNET) -
         {<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>address</emphasis>][<emphasis>exclusion</emphasis>]}</term>
 
@@ -675,6 +675,17 @@
 
        #INTERFACE    SOURCE         ADDRESS 
        INLINE(eth1)  0.0.0.0/0      70.90.191.121 ;  -m statistic --mode random --probability 0.50
+       eth1          0.0.0.0/0      70.90.191.123 
+</programlisting>
+
+          <para>If INLINE_MATCHES=Yes in <ulink
+          url="shorewall.conf.html">shorewall.conf(5)</ulink>, then these
+          rules may be specified as follows:</para>
+
+          <programlisting>/etc/shorewall/masq:
+
+       #INTERFACE    SOURCE         ADDRESS 
+       eth1          0.0.0.0/0      70.90.191.121 ;  -m statistic --mode random --probability 0.50
        eth1          0.0.0.0/0      70.90.191.123 
 </programlisting>
         </listitem>

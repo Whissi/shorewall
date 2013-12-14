@@ -82,7 +82,9 @@ sub process_tos() {
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
-	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) = split_line 'tos file entry', { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } ;
+	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) =
+		split_line( 'tos file entry',
+			    { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } );
 
 	    $first_entry = 0;
 
@@ -153,7 +155,10 @@ sub setup_ecn()
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
-	    my ($interface, $hosts ) = split_line1 'ecn file entry', { interface => 0, host => 1, hosts => 1 }, {}, 2;
+	    my ($interface, $hosts ) = split_line1( 'ecn file entry',
+						    { interface => 0, host => 1, hosts => 1 },
+						    {},
+						    2 );
 
 	    fatal_error 'INTERFACE must be specified' if $interface eq '-';
 	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
@@ -240,7 +245,8 @@ sub setup_blacklist() {
 		    $first_entry = 0;
 		}
 
-		my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
+		my ( $networks, $protocol, $ports, $options ) = split_line( 'blacklist file',
+									    { networks => 0, proto => 1, port => 2, options => 3 } );
 
 		if ( $options eq '-' ) {
 		    $options = 'src';
@@ -400,7 +406,9 @@ sub convert_blacklist() {
 	first_entry "Converting $fn...";
 
 	while ( read_a_line( NORMAL_READ ) ) {
-	    my ( $networks, $protocol, $ports, $options ) = split_line 'blacklist file', { networks => 0, proto => 1, port => 2, options => 3 };
+	    my ( $networks, $protocol, $ports, $options ) =
+		split_line( 'blacklist file',
+			    { networks => 0, proto => 1, port => 2, options => 3 } );
 
 	    if ( $options eq '-' ) {
 		$options = 'src';
@@ -560,7 +568,8 @@ sub process_routestopped() {
 	while ( read_a_line ( NORMAL_READ ) ) {
 
 	    my ($interface, $hosts, $options , $proto, $ports, $sports ) =
-		split_line 'routestopped file', { interface => 0, hosts => 1, options => 2, proto => 3, dport => 4, sport => 5 };
+		split_line( 'routestopped file',
+			    { interface => 0, hosts => 1, options => 2, proto => 3, dport => 4, sport => 5 } );
 
 	    my $interfaceref;
 
@@ -686,7 +695,8 @@ sub process_stoppedrules() {
 	    $result = 1;
 
 	    my ( $target, $source, $dest, $protos, $ports, $sports ) = 
-		split_line1 'stoppedrules file', { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 };
+		split_line1( 'stoppedrules file',
+			     { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 } );
 
 	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
 
@@ -1220,7 +1230,9 @@ sub setup_mac_lists( $ ) {
 
 	    while ( read_a_line( NORMAL_READ ) ) {
 
-		my ( $original_disposition, $interface, $mac, $addresses  ) = split_line1 'maclist file', { disposition => 0, interface => 1, mac => 2, addresses => 3 };
+		my ( $original_disposition, $interface, $mac, $addresses  ) =
+		    split_line1( 'maclist file',
+				 { disposition => 0, interface => 1, mac => 2, addresses => 3 } );
 
 		my ( $disposition, $level, $remainder) = split( /:/, $original_disposition, 3 );
 

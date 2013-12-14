@@ -877,6 +877,23 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">INLINE_MATCHES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.0. Traditionally in <ulink
+          url="shorewall6-rules.html">shorewall6-rules(5)</ulink>, a semicolon
+          separates column-oriented specifications on the left from <ulink
+          url="http://www.shorewall.net/configuration_file_basics.htm#Pairs">alternative
+          specificaitons</ulink> on the right.. When INLINE_MATCHES=Yes is
+          specified, the specifications on the right are interpreted as if
+          INLINE had been specified in the ACTION column. If not specified or
+          if specified as the empty value, the value 'No' is assumed for
+          backward compatibility.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">INVALID_DISPOSITION=[A_DROP|A_REJECT|DROP|REJECT|CONTINUE]</emphasis></term>
 

@@ -5201,11 +5201,12 @@ if ( /^\\s*COMMENT\\s+/ ) {
     s/COMMENT/?COMMENT/;
 }
 
-unless ( /^\\s*INLINE[( \\t]/ ) {
-    if ( /^(.+?);(\\s*.*?)(\\s*#.*)?$/ ) {
-	$_  = "$1\\{$2 \\}";
-	$_ .= $3 if defined $3 && $2 ne "";
-	$_ .= "\\n";
+perl -pi.bak -e '
+unless ( /^\\s*INLINE[( \\t:]/ || /^\\s*#/ ) {
+    if ( /^(.+?);(\\s*.+?)(\\s*#.*)?\$/ ) {
+	\$_  = "\$1\\{\$2 \\}";
+	\$_ .= \$3 if defined \$3 && \$3 ne "";
+	\$_ .= "\\n";
     }
 }' $file
 EOF
@@ -5220,7 +5221,7 @@ EOF
 				    warning message "Unable to rename ${file}.bak to $file:$!";
 				}
 			    } else {
-				warning_message ("Unable to update file ${file}.bak:$!" );
+				warning_message ("Unable to update file $file" );
 			    }
 			} else {
 			    warning_message( "$file skipped (not writeable)" ) unless -d _;
@@ -5270,13 +5271,15 @@ sub convert_alternative_format() {
 			    #
 			    # writeable regular file
 			    #
+			    print "Updating $file...\n";
+
 			    my $result = system << "EOF";
 perl -pi.bak -e '
-unless ( /^\\s*INLINE[( \\t]/ ) {
-    if ( /^(.+?);(\\s*.*?)(\\s*#.*)?$/ ) {
-	$_  = "$1\\{$2 \\}";
-	$_ .= $3 if defined $3 && $2 ne "";
-	$_ .= "\\n";
+unless ( /^\\s*INLINE[( \\t:]/ || /^\\s*#/ ) {
+    if ( /^(.+?);(\\s*.+?)(\\s*#.*)?\$/ ) {
+	\$_  = "\$1\\{\$2 \\}";
+	\$_ .= \$3 if defined \$3 && \$3 ne "";
+	\$_ .= "\\n";
     }
 }' $file
 EOF
@@ -5289,7 +5292,7 @@ EOF
 				    warning message "Unable to rename ${file}.bak to $file:$!";
 				}
 			    } else {
-				warning_message ("Unable to update file ${file}.bak:$!" );
+				warning_message ("Unable to update file $file" );
 			    }
 			} else {
 			    warning_message( "$file skipped (not writeable)" ) unless -d _;
@@ -5323,7 +5326,7 @@ sub get_configuration( $$$$$ ) {
 
     get_params;
 
-    process_shorewall_conf( $update, $annotate, $directives );
+    process_shorewall_conf( $update, $annotate, $directives || $inline );
 
     ensure_config_path;
 
@@ -5994,7 +5997,7 @@ sub get_configuration( $$$$$ ) {
 
     if ( $directives ) {
 	convert_to_directives(0);
-    } else {
+    } elsif ( $inline ) {
 	convert_alternative_format;
     }
 

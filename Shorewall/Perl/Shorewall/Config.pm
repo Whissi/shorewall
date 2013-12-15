@@ -5145,7 +5145,8 @@ sub export_params() {
 #
 # Walk the CONFIG_PATH converting FORMAT and COMMENT lines to compiler directives
 #
-sub convert_to_directives() {
+sub convert_to_directives( $ ) {
+    my $inline_matches = $_[0];
     my $sharedir = $shorewallrc{SHAREDIR};
     #
     # Make a copy of @config_path so that the for-loop below doesn't clobber that list
@@ -5178,13 +5179,106 @@ sub convert_to_directives() {
 			    #
 			    # writeable regular file
 			    #
+			    my $result;
+
+			    if ( $inline_matches ) {
+				$result = system << "EOF";
+perl -pi.bak -e '
+/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
+if ( /^\\s*COMMENT\\s+/ ) {
+    s/COMMENT/?COMMENT/;
+} elsif ( /^\\s*COMMENT\\s*\$/ ) {
+    s/COMMENT/?COMMENT/;
+}' $file
+EOF
+			    } else {
+				$result = system << "EOF";
+perl -pi.bak -e '
+/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
+if ( /^\\s*COMMENT\\s+/ ) {
+    s/COMMENT/?COMMENT/;
+} elsif ( /^\\s*COMMENT\\s*\$/ ) {
+    s/COMMENT/?COMMENT/;
+}
+
+unless ( /^\\s*INLINE[( \\t]/ ) {
+    if ( /^(.+?);(\\s*.*?)(\\s*#.*)?$/ ) {
+	$_  = "$1\\{$2 \\}";
+	$_ .= $3 if defined $3 && $2 ne "";
+	$_ .= "\\n";
+    }
+}' $file
+EOF
+			}
+
+			    if ( $result == 0 ) {
+				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
+				    progress_message3 "   File $file updated - old file renamed ${file}.bak";
+				} elsif ( rename "${file}.bak" , $file ) {
+				    progress_message "   File $file not updated -- no bare 'COMMENT' or 'FORMAT' lines found";
+				} else {
+				    warning message "Unable to rename ${file}.bak to $file:$!";
+				}
+			    } else {
+				warning_message ("Unable to update file ${file}.bak:$!" );
+			    }
+			} else {
+			    warning_message( "$file skipped (not writeable)" ) unless -d _;
+			}
+		    }
+		}
+
+		closedir $dirhandle;
+	    }
+	}
+    }
+}
+
+#
+# Walk the CONFIG_PATH converting '; <column>=<value>[,...]' lines to '{<column>=<value>[,...]}'
+#
+sub convert_alternative_format() {
+    my $sharedir = $shorewallrc{SHAREDIR};
+    #
+    # Make a copy of @config_path so that the for-loop below doesn't clobber that list
+    #
+    my @path = @config_path;
+
+    $sharedir =~ s|/+$||;
+
+    my $dirtest = qr|^$sharedir/+shorewall6?(?:/.*)?$|;
+
+    progress_message3 "Converting '; <column>=<value>[,...]' lines to '{<column>=<value>[,...]}...";
+
+    for my $dir ( @path ) {
+	unless ( $dir =~ /$dirtest/ ) {
+	    if ( ! -w $dir ) {
+		warning_message "$dir not processed (not writeable)";
+	    } else {
+		$dir =~ s|/+$||;
+
+		opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
+
+		while ( my $file = readdir( $dirhandle ) ) {
+		    unless ( $file eq 'capabilities'       ||
+			     $file eq 'params'             ||
+			     $file =~ /^shorewall6?.conf$/ ||
+			     $file =~ /\.bak$/ ) {
+			$file = "$dir/$file";
+		
+			if ( -f $file && -w _ ) {
+			    #
+			    # writeable regular file
+			    #
 			    my $result = system << "EOF";
-perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
-                 if ( /^\\s*COMMENT\\s+/ ) {
-                     s/COMMENT/?COMMENT/;
-                 } elsif ( /^\\s*COMMENT\\s*\$/ ) {
-                     s/COMMENT/?COMMENT/;
-                 }' $file
+perl -pi.bak -e '
+unless ( /^\\s*INLINE[( \\t]/ ) {
+    if ( /^(.+?);(\\s*.*?)(\\s*#.*)?$/ ) {
+	$_  = "$1\\{$2 \\}";
+	$_ .= $3 if defined $3 && $2 ne "";
+	$_ .= "\\n";
+    }
+}' $file
 EOF
 			    if ( $result == 0 ) {
 				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
@@ -5215,9 +5309,9 @@ EOF
 # - Read the capabilities file, if any
 # - establish global hashes %params, %config , %globals and %capabilities
 #
-sub get_configuration( $$$$ ) {
+sub get_configuration( $$$$$ ) {
 
-    my ( $export, $update, $annotate, $directives ) = @_;
+    my ( $export, $update, $annotate, $directives, $inline ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -5898,7 +5992,11 @@ sub get_configuration( $$$$ ) {
 	$variables{$var} = $config{$val};
     }
 
-    convert_to_directives if $directives;
+    if ( $directives ) {
+	convert_to_directives(0);
+    } else {
+	convert_alternative_format;
+    }
 
     cleanup_iptables if $sillyname && ! $config{LOAD_HELPERS_ONLY};
 }

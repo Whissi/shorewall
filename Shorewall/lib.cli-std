@@ -422,6 +422,7 @@ compiler() {
     [ -n "$g_convert" ] && options="$options --convert"
     [ -n "$g_annotate" ] && options="$options --annotate"
     [ -n "$g_directives" ] && options="$options --directives"
+    [ -n "$g_inline" ] && options="$options --inline"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -823,6 +824,10 @@ update_command() {
 			D*)
 			    g_directives=Yes
 			    option=${option#D}
+			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
 			    ;;
 			*)
 			    usage 1

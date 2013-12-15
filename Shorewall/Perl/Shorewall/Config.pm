@@ -554,6 +554,7 @@ our $warningcount;           # Used to suppress duplicate warnings about missing
 our $warningcount1;          # Used to suppress duplicate warnings about COMMENT being deprecated
 our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
 our $warningcount3;          # Used to suppress duplicate warnings about SECTION being deprecated
+our $checkinline;            # The -i option to check/compile/etc.
 
 our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
@@ -2055,6 +2056,8 @@ sub supplied( $ ) {
 sub split_line2( $$;$$$ ) {
     my ( $description, $columnsref, $nopad, $maxcolumns, $inline ) = @_;
 
+    my $inlinematches = $config{INLINE_MATCHES};
+
     unless ( defined $maxcolumns ) {
 	my @maxcolumns = ( keys %$columnsref );
 	$maxcolumns = @maxcolumns;
@@ -2072,11 +2075,25 @@ sub split_line2( $$;$$$ ) {
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
 
-	if ( $inline ) {
+	if ( $inlinematches ) {
+	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)" unless $inline;
+
+	    $inline_matches = $pairs;
+
+	    if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
+		#
+		# Pairs are enclosed in curly brackets.
+		#
+		$columns = $1;
+		$pairs   = $2;
+	    } else {
+		$pairs = '';
+	    }
+	} elsif ( $inline ) {
 	    #
 	    # This file supports INLINE
 	    #
-	    if ( $config{INLINE_MATCHES} || $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
+	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
 		$inline_matches = $pairs;
 
 		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
@@ -2086,11 +2103,12 @@ sub split_line2( $$;$$$ ) {
 		    $columns = $1;
 		    $pairs   = $2;
 		} else {
+		    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes" if $checkinline;
 		    $pairs = '';
 		}
 	    } 
-	} else {
-	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)"
+	} elsif ( $checkinline ) {
+	    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes";
 	}
     } elsif ( $currentline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
 	#
@@ -5145,8 +5163,7 @@ sub export_params() {
 #
 # Walk the CONFIG_PATH converting FORMAT and COMMENT lines to compiler directives
 #
-sub convert_to_directives( $ ) {
-    my $inline_matches = $_[0];
+sub convert_to_directives() {
     my $sharedir = $shorewallrc{SHAREDIR};
     #
     # Make a copy of @config_path so that the for-loop below doesn't clobber that list
@@ -5179,109 +5196,13 @@ sub convert_to_directives( $ ) {
 			    #
 			    # writeable regular file
 			    #
-			    my $result;
-
-			    if ( $inline_matches ) {
-				$result = system << "EOF";
-perl -pi.bak -e '
-/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
-if ( /^\\s*COMMENT\\s+/ ) {
-    s/COMMENT/?COMMENT/;
-} elsif ( /^\\s*COMMENT\\s*\$/ ) {
-    s/COMMENT/?COMMENT/;
-}' $file
-EOF
-			    } else {
-				$result = system << "EOF";
-perl -pi.bak -e '
-/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
-if ( /^\\s*COMMENT\\s+/ ) {
-    s/COMMENT/?COMMENT/;
-} elsif ( /^\\s*COMMENT\\s*\$/ ) {
-    s/COMMENT/?COMMENT/;
-}
-
-perl -pi.bak -e '
-unless ( /^\\s*INLINE[( \\t:]/ || /^\\s*#/ ) {
-    if ( /^(.+?);(\\s*.+?)(\\s*#.*)?\$/ ) {
-	\$_  = "\$1\\{\$2 \\}";
-	\$_ .= \$3 if defined \$3 && \$3 ne "";
-	\$_ .= "\\n";
-    }
-}' $file
-EOF
-			}
-
-			    if ( $result == 0 ) {
-				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
-				    progress_message3 "   File $file updated - old file renamed ${file}.bak";
-				} elsif ( rename "${file}.bak" , $file ) {
-				    progress_message "   File $file not updated -- no bare 'COMMENT' or 'FORMAT' lines found";
-				} else {
-				    warning message "Unable to rename ${file}.bak to $file:$!";
-				}
-			    } else {
-				warning_message ("Unable to update file $file" );
-			    }
-			} else {
-			    warning_message( "$file skipped (not writeable)" ) unless -d _;
-			}
-		    }
-		}
-
-		closedir $dirhandle;
-	    }
-	}
-    }
-}
-
-#
-# Walk the CONFIG_PATH converting '; <column>=<value>[,...]' lines to '{<column>=<value>[,...]}'
-#
-sub convert_alternative_format() {
-    my $sharedir = $shorewallrc{SHAREDIR};
-    #
-    # Make a copy of @config_path so that the for-loop below doesn't clobber that list
-    #
-    my @path = @config_path;
-
-    $sharedir =~ s|/+$||;
-
-    my $dirtest = qr|^$sharedir/+shorewall6?(?:/.*)?$|;
-
-    progress_message3 "Converting '; <column>=<value>[,...]' lines to '{<column>=<value>[,...]}...";
-
-    for my $dir ( @path ) {
-	unless ( $dir =~ /$dirtest/ ) {
-	    if ( ! -w $dir ) {
-		warning_message "$dir not processed (not writeable)";
-	    } else {
-		$dir =~ s|/+$||;
-
-		opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
-
-		while ( my $file = readdir( $dirhandle ) ) {
-		    unless ( $file eq 'capabilities'       ||
-			     $file eq 'params'             ||
-			     $file =~ /^shorewall6?.conf$/ ||
-			     $file =~ /\.bak$/ ) {
-			$file = "$dir/$file";
-		
-			if ( -f $file && -w _ ) {
-			    #
-			    # writeable regular file
-			    #
-			    print "Updating $file...\n";
-
 			    my $result = system << "EOF";
-perl -pi.bak -e '
-unless ( /^\\s*INLINE[( \\t:]/ || /^\\s*#/ ) {
-    if ( /^(.+?);(\\s*.+?)(\\s*#.*)?\$/ ) {
-	\$_  = "\$1\\{\$2 \\}";
-	\$_ .= \$3 if defined \$3 && \$3 ne "";
-	\$_ .= "\\n";
-    }
-}' $file
+			    perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
+                                             if ( /^\\s*COMMENT\\s+/ ) {
+                                                 s/COMMENT/?COMMENT/;
+                                             } elsif ( /^\\s*COMMENT\\s*\$/ ) {
+                                                 s/COMMENT/?COMMENT/;
+                                             }' $file
 EOF
 			    if ( $result == 0 ) {
 				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
@@ -5314,7 +5235,7 @@ EOF
 #
 sub get_configuration( $$$$$ ) {
 
-    my ( $export, $update, $annotate, $directives, $inline ) = @_;
+    ( my ( $export, $update, $annotate, $directives ) , $checkinline ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -5326,7 +5247,7 @@ sub get_configuration( $$$$$ ) {
 
     get_params;
 
-    process_shorewall_conf( $update, $annotate, $directives || $inline );
+    process_shorewall_conf( $update, $annotate, $directives );
 
     ensure_config_path;
 
@@ -5995,11 +5916,7 @@ sub get_configuration( $$$$$ ) {
 	$variables{$var} = $config{$val};
     }
 
-    if ( $directives ) {
-	convert_to_directives(0);
-    } elsif ( $inline ) {
-	convert_alternative_format;
-    }
+    convert_to_directives if $directives;
 
     cleanup_iptables if $sillyname && ! $config{LOAD_HELPERS_ONLY};
 }

@@ -424,9 +424,11 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 sub process_accounting_rule( ) {
 
     my ($action, $chain, $source, $dest, $protos, $ports, $sports, $user, $mark, $ipsec, $headers ) =
-	split_line1( 'Accounting File',
-		     { action => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8, ipsec => 9, headers => 10 } );
-
+	split_line2( 'Accounting File',
+		     { action => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8, ipsec => 9, headers => 10 },
+		     {},    #nopad
+		     undef, #Max columns
+		     1 );
     my $nonempty = 0;
 
     for my $proto ( split_list $protos, 'Protocol' ) {

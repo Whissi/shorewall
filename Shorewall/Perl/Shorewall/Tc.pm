@@ -321,9 +321,9 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     if ( $originalmark =~ /^INLINE\((.+)\)(:.*)?$/ ) {
 	$originalmark = $1;
 	$originalmark .= $2 if $2;
-	$raw = get_inline_matches;
+	$raw = get_inline_matches(0);
     } elsif ( $config{INLINE_MATCHES} ) {
-	$raw = get_inline_matches;
+	$raw = get_inline_matches(0);
     }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
@@ -565,7 +565,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 		       INLINE   => sub()
 		                       {
 					   assert ( $cmd eq 'INLINE' );
-					   $matches = get_inline_matches;
+					   $matches = get_inline_matches(1);
 
 					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
 					       $matches   = $1;

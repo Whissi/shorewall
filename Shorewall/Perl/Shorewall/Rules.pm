@@ -300,19 +300,6 @@ sub new_rules_chain( $ ) {
 # Functions moved from the former Policy Module
 ###############################################################################
 #
-# Split the passed target into the basic target and parameter (previously duplicated in this file)
-#
-sub get_target_param( $ ) {
-    my ( $target, $param ) = split '/', $_[0];
-
-    unless ( defined $param ) {
-	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
-    }
-
-    ( $target, $param );
-}
-
-#
 # Convert a chain into a policy chain.
 #
 sub convert_to_policy_chain($$$$$$)
@@ -1104,19 +1091,6 @@ sub finish_section ( $ ) {
 ################################################################################
 # Functions moved from the Actions module in 4.4.16
 ################################################################################
-#
-# Return ( action, level[:tag] ) from passed full action
-#
-sub split_action ( $ ) {
-    my $action = $_[0];
-
-    my @list   = split_list2( $action, 'ACTION' );
-
-    fatal_error "Invalid ACTION ($action)" if @list > 3;
-
-    ( shift @list, join( ':', @list ) );
-}
-
 #
 # Create a normalized action name from the passed pieces.
 #
@@ -2179,7 +2153,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     my ( $basictarget, $param ) = get_target_param $action;
     my $optimize = $wildcard ? ( $basictarget =~ /!$/ ? 0 : $config{OPTIMIZE} & 5 ) : 0;
     my $actiontype;
-    my $inaction  = ''; # Set to true when we are process rules in an action file
+    my $inaction  = ''; # Set to true when we are processing rules in an action file
     my $inchain   = ''; # Set to true when a chain reference is passed.
     my $normalized_target;
     my $normalized_action;
@@ -2194,27 +2168,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     $param = '' unless defined $param;
 
     if ( $basictarget eq 'INLINE' ) {
-	my $inline_matches = get_inline_matches;
-
-	if ( $inline_matches =~ /^(.*\s+)?-j\s+(.+) $/ ) {
-	    $raw_matches .= $1 if supplied $1;
-	    $action = $2;
-	    my ( $target ) = split ' ', $action;
-	    fatal_error "Unknown jump target ($action)" unless $targets{$target} || $target eq 'MARK';
-	    fatal_error "INLINE may not have a parameter when '-j' is specified in the free-form area" if $param ne '';
-	} else {
-	    $raw_matches .= $inline_matches;
-
-	    if ( $param eq '' ) {
-		$action = $loglevel ? 'LOG' : '';
-	    } else {
-		( $action, $loglevel )   = split_action $param;
-		( $basictarget, $param ) = get_target_param $action;
-		$param = '' unless defined $param;
-	    }
-	}
+	( $action, $basictarget, $param, $loglevel, $raw_matches ) = handle_inline( $action, $basictarget, $param, $loglevel );
     } elsif ( $config{INLINE_MATCHES} ) {
-	$raw_matches = get_inline_matches;
+	$raw_matches = get_inline_matches(0);
     }
     #
     # Determine the validity of the action

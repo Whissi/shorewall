@@ -70,7 +70,7 @@ our @EXPORT = qw(
 		 get_action_disposition
 		 set_action_disposition
 		 set_action_param
-		 get_inline_matches
+		 fetch_inline_matches
 		 set_inline_matches
 
                  set_comment
@@ -3071,7 +3071,7 @@ sub embedded_perl( $ ) {
 #
 # Return inline matches
 #
-sub get_inline_matches() {
+sub fetch_inline_matches() {
     "$inline_matches ";
 }
 
@@ -5197,7 +5197,8 @@ sub convert_to_directives() {
 			    # writeable regular file
 			    #
 			    my $result = system << "EOF";
-			    perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
+			    perl -pi.bak -e '/^\\s*FORMAT\\s+/ && s/FORMAT/?FORMAT/;
+                                             /^\\s*SECTION\\s+/ && s/SECTION/?SECTION/;
                                              if ( /^\\s*COMMENT\\s+/ ) {
                                                  s/COMMENT/?COMMENT/;
                                              } elsif ( /^\\s*COMMENT\\s*\$/ ) {

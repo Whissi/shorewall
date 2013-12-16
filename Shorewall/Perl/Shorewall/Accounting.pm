@@ -243,7 +243,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 		}
 	    }
 	} elsif ( $action eq 'INLINE' ) {
-	    $rule .= get_inline_matches;
+	    $rule .= get_inline_matches(1);
 	} else {
 	    ( $action, my $cmd ) = split /:/, $action;
 

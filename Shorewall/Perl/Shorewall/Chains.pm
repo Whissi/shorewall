@@ -80,6 +80,10 @@ our @EXPORT = ( qw(
 		    add_interface_options
 		    state_match
 		    state_imatch
+                    split_action
+                    get_target_param
+                    get_inline_matches
+                    handle_inline
 
 		    STANDARD
 		    NATRULE
@@ -8395,6 +8399,73 @@ sub initialize_switches() {
 	pop_indent;
 	emit "fi\n";
     }
+}
+
+#
+# Return ( action, level[:tag] ) from passed full action
+#
+sub split_action ( $ ) {
+    my $action = $_[0];
+
+    my @list   = split_list2( $action, 'ACTION' );
+
+    fatal_error "Invalid ACTION ($action)" if @list > 3;
+
+    ( shift @list, join( ':', @list ) );
+}
+
+#
+# Get inline matches and conditionally verify the absense of -j
+#
+sub get_inline_matches( $ ) {
+    if ( $_[0] ) {
+	fetch_inline_matches;
+    } else {
+	my $inline_matches = fetch_inline_matches;
+
+	fatal_error "-j is only allowed when the ACTION is INLINE with no parameter" if $inline_matches =~ /\s-j\s/;
+
+	$inline_matches;
+    }
+}
+
+#
+# Split the passed target into the basic target and parameter (previously duplicated in this file)
+#
+sub get_target_param( $ ) {
+    my ( $target, $param ) = split '/', $_[0];
+
+    unless ( defined $param ) {
+	( $target, $param ) = ( $1, $2 ) if $target =~ /^(.*?)[(](.*)[)]$/;
+    }
+
+    ( $target, $param );
+}
+
+sub handle_inline( $$$$ ) {
+    my ( $action, $basictarget, $param, $loglevel ) = @_;
+    my $inline_matches = get_inline_matches(1);
+    my $raw_matches = '';
+
+    if ( $inline_matches =~ /^(.*\s+)?-j\s+(.+) $/ ) {
+	$raw_matches .= $1 if supplied $1;
+	$action = $2;
+	my ( $target ) = split ' ', $action;
+	fatal_error "Unknown jump target ($action)" unless $targets{$target} || $target eq 'MARK';
+	fatal_error "INLINE may not have a parameter when '-j' is specified in the free-form area" if $param ne '';
+    } else {
+	$raw_matches .= $inline_matches;
+	
+	if ( $param eq '' ) {
+	    $action = $loglevel ? 'LOG' : '';
+	} else {
+	    ( $action, $loglevel )   = split_action $param;
+	    ( $basictarget, $param ) = get_target_param $action;
+	    $param = '' unless defined $param;
+	}
+    }
+
+    return ( $action, $basictarget, $param, $loglevel, $raw_matches );
 }
 
 1;

@@ -582,7 +582,7 @@ show_routing() {
 determine_ipset_version() {
     local setname
 
-    if [ -z "$IPSET" -o $IPSET = ipset ]; then
+    if [ -z "$IPSET" -o "$IPSET" = "ipset" ]; then
 	IPSET=$(mywhich ipset)
 	[ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
     fi

@@ -431,16 +431,14 @@ sub process_accounting_rule( ) {
 		     1 );
     my $nonempty = 0;
 
-    for my $proto ( split_list $protos, 'Protocol' ) {
-	fatal_error 'ACTION must be specified' if $action eq '-';
+    fatal_error 'ACTION must be specified' if $action eq '-';
 
-	if ( $action eq 'SECTION' ) {
-	    section_warning;
-	    process_section( $chain );
-	} else {
-	    for my $proto ( split_list $protos, 'Protocol' ) {
-		$nonempty |= process_accounting_rule1( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers );
-	    }
+    if ( $action eq 'SECTION' ) {
+	section_warning;
+	process_section( $chain );
+    } else {
+	for my $proto ( split_list $protos, 'Protocol' ) {
+	    $nonempty |= process_accounting_rule1( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers );
 	}
     }
 

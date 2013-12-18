@@ -318,10 +318,14 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
     my $raw = '';
 
-    if ( $originalmark =~ /^INLINE\((.+)\)(:.*)?$/ ) {
-	$originalmark = $1;
-	$originalmark .= $2 if $2;
-	$raw = get_inline_matches(0);
+    if ( $originalmark =~ /^INLINE(\((.+)\))?(:.*)?$/ ) {
+	if ( $1 ) {
+	    $originalmark = $2;
+	    $originalmark .= $3 if $3;
+	    $raw = get_inline_matches(0);
+	} else {
+	    $raw = get_inline_matches(1);
+	}
     } elsif ( $config{INLINE_MATCHES} ) {
 	$raw = get_inline_matches(0);
     }

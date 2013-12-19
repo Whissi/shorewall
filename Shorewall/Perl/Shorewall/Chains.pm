@@ -82,6 +82,7 @@ our @EXPORT = ( qw(
 		    state_imatch
                     split_action
                     get_target_param
+                    get_target_param1
                     get_inline_matches
                     handle_inline
 
@@ -8430,7 +8431,7 @@ sub get_inline_matches( $ ) {
 }
 
 #
-# Split the passed target into the basic target and parameter (previously duplicated in this file)
+# Split the passed target into the basic target and parameter
 #
 sub get_target_param( $ ) {
     my ( $target, $param ) = split '/', $_[0];
@@ -8440,6 +8441,16 @@ sub get_target_param( $ ) {
     }
 
     ( $target, $param );
+}
+
+sub get_target_param1( $ ) {
+    my $target = $_[0];
+
+    if ( $target =~ /^(.*?)[(](.*)[)]$/ ) {
+	( $1, $2 );
+    } else {
+	( $target, '' );
+    }
 }
 
 sub handle_inline( $$$$ ) {

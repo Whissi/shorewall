@@ -665,17 +665,6 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">STATE</emphasis> {<emphasis
-              role="bold">NEW</emphasis>|<emphasis
-              role="bold">RELATED</emphasis>|<emphasis
-              role="bold">ESTABLISHED</emphasis>|<emphasis
-              role="bold">INVALID</emphasis>} [,...]</para>
-
-              <para>Added in Shorewall 4.5.9. The rule will only match if the
-              packet's connection is in one of the listed states.</para>
-            </listitem>
-
-            <listitem>
               <para><emphasis
               role="bold">TOS</emphasis>(<replaceable>tos</replaceable>[/<replaceable>mask</replaceable>])</para>
 
@@ -1241,6 +1230,19 @@ Normal-Service       =&gt; 0x00</programlisting>
     AF42 =&gt; 0x24
     AF43 =&gt; 0x26
     EF   =&gt; 0x2e</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">STATE</emphasis> -- {<emphasis
+        role="bold">NEW</emphasis>|<emphasis
+        role="bold">RELATED</emphasis>|<emphasis
+        role="bold">ESTABLISHED</emphasis>|<emphasis
+        role="bold">INVALID</emphasis>} [,...]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.9. The rule will only match if the
+          packet's connection is in one of the listed states.</para>
         </listitem>
       </varlistentry>
     </variablelist>

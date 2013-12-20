@@ -594,17 +594,6 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">STATE</emphasis> {<emphasis
-              role="bold">NEW</emphasis>|<emphasis
-              role="bold">RELATED</emphasis>|<emphasis
-              role="bold">ESTABLISHED</emphasis>|<emphasis
-              role="bold">INVALID</emphasis>} [,...]</para>
-
-              <para>Added in Shorewall 4.5.9. The rule will only match if the
-              packet's connection is in one of the listed states.</para>
-            </listitem>
-
-            <listitem>
               <para><emphasis
               role="bold">TOS</emphasis>(<replaceable>tos</replaceable>[/<replaceable>mask</replaceable>])</para>
 
@@ -1161,6 +1150,19 @@ Normal-Service       =&gt; 0x00</programlisting>
           <replaceable>probability</replaceable> is a number 0 &lt;
           <replaceable>probability</replaceable> &lt;= 1 and may be expressed
           at up to 8 decimal points of precision.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">STATE</emphasis> -- {<emphasis
+        role="bold">NEW</emphasis>|<emphasis
+        role="bold">RELATED</emphasis>|<emphasis
+        role="bold">ESTABLISHED</emphasis>|<emphasis
+        role="bold">INVALID</emphasis>} [,...]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.9. The rule will only match if the
+          packet's connection is in one of the listed states.</para>
         </listitem>
       </varlistentry>
     </variablelist>

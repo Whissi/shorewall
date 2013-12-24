@@ -422,6 +422,7 @@ compiler() {
     [ -n "$g_convert" ] && options="$options --convert"
     [ -n "$g_annotate" ] && options="$options --annotate"
     [ -n "$g_directives" ] && options="$options --directives"
+    [ -n "$g_inline" ] && options="$options --inline"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -527,6 +528,10 @@ start_command() {
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
+			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
 			    ;;
 			*)
 			    usage 1
@@ -642,6 +647,10 @@ compile_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
+			    ;;
 			-)
 			    finished=1
 			    option=
@@ -732,6 +741,10 @@ check_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -811,6 +824,10 @@ update_command() {
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
+			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
 			    ;;
 			a*)
 			    g_annotate=Yes
@@ -910,6 +927,10 @@ restart_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1004,6 +1025,10 @@ refresh_command() {
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
+			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
 			    ;;
 			D)
 			    if [ $# -gt 1 ]; then
@@ -1394,6 +1419,10 @@ reload_command() # $* = original arguments less the command.
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
+			i*)
+			    g_inline=Yes
+			    option=${option#i}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1583,9 +1612,9 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   [ check | ck ] [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ <directory> ]"
+    echo "   [ check | ck ] [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ -i ] [ <directory> ]"
     echo "   clear"
-    echo "   [ compile | co ] [ -e ] [ -p ] [ -t ] [ -c ] [ -d ] [ -T ] [ <directory name> ] [ <path name> ]"
+    echo "   [ compile | co ] [ -e ] [ -p ] [ -t ] [ -c ] [ -d ] [ -T ] [ -i ] [ <directory name> ] [ <path name> ]"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   disable <interface>"
     echo "   drop <address> ..."
@@ -1608,7 +1637,7 @@ usage() # $1 = exit status
 	echo "   iptrace <ip6tables match expression>"
     fi
 
-    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ <directory> ] <system>"
+    echo "   load [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ -i ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
@@ -1621,9 +1650,9 @@ usage() # $1 = exit status
 
     echo "   refresh [ -d ] [ -n ] [ -T ] [ -D <directory> ] [ <chain>... ]"
     echo "   reject <address> ..."
-    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ <directory> ] <system>"
+    echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ -i ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ] [ -T ] [ <directory> ]"
+    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ] [ -T ] [ -i ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   safe-restart [ -t <timeout> ] [ <directory> ]"
     echo "   safe-start [ -t <timeout> ] [ <directory> ]"
@@ -1653,11 +1682,11 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] tc [ device ]"
     echo "   [ show | list | ls ] vardir"
     echo "   [ show | list | ls ] zones"
-    echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ -T ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ -T ] [ -i ] [ <directory> ]"
     echo "   status"
     echo "   stop"
     echo "   try <directory> [ <timeout> ]"
-    echo "   update [ -a ] [ -b ] [ -r ] [ -T ] [ -D ] [ <directory> ]"
+    echo "   update [ -a ] [ -b ] [ -r ] [ -T ] [ -D ] [ -i ] [ <directory> ]"
     echo "   version [ -a ]"
     echo
     exit $1

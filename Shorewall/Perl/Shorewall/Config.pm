@@ -70,7 +70,7 @@ our @EXPORT = qw(
 		 get_action_disposition
 		 set_action_disposition
 		 set_action_param
-		 get_inline_matches
+		 fetch_inline_matches
 		 set_inline_matches
 
                  set_comment
@@ -125,6 +125,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       split_list2
 				       split_line
 				       split_line1
+				       split_line2
 				       first_entry
 				       open_file
 				       close_file
@@ -226,7 +227,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.5.20-Beta1';
+our $VERSION = '4.6.0-Beta1';
 
 #
 # describe the current command, it's present progressive, and it's completion.
@@ -553,6 +554,7 @@ our $warningcount;           # Used to suppress duplicate warnings about missing
 our $warningcount1;          # Used to suppress duplicate warnings about COMMENT being deprecated
 our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
 our $warningcount3;          # Used to suppress duplicate warnings about SECTION being deprecated
+our $checkinline;            # The -i option to check/compile/etc.
 
 our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
@@ -833,6 +835,7 @@ sub initialize( $;$$) {
 	  CHAIN_SCRIPTS => undef,
 	  TRACK_RULES => undef,
 	  REJECT_ACTION => undef,
+	  INLINE_MATCHES => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -1982,6 +1985,57 @@ sub split_list3( $$ ) {
     @list2;
 }
 
+sub split_columns( $ ) {
+    my ($list) = @_;
+
+    return split ' ', $list unless $list =~ /\(/;
+
+    my @list1 = split ' ', $list;
+    my @list2;
+    my $element   = '';
+    my $opencount = 0;
+
+    for ( @list1 ) {
+	my $count;
+
+	if ( ( $count = tr/(/(/ ) > 0 ) {
+	    $opencount += $count;
+	    if ( $element eq '' ) {
+		$element = $_;
+	    } else {
+		$element = join( ',', $element, $_ );
+	    }
+
+	    if ( ( $count = tr/)/)/ ) > 0 ) {
+		if ( ! ( $opencount -= $count ) ) {
+		     push @list2 , $element;
+		     $element = '';
+		} else {
+		    fatal_error "Mismatched parentheses ($_)" if $opencount < 0;
+		}
+	    }
+	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
+	    $element = join (',', $element, $_ );
+	    if ( ! ( $opencount -= $count ) ) {
+		 push @list2 , $element;
+		 $element = '';
+	    } else {
+		fatal_error "Mismatched parentheses ($_)" if $opencount < 0;
+	    }
+	} elsif ( $element eq '' ) {
+	    push @list2 , $_;
+	} else {
+	    $element = join ',', $element , $_;
+	}
+    }
+
+    unless ( $opencount == 0 ) {
+	fatal_error "Mismatched parentheses ($list)";
+    }
+
+    @list2;
+}
+
 #
 # Determine if a value has been supplied
 #
@@ -1999,8 +2053,10 @@ sub supplied( $ ) {
 #    Handles all of the supported forms of column/pair specification
 #    Handles segragating raw iptables input in INLINE rules
 #
-sub split_line1( $$;$$ ) {
-    my ( $description, $columnsref, $nopad, $maxcolumns ) = @_;
+sub split_line2( $$;$$$ ) {
+    my ( $description, $columnsref, $nopad, $maxcolumns, $inline ) = @_;
+
+    my $inlinematches = $config{INLINE_MATCHES};
 
     unless ( defined $maxcolumns ) {
 	my @maxcolumns = ( keys %$columnsref );
@@ -2019,7 +2075,9 @@ sub split_line1( $$;$$ ) {
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
 
-	if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
+	if ( $inlinematches ) {
+	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)" unless $inline;
+
 	    $inline_matches = $pairs;
 
 	    if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
@@ -2031,6 +2089,26 @@ sub split_line1( $$;$$ ) {
 	    } else {
 		$pairs = '';
 	    }
+	} elsif ( $inline ) {
+	    #
+	    # This file supports INLINE
+	    #
+	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
+		$inline_matches = $pairs;
+
+		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
+		    #
+		    # Pairs are enclosed in curly brackets.
+		    #
+		    $columns = $1;
+		    $pairs   = $2;
+		} else {
+		    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes" if $checkinline;
+		    $pairs = '';
+		}
+	    } 
+	} elsif ( $checkinline ) {
+	    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes";
 	}
     } elsif ( $currentline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
 	#
@@ -2045,7 +2123,7 @@ sub split_line1( $$;$$ ) {
     fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 
-    my @line = split( ' ', $columns );
+    my @line = split_columns( $columns );
 
     $nopad = {} unless $nopad;
 
@@ -2087,6 +2165,10 @@ sub split_line1( $$;$$ ) {
     }
 
     @line;
+}
+
+sub split_line1( $$;$$ ) {
+    &split_line2( @_, undef );
 }
 
 sub split_line($$) {
@@ -2989,7 +3071,7 @@ sub embedded_perl( $ ) {
 #
 # Return inline matches
 #
-sub get_inline_matches() {
+sub fetch_inline_matches() {
     "$inline_matches ";
 }
 
@@ -5115,12 +5197,13 @@ sub convert_to_directives() {
 			    # writeable regular file
 			    #
 			    my $result = system << "EOF";
-perl -pi.bak -e '/^\\s*FORMAT\\s*/ && s/FORMAT/?FORMAT/;
-                 if ( /^\\s*COMMENT\\s+/ ) {
-                     s/COMMENT/?COMMENT/;
-                 } elsif ( /^\\s*COMMENT\\s*\$/ ) {
-                     s/COMMENT/?COMMENT/;
-                 }' $file
+			    perl -pi.bak -e '/^\\s*FORMAT\\s+/ && s/FORMAT/?FORMAT/;
+                                             /^\\s*SECTION\\s+/ && s/SECTION/?SECTION/;
+                                             if ( /^\\s*COMMENT\\s+/ ) {
+                                                 s/COMMENT/?COMMENT/;
+                                             } elsif ( /^\\s*COMMENT\\s*\$/ ) {
+                                                 s/COMMENT/?COMMENT/;
+                                             }' $file
 EOF
 			    if ( $result == 0 ) {
 				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
@@ -5131,7 +5214,7 @@ EOF
 				    warning message "Unable to rename ${file}.bak to $file:$!";
 				}
 			    } else {
-				warning_message ("Unable to update file ${file}.bak:$!" );
+				warning_message ("Unable to update file $file" );
 			    }
 			} else {
 			    warning_message( "$file skipped (not writeable)" ) unless -d _;
@@ -5151,9 +5234,9 @@ EOF
 # - Read the capabilities file, if any
 # - establish global hashes %params, %config , %globals and %capabilities
 #
-sub get_configuration( $$$$ ) {
+sub get_configuration( $$$$$ ) {
 
-    my ( $export, $update, $annotate, $directives ) = @_;
+    ( my ( $export, $update, $annotate, $directives ) , $checkinline ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -5471,6 +5554,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
     default_yes_no 'TRACK_RULES'                , '';
+    default_yes_no 'INLINE_MATCHES'             , '';
 
     if ( $val = $config{REJECT_ACTION} ) {
 	fatal_error "Invalid Reject Action Name ($val)" unless $val =~ /^[a-zA-Z][\w-]*$/;

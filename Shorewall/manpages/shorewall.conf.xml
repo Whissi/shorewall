@@ -74,6 +74,20 @@
     and can be configured to log all Shorewall messages to their own log
     file.</para>
 
+    <note>
+      <para>If you want to specify parameters to ULOG or NFLOG (e.g.,
+      NFLOG(1,0,1)), then you must either quote the setting or you must escape
+      the parentheses.</para>
+
+      <para>Examples:</para>
+
+      <programlisting>MACLIST_LOG_LEVEL="NFLOG(1,0,1)"</programlisting>
+
+      <para>or</para>
+
+      <programlisting>MACLIST_LOG_LEVEL=NFLOG\(1,0,1\)</programlisting>
+    </note>
+
     <para>Beginning with Shorewall 4.4.22, LOGMARK is also a valid level which
     logs the packet's mark value along with the other usual information. The
     syntax is:</para>
@@ -988,6 +1002,23 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           IMPLICIT_CONTINUE=Yes, an implicit CONTINUE policy may be overridden
           by including an explicit policy (one that does not specify "all" in
           either the SOURCE or the DEST columns).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">INLINE_MATCHES=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.0. Traditionally in <ulink
+          url="shorewall6-rules.html">shorewall-rules(5)</ulink>, a semicolon
+          separates column-oriented specifications on the left from <ulink
+          url="http://www.shorewall.net/configuration_file_basics.htm#Pairs">alternative
+          specificaitons</ulink> on the right.. When INLINE_MATCHES=Yes is
+          specified, the specifications on the right are interpreted as if
+          INLINE had been specified in the ACTION column. If not specified or
+          if specified as the empty value, the value 'No' is assumed for
+          backward compatibility.</para>
         </listitem>
       </varlistentry>
 

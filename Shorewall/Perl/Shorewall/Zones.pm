@@ -503,7 +503,8 @@ sub process_zone( \$ ) {
     my @parents;
 
     my ($zone, $type, $options, $in_options, $out_options ) =
-	split_line 'zones file', { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 };
+	split_line( 'zones file',
+		    { zone => 0, type => 1, options => 2, in_options => 3, out_options => 4 } );
 
     fatal_error 'ZONE must be specified' if $zone eq '-';
 
@@ -1079,9 +1080,12 @@ sub process_interface( $$ ) {
     my $bridge = '';
 
     if ( $file_format == 1 ) {
-	($zone, $originalinterface, $bcasts, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, broadcast => 2, options => 3 };
+	($zone, $originalinterface, $bcasts, $options ) =
+	    split_line1( 'interfaces file',
+			 { zone => 0, interface => 1, broadcast => 2, options => 3 } );
     } else {
-	($zone, $originalinterface, $options ) = split_line1 'interfaces file', { zone => 0, interface => 1, options => 2 };
+	($zone, $originalinterface, $options ) = split_line1( 'interfaces file',
+							      { zone => 0, interface => 1, options => 2 } );
 	$bcasts = '-';
     }
 
@@ -1939,7 +1943,10 @@ sub verify_required_interfaces( $ ) {
 #
 sub process_host( ) {
     my $ipsec = 0;
-    my ($zone, $hosts, $options ) = split_line1 'hosts file', { zone => 0, host => 1, hosts => 1, options => 2 }, {}, 3;
+    my ($zone, $hosts, $options ) = split_line1( 'hosts file',
+						 { zone => 0, host => 1, hosts => 1, options => 2 },
+						 {},
+						 3 );
 
     fatal_error 'ZONE must be specified'  if $zone eq '-';
     fatal_error 'HOSTS must be specified' if $hosts eq '-';

@@ -582,7 +582,7 @@ show_routing() {
 determine_ipset_version() {
     local setname
 
-    if [ -z "$IPSET" -o $IPSET = ipset ]; then
+    if [ -z "$IPSET" -o "$IPSET" = "ipset" ]; then
 	IPSET=$(mywhich ipset)
 	[ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
     fi
@@ -3506,6 +3506,8 @@ shorewall_cli() {
     g_conditional=
     g_file=
     g_doing="Compiling"
+    g_directives=
+    g_inline=
 
     VERBOSE=
     VERBOSITY=1

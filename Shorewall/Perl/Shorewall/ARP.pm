@@ -82,7 +82,8 @@ sub match_arp_net( $$$ ) {
 # Process a rule in the arprules file
 #
 sub process_arprule() {
-    my ( $originalaction, $source, $dest, $opcode ) = split_line( 'arprules file entry', {action => 0, source => 1, dest => 2, opcode => 3 } );
+    my ( $originalaction, $source, $dest, $opcode ) = split_line( 'arprules file entry',
+								  {action => 0, source => 1, dest => 2, opcode => 3 } );
 
     my $chainref;
     my $iifaceref;

@@ -207,7 +207,7 @@ sub initialize( $ ) {
 sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
-our  %tccmd;
+    our  %tccmd;
 
     unless ( %tccmd ) {
 	%tccmd = ( SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
@@ -315,6 +315,16 @@ our  %tccmd;
     }
 
     fatal_error 'MARK must be specified' if $originalmark eq '-';
+
+    my $raw = '';
+
+    if ( $originalmark =~ /^INLINE\((.+)\)(:.*)?$/ ) {
+	$originalmark = $1;
+	$originalmark .= $2 if $2;
+	$raw = get_inline_matches(0);
+    } elsif ( $config{INLINE_MATCHES} ) {
+	$raw = get_inline_matches(0);
+    }
 
     my ( $mark, $designator, $remainder ) = split( /:/, $originalmark, 3 );
 
@@ -555,11 +565,14 @@ our  %tccmd;
 		       INLINE   => sub()
 		                       {
 					   assert ( $cmd eq 'INLINE' );
-					   $matches = get_inline_matches;
+					   $matches = get_inline_matches(1);
 
-					   if ( $matches =~ /^(.*\s+)-j\s+(.+) $/ ) {
-					       $matches = $1;
-					       $target  = $2;
+					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
+					       $matches   = $1;
+					       $target    = $2;
+					       my $action = $target;
+					       $action = $1 if $action =~ /^(.+?)\s/;
+					       fatal_error "Unknown target ($action)" unless $targets{$action} || $builtin_target{$action};
 					   } else {
 					       $target = '';
 					   }
@@ -816,11 +829,19 @@ sub process_tc_rule( ) {
     my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 }, {}, 15;
+	    split_line2( 'tcrules file',
+			 { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 },
+			 {},
+			 15,
+	                 1 );
 	$headers = '-';
     } else {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
-	    split_line1 'tcrules file', { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 }, {}, 16;
+	    split_line2( 'tcrules file',
+			 { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },
+			 {},
+			 16,
+	                 1 );
     }
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
@@ -947,7 +968,9 @@ sub process_flow($) {
 }
 
 sub process_simple_device() {
-    my ( $device , $type , $in_rate , $out_part ) = split_line 'tcinterfaces', { interface => 0, type => 1, in_bandwidth => 2, out_bandwidth => 3 };
+    my ( $device , $type , $in_rate , $out_part ) =
+	split_line( 'tcinterfaces',
+		    { interface => 0, type => 1, in_bandwidth => 2, out_bandwidth => 3 } );
 
     fatal_error 'INTERFACE must be specified'      if $device eq '-';
     fatal_error "Duplicate INTERFACE ($device)"    if $tcdevices{$device};
@@ -1076,7 +1099,9 @@ sub process_simple_device() {
 my %validlinklayer = ( ethernet => 1, atm => 1, adsl => 1 );
 
 sub validate_tc_device( ) {
-    my ( $device, $inband, $outband , $options , $redirected ) = split_line 'tcdevices', { interface => 0, in_bandwidth => 1, out_bandwidth => 2, options => 3, redirect => 4 };
+    my ( $device, $inband, $outband , $options , $redirected ) =
+	split_line( 'tcdevices',
+		    { interface => 0, in_bandwidth => 1, out_bandwidth => 2, options => 3, redirect => 4 } );
 
     fatal_error 'INTERFACE must be specified' if $device eq '-';
     fatal_error "Invalid tcdevices entry"     if $outband eq '-';
@@ -1287,7 +1312,8 @@ sub validate_filter_priority( $$ ) {
 
 sub validate_tc_class( ) {
     my ( $devclass, $mark, $rate, $ceil, $prio, $options ) =
-	split_line 'tcclasses file', { interface => 0, mark => 1, rate => 2, ceil => 3, prio => 4, options => 5 };
+	split_line( 'tcclasses file',
+		    { interface => 0, mark => 1, rate => 2, ceil => 3, prio => 4, options => 5 } );
     my $classnumber = 0;
     my $devref;
     my $device = $devclass;
@@ -1950,7 +1976,8 @@ sub process_tc_filter1( $$$$$$$$$ ) {
 sub process_tc_filter() {
 
     my ( $devclass, $source, $dest , $protos, $portlist , $sportlist, $tos, $length, $priority )
-	= split_line 'tcfilters file', { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 , priority => 8 };
+	= split_line( 'tcfilters file',
+		      { class => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, tos => 6, length => 7 , priority => 8 } );
 
     fatal_error 'CLASS must be specified' if $devclass eq '-';
 
@@ -2049,7 +2076,9 @@ sub process_tc_priority1( $$$$$$ ) {
 }
 
 sub process_tc_priority() {
-    my ( $band, $protos, $ports , $address, $interface, $helper ) = split_line1 'tcpri', { band => 0, proto => 1, port => 2, address => 3, interface => 4, helper => 5 };
+    my ( $band, $protos, $ports , $address, $interface, $helper ) =
+	split_line1( 'tcpri',
+		     { band => 0, proto => 1, port => 2, address => 3, interface => 4, helper => 5 } );
 
     fatal_error 'BAND must be specified' if $band eq '-';
 
@@ -2493,7 +2522,8 @@ sub process_secmark_rule1( $$$$$$$$$ ) {
 #
 sub process_secmark_rule() {
     my ( $secmark, $chainin, $source, $dest, $protos, $dport, $sport, $user, $mark ) =
-	split_line1( 'Secmarks file' , { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
+	split_line1( 'Secmarks file' ,
+		     { secmark => 0, chain => 1, source => 2, dest => 3, proto => 4, dport => 5, sport => 6, user => 7, mark => 8 } );
 
     fatal_error 'SECMARK must be specified' if $secmark eq '-';
 

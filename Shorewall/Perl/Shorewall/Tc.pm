@@ -854,7 +854,7 @@ sub process_tc_rule( ) {
 }
     
 sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
-    my ( $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
+    our ( $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
     use constant {
 	PREROUTING  => 1,
@@ -862,40 +862,39 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 	FORWARD     => 4,
 	OUTPUT      => 8,
 	POSTROUTING => 16,
-	ALL         => 31,
+	ALLCHAINS   => 31,
 	STICKY      => 32,
 	STICKO      => 64,
     };
 
-    my %designators {
+    my %designators = (
 	P => PREROUTING,
 	I => INPUT,
 	F => FORWARD,
 	O => OUTPUT,
-	T => POSTROUTING };
+	T => POSTROUTING );
 
-    my %chainnames = ( PREROUTING  => 'tcpre',
-		       INPUT       => 'tcin',
-		       FORWARD     => 'tcfor',
-		       OUTPUT      => 'tcout',
-		       POSTROUTING => 'tcpost',
-		       sticky      => 'sticky',
-		       stocko      => 'sticko' );
+    our %chainnames = ( PREROUTING  => 'tcpre',
+			INPUT       => 'tcin',
+			FORWARD     => 'tcfor',
+			OUTPUT      => 'tcout',
+			POSTROUTING => 'tcpost',
+			sticky      => 'sticky',
+			stocko      => 'sticko' );
 
     our $target         = '';
     my  $junk           = '';
-    my  $raw_matches    = '';
+    our $raw_matches    = '';
     our $chain          = '';
     our $matches        = '';
     our $params         = '';
     our $done           = 0;
     my  $default_chain;
-    my  $divertref;
-    my  $restrictions   = 0;
+    our $restriction    = 0;
+    our $exceptionrule  = '';
 
     sub handle_mark_param( $ ) {
 	my ( $option ) = @_;
-	my $and_or = '';
 	my $and_or = $1 if $params =~ s/^([|&])//;
 
 	if ( $params =~ /-/ ) {
@@ -904,7 +903,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 	    #
 	    fatal_error "'|' and '&' may not be used with a mark range" if $and_or;
 	    fatal_error "A mark range is is not allowed with ACTION $command" if $command !~ /^(?:CONN)?MARK$/;
-	    my ( $mark, $mark2 ) = split /-/, $mark, 2;
+	    my ( $mark, $mark2 ) = split /-/, $params, 2;
 	    my $markval = validate_mark $mark;
 	    fatal_error "Invalid mark range ($mark-$mark2)" if $mark =~ m'/';
 	    my $mark2val = validate_mark $mark2;
@@ -954,7 +953,8 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	    $done = 1;
 	}  else {
-	    my $val = validate_mark( $mark = $params );
+	    my $mark = $params;
+	    my $val = validate_mark( $mark );
 	    #
 	    # A Single Mark
 	    #
@@ -978,7 +978,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	    $target = join( ' ', $target , join( in_hex( $mark ) , in_hex( $mask ) ) ); 
 	}
-    };
+    }
 
     my ( $command, $designator ) = split_action( $action );
 
@@ -988,30 +988,10 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
     ( $command , $params ) = get_target_param1( $command );
 
-    my $commandref = $commands{$command};
-
-    fatal_error "Invalid ACTION ($command)" unless $commandref;
-
-     if ( $command eq 'INLINE' ) {
-	( $action, $command, $params, $junk, $raw ) = handle_inline( $action, $command, $params, '' );
-    } elsif ( $config{INLINE_MATCHES} ) {
-	$raw = get_inline_matches( $command eq 'JUMP' );
-    }
-
-    if ( $source =~ /^\$FW/ ) {
-	fatal_error 'Rules with SOURCE $FW must use the OUTPUT chain' if $designator && $designator ne OUTPUT;
-	$default_chain = OUTPUT;
-    } elsif ( $dest =~ /^\$FW/ ) {
-	fatal_error 'Rules with DEST $FW must use the INPUT chain' if $designator && $designator ne INPUT;
-	$default_chain = INPUT;
-    } else {
-	$default_chain = $config{MARK_IN_FORWARD_CHAIN} ? FORWARD | PREROUTING;
-    }
-
     my %commands = (
 	CHECKSUM   => {
 	    defaultchain   => 0,
-	    allowedchains  => ALL,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
 	    maxparams      => 0 ,
 	    function       => sub() {
@@ -1032,7 +1012,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	CONNMARK   => {
 	    defaultchain   => 0,
-	    allowedchains  => ALL,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub () {
@@ -1044,7 +1024,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	CONTINUE   => {
 	    defaultchain   => 0,
-	    allowedchains  => ALL,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
 	    maxparams      => 0,
 	    function       => sub () {
@@ -1102,7 +1082,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 		$params =~ /^([-+]?(\d+))$/;
 
-		fatal_error "Invalid HL specification( $cmd )" unless supplied( $1 ) && ( $1 eq $2 || $2 != 0 ) && ( $params = abs $params ) < 256;
+		fatal_error "Invalid HL specification( HL($params) )" unless supplied( $1 ) && ( $1 eq $2 || $2 != 0 ) && ( $params = abs $params ) < 256;
 
 		$target = 'HL';
 
@@ -1131,7 +1111,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	JUMP       => {
 	    defaultchain   => 0,
-	    allowedchains  => ALL,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
 	    maxparams      => 1,
 	    function       => sub () {
@@ -1143,7 +1123,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	IPMARK     => {
 	    defaultchain   => 0,
-	    allowedchains  => ALL,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
 	    maxparams      => 1,
 	    function       => sub () {
@@ -1151,8 +1131,10 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 		require_capability 'IPMARK_TARGET', 'IPMARK', 's';
 		$chain  = $designator || $default_chain;
+		
+		my $val;
 
-		if ( $supplied $params ) {
+		if ( supplied $params ) {
 		    my ( $sd, $m1, $m2, $s , $bad ) = split ',', $params;
 
 		    fatal_error "Invalid IPMARK parameters ($params)" if $bad;
@@ -1184,7 +1166,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
 	MARK       => {
 	    defaultchain   => 0,
-	    allowedchains  => ALL,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub () {
@@ -1260,7 +1242,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 		    fatal_error "Invalid TPROXY specification( TPROXY($params) )" if defined $bad;
 		}
 
-		$mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
+		my $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
 
 		if ( $port ) {
 		    $port = validate_port( 'tcp', $port );
@@ -1297,14 +1279,12 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    function       => sub() {
 		fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
-		fatal_error "Invalid TTL specification( $cmd/$rest )" if $rest;
-
 		$chain  = $designator || FORWARD;
 		$target = 'TTL';
 
 		$params =~ /^([-+]?(\d+))$/;
 
-		fatal_error "Invalid TTL specification( TTL($params) )" unless supplied( $1 ) && ( $1 eq $2 || $2 != 0 ) && ( $param = abs $param ) < 256;
+		fatal_error "Invalid TTL specification( TTL($params) )" unless supplied( $1 ) && ( $1 eq $2 || $2 != 0 ) && ( $params = abs $params ) < 256;
 
 		if ( $1 =~ /^\+/ ) {
 		    $target .= " --ttl-inc $params";
@@ -1318,9 +1298,29 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
     );
 
-    my @params = split_list1( $params );
+    my $commandref = $commands{$command};
 
-    if ( @params > $commandref->{maxparams} } {
+    fatal_error "Invalid ACTION ($command)" unless $commandref;
+
+    if ( $command eq 'INLINE' ) {
+	( $action, $command, $params, $junk, $raw_matches ) = handle_inline( $action, $command, $params, '' );
+    } elsif ( $config{INLINE_MATCHES} ) {
+	$raw_matches = get_inline_matches( $command eq 'JUMP' );
+    }
+
+    if ( $source =~ /^\$FW/ ) {
+	fatal_error 'Rules with SOURCE $FW must use the OUTPUT chain' if $designator && $designator ne OUTPUT;
+	$default_chain = OUTPUT;
+    } elsif ( $dest =~ /^\$FW/ ) {
+	fatal_error 'Rules with DEST $FW must use the INPUT chain' if $designator && $designator ne INPUT;
+	$default_chain = INPUT;
+    } else {
+	$default_chain = $config{MARK_IN_FORWARD_CHAIN} ? FORWARD : PREROUTING;
+    }
+
+    my @params = split_list1( $params, 'parameter' );
+
+    if ( @params > $commandref->{maxparams} ) {
 	if ( $commandref->{maxparams} == 1 ) {
 	    fatal_error "The $command ACTION only accepts one parmeter";
 	} else {
@@ -1338,10 +1338,12 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 
     $commandref->function();
 
-    $chain ||= $designator;
-
-    
+    unless ( $done ) {
+	$chain ||= $designator;
+	fatal_error "$command rules are not allowed in the $chainnames{$chain} chain" unless $chain & $commandref->{allowedchains};
+    }
 }
+
 sub rate_to_kbit( $ ) {
     my $rate = $_[0];
 

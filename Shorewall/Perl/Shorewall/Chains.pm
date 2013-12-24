@@ -4768,15 +4768,20 @@ sub verify_small_mark( $ ) {
 
 sub validate_mark( $ ) {
     my $mark = shift;
+    my $val;
     fatal_error "Missing MARK" unless supplied $mark;
 
     if ( $mark =~ '/' ) {
 	my @marks = split '/', $mark;
 	fatal_error "Invalid MARK ($mark)" unless @marks == 2;
 	verify_mark $_ for @marks;
+	$val = @marks[0];
     } else {
 	verify_mark $mark;
+	$val = $mark;
     }
+
+    return numeric_value $val if defined( WANTARRAY );
 }
 
 #

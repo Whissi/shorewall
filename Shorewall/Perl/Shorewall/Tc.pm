@@ -980,13 +980,7 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 
-    my ( $command, $designator ) = split_action( $action );
-
-    if ( supplied $designator ) {
-	fatal_error "Invalid chain designator ( $designator )" unless $designators{$designator};
-    }
-
-    ( $command , $params ) = get_target_param1( $command );
+    my ( $command, $designator );
 
     my %commands = (
 	CHECKSUM   => {
@@ -1297,6 +1291,16 @@ sub process_mark_rule( $$$$$$$$$$$$$$$$ ) {
 	},
 
     );
+    #
+    # Function Body
+    #
+    ( $command, $designator ) = split_action( $action );
+
+    if ( supplied $designator ) {
+	fatal_error "Invalid chain designator ( $designator )" unless $designators{$designator};
+    }
+
+    ( $command , $params ) = get_target_param1( $command );
 
     my $commandref = $commands{$command};
 

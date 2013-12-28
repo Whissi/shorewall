@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-marks</refentrytitle>
+    <refentrytitle>shorewall6-mangle</refentrytitle>
 
     <manvolnum>5</manvolnum>
   </refmeta>
@@ -11,12 +11,12 @@
   <refnamediv>
     <refname>marks</refname>
 
-    <refpurpose>Shorewall Packet Marking rules file</refpurpose>
+    <refpurpose>Shorewall Packet marking/mangling rules file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/marks</command>
+      <command>/etc/shorewall6/mangle</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -24,13 +24,15 @@
     <title>Description</title>
 
     <para>This file was introduced in Shorewall 4.6.0 and is intended to
-    replace shorewall-tcrules(5). This file is only processed by the compiler
-    if:</para>
+    replace <ulink
+    url="shorewall6-tcrules.html">shorewall6-tcrules(5)</ulink>. This file is
+    only processed by the compiler if:</para>
 
     <orderedlist numeration="loweralpha">
       <listitem>
         <para>No file named 'tcrules' exists on the current CONFIG_PATH (see
-        <ulink url="shorewall.conf.html">shorewall.conf(5)</ulink>); or</para>
+        <ulink url="shorewall.conf.html">shorewall6.conf(5)</ulink>);
+        or</para>
       </listitem>
 
       <listitem>
@@ -44,7 +46,7 @@
 
     <important>
       <para>Unlike rules in the <ulink
-      url="shorewall-rules.html">shorewall-rules</ulink>(5) file, evaluation
+      url="shorewall6-rules.html">shorewall6-rules</ulink>(5) file, evaluation
       of rules in this file will continue after a match. So the final mark for
       each packet will be the one assigned by the LAST tcrule that
       matches.</para>
@@ -104,13 +106,13 @@
           <para>Unless otherwise specified for the particular
           <replaceable>command</replaceable>, the default chain is PREROUTING
           when MARK_IN_FORWARD_CHAIN=No in <ulink
-          url="shorewall.conf.html">shorewall.conf(5)</ulink>, and FORWARD
+          url="shorewall.conf.html">shorewall6.conf(5)</ulink>, and FORWARD
           when MARK_IN_FORWARD_CHAIN=Yes.</para>
 
           <para>A chain-designator may not be specified if the SOURCE or DEST
           columns begin with '$FW'. When the SOURCE is $FW, the generated rule
           is always placed in the OUTPUT chain. If DEST is '$FW', then the
-          rule is placed in the OUTPUT chain.</para>
+          rule is placed in the INPUT chain.</para>
 
           <para>Where a command takes parameters, those parameters are
           enclosed in parentheses ("(....)") and separated by commas.</para>
@@ -159,11 +161,11 @@
                 <para>When using Shorewall's built-in traffic shaping tool,
                 the <emphasis>major</emphasis> class is the device number (the
                 first device in <ulink
-                url="shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
+                url="shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5)
                 is major class 1, the second device is major class 2, and so
                 on) and the <emphasis>minor</emphasis> class is the class's
                 MARK value in <ulink
-                url="shorewall-tcclasses.html">shorewall-tcclasses</ulink>(5)
+                url="shorewall6-tcclasses.html">shorewall6-tcclasses</ulink>(5)
                 preceded by the number 1 (MARK 1 corresponds to minor class
                 11, MARK 5 corresponds to minor class 15, MARK 22 corresponds
                 to minor class 122, etc.).</para>
@@ -297,7 +299,7 @@
                 specified at the end of the rule. If the target is not one
                 known to Shorewall, then it must be defined as a builtin
                 action in <ulink
-                url="shorewall-actions.html">shorewall-actions</ulink>
+                url="shorewall6-actions.html">shorewall6-actions</ulink>
                 (5).</para>
 
                 <para>The following rules are equivalent:</para>
@@ -463,7 +465,7 @@ INLINE          eth0              -                 ; -p tcp -j MARK --set-mark 
                 then the assigned mark values are 0x200, 0x300 and 0x400 in
                 equal proportions. If no mask is specified, then ( 2 **
                 MASK_BITS ) - 1 is assumed (MASK_BITS is set in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5)).</para>
+                url="shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
               </listitem>
             </varlistentry>
 
@@ -564,7 +566,7 @@ Normal-Service       =&gt; 0x00</programlisting>
               <listitem>
                 <para>Transparently redirects a packet without altering the IP
                 header. Requires a tproxy provider to be defined in <ulink
-                url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+                url="shorewall6-providers.html">shorewall6-providers</ulink>(5).</para>
 
                 <para>There are three parameters to TPROXY - neither is
                 required:</para>
@@ -690,7 +692,7 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -707,7 +709,7 @@ Normal-Service       =&gt; 0x00</programlisting>
               <para>An interface name. May not be used in the PREROUTING chain
               (:P in the mark column or no chain qualifier and
               MARK_IN_FORWARD_CHAIN=No in <ulink
-              url="manpages/shorewall.conf">shorewall.conf</ulink> (5)). The
+              url="shorewall6.conf">shorewall6.conf</ulink> (5)). The
               interface name may be optionally followed by a colon (":") and
               an IP address list.</para>
             </listitem>
@@ -727,7 +729,7 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="shorewall-exclusion.html">shorewall-exclusion</ulink>(5)).</para>
+          url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -1069,8 +1071,8 @@ Normal-Service       =&gt; 0x00</programlisting>
         role="bold">INVALID</emphasis>} [,...]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.9. The rule will only match if the
-          packet's connection is in one of the listed states.</para>
+          <para>The rule will only match if the packet's connection is in one
+          of the listed states.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -1096,40 +1098,17 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <programlisting>       #ACTION    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
        #                                                       PORT(S)
-       1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-request
-       1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
-       RESTORE:T  0.0.0.0/0 0.0.0.0/0    all     -             -       -       0
-       CONTINUE:T 0.0.0.0/0 0.0.0.0/0    all     -             -       -       !0
-       4:T         0.0.0.0/0 0.0.0.0/0   ipp2p:all
-       SAVE:T      0.0.0.0/0 0.0.0.0/0   all     -             -       -       !0</programlisting>
+       MARK(1):T  ::/0      ::/0         icmp    echo-request
+       MARK(1):T  ::/0      ::/0         icmp    echo-reply
+       RESTORE:T  ::/0      ::/0         all     -             -       -       0
+       CONTINUE:T ::/0      ::/0         all     -             -       -       !0
+       MARK(4):T  ::/0      ::/0         ipp2p:all
+       SAVE:T     ::/0      ::/0         all     -             -       -       !0</programlisting>
 
           <para>If a packet hasn't been classified (packet mark is 0), copy
           the connection mark to the packet mark. If the packet mark is set,
           we're done. If the packet is P2P, set the packet mark to 4. If the
           packet mark has been set, save it to the connection mark.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 2:</term>
-
-        <listitem>
-          <para>SNAT outgoing connections on eth0 from 192.168.1.0/24 in
-          round-robin fashion between addresses 1.1.1.1, 1.1.1.3, and 1.1.1.9
-          (Shorewall 4.5.9 and later).</para>
-
-          <programlisting>/etc/shorewall/tcrules:
-
-       #ACTION   SOURCE         DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #                                                           PORT(S)
-       1-3:CF    192.168.1.0/24 eth0 ; state=NEW
-
-/etc/shorewall/masq:
-
-       #INTERFACE SOURCE         ADDRESS     ...
-       eth0       192.168.1.0/24 1.1.1.1 ; mark=1:C
-       eth0       192.168.1.0/24 1.1.1.3 ; mark=2:C
-       eth0       192.168.1.0/24 1.1.1.4 ; mark=3:C</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -1138,7 +1117,7 @@ Normal-Service       =&gt; 0x00</programlisting>
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/tcrules</para>
+    <para>/etc/shorewall6/mangle</para>
   </refsect1>
 
   <refsect1>
@@ -1156,14 +1135,14 @@ Normal-Service       =&gt; 0x00</programlisting>
     <para><ulink
     url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
 
-    <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-ecn(5), shorewall-exclusion(5),
-    shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-rtrules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
-    shorewall-secmarks(5), shorewall-tcclasses(5), shorewall-tcdevices(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
+    shorewall6-blacklist(5), shorewall6-ecn(5), shorewall6-exclusion(5),
+    shorewall6-hosts(5), shorewall6_interfaces(5), shorewall6-ipsets(5),
+    shorewall6-maclist(5), shorewall6-masq(5), shorewall6-nat(5),
+    shorewall6-netmap(5), shorewall6-params(5), shorewall6-policy(5),
+    shorewall6-providers(5), shorewall6-proxyarp(5), shorewall6-rtrules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
+    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

@@ -165,7 +165,7 @@ sub initialize( $ ) {
     $divertref = 0;
 }
 
-sub process_mark_rule1( $$$$$$$$$$$$$$$$ ) {
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
     our ( $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
     use constant {
@@ -1449,16 +1449,16 @@ sub process_tc_rule( ) {
     }
 }    
 
-sub process_mark_rule( ) {
+sub process_mangle_rule( ) {
     my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = 
-	split_line2( 'marks file',
+	split_line2( 'mangle file',
 		     { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },
 		     {},
 		     16,
 		     1 );
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
-	process_mark_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
+	process_mangle_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     }
 }
     
@@ -3207,14 +3207,14 @@ sub setup_tc() {
 
 	}
 
-	if ( -f find_file 'marks' ) {
+	if ( -f find_file 'mangle' ) {
 	    if ( $have_tcrules ) {
-		warning_message "The 'tcrules' file is non-empty -- 'marks' file ignored";
-	    } elsif ( my $fn = open_file( 'marks', 2, 1 ) ) {
+		warning_message "The 'tcrules' file is non-empty -- 'mangle' file ignored";
+	    } elsif ( my $fn = open_file( 'mangle', 2, 1 ) ) {
 	
 		first_entry "$doing $fn...";
 		
-		process_mark_rule while read_a_line( NORMAL_READ );
+		process_mangle_rule while read_a_line( NORMAL_READ );
 	    }
 	}
 

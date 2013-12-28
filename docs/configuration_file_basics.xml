@@ -134,7 +134,9 @@
           <para><filename>/etc/shorewall/tcrules </filename>- The file has a
           rather unfortunate name because it is used to define marking of
           packets for later use by both traffic control/shaping and policy
-          routing.</para>
+          routing. This file is superceded by
+          <filename>/etc/shorewall/mangle</filename> in Shorewall
+          4.6.0.</para>
         </listitem>
 
         <listitem>
@@ -275,6 +277,12 @@
           <para><filename>/usr/share/arprules</filename> — Added in Shorewall
           4.5.12. Allows specification of arptables rules.</para>
         </listitem>
+
+        <listitem>
+          <para><filename>/etc/shorewall/mangle</filename> -- Added in
+          Shorewall 4.6.0. Supercedes<filename>
+          /etc/shorewall/tcrules</filename>.</para>
+        </listitem>
       </itemizedlist></para>
 
     <para><emphasis role="bold">If you need to change a file in
@@ -356,9 +364,13 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     <para>Example: Traffic from zone A to zone B would go through chain A2B
     (think "A to B") or "A-B".</para>
 
-    <para>The default separator is "2" but you can override that by setting
-    ZONE_SEPARATOR="-" in <ulink
+    <para>In Shorewall 4.6, the default separator is "-" but you can override
+    that by setting ZONE_SEPARATOR="2" in <ulink
     url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+
+    <note>
+      <para>Prior to Shorewall 4.6, the default separator was "2".</para>
+    </note>
 
     <para>Zones themselves have names that begin with a letter and are
     composed of letters, numerals, and "_". The maximum length of a name is
@@ -421,36 +433,36 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     </itemizedlist>
 
     <para>To attach a comment to one or more rules, insert a record above the
-    rules that begins with the word COMMENT (must be in all caps). The
+    rules that begins with the word ?COMMENT (must be in all caps). The
     remainder of the line is treated as a comment -- that comment will appear
     delimited by "/* ... */" in the output of the <command>shorewall[-lite]
     show</command> and <command>shorewall[-lite] dump</command> commands. The
-    comment will be attached to each generated rule until another COMMENT line
-    appears. To stop attaching comments to rules, simply insert a line that
-    contains the single word COMMENT.</para>
+    comment will be attached to each generated rule until another ?COMMENT
+    line appears. To stop attaching comments to rules, simply insert a line
+    that contains the single word ?COMMENT.</para>
 
     <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
 
-    <programlisting>COMMENT Stop NETBIOS noise
+    <programlisting>?COMMENT Stop NETBIOS noise
 
 REJECT          loc                             net                     tcp     137,445
 REJECT          loc                             net                     udp     137:139
 
-COMMENT Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
+?COMMENT Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
 
 DROP            loc:!192.168.0.0/22             net
 
-COMMENT</programlisting>
+?COMMENT</programlisting>
 
     <para>Here's the corresponding output from
     <filename>/sbin/shorewall-lite</filename>:</para>
 
-    <programlisting>gateway:~ # <command>shorewall-lite show loc2net</command>
+    <programlisting>gateway:~ # <command>shorewall-lite show loc-net</command>
 Shorewall Lite 4.3.3 Chains loc2net at gateway - Mon Oct 16 15:04:52 PDT 2008
 
 Counters reset Mon Oct 16 14:52:17 PDT 2006
 
-Chain loc2net (1 references)
+Chain loc-net (1 references)
  pkts bytes target     prot opt in     out     source               destination
     0     0 LOG        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
     0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25
@@ -467,8 +479,8 @@ gateway:~ #
 
 </programlisting>
 
-    <para>COMMENT lines in macro files work somewhat differently from other
-    files. COMMENT lines in macros are ignored if COMMENT support is not
+    <para>?COMMENT lines in macro files work somewhat differently from other
+    files. ?COMMENT lines in macros are ignored if COMMENT support is not
     available or if there was a COMMENT in use when the top-level macro was
     invoked. This allows the following:</para>
 
@@ -476,12 +488,12 @@ gateway:~ #
 
     <para><programlisting>#ACTION SOURCE DEST  PROTO DEST    SOURCE  RATE  USER/
 #                          PORT(S) PORT(S) LIMIT GROUP
-COMMENT SSH
+?COMMENT SSH
 PARAM   -      -     tcp   22 </programlisting>
-    <filename>/etc/shorewall/rules</filename>:<programlisting>COMMENT Allow SSH from home
+    <filename>/etc/shorewall/rules</filename>:<programlisting>?COMMENT Allow SSH from home
 SSH(ACCEPT)    net:$MYIP      $FW
-COMMENT</programlisting>The comment line in macro.SSH will not override the
-    COMMENT line in the rules file and the generated rule will show <emphasis
+?COMMENT</programlisting>The comment line in macro.SSH will not override the
+    ?COMMENT line in the rules file and the generated rule will show <emphasis
     role="bold">/* Allow SSH from home */</emphasis> when displayed through
     the Shorewall show and dump commands.</para>
   </section>
@@ -571,8 +583,8 @@ ACCEPT      net:\
 
     <itemizedlist>
       <listitem>
-        <para>At any point, you can enter a semicolon (';') followed by one or
-        more specifications of the following forms:</para>
+        <para>At any point, you can enter a left curly bracket ('{') followed
+        by one or more specifications of the following forms:</para>
 
         <simplelist>
           <member><replaceable>column-name</replaceable>=<replaceable>value</replaceable></member>
@@ -582,6 +594,9 @@ ACCEPT      net:\
           <member><replaceable>column-name</replaceable>:<replaceable>value</replaceable></member>
         </simplelist>
 
+        <para>The pairs must be followed by a right curly bracket
+        ("}").</para>
+
         <para>The value may optionally be enclosed in double quotes.</para>
 
         <para>The pairs must be separated by white space, but you can add a
@@ -589,19 +604,23 @@ ACCEPT      net:\
         readability as in:</para>
 
         <simplelist>
-          <member><emphasis role="bold">; proto=&gt;udp,
-          port=1024</emphasis></member>
+          <member><emphasis role="bold">{ proto=&gt;udp, port=1024
+          }</emphasis></member>
         </simplelist>
       </listitem>
 
       <listitem>
-        <para>You can enclose the pairs in curly brackets ("{...}") rather
-        than separating them from columns by a semicolon:</para>
+        <para>You can also separate the pairs from columns by using a
+        semicolon:</para>
 
         <simplelist>
-          <member><emphasis role="bold">{ proto:udp, port:1024
-          }</emphasis></member>
+          <member><emphasis role="bold">; proto:udp,
+          port:1024</emphasis></member>
         </simplelist>
+
+        <para>That usage is deprecated beginning with Shorewall 4.6.0. See the
+        INLINE_MATCHES option in <ulink
+        url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
       </listitem>
     </itemizedlist>
 
@@ -671,6 +690,12 @@ ACCEPT      net:\
             <entry>maclist</entry>
 
             <entry>disposition,interface,mac,addresses</entry>
+          </row>
+
+          <row>
+            <entry>mangle</entry>
+
+            <entry>action,source,dest,proto,dport,sport,user,test,length,tos,connbytes,helper,headers</entry>
           </row>
 
           <row>

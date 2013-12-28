@@ -165,8 +165,8 @@ sub initialize( $ ) {
     $divertref = 0;
 }
 
-sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
-    our ( $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
+    our ( $file, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
     use constant {
 	PREROUTING     => 1,        #Actually tcpre
@@ -210,7 +210,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
     our $matches        = '';
     our $params         = '';
     our $done           = 0;
-    my  $default_chain;
+    my  $default_chain  = 0;
     our $restriction    = 0;
     our $exceptionrule  = '';
     my  $device         = '';
@@ -327,7 +327,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
        
 	CLASSIFY   => {
 	    defaultchain   => POSTROUTING,
-	    allowedchains  => POSTROUTING,
+	    allowedchains  => POSTROUTING | FORWARD | OUTPUT,
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub() {
@@ -476,12 +476,11 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
 	    defaultchain   => 0,
 	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
-	    maxparams      => 1,
+	    maxparams      => 4,
 	    function       => sub () {
 		my ( $srcdst, $mask1, $mask2, $shift ) = ('src', 255, 0, 0 );
 
 		require_capability 'IPMARK_TARGET', 'IPMARK', 's';
-		$chain  = $designator || $default_chain;
 		
 		my $val;
 
@@ -522,7 +521,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    mask           => in_hex( $globals{TC_MASK} ),
 	    function       => sub () {
-		$chain  = $designator || $default_chain;
 		$target = 'MARK';
 		handle_mark_param('--set-mark');
 	    },
@@ -534,7 +532,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
 	    minparams      => 0,
 	    maxparams      => 1,
 	    function       => sub () {
-		$chain  = $designator || $default_chain;
 		$target = 'CONNMARK ';
 		if ( supplied $params ) {
 		    handle_mark_param( '--restore-mark --mark ' );
@@ -578,7 +575,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub() {
-		$target .= decode_tos( $1 , 2 );
+		$target = 'TOS ' . decode_tos( $params , 2 );
 	    },
 	},
 
@@ -682,6 +679,10 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
 	    $chain = OUTPUT;
 	}
     }
+
+    unless ( ( $chain || $default_chain ) == OUTPUT ) {
+	fatal_error 'A USER/GROUP may only be specified when the SOURCE is $FW' unless $user eq '-';
+    }
     
     if ( $dest ne '-' ) {
 	if ( $dest eq $fw ) {
@@ -772,48 +773,32 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 
-    progress_message "  Mangle Rule \"$currentline\" $done";
+    progress_message "  $file Rule \"$currentline\" $done";
 }
 
 sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
-    my  %tcs = ( T => { chain  => 'tcpost',
-			connmark => 0,
-			fw       => 1,
-			fwi      => 0,
+    my  %tcs = ( T => { designator => ':T',
+			command    => '' 
 		 } ,
-		 CT => { chain  => 'tcpost' ,
-			 target => 'CONNMARK --set-mark' ,
-			 connmark => 1 ,
-			 fw       => 1 ,
-			 fwi      => 0,
+		 CT => { designator => ':T',
+			 command    => 'CONNMARK'
 		 } ,
-		 C  => { target => 'CONNMARK --set-mark' ,
-			 connmark => 1 ,
-			 fw       => 1 ,
-			 fwi      => 1 ,
+		 C  => { designator => '',
+		         command    => 'CONNMARK' ,
 		 } ,
-		 P  => { chain    => 'tcpre' ,
-			 connmark => 0 ,
-			 fw       => 0 ,
-			 fwi      => 0 ,
+		 P  => { designator => ':P',
+			 command    => ''
 		 } ,
-		 CP => { chain    => 'tcpre' ,
-			 target => 'CONNMARK --set-mark' ,
-			 connmark => 1 ,
-			 fw       => 0 ,
-			 fwi      => 0 ,
+		 CP => { designator => ':P' ,
+			 command    => 'CONNMARK'
 		 } ,
-		 F =>  { chain    => 'tcfor' ,
-			 connmark => 0 ,
-			 fw       => 0 ,
-			 fwi      => 0 ,
+		 F =>  { designator => ':F',
+			 command    => ''
 		 } ,
-		 CF => { chain    => 'tcfor' ,
-			 connmark => 1 ,
-			 fw       => 0 ,
-			 fwi      => 0 ,
+		 CF => { designator => ':F' ,
+			 command    => 'CONNMARK'
 		 } ,
 	);
 
@@ -821,105 +806,40 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
     unless ( %tccmd ) {
 	%tccmd = ( SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
-				 target    => 'CONNMARK --save-mark --mask' ,
-				 mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK,
-				 mask      => in_hex( $globals{TC_MASK} ) ,
-				 connmark  => 1
 			       } ,
 		   RESTORE =>  { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
-				 target    => 'CONNMARK --restore-mark --mask' ,
-				 mark      => $config{TC_EXPERT} ? HIGHMARK : SMALLMARK ,
-				 mask      => in_hex( $globals{TC_MASK} ) ,
-				 connmark  => 1
 			       } ,
 		   CONTINUE => { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
-				 target    => 'RETURN' ,
-				 mark      => NOMARK ,
-				 mask      => '' ,
-				 connmark  => 0
 			       } ,
 		   SAME =>     { match     => sub ( $ ) { $_[0] eq 'SAME' },
-				 target    => 'sticky' ,
-				 mark      => NOMARK ,
-				 mask      => '' ,
-				 connmark  => 0
 			       } ,
 		   IPMARK =>   { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
-				 target    => 'IPMARK' ,
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       } ,
 		   '|' =>      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
-				 target    => 'MARK --or-mark' ,
-				 mark      => HIGHMARK ,
-				 mask      => ''
+				 command   => 'MARK',
 			       } ,
 		   '&' =>      { match     => sub ( $ ) { $_[0] =~ '&.*' },
-				 target    => 'MARK --and-mark' ,
-				 mark      => HIGHMARK ,
-				 mask      => '' ,
-				 connmark  => 0
+				 command   => 'MARK',
 			       } ,
 		   TPROXY =>   { match     => sub ( $ ) { $_[0] =~ /^TPROXY/ },
-				 target    => 'TPROXY',
-				 mark      => HIGHMARK,
-				 mask      => '',
-				 connmark  => ''
 			       },
 		   DIVERT =>   { match     => sub( $ ) { $_[0] =~ /^DIVERT/ },
-				 target    => 'DIVERT',
-				 mark      => HIGHMARK,
-				 mask      => '',
-				 connmark  => ''
 			       },
 		   TTL =>      { match     => sub( $ ) { $_[0] =~ /^TTL/ },
-				 target    => 'TTL',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       },
 		   HL =>       { match     => sub( $ ) { $_[0] =~ /^HL/ },
-				 target    => 'HL',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       },
 		   IMQ =>      { match     => sub( $ ) { $_[0] =~ /^IMQ\(\d+\)$/ },
-				 target    => 'IMQ',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       },
 		   DSCP =>     { match     => sub( $ ) { $_[0] =~ /^DSCP\(\w+\)$/ },
-				 target    => 'DSCP',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       },
 		   TOS =>      { match     => sub( $ ) { $_[0] =~ /^TOS\(.+\)$/ },
-				 target    => 'TOS',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       },
 		   CHECKSUM => { match     => sub( $ ) { $_[0] eq 'CHECKSUM' },
-				 target    => 'CHECKSUM' ,
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0,
 			       },
 		   INLINE   => { match     => sub( $ ) { $_[0] eq 'INLINE' },
-				 target    => 'INLINE',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0,
 			       },
 		   DROP =>      { match     => sub( $ ) { $_[0] eq 'DROP' },
-				 target    => 'DROP',
-				 mark      => NOMARK,
-				 mask      => '',
-				 connmark  => 0
 			       },
 		 );
     }
@@ -930,8 +850,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
     fatal_error "Invalid MARK ($originalmark)" unless supplied $mark;
 
-    my $chain    = $globals{MARKING_CHAIN};
-    my $classid  = 0;
+    my $command = '';
 
     if ( $remainder ) {
 	if ( $originalmark =~ /^\w+\(?.*\)$/ ) {
@@ -940,324 +859,36 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	    fatal_error "Invalid MARK ($originalmark)"
 		unless ( $mark =~ /^([0-9a-fA-F]+)$/ &&
 			 $designator =~ /^([0-9a-fA-F]+)$/ &&
-			 ( $chain = $designator{$remainder} ) );
-	    $mark    = join( ':', $mark, $designator );
-	    $classid = 1;
+			 $designator{$remainder} );
+	    $mark       = join( ':', $mark, $designator );
+	    $designator = $remainder;
+	    $command    = 'CLASSIFY';
 	}
     }
 
-    my $target = 'MARK --set-mark';
     my $tcsref;
-    my $connmark = 0;
-    my $device   = '';
-    my $fw       = firewall_zone;
-    my $list;
-    my $restriction = 0;
-    my $cmd;
-    my $rest;
-    my $matches = '';
-    my $mark1;
-    my $exceptionrule = '';
-
-    my %processtcc = ( sticky => sub() {
-			                  if ( $chain eq 'tcout' ) {
-					      $target = 'sticko';
-					  } else {
-					      fatal_error "SAME rules are only allowed in the PREROUTING and OUTPUT chains" if $chain ne 'tcpre';
-					  }
-
-					  $restriction = DESTIFACE_DISALLOW;
-
-					  ensure_mangle_chain($target);
-
-					  $sticky++;
-				      },
-		       IPMARK => sub() {
-			                  my ( $srcdst, $mask1, $mask2, $shift ) = ('src', 255, 0, 0 );
-
-					  require_capability 'IPMARK_TARGET', 'IPMARK', 's';
-
-					  if ( $cmd =~ /^IPMARK\((.+?)\)$/ ) {
-					      my $params = $1;
-					      my $val;
-
-					      my ( $sd, $m1, $m2, $s , $bad ) = split ',', $params;
-
-					      fatal_error "Invalid IPMARK parameters ($params)" if $bad;
-					      fatal_error "Invalid IPMARK parameter ($sd)" unless ( $sd eq 'src' || $sd eq 'dst' );
-					      $srcdst = $sd;
-
-					      if ( supplied $m1 ) {
-						  $val = numeric_value ($m1);
-						  fatal_error "Invalid Mask ($m1)" unless defined $val && $val && $val <= 0xffffffff;
-						  $mask1 = in_hex ( $val & 0xffffffff );
-					      }
-
-					      if ( supplied $m2 ) {
-						  $val = numeric_value ($m2);
-						  fatal_error "Invalid Mask ($m2)" unless defined $val && $val <= 0xffffffff;
-						  $mask2 = in_hex ( $val & 0xffffffff );
-					      }
-
-					      if ( defined $s ) {
-						  $val = numeric_value ($s);
-						  fatal_error "Invalid Shift Bits ($s)" unless defined $val && $val >= 0 && $val < 128;
-						  $shift = $s;
-					      }
-					  } else {
-					      fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless $cmd eq 'IPMARK';
-					  }
-
-					  $target = "IPMARK --addr $srcdst --and-mask $mask1 --or-mask $mask2 --shift $shift";
-				      },
-		       DIVERT => sub() {
-			                  fatal_error "Invalid MARK ($originalmark)"               unless $file_format == 2;
-			                  fatal_error "Invalid DIVERT specification( $cmd/$rest )" if $rest;
-
-					  $chain = 'PREROUTING';
-
-					  $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
-
-					  unless ( $divertref ) {
-					      $divertref = new_chain( 'mangle', 'divert' );
-					      add_ijump( $divertref , j => 'MARK', targetopts => "--set-mark $mark"  );
-					      add_ijump( $divertref , j => 'ACCEPT' );
-					  }
-
-					  $target = 'divert';
-
-					  $matches = '! --tcp-flags FIN,SYN,RST,ACK SYN  -m socket --transparent ';
-				      },					      
-		       TPROXY => sub() {
-			                  require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
-
-			                  fatal_error "Invalid TPROXY specification( $cmd/$rest )" if $rest;
-
-					  $chain = 'PREROUTING';
-
-					  $cmd =~ /TPROXY\((.+?)\)$/;
-
-					  my $params = $1;
-					  my ( $port, $ip, $bad );
-
-					  if ( $file_format == 1 ) {
-					      fatal_error "Invalid TPROXY specification( $cmd )" unless defined $params;
-
-					      ( $mark, $port, $ip, $bad ) = split_list $params, 'Parameter';
-
-					      fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
-
-					      warning_message "TPROXY is deprecated in a format-1 tcrules file";
-					  } else {
-					      if ( $params ) {
-						  ( $port, $ip, $bad ) = split_list $params, 'Parameter';
-
-						  fatal_error "Invalid TPROXY specification( $cmd )" if defined $bad;
-					      
-					      } else {
-						  fatal_error "Invalid TPROXY specification ($cmd)" unless $cmd eq 'TPROXY' || $cmd eq 'TPROXY()';
-					      }
-
-					      $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
-					  }
-
-					  if ( $port ) {
-					      $port = validate_port( 'tcp', $port );
-					  } else {
-					      $port = 0;
-					  }
-
-					  $target .= " --on-port $port";
-
-					  if ( supplied $ip ) {
-					      if ( $family == F_IPV6 ) {
-						  if ( $ip =~ /^\[(.+)\]$/ || $ip =~ /^<(.+)>$/ ) {
-						      $ip = $1;
-						  } elsif ( $ip =~ /^\[(.+)\]\/(\d+)$/ ) {
-						      $ip = join( '/', $1, $2 );
-						  }
-					      }
-
-					      validate_address $ip, 1;
-					      $target .= " --on-ip $ip";
-					  }
-
-					  $target .= ' --tproxy-mark';
-
-					  $exceptionrule = '-p tcp ';
-				      },
-		       TTL => sub() {
-			                  fatal_error "TTL is not supported in IPv6 - use HL instead" if $family == F_IPV6;
-					  fatal_error "Invalid TTL specification( $cmd/$rest )" if $rest;
-					  $chain = 'tcfor';
-
-					  if ( $designator ) {
-					      if ( $designator eq 'P' ) {
-						  $chain = 'tcpre';
-					      } else {
-						  fatal_error "Chain designator $designator not allowed with TTL" if $designator ne 'F';
-					      }
-					  }
-
-					  $cmd =~ /^TTL\(([-+]?(\d+))\)$/;
-
-					  my $param =  $1;
-
-					  fatal_error "Invalid TTL specification( $cmd )" unless supplied( $1 ) && ( $1 eq $2 || $2 != 0 ) && ( $param = abs $param ) < 256;
-
-					  if ( $1 =~ /^\+/ ) {
-					      $target .= " --ttl-inc $param";
-					  } elsif ( $1 =~ /\-/ ) {
-					      $target .= " --ttl-dec $param";
-					  } else {
-					      $target .= " --ttl-set $param";
-					  }
-				      },
-		       HL => sub() {
-			                  fatal_error "HL is not supported in IPv4 - use TTL instead" if $family == F_IPV4;
-					  fatal_error "Invalid HL specification( $cmd/$rest )" if $rest;
-					  $chain = 'tcfor';
-
-
-					  if ( $designator ) {
-					      if ( $designator eq 'P' ) {
-						  $chain = 'tcpre';
-					      } else {
-						  fatal_error "Chain designator $designator not allowed with HL" if $designator ne 'F';
-					      }
-					  }
-
-					  $cmd =~ /^HL\(([-+]?(\d+))\)$/;
-
-					  my $param =  $1;
-
-					  fatal_error "Invalid HL specification( $cmd )" unless supplied( $1 ) && ( $1 eq $2 || $2 != 0 ) && ( $param = abs $param ) < 256;
-
-					  if ( $1 =~ /^\+/ ) {
-					      $target .= " --hl-inc $param";
-					  } elsif ( $1 =~ /\-/ ) {
-					      $target .= " --hl-dec $param";
-					  } else {
-					      $target .= " --hl-set $param";
-					  }
-				      },
-		       IMQ => sub() {
-			                  assert( $cmd =~ /^IMQ\((\d+)\)$/ );
-					  require_capability 'IMQ_TARGET', 'IMQ', 's';
-					  $target .= " --todev $1";
-				      },
-		       DSCP => sub() {
-			                  assert( $cmd =~ /^DSCP\((\w+)\)$/ );
-					  require_capability 'DSCP_TARGET', 'The DSCP action', 's';
-					  my $dscp = numeric_value( $1 );
-					  $dscp = $dscpmap{$1} unless defined $dscp;
-					  fatal_error( "Invalid DSCP ($1)" ) unless defined $dscp && $dscp <= 0x38 && ! ( $dscp & 1 );
-					  $target .= ' --set-dscp ' . in_hex( $dscp );
-				      },
-		       TOS => sub() {
-			                  assert( $cmd =~ /^TOS\((.+)\)$/ );
-					  $target .= decode_tos( $1 , 2 );
-				      },
-		       CHECKSUM => sub()
-		                        {  require_capability 'CHECKSUM_TARGET', 'The CHECKSUM action', 's';
-					   $target .= ' --checksum-fill';
-				       },
-		       INLINE   => sub()
-		                       {
-					   assert ( $cmd eq 'INLINE' );
-					   $matches = get_inline_matches(1);
-
-					   if ( $matches =~ /^(.*\s+)-j\s+(.+)$/ ) {
-					       $matches   = $1;
-					       $target    = $2;
-					       my $action = $target;
-					       $action = $1 if $action =~ /^(.+?)\s/;
-					       fatal_error "Unknown target ($action)" unless $targets{$action} || $builtin_target{$action};
-					   } else {
-					       $target = '';
-					   }
-
-					   $cmd = '';
-				       },
-		       DROP     => sub()
-		                       {
-					   assert ( $cmd eq 'DROP' );
-					   $target = 'DROP';
-					   $cmd = '';
-				       },
-		     );
-
-    if ( $source ) {
-	if ( $source eq $fw ) {
-	    if ( $classid ) {
-		fatal_error ":F is not allowed when the SOURCE is the firewall" if $chain eq 'tcfor';
-	    } else {
-		$chain = 'tcout';
-	    }
-
-	    $source = '';
-	} elsif ( $source =~ s/^($fw):// ) {
-	    fatal_error ":F is not allowed when the SOURCE is the firewall" if ( $designator || '' ) eq 'F';
-	    $chain = 'tcout';
-	}
-    }
-
-    if ( $dest ) {
-	if ( $dest eq $fw ) {
-	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
-	    $chain = 'tcin';
-	    $dest  = '';
-	} elsif ( $dest =~ s/^($fw):// ) {
-	    fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $classid;
-	    $chain = 'tcin';
-	}
-    }
-
+    
     if ( $designator ) {
-	$tcsref = $tcs{$designator};
+	my $tcsref = $tcs{$designator};
 
 	if ( $tcsref ) {
-	    if ( $chain eq 'tcout' ) {
-		fatal_error "Invalid chain designator for source $fw" unless $tcsref->{fw};
-	    } elsif ( $chain eq 'tcin' ) {
-		fatal_error "Invalid chain designator for dest $fw" unless $tcsref->{fwi};
+	    $designator = $tcsref->{designator};
+	    if ( my $cmd = $tcsref->{command} ) {
+		$command |= $cmd;
 	    }
-
-	    $chain    = $tcsref->{chain}                       if $tcsref->{chain};
-	    $target   = $tcsref->{target}                      if $tcsref->{target};
-	    $mark     = "$mark/" . in_hex( $globals{TC_MASK} ) if $connmark = $tcsref->{connmark} && $mark !~ m'/';
-
-	    require_capability ('CONNMARK' , "CONNMARK Rules", '' ) if $connmark;
-
 	} else {
-	    unless ( $classid ) {
-		fatal_error "Invalid ACTION ($originalmark)" unless $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/;
-		fatal_error 'A CLASSIFY rule may not have $FW as the DEST' if $chain eq 'tcin';
-		$chain = 'tcpost';
-		$mark  = $originalmark;
+	    unless ( $command ) {
+		fatal_error "Invalid MARK/CLASSIFY ($originalmark)" unless $mark =~ /^([0-9a-fA-F]+)$/ and $designator =~ /^([0-9a-fA-F]+)$/;
+		$mark       = join( ':', $mark, $designator );
+		$command    = 'CLASSIFY';
+		$designator = '';
 	    }
-
-	    if ( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' ) {
-		$originalmark = join( ':', normalize_hex( $mark ), normalize_hex( $designator ) );
-		fatal_error "Unknown Class ($mark)}" unless ( $device = $classids{$mark} );
-		fatal_error "IFB Classes may not be specified in tcrules" if @{$tcdevices{$device}{redirected}};
-
-		unless ( $tcclasses{$device}{hex_value $designator}{leaf} ) {
-		    warning_message "Non-leaf Class ($originalmark) - tcrule ignored";
-		    return;
-		}
-
-		if ( $dest eq '-' ) {
-		    $dest = $device;
-		} else {
-		    $dest = join( ':', $device, $dest ) unless $dest =~ /^[[:alpha:]]/;
-		}
-	    }
-
-	    $classid = 1;
-	    $target  = 'CLASSIFY --set-class';
 	}
+    } else {
+	$designator = '';
     }
+
+    my ( $cmd, $rest );
 
     if ( $mark =~ /^TOS/ ) {
 	$cmd = $mark;
@@ -1266,163 +897,37 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	($cmd, $rest) = split( '/', $mark, 2 );
     }
 
-    $list = '';
-
-    unless ( $classid ) {
+    unless ( $command ) {
 	{
 	    if ( $cmd =~ /^([A-Z|&]+)/ ) {
 		if ( my $tccmd = $tccmd{$1} ) {
 		    fatal_error "Invalid $1 ACTION ($originalmark)" unless $tccmd->{match}($cmd); 
-		    fatal_error "$mark not valid with :C[FPT]" if $connmark;
-
-		    require_capability ('CONNMARK' , "SAVE/RESTORE Rules", '' ) if $tccmd->{connmark};
-
-		    $target      = $tccmd->{target};
-		    my $marktype = $tccmd->{mark};
-
-		    if ( $marktype == NOMARK ) {
-			$mark = ''
-		    } else {
-			$mark =~ s/^[|&]//;
-		    }
-
-		    if ( my $f = $processtcc{$target} ) {
-			$f->();
-		    }
-
-		    if ( $rest ) {
-			fatal_error "Invalid COMMAND ($originalmark)" if $marktype == NOMARK;
-
-			$mark = $rest if $tccmd->{mask};
-
-			if ( $marktype == SMALLMARK ) {
-			    verify_small_mark $mark;
-			} else {
-			    validate_mark $mark;
-			}
-		    } elsif ( $tccmd->{mask} ) {
-			$mark = $tccmd->{mask};
-		    }
-		} else {
-		    fatal_error "Invalid ACTION ($originalmark)";
+		    $command = $tccmd->{command} if $tccmd->{command};
 		}
-	    } elsif ( $mark =~ /-/ ) {
-		( $mark, $mark1 ) = split /-/, $mark, 2;
-		validate_mark $mark;
-		fatal_error "Invalid mark range ($mark-$mark1)" if $mark =~ m'/';
-		validate_mark $mark1;
-		require_capability 'STATISTIC_MATCH', 'A mark range', 's';
-	    }  else {
-		validate_mark $mark;
-
-		if ( $config{PROVIDER_OFFSET} ) {
-		    my $val = numeric_value( $cmd );
-		    fatal_error "Invalid MARK/CLASSIFY ($cmd)" unless defined $val;
-		    my $limit = $globals{TC_MASK};
-		    unless ( have_capability 'FWMARK_RT_MASK' ) {
-			fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
-			    if $cmd && ( $chain eq 'tcpre' || $chain eq 'tcout' ) && $val <= $limit;
-		    }
-		}
+	    } else {
+		$command = 'MARK';
 	    }
 	}
     }
+	
 
-    fatal_error "USER/GROUP only allowed in the OUTPUT chain" unless ( $user eq '-' || ( $chain eq 'tcout' || $chain eq 'tcpost' ) );
-
-    if ( $state ne '-' ) {
-	my @state = split_list( $state, 'state' );
-	my %state = %validstates;
-
-	for ( @state ) {
-	    fatal_error "Invalid STATE ($_)"   unless exists $state{$_};
-	    fatal_error "Duplicate STATE ($_)" if $state{$_};
-	}
-    } else {
-	$state = 'ALL';
-    }
-
-    if ( $mark1 ) {
-	#
-	# A Mark Range
-	#
-	my $chainref = ensure_chain( 'mangle', $chain );
-
-	( $mark1, my $mask ) = split( '/', $mark1 );
-
-	my ( $markval, $mark1val ) = ( numeric_value $mark, numeric_value $mark1 );
-
-	fatal_error "Invalid mark range ($mark-$mark1)" unless $markval < $mark1val;
-
-	$mask = $globals{TC_MASK} unless supplied $mask;
-
-	$mask = numeric_value $mask;
-
-	my $increment = 1;
-	my $shift     = 0;
-
-	$increment <<= 1, $shift++ until $increment & $mask;
-
-	$mask = in_hex $mask;
-
-	my $marks = ( ( $mark1val - $markval ) >> $shift ) + 1;
-
-	for ( my $packet = 0; $packet < $marks; $packet++, $markval += $increment ) {
-	    my $match = "-m statistic --mode nth --every $marks --packet $packet ";
-
-	    expand_rule( $chainref,
-			 $restrictions{$chain} | $restriction,
-			 '' ,
-			 $match .
-			 do_user( $user ) .
-			 do_test( $testval, $globals{TC_MASK} ) .
-			 do_test( $testval, $globals{TC_MASK} ) .
-			 do_length( $length ) .
-			 do_tos( $tos ) .
-			 do_connbytes( $connbytes ) .
-			 do_helper( $helper ) .
-			 do_headers( $headers ) .
-			 do_probability( $probability ) .
-			 do_dscp( $dscp ) .
-			 state_match( $state ) ,
-			 $source ,
-			 $dest ,
-			 '' ,
-			 "$target " . join( '/', in_hex( $markval ) , $mask ) ,
-			 '',
-			 $target ,
-			 $exceptionrule );
-	}
-    } elsif ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
-					  $restrictions{$chain} | $restriction,
-					  '',
-					  do_proto( $proto, $ports, $sports) . $matches .
-					  do_user( $user ) .
-					  do_test( $testval, $globals{TC_MASK} ) .
-					  do_length( $length ) .
-					  do_tos( $tos ) .
-					  do_connbytes( $connbytes ) .
-					  do_helper( $helper ) .
-					  do_headers( $headers ) .
-					  do_probability( $probability ) .
-					  do_dscp( $dscp ) .
-					  state_match( $state ) ,
-					  $source ,
-					  $dest ,
-					  '' ,
-					  $mark ? "$target $mark" : $target,
-					  '' ,
-					  $target ,
-					  $exceptionrule ) )
-	      && $device ) {
-	#
-	# expand_rule() returns destination device if any
-	#
-	fatal_error "Class Id $originalmark is not associated with device $result" if $device ne $result &&( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' );
-    }
-
-    progress_message "  TC Rule \"$currentline\" $done";
-
+    process_mangle_rule1( 'Tcrules', 
+			  ( $command ? "$command($mark)" : $mark ) . $designator ,
+			  $source,
+			  $dest,
+			  $proto,
+			  $ports,
+			  $sports,
+			  $user,
+			  $testval,
+			  $length,
+			  $tos,
+			  $connbytes,
+			  $helper,
+			  $headers,
+			  $probability,
+			  $dscp,
+			  $state );
 }
 
 sub process_tc_rule( ) {
@@ -1458,7 +963,7 @@ sub process_mangle_rule( ) {
 		     1 );
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
-	process_mangle_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
+	process_mangle_rule1( 'Mangle', $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     }
 }
     

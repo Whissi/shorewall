@@ -165,6 +165,9 @@ sub initialize( $ ) {
     $divertref = 0;
 }
 
+#
+# Process a rule from the tcrules or mangle file
+#
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     our ( $file, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
@@ -683,7 +686,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     unless ( ( $chain || $default_chain ) == OUTPUT ) {
 	fatal_error 'A USER/GROUP may only be specified when the SOURCE is $FW' unless $user eq '-';
     }
-    
+
     if ( $dest ne '-' ) {
 	if ( $dest eq $fw ) {
 	    fatal_error 'Rules with DEST $FW must use the INPUT chain' if $designator && $designator ne INPUT;
@@ -776,6 +779,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     progress_message "  $file Rule \"$currentline\" $done";
 }
 
+#
+# Intermediate processing of a tcrules entry
+#
 sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     my ( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
@@ -814,12 +820,6 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 		   SAME =>     { match     => sub ( $ ) { $_[0] eq 'SAME' },
 			       } ,
 		   IPMARK =>   { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
-			       } ,
-		   '|' =>      { match     => sub ( $ ) { $_[0] =~ '\|.*'} ,
-				 command   => 'MARK',
-			       } ,
-		   '&' =>      { match     => sub ( $ ) { $_[0] =~ '&.*' },
-				 command   => 'MARK',
 			       } ,
 		   TPROXY =>   { match     => sub ( $ ) { $_[0] =~ /^TPROXY/ },
 			       },
@@ -899,7 +899,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
     unless ( $command ) {
 	{
-	    if ( $cmd =~ /^([A-Z|&]+)/ ) {
+	    if ( $cmd =~ /^([A-Z]+)/ ) {
 		if ( my $tccmd = $tccmd{$1} ) {
 		    fatal_error "Invalid $1 ACTION ($originalmark)" unless $tccmd->{match}($cmd); 
 		    $command = $tccmd->{command} if $tccmd->{command};
@@ -911,7 +911,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     }
 	
 
-    process_mangle_rule1( 'Tcrules', 
+    process_mangle_rule1( 'TC', 
 			  ( $command ? "$command($mark)" : $mark ) . $designator ,
 			  $source,
 			  $dest,
@@ -935,7 +935,22 @@ sub process_tc_rule( ) {
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
 	    split_line2( 'tcrules file',
-			 { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, probability => 12 , dscp => 13, state => 14 },
+			 { mark => 0,
+			   action => 0,
+			   source => 1,
+			   dest => 2,
+			   proto => 3,
+			   dport => 4,
+			   sport => 5,
+			   user => 6,
+			   test => 7,
+			   length => 8,
+			   tos => 9,
+			   connbytes => 10,
+			   helper => 11,
+			   probability => 12 , 
+			   scp => 13,
+			   state => 14 },
 			 {},
 			 15,
 	                 1 );
@@ -943,7 +958,23 @@ sub process_tc_rule( ) {
     } else {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
 	    split_line2( 'tcrules file',
-			 { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },
+			 { mark => 0,
+			   action => 0,
+			   source => 1,
+			   dest => 2,
+			   proto => 3,
+			   dport => 4,
+			   sport => 5,
+			   user => 6,
+			   test => 7,
+			   length => 8,
+			   tos => 9,
+			   connbytes => 10,
+			   helper => 11,
+			   headers => 12,
+			   probability => 13,
+			   dscp => 14,
+			   state => 15 },
 			 {},
 			 16,
 	                 1 );
@@ -955,18 +986,60 @@ sub process_tc_rule( ) {
 }    
 
 sub process_mangle_rule( ) {
-    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = 
-	split_line2( 'mangle file',
-		     { mark => 0, action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, test => 7, length => 8, tos => 9, connbytes => 10, helper => 11, headers => 12, probability => 13 , dscp => 14 , state => 15 },
-		     {},
-		     16,
-		     1 );
+    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
+    if ( $family == F_IPV4 ) {
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
+	    split_line2( 'tcrules file',
+			 { mark => 0,
+			   action => 0,
+			   source => 1,
+			   dest => 2,
+			   proto => 3,
+			   dport => 4,
+			   sport => 5,
+			   user => 6,
+			   test => 7,
+			   length => 8,
+			   tos => 9,
+			   connbytes => 10,
+			   helper => 11,
+			   probability => 12 , 
+			   scp => 13,
+			   state => 14 },
+			 {},
+			 15,
+	                 1 );
+	$headers = '-';
+    } else {
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
+	    split_line2( 'tcrules file',
+			 { mark => 0,
+			   action => 0,
+			   source => 1,
+			   dest => 2,
+			   proto => 3,
+			   dport => 4,
+			   sport => 5,
+			   user => 6,
+			   test => 7,
+			   length => 8,
+			   tos => 9,
+			   connbytes => 10,
+			   helper => 11,
+			   headers => 12,
+			   probability => 13,
+			   dscp => 14,
+			   state => 15 },
+			 {},
+			 16,
+	                 1 );
+    }
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
 	process_mangle_rule1( 'Mangle', $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     }
 }
-    
+ 
 sub rate_to_kbit( $ ) {
     my $rate = $_[0];
 

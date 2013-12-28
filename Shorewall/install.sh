@@ -695,14 +695,14 @@ if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
 fi
 
 #
-# Install the TC Rules file
+# Install the Mangle file
 #
-run_install $OWNERSHIP -m 0644 tcrules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tcrules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 mangle           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 mangle.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcrules ]; then
-    run_install $OWNERSHIP -m 0600 tcrules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tcrules
-    echo "TC Rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcrules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/mangle ]; then
+    run_install $OWNERSHIP -m 0600 mangle${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/mangle
+    echo "Mangle file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/mangle"
 fi
 
 #

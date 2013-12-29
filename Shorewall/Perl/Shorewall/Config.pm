@@ -2091,9 +2091,9 @@ sub split_line2( $$;$$$ ) {
 	    }
 	} elsif ( $inline ) {
 	    #
-	    # This file supports INLINE
+	    # This file supports INLINE or IPTABLES
 	    #
-	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/) {
+	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/ || $currentline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
 		$inline_matches = $pairs;
 
 		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {

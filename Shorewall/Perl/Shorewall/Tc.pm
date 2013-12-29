@@ -463,14 +463,28 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
 
-	JUMP       => {
+	IPTABLES  => {
 	    defaultchain   => 0,
 	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
 	    maxparams      => 1,
 	    function       => sub () {
+		fatal_error "Invalid ACTION (IPTABLES)" unless $family == F_IPV4;
 		my ( $tgt,  $options ) = split( ' ', $params );
-		fatal_error "Unknown target ( $tgt )" unless supplied $tgt;
+		fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		$target = $params;
+	    },
+	},
+
+	IP6TABLES => {
+	    defaultchain   => 0,
+	    allowedchains  => ALLCHAINS,
+	    minparams      => 0,
+	    maxparams      => 1,
+	    function       => sub () {
+		fatal_error "Invalid ACTION (IP6TABLES)" unless $family == F_IPV6;
+		my ( $tgt,  $options ) = split( ' ', $params );
+		fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
 		$target = $params;
 	    },
 	},
@@ -669,7 +683,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     if ( $cmd eq 'INLINE' ) {
 	( $target, $cmd, $params, $junk, $raw_matches ) = handle_inline( $action, $cmd, $params, '' );
     } elsif ( $config{INLINE_MATCHES} ) {
-	$raw_matches = get_inline_matches( $cmd eq 'JUMP' );
+	$raw_matches = get_inline_matches(0);
     }
 
     if ( $source ne '-' ) {

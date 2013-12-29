@@ -2003,7 +2003,7 @@ sub split_columns( $ ) {
 	    if ( $element eq '' ) {
 		$element = $_;
 	    } else {
-		$element = join( ',', $element, $_ );
+		$element = join( ' ', $element, $_ );
 	    }
 
 	    if ( ( $count = tr/)/)/ ) > 0 ) {
@@ -2015,7 +2015,7 @@ sub split_columns( $ ) {
 		}
 	    }
 	} elsif ( ( $count =  tr/)/)/ ) > 0 ) {
-	    $element = join (',', $element, $_ );
+	    $element = join (' ', $element, $_ );
 	    if ( ! ( $opencount -= $count ) ) {
 		 push @list2 , $element;
 		 $element = '';
@@ -2025,7 +2025,7 @@ sub split_columns( $ ) {
 	} elsif ( $element eq '' ) {
 	    push @list2 , $_;
 	} else {
-	    $element = join ',', $element , $_;
+	    $element = join ' ', $element , $_;
 	}
     }
 

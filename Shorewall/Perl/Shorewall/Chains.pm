@@ -107,6 +107,7 @@ our @EXPORT = ( qw(
 		    USERBUILTIN
 		    INLINERULE
 		    OPTIONS
+                    IPTABLES
 
 		    %chain_table
 		    %targets
@@ -397,26 +398,27 @@ our %nfobjects;
 #
 # Target Types
 #
-use constant { STANDARD     =>     0x1,       #defined by Netfilter
-	       NATRULE      =>     0x2,       #Involves NAT
-	       BUILTIN      =>     0x4,       #A built-in action
-	       NONAT        =>     0x8,       #'NONAT' or 'ACCEPT+'
-	       NATONLY      =>    0x10,       #'DNAT-' or 'REDIRECT-'
-	       REDIRECT     =>    0x20,       #'REDIRECT'
-	       ACTION       =>    0x40,       #An action (may be built-in)
-	       MACRO        =>    0x80,       #A Macro
-	       LOGRULE      =>   0x100,       #'LOG','NFLOG'
-	       NFQ          =>   0x200,       #'NFQUEUE'
-	       CHAIN        =>   0x400,       #Manual Chain
-	       SET          =>   0x800,       #SET
-	       AUDIT        =>  0x1000,       #A_ACCEPT, etc
-	       HELPER       =>  0x2000,       #CT:helper
-	       NFLOG        =>  0x4000,       #NFLOG or ULOG
-	       INLINE       =>  0x8000,       #Inline action
-	       STATEMATCH   => 0x10000,       #action.Invalid, action.Related, etc.
-	       USERBUILTIN  => 0x20000,       #Builtin action from user's actions file.
-	       INLINERULE   => 0x40000,       #INLINE
-	       OPTIONS      => 0x80000,       #Target Accepts Options
+use constant { STANDARD     =>      0x1,       #defined by Netfilter
+	       NATRULE      =>      0x2,       #Involves NAT
+	       BUILTIN      =>      0x4,       #A built-in action
+	       NONAT        =>      0x8,       #'NONAT' or 'ACCEPT+'
+	       NATONLY      =>     0x10,       #'DNAT-' or 'REDIRECT-'
+	       REDIRECT     =>     0x20,       #'REDIRECT'
+	       ACTION       =>     0x40,       #An action (may be built-in)
+	       MACRO        =>     0x80,       #A Macro
+	       LOGRULE      =>    0x100,       #'LOG','NFLOG'
+	       NFQ          =>    0x200,       #'NFQUEUE'
+	       CHAIN        =>    0x400,       #Manual Chain
+	       SET          =>    0x800,       #SET
+	       AUDIT        =>   0x1000,       #A_ACCEPT, etc
+	       HELPER       =>   0x2000,       #CT:helper
+	       NFLOG        =>   0x4000,       #NFLOG or ULOG
+	       INLINE       =>   0x8000,       #Inline action
+	       STATEMATCH   =>  0x10000,       #action.Invalid, action.Related, etc.
+	       USERBUILTIN  =>  0x20000,       #Builtin action from user's actions file.
+	       INLINERULE   =>  0x40000,       #INLINE
+	       OPTIONS      =>  0x80000,       #Target Accepts Options
+	       IPTABLES     => 0x100000,       #IPTABLES or IP6TABLES
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -2816,6 +2818,7 @@ sub initialize_chain_table($) {
 		    'WHITELIST'       => STANDARD,
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		    'INLINE'          => INLINERULE,
+		    'IPTABLES'        => IPTABLES,
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
@@ -2880,6 +2883,7 @@ sub initialize_chain_table($) {
 		    'WHITELIST'       => STANDARD,
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		    'INLINE'          => INLINERULE,
+		    'IP6TABLES'       => IPTABLES,
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {

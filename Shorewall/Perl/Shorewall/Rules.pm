@@ -2233,7 +2233,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	validate_level( $action );
 	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
 	$action   = 'LOG';
-    } elsif ( ! ( $actiontype & (ACTION | INLINE) ) ) {
+    } elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES ) ) ) {
 	fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -2243,7 +2243,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     #
     fatal_error "The +, - and ! modifiers are not allowed in the blrules file" if $action =~ s/[-+!]$// && $blacklist;
     
-    unless ( $actiontype & ( ACTION | INLINE) ) {
+    unless ( $actiontype & ( ACTION | INLINE | IPTABLES ) ) {
 	#
 	# Catch empty parameter list
 	#
@@ -2321,6 +2321,28 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		  fatal_error "HELPER requires require that the helper be specified in the HELPER column" if $helper eq '-';
 		  fatal_error "HELPER rules may only appear in the NEW section" unless $section == NEW_SECTION;
 		  $action = ''; } ,
+
+	      IPTABLES => sub {
+		  if ( $param ) {
+		      fatal_error "Unknown ACTION (IPTABLES)" unless $family == F_IPV4;
+		      my ( $tgt, $options ) = split / /, $param;
+		      fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		      $action = $param;
+		  } else {
+		      $action = '';
+		  }
+	      },
+
+	      IP6TABLES => sub {
+		  if ( $param ) {
+		      fatal_error "Unknown ACTION (IP6TABLES)" unless $family == F_IPV6;
+		      my ( $tgt, $options ) = split / /, $param;
+		      fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		      $action = $param;
+		  } else {
+		      $action = '';
+		  }
+	      },
 	    );
 
 	my $function = $functions{ $bt };
@@ -2744,7 +2766,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 	verify_audit( $action ) if $actiontype & AUDIT;
 
-	
 	expand_rule( $chainref ,
 		     $restriction ,
 		     '' ,

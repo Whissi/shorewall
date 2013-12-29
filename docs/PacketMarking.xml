@@ -5,7 +5,8 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Packet Marking using /etc/shorewall/tcrules</title>
+    <title>Packet Marking using /etc/shorewall/mangle and
+    /etc/shorewall/tcrules</title>
 
     <authorgroup>
       <author>
@@ -41,6 +42,12 @@
     3.2.5 and later. Not all features described here will be available in
     earlier releases.</para>
   </caution>
+
+  <important>
+    <para>/etc/shorewall/mangle superceded /etc/shorewall/tcruels in Shorewall
+    4.6.0. /etc/shorwall/tcrules is still supported but its use is
+    deprecated.</para>
+  </important>
 
   <section id="Marks">
     <title>Packet and Connection Marks</title>
@@ -103,21 +110,23 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     table. See the <ulink url="NetfilterOverview.html">Netfilter
     Overview</ulink> article.</para>
 
-    <para>You can think of entries in the tcrules file like instructions in a
-    program coded in a crude assembly language. The program gets executed for
-    each packet.</para>
+    <para>You can think of entries in the mangle and tcrules files like
+    instructions in a program coded in a crude assembly language. The program
+    gets executed for each packet.</para>
 
     <para>That is another way of saying that <emphasis role="bold">if you
     don't program, you may have difficulty making full use of
     Netfilter/Shorewall's Packet Marking</emphasis>.</para>
 
-    <para>Actually, the tcrules define several programs. Each program
-    corresponds to one of the built-in chains in the mangle table.</para>
+    <para>Actually, the mangle/tcrules files define several programs. Each
+    program corresponds to one of the built-in chains in the mangle
+    table.</para>
 
     <itemizedlist>
       <listitem>
         <para>PREROUTING program — If MARK_IN_FORWARD_CHAIN=No in
         <filename>shorewall.conf</filename>, then by default entries in
+        <filename>/etc/shorewall/mangle</filename> and
         <filename>/etc/shorewall/tcrules</filename> are part of the PREROUTING
         program. Entries specifying the ":P" suffix in the ACTION column are
         also part of the PREROUTING program. The PREROUTING program gets
@@ -126,7 +135,8 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
 
       <listitem>
         <para>FORWARD program — If MARK_IN_FORWARD_CHAIN=Yes in
-        <filename>shorewall.conf</filename>, then by default entries in
+        <filename>shorewall.conf</filename>, then by default entries
+        in<filename>/etc/shorewall/mangle</filename> and
         <filename>/etc/shorewall/tcrules</filename> are part of the FORWARD
         program. Entries specifying the ":F" suffix in the ACTION column are
         also part of the FORWARD program. The FORWARD program gets executed
@@ -254,8 +264,8 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     rules use a mask value that depends on which program the rule is part of,
     what the rule does, and the setting of HIGH_ROUTE_MARKS.</para>
 
-    <para>For entries in tcrules, the default mask value is 0xffff except in
-    these cases:</para>
+    <para>For entries in mangle and tcrules, the default mask value is 0xffff
+    except in these cases:</para>
 
     <itemizedlist>
       <listitem>
@@ -415,12 +425,12 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <title>Shorewall-defined Chains in the Mangle Table</title>
 
     <para>Shorewall creates a set of chains in the mangle table to hold rules
-    defined in your <firstterm>/etc/shorewall/tcrules</firstterm> file. As
-    mentioned above, chains are like subroutines in the packet marking
-    programming language. By placing all of your rules in subroutines,
-    CONTINUE (which generates a Netfilter RETURN rule) can be used to stop
-    processing your rules while still allowing following Shorewall-generated
-    rules to be executed.</para>
+    defined in your <filename>/etc/shorewall/mangle</filename>
+    (<filename>/etc/shorewall/tcrules</filename>) file. As mentioned above,
+    chains are like subroutines in the packet marking programming language. By
+    placing all of your rules in subroutines, CONTINUE (which generates a
+    Netfilter RETURN rule) can be used to stop processing your rules while
+    still allowing following Shorewall-generated rules to be executed.</para>
 
     <variablelist>
       <varlistentry>
@@ -464,18 +474,18 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <title>An Example</title>
 
     <para>Here's the example (slightly expanded) from the comments at the top
-    of the <filename>/etc/shorewall/tcrules</filename> file.</para>
+    of the <filename>/etc/shorewall/mangle</filename> file.</para>
 
     <programlisting>#ACTION  SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST    LENGTH  TOS
 #                                                        PORT(S)
-1        0.0.0.0/0       0.0.0.0/0       icmp    echo-request                 #Rule 1
-1        0.0.0.0/0       0.0.0.0/0       icmp    echo-reply                   #Rule 2
-1        $FW             0.0.0.0/0       icmp    echo-request                 #Rule 3
-1        $FW             0.0.0.0/0       icmp    echo-reply                   #Rule 4
+MARK(1)  0.0.0.0/0       0.0.0.0/0       icmp    echo-request                 #Rule 1
+MARK(1)  0.0.0.0/0       0.0.0.0/0       icmp    echo-reply                   #Rule 2
+MARK(1)  $FW             0.0.0.0/0       icmp    echo-request                 #Rule 3
+MARK(1)  $FW             0.0.0.0/0       icmp    echo-reply                   #Rule 4
 
 RESTORE  0.0.0.0/0       0.0.0.0/0       all     -       -       -       0    #Rule 5
 CONTINUE 0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 6
-4        0.0.0.0/0       0.0.0.0/0       ipp2p:all                            #Rule 7
+MARK(4)  0.0.0.0/0       0.0.0.0/0       ipp2p:all                            #Rule 7
 SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 8
 ##LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
@@ -537,8 +547,8 @@ SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #R
   <section id="Show">
     <title>Examining the Marking Programs on a Running System</title>
 
-    <para>You can see the tcrules in action using the <command>shorewall show
-    mangle</command> command.</para>
+    <para>You can see the mangle (tcrules) entries in action using the
+    <command>shorewall show mangle</command> command.</para>
 
     <para>The sample output from that command shown below has the following in
     <filename>/etc/shorewall/providers</filename>:</para>
@@ -548,13 +558,13 @@ Blarg   1       0x100   main            eth3            206.124.146.254 track,ba
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
 </programlisting>
 
-    <para>Here is <filename>/etc/shorewall/tcrules</filename>:</para>
+    <para>Here is <filename>/etc/shorewall/mangle</filename>:</para>
 
-    <programlisting>#ACTION SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
-#                                                       PORT(S)
-1:110   192.168.0.0/22  eth3                                            #Our internal nets get priority
+    <programlisting>#ACTION                 SOURCE          DEST            PROTO   PORT(S) SOURCE  USER    TEST
+#                                                                       PORT(S)
+CLASSIFY(1:110)         192.168.0.0/22  eth3                            #Our internal nets get priority
                                                                         #over the server
-1:130   206.124.146.177 eth3            tcp     -       873
+CLASSIFY(1:130)         206.124.146.177 eth3            tcp     -       873
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
 
@@ -676,7 +686,7 @@ Chain <emphasis role="bold">tcout</emphasis> (1 references)
 Chain <emphasis role="bold">tcpost</emphasis> (1 references)
  pkts bytes target     prot opt in     out     source               destination
 
-&lt;&lt;&lt;&lt; The next two rules are the entries in the /etc/shorewall/tcrules file &gt;&gt;&gt;&gt;
+&lt;&lt;&lt;&lt; The next two rules are the entries in the /etc/shorewall/mangle file &gt;&gt;&gt;&gt;
 
 65061   11M CLASSIFY   all  --  *      eth3    192.168.0.0/22       0.0.0.0/0           CLASSIFY set 1:110
  2224 2272K CLASSIFY   tcp  --  *      eth3    206.124.146.177      0.0.0.0/0           tcp spt:873 CLASSIFY set 1:130

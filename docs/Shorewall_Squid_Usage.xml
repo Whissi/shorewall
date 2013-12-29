@@ -240,7 +240,13 @@ Squid   1       202     -               eth1            192.168.1.3     loose,no
           </listitem>
 
           <listitem>
-            <para>In <filename>/etc/shorewall/tcrules</filename> add:</para>
+            <para>In <filename>/etc/shorewall/mangle</filename> add:</para>
+
+            <programlisting>#ACTION        SOURCE              DEST        PROTO    DEST
+#                                                       PORT(S)
+MARK(202):P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
+
+            <para>Corresponding /etc/shorewall/tcrules entries are:</para>
 
             <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
 #                                                 PORT(S)
@@ -304,7 +310,13 @@ Squid   1       202     -               eth2            192.0.2.177     loose,no
           </listitem>
 
           <listitem>
-            <para>In <filename>/etc/shorewall/tcrules</filename> add:</para>
+            <para>In <filename>/etc/shorewall/mangle</filename> add:</para>
+
+            <programlisting>#ACTION        SOURCE              DEST        PROTO    DEST
+#                                                       PORT(S)
+MARK(202):P    eth1                0.0.0.0/0   tcp      80</programlisting>
+
+            <para>Corresponding /etc/shorewall/tcrules entries are:</para>
 
             <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
 #                                                 PORT(S)
@@ -376,8 +388,12 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
       <para>Support for the TPROXY action in shorewall-tcrules(5) and the
       <option>local</option> option in shorewall-providers(5) has been
       available since Shoreall 4.4.7. That support required additional rules
-      to be added in the 'start' extention script to make it work
-      reliably.</para>
+      to be added in the 'start' extention script to make it work reliably.
+      Beginning with Shorewall 4.6.0, TPROXY in <ulink
+      url="manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>(5) and
+      in <ulink
+      url="manpages/shorewall-mangle.html">shorewall-mangle</ulink>(5) work as
+      described here.</para>
     </note>
 
     <para>The following configuration works with Squid running on the firewall
@@ -399,8 +415,16 @@ Tproxy    1        -        -           lo        -            tproxy</programli
       that the only option is <option>tproxy</option>.</para>
     </note>
 
-    <para><filename>/etc/shorewall/tcrules</filename> (assume loc interface is
+    <para><filename>/etc/shorewall/mangle</filename> (assume loc interface is
     eth1 and net interface is eth0):</para>
+
+    <programlisting>#ACTION         SOURCE      DEST        PROTO      DEST        SOURCE
+#                                                  PORT(S)     PORT(S)
+DIVERT          eth0        0.0.0.0/0   tcp        -           80
+TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
+
+    <para>Corresponding <filename>/etc/shorewall/tcrules</filename>
+    are:</para>
 
     <programlisting><emphasis role="bold">FORMAT 2</emphasis>
 #MARK           SOURCE      DEST        PROTO      DEST        SOURCE

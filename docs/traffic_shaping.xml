@@ -184,7 +184,9 @@
         you set WIDE_TC_MARKS=Yes in <ulink
         url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
         assign packet marks to different types of traffic using entries in the
-        <filename>/etc/shorewall/tcrules</filename> file.</para>
+        <filename>/etc/shorewall/tcrules</filename> file (Shorewall 4.6.0 or
+        later) or <filename>/etc/shorewall/tcrules</filename> (Prior to
+        Shorewall 4.6.0).</para>
 
         <note>
           <para>In Shorewall 4.4.26, WIDE_TC_MARKS was superseded by TC_BITS
@@ -192,7 +194,7 @@
           The default is based on the setting of WIDE_TC_MARKS so as to
           provide upward compatibility. See the <ulink
           url="PacketMarking.html#Values">Packet Marking using
-          /etc/shorewall/tcrules</ulink> article.</para>
+          /etc/shorewall/mangle</ulink> article.</para>
         </note>
       </listitem>
     </orderedlist>
@@ -204,7 +206,8 @@
 
     <para>Netfilter also supports a mark value on each connection. You can
     assign connection mark values in
-    <filename>/etc/shorewall/tcrules</filename>, you can copy the current
+    <filename>/etc/shorewall/mangle</filename>
+    (<filename>/etc/shorewall/tcrules</filename>), you can copy the current
     packet's mark to the connection mark (SAVE), or you can copy the
     connection mark value to the current packet's mark (RESTORE). For more
     information, see<ulink url="PacketMarking.html"> this
@@ -409,7 +412,8 @@
               <listitem>
                 <para>If specified, classification of traffic into the various
                 classes is done by CLASSIFY entries in
-                <filename>/etc/shorewall/tcrules</filename> or by entries in
+                <filename>/etc/shorewall/mangle</filename>
+                (<filename>/etc/shorewall/tcrules</filename>) or by entries in
                 <filename>/etc/shorewall/tcfilters</filename>. No MARK value
                 will be associated with classes on this interface.</para>
               </listitem>
@@ -545,11 +549,11 @@ ppp0           6000kbit         500kbit</programlisting>
           <para>MARK - The mark value which is an integer in the range 1-255
           (1-16383 if you set WIDE_TC_MARKS=Yes or set TC_BITS=14 in <ulink
           url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
-          define these marks in the tcrules file, marking the traffic you want
-          to go into the queuing classes defined in here. You can use the same
-          marks for different Interfaces. You must specify "-' in this column
-          if the device specified in the INTERFACE column has the <emphasis
-          role="bold">classify</emphasis> option in
+          define these marks in the mangle or tcrules file, marking the
+          traffic you want to go into the queuing classes defined in here. You
+          can use the same marks for different Interfaces. You must specify
+          "-' in this column if the device specified in the INTERFACE column
+          has the <emphasis role="bold">classify</emphasis> option in
           <filename>/etc/shorewall/tcdevices</filename>.</para>
 
           <note>
@@ -648,9 +652,9 @@ ppp0           6000kbit         500kbit</programlisting>
 
             <listitem>
               <para>occurs=<emphasis>number</emphasis> - Typically used with
-              an IPMARK entry in tcrules. Causes the rule to be replicated for
-              a total of <emphasis>number</emphasis> rules. Each rule has a
-              successively class number and mark value.</para>
+              an IPMARK entry in mangle or tcrules. Causes the rule to be
+              replicated for a total of <emphasis>number</emphasis> rules.
+              Each rule has a successively class number and mark value.</para>
 
               <para>When 'occurs' is used:</para>
 
@@ -679,7 +683,8 @@ ppp0           6000kbit         500kbit</programlisting>
               the class. So the total RATE represented by an entry with
               'occurs' will be the listed RATE multiplied by
               <emphasis>number</emphasis>. For additional information, see
-              <ulink url="manpages/shorewall-tcrules.html">tcrules</ulink>
+              <ulink url="manpages/shorewall-mangle.html">mangle</ulink> (5)
+              or <ulink url="manpages/shorewall-tcrules.html">tcrules</ulink>
               (5).</para>
             </listitem>
 
@@ -823,7 +828,7 @@ ppp0           6000kbit         500kbit</programlisting>
     </section>
 
     <section id="tcrules">
-      <title>/etc/shorewall/tcrules</title>
+      <title>/etc/shorewall/mangle and /etc/shorewall/rules</title>
 
       <important>
         <para>Unlike rules in the <ulink
@@ -902,356 +907,11 @@ ppp0           6000kbit         500kbit</programlisting>
       either set MARK_IN_FORWARD_CHAIN=Yes shorewall.conf or by using the :F
       qualifier (see below).</emphasis></para>
 
-      <para>Columns in the file are as follows:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>ACTION - ACTION (previously called MARK) specifies the mark
-          value is to be assigned in case of a match. This is an integer in
-          the range 1-255 (1-16383 if you set WIDE_TC_MARKS=Yes or TC_BITS=14
-          in <ulink url="manpages/shorewall.conf.html">shorewall.conf</ulink>
-          (5) ).</para>
-
-          <note>
-            <para>In Shorewall 4.4.26, WIDE_TC_MARKS was superseded by TC_BITS
-            which specifies the width in bits of the traffic shaping mark
-            field. The default is based on the setting of WIDE_TC_MARKS so as
-            to provide upward compatibility.</para>
-          </note>
-
-          <para>This value may be optionally followed by <quote>:</quote> and
-          either <quote>F</quote>, <quote>P</quote> or "T" to designate that
-          the marking will occur in the FORWARD, PREROUTING or POSTROUTING
-          chains respectively. If this additional specification is omitted,
-          the chain used to mark packets will be determined as follows:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>If the SOURCE is
-              $FW[:&lt;<emphasis>address</emphasis>&gt;], then the rule is
-              inserted in the OUTPUT chain.</para>
-            </listitem>
-
-            <listitem>
-              <para>Otherwise, the chain is determined by the setting of the
-              MARK_IN_FORWARD_CHAIN option in shorewall.conf.</para>
-            </listitem>
-          </itemizedlist>
-
-          <note>
-            <para><emphasis role="bold">Use the 'T' qualifier if you want the
-            rule to apply equally to traffic being routed through the firewall
-            and to traffic originating on the firewall
-            itself.</emphasis></para>
-          </note>
-
-          <para>Normally, the mark is applied to the packet. If you follow the
-          mark value with ":" and "C", then the mark is applied to the
-          connection. "C" can be combined with "F", "P" or "T" to designate
-          that the connection should be marked in a particular chain (e.g.,
-          "CF", "CP", "CT").</para>
-
-          <para>There are additional special values available:</para>
-
-          <orderedlist numeration="loweralpha">
-            <listitem>
-              <para><emphasis
-              role="bold">RESTORE</emphasis>[/<emphasis>mask</emphasis>] --
-              restore the packet's mark from the connection's mark using the
-              supplied mask if any. Your kernel and iptables must include
-              CONNMARK support.</para>
-
-              <para>As above, may be followed by <emphasis
-              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
-              or <emphasis role="bold">:T</emphasis>.</para>
-            </listitem>
-
-            <listitem>
-              <para><emphasis
-              role="bold">SAVE</emphasis>[/<emphasis>mask</emphasis>] -- save
-              the packet's mark to the connection's mark using the supplied
-              mask if any. Your kernel and iptables must include CONNMARK
-              support.</para>
-
-              <para>As above, may be followed by <emphasis
-              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
-              or <emphasis role="bold">:T</emphasis>.</para>
-            </listitem>
-
-            <listitem>
-              <para><emphasis role="bold">CONTINUE</emphasis> Don't process
-              any more marking rules in the table.</para>
-
-              <para>As above, may be followed by <emphasis
-              role="bold">:P</emphasis>, <emphasis role="bold">:F</emphasis>
-              or <emphasis role="bold">:T</emphasis>.</para>
-            </listitem>
-
-            <listitem>
-              <para><emphasis role="bold">COMMENT</emphasis> -- the rest of
-              the line will be attached as a comment to the Netfilter rule(s)
-              generated by the following entries. The comment will appear
-              delimited by "/* ... */" in the output of <command>shorewall
-              show mangle</command></para>
-
-              <para>To stop the comment from being attached to further rules,
-              simply include COMMENT on a line by itself.</para>
-            </listitem>
-          </orderedlist>
-
-          <para>To use CLASSIFY, your kernel and iptables must include
-          CLASSIFY target support. In that case, this column contains a
-          classification (classid) of the form &lt;major&gt;:&lt;minor&gt;
-          where &lt;major&gt; and &lt;minor&gt; are integers. Corresponds to
-          the 'class' specification in these traffic shaping modules:</para>
-
-          <simplelist>
-            <member>atm</member>
-
-            <member>cbq</member>
-
-            <member>dsmark</member>
-
-            <member>pfifo_fast</member>
-
-            <member>htb</member>
-
-            <member>prio</member>
-          </simplelist>
-
-          <para>Classification occurs in the POSTROUTING chain <emphasis
-          role="bold">except</emphasis> when the SOURCE contains
-          $FW[:&lt;<emphasis>address</emphasis>&gt;] in which case, the
-          classify action takes place in the OUTPUT chain. When used with the
-          builtin traffic shaper, the &lt;major&gt; class is the interface
-          number and the &lt;minor&gt; class is either:</para>
-
-          <orderedlist>
-            <listitem>
-              <para>Constructed by Shorewall. The method of construction
-              depends on the setting of WIDE_TC_MARKS (TC_BITS in shorewall
-              4.4.26 and later) in (<ulink
-              url="manpages/shorewall.conf.html">shorewall.conf</ulink>
-              (5)).</para>
-
-              <para>When WIDE_TC_MARKS=No (the default) or TC_BITS &gt; 14,
-              the &lt;minor&gt; class is:</para>
-
-              <itemizedlist>
-                <listitem>
-                  <para>the MARK value of the class preceded by the number "1"
-                  or "10" (MARK value 1 is &lt;minor&gt; class 11, MARK value
-                  22 is &lt;minor&gt; class 122, and so on). "10" is used
-                  where there are more than 10 devices defined in <link
-                  linkend="tcdevices">/etc/shorewall/tcdevices</link>.</para>
-                </listitem>
-              </itemizedlist>
-
-              <para>When WIDE_TC_MARKS=Yes (TC_BITS &gt;= 14), the
-              &lt;minor&gt; class is assigned sequentially beginning with
-              2.</para>
-            </listitem>
-
-            <listitem>
-              <para>The class number, if specified.</para>
-            </listitem>
-          </orderedlist>
-        </listitem>
-
-        <listitem>
-          <para>SOURCE - Source of the packet.</para>
-
-          <para>May be:</para>
-
-          <orderedlist>
-            <listitem>
-              <para>An interface name - matches traffic entering the firewall
-              on the specified interface. May not be used in classify rules or
-              in rules using the :T chain qualifier.</para>
-            </listitem>
-
-            <listitem>
-              <para>A comma-separated list of host or network IP addresses or
-              MAC addresses. <emphasis role="bold">This form will not match
-              traffic that originates on the firewall itself unless either
-              &lt;major&gt;&lt;minor&gt; or the :T chain qualifier is used in
-              the ACTION column.</emphasis></para>
-
-              <para>Examples:<simplelist>
-                  <member>0.0.0.0/0</member>
-                </simplelist></para>
-
-              <para><simplelist>
-                  <member>192.168.1.0/24, 172.20.4.0/24</member>
-                </simplelist></para>
-            </listitem>
-
-            <listitem>
-              <para>An interface name followed by a colon (":") followed by a
-              comma-separated list of host or network IP addresses or MAC
-              addresses. May not be used in classify rules or in rules using
-              the :T chain qualifier.</para>
-            </listitem>
-
-            <listitem>
-              <para>$FW optionally followed by a colon (":") and a
-              comma-separated list of host or network IP addresses. matches
-              packets originating on the firewall. May not be used with a
-              chain qualifier (:P, :F, etc.) in the ACTION column.</para>
-            </listitem>
-          </orderedlist>
-
-          <para>MAC addresses must be prefixed with "~" and use "-" as a
-          separator.</para>
-
-          <para>Example: ~00-A0-C9-15-39-78</para>
-
-          <para>If your kernel includes iprange match support, then address
-          ranges may be included in the address lists.</para>
-        </listitem>
-
-        <listitem>
-          <para>DEST - Destination of the packet.</para>
-
-          <para>May be:</para>
-
-          <orderedlist>
-            <listitem>
-              <para>An interface name. May not be used in the PREROUTING chain
-              (:P in the mark column or no chain qualifier and
-              MARK_IN_FORWARD_CHAIN=No in <ulink
-              url="manpages/shorewall.conf">shorewall.conf</ulink> (5)). The
-              interface name may be optionally followed by a colon (":") and
-              an IP address list.</para>
-            </listitem>
-
-            <listitem>
-              <para>A comma-separated list of host or network IP addresses.
-              The list may include ip address ranges if your kernel and
-              iptables include iprange support.</para>
-            </listitem>
-          </orderedlist>
-        </listitem>
-
-        <listitem>
-          <para>PROTO - Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
-          "ipp2p:udp", "ipp2p:all" a number, or "all". "ipp2p" requires ipp2p
-          match support in your kernel and iptables.</para>
-        </listitem>
-
-        <listitem>
-          <para>PORT(S) - Destination Ports. A comma-separated list of Port
-          names (from /etc/services), port numbers or port ranges; if the
-          protocol is "icmp", this column is interpreted as the destination
-          icmp-type(s).</para>
-
-          <para>If the protocol is ipp2p, this column is interpreted as an
-          ipp2p option without the leading "--" (example "bit" for
-          bit-torrent). If no PORT is given, "ipp2p" is assumed. Note that the
-          xtables-addons version of IPP2P does not support the "ipp2p" option;
-          if the column is empty or contains "ipp2p" when using that version
-          of IPP2P, Shorewall will substitute "edk,kazaa,gnu,dc".</para>
-
-          <para>This column is ignored if PROTOCOL = all but must be entered
-          if any of the following field is supplied. In that case, it is
-          suggested that this field contain "-"</para>
-        </listitem>
-
-        <listitem>
-          <para>CLIENT PORT(S) - (Optional) Port(s) used by the client. If
-          omitted, any source port is acceptable. Specified as a
-          comma-separate list of port names, port numbers or port
-          ranges.</para>
-        </listitem>
-
-        <listitem>
-          <para>USER/GROUP (Optional) This column may only be non-empty if the
-          SOURCE is the firewall itself. When this column is non-empty, the
-          rule applies only if the program generating the output is running
-          under the effective user and/or group. It may contain :</para>
-
-          <para>[!][&lt;user name or number&gt;]:[&lt;group name or
-          number&gt;][+&lt;program name&gt;]</para>
-
-          <para>The colon is optional when specifying only a user.</para>
-
-          <para>Examples:</para>
-
-          <programlisting>joe     #program must be run by joe
-:kids   #program must be run by a member of the 'kids' group
-!:kids  #program must not be run by a member of the 'kids' group
-+upnpd  #program named upnpd (This feature was removed from Netfilter in kernel version 2.6.14).</programlisting>
-        </listitem>
-
-        <listitem>
-          <para>TEST (Optional) Defines a test on the existing packet or
-          connection mark. The rule will match only if the test returns true.
-          Tests have the format [!]&lt;value&gt;[/&lt;mask&gt;][:C]</para>
-
-          <para>Where:</para>
-
-          <simplelist>
-            <member>! Inverts the test (not equal)</member>
-
-            <member>&lt;value&gt; Value of the packet or connection
-            mark.</member>
-
-            <member>&lt;mask&gt; A mask to be applied to the mark before
-            testing</member>
-
-            <member>:C Designates a connection mark. If omitted, the packet
-            mark's value is tested.</member>
-          </simplelist>
-        </listitem>
-
-        <listitem>
-          <para>LENGTH (Optional) This field, if present, allows you to match
-          the length of a packet against a specific value or range of values.
-          A range is specified in the form &lt;min&gt;:&lt;max&gt; where
-          either &lt;min&gt; or &lt;max&gt; (but not both) may be omitted. If
-          &lt;min&gt; is omitted, then 0 is assumed; if &lt;max&gt; is
-          omitted, than any packet that is &lt;min&gt; or longer will
-          match.</para>
-
-          <para>You must have iptables length support for this to work. If you
-          let it empty or place an "-" here, no length match will be
-          done.</para>
-
-          <para>Examples: 1024, 64:1500, :100</para>
-        </listitem>
-
-        <listitem>
-          <para>TOS (Optional) Type of Service. Either a standard name, or a
-          numeric value to match.</para>
-
-          <blockquote>
-            <simplelist>
-              <member>Minimize-Delay (16)</member>
-
-              <member>Maximize-Throughput (8)</member>
-
-              <member>Maximize-Reliability (4)</member>
-
-              <member>Minimize-Cost (2)</member>
-
-              <member>Normal-Service (0)</member>
-            </simplelist>
-          </blockquote>
-        </listitem>
-
-        <listitem>
-          <para>HELPER (Optional). Names one of the Netfilter protocol helper
-          modules such as <emphasis>ftp</emphasis>, <emphasis>sip</emphasis>,
-          <emphasis>amanda</emphasis>, etc.</para>
-        </listitem>
-
-        <listitem>
-          <para>HEADERS (Optioinal, Shorewall6 only, added in Shorewall
-          4.4.15). List of IPv6 headers that may appear in packets. See <ulink
-          url="manpages6/shorewall6-tcrules.html">shorewall6-tcrules</ulink>
-          (5) for details.</para>
-        </listitem>
-      </itemizedlist>
+      <para>See shorewall-mangle(5) and shorewall-tcrules(5) for a description
+      of the entries in these files. Note that the mangle file superceded the
+      tcrules file in Shorewall 4.6.0.</para>
+
+      <para>The following examples are for the mangle file.</para>
 
       <example id="Example1">
         <title></title>
@@ -1260,11 +920,11 @@ ppp0           6000kbit         500kbit</programlisting>
         packets arriving on eth2 and eth3 should be marked with 2. All packets
         originating on the firewall itself should be marked with 3.</para>
 
-        <programlisting>#ACTION SOURCE    DESTINATION    PROTOCOL   PORT(S)
-1       eth1      0.0.0.0/0      all
-2       eth2      0.0.0.0/0      all
-2       eth3      0.0.0.0/0      all
-3       $FW       0.0.0.0/0      all</programlisting>
+        <programlisting>#ACTION       SOURCE    DESTINATION    PROTOCOL   PORT(S)
+MARK(1)       eth1      0.0.0.0/0      all
+MARK(2)       eth2      0.0.0.0/0      all
+MARK(2)       eth3      0.0.0.0/0      all
+MARK(3)       $FW       0.0.0.0/0      all</programlisting>
       </example>
 
       <example id="Example2">
@@ -1273,8 +933,8 @@ ppp0           6000kbit         500kbit</programlisting>
         <para>All GRE (protocol 47) packets destined for 155.186.235.151
         should be marked with 12.</para>
 
-        <programlisting>#ACTION SOURCE    DESTINATION     PROTOCOL   PORT(S)
-12:T    0.0.0.0/0 155.182.235.151 47</programlisting>
+        <programlisting>#ACTION       SOURCE    DESTINATION     PROTOCOL   PORT(S)
+MARK(12):T    0.0.0.0/0 155.182.235.151 47</programlisting>
       </example>
 
       <example id="Example3">
@@ -1283,8 +943,8 @@ ppp0           6000kbit         500kbit</programlisting>
         <para>All SSH request packets originating in 192.168.1.0/24 and
         destined for 155.186.235.151 should be marked with 22.</para>
 
-        <programlisting>#ACTION SOURCE         DESTINATION     PROTOCOL   PORT(S)
-22:T    192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
+        <programlisting>#ACTION       SOURCE         DESTINATION     PROTOCOL   PORT(S)
+MARK(22):T    192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
       </example>
 
       <example id="Example4">
@@ -1294,10 +954,10 @@ ppp0           6000kbit         500kbit</programlisting>
         /etc/shorewall/tcdevices should be assigned to the class with mark
         value 10.</para>
 
-        <programlisting>#ACTION SOURCE         DESTINATION     PROTOCOL   PORT(S)         CLIENT
-#                                                                 PORT(S)
-1:110   0.0.0.0/0      0.0.0.0/0       tcp        22
-1:110   0.0.0.0/0      0.0.0.0/0       tcp        -               22</programlisting>
+        <programlisting>#ACTION           SOURCE         DESTINATION     PROTOCOL   PORT(S)         CLIENT
+#                                                                           PORT(S)
+CLASSIFY(1:110)   0.0.0.0/0      0.0.0.0/0       tcp        22
+CLASSIFY(1:110)   0.0.0.0/0      0.0.0.0/0       tcp        -               22</programlisting>
       </example>
 
       <example id="Example5">
@@ -1313,15 +973,15 @@ ppp0           6000kbit         500kbit</programlisting>
         means unclassified. Traffic originating on the firewall is not covered
         by this example.</para>
 
-        <programlisting>#ACTION  SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST
-#                                                                PORT(S)  GROUP
-1        0.0.0.0/0      0.0.0.0/0       icmp       echo-request
-1        0.0.0.0/0      0.0.0.0/0       icmp       echo-reply
+        <programlisting>#ACTION        SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST
+#                                                                      PORT(S)  GROUP
+MARK(1)        0.0.0.0/0      0.0.0.0/0       icmp       echo-request
+MARK(1)        0.0.0.0/0      0.0.0.0/0       icmp       echo-reply
 
-RESTORE  0.0.0.0/0      0.0.0.0/0       all        -             -        -         0
-CONTINUE 0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0
-4        0.0.0.0/0      0.0.0.0/0       ipp2p:all
-SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0</programlisting>
+RESTORE        0.0.0.0/0      0.0.0.0/0       all        -             -        -         0
+CONTINUE       0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0
+MARK(4)        0.0.0.0/0      0.0.0.0/0       ipp2p:all
+SAVE           0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0</programlisting>
 
         <para>The last four rules can be translated as:</para>
 
@@ -1376,7 +1036,7 @@ SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -     
       in the tcdevices, tcclasses and tcfilters files can be shared between
       Shorewall and Shorewall6. Only one of the products can control the
       configuration but the other can configure CLASSIFY rules in its own
-      tcrules file that refer to the shared classes.</para>
+      mangle or tcrules file that refer to the shared classes.</para>
 
       <para>To defined the configuration in Shorewall and shared it with
       Shorewall6:</para>
@@ -1411,11 +1071,11 @@ ln -s ../shorewall/tcclasses /etc/shorewall6/tcclasses</programlisting>
 
       <para>Shorewall6 compilations to have access to the tcdevices and
       tcclasses files although it will create no output. That access allows
-      CLASSIFY rules in /etc/shorewall6/tcrules to be validated against the TC
+      CLASSIFY rules in /etc/shorewall6/mangle to be validated against the TC
       configuration.</para>
 
       <para>In this configuration, it is Shorewall that controls TC
-      configuration (except for IPv6 tcrules). You can reverse the settings in
+      configuration (except for IPv6 mangle). You can reverse the settings in
       the files if you want to control the configuration using
       Shorewall6.</para>
     </section>
@@ -1451,7 +1111,8 @@ ln -s ../shorewall/tcclasses /etc/shorewall6/tcclasses</programlisting>
       <orderedlist>
         <listitem>
           <para>An IPMARK MARKing command in
-          <filename>/etc/shorewall/tcrules</filename>.</para>
+          <filename>/etc/shorewall/mangle</filename>
+          (<filename>/etc/shorewall/tcrules</filename>).</para>
         </listitem>
 
         <listitem>
@@ -1583,7 +1244,8 @@ eth0:101     - 1kbit 230kbit        4    occurs=6</programlisting>
       <para>The above defines 6 classes with class IDs 0x101-0x106. Each class
       has a guaranteed rate of 1kbit/second and a ceiling of 230kbit.</para>
 
-      <para><filename>/etc/shoreall/tcrules</filename>:</para>
+      <para><filename>/etc/shoreall/mangle</filename> or
+      <filename>/etc/shoreall/tcrules</filename>:</para>
 
       <programlisting>#ACTION                          SOURCE             DEST
 IPMARK(src,0xff,0x10100):F       192.168.1.0/29     eth0</programlisting>
@@ -1683,6 +1345,16 @@ NOPRIOPORTDST="6662 6663"  </programlisting>
           <para>This would result in the following additional settings to the
           tcrules file:</para>
 
+          <programlisting>MARK(3)               192.168.1.128/25 0.0.0.0/0      all
+MARK(3)               192.168.3.28     0.0.0.0/0      all
+MARK(3)               0.0.0.0/0        60.0.0.0/24    all
+MARK(3)               0.0.0.0/0        0.0.0.0/0      udp     6662,6663
+MARK(3)               0.0.0.0/0        0.0.0.0/0      udp     -         6662,6663
+MARK(3)               0.0.0.0/0        0.0.0.0/0      tcp     6662,6663
+MARK(3)               0.0.0.0/0        0.0.0.0/0      tcp     -         6662,6663</programlisting>
+
+          <para>Corresponding tcrules file entries are:</para>
+
           <programlisting>3               192.168.1.128/25 0.0.0.0/0      all
 3               192.168.3.28     0.0.0.0/0      all
 3               0.0.0.0/0        60.0.0.0/24    all
@@ -1727,7 +1399,16 @@ ppp0            4       90kbit          200kbit         3           default</pro
         </section>
 
         <section id="simpletcr">
-          <title>tcrules file</title>
+          <title>mangle file</title>
+
+          <programlisting>#ACTION               SOURCE          DEST            PROTO   PORT(S)      SOURCE    USER
+#                                                                          PORT(S)
+MARK(1):F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
+MARK(1):F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
+MARK(2):F             192.168.2.23    0.0.0.0/0       all
+MARK(3):F             192.168.2.42    0.0.0.0/0       all</programlisting>
+
+          <para>Corresponding tcrules file:</para>
 
           <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S)      CLIENT   USER
 #                                                                    PORT(S)
@@ -1908,11 +1589,12 @@ eth0          -                1000kbit               hfsc</programlisting>
     <programlisting><command>modprobe ifb numifbs=1
 ip link set ifb0 up</command></programlisting>
 
-    <para>Entries in <filename>/etc/shorewall/tcrules</filename> have no
-    effect on shaping traffic through an IFB. To allow classification of such
-    traffic, the /etc/shorewall/tcfilters file has been added. Entries in that
-    file create <ulink url="http://b42.cz/notes/u32_classifier/">u32
-    classification rules</ulink>.</para>
+    <para>Entries in <filename>/etc/shorewall/mangle</filename> or
+    <filename>/etc/shorewall/tcrules</filename> have no effect on shaping
+    traffic through an IFB. To allow classification of such traffic, the
+    /etc/shorewall/tcfilters file has been added. Entries in that file create
+    <ulink url="http://b42.cz/notes/u32_classifier/">u32 classification
+    rules</ulink>.</para>
 
     <section id="tcfilters">
       <title>/etc/shorewall/tcfilters</title>
@@ -1920,7 +1602,7 @@ ip link set ifb0 up</command></programlisting>
       <para>While this file was created to allow shaping of traffic through an
       IFB, the file may be used for general traffic classification as well.
       The file is similar to <ulink
-      url="shorewall-tcrules.html">shorewall-tcrules</ulink>(5) with the
+      url="shorewall-tcrules.html">shorewall-mangle</ulink>(5) with the
       following key exceptions:</para>
 
       <itemizedlist>
@@ -2391,7 +2073,7 @@ class htb 1:120 parent 1:1 leaf 120: prio 2 quantum 1900 rate 76000bit ceil 2300
         <listitem>
           <para>If your tcstart script uses the <quote>fwmark</quote>
           classifier, you can mark packets using entries in
-          /etc/shorewall/tcrules.</para>
+          /etc/shorewall/mangle or /etc/shorewall/tcrules.</para>
         </listitem>
       </orderedlist>
     </section>
@@ -2412,7 +2094,8 @@ class htb 1:120 parent 1:1 leaf 120: prio 2 quantum 1900 rate 76000bit ceil 2300
 
         <listitem>
           <para>If your script uses the <quote>fwmark</quote> classifier, you
-          can mark packets using entries in /etc/shorewall/tcrules.</para>
+          can mark packets using entries in /etc/shorewall/mangle or
+          /etc/shorewall/tcrules.</para>
         </listitem>
       </orderedlist>
     </section>

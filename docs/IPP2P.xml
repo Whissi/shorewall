@@ -70,6 +70,9 @@
       url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink></member>
 
       <member><ulink
+      url="manpages/shorewall-mangle.html">/etc/shorewall/mangle</ulink></member>
+
+      <member><ulink
       url="Accounting.html">/etc/shorewall/accounting</ulink></member>
 
       <member><ulink
@@ -188,10 +191,10 @@ tcp      6 269712 ESTABLISHED src=192.168.3.8 dst=206.124.146.177 sport=50584 dp
       </listitem>
     </orderedlist>
 
-    <para>These are implemented in the /etc/shorewall/tcrules file as
-    follows:</para>
+    <para>These are implemented in the /etc/shorewall/tcrules and
+    /etc/shorewall/mangle files as follows:</para>
 
-    <programlisting>#MARK                SOURCE        DEST        PROTO        PORT(S)        CLIENT     USER    TEST
+    <programlisting>#ACTION              SOURCE        DEST        PROTO        PORT(S)        CLIENT     USER    TEST
 #                                                                          PORT(S)
 RESTORE:P            -             -           tcp
 CONTINUE:P           -             -           tcp          -              -          -       !0

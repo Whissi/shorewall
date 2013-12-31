@@ -1735,6 +1735,10 @@ sub process_actions() {
 	    my $noinline = 0;
 	    my $nolog    = ( $type == INLINE ) || 0;
 	    my $builtin  = 0;
+	    my $raw      = 0;
+	    my $mangle   = 0;
+	    my $filter   = 0;
+	    my $nat      = 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1753,6 +1757,14 @@ sub process_actions() {
 			$nolog = 1;
 		    } elsif ( $_ eq 'builtin' ) {
 			$builtin = 1;
+		    } elsif ( $_ eq 'mangle' ) {
+			$mangle = 1;
+		    } elsif ( $_ eq 'raw' ) {
+			$raw = 1;
+		    } elsif ( $_ eq 'filter' ) {
+			$filter = 1;
+		    } elsif ( $_ eq 'nat' ) {
+			$nat = 1;
 		    } else {
 			fatal_error "Invalid option ($_)";
 		    }
@@ -1777,9 +1789,18 @@ sub process_actions() {
 	    }
 
 	    if ( $builtin ) {
-		$targets{$action}         = USERBUILTIN + OPTIONS;
-		$builtin_target{$action}  = 1;
+		my $actiontype            = USERBUILTIN | OPTIONS;
+		$actiontype              |= MANGLE_TABLE if $mangle;
+		$actiontype              |= RAW_TABLE    if $raw;
+		$actiontype              |= NAT_TABLE    if $nat;
+		#
+		# For backward compatibility, we assume that user-defined builtins are valid in the filter table
+		#
+		$actiontype              |= FILTER_TABLE if $filter || ! ($mangle || $raw || $nat);
+		$builtin_target{$action}  = $actiontype;
+		$targets{$action}         = $actiontype;
 	    } else {
+		fatal_error "Table names are only allowed for builtin actions" if $mangle || $raw || $nat || $filter;
 		new_action $action, $type, $noinline, $nolog;
 
 		my $actionfile = find_file( "action.$action" );
@@ -2168,7 +2189,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     $param = '' unless defined $param;
 
     if ( $basictarget eq 'INLINE' ) {
-	( $action, $basictarget, $param, $loglevel, $raw_matches ) = handle_inline( $action, $basictarget, $param, $loglevel );
+	( $action, $basictarget, $param, $loglevel, $raw_matches ) = handle_inline( FILTER_TABLE, 'filter', $action, $basictarget, $param, $loglevel );
     } elsif ( $config{INLINE_MATCHES} ) {
 	$raw_matches = get_inline_matches(0);
     }
@@ -2326,7 +2347,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		  if ( $param ) {
 		      fatal_error "Unknown ACTION (IPTABLES)" unless $family == F_IPV4;
 		      my ( $tgt, $options ) = split / /, $param;
-		      fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		      my $target_type = $builtin_target{$tgt};
+		      fatal_error "Unknown target ($tgt)" unless $target_type;
+		      fatal_error "The $tgt TARGET is now allowed in the filter table" unless $target_type & FILTER_TABLE;
 		      $action = $param;
 		  } else {
 		      $action = '';
@@ -2337,7 +2360,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		  if ( $param ) {
 		      fatal_error "Unknown ACTION (IP6TABLES)" unless $family == F_IPV6;
 		      my ( $tgt, $options ) = split / /, $param;
-		      fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		      my $target_type = $builtin_target{$tgt};
+		      fatal_error "Unknown target ($tgt)" unless $target_type;
+		      fatal_error "The $tgt TARGET is now allowed in the filter table" unless $target_type & FILTER_TABLE;
 		      $action = $param;
 		  } else {
 		      $action = '';

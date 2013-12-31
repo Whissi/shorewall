@@ -108,6 +108,10 @@ our @EXPORT = ( qw(
 		    INLINERULE
 		    OPTIONS
                     IPTABLES
+                    FILTER_TABLE
+                    NAT_TABLE
+                    MANGLE_TABLE
+                    RAW_TABLE
 
 		    %chain_table
 		    %targets
@@ -419,6 +423,11 @@ use constant { STANDARD     =>      0x1,       #defined by Netfilter
 	       INLINERULE   =>  0x40000,       #INLINE
 	       OPTIONS      =>  0x80000,       #Target Accepts Options
 	       IPTABLES     => 0x100000,       #IPTABLES or IP6TABLES
+
+	       FILTER_TABLE =>  0x1000000,
+	       MANGLE_TABLE =>  0x2000000,
+	       RAW_TABLE    =>  0x4000000,
+	       NAT_TABLE    =>  0x8000000,
 	   };
 #
 # Valid Targets -- value is a combination of one or more of the above
@@ -525,59 +534,59 @@ our $family;
 #
 # These are the current builtin targets
 #
-our %builtin_target = ( ACCEPT      => 1,
-			ACCOUNT     => 1,
-			AUDIT       => 1,
-			CHAOS       => 1,
-			CHECKSUM    => 1,
-			CLASSIFY    => 1,
-		        CLUSTERIP   => 1,
-			CONNMARK    => 1,
-			CONNSECMARK => 1,
-			COUNT       => 1,
-			CT          => 1,
-			DELUDE      => 1,
-			DHCPMAC     => 1,
-			DNAT        => 1,
-			DNETMAP     => 1,
-			DROP        => 1,
-			DSCP        => 1,
-			ECHO        => 1,
-			ECN         => 1,
-			HL          => 1,
-			IDLETIMER   => 1,
-			IPMARK      => 1,
-			LOG         => 1,
-			LOGMARK     => 1,
-			MARK        => 1,
-			MASQUERADE  => 1,
-			MIRROR      => 1,
-			NETMAP      => 1,
-			NFLOG       => 1,
-			NFQUEUE     => 1,
-			NOTRACK     => 1,
-			QUEUE       => 1,
-			RATEEST     => 1,
-			RAWDNAT     => 1,
-			RAWSNAT     => 1,
-			REDIRECT    => 1,
-			REJECT      => 1,
-			RETURN      => 1,
-			SAME        => 1,
-			SECMARK     => 1,
-			SET         => 1,
-			SNAT        => 1,
-			STEAL       => 1,
-			SYSRQ       => 1,
-			TARPIT      => 1,
-			TCPMSS      => 1,
-			TCPOPTSTRIP => 1,
-			TEE         => 1,
-			TOS         => 1,
-			TPROXY      => 1,
-			TRACE       => 1,
-			TTL         => 1,
-			ULOG        => 1,
+our %builtin_target = ( ACCEPT      => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			ACCOUNT     => STANDARD + MANGLE_TABLE,
+			AUDIT       => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			CHAOS       => STANDARD + FILTER_TABLE,
+			CHECKSUM    => STANDARD                            + MANGLE_TABLE,
+			CLASSIFY    => STANDARD                            + MANGLE_TABLE,
+		        CLUSTERIP   => STANDARD                            + MANGLE_TABLE + RAW_TABLE,
+			CONNMARK    => STANDARD                            + MANGLE_TABLE,
+			CONNSECMARK => STANDARD                            + MANGLE_TABLE,
+			COUNT       => STANDARD + FILTER_TABLE,
+			CT          => STANDARD                                           + RAW_TABLE,
+			DELUDE      => STANDARD + FILTER_TABLE,
+			DHCPMAC     => STANDARD                            + MANGLE_TABLE,
+			DNAT        => STANDARD                + NAT_TABLE,
+			DNETMAP     => STANDARD                + NAT_TABLE,
+			DROP        => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			DSCP        => STANDARD                            + MANGLE_TABLE,
+			ECHO        => STANDARD + FILTER_TABLE,
+			ECN         => STANDARD                            + MANGLE_TABLE,
+			HL          => STANDARD                            + MANGLE_TABLE,
+			IDLETIMER   => STANDARD,
+			IPMARK      => STANDARD                            + MANGLE_TABLE,
+			LOG         => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			LOGMARK     => STANDARD                            + MANGLE_TABLE,
+			MARK        => STANDARD + FILTER_TABLE             + MANGLE_TABLE,
+			MASQUERADE  => STANDARD                + NAT_TABLE,
+			MIRROR      => STANDARD + FILTER_TABLE,
+			NETMAP      => STANDARD                + NAT_TABLE,,
+			NFLOG       => STANDARD                            + MANGLE_TABLE + RAW_TABLE,
+			NFQUEUE     => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			NOTRACK     => STANDARD                                           + RAW_TABLE,
+			QUEUE       => STANDARD + FILTER_TABLE,
+			RATEEST     => STANDARD                            + MANGLE_TABLE,
+			RAWDNAT     => STANDARD                                           + RAW_TABLE,
+			RAWSNAT     => STANDARD                                           + RAW_TABLE,
+			REDIRECT    => STANDARD                + NAT_TABLE,
+			REJECT      => STANDARD + FILTER_TABLE,
+			RETURN      => STANDARD                            + MANGLE_TABLE + RAW_TABLE,
+			SAME        => STANDARD,
+			SECMARK     => STANDARD                            + MANGLE_TABLE,
+			SET         => STANDARD                            + MANGLE_TABLE + RAW_TABLE,
+			SNAT        => STANDARD                + NAT_TABLE,
+			STEAL       => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			SYSRQ       => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			TARPIT      => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			TCPMSS      => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			TCPOPTSTRIP => STANDARD                            + MANGLE_TABLE,
+			TEE         => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
+			TOS         => STANDARD                            + MANGLE_TABLE,
+			TPROXY      => STANDARD                            + MANGLE_TABLE,
+			TRACE       => STANDARD                                           + RAW_TABLE,
+			TTL         => STANDARD                            + MANGLE_TABLE,
+			ULOG        => STANDARD + FILTER_TABLE + NAT_TABLE + MANGLE_TABLE + RAW_TABLE,
 		        );
 
 our %ipset_exists;
@@ -8462,8 +8471,8 @@ sub get_target_param1( $ ) {
     }
 }
 
-sub handle_inline( $$$$ ) {
-    my ( $action, $basictarget, $param, $loglevel ) = @_;
+sub handle_inline( $$$$$$ ) {
+    my ( $table, $tablename, $action, $basictarget, $param, $loglevel ) = @_;
     my $inline_matches = get_inline_matches(1);
     my $raw_matches = '';
 
@@ -8471,7 +8480,9 @@ sub handle_inline( $$$$ ) {
 	$raw_matches .= $1 if supplied $1;
 	$action = $2;
 	my ( $target ) = split ' ', $action;
-	fatal_error "Unknown jump target ($action)" unless $targets{$target} || $target eq 'MARK';
+	my $target_type = $builtin_target{$target};
+	fatal_error "Unknown jump target ($action)" unless $target_type;
+	fatal_error "The $target TARGET is not allowed in the $tablename table" unless $target_type & $table;
 	fatal_error "INLINE may not have a parameter when '-j' is specified in the free-form area" if $param ne '';
     } else {
 	$raw_matches .= $inline_matches;

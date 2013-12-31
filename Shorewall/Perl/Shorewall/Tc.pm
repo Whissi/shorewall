@@ -471,7 +471,10 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		fatal_error "Invalid ACTION (IPTABLES)" unless $family == F_IPV4;
 		my ( $tgt,  $options ) = split( ' ', $params );
-		fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		my $target_type = $builtin_target{$tgt};
+		fatal_error "Unknown target ($tgt)" unless $target_type;
+		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless $target_type & MANGLE_TABLE;
+		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless 
 		$target = $params;
 	    },
 	},
@@ -484,7 +487,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		fatal_error "Invalid ACTION (IP6TABLES)" unless $family == F_IPV6;
 		my ( $tgt,  $options ) = split( ' ', $params );
-		fatal_error "Unknown target ($tgt)" unless $targets{$tgt} || $builtin_target{$tgt};
+		my $target_type = $builtin_target{$tgt};
+		fatal_error "Unknown target ($tgt)" unless $target_type;
+		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless $target_type & MANGLE_TABLE;
 		$target = $params;
 	    },
 	},
@@ -681,7 +686,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     fatal_error "Invalid ACTION ($cmd)" unless $commandref;
 
     if ( $cmd eq 'INLINE' ) {
-	( $target, $cmd, $params, $junk, $raw_matches ) = handle_inline( $action, $cmd, $params, '' );
+	( $target, $cmd, $params, $junk, $raw_matches ) = handle_inline( MANGLE_TABLE, 'mangle', $action, $cmd, $params, '' );
     } elsif ( $config{INLINE_MATCHES} ) {
 	$raw_matches = get_inline_matches(0);
     }

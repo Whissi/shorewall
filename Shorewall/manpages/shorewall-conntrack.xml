@@ -88,7 +88,7 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:notrack</emphasis>|DROP}[:<replaceable>chain-designator</replaceable>]</term>
+        role="bold">CT:notrack</emphasis>|DROP|LOG|ULOG(<replaceable>ulog-parameters</replaceable>):NFLOG(<replaceable>nflog-parameters</replaceable>)}[<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
           <para>This column is only present when FORMAT &gt;= 2. Values other
@@ -100,23 +100,19 @@
               <para><option>NOTRACK</option> or
               <option>CT:notrack</option></para>
 
-              <para>Disables connection tracking for this packet.</para>
+              <para>Disables connection tracking for this packet. If a
+              <replaceable>log-level</replaceable> is specified, the packet
+              will also be logged at that level.</para>
             </listitem>
 
             <listitem>
-              <para><option>DROP</option></para>
-
-              <para>Added in Shorewall 4.5.10. Silently discard the
-              packet.</para>
-            </listitem>
-
-            <listitem>
-              <para><option>helper</option>:<replaceable>name</replaceable></para>
+              <para><option>CT:helper</option>:<replaceable>name</replaceable></para>
 
               <para>Attach the helper identified by the
               <replaceable>name</replaceable> to this connection. This is more
-              flexible than loading the conntrack helper with preset
-              ports.</para>
+              flexible than loading the conntrack helper with preset ports. If
+              a <replaceable>log-level</replaceable> is specified, the packet
+              will also be logged at that level.</para>
 
               <para>At this writing, the available helpers are:</para>
 
@@ -172,14 +168,6 @@
                   <listitem>
                     <para>Requires that the pptp netfilter helper is
                     present.</para>
-                  </listitem>
-                </varlistentry>
-
-                <varlistentry>
-                  <term></term>
-
-                  <listitem>
-                    <para></para>
                   </listitem>
                 </varlistentry>
 
@@ -252,6 +240,39 @@
                   expectation events for this connection.</para>
                 </listitem>
               </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><option>DROP</option></para>
+
+              <para>Added in Shorewall 4.5.10. Silently discard the packet. If
+              a <replaceable>log-level</replaceable> is specified, the packet
+              will also be logged at that level.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>LOG</option></para>
+
+              <para>Added in Shoreawll 4.6.0. Logs the packet using the
+              specified <replaceable>log-level</replaceable> and<replaceable>
+              log-tag </replaceable>(if any). If no log-level is specified,
+              then 'info' is assumed.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>NFLOG</option></para>
+
+              <para>Added in Shoreawll 4.6.0. Queues the packet to a backend
+              logging daemon using the NFLOG netfilter target with the
+              specified <replaceable>nflog-parameters</replaceable>.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>ULOG</option></para>
+
+              <para>Added in Shoreawll 4.6.0. Queues the packet to a backend
+              logging daemon using the ULOG netfilter target with the
+              specified <replaceable>ulog-parameters</replaceable>.</para>
             </listitem>
           </itemizedlist>
 

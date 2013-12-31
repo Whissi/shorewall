@@ -88,7 +88,7 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:notrack</emphasis>|drop}[:<replaceable>chain-designator</replaceable>]</term>
+        role="bold">CT:notrack</emphasis>|DROP|LOG|NFLOG(<replaceable>nflog-parameters</replaceable>)}[:<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
           <para>This column is only present when FORMAT &gt;= 2. Values other
@@ -100,14 +100,9 @@
               <para><option>NOTRACK</option> or
               <option>CT:notrack</option></para>
 
-              <para>Disables connection tracking for this packet.</para>
-            </listitem>
-
-            <listitem>
-              <para><option>DROP</option></para>
-
-              <para>Added in Shorewall 4.5.10. Silently discard the
-              packet.</para>
+              <para>Disables connection tracking for this packet. If a
+              <replaceable>log-level</replaceable> is specified, the packet
+              will also be logged at that level.</para>
             </listitem>
 
             <listitem>
@@ -115,8 +110,105 @@
 
               <para>Attach the helper identified by the
               <replaceable>name</replaceable> to this connection. This is more
-              flexible than loading the conntrack helper with preset ports.
-              May be followed by an option list of
+              flexible than loading the conntrack helper with preset ports. If
+              a <replaceable>log-level</replaceable> is specified, the packet
+              will also be logged at that level.</para>
+
+              <para>At this writing, the available helpers are:</para>
+
+              <variablelist>
+                <varlistentry>
+                  <term>amanda</term>
+
+                  <listitem>
+                    <para>Requires that the amanda netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>ftp</term>
+
+                  <listitem>
+                    <para>Requires that the FTP netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>irc</term>
+
+                  <listitem>
+                    <para>Requires that the IRC netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>netbios-ns</term>
+
+                  <listitem>
+                    <para>Requires that the netbios_ns (sic) helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>RAS and Q.931</term>
+
+                  <listitem>
+                    <para>These require that the H323 netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>pptp</term>
+
+                  <listitem>
+                    <para>Requires that the pptp netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>sane</term>
+
+                  <listitem>
+                    <para>Requires that the SANE netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>sip</term>
+
+                  <listitem>
+                    <para>Requires that the SIP netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>snmp</term>
+
+                  <listitem>
+                    <para>Requires that the SNMP netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>tftp</term>
+
+                  <listitem>
+                    <para>Requires that the TFTP netfilter helper is
+                    present.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
+
+              <para>May be followed by an option list of
               <replaceable>arg</replaceable>=<replaceable>val</replaceable>
               pairs in parentheses:</para>
 
@@ -148,6 +240,31 @@
                   expectation events for this connection.</para>
                 </listitem>
               </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><option>DROP</option></para>
+
+              <para>Added in Shorewall 4.5.10. Silently discard the packet. If
+              a <replaceable>log-level</replaceable> is specified, the packet
+              will also be logged at that level.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>LOG</option></para>
+
+              <para>Added in Shoreawll 4.6.0. Logs the packet using the
+              specified <replaceable>log-level</replaceable> and<replaceable>
+              log-tag </replaceable>(if any). If no log-level is specified,
+              then 'info' is assumed.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>NFLOG</option></para>
+
+              <para>Added in Shoreawll 4.6.0. Queues the packet to a backend
+              logging daemon using the NFLOG netfilter target with the
+              specified <replaceable>nflog-parameters</replaceable>.</para>
             </listitem>
           </itemizedlist>
 

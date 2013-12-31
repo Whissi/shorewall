@@ -81,31 +81,50 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-' && $restriction != OUTPUT_RESTRICT;
     }
 
-    my $target = $action;
+    my $disposition = $action;
     my $exception_rule = '';
     my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_condition( $switch , $chainref->{name} );
+    my $level = '';
+
+    if ( $action =~ /^(?:NFLOG|ULOG)/ ) {
+	$action = join( ":" , 'LOG', $action );
+    }
 
     if ( $action eq 'NOTRACK' ) {
 	#
 	# A patch that deimplements the NOTRACK target has been posted on the
 	# Netfilter development list
 	#
-	$action = 'CT --notrack' if have_capability 'CT_TARGET';
-    } elsif ( $action ne 'DROP' ) {
-	(  $target, my ( $option, $args, $junk ) ) = split ':', $action, 4;
+	if ( have_capability 'CT_TARGET' ) {
+	    $action = 'CT --notrack';
+	    $disposition = 'notrack';
+	}
+    } elsif ( $action =~ /^(DROP|LOG)(:(.+))?$/ ) {
+	if ( $2 ) {
+	    validate_level( $level = $3 );
+	    $action      = $1;
+	    $disposition = $1;
+	}
+    } else {
+	(  $disposition, my ( $option, $args ), $level ) = split ':', $action, 4;
 
-	fatal_error "Invalid notrack ACTION ( $action )" if $junk || $target ne 'CT';
+	fatal_error "Invalid notrack ACTION ( $action )" if $disposition ne 'CT';
+
+	validate_level( $level ) if supplied $level;
 
 	require_capability 'CT_TARGET', 'CT entries in the conntrack file', '';
 
 	if ( $option eq 'notrack' ) {
 	    fatal_error "Invalid conntrack ACTION ( $action )" if supplied $args;
 	    $action = 'CT --notrack';
+	    $disposition = 'notrack';
 	} else {
 	    fatal_error "Invalid or missing CT option and arguments" unless supplied $option && supplied $args;
 
 	    if ( $option eq 'helper' ) {
 		my $modifiers = '';
+
+		$disposition = "helper";
 
 		if ( $args =~ /^([-\w.]+)\((.+)\)$/ ) {
 		    $args      = $1;
@@ -149,8 +168,8 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 		 $dest ,
 		 '' ,
 		 $action ,
-		 '' ,
-		 $target ,
+		 $level || '' ,
+		 $disposition ,
 		 $exception_rule );
 
     progress_message "  Conntrack rule \"$currentline\" $done";
@@ -224,6 +243,8 @@ sub process_format( $ ) {
 
 sub setup_conntrack() {
 
+    $format = 1;
+
     for my $name ( qw/notrack conntrack/ ) {
 
 	my $fn = open_file( $name, 3 , 1 );
@@ -271,11 +292,11 @@ sub setup_conntrack() {
 			}
 		    } elsif ( $action =~ s/:O$// ) {
 			process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		    } elsif ( $action =~ s/:OP// || $action =~ s/:PO// ) {
+		    } elsif ( $action =~ s/:OP$// || $action =~ s/:PO// ) {
 			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 			process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    } else {
-			$action =~ s/:P//;
+			$action =~ s/:P$//;
 			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    }
 		}

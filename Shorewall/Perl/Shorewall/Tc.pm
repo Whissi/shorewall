@@ -474,7 +474,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 		my $target_type = $builtin_target{$tgt};
 		fatal_error "Unknown target ($tgt)" unless $target_type;
 		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless $target_type & MANGLE_TABLE;
-		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless 
 		$target = $params;
 	    },
 	},
@@ -2806,9 +2805,9 @@ sub setup_tc() {
 
 	if ( -f find_file 'mangle' ) {
 	    if ( $have_tcrules ) {
-		warning_message "The 'tcrules' file is non-empty -- 'mangle' file ignored";
+		warning_message "Non-empty tcrules file ($fn); please move its contents to the mangle file";
 	    } elsif ( my $fn = open_file( 'mangle', 2, 1 ) ) {
-	
+
 		first_entry "$doing $fn...";
 		
 		process_mangle_rule while read_a_line( NORMAL_READ );

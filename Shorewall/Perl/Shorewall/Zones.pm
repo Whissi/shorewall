@@ -349,7 +349,7 @@ sub initialize( $$ ) {
 				  rpfilter    => SIMPLE_IF_OPTION,
 				  sfilter     => IPLIST_IF_OPTION,
 				  sourceroute => BINARY_IF_OPTION,
-				  tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				  tcpflags    => BINARY_IF_OPTION + IF_OPTION_HOST,
 				  upnp        => SIMPLE_IF_OPTION,
 				  upnpclient  => SIMPLE_IF_OPTION,
 				  mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
@@ -387,13 +387,14 @@ sub initialize( $$ ) {
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    optional    => SIMPLE_IF_OPTION,
+				    optional    => SIMPLE_IF_OPTION,
 				    proxyndp    => BINARY_IF_OPTION,
 				    required    => SIMPLE_IF_OPTION,
 				    routeback   => BINARY_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
 				    rpfilter    => SIMPLE_IF_OPTION,
 				    sfilter     => IPLIST_IF_OPTION,
 				    sourceroute => BINARY_IF_OPTION,
-				    tcpflags    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
+				    tcpflags    => BINARY_IF_OPTION + IF_OPTION_HOST,
 				    mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				    forward     => BINARY_IF_OPTION,
 				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
@@ -1353,6 +1354,8 @@ sub process_interface( $$ ) {
 	while ( my ( $option, $value ) = each( %options ) ) {
 	    fatal_error "The $option option may not be specified with 'unmanaged'" if $prohibitunmanaged{$option};
 	}
+    } else {
+	$options{tcpflags} = $hostoptionsref->{tcpflags} = 1 unless exists $options{tcpflags};
     }
 
     $physical{$physical} = $interfaces{$interface} = { name       => $interface ,

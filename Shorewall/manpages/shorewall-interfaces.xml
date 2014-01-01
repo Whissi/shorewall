@@ -731,7 +731,7 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">tcpflags</emphasis></term>
+              <term><emphasis role="bold">tcpflags[={0|1}]</emphasis></term>
 
               <listitem>
                 <para>Packets arriving on this interface are checked for
@@ -739,6 +739,9 @@ loc     eth2            -</programlisting>
                 have such a combination of flags are handled according to the
                 setting of TCP_FLAGS_DISPOSITION after having been logged
                 according to the setting of TCP_FLAGS_LOG_LEVEL.</para>
+
+                <para>Beginning with Shorewall 4.6.0, tcpflags=1 is the
+                default. To disable this option, specify tcpflags=0.</para>
               </listitem>
             </varlistentry>
 

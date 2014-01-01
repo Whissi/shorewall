@@ -2810,7 +2810,7 @@ sub setup_tc() {
 	    }
 	}
 
-	if ( my $fn = open_file( 'mangle' ) ) {
+	if ( my $fn = open_file( 'mangle', 1, 1 ) ) {
 
 	    $file_format = 3;
 

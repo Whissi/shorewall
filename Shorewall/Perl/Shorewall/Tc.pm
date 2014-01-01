@@ -608,7 +608,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub() {
 		require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
 
-		fatal_error "TPROXY is not supported in FORMAT 1 tcrules files" if $format < 2;
+		fatal_error "TPROXY is not supported in FORMAT 1 tcrules files" if $file_format < 2;
 
 		my ( $port, $ip, $bad );
 

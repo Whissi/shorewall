@@ -68,6 +68,7 @@ sub initialize_package_globals( $$$ ) {
     Shorewall::Proxyarp::initialize($family);
     Shorewall::IPAddrs::initialize($family);
     Shorewall::Misc::initialize($family);
+    Shorewall::Raw::initialize($family);
 }
 
 #

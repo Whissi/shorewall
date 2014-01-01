@@ -47,6 +47,12 @@ our %valid_ctevent = ( new        => 1,
 		       natseqinfo => 1,
 		       secmark    => 1 );
 
+our $family;
+
+sub initialize($) {
+    $family = shift;
+}
+
 #
 # Notrack
 #
@@ -105,10 +111,24 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	    $action      = $1;
 	    $disposition = $1;
 	}
+    } elsif ( $action =~ /^IP(6)?TABLES\((.+)\)(:(.*))$/ ) {
+	if ( $family == F_IPV4 ) {
+	    fatal_error 'Invalid conntrack ACTION (IP6TABLES)' if $1;
+	} else {
+	    fatal_error "Invalid conntrack ACTION (IPTABLES)" unless $1;
+	}
+
+	my ( $tgt, $options ) = split( ' ', $2 );
+	my $target_type = $builtin_target{$tgt};
+	fatal_error "Unknown target ($tgt)" unless $target_type;
+	fatal_error "The $tgt TARGET is not allowed in the raw table" unless $target_type & RAW_TABLE;
+	$disposition = $tgt;
+	$action      = 2;
+	validate_level( $level = $3 ) if supplied $3;
     } else {
 	(  $disposition, my ( $option, $args ), $level ) = split ':', $action, 4;
 
-	fatal_error "Invalid notrack ACTION ( $action )" if $disposition ne 'CT';
+	fatal_error "Invalid conntrack ACTION ( $action )" if $disposition ne 'CT';
 
 	validate_level( $level ) if supplied $level;
 
@@ -242,8 +262,6 @@ sub process_format( $ ) {
 }
 
 sub setup_conntrack() {
-
-    $format = 1;
 
     for my $name ( qw/notrack conntrack/ ) {
 

@@ -88,7 +88,7 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:notrack</emphasis>|DROP|LOG|NFLOG(<replaceable>nflog-parameters</replaceable>)}[:<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
+        role="bold">CT:notrack</emphasis>|DROP|LOG|NFLOG(<replaceable>nflog-parameters</replaceable>)|IP6TABLES(<replaceable>target</replaceable>)}[:<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
           <para>This column is only present when FORMAT &gt;= 2. Values other
@@ -248,6 +248,25 @@
               <para>Added in Shorewall 4.5.10. Silently discard the packet. If
               a <replaceable>log-level</replaceable> is specified, the packet
               will also be logged at that level.</para>
+            </listitem>
+
+            <listitem>
+              <para><option>IP6TABLES</option>(<replaceable>target</replaceable>)</para>
+
+              <para>Added in Shorewall 4.6.0. Allows you to specify any
+              iptables <replaceable>target</replaceable> with target options
+              (e.g., "IP6TABLES(AUDIT --type drop)"). If the target is not one
+              recognized by Shorewall, the following error message will be
+              issued:</para>
+
+              <simplelist>
+                <member>ERROR: Unknown target
+                (<replaceable>target</replaceable>)</member>
+              </simplelist>
+
+              <para>This error message may be eliminated by adding
+              <replaceable>target</replaceable> as a builtin action in <ulink
+              url="manpages/shorewall-actions.html">shorewall6-actions(5)</ulink>.</para>
             </listitem>
 
             <listitem>

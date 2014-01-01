@@ -1789,16 +1789,22 @@ sub process_actions() {
 	    }
 
 	    if ( $builtin ) {
-		my $actiontype            = USERBUILTIN | OPTIONS;
-		$actiontype              |= MANGLE_TABLE if $mangle;
-		$actiontype              |= RAW_TABLE    if $raw;
-		$actiontype              |= NAT_TABLE    if $nat;
+		my $actiontype = USERBUILTIN | OPTIONS;
+		$actiontype   |= MANGLE_TABLE if $mangle;
+		$actiontype   |= RAW_TABLE    if $raw;
+		$actiontype   |= NAT_TABLE    if $nat;
 		#
 		# For backward compatibility, we assume that user-defined builtins are valid in the filter table
 		#
-		$actiontype              |= FILTER_TABLE if $filter || ! ($mangle || $raw || $nat);
-		$builtin_target{$action}  = $actiontype;
-		$targets{$action}         = $actiontype;
+		$actiontype |= FILTER_TABLE if $filter || ! ($mangle || $raw || $nat);
+
+		if ( $builtin_target{$action} ) {
+		    $builtin_target{$action} |= $actiontype;
+		} else {
+		    $builtin_target{$action}  = $actiontype;
+		}
+
+		$targets{$action} = $actiontype;
 	    } else {
 		fatal_error "Table names are only allowed for builtin actions" if $mangle || $raw || $nat || $filter;
 		new_action $action, $type, $noinline, $nolog;

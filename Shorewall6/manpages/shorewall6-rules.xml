@@ -447,6 +447,28 @@
             </varlistentry>
 
             <varlistentry>
+              <term>IP6TABLES({<replaceable>target</replaceable>
+              [<replaceable>option</replaceable> ...])</term>
+
+              <listitem>
+                <para>This action allows you to specify an iptables target
+                with options (e.g., 'IP6TABLES(MARK --set-xmark 0x01/0xff)'.
+                If the target is not one recognized by Shorewall, the
+                following error message will be issued:</para>
+
+                <simplelist>
+                  <member>ERROR: Unknown target
+                  (<replaceable>target</replaceable>)</member>
+                </simplelist>
+
+                <para>This error message may be eliminated by adding the
+                <replaceable>target</replaceable> as a builtin action in
+                <ulink
+                url="shorewall6-actions.html">shorewall6-actions(5)</ulink>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis
               role="bold">LOG:<replaceable>level</replaceable></emphasis></term>
 

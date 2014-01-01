@@ -608,6 +608,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub() {
 		require_capability( 'TPROXY_TARGET', 'Use of TPROXY', 's');
 
+		fatal_error "TPROXY is not supported in FORMAT 1 tcrules files" if $format < 2;
+
 		my ( $port, $ip, $bad );
 
 		if ( $params ) {
@@ -2795,23 +2797,26 @@ sub setup_tc() {
     if ( $config{MANGLE_ENABLED} ) {
 	my $have_tcrules;
 
-	if ( my $fn = open_file( 'tcrules' , 2, 1 ) ) {
+	my $fn;
+
+	if ( $fn = open_file( 'tcrules' , 2, 1 ) ) {
 
 	    first_entry "$doing $fn...";
 
 	    process_tc_rule, $have_tcrules++ while read_a_line( NORMAL_READ );
 
-	}
-
-	if ( -f find_file 'mangle' ) {
 	    if ( $have_tcrules ) {
 		warning_message "Non-empty tcrules file ($fn); please move its contents to the mangle file";
-	    } elsif ( my $fn = open_file( 'mangle', 2, 1 ) ) {
-
-		first_entry "$doing $fn...";
-		
-		process_mangle_rule while read_a_line( NORMAL_READ );
 	    }
+	}
+
+	if ( my $fn = open_file( 'mangle' ) ) {
+
+	    $file_format = 3;
+
+	    first_entry "$doing $fn...";
+
+	    process_mangle_rule while read_a_line( NORMAL_READ );
 	}
 
 	if ( my $fn = open_file( 'secmarks', 1, 1 ) ) {

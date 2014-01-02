@@ -327,6 +327,10 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		                 => 'Owner Name Match',
 		 IPSET_MATCH     => 'Ipset Match',
 		 OLD_IPSET_MATCH => 'Old Ipset Match',
+		 IPSET_MATCH_NOMATCH
+                                 => 'Ipset Match nomatch',
+		 IPSET_MATCH_COUNTERS
+                                 => 'Ipset Match counters',
 		 IPSET_V5        => 'Version 5 ipsets',
 		 CONNMARK        => 'CONNMARK Target',
 		 XCONNMARK       => 'Extended CONNMARK Target',
@@ -904,6 +908,8 @@ sub initialize( $;$$) {
 	       OWNER_NAME_MATCH => undef,
 	       IPSET_MATCH => undef,
 	       OLD_IPSET_MATCH => undef,
+	       IPSET_MATCH_NOMATCH => undef,
+	       IPSET_MATCH_COUNTERS => undef,
 	       IPSET_V5 => undef,
 	       CONNMARK => undef,
 	       XCONNMARK => undef,
@@ -4077,11 +4083,15 @@ sub IPSet_Match() {
 
     $ipset = which $ipset unless $ipset =~ '/';
 
+    $capabilities{IPSET_MATCH_NOMATCH} = $capabilities{IPSET_MATCH_COUNTERS} = 0;
+
     if ( $ipset && -x $ipset ) {
 	qt( "$ipset -X $sillyname" );
 
 	if ( qt( "$ipset -N $sillyname iphash" ) || qt( "$ipset -N $sillyname hash:ip family $fam") ) {
 	    if ( qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
+		$capabilities{IPSET_MATCH_NOMATCH}  = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --return-nomatch -j ACCEPT" );
+		$capabilities{IPSET_MATCH_COUNTERS} = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --packets-lt 100 -j ACCEPT" );
 		qt1( "$iptables $iptablesw -F $sillyname" );
 		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
 	    } else {
@@ -4093,6 +4103,14 @@ sub IPSet_Match() {
     }
 
     $result;
+}
+
+sub IPSet_Match_Nomatch() {
+    have_capability 'IPSET_MATCH' && $capabilities{IPSET_MATCH_NOMATCH};
+}
+
+sub IPSet_Match_Counters() {
+    have_capability 'IPSET_MATCH' && $capabilities{IPSET_MATCH_COUNTGERS};
 }
 
 sub IPSET_V5() {
@@ -4383,6 +4401,8 @@ our %detect_capability =
       IPP2P_MATCH => \&Ipp2p_Match,
       IPRANGE_MATCH => \&IPRange_Match,
       IPSET_MATCH => \&IPSet_Match,
+      IPSET_MATCH_NOMATCH => \&IPSet_Match_Nomatch,
+      IPSET_MATCH_COUNTERS => \&IPSet_Match_Counters,
       IRC_HELPER => \&IRC_Helper,
       IRC0_HELPER => \&IRC0_Helper,
       OLD_IPSET_MATCH => \&Old_IPSet_Match,

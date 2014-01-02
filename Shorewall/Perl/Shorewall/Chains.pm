@@ -448,7 +448,22 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 	       ALL_RESTRICT        => 12,  # fw->fw rule            - neither -i nor -o allowed
 	       DESTIFACE_DISALLOW  => 32,  # Don't allow dest interface. Similar to INPUT_RESTRICT but generates a more relevant error message
 	       };
-
+#
+# Possible IPSET options
+#
+our %ipset_extensions = (
+    'nomatch'               => '--return-nomatch ',
+    'no-update-counters'    => '! --update-counters ',
+    'no-update-subcounters' => '! --update-subcounters ',
+    'pkts-eq'               => '--packets-eq = ',
+    'pkts-neq'              => '! --packets-eq = ',
+    'pkts-lt'               => '--packets-lt = ',
+    'pkts-gt'               => '--packets-gt = ',
+    'bytes-eq'              => '--bytes-eq = ',
+    'bytes-neq'             => '! --bytes-eq = ',
+    'bytes-lt'              => '--bytes-lt = ',
+    'bytes-gt'              => '--bytes-gt = ',
+    );
 #
 # See initialize() below for additional comments on these variables
 #
@@ -4403,26 +4418,32 @@ sub do_proto( $$$;$ )
 
 		    if ( $ports ne '' ) {
 			$invert = $ports =~ s/^!// ? '! ' : '';
-			$sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
 
-			if ( $multiport || $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT',1 );
+			if ( $ports =~ /^\+/ ) {
+			    $output .= $invert;
+			    $output .= get_set_flags( $ports, 'dst' );
+			} else {
+			    $sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
 
-			    if ( port_count ( $ports ) > 15 ) {
-				if ( $restricted ) {
-				    fatal_error "A port list in this file may only have up to 15 ports";
-				} elsif ( $invert ) {
-				    fatal_error "An inverted port list may only have up to 15 ports";
+			    if ( $multiport || $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
+				fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT',1 );
+
+				if ( port_count ( $ports ) > 15 ) {
+				    if ( $restricted ) {
+					fatal_error "A port list in this file may only have up to 15 ports";
+				    } elsif ( $invert ) {
+					fatal_error "An inverted port list may only have up to 15 ports";
+				    }
 				}
-			    }
 
-			    $ports = validate_port_list $pname , $ports;
-			    $output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "-m multiport ${invert}--dports ${ports} " );
-			    $multiport = 1;
-			}  else {
-			    fatal_error "Missing DEST PORT" unless supplied $ports;
-			    $ports   = validate_portpair $pname , $ports;
-			    $output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "${invert}--dport ${ports} " );
+				$ports = validate_port_list $pname , $ports;
+				$output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "-m multiport ${invert}--dports ${ports} " );
+				$multiport = 1;
+			    }  else {
+				fatal_error "Missing DEST PORT" unless supplied $ports;
+				$ports   = validate_portpair $pname , $ports;
+				$output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "${invert}--dport ${ports} " );
+			    }
 			}
 		    } else {
 			$multiport ||= ( $sports =~ tr/,/,/ ) > 0 ;;
@@ -4434,9 +4455,13 @@ sub do_proto( $$$;$ )
 
 		    if ( $sports ne '' ) {
 			fatal_error "'=' in the SOURCE PORT(S) column requires one or more ports in the DEST PORT(S) column" if $sports eq '=';
-			$invert = $sports =~ s/^!// ? '! ' : '';
-			if ( $multiport ) {
 
+			$invert = $sports =~ s/^!// ? '! ' : '';
+
+			if ( $ports =~ /^\+/ ) {
+			    $output .= $invert;
+			    $output .= get_set_flags( $ports, 'dst' );
+			} elsif ( $multiport ) {
 			    if ( port_count( $sports ) > 15 ) {
 				if ( $restricted ) {
 				    fatal_error "A port list in this file may only have up to 15 ports";
@@ -5424,12 +5449,35 @@ sub iprange_match() {
 sub get_set_flags( $$ ) {
     my ( $setname, $option ) = @_;
     my $options = $option;
+    my $extensions = '';
 
     require_capability( 'IPSET_MATCH' , 'ipset names in Shorewall configuration files' , '' );
 
     $ipset_rules++;
 
     $setname =~ s/^!//; # Caller has already taken care of leading !
+
+    if ( $setname =~ s/\((.+)\)$// ) {
+	fatal_error "Your iptables and/or kernel are too old to support an IPSET option list" if have_capability 'OLD_IPSET_MATCH';
+	my @extensions = split_list($1, 'ipset option');
+
+	for ( @extensions ) {
+	    my ($extension, $value) = split ' ', $_;
+	    my $match = $ipset_extensions{$extension};
+	    fatal_error "Unknown ipset option ($extension)" unless $match;
+
+	    if ( $match =~ /= $/ ) {
+		my $val;
+		fatal_error "The $extension option requires a value" unless supplied $value;
+		fatal_error "Invalid number ($value)" unless defined ( $val = numeric_value($value) );
+		$match =~ s/= $/$value /;
+	    } else {
+		fatal_error "The $extension option does not require a value" if supplied $value;
+	    }
+
+	    $extensions = join( '', $extensions, $match );
+	}
+    }
 
     if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
 	$setname  = $1;
@@ -5463,7 +5511,7 @@ sub get_set_flags( $$ ) {
 
     fatal_error "Invalid ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z][-\w]*/;
 
-    have_capability( 'OLD_IPSET_MATCH' ) ? "--set $setname $options " : "--match-set $setname $options ";
+    have_capability( 'OLD_IPSET_MATCH' ) ? "--set $setname $options " : "--match-set $setname $options $extensions";
 
 }
 

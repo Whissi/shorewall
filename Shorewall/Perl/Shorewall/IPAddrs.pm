@@ -649,7 +649,7 @@ sub resolve_6dnsname( $ ) {
     }
 
     @addrs;
-} 
+}
 
 sub validate_6net( $$ ) {
     my ( $net, $allow_name ) = @_;

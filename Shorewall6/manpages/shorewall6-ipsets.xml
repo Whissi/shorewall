@@ -91,6 +91,125 @@
     <para>In that example, when the source address of a packet matches the
     <emphasis role="bold">myset</emphasis> ipset, the <emphasis
     role="bold">myobject</emphasis> nfacct counter will be incremented.</para>
+
+    <para>Beginning with Shorewall 4.6.0, an ipset name (and src/dst list, if
+    any) can be immediately be followed by a list of match options. Available
+    options are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>nomatch</term>
+
+        <listitem>
+          <para>If the set type supports the nomatch flag, then the matching
+          is reversed: a match with an element flagged with nomatch returns
+          true, while a match with a plain element returns false. This option
+          requires the 'Ipset Match nomatch' capability in your kernel and
+          ip[6]tables.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>no-update-counters</term>
+
+        <listitem>
+          <para>The packet and byte counters of the matching element in the
+          set won't be updated. By default, the packet and byte counters are
+          updated. This option and those that follow require the 'Ipset Match
+          counters' capability in your kernel and ip[6]tables.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>no-update-subcounters</term>
+
+        <listitem>
+          <para>The packet and byte counters of the matching element in the
+          member set of a list type of set won't be updated. Default the
+          packet and byte counters are updated.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>packets=<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the packet counter of the element matches the given
+          <replaceable>value</replaceable> too.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>packets&lt;<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the packet counter of the element is less than the given
+          <replaceable>value</replaceable> as well.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>packets&gt;<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the packet counter of the element is greater than the given
+          <replaceable>value</replaceable> as well.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>packets!=<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the packet counter of the element does not match the given
+          <replaceable>value</replaceable> too.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>bytes=<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the byte counter of the element matches the given
+          <replaceable>value</replaceable> too.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>bytes&lt;<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the byte counter of the element is less than the given
+          <replaceable>value</replaceable> as well.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>bytes&gt;<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the byte counter of the element is greater than the given
+          <replaceable>value</replaceable> as well.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>bytes!=<replaceable>value</replaceable></term>
+
+        <listitem>
+          <para>If the packet is matched an element in the set, match only if
+          the byte counter of the element does not match the given
+          <replaceable>value</replaceable> too.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </refsect1>
 
   <refsect1>
@@ -103,6 +222,10 @@
     <para>+myset[2]</para>
 
     <para>+[myset1,myset2[dst]]</para>
+
+    <para>+myset[src,nomatch,packets&gt;100]</para>
+
+    <para>+myset[nomatch,no-update-counters](myObject)</para>
   </refsect1>
 
   <refsect1>

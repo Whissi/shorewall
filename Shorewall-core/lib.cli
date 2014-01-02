@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40515
+SHOREWALL_CAPVERSION=40600
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -2265,6 +2265,8 @@ determine_capabilities() {
     OWNER_NAME_MATCH=
     IPSET_MATCH=
     OLD_IPSET_MATCH=
+    IPSET_MATCH_NOMATCH=
+    IPSET_MATCH_COUNTERS=
     IPSET_V5=
     CONNMARK=
     XCONNMARK=
@@ -2552,6 +2554,8 @@ determine_capabilities() {
 
 	    if [ -n "$have_ipset" ]; then
 		if qt $g_tool -A $chain -m set --match-set $chain src -j ACCEPT; then
+		    qt $g_tool -A $chain -m set --match-set $chain src --return-nomatch  -j ACCEPT && IPSET_MATCH_NOMATCH=Yes
+		    qt $g_tool -A $chain -m set --match-set $chain src --packets-lt 100  -j ACCEPT && IPSET_MATCH_COUNTERS=Yes
 		    qt $g_tool -F $chain
 		    IPSET_MATCH=Yes
 		elif qt $g_tool -A $chain -m set --set $chain src -j ACCEPT; then
@@ -2686,7 +2690,9 @@ report_capabilities_unsorted() {
     report_capability "Owner Name Match (OWNER_NAME_MATCH)" $OWNER_NAME_MATCH
     if [ -n "$IPSET_MATCH" ]; then
 	report_capability "Ipset Match (IPSET_MATCH)" $IPSET_MATCH
-	[ -n "$OLD_IPSET_MATCH" ] && report_capability "OLD_Ipset Match (OLD_IPSET_MATCH)" $OLD_IPSET_MATCH
+	[ -n "$OLD_IPSET_MATCH" ]     && report_capability "OLD_Ipset Match (OLD_IPSET_MATCH)"           $OLD_IPSET_MATCH
+	[ -n "$IPSET_MATCH_NOMATCH" ] && report_capability "Ipset Match Nomatch (IPSET_MATCH_NOMATCH)"   $IPSET_MATCH_NOMATCH
+	[ -n "$IPSET_MATCH_NOMATCH" ] && report_capability "Ipset Match Counters (IPSET_MATCH_COUNTERS)" $IPSET_MATCH_COUNTERS
     fi
     report_capability "CONNMARK Target (CONNMARK)" $CONNMARK
     [ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target (XCONNMARK)" $XCONNMARK
@@ -2808,6 +2814,8 @@ report_capabilities_unsorted1() {
     report_capability1 OWNER_NAME_MATCH
     report_capability1 IPSET_MATCH
     report_capability1 OLD_IPSET_MATCH
+    report_capability1 IPSET_MATCH_NOMATCH
+    report_capability1 IPSET_MATCH_COUNTERS
     report_capability1 CONNMARK
     report_capability1 XCONNMARK
     report_capability1 CONNMARK_MATCH

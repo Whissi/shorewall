@@ -703,7 +703,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "4.5.19-Beta1",
-		    CAPVERSION              => 40515 ,
+		    CAPVERSION              => 40600 ,
 		  );
     #
     # From shorewall.conf file

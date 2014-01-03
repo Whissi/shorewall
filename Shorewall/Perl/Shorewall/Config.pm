@@ -374,6 +374,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 CONDITION_MATCH => 'Condition Match',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
+		 BASIC_EMATCH    => 'Basic Filter ematch',
 		 CT_TARGET       => 'CT Target',
 		 STATISTIC_MATCH =>
 		                    'Statistics Match',
@@ -953,6 +954,7 @@ sub initialize( $;$$) {
 	       CONDITION_MATCH => undef,
 	       IPTABLES_S => undef,
 	       BASIC_FILTER => undef,
+	       BASIC_EMATCH => undef,
 	       CT_TARGET => undef,
 	       STATISTIC_MATCH => undef,
 	       IMQ_TARGET => undef,
@@ -4270,6 +4272,10 @@ sub Basic_Filter() {
     $tc && system( "$tc filter add basic help 2>&1 | grep -q ^Usage" ) == 0;
 }
 
+sub Basic_Ematch() {
+    $tc && have_capability 'BASIC_FILTER' && system( "$tc filter add basic help 2>&1 | egrep -q match" ) == 0;
+}
+
 sub Fwmark_Rt_Mask() {
     $ip && system( "$ip rule add help 2>&1 | grep -q /MASK" ) == 0;
 }
@@ -4372,6 +4378,7 @@ our %detect_capability =
       AUDIT_TARGET => \&Audit_Target,
       ADDRTYPE => \&Addrtype,
       BASIC_FILTER => \&Basic_Filter,
+      BASIC_EMATCH => \&Basic_Ematch,
       CHECKSUM_TARGET => \&Checksum_Target,
       CLASSIFY_TARGET => \&Classify_Target,
       CONDITION_MATCH => \&Condition_Match,
@@ -4585,6 +4592,7 @@ sub determine_capabilities() {
 	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
 	$capabilities{IPTABLES_S}      = detect_capability( 'IPTABLES_S' );
 	$capabilities{BASIC_FILTER}    = detect_capability( 'BASIC_FILTER' );
+	$capabilities{BASIC_EMATCH}    = detect_capability( 'BASIC_EMATCH' );
 	$capabilities{CT_TARGET}       = detect_capability( 'CT_TARGET' );
 	$capabilities{STATISTIC_MATCH} = detect_capability( 'STATISTIC_MATCH' );
 	$capabilities{IMQ_TARGET}      = detect_capability( 'IMQ_TARGET' );

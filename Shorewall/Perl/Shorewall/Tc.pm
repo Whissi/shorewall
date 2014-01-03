@@ -1909,6 +1909,36 @@ sub validate_tc_class( ) {
 my %validlengths = ( 32 => '0xffe0', 64 => '0xffc0', 128 => '0xff80', 256 => '0xff00', 512 => '0xfe00', 1024 => '0xfc00', 2048 => '0xf800', 4096 => '0xf000', 8192 => '0xe000' );
 
 #
+# Handle an ipset name in the SOURCE or DEST columns of a filter
+#
+sub handle_ematch( $$ ) {
+    my ( $setname, $option ) = @_;
+
+    my $options = $option;
+
+    require_capability 'BASIC_EMATCH', 'IPSets', '';
+
+    if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
+	$setname  = $1;
+	my $count = $2;
+
+	$options .= ",$option" while --$count > 0;
+    } elsif ( $setname =~ /^(.*)\[((?:src|dst)(?:,(?:src|dst))){0,5}\]$/ ) {
+	$setname = $1;
+	$options = $2 if supplied $2;
+
+	my @options = split /,/, $options;
+
+	if ( $config{IPSET_WARNINGS} ) {
+	    my %typemap = ( src => 'Source', dst => 'Destination' );
+	    warning_message( "The '$options[0]' ipset flag is used in a $typemap{$option} column" ), unless $options[0] eq $option;
+	}
+    }
+
+    return " ipset( $setname, $options )";
+}
+
+#
 # Process a record from the tcfilters file
 #
 sub process_tc_filter1( $$$$$$$$$ ) {
@@ -1924,6 +1954,8 @@ sub process_tc_filter1( $$$$$$$$$ ) {
     my ( $ip, $ip32, $lo ) = $family == F_IPV4 ? ('ip', 'ip', 2 ) : ('ipv6', 'ip6', 4 );
 
     my $devref;
+
+    my $ematch = '';
 
     if ( $device =~ /^[\da-fA-F]+$/ && ! $tcdevices{$device} ) {
 	( $device, $devref ) = dev_by_number( hex_value( $device ) );
@@ -1970,15 +2002,27 @@ sub process_tc_filter1( $$$$$$$$$ ) {
     my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio u32";
 
     if ( $source ne '-' ) {
-	my ( $net , $mask ) = decompose_net( $source );
-	$rule .= "\\\n   match $ip32 src $net/$mask";
-	$have_rule = 1;
+	if ( $source =~ /^\+/ ) {
+	    $ematch = join( ' ', 'match', handle_ematch( $source, 'src' ) );
+	} else {
+	    my ( $net , $mask ) = decompose_net( $source );
+	    $rule .= "\\\n   match $ip32 src $net/$mask";
+	    $have_rule = 1;
+	}
     }
 
     if ( $dest ne '-' ) {
-	my ( $net , $mask ) = decompose_net( $dest );
-	$rule .= "\\\n   match $ip32 dst $net/$mask";
-	$have_rule = 1;
+	if ( $dest =~ /^\+/ ) {
+	    if ( $ematch ) {
+		$ematch = join( ' ', $ematch, handle_ematch( $dest, 'dst' ) );
+	    } else {
+		$ematch = join( ' ', 'match', handle_ematch( $dest, 'dst' ) );
+	    }
+	} else {
+	    my ( $net , $mask ) = decompose_net( $dest );
+	    $rule .= "\\\n   match $ip32 dst $net/$mask";
+	    $have_rule = 1;
+	}
     }
 
     if ( $tos ne '-' ) {
@@ -2019,13 +2063,25 @@ sub process_tc_filter1( $$$$$$$$$ ) {
 	}
     }
 
+    if ( $ematch ) {
+	if ( $have_rule ) {
+	    my $tnum = in_hex3 $devref->{tablenumber}++;
+	    push @$filtersref, ( "\nrun_tc $rule\\" ,
+				 "   link $tnum:0" );
+	    $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio basic ht $tnum:0 match ${ematch}";
+	} else {
+	    $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio basic match$ ${ematch}";
+	    $have_rule = 1;
+	}
+    }	    
+
     if ( $portlist eq '-' && $sportlist eq '-' ) {
 	if ( $have_rule ) {
 	    push @$filtersref , ( "\nrun_tc $rule\\" ,
 				  "   flowid $devnum:$class" ,
 				  '' );
 	} else {
-	    warning_message "Degenerate tcfilter ignored";
+	    warning_message "Degenerate tcfilter ignored" unless $ematch;
 	}
     } else {
 	fatal_error "Ports may not be specified without a PROTO" unless $protonumber;

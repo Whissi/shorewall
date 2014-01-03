@@ -4273,7 +4273,7 @@ sub Basic_Filter() {
 }
 
 sub Basic_Ematch() {
-    $tc && have_capability 'BASIC_FILTER' && system( "$tc filter add basic help 2>&1 | egrep -q match" ) == 0;
+    $tc && have_capability( 'BASIC_FILTER' ) && system( "$tc filter add basic help 2>&1 | egrep -q match" ) == 0;
 }
 
 sub Fwmark_Rt_Mask() {

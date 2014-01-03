@@ -233,7 +233,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">PROTO</emphasis> (Optional) - {<emphasis
-        role="bold">-</emphasis>|[!]{<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>}[,...]}</term>
+        role="bold">-</emphasis>|[!]{<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>}[,...]|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>If you wish to restrict this entry to a particular protocol
@@ -242,12 +242,17 @@
 
           <para>Beginning with Shorewall 4.5.12, this column can accept a
           comma-separated list of protocols.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an
+          <replaceable>ipset</replaceable> name can be specified in this
+          column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">PORT(S)</emphasis> (Optional) -
-        [[!]<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...]</term>
+        {-|[!]<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>If the PROTO column specifies TCP (6), UDP (17), DCCP (33),
@@ -257,6 +262,11 @@
 
           <para>Port ranges are of the form
           <emphasis>lowport</emphasis>:<emphasis>highport</emphasis>.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an
+          <replaceable>ipset</replaceable> name can be specified in this
+          column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 

@@ -1070,7 +1070,7 @@
         <term><emphasis role="bold">DEST PORT(S) (dport)</emphasis> -
         {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...}</term>
+        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>Optional destination Ports. A comma-separated list of Port
@@ -1106,6 +1106,11 @@
 
           <para>2. No port ranges are included or your kernel and iptables
           contain extended multi-port match support.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an
+          <replaceable>ipset</replaceable> name can be specified in this
+          column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 
@@ -1113,7 +1118,7 @@
         <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
         {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...}</term>
+        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>Optional port(s) used by the client. If omitted, any source
@@ -1146,6 +1151,11 @@
 
           <para>2. No port ranges are included or your kernel and iptables
           contain extended multi-port match support.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an
+          <replaceable>ipset</replaceable> name can be specified in this
+          column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 

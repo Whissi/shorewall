@@ -5474,18 +5474,15 @@ sub get_set_flags( $$ ) {
 	my %typemap = ( src => 'Source', dst => 'Destination' );
 
 	if ( $config{IPSET_WARNINGS} ) {
-	    for ( @options ) {
-		warning_message( "The '$_' ipset flag is used in a $typemap{$option} column" ), last unless $_ eq $option;
-	    }
+	    warning_message( "The '$options[0]' ipset flag is used in a $option column" ), unless $options[0] eq $option;
 	}
-
     }
 
     if ( $rest ) {
 	my @extensions = split_list($rest, 'ipset option');
 
 	for ( @extensions ) {
-	    my ($extension, $relop, $value) = split /(!=|=|<|>)/, $_;
+	    my ($extension, $relop, $value) = split /(<>|=|<|>)/, $_;
 
 	    my $match = $ipset_extensions{$extension};
 
@@ -5505,15 +5502,14 @@ sub get_set_flags( $$ ) {
 		fatal_error "Invalid number ($value)" unless defined ( $val = numeric_value($value) );
 		$extension = "--$extension";
 
-		if ( $relop =~ s/!// ) {
-		    $extension = join( ' ', '!',  $extension );
-		}
-
 		if ( $relop eq '<' ) {
 		    $extension .= '-lt';
 		} elsif ( $relop eq '>' ) {
 		    $extension .= '-gt';
+		} elsif ( $relop eq '=' ) {
+		    $extension .= '-eq';
 		} else {
+		    $extension = join( ' ', '!',  $extension );
 		    $extension .= '-eq';
 		}
 
@@ -5678,7 +5674,7 @@ sub match_source_net( $;$\$ ) {
 	fatal_error "Multiple ipset matches require the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'src' ) );
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
@@ -5747,7 +5743,7 @@ sub imatch_source_net( $;$\$ ) {
 	return do_imac $net;
     }
 
-    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/ ) {
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
 	my @result = ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'src' ) ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
@@ -5767,7 +5763,7 @@ sub imatch_source_net( $;$\$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'src' ) ) );
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
@@ -5832,7 +5828,7 @@ sub match_dest_net( $;$ ) {
 	return iprange_match . "${invert}--dst-range $net ";
     }
 
-    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/ ) {
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
 	my $result = join( '', '-m set ', $1 ? '! ' : '',  get_set_flags( $2, 'dst' ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
@@ -5852,15 +5848,15 @@ sub match_dest_net( $;$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
 	    $result .= join( '', '-m set ', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) );
-	}
 
-	if ( $3 ) {
-	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
-	    for ( my @objects = split_list $3, 'nfacct' ) {
-		validate_nfobject( $_ );
-		$result .= do_nfacct( $_ );
+	    if ( $3 ) {
+		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
+		for ( my @objects = split_list $3, 'nfacct' ) {
+		    validate_nfobject( $_ );
+		    $result .= do_nfacct( $_ );
+		}
 	    }
 	}
 
@@ -5916,7 +5912,7 @@ sub imatch_dest_net( $;$ ) {
 	return ( iprange => "${invert}--dst-range $net" );
     }
 
-    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/ ) {
+    if ( $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/ ) {
 	my @result = ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) ) );
 	if ( $3 ) {
 	    require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';
@@ -5936,7 +5932,7 @@ sub imatch_dest_net( $;$ ) {
 	fatal_error "Multiple ipset matches requires the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
 
 	for $net ( @sets ) {
-	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\]))?(?:\((.+)\))?$/;
+	    fatal_error "Expected ipset name ($net)" unless $net =~ /^(!?)(?:\+?)((?:6_)?[a-zA-Z][-\w]*(?:\[.*\])?)(?:\((.+)\))?$/;
 	    push @result , ( set => join( '', $1 ? '! ' : '', get_set_flags( $2, 'dst' ) ) );
 	    if ( $3 ) {
 		require_capability 'NFACCT_MATCH', "An nfacct object list ($3)", 's';

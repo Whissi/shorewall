@@ -772,9 +772,9 @@ Normal-Service       =&gt; 0x00</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORT(S)</emphasis> (dport) - [<emphasis
+        <term><emphasis role="bold">PORT(S)</emphasis> (dport) - {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
+        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>Optional destination Ports. A comma-separated list of Port
@@ -795,14 +795,19 @@ Normal-Service       =&gt; 0x00</programlisting>
           <para>An entry in this field requires that the PROTO column specify
           icmp (1), tcp (6), udp (17), sctp (132) or udplite (136). Use '-' if
           any of the following field is supplied.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an
+          <replaceable>ipset</replaceable> name can be specified in this
+          column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
-        [<emphasis
+        {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
+        role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>Optional source port(s). If omitted, any source port is
@@ -819,6 +824,11 @@ Normal-Service       =&gt; 0x00</programlisting>
           destination port in a packet matches one of the ports specified in
           DEST PORTS(S). Use of '=' requires multi-port match in your iptables
           and kernel.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an
+          <replaceable>ipset</replaceable> name can be specified in this
+          column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 

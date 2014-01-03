@@ -54,7 +54,8 @@
       <option>dst</option>. Example: myset[src,dst].</member>
     </simplelist>
 
-    <para>In a SOURCE column, the following pairs are equivalent:</para>
+    <para>In a SOURCE or SOURCE PORT(S) column, the following pairs are
+    equivalent:</para>
 
     <itemizedlist>
       <listitem>
@@ -62,7 +63,8 @@
       </listitem>
     </itemizedlist>
 
-    <para>In a DEST column, the following pairs are equivalent:</para>
+    <para>In a DEST or DEST PORT(S) column, the following pairs are
+    equivalent:</para>
 
     <itemizedlist>
       <listitem>
@@ -136,7 +138,7 @@
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the packet counter of the element matches the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
 
@@ -166,7 +168,7 @@
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the packet counter of the element does not match the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
 
@@ -176,7 +178,7 @@
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the byte counter of the element matches the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
 
@@ -201,12 +203,12 @@
       </varlistentry>
 
       <varlistentry>
-        <term>bytes!=<replaceable>value</replaceable></term>
+        <term>bytes&lt;&gt;<replaceable>value</replaceable></term>
 
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the byte counter of the element does not match the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -233,7 +235,7 @@
 
     <para>/etc/shorewall6/accounting</para>
 
-    <para>/etc/shorewall6/blacklist</para>
+    <para>/etc/shorewall6/blrules</para>
 
     <para>/etc/shorewall6/hosts -- <emphasis role="bold">Note:</emphasis>
     Multiple matches enclosed in +[...] may not be used in this file.</para>
@@ -245,7 +247,7 @@
 
     <para>/etc/shorewall6/secmarks</para>
 
-    <para>/etc/shorewall6/tcrules</para>
+    <para>/etc/shorewall6/mangle</para>
   </refsect1>
 
   <refsect1>

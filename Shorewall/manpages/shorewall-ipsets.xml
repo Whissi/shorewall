@@ -55,7 +55,8 @@
       <option>dst</option>. Example: myset[src,dst].</member>
     </simplelist>
 
-    <para>In a SOURCE column, the following pairs are equivalent:</para>
+    <para>In a SOURCE or SOURCE PORT(S) column, the following pairs are
+    equivalent:</para>
 
     <itemizedlist>
       <listitem>
@@ -63,7 +64,8 @@
       </listitem>
     </itemizedlist>
 
-    <para>In a DEST column, the following pairs are equivalent:</para>
+    <para>In a DEST or DEST PORT(S) column, the following pairs are
+    equivalent:</para>
 
     <itemizedlist>
       <listitem>
@@ -102,7 +104,7 @@
         <term>nomatch</term>
 
         <listitem>
-          <para> If the set type supports the nomatch flag, then the matching
+          <para>If the set type supports the nomatch flag, then the matching
           is reversed: a match with an element flagged with nomatch returns
           true, while a match with a plain element returns false. This option
           requires the 'Ipset Match nomatch' capability in your kernel and
@@ -137,7 +139,7 @@
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the packet counter of the element matches the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
 
@@ -167,7 +169,7 @@
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the packet counter of the element does not match the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
 
@@ -177,7 +179,7 @@
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the byte counter of the element matches the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
 
@@ -202,12 +204,12 @@
       </varlistentry>
 
       <varlistentry>
-        <term>bytes!=<replaceable>value</replaceable></term>
+        <term>bytes&lt;&gt;<replaceable>value</replaceable></term>
 
         <listitem>
           <para>If the packet is matched an element in the set, match only if
           the byte counter of the element does not match the given
-          <replaceable>value</replaceable> too.</para>
+          <replaceable>value</replaceable> also.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -240,7 +242,7 @@
 
     <para>/etc/shorewall/accounting</para>
 
-    <para>/etc/shorewall/blacklist</para>
+    <para>/etc/shorewall/blrules</para>
 
     <para>/etc/shorewall/hosts -- <emphasis role="bold">Note:</emphasis>
     Multiple matches enclosed in +[...] may not be used in this file.</para>

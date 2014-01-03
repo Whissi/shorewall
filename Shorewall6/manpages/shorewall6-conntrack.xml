@@ -392,7 +392,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term>DEST PORT(S) (dport) - port-number/service-name-list</term>
+        <term>DEST PORT(S) (dport) -
+        {-|<replaceable>port-number/service-name-list</replaceable>|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>A comma-separated list of port numbers and/or service names
@@ -400,11 +401,16 @@
           ranges of the form
           <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
           if your kernel and iptables include port range support.</para>
+
+          <para>Beginning with Shorewall 4.6.0, an ipset name can be specified
+          in this column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>SOURCE PORT(S) (sport) - port-number/service-name-list</term>
+        <term>SOURCE PORT(S) (sport) -
+        {-|<replaceable>port-number/service-name-list</replaceable>|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>A comma-separated list of port numbers and/or service names
@@ -418,6 +424,10 @@
           causes the rule to match when either the source port or the
           destination port in a packet matches one of the ports specified in
           DEST PORTS(S).</para>
+
+          <para>Beginning with Shorewall 4.6.0, an ipset name can be specified
+          in this column. This is intended to be used with
+          <firstterm>bitmap:port</firstterm> ipsets.</para>
         </listitem>
       </varlistentry>
 

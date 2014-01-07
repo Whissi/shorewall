@@ -700,14 +700,14 @@ sub process_stoppedrules() {
 		split_line1( 'stoppedrules file',
 			     { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5 } );
 
-	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|NOTRACK)$/;
+	    fatal_error( "Invalid TARGET ($target)" ) unless $target =~ /^(?:ACCEPT|DROP|NOTRACK)$/;
 
 	    my $tableref;
-
+	    my $raw;
 	    my $chainref;
 	    my $restriction = NO_RESTRICT;
 
-	    if ( $target eq 'NOTRACK' ) {
+	    if ( $raw = ( $target eq 'NOTRACK' || $target eq 'DROP' ) ) {
 		$tableref = $raw_table;
 		require_capability 'RAW_TABLE', 'NOTRACK', 's';
 		$chainref = $raw_table->{PREROUTING};
@@ -717,21 +717,21 @@ sub process_stoppedrules() {
 	    }
 
 	    if ( $source eq $fw ) {
-		$chainref = ( $target eq 'NOTRACK' ? $raw_table : $filter_table)->{OUTPUT};
+		$chainref = ( $raw ? $raw_table : $filter_table)->{OUTPUT};
 		$source = '';
 		$restriction = OUTPUT_RESTRICT;
 	    } elsif ( $source =~ s/^($fw):// ) {
-		$chainref = ( $target eq 'NOTRACK' ? $raw_table : $filter_table)->{OUTPUT};
+		$chainref = ( $raw ? $raw_table : $filter_table)->{OUTPUT};
 		$restriction = OUTPUT_RESTRICT;
 	    }
 
 	    if ( $dest eq $fw ) {
-		fatal_error "\$FW may not be specified as the destination of a NOTRACK rule" if $target eq 'NOTRACK';
+		fatal_error "\$FW may not be specified as the destination of a NOTRACK or DROP rule" if $raw;
 		$chainref = $filter_table->{INPUT};
 		$dest = '';
 		$restriction = INPUT_RESTRICT;
 	    } elsif ( $dest =~ s/^($fw):// ) {
-		fatal_error "\$FW may not be specified as the destination of a NOTRACK rule" if $target eq 'NOTRACK';
+		fatal_error "\$FW may not be specified as the destination of a NOTRACK or DROP rule" if $raw;
 		$chainref = $filter_table->{INPUT};
 		$restriction = INPUT_RESTRICT;
 	    }

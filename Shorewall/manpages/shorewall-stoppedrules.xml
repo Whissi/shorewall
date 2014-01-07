@@ -40,14 +40,20 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">ACTION</emphasis> -
-        <option>ACCEPT|NOTRACK</option></term>
+        <option>ACCEPT|NOTRACK|DROP</option></term>
 
         <listitem>
-          <para>Determines the disposition of the packet.
-          <option>ACCEPT</option> means that the packet will be accepted.
-          <option>NOTRACK</option> indicates that no conntrack entry should be
-          created for the packet. <option>NOTRACK</option> does not imply
-          <option>ACCEPT</option>.</para>
+          <para>Determines the disposition of the packet.</para>
+
+          <para><option>ACCEPT</option> means that the packet will be
+          accepted.</para>
+
+          <para><option>NOTRACK</option> indicates that no conntrack entry
+          should be created for the packet. <option>NOTRACK</option> does not
+          imply <option>ACCEPT</option>.</para>
+
+          <para><option>DROP</option> was added in Shorewall 4.6.0 and causes
+          the packet to be dropped in the raw table's PREROUTING chain.</para>
         </listitem>
       </varlistentry>
 

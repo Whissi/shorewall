@@ -215,12 +215,12 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     our $matches        = '';
     our $params         = '';
     our $done           = 0;
-    my  $default_chain  = 0;
+    our $default_chain  = 0;
     our $restriction    = 0;
     our $exceptionrule  = '';
     my  $device         = '';
     our $cmd;
-    my  $designator;
+    our $designator;
     my $fw              = firewall_zone;
 
     sub handle_mark_param( $ ) {
@@ -252,6 +252,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    $mask = in_hex $mask;
 
 	    my $marks = ( ( $mark2val - $markval ) >> $shift ) + 1;
+
+	    $chain ||= $designator;
+	    $chain ||= $default_chain;
 
 	    my $chainref = ensure_chain( 'mangle', $chain = $chainnames{$chain} );
 
@@ -367,9 +370,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub () {
-		$chain  = $designator || $default_chain;
 		$target = 'CONNMARK';
-		handle_mark_param('--set-mark');
+		handle_mark_param('--set-mark' );
 	    },
 	},
 

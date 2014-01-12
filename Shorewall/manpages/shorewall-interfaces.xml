@@ -71,7 +71,7 @@
           in this column.</para>
 
           <para>If the interface serves multiple zones that will be defined in
-          the <ulink url="shorewall-hosts.html">shorewall-hosts</ulink>(5)
+          the <ulink url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5)
           file, you should place "-" in this column.</para>
 
           <para>If there are multiple interfaces to the same zone, you must
@@ -97,7 +97,7 @@ loc     eth2            -</programlisting>
           <para>Logical name of interface. Each interface may be listed only
           once in this file. You may NOT specify the name of a "virtual"
           interface (e.g., eth0:0) here; see <ulink
-          url="http://www.shorewall.net/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink>.
+          url="/FAQ.htm#faq18">http://www.shorewall.net/FAQ.htm#faq18</ulink>.
           If the <option>physical</option> option is not specified, then the
           logical name is also the name of the actual interface.</para>
 
@@ -111,7 +111,7 @@ loc     eth2            -</programlisting>
           <para>When using Shorewall versions before 4.1.4, care must be
           exercised when using wildcards where there is another zone that uses
           a matching specific interface. See <ulink
-          url="shorewall-nesting.html">shorewall-nesting</ulink>(5) for a
+          url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5) for a
           discussion of this problem.</para>
 
           <para>Shorewall allows '+' as an interface name.</para>
@@ -154,7 +154,7 @@ loc     eth2            -</programlisting>
           <para>Beginning with Shorewall 4.5.17, if you specify a zone for the
           'lo' interface, then that zone must be defined as type
           <option>local</option> in <ulink
-          url="shorewall6-zones.html">shorewall6-zones</ulink>(5).</para>
+          url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -268,7 +268,7 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>Checks packets arriving on this interface against the
                 <ulink
-                url="shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
+                url="/manpages/shorewall-blacklist.html">shorewall-blacklist</ulink>(5)
                 file.</para>
 
                 <para>Beginning with Shorewall 4.4.13:</para>
@@ -279,7 +279,7 @@ loc     eth2            -</programlisting>
                     ZONES column, then the behavior is as if <emphasis
                     role="bold">blacklist</emphasis> had been specified in the
                     IN_OPTIONS column of <ulink
-                    url="shorewall-zones.html">shorewall-zones</ulink>(5).</para>
+                    url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5).</para>
                   </listitem>
 
                   <listitem>
@@ -348,7 +348,7 @@ loc     eth2            -</programlisting>
                       url="../bridge-Shorewall-perl.html">Shorewall-perl for
                       firewall/bridging</ulink>, then you need to include
                       DHCP-specific rules in <ulink
-                      url="shorewall-rules.html">shorewall-rules</ulink>(8).
+                      url="/manpages/shorewall-rules.html">shorewall-rules</ulink>(8).
                       DHCP uses UDP ports 67 and 68.</para>
                     </note>
                   </listitem>
@@ -421,7 +421,7 @@ loc     eth2            -</programlisting>
 
                 <blockquote>
                   <para>This option may also be enabled globally in the <ulink
-                  url="shorewall.conf.html">shorewall.conf</ulink>(5)
+                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
                   file.</para>
                 </blockquote>
               </listitem>
@@ -433,7 +433,7 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>Connection requests from this interface are compared
                 against the contents of <ulink
-                url="shorewall-maclist.html">shorewall-maclist</ulink>(5). If
+                url="/manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5). If
                 this option is specified, the interface must be an Ethernet
                 NIC and must be up before Shorewall is started.</para>
               </listitem>
@@ -472,7 +472,7 @@ loc     eth2            -</programlisting>
                 <para>Defines the zone as <firstterm>dynamic</firstterm>.
                 Requires ipset match support in your iptables and kernel. See
                 <ulink
-                url="http://www.shorewall.net/Dynamic.html">http://www.shorewall.net/Dynamic.html</ulink>
+                url="/Dynamic.html">http://www.shorewall.net/Dynamic.html</ulink>
                 for further information.</para>
               </listitem>
             </varlistentry>
@@ -486,7 +486,7 @@ loc     eth2            -</programlisting>
 
                 <para>Smurfs will be optionally logged based on the setting of
                 SMURF_LOG_LEVEL in <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5). After
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). After
                 logging, the packets are dropped.</para>
               </listitem>
             </varlistentry>
@@ -527,7 +527,7 @@ loc     eth2            -</programlisting>
                 refers to the name given in this option. It is useful when you
                 want to specify the same wildcard port name on two or more
                 bridges. See <ulink
-                url="http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple">http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple</ulink>.</para>
+                url="/bridge-Shorewall-perl.html#Multiple">http://www.shorewall.net/bridge-Shorewall-perl.html#Multiple</ulink>.</para>
 
                 <para>If the <emphasis>interface</emphasis> name is a wildcard
                 name (ends with '+'), then the physical
@@ -547,7 +547,7 @@ loc     eth2            -</programlisting>
                 /proc/sys/net/ipv4/conf/<emphasis>interface</emphasis>/proxy_arp.
                 Do NOT use this option if you are employing Proxy ARP through
                 entries in <ulink
-                url="shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).
+                url="/manpages/shorewall-proxyarp.html">shorewall-proxyarp</ulink>(5).
                 This option is intended solely for use with Proxy ARP
                 sub-networking as described at: <ulink
                 url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html.
@@ -626,12 +626,12 @@ loc     eth2            -</programlisting>
 
                 <para>This option can also be enabled globally via the
                 ROUTE_FILTER option in the <ulink
-                url="shorewall.conf.html">shorewall.conf</ulink>(5)
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
                 file.</para>
 
                 <important>
                   <para>If ROUTE_FILTER=Yes in <ulink
-                  url="shorewall.conf.html">shorewall.conf</ulink>(5), or if
+                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5), or if
                   your distribution sets net.ipv4.conf.all.rp_filter=1 in
                   <filename>/etc/sysctl.conf</filename>, then setting
                   <emphasis role="bold">routefilter</emphasis>=0 in an
@@ -653,14 +653,14 @@ loc     eth2            -</programlisting>
                   <itemizedlist>
                     <listitem>
                       <para>If USE_DEFAULT_RT=Yes in <ulink
-                      url="shorewall.conf.html">shorewall.conf</ulink>(5) and
+                      url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) and
                       the interface is listed in <ulink
-                      url="shorewall-providers.html">shorewall-providers</ulink>(5).</para>
+                      url="/manpages/shorewall-providers.html">shorewall-providers</ulink>(5).</para>
                     </listitem>
 
                     <listitem>
                       <para>If there is an entry for the interface in <ulink
-                      url="shorewall-providers.html">shorewall-providers</ulink>(5)
+                      url="/manpages/shorewall-providers.html">shorewall-providers</ulink>(5)
                       that doesn't specify the <option>balance</option>
                       option.</para>
                     </listitem>
@@ -797,7 +797,7 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>Incoming requests from this interface may be remapped
                 via UPNP (upnpd). See <ulink
-                url="../UPnP.html">http://www.shorewall.net/UPnP.html</ulink>.</para>
+                url="/UPnP.html">http://www.shorewall.net/UPnP.html</ulink>.</para>
               </listitem>
             </varlistentry>
 
@@ -912,7 +912,7 @@ net     ppp0      -</programlisting>
     <title>See ALSO</title>
 
     <para><ulink
-    url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
+    url="/configuration_file_basics.htm#Pairs">http://www.shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-blacklist(5), shorewall-hosts(5), shorewall-maclist(5),

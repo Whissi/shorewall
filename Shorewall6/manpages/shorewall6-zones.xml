@@ -44,14 +44,14 @@
           "none", "SOURCE" and "DEST" are reserved and may not be used as zone
           names. The maximum length of a zone name is determined by the
           setting of the LOGFORMAT option in <ulink
-          url="shorewall6.conf.html">shorewall6.conf</ulink>(5). With the
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5). With the
           default LOGFORMAT, zone names can be at most 5 characters
           long.</para>
 
           <blockquote>
             <para>The maximum length of an iptables log prefix is 29 bytes. As
             explained in <ulink
-            url="shorewall.conf.html">shorewall6.conf</ulink> (5), the default
+            url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink> (5), the default
             LOGPREFIX formatting string is “Shorewall:%s:%s:” where the first
             %s is replaced by the chain name and the second is replaced by the
             disposition.</para>
@@ -95,7 +95,7 @@
           follow the (sub)zone name by ":" and a comma-separated list of the
           parent zones. The parent zones must have been declared in earlier
           records in this file. See <ulink
-          url="shorewall6-nesting.html">shorewall6-nesting</ulink>(5) for
+          url="/manpages6/shorewall6-nesting.html">shorewall6-nesting</ulink>(5) for
           additional information.</para>
 
           <para>Example:</para>
@@ -108,7 +108,7 @@ c:a,b     ipv6</programlisting>
           <para>Currently, Shorewall6 uses this information to reorder the
           zone list so that parent zones appear after their subzones in the
           list. The IMPLICIT_CONTINUE option in <ulink
-          url="shorewall6.conf.html">shorewall6.conf</ulink>(5) can also
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5) can also
           create implicit CONTINUE policies to/from the subzone.</para>
 
           <para>Where an <emphasis role="bold">ipsec</emphasis> zone is
@@ -135,7 +135,7 @@ c:a,b     ipv6</programlisting>
                 the column. Communication with some zone hosts may be
                 encrypted. Encrypted hosts are designated using the 'ipsec'
                 option in <ulink
-                url="shorewall6-hosts.html">shorewall6-hosts</ulink>(5).</para>
+                url="/manpages6/shorewall6-hosts.html">shorewall6-hosts</ulink>(5).</para>
               </listitem>
             </varlistentry>
 
@@ -178,7 +178,7 @@ c:a,b     ipv6</programlisting>
               <listitem>
                 <para>Added in Shorewall 4.4.11 Beta 2 - A zone composed of
                 Linux-vserver guests. The zone contents must be defined in
-                <ulink url="shorewall6-hosts.html">shorewall6-hosts</ulink>
+                <ulink url="/manpages6/shorewall6-hosts.html">shorewall6-hosts</ulink>
                 (5).</para>
 
                 <para>Vserver zones are implicitly handled as subzones of the
@@ -206,7 +206,7 @@ c:a,b     ipv6</programlisting>
                     $FW rules are defined, they are placed in a chain named
                     ${FW}2${F2} or ${FW}-${FW} (e.g., 'fw2fw' or 'fw-fw' )
                     depending on the ZONE2ZONE setting in <ulink
-                    url="shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+                    url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
                   </listitem>
 
                   <listitem>
@@ -288,12 +288,12 @@ c:a,b     ipv6</programlisting>
                 <para>When specified in the IN_OPTIONS column, causes all
                 traffic from this zone to be passed against the <emphasis
                 role="bold">src</emphasis> entries in <ulink
-                url="shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5).</para>
+                url="/manpages6/shorewall6-blacklist.html">shorewall6-blacklist</ulink>(5).</para>
 
                 <para>When specified in the OUT_OPTIONS column, causes all
                 traffic to this zone to be passed against the <emphasis
                 role="bold">dst</emphasis> entries in s<ulink
-                url="shorewall6-blacklist.html">horewall6-blacklist</ulink>(5).</para>
+                url="/manpages6/shorewall6-blacklist.html">horewall6-blacklist</ulink>(5).</para>
 
                 <para>Specifying this option in the OPTIONS column is
                 equivalent to entering it in both of the IN_OPTIONS and
@@ -309,7 +309,7 @@ c:a,b     ipv6</programlisting>
                 OPTIONS column and indicates that only a single ipset should
                 be created for this zone if it has multiple dynamic entries in
                 <ulink
-                url="shorewall6-hosts.html">shorewall6-hosts</ulink>(5).
+                url="/manpages6/shorewall6-hosts.html">shorewall6-hosts</ulink>(5).
                 Without this option, a separate ipset is created for each
                 interface.</para>
               </listitem>
@@ -353,7 +353,7 @@ c:a,b     ipv6</programlisting>
               <listitem>
                 <para>sets the MSS field in TCP packets. If you supply this
                 option, you should also set FASTACCEPT=No in <ulink
-                url="shorewall6.conf.html">shorewall6.conf</ulink>(5) to
+                url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5) to
                 insure that both the SYN and SYN,ACK packets have their MSS
                 field adjusted.</para>
               </listitem>
@@ -426,10 +426,10 @@ c:a,b     ipv6</programlisting>
     <title>See ALSO</title>
 
     <para><ulink
-    url="http://www.shorewall.net/Multiple_Zones.html">http://www.shorewall.net/Multiple_Zones.html</ulink>.</para>
+    url="/Multiple_Zones.html">http://www.shorewall.net/Multiple_Zones.html</ulink>.</para>
 
     <para><ulink
-    url="http://shorewall.net/configuration_file_basics.htm#Pairs">http://shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
+    url="/configuration_file_basics.htm#Pairs">http://www.shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),

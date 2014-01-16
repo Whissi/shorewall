@@ -1546,7 +1546,7 @@ do_dump_command() {
 }
 
 dump_command() {
-    do_dump_command | dump_filter
+    do_dump_command $@ | dump_filter
 }
 
 #
@@ -3423,7 +3423,7 @@ usage() # $1 = exit status
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   disable <interface>"
     echo "   drop <address> ..."
-    echo "   dump [ -x ]"
+    echo "   dump [ -x ] [ -l ]"
     echo "   enable <interface>"
     echo "   forget [ <file name> ]"
     echo "   help"

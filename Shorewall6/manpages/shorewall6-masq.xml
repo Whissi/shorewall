@@ -6,6 +6,8 @@
     <refentrytitle>shorewall6-masq</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -35,10 +37,10 @@
       <para>If you have more than one ISP link, adding entries to this file
       will <emphasis role="bold">not</emphasis> force connections to go out
       through a particular link. You must use entries in <ulink
-      url="/manpages6/shorewall6-rtrules.html">shorewall6-rtrules</ulink>(5) or
-      PREROUTING entries in <ulink
-      url="/manpages6/shorewall6-tcrules.html">shorewall-tcrules</ulink>(5) to do
-      that.</para>
+      url="/manpages6/shorewall6-rtrules.html">shorewall6-rtrules</ulink>(5)
+      or PREROUTING entries in <ulink
+      url="/manpages6/shorewall6-tcrules.html">shorewall-tcrules</ulink>(5) to
+      do that.</para>
     </warning>
 
     <para>The columns in the file are as follows.</para>
@@ -65,10 +67,9 @@
           entry that defines <filename
           class="devicefile">ppp+</filename>.</para>
 
-          <para>Where <ulink
-          url="/4.4/MultiISP.html#Shared">more that
-          one internet provider share a single interface</ulink>, the provider
-          is specified by including the provider name or number in
+          <para>Where <ulink url="/4.4/MultiISP.html#Shared">more that one
+          internet provider share a single interface</ulink>, the provider is
+          specified by including the provider name or number in
           parentheses:</para>
 
           <programlisting>        eth0(Avvanta)</programlisting>
@@ -81,8 +82,8 @@
           addresses to indicate that you only want to change the source IP
           address for packets being sent to those particular destinations.
           Exclusion is allowed (see <ulink
-          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)) as
-          are ipset names preceded by a plus sign '+'.</para>
+          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5))
+          as are ipset names preceded by a plus sign '+'.</para>
 
           <para>Comments may be attached to Netfilter rules generated from
           entries in this file through the use of COMMENT lines. These lines
@@ -545,8 +546,8 @@
 </programlisting>
 
           <para>If INLINE_MATCHES=Yes in <ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5), then these
-          rules may be specified as follows:</para>
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5),
+          then these rules may be specified as follows:</para>
 
           <programlisting>/etc/shorewall/masq:
 

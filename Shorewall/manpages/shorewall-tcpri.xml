@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-tcpri</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -25,12 +27,13 @@
 
     <para>This file is used to specify the priority of traffic for simple
     traffic shaping (TC_ENABLED=Simple in <ulink
-    url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)). The priority band of
-    each packet is determined by the <emphasis role="bold">last</emphasis>
-    entry that the packet matches. If a packet doesn't match any entry in this
-    file, then its priority will be determined by its TOS field. The default
-    mapping is as follows but can be changed by setting the TC_PRIOMAP option
-    in <ulink url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+    url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)). The
+    priority band of each packet is determined by the <emphasis
+    role="bold">last</emphasis> entry that the packet matches. If a packet
+    doesn't match any entry in this file, then its priority will be determined
+    by its TOS field. The default mapping is as follows but can be changed by
+    setting the TC_PRIOMAP option in <ulink
+    url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
     <programlisting>TOS     Bits  Means                    Linux Priority    BAND
 ------------------------------------------------------------
@@ -131,8 +134,8 @@
         [<replaceable>helper</replaceable>]</term>
 
         <listitem>
-          <para>Optional. Names a Netfilter protocol helper module such as ftp,
-          sip, amanda, etc. A packet will match if it was accepted by the
+          <para>Optional. Names a Netfilter protocol helper module such as
+          ftp, sip, amanda, etc. A packet will match if it was accepted by the
           named helper module. You can also append "-" and a port number to
           the helper module name (e.g., ftp-21) to specify the port number
           that the original connection was made on.</para>

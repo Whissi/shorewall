@@ -6,6 +6,8 @@
     <refentrytitle>shorewall6-nesting</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -24,17 +26,18 @@
   <refsect1>
     <title>Description</title>
 
-    <para>In <ulink url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>(5), a
-    zone may be declared to be a sub-zone of one or more other zones using the
+    <para>In <ulink
+    url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>(5), a zone
+    may be declared to be a sub-zone of one or more other zones using the
     above syntax. The <replaceable>child-zone</replaceable> may be neither the
     firewall zone nor a vserver zone. The firewall zone may not appear as a
     parent zone, although all vserver zones are handled as sub-zones of the
     firewall zone.</para>
 
     <para>Where zones are nested, the CONTINUE policy in <ulink
-    url="/manpages6/shorewall6-policy.html">shorewall6-policy</ulink>(5) allows hosts
-    that are within multiple zones to be managed under the rules of all of
-    these zones.</para>
+    url="/manpages6/shorewall6-policy.html">shorewall6-policy</ulink>(5)
+    allows hosts that are within multiple zones to be managed under the rules
+    of all of these zones.</para>
   </refsect1>
 
   <refsect1>
@@ -74,7 +77,8 @@
     under rules where the source zone is net. It is important that this policy
     be listed BEFORE the next policy (net to all). You can have this policy
     generated for you automatically by using the IMPLICIT_CONTINUE option in
-    <ulink url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+    <ulink
+    url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
 
     <para>Partial <filename>/etc/shorewall6/rules</filename>:</para>
 
@@ -109,10 +113,11 @@
 
     <para>shorewall6(8), shorewall6-accounting(5), shorewall6-actions(5),
     shorewall6-blacklist(5), shorewall6-hosts(5), shorewall6-interfaces(5),
-    shorewall6-maclist(5), shorewall6-netmap(5),shorewall6-params(5), shorewall6-policy(5),
-    shorewall6-providers(5), shorewall6-rtrules(5),
-    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5), shorewall6-secmarks(5),
-    shorewall6-tcclasses(5), shorewall6-tcdevices(5), shorewall6-mangle(5),
-    shorewall6-tos(5), shorewall6-tunnels(5), shorewall6-zones(5)</para>
+    shorewall6-maclist(5), shorewall6-netmap(5),shorewall6-params(5),
+    shorewall6-policy(5), shorewall6-providers(5), shorewall6-rtrules(5),
+    shorewall6-routestopped(5), shorewall6-rules(5), shorewall6.conf(5),
+    shorewall6-secmarks(5), shorewall6-tcclasses(5), shorewall6-tcdevices(5),
+    shorewall6-mangle(5), shorewall6-tos(5), shorewall6-tunnels(5),
+    shorewall6-zones(5)</para>
   </refsect1>
 </refentry>

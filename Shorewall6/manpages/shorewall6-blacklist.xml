@@ -6,6 +6,8 @@
     <refentrytitle>shorewall6-blacklist</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -26,10 +28,11 @@
     <para>The blacklist file is used to perform static blacklisting by source
     address (IP or MAC), or by application. The use of this file is deprecated
     in favor of <ulink
-    url="/manpages6/shorewall6-blrules.html">shorewall6-blrules</ulink>(5), and beginning
-    with Shorewall 4.5.7, the blacklist file is no longer installed. Existing
-    blacklist files can be converted to a corresponding blrules file using the
-    <command>shorewall6 update -b</command> command.</para>
+    url="/manpages6/shorewall6-blrules.html">shorewall6-blrules</ulink>(5),
+    and beginning with Shorewall 4.5.7, the blacklist file is no longer
+    installed. Existing blacklist files can be converted to a corresponding
+    blrules file using the <command>shorewall6 update -b</command>
+    command.</para>
 
     <para>The columns in the file are as follows (where the column name is
     followed by a different name in parentheses, the different name is used in
@@ -47,8 +50,8 @@
           (if your kernel and ip6tables contain iprange match support) or
           ipset name prefaced by "+" (if your kernel supports ipset match).
           Exclusion (<ulink
-          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)) is
-          supported.</para>
+          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5))
+          is supported.</para>
 
           <para>MAC addresses must be prefixed with "~" and use "-" as a
           separator.</para>
@@ -145,13 +148,13 @@
 
     <para>When a packet arrives on an interface that has the <emphasis
     role="bold">blacklist</emphasis> option specified in <ulink
-    url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5), its
-    source IP address and MAC address is checked against this file and
+    url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5),
+    its source IP address and MAC address is checked against this file and
     disposed of according to the <emphasis
     role="bold">BLACKLIST_DISPOSITION</emphasis> and <emphasis
     role="bold">BLACKLIST_LOGLEVEL</emphasis> variables in <ulink
-    url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5). If <emphasis
-    role="bold">PROTOCOL</emphasis> or <emphasis
+    url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5). If
+    <emphasis role="bold">PROTOCOL</emphasis> or <emphasis
     role="bold">PROTOCOL</emphasis> and <emphasis role="bold">PORTS</emphasis>
     are supplied, only packets matching the protocol (and one of the ports if
     <emphasis role="bold">PORTS</emphasis> supplied) are blocked.</para>

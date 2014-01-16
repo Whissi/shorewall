@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-providers</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -77,17 +79,17 @@
 
         <listitem>
           <para>A FWMARK <emphasis>value</emphasis> used in your <ulink
-          url="/manpages/shorewall-mangle.html">shorewall-mangle(5)</ulink> file to
-          direct packets to this provider.</para>
+          url="/manpages/shorewall-mangle.html">shorewall-mangle(5)</ulink>
+          file to direct packets to this provider.</para>
 
           <para>If HIGH_ROUTE_MARKS=Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf(5)</ulink>, then the value
-          must be a multiple of 256 between 256 and 65280 or their hexadecimal
-          equivalents (0x0100 and 0xff00 with the low-order byte of the value
-          being zero). Otherwise, the value must be between 1 and 255. Each
-          provider must be assigned a unique mark value. This column may be
-          omitted if you don't use packet marking to direct connections to a
-          particular provider.</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf(5)</ulink>, then
+          the value must be a multiple of 256 between 256 and 65280 or their
+          hexadecimal equivalents (0x0100 and 0xff00 with the low-order byte
+          of the value being zero). Otherwise, the value must be between 1 and
+          255. Each provider must be assigned a unique mark value. This column
+          may be omitted if you don't use packet marking to direct connections
+          to a particular provider.</para>
         </listitem>
       </varlistentry>
 
@@ -112,8 +114,8 @@
         <listitem>
           <para>The name of the network interface to the provider. Must be
           listed in <ulink
-          url="/manpages/shorewall-interfaces.html">shorewall-interfaces(5)</ulink>. In
-          general, that interface should not have the
+          url="/manpages/shorewall-interfaces.html">shorewall-interfaces(5)</ulink>.
+          In general, that interface should not have the
           <option>proxyarp</option> option specified unless
           <option>loose</option> is given in the OPTIONS column of this
           entry.</para>
@@ -177,8 +179,9 @@
 
                 <para>Beginning with Shorewall 4.4.3, <option>track</option>
                 defaults to the setting of the TRACK_PROVIDERS option in
-                <ulink url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5).
-                If you set TRACK_PROVIDERS=Yes and want to override that
+                <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>
+                (5). If you set TRACK_PROVIDERS=Yes and want to override that
                 setting for an individual provider, then specify
                 <option>notrack</option> (see below).</para>
               </listitem>

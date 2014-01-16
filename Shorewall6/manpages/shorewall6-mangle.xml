@@ -6,6 +6,8 @@
     <refentrytitle>shorewall6-mangle</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -25,13 +27,14 @@
 
     <para>This file was introduced in Shorewall 4.6.0 and is intended to
     replace <ulink
-    url="/manpages6/shorewall6-tcrules.html">shorewall6-tcrules(5)</ulink>. This file is
-    only processed by the compiler if:</para>
+    url="/manpages6/shorewall6-tcrules.html">shorewall6-tcrules(5)</ulink>.
+    This file is only processed by the compiler if:</para>
 
     <orderedlist numeration="loweralpha">
       <listitem>
         <para>No file named 'tcrules' exists on the current CONFIG_PATH (see
-        <ulink url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>);
+        <ulink
+        url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>);
         or</para>
       </listitem>
 
@@ -46,10 +49,10 @@
 
     <important>
       <para>Unlike rules in the <ulink
-      url="/manpages6/shorewall6-rules.html">shorewall6-rules</ulink>(5) file, evaluation
-      of rules in this file will continue after a match. So the final mark for
-      each packet will be the one assigned by the LAST tcrule that
-      matches.</para>
+      url="/manpages6/shorewall6-rules.html">shorewall6-rules</ulink>(5) file,
+      evaluation of rules in this file will continue after a match. So the
+      final mark for each packet will be the one assigned by the LAST tcrule
+      that matches.</para>
 
       <para>If you use multiple internet providers with the 'track' option, in
       /etc/shorewall/providers be sure to read the restrictions at <ulink
@@ -106,8 +109,8 @@
           <para>Unless otherwise specified for the particular
           <replaceable>command</replaceable>, the default chain is PREROUTING
           when MARK_IN_FORWARD_CHAIN=No in <ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>, and FORWARD
-          when MARK_IN_FORWARD_CHAIN=Yes.</para>
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>,
+          and FORWARD when MARK_IN_FORWARD_CHAIN=Yes.</para>
 
           <para>A chain-designator may not be specified if the SOURCE or DEST
           columns begin with '$FW'. When the SOURCE is $FW, the generated rule
@@ -312,8 +315,8 @@ INLINE          eth0              -                 ; -p tcp -j MARK --set-mark 
 </programlisting>
 
                 <para>If INLINE_MATCHES=Yes in <ulink
-                url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5) then the
-                third rule above can be specified as follows:</para>
+                url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)
+                then the third rule above can be specified as follows:</para>
 
                 <programlisting>2:P             eth0              -                 ; -p tcp</programlisting>
               </listitem>
@@ -731,9 +734,9 @@ Normal-Service       =&gt; 0x00</programlisting>
               <para>An interface name. May not be used in the PREROUTING chain
               (:P in the mark column or no chain qualifier and
               MARK_IN_FORWARD_CHAIN=No in <ulink
-              url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink> (5)). The
-              interface name may be optionally followed by a colon (":") and
-              an IP address list.</para>
+              url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>
+              (5)). The interface name may be optionally followed by a colon
+              (":") and an IP address list.</para>
             </listitem>
 
             <listitem>

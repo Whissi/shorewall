@@ -6,6 +6,8 @@
     <refentrytitle>shorewall6-providers</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -77,17 +79,17 @@
 
         <listitem>
           <para>A FWMARK <emphasis>value</emphasis> used in your <ulink
-          url="/manpages6/shorewall6-mangle.html">shorewall6-mangle</ulink>(5) file to
-          direct packets to this provider.</para>
+          url="/manpages6/shorewall6-mangle.html">shorewall6-mangle</ulink>(5)
+          file to direct packets to this provider.</para>
 
           <para>If HIGH_ROUTE_MARKS=Yes in <ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5), then the
-          value must be a multiple of 256 between 256 and 65280 or their
-          hexadecimal equivalents (0x0100 and 0xff00 with the low-order byte
-          of the value being zero). Otherwise, the value must be between 1 and
-          255. Each provider must be assigned a unique mark value. This column
-          may be omitted if you don't use packet marking to direct connections
-          to a particular provider.</para>
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5),
+          then the value must be a multiple of 256 between 256 and 65280 or
+          their hexadecimal equivalents (0x0100 and 0xff00 with the low-order
+          byte of the value being zero). Otherwise, the value must be between
+          1 and 255. Each provider must be assigned a unique mark value. This
+          column may be omitted if you don't use packet marking to direct
+          connections to a particular provider.</para>
         </listitem>
       </varlistentry>
 
@@ -190,7 +192,8 @@
 
                 <para>Beginning with Shorewall 4.4.3, <option>track</option>
                 defaults to the setting of the TRACK_PROVIDERS option in
-                <ulink url="/manpages6/shorwewall6.conf.html">shorewall6.conf</ulink>
+                <ulink
+                url="/manpages6/shorwewall6.conf.html">shorewall6.conf</ulink>
                 (5). If you set TRACK_PROVIDERS=Yes and want to override that
                 setting for an individual provider, then specify
                 <option>notrack</option> (see below).</para>

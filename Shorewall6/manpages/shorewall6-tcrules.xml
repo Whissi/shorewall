@@ -3,9 +3,11 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall6-mangle</refentrytitle>
+    <refentrytitle>shorewall6-tcrules</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -28,10 +30,10 @@
 
     <important>
       <para>Unlike rules in the <ulink
-      url="/manpages6/shorewall6-rules.html">shorewall6-rules</ulink>(5) file, evaluation
-      of rules in this file will continue after a match. So the final mark for
-      each packet will be the one assigned by the LAST tcrule that
-      matches.</para>
+      url="/manpages6/shorewall6-rules.html">shorewall6-rules</ulink>(5) file,
+      evaluation of rules in this file will continue after a match. So the
+      final mark for each packet will be the one assigned by the LAST tcrule
+      that matches.</para>
 
       <para>If you use multiple internet providers with the 'track' option, in
       /etc/shorewall6/providers be sure to read the restrictions at <ulink
@@ -517,7 +519,8 @@
               [<replaceable>option</replaceable>] ...") after any matches
               specified at the end of the rule. If the target is not one known
               to Shorewall, then it must be defined as a builtin action in
-              <ulink url="/manpages6/shorewall6-actions.html">shorewall6-actions</ulink>
+              <ulink
+              url="/manpages6/shorewall6-actions.html">shorewall6-actions</ulink>
               (5).</para>
 
               <para>The following rules are equivalent:</para>
@@ -529,8 +532,8 @@ INLINE          eth0              -         tcp 22  ; -j MARK --set-mark 2
 INLINE          eth0              -                 ; -p tcp -j MARK --set-mark 2</programlisting>
 
               <para>If INLINE_MATCHES=Yes in <ulink
-              url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5) then the
-              third rule above can be specified as follows:</para>
+              url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)
+              then the third rule above can be specified as follows:</para>
 
               <programlisting>2:P             eth0              -                 ; -p tcp</programlisting>
 

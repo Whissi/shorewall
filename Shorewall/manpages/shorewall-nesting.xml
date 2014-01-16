@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-nesting</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -24,17 +26,18 @@
   <refsect1>
     <title>Description</title>
 
-    <para>In <ulink url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5), a
-    zone may be declared to be a sub-zone of one or more other zones using the
+    <para>In <ulink
+    url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5), a zone
+    may be declared to be a sub-zone of one or more other zones using the
     above syntax. The <replaceable>child-zone</replaceable> may be neither the
     firewall zone nor a vserver zone. The firewall zone may not appear as a
     parent zone, although all vserver zones are handled as sub-zones of the
     firewall zone.</para>
 
     <para>Where zones are nested, the CONTINUE policy in <ulink
-    url="/manpages/shorewall-policy.html">shorewall-policy</ulink>(5) allows hosts that
-    are within multiple zones to be managed under the rules of all of these
-    zones.</para>
+    url="/manpages/shorewall-policy.html">shorewall-policy</ulink>(5) allows
+    hosts that are within multiple zones to be managed under the rules of all
+    of these zones.</para>
   </refsect1>
 
   <refsect1>
@@ -74,7 +77,8 @@
     under rules where the source zone is net. It is important that this policy
     be listed BEFORE the next policy (net to all). You can have this policy
     generated for you automatically by using the IMPLICIT_CONTINUE option in
-    <ulink url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+    <ulink
+    url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
     <para>Partial <filename>/etc/shorewall/rules</filename>:</para>
 
@@ -204,12 +208,13 @@
     <title>See ALSO</title>
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
-    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5), shorewall-ipsets(5),
-    shorewall-maclist(5), shorewall-masq(5), shorewall-nat(5),
-    shorewall-netmap(5), shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-proxyarp(5), shorewall-rtrules(5),
-    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-mangle(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-blacklist(5), shorewall-hosts(5), shorewall_interfaces(5),
+    shorewall-ipsets(5), shorewall-maclist(5), shorewall-masq(5),
+    shorewall-nat(5), shorewall-netmap(5), shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-proxyarp(5),
+    shorewall-rtrules(5), shorewall-routestopped(5), shorewall-rules(5),
+    shorewall.conf(5), shorewall-secmarks(5), shorewall-tcclasses(5),
+    shorewall-tcdevices(5), shorewall-mangle(5), shorewall-tos(5),
+    shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

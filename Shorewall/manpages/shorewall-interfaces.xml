@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-interfaces</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -71,7 +73,8 @@
           in this column.</para>
 
           <para>If the interface serves multiple zones that will be defined in
-          the <ulink url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5)
+          the <ulink
+          url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5)
           file, you should place "-" in this column.</para>
 
           <para>If there are multiple interfaces to the same zone, you must
@@ -111,8 +114,8 @@ loc     eth2            -</programlisting>
           <para>When using Shorewall versions before 4.1.4, care must be
           exercised when using wildcards where there is another zone that uses
           a matching specific interface. See <ulink
-          url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5) for a
-          discussion of this problem.</para>
+          url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5)
+          for a discussion of this problem.</para>
 
           <para>Shorewall allows '+' as an interface name.</para>
 
@@ -433,8 +436,8 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>Connection requests from this interface are compared
                 against the contents of <ulink
-                url="/manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5). If
-                this option is specified, the interface must be an Ethernet
+                url="/manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5).
+                If this option is specified, the interface must be an Ethernet
                 NIC and must be up before Shorewall is started.</para>
               </listitem>
             </varlistentry>
@@ -486,8 +489,8 @@ loc     eth2            -</programlisting>
 
                 <para>Smurfs will be optionally logged based on the setting of
                 SMURF_LOG_LEVEL in <ulink
-                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). After
-                logging, the packets are dropped.</para>
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).
+                After logging, the packets are dropped.</para>
               </listitem>
             </varlistentry>
 
@@ -631,9 +634,9 @@ loc     eth2            -</programlisting>
 
                 <important>
                   <para>If ROUTE_FILTER=Yes in <ulink
-                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5), or if
-                  your distribution sets net.ipv4.conf.all.rp_filter=1 in
-                  <filename>/etc/sysctl.conf</filename>, then setting
+                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5),
+                  or if your distribution sets net.ipv4.conf.all.rp_filter=1
+                  in <filename>/etc/sysctl.conf</filename>, then setting
                   <emphasis role="bold">routefilter</emphasis>=0 in an
                   <replaceable>interface</replaceable> entry will not disable
                   route filtering on that
@@ -653,8 +656,8 @@ loc     eth2            -</programlisting>
                   <itemizedlist>
                     <listitem>
                       <para>If USE_DEFAULT_RT=Yes in <ulink
-                      url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) and
-                      the interface is listed in <ulink
+                      url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                      and the interface is listed in <ulink
                       url="/manpages/shorewall-providers.html">shorewall-providers</ulink>(5).</para>
                     </listitem>
 

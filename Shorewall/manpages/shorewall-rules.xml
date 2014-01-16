@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-rules</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -25,8 +27,8 @@
 
     <para>Entries in this file govern connection establishment by defining
     exceptions to the policies laid out in <ulink
-    url="/manpages/shorewall-policy.html">shorewall-policy</ulink>(5). By default,
-    subsequent requests and responses are automatically allowed using
+    url="/manpages/shorewall-policy.html">shorewall-policy</ulink>(5). By
+    default, subsequent requests and responses are automatically allowed using
     connection tracking. For any particular (source,dest) pair of zones, the
     rules are evaluated in the order in which they appear in this file and the
     first terminating match is the one that determines the disposition of the
@@ -145,8 +147,8 @@
 
     <warning>
       <para>If you specify FASTACCEPT=Yes in <ulink
-      url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) then the <emphasis
-      role="bold">ALL, ESTABLISHED</emphasis> and <emphasis
+      url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) then the
+      <emphasis role="bold">ALL, ESTABLISHED</emphasis> and <emphasis
       role="bold">RELATED</emphasis> sections must be empty.</para>
 
       <para>An except is made if you are running Shorewall 4.4.27 or later and
@@ -234,8 +236,8 @@
               <listitem>
                 <para>The name of an <emphasis>action</emphasis> declared in
                 <ulink
-                url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5) or
-                in /usr/share/shorewall/actions.std.</para>
+                url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5)
+                or in /usr/share/shorewall/actions.std.</para>
               </listitem>
             </varlistentry>
 
@@ -329,12 +331,13 @@
                 <para>Do not process any of the following rules for this
                 (source zone,destination zone). If the source and/or
                 destination IP address falls into a zone defined later in
-                <ulink url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5)
+                <ulink
+                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5)
                 or in a parent zone of the source or destination zones, then
                 this connection request will be passed to the rules defined
                 for that (those) zone(s). See <ulink
-                url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5) for
-                additional information.</para>
+                url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5)
+                for additional information.</para>
               </listitem>
             </varlistentry>
 
@@ -671,8 +674,8 @@
 
           <para>If the <emphasis role="bold">ACTION</emphasis> names an
           <emphasis>action</emphasis> declared in <ulink
-          url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5) or in
-          /usr/share/shorewall/actions.std then:</para>
+          url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5)
+          or in /usr/share/shorewall/actions.std then:</para>
 
           <itemizedlist>
             <listitem>
@@ -732,10 +735,10 @@
           <para>Beginning with Shorewall 4.4.13, you may use a
           <replaceable>zone-list </replaceable>which consists of a
           comma-separated list of zones declared in <ulink
-          url="/manpages/shorewall-zones.html">shorewall-zones</ulink> (5). This
-          <replaceable>zone-list</replaceable> may be optionally followed by
-          "+" to indicate that the rule is to apply to intra-zone traffic as
-          well as inter-zone traffic.</para>
+          url="/manpages/shorewall-zones.html">shorewall-zones</ulink> (5).
+          This <replaceable>zone-list</replaceable> may be optionally followed
+          by "+" to indicate that the rule is to apply to intra-zone traffic
+          as well as inter-zone traffic.</para>
 
           <para>When <emphasis role="bold">none</emphasis> is used either in
           the <emphasis role="bold">SOURCE</emphasis> or <emphasis
@@ -906,18 +909,19 @@
 
         <listitem>
           <para>Location of Server. May be a zone declared in <ulink
-          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5), $<emphasis
-          role="bold">FW</emphasis> to indicate the firewall itself, <emphasis
-          role="bold">all</emphasis>. <emphasis role="bold">all+</emphasis> or
-          <emphasis role="bold">none</emphasis>.</para>
+          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5),
+          $<emphasis role="bold">FW</emphasis> to indicate the firewall
+          itself, <emphasis role="bold">all</emphasis>. <emphasis
+          role="bold">all+</emphasis> or <emphasis
+          role="bold">none</emphasis>.</para>
 
           <para>Beginning with Shorewall 4.4.13, you may use a
           <replaceable>zone-list </replaceable>which consists of a
           comma-separated list of zones declared in <ulink
-          url="/manpages/shorewall-zones.html">shorewall-zones</ulink> (5). This
-          <replaceable>zone-list</replaceable> may be optionally followed by
-          "+" to indicate that the rule is to apply to intra-zone traffic as
-          well as inter-zone traffic.</para>
+          url="/manpages/shorewall-zones.html">shorewall-zones</ulink> (5).
+          This <replaceable>zone-list</replaceable> may be optionally followed
+          by "+" to indicate that the rule is to apply to intra-zone traffic
+          as well as inter-zone traffic.</para>
 
           <para>Beginning with Shorewall 4.5.4, A
           <replaceable>countrycode-list</replaceable> may be specified. A
@@ -1577,8 +1581,8 @@
           </simplelist>
 
           <para>If the HELPERS option is specified in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5), then any module
-          specified in this column must be listed in the HELPERS
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5), then
+          any module specified in this column must be listed in the HELPERS
           setting.</para>
         </listitem>
       </varlistentry>

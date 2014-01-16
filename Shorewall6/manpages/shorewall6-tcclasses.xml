@@ -6,6 +6,8 @@
     <refentrytitle>shorewall6-tcclasses</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -140,8 +142,8 @@
           <para>Normally, all classes defined here are sub-classes of a root
           class (class number 1) that is implicitly defined from the entry in
           <ulink
-          url="/manpages6/shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5). You
-          can establish a class hierarchy by specifying a
+          url="/manpages6/shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5).
+          You can establish a class hierarchy by specifying a
           <emphasis>parent</emphasis> class -- the number of a class that you
           have previously defined. The sub-class may borrow unused bandwidth
           from its parent.</para>
@@ -155,13 +157,13 @@
         <listitem>
           <para>The mark <emphasis>value</emphasis> which is an integer in the
           range 1-255. You set mark values in the <ulink
-          url="/manpages6/shorewall6-mangle.html">shorewall6-mangle</ulink>(5) file,
-          marking the traffic you want to fit in the classes defined in here.
-          Must be specified as '-' if the <emphasis
+          url="/manpages6/shorewall6-mangle.html">shorewall6-mangle</ulink>(5)
+          file, marking the traffic you want to fit in the classes defined in
+          here. Must be specified as '-' if the <emphasis
           role="bold">classify</emphasis> option is given for the interface in
           <ulink
-          url="/manpages6/shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5) and
-          you are running Shorewall 4.5 5 or earlier.</para>
+          url="/manpages6/shorewall6-tcdevices.html">shorewall6-tcdevices</ulink>(5)
+          and you are running Shorewall 4.5 5 or earlier.</para>
 
           <para>You can use the same marks for different interfaces.</para>
         </listitem>
@@ -672,10 +674,10 @@
           priority number, giving less delay) and will be granted excess
           bandwidth (up to 180kbps, the class ceiling) first, before any other
           traffic. A single VoIP stream, depending upon codecs, after
-          encapsulation, can take up to 80kbps on a PPPoE/DSL link, so we pad a
-          little bit just in case. (TOS byte values 0xb8 and 0x68 are DiffServ
-          classes EF and AFF3-1 respectively and are often used by VOIP
-          devices).</para>
+          encapsulation, can take up to 80kbps on a PPPoE/DSL link, so we pad
+          a little bit just in case. (TOS byte values 0xb8 and 0x68 are
+          DiffServ classes EF and AFF3-1 respectively and are often used by
+          VOIP devices).</para>
 
           <para>Interactive traffic (tos-minimum-delay) and TCP acks (and ICMP
           echo traffic if you use the example in tcrules) and any packet with

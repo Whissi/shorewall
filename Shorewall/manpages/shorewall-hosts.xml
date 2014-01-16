@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-hosts</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -29,8 +31,8 @@
 
     <para>The order of entries in this file is not significant in determining
     zone composition. Rather, the order that the zones are declared in <ulink
-    url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5) determines the order
-    in which the records in this file are interpreted.</para>
+    url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5) determines
+    the order in which the records in this file are interpreted.</para>
 
     <warning>
       <para>The only time that you need this file is when you have more than
@@ -39,9 +41,9 @@
 
     <warning>
       <para>If you have an entry for a zone and interface in <ulink
-      url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5) then do
-      not include any entries in this file for that same (zone, interface)
-      pair.</para>
+      url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+      then do not include any entries in this file for that same (zone,
+      interface) pair.</para>
     </warning>
 
     <para>The columns in the file are as follows.</para>
@@ -53,8 +55,8 @@
 
         <listitem>
           <para>The name of a zone declared in <ulink
-          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5). You may not
-          list the firewall zone in this column.</para>
+          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5). You
+          may not list the firewall zone in this column.</para>
         </listitem>
       </varlistentry>
 
@@ -67,9 +69,9 @@
 
         <listitem>
           <para>The name of an interface defined in the <ulink
-          url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5) file
-          followed by a colon (":") and a comma-separated list whose elements
-          are either:</para>
+          url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          file followed by a colon (":") and a comma-separated list whose
+          elements are either:</para>
 
           <orderedlist numeration="loweralpha">
             <listitem>
@@ -169,8 +171,8 @@
                 <para>The zone is accessed via a kernel 2.6 ipsec SA. Note
                 that if the zone named in the ZONE column is specified as an
                 IPSEC zone in the <ulink
-                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5) file
-                then you do NOT need to specify the 'ipsec' option
+                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5)
+                file then you do NOT need to specify the 'ipsec' option
                 here.</para>
               </listitem>
             </varlistentry>
@@ -181,8 +183,8 @@
               <listitem>
                 <para>Connection requests from these hosts are compared
                 against the contents of <ulink
-                url="/manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5). If
-                this option is specified, the interface must be an Ethernet
+                url="/manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5).
+                If this option is specified, the interface must be an Ethernet
                 NIC or equivalent and must be up before Shorewall is
                 started.</para>
               </listitem>
@@ -212,8 +214,8 @@
 
                 <para>Smurfs will be optionally logged based on the setting of
                 SMURF_LOG_LEVEL in <ulink
-                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). After
-                logging, the packets are dropped.</para>
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).
+                After logging, the packets are dropped.</para>
               </listitem>
             </varlistentry>
 

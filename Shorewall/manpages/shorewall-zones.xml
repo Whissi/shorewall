@@ -6,6 +6,8 @@
     <refentrytitle>shorewall-zones</refentrytitle>
 
     <manvolnum>5</manvolnum>
+
+    <refmiscinfo>Configuration Files</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -45,17 +47,17 @@
           "none", "any", "SOURCE" and "DEST" are reserved and may not be used
           as zone names. The maximum length of a zone name is determined by
           the setting of the LOGFORMAT option in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). With the
-          default LOGFORMAT, zone names can be at most 5 characters
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). With
+          the default LOGFORMAT, zone names can be at most 5 characters
           long.</para>
 
           <blockquote>
             <para>The maximum length of an iptables log prefix is 29 bytes. As
             explained in <ulink
-            url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5), the default
-            LOGPREFIX formatting string is “Shorewall:%s:%s:” where the first
-            %s is replaced by the chain name and the second is replaced by the
-            disposition.</para>
+            url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5),
+            the default LOGPREFIX formatting string is “Shorewall:%s:%s:”
+            where the first %s is replaced by the chain name and the second is
+            replaced by the disposition.</para>
 
             <itemizedlist>
               <listitem>
@@ -97,8 +99,8 @@
           (sub)zone name by ":" and a comma-separated list of the parent
           zones. The parent zones must have been declared in earlier records
           in this file. See <ulink
-          url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5) for
-          additional information.</para>
+          url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5)
+          for additional information.</para>
 
           <para>Example:</para>
 
@@ -110,8 +112,8 @@ c:a,b     ipv4</programlisting>
           <para>Currently, Shorewall uses this information to reorder the zone
           list so that parent zones appear after their subzones in the list.
           The IMPLICIT_CONTINUE option in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) can also create
-          implicit CONTINUE policies to/from the subzone.</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) can
+          also create implicit CONTINUE policies to/from the subzone.</para>
 
           <para>Where an <emphasis role="bold">ipsec</emphasis> zone is
           explicitly included as a child of an <emphasis
@@ -180,7 +182,8 @@ c:a,b     ipv4</programlisting>
               <listitem>
                 <para>Added in Shorewall 4.4.11 Beta 2 - A zone composed of
                 Linux-vserver guests. The zone contents must be defined in
-                <ulink url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>
+                <ulink
+                url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>
                 (5).</para>
 
                 <para>Vserver zones are implicitly handled as subzones of the
@@ -310,7 +313,8 @@ c:a,b     ipv4</programlisting>
                 <para>Added in Shorewall 4.5.9. May only be specified in the
                 OPTIONS column and indicates that only a single ipset should
                 be created for this zone if it has multiple dynamic entries in
-                <ulink url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5).
+                <ulink
+                url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5).
                 Without this option, a separate ipset is created for each
                 interface.</para>
               </listitem>
@@ -354,9 +358,9 @@ c:a,b     ipv4</programlisting>
               <listitem>
                 <para>sets the MSS field in TCP packets. If you supply this
                 option, you should also set FASTACCEPT=No in <ulink
-                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) to insure
-                that both the SYN and SYN,ACK packets have their MSS field
-                adjusted.</para>
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                to insure that both the SYN and SYN,ACK packets have their MSS
+                field adjusted.</para>
               </listitem>
             </varlistentry>
 

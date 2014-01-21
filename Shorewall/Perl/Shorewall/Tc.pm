@@ -2317,7 +2317,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	$protonumber = resolve_proto $proto;
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
 	if ( $protonumber ) {
-	    $rule .= 'and ' if $have_rule;
+	    $rule .= ' and ' if $have_rule;
 	    $rule .= "\\\n   match cmp\\( u8 at 6 mask 0xff eq $protonumber \\)";
 	    $have_rule = 1;
 	}
@@ -2337,11 +2337,11 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 	    push @sportlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
 
-	    $rule .= "\\\n   (" if $multiple = ( @sportlist > 1 );
+	    $rule .= "\\\n   (" if $multiple = ( @sportlist > 2 );
 
 	    while ( @sportlist ) {
 		my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
-		$rule .= "\\\n   cmp( u16 at 0 layer 2 mask $smask eq $sport \\)";
+		$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq $sport \\)";
 		$rule .= ' or' if @sportlist;
 	    }
 
@@ -2359,9 +2359,9 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 		$rule .= "\\\n   (" if @typelist > 1;
 
 		for my $type ( @typelist ) {
-		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp( $type );
+		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp\\( $type );
 
-		    $rule .= "\\\n   cmp( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
+		    $rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
 		    $rule .= ' or' if @typelist > 1;
 		}
 
@@ -2379,7 +2379,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp6( $type );
 
-		    $rule .= "\\\n   cmp( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
+		    $rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
 		    $rule .= ' or' if @typelist > 1;
 		}
 
@@ -2390,28 +2390,31 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $portlist, 'port list' );
 
-		$rule .= "\\\n   (" if $multiple = ( @portlist > 1 );
+		$rule .= "\\\n   (" if $multiple = ( @portlist > 2 );
 
 		while ( @portlist ) {
 		    my ( $port, $mask ) = ( shift @portlist, shift @portlist );
-		    $rule .= "\\\n   cmp( u16 at 2 layer 2 mask $mask eq $port \\)";
+		    $rule .= "\\\n   cmp\\( u16 at 2 layer 2 mask $mask eq $port \\)";
 		    $rule .= ' or' if @portlist;
 		}
 
 		$rule .= "\\\n   \\)" if $multiple;
-		$rule .= ' and';
 
-		push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
+		if ( $sportlist ne '-' ) {
+		    $rule .= ' and';
+		    
+		    push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
 
-		$rule .= "\\\n   (" if $multiple = ( @portlist > 1 );
+		    $rule .= "\\\n   (" if $multiple = ( @portlist > 2 );
 
-		while ( @portlist ) {
-		    my ( $sport, $smask ) = ( shift @portlist, shift @portlist );
-		    $rule .= "\\\n   cmp( u16 at 0 layer 2 mask $smask eq $sport \\)";
-		    $rule .= ' or' if @portlist;
+		    while ( @portlist ) {
+			my ( $sport, $smask ) = ( shift @portlist, shift @portlist );
+			$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq $sport \\)";
+			$rule .= ' or' if @portlist;
+		    }
+
+		    $rule .= "\\\n   \\)" if $multiple;
 		}
-
-		$rule .= "\\\n   \\)" if $multiple;
 	    }
 	}
     }
@@ -2425,12 +2428,12 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	    my @parts = decompose_net_u32( $source );
 
 	    if ( $family == F_IPV4 ) {
-		$rule .= join( ' ', "\\\n   cmp\\( u32 at 12 mask ", in_hex8( $parts[0] ), 'eq' , in_hex8( $parts[1] ), "\\)" );
+		$rule .= join( ' ', "\\\n   cmp\\( u32 at 12 mask", $parts[0] , 'eq' , $parts[1], "\\)" );
 	    } else {
 		my $offset = 8;
 
 		while ( @parts ) {
-		    $rule .= join( ' ', "\\\n   cmp\\( u32 at $offset mask ", in_hex8( shift @parts ) , 'eq' , in_hex8( shift @parts ), "\\)" );
+		    $rule .= join( ' ', "\\\n   cmp\\( u32 at $offset mask", shift @parts , 'eq' , shift @parts , "\\)" );
 		    $offset += 4;
 		    $rule .= ' and' if @parts;
 		}
@@ -2446,17 +2449,15 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	if ( $dest =~ /^\+/ ) {
 	    $rule .= join( ' ', "\\\n   ", handle_ematch( $dest, 'dst' ) );
 	} else {
-	    $rule .= 'and ' if $have_rule;
-
 	    my @parts = decompose_net_u32( $dest );
 
 	    if ( $family == F_IPV4 ) {
-		$rule .= join( ' ', "\\\n   cmp\\( u32 at 12 mask ", in_hex8( $parts[0] ), 'eq' , in_hex8( $parts[1] ), "\\)" );
+		$rule .= join( ' ', "\\\n   cmp\\( u32 at 16 mask", $parts[0] , 'eq' , $parts[1] , "\\)" );
 	    } else {
-		my $offset = 8;
+		my $offset = 24;
 
 		while ( @parts ) {
-		    $rule .= join( ' ', "\\\n   cmp\\( u32 at $offset", in_hex8( shift @parts ), 'eq' , in_hex8( shift @parts ), "\\)" );
+		    $rule .= join( ' ', "\\\n   cmp\\( u32 at $offset mask", shift @parts , 'eq' , shift @parts , "\\)" );
 		    $offset += 4;
 		    $rule .= ' and' if @parts;
 		}

@@ -311,18 +311,18 @@ sub decompose_net( $ ) {
 # For example, a /64 network will return two pairs; a /80 would return 3.
 #
 sub decompose_net_u32( $ ) {
-    my ( $net, $vlsm ) = decompose_net( $_[0] );
+    my ( $net, $vlsm ) = validate_net( $_[0] , 0 );
 
     assert( wantarray );
 
     if ( $family == F_IPV4 ) {
-	$vlsm = ( 0xffffffff << ( $vlsm-32 ) ) & 0xffffffff;
+	$vlsm = ( 0xffffffff << ( 32 - $vlsm ) ) & 0xffffffff;
 	return ( in_hex8( $vlsm ) , in_hex8( $net ) );
     }
     #
     # Split the address into 16-bit hex numbers
     #
-    my @addr = split( ':', $net );
+    my @addr = split( ':', normalize_6addr( $net ) );
     #
     # Replace each element by its numeric value
     #
@@ -339,7 +339,7 @@ sub decompose_net_u32( $ ) {
     }
 
     if ( $vlsm ) {
-	push @result, ( ( 0xffffffff << ( $vlsm-32 ) ) & 0xffffffff );
+	push @result, ( ( 0xffffffff << ( 32 - $vlsm ) ) & 0xffffffff );
 	push @result, ( ( $addr[0] << 16) | $addr[1] );
     }
 

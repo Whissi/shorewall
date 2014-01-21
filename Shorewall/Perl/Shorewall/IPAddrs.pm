@@ -58,6 +58,7 @@ our @EXPORT = ( qw( ALLIPv4
 		  validate_address
 		  validate_net
 		  decompose_net
+		  decompose_net_u32
 		  compare_nets
 		  validate_host
 		  validate_range
@@ -301,6 +302,48 @@ sub decompose_net( $ ) {
     ( $net, my $vlsm ) = validate_net( $net , 0 );
     ( ( $family == F_IPV4 ? encodeaddr( $net) : normalize_6addr( $net ) )  , $vlsm );
 
+}
+
+#
+# This function returns an array of (mask, address) pairs. For IPv4, only one 
+# pair is returned. For IPv6, one pair is returned for every 32 bits of the VLSM.
+#
+# For example, a /64 network will return two pairs; a /80 would return 3.
+#
+sub decompose_net_u32( $ ) {
+    my ( $net, $vlsm ) = decompose_net( $_[0] );
+
+    assert( wantarray );
+
+    if ( $family == F_IPV4 ) {
+	$vlsm = ( 0xffffffff << ( $vlsm-32 ) ) & 0xffffffff;
+	return ( in_hex8( $vlsm ) , in_hex8( $net ) );
+    }
+    #
+    # Split the address into 16-bit hex numbers
+    #
+    my @addr = split( ':', $net );
+    #
+    # Replace each element by its numeric value
+    #
+    no warnings;
+    $_ = oct( '0x' . $_ ) for @addr;
+    use warnings;
+
+    my @result;
+
+    while ( $vlsm >= 32 ) {
+	push @result, 0xffffff;
+	push @result, ( shift( @addr ) << 16 ) | shift( @addr );
+	$vlsm -= 32;
+    }
+
+    if ( $vlsm ) {
+	push @result, ( ( 0xffffffff << ( $vlsm-32 ) ) & 0xffffffff );
+	push @result, ( ( $addr[0] << 16) | $addr[1] );
+    }
+
+    @result;
 }
 
 sub compare_nets( $$ ) {

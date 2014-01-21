@@ -2188,6 +2188,300 @@ sub process_tc_filter1( $$$$$$$$$ ) {
 
 }
 
+#
+# Handle an ipset name in the SOURCE or DEST columns of a filter
+#
+sub handle_ematch( $$ ) {
+    my ( $setname, $option ) = @_;
+
+    my $options = $option;
+
+    require_capability 'BASIC_EMATCH', 'IPSets', '';
+
+    if ( $setname =~ /^(.*)\[([1-6])\]$/ ) {
+	$setname  = $1;
+	my $count = $2;
+
+	$options .= ",$option" while --$count > 0;
+    } elsif ( $setname =~ /^(.*)\[((?:src|dst)(?:,(?:src|dst))){0,5}\]$/ ) {
+	$setname = $1;
+	$options = $2 if supplied $2;
+
+	my @options = split /,/, $options;
+
+	if ( $config{IPSET_WARNINGS} ) {
+	    my %typemap = ( src => 'Source', dst => 'Destination' );
+	    warning_message( "The '$options[0]' ipset flag is used in a $typemap{$option} column" ), unless $options[0] eq $option;
+	}
+    }
+
+    $setname =~ s/\+//;
+
+    return "\\\n   ipset\\($setname $options\\)";
+}
+
+#
+# Process a TC filter and generate a 'basic' filter -- allows ipsets.
+#
+sub process_tc_filter2( $$$$$$$$$ ) {
+
+    my ( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority ) = @_;
+
+    my ($device, $class, $rest ) = split /:/, $devclass, 3;
+
+    our $lastdevice;
+
+    fatal_error "Invalid INTERFACE:CLASS ($devclass)" if defined $rest || ! ($device && $class );
+
+    my ( $ip, $ip32, $lo ) = $family == F_IPV4 ? ('ip', 'ip', 2 ) : ('ipv6', 'ip6', 4 );
+
+    my $devref;
+
+    if ( $device =~ /^[\da-fA-F]+$/ && ! $tcdevices{$device} ) {
+	( $device, $devref ) = dev_by_number( hex_value( $device ) );
+    } else {
+	( $device , $devref ) = dev_by_number( $device );
+    }
+
+    my ( $prio, $filterpri ) = ( undef, $devref->{filterpri} );
+
+    if ( $priority eq '-' ) {
+	$prio = ++$filterpri;
+	fatal_error "Filter priority overflow" if $prio > 65535;
+    } else {
+	$prio = validate_filter_priority( $priority, 'filter' );
+	$filterpri = $prio if $prio > $filterpri;
+    }
+
+    $devref->{filterpri} = $filterpri;
+
+    my $devnum = in_hexp $devref->{number};
+
+    my $tcref = $tcclasses{$device};
+
+    my $filtersref = $devref->{filters};
+
+    fatal_error "No Classes were defined for INTERFACE $device" unless $tcref;
+
+    my $classnum = hex_value $class;
+
+    fatal_error "Invalid CLASS ($class)" unless defined $classnum;
+
+    $tcref = $tcref->{$classnum};
+
+    fatal_error "Unknown CLASS ($devclass)"                  unless $tcref && $tcref->{occurs};
+    fatal_error "Filters may not specify an occurring CLASS" if $tcref->{occurs} > 1;
+
+    unless ( $tcref->{leaf} ) {
+	warning_message "Filter specifying a non-leaf CLASS ($devnum:$class) ignored";
+	return;
+    }
+
+    my $have_rule = 0;
+
+    my $rule = "filter add dev $devref->{physical} protocol $ip parent $devnum:0 prio $prio basic match";
+
+    if ( $tos ne '-' ) {
+	my $tosval = $tosoptions{$tos};
+	my $mask;
+
+	$tosval = $tos unless $tosval;
+
+	if ( $tosval =~ /^0x[0-9a-f]{2}$/ ) {
+	    $mask = '0xfc';
+	} elsif ( $tosval =~ /^(0x[0-9a-f]{2})\/(0x[0-9a-f]{2})$/ ) {
+	    $tosval = $1;
+	    $mask   = $2;
+	} else {
+	    fatal_error "Invalid TOS ($tos)";
+	}
+
+	$rule .= ' and' if $have_rule;
+	$rule .= "\\\n  cmp\\( u16 at 1 mask $mask eq $tosval \\)";
+
+	$have_rule = 1;
+    }
+
+    if ( $length ne '-' ) {
+	my $len = numeric_value( $length ) || 0;
+	my $mask = $validlengths{$len};
+	fatal_error "Invalid LENGTH ($length)" unless $mask;
+	$rule .= ' and' if $have_rule;
+	$rule .="\\\n   cmp\\(u16 at $lo mask $mask eq $len\\)";
+	$have_rule = 1;
+    }
+
+    my $protonumber = 0;
+
+    unless ( $proto eq '-' ) {
+	$protonumber = resolve_proto $proto;
+	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
+	if ( $protonumber ) {
+	    $rule .= 'and ' if $have_rule;
+	    $rule .= "\\\n   match cmp\\( u8 at 6 mask 0xff eq $protonumber \\)";
+	    $have_rule = 1;
+	}
+    }
+
+    if ( $portlist ne '-' || $sportlist ne '-' ) {
+	fatal_error "Ports may not be specified without a PROTO" unless $protonumber;
+
+	$rule .= ' and';
+
+	if ( $portlist eq '-' ) {
+	    fatal_error "Only TCP, UDP and SCTP may specify SOURCE PORT"
+		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP;
+
+	    my @sportlist;
+	    my $multiple;
+
+	    push @sportlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
+
+	    $rule .= "\\\n   (" if $multiple = ( @sportlist > 1 );
+
+	    while ( @sportlist ) {
+		my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
+		$rule .= "\\\n   cmp( u16 at 0 layer 2 mask $smask eq $sport \\)";
+		$rule .= ' or' if @sportlist;
+	    }
+
+	    $rule .= "\\\n   \\)" if $multiple;
+	} else {
+	    fatal_error "Only TCP, UDP, SCTP and ICMP may specify DEST PORT"
+		unless $protonumber == TCP || $protonumber == UDP || $protonumber == SCTP || $protonumber == ICMP;
+
+	    if ( $protonumber == ICMP ) {
+		fatal_error "ICMP not allowed with IPv6" unless $family == F_IPV4;
+		fatal_error "SOURCE PORT(S) are not allowed with ICMP" if $sportlist ne '-';
+
+		my @typelist = split_list( $portlist, 'icmp type' );
+
+		$rule .= "\\\n   (" if @typelist > 1;
+
+		for my $type ( @typelist ) {
+		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp( $type );
+
+		    $rule .= "\\\n   cmp( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
+		    $rule .= ' or' if @typelist > 1;
+		}
+
+		$rule .= "\\\n(" if @typelist > 1;
+
+	    } elsif ( $protonumber == IPv6_ICMP ) {
+		fatal_error "IPv6 ICMP not allowed with IPv4" unless $family == F_IPV4;
+		fatal_error "SOURCE PORT(S) are not allowed with IPv6 ICMP" if $sportlist ne '-';
+
+		my @typelist = split_list( $portlist, 'icmp type' );
+
+		$rule .= "\\\n   (" if @typelist > 1;
+
+		for my $type ( @typelist ) {
+
+		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp6( $type );
+
+		    $rule .= "\\\n   cmp( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
+		    $rule .= ' or' if @typelist > 1;
+		}
+
+		$rule .= "\\\n(" if @typelist > 1;
+	    } else {
+		my @portlist; 
+		my $multiple;
+
+		push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $portlist, 'port list' );
+
+		$rule .= "\\\n   (" if $multiple = ( @portlist > 1 );
+
+		while ( @portlist ) {
+		    my ( $port, $mask ) = ( shift @portlist, shift @portlist );
+		    $rule .= "\\\n   cmp( u16 at 2 layer 2 mask $mask eq $port \\)";
+		    $rule .= ' or' if @portlist;
+		}
+
+		$rule .= "\\\n   \\)" if $multiple;
+		$rule .= ' and';
+
+		push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
+
+		$rule .= "\\\n   (" if $multiple = ( @portlist > 1 );
+
+		while ( @portlist ) {
+		    my ( $sport, $smask ) = ( shift @portlist, shift @portlist );
+		    $rule .= "\\\n   cmp( u16 at 0 layer 2 mask $smask eq $sport \\)";
+		    $rule .= ' or' if @portlist;
+		}
+
+		$rule .= "\\\n   \\)" if $multiple;
+	    }
+	}
+    }
+
+    if ( $source ne '-' ) {
+	$rule .= ' and' if $have_rule;
+
+	if ( $source =~ /^\+/ ) {
+	    $rule = join( ' ', "\\\n   ", handle_ematch( $source, 'src' ) );
+	} else {
+	    my @parts = decompose_net_u32( $source );
+
+	    if ( $family == F_IPV4 ) {
+		$rule .= join( ' ', "\\\n   cmp\\( u32 at 12 mask ", in_hex8( $parts[0] ), 'eq' , in_hex8( $parts[1] ), "\\)" );
+	    } else {
+		my $offset = 8;
+
+		while ( @parts ) {
+		    $rule .= join( ' ', "\\\n   cmp\\( u32 at $offset mask ", in_hex8( shift @parts ) , 'eq' , in_hex8( shift @parts ), "\\)" );
+		    $offset += 4;
+		    $rule .= ' and' if @parts;
+		}
+	    }
+	}
+
+	$have_rule = 1;
+    }
+
+    if ( $dest ne '-' ) {
+	$rule .= ' and' if $have_rule;
+
+	if ( $dest =~ /^\+/ ) {
+	    $rule .= join( ' ', "\\\n   ", handle_ematch( $dest, 'dst' ) );
+	} else {
+	    $rule .= 'and ' if $have_rule;
+
+	    my @parts = decompose_net_u32( $dest );
+
+	    if ( $family == F_IPV4 ) {
+		$rule .= join( ' ', "\\\n   cmp\\( u32 at 12 mask ", in_hex8( $parts[0] ), 'eq' , in_hex8( $parts[1] ), "\\)" );
+	    } else {
+		my $offset = 8;
+
+		while ( @parts ) {
+		    $rule .= join( ' ', "\\\n   cmp\\( u32 at $offset", in_hex8( shift @parts ), 'eq' , in_hex8( shift @parts ), "\\)" );
+		    $offset += 4;
+		    $rule .= ' and' if @parts;
+		}
+	    }
+
+	    $have_rule = 1;
+	}
+    }
+
+    if ( $have_rule ) {
+	push @$filtersref, ( "\nrun_tc $rule\\" ,
+			     "   flowid $devnum:$class" );
+
+	emit '';
+
+	if ( $family == F_IPV4 ) {
+	    progress_message "  IPv4 TC Filter \"$currentline\" $done";
+	} else {
+	    progress_message "  IPv6 TC Filter \"$currentline\" $done";
+	}
+    } else {
+	warning_message "Degenerate filter ignored";
+    }
+}
+
 sub process_tc_filter() {
 
     my ( $devclass, $source, $dest , $protos, $portlist , $sportlist, $tos, $length, $priority )
@@ -2196,8 +2490,14 @@ sub process_tc_filter() {
 
     fatal_error 'CLASS must be specified' if $devclass eq '-';
 
-    for my $proto ( split_list $protos, 'Protocol' ) {
-	process_tc_filter1( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority );
+    if ( have_capability 'BASIC_EMATCH' ) {
+	for my $proto ( split_list $protos, 'Protocol' ) {
+	    process_tc_filter2( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority );
+	}
+    } else {
+	for my $proto ( split_list $protos, 'Protocol' ) {
+	    process_tc_filter1( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority );
+	}
     }
 }
 

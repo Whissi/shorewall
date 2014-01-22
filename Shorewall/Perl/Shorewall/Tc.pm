@@ -2217,7 +2217,7 @@ sub handle_ematch( $$ ) {
 
     $setname =~ s/\+//;
 
-    return "\\\n   ipset\\($setname $options\\)";
+    return "ipset\\($setname $options\\)";
 }
 
 #
@@ -2318,7 +2318,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	fatal_error "Unknown PROTO ($proto)" unless defined $protonumber;
 	if ( $protonumber ) {
 	    $rule .= ' and ' if $have_rule;
-	    $rule .= "\\\n   match cmp\\( u8 at 6 mask 0xff eq $protonumber \\)";
+	    $rule .= "\\\n   cmp\\( u8 at 6 mask 0xff eq $protonumber \\)";
 	    $have_rule = 1;
 	}
     }
@@ -2341,7 +2341,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 	    while ( @sportlist ) {
 		my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
-		$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq $sport \\)";
+		$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq 0x$sport \\)";
 		$rule .= ' or' if @sportlist;
 	    }
 
@@ -2356,7 +2356,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		my @typelist = split_list( $portlist, 'icmp type' );
 
-		$rule .= "\\\n   (" if @typelist > 1;
+		$rule .= "\\\n   \\(" if @typelist > 1;
 
 		for my $type ( @typelist ) {
 		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp\\( $type );
@@ -2373,7 +2373,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		my @typelist = split_list( $portlist, 'icmp type' );
 
-		$rule .= "\\\n   (" if @typelist > 1;
+		$rule .= "\\\n   \\(" if @typelist > 1;
 
 		for my $type ( @typelist ) {
 
@@ -2390,11 +2390,11 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $portlist, 'port list' );
 
-		$rule .= "\\\n   (" if $multiple = ( @portlist > 2 );
+		$rule .= "\\\n   \\(" if $multiple = ( @portlist > 2 );
 
 		while ( @portlist ) {
 		    my ( $port, $mask ) = ( shift @portlist, shift @portlist );
-		    $rule .= "\\\n   cmp\\( u16 at 2 layer 2 mask $mask eq $port \\)";
+		    $rule .= "\\\n   cmp\\( u16 at 2 layer 2 mask $mask eq 0x$port \\)";
 		    $rule .= ' or' if @portlist;
 		}
 
@@ -2405,11 +2405,11 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 		    
 		    push @portlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
 
-		    $rule .= "\\\n   (" if $multiple = ( @portlist > 2 );
+		    $rule .= "\\\n   \\(" if $multiple = ( @portlist > 2 );
 
 		    while ( @portlist ) {
 			my ( $sport, $smask ) = ( shift @portlist, shift @portlist );
-			$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq $sport \\)";
+			$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq 0xsport \\)";
 			$rule .= ' or' if @portlist;
 		    }
 
@@ -2423,7 +2423,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	$rule .= ' and' if $have_rule;
 
 	if ( $source =~ /^\+/ ) {
-	    $rule = join( ' ', "\\\n   ", handle_ematch( $source, 'src' ) );
+	    $rule = join( '', "\\\n   ", handle_ematch( $source, 'src' ) );
 	} else {
 	    my @parts = decompose_net_u32( $source );
 
@@ -2447,7 +2447,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	$rule .= ' and' if $have_rule;
 
 	if ( $dest =~ /^\+/ ) {
-	    $rule .= join( ' ', "\\\n   ", handle_ematch( $dest, 'dst' ) );
+	    $rule .= join( '', "\\\n   ", handle_ematch( $dest, 'dst' ) );
 	} else {
 	    my @parts = decompose_net_u32( $dest );
 

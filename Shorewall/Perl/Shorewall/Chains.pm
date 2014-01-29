@@ -7465,7 +7465,7 @@ sub expand_rule( $$$$$$$$$$$;$ )
 						     $exceptionrule,
 						     $actparms{disposition} || $disposition,
 						     $target ),
-					   1,
+					   $terminating{$basictarget} || ( $targetref || $targetref->{complete} ),
 					   $matches );
 		    }
 

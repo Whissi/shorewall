@@ -1896,6 +1896,8 @@ add_command() {
 		ipset=6_${zone}_${interface};
 	    fi
 
+	    ipset=$(echo $ipset | sed 's/./_/g');
+
 	    if ! qt $IPSET -L $ipset; then
 		fatal_error "Zone $zone, interface $interface does not have a dynamic host list"
 	    fi
@@ -1983,6 +1985,8 @@ delete_command() {
 		interface=${host%%:*}
 		ipset=6_${zone}_${interface};
 	    fi
+
+	    ipset=$(echo $ipset | sed 's/./_/g');
 
 	    if ! qt $IPSET -L $ipset -n; then
 		fatal_error "Zone $zone, interface $interface does not have a dynamic host list"

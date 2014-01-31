@@ -333,14 +333,14 @@ sub decompose_net_u32( $ ) {
     my @result;
 
     while ( $vlsm >= 32 ) {
-	push @result, 0xffffff;
-	push @result, ( shift( @addr ) << 16 ) | shift( @addr );
+	push @result, in_hex8( 0xffffff );
+	push @result, in_hex8( ( shift( @addr ) << 16 ) | shift( @addr ) );
 	$vlsm -= 32;
     }
 
     if ( $vlsm ) {
-	push @result, ( ( 0xffffffff << ( 32 - $vlsm ) ) & 0xffffffff );
-	push @result, ( ( $addr[0] << 16) | $addr[1] );
+	push @result, in_hex8( ( 0xffffffff << ( 32 - $vlsm ) ) & 0xffffffff );
+	push @result, in_hex8( ( $addr[0] << 16) | $addr[1] );
     }
 
     @result;

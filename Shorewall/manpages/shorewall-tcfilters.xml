@@ -13,7 +13,7 @@
   <refnamediv>
     <refname>tcfilters</refname>
 
-    <refpurpose>Shorewall u32 classifier rules file</refpurpose>
+    <refpurpose>Shorewall u32/basic classifier rules file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
@@ -81,23 +81,35 @@
 
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> - {<emphasis
-        role="bold">-</emphasis>|<emphasis>address</emphasis>}</term>
+        role="bold">-</emphasis>|<emphasis>address</emphasis>|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>Source of the packet. May be a host or network
-          <replaceable>address</replaceable>. DNS names are not
-          allowed.</para>
+          <replaceable>address</replaceable>. DNS names are not allowed.
+          Beginning with Shorewall 4.6.0, an ipset name (prefixed with '+')
+          may be used if your kernel and ip6tables have the <firstterm>Basic
+          Ematch</firstterm>capability. The ipset name may optionally be
+          followed by a number or a comma separated list of src and/or dst
+          enclosed in square brackets ([...]). See <ulink
+          url="shorewall-ipsets.html">shorewall-ipsets(5)</ulink> for
+          details.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> - {<emphasis
-        role="bold">-</emphasis>|<emphasis>address</emphasis>}}</term>
+        role="bold">-</emphasis>|<emphasis>address</emphasis>|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
           <para>Destination of the packet. May be a host or network
-          <replaceable>address</replaceable>. DNS names are not
-          allowed.</para>
+          <replaceable>address</replaceable>. DNS names are not allowed.
+          Beginning with Shorewall 4.6.0, an ipset name (prefixed with '+')
+          may be used if your kernel and ip6tables have the <firstterm>Basic
+          Ematch</firstterm>capability. The ipset name may optionally be
+          followed by a number or a comma separated list of src and/or dst
+          enclosed in square brackets ([...]). See <ulink
+          url="shorewall-ipsets.html">shorewall-ipsets(5)</ulink> for
+          details.</para>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink

@@ -2315,6 +2315,7 @@ determine_capabilities() {
     CONDITION_MATCH=
     IPTABLES_S=
     BASIC_FILTER=
+    BASIC_EMATCH=
     CT_TARGET=
     STATISTIC_MATCH=
     IMQ_TARGET=
@@ -2643,8 +2644,15 @@ determine_capabilities() {
     qt $g_tool -F $chain1
     qt $g_tool -X $chain1
 
-    [ -n "$TC" ] && $TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
-    [ -n "$TC" ] && $TC filter add basic help 2>&1 | grep -q ^Usage && BASIC_FILTER=Yes
+    if [ -n "$TC" ]; then
+	$TC filter add flow help 2>&1 | grep -q ^Usage && FLOW_FILTER=Yes
+
+	if $TC filter add basic help 2>&1 | grep -q ^Usage; then
+	    BASIC_FILTER=Yes
+	    $TC filter add basic help 2>&1 | egrep -q match && BASIC_EMATCH=Yes
+	fi
+    fi
+
     [ -n "$IP" ] && $IP rule add help 2>&1 | grep -q /MASK && FWMARK_RT_MASK=Yes
 
     CAPVERSION=$SHOREWALL_CAPVERSION
@@ -2775,6 +2783,7 @@ report_capabilities_unsorted() {
     fi
 
     report_capability "Basic Filter (BASIC_FILTER)" $BASIC_FILTER
+    report_capability "Basic Ematch (BASIC_EMATCH)" $BASIC_EMATCH
     report_capability "CT Target (CT_TARGET)" $CT_TARGET
 
     echo "   Kernel Version (KERNELVERSION): $KERNELVERSION"
@@ -2863,6 +2872,7 @@ report_capabilities_unsorted1() {
     report_capability1 CONDITION_MATCH
     report_capability1 IPTABLES_S
     report_capability1 BASIC_FILTER
+    report_capability1 BASIC_EMATCH
     report_capability1 CT_TARGET
     report_capability1 STATISTIC_MATCH
     report_capability1 IMQ_TARGET

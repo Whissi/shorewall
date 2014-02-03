@@ -2359,13 +2359,13 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 		$rule .= "\\\n   \\(" if @typelist > 1;
 
 		for my $type ( @typelist ) {
-		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp\\( $type );
+		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp( $type );
 
-		    $rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
+		    $rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | ( $icmpcode || 0 ) ) . ' \\)';
 		    $rule .= ' or' if @typelist > 1;
 		}
 
-		$rule .= "\\\n(" if @typelist > 1;
+		$rule .= "\\\n)" if @typelist > 1;
 
 	    } elsif ( $protonumber == IPv6_ICMP ) {
 		fatal_error "IPv6 ICMP not allowed with IPv4" unless $family == F_IPV4;
@@ -2379,11 +2379,11 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		    my ( $icmptype , $icmpcode ) = split '/', validate_icmp6( $type );
 
-		    $rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | $icmpcode );
+		    $rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0xffff eq " . in_hex4( ( $icmptype << 8 ) | ( $icmpcode || 0 ) ) . ' \\)';
 		    $rule .= ' or' if @typelist > 1;
 		}
 
-		$rule .= "\\\n(" if @typelist > 1;
+		$rule .= "\\\n)" if @typelist > 1;
 	    } else {
 		my @portlist; 
 		my $multiple;
@@ -2394,7 +2394,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		while ( @portlist ) {
 		    my ( $port, $mask ) = ( shift @portlist, shift @portlist );
-		    $rule .= "\\\n   cmp\\( u16 at 2 layer 2 mask $mask eq 0x$port \\)";
+		    $rule .= "\\\n   cmp\\( u16 at 2 layer 2 mask 0x$mask eq 0x$port \\)";
 		    $rule .= ' or' if @portlist;
 		}
 
@@ -2409,7 +2409,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 		    while ( @portlist ) {
 			my ( $sport, $smask ) = ( shift @portlist, shift @portlist );
-			$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq 0xsport \\)";
+			$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0x$smask eq 0xsport \\)";
 			$rule .= ' or' if @portlist;
 		    }
 

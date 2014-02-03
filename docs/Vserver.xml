@@ -139,21 +139,23 @@ vpn             ipv4            #OpenVPN clients
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE   INTERFACE     BROADCAST           OPTIONS
-<emphasis role="bold">net     eth1          detect              dhcp,optional,routefilter=0,logmartians,proxyarp=0,nosmurfs,upnp</emphasis>
+<emphasis role="bold">net     eth1          detect              routeback,dhcp,optional,routefilter=0,logmartians,proxyarp=0,nosmurfs,upnp</emphasis>
 ...</programlisting>
 
     <para><filename>/etc/shorewall/hosts</filename>:</para>
 
     <programlisting>#ZONE   HOST(S)                                 OPTIONS
 drct    eth4:dynamic
-<emphasis role="bold">dmz     eth1:70.90.191.124/31</emphasis></programlisting>
+<emphasis role="bold">dmz     eth1:70.90.191.124/31                   routeback</emphasis></programlisting>
 
     <para>While the IP addresses 70.90.191.124 and 70.90.191.125 are
     configured on eth1, the actual interface name is irrelevant so long as the
     interface is defined in <ulink
     url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink> (5).
     Shorewall will consider all vserver zones to be associated with the
-    loopback interface (<emphasis role="bold">lo</emphasis>).</para>
+    loopback interface (<emphasis role="bold">lo</emphasis>). Note that the
+    <emphasis role="bold">routeback</emphasis> option is required if the
+    vservers are to be able to communicate with each other.</para>
 
     <para>Once a vserver zone is defined, it can be used like any other zone
     type.</para>

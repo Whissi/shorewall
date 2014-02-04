@@ -2191,10 +2191,31 @@ sub process_tc_filter1( $$$$$$$$$ ) {
 #
 # Handle an ipset name in the SOURCE or DEST columns of a filter
 #
+sub handle_ematch( $$ );
+
 sub handle_ematch( $$ ) {
     my ( $setname, $option ) = @_;
 
     my $options = $option;
+
+    if ( $setname =~ /^\+\[(.+)\]$/ ) {
+	my @sets = split_host_list( $1, 1, 1 );
+
+	fatal_error "Multiple ipset matches require the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
+
+	my $result = @sets > 1 ? "\\(\\\n" : '';
+	my $sets   = 0;
+
+	for $setname ( @sets ) {
+	    $result .= ' or' if $sets++;
+	    $result .= "\\\n   " if @sets > 1;
+	    $result .= handle_ematch( $setname, $option );
+	}
+
+	$result .= "\\\n   \\)" if @sets > 1;
+
+	return $result;
+    }
 
     require_capability 'BASIC_EMATCH', 'IPSets', '';
 

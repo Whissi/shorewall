@@ -2201,18 +2201,14 @@ sub handle_ematch( $$ ) {
     if ( $setname =~ /^\+\[(.+)\]$/ ) {
 	my @sets = split_host_list( $1, 1, 1 );
 
-	fatal_error "Multiple ipset matches require the Repeat Match capability in your kernel and iptables" unless $globals{KLUDGEFREE};
-
-	my $result = @sets > 1 ? "\\(\\\n" : '';
+	my $result = '';
 	my $sets   = 0;
 
 	for $setname ( @sets ) {
-	    $result .= ' or' if $sets++;
+	    $result .= ' and' if $sets++;
 	    $result .= "\\\n   " if @sets > 1;
 	    $result .= handle_ematch( $setname, $option );
 	}
-
-	$result .= "\\\n   \\)" if @sets > 1;
 
 	return $result;
     }

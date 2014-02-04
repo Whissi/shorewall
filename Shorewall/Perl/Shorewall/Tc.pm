@@ -2337,7 +2337,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 	    push @sportlist, expand_port_range( $protonumber, $_ ) for split_list( $sportlist, 'port list' );
 
-	    $rule .= "\\\n   (" if $multiple = ( @sportlist > 2 );
+	    $rule .= "\\\n   \\(" if $multiple = ( @sportlist > 2 );
 
 	    while ( @sportlist ) {
 		my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );

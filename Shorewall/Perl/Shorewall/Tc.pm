@@ -2512,7 +2512,7 @@ sub process_tc_filter() {
 
     fatal_error 'CLASS must be specified' if $devclass eq '-';
 
-    if ( have_capability 'BASIC_EMATCH' ) {
+    if ( $config{BASIC_FILTERS} ) {
 	for my $proto ( split_list $protos, 'Protocol' ) {
 	    process_tc_filter2( $devclass, $source, $dest , $proto, $portlist , $sportlist, $tos, $length, $priority );
 	}

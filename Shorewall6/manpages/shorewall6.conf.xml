@@ -327,6 +327,30 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">BASIC_FILTERS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall-4.6.0. When set to <emphasis
+          role="bold">Yes</emphasis>, causes entries in <ulink
+          url="shorewall6-tcfilters.html">shorewall6-tcfilters(5)</ulink> to
+          generate a basic filter rather than a u32 filter. This setting
+          requires the <firstterm>Basic Ematch</firstterm> capability in your
+          kernel and iptables.</para>
+
+          <note>
+            <para>One of the advantages of basic filters is that ipset matches
+            are supported in newer iproute2 and kernel versions. Because
+            Shorewall6 cannot reliably detect this capability, use of basic
+            filters is controlled by this option.</para>
+          </note>
+
+          <para>The default value is No which causes u32 filters to be
+          generated.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">BLACKLIST=</emphasis>[{<emphasis
         role="bold">ALL</emphasis>|<emphasis
         role="bold"><replaceable>state</replaceable>[,...]</emphasis>}]</term>

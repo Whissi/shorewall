@@ -843,6 +843,7 @@ sub initialize( $;$$) {
 	  TRACK_RULES => undef,
 	  REJECT_ACTION => undef,
 	  INLINE_MATCHES => undef,
+	  BASIC_FILTERS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -5585,6 +5586,9 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
     default_yes_no 'TRACK_RULES'                , '';
     default_yes_no 'INLINE_MATCHES'             , '';
+    default_yes_no 'BASIC_FILTERS'              , '';
+
+    require_capability( 'BASIC_EMATCH', 'BASIC_FILTERS=Yes', 's' ) if $config{BASIC_FILTERS};
 
     if ( $val = $config{REJECT_ACTION} ) {
 	fatal_error "Invalid Reject Action Name ($val)" unless $val =~ /^[a-zA-Z][\w-]*$/;

@@ -4817,7 +4817,9 @@ EOF
 		progress_message3 "No update required to configuration file $configfile";
 	    }
 
-	    exit 0 unless $directives || -f find_file 'blacklist';
+	    exit 0 unless ( $directives ||
+			    -f find_file 'blacklist' ||
+			    -f find_file 'tcrules' );
 	}
     } else {
 	fatal_error "$fn does not exist";

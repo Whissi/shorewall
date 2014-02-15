@@ -584,8 +584,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path, $shorewallrc                      , $shorewallrc1 , $directives, $inline ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , ''          , '/usr/share/shorewall/shorewallrc', ''            , 0 ,          0 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path, $shorewallrc                      , $shorewallrc1 , $directives, $inline, $tcrules ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , ''          , '/usr/share/shorewall/shorewallrc', ''            , 0 ,          0 ,      0 );
 
     $export         = 0;
     $test           = 0;
@@ -625,6 +625,7 @@ sub compiler {
 		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,
 		  inline        => { store => \$inline,        validate=> \&validate_boolean    } ,
 		  directives    => { store => \$directives,    validate=> \&validate_boolean    } ,
+		  tcrules       => { store => \$tcrules,       validate=> \&validate_boolean    } ,
 		  config_path   => { store => \$config_path } ,
 		  shorewallrc   => { store => \$shorewallrc } ,
 		  shorewallrc1  => { store => \$shorewallrc1 } ,
@@ -794,7 +795,7 @@ sub compiler {
     #
     # TCRules and Traffic Shaping
     #
-    setup_tc;
+    setup_tc( $tcrules );
 
     if ( $scriptfilename || $debug ) {
 	pop_indent;

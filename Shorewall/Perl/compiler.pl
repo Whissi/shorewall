@@ -41,6 +41,7 @@
 #         --shorewallrc1=<path>       # Path to export shorewallrc file.
 #         --config_path=<path-list>   # Search path for config files
 #         --inline                    # Update alternative column specifications
+#         --tcrules                   # Create mangle from tcrules
 #
 use strict;
 use FindBin;
@@ -75,6 +76,7 @@ usage: compiler.pl [ <option> ... ] [ <filename> ]
     [ --shorewallrc1=<pathname> ]
     [ --config_path=<path-list> ]
     [ --inline ]
+    [ --tcrules ]
 _EOF_
 
 exit shift @_;
@@ -104,6 +106,7 @@ my $config_path   = '';
 my $shorewallrc   = '';
 my $shorewallrc1  = '';
 my $inline        = 0;
+my $tcrules       = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -137,6 +140,7 @@ my $result = GetOptions('h'               => \$help,
 			'update'          => \$update,
 			'convert'         => \$convert,
 			'inline'          => \$inline,
+			'tcrules'         => \$tcrules,
 			'config_path=s'   => \$config_path,
 			'shorewallrc=s'   => \$shorewallrc,
 			'shorewallrc1=s'  => \$shorewallrc1,
@@ -165,5 +169,6 @@ compiler( script          => $ARGV[0] || '',
 	  config_path     => $config_path,
 	  shorewallrc     => $shorewallrc,
 	  shorewallrc1    => $shorewallrc1,
-	  inline          => $inline
+	  inline          => $inline,
+	  tcrules         => $tcrules,
 	);

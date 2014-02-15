@@ -135,6 +135,10 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 
 our $family;
 
+our $tcrules;
+
+our $mangle;
+
 our $divertref; # DIVERT chain
 
 our %validstates = ( NEW                => 0,
@@ -934,24 +938,36 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 	
+    if ( $tcrules ) {
+	$command = ( $command ? "$command($mark)" : $mark ) . $designator;
+	my $line = ( $family == F_IPV6 ?
+		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$headers\t$probability\t$dscp\t$state" :
+		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$probability\t$dscp\t$state" );
+	#
+	# Supress superfluous trailinc dashes
+	#
+	$line =~ s/(?:\t-)+$//;
 
-    process_mangle_rule1( 'TC', 
-			  ( $command ? "$command($mark)" : $mark ) . $designator ,
-			  $source,
-			  $dest,
-			  $proto,
-			  $ports,
-			  $sports,
-			  $user,
-			  $testval,
-			  $length,
-			  $tos,
-			  $connbytes,
-			  $helper,
-			  $headers,
-			  $probability,
-			  $dscp,
-			  $state );
+	print $mangle "$line\n";
+    } else {
+	process_mangle_rule1( 'TC',
+			      ( $command ? "$command($mark)" : $mark ) . $designator ,
+			      $source,
+			      $dest,
+			      $proto,
+			      $ports,
+			      $sports,
+			      $user,
+			      $testval,
+			      $length,
+			      $tos,
+			      $connbytes,
+			      $helper,
+			      $headers,
+			      $probability,
+			      $dscp,
+			      $state );
+    }
 }
 
 sub process_tc_rule( ) {
@@ -3072,7 +3088,8 @@ sub process_secmark_rule() {
 #
 # Process the tcrules file and setup traffic shaping
 #
-sub setup_tc() {
+sub setup_tc( $ ) {
+    $tcrules = $_[0];
 
     if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
@@ -3126,14 +3143,33 @@ sub setup_tc() {
 	my $fn;
 
 	if ( $fn = open_file( 'tcrules' , 2, 1 ) ) {
+	    my $fn1;
+
+	    if ( $tcrules ) {
+		#
+		# We are going to convert this tcrules file to the equivalent mangle file
+		#
+		open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+	    }
 
 	    first_entry "$doing $fn...";
 
 	    process_tc_rule, $have_tcrules++ while read_a_line( NORMAL_READ );
 
 	    if ( $have_tcrules ) {
-		warning_message "Non-empty tcrules file ($fn); please move its contents to the mangle file";
+		if ( $mangle ) {
+		    progress_message2 "Converted $fn to $fn1";
+		    if ( rename $fn, "$fn.bak" ) {
+			progress_message2 "$fn renamed $fn.bak";
+		    } else {
+			fatal_error "Cannot Rename $fn to $fn.bak: $!";
+		    }
+		} else {
+		    warning_message "Non-empty tcrules file ($fn); consider running '$product update -t'";
+		}
 	    }
+
+	    close $mangle if $tcrules;
 	}
 
 	if ( my $fn = open_file( 'mangle', 1, 1 ) ) {

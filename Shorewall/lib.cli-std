@@ -422,6 +422,7 @@ compiler() {
     [ -n "$g_convert" ] && options="$options --convert"
     [ -n "$g_annotate" ] && options="$options --annotate"
     [ -n "$g_directives" ] && options="$options --directives"
+    [ -n "$g_tcrules" ] && options="$options --tcrules"
     [ -n "$g_inline" ] && options="$options --inline"
 
     if [ -n "$PERL" ]; then
@@ -840,6 +841,17 @@ update_command() {
 			D*)
 			    g_directives=Yes
 			    option=${option#D}
+			    ;;
+			t*)
+			    g_tcrules=Yes
+			    option=${option#t}
+			    ;;
+			A*)
+			    g_inline=Yes
+			    g_convert=Yes
+			    g_directives=Yes
+			    g_tcrules=Yes
+			    option=${option#A}
 			    ;;
 			*)
 			    usage 1
@@ -1686,7 +1698,7 @@ usage() # $1 = exit status
     echo "   status"
     echo "   stop"
     echo "   try <directory> [ <timeout> ]"
-    echo "   update [ -a ] [ -b ] [ -r ] [ -T ] [ -D ] [ -i ] [ <directory> ]"
+    echo "   update [ -a ] [ -b ] [ -r ] [ -T ] [ -D ] [ -i ] [-t] [-A] [ <directory> ]"
     echo "   version [ -a ]"
     echo
     exit $1

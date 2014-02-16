@@ -557,7 +557,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
 	RESTORE    => {
 	    defaultchain   => 0,
-	    allowedchains  => PREROUTING | FORWARD,
+	    allowedchains  => PREROUTING | FORWARD | POSTROUTING,
 	    minparams      => 0,
 	    maxparams      => 1,
 	    function       => sub () {
@@ -585,7 +585,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
 	SAVE       => {
 	    defaultchain   => 0,
-	    allowedchains  => PREROUTING | FORWARD,
+	    allowedchains  => PREROUTING | FORWARD | POSTROUTING,
 	    minparams      => 0,
 	    maxparams      => 1,
 	    function       => sub () {

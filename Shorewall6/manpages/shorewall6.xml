@@ -622,6 +622,10 @@
 
       <arg><option>-i</option></arg>
 
+      <arg><option>-t</option></arg>
+
+      <arg><option>-A</option></arg>
+
       <arg><replaceable>directory</replaceable></arg>
     </cmdsynopsis>
 
@@ -1688,6 +1692,17 @@
           lines will be handled incorrectly if INLINE_MATCHES is set to Yes in
           <ulink
           url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>.</para>
+
+          <para>The <option>-t</option> option was added in Shorewall 4.6.0.
+          When specified, <option>-t</option> causes <ulink
+          url="shorewall6-tcrules.html">shorewall6-tcrules(5)</ulink> to be
+          converted to <ulink
+          url="shorewall6-mangle.html">shorewall6-mangle(5)</ulink>. The old
+          file is renamed with a .bak suffix.</para>
+
+          <para>The <option>-A</option> option was added in Shorewall 4.6.0
+          and is equivalent to specifying the <option>-b</option>,
+          <option>-D</option> and the <option>-t</option> options.</para>
 
           <para>For a description of the other options, see the <emphasis
           role="bold">check</emphasis> command above.</para>

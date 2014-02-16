@@ -948,6 +948,10 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	#
 	$line =~ s/(?:\t-)+$//;
 
+	my $raw_matches = fetch_inline_matches;
+
+	$line .= join( '', ' ;', $raw_matches ) if $raw_matches ne ' ';
+
 	print $mangle "$line\n";
     } else {
 	process_mangle_rule1( 'TC',

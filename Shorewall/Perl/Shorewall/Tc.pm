@@ -950,7 +950,13 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
 	my $raw_matches = fetch_inline_matches;
 
-	$line .= join( '', ' ;', $raw_matches ) if $raw_matches ne ' ';
+	if ( $raw_matches ne ' ' ) {
+	    if ( $command =~ /^INLINE/ || $config{INLINE_MATCHES} ) {
+		$line .= join( '', ' ;', $raw_matches );es
+	    } else {
+		$line .= join( '', ' {', $raw_matches , ' }' );
+	    }
+	}
 
 	print $mangle "$line\n";
     } else {

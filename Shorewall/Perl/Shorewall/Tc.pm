@@ -3154,6 +3154,8 @@ sub setup_tc( $ ) {
 		# We are going to convert this tcrules file to the equivalent mangle file
 		#
 		open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+
+		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
 	    }
 
 	    first_entry "$doing $fn...";
@@ -3173,7 +3175,7 @@ sub setup_tc( $ ) {
 		}
 	    }
 
-	    close $mangle if $tcrules;
+	    close $mangle, directive_callback( 0 ) if $tcrules;
 	}
 
 	if ( my $fn = open_file( 'mangle', 1, 1 ) ) {

@@ -158,6 +158,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
                                        set_section_function
                                        section_warning
                                        clear_section_function
+                                       directive_callback
 
 				       $product
 				       $Product
@@ -562,6 +563,7 @@ our $warningcount1;          # Used to suppress duplicate warnings about COMMENT
 our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
 our $warningcount3;          # Used to suppress duplicate warnings about SECTION being deprecated
 our $checkinline;            # The -i option to check/compile/etc.
+our $directive_callback;     # Function to call in compiler_directive
 
 our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
 
@@ -687,6 +689,8 @@ sub initialize( $;$$) {
     $ifstack        = 0;
     @ifstack        = ();
     $embedded       = 0;
+    $directive_callback
+	            = 0;
     #
     # Contents of last COMMENT line.
     #
@@ -2491,6 +2495,13 @@ sub evaluate_expression( $$$ ) {
 }
 
 #
+# Set callback
+#
+sub directive_callback( $ ) {
+    $directive_callback = shift;
+}
+
+#
 # Each entry in @ifstack consists of a 4-tupple
 #
 # [0] = The keyword (IF,ELSIF or ELSE)
@@ -2518,127 +2529,128 @@ sub process_compiler_directive( $$$$ ) {
 
     my ( $lastkeyword, $prioromit, $included, $lastlinenumber ) = @ifstack ? @{$ifstack[-1]} : ('', 0, 0, 0 );
 
-    my %directives = ( IF => sub() {
-			   directive_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
-			   my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
-			   push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
-			   $omitting = $nextomitting;
-		       } ,
+    my %directives =
+	( IF => sub() {
+	    directive_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
+	    my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
+	    push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
+	    $omitting = $nextomitting;
+	  } ,
 
-		       ELSIF => sub() {
-			   directive_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
-			   directive_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
-			   if ( $omitting && ! $included ) {
-			       #
-			       # We can only change to including if we were previously omitting
-			       #
-			       $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber );
-			       $included = ! $omitting;
-			   } else {
-			       #
-			       # We have already included -- so we don't want to include this part
-			       #
-			       $omitting = 1;
-			   }
-			   $ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
-		       } ,
+	  ELSIF => sub() {
+	      directive_error( "?ELSIF has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	      directive_error( "Missing IF expression" , $filename, $linenumber ) unless $expression;
+	      if ( $omitting && ! $included ) {
+		  #
+		  # We can only change to including if we were previously omitting
+		  #
+		  $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber );
+		  $included = ! $omitting;
+	      } else {
+		  #
+		  # We have already included -- so we don't want to include this part
+		  #
+		  $omitting = 1;
+	      }
+	      $ifstack[-1] = [ 'ELSIF', $prioromit, $included, $lastlinenumber ];
+	  } ,
 
-		       ELSE => sub() {
-			   directive_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
-			   directive_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
-			   $omitting = $included || ! $omitting unless $prioromit;
-			   $ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
-		       } ,
+	  ELSE => sub() {
+	      directive_error( "Invalid ?ELSE" , $filename, $linenumber ) unless $expression eq '';
+	      directive_error( "?ELSE has no matching ?IF" , $filename, $linenumber ) unless @ifstack > $ifstack && $lastkeyword =~ /IF/;
+	      $omitting = $included || ! $omitting unless $prioromit;
+	      $ifstack[-1] = [ 'ELSE', $prioromit, 1, $lastlinenumber ];
+	  } ,
 
-		       ENDIF => sub() {
-			   directive_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
-			   directive_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
-			   $omitting = $prioromit;
-			   pop @ifstack;
-		       } ,
+	  ENDIF => sub() {
+	      directive_error( "Invalid ?ENDIF" , $filename, $linenumber ) unless $expression eq '';
+	      directive_error( q(Unexpected "?ENDIF" without matching ?IF or ?ELSE) , $filename, $linenumber ) if @ifstack <= $ifstack;
+	      $omitting = $prioromit;
+	      pop @ifstack;
+	  } ,
 
-		       SET => sub() {
-			   unless ( $omitting ) {
-			       directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
-			       ( my $var , $expression ) = split ' ', $expression, 2;
-			       directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^(\$)?([a-zA-Z]\w*)$/ || $var =~ /^(@)(\d+|[a-zA-Z]\w*)/;
-			       directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
+	  SET => sub() {
+	      unless ( $omitting ) {
+		  directive_error( "Missing SET variable", $filename, $linenumber ) unless supplied $expression;
+		  ( my $var , $expression ) = split ' ', $expression, 2;
+		  directive_error( "Invalid SET variable ($var)", $filename, $linenumber) unless $var =~ /^(\$)?([a-zA-Z]\w*)$/ || $var =~ /^(@)(\d+|[a-zA-Z]\w*)/;
+		  directive_error( "Missing SET expression"     , $filename, $linenumber) unless supplied $expression;
 
-			       if ( ( $1 || '' ) eq '@' ) {
-				   $var = $2;
-				   $var = numeric_value( $var ) if $var =~ /^\d/;
-				   $var = $2 || 'chain';
-				   directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
-				   my $val = $actparms{$var} = evaluate_expression ( $expression,
-										     $filename,
-										     $linenumber );
-				   $parmsmodified = 1;
-			       } else {
-				   $variables{$2} = evaluate_expression( $expression,
-									 $filename,
-									 $linenumber );
-			       }
-			   }
-		       } ,
+		  if ( ( $1 || '' ) eq '@' ) {
+		      $var = $2;
+		      $var = numeric_value( $var ) if $var =~ /^\d/;
+		      $var = $2 || 'chain';
+		      directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
+		      my $val = $actparms{$var} = evaluate_expression ( $expression,
+									$filename,
+									$linenumber );
+		      $parmsmodified = 1;
+		  } else {
+		      $variables{$2} = evaluate_expression( $expression,
+							    $filename,
+							    $linenumber );
+		  }
+	      }
+	  } ,
 
-		       FORMAT => sub() {
-			   unless ( $omitting ) {
-			       directive_error( "?FORMAT is not allowed in this file",      $filename, $linenumber ) unless $max_format > 1;
-			       directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
-			       directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
-			       directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;
-			       $file_format = $expression;
-			   }
-		       } ,
+	  'FORMAT' => sub() {
+	      unless ( $omitting ) {
+		  directive_error( "?FORMAT is not allowed in this file",      $filename, $linenumber ) unless $max_format > 1;
+		  directive_error( "Missing format",                           $filename, $linenumber ) unless supplied $expression;
+		  directive_error( "Invalid format ($expression)",             $filename, $linenumber ) unless $expression =~ /^\d+$/;
+		  directive_error( "Format must be between 1 and $max_format", $filename, $linenumber ) unless $expression && $expression <= $max_format;
+		  $file_format = $expression;
+	      }
+	  } ,
 
-		       RESET => sub() {
-			   unless ( $omitting ) {
-			       my $var = $expression;
-			       directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
-			       directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^(\$)?([a-zA-Z]\w*)$/ || $var =~ /^(@)(\d+|[a-zA-Z]\w*)/;
+	  RESET => sub() {
+	      unless ( $omitting ) {
+		  my $var = $expression;
+		  directive_error( "Missing RESET variable", $filename, $linenumber)        unless supplied $var;
+		  directive_error( "Invalid RESET variable ($var)", $filename, $linenumber) unless $var =~ /^(\$)?([a-zA-Z]\w*)$/ || $var =~ /^(@)(\d+|[a-zA-Z]\w*)/;
 
-			       if ( ( $1 || '' ) eq '@' ) {
-				   $var = numeric_value( $var ) if $var =~ /^\d/;
-				   $var = $2 || 'chain';
-				   directive_error( "Shorewall variables may only be RESET in the body of an action", $filename, $linenumber ) unless $actparms{0};
-				   if ( exists $actparms{$var} ) {
-				       if ( $var =~ /^loglevel|logtag|chain|disposition|caller$/ ) {
-					   $actparms{$var} = '';
-				       } else {
-					   delete $actparms{$var}
-				       }
-				   } else {
-				       directive_warning( "Shorewall variable $2 does not exist", $filename, $linenumber );
-				   }
+		  if ( ( $1 || '' ) eq '@' ) {
+		      $var = numeric_value( $var ) if $var =~ /^\d/;
+		      $var = $2 || 'chain';
+		      directive_error( "Shorewall variables may only be RESET in the body of an action", $filename, $linenumber ) unless $actparms{0};
+		      if ( exists $actparms{$var} ) {
+			  if ( $var =~ /^loglevel|logtag|chain|disposition|caller$/ ) {
+			      $actparms{$var} = '';
+			  } else {
+			      delete $actparms{$var}
+			  }
+		      } else {
+			  directive_warning( "Shorewall variable $2 does not exist", $filename, $linenumber );
+		      }
 
-			       } else {
-				   if ( exists $variables{$2} ) {
-				       delete $variables{$2};
-				   } else {
-				       directive_warning( "Shell variable $2 does not exist", $filename, $linenumber );
-				   }
-			       }
-			   }
-		       } ,
+		  } else {
+		      if ( exists $variables{$2} ) {
+			  delete $variables{$2};
+		      } else {
+			  directive_warning( "Shell variable $2 does not exist", $filename, $linenumber );
+		      }
+		  }
+	      }
+	  } ,
 
-		       COMMENT => sub() {
-			   unless ( $omitting ) {
-			       if ( $comments_allowed ) {
-				   unless ( $nocomment ) {
-				       if ( have_capability( 'COMMENTS' ) ) {
-					   ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
-					   $comment =~ s/\s*$//;
-				       } else {
-					   directive_warning( "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
-				       }
-				   }
-			       } else {
-				   directive_error ( "?COMMENT is not allowed in this file", $filename, $linenumber );
-			       }
-			   }
-		       }
+	  COMMENT => sub() {
+	      unless ( $omitting ) {
+		  if ( $comments_allowed ) {
+		      unless ( $nocomment ) {
+			  if ( have_capability( 'COMMENTS' ) ) {
+			      ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
+			      $comment =~ s/\s*$//;
+			  } else {
+			      directive_warning( "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
+			  }
+		      }
+		  } else {
+		      directive_error ( "?COMMENT is not allowed in this file", $filename, $linenumber );
+		  }
+	      }
+	  }
 
-		     );
+	);
 
     if ( my $function = $directives{$keyword} ) {
 	$function->();
@@ -2646,7 +2658,11 @@ sub process_compiler_directive( $$$$ ) {
 	assert( 0, $keyword );
     }
 
-    $omitting;
+    if ( $directive_callback ) {
+        $directive_callback->( $keyword, $line ) 
+    } else {
+        $omitting;
+    }
 }
 
 #

@@ -1864,9 +1864,41 @@
           url="shorewall-mangle.html">shorewall-mangle(5)</ulink>. The old
           file is renamed with a .bak suffix.</para>
 
+          <important>
+            <para>There are some notable restrictions with the
+            <option>-t</option> option:</para>
+
+            <orderedlist>
+              <listitem>
+                <para>Converted rules will be appended to the existing
+                <filename>mangle</filename> file; if there is no
+                <filename>mangle</filename> file in the CONFIG_PATH, one will
+                be created in <filename
+                class="directory">/etc/shorewall</filename>.</para>
+              </listitem>
+
+              <listitem>
+                <para>Existing comments in the <filename>tcrules</filename>
+                file will not be transferred to the
+                <filename>mangle</filename> file.</para>
+              </listitem>
+
+              <listitem>
+                <para>INCLUDEd files will be expanded inline in the
+                <filename>mangle</filename> file.</para>
+              </listitem>
+
+              <listitem>
+                <para>Columns in the <filename>mangle</filename> file will be
+                separated by a single tab character; there is no attempt made
+                to otherwise align the columns.</para>
+              </listitem>
+            </orderedlist>
+          </important>
+
           <para>The <option>-A</option> option was added in Shorewall 4.6.0
           and is equivalent to specifying the <option>-b</option>,
-          <option>-D</option> and the <option>-t</option> options. </para>
+          <option>-D</option> and the <option>-t</option> options.</para>
 
           <para>For a description of the other options, see the <emphasis
           role="bold">check</emphasis> command above.</para>

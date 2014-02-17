@@ -944,7 +944,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$headers\t$probability\t$dscp\t$state" :
 		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$probability\t$dscp\t$state" );
 	#
-	# Supress superfluous trailinc dashes
+	# Supress superfluous trailing dashes
 	#
 	$line =~ s/(?:\t-)+$//;
 
@@ -952,7 +952,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 
 	if ( $raw_matches ne ' ' ) {
 	    if ( $command =~ /^INLINE/ || $config{INLINE_MATCHES} ) {
-		$line .= join( '', ' ;', $raw_matches );es
+		$line .= join( '', ' ;', $raw_matches );
 	    } else {
 		$line .= join( '', ' {', $raw_matches , ' }' );
 	    }

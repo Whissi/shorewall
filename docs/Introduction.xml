@@ -368,8 +368,8 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     and the command to be aborted. If the compilation step doesn't find any
     errors then the shell script is executed.</para>
 
-    <para>The 'compiled' scripts are placed in the directory <filename
-    class="directory">/var/lib/shorewall</filename> and are named to
+    <para>The 'compiled' scripts are placed by default in the directory
+    <filename class="directory">/var/lib/shorewall</filename> and are named to
     correspond to the command being executed. For example, the command
     <command>/sbin/shorewall start</command> will generate a script named
     <filename>/var/lib/shorewall/.start</filename> and, if the compilation is
@@ -380,6 +380,13 @@ ACCEPT     net           $FW       tcp        22</programlisting>
     clear</command> command is subsequently executed,
     <filename>/var/lib/shorewall/firewall</filename> is run to perform the
     requested operation.</para>
+
+    <para>The AUTOMAKE option in /etc/shorewall/shorewall.conf may be set to
+    automatically generate a new script when one of the configuration files is
+    changed. When no file has changed since the last compilation, the
+    <command>/sbin/shorewall start</command> and <command>/sbin/shorewall
+    restart</command> commands will simply execute the current
+    <filename>/var/lib/shorewall/firewall</filename> script.</para>
   </section>
 
   <section id="Packages">

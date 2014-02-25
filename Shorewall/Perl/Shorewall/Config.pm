@@ -3382,6 +3382,7 @@ sub read_a_line($) {
 
 	    if ( $comments_allowed && $currentline =~ /^\s*COMMENT\b/ ) {
 		process_comment unless $nocomment;
+		$directive_callback->( 'COMMENT', $currentline ) if $directive_callback;
 		$currentline = '';
 		$currentlinenumber = 0;
 		next
@@ -3393,6 +3394,7 @@ sub read_a_line($) {
 		fatal_error( "Invalid format ($format)" )                 unless $format =~ /\d+/;
 		fatal_error( "Format must be between 1 and $max_format" ) unless $format && $format <= $max_format;
 		$file_format = $format;
+		$directive_callback->( 'FORMAT', $currentline ) if $directive_callback;
 		$currentline = '';
 		$currentlinenumber = 0;
 		next
@@ -3433,6 +3435,7 @@ sub read_a_line($) {
                 fatal_error "Invalid SECTION name ($sectionname)" unless $sectionname =~ /^[-_\da-zA-Z]+$/;
                 fatal_error "This file does not allow ?SECTION" unless $section_function;
                 $section_function->($sectionname);
+                $directive_callback->( 'SECTION', $currentline ) if $directive_callback;
                 $currentline = '';
 	    } else {
 		fatal_error "Non-ASCII gunk in file" if ( $options && CHECK_GUNK ) && $currentline =~ /[^\s[:print:]]/;

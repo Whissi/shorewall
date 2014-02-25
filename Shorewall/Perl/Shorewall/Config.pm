@@ -2997,6 +2997,8 @@ sub embedded_shell( $ ) {
     fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
     my ( $command, $linenumber ) = ( "/bin/sh -c '$currentline", $currentlinenumber );
 
+    $directive_callback->( 'SHELL', $currentline ) if $directive_callback;
+
     if ( $multiline ) {
 	#
 	# Multi-line script
@@ -3007,6 +3009,7 @@ sub embedded_shell( $ ) {
 	my $last = 0;
 
 	while ( read_a_line( PLAIN_READ ) ) {
+	    $directive_callback->( 'SHELL', $currentline ) if $directive_callback;
 	    last if $last = $currentline =~ s/^\s*\??END(\s+SHELL)?\s*(?:;\s*)?$//i;
 	    $command .= "$currentline\n";
 	}
@@ -3031,6 +3034,8 @@ sub embedded_perl( $ ) {
 
     my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config (qw/shorewall/);\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
 
+    $directive_callback->( 'PERL', $currentline ) if $directive_callback;
+
     if ( $multiline ) {
 	#
 	# Multi-line script
@@ -3041,6 +3046,7 @@ sub embedded_perl( $ ) {
 	my $last = 0;
 
 	while ( read_a_line( PLAIN_READ ) ) {
+	    $directive_callback->( 'PERL', $currentline ) if $directive_callback;
 	    last if $last = $currentline =~ s/^\s*\??END(\s+PERL)?\s*(?:;\s*)?//i;
 	    $command .= "$currentline\n";
 	}

@@ -148,7 +148,8 @@
       two ISPs. Entries in <filename>/etc/shorewall/mangle</filename> and
       <filename>/etc/shorewall/rtrules</filename> can be used to direct
       particular outgoing connections to one ISP or the other. Use of
-      <filename>/etc/shorewall/tcrules</filename> is not required for
+      <filename>/etc/shorewall/mangle</filename> (or
+      <filename>/etc/shorewall/tcrules</filename>) is not required for
       <filename>/etc/shorewall/providers</filename> to work, but in most
       cases, you must select a unique MARK value for each provider so
       Shorewall can set up the correct marking rules for you.</para>
@@ -2517,6 +2518,14 @@ MARK(2)               $FW             0.0.0.0/0       tcp     119</programlistin
           <para>Use <emphasis role="bold">avvanta</emphasis> for NTTP</para>
         </listitem>
       </itemizedlist>
+
+      <para>The same rules converted to use the mangle file are:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S)         CLIENT  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
+#                                                                       PORT(S) 
+MARK(2)         $FW             0.0.0.0/0       tcp     21
+MARK(2)         $FW             0.0.0.0/0       tcp     -               -       -       -       -       -       -               ftp
+MARK(2)         $FW             0.0.0.0/0       tcp     119</programlisting>
 
       <para>The remaining files are for a rather standard two-interface config
       with a bridge as the local interface.</para>

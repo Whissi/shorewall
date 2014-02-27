@@ -110,6 +110,12 @@
         </listitem>
 
         <listitem>
+          <para><filename>/etc/shorewall/mangle</filename> - supercedes
+          <filename>/etc/shorewall/tcrules</filename> in Shorewall 4.6.0.
+          Contains rules for packet marking, TTL, TPROXY, etc.</para>
+        </listitem>
+
+        <listitem>
           <para><filename>/etc/shorewall/rules</filename> - defines rules that
           are exceptions to the overall policies established in
           /etc/shorewall/policy.</para>
@@ -221,7 +227,9 @@
 
         <listitem>
           <para><filename>/etc/shorewall/tcrules</filename> - Mark or classify
-          traffic for traffic shaping or multiple providers.</para>
+          traffic for traffic shaping or multiple providers. Deprecated in
+          Shorewall 4.6.0 in favor of
+          <filename>/etc/shorewall/mangle</filename>.</para>
         </listitem>
 
         <listitem>

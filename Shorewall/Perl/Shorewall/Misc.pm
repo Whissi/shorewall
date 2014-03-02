@@ -2512,9 +2512,9 @@ EOF
 	  "restore_default_route $config{USE_DEFAULT_RT}"
 	  );
 
-    if ( $config{ADMINISABSENTMINDED} ) {
-	add_ijump $filter_table ->{$_}, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' for qw/INPUT FORWARD/;
-    }
+    my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;
+
+    add_ijump $filter_table ->{$_}, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' for @chains;
 
     if ( $family == F_IPV6 ) {
 	add_ijump $input, j => 'ACCEPT', s => IPv6_LINKLOCAL;

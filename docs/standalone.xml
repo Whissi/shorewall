@@ -515,15 +515,16 @@ root@lists:~# </programlisting>
 
     <para>If you wish to enable connections from the Internet to your firewall
     and you find an appropriate macro in
-    <filename>/etc/shorewall/macro.*</filename>, the general format of a rule
-    in <filename>/etc/shorewall/rules</filename> is:</para>
+    <filename>/usr/share/shorewall/macro.*</filename>, the general format of a
+    rule in <filename>/etc/shorewall/rules</filename> is:</para>
 
     <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
 &lt;<emphasis>macro</emphasis>&gt;(ACCEPT) net       $FW</programlisting>
 
     <important>
       <para>Be sure to add your rules after the line that reads <emphasis
-      role="bold">SECTION NEW.</emphasis></para>
+      role="bold">SECTION NEW</emphasis> (?SECTION NEW in Shorewall 4.6.0 and
+      later).</para>
     </important>
 
     <example id="Example1">
@@ -605,19 +606,34 @@ SSH(ACCEPT) net       $FW           </programlisting>
     <quote><command>shorewall stop</command></quote>. When the firewall is
     stopped, routing is enabled on those hosts that have an entry in
     <filename><ulink
-    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>.
-    A running firewall may be restarted using the <quote><command>shorewall
-    restart</command></quote> command. If you want to totally remove any trace
-    of Shorewall from your Netfilter configuration, use
-    <quote><command>shorewall clear</command></quote>.</para>
+    url="manpages/shorewall-stoppedrules.html">/etc/shorewall/stoppedrules</ulink></filename>
+    (<filename><ulink
+    url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>
+    in Shorewall 4.5.7 and earlier). A running firewall may be restarted using
+    the <quote><command>shorewall restart</command></quote> command. If you
+    want to totally remove any trace of Shorewall from your Netfilter
+    configuration, use <quote><command>shorewall
+    clear</command></quote>.</para>
 
     <warning>
       <para>If you are connected to your firewall from the Internet, do not
       issue a <quote><command>shorewall stop</command></quote> command unless
-      you have added an entry for the IP address that you are connected from
-      to <ulink
-      url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>.
-      Also, I don't recommend using <quote><command>shorewall
+      you have either:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Used ADMINISABSENTMINDED=Yes in
+          <filename>/etc/shorewall/shorewall.conf</filename> or</para>
+        </listitem>
+
+        <listitem>
+          <para>added an entry for the IP address that you are connected from
+          to <ulink
+          url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Also, I don't recommend using <quote><command>shorewall
       restart</command></quote>; it is better to create an <emphasis><ulink
       url="configuration_file_basics.htm#Configs">alternate
       configuration</ulink></emphasis> and test it using the <ulink

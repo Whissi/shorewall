@@ -193,7 +193,6 @@
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/interfaces
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/masq
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/policy
-/usr/share/doc/packages/shorewall/Samples/three-interfaces/routestopped
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/rules
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/zones
 ~#</programlisting>
@@ -954,8 +953,8 @@ DNS(ACCEPT) $FW       dmz:10.10.11.1             </programlisting></para>
     a <emphasis>defined macro</emphasis>. Shorewall includes a number of
     defined macros and <ulink url="Macros.html">you can add your own</ulink>.
     To see the list of macros included with your version of Shorewall, run the
-    command <command>ls
-    <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
+    command <command>shorewall show
+    <filename>macros</filename></command>.</para>
 
     <para>You don't have to use defined macros when coding a rule in
     <filename>/etc/shorewall/rules</filename>. The first example above (name
@@ -1128,12 +1127,14 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     <para>The firewall is started using the <command>shorewall start</command>
     command and stopped using <command>shorewall stop</command>. When the
     firewall is stopped, routing is enabled on those hosts that have an entry
-    in <ulink
-    url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>.
-    A running firewall may be restarted using the <command>shorewall
-    restart</command> command. If you want to totally remove any trace of
-    Shorewall from your Netfilter configuration, use <command>shorewall
-    clear</command>.</para>
+    in <filename><ulink
+    url="manpages/shorewall-stoppedrules.html">/etc/shorewall/stoppedrules</ulink></filename>
+    (<ulink
+    url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>
+    on Shorewall 4.5.7 and earlier). A running firewall may be restarted using
+    the <command>shorewall restart</command> command. If you want to totally
+    remove any trace of Shorewall from your Netfilter configuration, use
+    <command>shorewall clear</command>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
@@ -1144,16 +1145,26 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     DMZ or if you want to enable a different set of hosts, modify
     <filename>/etc/shorewall/routestopped</filename> accordingly. <warning>
         <para>If you are connected to your firewall from the Internet, do not
-        issue a <command>shorewall stop</command> command unless you have
-        added an entry for the IP address that you are connected from to
-        <ulink
-        url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>.
-        Also, I don't recommend using <command>shorewall restart</command>; it
-        is better to create an <ulink
-        url="configuration_file_basics.htm#Levels">alternate
-        configuration</ulink> and test it using the <ulink
-        url="starting_and_stopping_shorewall.htm"><command>shorewall
-        try</command> command</ulink>.</para>
+        issue a <quote><command>shorewall stop</command></quote> command
+        unless you have either:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Used ADMINISABSENTMINDED=Yes in
+            <filename>/etc/shorewall/shorewall.conf</filename>; or</para>
+          </listitem>
+
+          <listitem>
+            <para>added an entry for the <acronym>IP</acronym> address that
+            you are connected from to <filename
+            class="directory">/etc/shorewall/</filename><filename>routestopped</filename>.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>Also, I don't recommend using <quote><command>shorewall
+        restart</command></quote>; it is better to create an alternate
+        configuration and test it using the <quote><command>shorewall
+        try</command></quote> command.</para>
       </warning></para>
 
     <para>The firewall will start after your network interfaces have been

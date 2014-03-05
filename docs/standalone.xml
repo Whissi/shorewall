@@ -536,6 +536,12 @@ Web(ACCEPT) net       $FW
 IMAP(ACCEPT)net       $FW</programlisting>
     </example>
 
+    <caution>
+      <para>The Shorewall-provided macros assume that the associated service
+      is using it's standard port and will not work with services listening on
+      a non-standard port.</para>
+    </caution>
+
     <para>You may also choose to code your rules directly without using the
     pre-defined macros. This will be necessary in the event that there is not
     a pre-defined macro that meets your requirements. In that case the general

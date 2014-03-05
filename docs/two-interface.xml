@@ -171,7 +171,6 @@
 /usr/share/doc/packages/shorewall/Samples/two-interfaces/interfaces
 /usr/share/doc/packages/shorewall/Samples/two-interfaces/masq
 /usr/share/doc/packages/shorewall/Samples/two-interfaces/policy
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/routestopped
 /usr/share/doc/packages/shorewall/Samples/two-interfaces/rules
 /usr/share/doc/packages/shorewall/Samples/two-interfaces/zones
 ~#</programlisting>
@@ -203,8 +202,9 @@
 
               <para>If you install using the .deb, you will find that your
               <filename class="directory">/etc/shorewall</filename> directory
-              is empty. This is intentional. The released configuration file
-              skeletons may be found on your system in the directory <filename
+              is practially empty. This is intentional. The released
+              configuration file skeletons may be found on your system in the
+              directory <filename
               class="directory">/usr/share/doc/shorewall/default-config</filename>.
               Simply copy the files you need from that directory to <filename
               class="directory">/etc/shorewall</filename> and modify the
@@ -910,8 +910,8 @@ DNS(ACCEPT) $FW       net</programlisting>This rule allows
 
     <para>In the rule shown above, <quote>DNS</quote>(ACCEPT)is an example of
     a <emphasis>macro invocation</emphasis>. Shorewall includes a number of
-    macros (see <filename>/usr/share/shorewall/macro.*</filename>) and <ulink
-    url="Macros.html">you can add your own</ulink>.</para>
+    macros (command <emphasis role="bold">shorewall show macros</emphasis>)
+    and <ulink url="Macros.html">you can add your own</ulink>.</para>
 
     <para>You don't have to use defined macros when coding a rule in
     <filename>/etc/shorewall/rules</filename>; Shorewall will start slightly
@@ -1046,7 +1046,9 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     <quote><command>shorewall stop</command></quote>. When the firewall is
     stopped, routing is enabled on those hosts that have an entry in <filename
     class="directory">/etc/shorewall/</filename><filename><ulink
-    url="manpages/shorewall-routestopped.html">routestopped</ulink></filename>.
+    url="manpages/shorewall-routestopped.html">routestopped</ulink></filename>
+    (Shorewall 4.5.7 and earlier) or in<filename> <ulink
+    url="manpages/shorewall-stoppedrules.html">/etc/shorewall/stoppedrules</ulink></filename>.
     A running firewall may be restarted using the <quote><command>shorewall
     restart</command></quote> command. If you want to totally remove any trace
     of Shorewall from your Netfilter configuration, use
@@ -1063,10 +1065,22 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     accordingly. <warning>
         <para>If you are connected to your firewall from the Internet, do not
         issue a <quote><command>shorewall stop</command></quote> command
-        unless you have added an entry for the <acronym>IP</acronym> address
-        that you are connected from to <filename
-        class="directory">/etc/shorewall/</filename><filename>routestopped</filename>.
-        Also, I don't recommend using <quote><command>shorewall
+        unless you have either:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Used ADMINISABSENTMINDED=Yes in
+            <filename>/etc/shorewall/shorewall.conf</filename>; or</para>
+          </listitem>
+
+          <listitem>
+            <para>added an entry for the <acronym>IP</acronym> address that
+            you are connected from to <filename
+            class="directory">/etc/shorewall/</filename><filename>routestopped</filename>.</para>
+          </listitem>
+        </orderedlist>
+
+        <para> Also, I don't recommend using <quote><command>shorewall
         restart</command></quote>; it is better to create an alternate
         configuration and test it using the <quote><command>shorewall
         try</command></quote> command.</para>

@@ -216,18 +216,50 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>The value of this variable affects Shorewall6's stopped state.
-          When ADMINISABSENTMINDED=No, only traffic to/from those addresses
-          listed in <ulink
-          url="shorewall6-routestopped.html">shorewall6-routestopped</ulink>(5)
-          is accepted when Shorewall6 is stopped. When
-          ADMINISABSENTMINDED=Yes, in addition to traffic to/from addresses in
-          <ulink
-          url="shorewall6-routestopped.html">shorewall6-routestopped</ulink>(5),
-          connections that were active when Shorewall6 stopped continue to
-          work and all new connections from the firewall system itself are
-          allowed. If this variable is not set or is given the empty value
-          then ADMINISABSENTMINDED=No is assumed.</para>
+          <para>The value of this variable affects Shorewall's stopped state.
+          The behavior differs depending on whether <ulink
+          url="shorewall-routestopped.html">shorewall6-routestopped</ulink>(5)
+          or <ulink
+          url="shorewall-stoppedrules.html">shorewall6-stoppedrules</ulink>(5)
+          is used:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>routestopped</term>
+
+              <listitem>
+                <para>When ADMINISABSENTMINDED=No, only traffic to/from those
+                addresses listed in <filename>routestopped</filename> is
+                accepted when Shorewall is stopped. When
+                ADMINISABSENTMINDED=Yes, in addition to traffic to/from
+                addresses in <filename>routestopped</filename>, connections
+                that were active when Shorewall stopped continue to work and
+                all new connections from the firewall system itself are
+                allowed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>stoppedrules</term>
+
+              <listitem>
+                <para>If ADMINISABSENTMINDED=No, a warning message is issued
+                and the setting is ignored.</para>
+
+                <para>In addition to connections matching entries in
+                <filename>stoppedrules</filename>, existing connections
+                continue to work and all new connections from the firewall
+                system itself are allowed. To sever all existing connections
+                when the firewall is stopped, install the conntrack utility
+                and place the command <command>conntrack -F</command> in the
+                stopped user exit
+                (<filename>/etc/shorewall6/stopped</filename>).</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>If this variable is not set or is given the empty value then
+          ADMINISABSENTMINDED=No is assumed.</para>
         </listitem>
       </varlistentry>
 

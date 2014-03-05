@@ -679,7 +679,13 @@ sub process_stoppedrules() {
     my $result;
 
     if ( my $fn = open_file 'stoppedrules' , 1, 1 ) {
-	first_entry "$doing $fn...";
+	first_entry sub() {
+	    progress_message2("$doing $fn...");
+	    unless ( $config{ADMINISABSENTMINDED} ) {
+		warning_message("Entries in the routestopped file are processed as if ADMINISABSENTMINDED=Yes");
+		$config{ADMINISABSENTMINDED} = 'Yes';
+	    }
+	};
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
@@ -2512,9 +2518,9 @@ EOF
 	  "restore_default_route $config{USE_DEFAULT_RT}"
 	  );
 
-    my @chains = $config{ADMINISABSENTMINDED} ? qw/INPUT FORWARD/ : qw/INPUT OUTPUT FORWARD/;
-
-    add_ijump $filter_table ->{$_}, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' for @chains;
+    if ( $config{ADMINISABSENTMINDED} ) {
+	add_ijump $filter_table ->{$_}, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' for qw/INPUT FORWARD/;
+    }
 
     if ( $family == F_IPV6 ) {
 	add_ijump $input, j => 'ACCEPT', s => IPv6_LINKLOCAL;

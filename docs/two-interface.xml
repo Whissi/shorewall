@@ -808,12 +808,6 @@ FTP(DNAT)  net       loc:10.10.10.1</programlisting> For
         information.</para>
       </example> A couple of important points to keep in mind: <itemizedlist>
         <listitem>
-          <para>The Shorewall-provided macros assume that the service is using
-          its standard port and will not work with a service listening on a
-          non-standard port.</para>
-        </listitem>
-
-        <listitem>
           <para>You must test the above rule from a client outside of your
           local network (i.e., don't test from a browser running on computers
           1 or 2 or on the firewall). If you want to be able to access your
@@ -1086,7 +1080,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
           </listitem>
         </orderedlist>
 
-        <para>Also, I don't recommend using <quote><command>shorewall
+        <para> Also, I don't recommend using <quote><command>shorewall
         restart</command></quote>; it is better to create an alternate
         configuration and test it using the <quote><command>shorewall
         try</command></quote> command.</para>

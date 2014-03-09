@@ -324,7 +324,7 @@
             </varlistentry>
           </variablelist>
 
-          <para> If this variable is not set or is given the empty value then
+          <para>If this variable is not set or is given the empty value then
           ADMINISABSENTMINDED=No is assumed.</para>
         </listitem>
       </varlistentry>
@@ -2766,12 +2766,12 @@ INLINE          -       -       -       ; -j REJECT
 
         <listitem>
           <para>When set to 'Yes', this option causes the Shorewall multi-ISP
-          feature to create a different set of routing rules which are
-          resilient to changes in the main routing table. Such changes can
-          occur for a number of reasons, VPNs going up and down being an
-          example. The idea is to send packets through the main table prior to
-          applying any of the Shorewall-generated routing rules. So changes to
-          the main table will affect the routing of packets by default.</para>
+          feature to create a set of routing rules which are resilient to
+          changes in the main routing table. Such changes can occur for a
+          number of reasons, VPNs going up and down being an example. The idea
+          is to send packets through the main table prior to applying any of
+          the Shorewall-generated routing rules. So changes to the main table
+          will affect the routing of packets by default.</para>
 
           <para>When USE_DEFAULT_RT=Yes:</para>
 
@@ -2820,8 +2820,10 @@ INLINE          -       -       -       ; -j REJECT
             </listitem>
           </orderedlist>
 
-          <para>If USE_DEFAULT_RT is not set or if it is set to the empty
-          string then USE_DEFAULT_RT=No is assumed.</para>
+          <para>Prior to Shorewall 4.6.0, if USE_DEFAULT_RT was not set or if
+          it was set to the empty string then USE_DEFAULT_RT=No was assumed.
+          Beginning with Shorewall 4.6.0, the default is USE_DEFAULT_RT=Yes
+          and use of USE_DEFAULT_RT=No is discouraged.</para>
         </listitem>
       </varlistentry>
 

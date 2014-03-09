@@ -606,6 +606,7 @@ our %deprecated = ( LOGRATE            => '' ,
 		    WIDE_TC_MARKS      => 'no',
 		    HIGH_ROUTE_MARKS   => 'no',
 		    BLACKLISTNEWONLY   => 'yes',
+                    USE_DEFAULT_RT     => 'yes',
 		  );
 #
 # Deprecated options that are eliminated via update

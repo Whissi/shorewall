@@ -866,12 +866,12 @@ CEOF
 	    if ( $shared ) {
 		emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
 		emit( "run_ip rule add from $address pref 20000 table $id" ,
-		      "echo \"\$IP -$family rule del from $address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
+		      "echo \"\$IP -$family rule del from $address pref 20000> /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
 	    } elsif ( ! $pseudo ) {
 		emit  ( "find_interface_addresses $physical | while read address; do" );
 		emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
 		emit  ( "    run_ip rule add from \$address pref 20000 table $id",
-			"    echo \"\$IP -$family rule del from \$address > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
+			"    echo \"\$IP -$family rule del from \$address pref 20000 > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
 			'    rulenum=$(($rulenum + 1))',
 			'done'
 		      );

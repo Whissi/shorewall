@@ -342,7 +342,7 @@
 
         <listitem>
           <para>If set, the behavior of the <command>start</command> and
-          <command>restart</command> commands is change; if no files in
+          <command>restart</command> commands is changed; if no files in
           <filename><filename
           class="directory">/etc/shorewall</filename></filename> have been
           changed since the last successful <command>start</command> or
@@ -665,13 +665,14 @@
           and the policy is enforced in that chain. For example, if the policy
           entry is<programlisting>#SOURCE DEST POLICY LOG
 #                   LEVEL
-net     all  DROP   info</programlisting>then the chain name is 'net2all'
-          which is also the chain named in Shorewall log messages generated as
-          a result of the policy. If EXPAND_POLICIES=Yes, then Shorewall will
-          create a separate chain for each pair of zones covered by the
-          policy. This makes the resulting log messages easier to interpret
-          since the chain in the messages will have a name of the form 'a2b'
-          where 'a' is the SOURCE zone and 'b' is the DEST zone.</para>
+net     all  DROP   info</programlisting>then the chain name is 'net-all'
+          ("net2all" if ZONE2ZONE=2) which is also the chain named in
+          Shorewall log messages generated as a result of the policy. If
+          EXPAND_POLICIES=Yes, then Shorewall will create a separate chain for
+          each pair of zones covered by the policy. This makes the resulting
+          log messages easier to interpret since the chain in the messages
+          will have a name of the form 'a2b' where 'a' is the SOURCE zone and
+          'b' is the DEST zone.</para>
         </listitem>
       </varlistentry>
 
@@ -782,7 +783,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
 
         <listitem>
           <para>Added in Shorewall 4.5.7. This option lists the Netfilter
-          application helps that are to be enabled. If not specified, the
+          application helpers that are to be enabled. If not specified, the
           default is to enable all helpers.</para>
 
           <para>Possible values for <replaceable>helper</replaceable>
@@ -1122,7 +1123,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net2all'
           <para>Added in Shorewall6 4.4.20. If not specified, the default is
           Yes which preserves the legacy behavior of <command>start
           -f</command> (the modification times of the files in
-          <filename>/etc/shorewall6</filename> are compare with that of
+          <filename>/etc/shorewall6</filename> are compared with that of
           <filename>/var/lib/shorewall6/restore</filename>). If set to No,
           then the times are compared with that of
           /var/lib/shorewall6/firewall, which is consistent with the way that

@@ -545,7 +545,7 @@ debug_restore_input() {
 		eval $g_tool -t $table $first $second $rest
 
 		if [ $? -ne 0 ]; then
-		    error_message "ERROR: Command \"$g_tool $first $second $rest\" Failed"
+		    error_message "ERROR: Command \"$g_tool -t $table $first $second $rest\" Failed"
 		    stop_firewall
 		    exit 2
 		fi

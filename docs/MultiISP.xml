@@ -847,11 +847,9 @@ eth1             0.0.0.0/0         130.252.99.27</programlisting>
       <para>This continues the example in the preceding section.</para>
 
       <para>Now suppose that you want to route all outgoing SMTP traffic from
-      your local network through ISP 2. You would make this entry in <ulink
-      url="traffic_shaping.htm">/etc/shorewall/mangle</ulink> (and if you are
-      running a version of Shorewall earlier than 3.0.0, you would set
-      TC_ENABLED=Yes in <ulink
-      url="???">/etc/shorewall/shorewall.conf</ulink>).</para>
+      your local network through ISP 2. If you are running Shorewall 4.6.0 or
+      later, you would make this entry in <ulink
+      url="traffic_shaping.htm">/etc/shorewall/mangle</ulink>.</para>
 
       <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)
@@ -863,6 +861,21 @@ MARK(2):P       &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting
       <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)
 MARK(2)         $FW             0.0.0.0/0       tcp     25</programlisting>
+
+      <para>If you are running a Shorewall version earlier than 4.6.0, the
+      above rules in <ulink
+      url="manpages/shorewall-tcrules.html">/etc/shorewall/tcrules</ulink>
+      would be:</para>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                               PORT(S)
+2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
+
+      <para>And for traffic from the firewall:</para>
+
+      <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                               PORT(S)
+2               $FW             0.0.0.0/0       tcp     25</programlisting>
     </section>
 
     <section id="PortForwarding">

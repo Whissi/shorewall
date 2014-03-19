@@ -2070,6 +2070,7 @@ sub use_input_chain($$) {
     # Interface associated with a single zone -- Must use the interface chain if
     #                                            the zone has  multiple interfaces
     #                                            and this interface has option rules
+    #
     return 1 if $interfaceref->{options}{use_input_chain} && keys %{ zone_interfaces( $zone ) } > 1;
     #
     # Interface associated with a single zone -- use the zone's input chain if it has one

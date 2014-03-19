@@ -825,12 +825,13 @@ sub get_opttype( $$ ) { # $option, $default
     $opttype{$_[0]} || $_[1];
 }
 
-# # Next a helper for setting an individual option
+#
+# Next a helper for setting an individual option
 #
 sub set_rule_option( $$$ ) {
     my ( $ruleref, $option, $value ) = @_;
 
-    assert( defined $value && reftype $ruleref , $value, $ruleref );
+    assert( defined $value && reftype $ruleref , $option, $ruleref );
 
     $ruleref->{simple} = 0;
     $ruleref->{complex} = 1 if reftype $value;
@@ -2332,7 +2333,7 @@ sub add_jump( $$$;$$$ ) {
     #
     # If the destination is a chain, mark it referenced
     #
-    $toref->{referenced} = 1, add_reference $fromref, $toref if $toref;
+    $toref->{referenced} = 1, add_reference( $fromref, $toref ) if $toref;
 
     my $param = $goto_ok && $toref && have_capability( 'GOTO_TARGET' ) ? 'g' : 'j';
 
@@ -3182,6 +3183,7 @@ sub check_optimization( $ ) {
 # Perform Optimization
 #
 # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
+#
 sub optimize_level0() {
     for my $table ( qw/raw rawpost mangle nat filter/ ) {
 	my $tableref = $chain_table{$table};

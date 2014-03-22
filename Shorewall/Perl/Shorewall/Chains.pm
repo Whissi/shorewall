@@ -4797,11 +4797,6 @@ sub verify_mark( $ ) {
     }
 }
 
-sub verify_small_mark( $ ) {
-    verify_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > $globals{TC_MAX};
-}
-
 sub validate_mark( $ ) {
     my $mark = shift;
     my $val;
@@ -4818,6 +4813,12 @@ sub validate_mark( $ ) {
     }
 
     return numeric_value $val if defined( wantarray );
+}
+
+sub verify_small_mark( $ ) {
+    my $val = validate_mark ( (my $mark) = $_[0] );
+    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > $globals{TC_MAX};
+    $val;
 }
 
 #

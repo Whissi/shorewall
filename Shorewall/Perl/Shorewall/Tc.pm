@@ -227,8 +227,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     our $designator;
     my $fw              = firewall_zone;
 
-    sub handle_mark_param( $ ) {
-	my ( $option ) = @_;
+    sub handle_mark_param( $$ ) {
+	my ( $option, $marktype ) = @_;
 	my $and_or = $1 if $params =~ s/^([|&])//;
 
 	if ( $params =~ /-/ ) {
@@ -292,16 +292,21 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
 	    $done = 1;
 	}  else {
-	    my $mark = $params;
-	    my $val;
-	    if ( supplied $mark ) {
-		$val = validate_mark( $mark );
-	    } else {
-		$val = numeric_value( $mark = $globals{TC_MASK} );
-	    }
 	    #
 	    # A Single Mark
 	    #
+	    my $mark = $params;
+	    my $val;
+	    if ( supplied $mark ) {
+		if ( $marktype == SMALLMARK ) {
+		    $val = verify_small_mark( $mark );
+		} else {
+		    $val = validate_mark( $mark );
+		}
+	    } else {
+		$val = numeric_value( $mark = $globals{TC_MASK} );
+	    }
+
 	    if ( $config{PROVIDER_OFFSET} ) {
 		my $limit = $globals{TC_MASK};
 		unless ( have_capability 'FWMARK_RT_MASK' ) {
@@ -375,7 +380,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    function       => sub () {
 		$target = 'CONNMARK';
-		handle_mark_param('--set-mark' );
+		handle_mark_param('--set-mark' , HIGHMARK );
 	    },
 	},
 
@@ -551,7 +556,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    mask           => in_hex( $globals{TC_MASK} ),
 	    function       => sub () {
 		$target = 'MARK';
-		handle_mark_param('--set-mark');
+		handle_mark_param('--set-mark', , HIGHMARK );
 	    },
 	},
 
@@ -563,7 +568,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		$target = 'CONNMARK ';
 		if ( supplied $params ) {
-		    handle_mark_param( '--restore-mark --mark ' );
+		    handle_mark_param( '--restore-mark --mask ',
+				       $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
 		} else {
 		    $target .= '--restore-mark --mask ' . in_hex( $globals{TC_MASK} );
 		}
@@ -591,7 +597,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		$target = 'CONNMARK ';
 		if ( supplied $params ) {
-		    handle_mark_param( '--save-mark --mask ' );
+		    handle_mark_param( '--save-mark --mask ' ,
+				       $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
+
 		} else {
 		    $target .= '--save-mark --mask ' . in_hex( $globals{TC_MASK} );
 		}

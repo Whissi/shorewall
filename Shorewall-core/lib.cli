@@ -2935,11 +2935,11 @@ show_status() {
     fi
 
     if [ $VERBOSITY -ge 1 ]; then 
-	echo "State:$state"
 	if [ -f $g_firewall ]; then
-	    echo $g_echo_n "$g_firewall was compiled by Shorewall version "
-	    $g_firewall version
+	    state="$state ($g_firewall compiled by Shorewall version $($g_firewall version))"
 	fi
+	echo "State:$state"
+	echo
     fi
 
 }
@@ -2947,7 +2947,6 @@ show_status() {
 status_command() {
     [ $VERBOSITY -ge 1 ] && echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)" && echo
     show_status
-    [ $VERBOSITY -ge 1 ] && echo
     exit $status
 }
 

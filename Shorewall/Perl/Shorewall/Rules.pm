@@ -2497,10 +2497,12 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		my $auxref   = $filter_table->{$auxchain};
 
 		unless ( $auxref ) {
+		    my $save_comment = push_comment;
 		    $auxref = new_chain 'filter', $auxchain;
 		    $auxref->{blacklistsection} = 1 if $blacklist;
 
 		    add_ijump( $chainref, j => $auxref, state_imatch( $section_states{$section} ) );
+		    pop_comment( $save_comment );
 		}
 
 		$chain    = $auxchain;

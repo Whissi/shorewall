@@ -5320,7 +5320,7 @@ sub get_configuration( $$$$$ ) {
     # get_capabilities requires that the true settings of these options be established
     #
     default 'MODULE_PREFIX', 'ko ko.gz o o.gz gz';
-    default_yes_no 'LOAD_HELPERS_ONLY'          , '';
+    default_yes_no 'LOAD_HELPERS_ONLY'          , 'Yes';
 
     get_capabilities( $export );
 

@@ -817,12 +817,6 @@ sub add_group_to_zone($$$$$)
     $zoneref->{interfaces}{$interface} = 1;
     $zoneref->{destonly} ||= $interfaceref->{options}{destonly};
     $options->{destonly} ||= $interfaceref->{options}{destonly};
-    #
-    # Make 'find_hosts_by_option()' work correctly for this zone
-    #
-    for ( qw/blacklist maclist nosmurfs tcpflags/ ) {
-	$options->{$_} = $interfaceref->{options}{$_} if $interfaceref->{options}{$_} && ! exists $options->{$_};
-    }
 
     $interfaceref->{zones}{$zone} = 1;
 
@@ -857,6 +851,13 @@ sub add_group_to_zone($$$$$)
 		if ( $host eq ALLIP ) {
 		    fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if @newnetworks;
 		    $interfaces{$interface}{zone} = $zone;
+		    #
+		    # Make 'find_hosts_by_option()' work correctly for this zone
+		    #
+		    for ( qw/blacklist maclist nosmurfs tcpflags/ ) {
+			$options->{$_} = $interfaceref->{options}{$_} if $interfaceref->{options}{$_};
+		    }
+
 		    $allip = 1;
 		}
 	    }

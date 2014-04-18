@@ -67,6 +67,7 @@ our $VERSION = 'MODULEVERSION';
 our %sections;
 
 our $section;
+our $next_section;
 
 use constant { NULL_SECTION          => 0x00,
                BLACKLIST_SECTION     => 0x01,
@@ -239,7 +240,8 @@ sub initialize( $ ) {
     #
     # Current rules file section.
     #
-    $section  = NULL_SECTION;
+    $section      = NULL_SECTION;
+    $next_section = NULL_SECTION;
     #
     # Macro=><macro file> mapping
     #
@@ -3065,22 +3067,35 @@ sub process_section ($) {
     if ( $sect eq 'BLACKLIST' ) {
 	fatal_error "The BLACKLIST section has been eliminated. Please move your BLACKLIST rules to the 'blrules' file";
     } elsif ( $sect eq 'ESTABLISHED' ) {
-	$sections{ALL} = 1;
+        $sections{ALL} = 1;
     } elsif ( $sect eq 'RELATED' ) {
-	@sections{'ALL','ESTABLISHED'} = ( 1, 1);
-	finish_section 'ESTABLISHED';
+        @sections{'ALL','ESTABLISHED'} = ( 1, 1);
     } elsif ( $sect eq 'INVALID' ) {
-	@sections{'ALL','ESTABLISHED','RELATED'} = ( 1, 1, 1 );
-	finish_section ( 'ESTABLISHED,RELATED' );
+        @sections{'ALL','ESTABLISHED','RELATED'} = ( 1, 1, 1 );
     } elsif ( $sect eq 'UNTRACKED' ) {
-	@sections{'ALL','ESTABLISHED','RELATED', 'INVALID' } = ( 1, 1, 1, 1 );
-	finish_section ( 'ESTABLISHED,RELATED,INVALID' );
+        @sections{'ALL','ESTABLISHED','RELATED', 'INVALID' } = ( 1, 1, 1, 1 );
     } elsif ( $sect eq 'NEW' ) {
-	@sections{'ALL','ESTABLISHED','RELATED','INVALID','UNTRACKED', 'NEW'} = ( 1, 1, 1, 1, 1, 1 );
+        @sections{'ALL','ESTABLISHED','RELATED','INVALID','UNTRACKED', 'NEW'} = ( 1, 1, 1, 1, 1, 1 );
+    }
+
+
+
+    $next_section = $section_map{$sect};
+}
+
+sub next_section() {
+    
+    if ( $next_section == RELATED_SECTION ) {
+	finish_section 'ESTABLISHED';
+    } elsif ( $next_section == INVALID_SECTION ) {
+	finish_section ( 'ESTABLISHED,RELATED' );
+    } elsif ( $next_section == UNTRACKED_SECTION ) {
+	finish_section ( 'ESTABLISHED,RELATED,INVALID' );
+    } elsif ( $next_section == NEW_SECTION ) {
 	finish_section ( 'ESTABLISHED,RELATED,INVALID,UNTRACKED' );
     }
 
-    $section = $section_map{$sect};
+    $section = $next_section;
 }
 
 #
@@ -3167,7 +3182,7 @@ sub process_raw_rule ( ) {
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.
     #
-    process_section( 'NEW' ) unless $section;
+    next_section if $section != $next_section;
 
     if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
 	progress_message "Rule \"$currentline\" ignored.";
@@ -3330,7 +3345,7 @@ sub process_rules( $ ) {
     #
     # Process the blrules file
     #
-    $section = BLACKLIST_SECTION;
+    $section = $next_section = BLACKLIST_SECTION;
 
     my $fn = open_file( 'blrules', 1, 1 );
 
@@ -3359,7 +3374,8 @@ sub process_rules( $ ) {
 	process_raw_rule while read_a_line( NORMAL_READ );
     }
 
-    $section = NULL_SECTION;
+    $section      = NULL_SECTION;
+    $next_section = NEW_SECTION;
 
     add_interface_options( $blrules );
 
@@ -3383,7 +3399,7 @@ sub process_rules( $ ) {
     #
     # No need to finish the NEW section since no rules need to be generated
     #
-    $section = DEFAULTACTION_SECTION;
+    $section = $next_section = DEFAULTACTION_SECTION;
 }
 
 1;

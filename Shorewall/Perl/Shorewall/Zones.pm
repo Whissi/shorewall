@@ -804,9 +804,9 @@ sub single_interface( $ ) {
     @keys == 1 ? $keys[0] : '';
 }
 
-sub add_group_to_zone($$$$$)
+sub add_group_to_zone($$$$$$)
 {
-    my ($zone, $type, $interface, $networks, $options) = @_;
+    my ($zone, $type, $interface, $networks, $options, $inherit_options) = @_;
     my $hostsref;
     my $typeref;
     my $interfaceref;
@@ -817,6 +817,15 @@ sub add_group_to_zone($$$$$)
     $zoneref->{interfaces}{$interface} = 1;
     $zoneref->{destonly} ||= $interfaceref->{options}{destonly};
     $options->{destonly} ||= $interfaceref->{options}{destonly};
+
+    if ( $inherit_options && $type== $zonetype && $type != IPSEC ) {
+	#
+	# Make 'find_hosts_by_option()' work correctly for this zone
+	#
+	for ( qw/blacklist maclist nosmurfs tcpflags/ ) {
+	    $options->{$_} = $interfaceref->{options}{$_} if $interfaceref->{options}{$_} && ! exists $options->{$_}; 
+	}
+    }
 
     $interfaceref->{zones}{$zone} = 1;
 
@@ -851,13 +860,6 @@ sub add_group_to_zone($$$$$)
 		if ( $host eq ALLIP ) {
 		    fatal_error "Duplicate Host Group ($interface:$host) in zone $zone" if @newnetworks;
 		    $interfaces{$interface}{zone} = $zone;
-		    #
-		    # Make 'find_hosts_by_option()' work correctly for this zone
-		    #
-		    for ( qw/blacklist maclist nosmurfs tcpflags/ ) {
-			$options->{$_} = $interfaceref->{options}{$_} if $interfaceref->{options}{$_};
-		    }
-
 		    $allip = 1;
 		}
 	    }
@@ -1409,12 +1411,13 @@ sub process_interface( $$ ) {
 	}
 
 	$netsref ||= [ allip ];
-	add_group_to_zone( $zone, $zoneref->{type}, $interface, $netsref, $hostoptionsref );
+	add_group_to_zone( $zone, $zoneref->{type}, $interface, $netsref, $hostoptionsref , 1);
 	add_group_to_zone( $zone,
 			   $zoneref->{type},
 			   $interface,
 			   $family == F_IPV4 ? [ IPv4_MULTICAST ] : [ IPv6_MULTICAST ] ,
-			   { destonly => 1 } ) if $hostoptionsref->{multicast} && $interfaces{$interface}{zone} ne $zone;
+			   { destonly => 1 },
+			   0) if $hostoptionsref->{multicast} && $interfaces{$interface}{zone} ne $zone;
     }
 
     progress_message "  Interface \"$currentline\" Validated";
@@ -2077,7 +2080,7 @@ sub process_host( ) {
     #
     $interface = '%vserver%' if $type & VSERVER;
 
-    add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref);
+    add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref, 1 );
 
     progress_message "   Host \"$currentline\" validated";
 

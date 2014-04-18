@@ -606,7 +606,7 @@ our %deprecated = ( LOGRATE            => '' ,
 		    WIDE_TC_MARKS      => 'no',
 		    HIGH_ROUTE_MARKS   => 'no',
 		    BLACKLISTNEWONLY   => 'yes',
-                    USE_DEFAULT_RT     => 'yes',
+                    USE_DEFAULT_RT     => '',
 		  );
 #
 # Deprecated options that are eliminated via update
@@ -5627,7 +5627,7 @@ sub get_configuration( $$$$$ ) {
     require_capability 'COMMENTS', 'TRACK_RULES=Yes', 's' if $config{TRACK_RULES};
 
     default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
-    default_yes_no 'USE_DEFAULT_RT'             , 'Yes';
+    default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'WIDE_TC_MARKS'              , '';

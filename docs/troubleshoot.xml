@@ -16,7 +16,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2007</year>
+      <year>2001-2007, 2014</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -145,8 +145,8 @@ gateway:~/test # </programlisting>A look at /var/lib/shorewall/restore at line
         </listitem>
 
         <listitem>
-          <para>The <filename>routestopped</filename> file is not
-          consulted.</para>
+          <para>The <filename>stoppedrules (routestopped)</filename> file is
+          not consulted.</para>
         </listitem>
 
         <listitem>
@@ -275,14 +275,13 @@ gateway:~/test # </programlisting>A look at /var/lib/shorewall/restore at line
     messages, it may be an indication that you are missing one or more rules
     -- see <ulink url="FAQ.htm#faq17">FAQ 17</ulink>.</para>
 
-    <para>While you are troubleshooting, it is a good idea to clear two
-    variables in
+    <para>While you are troubleshooting, it is a good idea to clear LOGLIMIT
+    in
     <filename><filename>/etc/shorewall/shorewall.conf</filename></filename>:</para>
 
-    <para><programlisting>LOGRATE=
-LOGBURST=""</programlisting>This way, you will see all of the log messages
-    being generated (be sure to restart shorewall after clearing these
-    variables).</para>
+    <para><programlisting>LOGLIMIT=</programlisting>This way, you will see all
+    of the log messages being generated (be sure to restart shorewall after
+    clearing thIs variable).</para>
 
     <example id="Example2">
       <title>Log Message</title>

@@ -318,7 +318,7 @@ fi
 if [ -n "$SYSTEMD" ]; then
     mkdir -p ${DESTDIR}${SYSTEMD}
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 600 $SERVICEFILE ${DESTDIR}${SYSTEMD}/$PRODUCT.service
+    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SYSTEMD}/$PRODUCT.service
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMD}/$PRODUCT.service"
     if [ -n "$DESTDIR" ]; then

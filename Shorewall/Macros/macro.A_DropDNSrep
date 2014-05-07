@@ -1,13 +1,15 @@
 #
 # Shorewall version 4 - Audited DropDNSrep Macro
 #
-# /usr/share/shorewall/macro.ADropDNSrep
+# /usr/share/shorewall/macro.A_DropDNSrep
 #
 #	This macro silently audites and drops DNS UDP replies
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
-#				PORT(S)	PORT(S)	LIMIT	GROUP
+?FORMAT 2
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
+#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 
 ?COMMENT Late DNS Replies
 

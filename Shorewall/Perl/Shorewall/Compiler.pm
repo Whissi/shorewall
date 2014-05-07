@@ -377,21 +377,20 @@ sub generate_script_3($) {
 
     emit '';
 
+    emit ( 'if [ "$COMMAND" = refresh ]; then' ,
+	   '   run_refresh_exit' ,
+	   'else' ,
+	   '    run_init_exit',
+	   'fi',
+	   '' );
+
     load_ipsets;
     create_nfobjects;
+    verify_address_variables;
+    save_dynamic_chains;
+    mark_firewall_not_started;
 
     if ( $family == F_IPV4 ) {
-	emit ( 'if [ "$COMMAND" = refresh ]; then' ,
-	       '   run_refresh_exit' ,
-	       'else' ,
-	       '    run_init_exit',
-	       'fi',
-	       '' );
-
-	verify_address_variables;
-	save_dynamic_chains;
-	mark_firewall_not_started;
-
 	emit ( '',
 	       'delete_proxyarp',
 	       ''
@@ -410,16 +409,15 @@ sub generate_script_3($) {
 	emit "disable_ipv6\n" if $config{DISABLE_IPV6};
 
     } else {
-	emit ( 'if [ "$COMMAND" = refresh ]; then' ,
-	       '   run_refresh_exit' ,
-	       'else' ,
-	       '    run_init_exit',
-	       'fi',
-	       '' );
-
-	verify_address_variables;
-	save_dynamic_chains;
-	mark_firewall_not_started;
+	if ( have_capability( 'NAT_ENABLED' ) ) {
+	    emit(  'if [ -f ${VARDIR}/nat ]; then',
+		   '    while read external interface; do',
+		   '        del_ip_addr $external $interface',
+		   '    done < ${VARDIR}/nat',
+		   '',
+		   '    rm -f ${VARDIR}/nat',
+		   "fi\n" );
+	}
 
 	emit ('',
 	       'delete_proxyndp',

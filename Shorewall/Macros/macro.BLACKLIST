@@ -6,8 +6,10 @@
 #	This macro handles blacklisting using BLACKLIST_DISPOSITION and BLACKLIST_LOGLEVEL
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
-#				PORT(S)	PORT(S)	LIMIT	GROUP
+?FORMAT 2
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
+#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 ?if $BLACKLIST_LOGLEVEL
 blacklog
 ?else

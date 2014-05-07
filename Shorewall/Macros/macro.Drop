@@ -11,12 +11,14 @@
 #		Drop	net	all
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	RATE	USER/
-#				PORT(S)	PORT(S)	LIMIT	GROUP
+?FORMAT 2
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
+#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 #
-# Don't log 'auth' REJECT
+# Don't log 'auth' DROP
 #
-REJECT	-	-	tcp	113
+DROP	-	-	tcp	113
 #
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).

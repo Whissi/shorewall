@@ -20,20 +20,20 @@
 #
 # /etc/shorewall/macro.FwdFTP:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
-#	#				PORT(S)	PORT(S)	DEST	 LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
+#	#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 #	DNAT	-	-	tcp	21
 #
 # /etc/shorewall/rules:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
-#	#				PORT(S)	PORT(S)	DEST	 LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
+#	#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 #	FwdFTP	net	loc:192.168.1.5
 #
 # The result is equivalent to:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
-#	#				PORT(S)	PORT(S)	DEST	 LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
+#	#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 #	DNAT	net	loc:192.168.1.5	tcp	21
 #
 # The substitution rules are as follows:
@@ -71,11 +71,13 @@
 #	Remaining		Any value in the rules file REPLACES the value
 #	columns			given in the macro file.
 #
-# Multiple parameters may be passed to a macro. Within this file, $1 refers to the first parameter,
-# $2 to the second an so on. $1 is a synonym for PARAM but may be used anywhere in the file whereas
-# PARAM may only be used in the ACTION column.
+# Multiple parameters may be passed to a macro. Within this file, $1 refers
+# to the first parameter, $2 to the second an so on. $1 is a synonym for
+# PARAM but may be used anywhere in the file whereas PARAM may only be used
+# in the ACTION column.
 #
-# You can specify default values for parameters by using DEFAULT or DEFAULTS entry:
+# You can specify default values for parameters by using DEFAULT or DEFAULTS
+# entry:
 #
 #      DEFAULTS  <default for $1>,<default for $2>,...
 #

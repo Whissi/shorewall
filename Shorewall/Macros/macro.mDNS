@@ -8,8 +8,10 @@
 #	This macro handles multicast DNS traffic
 #
 ###############################################################################
-#ACTION	SOURCE	DEST			PROTO	DEST	SOURCE	RATE	USER/
-#						PORT(S)	PORT(S)	LIMIT	GROUP
+?FORMAT 2
+###############################################################################
+#ACTION	SOURCE	DEST			PROTO	DEST	SOURCE	ORIGIN	RATE
+#						PORT(S)	PORT(S)	DEST	LIMIT
 PARAM	-	224.0.0.251		udp	5353
 PARAM	-	-			udp	1024:	5353
 PARAM	-	224.0.0.251		2

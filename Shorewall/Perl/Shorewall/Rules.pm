@@ -203,6 +203,14 @@ our %statetable;
 #
 our $statematch;
 #
+# Avoid duplicate format-1 macro warnings
+#
+our %fmt1macrowarn;
+#
+# Avoid duplicate format-1 action warnings
+#
+our %fmt1actionwarn;
+#
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
 #
@@ -279,6 +287,9 @@ sub initialize( $ ) {
     } else {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn/;
     }
+
+    %fmt1macrowarn  = ();
+    %fmt1actionwarn = ();
 }
 
 #
@@ -1652,6 +1663,8 @@ sub process_action($$) {
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
 
 	if ( $file_format == 1 ) {
+	    warning_message( "FORMAT-1 actions are deprecated and support will be dropped in a future release" ) unless $fmt1actionwarn{$action}++;
+
 	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
 		split_line1( 
 		    'action file',
@@ -1903,6 +1916,8 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
 
 	if ( $file_format == 1 ) {
+	    warning_message( "FORMAT-1 macros are deprecated and support will be dropped in a future release" ) unless $fmt1macrowarn{$macro}++;
+
 	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = 
 		split_line2( 'macro file',
 			     \%rulecolumns,

@@ -708,7 +708,7 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
           <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
-<emphasis role="bold">eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</emphasis></programlisting>
+<emphasis role="bold">eth1:192.168.1.5        192.168.1.0/24  192.168.1.254   tcp     www</emphasis></programlisting>
 
           <para>Note: The technique described here is known as
           <firstterm>hairpinning NAT</firstterm> and is described in section 6
@@ -718,7 +718,7 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
           source:</para>
 
           <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
-eth1:192.168.1.5        eth1            <emphasis role="bold">130.151.100.69</emphasis>  tcp     www</programlisting>
+eth1:192.168.1.5        192.168.1.0/24  <emphasis role="bold">130.151.100.69</emphasis>  tcp     www</programlisting>
         </listitem>
 
         <listitem>

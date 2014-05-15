@@ -79,6 +79,166 @@
   </section>
 
   <section>
+    <title>Version &gt;= 4.6.0</title>
+
+    <orderedlist>
+      <listitem>
+        <para>Beginning with Shorewall 4.6.0, ection headers are now preceded
+        by '?' (e.g., '?SECTION ...'). If your configuration contains any bare
+        'SECTION' entries, the following warning is issued: </para>
+
+        <programlisting>WARNING: 'SECTION' is deprecated in favor of '?SECTION' - consider running 'shorewall update -D' ...</programlisting>
+
+        <para>As mentioned in the message, running 'shorewall[6] update -D'
+        will eliminate the warning.</para>
+      </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall 4.6.0, the 'tcrules' file has been
+        superceded by the 'mangle' file. Existing 'tcrules' files will still
+        be processed, with the restriction that TPROXY is no longer supported
+        in FORMAT 1. If your 'tcrules' file has non-commentary entries, the
+        following warning message is issued:</para>
+
+        <programlisting>WARNING: Non-empty tcrules file (...); consider running 'shorewall update -t'</programlisting>
+
+        <para>See <ulink url="manpages/shorewall.html">shorewall</ulink>(8)
+        for limitations of 'update -t'.</para>
+      </listitem>
+
+      <listitem>
+        <para>The default value LOAD_HELPERS_ONLY is now 'Yes'.</para>
+      </listitem>
+
+      <listitem>
+        <para> Beginning with Shorewall 4.5.0, FORMAT-1 actions and macros are
+        deprecated and a warning will be issued for each FORMAT-1 action or
+        macro found.</para>
+
+        <programlisting>WARNING: FORMAT-1 actions are deprecated and support will be dropped in a future release.</programlisting>
+
+        <programlisting>WARNING: FORMAT-1 macros are deprecated and support will be dropped in a future release.</programlisting>
+
+        <para> To eliminate these warnings, add the following line before the
+        first rule in the action or macro: </para>
+
+        <programlisting>?FORMAT 2</programlisting>
+
+        <para>and adjust the columns appropriately. FORMAT-1 actions have the
+        following columns:</para>
+
+        <simplelist>
+          <member>TARGET</member>
+
+          <member>SOURCE</member>
+
+          <member>DEST</member>
+
+          <member>PROTO</member>
+
+          <member>DEST PORT(S)</member>
+
+          <member>SOURCE PORT(S)</member>
+
+          <member>RATE/LIMIT</member>
+
+          <member>USER/GROUP</member>
+
+          <member>MARK</member>
+        </simplelist>
+
+        <para>while FORMAT-2 actions have these columns:</para>
+
+        <simplelist>
+          <member>TARGET</member>
+
+          <member>SOURCE</member>
+
+          <member>DEST</member>
+
+          <member>PROTO</member>
+
+          <member>DEST PORT(S)</member>
+
+          <member>SOURCE PORT(S)</member>
+
+          <member>ORIGINAL DEST</member>
+
+          <member>RATE/LIMIT</member>
+
+          <member>USER/GROUP</member>
+
+          <member>MARK</member>
+
+          <member>CONLIMIT</member>
+
+          <member>TIME</member>
+
+          <member>HEADERS (Used in IPv6 only)</member>
+
+          <member>CONDITION</member>
+
+          <member>HELPER</member>
+        </simplelist>
+
+        <para>FORMAT-1 macros have the following columns:</para>
+
+        <simplelist>
+          <member>TARGET</member>
+
+          <member>SOURCE</member>
+
+          <member>DEST</member>
+
+          <member>PROTO</member>
+
+          <member>DEST PORT(S)</member>
+
+          <member>SOURCE PORT(S)</member>
+
+          <member>RATE/LIMIT</member>
+
+          <member>USER/GROUP</member>
+        </simplelist>
+
+        <para>while FORMAT-2 macros have the following columns:</para>
+
+        <simplelist>
+          <member>TARGET</member>
+
+          <member>SOURCE</member>
+
+          <member>DEST</member>
+
+          <member>PROTO</member>
+
+          <member>DEST PORT(S)</member>
+
+          <member>SOURCE PORT(S)</member>
+
+          <member>ORIGINAL DEST</member>
+
+          <member>RATE/LIMIT</member>
+
+          <member>USER/GROUP</member>
+
+          <member>MARK</member>
+
+          <member>CONLIMIT</member>
+
+          <member>TIME</member>
+
+          <member>HEADERS (Used in IPv6 only)</member>
+
+          <member>CONDITION</member>
+
+          <member>HELPER</member>
+        </simplelist>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
     <title>Versions &gt;= 4.5.0</title>
 
     <orderedlist>
@@ -341,6 +501,26 @@
 
           <member><filename>tunnels</filename></member>
         </simplelist>
+      </listitem>
+
+      <listitem>
+        <para>To allow finer-grained selection of the connection-tracking
+        states that are passed through blacklists (both dynamic and static), a
+        BLACKLIST option was added to shorewall.conf and shorewall6.conf in
+        Shorewall 4.5.13.</para>
+
+        <para>The BLACKLISTNEWONLY option was deprecated at that point. A
+        'shorewall update' ( 'shorewall6 update' ) will replace the
+        BLACKLISTNEWONLY option with the equivalent BLACKLIST option.</para>
+      </listitem>
+
+      <listitem>
+        <para>In Shorewall 4.5.14, the BLACKLIST_LOGLEVEL option was renamed
+        BLACKLIST_LOG_LEVEL to be consistent with the other log-level option
+        names. BLACKLIST_LOGLEVEL continues to be accepted as a synonym for
+        BLACKLIST_LOG_LEVEL, but a 'shorewall update' or 'shorewall6 update'
+        command will replace BLACKLIST_LOGLEVEL with BLACKLIST_LOG_LEVEL in
+        the new .conf file.</para>
       </listitem>
     </orderedlist>
   </section>

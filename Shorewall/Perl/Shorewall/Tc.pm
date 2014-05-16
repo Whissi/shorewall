@@ -693,7 +693,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     ( $cmd, $designator ) = split_action( $action );
 
     if ( supplied $designator ) {
-	fatal_error "Invalid chain designator ( $designator )" unless $designator = $designators{$designator};
+	my $temp = $designators{$designator};
+	fatal_error "Invalid chain designator ( $designator )" unless $temp;
+	$designator = $temp;
     }
 
     ( $cmd , $params ) = get_target_param1( $cmd );
@@ -710,11 +712,11 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
     if ( $source ne '-' ) {
 	if ( $source eq $fw ) {
-	    fatal_error 'Rules with SOURCE $FW must use the OUTPUT chain' if $designator && $designator ne OUTPUT;
+	    fatal_error 'Rules with SOURCE $FW must use the OUTPUT chain' if $designator && $designator != OUTPUT;
 	    $chain = OUTPUT;
 	    $source = '-';
 	} elsif ( $source =~ s/^($fw):// ) {
-	    fatal_error 'Rules with SOURCE $FW must use the OUTPUT chain' if $designator && $designator ne OUTPUT;
+	    fatal_error 'Rules with SOURCE $FW must use the OUTPUT chain' if $designator && $designator != OUTPUT;
 	    $chain = OUTPUT;
 	}
     }

@@ -338,7 +338,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    minparams      => 0,
 	    maxparams      => 0 ,
 	    function       => sub() {
-		$target = 'CHECKSUM';
+		$target = 'CHECKSUM --checksum-fill';
 	    },
 	},
        

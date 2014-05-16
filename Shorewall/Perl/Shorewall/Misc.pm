@@ -775,8 +775,8 @@ sub process_stoppedrules() {
 
 sub setup_mss();
 
-sub add_common_rules ( $ ) {
-    my $upgrade = shift;
+sub add_common_rules ( $$ ) {
+    my ( $upgrade_blacklist, $upgrade_tcrules ) = @_;
     my $interface;
     my $chainref;
     my $target;
@@ -929,8 +929,8 @@ sub add_common_rules ( $ ) {
 	    
     run_user_exit1 'initdone';
 
-    if ( $upgrade ) {
-	exit 0 unless convert_blacklist;
+    if ( $upgrade_blacklist ) {
+	exit 0 unless convert_blacklist || $upgrade_tcrules;
     } else {
 	setup_blacklist;
     }

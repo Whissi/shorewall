@@ -730,7 +730,7 @@ sub compiler {
     #
     # Do all of the zone-independent stuff (mostly /proc)
     #
-    add_common_rules( $convert );
+    add_common_rules( $convert, $tcrules );
     #
     # More /proc
     #

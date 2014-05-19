@@ -64,7 +64,7 @@ unless ( defined $vendor ) {
 
 	$id =~ s/ID=//;
 	
-	if ( $id eq 'fedora' ) {
+	if ( $id eq 'fedora' || $id eq 'rhel' ) {
 	    $vendor = 'redhat';
 	} elsif ( $id eq 'opensuse' ) {
 	    $vendor = 'suse';

@@ -747,6 +747,12 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
           time that you get a new IP address.</para>
 
           <note>
+            <para>If your local interface is a bridge, see <link
+            linkend="faq2e">FAQ 2e</link> for additional configuration
+            steps.</para>
+          </note>
+
+          <note>
             <para>For optional interfaces, use the function <emphasis
             role="bold">find_first_interface_address_if_any()</emphasis>
             rather than <emphasis
@@ -914,6 +920,58 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
         <para>For one-to-one (static), NAT, simply place 'Yes' in the ALL
         INTERFACES column of each entry in <ulink
         url="manpages/shorewall-nat.html">/etc/shorewall/nat</ulink>.</para>
+      </section>
+
+      <section id="faq2e">
+        <title>(FAQ 2e) I have the situation in FAQ 2 but my local interface
+        is a bridge and the solution in FAQ 2 doesn't work</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: Assume that the bridge
+        is br0 and that eth1 is the bridge port that connects to the LAN
+        containing 192.168.1.5</para>
+
+        <para>In addition to the steps in FAQ 2, you also need to:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Set the <firstterm>hairpin</firstterm> option on
+            eth1.</para>
+
+            <programlisting>brctl hairpin br0 eth1 on</programlisting>
+
+            <para>On Debian and derivitives, you can place that command in
+            /etc/network/interfaces as a post-up command:</para>
+
+            <programlisting>auto br0
+iface br0 inet static
+        bridge_ports    eth1
+        bridge_fd       0
+        bridge_maxwait  0
+        address         192.168.1.1
+        netmask         255.255.255.0
+        <emphasis role="bold">post-up /sbin/brctl hairpin br0 eth1 on</emphasis></programlisting>
+          </listitem>
+
+          <listitem>
+            <para>Install ebtables if it is not already installed.</para>
+          </listitem>
+
+          <listitem>
+            <para>Be sure that all traffic going out of eth1 has the correct
+            MAC address.</para>
+
+            <programlisting>ebtables -t nat -A POSTROUTING -o eth1 -j snat --to-source <emphasis>br0-MAC-address</emphasis> </programlisting>
+
+            <para>where br0-MAC-address is the MAC address of br0.</para>
+
+            <para>Here's a working example of /etc/shorewall/start that
+            executes the above command.</para>
+
+            <programlisting>if [ $(ebtables -t nat -L POSTROUTING | wc -l) -lt 4 ]; then
+   <emphasis role="bold">ebtables -t nat -A POSTROUTING -o eth1 -j snat --to-source 0:19:21:d0:61:65</emphasis>
+fi</programlisting>
+          </listitem>
+        </orderedlist>
       </section>
     </section>
   </section>

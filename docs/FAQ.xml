@@ -927,29 +927,30 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emph
         is a bridge and the solution in FAQ 2 doesn't work</title>
 
         <para><emphasis role="bold">Answer</emphasis>: Assume that the bridge
-        is br0 and that eth1 is the bridge port that connects to the LAN
+        is br0 and that eth2 is the bridge port that connects to the LAN
         containing 192.168.1.5</para>
 
-        <para>In addition to the steps in FAQ 2, you also need to:</para>
+        <para>In addition to the steps in FAQ 2 (replacing eth1 with br0), you
+        also need to:</para>
 
         <orderedlist>
           <listitem>
             <para>Set the <firstterm>hairpin</firstterm> option on
-            eth1.</para>
+            eth2.</para>
 
-            <programlisting>brctl hairpin br0 eth1 on</programlisting>
+            <programlisting>brctl hairpin br0 eth2 on</programlisting>
 
             <para>On Debian and derivitives, you can place that command in
             /etc/network/interfaces as a post-up command:</para>
 
             <programlisting>auto br0
 iface br0 inet static
-        bridge_ports    eth1
+        bridge_ports    eth2
         bridge_fd       0
         bridge_maxwait  0
         address         192.168.1.1
         netmask         255.255.255.0
-        <emphasis role="bold">post-up /sbin/brctl hairpin br0 eth1 on</emphasis></programlisting>
+        <emphasis role="bold">post-up /sbin/brctl hairpin br0 eth2 on</emphasis></programlisting>
           </listitem>
 
           <listitem>
@@ -957,10 +958,10 @@ iface br0 inet static
           </listitem>
 
           <listitem>
-            <para>Be sure that all traffic going out of eth1 has the correct
+            <para>Be sure that all traffic going out of eth2 has the correct
             MAC address.</para>
 
-            <programlisting>ebtables -t nat -A POSTROUTING -o eth1 -j snat --to-source <emphasis>br0-MAC-address</emphasis> </programlisting>
+            <programlisting>ebtables -t nat -A POSTROUTING -o eth2 -j snat --to-source <emphasis>br0-MAC-address</emphasis> </programlisting>
 
             <para>where br0-MAC-address is the MAC address of br0.</para>
 
@@ -968,7 +969,7 @@ iface br0 inet static
             executes the above command.</para>
 
             <programlisting>if [ $(ebtables -t nat -L POSTROUTING | wc -l) -lt 4 ]; then
-   <emphasis role="bold">ebtables -t nat -A POSTROUTING -o eth1 -j snat --to-source 0:19:21:d0:61:65</emphasis>
+   <emphasis role="bold">ebtables -t nat -A POSTROUTING -o eth2 -j snat --to-source 0:19:21:d0:61:65</emphasis>
 fi</programlisting>
           </listitem>
         </orderedlist>
@@ -997,6 +998,12 @@ fi</programlisting>
         <option>blacklist</option> option in <ulink
         url="manpages/shorewall-interfaces.html"><filename>/etc/shorewall/interfaces</filename></ulink>
         to implement blacklisting by destination IP address.</para>
+      </note>
+
+      <note>
+        <para>Beginning with Shorewall 4.4.26, you can use <ulink
+        url="manpages/shorewall-blrules.html">/etc/shorewall/blrules</ulink>
+        to implement arbitrary blacklist rules.</para>
       </note>
     </section>
 

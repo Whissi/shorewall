@@ -252,6 +252,7 @@ show_classifiers() {
 
 	if [ -n "$qdisc" ]; then
 	    echo Device $device:
+	    qt tc -s filter ls root dev $device && tc -s filter ls root dev $device | grep -v '^$'
 	    tc -s filter ls dev $device
 	    echo
 	fi

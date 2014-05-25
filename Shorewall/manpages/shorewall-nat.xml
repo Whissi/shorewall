@@ -137,6 +137,80 @@
   </refsect1>
 
   <refsect1>
+    <title>RESTRICTIONS</title>
+
+    <para>DNAT rules always preempt one-to-one NAT rules. This has subtile
+    consequences when there are sub-zones on an
+    <replaceable>interface</replaceable>. Consider the following:</para>
+
+    <para><filename>/etc/shorewall/zones</filename>:</para>
+
+    <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
+#                                       OPTIONS                 OPTIONS
+fw      firewall
+net     ipv4
+loc     ipv4
+smc:net ipv4</programlisting>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE   INTERFACE       OPTIONS
+net     eth0            dhcp,tcpflags,nosmurfs,routefilter,logmartians,sourceroute=0
+loc     eth1            tcpflags,nosmurfs,routefilter,logmartians</programlisting>
+
+    <para><filename>/etc/shorewall/hosts</filename>:</para>
+
+    <programlisting>#ZONE   HOST(S)                                 OPTIONS
+smc     eth0:10.1.10.0/24</programlisting>
+
+    <para><filename>/etc/shorewall/nat</filename>:</para>
+
+    <programlisting>#EXTERNAL       INTERFACE       INTERNAL        ALL             LOCAL
+#                                               INTERFACES
+10.1.10.100     eth0            172.20.1.100
+</programlisting>
+
+    <para>Note that the EXTERNAL address is in the <emphasis
+    role="bold">smc</emphasis> zone.</para>
+
+    <para><filename>/etc/shorewall/rules</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME            HEADERS     SWITCH           HELPER
+#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+...
+DNAT            net             loc:172.20.1.4  tcp     80</programlisting>
+
+    <para>For the one-to-one NAT to work correctly in this configuration, one
+    of two approaches can be taken:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Define a CONTINUE policy with <emphasis
+        role="bold">smc</emphasis> as the SOURCE zone (preferred):</para>
+
+        <programlisting>#SOURCE		DEST		POLICY		LOG LEVEL	LIMIT:BURST
+<emphasis role="bold">smc		$FW		CONTINUE</emphasis>
+loc		net		ACCEPT
+net		all		DROP		info
+# THE FOLLOWING POLICY MUST BE LAST
+all		all		REJECT		info
+</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Set IMPLICIT_CONTINUE=Yes in <ulink
+        url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
+      </listitem>
+    </orderedlist>
+  </refsect1>
+
+  <refsect1>
     <title>FILES</title>
 
     <para>/etc/shorewall/nat</para>

@@ -252,7 +252,15 @@ show_classifiers() {
 
 	if [ -n "$qdisc" ]; then
 	    echo Device $device:
-	    tc -s filter ls dev $device
+	    qt tc -s filter ls root dev $device && tc -s filter ls root dev $device | grep -v '^$'
+	    tc filter show dev $device
+	    tc class show dev $device | fgrep 'leaf ' | fgrep -v ' hfsc' | sed 's/^.*leaf //;s/ .*//' | while read class; do
+		if [ -n "$class" ]; then
+		    echo
+		    echo Node $class
+		    tc filter show dev $device parent $class
+		fi
+	    done
 	    echo
 	fi
     }

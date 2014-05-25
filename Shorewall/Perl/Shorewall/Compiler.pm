@@ -819,7 +819,7 @@ sub compiler {
     #
     # Setup Nat
     #
-    setup_nat if $family == F_IPV4;
+    setup_nat;
     #
     # Setup NETMAP
     #

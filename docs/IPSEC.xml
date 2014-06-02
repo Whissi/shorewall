@@ -200,12 +200,12 @@ vpn          eth0:192.168.1.0/24</programlisting>
 
       <para>/etc/shorewall/masq - System A</para>
 
-      <programlisting>#INTERFACE            SUBNET                ADDRESS
+      <programlisting>#INTERFACE            SOURCE                ADDRESS
 eth0:!10.0.0.0/8      192.168.1.0/24</programlisting>
 
       <para>/etc/shorewall/masq - System B</para>
 
-      <programlisting>#INTERFACE            SUBNET                ADDRESS
+      <programlisting>#INTERFACE            SOURCE                ADDRESS
 eth0:!192.168.1.0/24  10.0.0.0/8</programlisting>
     </blockquote>
 
@@ -425,8 +425,8 @@ ipsec       net        0.0.0.0/0       vpn1,vpn2,vpn3</programlisting>
     Shorewall will issue warnings to that effect. These warnings may be safely
     ignored. FreeS/Wan may now be configured to have three different Road
     Warrior connections with the choice of connection being based on X-509
-    certificates or some other means. Each of these connections will utilize
-    a different updown script that adds the remote station to the appropriate
+    certificates or some other means. Each of these connections will utilize a
+    different updown script that adds the remote station to the appropriate
     zone when the connection comes up and that deletes the remote station when
     the connection comes down. For example, when 134.28.54.2 connects for the
     vpn2 zone the <quote>up</quote> part of the script will issue the

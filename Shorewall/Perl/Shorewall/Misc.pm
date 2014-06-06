@@ -878,11 +878,11 @@ sub add_common_rules ( $$ ) {
 		    add_ijump( $chainref , g => $target, imatch_source_net( $_ ), @ipsec ), $chainref->{filtered}++ for @filters;
 		}
 	    }
-	}
 
-	for ( option_chains( $interface ) ) {
-	    add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
-	    add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
+	    for ( option_chains( $interface ) ) {
+		add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
+		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
+	    }
 	}
     }
 

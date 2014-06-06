@@ -867,10 +867,10 @@ sub add_common_rules ( $ ) {
 		}
 	    }
 
-	    for ( option_chains( $interface ) ) {
-		add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
-		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
-	    }
+	}
+	for ( option_chains( $interface ) ) {
+	    add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
+	    add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
 	}
     }
 

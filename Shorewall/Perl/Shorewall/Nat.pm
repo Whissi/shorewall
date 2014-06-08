@@ -633,7 +633,7 @@ sub setup_netmap() {
 }
 
 #
-# Called from process_rule1 to add a rule to the NAT table
+# Called from process_rule to add a rule to the NAT table
 #
 sub handle_nat_rule( $$$$$$$$$$$$$ ) {
     my ( $dest,           # <server>[:port]
@@ -687,6 +687,11 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 	#
 	$server = $dest;
     }
+
+    #
+    # Check for list in $server
+    #
+    fatal_error "An address list is not allowed in the DEST column of a $action RULE" if $server =~ /,/;
     #
     # Generate the target
     #

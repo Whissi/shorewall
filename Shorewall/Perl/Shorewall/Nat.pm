@@ -691,7 +691,7 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
     #
     # Check for list in $server
     #
-    fatal_error "An address list is not allowed in the DEST column of a $action RULE" if $server =~ /,/;
+    fatal_error "An address list ($server) s not allowed in the DEST column of a $action RULE" if $server =~ /,/;
     #
     # Generate the target
     #

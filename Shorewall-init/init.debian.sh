@@ -110,8 +110,8 @@ shorewall_start () {
 	  # Run in a sub-shell to avoid name collisions
 	  #
 	  ( 
-	      if ! ${STATEDIR}/$PRODUCT/firewall status > /dev/null 2>&1; then
-		  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} stop || echo_notdone
+	      if ! ${STATEDIR}/firewall status > /dev/null 2>&1; then
+		  ${STATEDIR}/firewall ${OPTIONS} stop || echo_notdone
 	      else
 		  echo_notdone
 	      fi
@@ -136,7 +136,7 @@ shorewall_stop () {
       setstatedir
 
       if [ -x ${STATEDIR}/firewall ]; then
-	  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} clear || echo_notdone
+	  ${STATEDIR}/firewall ${OPTIONS} clear || echo_notdone
       fi
   done
 

@@ -105,7 +105,7 @@ shorewall_start () {
   for PRODUCT in $PRODUCTS; do
       setstatedir
 
-      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
+      if [ -x ${STATEDIR}/firewall ]; then
           #
 	  # Run in a sub-shell to avoid name collisions
 	  #
@@ -117,7 +117,7 @@ shorewall_start () {
 	      fi
 	  )
       else
-	  echo echo_notdone
+	  echo_notdone
       fi
   done
 
@@ -135,7 +135,7 @@ shorewall_stop () {
   for PRODUCT in $PRODUCTS; do
       setstatedir
 
-      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
+      if [ -x ${STATEDIR}/firewall ]; then
 	  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} clear || echo_notdone
       fi
   done

@@ -2952,9 +2952,74 @@ show_status() {
 
 }
 
+interface_status() {
+    case $(cat $1) in
+	0)
+	    echo Enabled
+	    ;;
+	1)
+	    echo Disabled
+	    ;;
+	*)
+	    echo Unknown
+	    ;;
+    esac
+}
+
+show_interfaces() {
+    local f
+    local interface
+    local printed
+
+    for f in ${VARDIR}/*.status; do
+	interface=$(basename $f)
+	echo "   Interface ${interface%.status} is $(interface_status $f)"
+	printed=Yes
+    done
+
+    [ -n "$printed" ] && echo
+}
+
 status_command() {
+     local finished
+    finished=0
+    local option
+    local interfaces
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			i*)
+			    interfaces=Yes
+			    option=${option#i}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ $# -eq 0 ] || usage 1
+
     [ $VERBOSITY -ge 1 ] && echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)" && echo
     show_status
+    [ -n "$interfaces" ] && show_interfaces
     exit $status
 }
 
@@ -3488,7 +3553,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] zones"
     echo "   start [ -f ] [ -p ] [ <directory> ]"
     echo "   stop"
-    echo "   status"
+    echo "   status [ -i ]"
     echo "   version [ -a ]"
     echo
     exit $1
@@ -3739,10 +3804,10 @@ shorewall_cli() {
     	    show_command $@
 	    ;;
 	status)
-	    [ $# -eq 1 ] || usage 1
 	    [ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
 	    get_config
-	    status_command
+	    shift
+	    status_command $@
 	    ;;
 	dump)
 	    get_config Yes No Yes

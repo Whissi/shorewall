@@ -516,6 +516,20 @@
 
       <arg choice="opt"><option>show | list | ls </option></arg>
 
+      <arg><option>-x</option></arg>
+
+      <arg choice="plain"><option>{bl|blacklists}</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="opt"><option>show | list | ls </option></arg>
+
       <arg><option>-b</option></arg>
 
       <arg><option>-x</option></arg>
@@ -1471,6 +1485,19 @@
               <listitem>
                 <para>Produces a report about the available actions (built-in,
                 standard and user-defined).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">bl|blacklists</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.2. Displays the dynamic chain
+                along with any chains produced by entries in
+                shorewall-blrules(5).The <emphasis role="bold">-x</emphasis>
+                option is passed directly through to iptables and causes
+                actual packet and byte counts to be displayed. Without this
+                option, those counts are abbreviated.</para>
               </listitem>
             </varlistentry>
 

@@ -272,6 +272,19 @@ show_classifiers() {
 }
 
 #
+# Display blacklist chains
+#
+show_bl() {
+    $g_tool -L $g_ipt_options | \
+	awk 'BEGIN           {prnt=0; };
+            /^$/             {if (prnt == 1) print ""; prnt=0; };
+            /Chain .*~ /     {prnt=1; };
+            /Chain dynamic / {prnt=1; };
+            {if (prnt == 1)  print; };
+            END {if (prnt == 1 ) print "" };'
+}
+
+#
 # Watch the Firewall Log
 #
 logwatch() # $1 = timeout -- if negative, prompt each time that
@@ -1189,7 +1202,13 @@ show_command() {
 	    echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
 	    echo
 	    show_events
-	    ;;	    
+	    ;;
+	bl|blacklists)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION blacklist chains at $g_hostname - $(date)"
+	    echo
+	    show_bl;
+	    ;;
 	*)
 	    case "$g_program" in
 		*-lite)
@@ -3531,6 +3550,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   [ show | list | ls ] [ -f ] capabilities"
     echo "   [ show | list | ls ] arptables"
+    echo "   [ show | list | ls ] {bl|blacklists}"
     echo "   [ show | list | ls ] classifiers"
     echo "   [ show | list | ls ] config"
     echo "   [ show | list | ls ] connections"

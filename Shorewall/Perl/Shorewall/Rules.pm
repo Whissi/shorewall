@@ -2950,7 +2950,7 @@ sub perl_action_helper($$;$) {
 
     $matches .= ' ' unless $matches =~ /^(?:.+\s)?$/;
 
-    set_inline_matches $matches if $target =~ /^INLINE(?::.*)?$/;
+    set_inline_matches( $target =~ /^INLINE(?::.*)?$/ ? $matches : '' );
 
     if ( $isstatematch ) {
 	if ( $statematch ) {

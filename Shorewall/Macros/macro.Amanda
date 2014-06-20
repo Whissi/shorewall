@@ -14,7 +14,7 @@
 #				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __AMANDA_HELPER )
- PARAM	-	-	udp	10080 ; helper=amanda
+ PARAM	-	-	udp	10080 { helper=amanda }
 ?else
  PARAM	-	-	udp	10080
 ?endif

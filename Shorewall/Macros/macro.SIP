@@ -12,7 +12,7 @@
 #				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __SIP_HELPER  )
- PARAM	-	-	udp	5060 ; helper=sip
+ PARAM	-	-	udp	5060 { helper=sip }
 ?else
  PARAM	-	-	udp	5060
 ?endif

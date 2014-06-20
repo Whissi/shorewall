@@ -17,7 +17,7 @@
 PARAM	-	-	udp	135,445
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
- PARAM	-	-	udp	137 ; helper=netbios-ns
+ PARAM	-	-	udp	137 { helper=netbios-ns }
  PARAM	-	-	udp	138:139
 ?else
  PARAM	-	-	udp	137:139
@@ -28,7 +28,7 @@ PARAM	-	-	tcp	135,139,445
 PARAM	DEST	SOURCE	udp	135,445
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
- PARAM	DEST	SOURCE	udp	137 ; helper=netbios-ns
+ PARAM	DEST	SOURCE	udp	137 { helper=netbios-ns }
  PARAM	DEST	SOURCE	udp	138:139
 ?else
  PARAM	DEST	SOURCE	udp	137:139

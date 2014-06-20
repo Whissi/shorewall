@@ -17,7 +17,7 @@
 PARAM	-	-	udp	135,445
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
- PARAM	-	-	udp	137 ; helper=netbios-ns
+ PARAM	-	-	udp	137 { helper=netbios-ns }
  PARAM	-	-	udp	138:139
 ?else
  PARAM	-	-	udp	137:139

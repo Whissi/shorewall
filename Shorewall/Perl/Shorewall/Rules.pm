@@ -3023,6 +3023,8 @@ sub perl_action_tcp_helper($$) {
 
     $proto .= ' ' unless $proto =~ /^(?:.+\s)?$/;
 
+    set_inline_matches( '' ) if $config{INLINE_MATCHES};
+
     if ( $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6' ) {
 	#
 	# For other protos, a 'no rule generated' warning will be issued

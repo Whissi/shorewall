@@ -123,7 +123,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -166,7 +166,7 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
-      <command>shorewall</command>
+      <command>shorewall6</command>
 
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
@@ -461,6 +461,20 @@
 
       <arg choice="opt"><option>show | list | ls </option></arg>
 
+      <arg><option>-x</option></arg>
+
+      <arg choice="plain"><option>{bl|blacklists}</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="opt"><option>show | list | ls </option></arg>
+
       <arg><option>-b</option></arg>
 
       <arg><option>-x</option></arg>
@@ -581,7 +595,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>status</option></arg>
+      <arg choice="plain"><arg
+      choice="plain"><option>status</option><arg><option>-i</option></arg></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -1355,6 +1370,19 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">bl|blacklists</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.2. Displays the dynamic chain
+                along with any chains produced by entries in
+                shorewall-blrules(5).The <emphasis role="bold">-x</emphasis>
+                option is passed directly through to ip6tables and causes
+                actual packet and byte counts to be displayed. Without this
+                option, those counts are abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">capabilities</emphasis></term>
 
               <listitem>
@@ -1611,6 +1639,10 @@
         <listitem>
           <para>Produces a short report about the state of the
           Shorewall6-configured firewall.</para>
+
+          <para>The <option>-i </option>option was added in Shorewall 4.6.2
+          and causes the status of each optional interface to be
+          displayed.</para>
         </listitem>
       </varlistentry>
 

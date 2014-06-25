@@ -1067,7 +1067,7 @@ sub process_mangle_rule( ) {
 			   scp => 13,
 			   state => 14 },
 			 {},
-			 15,
+			 16,
 	                 1 );
 	$headers = '-';
     } else {
@@ -1091,7 +1091,7 @@ sub process_mangle_rule( ) {
 			   dscp => 14,
 			   state => 15 },
 			 {},
-			 16,
+			 17,
 	                 1 );
     }
 

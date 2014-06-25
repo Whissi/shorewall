@@ -174,8 +174,8 @@ sub initialize( $ ) {
 #
 # Process a rule from the tcrules or mangle file
 #
-sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
-    our ( $file, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
+    our ( $file, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state ) = @_;
 
     use constant {
 	PREROUTING     => 1,        #Actually tcpre
@@ -798,7 +798,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 					 do_probability( $probability ) .
 					 do_dscp( $dscp ) .
 					 state_match( $state ) .
-					 do_time( $time ) .
 					 $raw_matches ,
 					 $source ,
 					 $dest ,
@@ -987,9 +986,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 			      $headers,
 			      $probability,
 			      $dscp,
-			      $state,
-			      '-',
-	    );
+			      $state );
     }
 }
 
@@ -1049,9 +1046,9 @@ sub process_tc_rule( ) {
 }    
 
 sub process_mangle_rule( ) {
-    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     if ( $family == F_IPV4 ) {
-	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time ) =
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state ) =
 	    split_line2( 'tcrules file',
 			 { mark => 0,
 			   action => 0,
@@ -1068,9 +1065,7 @@ sub process_mangle_rule( ) {
 			   helper => 11,
 			   probability => 12 , 
 			   scp => 13,
-			   state => 14,
-			   time => 15,
-			 },
+			   state => 14 },
 			 {},
 			 15,
 	                 1 );
@@ -1094,16 +1089,14 @@ sub process_mangle_rule( ) {
 			   headers => 12,
 			   probability => 13,
 			   dscp => 14,
-			   state => 15,
-			   time => 16,
-			 },
+			   state => 15 },
 			 {},
 			 16,
 	                 1 );
     }
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
-	process_mangle_rule1( 'Mangle', $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+	process_mangle_rule1( 'Mangle', $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     }
 }
  

@@ -2950,7 +2950,7 @@ sub perl_action_helper($$;$) {
 
     $matches .= ' ' unless $matches =~ /^(?:.+\s)?$/;
 
-    set_inline_matches $matches if $target =~ /^INLINE(?::.*)?$/;
+    set_inline_matches( $target =~ /^INLINE(?::.*)?$/ ? $matches : '' );
 
     if ( $isstatematch ) {
 	if ( $statematch ) {
@@ -3022,6 +3022,8 @@ sub perl_action_tcp_helper($$) {
     assert( $chainref );
 
     $proto .= ' ' unless $proto =~ /^(?:.+\s)?$/;
+
+    set_inline_matches( '' ) if $config{INLINE_MATCHES};
 
     if ( $passedproto eq '-' || $passedproto eq 'tcp' || $passedproto eq '6' ) {
 	#

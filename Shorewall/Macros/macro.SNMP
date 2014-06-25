@@ -14,7 +14,7 @@
 #				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __SNMP_HELPER )
- PARAM	-	-  	udp     161 ; helper=snmp
+ PARAM	-	-  	udp     161 { helper=snmp }
 ?else
  PARAM	-	-	udp	161
 ?endif

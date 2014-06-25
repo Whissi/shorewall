@@ -1109,6 +1109,104 @@ Normal-Service       =&gt; 0x00</programlisting>
           of the listed states.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">TIME</emphasis> -
+        <emphasis>timeelement</emphasis>[&amp;<emphasis>timeelement</emphasis>...]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.2.</para>
+
+          <para>May be used to limit the rule to a particular time period each
+          day, to particular days of the week or month, or to a range defined
+          by dates and times. Requires time match support in your kernel and
+          ip6tables.</para>
+
+          <para><replaceable>timeelement</replaceable> may be:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>timestart=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+              <listitem>
+                <para>Defines the starting time of day.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>timestop=<replaceable>hh</replaceable>:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]</term>
+
+              <listitem>
+                <para>Defines the ending time of day.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>utc</term>
+
+              <listitem>
+                <para>Times are expressed in Greenwich Mean Time.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>localtz</term>
+
+              <listitem>
+                <para>Deprecated by the Netfilter team in favor of <emphasis
+                role="bold">kerneltz</emphasis>. Times are expressed in Local
+                Civil Time (default).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>kerneltz</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.2. Times are expressed in Local
+                Kernel Time (requires iptables 1.4.12 or later).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>weekdays=ddd[,ddd]...</term>
+
+              <listitem>
+                <para>where <replaceable>ddd</replaceable> is one of
+                <option>Mon</option>, <option>Tue</option>,
+                <option>Wed</option>, <option>Thu</option>,
+                <option>Fri</option>, <option>Sat</option> or
+                <option>Sun</option></para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>monthdays=dd[,dd],...</term>
+
+              <listitem>
+                <para>where <replaceable>dd</replaceable> is an ordinal day of
+                the month</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>datestart=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+              <listitem>
+                <para>Defines the starting date and time.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>datestop=<replaceable>yyyy</replaceable>[-<replaceable>mm</replaceable>[-<replaceable>dd</replaceable>[<option>T</option><replaceable>hh</replaceable>[:<replaceable>mm</replaceable>[:<replaceable>ss</replaceable>]]]]]</term>
+
+              <listitem>
+                <para>Defines the ending date and time.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 

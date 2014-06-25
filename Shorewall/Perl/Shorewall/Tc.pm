@@ -1072,7 +1072,7 @@ sub process_mangle_rule( ) {
 			   time => 15,
 			 },
 			 {},
-			 15,
+			 16,
 	                 1 );
 	$headers = '-';
     } else {
@@ -1098,7 +1098,7 @@ sub process_mangle_rule( ) {
 			   time => 16,
 			 },
 			 {},
-			 16,
+			 17,
 	                 1 );
     }
 

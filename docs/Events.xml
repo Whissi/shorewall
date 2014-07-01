@@ -701,5 +701,87 @@ ResetEvent(SSH,DROP:info)        </programlisting>
 #                                                         PORT(S)
 Knock                 net            $FW       tcp        22,1599-1601          </programlisting>
     </section>
+
+    <section id="Stateful">
+      <title>Stateful Port Knocking (knock with a sequence of ports)</title>
+
+      <para>Gerhard Wiesinger has contributed a Perl module that allows you to
+      define portknocking sequences. Download <ulink
+      url="pub/shorewall/contrib/PortKnocking/KnockEnhanced.pm">the
+      module</ulink> and copy it into your site_perl directory.</para>
+
+      <para>Using Gerhard's module, a port-knocking rule is defined via a
+      '?PERL' statement. This example opens the SSH port from net-&gt;fw using
+      the knock sequence 52245, 15623, 19845:</para>
+
+      <programlisting>?BEGIN PERL
+use KnockEnhanced;
+KnockEnhanced 'net', '$FW', {name =&gt; 'SSH1', log_level =&gt; 3, proto =&gt; 'tcp', target =&gt; 'ssh', knocker =&gt; [52245,15623,19845]};
+?END PERL</programlisting>
+
+      <para>A few notes on the parameters:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The first parameter is the rule SOURCE</para>
+        </listitem>
+
+        <listitem>
+          <para>The second parameter is the rule DEST</para>
+        </listitem>
+
+        <listitem>
+          <para>The third parameter is a Perl hash reference that defines the
+          remaining parameters. Each parameter is specified via
+          <replaceable>param</replaceable> =&gt;
+          <replaceable>value</replaceable>.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><emphasis role="bold">proto</emphasis> is the protocol --
+              if not specified, the default is tcp</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">seconds</emphasis> is the timeout
+              between successive events -- default is 60 seconds.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">original_dest</emphasis> is the rule
+              ORIGINAL DEST</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">target</emphasis> is the port(s)
+              that you are trying to open. May either be a single name or
+              number, or it may be a list of names and/or numbers separated by
+              commas and enclosed in square brackets ("[...]").</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">name</emphasis> is a name used as
+              the base for event and chain names. If not supplied, the first
+              <emphasis role="bold">target</emphasis> is used, in which case
+              the first target must be a port name.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis role="bold">log_level </emphasis>specifies
+              logging for the generated rules</para>
+            </listitem>
+          </itemizedlist>
+
+          <note>
+            <para>Port names and numbers may be optionally followed by a colon
+            (":") and a protocol name or number to override the specified
+            protocol.</para>
+          </note>
+        </listitem>
+      </itemizedlist>
+
+      <para>The module itself contains additional examples of its
+      usage.</para>
+    </section>
   </section>
 </article>

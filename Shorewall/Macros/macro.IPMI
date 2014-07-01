@@ -3,7 +3,10 @@
 #
 # /usr/share/shorewall/macro.IPMI
 #
-#	This macro handles IPMI console redirection with Dell and Supermicro.
+#	This macro handles IPMI console redirection with Asus (AMI),
+#	Dell DRAC5+ (Avocent), and Supermicro (Aten or AMI).
+#	Use this macro to open access to your IPMI interface from management
+#	workstations.
 #
 ###############################################################################
 ?FORMAT 2
@@ -11,7 +14,13 @@
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
 #				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
 PARAM	-	-	tcp	623		# RMCP
-PARAM	-	-	tcp	5900,5901	# Remote Console
+PARAM	-	-	tcp	3668,3669	# Virtual Media, Secure (Dell)
+PARAM	-	-	tcp	5120,5123	# CD, floppy (Asus, Aten)
+PARAM	-	-	tcp	5900,5901	# Remote Console (Aten, Dell)
+PARAM	-	-	tcp	7578		# Remote Console (AMI)
 PARAM	-	-	udp	623		# RMCP
 HTTP
 HTTPS
+SNMP
+SSH						# Serial over Lan
+Telnet

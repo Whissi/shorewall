@@ -423,7 +423,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		require_capability 'DSCP_TARGET', 'The DSCP action', 's';
 		my $dscp = numeric_value( $params );
-		$dscp = $dscpmap{$1} unless defined $dscp;
+		$dscp = $dscpmap{$params} unless defined $dscp;
 		fatal_error( "Invalid DSCP ($params)" ) unless defined $dscp && $dscp <= 0x38 && ! ( $dscp & 1 );
 		$target = 'DSCP --set-dscp ' . in_hex( $dscp );
 	    },

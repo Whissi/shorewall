@@ -1076,7 +1076,7 @@ sub process_mangle_rule( ) {
 	                 1 );
 	$headers = '-';
     } else {
-	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state ) =
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time ) =
 	    split_line2( 'tcrules file',
 			 { mark => 0,
 			   action => 0,

@@ -129,11 +129,15 @@
 
       <varlistentry>
         <term><emphasis role="bold">GATEWAY</emphasis> - {<emphasis
-        role="bold">-</emphasis>|<emphasis>address</emphasis>|<emphasis
+        role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>mac</emphasis>]|<emphasis
         role="bold">detect</emphasis>}</term>
 
         <listitem>
-          <para>The IP address of the provider's gateway router.</para>
+          <para>The IP address of the provider's gateway router. Beginning
+          with Shorewall 4.6.2, you may also specify the MAC address of the
+          gateway when there are multiple providers serviced through the same
+          interface. When the MAC is not specified, Shorewall will detect the
+          MAC during firewall start or restart.</para>
 
           <para>You can enter "detect" here and Shorewall will attempt to
           detect the gateway automatically.</para>

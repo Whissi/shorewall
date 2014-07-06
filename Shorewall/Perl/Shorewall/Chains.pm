@@ -6723,20 +6723,25 @@ sub interface_mac( $$ ) {
 #
 # Record the fact that the ruleset requires MAC address of the passed gateway IP routed out of the passed interface for the passed provider number
 #
-sub get_interface_mac( $$$ ) {
-    my ( $ipaddr, $logical , $table ) = @_;
+sub get_interface_mac( $$$$ ) {
+    my ( $ipaddr, $logical , $table, $mac ) = @_;
 
     my $interface = get_physical( $logical );
     my $variable = interface_mac( $interface , $table );
 
     $global_variables |= NOT_RESTORE;
-
-    if ( interface_is_optional $logical ) {
-	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)\n);
+    
+    if ( $mac ) {
+	$interfacemacs{$table} = qq($variable=$mac);
     } else {
-	$interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)
+	if ( interface_is_optional $logical ) {
+	    $interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)\n);
+	} else {
+	    $interfacemacs{$table} = qq($variable=\$(find_mac $ipaddr $interface)
 [ -n "\$$variable" ] || startup_error "Unable to determine the MAC address of $ipaddr through interface \\"$interface\\""
 );
+
+       }
     }
 
     "\$$variable";

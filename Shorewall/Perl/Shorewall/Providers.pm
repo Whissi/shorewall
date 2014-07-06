@@ -258,7 +258,7 @@ sub copy_and_edit_table( $$$$$ ) {
     emit '';
 
     if ( $realm ) {
-	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]]+//' | ${filter}while read net route; do" )
+	emit  ( "\$IP -$family -o route show table $duplicate | sed -r 's/ realm [[:alnum:]_]+//' | ${filter}while read net route; do" )
     } else {
 	emit  ( "\$IP -$family -o route show table $duplicate | ${filter}while read net route; do" )
     }
@@ -442,10 +442,11 @@ sub process_a_provider( $ ) {
 
     fatal_error 'INTERFACE must be specified' if $interface eq '-';
 
-    ( $interface, my $address ) = split /:/, $interface;
+    ( $interface, my $address ) = split /:/, $interface, 2;
 
     my $shared = 0;
     my $noautosrc = 0;
+    my $mac = '';
 
     if ( defined $address ) {
 	validate_address $address, 0;
@@ -469,7 +470,17 @@ sub process_a_provider( $ ) {
 	$gateway = get_interface_gateway $interface;
 	$gatewaycase = 'detect';
     } elsif ( $gateway && $gateway ne '-' ) {
+	( $gateway, $mac ) = split_host_list( $gateway, 0 );
 	validate_address $gateway, 0;
+
+	if ( defined $mac ) {
+	    $mac =~ tr/-/:/;
+	    $mac =~ s/^~//;
+	    fatal_error "Invalid MAC address ($mac)" unless $mac =~ /^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
+	} else {
+	    $mac = '';
+	}
+
 	$gatewaycase = 'specified';
     } else {
 	$gatewaycase = 'none';
@@ -644,6 +655,7 @@ sub process_a_provider( $ ) {
 			   loose       => $loose ,
 			   duplicate   => $duplicate ,
 			   address     => $address ,
+			   mac         => $mac ,
 			   local       => $local ,
 			   tproxy      => $tproxy ,
 			   load        => $load ,
@@ -720,6 +732,7 @@ sub add_a_provider( $$ ) {
     my $loose       = $providerref->{loose};
     my $duplicate   = $providerref->{duplicate};
     my $address     = $providerref->{address};
+    my $mac         = $providerref->{mac};
     my $local       = $providerref->{local};
     my $tproxy      = $providerref->{tproxy};
     my $load        = $providerref->{load};
@@ -733,7 +746,7 @@ sub add_a_provider( $$ ) {
     my $realm = '';
 
     if ( $shared ) {
-	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table );
+	my $variable = $providers{$table}{mac} = get_interface_mac( $gateway, $interface , $table, $mac );
 	$realm = "realm $number";
 	start_provider( $label , $table, $number, $id, qq(if interface_is_usable $physical && [ -n "$variable" ]; then) );
     } elsif ( $pseudo ) {

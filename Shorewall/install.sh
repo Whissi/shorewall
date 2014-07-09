@@ -399,7 +399,7 @@ fi
 #
 # Create /etc/$PRODUCT and other directories
 #
-mkdir -p ${DESTDIR}/${CONFDIR}/$PRODUCT
+mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${PERLLIBDIR}/Shorewall
 mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles

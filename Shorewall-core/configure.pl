@@ -100,7 +100,7 @@ if ( defined $vendor ) {
     } elsif ( `uname` =~ '^Darwin' ) {
 	$vendor = 'apple';
 	$rcfilename = 'shorewallrc.apple';
-    } elsif ( `uname` =~ '^Cygwin' ) {
+    } elsif ( `uname` =~ /^Cygwin/i ) {
 	$vendor = 'cygwin';
 	$rcfilename = 'shorewallrc.cygwin';
     } else {

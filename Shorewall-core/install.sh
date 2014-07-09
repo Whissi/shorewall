@@ -187,7 +187,7 @@ INSTALLD='-D'
 
 if [ -z "$BUILD" ]; then
     case $(uname) in
-	cygwin*)
+	cygwin*|CYGWIN*)
 	    BUILD=cygwin
 	    ;;
 	Darwin)

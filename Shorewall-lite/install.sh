@@ -195,7 +195,7 @@ T='-T'
 
 if [ -z "$BUILD" ]; then
     case $(uname) in
-	cygwin*)
+	cygwin*|CYGWIN*)
 	    BUILD=cygwin
 	    ;;
 	Darwin)
@@ -242,7 +242,7 @@ if [ -z "$BUILD" ]; then
 fi
 
 case $BUILD in
-    cygwin*)
+    cygwin*|CYGWIN*)
 	OWNER=$(id -un)
 	GROUP=$(id -gn)
 	;;

@@ -750,8 +750,10 @@ eth1             0.0.0.0/0            130.252.99.27</programlisting>
       <title>Martians</title>
 
       <para>One problem that often arises with Multi-ISP configuration is
-      'Martians'. If your Internet interfaces are configured with the
-      <emphasis role="bold">routefilter</emphasis> option in
+      'Martians'. If you set ROUTE_FILTER=Yes in
+      <filename>/etc/shorewall/shorewall.conf</filename> or if your Internet
+      interfaces are configured with the <emphasis
+      role="bold">routefilter</emphasis> option in
       <filename>/etc/shorewall/interfaces</filename> (remember that if you set
       that option, you should also select <emphasis
       role="bold">logmartians</emphasis>), then things may not work correctly
@@ -810,6 +812,18 @@ DROP:info        net:192.168.1.0/24         all</programlisting>
 
       <para>Be sure the above rule is added before any other rules with
       <emphasis>net</emphasis> in the SOURCE column.</para>
+
+      <important>
+        <para>If you set ROUTE_FILTER=Yes in
+        <filename>/etc/shorewall/shorewall.conf</filename>, then setting
+        <emphasis role="bold">routefilter</emphasis>=0 in <ulink
+        url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
+        (5) will not disable route filtering on a given interface. You must
+        set ROUTE_FILTER=No in <ulink
+        url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>
+        (5), then set the <emphasis role="bold">routefilter</emphasis> option
+        on those interfaces on which you want route filtering.</para>
+      </important>
     </section>
 
     <section id="Example1">

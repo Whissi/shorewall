@@ -229,9 +229,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
     sub handle_mark_param( $$ ) {
 	my ( $option, $marktype ) = @_;
-	my $and_or = $1 if $params =~ s/^([|&])//;
-
-	$and_or ||= '';
+	my $and_or = $params =~ s/^([|&])// ? $1 : '';
 
 	if ( $params =~ /-/ ) {
 	    #

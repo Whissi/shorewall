@@ -231,6 +231,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	my ( $option, $marktype ) = @_;
 	my $and_or = $1 if $params =~ s/^([|&])//;
 
+	$and_or ||= '';
+
 	if ( $params =~ /-/ ) {
 	    #
 	    # A Mark Range
@@ -556,7 +558,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    mask           => in_hex( $globals{TC_MASK} ),
 	    function       => sub () {
 		$target = 'MARK';
-		handle_mark_param('--set-mark', , HIGHMARK );
+		handle_mark_param('', , HIGHMARK );
 	    },
 	},
 
@@ -927,21 +929,22 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	$designator = '';
     }
 
-    my ( $cmd, $rest );
-
-    if ( $mark =~ /^TOS/ ) {
-	$cmd = $mark;
-	$rest = '';
-    } else {
-	($cmd, $rest) = split( '/', $mark, 2 );
-    }
-
     unless ( $command ) {
 	{
-	    if ( $cmd =~ /^([A-Z]+)/ ) {
+	    my ( $cmd, $rest ) = split( '/', $mark, 2 );
+
+	    if ( $cmd =~ /^([A-Z]+)(?:\((.+)\))?/ ) {
 		if ( my $tccmd = $tccmd{$1} ) {
 		    fatal_error "Invalid $1 ACTION ($originalmark)" unless $tccmd->{match}($cmd); 
-		    $command = $tccmd->{command} if $tccmd->{command};
+		    $command = $1;
+		    if ( supplied $rest ) {
+			fatal_error "Invalid $1 ACTION ($originalmark)" if supplied $2;
+			$mark = $rest;
+		    } elsif ( supplied $2 ) {
+			$mark = $2;
+		    } else {
+			$mark = '';
+		    }
 		}
 	    } else {
 		$command = 'MARK';

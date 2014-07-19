@@ -4140,7 +4140,7 @@ sub IPSet_Match_Nomatch() {
 }
 
 sub IPSet_Match_Counters() {
-    have_capability 'IPSET_MATCH' && $capabilities{IPSET_MATCH_COUNTGERS};
+    have_capability 'IPSET_MATCH' && $capabilities{IPSET_MATCH_COUNTERS};
 }
 
 sub IPSET_V5() {

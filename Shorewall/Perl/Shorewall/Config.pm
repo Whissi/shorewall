@@ -4109,7 +4109,7 @@ sub Old_IPSet_Match() {
 sub IPSet_Match() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
-    my $have_ipset;
+    my $fam    = $family == F_IPV4 ? 'inet' : 'inet6';
 
     $ipset = which $ipset unless $ipset =~ '/';
 
@@ -4118,36 +4118,18 @@ sub IPSet_Match() {
     if ( $ipset && -x $ipset ) {
 	qt( "$ipset -X $sillyname" );
 
-	if ( $family == F_IPV4 ) {
-	    if ( qt("$ipset -N $sillyname hash:ip family inet") ) {
-		$capabilities{IPSET_V5} = 1;
-		$have_ipset = 1;
-	    } elsif ( qt( "ipset -N $sillyname iphash" ) ) {
-		$have_ipset = 1;
-	    }
-
-	    if ( $have_ipset ) {
-		if ( qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
-		    $capabilities{IPSET_MATCH_NOMATCH}  = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --return-nomatch -j ACCEPT" );
-		    $capabilities{IPSET_MATCH_COUNTERS} = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --packets-lt 100 -j ACCEPT" );
-		    qt1( "$iptables $iptablesw -F $sillyname" );
-		    $result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
-		} elsif ( qt1( "iptables $iptablesw -A $sillyname -m set --set $sillyname src -j ACCEPT" ) ) {
-		    qt1( "$iptables $iptablesw -F $sillyname" );
-		    $result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
-		}
-
-		qt( "$ipset -X $sillyname" );
-	    }
-	} elsif ( qt( "$ipset -N $sillyname hash:ip family inet6" ) ) {
-	    $capabilities{IPSET_V5} = 1;
+	if ( qt( "$ipset -N $sillyname iphash" ) || qt( "$ipset -N $sillyname hash:ip family $fam") ) {
 	    if ( qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
+		$capabilities{IPSET_MATCH_NOMATCH}  = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --return-nomatch -j ACCEPT" );
+		$capabilities{IPSET_MATCH_COUNTERS} = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --packets-lt 100 -j ACCEPT" );
 		qt1( "$iptables $iptablesw -F $sillyname" );
 		$result = ! ( $capabilities{OLD_IPSET_MATCH} = 0 );
+	    } else {
+		$result = have_capability 'OLD_IPSET_MATCH';
 	    }
-	}
 
-	qt( "$ipset -X $sillyname" );
+	    qt( "$ipset -X $sillyname" );
+	}
     }
 
     $result;

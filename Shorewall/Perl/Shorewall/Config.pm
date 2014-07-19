@@ -4633,6 +4633,7 @@ sub determine_capabilities() {
 	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
+	$capabilities{HEADER_MATCH}    = detect_capability( 'HEADER_MATCH' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

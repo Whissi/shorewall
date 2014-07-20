@@ -4118,7 +4118,7 @@ sub IPSet_Match() {
     if ( $ipset && -x $ipset ) {
 	qt( "$ipset -X $sillyname" );
 
-	if ( qt( "$ipset -N $sillyname hash:ip family $fam") || qt( "$ipset -N $sillyname iphash" ) ) {
+	if ( qt( "$ipset -N $sillyname hash:ip family $fam" ) || qt( "$ipset -N $sillyname iphash" ) ) {
 	    if ( qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src -j ACCEPT" ) ) {
 		$capabilities{IPSET_MATCH_NOMATCH}  = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --return-nomatch -j ACCEPT" );
 		$capabilities{IPSET_MATCH_COUNTERS} = qt1( "$iptables $iptablesw -A $sillyname -m set --match-set $sillyname src --packets-lt 100 -j ACCEPT" );

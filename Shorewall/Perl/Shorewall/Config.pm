@@ -4615,6 +4615,7 @@ sub determine_capabilities() {
 	$capabilities{FWMARK_RT_MASK}  = detect_capability( 'FWMARK_RT_MASK' );
 	$capabilities{MARK_ANYWHERE}   = detect_capability( 'MARK_ANYWHERE' );
 	$capabilities{ACCOUNT_TARGET}  = detect_capability( 'ACCOUNT_TARGET' );
+	$capabilities{HEADER_MATCH}    = detect_capability( 'HEADER_MATCH' );
 	$capabilities{AUDIT_TARGET}    = detect_capability( 'AUDIT_TARGET' );
 	$capabilities{IPSET_V5}        = detect_capability( 'IPSET_V5' );
 	$capabilities{CONDITION_MATCH} = detect_capability( 'CONDITION_MATCH' );
@@ -4630,10 +4631,10 @@ sub determine_capabilities() {
 	$capabilities{RPFILTER_MATCH}  = detect_capability( 'RPFILTER_MATCH' );
 	$capabilities{NFACCT_MATCH}    = detect_capability( 'NFACCT_MATCH' );
 	$capabilities{CHECKSUM_TARGET} = detect_capability( 'CHECKSUM_TARGET' );
+	$capabilities{ARPTABLESJF}     = detect_capability( 'ARPTABLESJF' );
 	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
-	$capabilities{HEADER_MATCH}    = detect_capability( 'HEADER_MATCH' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

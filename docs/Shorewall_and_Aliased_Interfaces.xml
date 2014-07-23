@@ -182,6 +182,13 @@ ACCEPT    net        $FW:206.124.146.178  tcp        22</programlisting></para>
       <programlisting>#ACTION   SOURCE     DEST                 PROTO      DEST PORT(S)   SOURCE    ORIGINAL
 #                                                                   PORT(S)   DEST
 DNAT      net        loc:192.168.1.3      tcp        80             -         206.124.146.178    </programlisting>
+
+      <para>If I wished to forward tcp port 10000 on that virtual interface to
+      port 22 on local host 192.168.1.3, the rule would be:</para>
+
+      <programlisting>#ACTION   SOURCE     DEST                 PROTO      DEST PORT(S)   SOURCE    ORIGINAL
+#                                                                   PORT(S)   DEST
+DNAT      net        loc:192.168.1.3:22   tcp        22             -         206.124.146.178    </programlisting>
     </section>
 
     <section id="SNAT">

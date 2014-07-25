@@ -294,6 +294,131 @@ xt_tcpudp               3328  0
     /etc/shorewall/shorewall.conf to point to that directory.</para>
   </section>
 
+  <section>
+    <title>FTP with Kernel 3.5 and Later</title>
+
+    <para>Because of the potential for attackers to subvert Netfilter helpers
+    like the one for FTP, the Netfilter team are in the process of eliminating
+    the automatic association of helpers to connections. In the 3.5 kernel, it
+    is possible to disable this automatic association, and the team have
+    announced that automatic association will eventually be eliminated. While
+    it is certainly more secure to add explicit rules that create these
+    associations, for Shorewall to require users to add those rules would
+    present a gross inconvenience during a Shorewall upgrade. To make
+    Shorewall and kernel upgrades as smooth as possible, several new features
+    were added to the Shorewall 4.5.7:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Shorewall automatically disables the kernel's automatic
+        association of helpers to connections on kernel 3.5 and later.</para>
+      </listitem>
+
+      <listitem>
+        <para>An automatic association of helpers with connections that
+        performs the same function as in the pre-3.5 kernels has been added.
+        This automatic association is controlled by the AUTOHELPERS
+        shorewall.conf option which is set to 'Yes' by default.</para>
+      </listitem>
+
+      <listitem>
+        <para>A HELPERS column has been added to the /etc/shorewall/rules In
+        the NEW section: When the ACTION is ACCEPT, DNAT or REDIRECT, the
+        specified helper is automatically associated with the
+        connection.</para>
+      </listitem>
+
+      <listitem>
+        <para>HELPERS may be specified in action files, macros and in the
+        rules file itself. In the RELATED section: The rule will only match
+        related connections that have the named helper attached. - The
+        standard Macros for applications requiring a helper (FTP, IRC, etc)
+        have been modified to automatically specify the correct helper in the
+        HELPER column.</para>
+      </listitem>
+
+      <listitem>
+        <para>HELPER is now a valid action in /etc/shorewall/rules. This
+        action requires that a helper be present in the HELPER column and
+        causes the specified helper to be associated with connections matching
+        the rule. No destination zone should be specified in HELPER rules.
+        HELPER rules allow specification of a helper for connections that are
+        ACCEPTed by the applicable policy.</para>
+
+        <para> Example (loc-&gt;net policy is ACCEPT) - In
+        /etc/shorewall/rules:</para>
+
+        <programlisting>#ACTION     SOURCE       DEST
+FTP(HELPER) loc          - </programlisting>
+
+        <para>or equivalently </para>
+
+        <programlisting>#ACTION     SOURCE       DEST    PROTO  DEST
+#                                       PORT(S)
+HELPER      loc          -       tcp    21   { helper=ftp }</programlisting>
+      </listitem>
+
+      <listitem>
+        <para> The set of enabled helpers (either by AUTOHELPERS=Yes or by the
+        HELPERS column) can be taylored using the new HELPERS option in
+        shorewall.conf. </para>
+      </listitem>
+    </itemizedlist>
+
+    <para>By making AUTOHELPERS=Yes the default, users can upgrade their
+    systems to a 3.5+ kernel without disrupting the operation of their
+    firewalls. Beyond such upgrades, we suggest setting AUTOHELPERS=No and
+    follow one of two strategies:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Use the HELPERS column in the rules file to enable helpers as
+        needed (preferred); or</para>
+      </listitem>
+
+      <listitem>
+        <para>Taylor the conntrack file to enable helpers on only those
+        connections that are required.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>With either of these approaches, the list if available helpers can
+    be trimmed using the HELPERS option and rules can be added to the RELATED
+    section of the rules file to further restrict the effect of helpers. The
+    implementation of these new function places conditional rules in the
+    /etc/shorewall[6]/conntrack file. These rules are included conditionally
+    based in the setting of AUTOHELPERS.</para>
+
+    <para> Example:</para>
+
+    <programlisting>#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
+#                                                               PORT(S)         PORT(S) GROUP
+?if $AUTOHELPERS &amp;&amp; __CT_TARGET
+?if __FTP_HELPER
+CT:helper:ftp           all             -               tcp     21
+?endif
+...
+?endif</programlisting>
+
+    <para> __FTP_HELPER evaluates to false if the HELPERS setting is non-empty
+    and 'ftp' is not listed in that setting. For example, if you only need FTP
+    access from your 'loc' zone, then add this rule outside of the outer-most
+    ?if....?endif shown above.</para>
+
+    <programlisting>#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
+#                                                               PORT(S)         PORT(S) GROUP
+...
+CT:helper:ftp           loc             -               tcp     21</programlisting>
+
+    <para> For an overview of Netfilter Helpers and Shorewall's support for
+    dealing with them, see <ulink
+    url="Helpers.html">http://www.shorewall.net/Helpers.html</ulink>.</para>
+
+    <para>See <ulink
+    url="https://home.regit.org/netfilter-en/secure-use-of-helpers/">https://home.regit.org/netfilter-en/secure-use-of-helpers/</ulink>
+    for additional information. </para>
+  </section>
+
   <section id="Ports">
     <title>FTP on Non-standard Ports</title>
 

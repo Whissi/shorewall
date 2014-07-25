@@ -440,12 +440,15 @@ DNAT            net            loc:192.168.1.2:21   tcp       12345  { helper=ft
     <para>That entry will accept ftp connections on port 12345 from the net
     and forward them to host 192.168.1..2 and port 21 in the loc zone.</para>
 
-    <para><filename>/etc/shorewall/rules:</filename></para>
+    <para><filename>/etc/shorewall/conntrack:</filename></para>
 
     <programlisting>#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
 #                                                               PORT(S)         PORT(S) GROUP
 ...
 CT:helper:ftp           loc             -               tcp     12345</programlisting>
+
+    <para>That rule automatically associates the ftp helper with TCP port
+    12345 from the 'loc' zone.</para>
 
     <para>Otherwise, read on.</para>
 

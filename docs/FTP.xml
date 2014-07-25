@@ -422,6 +422,33 @@ CT:helper:ftp           loc             -               tcp     21</programlisti
   <section id="Ports">
     <title>FTP on Non-standard Ports</title>
 
+    <para>If you are running kernel 3.5 or later and Shorewall 4.5.7 or later,
+    then please read the preceding section. You can add appropriate entries
+    into <ulink url="manpages/shorewall-rules.html">shorewall-rules(5)</ulink>
+    or <ulink
+    url="manpages/shorewall-conntrack.html">shorewall-conntrack(5)</ulink> to
+    associate the FTP helpers with a nonstandard port.</para>
+
+    <para>Examples using port 12345:</para>
+
+    <para><filename>/etc/shorewall/rules:</filename></para>
+
+    <programlisting>#ACTION         SOURCE         DEST                 PROTO     DEST
+#                                                             PORT(S)
+DNAT            net            loc:192.168.1.2:21   tcp       12345  { helper=ftp }the</programlisting>
+
+    <para>That entry will accept ftp connections on port 12345 from the net
+    and forward them to host 192.168.1..2 and port 21 in the loc zone.</para>
+
+    <para><filename>/etc/shorewall/rules:</filename></para>
+
+    <programlisting>#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
+#                                                               PORT(S)         PORT(S) GROUP
+...
+CT:helper:ftp           loc             -               tcp     12345</programlisting>
+
+    <para>Otherwise, read on.</para>
+
     <note>
       <para>If you are running <emphasis role="bold">kernel 2.6.19 or
       earlier</emphasis>, replace <emphasis

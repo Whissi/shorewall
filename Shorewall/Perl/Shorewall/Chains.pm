@@ -3503,7 +3503,7 @@ sub optimize_level8( $$$ ) {
     %renamed = ();
 
     while ( $progress ) {
-	my @chains   = ( sort level8_compare grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} );
+	my @chains   = ( sort { level8_compare($a, $b) } ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} ) );
 	my @chains1  = @chains;
 	my $chains   = @chains;
 	my %rename;

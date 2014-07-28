@@ -375,6 +375,20 @@
 
       <arg choice="opt"><option>show | list | ls </option></arg>
 
+      <arg><option>-x</option></arg>
+
+      <arg choice="plain"><option>{bl|blacklists}</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6-lite</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="opt"><option>show | list | ls </option></arg>
+
       <arg
       choice="req"><option>classifiers|connections|config|events|filters|ip|ipa|zones|policies|marks</option></arg>
     </cmdsynopsis>
@@ -465,7 +479,8 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>status</option></arg>
+      <arg choice="plain"><arg
+      choice="plain"><option>status</option><arg><option>-i</option></arg></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -828,6 +843,19 @@
 
           <variablelist>
             <varlistentry>
+              <term><emphasis role="bold">bl|blacklists</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.2. Displays the dynamic chain
+                along with any chains produced by entries in
+                shorewall6-blrules(5).The <emphasis role="bold">-x</emphasis>
+                option is passed directly through to ip6tables and causes
+                actual packet and byte counts to be displayed. Without this
+                option, those counts are abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">capabilities</emphasis></term>
 
               <listitem>
@@ -1071,6 +1099,10 @@
         <listitem>
           <para>Produces a short report about the state of the
           Shorewall-configured firewall.</para>
+
+          <para>The <option>-i </option>option was added in Shorewall 4.6.2
+          and causes the status of each optional or provider interface to be
+          displayed.</para>
         </listitem>
       </varlistentry>
 

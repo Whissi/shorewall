@@ -17,6 +17,7 @@ usage() {
     echo "   reset"
     echo "   refresh"
     echo "   restart"
+    echo "   run <function> [ <argument> ... ]"
     echo "   status"
     echo "   up <interface>"
     echo "   version"
@@ -370,6 +371,10 @@ case "$COMMAND" in
 	    disable_provider $1
 	fi
 	status=0
+	;;
+    run)
+	shift
+	eval $@
 	;;
     version)
 	[ $# -ne 1 ] && usage 2

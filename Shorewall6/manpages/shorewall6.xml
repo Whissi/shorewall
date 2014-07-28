@@ -414,6 +414,21 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>run</option></arg>
+
+      <arg choice="plain">function</arg>
+
+      <arg><replaceable>parameter ...</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>safe-restart</option></arg>
 
       <arg><option>-d</option></arg>
@@ -1287,6 +1302,19 @@
           <emphasis>filename</emphasis> is given then Shorewall6 will be
           restored from the file specified by the RESTOREFILE option in <ulink
           url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">run</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.3. Calls the named
+          <replaceable>function</replaceable> passing the supplied
+          <replaceable>parameter</replaceable>s. The
+          <replaceable>function</replaceable> will normally be declared in
+          <filename>lib.private</filename> and is executed in the context of
+          the generated firewall script.</para>
         </listitem>
       </varlistentry>
 

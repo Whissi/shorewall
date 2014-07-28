@@ -3574,6 +3574,7 @@ usage() # $1 = exit status
     echo "   start [ -f ] [ -p ] [ <directory> ]"
     echo "   stop"
     echo "   status [ -i ]"
+    echo "   run <function> [ function ... ]"
     echo "   version [ -a ]"
     echo
     exit $1
@@ -3816,6 +3817,14 @@ shorewall_cli() {
 		run_it ${VARDIR}/firewall $g_debugging $@
 	    else
 		fatal_error "$g_product is not running"
+	    fi
+	    ;;
+	run)
+	    get_config Yes
+	    if [ -x ${VARDIR}/firewall ] ; then
+		run_it ${VARDIR}/firewall $g_debugging $@
+	    else
+		fatal_error "${VARDIR}/firewall does not exist or is not executable"
 	    fi
 	    ;;
 	show|list|ls)

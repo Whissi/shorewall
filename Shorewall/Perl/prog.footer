@@ -17,7 +17,7 @@ usage() {
     echo "   reset"
     echo "   refresh"
     echo "   restart"
-    echo "   run <function> [ <argument> ... ]"
+    echo "   run <command> [ <parameter> ... ]"
     echo "   status"
     echo "   up <interface>"
     echo "   version"
@@ -373,10 +373,14 @@ case "$COMMAND" in
 	status=0
 	;;
     run)
-	shift
-	detect_configuration
-	eval $@
-	status=$?
+	if [ $# -gt 1 ]; then
+	    shift
+	    detect_configuration
+	    eval $@
+	    status=$?
+	else
+	    error_message "ERROR: Missing command"
+	fi
 	;;
     version)
 	[ $# -ne 1 ] && usage 2

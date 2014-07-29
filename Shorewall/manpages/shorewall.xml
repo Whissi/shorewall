@@ -1428,12 +1428,20 @@
         <term><emphasis role="bold">run</emphasis></term>
 
         <listitem>
-          <para>Added in Shorewall 4.6.3. Calls the named
-          <replaceable>function</replaceable> passing the supplied
-          <replaceable>parameter</replaceable>s. The
-          <replaceable>function</replaceable> will normally be declared in
-          <filename>lib.private</filename> and is executed in the context of
-          the generated firewall script.</para>
+          <para>Added in Shorewall 4.6.3. Executes
+          <replaceable>command</replaceable> in the context of the generated
+          script passing the supplied <replaceable>parameter</replaceable>s.
+          Normally, the <replaceable>command</replaceable> will be a function
+          declared in <filename>lib.private</filename>.</para>
+
+          <para>If there are files in the CONFIG_PATH that were modified after
+          the current firewall script was generated, the following warning
+          message is issued:</para>
+
+          <simplelist>
+            <member>WARNING: /var/lib/shorewall/firewall is not up to
+            date</member>
+          </simplelist>
         </listitem>
       </varlistentry>
 

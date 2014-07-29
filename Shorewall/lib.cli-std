@@ -1615,6 +1615,15 @@ export_command() # $* = original arguments less the command.
     fi
 }
 
+run_command() {
+    if [ -x ${VARDIR}/firewall ] ; then
+	uptodate ${VARDIR}/firewall || echo "   WARNING: ${VARDIR}/firewall is not up to date" >&2
+	run_it ${VARDIR}/firewall $g_debugging $@
+    else
+	fatal_error "${VARDIR}/firewall does not exist or is not executable"
+    fi
+}
+
 #
 # Give Usage Information
 #

@@ -374,7 +374,9 @@ case "$COMMAND" in
 	;;
     run)
 	shift
+	detect_configuration
 	eval $@
+	status=$?
 	;;
     version)
 	[ $# -ne 1 ] && usage 2

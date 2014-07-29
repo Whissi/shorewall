@@ -3515,6 +3515,14 @@ restart_command() {
     return $rc
 }
 
+run_command() {
+    if [ -x ${VARDIR}/firewall ] ; then
+	run_it ${VARDIR}/firewall $g_debugging $@
+    else
+	fatal_error "${VARDIR}/firewall does not exist or is not executable"
+    fi
+}
+
 #
 # Give Usage Information
 #
@@ -3820,12 +3828,9 @@ shorewall_cli() {
 	    fi
 	    ;;
 	run)
+	    [ $# -gt 1 ] || fatal_error "Missing function name"
 	    get_config Yes
-	    if [ -x ${VARDIR}/firewall ] ; then
-		run_it ${VARDIR}/firewall $g_debugging $@
-	    else
-		fatal_error "${VARDIR}/firewall does not exist or is not executable"
-	    fi
+	    run_command $@
 	    ;;
 	show|list|ls)
 	    get_config Yes No Yes

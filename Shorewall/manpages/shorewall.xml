@@ -1434,6 +1434,11 @@
           Normally, the <replaceable>command</replaceable> will be a function
           declared in <filename>lib.private</filename>.</para>
 
+          <para>Before executing the <replaceable>command</replaceable>, the
+          script will detect the configuration, setting all SW_* variables and
+          will run your <filename>init</filename> extension script with
+          $COMMAND = 'run'.</para>
+
           <para>If there are files in the CONFIG_PATH that were modified after
           the current firewall script was generated, the following warning
           message is issued:</para>

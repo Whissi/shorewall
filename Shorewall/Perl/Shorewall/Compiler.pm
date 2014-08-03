@@ -280,42 +280,42 @@ sub generate_script_2() {
 
     if ( $global_variables ) {
 
-	emit( 'case $COMMAND in' );
-
-	push_indent;
-
 	if ( $global_variables & NOT_RESTORE ) {
-	    emit( 'start|restart|refresh|disable|enable|run)' );
-	} else {
-	    emit( 'start|restart|refresh|disable|enable|restore|run)' );
-	}
 
-	push_indent;
+	    emit( 'case $COMMAND in' );
 
-	set_global_variables(1);
-
-	handle_optional_interfaces(0);
-
-	emit ';;';
-
-	if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
-	    pop_indent;
+	    push_indent;
 
 	    emit 'restore)';
 
 	    push_indent;
 
-	    set_global_variables(0);
+	    if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
 
-	    handle_optional_interfaces(0);
+		set_global_variables(0);
+
+		handle_optional_interfaces(0);
+	    }
 
 	    emit ';;';
+
+	    pop_indent;
+
+	    emit '*)';
+
+	    push_indent;
 	}
 
-	pop_indent;
-	pop_indent;
+	set_global_variables(1);
 
-	emit ( 'esac' ) ,
+	handle_optional_interfaces(0);
+
+	if ( $global_variables & NOT_RESTORE ) {
+	    emit ';;';
+	    pop_indent;
+	    pop_indent;
+	    emit ( 'esac' );
+	}
     } else {
 	emit( 'true' ) unless handle_optional_interfaces(1);
     }

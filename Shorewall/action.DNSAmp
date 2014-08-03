@@ -1,0 +1,34 @@
+#
+# Shorewall 4 - DNS Amplification Action
+#
+#    /usr/share/shorewall/action.DNSAmp
+#
+#     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
+#
+#     (c) 2011,2012 - Tom Eastep (teastep@shorewall.net)
+#
+#       Complete documentation is available at http://shorewall.net
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of Version 2 of the GNU General Public License
+#       as published by the Free Software Foundation.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#   DNSAmp[([<action>])]
+#
+#       Default action is DROP
+#
+##########################################################################################
+?format 2
+
+DEFAULTS DROP
+
+IPTABLES(@1)	-	-	udp	53	; -m u32 --u32 "0>>22&0x3C\@8&0x0100=0x0100 && 0>>22&0x3C\@12>>16=1"

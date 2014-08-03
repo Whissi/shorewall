@@ -3260,6 +3260,10 @@ sub expand_variables( \$ ) {
     }
 
     if ( $actparms{0} ) {
+	#
+	# Allow escaping at signs (@) for u32
+	#
+	$$lineref =~ s/\\@/??/g;
 	#                         $1      $2   $3                     -     $4
 	while ( $$lineref =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
@@ -3268,6 +3272,8 @@ sub expand_variables( \$ ) {
 	    $$lineref = join( '', $first , $val , $rest );
 	    fatal_error "Variable Expansion Loop" if ++$count > 100;
 	}
+
+	$$lineref =~ s/??/@/g;
     }
 }
 

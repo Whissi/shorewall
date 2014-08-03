@@ -3273,7 +3273,7 @@ sub expand_variables( \$ ) {
 	    fatal_error "Variable Expansion Loop" if ++$count > 100;
 	}
 
-	$$lineref =~ s/??/@/g;
+	$$lineref =~ s/\?\?/@/g;
     }
 }
 

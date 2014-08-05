@@ -1673,9 +1673,11 @@ sub process_action($$) {
 	    $origdest = $connlimit = $time = $headers = $condition = $helper = '-';
 	} else {
 	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
-		= split_line1( 'action file',
+		= split_line2( 'action file',
 			       \%rulecolumns,
-			       $action_commands );
+			       $action_commands,
+			       undef,
+			       1 );
 	}
 
 	fatal_error 'TARGET must be specified' if $target eq '-';

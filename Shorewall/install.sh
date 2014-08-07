@@ -205,7 +205,7 @@ done
 
 if [ -z "$BUILD" ]; then
     case $(uname) in
-	cygwin*|CYGWIN)
+	cygwin*|CYGWIN*)
 	    BUILD=cygwin
 	    ;;
 	Darwin)

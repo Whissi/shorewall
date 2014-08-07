@@ -164,42 +164,14 @@ done
 #
 # Read the RC file
 #
-if [ -n "$DESTDIR" ]; then
-    if [ $# -eq 0 ]; then
-	if [ -f ./shorewallrc ]; then
-	    . ./shorewallrc
-	elif [ -f ~/.shorewallrc ]; then
-	    . ~/.shorewallrc || exit 1
-	    file=./.shorewallrc
-	elif [ -f /usr/share/shorewall/shorewallrc ]; then
-	    . /usr/share/shorewall/shorewallrc
-	else
-	    fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
-	fi
-    elif [ $# -eq 1 ]; then
-	file=$1
-	case $file in
-	    /*|.*)
-		;;
-	    *)
-		file=./$file
-	    ;;
-	esac
-
-	. $file
-    else
-	usage 1
-    fi
-elif [ $# -eq 0 ]; then
+if [ $# -eq 0 ]; then
     if [ -f ./shorewallrc ]; then
 	. ./shorewallrc
-	file=./shorewallrc
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
-	file=~/.shorewallrc
+	file=./.shorewallrc
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
 	. /usr/share/shorewall/shorewallrc
-	file=/usr/share/shorewall/shorewallrc
     else
 	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
@@ -209,7 +181,7 @@ elif [ $# -eq 1 ]; then
 	/*|.*)
 	    ;;
 	*)
-	    file=./$file || exit 1
+	    file=./$file
 	    ;;
     esac
 
@@ -233,7 +205,7 @@ done
 
 if [ -z "$BUILD" ]; then
     case $(uname) in
-	cygwin*|CYGWIN*)
+	cygwin*|CYGWIN)
 	    BUILD=cygwin
 	    ;;
 	Darwin)
@@ -331,23 +303,6 @@ case "$HOST" in
 	;;
 esac
 
-if [ -z "${DEST}" -a -z "$file" ] ]; then
-    if $HOST = linux; then
-	file=shorewallrc.default
-    else
-	file=shorewallrc.${HOST}
-    fi
-
-    echo "You have not specified a configuration file and ~/.shorewallrc does not exist" >&2
-    echo "Shorewall-core $VERSION has determined that the $file configuration is appropriate for your system" >&2
-    echo "Please review the settings in that file. If you wish to change them, make a copy and modify the copy" >&2
-    echo "Then re-run install.sh passing either $file or the name of your modified copy" >&2
-    echo "" >&2
-    echo "Example:" >&2
-    echo "" >&2
-    echo "   ./install.sh $file" &>2
-fi
-
 if [ $PRODUCT = shorewall ]; then
     if [ -n "$DIGEST" ]; then
 	#
@@ -418,6 +373,11 @@ else
     first_install="Yes"
 fi
 
+if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/$PRODUCT/coreversion ]; then
+    echo "Shorewall $VERSION requires Shorewall Core which does not appear to be installed"
+    exit 1
+fi
+
 install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0755
 [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/${PRODUCT}
 echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
@@ -439,108 +399,12 @@ fi
 #
 # Create /etc/$PRODUCT and other directories
 #
-if [ -z "${DESTDIR}" -a $PRODUCT = shorewall ]; then
-    #
-    # Install core components
-    #
-    mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall
-    chmod 755 ${DESTDIR}${LIBEXECDIR}/shorewall
-
-    mkdir -p ${DESTDIR}${SHAREDIR}/shorewall
-    chmod 755 ${DESTDIR}${SHAREDIR}/shorewall
-
-    mkdir -p ${DESTDIR}${CONFDIR}
-    chmod 755 ${DESTDIR}${CONFDIR}
-
-    if [ -n "${SYSCONFDIR}" ]; then
-	mkdir -p ${DESTDIR}${SYSCONFDIR}
-	chmod 755 ${DESTDIR}${SYSCONFDIR}
-    fi
-
-    if [ -n "${SYSTEMD}" ]; then
-	mkdir -p ${DESTDIR}${SYSTEMD}
-	chmod 755 ${DESTDIR}${SYSTEMD}
-    fi
-
-    mkdir -p ${DESTDIR}${SBINDIR}
-    chmod 755 ${DESTDIR}${SBINDIR}
-
-    mkdir -p ${DESTDIR}${MANDIR}
-    chmod 755 ${DESTDIR}${MANDIR}
-
-    if [ -n "${INITFILE}" ]; then
-	mkdir -p ${DESTDIR}${INITDIR}
-	chmod 755 ${DESTDIR}${INITDIR}
-
-	if [ -n "$AUXINITSOURCE" -a -f "$AUXINITSOURCE" ]; then
-	    install_file $AUXINITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
-	    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$AUXINITFILE
-	    echo  "SysV init script $AUXINITSOURCE installed in ${DESTDIR}${INITDIR}/$AUXINITFILE"
-	fi
-    fi
-    #
-    # Install wait4ifup
-    #
-    install_file wait4ifup ${DESTDIR}${LIBEXECDIR}/shorewall/wait4ifup 0755
-
-    echo
-    echo "wait4ifup installed in ${DESTDIR}${LIBEXECDIR}/shorewall/wait4ifup"
-
-    #
-    # Install the libraries
-    #
-    for f in lib.* ; do
-	install_file $f ${DESTDIR}${SHAREDIR}/shorewall/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/shorewall/$f"
-    done
-
-    #
-    # Symbolically link 'functions' to lib.base
-    #
-    ln -sf lib.base ${DESTDIR}${SHAREDIR}/shorewall/functions
-    #
-    # Create the version file
-    #
-    echo "$VERSION" > ${DESTDIR}${SHAREDIR}/shorewall/coreversion
-    chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
-
-    if [ -z "${DESTDIR}" ]; then
-	if [ $update -ne 0 ]; then
-	    echo "Updating $file - original saved in $file.bak"
-
-	    cp $file $file.bak
-
-	    echo '#'                                             >> $file
-	    echo "# Updated by Shorewall-core $VERSION -" `date` >> $file
-	    echo '#'                                             >> $file
-
-	    [ $update -eq 1 ] && sed -i 's/VARDIR/VARLIB/' $file
-
-	    echo 'VARDIR=${VARLIB}/${PRODUCT}' >> $file
-	fi
-    fi
-
-    [ $file != "${DESTDIR}${SHAREDIR}/shorewall/shorewallrc" ] && cp $file ${DESTDIR}${SHAREDIR}/shorewall/shorewallrc
-
-    [ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc ~/.shorewallrc
-
-    if [ ${SHAREDIR} != /usr/share ]; then
-	for f in lib.*; do
-	    if [ $BUILD != apple ]; then
-		eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/shorewall/$f
-	    else
-		eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/shorewall/$f
-	    fi
-	done
-    fi
-fi
-   
+mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
+mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${PERLLIBDIR}/Shorewall
 mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 mkdir -p ${DESTDIR}${VARDIR}
 
-mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
 chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT
 chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles

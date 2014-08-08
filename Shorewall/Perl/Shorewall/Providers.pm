@@ -457,14 +457,30 @@ sub process_a_provider( $ ) {
     my $interfaceref = known_interface( $interface );
 
     fatal_error "Unknown Interface ($interface)" unless $interfaceref;
-    #
-    # Switch to the logical name if a physical name was passed
-    #
-    $interface = $interfaceref->{name};
 
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
-    my $physical    = get_physical $interface;
+    #
+    # Switch to the logical name if a physical name was passed
+    #
+    my $physical;
+
+    if ( $interface eq $interfaceref->{name} ) {
+	#
+	# The logical interface name was specified
+	#
+	$physical = get_physical $interface;
+    } else {
+	#
+	# A Physical name was specified
+	#
+	$physical = $interface;
+	#
+	# Switch to the logical name unless it is a wildcard
+	#
+	$interface = $interfaceref->{name} unless $interfaceref->{name} =~ /\+$/;
+    } 
+
     my $gatewaycase = '';
 
     if ( $physical =~ /\+$/ ) {

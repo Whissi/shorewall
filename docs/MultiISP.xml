@@ -1184,63 +1184,6 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
 
       <programlisting>#SOURCE     DEST      PROVIDER        PRIORITY
 lo          -         shorewall       1000</programlisting>
-
-      <para>Another option is to re-arrange the routing rules. Here is an
-      example of the routing rules produced with USE_DEFAULT_RT=Yes and
-      without the <option>loose</option> option being specified on the
-      providers:</para>
-
-      <programlisting>0:      from all lookup local
-1:      from all fwmark 0x80000/0x80000 lookup TProxy
-999:    from all lookup main
-1000:   from 70.90.191.121 lookup ComcastB
-1000:   from 70.90.191.123 lookup ComcastB
-1000:   from 10.0.0.4 lookup ComcastC
-10000:  from all fwmark 0x10000/0x30000 lookup ComcastB
-10001:  from all fwmark 0x20000/0x30000 lookup ComcastC
-32765:  from all lookup balance
-32767:  from all lookup default
-</programlisting>
-
-      <para>Note the rules with priority 1000 -- these rules are configured by
-      Shorewall when the providers do not have the <option>loose</option>
-      option. If that option is specified, the rules become:</para>
-
-      <programlisting>0:      from all lookup local
-1:      from all fwmark 0x80000/0x80000 lookup TProxy
-999:    from all lookup main
-10000:  from all fwmark 0x10000/0x30000 lookup ComcastB
-10001:  from all fwmark 0x20000/0x30000 lookup ComcastC
-32765:  from all lookup balance
-32767:  from all lookup default
-</programlisting>
-
-      <para>Now, if we configure the following rtrules:</para>
-
-      <programlisting>#SOURCE            DEST      PROVIDER        PRIORITY
-70.90.191.121      -         ComcastB        20000
-70.90.191.123      -         ComcastB        20000
-10.0.0.4           -         ComcastC        20000</programlisting>
-
-      <para>Then the routing rules become:</para>
-
-      <programlisting>0:      from all lookup local
-1:      from all fwmark 0x80000/0x80000 lookup TProxy
-999:    from all lookup main
-10000:  from all fwmark 0x10000/0x30000 lookup ComcastB
-10001:  from all fwmark 0x20000/0x30000 lookup ComcastC
-20000:  from 70.90.191.121 lookup ComcastB
-20000:  from 70.90.191.123 lookup ComcastB
-20000:  from 10.0.0.4 lookup ComcastC
-32765:  from all lookup balance
-32767:  from all lookup default
-</programlisting>
-
-      <para>These change give marks priority over the source IP address, so
-      marking a packet will send it to the proscribed provider, regardless of
-      its source IP address. If you take this approach, be sure to include
-      the<link linkend="masq"> proper rules in /etc/shorewall/masq</link> to
-      insure that the correct source IP address is used.</para>
     </section>
 
     <section id="routes">

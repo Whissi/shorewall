@@ -710,7 +710,7 @@
       up.</para>
     </section>
 
-    <section>
+    <section id="masq">
       <title>./etc/shorewall/masq and Multi-ISP</title>
 
       <para>If you masquerade a local network, you will need to add masquerade
@@ -976,51 +976,6 @@ eth1             0.0.0.0/0         130.252.99.27
 eth3             0.0.0.0/0         16.105.78.4</programlisting></para>
     </section>
 
-    <section id="Local">
-      <title>Applications running on the Firewall -making them use a
-      particular provider</title>
-
-      <para>As <link linkend="Applications">noted above</link>, separate
-      entries in <filename>/etc/shorewall/mangle</filename> are required for
-      traffic originating from the firewall.</para>
-
-      <para>Experience has shown that in some cases, problems occur with
-      applications running on the firewall itself. This is especially true
-      when you have specified <emphasis role="bold">routefilter</emphasis> on
-      your external interfaces in /etc/shorewall/interfaces (see <link
-      linkend="Martians">above</link>). When this happens, it is suggested
-      that you have the application use specific local IP addresses rather
-      than 0.</para>
-
-      <para>Examples:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Squid: In <filename>squid.conf</filename>, set <emphasis
-          role="bold">tcp_outgoing_address</emphasis> to the IP address of the
-          interface that you want Squid to use.</para>
-        </listitem>
-
-        <listitem>
-          <para>In OpenVPN, set <emphasis role="bold">local
-          </emphasis>(<emphasis role="bold">--local</emphasis> on the command
-          line) to the IP address that you want the server to receive
-          connections on.</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>Note that some traffic originating on the firewall doesn't have a
-      SOURCE IP address before routing. At least one Shorewall user reports
-      that an entry in <filename>/etc/shorewall/rtrules</filename> with 'lo'
-      in the SOURCE column seems to be the most reliable way to direct such
-      traffic to a particular ISP.</para>
-
-      <para>Example:</para>
-
-      <programlisting>#SOURCE     DEST      PROVIDER        PRIORITY
-lo          -         shorewall       1000</programlisting>
-    </section>
-
     <section id="rtrules">
       <title>/etc/shorewall/rtrules (formerly
       /etc/shorewall/route_rules)</title>
@@ -1184,6 +1139,108 @@ gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
 -                       10.8.0.0/24     main            1000</programlisting>
       </section>
+    </section>
+
+    <section id="Local">
+      <title>Applications running on the Firewall - making them use a
+      particular provider</title>
+
+      <para>As <link linkend="Applications">noted above</link>, separate
+      entries in <filename>/etc/shorewall/mangle</filename> are required for
+      traffic originating from the firewall.</para>
+
+      <para>Experience has shown that in some cases, problems occur with
+      applications running on the firewall itself. This is especially true
+      when you have specified <emphasis role="bold">routefilter</emphasis> on
+      your external interfaces in /etc/shorewall/interfaces (see <link
+      linkend="Martians">above</link>). When this happens, it is suggested
+      that you have the application use specific local IP addresses rather
+      than 0.</para>
+
+      <para>Examples:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Squid: In <filename>squid.conf</filename>, set <emphasis
+          role="bold">tcp_outgoing_address</emphasis> to the IP address of the
+          interface that you want Squid to use.</para>
+        </listitem>
+
+        <listitem>
+          <para>In OpenVPN, set <emphasis role="bold">local
+          </emphasis>(<emphasis role="bold">--local</emphasis> on the command
+          line) to the IP address that you want the server to receive
+          connections on.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Note that some traffic originating on the firewall doesn't have a
+      SOURCE IP address before routing. At least one Shorewall user reports
+      that an entry in <filename>/etc/shorewall/rtrules</filename> with 'lo'
+      in the SOURCE column seems to be the most reliable way to direct such
+      traffic to a particular ISP.</para>
+
+      <para>Example:</para>
+
+      <programlisting>#SOURCE     DEST      PROVIDER        PRIORITY
+lo          -         shorewall       1000</programlisting>
+
+      <para>Another option is to re-arrange the routing rules. Here is an
+      example of the routing rules produced with USE_DEFAULT_RT=Yes and
+      without the <option>loose</option> option being specified on the
+      providers:</para>
+
+      <programlisting>0:      from all lookup local
+1:      from all fwmark 0x80000/0x80000 lookup TProxy
+999:    from all lookup main
+1000:   from 70.90.191.121 lookup ComcastB
+1000:   from 70.90.191.123 lookup ComcastB
+1000:   from 10.0.0.4 lookup ComcastC
+10000:  from all fwmark 0x10000/0x30000 lookup ComcastB
+10001:  from all fwmark 0x20000/0x30000 lookup ComcastC
+32765:  from all lookup balance
+32767:  from all lookup default
+</programlisting>
+
+      <para>Note the rules with priority 1000 -- these rules are configured by
+      Shorewall when the providers do not have the <option>loose</option>
+      option. If that option is specified, the rules become:</para>
+
+      <programlisting>0:      from all lookup local
+1:      from all fwmark 0x80000/0x80000 lookup TProxy
+999:    from all lookup main
+10000:  from all fwmark 0x10000/0x30000 lookup ComcastB
+10001:  from all fwmark 0x20000/0x30000 lookup ComcastC
+32765:  from all lookup balance
+32767:  from all lookup default
+</programlisting>
+
+      <para>Now, if we configure the following rtrules:</para>
+
+      <programlisting>#SOURCE            DEST      PROVIDER        PRIORITY
+70.90.191.121      -         ComcastB        20000
+70.90.191.123      -         ComcastB        20000
+10.0.0.4           -         ComcastC        20000</programlisting>
+
+      <para>Then the routing rules become:</para>
+
+      <programlisting>0:      from all lookup local
+1:      from all fwmark 0x80000/0x80000 lookup TProxy
+999:    from all lookup main
+10000:  from all fwmark 0x10000/0x30000 lookup ComcastB
+10001:  from all fwmark 0x20000/0x30000 lookup ComcastC
+20000:  from 70.90.191.121 lookup ComcastB
+20000:  from 70.90.191.123 lookup ComcastB
+20000:  from 10.0.0.4 lookup ComcastC
+32765:  from all lookup balance
+32767:  from all lookup default
+</programlisting>
+
+      <para>These change give marks priority over the source IP address, so
+      marking a packet will send it to the proscribed provider, regardless of
+      its source IP address. If you take this approach, be sure to include
+      the<link linkend="masq"> proper rules in /etc/shorewall/masq</link> to
+      insure that the correct source IP address is used.</para>
     </section>
 
     <section id="routes">

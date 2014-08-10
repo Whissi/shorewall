@@ -388,122 +388,31 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     details.</para>
   </section>
 
-  <section id="COMMENT">
-    <title>Attach Comment to Netfilter Rules</title>
+  <section id="capabilities">
+    <title>Capabilities</title>
 
-    <para>If you kernel and iptables contain comment match support (see the
-    output of <command>shorewall show capabilities</command>), then you can
-    attach comments to Netfilter rules. This feature is available in the
-    following files:</para>
+    <para>Shorewall probes your system to determine the features that it
+    supports. The result of this probing is a set of
+    <firstterm>capabilities</firstterm>. This probing is normally done each
+    time that the compiler is run but can also be done by executing the
+    <command>shorewall show capabilities</command> command. Regardless of
+    whether the compiler or the command does the probing, this probing may
+    produce error messages in your system log. These log messages are to be
+    expected and do not represent a problem; they merely indicate that
+    capabilities that are being probed are not supported on your
+    system.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><filename>/etc/shorewall/conntrack</filename> (formerly
-        <filename>/etc/shorewall/notrack</filename>)</para>
-      </listitem>
+    <para>Probing may be suppressed by using a <firstterm>capabilities
+    file</firstterm>. A capabilities file may be generated using this
+    command:</para>
 
-      <listitem>
-        <para><filename>/etc/shorewall/accounting</filename></para>
-      </listitem>
+    <programlisting><command>shorewall show -f capabilities &gt; /etc/shorewall/capabilities</command></programlisting>
 
-      <listitem>
-        <para><filename>/etc/shorewall/masq</filename></para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall/nat</filename></para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall/rules</filename></para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall/secmarks</filename></para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall/tcrules</filename></para>
-      </listitem>
-
-      <listitem>
-        <para><filename>/etc/shorewall/tunnels</filename></para>
-      </listitem>
-
-      <listitem>
-        <para>Action definition files
-        (<filename>/etc/shorewall/action.*</filename>)</para>
-      </listitem>
-
-      <listitem>
-        <para>Macro definition files (/etc/shorewall/macro.*)</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>To attach a comment to one or more rules, insert a record above the
-    rules that begins with the word ?COMMENT (must be in all caps). The
-    remainder of the line is treated as a comment -- that comment will appear
-    delimited by "/* ... */" in the output of the <command>shorewall[-lite]
-    show</command> and <command>shorewall[-lite] dump</command> commands. The
-    comment will be attached to each generated rule until another ?COMMENT
-    line appears. To stop attaching comments to rules, simply insert a line
-    that contains the single word ?COMMENT.</para>
-
-    <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
-
-    <programlisting>?COMMENT Stop NETBIOS noise
-
-REJECT          loc                             net                     tcp     137,445
-REJECT          loc                             net                     udp     137:139
-
-?COMMENT Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
-
-DROP            loc:!192.168.0.0/22             net
-
-?COMMENT</programlisting>
-
-    <para>Here's the corresponding output from
-    <filename>/sbin/shorewall-lite</filename>:</para>
-
-    <programlisting>gateway:~ # <command>shorewall-lite show loc-net</command>
-Shorewall Lite 4.3.3 Chains loc2net at gateway - Mon Oct 16 15:04:52 PDT 2008
-
-Counters reset Mon Oct 16 14:52:17 PDT 2006
-
-Chain loc-net (1 references)
- pkts bytes target     prot opt in     out     source               destination
-    0     0 LOG        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
-    0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25
-    0     0 LOG        udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:1025:1031 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
-    0     0 reject     udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:1025:1031
-    0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           multiport dports 137,445 <emphasis
-        role="bold">/* Stop NETBIOS noise */</emphasis>
-    0     0 reject     udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:137:139 <emphasis
-        role="bold">/* Stop NETBIOS noise */</emphasis>
-    0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0           <emphasis
-        role="bold">/* Stop my idiotic work laptop from sending to the net with an HP source/dest IP address */</emphasis>
-    5   316 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
-gateway:~ #
-
-</programlisting>
-
-    <para>?COMMENT lines in macro files work somewhat differently from other
-    files. ?COMMENT lines in macros are ignored if COMMENT support is not
-    available or if there was a COMMENT in use when the top-level macro was
-    invoked. This allows the following:</para>
-
-    <para><filename>/usr/share/shorewall/macro.SSH</filename>:</para>
-
-    <para><programlisting>#ACTION SOURCE DEST  PROTO DEST    SOURCE  RATE  USER/
-#                          PORT(S) PORT(S) LIMIT GROUP
-?COMMENT SSH
-PARAM   -      -     tcp   22 </programlisting>
-    <filename>/etc/shorewall/rules</filename>:<programlisting>?COMMENT Allow SSH from home
-SSH(ACCEPT)    net:$MYIP      $FW
-?COMMENT</programlisting>The comment line in macro.SSH will not override the
-    ?COMMENT line in the rules file and the generated rule will show <emphasis
-    role="bold">/* Allow SSH from home */</emphasis> when displayed through
-    the Shorewall show and dump commands.</para>
+    <important>
+      <para>If you use a capabilities file, be sure to regenerate it after you
+      have performed a Shorewall upgrade to ensure that all current
+      capabilities have been recorded in your file.</para>
+    </important>
   </section>
 
   <section id="BlankColumn">
@@ -626,9 +535,11 @@ ACCEPT      net:\
           port:1024</emphasis></member>
         </simplelist>
 
-        <para>That usage is deprecated beginning with Shorewall 4.6.0. See the
-        INLINE_MATCHES option in <ulink
-        url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
+        <important>
+          <para>That usage is deprecated beginning with Shorewall 4.6.0. See
+          the INLINE_MATCHES option in <ulink
+          url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
+        </important>
       </listitem>
     </itemizedlist>
 
@@ -1180,7 +1091,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
   <section>
     <title>?FORMAT Directive</title>
 
-    <para>A number of different files support multiple formats. Prior to
+    <para>A number of configuration files support multiple formats. Prior to
     Shorewall 4.5.11, the format was specified by a line having 'FORMAT' as
     the first token. This requires each of the file processors to handle
     FORMAT separately.</para>
@@ -1284,11 +1195,16 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     centralize processing of COMMENT directives. The old entries, while still
     supported, are now deprecated.</para>
 
+    <para>Use of this directive requires Comment support in your kernel and
+    iptables - see the output of <command><link
+    linkend="capabilities">shorewall show
+    capabilities</link></command>.</para>
+
     <para>The ?COMMENT directive is as follows:</para>
 
     <variablelist>
       <varlistentry>
-        <term>COMMENT [ <replaceable>comment</replaceable> ]</term>
+        <term>[?]COMMENT [ <replaceable>comment</replaceable> ]</term>
 
         <listitem>
           <para>If <replaceable>comment</replaceable> is present, it will
@@ -1299,13 +1215,69 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
         </listitem>
       </varlistentry>
     </variablelist>
+
+    <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
+
+    <programlisting>?COMMENT Stop NETBIOS noise
+
+REJECT          loc                             net                     tcp     137,445
+REJECT          loc                             net                     udp     137:139
+
+?COMMENT Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
+
+DROP            loc:!192.168.0.0/22             net
+
+?COMMENT</programlisting>
+
+    <para>Here's the corresponding output from
+    <filename>/sbin/shorewall-lite</filename>:</para>
+
+    <programlisting>gateway:~ # <command>shorewall-lite show loc-net</command>
+Shorewall Lite 4.3.3 Chains loc2net at gateway - Mon Oct 16 15:04:52 PDT 2008
+
+Counters reset Mon Oct 16 14:52:17 PDT 2006
+
+Chain loc-net (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 LOG        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
+    0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp dpt:25
+    0     0 LOG        udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:1025:1031 LOG flags 0 level 6 prefix `FW:loc2net:REJECT:'
+    0     0 reject     udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:1025:1031
+    0     0 reject     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           multiport dports 137,445 <emphasis
+        role="bold">/* Stop NETBIOS noise */</emphasis>
+    0     0 reject     udp  --  *      *       0.0.0.0/0            0.0.0.0/0           udp dpts:137:139 <emphasis
+        role="bold">/* Stop NETBIOS noise */</emphasis>
+    0     0 DROP       all  --  *      *      !192.168.0.0/22       0.0.0.0/0           <emphasis
+        role="bold">/* Stop my idiotic work laptop from sending to the net with an HP source/dest IP address */</emphasis>
+    5   316 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+gateway:~ #
+
+</programlisting>
+
+    <para>?COMMENT lines in macro files work somewhat differently from other
+    files. ?COMMENT lines in macros are ignored if COMMENT support is not
+    available or if there was a COMMENT in use when the top-level macro was
+    invoked. This allows the following:</para>
+
+    <para><filename>/usr/share/shorewall/macro.SSH</filename>:</para>
+
+    <para><programlisting>#ACTION SOURCE DEST  PROTO DEST    SOURCE  RATE  USER/
+#                          PORT(S) PORT(S) LIMIT GROUP
+?COMMENT SSH
+PARAM   -      -     tcp   22 </programlisting>
+    <filename>/etc/shorewall/rules</filename>:<programlisting>?COMMENT Allow SSH from home
+SSH(ACCEPT)    net:$MYIP      $FW
+?COMMENT</programlisting>The comment line in macro.SSH will not override the
+    ?COMMENT line in the rules file and the generated rule will show <emphasis
+    role="bold">/* Allow SSH from home */</emphasis> when displayed through
+    the Shorewall show and dump commands.</para>
   </section>
 
   <section id="CONFIG_PATH">
     <title>CONFIG_PATH</title>
 
     <para>The CONFIG_PATH option in shorewall.conf determines where the
-    compiler searches for files. The default setting is
+    compiler searches for configuration files. The default setting is
     CONFIG_PATH=/etc/shorewall:/usr/share/shorewall which means that the
     compiler first looks in /etc/shorewall and if it doesn't find the file, it
     then looks in /usr/share/shorewall.</para>
@@ -2150,8 +2122,8 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 ACCEPT loc fw tcp 22
 ACCEPT dmz fw tcp 22</programlisting></para>
 
-    <para>Perl scripts run in the context of the compiler process using
-    Perl's eval() function. Perl scripts are implicitly prefixed by the
+    <para>Perl scripts run in the context of the compiler process using Perl's
+    eval() function. Perl scripts are implicitly prefixed by the
     following:</para>
 
     <programlisting>package Shorewall::User;

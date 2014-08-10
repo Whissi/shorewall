@@ -1497,7 +1497,7 @@ sub map_physical( $$ ) {
 
     $physical =~ s/\+$//;
 
-    $physical . substr( $name, length  $interfaceref->{root} );
+    $physical . substr( $name, length( $interfaceref->{root} ) );
 }
 
 #

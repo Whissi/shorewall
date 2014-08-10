@@ -818,9 +818,7 @@ sub apply_policy_rules() {
     progress_message2 'Applying Policies...';
 
     for my $chainref ( @policy_chains ) {
-	my $policy      = $chainref->{policy};
-
-	unless ( $policy eq 'NONE' ) {
+	unless ( ( my $policy = $chainref->{policy} ) eq 'NONE' ) {
 	    my $loglevel    = $chainref->{loglevel};
 	    my $provisional = $chainref->{provisional};
 	    my $default     = $chainref->{default};

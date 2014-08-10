@@ -460,9 +460,6 @@ sub process_a_provider( $ ) {
 
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
-    #
-    # Switch to the logical name if a physical name was passed
-    #
     my $physical;
 
     if ( $interface eq $interfaceref->{name} ) {

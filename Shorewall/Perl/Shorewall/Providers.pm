@@ -469,7 +469,7 @@ sub process_a_provider( $ ) {
 	#
 	# The logical interface name was specified
 	#
-	$physical = get_physical $interface;
+	$physical = $interfaceref->{physical};
     } else {
 	#
 	# A Physical name was specified
@@ -478,7 +478,7 @@ sub process_a_provider( $ ) {
 	#
 	# Switch to the logical name unless it is a wildcard
 	#
-	$interface = $interfaceref->{name} unless $interfaceref->{name} =~ /\+$/;
+	$interface = $interfaceref->{name} unless $interfaceref->{wildcard};
     } 
 
     my $gatewaycase = '';

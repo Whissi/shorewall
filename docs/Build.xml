@@ -164,7 +164,7 @@
     <section>
       <title>build</title>
 
-      <para>This is the script that builds Shorewall 4.4 packages from
+      <para>This is the script that builds Shorewall 4.6 packages from
       Git.</para>
 
       <para>The script copies content from Git using the <command>git
@@ -220,7 +220,7 @@
       <para>You should ensure that you have the latest scripts. The scripts
       change periodically as we move through the release cycles.</para>
 
-      <para>The build44 script may need to be modified to fit your particular
+      <para>The build46 script may need to be modified to fit your particular
       environment. There are a number of variables that are set near the top
       of the file:</para>
 
@@ -270,10 +270,12 @@
       </variablelist>
 
       <para>The scripts assume that there will be a separate <firstterm>build
-      directory</firstterm> per major release. To build a release, you cd to
-      the appropriate directory and run the build script.</para>
+      directory</firstterm> per major release.</para>
 
-      <para>The general form of the build command is:</para>
+      <para>To build a release, you cd to the appropriate directory and run
+      the build46 script.</para>
+
+      <para>The general form of the build46 command is:</para>
 
       <blockquote>
         <para><command>build</command> [ -<replaceable>options</replaceable> ]
@@ -401,13 +403,13 @@
     </section>
 
     <section>
-      <title>build45</title>
+      <title>build45 and build46</title>
 
-      <para>This is the script that builds Shorewall 4.5 packages from
-      Git.</para>
+      <para>These are the scripts that respectively build Shorewall 4.5 and
+      Shorewall 4.6 packages from Git.</para>
 
-      <para>The script copies content from Git using the <command>git
-      archive</command> command. It then uses that content to build the
+      <para>The scripts copy content from Git using the <command>git
+      archive</command> command. They then use that content to build the
       packages. In addition to the usual Gnu utilities, the following software
       is required:</para>
 
@@ -451,7 +453,7 @@
 
           <listitem>
             <para>Required to convert the XML manpages to manpages. Be sure
-            that you have a recent version; I use 0.0.23.</para>
+            that you have a recent version; I use 0.0.25.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -459,7 +461,7 @@
       <para>You should ensure that you have the latest scripts. The scripts
       change periodically as we move through the release cycles.</para>
 
-      <para>The build44 script may need to be modified to fit your particular
+      <para>The scripts may need to be modified to fit your particular
       environment. There are a number of variables that are set near the top
       of the file:</para>
 
@@ -509,14 +511,17 @@
       </variablelist>
 
       <para>The scripts assume that there will be a separate <firstterm>build
-      directory</firstterm> per major release. To build a release, you cd to
-      the appropriate directory and run the build script.</para>
+      directory</firstterm> per major release. Each build directory should
+      contain the empty file <filename>shorewall-pkg.config</filename>; that
+      file is no longer used but has been retained just as a guard against
+      initiating a build in an unintended directory. To build a release, you
+      cd to the appropriate directory and run the build script.</para>
 
       <para>The general form of the build command is:</para>
 
       <blockquote>
-        <para><command>build</command> [ -<replaceable>options</replaceable> ]
-        <replaceable>release</replaceable> [ <replaceable>prior
+        <para><command>build</command>4x [ -<replaceable>options</replaceable>
+        ] <replaceable>release</replaceable> [ <replaceable>prior
         release</replaceable> ]</para>
       </blockquote>
 
@@ -632,8 +637,8 @@
         </varlistentry>
       </variablelist>
 
-      <para>Example 1 - Build Shorewall 4.3.7 and generate patches against
-      4.3.6:</para>
+      <para>Example 1 - Build Shorewall 4.5.7 and generate patches against
+      4.5.6:</para>
 
       <blockquote>
         <para><command>build45 4.5.7 4.5.6</command></para>

@@ -123,6 +123,17 @@ shorewall_start () {
 
   echo "done."
 
+  if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
+
+      echo -n "Restoring ipsets: "
+
+      if ! ipset -R < "$SAVE_IPSETS"; then
+	  echo_notdone
+      fi
+
+      echo "done."
+  fi
+
   return 0
 }
 
@@ -141,6 +152,20 @@ shorewall_stop () {
   done
 
   echo "done."
+
+  if [ -n "$SAVE_IPSETS" ]; then
+
+      echo "Saving ipsets: "
+
+      mkdir -p $(dirname "$SAVE_IPSETS")
+      if ipset -S > "${SAVE_IPSETS}.tmp"; then
+	  grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
+      else
+	  echo_notdone
+      fi
+
+      echo "done."
+  fi
 
   return 0
 }

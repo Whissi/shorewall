@@ -450,24 +450,36 @@
             </varlistentry>
 
             <varlistentry>
-              <term>IP6TABLES({<replaceable>target</replaceable>
+              <term>IP6TABLES({<replaceable>ip6tables-target</replaceable>
               [<replaceable>option</replaceable> ...])</term>
 
               <listitem>
-                <para>This action allows you to specify an iptables target
-                with options (e.g., 'IP6TABLES(MARK --set-xmark 0x01/0xff)'.
-                If the target is not one recognized by Shorewall, the
-                following error message will be issued:</para>
+                <para>This action allows you to specify an ip6tables target
+                with options (e.g., 'IPTABLES(MARK --set-xmark 0x01/0xff)'. If
+                the <replaceable>ip6tables-target</replaceable> is not one
+                recognized by Shorewall, the following error message will be
+                issued:</para>
 
                 <simplelist>
                   <member>ERROR: Unknown target
-                  (<replaceable>target</replaceable>)</member>
+                  (<replaceable>ip6tables-target</replaceable>)</member>
                 </simplelist>
 
-                <para>This error message may be eliminated by adding the
-                <replaceable>target</replaceable> as a builtin action in
-                <ulink
-                url="/manpages6/shorewall6-actions.html">shorewall6-actions(5)</ulink>.</para>
+                <para>This error message may be eliminated by adding
+                the<replaceable>
+                ip6tables-</replaceable><replaceable>target</replaceable> as a
+                builtin action in <ulink
+                url="shorewall6-actions.html">shorewall6-actions</ulink>(5).</para>
+
+                <important>
+                  <para>If you specify REJECT as the
+                  <replaceable>ip6tables-target</replaceable>, the target of
+                  the rule will be the i6ptables REJECT target and not
+                  Shorewall's builtin 'reject' chain which is used when REJECT
+                  (see below) is specified as the
+                  <replaceable>target</replaceable> in the ACTION
+                  column.</para>
+                </important>
               </listitem>
             </varlistentry>
 

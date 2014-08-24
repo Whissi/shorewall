@@ -476,24 +476,35 @@
             </varlistentry>
 
             <varlistentry>
-              <term>IPTABLES({<replaceable>target</replaceable>
+              <term>IPTABLES({<replaceable>iptables-target</replaceable>
               [<replaceable>option</replaceable> ...])</term>
 
               <listitem>
                 <para>This action allows you to specify an iptables target
                 with options (e.g., 'IPTABLES(MARK --set-xmark 0x01/0xff)'. If
-                the target is not one recognized by Shorewall, the following
-                error message will be issued:</para>
+                the <replaceable>iptables-target</replaceable> is not one
+                recognized by Shorewall, the following error message will be
+                issued:</para>
 
                 <simplelist>
                   <member>ERROR: Unknown target
-                  (<replaceable>target</replaceable>)</member>
+                  (<replaceable>iptables-target</replaceable>)</member>
                 </simplelist>
 
                 <para>This error message may be eliminated by adding the
-                <replaceable>target</replaceable> as a builtin action in
-                <ulink
+                <replaceable>iptables-</replaceable><replaceable>target</replaceable>
+                as a builtin action in <ulink
                 url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5).</para>
+
+                <important>
+                  <para>If you specify REJECT as the
+                  <replaceable>iptables-target</replaceable>, the target of
+                  the rule will be the iptables REJECT target and not
+                  Shorewall's builtin 'reject' chain which is used when REJECT
+                  (see below) is specified as the
+                  <replaceable>target</replaceable> in the ACTION
+                  column.</para>
+                </important>
               </listitem>
             </varlistentry>
 

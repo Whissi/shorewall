@@ -2374,7 +2374,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		      my ( $tgt, $options ) = split / /, $param;
 		      my $target_type = $builtin_target{$tgt};
 		      fatal_error "Unknown target ($tgt)" unless $target_type;
-		      fatal_error "The $tgt TARGET is now allowed in the filter table" unless $target_type & FILTER_TABLE;
+		      fatal_error "The $tgt TARGET is not allowed in the filter table" unless $target_type & FILTER_TABLE;
 		      $action = $param;
 		  } else {
 		      $action = '';
@@ -2387,7 +2387,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		      my ( $tgt, $options ) = split / /, $param;
 		      my $target_type = $builtin_target{$tgt};
 		      fatal_error "Unknown target ($tgt)" unless $target_type;
-		      fatal_error "The $tgt TARGET is now allowed in the filter table" unless $target_type & FILTER_TABLE;
+		      fatal_error "The $tgt TARGET is not allowed in the filter table" unless $target_type & FILTER_TABLE;
 		      $action = $param;
 		  } else {
 		      $action = '';

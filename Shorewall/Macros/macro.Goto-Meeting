@@ -1,0 +1,12 @@
+#
+# Shorewall version 4 - Citrix/Goto Meeting macro
+#
+# /usr/share/shorewall/macro.Goto-Meeting
+#          by Eric Teeter
+#       This macro handles Citrix/Goto Meeting
+#       Assumes that ports 80 and 443 are already open
+#       If needed, use the macros that open Http and Https to reduce redundancy
+####################################################################################
+#ACTION	   SOURCE	DEST    PROTO   DEST    SOURCE  RATE    USER/
+#                                       PORT(S) PORT(S) LIMIT   GROUP
+PARAM      -         	-       tcp     8200    # Goto Meeting only needed (TCP outbound)

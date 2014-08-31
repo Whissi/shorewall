@@ -7570,7 +7570,7 @@ sub expand_rule( $$$$$$$$$$$;$ )
 						     $exceptionrule,
 						     $actparms{disposition} || $disposition,
 						     $target ),
-					   $terminating{$basictarget} || ( $targetref || $targetref->{complete} ),
+					   $terminating{$basictarget} || ( $targetref && $targetref->{complete} ),
 					   $matches );
 		    }
 

@@ -1748,14 +1748,15 @@ sub process_actions() {
 						    undef, #Columns
 						    1 );   #Allow inline matches
 
-	    my $type     = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
-	    my $noinline = 0;
-	    my $nolog    = ( $type == INLINE ) || 0;
-	    my $builtin  = 0;
-	    my $raw      = 0;
-	    my $mangle   = 0;
-	    my $filter   = 0;
-	    my $nat      = 0;
+	    my $type        = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
+	    my $noinline    = 0;
+	    my $nolog       = ( $type == INLINE ) || 0;
+	    my $builtin     = 0;
+	    my $raw         = 0;
+	    my $mangle      = 0;
+	    my $filter      = 0;
+	    my $nat         = 0;
+	    my $terminating = 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1774,6 +1775,8 @@ sub process_actions() {
 			$nolog = 1;
 		    } elsif ( $_ eq 'builtin' ) {
 			$builtin = 1;
+		    } elsif ( $_ eq 'terminating' ) {
+			$terminating = 1;
 		    } elsif ( $_ eq 'mangle' ) {
 			$mangle = 1;
 		    } elsif ( $_ eq 'raw' ) {
@@ -1822,6 +1825,8 @@ sub process_actions() {
 		}
 
 		$targets{$action} = $actiontype;
+
+		make_terminating( $action ) if $terminating;
 	    } else {
 		fatal_error "Table names are only allowed for builtin actions" if $mangle || $raw || $nat || $filter;
 		new_action $action, $type, $noinline, $nolog;

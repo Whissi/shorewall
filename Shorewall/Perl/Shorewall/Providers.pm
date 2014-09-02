@@ -1293,9 +1293,11 @@ sub start_providers() {
 	    emit_unindented "$providers{$_}{number}\t$_" unless $providers{$_}{pseudo};
 	}
 
-	emit_unindented "EOF\n";
+	emit_unindented 'EOF';
 
-	emit "fi\n";
+	emit( 'else',
+	      '    error_message "WARNING: /etc/iproute2/rt_tables is missing or is not writeable"',
+	      "fi\n" );
     }
 
     emit  ( '#',

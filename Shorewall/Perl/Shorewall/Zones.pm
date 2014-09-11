@@ -2121,24 +2121,29 @@ sub have_ipsec() {
 sub find_hosts_by_option( $ ) {
     my $option = $_[0];
     my @hosts;
+    my %done;
+
+    for my $interface ( @interfaces ) {
+	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
+	    push @hosts, [ $interface, '', ALLIP , [] ];
+	    $done{$interface} = 1;
+	}
+    }
 
     for my $zone ( grep ! ( $zones{$_}{type} & FIREWALL ) , @zones ) {
 	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
 	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
 		for my $host ( @{$arrayref} ) {
-		    if ( my $value = $host->{options}{$option} ) {
-			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}, $value ];
+		    my $ipsec = $host->{ipsec};
+		    unless ( $done{$interface} ) { 
+			if ( my $value = $host->{options}{$option} ) {
+			    for my $net ( @{$host->{hosts}} ) {
+				push @hosts, [ $interface, $ipsec , $net , $host->{exclusions}, $value ];
+			    }
 			}
 		    }
 		}
 	    }
-	}
-    }
-
-    for my $interface ( @interfaces ) {
-	if ( ! $interfaces{$interface}{zone} && $interfaces{$interface}{options}{$option} ) {
-	    push @hosts, [ $interface, 'none', ALLIP , [] ];
 	}
     }
 

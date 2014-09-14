@@ -1894,8 +1894,10 @@ sub handle_optional_interfaces( $ ) {
 
     if ( @$interfaces ) {
 	my $require     = $config{REQUIRE_INTERFACE};
+	my $gencase     = shift;
 
-	verify_required_interfaces( shift );
+	verify_required_interfaces( $gencase );
+	emit '' if $gencase;
 
 	emit( 'HAVE_INTERFACE=', '' ) if $require;
 	#

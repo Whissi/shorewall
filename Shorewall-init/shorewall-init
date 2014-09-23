@@ -63,18 +63,19 @@ shorewall_start () {
   for PRODUCT in $PRODUCTS; do
       setstatedir
 
-      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
+      if [ -x ${STATEDIR}/firewall ]; then
           #
 	  # Run in a sub-shell to avoid name collisions
 	  #
 	  (
-	      if ! ${STATEDIR}/$PRODUCT/firewall status > /dev/null 2>&1; then
-		  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} stop || exit 1
+	      if ! ${STATEDIR}/firewall status > /dev/null 2>&1; then
+		  ${STATEDIR}/firewall ${OPTIONS} stop || exit 1
 	      else
 		  exit 1
 	      fi
 	  )
       else
+          echo ERROR:  ${STATEDIR}/firewall does not exist or is not executable!
 	  exit 1
       fi
   done
@@ -95,8 +96,8 @@ shorewall_stop () {
   for PRODUCT in $PRODUCTS; do
       setstatedir
 
-      if [ -x ${STATEDIR}/$PRODUCT/firewall ]; then
-	  ${STATEDIR}/$PRODUCT/firewall ${OPTIONS} clear || exit 1
+      if [ -x ${STATEDIR}/firewall ]; then
+	  ${STATEDIR}/firewall ${OPTIONS} clear || exit 1
       fi
   done
 

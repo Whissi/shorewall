@@ -460,6 +460,9 @@ sub process_a_provider( $ ) {
 
     fatal_error "A bridge port ($interface) may not be configured as a provider interface" if port_to_bridge $interface;
 
+    #
+    # Switch to the logical name if a physical name was passed
+    #
     my $physical;
 
     if ( $interface eq $interfaceref->{name} ) {
@@ -1293,9 +1296,11 @@ sub start_providers() {
 	    emit_unindented "$providers{$_}{number}\t$_" unless $providers{$_}{pseudo};
 	}
 
-	emit_unindented "EOF\n";
+	emit_unindented 'EOF';
 
-	emit "fi\n";
+	emit( 'else',
+	      '    error_message "WARNING: /etc/iproute2/rt_tables is missing or is not writeable"',
+	      "fi\n" );
     }
 
     emit  ( '#',
@@ -1892,8 +1897,10 @@ sub handle_optional_interfaces( $ ) {
 
     if ( @$interfaces ) {
 	my $require     = $config{REQUIRE_INTERFACE};
+	my $gencase     = shift;
 
-	verify_required_interfaces( shift );
+	verify_required_interfaces( $gencase );
+	emit '' if $gencase;
 
 	emit( 'HAVE_INTERFACE=', '' ) if $require;
 	#

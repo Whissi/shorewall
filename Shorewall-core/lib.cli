@@ -1470,10 +1470,22 @@ do_dump_command() {
 	$g_tool -t rawpost -L $g_ipt_options
     fi
 
-    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+    local count
+    local max
 
-    heading "Conntrack Table ($count out of $max)"
+    if [ -f /proc/sys/net/netfilter/nf_conntrack_count ]; then
+	count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+	max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+
+	heading "Conntrack Table ($count out of $max)"
+    elif [ -f /proc/sys/net/ipv4/netfilter/ip_conntrack_count ]; then
+	count=$(cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count)
+	max=$(cat /proc/sys/net/ipv4/netfilter/ip_conntrack_max)
+
+	heading "Conntrack Table ($count out of $max)"
+    else
+	heading "Conntrack Table"
+    fi
 
     if [ $g_family -eq 4 ]; then
     	[ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
@@ -3583,7 +3595,6 @@ usage() # $1 = exit status
     echo "   start [ -f ] [ -p ] [ <directory> ]"
     echo "   stop"
     echo "   status [ -i ]"
-    echo "   run <function> [ function ... ]"
     echo "   version [ -a ]"
     echo
     exit $1

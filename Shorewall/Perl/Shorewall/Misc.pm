@@ -994,7 +994,7 @@ sub add_common_rules ( $$ ) {
 	for my $hostref  ( @$list ) {
 	    $interface     = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my @policy     = have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
+	    my @policy     = $ipsec && have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
 
 	    for $chain ( option_chains $interface ) {
@@ -1118,7 +1118,8 @@ sub add_common_rules ( $$ ) {
 	for my $hostref  ( @$list ) {
 	    my $interface  = $hostref->[0];
 	    my $target     = source_exclusion( $hostref->[3], $chainref );
-	    my @policy     = have_ipsec ? ( policy => "--pol $hostref->[1] --dir in" ) : ();
+	    my $ipsec      = $hostref->[1];
+	    my @policy     = $ipsec && have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
 
 	    for $chain ( option_chains $interface ) {
 		add_ijump( $filter_table->{$chain} , j => $target, p => 'tcp', imatch_source_net( $hostref->[2] ), @policy );
@@ -1289,7 +1290,7 @@ sub setup_mac_lists( $ ) {
 	for my $hostref ( @$maclist_hosts ) {
 	    my $interface  = $hostref->[0];
 	    my $ipsec      = $hostref->[1];
-	    my @policy     = have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
+	    my @policy     = $ipsec && have_ipsec ? ( policy => "--pol $ipsec --dir in" ) : ();
 	    my @source     = imatch_source_net $hostref->[2];
 
 	    my @state = have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,UNTRACKED' : state_imatch 'NEW';

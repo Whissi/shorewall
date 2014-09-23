@@ -155,8 +155,6 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 
     my ($action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers ) = @_;
 
-    $acctable = $config{ACCOUNTING_TABLE};
-
     $jumpchainref = 0;
 
     $asection = LEGACY if $asection < 0;
@@ -452,6 +450,8 @@ sub setup_accounting() {
     if ( my $fn = open_file 'accounting', 1, 1 ) {
 
 	set_section_function( &process_section );
+
+	$acctable = $config{ACCOUNTING_TABLE};
 
 	first_entry "$doing $fn...";
 

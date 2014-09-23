@@ -308,13 +308,14 @@ sub generate_script_2() {
 
 	set_global_variables(1);
 
-	handle_optional_interfaces(0);
-
 	if ( $global_variables & NOT_RESTORE ) {
+	    handle_optional_interfaces(0);
 	    emit ';;';
 	    pop_indent;
 	    pop_indent;
 	    emit ( 'esac' );
+	} else {
+	    handle_optional_interfaces(1);
 	}
     } else {
 	emit( 'true' ) unless handle_optional_interfaces(1);

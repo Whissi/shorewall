@@ -1,12 +1,12 @@
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.4
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall
 #
-#     Copyright 2011 Jonathan Underwood (jonathan.underwood@gmail.com)
+#     Copyright 2011 Jonathan Underwood <jonathan.underwood@gmail.com>
 #
 [Unit]
 Description=Shorewall IPv6 firewall (lite)
-After=syslog.target
 After=network.target
+Conflicts=ip6tables.service firewalld.service
 
 [Service]
 Type=oneshot
@@ -17,4 +17,4 @@ ExecStart=/sbin/shorewall6-lite $OPTIONS start
 ExecStop=/sbin/shorewall6-lite $OPTIONS stop
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=basic.target

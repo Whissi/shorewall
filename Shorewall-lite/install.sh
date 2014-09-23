@@ -206,7 +206,7 @@ if [ -z "$BUILD" ]; then
 		eval $(cat /etc/os-release | grep ^ID)
 
 		case $ID in
-		    fedora|rhel)
+		    fedora|rhel|centos|foobar)
 			BUILD=redhat
 			;;
 		    debian)

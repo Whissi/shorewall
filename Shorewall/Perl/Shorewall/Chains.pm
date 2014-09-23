@@ -73,7 +73,6 @@ our @EXPORT = ( qw(
 		    allow_optimize
 		    allow_delete
 		    allow_move
-                    make_terminating
 		    set_optflags
 		    reset_optflags
 		    has_return
@@ -105,6 +104,7 @@ our @EXPORT = ( qw(
 		    AUDIT
 		    HELPER
 		    INLINE
+		    TERMINATING
 		    STATEMATCH
 		    USERBUILTIN
 		    INLINERULE
@@ -791,13 +791,6 @@ sub incr_cmd_level( $ ) {
 
 sub decr_cmd_level( $ ) {
     assert( --$_[0]->{cmdlevel} >= 0, $_[0] );
-}
-
-#
-# Mark an action as terminating
-#
-sub make_terminating( $ ) {
-    $terminating{$_[0]} = 1;
 }
 
 #

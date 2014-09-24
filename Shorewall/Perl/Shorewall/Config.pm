@@ -5750,7 +5750,7 @@ sub get_configuration( $$$$$ ) {
 
     if ( defined( $val = $config{LOG_BACKEND} ) ) {
 	if ( $family == F_IPV4 && $val eq 'ULOG' ) {
-	    $val = 'xt_ULOG';
+	    $val = 'ipt_ULOG';
 	} elsif ( $val eq 'netlink' ) {
 	    $val = 'nfnetlink_log';
 	} elsif ( $val eq 'LOG' ) {

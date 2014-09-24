@@ -382,7 +382,7 @@ ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlis
 
     <para>Example - change the IPv4 backend to LOG:</para>
 
-    <programlisting>echo ipt_LOG &gt; /proc/net/netfilter/nf_log.2</programlisting>
+    <programlisting>sysctl net.netfilter.nf_log.2=ipt_LOG</programlisting>
 
     <para>Beginning with Shorewall 4.6.4, you can configure the backend using
     the LOG_BACKEND option in <ulink

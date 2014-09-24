@@ -743,7 +743,7 @@ sub compiler {
 
     setup_source_routing($family);
 
-    setup_log_backend;
+    setup_log_backend($family);
     #
     # Proxy Arp/Ndp
     #

@@ -320,6 +320,76 @@ ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlis
     </section>
   </section>
 
+  <section>
+    <title id="Backends">Log Backends</title>
+
+    <para>Netfilter logging allows configuration of multiple backends. Logging
+    backends provide the The low-level forward of log messages. There are
+    currently three backends:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>LOG (ipt_LOG and ip6t_LOG).</term>
+
+        <listitem>
+          <para>Normal kernel-based logging to a syslog daemon.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ULOG (ipt_ULOG)</term>
+
+        <listitem>
+          <para>ULOG logging as described ablve. Only available for
+          IPv4.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>netlink (nfnetlink_log)</term>
+
+        <listitem>
+          <para>The logging backend behind NFLOG, defined above.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The currently-available and currently-selected IPv4 and IPv6
+    backends are shown in /proc/sys/net/netfilter/nf_log:</para>
+
+    <programlisting>cat /proc/net/netfilter/nf_log
+ 0 NONE (nfnetlink_log)
+ 1 NONE (nfnetlink_log)
+ 2 ipt_ULOG (ipt_ULOG,ipt_LOG,nfnetlink_log)
+ 3 NONE (nfnetlink_log)
+ 4 NONE (nfnetlink_log)
+ 5 NONE (nfnetlink_log)
+ 6 NONE (nfnetlink_log)
+ 7 NONE (nfnetlink_log)
+ 8 NONE (nfnetlink_log)
+ 9 NONE (nfnetlink_log)
+10 ip6t_LOG (ip6t_LOG,nfnetlink_log)
+11 NONE (nfnetlink_log)
+12 NONE (nfnetlink_log)</programlisting>
+
+    <para>The magic numbers (0-12) are Linux address family numbers (AF_INET
+    is 2 and AF_INET6 is 10).</para>
+
+    <para>The name immediately following the number is the currently-selected
+    backend, and the ones in parantheses are the ones that are available. You
+    can change the currently selected backend by echoing it's name into
+    /proc/net/netfilter/nf_log.<replaceable>number</replaceable>.</para>
+
+    <para>Example - change the IPv4 backend to LOG:</para>
+
+    <programlisting>echo ipt_LOG &gt; /proc/net/netfilter/nf_log.2</programlisting>
+
+    <para>Beginning with Shorewall 4.6.4, you can configure the backend using
+    the LOG_BACKEND option in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink> and <ulink
+    url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>.</para>
+  </section>
+
   <section id="Syslog-ng">
     <title>Syslog-ng</title>
 

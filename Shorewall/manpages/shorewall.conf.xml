@@ -1307,6 +1307,45 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">LOG_BACKEND=</emphasis>[<emphasis>backend</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.4. LOG_BACKEND determines the logging
+          backend to be used for the <command>iptrace</command> command (see
+          <ulink url="manpages/shorewall.html">shorewall(8)</ulink>).</para>
+
+          <para><replaceable>backend</replaceable> is one of:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>LOG</term>
+
+              <listitem>
+                <para>Use standard kernel logging.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>ULOG</term>
+
+              <listitem>
+                <para>Use ULOG logging to ulogd.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>netlink</term>
+
+              <listitem>
+                <para>Use netlink logging to ulogd version 2 or later.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">LOG_MARTIANS=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|Keep]</term>

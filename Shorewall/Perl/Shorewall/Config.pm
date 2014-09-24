@@ -741,6 +741,7 @@ sub initialize( $;$$) {
 	  RPFILTER_LOG_LEVEL => undef,
 	  INVALID_LOG_LEVEL => undef,
 	  UNTRACKED_LOG_LEVEL => undef,
+	  LOG_BACKEND => undef,
 	  #
 	  # Location of Files
 	  #
@@ -5746,6 +5747,20 @@ sub get_configuration( $$$$$ ) {
     default_log_level 'RELATED_LOG_LEVEL',    '';
     default_log_level 'INVALID_LOG_LEVEL',    '';
     default_log_level 'UNTRACKED_LOG_LEVEL',  '';
+
+    if ( defined( $val = $config{LOG_BACKEND} ) ) {
+	if ( $family == F_IPV4 && $val eq 'ULOG' ) {
+	    $val = 'xt_ULOG';
+	} elsif ( $val eq 'netlink' ) {
+	    $val = 'nfnetlink_log';
+	} elsif ( $val eq 'LOG' ) {
+	    $val = $family == F_IPV4 ? 'ipt_LOG' : 'ip6t_log';
+	} else {
+	    fatal_error "Invalid LOG Backend ($val)";
+	}
+
+	$config{LOG_BACKEND} = $val;
+    }
 
     warning_message "RFC1918_LOG_LEVEL=$config{RFC1918_LOG_LEVEL} ignored. The 'norfc1918' interface/host option is no longer supported" if $config{RFC1918_LOG_LEVEL};
 

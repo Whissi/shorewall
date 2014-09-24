@@ -1159,6 +1159,38 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
       <varlistentry>
         <term><emphasis
+        role="bold">LOG_BACKEND=</emphasis>[<emphasis>backend</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.4. LOG_BACKEND determines the logging
+          backend to be used for the <command>iptrace</command> command (see
+          <ulink
+          url="manpages6/shorewall6.html">shorewall6(8)</ulink>).</para>
+
+          <para><replaceable>backend</replaceable> is one of:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>LOG</term>
+
+              <listitem>
+                <para>Use standard kernel logging.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>netlink</term>
+
+              <listitem>
+                <para>Use netlink logging to ulogd version 2 or later.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
         role="bold">LOG_VERBOSITY=</emphasis>[<emphasis>number</emphasis>]</term>
 
         <listitem>

@@ -1129,15 +1129,10 @@
           be one or more matches that may appear in both the raw table OUTPUT
           and raw table PREROUTING chains.</para>
 
-          <para>When using ipt_LOG, the trace records are written to the
-          kernel's log buffer with facility = kernel and priority = warning,
-          and they are routed from there by your logging daemon (syslogd,
-          rsyslog, syslog-ng, ...). When using nfnetlink_log or ipt_ULOG, the
-          trace records go to ulogd.</para>
-
-          <para>In either case, Shorewall has no control over where the
-          messages are written; consult your logging daemon's
-          documentation.</para>
+          <para>The log message destination is determined by the
+          currently-selected IPv4 <ulink
+          url="/shorewall_logging.html#Backends">logging
+          backend</ulink>.</para>
         </listitem>
       </varlistentry>
 

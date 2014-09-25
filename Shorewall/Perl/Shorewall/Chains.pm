@@ -1654,6 +1654,10 @@ sub insert_rule($$$) {
 sub insert_irule( $$$$;@ ) {
     my ( $chainref, $jump, $target, $number, @matches ) = @_;
 
+    my $rulesref = $chainref->{rules};
+
+    return add_irule( $chainref, $jump, $target, @matches ) if $number >= @$rulesref;
+
     my $ruleref = {};
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
@@ -1673,7 +1677,7 @@ sub insert_irule( $$$$;@ ) {
     
     $ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $ruleref->{comment} || $comment;
 
-    splice( @{$chainref->{rules}}, $number, 0, $ruleref );
+    splice( @$rulesref, $number, 0, $ruleref );
 
     trace( $chainref, 'I', ++$number, format_rule( $chainref, $ruleref ) ) if $debug;
 

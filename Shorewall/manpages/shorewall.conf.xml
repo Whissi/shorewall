@@ -309,17 +309,22 @@
               <term>stoppedrules</term>
 
               <listitem>
-                <para>If ADMINISABSENTMINDED=No, a warning message is issued
-                and the setting is ignored.</para>
-
-                <para>In addition to connections matching entries in
-                <filename>stoppedrules</filename>, existing connections
-                continue to work and all new connections from the firewall
-                system itself are allowed. To sever all existing connections
-                when the firewall is stopped, install the conntrack utility
-                and place the command <command>conntrack -F</command> in the
-                stopped user exit
+                <para>All existing connections continue to work. To sever all
+                existing connections when the firewall is stopped, install the
+                conntrack utility and place the command <command>conntrack
+                -F</command> in the stopped user exit
                 (<filename>/etc/shorewall/stopped</filename>).</para>
+
+                <para>If ADMINISABSENTMINDED=No, only new connections matching
+                entries in <filename>stoppedrules</filename> are accepted when
+                Shorewall is stopped. Response packets and related connections
+                are automatically accepted.</para>
+
+                <para>If ADMINISABSENTMINDED=Yes, in addition to connections
+                matching entries in <filename>stoppedrules</filename>, all new
+                connections from the firewall system itself are allowed when
+                the firewall is stopped. Response packets and related
+                connections are automatically accepted.</para>
               </listitem>
             </varlistentry>
           </variablelist>

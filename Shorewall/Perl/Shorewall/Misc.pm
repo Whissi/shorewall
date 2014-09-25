@@ -690,11 +690,10 @@ sub process_stoppedrules() {
     my $result;
 
     if ( my $fn = open_file 'stoppedrules' , 1, 1 ) {
-	first_entry sub() {
-	    progress_message2("$doing $fn...");
+	first_entry sub () {
+	    progress_message2( "$doing $fn..." );
 	    unless ( $config{ADMINISABSENTMINDED} ) {
-		warning_message("Entries in the stoppedrules file are processed as if ADMINISABSENTMINDED=Yes");
-		$config{ADMINISABSENTMINDED} = 'Yes';
+		insert_ijump $filter_table ->{$_}, j => 'ACCEPT', 0, state_imatch 'ESTABLISHED,RELATED' for qw/INPUT FORWARD/;
 	    }
 	};
 

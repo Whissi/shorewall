@@ -977,8 +977,7 @@ sub compiler {
 	    # compile_stop_firewall() also validates the routestopped file. Since we don't
 	    # call that function during normal 'check', we must validate routestopped here.
 	    #
-	    process_routestopped;
-	    process_stoppedrules;
+	    process_routestopped unless process_stoppedrules;
 	}
 	#
 	# Report used/required capabilities

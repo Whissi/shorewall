@@ -1682,8 +1682,8 @@ sub insert_irule( $$$$;@ ) {
     $ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $ruleref->{comment} || $comment;
 
     if ( $number >= @$rulesref ) {
-	$number = @$rulesref;
 	push @$rulesref, $ruleref;
+	$number = @$rulesref;
     } else {
 	splice( @$rulesref, $number, 0, $ruleref );
 	$number++;

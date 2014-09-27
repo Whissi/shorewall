@@ -3503,8 +3503,8 @@ sub default ( $$ ) {
 #
 # Provide a default value for a yes/no configuration variable.
 #
-sub default_yes_no ( $$ ) {
-    my ( $var, $val ) = @_;
+sub default_yes_no ( $$;$ ) {
+    my ( $var, $val, $other ) = @_;
 
     my $curval = $config{$var};
 
@@ -3513,8 +3513,17 @@ sub default_yes_no ( $$ ) {
 
 	if (  $curval eq 'no' ) {
 	    $config{$var} = '';
+	} elsif ( defined( $other ) && $curval eq $other ) {
+	    #
+	    # Downshift value for later comparison
+	    #
+	    $config{$var} = $curval;
 	} else {
 	    fatal_error "Invalid value for $var ($curval)" unless $curval eq 'yes';
+	    #
+	    # Make Case same as default
+	    #
+	    $config{$var} = 'Yes';
 	}
     } else {
 	$config{$var} = $val;

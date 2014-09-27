@@ -1682,14 +1682,16 @@ sub insert_irule( $$$$;@ ) {
     $ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $ruleref->{comment} || $comment;
 
     if ( $number >= @$rulesref ) {
-	push @$rulesref, $ruleref;
+	#
+	# Avoid failure in spice if we insert beyond the end of the chain
+	#
 	$number = @$rulesref;
+	push @$rulesref, $ruleref;
     } else {
 	splice( @$rulesref, $number, 0, $ruleref );
-	$number++;
     }
 
-    trace( $chainref, 'I', $number, format_rule( $chainref, $ruleref ) ) if $debug;
+    trace( $chainref, 'I', ++$number, format_rule( $chainref, $ruleref ) ) if $debug;
 
     $iprangematch = 0;
 

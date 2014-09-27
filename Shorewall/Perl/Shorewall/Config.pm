@@ -3505,6 +3505,7 @@ sub default ( $$ ) {
 #
 sub default_yes_no ( $$;$ ) {
     my ( $var, $val, $other ) = @_;
+    my $result = 1;
 
     my $curval = $config{$var};
 
@@ -3513,11 +3514,19 @@ sub default_yes_no ( $$;$ ) {
 
 	if (  $curval eq 'no' ) {
 	    $config{$var} = '';
-	} elsif ( defined( $other ) && $curval eq $other ) {
-	    #
-	    # Downshift value for later comparison
-	    #
-	    $config{$var} = $curval;
+	} elsif ( defined( $other ) ) {
+	    if ( $other eq '*' ) {
+		if ( $curval eq 'yes' ) {
+		    $config{$var} = 'Yes';
+		} else {
+		    $result = 0;
+		}
+	    } elsif ( $curval eq $other ) {
+		#
+		# Downshift value for later comparison
+		#
+		$config{$var} = $curval;
+	    }
 	} else {
 	    fatal_error "Invalid value for $var ($curval)" unless $curval eq 'yes';
 	    #
@@ -3528,6 +3537,8 @@ sub default_yes_no ( $$;$ ) {
     } else {
 	$config{$var} = $val;
     }
+
+    $result;
 }
 
 sub default_yes_no_ipv4 ( $$ ) {

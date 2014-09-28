@@ -5573,8 +5573,8 @@ sub get_configuration( $$$$$ ) {
 
     unless (default_yes_no 'SAVE_IPSETS', '', '*' ) {
 	$val = $config{SAVE_IPSETS};
-	unless ( $val = 'ipv4' ) {
-	    my @sets = (split_list( $val= $config{SAVE_IPSETS}, 'ipset' ));
+	unless ( $val eq 'ipv4' ) {
+	    my @sets = split_list( $val , 'ipset' );
 	    $globals{SAVED_IPSETS} = \@sets;
 	    require_capability 'IPSET_V5', 'A saved ipset list', 's';
 	    $config{SAVE_IPSETS} = '';

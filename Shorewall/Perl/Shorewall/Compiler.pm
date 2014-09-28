@@ -348,6 +348,7 @@ sub generate_script_3($) {
     create_netfilter_load( $test );
     create_arptables_load( $test ) if $have_arptables;
     create_chainlist_reload( $_[0] );
+    create_save_ipsets;
 
     emit "#\n# Start/Restart the Firewall\n#";
 

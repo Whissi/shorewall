@@ -428,45 +428,47 @@ do_save() {
 	    ;;
     esac
 
-    case ${SAVE_IPSETS:=No} in
-	[Yy]es)
-	    case ${IPSET:=ipset} in
-		*/*)
-		    if [ ! -x "$IPSET" ]; then
-			error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
-			IPSET=
+    if ! run_it ${VARDIR}/firewall savesets ${g_restorepath}-ipsets; then
+	case ${SAVE_IPSETS:=No} in
+	    [Yy]es)
+		case ${IPSET:=ipset} in
+		    */*)
+			if [ ! -x "$IPSET" ]; then
+			    error_message "ERROR: IPSET=$IPSET does not exist or is not executable - ipsets are not saved"
+			    IPSET=
+			fi
+			;;
+		    *)
+			IPSET="$(mywhich $IPSET)"
+			[ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
+			;;
+		esac
+
+		if [ -n "$IPSET" ]; then
+		    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
+			#
+			# The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
+			#
+			hack='| grep -v /31'
+		    else
+			hack=
 		    fi
-		    ;;
-		*)
-		    IPSET="$(mywhich $IPSET)"
-		    [ -n "$IPSET" ] || error_message "ERROR: The ipset utility cannot be located - ipsets are not saved"
-		    ;;
-	    esac
 
-	    if [ -n "$IPSET" ]; then
-		if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
-                    #
-                    # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
-                    #
-		    hack='| grep -v /31'
-		else
-		    hack=
+		    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
+			#
+			# Don't save an 'empty' file
+			#
+			grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+		    fi
 		fi
-
-		if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
-                    #
-                    # Don't save an 'empty' file
-                    #
-		    grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
-		fi
-	    fi
-	    ;;
-	[Nn]o)
-	    ;;
-	*)
-	    error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
-	    ;;
-    esac
+		;;
+	    [Nn]o)
+		;;
+	    *)
+		error_message "WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS"
+		;;
+	esac
+    fi
 
     return $status
 }

@@ -2123,6 +2123,25 @@ INLINE          -       -       -       ; -j REJECT
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">SAVE_IPSETS=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No|<replaceable>setlist</replaceable></emphasis>}</term>
+
+        <listitem>
+          <para>Re-enabled in Shorewall 4.4.6. If SAVE_IPSETS=Yes, then the
+          current contents of your ipsets will be saved by the <emphasis
+          role="bold">shorewall stop</emphasis> and <emphasis
+          role="bold">shorewall save</emphasis> commands and restored by the
+          <emphasis role="bold">shorewall start</emphasis> and <emphasis
+          role="bold">shorewall restore</emphasis> commands.</para>
+
+          <para>Beginning with Shorewall 4.6.4, you can restrict the set of
+          ipsets saved by specifying a setlist (a comma-separated list of ipv6
+          ipset names).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">SHOREWALL_SHELL=</emphasis>[<emphasis>pathname</emphasis>]</term>
 

@@ -20,6 +20,7 @@ usage() {
     echo "   run <command> [ <parameter> ... ]"
     echo "   status"
     echo "   up <interface>"
+    echo "   savesets <file>"
     echo "   version"
     echo
     echo "Options are:"
@@ -381,6 +382,13 @@ case "$COMMAND" in
 	    status=$?
 	else
 	    error_message "ERROR: Missing command"
+	fi
+	;;
+    savesets)
+	if [ $# -eq 2 ]; then
+	    save_ipsets $2
+	else
+	    usage 2
 	fi
 	;;
     version)

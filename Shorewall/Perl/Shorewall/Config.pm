@@ -5572,10 +5572,13 @@ sub get_configuration( $$$$$ ) {
     unsupported_yes_no_warning 'RFC1918_STRICT';
 
     unless (default_yes_no 'SAVE_IPSETS', '', '*' ) {
-	my @sets = (split_list( $val= $config{SAVE_IPSETS}, 'ipset' ));
-	$globals{SAVED_IPSETS} = \@sets;
-        require_capability 'IPSET_V5', 'A saved ipset list', 's';
-	$config{SAVE_IPSETS} = '';
+	$val = $config{SAVE_IPSETS};
+	unless ( $val = 'ipv4' ) {
+	    my @sets = (split_list( $val= $config{SAVE_IPSETS}, 'ipset' ));
+	    $globals{SAVED_IPSETS} = \@sets;
+	    require_capability 'IPSET_V5', 'A saved ipset list', 's';
+	    $config{SAVE_IPSETS} = '';
+	}
     }
 
     default_yes_no 'SAVE_ARPTABLES'             , '';

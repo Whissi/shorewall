@@ -8016,12 +8016,22 @@ sub create_save_ipsets() {
 	    ensure_ipset( $_ ) for @ipsets;
 	}
 
-	emit( '' ,
-	      '    rm -f ${VARDIR}/ipsets.save' ,
-	      '' );
-
 	if ( $config{SAVE_IPSETS} ) {
-	    if ( $family == F_IPV4 ) {
+	    if ( $family == F_IPV6 || $config{SAVE_IPSETS} eq 'ipv4' ) {
+		my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
+
+		emit( '    rm -f $file' ,
+		      '    touch $file' ,
+		      '    local set' ,
+		      ''
+		    );
+
+		emit( "    \$IPSET -S $_ >> >> \$file" ) for @ipsets;
+
+		emit( "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
+		      "        \$IPSET save \$set >> \$file" ,
+		      "    done" );
+	    } else {
 		emit ( '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
 		       '        #',
 		       '        # The \'grep -v\' is a hack for a bug in ipset\'s nethash implementation when xtables-addons is applied to Lenny' ,
@@ -8034,11 +8044,9 @@ sub create_save_ipsets() {
 		       '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
 		       "        grep -qE -- \"^(-N|create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file" ,
 		       '    fi' );
-	    } else {
-		emit ( '    if eval $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
-		       "        grep -qE -- \"^(-N|create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file" ,
-		       '    fi' );
-	    }
+ 	    }
+
+	    emit("}\n" );
 	} elsif ( @ipsets || $globals{SAVED_IPSETS} ) {
 	    emit( '    rm -f ${VARDIR}/ipsets.tmp' ,
 		  '    touch ${VARDIR}/ipsets.tmp' ,

@@ -2470,7 +2470,7 @@ INLINE          -       -       -       ; -j REJECT
       <varlistentry>
         <term><emphasis role="bold">SAVE_IPSETS=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis
-        role="bold">No|<replaceable>setlist</replaceable></emphasis>}</term>
+        role="bold">No|ipv4|<replaceable>setlist</replaceable></emphasis>}</term>
 
         <listitem>
           <para>Re-enabled in Shorewall 4.4.6. If SAVE_IPSETS=Yes, then the
@@ -2480,9 +2480,21 @@ INLINE          -       -       -       ; -j REJECT
           <emphasis role="bold">shorewall start</emphasis> and <emphasis
           role="bold">shorewall restore</emphasis> commands.</para>
 
-          <para>Beginning with Shorewall 4.6.4, you can restrict the set of
-          ipsets saved by specifying a setlist (a comma-separated list of ipv4
-          ipset names).</para>
+          <para>Beginning with Shorewall 4.6.4:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>When SAVE_IPSETS=ipv4, only ipv4 ipsets are saved if the
+              'Ipset V5' capability is supported by your system.</para>
+            </listitem>
+
+            <listitem>
+              <para>you can restrict the set of ipsets saved by specifying a
+              setlist (a comma-separated list of ipv4 ipset names).</para>
+            </listitem>
+          </itemizedlist>
+
+          <para> </para>
         </listitem>
       </varlistentry>
 

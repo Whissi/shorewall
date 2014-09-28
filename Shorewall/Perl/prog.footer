@@ -386,6 +386,7 @@ case "$COMMAND" in
 	;;
     savesets)
 	if [ $# -eq 2 ]; then
+	    rm -f $2
 	    save_ipsets $2
 	else
 	    usage 2

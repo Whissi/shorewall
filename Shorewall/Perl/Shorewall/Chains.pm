@@ -8006,13 +8006,13 @@ sub create_save_ipsets() {
 	  'save_ipsets() {' );
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
-    emit( '    local file' ,
-	  '',
-	  '    file=$1',
-	  ''
-	);
+	emit( '    local file' ,
+	      '',
+	      '    file=$1'
+	    );
 
 	if ( @ipsets ) {
+	    emit '';
 	    ensure_ipset( $_ ) for @ipsets;
 	}
 
@@ -8020,19 +8020,24 @@ sub create_save_ipsets() {
 	    if ( $family == F_IPV6 || $config{SAVE_IPSETS} eq 'ipv4' ) {
 		my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
 
-		emit( '    rm -f $file' ,
+		emit( '' ,
+		      '    rm -f $file' ,
 		      '    touch $file' ,
 		      '    local set' ,
-		      ''
 		    );
 
-		emit( "    \$IPSET -S $_ >> >> \$file" ) for @ipsets;
+		if ( @ipsets ) {
+		    emit '';
+		    emit( "    \$IPSET -S $_ >> >> \$file" ) for @ipsets;
+		}
 
-		emit( "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
+		emit( '',
+		      "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
 		      "        \$IPSET save \$set >> \$file" ,
 		      "    done" );
 	    } else {
-		emit ( '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
+		emit ( '' ,
+		       '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
 		       '        #',
 		       '        # The \'grep -v\' is a hack for a bug in ipset\'s nethash implementation when xtables-addons is applied to Lenny' ,
 		       '        #',
@@ -8048,20 +8053,26 @@ sub create_save_ipsets() {
 
 	    emit("}\n" );
 	} elsif ( @ipsets || $globals{SAVED_IPSETS} ) {
-	    emit( '    rm -f ${VARDIR}/ipsets.tmp' ,
+	    emit( '' ,
+		  '    rm -f ${VARDIR}/ipsets.tmp' ,
 		  '    touch ${VARDIR}/ipsets.tmp' ,
-		  '' );
+		);
 
-	    emit( "    \$IPSET -S $_ >> >> \${VARDIR}/ipsets.tmp" ) for @ipsets;
+	    if ( @ipsets ) {
+		emit '';
+		emit( "    \$IPSET -S $_ >> >> \${VARDIR}/ipsets.tmp" ) for @ipsets;
+	    }
 
-	    emit( "    if qt \$IPSET list $_; then" ,
+	    emit( '' ,
+		  "    if qt \$IPSET list $_; then" ,
 		  "        \$IPSET save $_ >> \${VARDIR}/ipsets.tmp" ,
 		  '    else' ,
 		  "        error_message 'ipset $_ not saved (not found)'" ,
 		  "    fi\n" ) for @{$globals{SAVED_IPSETS}};
 
-	    emit( "    grep -qE -- \"(-N|^create )\" \${VARDIR}/ipsets.tmp && cat \${VARDIR}/ipsets.tmp >> \$file\n" );
 	    emit( '' ,
+		  "    grep -qE -- \"(-N|^create )\" \${VARDIR}/ipsets.tmp && cat \${VARDIR}/ipsets.tmp >> \$file\n" ,
+		  '' ,
 		  "}\n" );
 	}
     } else {

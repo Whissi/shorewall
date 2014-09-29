@@ -2608,7 +2608,7 @@ EOF
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit( '',
-	      '    save_ipsets' );
+	      '    save_ipsets ${VARDIR}/ipsets.save' );
     }
 	
     emit '

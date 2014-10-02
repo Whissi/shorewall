@@ -2309,9 +2309,25 @@ gateway:~# </programlisting>
       <title>(FAQ 103) Shorewall fails to start at boot but will start
       immediately after</title>
 
-      <para>Answer: This is usually associated with SELinux. <ulink
+      <para><emphasis role="bold">Answer:</emphasis> This is usually
+      associated with SELinux. <ulink
       url="https://lists.fedoraproject.org/pipermail/selinux/2010-June/012680.html">Here</ulink>
       is an example.</para>
+    </section>
+
+    <section id="faq104">
+      <title>(FAQ 104) I see <emphasis>kernel</emphasis> messages in my log
+      when I start or restart Shorewall or Shorewall6</title>
+
+      <para>Example: </para>
+
+      <programlisting>&gt; Oct 1 13:04:39 deb kernel: [ 9570.619744] xt_addrtype: ipv6 does not support BROADCAST matching
+</programlisting>
+
+      <para><emphasis role="bold">Answer:</emphasis> These are harmless.
+      Shorewall attempts to execute various commands to determine the
+      capabiities of your system. If you system doesn't support a command, it
+      will generally issue a kernel log message.</para>
     </section>
   </section>
 

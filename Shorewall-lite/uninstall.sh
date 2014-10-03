@@ -127,7 +127,7 @@ if [ -f "$FIREWALL" ]; then
 	updaterc.d shorewall-lite remove
     elif mywhich insserv ; then
         insserv -r $FIREWALL
-    elif [ mywhich chkconfig ; then
+    elif mywhich chkconfig ; then
 	chkconfig --del $(basename $FIREWALL)
     elif mywhich systemctl ; then
 	systemctl disable shorewall-lite

@@ -346,6 +346,7 @@ fi
 delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
 install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0544
+[ -n "${INITFILE}" ] && install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
 
 echo "$Product control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
@@ -499,7 +500,7 @@ chmod 644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
 # Remove and create the symbolic link to the init script
 #
 
-if [ -z "${DESTDIR}${SYSTEMD}" ]; then
+if [ -z "${DESTDIR}" -a -n "${INITFILE}" ]; then
     rm -f ${SHAREDIR}/$PRODUCT/init
     ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/$PRODUCT/init
 fi

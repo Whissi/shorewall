@@ -1120,7 +1120,7 @@ chmod 644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
 # Remove and create the symbolic link to the init script
 #
 
-if [ -z "${DESTDIR}${SYSTEMD}" ]; then
+if [ -z "${DESTDIR}" -a -n "${INITFILE}" ]; then
     rm -f ${SHAREDIR}/$PRODUCT/init
     ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/$PRODUCT/init
 fi

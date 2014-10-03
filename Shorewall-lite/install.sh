@@ -30,6 +30,7 @@ usage() # $1 = exit status
     echo "usage: $ME [ <configuration-file> ]"
     echo "       $ME -v"
     echo "       $ME -h"
+    echo "       $ME -n"
     exit $1
 }
 
@@ -113,6 +114,7 @@ fi
 # Parse the run line
 #
 finished=0
+configure=1
 
 while [ $finished -eq 0 ] ; do
     case "$1" in
@@ -127,6 +129,10 @@ while [ $finished -eq 0 ] ; do
 		    v)
 			echo "$Product Firewall Installer Version $VERSION"
 			exit 0
+			;;
+		    n*)
+			configure=0
+			option=${option#n}
 			;;
 		    *)
 			usage 1
@@ -527,7 +533,7 @@ if [ ${SHAREDIR} != /usr/share ]; then
     eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
 fi
 
-if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
+if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
     if [ -n "$SYSTEMD" ]; then
 	if systemctl enable ${PRODUCT}.service; then
 	    echo "$Product will start automatically at boot"

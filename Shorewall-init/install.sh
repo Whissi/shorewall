@@ -35,6 +35,7 @@ usage() # $1 = exit status
     echo "usage: $ME [ <configuration-file> ]"
     echo "       $ME -v"
     echo "       $ME -h"
+    echo "       $ME -n"
     exit $1
 }
 
@@ -105,6 +106,7 @@ PRODUCT=shorewall-init
 T='-T'
 
 finished=0
+configure=1
 
 while [ $finished -eq 0 ] ; do
     case "$1" in
@@ -119,6 +121,10 @@ while [ $finished -eq 0 ] ; do
 		    v)
 			echo "Shorewall-init Firewall Installer Version $VERSION"
 			exit 0
+			;;
+		    n*)
+			configure=0
+			option=${option#n}
 			;;
 		    *)
 			usage 1
@@ -453,7 +459,7 @@ case $HOST in
 esac
 
 if [ -z "$DESTDIR" ]; then
-    if [ -n "$first_install" ]; then
+    if [ $configure -eq 1 -a -n "$first_install" ]; then
 	if [ $HOST = debian ]; then
 	    if mywhich insserv; then
 		if insserv ${INITDIR}/shorewall-init; then
@@ -505,7 +511,7 @@ if [ -z "$DESTDIR" ]; then
 	fi
     fi
 else
-    if [ -n "$first_install" ]; then
+    if [ $configure -eq 1 -a -n "$first_install" ]; then
 	if [ $HOST = debian ]; then
 	    if [ -n "${DESTDIR}" ]; then
 		mkdir -p ${DESTDIR}/etc/rcS.d

@@ -35,6 +35,7 @@ usage() # $1 = exit status
     echo "       $ME -h"
     echo "       $ME -s"
     echo "       $ME -a"
+    echo "       $ME -n"
     exit $1
 }
 
@@ -118,6 +119,7 @@ T="-T"
 INSTALLD='-D'
 
 finished=0
+configure=1
 
 while [ $finished -eq 0 ]; do
     option=$1
@@ -146,6 +148,10 @@ while [ $finished -eq 0 ]; do
 		    p*)
 			ANNOTATED=
 			option=${option#p}
+			;;
+		    n*)
+			configure=0
+			option=${option#n}
 			;;
 		    *)
 			usage 1
@@ -1167,7 +1173,7 @@ if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PR
     echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 
-if [ -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
+if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
     if [ -n "$SYSTEMD" ]; then
 	if systemctl enable ${PRODUCT}.service; then
 	    echo "$Product will start automatically at boot"

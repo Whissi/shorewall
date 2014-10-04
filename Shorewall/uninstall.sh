@@ -31,7 +31,11 @@ VERSION=xxx #The Build script inserts the actual version
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <shorewallrc file> ]"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
+    echo "  -n"
     exit $1
 }
 
@@ -68,6 +72,44 @@ remove_file() # $1 = file to restore
 	echo "$1 Removed"
     fi
 }
+
+finished=0
+configure=1
+
+while [ $finished -eq 0 ]; do
+    option=$1
+
+    case "$option" in
+	-*)
+	    option=${option#-}
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "$Product Firewall Installer Version $VERSION"
+			exit 0
+			;;
+			;;
+		    n*)
+			configure=0
+			option=${option#n}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
+	    ;;
+	*)
+	    finished=1
+	    ;;
+    esac
+done
 
 if [ $# -eq 0 ]; then
     if [ -f ./shorewallrc ]; then
@@ -117,14 +159,16 @@ fi
 rm -f ${SBINDIR}/shorewall
 
 if [ -f "$INITSCRIPT" ]; then
-    if mywhich updaterc.d ; then
-	updaterc.d ${PRODUCT} remove
-    elif mywhich insserv ; then
-        insserv -r $INITSCRIPT
-    elif mywhich chkconfig ; then
-	chkconfig --del $(basename $INITSCRIPT)
-    elif mywhich systemctl ; then
-	systemctl disable ${PRODUCT}
+    if [ $configure -eq 1 ]; then
+	if mywhich updaterc.d ; then
+	    updaterc.d ${PRODUCT} remove
+	elif mywhich insserv ; then
+            insserv -r $INITSCRIPT
+	elif mywhich chkconfig ; then
+	    chkconfig --del $(basename $INITSCRIPT)
+	elif mywhich systemctl ; then
+	    systemctl disable ${PRODUCT}
+	fi
     fi
 
     remove_file $INITSCRIPT

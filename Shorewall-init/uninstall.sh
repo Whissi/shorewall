@@ -69,6 +69,43 @@ remove_file() # $1 = file to restore
     fi
 }
 
+finished=0
+configure=1
+
+while [ $finished -eq 0 ]; do
+    option=$1
+
+    case "$option" in
+	-*)
+	    option=${option#-}
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "$Product Firewall Installer Version $VERSION"
+			exit 0
+			;;
+			;;
+		    n*)
+			configure=0
+			option=${option#n}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
+	    ;;
+	*)
+	    finished=1
+	    ;;
+    esac
+done
 #
 # Read the RC file
 #

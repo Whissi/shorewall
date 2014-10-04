@@ -209,6 +209,8 @@ done
 
 [ -n "${INITFILE}" ] && require INITSOURCE && require INITDIR
 
+[ -n "$SANDBOX" ] && configure=0
+
 if [ -z "$BUILD" ]; then
     case $(uname) in
 	cygwin*|CYGWIN*)

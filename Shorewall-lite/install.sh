@@ -195,6 +195,8 @@ done
 
 PATH=${SBINDIR}:/bin:/usr${SBINDIR}:/usr/bin:/usr/local/bin:/usr/local${SBINDIR}
 
+[ -n "$SANDBOX" ] && configure=0
+
 #
 # Determine where to install the firewall script
 #

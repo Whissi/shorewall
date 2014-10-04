@@ -151,20 +151,27 @@ fi
 
 echo "Uninstalling Shorewall Init $VERSION"
 
+[ -n "$SANDBOX" ] && configure=0
+
 INITSCRIPT=${CONFDIR}/init.d/shorewall-init
 
 if [ -f "$INITSCRIPT" ]; then
-    if mywhich updaterc.d ; then
-	updaterc.d shorewall-init remove
-    elif mywhich insserv ; then
-        insserv -r $INITSCRIPT
-    elif mywhich chkconfig ; then
-	chkconfig --del $(basename $INITSCRIPT)
-    elif mywhich systemctl ; then
-	systemctl disable shorewall-init
+    if [ $configure -eq 1 ]; then
+	if mywhich updaterc.d ; then
+	    updaterc.d shorewall-init remove
+	elif mywhich insserv ; then
+            insserv -r $INITSCRIPT
+	elif mywhich chkconfig ; then
+	    chkconfig --del $(basename $INITSCRIPT)
+	fi
     fi
 
     remove_file $INITSCRIPT
+fi
+
+if [ -n "$SYSTEMD" ]; then
+    [ $configure -eq 1 ] && systemctl disable shorewall-init.service
+    rm -f $SYSTEMD/shorewall-init.service
 fi
 
 [ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local

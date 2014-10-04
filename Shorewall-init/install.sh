@@ -184,6 +184,8 @@ for var in SHAREDIR LIBEXECDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 
+[ -n "$SANDBOX" ] && configure=0
+
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
 if [ -z "$BUILD" ]; then

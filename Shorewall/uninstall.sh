@@ -152,6 +152,8 @@ fi
 
 echo "Uninstalling shorewall $VERSION"
 
+[ -n "$SANDBOX" ] && configure=0
+
 if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall-lite ]; then
    shorewall clear
 fi
@@ -166,12 +168,15 @@ if [ -f "$INITSCRIPT" ]; then
             insserv -r $INITSCRIPT
 	elif mywhich chkconfig ; then
 	    chkconfig --del $(basename $INITSCRIPT)
-	elif mywhich systemctl ; then
-	    systemctl disable ${PRODUCT}
 	fi
     fi
 
     remove_file $INITSCRIPT
+fi
+
+if [ -n "$SYSTEMD" ]; then
+    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
+    rm -f $SYSTEMD/${PRODUCT}.service
 fi
 
 rm -rf ${SHAREDIR}/shorewall/version

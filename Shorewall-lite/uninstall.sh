@@ -92,7 +92,6 @@ while [ $finished -eq 0 ]; do
 			echo "$Product Firewall Installer Version $VERSION"
 			exit 0
 			;;
-			;;
 		    n*)
 			configure=0
 			option=${option#n}
@@ -155,8 +154,10 @@ echo "Uninstalling Shorewall Lite $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
-if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall ]; then
-   shorewall-lite clear
+if [ $configure -eq 1 ]; then
+    if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall ]; then
+	shorewall-lite clear
+    fi
 fi
 
 if [ -L ${SHAREDIR}/shorewall-lite/init ]; then

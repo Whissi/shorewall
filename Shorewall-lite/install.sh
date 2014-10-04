@@ -478,18 +478,18 @@ done
 if [ -d manpages ]; then
     cd manpages
 
-    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${SHAREDIR}/man/man5/ ${DESTDIR}${SHAREDIR}/man/man8/
+    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${SHAREDIR}/man/man5/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}${SHAREDIR}/man/man5/$f.gz"
+	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
     done
 
     for f in *.8; do
 	gzip -c $f > $f.gz
-	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${SHAREDIR}/man/man8/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}${SHAREDIR}/man/man8/$f.gz"
+	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
     done
 
     cd ..

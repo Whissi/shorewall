@@ -109,7 +109,9 @@ finished=0
 configure=1
 
 while [ $finished -eq 0 ] ; do
-    case "$1" in
+    option="$1"
+
+    case "$option" in
 	-*)
 	    option=${option#-}
 

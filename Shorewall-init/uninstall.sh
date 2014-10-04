@@ -202,7 +202,7 @@ if [ -d ${CONFDIR}/ppp ]; then
     done
 fi
 
-rm -f  ${SHAREDIR}/shorewall-init
+rm -f  ${SBINDIR}/shorewall-init
 rm -rf ${SHAREDIR}/shorewall-init
 rm -rf ${LIBEXECDIR}/shorewall-init
 

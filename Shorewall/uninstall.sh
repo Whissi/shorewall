@@ -162,18 +162,24 @@ fi
 
 rm -f ${SBINDIR}/shorewall
 
-if [ -f "$INITSCRIPT" ]; then
+if [ -L ${SHAREDIR}/shorewall6/init ]; then
+    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6/init)
+elif [ -n "$INITFILE" ]; then
+    FIREWALL=${INITDIR}/${INITFILE}
+fi
+
+if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if mywhich updaterc.d ; then
 	    updaterc.d ${PRODUCT} remove
 	elif mywhich insserv ; then
-            insserv -r $INITSCRIPT
+            insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
-	    chkconfig --del $(basename $INITSCRIPT)
+	    chkconfig --del $(basename $FIREWALL)
 	fi
     fi
 
-    remove_file $INITSCRIPT
+    remove_file $FIREWALL
 fi
 
 if [ -n "$SYSTEMD" ]; then

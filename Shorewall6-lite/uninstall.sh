@@ -152,12 +152,12 @@ echo "Uninstalling Shorewall Lite $VERSION"
 [ -n "$SANDBOX" ] && configure=0
 
 if [ $configure -eq 1 ]; then
-    if qt ip6tables -L shorewall -n && [ ! -f ${SBINDIR)/shorewall6 ]; then
+    if qt ip6tables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall6 ]; then
 	${SBINDIR}/shorewall6-lite clear
     fi
 fi
 
-if [ -l ${SHAREDIR}/shorewall6-lite/init ]; then
+if [ -f ${SHAREDIR}/shorewall6-lite/init ]; then
     FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6-lite/init)
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
@@ -191,6 +191,9 @@ rm -rf ${SHAREDIR}/shorewall6-lite
 rm -rf ${LIBEXEC}/shorewall6-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall6-lite
 [ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/shorewall6-lite.service
+
+rm -f ${MANDIR}/man5/shorewall6-lite*
+rm -f ${MANDIR}/man8/shorewall6-lite*
 
 echo "Shorewall6 Lite Uninstalled"
 

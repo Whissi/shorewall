@@ -188,10 +188,14 @@ fi
 
 rm -f ${SBINDIR}/shorewall-lite
 
+rm -rf ${CONFDIR}/shorewall-lite
 rm -rf ${VARDIR}/shorewall-lite
 rm -rf ${SHAREDIR}/shorewall-lite
 rm -rf ${LIBEXEC}/shorewall-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall-lite
+
+rm -f ${MANDIR}/man5/shorewall-lite*
+rm -f ${MANDIR}/man8/shorewall-lite*
 
 echo "Shorewall Lite Uninstalled"
 

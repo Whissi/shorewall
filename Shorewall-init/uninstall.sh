@@ -1,4 +1,4 @@
-\#!/bin/sh
+#!/bin/sh
 #
 # Script to back uninstall Shoreline Firewall
 #
@@ -87,7 +87,6 @@ while [ $finished -eq 0 ]; do
 		    v)
 			echo "$Product Firewall Installer Version $VERSION"
 			exit 0
-			;;
 			;;
 		    n*)
 			configure=0

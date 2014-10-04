@@ -376,6 +376,9 @@ if [ $HOST = debian ]; then
     if [ -n "${DESTDIR}" ]; then
 	mkdir -p ${DESTDIR}/etc/network/if-up.d/
 	mkdir -p ${DESTDIR}/etc/network/if-down.d/
+    elif [ $configure -eq 0 ]; then
+	mkdir -p ${DESTDIR}/${CONFDIR}/network/if-up.d/
+	mkdir -p ${DESTDIR}/${CONFDIR}/network/if-down.d/	
     fi
 
     if [ ! -f ${DESTDIR}/etc/default/shorewall-init ]; then
@@ -383,7 +386,11 @@ if [ $HOST = debian ]; then
 	    mkdir ${DESTDIR}/etc/default
 	fi
 
-	install_file sysconfig ${DESTDIR}/etc/default/shorewall-init 0644
+	if [ $configure -eq 1 ]; then
+	    install_file sysconfig ${DESTDIR}/etc/default/shorewall-init 0644
+	else
+	    install_file sysconfig ${DESTDIR}${CONFDIR}/default/shorewall-init 0644
+	fi
     fi
 
     IFUPDOWN=ifupdown.debian.sh
@@ -394,7 +401,7 @@ else
 	if [ -z "$RPM" ]; then
 	    if [ $HOST = suse ]; then
 		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
-		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-down.d
+		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-down.d
 	    elif [ $HOST = gentoo ]; then
 		# Gentoo does not support if-{up,down}.d
 		/bin/true
@@ -425,17 +432,35 @@ mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
 install_file ifupdown ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
-    install_file ifupdown ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
+    if [ $configure -eq 1 ]; then
+	install_file ifupdown ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
+    else
+	mkdir -p ${DESTDIR}${CONFIGDIR}/NetworkManager/dispatcher.d/
+	install_file ifupdown ${DESTDIR}${CONFIGDIR}/NetworkManager/dispatcher.d/01-shorewall 0544
+    fi
 fi
 
 case $HOST in
     debian)
-	install_file ifupdown ${DESTDIR}/etc/network/if-up.d/shorewall 0544
-	install_file ifupdown ${DESTDIR}/etc/network/if-down.d/shorewall 0544
-	install_file ifupdown ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
+	if [ $configure -eq 1 ]; then
+	    install_file ifupdown ${DESTDIR}/etc/network/if-up.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}/etc/network/if-down.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
+	else
+	    mkdir -p ${DESTDIR}${CONFIGDIR}/network/if-up.d/
+	    mkdir -p ${DESTDIR}${CONFIGDIR}/network/if-down.d/
+	    install_file ifupdown ${DESTDIR}${CONFIGDIR}/network/if-up.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${CONFIGDIR}/network/if-down.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${CONFIGDIR}/network/if-post-down.d/shorewall 0544
+	fi
 	;;
     suse)
 	if [ -z "$RPM" ]; then
+	    if [ $configure -eq 0 ]; then
+		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-up.d/
+		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-down.d/
+	    fi
+
 	    install_file ifupdown ${DESTDIR}${SYSCONFDIR}/network/if-up.d/shorewall 0544
 	    install_file ifupdown ${DESTDIR}${SYSCONFDIR}/network/if-down.d/shorewall 0544
 	fi

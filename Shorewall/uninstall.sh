@@ -27,6 +27,7 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx #The Build script inserts the actual version
+PRODUCT=shorewall
 
 usage() # $1 = exit status
 {
@@ -177,7 +178,7 @@ fi
 
 if [ -n "$SYSTEMD" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SYSTEMD/${PRODUCT}.service
+    rm -f $SYSTEMD/shorewall.service
 fi
 
 rm -rf ${SHAREDIR}/shorewall/version
@@ -189,7 +190,7 @@ if [ -n "$SYSCONFDIR" ]; then
 fi
 
 rm -rf ${VARDIR}/shorewall
-rm -rf ${PERLLIB}/Shorewall/*
+rm -rf ${PERLLIBDIR}/Shorewall/*
 rm -rf ${LIBEXEC}/shorewall
 rm -rf ${SHAREDIR}/shorewall/configfiles/
 rm -rf ${SHAREDIR}/shorewall/Samples/

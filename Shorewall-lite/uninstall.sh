@@ -27,6 +27,7 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx  #The Build script inserts the actual version
+PRODUCT=shorewall-lite
 
 usage() # $1 = exit status
 {
@@ -182,17 +183,15 @@ fi
 
 if [ -n "$SYSTEMD" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SYSTEMD/${PRODUCT}.service
+    rm -f $SYSTEMD/shorewall-lite.service
 fi
 
 rm -f ${SBINDIR}/shorewall-lite
 
-rm -rf ${SBINDIR}/shorewall-lite
 rm -rf ${VARDIR}/shorewall-lite
 rm -rf ${SHAREDIR}/shorewall-lite
 rm -rf ${LIBEXEC}/shorewall-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall-lite
-[ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/shorewall-lite.service
 
 echo "Shorewall Lite Uninstalled"
 

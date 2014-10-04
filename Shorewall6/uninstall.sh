@@ -27,6 +27,7 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx #The Build script inserts the actual version
+PRODUCT=shorewall6
 
 usage() # $1 = exit status
 {
@@ -68,6 +69,43 @@ remove_file() # $1 = file to restore
 	echo "$1 Removed"
     fi
 }
+
+finished=0
+configure=1
+
+while [ $finished -eq 0 ]; do
+    option=$1
+
+    case "$option" in
+	-*)
+	    option=${option#-}
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "$Product Firewall Installer Version $VERSION"
+			exit 0
+			;;
+		    n*)
+			configure=0
+			option=${option#n}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
+	    ;;
+	*)
+	    finished=1
+	    ;;
+    esac
+done
 
 #
 # Read the RC file
@@ -112,8 +150,12 @@ fi
 
 echo "Uninstalling shorewall6 $VERSION"
 
-if qt ip6tables -L shorewall6 -n && [ ! -f ${SBINDIR}/shorewall6-lite ]; then
-   ${SBINDIR}/shorewall6 clear
+[ -n "$SANDBOX" ] && configure=0
+
+if [ $configure -eq 1 ]; then
+    if qt ip6tables -L shorewall6 -n && [ ! -f ${SBINDIR}/shorewall6-lite ]; then
+	${SBINDIR}/shorewall6 clear
+    fi
 fi
 
 if [ -L ${SHAREDIR}/shorewall6/init ]; then
@@ -123,17 +165,22 @@ elif [ -n "$INITFILE" ]; then
 fi
 
 if [ -f "$FIREWALL" ]; then
-    if mywhich updaterc.d ; then
-	updaterc.d shorewall6 remove
-    elif mywhich insserv ; then
-        insserv -r $FIREWALL
-    elif mywhich chkconfig ; then
-	chkconfig --del $(basename $FIREWALL)
-    elif mywhich systemctl ; then
-	systemctl disable shorewall6
+    if [ $configure -eq 1 ]; then
+	if mywhich updaterc.d ; then
+	    updaterc.d shorewall6 remove
+	elif mywhich insserv ; then
+            insserv -r $FIREWALL
+	elif mywhich chkconfig ; then
+	    chkconfig --del $(basename $FIREWALL)
+	fi
     fi
 
     remove_file $FIREWALL
+fi
+
+if [ -n "$SYSTEMD" ]; then
+    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
+    rm -f $SYSTEMD/shorewall6.service
 fi
 
 rm -f ${SBINDIR}/shorewall6

@@ -199,4 +199,3 @@ rm -f ${MANDIR}/man8/shorewall-lite*
 
 echo "Shorewall Lite Uninstalled"
 
-

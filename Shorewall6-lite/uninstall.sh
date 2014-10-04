@@ -196,5 +196,3 @@ rm -f ${MANDIR}/man5/shorewall6-lite*
 rm -f ${MANDIR}/man8/shorewall6-lite*
 
 echo "Shorewall6 Lite Uninstalled"
-
-

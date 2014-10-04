@@ -186,7 +186,7 @@ fi
 rm -f ${SBINDIR}/shorewall6
 rm -rf ${CONFDIR}/shorewall6
 rm -rf ${VARDIR}/shorewall6
-rm -rf ${LIBEXEC}/shorewall6
+rm -rf ${LIBEXECDIR}/shorewall6
 rm -rf ${SHAREDIR}/shorewall6
 
 for f in ${MANDIR}/man5/shorewall6* ${SHAREDIR}/man/man8/shorewall6*; do

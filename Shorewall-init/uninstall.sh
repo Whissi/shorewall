@@ -203,7 +203,7 @@ if [ -d ${CONFDIR}/ppp ]; then
 fi
 
 rm -rf ${SHAREDIR}/shorewall-init
-rm -rf ${LIBEXEC}/shorewall-init
+rm -rf ${LIBEXECDIR}/shorewall-init
 
 echo "Shorewall Init Uninstalled"
 

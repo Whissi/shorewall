@@ -368,6 +368,8 @@ chmod 644 ${DESTDIR}${SHAREDIR}/shorewall-init/version
 #
 # Remove and create the symbolic link to the init script
 #
+echo CONFDIR is $CONFDIR
+
 if [ -z "$DESTDIR" ]; then
     rm -f ${SHAREDIR}/shorewall-init/init
     ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/shorewall-init/init
@@ -377,12 +379,14 @@ if [ $HOST = debian ]; then
     if [ -n "${DESTDIR}" ]; then
 	mkdir -p ${DESTDIR}/etc/network/if-up.d/
 	mkdir -p ${DESTDIR}/etc/network/if-down.d/
+	mkdir -p ${DESTDIR}/etc/network/if-post-down.d/
     elif [ $configure -eq 0 ]; then
-	mkdir -p ${DESTDIR}/${CONFDIR}/network/if-up.d/
-	mkdir -p ${DESTDIR}/${CONFDIR}/network/if-down.d/	
+	mkdir -p ${DESTDIR}${CONFDIR}/network/if-up.d/
+	mkdir -p ${DESTDIR}${CONFDIR}/network/if-down.d/
+	mkdir -p ${DESTDIR}${CONFDIR}/network/if-post-down.d/
     fi
 
-    if [ ! -f ${DESTDIR}/etc/default/shorewall-init ]; then
+    if [ ! -f ${DESTDIR}${CONFDIR}/default/shorewall-init ]; then
 	if [ -n "${DESTDIR}" ]; then
 	    mkdir ${DESTDIR}/etc/default
 	fi
@@ -390,6 +394,7 @@ if [ $HOST = debian ]; then
 	if [ $configure -eq 1 ]; then
 	    install_file sysconfig ${DESTDIR}/etc/default/shorewall-init 0644
 	else
+	    mkdir -p ${DESTDIR}${CONFDIR}/default
 	    install_file sysconfig ${DESTDIR}${CONFDIR}/default/shorewall-init 0644
 	fi
     fi
@@ -436,8 +441,8 @@ if [ -d ${DESTDIR}/etc/NetworkManager ]; then
     if [ $configure -eq 1 ]; then
 	install_file ifupdown ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
     else
-	mkdir -p ${DESTDIR}${CONFIGDIR}/NetworkManager/dispatcher.d/
-	install_file ifupdown ${DESTDIR}${CONFIGDIR}/NetworkManager/dispatcher.d/01-shorewall 0544
+	mkdir -p ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/
+	install_file ifupdown ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/01-shorewall 0544
     fi
 fi
 
@@ -448,11 +453,9 @@ case $HOST in
 	    install_file ifupdown ${DESTDIR}/etc/network/if-down.d/shorewall 0544
 	    install_file ifupdown ${DESTDIR}/etc/network/if-post-down.d/shorewall 0544
 	else
-	    mkdir -p ${DESTDIR}${CONFIGDIR}/network/if-up.d/
-	    mkdir -p ${DESTDIR}${CONFIGDIR}/network/if-down.d/
-	    install_file ifupdown ${DESTDIR}${CONFIGDIR}/network/if-up.d/shorewall 0544
-	    install_file ifupdown ${DESTDIR}${CONFIGDIR}/network/if-down.d/shorewall 0544
-	    install_file ifupdown ${DESTDIR}${CONFIGDIR}/network/if-post-down.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${CONFDIR}/network/if-up.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${CONFDIR}/network/if-down.d/shorewall 0544
+	    install_file ifupdown ${DESTDIR}${CONFDIR}/network/if-post-down.d/shorewall 0544
 	fi
 	;;
     suse)

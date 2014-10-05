@@ -683,6 +683,56 @@
 
         <programlisting><command>./configure --vendor=redhat --systemd=</command></programlisting>
       </section>
+
+      <section>
+        <title>Install for Packaging.</title>
+
+        <para>If you build your own packages, then you will want to install
+        the Shorewall products into it's own directory tree. This is done by
+        adding DESTDIR to the installer's environment. For example, to install
+        a product for Debian into the /tmp/package directory:</para>
+
+        <programlisting>DESTDIR=/tmp/package ./install.sh shorewallrc.debian</programlisting>
+      </section>
+
+      <section>
+        <title>Install into a Sandbox</title>
+
+        <para>When DESTDIR is used, the resulting configuration is not
+        runnable, because all configuration pathnames are relative to
+        $DESTDIR. Beginning with Shorewall 4.6.4, you can create runnable
+        configurations separate from your main configuration. Here is a sample
+        shorewallrc file:</para>
+
+        <programlisting>                INSTALL_DIR=/usr/local/shorewall-custom
+                HOST=suse
+                PREFIX=${INSTALL_DIR}
+                SHAREDIR=${INSTALL_DIR}/share
+                LIBEXECDIR=${INSTALL_DIR}/lib
+                PERLLIBDIR=${INSTALL_DIR}/lib/perl5
+                CONFDIR=${INSTALL_DIR}/etc
+                SBINDIR=${INSTALL_DIR}/usr/sbin
+                MANDIR=${SHAREDIR}/man/
+                INITDIR=${INSTALL_DIR}/etc/init.d
+                INITSOURCE=init.suse.sh
+                INITFILE=${PRODUCT}
+                AUXINITSOURCE=
+                AUXINITFILE=
+                SYSTEMD=${INSTALL_DIR}/etc/systemd
+                SERVICEFILE=${PRODUCT}.service
+                SYSCONFFILE=sysconfig
+                SYSCONFDIR=${INSTALL_DIR}/etc/sysconfig
+                SPARSE=
+                ANNOTATED=
+                VARLIB=${INSTALL_DIR}/var/lib
+                VARDIR=${VARLIB}/${PRODUCT}
+                <emphasis role="bold">SANDBOX=Yes</emphasis></programlisting>
+
+        <para>The above shorewallrc creates a runnable configuration in
+        /usr/local/shorewall-custom. It is triggered by adding SANDBOX to the
+        shorewallrc file -- any non-empty value for that variable will prevent
+        the installer from replacing the current main configuraiton. </para>
+      </section>
     </section>
 
     <section>

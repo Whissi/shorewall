@@ -316,6 +316,7 @@ fi
 # Install the Firewall Script
 #
 if [ -n "$INITFILE" ]; then
+    mkdir -p ${DESTDIR}${INITDIR}
     install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
     

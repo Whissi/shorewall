@@ -370,7 +370,7 @@ mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${VARDIR}
 
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
-chmod 755 ${DESTDIR}/usr/share/$PRODUCT
+chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT
 
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d

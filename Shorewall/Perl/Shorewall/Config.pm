@@ -5778,7 +5778,7 @@ sub get_configuration( $$$$$ ) {
     default_log_level 'INVALID_LOG_LEVEL',    '';
     default_log_level 'UNTRACKED_LOG_LEVEL',  '';
 
-    if ( defined( $val = $config{LOG_BACKEND} ) ) {
+    if ( supplied( $val = $config{LOG_BACKEND} ) ) {
 	if ( $family == F_IPV4 && $val eq 'ULOG' ) {
 	    $val = 'ipt_ULOG';
 	} elsif ( $val eq 'netlink' ) {

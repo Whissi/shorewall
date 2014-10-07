@@ -159,6 +159,17 @@ ACCEPT       net:+sshok  $FW      tcp      22</programlisting></para>
     setting SAVE_IPSETS to a comma-separated list of ipset names. You can also
     restrict the group of sets saved to ipv4 sets by setting
     SAVE_IPSETS=ipv4.</para>
+
+    <para>With Shorewall 4.6.4, the SAVE_IPSETS option may specify a list of
+    ipsets to be saved. When such a list is specified, only those ipsets
+    together with the ipsets supporting dynamic zones are saved. Shorewall6
+    support for the SAVE_IPSETS option was also added in 4.6.4. When
+    SAVE_IPSETS=Yes in <ulink
+    url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>, only ipv6
+    ipsets are saved. For Shorewall, if SAVE_IPSETS=ipv4 in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink>, then only
+    ipv4 ipsets are saved. Both features require ipset version 5 or
+    later.</para>
   </section>
 
   <section>
@@ -169,7 +180,7 @@ ACCEPT       net:+sshok  $FW      tcp      22</programlisting></para>
     <para>Beginning with Shorewall 4.6.4, SAVE_IPSETS is available in <ulink
     url="manpages6/shorewall6.conf.html">shorewall6-conf(5)</ulink>. When set
     to Yes, the ipv6 ipsets will be set. You can also save selective ipsets by
-    setting SAVE_IPSETS to a comma-separated list of ipset names. </para>
+    setting SAVE_IPSETS to a comma-separated list of ipset names.</para>
 
     <para>Prior to Shorewall 4.6.4, SAVE_IPSETS=Yes in shorewall.conf won't
     work correctly because it saves both IPv4 and IPv6 ipsets. To work around

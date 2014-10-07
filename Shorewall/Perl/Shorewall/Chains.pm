@@ -8075,8 +8075,11 @@ sub create_save_ipsets() {
 		  '' ,
 		  "}\n" );
 	}
-    } else {
+    } elsif ( $config{SAVE_IPSETS} ) {
 	emit( '    error_message "WARNING: No ipsets were saved"',
+	      "}\n" );
+    } else {
+	emit( '    true',
 	      "}\n" );
     }
 }

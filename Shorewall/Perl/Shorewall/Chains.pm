@@ -8028,7 +8028,7 @@ sub create_save_ipsets() {
 
 		if ( @ipsets ) {
 		    emit '';
-		    emit( "    \$IPSET -S $_ >> >> \$file" ) for @ipsets;
+		    emit( "    \$IPSET -S $_ >> \$file" ) for @ipsets;
 		}
 
 		emit( '',
@@ -8060,7 +8060,7 @@ sub create_save_ipsets() {
 
 	    if ( @ipsets ) {
 		emit '';
-		emit( "    \$IPSET -S $_ >> >> \${VARDIR}/ipsets.tmp" ) for @ipsets;
+		emit( "    \$IPSET -S $_ >> \${VARDIR}/ipsets.tmp" ) for @ipsets;
 	    }
 
 	    emit( '' ,

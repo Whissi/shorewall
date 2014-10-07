@@ -329,9 +329,13 @@ if [ -n "${SYSCONFDIR}" ]; then
     chmod 755 ${DESTDIR}${SYSCONFDIR}
 fi
 
-if [ -n "${SYSTEMD}" ]; then
-    mkdir -p ${DESTDIR}${SYSTEMD}
-    chmod 755 ${DESTDIR}${SYSTEMD}
+if [ -z "${SYSTEMDDIR}" ]; then
+    SYSTEMDDIR="$SYSTEMD"
+fi
+
+if [ -n "${SYSTEMDDIR}" ]; then
+    mkdir -p ${DESTDIR}${SYSTEMDDIR}
+    chmod 755 ${DESTDIR}${SYSTEMDDIR}
 fi
 
 mkdir -p ${DESTDIR}${SBINDIR}

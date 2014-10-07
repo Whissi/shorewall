@@ -195,6 +195,10 @@ elif [ -n "${options[VARDIR]}" ]; then
     fi
 fi
 
+if [ -z "${options[SYSTEMDDIR]}" ]; then
+    $options[SYSTEMDDIR]="${options[SYSTEMD]}"
+fi
+
 for on in \
     HOST \
     PREFIX \
@@ -209,7 +213,7 @@ for on in \
     INITFILE \
     AUXINITSOURCE \
     AUXINITFILE \
-    SYSTEMD \
+    SYSTEMDDIR \
     SERVICEFILE \
     SYSCONFFILE \
     SYSCONFDIR \

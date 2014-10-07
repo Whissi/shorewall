@@ -154,6 +154,8 @@ if ( $options{VARLIB} ) {
     $options{VARDIR} = '${VARLIB}/${PRODUCT}';
 }
 
+$options{SYSTEMDDIR}=$options{SYSTEMD} unless $options{SYSTEMDDIR};
+
 for ( qw/ HOST
 	  PREFIX
 	  SHAREDIR
@@ -167,7 +169,7 @@ for ( qw/ HOST
 	  INITFILE
 	  AUXINITSOURCE
 	  AUXINITFILE
-	  SYSTEMD
+	  SYSTEMDDIR
           SERVICEFILE
 	  SYSCONFFILE
 	  SYSCONFDIR

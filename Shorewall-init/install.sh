@@ -330,12 +330,16 @@ fi
 #
 # Install the .service file
 #
-if [ -n "$SYSTEMD" ]; then
-    mkdir -p ${DESTDIR}${SYSTEMD}
+if [ -z "${SYSTEMDDIR}" ]; then
+    SYSTEMDDIR="$SYSTEMD"
+fi
+
+if [ -n "$SYSTEMDDIR" ]; then
+    mkdir -p ${DESTDIR}${SYSTEMDDIR}
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SYSTEMD}/$PRODUCT.service
-    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMD}/$PRODUCT.service
-    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMD}/$PRODUCT.service"
+    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
+    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service"
     if [ -n "$DESTDIR" ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}
         chmod 755 ${DESTDIR}${SBINDIR}
@@ -515,7 +519,7 @@ if [ -z "$DESTDIR" ]; then
 	    # not by the installer
 	    /bin/true
 	else
-	    if [ -n "$SYSTEMD" ]; then
+	    if [ -n "$SYSTEMDDIR" ]; then
 		if systemctl enable shorewall-init.service; then
 		    echo "Shorewall Init will start automatically at boot"
 		fi

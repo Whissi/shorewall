@@ -5,7 +5,8 @@
 #
 [Unit]
 Description=Shorewall IPv4 firewall (bootup security)
-Before=network.target
+Before=network-pre.target
+Wants=network-pre.target
 Conflicts=firewalld.service
 
 [Service]

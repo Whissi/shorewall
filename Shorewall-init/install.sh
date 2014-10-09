@@ -340,7 +340,7 @@ if [ -n "$SYSTEMDDIR" ]; then
     run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service"
-    if [ -n "$DESTDIR" ]; then
+    if [ -n "$DESTDIR" -o $configure -eq 0 ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}
         chmod 755 ${DESTDIR}${SBINDIR}
     fi

@@ -368,6 +368,17 @@ resolve_arptables() {
 }
 
 #
+# Try to run the 'savesets' command
+#
+savesets() {
+    local supported
+
+    supported=$(run_it ${VARDIR}/firewall help | fgrep savesets )
+
+    [ -n "$supported" ] && run_it ${VARDIR}/firewall savesets ${g_restorepath}-ipsets
+}
+
+#
 # Save currently running configuration
 #
 do_save() {
@@ -428,7 +439,7 @@ do_save() {
 	    ;;
     esac
 
-    if ! run_it ${VARDIR}/firewall savesets ${g_restorepath}-ipsets; then
+    if ! savesets;  then
 	case ${SAVE_IPSETS:=No} in
 	    [Yy]es)
 		case ${IPSET:=ipset} in

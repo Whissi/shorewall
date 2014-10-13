@@ -195,8 +195,8 @@ elif [ -n "${options[VARDIR]}" ]; then
     fi
 fi
 
-if [ -z "${options[SYSTEMDDIR]}" ]; then
-    $options[SYSTEMDDIR]="${options[SYSTEMD]}"
+if [ -z "${options[SERVICEDIR]}" ]; then
+    $options[SERVICEDIR]="${options[SYSTEMD]}"
 fi
 
 for on in \
@@ -213,7 +213,7 @@ for on in \
     INITFILE \
     AUXINITSOURCE \
     AUXINITFILE \
-    SYSTEMDDIR \
+    SERVICEDIR \
     SERVICEFILE \
     SYSCONFFILE \
     SYSCONFDIR \

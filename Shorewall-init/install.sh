@@ -330,16 +330,16 @@ fi
 #
 # Install the .service file
 #
-if [ -z "${SYSTEMDDIR}" ]; then
-    SYSTEMDDIR="$SYSTEMD"
+if [ -z "${SERVICEDIR}" ]; then
+    SERVICEDIR="$SYSTEMD"
 fi
 
-if [ -n "$SYSTEMDDIR" ]; then
-    mkdir -p ${DESTDIR}${SYSTEMDDIR}
+if [ -n "$SERVICEDIR" ]; then
+    mkdir -p ${DESTDIR}${SERVICEDIR}
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
-    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
-    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service"
+    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
     if [ -n "$DESTDIR" -o $configure -eq 0 ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}
         chmod 755 ${DESTDIR}${SBINDIR}
@@ -519,7 +519,7 @@ if [ -z "$DESTDIR" ]; then
 	    # not by the installer
 	    /bin/true
 	else
-	    if [ -n "$SYSTEMDDIR" ]; then
+	    if [ -n "$SERVICEDIR" ]; then
 		if systemctl enable shorewall-init.service; then
 		    echo "Shorewall Init will start automatically at boot"
 		fi

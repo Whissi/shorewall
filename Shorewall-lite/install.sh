@@ -392,16 +392,16 @@ fi
 #
 # Install the .service file
 #
-if [ -z "${SYSTEMDDIR}" ]; then
-    SYSTEMDDIR="$SYSTEMD"
+if [ -z "${SERVICEDIR}" ]; then
+    SERVICEDIR="$SYSTEMD"
 fi
 
-if [ -n "$SYSTEMDDIR" ]; then
-    mkdir -p ${DESTDIR}${SYSTEMDDIR}
+if [ -n "$SERVICEDIR" ]; then
+    mkdir -p ${DESTDIR}${SERVICEDIR}
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
-    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service
-    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SYSTEMDDIR}/$PRODUCT.service"
+    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
 fi
 #
 # Install the config file
@@ -543,7 +543,7 @@ if [ ${SHAREDIR} != /usr/share ]; then
 fi
 
 if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
-    if [ -n "$SYSTEMDDIR" ]; then
+    if [ -n "$SERVICEDIR" ]; then
 	if systemctl enable ${PRODUCT}.service; then
 	    echo "$Product will start automatically at boot"
 	fi

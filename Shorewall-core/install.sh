@@ -329,13 +329,13 @@ if [ -n "${SYSCONFDIR}" ]; then
     chmod 755 ${DESTDIR}${SYSCONFDIR}
 fi
 
-if [ -z "${SYSTEMDDIR}" ]; then
-    SYSTEMDDIR="$SYSTEMD"
+if [ -z "${SERVICEDIR}" ]; then
+    SERVICEDIR="$SYSTEMD"
 fi
 
-if [ -n "${SYSTEMDDIR}" ]; then
-    mkdir -p ${DESTDIR}${SYSTEMDDIR}
-    chmod 755 ${DESTDIR}${SYSTEMDDIR}
+if [ -n "${SERVICEDIR}" ]; then
+    mkdir -p ${DESTDIR}${SERVICEDIR}
+    chmod 755 ${DESTDIR}${SERVICEDIR}
 fi
 
 mkdir -p ${DESTDIR}${SBINDIR}

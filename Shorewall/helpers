@@ -58,9 +58,12 @@ loadmodule nf_nat_sip
 loadmodule nf_nat_snmp_basic
 loadmodule nf_nat_tftp
 #
-# While not actually helpers, these are handy to have
+# While not actually helpers, these are handy to have. Not
+# all of these will be found on any given system, since
+# some are aliases on later kernels.
 #
 loadmodule ipt_LOG
+loadmodule xt_LOG
 loadmodule xt_NFLOG
 loadmodule ipt_ULOG
 loadmodule nfnetlink_log

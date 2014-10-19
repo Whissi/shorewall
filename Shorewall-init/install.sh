@@ -372,8 +372,6 @@ chmod 644 ${DESTDIR}${SHAREDIR}/shorewall-init/version
 #
 # Remove and create the symbolic link to the init script
 #
-echo CONFDIR is $CONFDIR
-
 if [ -z "$DESTDIR" ]; then
     rm -f ${SHAREDIR}/shorewall-init/init
     ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/shorewall-init/init

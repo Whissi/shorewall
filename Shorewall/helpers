@@ -58,9 +58,10 @@ loadmodule nf_nat_sip
 loadmodule nf_nat_snmp_basic
 loadmodule nf_nat_tftp
 #
-# While not actually helpers, these are handy to have. Not
-# all of these will be found on any given system, since
-# some are aliases on later kernels.
+# While not actually helpers, these are included here so that
+# LOG_BACKEND can work correctly. Not all of them will be
+# loaded, since at least one of them will be an alias on any
+# given system.
 #
 loadmodule ipt_LOG
 loadmodule xt_LOG

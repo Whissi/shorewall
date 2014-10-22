@@ -242,13 +242,34 @@
 
       <varlistentry>
         <term><emphasis role="bold">BURST:LIMIT</emphasis> (limit) -
-        [{<emphasis>s</emphasis>|<emphasis
-        role="bold">d</emphasis>}:[[<replaceable>name</replaceable>]:]]]<emphasis>rate</emphasis><emphasis
-        role="bold">/</emphasis>{<emphasis
-        role="bold">second</emphasis>|<emphasis
-        role="bold">minute</emphasis>}[:<emphasis>burst</emphasis>]</term>
+        [-|<replaceable>limit</replaceable>]</term>
 
         <listitem>
+          <para>where limit is one of:</para>
+
+          <simplelist>
+            <member>[<emphasis
+            role="bold">-</emphasis>|[{<emphasis>s</emphasis>|<emphasis
+            role="bold">d</emphasis>}:[[<replaceable>name</replaceable>]:]]]<emphasis>rate</emphasis><emphasis
+            role="bold">/</emphasis>{<emphasis
+            role="bold">sec</emphasis>|<emphasis
+            role="bold">min</emphasis>|<emphasis
+            role="bold">hour</emphasis>|<emphasis
+            role="bold">day</emphasis>}[:<emphasis>burst</emphasis>]</member>
+
+            <member>[<replaceable>name</replaceable>1]:<emphasis>rate1</emphasis><emphasis
+            role="bold">/</emphasis>{<emphasis
+            role="bold">sec</emphasis>|<emphasis
+            role="bold">min</emphasis>|<emphasis
+            role="bold">hour</emphasis>|<emphasis
+            role="bold">day</emphasis>}[:<emphasis>burst1</emphasis>],[<replaceable>name</replaceable>2]:<emphasis>rate2</emphasis><emphasis
+            role="bold">/</emphasis>{<emphasis
+            role="bold">sec</emphasis>|<emphasis
+            role="bold">min</emphasis>|<emphasis
+            role="bold">hour</emphasis>|<emphasis
+            role="bold">day</emphasis>}[:<emphasis>burst2</emphasis>]</member>
+          </simplelist>
+
           <para>If passed, specifies the maximum TCP connection
           <emphasis>rate</emphasis> and the size of an acceptable
           <emphasis>burst</emphasis>. If not specified, TCP connections are
@@ -261,9 +282,19 @@
           the user and specifies a hash table to be used to count matching
           connections. If not give, the name <emphasis
           role="bold">shorewall</emphasis> is assumed. Where more than one
-          POLICY specifies the same name, the connections counts for the
-          policies are aggregated and the individual rates apply to the
+          POLICY or rule specifies the same name, the connections counts for
+          the policies are aggregated and the individual rates apply to the
           aggregated count.</para>
+
+          <para>Beginning with Shorewall 4.6.5, two<replaceable>
+          limit</replaceable>s may be specified, separated by a comma. In this
+          case, the first limit (<replaceable>name1</replaceable>,
+          <replaceable>rate1</replaceable>, burst1) specifies the per-source
+          IP limit and the second limit specifies the per-destination IP
+          limit.</para>
+
+          <para>Example: <emphasis
+          role="bold">client:10/sec:20,:60/sec:100</emphasis></para>
         </listitem>
       </varlistentry>
 

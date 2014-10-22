@@ -4876,62 +4876,79 @@ my %norate = ( DROP => 1, REJECT => 1 );
 # Create a "-m limit" match for the passed LIMIT/BURST
 #
 sub do_ratelimit( $$ ) {
-    my ( $rate, $action ) = @_;
+    my ( $rates, $action ) = @_;
 
-    return '' unless $rate and $rate ne '-';
+    return '' unless $rates and $rates ne '-';
 
     fatal_error "Rate Limiting not available with $action" if $norate{$action};
-    #
-    # "-m hashlimit" match for the passed LIMIT/BURST
-    #
-    if ( $rate =~ /^[sd]:{1,2}/ ) {
-	require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
 
-	my $limit = "-m hashlimit ";
-	my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
-	my $units;
+    my @rates = split_list $rates, 'rate';
 
-	if ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	    fatal_error "Invalid Rate ($3)" unless $4;
-	    fatal_error "Invalid Burst ($7)" unless $7;
-	    $limit .= "--$match $3 --hashlimit-burst $7 --hashlimit-name ";
-	    $limit .= $2 ? $2 : 'shorewall' . $hashlimitset++;
-	    $limit .= ' --hashlimit-mode ';
-	    $units = $6;
-	} elsif ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?)$/ ) {
-	    fatal_error "Invalid Rate ($3)" unless $4;
-	    $limit .= "--$match $3 --hashlimit-name ";
-	    $limit .= $2 ? $2 :  'shorewall' . $hashlimitset++;
-	    $limit .= ' --hashlimit-mode ';
-	    $units = $6;
-	} else {
-	    fatal_error "Invalid rate ($rate)";
-	}
+    if ( @rates == 2 ) {
+	$rates[0] = 's:' . $rates[0];
+	$rates[1] = 'd:' . $rates[1];
+    } elsif ( @rates > 2 ) {
+	fatal error "Only two rates may be specified";
+    }
 
-	$limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
+    my $limit = '';
 
-	if ( $units && $units ne 'sec' ) {
-	    my $expire = 60000; # 1 minute in milliseconds
+    for my $rate ( @rates ) {
+	#
+	# "-m hashlimit" match for the passed LIMIT/BURST
+	#
+	if ( $rate =~ /^([sd]):{1,2}/ ) {
+	    require_capability 'HASHLIMIT_MATCH', 'Per-ip rate limiting' , 's';
 
-	    if ( $units ne 'min' ) {
-		$expire *= 60; #At least an hour
-		$expire *= 24 if $units eq 'day';
+	    my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
+	    my $units;
+
+	    $limit .= "-m hashlimit ";
+	    
+	    if ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
+		fatal_error "Invalid Rate ($3)" unless $4;
+		fatal_error "Invalid Burst ($7)" unless $7;
+		$limit .= "--$match $3 --hashlimit-burst $7 --hashlimit-name ";
+		$limit .= $2 ? $2 : 'shorewall' . $hashlimitset++;
+		$limit .= ' --hashlimit-mode ';
+		$units = $6;
+	    } elsif ( $rate =~ /^[sd]:((\w*):)?((\d+)(\/(sec|min|hour|day))?)$/ ) {
+		fatal_error "Invalid Rate ($3)" unless $4;
+		$limit .= "--$match $3 --hashlimit-name ";
+		$limit .= $2 ? $2 :  'shorewall' . $hashlimitset++;
+		$limit .= ' --hashlimit-mode ';
+		$units = $6;
+	    } else {
+		fatal_error "Invalid rate ($rate)";
 	    }
 
-	    $limit .= "--hashlimit-htable-expire $expire ";
-	}
+	    $limit .= $rate =~ /^s:/ ? 'srcip ' : 'dstip ';
 
-	$limit;
-    } elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
-	fatal_error "Invalid Rate ($1)" unless $2;
-	fatal_error "Invalid Burst ($5)" unless $5;
-	"-m limit --limit $1 --limit-burst $5 ";
-    } elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
-	fatal_error "Invalid Rate (${1}${2})" unless $1;
-	"-m limit --limit $rate ";
-    } else {
-	fatal_error "Invalid rate ($rate)";
+	    if ( $units && $units ne 'sec' ) {
+		my $expire = 60000; # 1 minute in milliseconds
+
+		if ( $units ne 'min' ) {
+		    $expire *= 60; #At least an hour
+		    $expire *= 24 if $units eq 'day';
+		}
+
+		$limit .= "--hashlimit-htable-expire $expire ";
+	    }
+	} else {
+	    if ( $rate =~ /^((\d+)(\/(sec|min|hour|day))?):(\d+)$/ ) {
+		fatal_error "Invalid Rate ($1)" unless $2;
+		fatal_error "Invalid Burst ($5)" unless $5;
+		$limit = "-m limit --limit $1 --limit-burst $5 ";
+	    } elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
+		fatal_error "Invalid Rate (${1}${2})" unless $1;
+		$limit = "-m limit --limit $rate ";
+	    } else {
+		fatal_error "Invalid rate ($rate)";
+	    }
+	}
     }
+
+    $limit;
 }
 
 #

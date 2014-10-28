@@ -587,7 +587,7 @@ debug_restore_input() {
     done
 }
 
-interface_up() {
+interface_enabled() {
     return $(cat ${VARDIR}/$1.status)
 }
 
@@ -604,7 +604,7 @@ distribute_load() {
     totalload=0
 
     for interface in $@; do
-	if interface_up $interface; then
+	if interface_enabled $interface; then
 	    load=$(cat ${VARDIR}/${interface}_load)
 	    eval ${interface}_load=$load
 	    mark=$(cat ${VARDIR}/${interface}_mark)

@@ -5056,15 +5056,23 @@ sub unsupported_yes_no_warning( $ ) {
 #
 # Process the params file
 #
-sub get_params() {
+sub get_params( $ ) {
+    my $export = $_[0];
+
     my $fn = find_file 'params';
 
     my %reserved = ( COMMAND => 1, CONFDIR => 1, SHAREDIR => 1, VARDIR => 1 );
 
     if ( -f $fn ) {
+	my $shellpath = $export ? '/bin/sh' : $config{SHOREWALL_SHELL} || '/bin/sh';
+
+	$shellpath = which( $shellpath ) unless $shellpath =~ '/';
+
+	fatal_error "SHOREWALL_SHELL ($shellpath) is not found or is not executable" unless -x $shellpath;
+
 	progress_message2 "Processing $fn ...";
 
-	my $command = "$FindBin::Bin/getparams $fn " . join( ':', @config_path ) . " $family";
+	my $command = "$shellpath $FindBin::Bin/getparams $fn " . join( ':', @config_path ) . " $family";
 	#
 	# getparams silently sources the params file under 'set -a', then executes 'export -p'
 	#
@@ -5334,7 +5342,7 @@ sub get_configuration( $$$$$ ) {
 
     ensure_config_path;
 
-    get_params;
+    get_params( $export );
 
     process_shorewall_conf( $update, $annotate, $directives );
 

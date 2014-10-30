@@ -10,8 +10,9 @@
 
 OPTIONS=""
 
-# Use /etc/default shorewall6 to specify $OPTIONS to run at startup, however this
-# this might prevent shorewall6 from starting. use at your own risk
+# Use /etc/default shorewall6 to specify $OPTIONS and STARTOPTIONS to
+# run at startup, however this this might prevent shorewall6 from
+# starting. use at your own risk
 if [ -f /etc/default/shorewall6 ] ; then
     . /etc/default/shorewall6
 fi
@@ -19,7 +20,7 @@ fi
 
 start() {
 	echo "Starting IPv6 shorewall rules..."
-	exec /sbin/shorewall6 $OPTIONS start
+	exec /sbin/shorewall6 $OPTIONS start $STARTOPTIONS
 }
 
 stop() {
@@ -29,7 +30,7 @@ stop() {
 
 restart() {
 	echo "Restarting IPv6 shorewall rules..."
-	exec /sbin/shorewall6 restart
+	exec /sbin/shorewall6 restart $RESTARTOPTIONS
 }
 
 status() {

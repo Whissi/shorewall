@@ -39,7 +39,7 @@ fi
 
 start() {
     echo -n $"Starting Shorewall: "
-    $shorewall $OPTIONS start 2>&1 | $logger
+    $shorewall $OPTIONS start $STARTOPTIONS 2>&1 | $logger
     retval=${PIPESTATUS[0]}
     if [[ $retval == 0 ]]; then
 	touch $lockfile
@@ -69,7 +69,7 @@ restart() {
 # Note that we don't simply stop and start since shorewall has a built in
 # restart which stops the firewall if running and then starts it.
     echo -n $"Restarting Shorewall: "
-    $shorewall $OPTIONS restart 2>&1 | $logger
+    $shorewall $OPTIONS restart $RESTARTOPTIONS 2>&1 | $logger
     retval=${PIPESTATUS[0]}
     if [[ $retval == 0 ]]; then
 	touch $lockfile

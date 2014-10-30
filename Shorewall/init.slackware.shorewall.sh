@@ -10,15 +10,16 @@
 
 OPTIONS=""
 
-# Use /etc/default shorewall to specify $OPTIONS to run at startup, however this
-# this might prevent shorewall from starting. use at your own risk
+# Use /etc/default shorewall to specify $OPTIONS and STARTOPTIONS to
+# run at startup, however this this might prevent shorewall from
+# starting. use at your own risk
 if [ -f /etc/default/shorewall ] ; then
     . /etc/default/shorewall
 fi
 
 start() {
 	echo "Starting IPv4 shorewall rules..."
-	exec /sbin/shorewall $OPTIONS start
+	exec /sbin/shorewall $OPTIONS start $STARTOPTIONS
 }
 
 stop() {
@@ -28,7 +29,7 @@ stop() {
 
 restart() {
 	echo "Restarting IPv4 shorewall rules..."
-	exec /sbin/shorewall restart
+	exec /sbin/shorewall restart $RESTARTOPTIONS
 }
 
 status() {

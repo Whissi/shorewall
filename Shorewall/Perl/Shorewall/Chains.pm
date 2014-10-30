@@ -6521,7 +6521,7 @@ sub set_chain_variables() {
 
 	emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
 	      '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
-
+	emit( 'IPTABLES_RESTORE="$IPTABLES_RESTORE --counters"' ) if $config{SAVE_COUNTERS};
 	emit( 'g_tool=$IPTABLES' );
     } else {
 	if ( $config{IP6TABLES} ) {
@@ -6536,7 +6536,7 @@ sub set_chain_variables() {
 
 	emit( 'IP6TABLES_RESTORE=${IP6TABLES}-restore',
 	      '[ -x "$IP6TABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
-
+	emit( 'IP6TABLES_RESTORE="$IP6TABLES_RESTORE --counters"' ) if $config{SAVE_COUNTERS};
 	emit( 'g_tool=$IP6TABLES' );
     }
 

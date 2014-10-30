@@ -849,6 +849,7 @@ sub initialize( $;$$) {
 	  REJECT_ACTION => undef,
 	  INLINE_MATCHES => undef,
 	  BASIC_FILTERS => undef,
+	  SAVE_COUNTERS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -5661,6 +5662,7 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'TRACK_RULES'                , '';
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
+    default_yes_no 'SAVE_COUNTERS'              , '';
 
     require_capability( 'BASIC_EMATCH', 'BASIC_FILTERS=Yes', 's' ) if $config{BASIC_FILTERS};
 

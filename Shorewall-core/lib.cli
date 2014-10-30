@@ -493,6 +493,8 @@ save_config() {
 
     [ -x $iptables_save ] || echo "$iptables-save does not exist or is not executable" >&2
 
+    [ -n "$SAVE_COUNTERS" ] && iptables_save="$iptables_save --counters"
+
     if product_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
@@ -1623,6 +1625,11 @@ restore_command() {
 			n*)
 			    g_noroutes=Yes
 			    option=${option#n}
+			    ;;
+			p*)
+			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
+			    g_purge=Yes
+			    option=${option%p}
 			    ;;
 			*)
 			    usage 1
@@ -3576,9 +3583,10 @@ usage() # $1 = exit status
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   reject <address> ..."
+    echo "   recover [ -n ] [ -p ]"
     echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
-    echo "   restore [ -n ] [ <file name> ]"
+    echo "   restore [ -n ] [ -p ] [ <file name> ]"
     echo "   run <command> [ <parameter> ... ]"
     echo "   save [ <file name> ]"
     echo "   [ show | list | ls ] [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
@@ -3843,6 +3851,15 @@ shorewall_cli() {
 	    get_config Yes Yes
 	    shift
 	    restart_command $@
+	    ;;
+	recover)
+	    get_config Yes Yes
+	    shift
+	    if [ -n "$SAVE_COUNTERS" -a -f ${VARDIR}/${RESTOREFILE} ]; then
+		restore_command $@
+	    else
+		start_command $@
+	    fi
 	    ;;
 	disable|enable)
 	    get_config Yes

@@ -3414,7 +3414,11 @@ start_command() {
 	[ -n "$g_nolock" ] || mutex_on
 
 	if [ -x ${VARDIR}/firewall ]; then
-	    run_it ${VARDIR}/firewall $g_debugging start
+	    if [ -n "$g_fast" -a -x ${VARDIR}/${RESTOREFILE} -a ! ${VARDIR}/firewall -nt ${VARDIR}/${RESTOREFILE} ]; then
+		run_it ${VARDIR}/${RESTOREFILE} $g_debugging restore
+	    else
+		run_it ${VARDIR}/firewall $g_debugging start
+	    fi
 	    rc=$?
 	else
 	    error_message "${VARDIR}/firewall is missing or is not executable"
@@ -3449,6 +3453,10 @@ start_command() {
 			-)
 			    finished=1
 			    option=
+			    ;;
+			f*)
+			    g_fast=Yes
+			    option=${option#f}
 			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
@@ -3583,7 +3591,6 @@ usage() # $1 = exit status
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   reject <address> ..."
-    echo "   recover [ -n ] [ -p ]"
     echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
     echo "   restore [ -n ] [ -p ] [ <file name> ]"
@@ -3851,15 +3858,6 @@ shorewall_cli() {
 	    get_config Yes Yes
 	    shift
 	    restart_command $@
-	    ;;
-	recover)
-	    get_config Yes Yes
-	    shift
-	    if [ -n "$SAVE_COUNTERS" -a -f ${VARDIR}/${RESTOREFILE} ]; then
-		restore_command $@
-	    else
-		start_command $@
-	    fi
 	    ;;
 	disable|enable)
 	    get_config Yes

@@ -474,6 +474,8 @@
       <arg><option>-n</option></arg>
 
       <arg><option>-p</option></arg>
+
+      <arg><option>-f</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -1102,6 +1104,15 @@
           <para>The <option>-p</option> option causes the connection tracking
           table to be flushed; the <command>conntrack</command> utility must
           be installed to use this option.</para>
+
+          <para>The <option>-m</option> option prevents the firewall script
+          from modifying the current routing configuration.</para>
+
+          <para>The <option>-f</option> option was added in Shorewall 4.6.5.
+          If the RESTOREFILE named in <ulink
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) exists, is
+          executable and is not older than the current filewall script, then
+          that saved configuration is restored.</para>
         </listitem>
       </varlistentry>
 

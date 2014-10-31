@@ -512,45 +512,44 @@ EOF
     #
     # Use a parameter list rather than 'here documents' to avoid an extra blank line
     #
-    emit(
-'    run_refreshed_exit',
-'    do_iptables -N shorewall' );
+    emit( '    run_refreshed_exit',
+	  '    do_iptables -N shorewall' );
 
     emit ( '    do_iptables -A shorewall -m recent --set --name %CURRENTTIME' ) if have_capability 'RECENT_MATCH';
 
     emit(
-"    set_state Started $config_dir",
-'    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall',
-'else',
-'    setup_netfilter'
+	"    set_state Started $config_dir",
+	'    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall');
+    emit( '    [ -n "$g_sha1sum" ] && echo "$g_sha1sum" > ${VARDIR}/.sha1sum || rm -f ${VARDIR}/.sha1sum' ) if $config{SAVE_COUNTERS};
+
+    emit( 'else',
+	  '    setup_netfilter'
 	);
     push_indent;
     emit 'setup_arptables' if $have_arptables;
     setup_load_distribution;
     pop_indent;
 
-    emit<<'EOF';
-    conditionally_flush_conntrack
-EOF
+    emit( "    conditionally_flush_conntrack\n" );
+
     push_indent;
     initialize_switches;
     setup_forwarding( $family , 0 );
     pop_indent;
 
-    emit<<"EOF";
-    run_start_exit
-    do_iptables -N shorewall
-EOF
+    emit( '    run_start_exit', 
+	  '    do_iptables -N shorewall',
+	  '' );
 
-    emit ( '    do_iptables -A shorewall -m recent --set --name %CURRENTTIME' ) if have_capability 'RECENT_MATCH';
+    emit( '    do_iptables -A shorewall -m recent --set --name %CURRENTTIME' ) if have_capability 'RECENT_MATCH';
 
-    emit<<"EOF";
-    set_state Started $config_dir
-    my_pathname=\$(my_pathname)
-    [ \$my_pathname = \${VARDIR}/firewall ] || cp -f \$my_pathname \${VARDIR}/firewall
-    run_started_exit
-fi
-EOF
+    emit( "    set_state Started $config_dir",
+	  '    my_pathname=$(my_pathname)',
+	  '    [ $my_pathname = ${VARDIR}/firewall ] || cp -f $my_pathname ${VARDIR}/firewall' );
+
+    emit( '    [ -n "$g_sha1sum" ] && echo "$g_sha1sum" > ${VARDIR}/.sha1sum || rm -f ${VARDIR}/.sha1sum' ) if $config{SAVE_COUNTERS};
+    emit( '    run_started_exit',
+	  "fi\n" );
 
     emit<<'EOF';
 date > ${VARDIR}/restarted

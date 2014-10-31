@@ -332,6 +332,7 @@ if [ $PRODUCT = shorewall ]; then
 	if ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
 	    if perl -e 'use Digest::SHA1;' 2> /dev/null ; then
 		sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Chains.pm
+		sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Config.pm
 		DIGEST=SHA1
 	    else
 		echo "ERROR: Shorewall $VERSION requires either Digest::SHA or Digest::SHA1" >&2

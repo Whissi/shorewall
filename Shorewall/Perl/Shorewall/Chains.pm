@@ -7909,14 +7909,21 @@ sub emitr1( $$ ) {
 
 sub save_dynamic_chains() {
 
-    my $tool;
+    my $tool = $family == F_IPV4 ? '${IPTABLES}' : '${IP6TABLES}';
 
     emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = refresh ]; then' );
     push_indent;
 
-    if ( have_capability 'IPTABLES_S' ) {
-	$tool = $family == F_IPV4 ? '${IPTABLES}' : '${IP6TABLES}';
+    if ( $config{SAVE_COUNTERS} ) {
+	my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
 
+	emit( 'if [ "$COMMAND" = restart; then',
+	      "    ${tool}-save --counters > \${VARDIR}/.$utility}-input",
+	      "fi\n" );
+
+    }
+
+    if ( have_capability 'IPTABLES_S' ) {
 	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
     $tool -t nat -S UPnP | tail -n +2 > \${VARDIR}/.UPnP
@@ -7936,6 +7943,7 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
+
     } else {
 	$tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
 
@@ -8240,13 +8248,23 @@ sub create_netfilter_load( $ ) {
 	   '# Create the input to iptables-restore/ip6tables-restore and pass that input to the utility',
 	   '#',
 	   'setup_netfilter()',
-	   '{'
-	   );
+	   '{' );
+
+    emit( '    local option' ) if $config{SAVE_COUNTERS};
 
     push_indent;
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
     my $UTILITY = $family == F_IPV4 ? 'IPTABLES_RESTORE' : 'IP6TABLES_RESTORE';
+
+    if ( $config{SAVE_COUNTERS} ) {
+	emit( '',
+	      'if [ "$COMMAND" = restart -a -n "$g_sha1sum" -a -f ${VARDIR}/.sha1sum -a $g_sha1sum = $(cat ${VARDIR}/.sha1sum) ]; then',
+	      '    option="--counters"',
+	      'else' 
+	    );
+	push_indent;
+    }
 
     save_progress_message "Preparing $utility input...";
 
@@ -8304,20 +8322,28 @@ sub create_netfilter_load( $ ) {
     }
 
     enter_cmd_mode;
+
+    pop_indent, emit "fi\n" if $config{SAVE_COUNTERS};
     #
     # Now generate the actual ip[6]tables-restore command
     #
     emit(  'exec 3>&-',
-	   '',
-	   '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY,
-	   '',
-	   'progress_message2 "Running $command..."',
-	   '',
-	   "cat \${VARDIR}/.${utility}-input | \$command # Use this nonsensical form to appease SELinux",
-	   'if [ $? != 0 ]; then',
-	   qq(    fatal_error "iptables-restore Failed. Input is in \${VARDIR}/.${utility}-input"),
-	   "fi\n"
-	   );
+	   '' );
+
+    if ( $config{SAVE_COUNTERS} ) {
+	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY . ' $option' );
+    } else {
+	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
+    }
+
+    emit( '',
+	  'progress_message2 "Running $command..."',
+	  '',
+	  "cat \${VARDIR}/.${utility}-input | \$command # Use this nonsensical form to appease SELinux",
+	  'if [ $? != 0 ]; then',
+	  qq(    fatal_error "iptables-restore Failed. Input is in \${VARDIR}/.${utility}-input"),
+	  "fi\n"
+	);
 
     pop_indent;
 

@@ -40,6 +40,7 @@ use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
 use Scalar::Util 'reftype';
 use FindBin;
+use Digest::SHA qw(sha1_hex);
 
 our @ISA = qw(Exporter);
 #
@@ -88,6 +89,7 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
+                                       generate_sha1
 				       finalize_script
 				       enable_script
 				       disable_script
@@ -1761,6 +1763,13 @@ sub create_temp_script( $$ ) {
 
 }
 
+# Generate the SHA1 digest of the (incomplete script)
+#
+sub generate_sha1() {
+    my $data = `cat $tempfile`;
+    sha1_hex $data;
+}
+
 #
 # Finalize the script file
 #
@@ -1770,6 +1779,17 @@ sub finalize_script( $ ) {
     $script = 0;
 
     if ( $file ne '-' ) {
+	if ( $config{SAVE_COUNTERS} ) {
+	    my $sha1sum = generate_sha1;
+	    @ARGV = ( $tempfile );
+	    $^I = '';
+
+	    while ( <> ) {
+		s/g_sha1sum=/g_sha1sum=$sha1sum/;
+		print;
+	    }
+	}
+
 	rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
 	chmod 0700, $file or fatal_error "Cannot secure $file for execute access";
 	progress_message3 "Shorewall configuration compiled to $file" unless $export;

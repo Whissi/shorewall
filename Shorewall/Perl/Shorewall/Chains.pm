@@ -7917,7 +7917,7 @@ sub save_dynamic_chains() {
     if ( $config{SAVE_COUNTERS} ) {
 	my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
 
-	emit( 'if [ "$COMMAND" = restart; then',
+	emit( 'if [ "$COMMAND" = restart ]; then',
 	      "    ${tool}-save --counters > \${VARDIR}/.$utility}-input",
 	      "fi\n" );
 

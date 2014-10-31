@@ -7920,7 +7920,6 @@ sub save_dynamic_chains() {
 	emit( 'if [ "$COMMAND" = restart ]; then',
 	      "    ${tool}-save --counters > \${VARDIR}/.$utility}-input",
 	      "fi\n" );
-
     }
 
     if ( have_capability 'IPTABLES_S' ) {

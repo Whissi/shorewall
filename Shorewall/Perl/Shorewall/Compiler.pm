@@ -519,12 +519,11 @@ EOF
 
     emit(
 	"    set_state Started $config_dir",
-	'    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall');
-    emit( '    [ -n "$g_sha1sum" ] && echo "$g_sha1sum" > ${VARDIR}/.sha1sum || rm -f ${VARDIR}/.sha1sum' ) if $config{SAVE_COUNTERS};
-
-    emit( 'else',
-	  '    setup_netfilter'
+	'    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall',
+        'else',
+	'    setup_netfilter'
 	);
+
     push_indent;
     emit 'setup_arptables' if $have_arptables;
     setup_load_distribution;
@@ -545,10 +544,8 @@ EOF
 
     emit( "    set_state Started $config_dir",
 	  '    my_pathname=$(my_pathname)',
-	  '    [ $my_pathname = ${VARDIR}/firewall ] || cp -f $my_pathname ${VARDIR}/firewall' );
-
-    emit( '    [ -n "$g_sha1sum" ] && echo "$g_sha1sum" > ${VARDIR}/.sha1sum || rm -f ${VARDIR}/.sha1sum' ) if $config{SAVE_COUNTERS};
-    emit( '    run_started_exit',
+	  '    [ $my_pathname = ${VARDIR}/firewall ] || cp -f $my_pathname ${VARDIR}/firewall',
+	  '    run_started_exit',
 	  "fi\n" );
 
     emit<<'EOF';

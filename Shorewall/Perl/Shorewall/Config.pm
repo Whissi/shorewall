@@ -1780,12 +1780,16 @@ sub finalize_script( $ ) {
 
     if ( $file ne '-' ) {
 	if ( $config{SAVE_COUNTERS} ) {
-	    my $sha1sum = generate_sha1;
+	    my $sha1sum  = generate_sha1;
+	    my $sha1sum1 = substr( $sha1sum, 0, 20 );
+	    my $sha1sum2 = substr( $sha1sum, -20 );
+
 	    @ARGV = ( $tempfile );
 	    $^I = '';
 
 	    while ( <> ) {
-		s/g_sha1sum=/g_sha1sum=$sha1sum/;
+		s/g_sha1sum1=/g_sha1sum1=$sha1sum1/;
+		s/g_sha1sum2=/g_sha1sum2=$sha1sum2/;
 		print;
 	    }
 	}

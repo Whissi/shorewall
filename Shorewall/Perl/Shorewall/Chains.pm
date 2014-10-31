@@ -6521,7 +6521,6 @@ sub set_chain_variables() {
 
 	emit( 'IPTABLES_RESTORE=${IPTABLES}-restore',
 	      '[ -x "$IPTABLES_RESTORE" ] || startup_error "$IPTABLES_RESTORE does not exist or is not executable"' );
-	emit( 'IPTABLES_RESTORE="$IPTABLES_RESTORE --counters"' ) if $config{SAVE_COUNTERS};
 	emit( 'g_tool=$IPTABLES' );
     } else {
 	if ( $config{IP6TABLES} ) {
@@ -6536,7 +6535,6 @@ sub set_chain_variables() {
 
 	emit( 'IP6TABLES_RESTORE=${IP6TABLES}-restore',
 	      '[ -x "$IP6TABLES_RESTORE" ] || startup_error "$IP6TABLES_RESTORE does not exist or is not executable"' );
-	emit( 'IP6TABLES_RESTORE="$IP6TABLES_RESTORE --counters"' ) if $config{SAVE_COUNTERS};
 	emit( 'g_tool=$IP6TABLES' );
     }
 
@@ -7918,7 +7916,7 @@ sub save_dynamic_chains() {
 	my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
 
 	emit( 'if [ "$COMMAND" = restart ]; then',
-	      "    ${tool}-save --counters > \${VARDIR}/.$utility}-input",
+	      "    ${tool}-save --counters > \${VARDIR}/.${utility}-input",
 	      "fi\n" );
     }
 
@@ -8258,9 +8256,12 @@ sub create_netfilter_load( $ ) {
 
     if ( $config{SAVE_COUNTERS} ) {
 	emit( '',
-	      'if [ "$COMMAND" = restart -a -n "$g_sha1sum" -a -f ${VARDIR}/.sha1sum -a $g_sha1sum = $(cat ${VARDIR}/.sha1sum) ]; then',
+	      'if [ "$COMMAND" = restart ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then',
 	      '    option="--counters"',
-	      'else' 
+	      '',
+	      '    progress_message "Reusing existing ruleset..."',
+	      '',
+	      'else'
 	    );
 	push_indent;
     }
@@ -8330,7 +8331,7 @@ sub create_netfilter_load( $ ) {
 	   '' );
 
     if ( $config{SAVE_COUNTERS} ) {
-	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY . ' $option' );
+	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command="$' . $UTILITY . ' $option"' );
     } else {
 	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
     }
@@ -8343,6 +8344,14 @@ sub create_netfilter_load( $ ) {
 	  qq(    fatal_error "iptables-restore Failed. Input is in \${VARDIR}/.${utility}-input"),
 	  "fi\n"
 	);
+
+    if ( $config{SAVE_COUNTERS} ) {
+	emit( 'if [ -z "$options" ]; then',
+	      '    $g_tool -N $g_sha1sum1',
+	      '    $g_tool -N $g_sha1sum2',
+	      'fi'
+	    );
+    }
 
     pop_indent;
 

@@ -493,7 +493,7 @@ save_config() {
 
     [ -x $iptables_save ] || echo "$iptables-save does not exist or is not executable" >&2
 
-    [ -n "$g_counters" iptables_save="$iptables_save --counters"
+    [ -n "$g_counters" ] && iptables_save="$iptables_save --counters"
 
     if product_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
@@ -3122,6 +3122,8 @@ save_command() {
     local finished
     finished=0
 
+    shift
+
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
 	case $option in
@@ -3152,10 +3154,10 @@ save_command() {
     done
 
     case $# in
-	1)
+	0)
 	    ;;
-	2)
-	    RESTOREFILE="$2"
+	1)
+	    RESTOREFILE="$1"
 	    validate_restorefile '<restore file>'
 	    ;;
 	*)

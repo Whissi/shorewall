@@ -8243,7 +8243,7 @@ sub create_netfilter_load( $ ) {
 	   '# Create the input to iptables-restore/ip6tables-restore and pass that input to the utility',
 	   '#',
 	   'setup_netfilter()',
-	   '{'.
+	   '{',
 	   '    local option',
 	);
 
@@ -8309,8 +8309,8 @@ sub create_netfilter_load( $ ) {
 	# SHA1SUM chains for handling 'restart -s'
 	#
 	if ( $table eq 'filter' ) {
-	    emit_unindented ':$shasum1 - [0:0]';
-	    emit_unindented ':$shasum2 - [0:0]';
+	    emit_unindented ':$g_sha1sum1 - [0:0]';
+	    emit_unindented ':$g_sha1sum2 - [0:0]';
 	}
 
 	#

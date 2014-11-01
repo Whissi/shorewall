@@ -851,7 +851,6 @@ sub initialize( $;$$) {
 	  REJECT_ACTION => undef,
 	  INLINE_MATCHES => undef,
 	  BASIC_FILTERS => undef,
-	  SAVE_COUNTERS => undef,
 	  #
 	  # Packet Disposition
 	  #
@@ -1779,19 +1778,17 @@ sub finalize_script( $ ) {
     $script = 0;
 
     if ( $file ne '-' ) {
-	if ( $config{SAVE_COUNTERS} ) {
-	    my $sha1sum  = generate_sha1;
-	    my $sha1sum1 = substr( $sha1sum, 0, 20 );
-	    my $sha1sum2 = substr( $sha1sum, -20 );
+	my $sha1sum  = generate_sha1;
+	my $sha1sum1 = substr( $sha1sum, 0, 20 );
+	my $sha1sum2 = substr( $sha1sum, -20 );
 
-	    @ARGV = ( $tempfile );
-	    $^I = '';
+	@ARGV = ( $tempfile );
+	$^I = '';
 
-	    while ( <> ) {
-		s/g_sha1sum1=/g_sha1sum1=$sha1sum1/;
-		s/g_sha1sum2=/g_sha1sum2=$sha1sum2/;
-		print;
-	    }
+	while ( <> ) {
+	    s/g_sha1sum1=/g_sha1sum1=$sha1sum1/;
+	    s/g_sha1sum2=/g_sha1sum2=$sha1sum2/;
+	    print;
 	}
 
 	rename $tempfile, $file or fatal_error "Cannot Rename $tempfile to $file: $!";
@@ -5686,7 +5683,6 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'TRACK_RULES'                , '';
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
-    default_yes_no 'SAVE_COUNTERS'              , '';
 
     require_capability( 'BASIC_EMATCH', 'BASIC_FILTERS=Yes', 's' ) if $config{BASIC_FILTERS};
 

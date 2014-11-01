@@ -352,7 +352,8 @@ sub generate_script_3($) {
 
     emit "#\n# Start/Restart the Firewall\n#";
 
-    emit 'define_firewall() {';
+    emit( 'define_firewall() {',
+	  '    local options' );
 
     push_indent;
 
@@ -470,10 +471,12 @@ sub generate_script_3($) {
     emit( '',
 	  'if [ $COMMAND = restore ]; then',
 	  '    iptables_save_file=${VARDIR}/$(basename $0)-iptables',
-	  '    if [ -f $iptables_save_file ]; then' );
+	  '    if [ -f $iptables_save_file ]; then',
+	  '        [ -n "$g_counters" ] && options=--counters'
+	);
 
     if ( $family == F_IPV4 ) {
-	emit( '        cat $iptables_save_file | $IPTABLES_RESTORE # Use this nonsensical form to appease SELinux' );
+	emit( '        cat $iptables_save_file | $IPTABLES_RESTORE $options # Use this nonsensical form to appease SELinux' );
 
 	emit( '',
 	      '        arptables_save_file=${VARDIR}/$(basename $0)-arptables',
@@ -483,7 +486,7 @@ sub generate_script_3($) {
 	    if $config{SAVE_ARPTABLES};
 
     } else {
-	emit '        cat $iptables_save_file | $IP6TABLES_RESTORE # Use this nonsensical form to appease SELinux'
+	emit '        cat $iptables_save_file | $IP6TABLES_RESTORE $options # Use this nonsensical form to appease SELinux'
     }
 
     emit( '    else',

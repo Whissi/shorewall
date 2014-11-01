@@ -7907,18 +7907,16 @@ sub emitr1( $$ ) {
 
 sub save_dynamic_chains() {
 
-    my $tool = $family == F_IPV4 ? '${IPTABLES}' : '${IP6TABLES}';
+    my $tool    = $family == F_IPV4 ? '${IPTABLES}'      : '${IP6TABLES}';
+    my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
 
     emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = refresh ]; then' );
     push_indent;
 
-    if ( $config{SAVE_COUNTERS} ) {
-	my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
-
-	emit( 'if [ "$COMMAND" = restart ]; then',
-	      "    ${tool}-save --counters > \${VARDIR}/.${utility}-input",
-	      "fi\n" );
-    }
+    emit( 'if [ -n "$g_counters" ]; then' ,
+	  "    ${tool}-save --counters > \${VARDIR}/.${utility}-input",
+	  "fi\n"
+	);
 
     if ( have_capability 'IPTABLES_S' ) {
 	emit <<"EOF";
@@ -8245,26 +8243,25 @@ sub create_netfilter_load( $ ) {
 	   '# Create the input to iptables-restore/ip6tables-restore and pass that input to the utility',
 	   '#',
 	   'setup_netfilter()',
-	   '{' );
-
-    emit( '    local option' ) if $config{SAVE_COUNTERS};
+	   '{'.
+	   '    local option',
+	);
 
     push_indent;
 
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
     my $UTILITY = $family == F_IPV4 ? 'IPTABLES_RESTORE' : 'IP6TABLES_RESTORE';
 
-    if ( $config{SAVE_COUNTERS} ) {
-	emit( '',
-	      'if [ "$COMMAND" = restart ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then',
-	      '    option="--counters"',
-	      '',
-	      '    progress_message "Reusing existing ruleset..."',
-	      '',
-	      'else'
-	    );
-	push_indent;
-    }
+    emit( '',
+	  'if [ "$COMMAND" = restart -a -n "$g_counters" ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then',
+	  '    option="--counters"',
+	  '',
+	  '    progress_message "Reusing existing ruleset..."',
+	  '',
+	  'else'
+	);
+
+    push_indent;
 
     save_progress_message "Preparing $utility input...";
 
@@ -8309,6 +8306,14 @@ sub create_netfilter_load( $ ) {
 	    }
 	}
 	#
+	# SHA1SUM chains for handling 'restart -s'
+	#
+	if ( $table eq 'filter' ) {
+	    emit_unindented ':$shasum1 - [0:0]';
+	    emit_unindented ':$shasum2 - [0:0]';
+	}
+
+	#
 	# Then emit the rules
 	#
 	for my $chainref ( @chains ) {
@@ -8323,18 +8328,14 @@ sub create_netfilter_load( $ ) {
 
     enter_cmd_mode;
 
-    pop_indent, emit "fi\n" if $config{SAVE_COUNTERS};
+    pop_indent, emit "fi\n";
     #
     # Now generate the actual ip[6]tables-restore command
     #
     emit(  'exec 3>&-',
 	   '' );
 
-    if ( $config{SAVE_COUNTERS} ) {
-	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command="$' . $UTILITY . ' $option"' );
-    } else {
-	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
-    }
+    emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command="$' . $UTILITY . ' $option"' );
 
     emit( '',
 	  'progress_message2 "Running $command..."',
@@ -8344,14 +8345,6 @@ sub create_netfilter_load( $ ) {
 	  qq(    fatal_error "iptables-restore Failed. Input is in \${VARDIR}/.${utility}-input"),
 	  "fi\n"
 	);
-
-    if ( $config{SAVE_COUNTERS} ) {
-	emit( 'if [ -z "$options" ]; then',
-	      '    $g_tool -N $g_sha1sum1',
-	      '    $g_tool -N $g_sha1sum2',
-	      'fi'
-	    );
-    }
 
     pop_indent;
 

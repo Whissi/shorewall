@@ -29,6 +29,7 @@ usage() {
     echo "   -n               Don't update routing configuration"
     echo "   -p               Purge Conntrack Table"
     echo "   -t               Timestamp progress Messages"
+    echo "   -c               Save/restore iptables counters"
     echo "   -V <verbosity>   Set verbosity explicitly"
     echo "   -R <file>        Override RESTOREFILE setting"
     exit $1
@@ -93,6 +94,10 @@ g_recovering=$RECOVERING
 #
 g_sha1sum1=
 g_sha1sum2=
+#
+# Other Globals
+#
+g_counters=
 
 initialize
 
@@ -143,6 +148,10 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 		    r*)
 			g_recovering=Yes
 			option=${option#r}
+			;;
+		    c*)
+			g_counters=Yes
+			option=${option#c}
 			;;
 		    V*)
 			option=${option#V}

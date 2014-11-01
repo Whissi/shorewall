@@ -534,6 +534,10 @@ start_command() {
 			    g_inline=Yes
 			    option=${option#i}
 			    ;;
+			C*)
+			    g_counters=Yes
+			    option=${option#C}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -942,6 +946,10 @@ restart_command() {
 			i*)
 			    g_inline=Yes
 			    option=${option#i}
+			    ;;
+			C*)
+			    g_counters=Yes
+			    option=${option#C}
 			    ;;
 			*)
 			    usage 1
@@ -1673,12 +1681,12 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ -i ] [ <directory> ] <system>"
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ] [ -T ] [ -i ] [ <directory> ]"
-    echo "   restore [ -n ] [ -p ] [ <file name> ]"
+    echo "   restart [ -n ] [ -p ] [-d] [ -f ] [ -c ] [ -T ] [ -i ] [ -C ] [ <directory> ]"
+    echo "   restore [ -n ] [ -p ] [ -C ] [ <file name> ]"
     echo "   run <command> [ <parameter> ... ]"
     echo "   safe-restart [ -t <timeout> ] [ <directory> ]"
     echo "   safe-start [ -t <timeout> ] [ <directory> ]"
-    echo "   save [ <file name> ]"
+    echo "   save [ -C ] [ <file name> ]"
     echo "   [ show | list | ls ] [ -x ] [ -t {filter|mangle|nat|raw|rawpost} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   [ show | list | ls ] actions"
     echo "   [ show | list | ls ] [ -x ] {bl|blacklists}"
@@ -1705,7 +1713,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] tc [ device ]"
     echo "   [ show | list | ls ] vardir"
     echo "   [ show | list | ls ] zones"
-    echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ -T ] [ -i ] [ <directory> ]"
+    echo "   start [ -f ] [ -n ] [ -p ] [ -c ] [ -T ] [ -i ] [ -C ] [ <directory> ]"
     echo "   status [ -i ]"
     echo "   stop"
     echo "   try <directory> [ <timeout> ]"

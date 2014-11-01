@@ -493,7 +493,7 @@ save_config() {
 
     [ -x $iptables_save ] || echo "$iptables-save does not exist or is not executable" >&2
 
-    [ -n "$SAVE_COUNTERS" ] && iptables_save="$iptables_save --counters"
+    [ -n "$g_counters" iptables_save="$iptables_save --counters"
 
     if product_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
@@ -1630,6 +1630,10 @@ restore_command() {
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 			    g_purge=Yes
 			    option=${option%p}
+			    ;;
+			C*)
+			    g_counters=Yes
+			    option=${option#C}
 			    ;;
 			*)
 			    usage 1
@@ -3115,6 +3119,38 @@ reject_command() {
 }
 
 save_command() {
+    local finished
+    finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			C*)
+			    g_counters=Yes
+			    option=${option#C}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
     case $# in
 	1)
 	    ;;
@@ -3458,6 +3494,10 @@ start_command() {
 			    g_fast=Yes
 			    option=${option#f}
 			    ;;
+			C*)
+			    g_counters=Yes
+			    option=${option#C}
+			    ;;
 			p*)
 			    [ -n "$(which conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 			    g_purge=Yes
@@ -3518,6 +3558,10 @@ restart_command() {
 			    [ -n "$(mywhich conntrack)" ] || fatal_error "The '-p' option requires the conntrack utility which does not appear to be installed on this system"
 			    g_purge=Yes
 			    option=${option%p}
+			    ;;
+			C*)
+			    g_counters=Yes
+			    option=${option#C}
 			    ;;
 			*)
 			    usage 1
@@ -3592,10 +3636,10 @@ usage() # $1 = exit status
     echo "   logwatch [<refresh interval>]"
     echo "   reject <address> ..."
     echo "   reset [ <chain> ... ]"
-    echo "   restart [ -n ] [ -p ] [ -f ] [ <directory> ]"
-    echo "   restore [ -n ] [ -p ] [ <file name> ]"
+    echo "   restart [ -n ] [ -p ] [ -f ] [ -C ] [ <directory> ]"
+    echo "   restore [ -n ] [ -p ] [ -C ] [ <file name> ]"
     echo "   run <command> [ <parameter> ... ]"
-    echo "   save [ <file name> ]"
+    echo "   save [ -C ] [ <file name> ]"
     echo "   [ show | list | ls ] [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   [ show | list | ls ] [ -f ] capabilities"
     echo "   [ show | list | ls ] arptables"
@@ -3620,7 +3664,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] tc [ device ]"
     echo "   [ show | list | ls ] vardir"
     echo "   [ show | list | ls ] zones"
-    echo "   start [ -f ] [ -p ] [ <directory> ]"
+    echo "   start [ -f ] [ -p ] [ -C ] [ <directory> ]"
     echo "   stop"
     echo "   status [ -i ]"
     echo "   version [ -a ]"
@@ -3672,6 +3716,7 @@ shorewall_cli() {
     g_directives=
     g_inline=
     g_tcrules=
+    g_counters=
 
     VERBOSE=
     VERBOSITY=1

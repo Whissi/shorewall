@@ -7914,7 +7914,7 @@ sub save_dynamic_chains() {
     push_indent;
 
     emit( 'if [ -n "$g_counters" ]; then' ,
-	  "    ${tool}-save --counters > \${VARDIR}/.${utility}-input",
+	  "    ${tool}-save --counters | grep -vE '[ :]shorewall ' > \${VARDIR}/.${utility}-input",
 	  "fi\n"
 	);
 

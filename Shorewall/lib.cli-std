@@ -574,14 +574,14 @@ start_command() {
     esac
 
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
-	if [ -z "$g_fast" -o -z "$LEGACY_FASTSTART" ]; then
+	if [ -z "$g_fast" -o -z "${LEGACY_FASTSTART}${g_counters}" ]; then
 	    #
-	    # Automake or LEGACY_FASTSTART=No -- use the last compiled script
+	    # Automake or ( LEGACY_FASTSTART=No and not -C ) -- use the last compiled script
 	    #
 	    object=firewall
 	else
 	    #
-	    # 'start -f' with LEGACY_FASTSTART=Yes -- use last saved configuration
+	    # 'start -f' with ( LEGACY_FASTSTART=Yes or -C ) -- use last saved configuration
 	    #
 	    object=$RESTOREFILE
 	fi

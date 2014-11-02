@@ -8263,9 +8263,9 @@ sub create_netfilter_load( $ ) {
 
     push_indent;
 
-    save_progress_message "Preparing $utility input...";
+    emit 'option=';
 
-    emit '';
+    save_progress_message "Preparing $utility input...";
 
     emit "exec 3>\${VARDIR}/.${utility}-input";
 

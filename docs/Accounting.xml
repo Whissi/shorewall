@@ -612,4 +612,102 @@ gateway:~#
     <para>The <command>shorewall show nfacct</command> command is a thin
     wrapper around the <command>nfacct list</command> command.</para>
   </section>
+
+  <section>
+    <title>Preserving Counters over Restart and Reboot</title>
+
+    <para>Beginning with Shorewall 4.6.5, it is possible to preserve
+    <emphasis>all</emphasis> ip[6]tables packet and byte counters over
+    restarts and reboots through use of the <option>-C</option> option. This
+    option is available in several commands.</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>save</term>
+
+        <listitem>
+          <para> Causes the packet and byte counters to be saved along with
+          the chains and rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>restore</term>
+
+        <listitem>
+          <para>Causes the packet and byte counters (if saved) to be restored
+          along with the chains and rules. </para>
+
+          <caution>
+            <para>If your iptables ruleset depends on variables that are
+            detected at run-time, either in your params file or by
+            Shorewall-generated code, <command>restore</command> will use the
+            values that were detected when the ruleset was saved, which may be
+            different from the current values.</para>
+          </caution>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>start</term>
+
+        <listitem>
+          <para>With Shorewall and Shorewall6, the -C option only has an
+          effect if the <option>-f </option>option is also specified. If a
+          previously-saved configuration is restored, then the packet and byte
+          counters (if saved) will be restored along with the chains and
+          rules. </para>
+
+          <caution>
+            <para>If your iptables ruleset depends on variables that are
+            detected at run-time, either in your params file or by
+            Shorewall-generated code, <option>-C</option> will use the values
+            that were detected when the ruleset was saved, which may be
+            different from the current values.</para>
+          </caution>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>restart</term>
+
+        <listitem>
+          <para>If an existing compiled script is used (no recompilation
+          required) and if that script generated the current running
+          configuration, then the current netfilter configuration is reloaded
+          as is so as to preserve the current packet and byte counters.</para>
+
+          <caution>
+            <para>If your iptables ruleset depends on variables that are
+            detected at run-time, either in your params file or by
+            Shorewall-generated code, <option>-C</option> will use the values
+            that were detected when the ruleset was previously started, which
+            may be different from the current values.</para>
+          </caution>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para> If you wish to (approximately) preserve the counters over a
+    possibly unexpected reboot, then: </para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Create a cron job that periodically executes 'shorewall save
+        <option>-C</option>'.</para>
+      </listitem>
+
+      <listitem>
+        <para>Specify the<option> -C</option> and <option>-f</option> options
+        in the STARTOPTIONS variable in either
+        <filename>/etc/default/shorewall</filename> (
+        <filename>/etc/default/shorewall6</filename>, etc.) or
+        <filename>/etc/sysconfig/shorewall</filename>
+        (<filename>/etc/sysconfig/shorewall</filename>6, etc.), whichever is
+        supported by your distribution. Note that not all distributions
+        include these files so you may have to create the one(s) you
+        need.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
 </article>

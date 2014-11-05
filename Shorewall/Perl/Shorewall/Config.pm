@@ -1779,8 +1779,8 @@ sub finalize_script( $ ) {
 
     if ( $file ne '-' ) {
 	my $sha1sum  = generate_sha1;
-	my $sha1sum1 = substr( $sha1sum, 0, 20 );
-	my $sha1sum2 = substr( $sha1sum, -20 );
+	my $sha1sum1 = join( '-', 'sha-rh', substr( $sha1sum, 0, 20 ) );
+	my $sha1sum2 = join( '-', 'sha-lh', substr( $sha1sum, -20   ) );
 
 	@ARGV = ( $tempfile );
 	$^I = '';

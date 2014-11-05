@@ -356,15 +356,35 @@ sub setup_log_backend($) {
 
 	emit( 'progress_message2 "Setting up log backend"',
 	      '',
-	      "if [ -f $file ]; then",
-	      "   if echo $setting > $file; then",
-	      "       progress_message 'Log Backend set to $setting'",
-	      '   else',
-	      "       error_message 'WARNING: Unable to set log backend to $setting'",
-	      '   fi',
-	      'else',
-	      "   error_message 'WARNING: $file does not exist - log backend not set'",
-	      "fi\n" );
+	      "if [ -f $file ]; then"
+	    );
+
+	if ( $setting =~ /ip6?t_log/i ) {
+	    my $alternative = 'nf_log_ipv' . $family;
+
+	    emit( "    setting=$setting",
+		  '',
+		  "    fgrep -q $setting /proc/net/netfilter/nf_log || setting=$alternative",
+		  '',
+		  "    if echo \$setting > $file; then",
+		  '       progress_message "Log Backend set to $setting"',
+		  '   else',
+		  '       error_message "WARNING: Unable to set log backend to $setting"',
+		  '   fi',
+		  'else',
+		  "    error_message 'WARNING: $file does not exist - log backend not set'",
+		  "fi\n"
+		);
+	} else {
+	    emit( "    if echo $setting > $file; then",
+		  "        progress_message 'Log Backend set to $setting'",
+		  '    else',
+		  "        error_message 'WARNING: Unable to set log backend to $setting'",
+		  '    fi',
+		  'else',
+		  "    error_message 'WARNING: $file does not exist - log backend not set'",
+		  "fi\n" );
+	}
     }
 }
 

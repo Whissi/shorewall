@@ -536,8 +536,9 @@
 
     <para>The <option>nolock</option> option prevents the command from
     attempting to acquire the shorewall6-lite lockfile. It is useful if you
-    need to include <command>shorewall</command> commands in
-    <filename>/etc/shorewall/started</filename>.</para>
+    need to include <command>shorewall</command> commands in the
+    <filename>started</filename> <ulink
+    url="../shorewall_extension_scripts.html">extension script</ulink>.</para>
 
     <para>The <emphasis>options</emphasis> control the amount of output that
     the command produces. They consist of a sequence of the letters <emphasis
@@ -548,8 +549,8 @@
     role="bold">v</emphasis> adds one to the effective verbosity and each
     <emphasis role="bold">q</emphasis> subtracts one from the effective
     VERBOSITY. Alternately, <emphasis role="bold">v</emphasis> may be followed
-    immediately with one of -1,0,1,2 to specify a specify VERBOSITY. There may
-    be no white-space between <emphasis role="bold">v</emphasis> and the
+    immediately with one of -1,0,1,2 to specify VERBOSITY. There may be no
+    white-space between <emphasis role="bold">v</emphasis> and the
     VERBOSITY.</para>
 
     <para>The <emphasis>options</emphasis> may also include the letter
@@ -570,16 +571,16 @@
           <para>Adds a list of hosts or subnets to a dynamic zone usually used
           with VPN's.</para>
 
-          <para>The <replaceable>interface</replaceable> argument names an interface
-          defined in the <ulink
+          <para>The <replaceable>interface</replaceable> argument names an
+          interface defined in the <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
-          file. A <replaceable>host-list</replaceable> is comma-separated list whose
-          elements are host or network addresses.</para>
+          file. A <replaceable>host-list</replaceable> is comma-separated list
+          whose elements are host or network addresses.</para>
 
           <caution>
             <para>The <command>add</command> command is not very robust. If
-            there are errors in the <replaceable>host-list</replaceable>,
-            you may see a large number of error messages yet a subsequent
+            there are errors in the <replaceable>host-list</replaceable>, you
+            may see a large number of error messages yet a subsequent
             <command>shorewall6-lite show zones</command> command will
             indicate that all hosts were added. If this happens, replace
             <command>add</command> by <command>delete</command> and run the
@@ -593,9 +594,9 @@
 
         <listitem>
           <para>Re-enables receipt of packets from hosts previously
-          blacklisted by a <command>drop</command>, <command>logdrop</command>,
-          <command>reject</command>, or <command>logreject</command>
-          command.</para>
+          blacklisted by a <command>drop</command>,
+          <command>logdrop</command>, <command>reject</command>, or
+          <command>logreject</command> command.</para>
         </listitem>
       </varlistentry>
 
@@ -625,8 +626,8 @@
           <para>The <replaceable>interface</replaceable> argument names an
           interface defined in the <ulink
           url="shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
-          file. A <replaceable>host-list</replaceable> is comma-separated
-          list whose elements are a host or network address.</para>
+          file. A <replaceable>host-list</replaceable> is comma-separated list
+          whose elements are a host or network address.</para>
         </listitem>
       </varlistentry>
 
@@ -646,8 +647,8 @@
         <term><emphasis role="bold">drop</emphasis></term>
 
         <listitem>
-          <para>Causes traffic from the listed <replaceable>address</replaceable>es
-          to be silently dropped.</para>
+          <para>Causes traffic from the listed
+          <replaceable>address</replaceable>es to be silently dropped.</para>
         </listitem>
       </varlistentry>
 
@@ -658,15 +659,15 @@
           <para>Produces a verbose report about the firewall configuration for
           the purpose of problem analysis.</para>
 
-          <para>The <option>-x</option> option causes actual
-          packet and byte counts to be displayed. Without that option, these
-          counts are abbreviated.</para>
-          
+          <para>The <option>-x</option> option causes actual packet and byte
+          counts to be displayed. Without that option, these counts are
+          abbreviated.</para>
+
           <para>The <option>-m</option> option causes any MAC addresses
           included in shorewall6-lite log messages to be displayed.</para>
 
-          <para>The <option>-l</option> option causes the rule
-          number for each Netfilter rule to be displayed.</para>
+          <para>The <option>-l</option> option causes the rule number for each
+          Netfilter rule to be displayed.</para>
         </listitem>
       </varlistentry>
 
@@ -686,10 +687,11 @@
         <term><emphasis role="bold">forget</emphasis></term>
 
         <listitem>
-          <para>Deletes <filename>/var/lib/shorewall6-lite/<replaceable>filename</replaceable></filename>
+          <para>Deletes
+          <filename>/var/lib/shorewall6-lite/<replaceable>filename</replaceable></filename>
           and <filename>/var/lib/shorewall6-lite/save</filename>. If no
-          <replaceable>filename</replaceable> is given then the file specified by
-          RESTOREFILE in <ulink
+          <replaceable>filename</replaceable> is given then the file specified
+          by RESTOREFILE in <ulink
           url="shorewall.conf.html">shorewall6.conf</ulink>(5) is
           assumed.</para>
         </listitem>
@@ -755,10 +757,11 @@
         <term><emphasis role="bold">logdrop</emphasis></term>
 
         <listitem>
-          <para>Causes traffic from the listed <replaceable>address</replaceable>es
-          to be logged then discarded. Logging occurs at the log level
-          specified by the BLACKLIST_LOGLEVEL setting in <ulink
-          url="shorewall.conf.html">shorewall6.conf</ulink> (5).</para>
+          <para>Causes traffic from the listed
+          <replaceable>address</replaceable>es to be logged then discarded.
+          Logging occurs at the log level specified by the BLACKLIST_LOGLEVEL
+          setting in <ulink url="shorewall.conf.html">shorewall6.conf</ulink>
+          (5).</para>
         </listitem>
       </varlistentry>
 
@@ -771,16 +774,16 @@
           produces an audible alarm when new shorewall6-lite messages are
           logged.</para>
 
-          <para>The <option>-m</option> option causes the
-          MAC address of each packet source to be displayed if that
-          information is available.</para>
-          
-          <para>The <replaceable>refresh-interval</replaceable> specifies
-          the time in seconds between screen refreshes. You can enter a
-          negative number by preceding the number with "--" (e.g.,
-          <command>shorewall6-lite logwatch -- -30</command>). In this
-          case, when a packet count changes, you will be prompted to hit
-          any key to resume screen refreshes.</para>
+          <para>The <option>-m</option> option causes the MAC address of each
+          packet source to be displayed if that information is
+          available.</para>
+
+          <para>The <replaceable>refresh-interval</replaceable> specifies the
+          time in seconds between screen refreshes. You can enter a negative
+          number by preceding the number with "--" (e.g.,
+          <command>shorewall6-lite logwatch -- -30</command>). In this case,
+          when a packet count changes, you will be prompted to hit any key to
+          resume screen refreshes.</para>
         </listitem>
       </varlistentry>
 
@@ -788,10 +791,11 @@
         <term><emphasis role="bold">logreject</emphasis></term>
 
         <listitem>
-          <para>Causes traffic from the listed <replaceable>address</replaceable>es
-          to be logged then rejected. Logging occurs at the log level
-          specified by the BLACKLIST_LOGLEVEL setting in <ulink
-          url="shorewall.conf.html">shorewall6.conf</ulink> (5).</para>
+          <para>Causes traffic from the listed
+          <replaceable>address</replaceable>es to be logged then rejected.
+          Logging occurs at the log level specified by the BLACKLIST_LOGLEVEL
+          setting in <ulink url="shorewall.conf.html">shorewall6.conf</ulink>
+          (5).</para>
         </listitem>
       </varlistentry>
 
@@ -822,8 +826,8 @@
 
         <listitem>
           <para>Restart is similar to <command>shorewall6-lite start</command>
-          except that it assumes that the firewall is already
-          started. Existing connections are maintained.</para>
+          except that it assumes that the firewall is already started.
+          Existing connections are maintained.</para>
 
           <caution>
             <para>If your ip6tables ruleset depends on variables that are
@@ -854,17 +858,19 @@
         <listitem>
           <para>Restore shorewall6-lite to a state saved using the
           <command>shorewall6-lite save</command> command. Existing
-          connections are maintained. The <replaceable>filename</replaceable> names
-          a restore file in <filename class="directory">/var/lib/shorewall6-lite</filename>
-          created using <command>shorewall6-lite save</command>; if no
-          <replaceable>filename</replaceable> is given then shorewall6-lite will be
-          restored from the file specified by the RESTOREFILE option in <ulink
+          connections are maintained. The <replaceable>filename</replaceable>
+          names a restore file in <filename
+          class="directory">/var/lib/shorewall6-lite</filename> created using
+          <command>shorewall6-lite save</command>; if no
+          <replaceable>filename</replaceable> is given then shorewall6-lite
+          will be restored from the file specified by the RESTOREFILE option
+          in <ulink
           url="shorewall.conf.html">shorewall6.conf</ulink>(5).</para>
 
           <para>The <option>-C</option> option was added in Shorewall 4.6.5.
           If the <option>-C</option> option was specified during
-          <command>shorewall7-lite save</command>, then the counters saved
-          by that operation will be restored.</para>
+          <command>shorewall7-lite save</command>, then the counters saved by
+          that operation will be restored.</para>
         </listitem>
       </varlistentry>
 
@@ -890,12 +896,12 @@
 
         <listitem>
           <para>The dynamic blacklist is stored in
-          <filename>/var/lib/shorewall6-lite/save</filename>. The state of
-          the firewall is stored in
+          <filename>/var/lib/shorewall6-lite/save</filename>. The state of the
+          firewall is stored in
           <filename>/var/lib/shorewall6-lite/<replaceable>filename</replaceable></filename>
           for use by the <command>shorewall6-lite restore</command> command.
-          If <replaceable>filename</replaceable> is not given then the state is saved
-          in the file specified by the RESTOREFILE option in <ulink
+          If <replaceable>filename</replaceable> is not given then the state
+          is saved in the file specified by the RESTOREFILE option in <ulink
           url="shorewall.conf.html">shorewall6.conf</ulink>(5).</para>
 
           <para>The <option>-C</option> option, added in Shorewall 4.6.5,
@@ -918,10 +924,10 @@
               <listitem>
                 <para>Added in Shorewall 4.6.2. Displays the dynamic chain
                 along with any chains produced by entries in
-                shorewall6-blrules(5).The <option>-x</option>
-                option is passed directly through to ip6tables and causes
-                actual packet and byte counts to be displayed. Without this
-                option, those counts are abbreviated.</para>
+                shorewall6-blrules(5).The <option>-x</option> option is passed
+                directly through to ip6tables and causes actual packet and
+                byte counts to be displayed. Without this option, those counts
+                are abbreviated.</para>
               </listitem>
             </varlistentry>
 
@@ -930,9 +936,9 @@
 
               <listitem>
                 <para>Displays your kernel/iptables capabilities. The
-                <option>-f</option> option causes the display
-                to be formatted as a capabilities file for use with
-                <command>compile -e</command>.</para>
+                <option>-f</option> option causes the display to be formatted
+                as a capabilities file for use with <command>compile
+                -e</command>.</para>
               </listitem>
             </varlistentry>
 
@@ -948,24 +954,22 @@
                 <emphasis>chain</emphasis> is given, all of the chains in the
                 filter table are displayed.</para>
 
-                <para>The <option>-x</option> option
-                is passed directly through to iptables and causes actual
-                packet and byte counts to be displayed. Without this option,
-                those counts are abbreviated.</para>
+                <para>The <option>-x</option> option is passed directly
+                through to iptables and causes actual packet and byte counts
+                to be displayed. Without this option, those counts are
+                abbreviated.</para>
 
-                <para>The <option>-t</option> option specifies the
-                Netfilter table to display. The default is <emphasis
+                <para>The <option>-t</option> option specifies the Netfilter
+                table to display. The default is <emphasis
                 role="bold">filter</emphasis>.</para>
 
-                <para>The <option>-b</option> ('brief') option
-                causes rules which have not been used (i.e. which have zero
-                packet and byte counts) to be omitted from the output. Chains
-                with no rules displayed are also omitted from the
-                output.</para>
+                <para>The <option>-b</option> ('brief') option causes rules
+                which have not been used (i.e. which have zero packet and byte
+                counts) to be omitted from the output. Chains with no rules
+                displayed are also omitted from the output.</para>
 
-                <para>The <option>-l</option> option causes
-                the rule number for each Netfilter rule to be
-                displayed.</para>
+                <para>The <option>-l</option> option causes the rule number
+                for each Netfilter rule to be displayed.</para>
 
                 <para>If the <option>-t</option> option and the
                 <option>chain</option> keyword are both omitted and any of the
@@ -1047,9 +1051,9 @@
                 log file specified by the LOGFILE option in <ulink
                 url="shorewall.conf.html">shorewall6.conf</ulink>(5).</para>
 
-                <para>The <option>-m</option> option causes the MAC
-                address of each packet source to be displayed if that
-                information is available.</para>
+                <para>The <option>-m</option> option causes the MAC address of
+                each packet source to be displayed if that information is
+                available.</para>
               </listitem>
             </varlistentry>
 
@@ -1069,9 +1073,9 @@
               <listitem>
                 <para>Displays the Netfilter nat table using the command
                 <command>iptables -t nat -L -n -v</command>.The
-                <option>-x</option> option is passed directly
-                through to iptables and causes actual packet and byte counts
-                to be displayed. Without this option, those counts are
+                <option>-x</option> option is passed directly through to
+                iptables and causes actual packet and byte counts to be
+                displayed. Without this option, those counts are
                 abbreviated.</para>
               </listitem>
             </varlistentry>
@@ -1102,9 +1106,9 @@
               <listitem>
                 <para>Displays the Netfilter raw table using the command
                 <command>iptables -t raw -L -n -v</command>.The
-                <option>-x</option> option is passed directly
-                through to iptables and causes actual packet and byte counts
-                to be displayed. Without this option, those counts are
+                <option>-x</option> option is passed directly through to
+                iptables and causes actual packet and byte counts to be
+                displayed. Without this option, those counts are
                 abbreviated.</para>
               </listitem>
             </varlistentry>
@@ -1156,8 +1160,8 @@
           and is only meaningful when the <option>-f</option> option is also
           specified. If the previously-saved configuration is restored, and if
           the <option>-C</option> option was also specified in the
-          <command>save</command> command, then the packet and byte
-          counters will be restored.</para>
+          <command>save</command> command, then the packet and byte counters
+          will be restored.</para>
         </listitem>
       </varlistentry>
 

@@ -845,6 +845,7 @@ detect_dynamic_gateway() { # $1 = interface
     local GATEWAYS
     GATEWAYS=
     local gateway
+    local file
 
     gateway=$(run_findgw_exit $1);
 
@@ -852,14 +853,21 @@ detect_dynamic_gateway() { # $1 = interface
 	gateway=$( find_peer $($IP addr list $interface ) )
     fi
 
-    if [ -z "$gateway" -a -f ${VARLIB}/dhcpcd/dhcpcd-${1}.info ]; then
-	eval $(grep ^GATEWAYS=  ${VARLIB}/dhcpcd/dhcpcd-${1}.info 2> /dev/null)
+    file="${VARLIB}/dhcpcd/dhcpcd-${1}.info"
+    if [ -z "$gateway" -a -f "${file}" ]; then
+	eval $(grep ^GATEWAYS= "${file}" 2> /dev/null)
 	[ -n "$GATEWAYS" ] && GATEWAYS=${GATEWAYS%,*} && gateway=$GATEWAYS
     fi
 
-    if [ -z "$gateway" -a -f ${VARLIB}/dhcp/dhclient-${1}.lease ]; then
-	gateway=$(grep 'option routers' ${VARLIB}/dhcp/dhclient-${1}.lease | tail -n 1 | while read j1 j2 gateway; do echo $gateway ; return 0; done)
-    fi
+    for file in \
+	"${VARLIB}/dhcp/dhclient-${1}.lease" \
+	"${VARLIB}/dhcp/dhclient.${1}.leases"
+    do
+	[ -n "$gateway" ] && break
+	if [ -f "${file}" ]; then
+	    gateway=$(grep 'option routers' "${file}" | tail -n 1 | while read j1 j2 gateway; do echo "${gateway%\;}" ; return 0; done)
+	fi
+    done
 
     [ -n "$gateway" ] && echo $gateway
 }

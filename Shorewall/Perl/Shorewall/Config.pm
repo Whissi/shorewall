@@ -5814,7 +5814,7 @@ sub get_configuration( $$$$$ ) {
 	} elsif ( $val eq 'netlink' ) {
 	    $val = 'nfnetlink_log';
 	} elsif ( $val eq 'LOG' ) {
-	    $val = $family == F_IPV4 ? 'ipt_LOG' : 'ip6t_log';
+	    $val = $family == F_IPV4 ? 'ipt_LOG' : 'ip6t_LOG';
 	} else {
 	    fatal_error "Invalid LOG Backend ($val)";
 	}

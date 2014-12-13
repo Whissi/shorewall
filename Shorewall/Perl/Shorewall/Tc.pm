@@ -260,6 +260,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    $chain ||= $designator;
 	    $chain ||= $default_chain;
 
+	    $option = '--set-mark';
+
 	    my $chainref = ensure_chain( 'mangle', $chain = $chainnames{$chain} );
 
 	    for ( my $packet = 0; $packet < $marks; $packet++, $markval += $increment ) {

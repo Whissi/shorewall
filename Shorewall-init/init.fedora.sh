@@ -42,7 +42,7 @@ setstatedir() {
 	statedir=$( . /${CONFDIR}/${PRODUCT}/vardir && echo $VARDIR )
     fi
 
-    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARLIB}/${PRODUCT}
 
     if [ $PRODUCT == shorewall -o $PRODUCT == shorewall6 ]; then
 	${SBINDIR}/$PRODUCT $OPTIONS compile -c

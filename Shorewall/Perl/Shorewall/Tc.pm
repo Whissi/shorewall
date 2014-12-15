@@ -260,7 +260,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    $chain ||= $designator;
 	    $chain ||= $default_chain;
 
-	    $option = '--set-mark';
+	    $option ||= ( $and_or eq '|' ? '--or-mark' : $and_or ? '--and-mark' : '--set-mark' );
 
 	    my $chainref = ensure_chain( 'mangle', $chain = $chainnames{$chain} );
 

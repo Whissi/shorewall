@@ -231,12 +231,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	my ( $option, $marktype ) = @_;
 	my $and_or = $params =~ s/^([|&])// ? $1 : '';
 
-	if ( $option ) {
-	    $target = join( ' ', $target, $option );
-	} else {
-	    $target = join( ' ', $target, $and_or eq '|' ? '--or-mark' : $and_or ? '--and-mark' : '--set-mark' );
-	}
-
 	if ( $params =~ /-/ ) {
 	    #
 	    # A Mark Range
@@ -266,6 +260,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    $chain ||= $designator;
 	    $chain ||= $default_chain;
 
+	    $option = '--set-mark';
+
 	    my $chainref = ensure_chain( 'mangle', $chain = $chainnames{$chain} );
 
 	    for ( my $packet = 0; $packet < $marks; $packet++, $markval += $increment ) {
@@ -290,7 +286,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 			     $source ,
 			     $dest ,
 			     '' ,
-			     join( ' ', $target,  $option , join( '/', in_hex( $markval ) , $mask ) ) ,
+			     "$target $option " . join( '/', in_hex( $markval ) , $mask ) ,
 			     '',
 			     $target ,
 			     $exceptionrule );
@@ -319,6 +315,12 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		    fatal_error "Marks <= $limit may not be set in the PREROUTING or OUTPUT chains when HIGH_ROUTE_MARKS=Yes"
 			if $val && ( $chain && ( PREROUTING | OUTPUT ) ) && $val <= $globals{TC_MASK};
 		}
+	    }
+
+	    if ( $option ) {
+		$target = join( ' ', $target, $option );
+	    } else {
+		$target = join( ' ', $target, $and_or eq '|' ? '--or-mark' : $and_or ? '--and-mark' : '--set-mark' );
 	    }
 
 	    ( $mark, my $mask ) = split '/', $mark;

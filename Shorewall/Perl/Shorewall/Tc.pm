@@ -765,7 +765,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
 	for ( @state ) {
 	    fatal_error "Invalid STATE ($_)"   unless exists $state{$_};
-	    fatal_error "Duplicate STATE ($_)" if $state{$_};
+	    fatal_error "Duplicate STATE ($_)" if $state{$_}++;
 	}
     } else {
 	$state = 'ALL';

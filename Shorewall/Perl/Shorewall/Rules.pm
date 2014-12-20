@@ -774,7 +774,7 @@ sub report_syn_flood_protection() {
 #
 # Complete a policy chain - Add policy-enforcing rules and syn flood, if specified
 #
-sub default_policy( $$$ ) {
+sub default_policy( $$$ ) { #Chainref, Source Zone, Destination Zone
     my $chainref   = $_[0];
     my $policyref  = $filter_table->{$chainref->{policychain}};
     my $synparams  = $policyref->{synparams};
@@ -2466,11 +2466,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		$destzone = '';
 	    }
 	}
-    } else {
-	unless ( $inchain ) {
-	    fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
-	    fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
-	}
+    } elsif ( ! $inchain ) {
+	fatal_error "Missing destination zone" if $destzone eq '-' || $destzone eq '';
+	fatal_error "Unknown destination zone ($destzone)" unless $destref = defined_zone( $destzone );
     }
 
     my $restriction = NO_RESTRICT;

@@ -1268,9 +1268,7 @@ sub cleanup_iptables() {
 	qt1( "$iptables $iptablesw -t raw -X $sillyname" );
     }
 
-    $sillyname = $sillyname1 = undef;
-
-    $sillyname = '';
+    $sillyname = $sillyname1 = '';
 }
 
 #
@@ -1591,7 +1589,7 @@ sub set_command( $$$ ) {
 #
 # Print the current TOD to STDOUT.
 #
-sub timestamp() {
+sub get_localtime() {
     our @localtime = localtime;
     printf '%02d:%02d:%02d ', @localtime[2,1,0];
 }
@@ -1608,7 +1606,7 @@ sub progress_message {
 	$line =~ s/\s+/ /g;
 
 	if ( $verbosity > 1 ) {
-	    timestamp, $havelocaltime = 1 if $timestamp;
+	    get_localtime, $havelocaltime = 1 if $timestamp;
 	    #
 	    # We use this function to display messages containing raw config file images which may contains tabs (including multiple tabs in succession).
 	    # The following makes such messages look more readable and uniform
@@ -1631,7 +1629,7 @@ sub progress_message_nocompress {
     my $havelocaltime = 0;
 
     if ( $verbosity > 1 ) {
-	timestamp, $havelocaltime = 1 if $timestamp;
+	get_localtime, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
@@ -1652,7 +1650,7 @@ sub progress_message2 {
     my $havelocaltime = 0;
 
     if ( $verbosity > 0 ) {
-	timestamp, $havelocaltime = 1 if $timestamp;
+	get_localtime, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
@@ -1673,7 +1671,7 @@ sub progress_message3 {
     my $havelocaltime = 0;
 
     if ( $verbosity >= 0 ) {
-	timestamp, $havelocaltime = 1 if $timestamp;
+	get_localtime, $havelocaltime = 1 if $timestamp;
 	print "@_\n";
     }
 
@@ -1762,7 +1760,7 @@ sub create_temp_script( $$ ) {
 
 }
 
-# Generate the SHA1 digest of the (incomplete script)
+# Generate the SHA1 digest of the (incomplete) script
 #
 sub generate_sha1() {
     my $data = `cat $tempfile`;
@@ -1840,7 +1838,7 @@ sub set_config_path( $ ) {
 }
 
 #
-# Set $debug
+# Set $debug and $confess
 #
 sub set_debug( $$ ) {
     $debug   = shift;
@@ -1865,6 +1863,9 @@ sub find_file($)
     "$config_path[0]$filename";
 }
 
+#
+# Split a comma-separated list into a Perl array
+#
 sub split_list( $$;$ ) {
     my ($list, $type, $origlist ) = @_;
 
@@ -1873,6 +1874,9 @@ sub split_list( $$;$ ) {
     split /,/, $list;
 }
 
+#
+# This version handles parenthetical list elements with embedded commas. It removes the parentheses
+#
 sub split_list1( $$;$ ) {
     my ($list, $type, $keepparens ) = @_;
 
@@ -2024,6 +2028,9 @@ sub split_list3( $$ ) {
     @list2;
 }
 
+#
+# Splits the columns of a config file record
+#
 sub split_columns( $ ) {
     my ($list) = @_;
 

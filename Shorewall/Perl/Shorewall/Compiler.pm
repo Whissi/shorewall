@@ -649,10 +649,7 @@ sub compiler {
 
     set_config_path( $config_path ) if $config_path;
 
-    if ( $directory ne '' ) {
-	fatal_error "$directory is not an existing directory" unless -d $directory;
-	set_shorewall_dir( $directory );
-    }
+    set_shorewall_dir( $directory ) if $directory ne '';
 
     $verbosity = 1 if $debug && $verbosity < 1;
 
@@ -665,15 +662,6 @@ sub compiler {
     #
     get_configuration( $export , $update , $annotate , $directives , $inline );
     #
-    # Create a temp file to hold the script
-    #
-    if ( $scriptfilename ) {
-	set_command( 'compile', 'Compiling', 'Compiled' );
-	create_temp_script( $scriptfilename , $export );
-    } else {
-	set_command( 'check', 'Checking', 'Checked' );
-    }
-    #
     # Chain table initialization depends on shorewall.conf and capabilities. So it must be deferred until
     # now when shorewall.conf has been processed and the capabilities have been determined.
     #
@@ -682,6 +670,15 @@ sub compiler {
     # Allow user to load Perl modules
     #
     run_user_exit1 'compile';
+    #
+    # Create a temp file to hold the script
+    #
+    if ( $scriptfilename ) {
+	set_command( 'compile', 'Compiling', 'Compiled' );
+	create_temp_script( $scriptfilename , $export );
+    } else {
+	set_command( 'check', 'Checking', 'Checked' );
+    }
     #
     #                                     Z O N E   D E F I N I T I O N
     #                              (Produces no output to the compiled script)

@@ -4752,6 +4752,7 @@ sub ensure_config_path() {
 #
 sub set_shorewall_dir( $ ) {
     $shorewall_dir = shift;
+    fatal_error "$shorewall_dir is not an existing directory" unless -d $shorewall_dir;
     ensure_config_path;
 }
 

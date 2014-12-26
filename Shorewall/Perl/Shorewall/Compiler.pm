@@ -851,7 +851,7 @@ sub compiler {
     #
     # Apply Policies
     #
-    apply_policy_rules;
+    complete_policy_chains;
     #
     # Reject Action
     #

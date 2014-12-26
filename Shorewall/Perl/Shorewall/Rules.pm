@@ -44,7 +44,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 		  process_policies
-		  apply_policy_rules
+		  complete_policy_chains
 		  complete_standard_chain
 		  setup_syn_flood_chains
 		  save_policies
@@ -774,7 +774,7 @@ sub report_syn_flood_protection() {
 #
 # Complete a policy chain - Add policy-enforcing rules and syn flood, if specified
 #
-sub default_policy( $$$ ) { #Chainref, Source Zone, Destination Zone
+sub complete_policy_chain( $$$ ) { #Chainref, Source Zone, Destination Zone
     my $chainref   = $_[0];
     my $policyref  = $filter_table->{$chainref->{policychain}};
     my $synparams  = $policyref->{synparams};
@@ -814,7 +814,7 @@ sub ensure_rules_chain( $ );
 #
 # Finish all policy Chains
 #
-sub apply_policy_rules() {
+sub complete_policy_chains() {
     progress_message2 'Applying Policies...';
 
     for my $chainref ( @policy_chains ) {
@@ -856,7 +856,7 @@ sub apply_policy_rules() {
 
 	    if ( $chainref->{referenced} ) {
 		run_user_exit $chainref;
-		default_policy $chainref, $zone, $zone1;
+		complete_policy_chain $chainref, $zone, $zone1;
 	    }
 	}
     }

@@ -348,44 +348,44 @@ sub new_policy_chain($$$$$)
 #
 sub set_policy_chain($$$$$$)
 {
-    my ($source, $dest, $chain1, $chainref, $policy, $intrazone) = @_;
+    my ( $chain, $source, $dest, $polchainref, $policy, $intrazone ) = @_;
 
-    my $chainref1 = $filter_table->{$chain1};
+    my $chainref = $filter_table->{$chain};
 
-    if ( $chainref1 ) {
-	if ( $intrazone && $source eq $dest && $chainref1->{provisional} ) {
-	    $chainref1->{policychain} = '';
-	    $chainref1->{provisional} = '';
+    if ( $chainref ) {
+	if ( $intrazone && $source eq $dest && $chainref->{provisional} ) {
+	    $chainref->{policychain} = '';
+	    $chainref->{provisional} = '';
 	}
     } else {
-	$chainref1 = new_rules_chain $chain1;
+	$chainref = new_rules_chain $chain;
     }
 
-    unless ( $chainref1->{policychain} ) {
+    unless ( $chainref->{policychain} ) {
 	if ( $config{EXPAND_POLICIES} ) {
 	    #
 	    # We convert the canonical chain into a policy chain, using the settings of the
 	    # passed policy chain.
 	    #
-	    $chainref1->{policychain} = $chain1;
-	    $chainref1->{loglevel}    = $chainref->{loglevel} if defined $chainref->{loglevel};
-	    $chainref1->{audit}       = $chainref->{audit}    if defined $chainref->{audit};
+	    $chainref->{policychain} = $chain;
+	    $chainref->{loglevel}    = $polchainref->{loglevel} if defined $polchainref->{loglevel};
+	    $chainref->{audit}       = $polchainref->{audit}    if defined $polchainref->{audit};
 
-	    if ( defined $chainref->{synparams} ) {
-		$chainref1->{synparams}   = $chainref->{synparams};
-		$chainref1->{synchain}    = $chainref->{synchain};
+	    if ( defined $polchainref->{synparams} ) {
+		$chainref->{synparams}   = $polchainref->{synparams};
+		$chainref->{synchain}    = $polchainref->{synchain};
 	    }
 
-	    $chainref1->{default}     = $chainref->{default} if defined $chainref->{default};
-	    $chainref1->{is_policy}   = 1;
-	    push @policy_chains, $chainref1;
+	    $chainref->{default}     = $polchainref->{default} if defined $polchainref->{default};
+	    $chainref->{is_policy}   = 1;
+	    push @policy_chains, $chainref;
 	} else {
-	    $chainref1->{policychain} = $chainref->{name};
+	    $chainref->{policychain} = $polchainref->{name};
 	}
 
-	$chainref1->{policy} = $policy;
-	$chainref1->{policypair} = [ $source, $dest ];
-	$chainref1->{origin} = $chainref->{origin};
+	$chainref->{policy}     = $policy;
+	$chainref->{policypair} = [ $source, $dest ];
+	$chainref->{origin}     = $polchainref->{origin};
     }
 }
 
@@ -582,19 +582,19 @@ sub process_a_policy() {
 	if ( $serverwild ) {
 	    for my $zone ( @zonelist ) {
 		for my $zone1 ( @zonelist ) {
-		    set_policy_chain $client, $server, rules_chain( ${zone}, ${zone1} ), $chainref, $policy, $intrazone;
+		    set_policy_chain rules_chain( ${zone}, ${zone1} ), $client, $server, $chainref, $policy, $intrazone;
 		    print_policy $zone, $zone1, $policy, $chain;
 		}
 	    }
 	} else {
 	    for my $zone ( all_zones ) {
-		set_policy_chain $client, $server, rules_chain( ${zone}, ${server} ), $chainref, $policy, $intrazone;
+		set_policy_chain rules_chain( ${zone}, ${server} ), $client, $server, $chainref, $policy, $intrazone;
 		print_policy $zone, $server, $policy, $chain;
 	    }
 	}
     } elsif ( $serverwild ) {
 	for my $zone ( @zonelist ) {
-	    set_policy_chain $client, $server, rules_chain( ${client}, ${zone} ), $chainref, $policy, $intrazone;
+	    set_policy_chain rules_chain( ${client}, ${zone} ), $client, $server, $chainref, $policy, $intrazone;
 	    print_policy $client, $zone, $policy, $chain;
 	}
 
@@ -670,8 +670,8 @@ sub process_policies()
 		unless ( $zone eq $zone1 ) {
 		    my $name  = rules_chain( $zone,  $zone1 );
 		    my $name1 = rules_chain( $zone1, $zone  );
-		    set_policy_chain( $zone,  $zone1, $name,  ensure_rules_chain( $name  ), 'NONE', 0 );
-		    set_policy_chain( $zone1, $zone,  $name1, ensure_rules_chain( $name1 ), 'NONE', 0 );
+		    set_policy_chain( $name,  $zone,  $zone1, ensure_rules_chain( $name  ), 'NONE', 0 );
+		    set_policy_chain( $name1, $zone1, $zone,  ensure_rules_chain( $name1 ), 'NONE', 0 );
 		}
 	    }
 	} elsif ( $type == LOOPBACK ) {
@@ -679,8 +679,8 @@ sub process_policies()
 		unless ( $zone eq $zone1 || zone_type( $zone1 ) == LOOPBACK ) {
 		    my $name  = rules_chain( $zone,  $zone1 );
 		    my $name1 = rules_chain( $zone1, $zone  );
-		    set_policy_chain( $zone,  $zone1, $name,  ensure_rules_chain( $name  ), 'NONE', 0 );
-		    set_policy_chain( $zone1, $zone,  $name1, ensure_rules_chain( $name1 ), 'NONE', 0 );
+		    set_policy_chain( $name,  $zone,  $zone1, ensure_rules_chain( $name  ), 'NONE', 0 );
+		    set_policy_chain( $name1, $zone1, $zone,  ensure_rules_chain( $name1 ), 'NONE', 0 );
 		}
 	    }
 	}

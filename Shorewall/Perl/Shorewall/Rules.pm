@@ -714,7 +714,7 @@ sub process_policies()
 #
 sub process_inline ($$$$$$$$$$$$$$$$$$$$$);
 
-sub policy_rules( $$$$$ ) {
+sub add_policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
 
     unless ( $target eq 'NONE' ) {
@@ -785,20 +785,20 @@ sub complete_policy_chain( $$$ ) { #Chainref, Source Zone, Destination Zone
     assert( $policyref );
 
     if ( $chainref eq $policyref ) {
-	policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
+	add_policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
     } else {
 	if ( $policy eq 'ACCEPT' || $policy eq 'QUEUE' || $policy =~ /^NFQUEUE/ ) {
 	    if ( $synparams ) {
 		report_syn_flood_protection;
-		policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
+		add_policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
 	    } else {
 		add_ijump $chainref,  g => $policyref;
 		$chainref = $policyref;
-		policy_rules( $chainref, $policy, $loglevel, $default, $config{MULTICAST} ) if $default =~/^macro\./;
+		add_policy_rules( $chainref, $policy, $loglevel, $default, $config{MULTICAST} ) if $default =~/^macro\./;
 	    }
 	} elsif ( $policy eq 'CONTINUE' ) {
 	    report_syn_flood_protection if $synparams;
-	    policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
+	    add_policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
 	} else {
 	    report_syn_flood_protection if $synparams;
 	    add_ijump $chainref , g => $policyref;
@@ -845,7 +845,7 @@ sub complete_policy_chains() {
 
 	    if ( $name =~ /^all[-2]|[-2]all$/ ) {
 		run_user_exit $chainref;
-		policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
+		add_policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
 	    }
 	}
     }
@@ -890,7 +890,7 @@ sub complete_standard_chain ( $$$$ ) {
     }
 
 
-    policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
+    add_policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
 }
 
 #

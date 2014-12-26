@@ -357,7 +357,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg><option>-b</option></arg>
 
@@ -379,7 +379,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg><option>-x</option></arg>
 
@@ -393,7 +393,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg><option>-f</option></arg>
 
@@ -407,7 +407,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg
       choice="req"><option>classifiers|connections|config|events|filters|ip|ipa|zones|policies|marks</option></arg>
@@ -420,7 +420,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg choice="plain"><option>event</option><arg
       choice="plain"><replaceable>event</replaceable></arg></arg>
@@ -433,7 +433,21 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg choice="plain"><option>routing</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall-lite</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg><option>-x</option></arg>
 
@@ -447,7 +461,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg choice="plain"><option>tc</option></arg>
     </cmdsynopsis>
@@ -459,7 +473,7 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="opt"><option>show | list | ls </option></arg>
+      <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg><option>-m</option></arg>
 
@@ -1088,7 +1102,9 @@
               <term><emphasis role="bold">routing</emphasis></term>
 
               <listitem>
-                <para>Displays the system's IPv4 routing configuration.</para>
+                <para>Displays the system's IPv4 routing configuration. The -c
+                option causes the route cache to be displayed in addition to
+                the other routing information.</para>
               </listitem>
             </varlistentry>
 

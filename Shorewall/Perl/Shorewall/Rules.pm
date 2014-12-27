@@ -1748,15 +1748,31 @@ sub process_actions() {
 						    undef, #Columns
 						    1 );   #Allow inline matches
 
-	    my $type        = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
-	    my $noinline    = 0;
-	    my $nolog       = ( $type == INLINE ) || 0;
-	    my $builtin     = 0;
-	    my $raw         = 0;
-	    my $mangle      = 0;
-	    my $filter      = 0;
-	    my $nat         = 0;
-	    my $terminating = 0;
+	    my $type = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
+
+	    use constant { INLINE_OPT           => 1 ,
+			   NOINLINE_OPT         => 2 ,
+			   NOLOG_OPT            => 4 ,
+			   BUILTIN_OPT          => 8 ,
+			   RAW_OPT              => 16 ,
+			   MANGLE_OPT           => 32 ,
+			   FILTER_OPT           => 64 ,
+			   NAT_OPT              => 128 ,
+			   TERMINATING_OPT      => 256 ,
+		       };
+
+	    my %options = ( inline      => INLINE_OPT ,
+			    noinline    => NOINLINE_OPT ,
+			    nolog       => NOLOG_OPT ,
+			    builtin     => BUILTIN_OPT ,
+			    raw         => RAW_OPT ,
+			    mangle      => MANGLE_OPT ,
+			    filter      => FILTER_OPT ,
+			    nat         => NAT_OPT ,
+			    terminating => TERMINATING_OPT ,
+			  );
+
+	    my $opts = $type == INLINE ? NOLOG_OPT : 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -1767,31 +1783,14 @@ sub process_actions() {
 
 	    if ( $options ne '-' ) {
 		for ( split_list( $options, 'option' ) ) {
-		    if ( $_ eq 'inline' ) {
-			$type = INLINE;
-		    } elsif ( $_ eq 'noinline' ) {
-			$noinline = 1;
-		    } elsif ( $_ eq 'nolog' ) {
-			$nolog = 1;
-		    } elsif ( $_ eq 'builtin' ) {
-			$builtin = 1;
-		    } elsif ( $_ eq 'terminating' ) {
-			$terminating = 1;
-		    } elsif ( $_ eq 'mangle' ) {
-			$mangle = 1;
-		    } elsif ( $_ eq 'raw' ) {
-			$raw = 1;
-		    } elsif ( $_ eq 'filter' ) {
-			$filter = 1;
-		    } elsif ( $_ eq 'nat' ) {
-			$nat = 1;
-		    } else {
-			fatal_error "Invalid option ($_)";
-		    }
+		    fatal_error "Invalid option ($_)" unless $options{$_};
+		    $opts |= $options{$_};
 		}
+
+		$type = INLINE if $opts & INLINE_OPT;
 	    }
 
-	    fatal_error "Conflicting OPTIONS ($options)" if $noinline && $type == INLINE;
+	    fatal_error "Conflicting OPTIONS ($options)" if ( $opts & NOINLINE_OPT && $type == INLINE ) || ( $opts & INLINE_OPT && $opts & BUILTIN_OPT );
 
 	    if ( my $actiontype = $targets{$action} ) {
 		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
@@ -1808,15 +1807,15 @@ sub process_actions() {
 		}
 	    }
 
-	    if ( $builtin ) {
+	    if ( $opts & BUILTIN_OPT ) {
 		my $actiontype = USERBUILTIN | OPTIONS;
-		$actiontype   |= MANGLE_TABLE if $mangle;
-		$actiontype   |= RAW_TABLE    if $raw;
-		$actiontype   |= NAT_TABLE    if $nat;
+		$actiontype   |= MANGLE_TABLE if $opts & MANGLE_OPT;
+		$actiontype   |= RAW_TABLE    if $opts & RAW_OPT;
+		$actiontype   |= NAT_TABLE    if $opts & NAT_OPT;
 		#
 		# For backward compatibility, we assume that user-defined builtins are valid in the filter table
 		#
-		$actiontype |= FILTER_TABLE if $filter || ! ($mangle || $raw || $nat);
+		$actiontype |= FILTER_TABLE if $opts & FILTER_OPT || ! ( $opts & ( MANGLE_OPT | RAW_OPT | NAT_OPT ) );
 
 		if ( $builtin_target{$action} ) {
 		    $builtin_target{$action} |= $actiontype;
@@ -1826,16 +1825,17 @@ sub process_actions() {
 
 		$targets{$action} = $actiontype;
 
-		make_terminating( $action ) if $terminating;
+		make_terminating( $action ) if $opts & TERMINATING_OPT
 	    } else {
-		fatal_error "Table names are only allowed for builtin actions" if $mangle || $raw || $nat || $filter;
-		new_action $action, $type, $noinline, $nolog;
+		fatal_error "Table names are only allowed for builtin actions" if $opts & ( MANGLE_OPT | RAW_OPT | NAT_OPT | FILTER_OPT );
+
+		new_action $action, $type, ( $opts & NOINLINE_OPT ) != 0 , ( $opts & NOLOG_OPT ) != 0;
 
 		my $actionfile = find_file( "action.$action" );
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		$inlines{$action} = { file => $actionfile, nolog => $nolog } if $type == INLINE;
+		$inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT } if $type == INLINE;
 	    }
 	}
     }

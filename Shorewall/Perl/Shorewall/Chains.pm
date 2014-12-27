@@ -30,7 +30,7 @@ package Shorewall::Chains;
 require Exporter;
 
 use Scalar::Util 'reftype';
-use Digest::SHA qw(sha1);
+use Digest::SHA qw(sha1_hex);
 use File::Basename;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
@@ -316,7 +316,7 @@ our $VERSION = '4.5_18';
 #                                               restriction  => Restrictions on further rules in this chain.
 #                                               audit        => Audit the result.
 #                                               filtered     => Number of filter rules at the front of an interface forward chain
-#                                               digest       => string representation of the chain's rules for use in optimization
+#                                               digest       => SHA1 digest of the string representation of the chain's rules for use in optimization
 #                                                               level 8.
 #                                               complete     => The last rule in the chain is a -g or a simple -j to a terminating target
 #                                                               Suppresses adding additional rules to the chain end of the chain
@@ -3054,7 +3054,7 @@ sub calculate_digest( $ ) {
 	}
     }
 
-    $chainref->{digest} = sha1 $digest;
+    $chainref->{digest} = sha1_hex $digest;
 }
 
 #
@@ -7665,7 +7665,7 @@ sub add_interface_options( $ ) {
 		}
 	    }
 
-	    $chainref->{digest} = sha1 $digest;
+	    $chainref->{digest} = sha1_hex $digest;
 	}
 	#
 	# Insert jumps to the interface chains into the rules chains

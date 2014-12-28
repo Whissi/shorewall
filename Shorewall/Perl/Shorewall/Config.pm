@@ -394,6 +394,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 MASQUERADE_TGT  => 'MASQUERADE Target',
 		 UDPLITEREDIRECT => 'UDPLITE Port Redirection',
 		 NEW_TOS_MATCH   => 'New tos Match',
+		 TARPIT_TARGET   => 'TARPIT Target',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -979,6 +980,7 @@ sub initialize( $;$$) {
 	       UDPLITEREDIRECT => undef,
 	       NEW_TOS_MATCH => undef,
 	       REAP_OPTION => undef,
+	       TARPIT_TARGET => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4226,6 +4228,10 @@ sub Addrtype() {
     qt1( "$iptables $iptablesw -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
 }
 
+sub Tarpit_Target() {
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp -j TARPIT" );
+}
+
 sub Tcpmss_Match() {
     qt1( "$iptables $iptablesw -A $sillyname -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT" );
 }
@@ -4540,6 +4546,7 @@ our %detect_capability =
       SIP0_HELPER => \&SIP0_Helper,
       SNMP_HELPER => \&SNMP_Helper,
       STATISTIC_MATCH => \&Statistic_Match,
+      TARPIT_TARGET => \&Tarpit_Target,
       TCPMSS_MATCH => \&Tcpmss_Match,
       TFTP_HELPER => \&TFTP_Helper,
       TFTP0_HELPER => \&TFTP0_Helper,
@@ -4692,6 +4699,7 @@ sub determine_capabilities() {
 	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
+	$capabilities{TARPIT_MATCH}    = detect_capability( 'TARPIT_MATCH' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

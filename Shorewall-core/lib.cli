@@ -2392,6 +2392,7 @@ determine_capabilities() {
     MASQUERADE_TGT=
     UDPLITEREDIRECT=
     NEW_TOS_MATCH=
+    TARPIT_TARGET=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -2544,6 +2545,8 @@ determine_capabilities() {
 	qt $g_tool -D $chain -m nfacct --nfacct-name $chain
 	qt $NFACCT del $chain
     fi
+
+    qt $g_tool -A $chain -p tcp -j TARPIT && TARPIT_TARGET=Yes
 
     if [ -n "$MANGLE_ENABLED" ]; then
 	qt $g_tool -t mangle -N $chain
@@ -2822,6 +2825,7 @@ report_capabilities_unsorted() {
     report_capability "MASQUERADE Target" $MASQUERADE_TGT
     report_capability "UDPLITE Port Redirection" $UDPLITEREDIRECT
     report_capability "New tos Match" $NEW_TOS_MATCH
+    report_capability "TARPIT Target" $TARPIT_TARGET
 
     report_capability "Amanda Helper" $AMANDA_HELPER
     report_capability "FTP Helper" $FTP_HELPER
@@ -2949,6 +2953,7 @@ report_capabilities_unsorted1() {
     report_capability1 MASQUERADE_TGT
     report_capability1 UDPLITEREDIRECT
     report_capability1 NEW_TOS_MATCH
+    report_capability1 TARPIT_TARGET
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

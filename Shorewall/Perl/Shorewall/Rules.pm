@@ -2211,6 +2211,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     my $blacklist   = ( $section == BLACKLIST_SECTION );
     my $matches     = $rule;
     my $raw_matches = '';
+    my $exceptionrule = '';
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2284,7 +2285,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	validate_level( $action );
 	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
 	$action   = 'LOG';
-    } elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES ) ) ) {
+    } elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES | TARPIT ) ) ) {
 	fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
 	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
     }
@@ -2294,7 +2295,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
     #
     fatal_error "The +, - and ! modifiers are not allowed in the blrules file" if $action =~ s/[-+!]$// && $blacklist;
     
-    unless ( $actiontype & ( ACTION | INLINE | IPTABLES ) ) {
+    unless ( $actiontype & ( ACTION | INLINE | IPTABLES | TARPIT ) ) {
 	#
 	# Catch empty parameter list
 	#
@@ -2397,6 +2398,20 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		  } else {
 		      $action = '';
 		  }
+	      },
+
+	      TARPIT => sub {
+		  require_capability 'TARPIT_TARGET', 'The TARPIT Target', 's';
+
+		  fatal_error "TARPIT is only valid with PROTO tcp (6)" if ( resolve_proto( $proto ) || 0 ) != TCP;
+
+		  if ( $param ) {
+		      fatal_error "TARPIT Parameter must be 'tarpit', 'honeypot' or 'reset'" unless $param =~ /^(tarpit|honeypot|reset)$/;
+		      $action     = "TARPIT --$param";
+		      $log_action = 'TARPIT';
+		  }
+
+		  $exceptionrule = '-p 6 ';
 	      },
 	    );
 
@@ -2831,7 +2846,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 		     $action ,
 		     $loglevel ,
 		     $log_action ,
-		     '' )
+		     $exceptionrule )
 	    unless unreachable_warning( $wildcard || $section == DEFAULTACTION_SECTION, $chainref );
     }
 

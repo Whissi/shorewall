@@ -110,6 +110,7 @@ our @EXPORT = ( qw(
 		    INLINERULE
 		    OPTIONS
                     IPTABLES
+		    TARPIT
                     FILTER_TABLE
                     NAT_TABLE
                     MANGLE_TABLE
@@ -426,6 +427,7 @@ use constant { STANDARD     =>      0x1,       #defined by Netfilter
 	       INLINERULE   =>  0x40000,       #INLINE
 	       OPTIONS      =>  0x80000,       #Target Accepts Options
 	       IPTABLES     => 0x100000,       #IPTABLES or IP6TABLES
+	       TARPIT       => 0x200000,       #TARPIT
 
 	       FILTER_TABLE =>  0x1000000,
 	       MANGLE_TABLE =>  0x2000000,
@@ -2858,6 +2860,7 @@ sub initialize_chain_table($) {
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		    'INLINE'          => INLINERULE,
 		    'IPTABLES'        => IPTABLES,
+		    'TARPIT'          => STANDARD + TARPIT + OPTIONS,
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
@@ -2923,6 +2926,7 @@ sub initialize_chain_table($) {
 		    'HELPER'          => STANDARD + HELPER + NATONLY, #Actually RAWONLY
 		    'INLINE'          => INLINERULE,
 		    'IP6TABLES'       => IPTABLES,
+		    'TARPIT'          => STANDARD + TARPIT + OPTIONS,
 		   );
 
 	for my $chain ( qw(OUTPUT PREROUTING) ) {

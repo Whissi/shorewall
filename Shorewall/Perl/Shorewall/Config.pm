@@ -4699,7 +4699,7 @@ sub determine_capabilities() {
 	$capabilities{MASQUERADE_TGT}  = detect_capability( 'MASQUERADE_TGT' );
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
-	$capabilities{TARPIT_MATCH}    = detect_capability( 'TARPIT_MATCH' );
+	$capabilities{TARPIT_TARGET}   = detect_capability( 'TARPIT_TARGET' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

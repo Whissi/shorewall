@@ -2401,7 +2401,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 	      },
 
 	      TARPIT => sub {
-		  require_capability 'TARPIT_TARGET', 'The TARPIT Target', 's';
+		  require_capability 'TARPIT_TARGET', 'TARPIT', 's';
 
 		  fatal_error "TARPIT is only valid with PROTO tcp (6)" if ( resolve_proto( $proto ) || 0 ) != TCP;
 

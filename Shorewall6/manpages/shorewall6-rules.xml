@@ -628,6 +628,76 @@
                 url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>TARPIT [(<emphasis role="bold">tarpit</emphasis> |
+              <emphasis role="bold">honeypot</emphasis> | <emphasis
+              role="bold">reset</emphasis>)]</term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.6.</para>
+
+                <para>TARPIT captures and holds incoming TCP connections using
+                no local per-connection resources.</para>
+
+                <para>TARPIT only works with the PROTO column set to tcp (6),
+                and is totally application agnostic. This module will answer a
+                TCP request and play along like a listening server, but aside
+                from sending an ACK or RST, no data is sent. Incoming packets
+                are ignored and dropped. The attacker will terminate the
+                session eventually. This module allows the initial packets of
+                an attack to be captured by other software for inspection. In
+                most cases this is sufficient to determine the nature of the
+                attack.</para>
+
+                <para>This offers similar functionality to LaBrea
+                &lt;http://www.hackbusters.net/LaBrea/&gt; but does not
+                require dedicated hardware or IPs. Any TCP port that you would
+                normally DROP or REJECT can instead become a tarpit.</para>
+
+                <para>The target accepts a single optional parameter:</para>
+
+                <variablelist>
+                  <varlistentry>
+                    <term>tarpit</term>
+
+                    <listitem>
+                      <para>This mode is the default and completes a
+                      connection with the attacker but limits the window size
+                      to 0, thus keeping the attacker waiting long periods of
+                      time. While he is maintaining state of the connection
+                      and trying to continue every 60-240 seconds, we keep
+                      none, so it is very lightweight. Attempts to close the
+                      connection are ignored, forcing the remote side to time
+                      out the connection in 12-24 minutes.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>honeypot</term>
+
+                    <listitem>
+                      <para>This mode completes a connection with the
+                      attacker, but signals a normal window size, so that the
+                      remote side will attempt to send data, often with some
+                      very nasty exploit attempts. We can capture these
+                      packets for decoding and further analysis. The module
+                      does not send any data, so if the remote expects an
+                      application level response, the game is up.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>reset</term>
+
+                    <listitem>
+                      <para>This mode is handy because we can send an inline
+                      RST (reset). It has no other function.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
           <para>The <replaceable>target</replaceable> may optionally be

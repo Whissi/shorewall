@@ -109,25 +109,6 @@ get_config() {
 	    g_tool=$IP6TABLES
 	fi
 
-	if [ -n "$IP" ]; then
-	    case "$IP" in
-		*/*)
-		    if [ ! -x "$IP" ] ; then
-			fatal_error "The program specified in IP ($IP) does not exist or is not executable"
-		    fi
-		    ;;
-		*)
-		    prog="$(mywhich $IP 2> /dev/null)"
-		    if [ -z "$prog" ] ; then
-			fatal_error "Can't find $IP executable"
-		    fi
-		    IP=$prog
-		    ;;
-	    esac
-	else
-	    IP='ip'
-	fi
-
 	if [ -n "$IPSET" ]; then
 	    case "$IPSET" in
 		*/*)
@@ -243,6 +224,25 @@ get_config() {
 	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
 	    SHOREWALL_SHELL=/bin/sh
 	fi
+    fi
+
+    if [ -n "$IP" ]; then
+	case "$IP" in
+	    */*)
+		if [ ! -x "$IP" ] ; then
+		    fatal_error "The program specified in IP ($IP) does not exist or is not executable"
+		fi
+		;;
+	    *)
+		prog="$(mywhich $IP 2> /dev/null)"
+		if [ -z "$prog" ] ; then
+		    fatal_error "Can't find $IP executable"
+		fi
+		IP=$prog
+		;;
+	esac
+    else
+	IP='ip'
     fi
 
     case $VERBOSITY in

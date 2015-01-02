@@ -3400,11 +3400,6 @@ get_config() {
 
     g_hostname=$(hostname 2> /dev/null)
 
-    IP=$(mywhich ip 2> /dev/null)
-    if [ -z "$IP" ] ; then
-	fatal_error "Can't find ip executable"
-    fi
-
     if [ -n "$IPSET" ]; then
 	case "$IPSET" in
 	    */*)
@@ -3425,6 +3420,11 @@ get_config() {
     fi
 
     TC=tc
+
+    IP=$(mywhich ip 2> /dev/null)
+    if [ -z "$IP" ] ; then
+	fatal_error "Can't find ip executable"
+    fi
 
     g_loopback=$(find_loopback_interfaces)
 

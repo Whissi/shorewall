@@ -646,6 +646,24 @@ find_first_interface_address_if_any() # $1 = interface
 }
 
 #
+#Determines if the passed interface is a loopback interface
+#
+loopback_interface() { #$1 = Interface name
+    [ "$1" = lo ] || $IP link show $1 | fgrep -q LOOPBACK
+}
+
+#
+# Find Loopback Interfaces
+#
+find_loopback_interfaces() {
+    local interfaces
+
+    interfaces=$($IP link show | fgrep LOOPBACK | sed 's/://g' | cut -d ' ' -f 2)
+
+    [ -n "$interfaces" ] && echo $interfaces || echo lo
+}
+
+#
 # Internal version of 'which'
 #
 mywhich() {

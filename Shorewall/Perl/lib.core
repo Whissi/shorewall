@@ -652,7 +652,7 @@ interface_is_usable() # $1 = interface
     local status;
     status=0
 
-    if [ "$1" != lo ]; then
+    if ! loopback_interface $1 then
 	if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]; then
 	    [ "$COMMAND" = enable ] || run_isusable_exit $1
 	    status=$?
@@ -902,18 +902,21 @@ detect_gateway() # $1 = interface
 # Disable IPV6
 #
 disable_ipv6() {
-    local foo
-    foo="$($IP -f inet6 addr list 2> /dev/null)"
+    local temp
+    temp="$($IP -f inet6 addr list 2> /dev/null)"
 
-    if [ -n "$foo" ]; then
+    if [ -n "$temp" ]; then
 	if [ -x "$IP6TABLES" ]; then
 	    $IP6TABLES -P FORWARD DROP
 	    $IP6TABLES -P INPUT DROP
 	    $IP6TABLES -P OUTPUT DROP
 	    $IP6TABLES -F
 	    $IP6TABLES -X
-	    $IP6TABLES -A OUTPUT -o lo -j ACCEPT
-	    $IP6TABLES -A INPUT -i lo -j ACCEPT
+
+	    for temp in $(find_loopback_interfaces); do
+		$IP6TABLES -A OUTPUT -o $temp -j ACCEPT
+		$IP6TABLES -A INPUT  -i $temp -j ACCEPT
+	    done
 	else
 	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
 	fi

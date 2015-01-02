@@ -3421,6 +3421,8 @@ get_config() {
 
     TC=tc
 
+    g_loopback=$(find_loopback_interfaces)
+
 }
 
 #
@@ -3724,6 +3726,7 @@ shorewall_cli() {
     g_inline=
     g_tcrules=
     g_counters=
+    g_loopback=
 
     VERBOSE=
     VERBOSITY=1

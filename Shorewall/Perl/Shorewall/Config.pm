@@ -395,6 +395,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 UDPLITEREDIRECT => 'UDPLITE Port Redirection',
 		 NEW_TOS_MATCH   => 'New tos Match',
 		 TARPIT_TARGET   => 'TARPIT Target',
+		 IFACE_MATCH     => 'Iface Match',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -713,7 +714,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "4.5.19-Beta1",
-		    CAPVERSION              => 40600 ,
+		    CAPVERSION              => 40606 ,
 		  );
     #
     # From shorewall.conf file
@@ -981,6 +982,7 @@ sub initialize( $;$$) {
 	       NEW_TOS_MATCH => undef,
 	       REAP_OPTION => undef,
 	       TARPIT_TARGET => undef,
+	       IFACE_MATCH => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4462,6 +4464,12 @@ sub Arptables_JF() {
     }
 }
 
+sub Iface_Match() {
+    qt1( "$iptables $iptablesw -A $sillyname -m iface --iface lo --loopback" );
+}
+
+
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AMANDA_HELPER => \&Amanda_Helper,
@@ -4494,6 +4502,7 @@ our %detect_capability =
       HASHLIMIT_MATCH => \&Hashlimit_Match,
       HEADER_MATCH => \&Header_Match,
       HELPER_MATCH => \&Helper_Match,
+      IFACE_MATCH => \&Iface_Match,
       IMQ_TARGET => \&Imq_Target,
       IPMARK_TARGET => \&IPMark_Target,
       IPP2P_MATCH => \&Ipp2p_Match,
@@ -4700,6 +4709,7 @@ sub determine_capabilities() {
 	$capabilities{UDPLITEREDIRECT} = detect_capability( 'UDPLITEREDIRECT' );
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
 	$capabilities{TARPIT_TARGET}   = detect_capability( 'TARPIT_TARGET' );
+	$capabilities{IFACE_MATCH}     = detect_capability( 'IFACE_MATCH' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

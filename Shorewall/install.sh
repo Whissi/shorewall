@@ -323,6 +323,7 @@ if [ $PRODUCT = shorewall ]; then
 	    fi
 
 	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Chains.pm
+	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Config.pm
 	fi
     elif [ "$BUILD" = "$HOST" ]; then
         #

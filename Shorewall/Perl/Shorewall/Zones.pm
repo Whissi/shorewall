@@ -55,6 +55,7 @@ our @EXPORT = ( qw( NOTHING
 		    find_zone
 		    firewall_zone
 		    loopback_zones
+		    loopback_interface
 		    local_zones
 		    defined_zone
 		    zone_type
@@ -219,6 +220,7 @@ our $minroot;
 our $zonemark;
 our $zonemarkincr;
 our $zonemarklimit;
+our $loopback_interface;
 
 use constant { FIREWALL => 1,
 	       IP       => 2,
@@ -329,6 +331,7 @@ sub initialize( $$ ) {
     %mapbase1 = ();
     $baseseq = 0;
     $minroot = 0;
+    $loopback_interface = '';
 
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
@@ -341,6 +344,7 @@ sub initialize( $$ ) {
 				  ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				  maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  logmartians => BINARY_IF_OPTION,
+				  loopback    => BINARY_IF_OPTION,
 				  nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				  norfc1918   => OBSOLETE_IF_OPTION,
 				  nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -386,6 +390,7 @@ sub initialize( $$ ) {
 				    destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
+				    loopback    => BINARY_IF_OPTION,
 				    maclist     => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    nets        => IPLIST_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_VSERVER,
 				    nosmurfs    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
@@ -1353,8 +1358,15 @@ sub process_interface( $$ ) {
 	$options{ignore} ||= 0;
     }
 
+    $options{loopback} ||= ( $physical eq 'lo' );
+
+    if ( $options{loopback} ) {
+	fatal_error "Only one 'loopback' interface is allowed" if $loopback_interface;
+	$loopback_interface = $physical;
+    }
+
     if ( $options{unmanaged} ) {
-	fatal_error "The 'lo' interface may not be unmanaged when there are vserver zones" if $physical eq 'lo' && vserver_zones;
+	fatal_error "The loopback interface ($loopback_interface) may not be unmanaged when there are vserver zones" if $options{loopback} && vserver_zones;
 
 	while ( my ( $option, $value ) = each( %options ) ) {
 	    fatal_error "The $option option may not be specified with 'unmanaged'" if $prohibitunmanaged{$option};
@@ -1382,9 +1394,9 @@ sub process_interface( $$ ) {
     if ( $zone ) {
 	fatal_error "Unmanaged interfaces may not be associated with a zone" if $options{unmanaged};
 
-	if ( $physical eq 'lo' ) {
-	    fatal_error "Only a loopback zone may be assigned to 'lo'" unless $zoneref->{type} == LOOPBACK;
-	    fatal_error "Invalid definition of 'lo'"                   if $bridge ne $interface;
+	if ( $options{loopback} ) {
+	    fatal_error "Only a loopback zone may be assigned to '$physical'" unless $zoneref->{type} == LOOPBACK;
+	    fatal_error "Invalid definition of '$physical'"                   if $bridge ne $interface;
 	    
 	    for ( qw/arp_filter
 		     arp_ignore
@@ -1406,10 +1418,10 @@ sub process_interface( $$ ) {
 		     upnpclient
 		     mss
 		    / ) {
-		fatal_error "The 'lo' interface may not specify the '$_' option" if supplied $options{$_};
+		fatal_error "The '$config{LOOPBACK}' interface may not specify the '$_' option" if supplied $options{$_};
 	    }
 	} else {
-	    fatal_error "A loopback zone may only be assigned to 'lo'" if $zoneref->{type} == LOOPBACK;
+	    fatal_error "A loopback zone may only be assigned to the loopback interface" if $zoneref->{type} == LOOPBACK;
 	}
 
 	$netsref ||= [ allip ];
@@ -1466,6 +1478,22 @@ sub validate_interfaces_file( $ ) {
     #
     fatal_error "No network interfaces defined" unless @interfaces;
 
+    #
+    # Define the loopback interface if it hasn't been already
+    #
+    unless ( $loopback_interface ) {
+	$interfaces{lo} = { name             => 'lo',
+			    bridge           => 'lo',
+			    nets             => 0,
+			    number           => $nextinum++,
+			    root             => 'lo',
+			    broadcasts       => undef,
+			    options          => { unmanaged => 1, loopback => 1 , ignore => 1 },
+			    zone             => '',
+			    physical         => 'lo' };
+	push @interfaces, $loopback_interface = 'lo';
+    }
+
     if ( vserver_zones ) {
 	#
 	# While the user thinks that vservers are associated with a particular interface, they really are not.
@@ -1481,7 +1509,7 @@ sub validate_interfaces_file( $ ) {
 				    broadcasts => undef ,
 				    options    => {} ,
 				    zone       => '',
-				    physical   => 'lo',
+				    physical   => $loopback_interface,
 				  };
 
 	push @interfaces, $interface;
@@ -1543,6 +1571,13 @@ sub known_interface($)
     $physical{$interface} || 0;
 }
 
+# 
+# Return the loopback interface physical name
+#
+sub loopback_interface() {
+    $loopback_interface;
+}
+
 #
 # Return interface number
 #
@@ -1589,7 +1624,7 @@ sub managed_interfaces() {
 # Return a list of unmanaged interfaces (skip 'lo' since it is implicitly unmanaged when there are no loopback zones).
 #
 sub unmanaged_interfaces() {
-    grep ( $interfaces{$_}{options}{unmanaged} && $_ ne 'lo', @interfaces );
+    grep ( $interfaces{$_}{options}{unmanaged} && ! $interfaces{$_}{options}{loopback}, @interfaces );
 }
 
 #
@@ -1989,10 +2024,10 @@ sub process_host( ) {
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
 	fatal_error "Unmanaged interfaces may not be associated with a zone" if $interfaceref->{unmanaged};
 
-	if ( $interfaceref->{name} eq 'lo' ) {
-	    fatal_error "Only a loopback zone may be associated with the loopback interface (lo)" if $type != LOOPBACK;
+	if ( $interfaceref->{physical} eq $loopback_interface ) {
+	    fatal_error "Only a loopback zone may be associated with the loopback interface ($loopback_interface)" if $type != LOOPBACK;
 	} else {
-	    fatal_error "Loopback zones may only be associated with the loopback interface (lo)" if $type == LOOPBACK;
+	    fatal_error "Loopback zones may only be associated with the loopback interface ($loopback_interface)" if $type == LOOPBACK;
 	}
     } else {
 	fatal_error "Invalid HOST(S) column contents: $hosts"

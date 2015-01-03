@@ -412,7 +412,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 SIP0_HELPER     => 'SIP-0 Helper',
 		 SNMP_HELPER     => 'SNMP Helper',
 		 TFTP_HELPER     => 'TFTP Helper',
-		 TFTP0_HELPER     => 'TFTP-0 Helper',
+		 TFTP0_HELPER    => 'TFTP-0 Helper',
 		 #
 		 # Constants
 		 #

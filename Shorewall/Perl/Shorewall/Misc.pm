@@ -854,7 +854,7 @@ sub add_common_rules ( $$ ) {
 
 	my $interfaceref = find_interface $interface;
 
-	unless ( $interfaceref->{physical} eq 'lo' ) {
+	unless ( $interfaceref->{physical} eq loopback_interface ) {
 	    unless ( $interfaceref->{options}{ignore} & NO_SFILTER || $interfaceref->{options}{rpfilter} ) {
 
 		my @filters = @{$interfaceref->{filter}};
@@ -1452,7 +1452,7 @@ sub handle_loopback_traffic() {
     my $rawout   = $raw_table->{OUTPUT};
     my $rulenum  = 0;
     my $loopback = loopback_zones;
-    my $loref    = known_interface('lo');
+    my $loref    = known_interface(loopback_interface);
 
     my $unmanaged;
     my $outchainref;
@@ -1463,17 +1463,17 @@ sub handle_loopback_traffic() {
 	# We have a vserver zone -- route output through a separate chain
 	#
 	$outchainref = new_standard_chain 'loopback';
-	add_ijump $filter_table->{OUTPUT}, j => $outchainref, o => 'lo';
+	add_ijump $filter_table->{OUTPUT}, j => $outchainref, o => loopback_interface;
     } else {
 	#
 	# Only the firewall -- just use the OUTPUT chain
 	#
 	if ( $unmanaged = $loref && $loref->{options}{unmanaged} ) {
-	    add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => 'lo' );
-	    add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => 'lo' );
+	    add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => loopback_interface );
+	    add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => loopback_interface );
 	} else {
 	    $outchainref = $filter_table->{OUTPUT};
-	    @rule = ( o => 'lo');
+	    @rule = ( o => loopback_interface);
 	}
     }
 
@@ -1552,7 +1552,7 @@ sub add_interface_jumps {
     our %forward_jump_added;
     my @interfaces = grep $_ ne '%vserver%', @_;
     my $dummy;
-    my $lo_jump_added = interface_zone( 'lo' ) && ! get_interface_option( 'lo', 'destonly' );
+    my $lo_jump_added = interface_zone( loopback_interface ) && ! get_interface_option( loopback_interface, 'destonly' );
     #
     # Add Nat jumps
     #
@@ -1582,7 +1582,7 @@ sub add_interface_jumps {
 	my $outputref    = $filter_table->{output_chain $interface};
 	my $interfaceref = find_interface($interface);
 
-	add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => 'lo' if $interfaceref->{physical} eq '+' && ! $lo_jump_added++;
+	add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => loopback_interface if $interfaceref->{physical} eq '+' && ! $lo_jump_added++;
 
 	if ( $interfaceref->{options}{port} ) {
 	    my $bridge = $interfaceref->{bridge};
@@ -1621,7 +1621,7 @@ sub add_interface_jumps {
 	}
     }
 
-    add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => 'lo' unless $lo_jump_added++;
+    add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => loopback_interface unless $lo_jump_added++;
 
     handle_loopback_traffic;
 }
@@ -2551,8 +2551,8 @@ EOF
 
     process_routestopped unless process_stoppedrules;
 
-    add_ijump $input,  j => 'ACCEPT', i => 'lo';
-    add_ijump $output, j => 'ACCEPT', o => 'lo' unless $config{ADMINISABSENTMINDED};
+    add_ijump $input,  j => 'ACCEPT', i => loopback_interface;
+    add_ijump $output, j => 'ACCEPT', o => loopback_interface unless $config{ADMINISABSENTMINDED};
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 

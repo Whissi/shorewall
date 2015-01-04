@@ -1463,17 +1463,31 @@ sub handle_loopback_traffic() {
 	# We have a vserver zone -- route output through a separate chain
 	#
 	$outchainref = new_standard_chain 'loopback';
-	add_ijump $filter_table->{OUTPUT}, j => $outchainref, o => loopback_interface;
+
+	if ( have_capability 'IFACE_MATCH' ) {
+	    add_ijump $filter_table->{OUTPUT}, j => $outchainref, iface => '--dev-out --loopback';
+	} else {
+	    add_ijump $filter_table->{OUTPUT}, j => $outchainref, o => loopback_interface;
+	}
     } else {
 	#
 	# Only the firewall -- just use the OUTPUT chain
 	#
 	if ( $unmanaged = $loref && $loref->{options}{unmanaged} ) {
-	    add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => loopback_interface );
-	    add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => loopback_interface );
+	    if ( have_capability 'IFACE_MATCH' ) {
+		add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', iface => '--dev-in --loopback' );
+		add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', iface => '--dev-out --loopback' );
+	    } else {
+		add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => loopback_interface );
+		add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => loopback_interface );
+	    }
 	} else {
 	    $outchainref = $filter_table->{OUTPUT};
-	    @rule = ( o => loopback_interface);
+	    if ( have_capability 'IFACE_MATCH' ) {
+		@rule = ( iface => '--dev-out --loopback' );
+	    } else {
+		@rule = ( o => loopback_interface );
+	    }
 	}
     }
 
@@ -1582,7 +1596,13 @@ sub add_interface_jumps {
 	my $outputref    = $filter_table->{output_chain $interface};
 	my $interfaceref = find_interface($interface);
 
-	add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => loopback_interface if $interfaceref->{physical} eq '+' && ! $lo_jump_added++;
+	if ( $interfaceref->{physical} eq '+' && ! $lo_jump_added++ ) {
+	    if ( have_capability 'IFACE_MATCH' ) {
+		add_ijump $filter_table->{INPUT} , j => 'ACCEPT', iface => '--dev-in --loopback';
+	    } else {
+		add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => loopback_interface;
+	    }
+	}
 
 	if ( $interfaceref->{options}{port} ) {
 	    my $bridge = $interfaceref->{bridge};
@@ -1621,7 +1641,13 @@ sub add_interface_jumps {
 	}
     }
 
-    add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => loopback_interface unless $lo_jump_added++;
+    unless ( $lo_jump_added++ ) {
+	if ( have_capability 'IFACE_MATCH' ) {
+	    add_ijump $filter_table->{INPUT} , j => 'ACCEPT', iface => '--dev-in --loopback';
+	} else {
+	    add_ijump $filter_table->{INPUT} , j => 'ACCEPT', i => loopback_interface;
+	}
+    }
 
     handle_loopback_traffic;
 }
@@ -2551,8 +2577,13 @@ EOF
 
     process_routestopped unless process_stoppedrules;
 
-    add_ijump $input,  j => 'ACCEPT', i => loopback_interface;
-    add_ijump $output, j => 'ACCEPT', o => loopback_interface unless $config{ADMINISABSENTMINDED};
+    if ( have_capability 'IFACE_MATCH' ) {
+	add_ijump $input,  j => 'ACCEPT', iface => '--dev-in --loopback';
+	add_ijump $output, j => 'ACCEPT', iface => '--dev-out --loopback' unless $config{ADMINISABSENTMINDED};
+    } else {
+	add_ijump $input,  j => 'ACCEPT', i => loopback_interface;
+	add_ijump $output, j => 'ACCEPT', o => loopback_interface unless $config{ADMINISABSENTMINDED};
+    }
 
     my $interfaces = find_interfaces_by_option 'dhcp';
 

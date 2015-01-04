@@ -652,7 +652,7 @@ interface_is_usable() # $1 = interface
     local status;
     status=0
 
-    if ! loopback_interface $1 then
+    if ! loopback_interface $1; then
 	if interface_is_up $1 && [ "$(find_first_interface_address_if_any $1)" != 0.0.0.0 ]; then
 	    [ "$COMMAND" = enable ] || run_isusable_exit $1
 	    status=$?

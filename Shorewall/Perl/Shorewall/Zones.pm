@@ -1488,7 +1488,7 @@ sub validate_interfaces_file( $ ) {
 			    number           => $nextinum++,
 			    root             => 'lo',
 			    broadcasts       => undef,
-			    options          => { unmanaged => 1, loopback => 1 , ignore => 1 },
+			    options          => { loopback => 1 , ignore => 1 },
 			    zone             => '',
 			    physical         => 'lo' };
 	push @interfaces, $loopback_interface = 'lo';

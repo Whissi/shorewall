@@ -1475,10 +1475,8 @@ sub handle_loopback_traffic() {
 	#
 	if ( $unmanaged = $loref && $loref->{options}{unmanaged} ) {
 	    if ( have_capability 'IFACE_MATCH' ) {
-		add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', iface => '--dev-in --loopback' );
 		add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', iface => '--dev-out --loopback' );
 	    } else {
-		add_ijump( $filter_table->{INPUT},  j => 'ACCEPT', i => loopback_interface );
 		add_ijump( $filter_table->{OUTPUT}, j => 'ACCEPT', o => loopback_interface );
 	    }
 	} else {

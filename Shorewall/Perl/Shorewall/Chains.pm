@@ -1986,6 +1986,10 @@ sub zone_forward_chain($) {
 #
 sub use_forward_chain($$) {
     my ( $interface, $chainref ) = @_;
+    my @loopback_zones = loopback_zones;
+
+    return 0 if $interface eq loopback_interface && ! @loopback_zones;
+
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
 

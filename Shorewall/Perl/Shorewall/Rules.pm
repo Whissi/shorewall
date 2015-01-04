@@ -2405,10 +2405,12 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$ ) {
 
 		  fatal_error "TARPIT is only valid with PROTO tcp (6)" if ( resolve_proto( $proto ) || 0 ) != TCP;
 
-		  if ( $param ) {
+		  if ( supplied $param ) {
 		      fatal_error "TARPIT Parameter must be 'tarpit', 'honeypot' or 'reset'" unless $param =~ /^(tarpit|honeypot|reset)$/;
 		      $action     = "TARPIT --$param";
 		      $log_action = 'TARPIT';
+		  } else {
+		      $action = $log_action = 'TARPIT';
 		  }
 
 		  $exceptionrule = '-p 6 ';

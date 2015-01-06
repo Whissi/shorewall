@@ -530,8 +530,9 @@ sub process_a_provider( $ ) {
 		$track = 0;
 	    } elsif ( $option =~ /^balance=(\d+)$/ ) {
 		fatal_error q('balance=<weight>' is not available in IPv6) if $family == F_IPV6;
+		fatal_error 'The balance setting must be non-zero' unless $1;
 		$balance = $1;
-	    } elsif ( $option eq 'balance' ) {
+	    } elsif ( $option eq 'balance' || $option eq 'primary') {
 		$balance = 1;
 	    } elsif ( $option eq 'loose' ) {
 		$loose   = 1;

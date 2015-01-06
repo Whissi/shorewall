@@ -162,8 +162,8 @@
                 this provider's gateway to be added to the <emphasis
                 role="bold">main</emphasis> routing table (USE_DEFAULT_RT=No)
                 or to the <emphasis role="bold">balance</emphasis> routing
-                table (USE_DEFAULT_RT=Yes). At most one provider can specify
-                this option.</para>
+                table (USE_DEFAULT_RT=Yes). Only one provider can specify this
+                option.</para>
               </listitem>
             </varlistentry>
 
@@ -245,6 +245,19 @@
                 is assumed. Use of that option is preferred to this one,
                 unless an <replaceable>address</replaceable> is provider in
                 the INTERFACE column.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">primary</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.6, <emphasis
+                role="bold">primary</emphasis> is a synonym for <emphasis
+                role="bold">balance</emphasis> (see above) and is preferred
+                when the remaining providers specify <emphasis
+                role="bold">fallback</emphasis> or <emphasis
+                role="bold">tproxy</emphasis>.</para>
               </listitem>
             </varlistentry>
 

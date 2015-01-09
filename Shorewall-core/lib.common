@@ -658,7 +658,7 @@ loopback_interface() { #$1 = Interface name
 find_loopback_interfaces() {
     local interfaces
 
-    interfaces=$($IP link show | fgrep LOOPBACK | sed 's/://g' | cut -d ' ' -f 2)
+    [ -x "$IP" ] && interfaces=$($IP link show | fgrep LOOPBACK | sed 's/://g' | cut -d ' ' -f 2)
 
     [ -n "$interfaces" ] && echo $interfaces || echo lo
 }

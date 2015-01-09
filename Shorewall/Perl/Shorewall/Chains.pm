@@ -4445,6 +4445,7 @@ sub do_proto( $$$;$ )
 
 			if ( $ports =~ /^\+/ ) {
 			    $output .= $invert;
+			    $output .= '-m set ';
 			    $output .= get_set_flags( $ports, 'dst' );
 			} else {
 			    $sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
@@ -4484,7 +4485,8 @@ sub do_proto( $$$;$ )
 
 			if ( $ports =~ /^\+/ ) {
 			    $output .= $invert;
-			    $output .= get_set_flags( $ports, 'dst' );
+			    $output .= '-m set ';
+			    $output .= get_set_flags( $ports, 'src' );
 			} elsif ( $multiport ) {
 			    if ( port_count( $sports ) > 15 ) {
 				if ( $restricted ) {
@@ -4649,30 +4651,35 @@ sub do_iproto( $$$ )
 
 		    if ( $ports ne '' ) {
 			$invert  = $ports =~ s/^!// ? '! ' : '';
-			$sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
 
-			if ( $multiport || $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
-			    fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' , 1 );
+			if ( $ports =~ /^\+/ ) {
+			    push @output , set => ${invert} . get_set_flags( $ports, 'dst' );
+			} else {
+			    $sports = '', require_capability( 'MULTIPORT', "'=' in the SOURCE PORT(S) column", 's' ) if ( $srcndst = $sports eq '=' );
 
-			    if ( port_count ( $ports ) > 15 ) {
-				if ( $restricted ) {
-				    fatal_error "A port list in this file may only have up to 15 ports";
-				} elsif ( $invert ) {
-				    fatal_error "An inverted port list may only have up to 15 ports";
+			    if ( $multiport || $ports =~ tr/,/,/ > 0 || $sports =~ tr/,/,/ > 0 ) {
+				fatal_error "Port lists require Multiport support in your kernel/iptables" unless have_capability( 'MULTIPORT' , 1 );
+
+				if ( port_count ( $ports ) > 15 ) {
+				    if ( $restricted ) {
+					fatal_error "A port list in this file may only have up to 15 ports";
+				    } elsif ( $invert ) {
+					fatal_error "An inverted port list may only have up to 15 ports";
+				    }
 				}
-			    }
 
-			    $ports = validate_port_list $pname , $ports;
-			    push @output, multiport => ( $srcndst ? "${invert}--ports ${ports} " : "${invert}--dports ${ports} " );
-			    $multiport = 1;
-			}  else {
-			    fatal_error "Missing DEST PORT" unless supplied $ports;
-			    $ports   = validate_portpair $pname , $ports;
+				$ports = validate_port_list $pname , $ports;
+				push @output, multiport => ( $srcndst ? "${invert}--ports ${ports} " : "${invert}--dports ${ports} " );
+				$multiport = 1;
+			    }  else {
+				fatal_error "Missing DEST PORT" unless supplied $ports;
+				$ports   = validate_portpair $pname , $ports;
 
-			    if ( $srcndst ) {
-				push @output, multiport => "${invert}--ports ${ports}";
-			    } else {
-				push @output, dport => "${invert}${ports}";
+				if ( $srcndst ) {
+				    push @output, multiport => "${invert}--ports ${ports}";
+				} else {
+				    push @output, dport => "${invert}${ports}";
+				}
 			    }
 			}
 		    } else {
@@ -4682,8 +4689,10 @@ sub do_iproto( $$$ )
 		    if ( $sports ne '' ) {
 			fatal_error "'=' in the SOURCE PORT(S) column requires one or more ports in the DEST PORT(S) column" if $sports eq '=';
 			$invert = $sports =~ s/^!// ? '! ' : '';
-			if ( $multiport ) {
 
+			if ( $ports =~ /^\+/ ) {
+			    push @output, set => ${invert} . get_set_flags( $ports, 'src' );
+			} elsif ( $multiport ) {
 			    if ( port_count( $sports ) > 15 ) {
 				if ( $restricted ) {
 				    fatal_error "A port list in this file may only have up to 15 ports";

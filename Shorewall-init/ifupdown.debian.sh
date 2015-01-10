@@ -28,7 +28,7 @@ setstatedir() {
 	statedir=$( . /${CONFDIR}/${PRODUCT}/vardir && echo $VARDIR )
     fi
 
-    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARDIR}/${PRODUCT}
+    [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARLIB}/${PRODUCT}
 
     if [ ! -x $STATEDIR/firewall ]; then
 	if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then

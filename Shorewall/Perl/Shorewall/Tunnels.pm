@@ -132,6 +132,13 @@ sub setup_tunnels() {
 	add_tunnel_rule $inchainref,  p => 'tcp --dport 1723', @$source
 	}
 
+    sub setup_one_tinc {
+	my ( $inchainref, $outchainref, $kind, $source, $dest ) = @_;
+
+	add_tunnel_rule $inchainref,  p => 'udp --dport 655', @$source;
+	add_tunnel_rule $outchainref, p => 'udp --dport 655', @$dest;
+    }
+
     sub setup_one_openvpn {
 	my ($inchainref, $outchainref, $kind, $source, $dest) = @_;
 
@@ -154,7 +161,7 @@ sub setup_tunnels() {
 	}
 
 	add_tunnel_rule $inchainref,  p => "$protocol --dport $port", @$source;
-	add_tunnel_rule $outchainref, p => "$protocol --dport $port", @$dest;;
+	add_tunnel_rule $outchainref, p => "$protocol --dport $port", @$dest;
     }
 
     sub setup_one_openvpn_client {
@@ -263,6 +270,7 @@ sub setup_tunnels() {
 				'6in4'          => { function => \&setup_one_other,          params   => [ \@source, \@dest , 41 ] } ,
 				'pptpclient'    => { function => \&setup_pptp_client,        params   => [ $kind, \@source, \@dest ] } ,
 				'pptpserver'    => { function => \&setup_pptp_server,        params   => [ $kind, \@source, \@dest ] } ,
+				'tinc'          => { function => \&setup_one_tinc,           params   => [ $kind, \@source, \@dest ] } ,
 				'openvpn'       => { function => \&setup_one_openvpn,        params   => [ $kind, \@source, \@dest ] } ,
 				'openvpnclient' => { function => \&setup_one_openvpn_client, params   => [ $kind, \@source, \@dest ] } ,
 				'openvpnserver' => { function => \&setup_one_openvpn_server, params   => [ $kind, \@source, \@dest ] } ,

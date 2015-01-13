@@ -65,7 +65,8 @@
         <emphasis role="bold">openvpn</emphasis>       - OpenVPN in point-to-point mode
         <emphasis role="bold">openvpnclient</emphasis> - OpenVPN client runs on the firewall
         <emphasis role="bold">openvpnserver</emphasis> - OpenVPN server runs on the firewall
-        <emphasis role="bold">generic</emphasis>       - Other tunnel type</programlisting>
+        <emphasis role="bold">generic</emphasis>       - Other tunnel type
+        <emphasis role="bold">tinc</emphasis>          - TINC (added in Shorewall 4.6.6)</programlisting>
 
           <para>If the type is <emphasis role="bold">ipsec</emphasis>, it may
           be followed by <emphasis role="bold">:ah</emphasis> to indicate that
@@ -227,6 +228,19 @@
 
           <programlisting>        #TYPE            ZONE    GATEWAY                GATEWAY ZONES
         generic:udp:4444 net     2001:cec792b4:1::44</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Example 9:</term>
+
+        <listitem>
+          <para>TINC tunnel where the remote gateways are not specified. If
+          you wish to specify a list of gateways, you can do so in the GATEWAY
+          column.</para>
+
+          <programlisting>        #TYPE            ZONE    GATEWAY          GATEWAY ZONES
+        tinc             net     ::/0</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

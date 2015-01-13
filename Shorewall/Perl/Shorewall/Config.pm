@@ -3399,7 +3399,7 @@ sub read_a_line($) {
 	    # Must check for shell/perl before doing variable expansion
 	    # 
 	    if ( $options & EMBEDDED_ENABLED ) {
-		if ( $currentline =~ s/^\s*\??(BEGIN\s+)SHELL\s*;?//i || $currentline =~ s/^\s*\??SHELL\s*//i ) {
+		if ( $currentline =~ s/^\s*\??(BEGIN\s+)SHELL\s*;?//i || $currentline =~ s/^\s*\?SHELL\s*//i || $currentline =~ s/^\s*SHELL\s+// ) {
 		    handle_first_entry if $first_entry;
 		    embedded_shell( $1 );
 		    next;

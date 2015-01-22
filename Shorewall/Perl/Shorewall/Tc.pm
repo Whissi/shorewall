@@ -1055,7 +1055,7 @@ sub process_mangle_rule( ) {
     my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time ) =
-	    split_line2( 'tcrules file',
+	    split_line2( 'mangle file',
 			 { mark => 0,
 			   action => 0,
 			   source => 1,
@@ -1080,7 +1080,7 @@ sub process_mangle_rule( ) {
 	$headers = '-';
     } else {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time ) =
-	    split_line2( 'tcrules file',
+	    split_line2( 'mangle file',
 			 { mark => 0,
 			   action => 0,
 			   source => 1,

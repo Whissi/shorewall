@@ -373,20 +373,24 @@ case "$COMMAND" in
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
+	mutex_on
 	if product_is_started; then
 	    detect_configuration
 	    enable_provider $1
 	fi
+	mutex_off
 	status=0
 	;;
     disable)
 	[ $# -eq 1 ] && exit 0
 	shift
 	[ $# -ne 1 ] && usage 2
+	mutex_on
 	if product_is_started; then
 	    detect_configuration
 	    disable_provider $1
 	fi
+	mutex_off
 	status=0
 	;;
     run)

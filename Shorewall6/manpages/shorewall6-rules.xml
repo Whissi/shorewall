@@ -791,6 +791,13 @@
           <ulink
           url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5).</para>
 
+          <para><emphasis role="bold">any</emphasis> is equivalent to
+          <emphasis role="bold">all</emphasis> when there are no nested zones.
+          When there are nested zones, <emphasis role="bold">any</emphasis>
+          only refers to top-level zones (those with no parent zones). Note
+          that <emphasis role="bold">any</emphasis> excludes all vserver
+          zones, since those zones are nested within the firewall zone.</para>
+
           <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
           role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] or
           <emphasis role="bold">any</emphasis>[<emphasis
@@ -800,13 +807,6 @@
           and/or host addresses. Hosts may be specified by IP or MAC address;
           mac addresses must begin with "~" and must use "-" as a
           separator.</para>
-
-          <para><emphasis role="bold">any</emphasis> is equivalent to
-          <emphasis role="bold">all</emphasis> when there are no nested zones.
-          When there are nested zones, <emphasis role="bold">any</emphasis>
-          only refers to top-level zones (those with no parent zones). Note
-          that <emphasis role="bold">any</emphasis> excludes all vserver
-          zones, since those zones are nested within the firewall zone.</para>
 
           <para>Hosts may also be specified as an IP address range using the
           syntax

@@ -5510,7 +5510,7 @@ sub get_set_flags( $$ ) {
 
     my $rest = '';
 
-    if ( $setname =~ /^(.*)\[([1-6])(?:,(.*))\]$/ ) {
+    if ( $setname =~ /^(.*)\[([1-6])(?:,(.+))?\]$/ ) {
 	$setname  = $1;
 	my $count = $2;
 	$rest     = $3;
@@ -5535,7 +5535,7 @@ sub get_set_flags( $$ ) {
 	}
     }
 
-    if ( $rest ) {
+    if ( supplied $rest ) {
 	my @extensions = split_list($rest, 'ipset option');
 
 	for ( @extensions ) {

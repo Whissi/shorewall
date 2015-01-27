@@ -374,7 +374,7 @@ reload_kernel_modules() {
 	moduleloader=insmod
     fi
 
-    [ -n "${MODULE_SUFFIX:=ko ko.gz o o.gz gz}" ]
+    [ -n "${MODULE_SUFFIX:=ko ko.gz ko.xz o o.gz o.xz gz xz}" ]
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \
@@ -413,7 +413,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 	moduleloader=insmod
     fi
 
-    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+    [ -n "${MODULE_SUFFIX:=o gz xz ko o.gz o.xz ko.gz ko.xz}" ]
 
     [ -z "$MODULESDIR" ] && \
 	uname=$(uname -r) && \

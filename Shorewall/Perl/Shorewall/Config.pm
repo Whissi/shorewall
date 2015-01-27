@@ -3862,7 +3862,7 @@ sub load_kernel_modules( ) {
 
 	close LSMOD;
 
-	$config{MODULE_SUFFIX} = 'o gz ko o.gz ko.gz' unless $config{MODULE_SUFFIX};
+	$config{MODULE_SUFFIX} = 'o gz xz ko o.gz o.xz ko.gz ko.xz' unless $config{MODULE_SUFFIX};
 
 	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
 

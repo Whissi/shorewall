@@ -124,6 +124,28 @@
 
           <variablelist>
             <varlistentry>
+              <term><emphasis
+              role="bold">ADD(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.7. Causes addresses and/or port
+                numbers to be added to the named
+                <replaceable>ipset</replaceable>. The
+                <replaceable>flags</replaceable> specify the address or tuple
+                to be added to the set and must match the type of ipset
+                involved. For example, for an iphash ipset, either the SOURCE
+                or DESTINATION address can be added using
+                <replaceable>flags</replaceable> <emphasis
+                role="bold">src</emphasis> or <emphasis
+                role="bold">dst</emphasis> respectively (see the -A command in
+                ipset (8)).</para>
+
+                <para>ADD is non-terminating. Even if a packet matches the
+                rule, it is passed on to the next rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">CHECKSUM</emphasis></term>
 
               <listitem>
@@ -211,6 +233,27 @@
                 <emphasis>exclusion</emphasis> (see the SOURCE and DEST
                 columns below); that restriction will be removed when
                 iptables/Netfilter provides the necessary support.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">DEL(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.6.7. Causes an entry to be deleted
+                from the named <replaceable>ipset</replaceable>. The
+                <replaceable>flags</replaceable> specify the address or tuple
+                to be deleted from the set and must match the type of ipset
+                involved. For example, for an iphash ipset, either the SOURCE
+                or DESTINATION address can be deleted using
+                <replaceable>flags</replaceable> <emphasis
+                role="bold">src</emphasis> or <emphasis
+                role="bold">dst</emphasis> respectively (see the -D command in
+                ipset (8)).</para>
+
+                <para>DEL is non-terminating. Even if a packet matches the
+                rule, it is passed on to the next rule.</para>
               </listitem>
             </varlistentry>
 
@@ -509,7 +552,8 @@ INLINE          eth0              -                 ; -p tcp -j MARK --set-mark 
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">SAME</emphasis></term>
+              <term><emphasis
+              role="bold">SAME[(<replaceable>timeout</replaceable>)]</emphasis></term>
 
               <listitem>
                 <para>Some websites run applications that require multiple
@@ -533,12 +577,16 @@ SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
                 connections to an individual remote system to all use the same
                 provider. For example:<programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
 #                                                        PORT(S)
-SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
-                If the firewall attempts a connection on TCP port 80 or 443
-                and it has sent a packet on either of those ports in the last
-                five minutes to the same remote system then the new connection
-                will use the same provider as the connection over which that
-                last packet was sent.</para>
+SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>The
+                optional <replaceable>timeout</replaceable> parameter was
+                added in Shorewall 4.6.7 and specifies a number of seconds .
+                When not specified, a value of 300 seconds (5 minutes) is
+                assumed. If the firewall attempts a connection on TCP port 80
+                or 443 and it has sent a packet on either of those ports in
+                the last <replaceable>timeout</replaceable> seconds to the
+                same remote system then the new connection will use the same
+                provider as the connection over which that last packet was
+                sent.</para>
               </listitem>
             </varlistentry>
 

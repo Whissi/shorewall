@@ -334,7 +334,31 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	}
     }
 
+    sub ipset_command() {
+	my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
+
+	require_capability( 'IPSET_MATCH', "$cmd rules", '' );
+	fatal_error "$cmd rules require a set name parameter" unless $params;
+
+	my ( $setname, $flags, $rest ) = split ':', $params, 3;
+	fatal_error "Invalid ADD/DEL parameter ($params)" if $rest;
+	$setname =~ s/^\+//;
+	fatal_error "Expected ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z][-\w]*$/;
+	fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
+	$target = join( ' ', 'SET --' . $xlate{$cmd} , $setname , $flags );
+    }
+
     my %commands = (
+	ADD       => {
+	    defaultchain   => PREROUTING,
+	    allowedchains  => ALLCHAINS,
+	    minparams      => 1,
+	    maxparams      => 1,
+	    function       => sub() {
+		ipset_command();
+	    }
+	},
+
 	CHECKSUM   => {
 	    defaultchain   => 0,
 	    allowedchains  => ALLCHAINS,
@@ -395,6 +419,16 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		$target = 'RETURN';
 	    },
+	},
+
+	DEL       => {
+	    defaultchain   => PREROUTING,
+	    allowedchains  => ALLCHAINS,
+	    minparams      => 1,
+	    maxparams      => 1,
+	    function       => sub() {
+		ipset_command();
+	    }
 	},
 
 	DIVERT     => {
@@ -860,7 +894,11 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
     our  %tccmd;
 
     unless ( %tccmd ) {
-	%tccmd = ( SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
+	%tccmd = ( ADD =>      { match     => sub ( $ ) { $_[0] =~ /^ADD/ } 
+		               },
+		   DEL =>      { match     => sub ( $ ) { $_[0] =~ /^DEL/ }
+		               },
+	           SAVE =>     { match     => sub ( $ ) { $_[0] eq 'SAVE' } ,
 			       } ,
 		   RESTORE =>  { match     => sub ( $ ) { $_[0] eq 'RESTORE' },
 			       } ,

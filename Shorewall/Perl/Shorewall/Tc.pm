@@ -609,7 +609,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		if ( supplied $params ) {
 		    handle_mark_param( '--save-mark --mask ' ,
 				       $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
-
 		} else {
 		    $target .= '--save-mark --mask ' . in_hex( $globals{TC_MASK} );
 		}

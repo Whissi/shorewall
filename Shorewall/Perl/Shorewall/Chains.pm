@@ -649,6 +649,7 @@ our %opttype = ( rule          => CONTROL,
 		 simple        => CONTROL,
 		 matches       => CONTROL,
 		 complex       => CONTROL,
+		 t             => CONTROL,
 
 		 i             => UNIQUE,
 		 s             => UNIQUE,
@@ -891,6 +892,8 @@ sub set_rule_option( $$$ ) {
 	    }
 	} elsif ( $opttype == EXCLUSIVE ) {
 	    $ruleref->{$option} .= ",$value";
+	} elsif ( $opttype  == CONTROL ) {
+	    $ruleref->{$option} = $value;
 	} elsif ( $opttype == UNIQUE ) {
 	    #
 	    # Shorewall::Rules::perl_action_tcp_helper() can produce rules that have two -p specifications.
@@ -925,7 +928,7 @@ sub transform_rule( $;\$ ) {
 	my $option;
 	my $invert = '';
 
-	if ( $input =~ s/^(!\s+)?-([psdjgiom])\s+// ) {
+	if ( $input =~ s/^(!\s+)?-([psdjgiomt])\s+// ) {
 	    #
 	    # Normal case of single-character
 	    $invert = '!' if $1;
@@ -955,7 +958,7 @@ sub transform_rule( $;\$ ) {
 
       PARAM:
 	{
-	    while ( $input ne '' && $input !~ /^(?:!|-[psdjgiom])\s/ ) {
+	    while ( $input ne '' && $input !~ /^(?:!|-[psdjgiomt])\s/ ) {
 		last PARAM if $input =~ /^--([^\s]+)/ && $aliases{$1 || '' };
 		$input =~ s/^([^\s]+)\s*//;
 		my $token = $1;

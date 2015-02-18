@@ -225,6 +225,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     my  $device         = '';
     our $cmd;
     our $designator;
+    our $ttl            = 0;
     my $fw              = firewall_zone;
 
     sub handle_mark_param( $$ ) {
@@ -587,6 +588,13 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		$target = ( $chain == OUTPUT ? 'sticko' : 'sticky' );
 		$restriction = DESTIFACE_DISALLOW;
 		ensure_mangle_chain( $target );
+		if (supplied $params) {
+		    $ttl = numeric_value( $params );
+		    fatal_error "The SAME timeout must be positive" unless $ttl;
+		} else {
+		    $ttl = 300;
+		}
+
 		$sticky++;
 	    },
 	},
@@ -801,6 +809,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 					 do_dscp( $dscp ) .
 					 state_match( $state ) .
 					 do_time( $time ) .
+					 ( $ttl ? "-t $ttl " : '' ) .
 					 $raw_matches ,
 					 $source ,
 					 $dest ,
@@ -858,7 +867,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 			       } ,
 		   CONTINUE => { match     => sub ( $ ) { $_[0] eq 'CONTINUE' },
 			       } ,
-		   SAME =>     { match     => sub ( $ ) { $_[0] eq 'SAME' },
+		   SAME =>     { match     => sub ( $ ) { $_[0] =~ /^SAME(?:\(d+\))?$/ },
 			       } ,
 		   IPMARK =>   { match     => sub ( $ ) { $_[0] =~ /^IPMARK/ },
 			       } ,

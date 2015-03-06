@@ -7953,7 +7953,7 @@ else
 fi
 
 if chain_exists dynamic; then
-    $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic
+    $tool -S dynamic | tail -n +2 | fgrep -v -- '-j ACCEPT' > \${VARDIR}/.dynamic
 else
     rm -f \${VARDIR}/.dynamic
 fi

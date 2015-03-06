@@ -865,19 +865,22 @@
           firewall be in the started state and that DYNAMIC_BLACKLIST=Yes in
           <ulink url="/manpages/shorewall.conf.html">shorewall.conf
           (5)</ulink>. The effect of the command is to temporarily open the
-          firewall for connections matching the parameters. The
-          <replaceable>source</replaceable> and
+          firewall for connections matching the parameters.</para>
+
+          <para>The <replaceable>source</replaceable> and
           <replaceable>dest</replaceable> parameters may each be specified as
           <emphasis role="bold">all</emphasis> if you don't wish to restrict
-          the connection source or destination respectively. The
-          <replaceable>protocol</replaceable> may be specified either as a
-          number or as a name listed in /etc/protocols. The
-          <replaceable>port</replaceable> must be specified
-          numerically.</para>
+          the connection source or destination respectively. Otherwise, each
+          must contain a host or network address or a valid DNS name.</para>
+
+          <para>The <replaceable>protocol</replaceable> may be specified
+          either as a number or as a name listed in /etc/protocols. The
+          <replaceable>port</replaceable> may be specified numerically or as a
+          name listed in /etc/services.</para>
 
           <para>To reverse the effect of a successful <command>open</command>
           command, use the <command>close</command> command with the same
-          parameters.</para>
+          parameters or simply restart the firewall.</para>
 
           <para>Example: To open the firewall for SSH connections to address
           192.168.1.1, the command would be:</para>
@@ -1154,6 +1157,16 @@
                 through to iptables and causes actual packet and byte counts
                 to be displayed. Without this option, those counts are
                 abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">opens</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 4.5.8. Displays the iptables rules in
+                the 'dynamic' chain created through use of the <command>open
+                </command>command..</para>
               </listitem>
             </varlistentry>
 

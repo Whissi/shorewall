@@ -1224,6 +1224,15 @@ show_command() {
 	    echo
 	    show_bl;
 	    ;;
+	opens)
+	    [ $# -gt 1 ] && usage 1
+	    echo "$g_product $SHOREWALL_VERSION Temporarily opened connections at $g_hostname - $(date)"
+
+	    if chain_exists dynamic; then
+		$g_tool -t filter -L dynamic $g_ipt_options | head -n2
+		$g_tool -t filter -L dynamic $g_ipt_options | fgrep ACCEPT | $output_filter
+	    fi
+	    ;;
 	*)
 	    case "$g_program" in
 		*-lite)
@@ -3740,6 +3749,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] [ -m ] log [<regex>]"
     echo "   [ show | list | ls ] [ -x ] mangle|nat|raw|rawpost"
     echo "   [ show | list | ls ] nfacct"
+    echo "   [ show | list | ls ] opens"
     echo "   [ show | list | ls ] policies"
     echo "   [ show | list | ls ] routing"
     echo "   [ show | list | ls ] tc [ device ]"

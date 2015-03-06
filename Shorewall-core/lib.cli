@@ -2076,6 +2076,55 @@ delete_command() {
     fi
 }
 
+open_close_command() {
+    local command
+    local desc
+
+    chain_exists dynamic || fatal_error "The $COMMAND command requires the firewall to be running with DYNAMIC_BLACKLIST enabled"
+
+    [ $COMMAND = open ] && command='-I dynamic' || command='-D dynamic'
+
+    [ $# -ge 2 ] || fatal_error "Too few parameters"
+    [ $# -le 4 ] || fatal_error "Too many parameters"
+
+    if [ $1 = all ]; then
+	desc="from *"
+    else
+	command="$command -s $1"
+	desc="from $1"
+    fi
+
+    if [ $2 = all ]; then
+	desc="$desc to *"
+    else
+	command="$command -d $2"
+	desc="$desc to $2"
+    fi
+
+    if [ $# -ge 3 ]; then
+	command="$command -p $3"
+	desc="$desc protocol $3"
+    fi
+
+    if [ $# -eq 4 ]; then
+	command="$command --dport $4"
+	desc="$desc port $4"
+    fi
+
+    if $g_tool $command -j ACCEPT; then
+	case $COMMAND in
+	     open)
+		 echo "Firewall opened for connections $desc"
+		 ;;
+	     *)
+		 echo "Firewall closed for connections $desc (may still be permitted by rules/policies)"
+		 ;;
+	esac
+
+	return 0
+    fi
+}
+
 #
 # 'hits' commmand executor
 #
@@ -3628,6 +3677,7 @@ usage() # $1 = exit status
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   clear"
+    echo "   close <source> <dest> [ <protocol> [ <port> ] ]" 
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   disable <interface>"
     echo "   drop <address> ..."
@@ -3645,6 +3695,7 @@ usage() # $1 = exit status
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
+    echo "   open <source> <dest> [ <protocol> [ <port> ] ]" 
     echo "   reject <address> ..."
     echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ] [ -f ] [ -C ] [ <directory> ]"
@@ -3978,6 +4029,11 @@ shorewall_cli() {
 	    [ -n "$g_debugging" ] && set -x
 	    [ $# -eq 1 ] && usage 1
 	    reject_command $@
+	    ;;
+	open|close)
+	    get_config
+	    shift
+	    open_close_command $@
 	    ;;
 	allow)
 	    get_config

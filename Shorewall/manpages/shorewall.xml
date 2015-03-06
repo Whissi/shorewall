@@ -88,6 +88,17 @@
     <cmdsynopsis>
       <command>shorewall</command>
 
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>close</option><replaceable>
+      source</replaceable><replaceable> dest</replaceable><arg>
+      <replaceable>protocol</replaceable><arg> <replaceable>port</replaceable>
+      </arg> </arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
@@ -357,6 +368,17 @@
 
       <arg choice="plain"><replaceable>iptables match
       expression</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>open</option><replaceable>
+      source</replaceable><replaceable> dest</replaceable><arg>
+      <replaceable>protocol</replaceable><arg> <replaceable>port</replaceable>
+      </arg> </arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -922,6 +944,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">close</emphasis>
+        <replaceable>source</replaceable> <replaceable>dest</replaceable> [
+        <replaceable>protocol</replaceable> [ <replaceable>port</replaceable>
+        ] ]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.5.8. This command reverses the effect of
+          an earlier <command>open</command> command; the parameters must
+          match those given in that earlier command.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">compile</emphasis></term>
 
         <listitem>
@@ -1271,6 +1306,46 @@
           <para>The <replaceable>iptables match expression</replaceable> must
           be one given in the <command>iptrace</command> command being
           canceled.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">open</emphasis>
+        <replaceable>source</replaceable> <replaceable>dest</replaceable> [
+        <replaceable>protocol</replaceable> [ <replaceable>port</replaceable>
+        ] ]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.8. This command requires that the
+          firewall be in the started state and that DYNAMIC_BLACKLIST=Yes in
+          <ulink url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>. The effect of the command is to temporarily open the
+          firewall for connections matching the parameters. The
+          <replaceable>source</replaceable> and
+          <replaceable>dest</replaceable> parameters may each be specified as
+          <emphasis role="bold">all</emphasis> if you don't wish to restrict
+          the connection source or destination respectively. The
+          <replaceable>protocol</replaceable> may be specified either as a
+          number or as a name listed in /etc/protocols. The
+          <replaceable>port</replaceable> must be specified
+          numerically.</para>
+
+          <para>To reverse the effect of a successful <command>open</command>
+          command, use the <command>close</command> command with the same
+          parameters.</para>
+
+          <para>Example: To open the firewall for SSH connections to address
+          192.168.1.1, the command would be:</para>
+
+          <simplelist>
+            <member>shorewall open all 192.168.1.1 tcp 22</member>
+          </simplelist>
+
+          <para>To reverse that command, use:</para>
+
+          <simplelist>
+            <member>shorewall close all 192.168.1.1 tcp 22</member>
+          </simplelist>
         </listitem>
       </varlistentry>
 

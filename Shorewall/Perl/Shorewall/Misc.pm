@@ -2418,7 +2418,7 @@ EOF
     case $COMMAND in
         stop|clear|restore)
             if chain_exists dynamic; then
-                ${IPTABLES}-save -t filter | grep '^-A dynamic' > ${VARDIR}/.dynamic
+                ${IPTABLES}-save -t filter | grep '^-A dynamic' | fgrep -v -- '-j ACCEPT' > ${VARDIR}/.dynamic
             fi
             ;;
         *)
@@ -2433,7 +2433,7 @@ EOF
     case $COMMAND in
         stop|clear|restore)
             if chain_exists dynamic; then
-                ${IP6TABLES}-save -t filter | grep '^-A dynamic' > ${VARDIR}/.dynamic
+                ${IP6TABLES}-save -t filter | grep '^-A dynamic' | fgrep -v -- '-j ACCEPT' > ${VARDIR}/.dynamic
             fi
             ;;
         *)

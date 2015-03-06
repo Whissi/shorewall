@@ -387,7 +387,7 @@ do_save() {
     status=0
 
     if [ -f ${VARDIR}/firewall ]; then
-	if $iptables_save | iptablesbug > ${VARDIR}/restore-$$; then
+	if $iptables_save | iptablesbug | grep -v -- '-A dynamic.* -j ACCEPT' > ${VARDIR}/restore-$$; then
 	    cp -f ${VARDIR}/firewall $g_restorepath
 	    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
 	    chmod +x $g_restorepath
@@ -2080,48 +2080,67 @@ open_close_command() {
     local command
     local desc
 
-    chain_exists dynamic || fatal_error "The $COMMAND command requires the firewall to be running with DYNAMIC_BLACKLIST enabled"
-
-    [ $COMMAND = open ] && command='-I dynamic' || command='-D dynamic'
+    product_is_started   || fatal_error "The $COMMAND command requires the firewall to be running"
+    chain_exists dynamic || fatal_error "The $COMMAND command requires DYNAMIC_BLACKLIST=Yes in the running configuration"
 
     [ $# -ge 2 ] || fatal_error "Too few parameters"
     [ $# -le 4 ] || fatal_error "Too many parameters"
 
     if [ $1 = all ]; then
-	desc="from *"
+	command=dynamic
     else
-	command="$command -s $1"
-	desc="from $1"
+	command="dynamic -s $1"
     fi
 
-    if [ $2 = all ]; then
-	desc="$desc to *"
-    else
+    if [ $2 != all ]; then
 	command="$command -d $2"
-	desc="$desc to $2"
     fi
+
+    desc="from $1 to $2"
 
     if [ $# -ge 3 ]; then
 	command="$command -p $3"
-	desc="$desc protocol $3"
+
+	case $3 in
+	    [0-9]*)
+		desc="$desc protocol $3"
+		;;
+	    *)
+		desc="$desc $3"
+		;;
+	esac
     fi
 
     if [ $# -eq 4 ]; then
-	command="$command --dport $4"
-	desc="$desc port $4"
+	command="$command -m multiport --dports $4"
+
+	case $4 in
+	    [0-9]*,)
+		desc="$desc ports $4"
+		;;
+	    [0-9]*)
+		desc="$desc port $4"
+		;;
+	    *)
+		desc="$desc $4"
+		;;
+	esac
     fi
 
-    if $g_tool $command -j ACCEPT; then
-	case $COMMAND in
-	     open)
-		 echo "Firewall opened for connections $desc"
-		 ;;
-	     *)
-		 echo "Firewall closed for connections $desc (may still be permitted by rules/policies)"
-		 ;;
-	esac
+    command="$command -j ACCEPT"
 
-	return 0
+    if [ $COMMAND = open ]; then
+	if $g_tool -I $command ; then
+	    echo "Firewall dynamically opened for connections $desc"
+	    return 0
+	fi
+    else
+	if $g_tool -D $command 2> /dev/null; then
+	    echo "Firewall dynamically closed for connections $desc (may still be permitted by rules/policies)"
+	    return 0
+	fi
+
+	fatal_error "Connections $desc are not currently opened"
     fi
 }
 

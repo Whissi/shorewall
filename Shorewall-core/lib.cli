@@ -1229,8 +1229,9 @@ show_command() {
 	    echo "$g_product $SHOREWALL_VERSION Temporarily opened connections at $g_hostname - $(date)"
 
 	    if chain_exists dynamic; then
-		$g_tool -t filter -L dynamic $g_ipt_options | head -n2
-		$g_tool -t filter -L dynamic $g_ipt_options | fgrep ACCEPT | $output_filter
+		g_ipt_options="$g_ipt_options --line-numbers"
+		$g_tool -t filter -L dynamic $g_ipt_options  | head -n2
+		$g_tool -t filter -L dynamic $g_ipt_options  | fgrep ACCEPT | $output_filter
 	    fi
 	    ;;
 	*)
@@ -2085,70 +2086,121 @@ delete_command() {
     fi
 }
 
+open_close_setup() {
+    [ -n "$g_nolock" ] || mutex_on
+
+    if ! product_is_started ; then
+	[ -n "$g_nolock" ] || mutex_off
+	fatal_error "The $COMMAND command requires the firewall to be running"
+    fi
+
+    if ! chain_exists dynamic; then
+	[ -n "$g_nolock" ] || mutex_off
+	fatal_error "The $COMMAND command requires DYNAMIC_BLACKLIST=Yes in the running configuration"
+    fi
+}
+
 open_close_command() {
     local command
     local desc
 
-    product_is_started   || fatal_error "The $COMMAND command requires the firewall to be running"
-    chain_exists dynamic || fatal_error "The $COMMAND command requires DYNAMIC_BLACKLIST=Yes in the running configuration"
-
-    [ $# -ge 2 ] || fatal_error "Too few parameters"
     [ $# -le 4 ] || fatal_error "Too many parameters"
 
-    if [ $1 = all ]; then
-	command=dynamic
-    else
-	command="dynamic -s $1"
-    fi
-
-    if [ $2 != all ]; then
-	command="$command -d $2"
-    fi
-
-    desc="from $1 to $2"
-
-    if [ $# -ge 3 ]; then
-	command="$command -p $3"
-
-	case $3 in
-	    [0-9]*)
-		desc="$desc protocol $3"
-		;;
-	    *)
-		desc="$desc $3"
-		;;
-	esac
-    fi
-
-    if [ $# -eq 4 ]; then
-	command="$command -m multiport --dports $4"
-
-	case $4 in
-	    [0-9]*,)
-		desc="$desc ports $4"
-		;;
-	    [0-9]*)
-		desc="$desc port $4"
-		;;
-	    *)
-		desc="$desc $4"
-		;;
-	esac
-    fi
-
-    command="$command -j ACCEPT"
-
     if [ $COMMAND = open ]; then
-	if $g_tool -I $command ; then
-	    echo "Firewall dynamically opened for connections $desc"
-	    return 0
+	[ $# -ge 2 ] || fatal_error "Too few parameters"
+    else
+	[ $# -ge 1 ] || fatal_error "Too few parameters"
+    fi
+
+    if [ $# -eq 1 ]; then
+	#
+	# close <rule number>
+	#
+	case $1 in
+	    [0-9]*)
+		;;
+	    *)
+		fatal_error "Invalid Rule Number ($1)"
+		;;
+	esac
+
+	open_close_setup #Conditionally acquires mutex
+
+	if $g_tool -L dynamic --line-numbers | grep -q "^$1 .* ACCEPT "; then
+	    if $g_tool -D dynamic $1; then
+		[ -n "$g_nolock" ] || mutex_off
+		echo "Temporary open #$1 closed"
+		return 0
+	    fi
+	    [ -n "$g_nolock" ] || mutex_off
+	    return 2
+	else
+	    [ -n "$g_nolock" ] || mutex_off
+	    fatal_error "$1 is not a valid temporary open number"
 	fi
     else
+	if [ $1 = all ]; then
+	    command=dynamic
+	else
+	    command="dynamic -s $1"
+	fi
+
+	if [ $2 != all ]; then
+	    command="$command -d $2"
+	fi
+
+	desc="from $1 to $2"
+
+	if [ $# -ge 3 ]; then
+	    command="$command -p $3"
+
+	    case $3 in
+		[0-9]*)
+		    desc="$desc protocol $3"
+		    ;;
+		*)
+		    desc="$desc $3"
+		    ;;
+	    esac
+	fi
+
+	if [ $# -eq 4 ]; then
+	    command="$command -m multiport --dports $4"
+
+	    case $4 in
+		[0-9]*,)
+		    desc="$desc ports $4"
+		    ;;
+		[0-9]*)
+		    desc="$desc port $4"
+		    ;;
+		*)
+		    desc="$desc $4"
+		    ;;
+	    esac
+	fi
+
+	command="$command -j ACCEPT"
+
+	open_close_setup #Conditionally acquires mutex
+
+	if [ $COMMAND = open ]; then
+	    if $g_tool -I $command ; then
+		[ -n "$g_nolock" ] || mutex_off
+		echo "Firewall dynamically opened for connections $desc"
+		return 0
+	    fi
+	    [ -n "$g_nolock" ] || mutex_off
+	    return 2
+	fi
+
 	if $g_tool -D $command 2> /dev/null; then
+	    [ -n "$g_nolock" ] || mutex_off
 	    echo "Firewall dynamically closed for connections $desc (may still be permitted by rules/policies)"
 	    return 0
 	fi
 
+	[ -n "$g_nolock" ] || mutex_off
 	fatal_error "Connections $desc are not currently opened"
     fi
 }

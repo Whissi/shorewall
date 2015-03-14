@@ -91,10 +91,11 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>close</option><replaceable>
-      source</replaceable><replaceable> dest</replaceable><arg>
-      <replaceable>protocol</replaceable><arg> <replaceable>port</replaceable>
-      </arg> </arg></arg>
+      <arg choice="plain"><option>close</option><arg choice="req">
+      <replaceable>open-number</replaceable> |
+      <replaceable>source</replaceable><replaceable>dest</replaceable><arg><replaceable>protocol</replaceable><arg>
+      <replaceable>port</replaceable> </arg></arg></arg><replaceable>
+      </replaceable></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -882,15 +883,23 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">close</emphasis>
+        <term><emphasis role="bold">close</emphasis> {
+        <replaceable>open-number</replaceable> |
         <replaceable>source</replaceable> <replaceable>dest</replaceable> [
         <replaceable>protocol</replaceable> [ <replaceable>port</replaceable>
-        ] ]</term>
+        ] ] }</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.8. This command reverses the effect of
-          an earlier <command>open</command> command; the parameters must
-          match those given in that earlier command.</para>
+          <para>Added in Shorewall 4.5.8. This command closes a temporary open
+          created by the <command>open</command> command. In the first form,
+          an <replaceable>open-number</replaceable> specifies the open to be
+          closed. Open numbers are displayed in the <emphasis
+          role="bold">num</emphasis> column of the output of the
+          <command>shorewall6 show opens </command>command.</para>
+
+          <para>When the second form of the command is used, the parameters
+          must match those given in the earlier <command>open</command>
+          command.</para>
         </listitem>
       </varlistentry>
 

@@ -2086,23 +2086,23 @@ delete_command() {
     fi
 }
 
-open_close_setup() {
-    [ -n "$g_nolock" ] || mutex_on
-
-    if ! product_is_started ; then
-	[ -n "$g_nolock" ] || mutex_off
-	fatal_error "The $COMMAND command requires the firewall to be running"
-    fi
-
-    if ! chain_exists dynamic; then
-	[ -n "$g_nolock" ] || mutex_off
-	fatal_error "The $COMMAND command requires DYNAMIC_BLACKLIST=Yes in the running configuration"
-    fi
-}
-
 open_close_command() {
     local command
     local desc
+
+    open_close_setup() {
+	[ -n "$g_nolock" ] || mutex_on
+
+	if ! product_is_started ; then
+	    [ -n "$g_nolock" ] || mutex_off
+	    fatal_error "The $COMMAND command requires the firewall to be running"
+	fi
+
+	if ! chain_exists dynamic; then
+	    [ -n "$g_nolock" ] || mutex_off
+	    fatal_error "The $COMMAND command requires DYNAMIC_BLACKLIST=Yes in the running configuration"
+	fi
+    }
 
     [ $# -le 4 ] || fatal_error "Too many parameters"
 

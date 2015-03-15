@@ -174,7 +174,13 @@
 
         <listitem>
           <para><filename>/etc/shorewall/start</filename> - commands that you
-          wish to execute at the completion of a <quote>shorewall
+          wish to execute near the completion of a <quote>shorewall
+          start</quote> or <quote>shorewall restart</quote></para>
+        </listitem>
+
+        <listitem>
+          <para><filename>/etc/shorewall/started</filename> - commands that
+          you wish to execute after the completion of a <quote>shorewall
           start</quote> or <quote>shorewall restart</quote></para>
         </listitem>
 
@@ -836,8 +842,11 @@ DNAT { source=net dest=loc:10.0.0.1 proto=tcp dport=80 mark=88 }</programlisting
         <para>ZONE — The name of a zone declared in
         <filename>/etc/shorewall/zones</filename> or
         <filename>/etc/shorewall6/zones</filename>. This part is only
-        available in the rules file (<filename>/etc/shorewall/rules</filename>
-        and <filename>/etc/shorewall6/rules</filename>).</para>
+        available in the rules file
+        (<filename>/etc/shorewall/rules</filename>,
+        <filename>/etc/shorewall/blrules</filename>,<filename>
+        /etc/shorewall6/rules</filename> and
+        <filename>/etc/shorewall6/blrules</filename>).</para>
       </listitem>
 
       <listitem>

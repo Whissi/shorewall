@@ -2117,10 +2117,10 @@ open_close_command() {
 	# close <rule number>
 	#
 	case $1 in
-	    [0-9]*)
+	    [1-9]|[1-9][0-9]|[1-9][0-9][0-9]*)
 		;;
 	    *)
-		fatal_error "Invalid Rule Number ($1)"
+		fatal_error "$1 is not a valid temporary open number"
 		;;
 	esac
 

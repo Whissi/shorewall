@@ -2089,6 +2089,8 @@ delete_command() {
 open_close_command() {
     local command
     local desc
+    local proto
+    local icmptype
 
     open_close_setup() {
 	[ -n "$g_nolock" ] || mutex_on
@@ -2152,7 +2154,11 @@ open_close_command() {
 	desc="from $1 to $2"
 
 	if [ $# -ge 3 ]; then
-	    command="$command -p $3"
+	    proto=$3
+
+	    [ $proto = icmp -a $g_family -eq 6 ] && proto=58
+
+	    command="$command -p $proto"
 
 	    case $3 in
 		[0-9]*)
@@ -2162,22 +2168,57 @@ open_close_command() {
 		    desc="$desc $3"
 		    ;;
 	    esac
+
+	    if [ $g_family -eq 4 ]; then
+		if [ $proto = 6 -o $proto = icmp ]; then
+		    proto=icmp
+		    icmptype='--icmp-type'
+		fi
+	    else
+		if [ $proto = 58 -o $proto = ipv6-icmp ]; then
+		    proto=icmp
+		    icmptype='--icmpv6-type'
+		fi
+	    fi
 	fi
 
 	if [ $# -eq 4 ]; then
-	    command="$command -m multiport --dports $4"
+	    if [ $proto = icmp ]; then
+		case $4 in
+		    *,*)
+			fatal_error "Only a single ICMP type may be specified"
+			;;
+		    [0-9]*)
+			desc="$desc type $4"
+			;;
+		    *)
+			desc="$desc $4"
+			;;
+		esac
 
-	    case $4 in
-		[0-9]*,)
-		    desc="$desc ports $4"
-		    ;;
-		[0-9]*)
-		    desc="$desc port $4"
+		command="$command $icmptype $4"
+	    else
+		case $4 in
+		*,*)
+		    command="$command -m multiport --dports $4"
 		    ;;
 		*)
-		    desc="$desc $4"
+		    command="$command --dport $4"
 		    ;;
-	    esac
+		esac
+
+		case $4 in
+		    [0-9]*,)
+			desc="$desc ports $4"
+			;;
+		    [0-9]*)
+			desc="$desc port $4"
+			;;
+		    *)
+			desc="$desc $4"
+			;;
+		esac
+	    fi
 	fi
 
 	command="$command -j ACCEPT"

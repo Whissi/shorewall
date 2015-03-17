@@ -8048,7 +8048,7 @@ sub create_save_ipsets() {
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit( '    local file' ,
 	      '',
-	      '    file=$1'
+	      '    file=${1:-${VARDIR}/save.ipsets}'
 	    );
 
 	if ( @ipsets ) {
@@ -8074,7 +8074,9 @@ sub create_save_ipsets() {
 		emit( '',
 		      "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
 		      "        \$IPSET save \$set >> \$file" ,
-		      "    done" );
+		      "    done" ,
+		      '',
+		    );
 	    } else {
 		emit ( '' ,
 		       '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
@@ -8091,7 +8093,9 @@ sub create_save_ipsets() {
 		       '    fi' );
  	    }
 
-	    emit("}\n" );
+	    emit( "    return 0",
+		  '',
+		  "}\n" );
 	} elsif ( @ipsets || $globals{SAVED_IPSETS} ) {
 	    emit( '' ,
 		  '    rm -f ${VARDIR}/ipsets.tmp' ,
@@ -8113,10 +8117,13 @@ sub create_save_ipsets() {
 	    emit( '' ,
 		  "    grep -qE -- \"(-N|^create )\" \${VARDIR}/ipsets.tmp && cat \${VARDIR}/ipsets.tmp >> \$file\n" ,
 		  '' ,
+		  '    return 0',
+		  '' ,
 		  "}\n" );
 	}
     } elsif ( $config{SAVE_IPSETS} ) {
 	emit( '    error_message "WARNING: No ipsets were saved"',
+	      '    return 1',
 	      "}\n" );
     } else {
 	emit( '    true',

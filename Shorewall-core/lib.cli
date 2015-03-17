@@ -375,7 +375,18 @@ savesets() {
 
     supported=$(run_it ${VARDIR}/firewall help | fgrep savesets )
 
-    [ -n "$supported" ] && run_it ${VARDIR}/firewall savesets ${g_restorepath}-ipsets
+    [ -n "$supported" ] && run_it ${VARDIR}/firewall savesets ${g_restorepath}-ipsets 
+}
+
+#
+# Proactive save of the current ipset contents
+#
+savesets1() {
+    local supported
+
+    supported=$(run_it ${VARDIR}/firewall help | fgrep savesets )
+
+    [ -n "$supported" ] && run_it ${VARDIR}/firewall savesets ${VARDIR}/ipsets.save && progress_message3 "The ipsets have been saved to ${VARDIR}/ipsets.save"
 }
 
 #
@@ -3823,6 +3834,7 @@ usage() # $1 = exit status
     echo "   restore [ -n ] [ -p ] [ -C ] [ <file name> ]"
     echo "   run <command> [ <parameter> ... ]"
     echo "   save [ -C ] [ <file name> ]"
+    echo "   savesets"
     echo "   [ show | list | ls ] [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     echo "   [ show | list | ls ] [ -f ] capabilities"
     echo "   [ show | list | ls ] arptables"
@@ -4219,6 +4231,12 @@ shorewall_cli() {
 	    get_config
 	    shift
 	    noiptrace_command $@
+	    ;;
+	savesets)
+	    [ $# -eq 1 ] || usage 1
+	    get_config
+	    [ -n "$g_debugging" ] && set -x
+	    savesets1
 	    ;;
 	*)
 	    if [ -z "$g_lite" ]; then

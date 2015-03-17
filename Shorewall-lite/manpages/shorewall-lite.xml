@@ -377,6 +377,17 @@
     <cmdsynopsis>
       <command>shorewall-lite</command>
 
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>savesets</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall-lite</command>
+
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
 
       <arg>-<replaceable>options</replaceable></arg>
@@ -999,6 +1010,20 @@
           <para>The <option>-C</option> option, added in Shorewall 4.6.5,
           causes the iptables packet and byte counters to be saved along with
           the chains and rules.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">savesets</emphasis></term>
+
+        <listitem>
+          <para>Added in shorewall 4.6.8. Performs the same action as the
+          <command>stop</command> command with respect to saving ipsets (see
+          the SAVE_IPSETS option in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).
+          This command may be used to proactively save your ipset contents in
+          the event that a system failure occurs prior to issuing a
+          <command>stop</command> command.</para>
         </listitem>
       </varlistentry>
 

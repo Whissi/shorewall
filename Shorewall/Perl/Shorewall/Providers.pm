@@ -1086,10 +1086,8 @@ CEOF
     }
 }
 
-sub add_an_rtrule( ) {
-    my ( $source, $dest, $provider, $priority, $originalmark ) =
-	split_line( 'rtrules file',
-		    { source => 0, dest => 1, provider => 2, priority => 3 , mark => 4 } );
+sub add_an_rtrule1( $$$$$ ) {
+    my ( $source, $dest, $provider, $priority, $originalmark ) = @_;
 
     our $current_if;
 
@@ -1176,6 +1174,17 @@ sub add_an_rtrule( ) {
     push @{$providerref->{rules}}, "echo \"\$IP -$family rule del $source ${dest}${mark} $priority > /dev/null 2>&1\" >> \${VARDIR}/undo_${provider}_routing";
 
     progress_message "   Routing rule \"$currentline\" $done";
+}
+
+sub add_an_rtrule( ) {
+    my ( $sources, $dests, $provider, $priority, $originalmark ) =
+	split_line( 'rtrules file',
+		    { source => 0, dest => 1, provider => 2, priority => 3 , mark => 4 } );
+    for my $source ( split_list( $sources, "source" ) ) {
+	for my $dest (split_list( $dests , "dest" ) ) {
+	    add_an_rtrule1( $source, $dest, $provider, $priority, $originalmark );
+	}
+    }
 }
 
 sub add_a_route( ) {

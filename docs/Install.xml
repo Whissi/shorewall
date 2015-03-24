@@ -693,6 +693,12 @@
         a product for Debian into the /tmp/package directory:</para>
 
         <programlisting>DESTDIR=/tmp/package ./install.sh shorewallrc.debian</programlisting>
+
+        <para>When DESTDIR is specified, the installers treat $DESTDIR as the
+        root of the filesystem tree. In other words, the created installation
+        is only runnable if one chroots to $DESTDIR. Please note that the
+        uninstall.sh scripts cannot uninstall a configuration installed with
+        non-empty DESTDIR. </para>
       </section>
 
       <section>
@@ -731,7 +737,7 @@
         <para>The above shorewallrc creates a runnable configuration in
         /usr/local/shorewall-custom. It is triggered by adding SANDBOX to the
         shorewallrc file -- any non-empty value for that variable will prevent
-        the installer from replacing the current main configuraiton. </para>
+        the installer from replacing the current main configuraiton.</para>
       </section>
     </section>
 

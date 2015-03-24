@@ -188,6 +188,8 @@ done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
+[ $configure -eq 1 ] && ETC=/etc || ETC="${CONFDIR}"
+
 if [ -z "$BUILD" ]; then
     case $(uname) in
 	cygwin*)
@@ -379,9 +381,9 @@ fi
 
 if [ $HOST = debian ]; then
     if [ -n "${DESTDIR}" ]; then
-	mkdir -p ${DESTDIR}/etc/network/if-up.d/
-	mkdir -p ${DESTDIR}/etc/network/if-down.d/
-	mkdir -p ${DESTDIR}/etc/network/if-post-down.d/
+	mkdir -p ${DESTDIR}${ETC}/network/if-up.d/
+	mkdir -p ${DESTDIR}${ETC}/network/if-down.d/
+	mkdir -p ${DESTDIR}${ETC}/network/if-post-down.d/
     elif [ $configure -eq 0 ]; then
 	mkdir -p ${DESTDIR}${CONFDIR}/network/if-up.d/
 	mkdir -p ${DESTDIR}${CONFDIR}/network/if-down.d/
@@ -390,15 +392,11 @@ if [ $HOST = debian ]; then
 
     if [ ! -f ${DESTDIR}${CONFDIR}/default/shorewall-init ]; then
 	if [ -n "${DESTDIR}" ]; then
-	    mkdir ${DESTDIR}/etc/default
+	    mkdir ${DESTDIR}${ETC}/default
 	fi
 
-	if [ $configure -eq 1 ]; then
-	    install_file sysconfig ${DESTDIR}/etc/default/shorewall-init 0644
-	else
-	    mkdir -p ${DESTDIR}${CONFDIR}/default
-	    install_file sysconfig ${DESTDIR}${CONFDIR}/default/shorewall-init 0644
-	fi
+	[ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/default
+	install_file sysconfig ${DESTDIR}${ETC}/default/shorewall-init 0644
     fi
 
     IFUPDOWN=ifupdown.debian.sh
@@ -408,13 +406,13 @@ else
 
 	if [ -z "$RPM" ]; then
 	    if [ $HOST = suse ]; then
-		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-up.d
-		mkdir -p ${DESTDIR}/etc/sysconfig/network/if-down.d
+		mkdir -p ${DESTDIR}${ETC}/sysconfig/network/if-up.d
+		mkdir -p ${DESTDIR}${ETC}/sysconfig/network/if-down.d
 	    elif [ $HOST = gentoo ]; then
 		# Gentoo does not support if-{up,down}.d
 		/bin/true
 	    else
-		mkdir -p ${DESTDIR}/etc/NetworkManager/dispatcher.d
+		mkdir -p ${DESTDIR}/${ETC}/NetworkManager/dispatcher.d
 	    fi
 	fi
     fi
@@ -440,12 +438,8 @@ mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
 install_file ifupdown ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
-    if [ $configure -eq 1 ]; then
-	install_file ifupdown ${DESTDIR}/etc/NetworkManager/dispatcher.d/01-shorewall 0544
-    else
-	mkdir -p ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/
-	install_file ifupdown ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/01-shorewall 0544
-    fi
+    [ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/
+    install_file ifupdown ${DESTDIR}${ETC}/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
 case $HOST in

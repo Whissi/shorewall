@@ -113,7 +113,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	    $action      = $1;
 	    $disposition = $1;
 	}
-    } elsif ( $action =~ /^IP(6)?TABLES\((.+)\)(:(.*))$/ ) {
+    } elsif ( $action =~ /^IP(6)?TABLES\((.+)\)(:(.*))?$/ ) {
 	if ( $family == F_IPV4 ) {
 	    fatal_error 'Invalid conntrack ACTION (IP6TABLES)' if $1;
 	} else {
@@ -125,8 +125,8 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	fatal_error "Unknown target ($tgt)" unless $target_type;
 	fatal_error "The $tgt TARGET is not allowed in the raw table" unless $target_type & RAW_TABLE;
 	$disposition = $tgt;
-	$action      = 2;
-	validate_level( $level = $3 ) if supplied $3;
+	$action      = $2;
+	validate_level( $level = $4 ) if supplied $4;
     } else {
 	(  $disposition, my ( $option, $args ), $level ) = split ':', $action, 4;
 

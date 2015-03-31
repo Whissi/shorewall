@@ -465,6 +465,7 @@ sub parse_zone_option_list($$\$$)
 	    } else {
 		fatal_error "Missing value for option \"$e\""        unless defined $val;
 		fatal_error "Invalid value ($val) for option \"$e\"" unless $val =~ /^($fmt)$/;
+		require_capability 'TCPMSS_TARGET', "mss=$val", 's' if $e eq 'mss';
 	    }
 
 	    my $key = $zonekey{$e};
@@ -1258,6 +1259,7 @@ sub process_interface( $$ ) {
 		fatal_error "The '$option' option requires a value" unless defined $value;
 		my $numval = numeric_value $value;
 		fatal_error "Invalid value ($value) for option $option" unless defined $numval && $numval <= $maxoptionvalue{$option};
+		require_capability 'TCPMSS_TARGET', "mss=$value", 's' if $option eq 'mss';
 		$options{$option} = $numval;
 		$hostoptions{$option} = $numval if $hostopt;
 	    } elsif ( $type == IPLIST_IF_OPTION ) {
@@ -2067,6 +2069,7 @@ sub process_host( ) {
 		$zoneref->{options}{in}{blacklist} = 1;
 	    } elsif ( $option =~ /^mss=(\d+)$/ ) {
 		fatal_error "Invalid mss ($1)" unless $1 >= 500;
+		require_capability 'TCPMSS_TARGET', $option, 's';
 		$options{mss} = $1;
 		$zoneref->{options}{complex} = 1;
 	    } elsif ( $validhostoptions{$option}) {

@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40606
+SHOREWALL_CAPVERSION=40609
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -2575,6 +2575,7 @@ determine_capabilities() {
     NEW_TOS_MATCH=
     TARPIT_TARGET=
     IFACE_MATCH=
+    TCPMSS_TARGET=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -2731,6 +2732,8 @@ determine_capabilities() {
     qt $g_tool -A $chain -p tcp -j TARPIT && TARPIT_TARGET=Yes
 
     qt $g_tool -A $chain -m iface --iface lo --loopback && IFACE_MATCH=Yes
+
+    qt $g_tool -A $chain -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu && TCPMSS_TARGET=Yes
 
     if [ -n "$MANGLE_ENABLED" ]; then
 	qt $g_tool -t mangle -N $chain
@@ -3001,16 +3004,17 @@ report_capabilities_unsorted() {
     report_capability "IMQ Target (IMQ_TARGET)" $IMQ_TARGET
     report_capability "DSCP Match (DSCP_MATCH)" $DSCP_MATCH
     report_capability "DSCP Target (DSCP_TARGET)" $DSCP_TARGET
-    report_capability "Geo IP match" $GEOIP_MATCH
-    report_capability "RPFilter match" $RPFILTER_MATCH
-    report_capability "NFAcct match" $NFACCT_MATCH
-    report_capability "Checksum Target" $CHECKSUM_TARGET
-    report_capability "Arptables JF" $ARPTABLESJF
-    report_capability "MASQUERADE Target" $MASQUERADE_TGT
-    report_capability "UDPLITE Port Redirection" $UDPLITEREDIRECT
-    report_capability "New tos Match" $NEW_TOS_MATCH
-    report_capability "TARPIT Target" $TARPIT_TARGET
-    report_capability "Iface Match" $IFACE_MATCH
+    report_capability "Geo IP Match (GEOIP_MATCH)" $GEOIP_MATCH
+    report_capability "RPFilter Match (RPFILTER_MATCH)" $RPFILTER_MATCH
+    report_capability "NFAcct Match" $NFACCT_MATCH
+    report_capability "Checksum Target (CHECKSUM_TARGET)" $CHECKSUM_TARGET
+    report_capability "Arptables JF (ARPTABLESJF)" $ARPTABLESJF
+    report_capability "MASQUERADE Target (MASQUERADE_TGT)" $MASQUERADE_TGT
+    report_capability "UDPLITE Port Redirection (UDPLITEREDIRECT)" $UDPLITEREDIRECT
+    report_capability "New tos Match (NEW_TOS_MATCH)" $NEW_TOS_MATCH
+    report_capability "TARPIT Target (TARPIT_TARGET)" $TARPIT_TARGET
+    report_capability "Iface Match (IFACE_MATCH)" $IFACE_MATCH
+    report_capability "TCPMSS Target (TCPMSS_TARGET)" $TCPMSS_TARGET
 
     report_capability "Amanda Helper" $AMANDA_HELPER
     report_capability "FTP Helper" $FTP_HELPER
@@ -3140,6 +3144,7 @@ report_capabilities_unsorted1() {
     report_capability1 NEW_TOS_MATCH
     report_capability1 TARPIT_TARGET
     report_capability1 IFACE_MATCH
+    report_capability1 TCPMSS_TARGET
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

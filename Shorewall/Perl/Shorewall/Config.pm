@@ -396,6 +396,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 NEW_TOS_MATCH   => 'New tos Match',
 		 TARPIT_TARGET   => 'TARPIT Target',
 		 IFACE_MATCH     => 'Iface Match',
+                 TCPMSS_TARGET   => 'TCPMSS Target',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -714,7 +715,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "4.5.19-Beta1",
-		    CAPVERSION              => 40606 ,
+		    CAPVERSION              => 40609 ,
 		  );
     #
     # From shorewall.conf file
@@ -983,6 +984,7 @@ sub initialize( $;$$) {
 	       REAP_OPTION => undef,
 	       TARPIT_TARGET => undef,
 	       IFACE_MATCH => undef,
+	       TCPMSS_TARGET => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4468,7 +4470,9 @@ sub Iface_Match() {
     qt1( "$iptables $iptablesw -A $sillyname -m iface --iface lo --loopback" );
 }
 
-
+sub Tcpmss_Target() {
+    qt1( "$iptables $iptablesw -A $sillyname -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu" );
+}
 
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
@@ -4557,6 +4561,7 @@ our %detect_capability =
       STATISTIC_MATCH => \&Statistic_Match,
       TARPIT_TARGET => \&Tarpit_Target,
       TCPMSS_MATCH => \&Tcpmss_Match,
+      TCPMSS_TARGET => \&Tcpmss_Target,
       TFTP_HELPER => \&TFTP_Helper,
       TFTP0_HELPER => \&TFTP0_Helper,
       TIME_MATCH => \&Time_Match,
@@ -4710,6 +4715,7 @@ sub determine_capabilities() {
 	$capabilities{NEW_TOS_MATCH}   = detect_capability( 'NEW_TOS_MATCH' );
 	$capabilities{TARPIT_TARGET}   = detect_capability( 'TARPIT_TARGET' );
 	$capabilities{IFACE_MATCH}     = detect_capability( 'IFACE_MATCH' );
+	$capabilities{TCPMSS_TARGET}   = detect_capability( 'TCPMSS_TARGET' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
@@ -5608,8 +5614,9 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'CLEAR_TC'                   , $family == F_IPV4 ? 'Yes' : '';
 
-    if ( supplied $config{CLAMPMSS} ) {
-	default_yes_no 'CLAMPMSS'                   , '' unless $config{CLAMPMSS} =~ /^\d+$/;
+    if ( supplied( $val = $config{CLAMPMSS} ) ) {
+	default_yes_no 'CLAMPMSS'                   , '' unless $val =~ /^\d+$/;
+	require_capability 'TCPMSS_TARGET', "CLAMPMSS=$val", 's' if $config{CLAMPMSS}; 
     } else {
 	$config{CLAMPMSS} = '';
     }

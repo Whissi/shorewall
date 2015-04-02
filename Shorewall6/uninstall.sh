@@ -136,7 +136,7 @@ else
     usage 1
 fi
 
-if [ -f ${SHARDIR}/shorewall6/version ]; then
+if [ -f ${SHAREDIR}/shorewall6/version ]; then
     INSTALLED_VERSION="$(cat /usr/share/shorewall6/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall6 Version $INSTALLED_VERSION is installed"

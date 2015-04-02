@@ -197,7 +197,7 @@ fi
 
 rm -rf ${VARDIR}/shorewall
 rm -rf ${PERLLIBDIR}/Shorewall/*
-rm -rf ${LIBEXECDIR}/shorewall
+[ ${LIBEXECDIR} = ${SHAREDIR} ] || rm -rf ${LIBEXECDIR}/shorewall
 rm -rf ${SHAREDIR}/shorewall/configfiles/
 rm -rf ${SHAREDIR}/shorewall/Samples/
 rm -rf ${SHAREDIR}/shorewall/Shorewall/

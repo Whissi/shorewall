@@ -137,7 +137,7 @@ else
 fi
 
 if [ -f ${SHAREDIR}/shorewall6/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall6/version)"
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall6/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall6 Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."

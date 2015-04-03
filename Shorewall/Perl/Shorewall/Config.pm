@@ -5021,9 +5021,7 @@ sub read_capabilities() {
 	$capabilities{KERNELVERSION} = 20630;
     }
 
-    if ( ( $capabilities{CAPVERSION} || 0 ) < 40609 ) {
-	$capabilities{TCPMSS_TARGET} = 1
-    }
+    $capabilities{TCPMSS_TARGET} = 1 if ( ( $capabilities{CAPVERSION} || 0 ) < 40609 );
 
     $helpers_aliases{ftp}  = 'ftp-0',  $capabilities{FTP_HELPER}  = 1 if $capabilities{FTP0_HELPER};
     $helpers_aliases{irc}  = 'irc-0',  $capabilities{IRC_HELPER}  = 1 if $capabilities{IRC0_HELPER};

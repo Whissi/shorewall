@@ -35,6 +35,12 @@ usage() # $1 = exit status
     exit $1
 }
 
+fatal_error()
+{
+    echo "   ERROR: $@" >&2
+    exit 1
+}
+
 qt()
 {
     "$@" >/dev/null 2>&1

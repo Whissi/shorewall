@@ -5020,7 +5020,9 @@ sub read_capabilities() {
 	warning_message "Your capabilities file does not contain a Kernel Version -- using 2.6.30";
 	$capabilities{KERNELVERSION} = 20630;
     }
-
+    #
+    # Assume that this is available when using an old capabilities files
+    #
     $capabilities{TCPMSS_TARGET} = 1 if ( ( $capabilities{CAPVERSION} || 0 ) < 40609 );
 
     $helpers_aliases{ftp}  = 'ftp-0',  $capabilities{FTP_HELPER}  = 1 if $capabilities{FTP0_HELPER};

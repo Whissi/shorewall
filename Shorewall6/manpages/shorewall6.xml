@@ -799,7 +799,10 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">add</emphasis></term>
+        <term><emphasis role="bold">add </emphasis>{
+        <replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]...
+        <replaceable>zone</replaceable> | <replaceable>zone</replaceable>
+        <replaceable>host-list</replaceable> }</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.21. Adds a list of hosts or subnets to
@@ -831,7 +834,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">allow</emphasis></term>
+        <term><emphasis role="bold">allow
+        </emphasis><replaceable>address</replaceable></term>
 
         <listitem>
           <para>Re-enables receipt of packets from hosts previously
@@ -843,7 +847,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">check</emphasis></term>
+        <term><emphasis role="bold">check </emphasis>[-<option>e</option>]
+        [-<option>d</option>] [-<option>p</option>] [-<option>r</option>]
+        [-<option>T</option>] [-<option>i</option>]
+        [<replaceable>directory</replaceable>]</term>
 
         <listitem>
           <para>Compiles the configuration in the specified
@@ -883,7 +890,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">clear</emphasis></term>
+        <term><emphasis role="bold">clear
+        </emphasis>[-<option>f</option>]</term>
 
         <listitem>
           <para>Clear will remove all rules and chains installed by
@@ -915,7 +923,11 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">compile</emphasis></term>
+        <term><emphasis role="bold">compile </emphasis>[-<option>e</option>]
+        [-<option>c</option>] [-<option>d</option>] [-<option>p</option>]
+        [-<option>T</option>] [-<option>i</option>]
+        [<replaceable>directory</replaceable>]
+        [<replaceable>pathname</replaceable> ]</term>
 
         <listitem>
           <para>Compiles the current configuration into the executable file
@@ -971,7 +983,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">delete</emphasis></term>
+        <term><emphasis role="bold">delete </emphasis>{
+        <replaceable>interface</replaceable>[:<replaceable>host-list</replaceable>]...
+        <replaceable>zone</replaceable> | <replaceable>zone</replaceable>
+        <replaceable>host-list</replaceable> }</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.21. The delete command reverses the
@@ -996,7 +1011,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">disable</emphasis></term>
+        <term><emphasis role="bold">disable </emphasis><emphasis role="bold">
+        </emphasis>{ <replaceable>interface</replaceable> |
+        <replaceable>provider</replaceable> }</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.26. Disables the optional provider
@@ -1015,7 +1032,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">drop</emphasis></term>
+        <term><emphasis role="bold">drop
+        </emphasis><replaceable>address</replaceable></term>
 
         <listitem>
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
@@ -1024,7 +1042,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">dump</emphasis></term>
+        <term><emphasis role="bold">dump </emphasis>[-<option>x</option>]
+        [-<option>l</option>] [-<option>m</option>]
+        [-<option>c</option>]</term>
 
         <listitem>
           <para>Produces a verbose report about the firewall configuration for
@@ -1046,7 +1066,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">enable</emphasis></term>
+        <term><emphasis role="bold">enable </emphasis>{
+        <replaceable>interface</replaceable> |
+        <replaceable>provider</replaceable> }</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.26. Enables the optional provider
@@ -1067,7 +1089,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">export</emphasis></term>
+        <term><emphasis role="bold">export
+        </emphasis>[<replaceable>directory1</replaceable> ]
+        [<replaceable>user</replaceable>@]<replaceable>system</replaceable>[:<replaceable>directory2</replaceable>
+        ]</term>
 
         <listitem>
           <para>If <emphasis>directory1</emphasis> is omitted, the current
@@ -1091,7 +1116,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">forget</emphasis></term>
+        <term><emphasis role="bold">forget </emphasis>[
+        <replaceable>filename</replaceable> ]</term>
 
         <listitem>
           <para>Deletes <filename>/var/lib/shorewall6/<replaceable>filename
@@ -1112,7 +1138,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">iptrace</emphasis></term>
+        <term><emphasis role="bold">iptrace </emphasis><replaceable>ip6tables
+        match expression</replaceable></term>
 
         <listitem>
           <para>This is a low-level debugging command that causes iptables
@@ -1140,7 +1167,11 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">load</emphasis></term>
+        <term><emphasis role="bold">load </emphasis> [-<option>s</option>]
+        [-<option>c</option>] [-<option>r</option>
+        <replaceable>root-user-name</replaceable>] [-<option>T</option>]
+        [-<option>i</option>] [ <replaceable>directory</replaceable> ]
+        <replaceable>system</replaceable></term>
 
         <listitem>
           <para>If <emphasis>directory</emphasis> is omitted, the current
@@ -1195,7 +1226,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">logdrop</emphasis></term>
+        <term><emphasis role="bold">logdrop
+        </emphasis><replaceable>address</replaceable></term>
 
         <listitem>
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
@@ -1207,7 +1239,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">logwatch</emphasis></term>
+        <term><emphasis role="bold">logwatch </emphasis>[-<option>m</option>]
+        [<replaceable>refresh-interval</replaceable>]</term>
 
         <listitem>
           <para>Monitors the log file specified by the LOGFILE option in
@@ -1225,7 +1258,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">logreject</emphasis></term>
+        <term><emphasis role="bold">logreject</emphasis>
+        <replaceable>address</replaceable></term>
 
         <listitem>
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
@@ -1246,7 +1280,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">noiptrace</emphasis></term>
+        <term><emphasis role="bold">noiptrace
+        </emphasis><replaceable>ip6tables match
+        expression</replaceable></term>
 
         <listitem>
           <para>This is a low-level debugging command that cancels a trace
@@ -1298,7 +1334,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">refresh</emphasis></term>
+        <term><emphasis role="bold">refresh </emphasis>[-<option>n</option>]
+        [-<option>d</option>] [-<option>T</option>] [-i]
+        [-<option>D</option><replaceable>directory</replaceable> ] [
+        <replaceable>chain</replaceable>... ]</term>
 
         <listitem>
           <para>All steps performed by <command>restart</command> are
@@ -1350,7 +1389,21 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">reload</emphasis></term>
+        <term><emphasis role="bold">reject</emphasis><replaceable>
+        address</replaceable></term>
+
+        <listitem>
+          <para>Causes traffic from the listed <emphasis>address</emphasis>es
+          to be silently rejected.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">reload </emphasis>[-<option>s</option>]
+        [-<option>c</option>] [-<option>r</option>
+        <replaceable>root-user-name</replaceable>] [-<option>T</option>]
+        [-<option>i</option>] [ <replaceable>directory</replaceable> ]
+        <replaceable>system</replaceable></term>
 
         <listitem>
           <para>If <emphasis>directory</emphasis> is omitted, the current
@@ -1417,7 +1470,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">restart</emphasis></term>
+        <term><emphasis role="bold">restart </emphasis>[-<option>n</option>]
+        [-<option>p</option>] [-<option>d</option>] [-<option>f</option>]
+        [-<option>c</option>] [-<option>T</option>] [-<option>i</option>]
+        [-<option>C</option>] [ <replaceable>directory</replaceable> ]</term>
 
         <listitem>
           <para>Restart is similar to <command>shorewall6 start</command>
@@ -1472,7 +1528,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">restore</emphasis></term>
+        <term><emphasis role="bold">restore </emphasis>[-<option>n</option>]
+        [-<option>p</option>] [-<option>C</option>] [
+        <replaceable>filename</replaceable> ]</term>
 
         <listitem>
           <para>Restore Shorewall6 to a state saved using the
@@ -1500,7 +1558,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">run</emphasis></term>
+        <term><emphasis role="bold">run</emphasis><emphasis role="bold">
+        </emphasis><replaceable>command</replaceable> [
+        <replaceable>parameter</replaceable> ... ]</term>
 
         <listitem>
           <para>Added in Shorewall 4.6.3. Executes
@@ -1523,7 +1583,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">safe-restart</emphasis></term>
+        <term><emphasis role="bold">safe-restart
+        </emphasis>[-<option>d</option>] [-<option>p</option>]
+        [-<option>t</option><replaceable>timeout</replaceable> ] [
+        <replaceable>directory</replaceable> ]</term>
 
         <listitem>
           <para>Only allowed if Shorewall6 is running. The current
@@ -1549,7 +1612,10 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">safe-start</emphasis></term>
+        <term><emphasis role="bold">safe-start
+        </emphasis>[-<option>d</option>] [-<option>p</option>]
+        [-<option>t</option><replaceable>timeout</replaceable> ] [
+        <replaceable>directory</replaceable> ]</term>
 
         <listitem>
           <para>Shorewall6 is started normally. You will then be prompted
@@ -1571,7 +1637,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">save</emphasis></term>
+        <term><emphasis role="bold">save </emphasis>[-<option>C</option>] [
+        <replaceable>filename</replaceable> ]</term>
 
         <listitem>
           <para>The dynamic blacklist is stored in <filename>
@@ -1622,7 +1689,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">bl|blacklists</emphasis></term>
+              <term>[-<option>x</option>] <emphasis role="bold">bl|blacklists
+              </emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.6.2. Displays the dynamic chain
@@ -1635,7 +1703,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">capabilities</emphasis></term>
+              <term>[-<option>f</option>] <emphasis
+              role="bold">capabilities</emphasis></term>
 
               <listitem>
                 <para>Displays your kernel/ip6tables capabilities. The
@@ -1646,8 +1715,10 @@
             </varlistentry>
 
             <varlistentry>
-              <term>[ [ <option>chain</option> ] <emphasis>chain</emphasis>...
-              ]</term>
+              <term>[-<option>b</option>] [-<option>x</option>]
+              [-<option>l</option>] [-<option>t</option>
+              {<option>filter</option>|<option>mangle</option>|<option>nat</option>|<option>raw</option>|<option>rawpost</option>}][
+              <emphasis>chain</emphasis>... ]</term>
 
               <listitem>
                 <para>The rules in each <emphasis>chain</emphasis> are
@@ -1777,6 +1848,20 @@
             </varlistentry>
 
             <varlistentry>
+              <term>[-<option>x</option>] <emphasis
+              role="bold">nat</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter nat table using the command
+                <emphasis role="bold">ip6tables -t nat -L -n -v</emphasis>.
+                The <emphasis role="bold">-x</emphasis> option is passed
+                directly through to ip6tables and causes actual packet and
+                byte counts to be displayed. Without this option, those counts
+                are abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">opens</emphasis></term>
 
               <listitem>
@@ -1799,7 +1884,22 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">routing</emphasis></term>
+              <term>[-<option>x</option>] <emphasis
+              role="bold">raw</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter raw table using the command
+                <emphasis role="bold">ip6tables -t raw -L -n -v</emphasis>.
+                The <emphasis role="bold">-x</emphasis> option is passed
+                directly through to ip6tables and causes actual packet and
+                byte counts to be displayed. Without this option, those counts
+                are abbreviated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">[-<option>c</option>]<emphasis
+              role="bold"> </emphasis>routing</emphasis></term>
 
               <listitem>
                 <para>Displays the system's IPv6 routing configuration. The -c
@@ -1830,7 +1930,11 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">start</emphasis></term>
+        <term><emphasis role="bold">start </emphasis><emphasis role="bold">
+        </emphasis>[-<option>n</option>] [-<option>p</option>]
+        [-<option>d</option>] [-<option>f</option>] [-<option>c</option>]
+        [-<option>T</option>] [-<option>i</option>] [-<option>C</option>] [
+        <replaceable>directory</replaceable> ]</term>
 
         <listitem>
           <para>Start shorewall6. Existing connections through shorewall6
@@ -1886,7 +1990,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">stop</emphasis></term>
+        <term><emphasis role="bold">stop
+        </emphasis>[-<option>f</option>]</term>
 
         <listitem>
           <para>Stops the firewall. All existing connections, except those
@@ -1898,6 +2003,12 @@
           is from systems listed in <ulink
           url="/manpages6/shorewall6-routestopped.html">shorewall6-routestopped</ulink>(5)
           or by ADMINISABSENTMINDED.</para>
+
+          <para>If <option>-f</option> is given, the command will be processed
+          by the compiled script that executed the last successful <emphasis
+          role="bold">start</emphasis>, <emphasis
+          role="bold">restart</emphasis> or <emphasis
+          role="bold">refresh</emphasis> command if that script exists.</para>
         </listitem>
       </varlistentry>
 
@@ -1915,7 +2026,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">try</emphasis></term>
+        <term><emphasis role="bold">try
+        </emphasis><replaceable>directory</replaceable> [
+        <replaceable>timeout</replaceable> ]</term>
 
         <listitem>
           <para>If Shorewall6 is started then the firewall state is saved to a
@@ -1949,7 +2062,11 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">update</emphasis></term>
+        <term><emphasis role="bold">update </emphasis>[-<option>b</option>]
+        [-<option>d</option>] [-<option>r</option>] [-<option>T</option>]
+        [-<option>a</option>] [-<option>D</option>] [-<option>i</option>]
+        [-<option>t</option>] [-<option>A</option>] [
+        <replaceable>directory</replaceable> ]</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.21 and causes the compiler to update
@@ -2041,7 +2158,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">version</emphasis></term>
+        <term><emphasis role="bold">version
+        [-<option>a</option>]</emphasis></term>
 
         <listitem>
           <para>Displays Shorewall6's version. If the <option>-a</option>

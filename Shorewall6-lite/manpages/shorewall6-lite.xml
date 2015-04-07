@@ -1202,7 +1202,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">log</emphasis></term>
+              <term>[-<option>m</option>] <emphasis
+              role="bold">log</emphasis></term>
 
               <listitem>
                 <para>Displays the last 20 shorewall6-lite messages from the
@@ -1212,6 +1213,20 @@
                 <para>The <option>-m</option> option causes the MAC address of
                 each packet source to be displayed if that information is
                 available.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>[-<option>x</option>] <emphasis
+              role="bold">mangle</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter mangle table using the command
+                <command>ip6tables -t mangle -L -n -v</command>.The
+                <option>-x</option> option is passed directly through to
+                ip6tables and causes actual packet and byte counts to be
+                displayed. Without this option, those counts are
+                abbreviated.</para>
               </listitem>
             </varlistentry>
 

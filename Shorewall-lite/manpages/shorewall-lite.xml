@@ -1231,7 +1231,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">log</emphasis></term>
+              <term>[-<option>m</option>] <emphasis
+              role="bold">log</emphasis></term>
 
               <listitem>
                 <para>Displays the last 20 Shorewall-lite messages from the
@@ -1240,6 +1241,20 @@
                 <emphasis role="bold">-m</emphasis> option causes the MAC
                 address of each packet source to be displayed if that
                 information is available.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>[-<option>x</option>] <emphasis
+              role="bold">mangle</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter mangle table using the command
+                <emphasis role="bold">iptables -t mangle -L -n -v</emphasis>.
+                The <emphasis role="bold">-x</emphasis> option is passed
+                directly through to iptables and causes actual packet and byte
+                counts to be displayed. Without this option, those counts are
+                abbreviated.</para>
               </listitem>
             </varlistentry>
 

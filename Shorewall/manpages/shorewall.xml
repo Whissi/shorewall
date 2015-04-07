@@ -597,7 +597,7 @@
       <arg><option>-t</option>
       {<option>filter</option>|<option>mangle</option>|<option>nat</option>|<option>raw|rawpost</option>}</arg>
 
-      <arg><arg><option>chain</option></arg><arg choice="plain"
+      <arg><arg choice="plain"
       rep="repeat"><replaceable>chain</replaceable></arg></arg>
     </cmdsynopsis>
 
@@ -1916,7 +1916,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">log</emphasis></term>
+              <term>[-<option>m</option>] <emphasis
+              role="bold">log</emphasis></term>
 
               <listitem>
                 <para>Displays the last 20 Shorewall messages from the log
@@ -1938,13 +1939,28 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">macro</emphasis></term>
+              <term><emphasis role="bold">macro
+              </emphasis><replaceable>macro</replaceable></term>
 
               <listitem>
                 <para>Added in Shorewall 4.4.6. Displays the file that
                 implements the specified <replaceable>macro</replaceable>
                 (usually
                 <filename>/usr/share/shorewall/macro</filename>.<replaceable>macro</replaceable>).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>[-<option>x</option>] <emphasis
+              role="bold">mangle</emphasis></term>
+
+              <listitem>
+                <para>Displays the Netfilter mangle table using the command
+                <emphasis role="bold">iptables -t mangle -L -n -v</emphasis>.
+                The <emphasis role="bold">-x</emphasis> option is passed
+                directly through to iptables and causes actual packet and byte
+                counts to be displayed. Without this option, those counts are
+                abbreviated.</para>
               </listitem>
             </varlistentry>
 

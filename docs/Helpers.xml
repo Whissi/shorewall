@@ -114,9 +114,11 @@
       nf_nat_<replaceable>application</replaceable>; more about that
       below.</para>
 
-      <para>The modules are not auto-loaded and must be loaded explicitly
-      using the <command>modprob</command> or <command>insmod</command>
-      utilities.</para>
+      <para>Prior to Shorewall 4.5.7, helper modules were not auto-loaded and
+      must be loaded explicitly using the <command>modprob</command> or
+      <command>insmod</command> utilities. Beginning with Shorewall 4.5.7,
+      these modules are loaded when Shorewall is determining the capabilities
+      of your system.</para>
 
       <para>Many of the modules allow parameters to be specified when the
       module is loaded. Among the common parameters is the ports parameter
@@ -281,13 +283,22 @@
         </varlistentry>
 
         <varlistentry>
+          <term>DONT_LOAD</term>
+
+          <listitem>
+            <para>This is a comma-separated list of modules that you
+            specifically don't want Shorewall to load.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
           <term>HELPERS</term>
 
           <listitem>
             <para>This option was added in Shorewall 4.5.7 and lists the
-            modules to be enabled for association with connections. This
-            option is fully functional only on systems running kernel 3.5 or
-            later.</para>
+            modules to be enabled for association with connections
+            (comma-separated). This option is fully functional only on systems
+            running kernel 3.5 or later.</para>
 
             <para>The module names allowed in this list are <emphasis
             role="bold">amanda</emphasis>, <emphasis
@@ -297,7 +308,19 @@
             role="bold">pptp</emphasis>, <emphasis
             role="bold">sane</emphasis>, <emphasis role="bold">sip</emphasis>,
             <emphasis role="bold">snmp</emphasis> and <emphasis
-            role="bold">tftp</emphasis>.</para>
+            role="bold">tftp</emphasis>. If you don't want a particular helper
+            module loaded, then:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>List it in the DONT_LOAD option; and</para>
+              </listitem>
+
+              <listitem>
+                <para>Explicitly list those helpers that you do want in
+                HELPERS.</para>
+              </listitem>
+            </itemizedlist>
           </listitem>
         </varlistentry>
 

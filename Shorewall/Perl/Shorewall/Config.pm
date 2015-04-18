@@ -880,9 +880,6 @@ sub initialize( $;$$) {
     #
     # Valid log levels
     #
-    # Note that we don't include LOGMARK; that is so we can default its
-    # priority to 'info' (LOGMARK itself defaults to 'warn').
-    #
     %validlevels = ( DEBUG   => 7,
 		     INFO    => 6,
 		     NOTICE  => 5,

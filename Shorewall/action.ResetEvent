@@ -41,9 +41,9 @@ set_action_disposition( $disposition) if supplied $disposition;
 set_action_name_to_caller;
 
 if ( $destination eq 'dst' ) {
-    perl_action_helper( $action, "-m recent --name $event --remove --rdest" );
+    perl_action_helper( $action, '', '', "-m recent --name $event --remove --rdest" );
 } else {
-    perl_action_helper( $action, "-m recent --name $event --remove --rsource" );
+    perl_action_helper( $action, '', '', "-m recent --name $event --remove --rsource" );
 }
 
 1;

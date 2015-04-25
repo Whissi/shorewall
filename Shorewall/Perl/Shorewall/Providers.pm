@@ -1729,12 +1729,12 @@ sub compile_updown() {
 	      q(    if [ "$COMMAND" = up ]; then) , 
 	      q(        progress_message3 "Attempting enable on interface $1") ,
 	      q(        COMMAND=enable) ,
-	      q(        detect_configuration),        
+	      q(        detect_configuration $1),
 	      q(        enable_provider $1),
 	      q(    elif [ "$PHASE" != post-down ]; then # pre-down or not Debian) ,
 	      q(        progress_message3 "Attempting disable on interface $1") ,
 	      q(        COMMAND=disable) ,
-	      q(        detect_configuration),        
+	      q(        detect_configuration $1),
 	      q(        disable_provider $1) ,
 	      q(    fi) ,
 	      q(elif [ "$COMMAND" = up ]; then) ,
@@ -1941,6 +1941,19 @@ sub handle_optional_interfaces( $ ) {
 
 	    emit( "$physical)" ), push_indent if $wildcards;
 
+	    if ( $provider eq $physical ) {
+		#
+		# Just an optional interface, or provider and interface are the same
+		#
+		emit qq(if [ -z "\$1" -o "\$1" = "$physical" ]; then);
+	    } else {
+		#
+		# Provider
+		#
+		emit qq(if [ -z "\$1" -o "\$1" = "$physical" -o "\$1" = "$provider" ]; then);
+	    }
+
+	    push_indent;
 	    if ( $providerref->{gatewaycase} eq 'detect' ) {
 		emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
 	    } else {
@@ -1951,6 +1964,10 @@ sub handle_optional_interfaces( $ ) {
 
 	    emit( "    SW_${base}_IS_USABLE=Yes" ,
 		  'fi' );
+
+	    pop_indent;
+
+	    emit( 'fi' );
 
 	    emit( ';;' ), pop_indent if $wildcards;
 	}

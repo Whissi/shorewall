@@ -375,7 +375,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 2
 	mutex_on
 	if product_is_started; then
-	    detect_configuration
+	    detect_configuration $1
 	    enable_provider $1
 	fi
 	mutex_off
@@ -387,7 +387,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 2
 	mutex_on
 	if product_is_started; then
-	    detect_configuration
+	    detect_configuration $1
 	    disable_provider $1
 	fi
 	mutex_off

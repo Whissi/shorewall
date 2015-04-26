@@ -24,6 +24,8 @@
 
       <year>2010</year>
 
+      <year>2015</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -170,6 +172,12 @@ ACCEPT       net:+sshok  $FW      tcp      22</programlisting></para>
     url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink>, then only
     ipv4 ipsets are saved. Both features require ipset version 5 or
     later.</para>
+
+    <para>Although Shorewall can save the definition of your ipsets and
+    restore them when Shorewall starts, in most cases you must use the ipset
+    utility to initially create and load your ipsets. The exception is that
+    Shorewall will automatically create an empty iphash ipset to back each
+    dynamic zone.</para>
   </section>
 
   <section>

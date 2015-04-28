@@ -44,6 +44,7 @@ our @EXPORT = qw( process_providers
 		  compile_updown
 		  setup_load_distribution
 		  have_providers
+                  map_provider_to_interface
 	       );
 our @EXPORT_OK = qw( initialize provider_realm );
 our $VERSION = '4.4_24';
@@ -1588,6 +1589,35 @@ sub have_providers() {
     return our $providers;
 }
 
+sub map_provider_to_interface() {
+
+    my $haveoptional;
+
+    for my $providerref ( values %providers ) {
+	if ( $providerref->{optional} ) {
+	    unless ( $haveoptional++ ) {
+		emit( 'if [ -n "$interface" ]; then',
+		      '    case $interface in' );
+
+		push_indent;
+		push_indent;
+	    }
+
+	    emit( $providerref->{provider} . ')',
+		  '    interface=' . $providerref->{physical},
+		  '    ;;' );
+	}
+    }
+
+    if ( $haveoptional ) {
+	pop_indent;
+	pop_indent;
+	emit( '    esac',
+	      "fi\n"
+	    );
+    }
+}
+
 sub setup_providers() {
     our $providers;
 
@@ -1945,12 +1975,12 @@ sub handle_optional_interfaces( $ ) {
 		#
 		# Just an optional interface, or provider and interface are the same
 		#
-		emit qq(if [ -z "\$1" -o "\$1" = "$physical" ]; then);
+		emit qq(if [ -z "\$interface" -o "\$interface" = "$physical" ]; then);
 	    } else {
 		#
 		# Provider
 		#
-		emit qq(if [ -z "\$1" -o "\$1" = "$physical" -o "\$1" = "$provider" ]; then);
+		emit qq(if [ -z "\$interface" -o "\$interface" = "$physical" ]; then);
 	    }
 
 	    push_indent;
@@ -1967,7 +1997,7 @@ sub handle_optional_interfaces( $ ) {
 
 	    pop_indent;
 
-	    emit( 'fi' );
+	    emit( "fi\n" );
 
 	    emit( ';;' ), pop_indent if $wildcards;
 	}

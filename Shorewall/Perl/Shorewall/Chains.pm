@@ -260,6 +260,7 @@ our %EXPORT_TAGS = (
 				       get_interface_gateway
 				       get_interface_mac
 				       have_global_variables
+                                       have_address_variables
 				       set_global_variables
 				       save_dynamic_chains
 				       load_ipsets
@@ -5604,6 +5605,8 @@ sub have_ipset_rules() {
 
 sub get_interface_address( $ );
 
+sub get_interface_gateway ( $;$ );
+
 sub record_runtime_address( $$;$ ) {
     my ( $addrtype, $interface, $protect ) = @_;
 
@@ -6693,11 +6696,10 @@ sub get_interface_gateway ( $;$ ) {
     $global_variables |= ALL_COMMANDS;
 
     if ( interface_is_optional $logical ) {
-	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)\n);
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface));
     } else {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)
-[ -n "\$$variable" ] || startup_error "Unable to detect the gateway through interface $interface"
-);
+[ -n "\$$variable" ] || startup_error "Unable to detect the gateway through interface $interface");
     }
 
     $protect ? "\${$variable:-" . NILIP . '}' : "\$$variable";
@@ -6803,16 +6805,40 @@ sub have_global_variables() {
     have_capability( 'ADDRTYPE' ) ? $global_variables : $global_variables | NOT_RESTORE;
 }
 
+sub have_address_variables() {
+    ( keys %interfaceaddr || keys %interfacemacs || keys %interfacegateways );
+}
+
 #
 # Generate setting of run-time global shell variables
 #
-sub set_global_variables( $ ) {
+sub set_global_variables( $$ ) {
 
-    my $setall = shift;
+    my ( $setall, $conditional ) = @_;
 
-    emit $_ for values %interfaceaddr;
-    emit $_ for values %interfacegateways;
-    emit $_ for values %interfacemacs;
+    if ( $conditional ) {
+	my ( $interface, $code );
+
+	while ( ( $interface, $code ) = each %interfaceaddr ) {
+	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $code) );
+	}
+
+	while ( ( $interface, $code ) = each %interfacegateways ) {
+	    emit( qq(if [ -z "\$interface" -o "\$interface" = "$interface" ]; then) );
+	    push_indent;
+	    emit( $code );
+	    pop_indent;
+	    emit( qq(fi\n) );
+	}
+
+	while ( ( $interface, $code ) = each %interfacemacs ) {
+	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $code) );
+	}
+    } else {
+	emit $_     for values %interfaceaddr;
+	emit "$_\n" for values %interfacegateways;
+	emit $_     for values %interfacemacs;
+    }
 
     if ( $setall ) {
 	emit $_ for values %interfaceaddrs;

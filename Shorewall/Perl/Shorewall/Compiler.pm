@@ -274,9 +274,20 @@ sub generate_script_2() {
 	  'detect_configuration()',
 	  '{' );
 
-    my $global_variables = have_global_variables;
+    my $global_variables    = have_global_variables;
+    my $optional_interfaces = find_interfaces_by_option( 'optional' );
 
     push_indent;
+
+    if ( have_address_variables || @$optional_interfaces ) {
+	emit( 'local interface',
+	      '',
+	      'interface="$1"',
+	      ''
+	    );
+    }
+
+    map_provider_to_interface if have_providers;
 
     if ( $global_variables ) {
 
@@ -292,7 +303,7 @@ sub generate_script_2() {
 
 	    if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
 
-		set_global_variables(0);
+		set_global_variables(0, 0);
 
 		handle_optional_interfaces(0);
 	    }
@@ -306,7 +317,7 @@ sub generate_script_2() {
 	    push_indent;
 	}
 
-	set_global_variables(1);
+	set_global_variables(1,1);
 
 	if ( $global_variables & NOT_RESTORE ) {
 	    handle_optional_interfaces(0);

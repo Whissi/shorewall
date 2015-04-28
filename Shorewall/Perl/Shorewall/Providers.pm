@@ -47,7 +47,7 @@ our @EXPORT = qw( process_providers
                   map_provider_to_interface
 	       );
 our @EXPORT_OK = qw( initialize provider_realm );
-our $VERSION = '4.4_24';
+our $VERSION = 'MODULEVERSION';
 
 use constant { LOCAL_TABLE   => 255,
 	       MAIN_TABLE    => 254,

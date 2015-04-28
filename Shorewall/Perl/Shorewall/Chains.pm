@@ -280,7 +280,7 @@ our %EXPORT_TAGS = (
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.5_18';
+our $VERSION = 'MODULEVERSION';
 
 #
 # Chain Table

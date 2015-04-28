@@ -232,7 +232,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
 Exporter::export_ok_tags('internal');
 
-our $VERSION = '4.6.0-Beta1';
+our $VERSION = 'MODULEVERSION';
 
 #
 # describe the current command, it's present progressive, and it's completion.

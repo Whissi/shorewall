@@ -15,6 +15,7 @@ usage() {
     echo "   down <interface>"
     echo "   enable <interface>"
     echo "   reset"
+    echo "   reenable <interface>"
     echo "   refresh"
     echo "   restart"
     echo "   run <command> [ <parameter> ... ]"
@@ -389,6 +390,19 @@ case "$COMMAND" in
 	if product_is_started; then
 	    detect_configuration $1
 	    disable_provider $1
+	fi
+	mutex_off
+	status=0
+	;;
+    reenable)
+	[ $# -eq 1 ] && exit 0
+	shift
+	[ $# -ne 1 ] && usage 2
+	mutex_on
+	if product_is_started; then
+	    detect_configuration $1
+	    COMMAND=enable  disable_provider $1 Yes
+	    COMMAND=disable enable_provider  $1 Yes
 	fi
 	mutex_off
 	status=0

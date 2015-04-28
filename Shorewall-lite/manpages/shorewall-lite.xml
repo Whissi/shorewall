@@ -297,6 +297,20 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>reenable</option></arg>
+
+      <arg choice="plain">{ <replaceable>interface</replaceable> |
+      <replaceable>provider</replaceable> }</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall-lite</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>reject</option></arg>
 
       <arg choice="plain"><replaceable>address</replaceable></arg>
@@ -792,8 +806,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">hits </emphasis> [-<option>t</option>]
-        </term>
+        <term><emphasis role="bold">hits </emphasis>
+        [-<option>t</option>]</term>
 
         <listitem>
           <para>Generates several reports from Shorewall-lite log messages in
@@ -959,6 +973,20 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">reenable</emphasis>{
+        <replaceable>interface</replaceable> |
+        <replaceable>provider</replaceable> }</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.9. This is equivalent to a
+          <command>disable</command> command followed by an
+          <command>enable</command> command on the specified
+          <replaceable>interface</replaceable> or
+          <replaceable>provider</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">reject</emphasis><replaceable>
         address</replaceable></term>
 
@@ -970,7 +998,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">reset [<replaceable>chain</replaceable>,
-        ...]</emphasis><acronym></acronym></term>
+        ...]</emphasis><acronym/></term>
 
         <listitem>
           <para>Resets the packet and byte counters in the specified

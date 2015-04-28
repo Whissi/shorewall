@@ -3834,6 +3834,7 @@ usage() # $1 = exit status
     echo "   logwatch [<refresh interval>]"
     echo "   open <source> <dest> [ <protocol> [ <port> ] ]" 
     echo "   reject <address> ..."
+    echo "   reenable <interface>"
     echo "   reset [ <chain> ... ]"
     echo "   restart [ -n ] [ -p ] [ -f ] [ -C ] [ <directory> ]"
     echo "   restore [ -n ] [ -p ] [ -C ] [ <file name> ]"
@@ -4102,7 +4103,7 @@ shorewall_cli() {
 	    shift
 	    restart_command $@
 	    ;;
-	disable|enable)
+	disable|enable|reenable)
 	    get_config Yes
 	    if product_is_started; then
 		run_it ${VARDIR}/firewall $g_debugging $@

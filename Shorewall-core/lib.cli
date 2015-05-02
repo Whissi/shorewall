@@ -2475,6 +2475,7 @@ determine_capabilities() {
     local chain
     local chain1
     local arptables
+    local helper
 
     if [ -z "$g_tool" ]; then
 	[ $g_family -eq 4 ] && tool=iptables || tool=ip6tables
@@ -2776,21 +2777,44 @@ determine_capabilities() {
 	if qt $g_tool -t raw -A $chain -j CT --notrack; then
 	    CT_TARGET=Yes;
 
-	    qt $g_tool -t raw -A $chain -p udp --dport 10080 -j CT --helper amanda     && AMANDA_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 21    -j CT --helper ftp        && FTP_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 21    -j CT --helper ftp-0      && FTP0_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 1719  -j CT --helper RAS        && H323_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 6667  -j CT --helper irc        && IRC_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 6667  -j CT --helper irc-0      && IRC0_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 137   -j CT --helper netbios-ns && NETBIOS_NS_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 1729  -j CT --helper pptp       && PPTP_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 6566  -j CT --helper sane       && SANE_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p tcp --dport 6566  -j CT --helper sane-0     && SANE0_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 5060  -j CT --helper sip        && SIP_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 5060  -j CT --helper sip-0      && SIP0_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 161   -j CT --helper snmp       && SNMP_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 69    -j CT --helper tftp       && TFTP_HELPER=Yes
-	    qt $g_tool -t raw -A $chain -p udp --dport 69    -j CT --helper tftp-0     && TFTP0_HELPER=Yes
+	    for helper in amanda ftp ftp0 h323 irc irc0 netbios_ns pptp sane sane0 sip sip0 snmp tftp tftp0; do
+		eval ${helper}_ENABLED=''
+	    done
+
+	    if [ -n "$HELPERS" ]; then
+		for helper in $(split_list "$HELPERS"); do
+		    case $helper in
+			none)
+			    ;;
+			amanda|ftp|ftp0|h323|irc|irc0|netbios_ns|pptp|sane|sane0|sip|sip0|snmp|tftp|tftp0)
+			    eval ${helper}_ENABLED=Yes
+			    ;;
+			*)
+			    error_message "WARNING: Invalid helper ($helper) ignored"
+			    ;;
+		    esac
+		done
+	    else
+		for helper in amanda ftp ftp0 h323 irc irc0 netbios_ns pptp sane sane0 sip sip0 snmp tftp tftp0; do
+		    eval ${helper}_ENABLED=Yes
+		done
+	    fi
+
+	    [ -n "$amanda_ENABLED" ]     && qt $g_tool -t raw -A $chain -p udp --dport 10080 -j CT --helper amanda     && AMANDA_HELPER=Yes
+	    [ -n "$ftp_ENABLED" ]        && qt $g_tool -t raw -A $chain -p tcp --dport 21    -j CT --helper ftp        && FTP_HELPER=Yes
+	    [ -n "$ftp0_ENABLED" ]       && qt $g_tool -t raw -A $chain -p tcp --dport 21    -j CT --helper ftp-0      && FTP0_HELPER=Yes
+	    [ -n "$h323_ENABLED" ]       && qt $g_tool -t raw -A $chain -p udp --dport 1719  -j CT --helper RAS        && H323_HELPER=Yes
+	    [ -n "$irc_ENABLED" ]        && qt $g_tool -t raw -A $chain -p tcp --dport 6667  -j CT --helper irc        && IRC_HELPER=Yes
+	    [ -n "$irc0_ENABLED" ]       && qt $g_tool -t raw -A $chain -p tcp --dport 6667  -j CT --helper irc-0      && IRC0_HELPER=Yes
+	    [ -n "$netbios_ns_ENABLED" ] && qt $g_tool -t raw -A $chain -p udp --dport 137   -j CT --helper netbios-ns && NETBIOS_NS_HELPER=Yes
+	    [ -n "$pptp_ENABLED" ]       && qt $g_tool -t raw -A $chain -p tcp --dport 1729  -j CT --helper pptp       && PPTP_HELPER=Yes
+	    [ -n "$sane_ENABLED" ]       && qt $g_tool -t raw -A $chain -p tcp --dport 6566  -j CT --helper sane       && SANE_HELPER=Yes
+	    [ -n "$sane0_ENABLED" ]      && qt $g_tool -t raw -A $chain -p tcp --dport 6566  -j CT --helper sane-0     && SANE0_HELPER=Yes
+	    [ -n "$sip_ENABLED" ]        && qt $g_tool -t raw -A $chain -p udp --dport 5060  -j CT --helper sip        && SIP_HELPER=Yes
+	    [ -n "$sip0_ENABLED" ]       && qt $g_tool -t raw -A $chain -p udp --dport 5060  -j CT --helper sip-0      && SIP0_HELPER=Yes
+	    [ -n "$snmp_ENABLED" ]       && qt $g_tool -t raw -A $chain -p udp --dport 161   -j CT --helper snmp       && SNMP_HELPER=Yes
+	    [ -n "$tftp_ENABLED" ]       && qt $g_tool -t raw -A $chain -p udp --dport 69    -j CT --helper tftp       && TFTP_HELPER=Yes
+	    [ -n "$tftp0_ENABLED" ]      && qt $g_tool -t raw -A $chain -p udp --dport 69    -j CT --helper tftp-0     && TFTP0_HELPER=Yes
 	fi
 
 	qt $g_tool -t raw -F $chain

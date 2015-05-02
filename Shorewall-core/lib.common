@@ -212,6 +212,17 @@ split() {
 }
 
 #
+# Split a comma-separated list into a space-separated list
+#
+split_list() {
+    local ifs
+    ifs=$IFS
+    IFS=,
+    echo $*
+    IFS=$ifs
+}
+
+#
 # Search a list looking for a match -- returns zero if a match found
 # 1 otherwise
 #

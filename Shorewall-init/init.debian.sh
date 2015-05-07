@@ -74,7 +74,9 @@ setstatedir() {
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARLIB}/${PRODUCT}
 
     if [ $PRODUCT = shorewall -o $PRODUCT = shorewall6 ]; then
-	${SBINDIR}/$PRODUCT ${OPTIONS} compile -c || echo_notdone
+	${SBINDIR}/$PRODUCT ${OPTIONS} compile -c
+    else
+	return 0
     fi
 }
 
@@ -103,21 +105,17 @@ shorewall_start () {
   echo -n "Initializing \"Shorewall-based firewalls\": "
 
   for PRODUCT in $PRODUCTS; do
-      setstatedir
-
-      if [ -x ${STATEDIR}/firewall ]; then
-          #
-	  # Run in a sub-shell to avoid name collisions
-	  #
-	  ( 
-	      if ! ${STATEDIR}/firewall status > /dev/null 2>&1; then
-		  ${STATEDIR}/firewall ${OPTIONS} stop || echo_notdone
-	      else
-		  echo_notdone
-	      fi
-	  )
-      else
-	  echo_notdone
+      if setstatedir; then
+	  if [ -x ${STATEDIR}/firewall ]; then
+              #
+	      # Run in a sub-shell to avoid name collisions
+	      #
+	      (
+		  if ! ${STATEDIR}/firewall status > /dev/null 2>&1; then
+		      ${STATEDIR}/firewall ${OPTIONS} stop
+		  fi
+	      )
+	  fi
       fi
   done
 
@@ -144,10 +142,10 @@ shorewall_stop () {
 
   echo -n "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
-      setstatedir
-
-      if [ -x ${STATEDIR}/firewall ]; then
-	  ${STATEDIR}/firewall ${OPTIONS} clear || echo_notdone
+      if setstatedir; then
+	  if [ -x ${STATEDIR}/firewall ]; then
+	      ${STATEDIR}/firewall ${OPTIONS} clear
+	  fi
       fi
   done
 

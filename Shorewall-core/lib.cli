@@ -1683,7 +1683,7 @@ restore_command() {
 
     if [ -z "$STARTUP_ENABLED" ]; then
 	error_message "ERROR: Startup is disabled"
-	exit 2
+	exit 6
     fi
 
     g_restorepath=${VARDIR}/$RESTOREFILE
@@ -3680,7 +3680,7 @@ start_command() {
 	else
 	    error_message "${VARDIR}/firewall is missing or is not executable"
 	    logger -p kern.err "ERROR:$g_product start failed"
-	    rc=2
+	    rc=6
 	fi
 
 	[ -n "$g_nolock" ] || mutex_off
@@ -3813,7 +3813,7 @@ restart_command() {
     else
 	error_message "${VARDIR}/firewall is missing or is not executable"
 	logger -p kern.err "ERROR:$g_product restart failed"
-	rc=2
+	rc=6
     fi
 
     [ -n "$g_nolock" ] || mutex_off

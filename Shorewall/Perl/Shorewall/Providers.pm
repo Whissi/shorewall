@@ -695,8 +695,6 @@ sub process_a_provider( $ ) {
     $provider_interfaces{$interface} = $table unless $shared;
 
     if ( $track ) {
-	fatal_error "The 'track' option requires a numeric value in the MARK column" if $mark eq '-';
-
 	if ( $routemarked_interfaces{$interface} ) {
 	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} == ROUTEMARKED_UNSHARED;
 	    fatal_error "Multiple providers through the same interface must their IP address specified in the INTERFACES" unless $shared;

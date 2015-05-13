@@ -1516,7 +1516,7 @@ EOF
 		       "        start_provider_$provider" );
 	    }
 
-	    emit ( '    elif [ -z $2 ]; then',
+	    emit ( '    elif [ -z "$2" ]; then',
 		   "        startup_error \"Interface $providerref->{physical} is already enabled\"",
 		   '    fi',
 		   '    ;;'

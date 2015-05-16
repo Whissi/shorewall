@@ -146,20 +146,16 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	    if ( $option eq 'helper' ) {
 		my $modifiers = '';
 
-		$disposition = "helper";
+		$disposition = 'helper';
 
-		if ( $args =~ /^([-\w.]*)\((.+)\)$/ ) {
+		if ( $args =~ /^([-\w.]+)\((.+)\)$/ ) {
 		    $args      = $1;
 		    $modifiers = $2;
 		}
 
-		if ( supplied $args ) {
-		    fatal_error "Invalid helper' ($args)" if $args =~ /,/;
-		    validate_helper( $args, $proto );
-		    $action = "CT --helper $helpers_aliases{$args}";
-		} else {
-		    $action = "CT ";
-		}
+		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
+		validate_helper( $args, $proto );
+		$action = "CT --helper $helpers_aliases{$args}";
 
 		$exception_rule = do_proto( $proto, '-', '-' );
 		
@@ -181,6 +177,17 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 			fatal_error "Invalid helper option ($mod)";
 		    }
 		}
+	    } elsif ( $option eq 'ctevents' ) {
+		$disposition = 'helper';
+
+		for ( split_list( $args, 'ctevents' ) ) {
+		    fatal_error "Invalid 'ctevents' event ($_)" unless $valid_ctevent{$_};
+		}
+
+		$action = "CT --ctevents $args";
+	    } elsif ( $option eq 'expevents' ) {
+		fatal_error "Invalid expevent argument ($args)" unless $args eq 'new';
+		$action = 'CT --expevents new';
 	    } else {
 		fatal_error "Invalid CT option ($option)";
 	    }

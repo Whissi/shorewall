@@ -90,8 +90,7 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:helper:(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])</emphasis>|<emphasis
-        role="bold">CT:notrack</emphasis>|DROP|LOG|NFLOG(<replaceable>nflog-parameters</replaceable>)|IP6TABLES(<replaceable>target</replaceable>)}[:<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
+        role="bold">CT:ctevents:<replaceable>event</replaceable>[,...]|CT:expevents:new|notrack</emphasis>|DROP|LOG|NFLOG(<replaceable>nflog-parameters</replaceable>)|IP6TABLES(<replaceable>target</replaceable>)}[:<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
           <para>This column is only present when FORMAT &gt;= 2. Values other
@@ -239,15 +238,35 @@
                 <listitem>
                   <para><option>expevents</option><option>=new</option></para>
 
-                  <para>Only generate a <emphasis role="bold">new</emphasis>
+                  <para>Only generate <emphasis role="bold">new</emphasis>
                   expectation events for this connection.</para>
                 </listitem>
               </itemizedlist>
+            </listitem>
 
-              <para>Beginning with Shorewall 4.6.10, the parenthesized list of
-              <replaceable>arg</replaceable>=<replaceable>val</replaceable>
-              pairs may be given without a helper name (e.g.,
-              CT:helper:(ctevents=assured,destroyed)).</para>
+            <listitem>
+              <para>ctevents:<replaceable>event</replaceable>[,...]</para>
+
+              <para>Added in Shorewall 4.6.10. Only generate the specified
+              conntrack events for this connection. Possible event types are:
+              <emphasis role="bold">new</emphasis>, <emphasis
+              role="bold">related</emphasis>, <emphasis
+              role="bold">destroy</emphasis>, <emphasis
+              role="bold">reply</emphasis>, <emphasis
+              role="bold">assured</emphasis>, <emphasis
+              role="bold">protoinfo</emphasis>, <emphasis
+              role="bold">helper</emphasis>, <emphasis
+              role="bold">mark</emphasis> (this is connection mark, not packet
+              mark), <emphasis role="bold">natseqinfo</emphasis>, and
+              <emphasis role="bold">secmark</emphasis>.</para>
+            </listitem>
+
+            <listitem>
+              <para>expevents=new</para>
+
+              <para>Added in Shorewall 4.6.10. Only generate <emphasis
+              role="bold">new</emphasis> expectation events for this
+              connection.</para>
             </listitem>
 
             <listitem>

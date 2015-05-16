@@ -148,16 +148,21 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 
 		$disposition = "helper";
 
-		if ( $args =~ /^([-\w.]+)\((.+)\)$/ ) {
+		if ( $args =~ /^([-\w.]*)\((.+)\)$/ ) {
 		    $args      = $1;
 		    $modifiers = $2;
 		}
 
-		fatal_error "Invalid helper' ($args)" if $args =~ /,/;
-		validate_helper( $args, $proto );
-		$action = "CT --helper $helpers_aliases{$args}";
-		$exception_rule = do_proto( $proto, '-', '-' );
+		if ( supplied $args ) {
+		    fatal_error "Invalid helper' ($args)" if $args =~ /,/;
+		    validate_helper( $args, $proto );
+		    $action = "CT --helper $helpers_aliases{$args}";
+		} else {
+		    $action = "CT ";
+		}
 
+		$exception_rule = do_proto( $proto, '-', '-' );
+		
 		for my $mod ( split_list1( $modifiers, 'ctevents' ) ) {
 		    fatal_error "Invalid helper option ($mod)" unless $mod =~ /^(\w+)=(.+)$/;
 		    $mod    = $1;

@@ -90,7 +90,7 @@
         role="bold">NOTRACK</emphasis>|<emphasis
         role="bold">CT</emphasis>:<emphasis
         role="bold">helper</emphasis>:<replaceable>name</replaceable>[(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|<emphasis
-        role="bold">CT:notrack</emphasis>|DROP|LOG|ULOG(<replaceable>ulog-parameters</replaceable>):NFLOG(<replaceable>nflog-parameters</replaceable>)|IPTABLES(<replaceable>target</replaceable>)}[<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
+        role="bold">CT:helper:(<replaceable>arg</replaceable>=<replaceable>val</replaceable>[,...])|CT:notrack</emphasis>|DROP|LOG|ULOG(<replaceable>ulog-parameters</replaceable>):NFLOG(<replaceable>nflog-parameters</replaceable>)|IPTABLES(<replaceable>target</replaceable>)}[<replaceable>log-level</replaceable>[:<replaceable>log-tag</replaceable>]][:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
           <para>This column is only present when FORMAT &gt;= 2. Values other
@@ -114,7 +114,8 @@
               <replaceable>name</replaceable> to this connection. This is more
               flexible than loading the conntrack helper with preset ports. If
               a <replaceable>log-level</replaceable> is specified, the packet
-              will also be logged at that level.</para>
+              will also be logged at that level. Beginning with Shorewall
+              4.6.10, the helper name is optional</para>
 
               <para>At this writing, the available helpers are:</para>
 
@@ -242,6 +243,11 @@
                   expectation events for this connection.</para>
                 </listitem>
               </itemizedlist>
+
+              <para>Beginning with Shorewall 4.6.10, the parenthesized list of
+              <replaceable>arg</replaceable>=<replaceable>val</replaceable>
+              pairs may be given without a helper name (e.g.,
+              CT:helper:(ctevents=assured,destroyed)).</para>
             </listitem>
 
             <listitem>

@@ -765,7 +765,6 @@ sub initialize( $$$ ) {
 		     RETURN       => 1,
 		     QUEUE        => 1,
 		     CLASSIFY     => 1,
-		     CT           => 1,
 		     DNAT         => 1,
 		     MASQUERADE   => 1,
 		     NETMAP       => 1,

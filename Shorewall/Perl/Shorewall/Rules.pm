@@ -224,6 +224,7 @@ sub initialize( $ ) {
     $family            = shift;
     #
     # Chains created as a result of entries in the policy file
+    #
     @policy_chains  = ();
     #
     # This is updated from the *_DEFAULT settings in shorewall.conf. Those settings were stored
@@ -548,10 +549,10 @@ sub process_a_policy() {
 		$chainref->{provisional} = 0;
 		$chainref->{policy} = $policy;
 	    } else {
-		fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
+		fatal_error qq(Policy "$client $server $originalpolicy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 	    }
 	} elsif ( $chainref->{policy} ) {
-	    fatal_error qq(Policy "$client $server $policy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
+	    fatal_error qq(Policy "$client $server $originalpolicy" duplicates earlier policy "@{$chainref->{policypair}} $chainref->{policy}");
 	} else {
 	    convert_to_policy_chain( $chainref, $client, $server, $policy, 0 , $audit );
 	    push @policy_chains, ( $chainref ) unless $config{EXPAND_POLICIES} && ( $clientwild || $serverwild );
@@ -583,23 +584,23 @@ sub process_a_policy() {
 	    for my $zone ( @zonelist ) {
 		for my $zone1 ( @zonelist ) {
 		    set_policy_chain rules_chain( ${zone}, ${zone1} ), $client, $server, $chainref, $policy, $intrazone;
-		    print_policy $zone, $zone1, $policy, $chain;
+		    print_policy $zone, $zone1, $originalpolicy, $chain;
 		}
 	    }
 	} else {
 	    for my $zone ( all_zones ) {
 		set_policy_chain rules_chain( ${zone}, ${server} ), $client, $server, $chainref, $policy, $intrazone;
-		print_policy $zone, $server, $policy, $chain;
+		print_policy $zone, $server, $originalpolicy, $chain;
 	    }
 	}
     } elsif ( $serverwild ) {
 	for my $zone ( @zonelist ) {
 	    set_policy_chain rules_chain( ${client}, ${zone} ), $client, $server, $chainref, $policy, $intrazone;
-	    print_policy $client, $zone, $policy, $chain;
+	    print_policy $client, $zone, $originalpolicy, $chain;
 	}
 
     } else {
-	print_policy $client, $server, $policy, $chain;
+	print_policy $client, $server, $originalpolicy, $chain;
     }
 }
 

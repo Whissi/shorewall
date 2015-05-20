@@ -534,19 +534,31 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">NFQUEUE</emphasis>[(<replaceable>queuenumber</replaceable>)]</term>
+              role="bold">NFQUEUE</emphasis>[([<replaceable>queuenumber</replaceable>1[:<replaceable>queuenumber2</replaceable>][,bypass]]|bypass)]</term>
 
               <listitem>
                 <para>Queues the packet to a user-space application using the
                 nfnetlink_queue mechanism. If a
-                <replaceable>queuenumber</replaceable> is not specified, queue
-                zero (0) is assumed.</para>
+                <replaceable>queuenumber</replaceable>1 is not specified,
+                queue zero (0) is assumed. Beginning with Shorewall 4.6.10,
+                the keyword <emphasis role="bold">bypass</emphasis> can be
+                given. By default, if no userspace program is listening on an
+                NFQUEUE, then all packets that are to be queued are dropped.
+                When this option is used, the NFQUEUE rule is silently
+                bypassed instead. The packet will move on to the next rule.
+                Also beginning in Shorewall 4.6.10, a second queue number
+                (<replaceable>queuenumber2</replaceable>) may be specified.
+                This specifies a range of queues to use. Packets are then
+                balanced across the given queues. This is useful for multicore
+                systems: start multiple instances of the userspace program on
+                queues x, x+1, .. x+n and use "x:x+n". Packets belonging to
+                the same connection are put into the same nfqueue.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis
-              role="bold">NFQUEUE![(<replaceable>queuenumber</replaceable>)]</emphasis></term>
+              <term><emphasis role="bold"><emphasis
+              role="bold">NFQUEUE</emphasis>[([<replaceable>queuenumber1</replaceable>[,<replaceable>queuenumber2</replaceable>][,bypass]]|bypass)]</emphasis></term>
 
               <listitem>
                 <para>like NFQUEUE but exempts the rule from being suppressed

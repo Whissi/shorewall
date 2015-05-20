@@ -470,6 +470,52 @@ sub process_default_action( $$$$ ) {
 }
 
 #
+# Verify an NFQUEUE specification and return the appropriate ip[6]tables target
+#
+sub handle_nfqueue( $$ ) {
+    my ($params, $allow_bypass ) = @_;
+    my $action;
+
+    require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules and Policies', '' );
+
+    my ( $queue, $bypass ) = split ',', $params;
+
+    if ( $queue eq 'bypass' ) {
+	fatal_error "'bypass' is not allowed in this context" unless $allow_bypass;
+	fatal_error "Invalid NFQUEUE options (bypass,$bypass)" if supplied $bypass;
+	return 'NFQUEUE --queue-bypass';
+    }
+
+    my ( $queue1, $queue2 ) = split ':', $queue;
+
+    my $queuenum1 = numeric_value( $queue1 );
+    my $queuenum2;
+
+    fatal_error "Invalid NFQUEUE queue number ($queue1)" unless defined( $queuenum1) && $queuenum1 >= 0 && $queuenum1 <= 65535;
+
+    if ( supplied $queue2 ) {
+	$queuenum2 = numeric_value( $queue2 );
+
+	fatal_error "Invalid NFQUEUE queue number ($queue2)" unless defined( $queuenum2) && $queuenum2 >= 0 && $queuenum2 <= 65535 && $queuenum1 < $queuenum2;
+    }
+
+    if ( supplied $bypass ) {
+	fatal_error "Invalid NFQUEUE option ($bypass)" if $bypass ne 'bypass';
+	fatal_error "'bypass' is not allowed in this context" unless $allow_bypass;
+
+	$bypass =' --queue-bypass';
+    } else {
+	$bypass = '';
+    }
+
+    if ( supplied $queue2 ) {
+	return "NFQUEUE --queue-balance ${queuenum1}:${queuenum2}${bypass}";
+    } else {
+	return "NFQUEUE --queue-num ${queuenum1}${bypass}";
+    }
+}
+
+#
 # Process an entry in the policy file.
 #
 sub process_a_policy() {
@@ -519,11 +565,9 @@ sub process_a_policy() {
     $default = process_default_action( $originalpolicy, $policy, $default, $level );
 
     if ( defined $queue ) {
-	fatal_error "Invalid policy ($policy($queue))" unless $policy eq 'NFQUEUE';
-	require_capability( 'NFQUEUE_TARGET', 'An NFQUEUE Policy', 's' );
-	my $queuenum = numeric_value( $queue );
-	fatal_error "Invalid NFQUEUE queue number ($queue)" unless defined( $queuenum) && $queuenum <= 65535;
-	$policy = "NFQUEUE --queue-num $queuenum";
+	$policy = handle_nfqueue( $queue,
+				  0 # Don't allow 'bypass'
+	    );
     } elsif ( $policy eq 'NONE' ) {
 	fatal_error "NONE policy not allowed with \"all\""
 	    if $clientwild || $serverwild;
@@ -2277,10 +2321,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	return $generated;
 
     } elsif ( $actiontype & NFQ ) {
-	require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules', '' );
-	my $paramval = $param eq '' ? 0 : numeric_value( $param );
-	fatal_error "Invalid value ($param) for NFQUEUE queue number" unless defined($paramval) && $paramval <= 65535;
-	$action = "NFQUEUE --queue-num $paramval";
+	$action = handle_nfqueue( $param,
+				  1 # Allow 'bypass'
+	    );
     } elsif ( $actiontype & SET ) {
 	require_capability( 'IPSET_MATCH', 'SET and UNSET rules', '' );
 	fatal_error "$action rules require a set name parameter" unless $param;

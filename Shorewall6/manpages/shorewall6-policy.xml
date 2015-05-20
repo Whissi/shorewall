@@ -105,9 +105,9 @@
         role="bold">REJECT</emphasis>|<emphasis
         role="bold">CONTINUE</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>|<emphasis
-        role="bold">NFQUEUE</emphasis>[(<emphasis>queuenumber</emphasis>)]|<emphasis
+        role="bold">NFQUEUE</emphasis>[(<emphasis>queuenumber1</emphasis>[,<replaceable>queuenumber2</replaceable>])]|<emphasis
         role="bold">NONE</emphasis>}[<emphasis
-        role="bold">:</emphasis>{<emphasis>default-action-or-macro</emphasis>|<emphasis
+        role="bold">:</emphasis>{<emphasis>default-action-or-macro</emphasis>[:level]|<emphasis
         role="bold">None</emphasis>}]</term>
 
         <listitem>
@@ -180,8 +180,14 @@
               <listitem>
                 <para>Queue the request for a user-space application using the
                 nfnetlink_queue mechanism. If a
-                <replaceable>queuenumber</replaceable> is not given, queue
-                zero (0) is assumed.</para>
+                <replaceable>queuenumber1</replaceable> is not given, queue
+                zero (0) is assumed. Beginning with Shorewall 4.6.10, a second
+                queue number (queuenumber2) may be given. This specifies a
+                range of queues to use. Packets are then balanced across the
+                given queues. This is useful for multicore systems: start
+                multiple instances of the userspace program on queues x, x+1,
+                .. x+n and use "x:x+n". Packets belonging to the same
+                connection are put into the same nfqueue.</para>
               </listitem>
             </varlistentry>
 

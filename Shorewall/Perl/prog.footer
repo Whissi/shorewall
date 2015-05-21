@@ -22,6 +22,7 @@ usage() {
     echo "   status"
     echo "   up <interface>"
     echo "   savesets <file>"
+    echo "   call <function> [ <parameter> ... ]"
     echo "   version"
     echo
     echo "Options are:"
@@ -425,6 +426,14 @@ case "$COMMAND" in
 	else
 	    usage 2
 	fi
+	;;
+    call)
+	#
+	# Undocumented way to call functions in the libraries directly
+	#
+	detect_configuration
+	shift
+	$@
 	;;
     version)
 	[ $# -ne 1 ] && usage 2

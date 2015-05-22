@@ -55,6 +55,21 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>call</option></arg>
+
+      <arg
+      choice="plain"><replaceable>function</replaceable><arg><replaceable>parameter</replaceable>
+      ...</arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6-lite</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg
       choice="plain"><option>clear</option><arg><option>-f</option></arg></arg>
     </cmdsynopsis>
@@ -652,6 +667,24 @@
           blacklisted by a <command>drop</command>,
           <command>logdrop</command>, <command>reject</command>, or
           <command>logreject</command> command.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">call <replaceable>function</replaceable> [
+        <replaceable>parameter</replaceable> ... ]</emphasis></term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.10. Allows you to call a function in
+          one of the Shorewall libraries or in your compiled script. function
+          must name the shell function to be called. The listed parameters are
+          passed to the function.</para>
+
+          <para>The function is first searched for in
+          <filename>lib.base</filename>, <filename>lib.common</filename>,
+          <filename>lib.cli</filename> and <filename>lib.cli-std</filename>
+          (Shorewall and Shorewall6 only). If it is not found, the call
+          command is passed to the generated script to be executed.</para>
         </listitem>
       </varlistentry>
 

@@ -71,6 +71,15 @@ startup_error() # $* = Error Message
 }
 
 #
+# Fatal Error
+#
+fatal_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 2
+}
+
+#
 # Get the Shorewall version of the passed script
 #
 get_script_version() { # $1 = script

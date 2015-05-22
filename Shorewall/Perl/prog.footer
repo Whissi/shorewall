@@ -429,11 +429,27 @@ case "$COMMAND" in
 	;;
     call)
 	#
-	# Undocumented way to call functions in the libraries directly
+	# Way to call functions in the generated script directly
 	#
 	detect_configuration
+
 	shift
-	$@
+
+	if [ $# -gt 0 ]; then
+	    #
+	    # See what it is
+	    #
+	    if type $1 2> /dev/null | fgrep -q 'is a function'; then
+		#
+		# It's a shell function -- call it
+		#
+		$@
+	    else
+		fatal_error "$1 is not a known shell function"
+	    fi
+	else
+	    usage 1
+	fi
 	;;
     version)
 	[ $# -ne 1 ] && usage 2

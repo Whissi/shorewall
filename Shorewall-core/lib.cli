@@ -42,16 +42,6 @@ fi
 
 . ${SHAREDIR}/shorewall/lib.base
 
-
-#
-# Fatal Error
-#
-fatal_error() # $@ = Message
-{
-    echo "   ERROR: $@" >&2
-    exit 2
-}
-
 #
 # Issue an error message and die
 #
@@ -4239,10 +4229,29 @@ shorewall_cli() {
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    #
-	    # Undocumented way to call functions in the libraries directly
+	    # Way to call functions in the libraries directly
 	    #
 	    shift
-	    $@
+
+	    if [ $# -gt 0 ]; then
+		#
+		# First look for it here
+		#
+		if type $1 2> /dev/null | fgrep -q 'is a function'; then
+		    #
+		    # It's a shell function -- call it
+		    #
+		    $@
+		else
+		    #
+		    # It isn't a function visible to this script -- try
+		    # the compiled firewall
+		    #
+		    run_it $g_firewall $g_debugging call $@
+		fi
+	    else
+		usage 1
+	    fi
 	    ;;
 	help)
 	    shift

@@ -568,8 +568,8 @@ sub process_a_provider( $ ) {
 		$track  = 0           if $config{TRACK_PROVIDERS};
 		$default_balance = 0  if $config{USE_DEFAULT_RT};
 	    } elsif ( $option =~ /^load=(0?\.\d{1,8})/ ) {
-		$load = $1;
-		require_capability 'STATISTIC_MATCH', "load=$load", 's';
+		$load = sprintf "%1.8f", $1;
+		require_capability 'STATISTIC_MATCH', "load=$1", 's';
 	    } elsif ( $option eq 'autosrc' ) {
 		$noautosrc = 0;
 	    } elsif ( $option eq 'noautosrc' ) {
@@ -1620,6 +1620,11 @@ sub setup_providers() {
     our $providers;
 
     if ( $providers ) {
+	if ( $maxload ) {
+	    warning_message "The sum of the provider interface loads exceeds 1.000000" if $maxload > 1;
+	    warning_message "The sum of the provider interface loads is less than 1.000000" if $maxload < 1;
+	}
+
 	emit "\nif [ -z \"\$g_noroutes\" ]; then";
 
 	push_indent;

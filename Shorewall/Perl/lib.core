@@ -645,7 +645,15 @@ scale=8
 $totalload - $load
 EOF
 )
-		run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $load -j MARK --set-mark $mark
+
+		case $load in
+		    .*|0.*)
+			run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $load -j MARK --set-mark $mark
+			;;
+		    *)
+			run_iptables -t mangle -A ~$interface -j MARK --set-mark $mark
+			;;
+		esac
 	    fi
 	done
     fi

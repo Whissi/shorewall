@@ -8148,7 +8148,8 @@ sub create_save_ipsets() {
 	}
     } elsif ( $config{SAVE_IPSETS} ) {
 	emit( '    error_message "WARNING: No ipsets were saved"',
-	      '    return 1',
+	      "    #\n    # Indicate success so that the CLI doesn't attempt to save the sets\n    #",
+	      '    return 0',
 	      "}\n" );
     } else {
 	emit( '    true',

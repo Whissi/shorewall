@@ -604,15 +604,16 @@ interface_enabled() {
 
 distribute_load() {
     local interface
-    local totalload
+    local currentload
     local load
     local mark
-    local maxload
+    local totalload
+    local temp
 
-    maxload=$1
+    totalload=$1
     shift
 
-    totalload=0
+    currentload=0
 
     for interface in $@; do
 	if interface_enabled $interface; then
@@ -620,29 +621,31 @@ distribute_load() {
 	    eval ${interface}_load=$load
 	    mark=$(cat ${VARDIR}/${interface}_mark)
 	    eval ${interface}_mark=$mark
-	    totalload=$( bc <<EOF
+	    currentload=$( bc <<EOF
 scale=8
-$totalload + $load
+$currentload + $load
 EOF
 )
 	fi
     done
 
-    if [ $totalload ]; then
+    if [ $currentload ]; then
 	for interface in $@; do
 	    qt $g_tool -t mangle -F ~$interface
+
 	    eval load=\$${interface}_load
 	    eval mark=\$${interface}_mark
 
 	    if [ -n "$load" ]; then
+		temp=$load
 		load=$(bc <<EOF
 scale=8
-( $load / $totalload ) * $maxload
+( $load / $currentload ) * $totalload
 EOF
 )
-		totalload=$(bc <<EOF
+		currentload=$(bc <<EOF
 scale=8
-$totalload - $load
+$currentload - $temp
 EOF
 )
 

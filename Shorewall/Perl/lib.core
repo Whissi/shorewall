@@ -604,11 +604,12 @@ interface_enabled() {
 
 distribute_load() {
     local interface
-    local currentload
-    local load
-    local mark
-    local totalload
-    local temp
+    local currentload # Total load of enabled interfaces
+    local load        # Specified load of an enabled interface
+    local mark        # Mark of an enabled interface
+    local totalload   # Total load of all interfaces - usually 1.000000
+    local nload       # Normalized load of an enabled interface
+    local var         # Interface name to embed in a variable name
 
     totalload=$1
     shift
@@ -617,10 +618,11 @@ distribute_load() {
 
     for interface in $@; do
 	if interface_enabled $interface; then
+	    var=$(echo $interface | sed 's/[.-]/_/g')
 	    load=$(cat ${VARDIR}/${interface}_load)
-	    eval ${interface}_load=$load
+	    eval ${var}_load=$load
 	    mark=$(cat ${VARDIR}/${interface}_mark)
-	    eval ${interface}_mark=$mark
+	    eval ${var}_mark=$mark
 	    currentload=$( bc <<EOF
 scale=8
 $currentload + $load
@@ -633,25 +635,25 @@ EOF
 	for interface in $@; do
 	    qt $g_tool -t mangle -F ~$interface
 
-	    eval load=\$${interface}_load
-	    eval mark=\$${interface}_mark
+	    var=$(echo $interface | sed 's/[.-]/_/g')
+	    eval load=\$${var}_load
+	    eval mark=\$${var}_mark
 
 	    if [ -n "$load" ]; then
-		temp=$load
-		load=$(bc <<EOF
+		nload=$(bc <<EOF
 scale=8
 ( $load / $currentload ) * $totalload
 EOF
 )
 		currentload=$(bc <<EOF
 scale=8
-$currentload - $temp
+$currentload - $load
 EOF
 )
 
-		case $load in
+		case $nload in
 		    .*|0.*)
-			run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $load -j MARK --set-mark $mark
+			run_iptables -t mangle -A ~$interface -m statistic --mode random --probability $nload -j MARK --set-mark $mark
 			;;
 		    *)
 			run_iptables -t mangle -A ~$interface -j MARK --set-mark $mark

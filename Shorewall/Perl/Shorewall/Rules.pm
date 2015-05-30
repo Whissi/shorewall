@@ -481,7 +481,7 @@ sub handle_nfqueue( $$ ) {
 
     $params = '' unless defined $params;
 
-    my ( $queue, $bypass, $junk ) = split ',', $params;
+    my ( $queue, $bypass, $junk ) = split ',', $params, 3;
 
     fatal_error "Invalid NFQUEUE parameter list" if defined $junk;
 

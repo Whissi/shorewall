@@ -474,34 +474,38 @@ sub process_default_action( $$$$ ) {
 #
 sub handle_nfqueue( $$ ) {
     my ($params, $allow_bypass ) = @_;
-    my $action;
+    my ( $action, $bypass );
     my ( $queue1, $queue2, $queuenum1, $queuenum2 );
 
     require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules and Policies', '' );
 
-    $params = '' unless defined $params;
+    if ( supplied( $params ) ) {
+	( my $queue, $bypass, my $junk ) = split ',', $params, 3;
 
-    my ( $queue, $bypass, $junk ) = split ',', $params, 3;
+	fatal_error "Invalid NFQUEUE parameter list ($params)" if defined $junk;
 
-    fatal_error "Invalid NFQUEUE parameter list" if defined $junk;
+	if ( supplied $queue ) {
+	    if ( $queue eq 'bypass' ) {
+		fatal_error "'bypass' is not allowed in this context" unless $allow_bypass;
+		fatal_error "Invalid NFQUEUE options (bypass,$bypass)" if supplied $bypass;
+		return 'NFQUEUE --queue-bypass';
+	    }
 
-    if ( supplied $queue ) {
-	if ( $queue eq 'bypass' ) {
-	    fatal_error "'bypass' is not allowed in this context" unless $allow_bypass;
-	    fatal_error "Invalid NFQUEUE options (bypass,$bypass)" if supplied $bypass;
-	    return 'NFQUEUE --queue-bypass';
-	}
+	    ( $queue1, $queue2 ) = split ':', $queue, 2;
 
-	( $queue1, $queue2 ) = split ':', $queue;
+	    fatal_error "Invalid NFQUEUE parameter list ($params)" unless supplied $queue1;
 
-	$queuenum1 = numeric_value( $queue1 );
+	    $queuenum1 = numeric_value( $queue1 );
 
-	fatal_error "Invalid NFQUEUE queue number ($queue1)" unless defined( $queuenum1) && $queuenum1 >= 0 && $queuenum1 <= 65535;
+	    fatal_error "Invalid NFQUEUE queue number ($queue1)" unless defined( $queuenum1) && $queuenum1 >= 0 && $queuenum1 <= 65535;
 
-	if ( supplied $queue2 ) {
-	    $queuenum2 = numeric_value( $queue2 );
+	    if ( supplied $queue2 ) {
+		$queuenum2 = numeric_value( $queue2 );
 
-	    fatal_error "Invalid NFQUEUE queue number ($queue2)" unless defined( $queuenum2) && $queuenum2 >= 0 && $queuenum2 <= 65535 && $queuenum1 < $queuenum2;
+		fatal_error "Invalid NFQUEUE queue number ($queue2)" unless defined( $queuenum2) && $queuenum2 >= 0 && $queuenum2 <= 65535 && $queuenum1 < $queuenum2;
+	    }
+	} else {
+	    $queuenum1 = 0;
 	}
     } else {
 	$queuenum1 = 0;

@@ -388,16 +388,30 @@ do_save() {
     status=0
 
     if [ -f ${VARDIR}/firewall ]; then
-	if $iptables_save | iptablesbug | grep -v -- '-A dynamic.* -j ACCEPT' > ${VARDIR}/restore-$$; then
-	    cp -f ${VARDIR}/firewall $g_restorepath
-	    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
-	    chmod +x $g_restorepath
-	    echo "   Currently-running Configuration Saved to $g_restorepath"
-	    run_user_exit save
+	if [ -n "$WORKAROUNDS" ]; then
+	    if $iptables_save | iptablesbug | grep -v -- '-A dynamic.* -j ACCEPT' > ${VARDIR}/restore-$$; then
+		cp -f ${VARDIR}/firewall $g_restorepath
+		mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
+		chmod +x $g_restorepath
+		echo "   Currently-running Configuration Saved to $g_restorepath"
+		run_user_exit save
+	    else
+		rm -f ${VARDIR}/restore-$$
+		echo "   ERROR: Currently-running Configuration Not Saved" >&2
+		status=1
+	    fi
 	else
-	    rm -f ${VARDIR}/restore-$$
-	    echo "   ERROR: Currently-running Configuration Not Saved" >&2
-	    status=1
+	    if $iptables_save | grep -v -- '-A dynamic.* -j ACCEPT' > ${VARDIR}/restore-$$; then
+		cp -f ${VARDIR}/firewall $g_restorepath
+		mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
+		chmod +x $g_restorepath
+		echo "   Currently-running Configuration Saved to $g_restorepath"
+		run_user_exit save
+	    else
+		rm -f ${VARDIR}/restore-$$
+		echo "   ERROR: Currently-running Configuration Not Saved" >&2
+		status=1
+	    fi
 	fi
     else
 	echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
@@ -409,16 +423,25 @@ do_save() {
 	    resolve_arptables
 
 	    if [ -n "$arptables" ]; then
-	        #
-	        # 'sed' command is a hack to work around broken arptables_jf
-	        #
-		if ${arptables}-save | sed 's/-p[[:space:]]\+0\([[:digit:]]\)00\/ffff/-p 000\1\/ffff/' > ${VARDIR}/restore-$$; then
-		    if grep -q '^-A' ${VARDIR}/restore-$$; then
-			mv -f ${VARDIR}/restore-$$ ${g_restorepath}-arptables
-		    else
-			rm -f ${VARDIR}/restore-$$
+		if [ -n "$WORKAROUNDS" ]; then
+	            #
+	            # 'sed' command is a hack to work around broken arptables_jf
+	            #
+		    if ${arptables}-save | sed 's/-p[[:space:]]\+0\([[:digit:]]\)00\/ffff/-p 000\1\/ffff/' > ${VARDIR}/restore-$$; then
+			if grep -q '^-A' ${VARDIR}/restore-$$; then
+			    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-arptables
+			else
+			    rm -f ${VARDIR}/restore-$$
+			fi
 		    fi
-		fi
+		else
+		    if ${arptables}-save > ${VARDIR}/restore-$$; then
+			if grep -q '^-A' ${VARDIR}/restore-$$; then
+			    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-arptables
+			else
+			    rm -f ${VARDIR}/restore-$$
+			fi
+		    fi
 	    else
 		case "$ARPTABLES" in
 		    */*)
@@ -457,21 +480,28 @@ do_save() {
 		esac
 
 		if [ -n "$IPSET" ]; then
-		    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
-			#
-			# The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
-			#
-			hack='| grep -v /31'
-		    else
-			hack=
-		    fi
+		    if [ -n "$WORKAROUNDS" ]; then
+			if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then
+			    #
+			    # The 'grep -v' is a hack for a bug in ipset's nethash implementation when xtables-addons is applied to Lenny
+			    #
+			    hack='| grep -v /31'
+			else
+			    hack=
+			fi
 
-		    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
-			#
-			# Don't save an 'empty' file
-			#
-			grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+			if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then
+			    #
+			    # Don't save an 'empty' file
+			    #
+			    grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+			fi
 		    fi
+		elif eval $IPSET -S > ${VARDIR}/ipsets.tmp; then
+		    #
+		    # Don't save an 'empty' file
+		    #
+		    grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
 		fi
 		;;
 	    [Nn]o|ipv4|ipv6)
@@ -3617,6 +3647,19 @@ get_config() {
 	esac
     else
 	IPSET=''
+    fi
+
+    if [ -n "$WORKAROUNDS" ]; then
+	case $WORKAROUNDS in
+	    [Yy]es)
+	        ;;
+	    [Nn]o)
+		WORKAROUNDS=''
+		;;
+	    *)
+		fatal_error "Invalid setting ($WORKAROUNDS) for WORKAROUNDS"
+		;;
+	esac
     fi
 
     TC=tc

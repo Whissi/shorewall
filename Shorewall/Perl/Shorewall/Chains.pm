@@ -8102,7 +8102,7 @@ sub create_save_ipsets() {
 		      "    done" ,
 		      '',
 		    );
-	    } else {
+	    } elsif ( $config{WORKAROUNDS} ) {
 		emit ( '' ,
 		       '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
 		       '        #',
@@ -8116,7 +8116,13 @@ sub create_save_ipsets() {
 		       '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
 		       "        grep -qE -- \"^(-N|create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file" ,
 		       '    fi' );
- 	    }
+	    } else {
+		emit ( 
+		       '',
+		       '    if eval $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
+		       "        grep -qE -- \"^(-N|create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file" ,
+		       '    fi' );
+	    }
 
 	    emit( "    return 0",
 		  '',
@@ -8161,9 +8167,9 @@ sub load_ipsets() {
     my @ipsets = all_ipsets;
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
+	emit ( '', );
+	emit ( 'local hack' ) if $config{WORKAROUNDS};
 	emit ( '',
-	       'local hack',
-	       '',
 	       'case $IPSET in',
 	       '    */*)',
 	       '        [ -x "$IPSET" ] || startup_error "IPSET=$IPSET does not exist or is not executable"',

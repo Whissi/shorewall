@@ -2404,8 +2404,9 @@ sub compile_stop_firewall( $$$ ) {
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #
 stop_firewall() {
-    local hack
 EOF
+
+    emit ( '    local hack' ) if $config{WORKAROUNDS};
 
     $output->{policy} = 'ACCEPT' if $config{ADMINISABSENTMINDED};
 

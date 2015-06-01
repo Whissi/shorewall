@@ -324,6 +324,19 @@ get_config() {
 	    ;;
     esac
 
+    if [ -n "$WORKAROUNDS" ]; then
+	case $WORKAROUNDS in
+	    [Yy]es)
+	        ;;
+	    [Nn]o)
+		WORKAROUNDS=''
+		;;
+	    *)
+		fatal_error "Invalid setting ($WORKAROUNDS) for WORKAROUNDS"
+		;;
+	esac
+    fi
+
     g_loopback=$(find_loopback_interfaces)
 }
 

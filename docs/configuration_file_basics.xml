@@ -819,6 +819,16 @@ DNAT { source=net dest=loc:10.0.0.1 proto=tcp dport=80 mark=88 }</programlisting
     <para>In the Shorewall documentation and manpages, we have tried to make
     it clear which type of address is accepted in each specific case.</para>
 
+    <para>Because Shorewall uses a colon (":") as a separator in many
+    contexts, IPv6 addresses are best written using the standard convention in
+    which the address itself is enclosed in square brackets:</para>
+
+    <simplelist>
+      <member>[ 2001:227:e857:1::1]</member>
+
+      <member>[2001:227:e857:1:0:0:0:0:1]/64</member>
+    </simplelist>
+
     <para>For more information about addressing, see the<ulink
     url="shorewall_setup_guide.htm#Addressing"> Setup Guide</ulink>.</para>
   </section>

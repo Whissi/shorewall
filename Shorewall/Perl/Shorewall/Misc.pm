@@ -2136,11 +2136,9 @@ sub optimize1_zones( $$@ ) {
 #
 sub generate_matrix() {
     my @interfaces = ( managed_interfaces );
-    #
-    # Should this be the real PREROUTING chain?
-    #
-    my @zones     = off_firewall_zones;
-    our @vservers = vserver_zones;
+    my @zones      = off_firewall_zones;
+
+    our @vservers  = vserver_zones;
 
     my $interface_jumps_added = 0;
 

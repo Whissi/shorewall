@@ -2622,8 +2622,8 @@ INLINE          -       -       -       ; -j REJECT
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">WIDE_TC_MARKS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        <term><emphasis role="bold">WIDE_TC_MARKS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>Deprecated in Shorewall 4.4.26 in favor of TC_BITS and
@@ -2634,6 +2634,20 @@ INLINE          -       -       -       ; -j REJECT
           traffic shaping marks are 14 bytes wide (values 1-16383). The
           setting of WIDE_TC_MARKS also has an effect on the HIGH_ROUTE_MARKS
           option (see above).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">WORKAROUNDS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 4.6.11. Over time, there have been a number
+          of changes in Shorewall that work around defects in other products
+          such as iptables and ipset. When WORKAROUNDS=Yes, these workarounds
+          are enabled; when WORKAROUNDS=No, they are disabled. If not
+          specified or if specified as empty, WORKAROUNDS=Yes is
+          assumed.</para>
         </listitem>
       </varlistentry>
 

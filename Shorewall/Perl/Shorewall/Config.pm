@@ -301,7 +301,7 @@ our %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT', BLACKLIST_LOGLEVEL => 'BLACKLIST
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY WORKAROUNDS/;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY/;
 #
 # From parsing the capabilities file or detecting capabilities
 #
@@ -5718,7 +5718,7 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'TRACK_RULES'                , '';
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
-    default_yes_no 'WORKAROUNDS'                , '';
+    default_yes_no 'WORKAROUNDS'                , 'Yes';
 
     require_capability( 'BASIC_EMATCH', 'BASIC_FILTERS=Yes', 's' ) if $config{BASIC_FILTERS};
 
@@ -6263,7 +6263,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE) ) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS) ) {
 	conditionally_add_option $option;
     }
 

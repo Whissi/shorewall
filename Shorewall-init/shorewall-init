@@ -1,18 +1,19 @@
-#! /bin/bash
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.5
+#!/bin/bash
+#	The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.6
 #
-#     (c) 2012-2014 - Tom Eastep (teastep@shorewall.net)
+#	(c) 2012-2014 - Tom Eastep (teastep@shorewall.net)
 #
-#       On most distributions, this file should be called /etc/init.d/shorewall.
+#	On most distributions, this file should be called
+#	/etc/init.d/shorewall.
 #
-#       Complete documentation is available at http://shorewall.net
+#	Complete documentation is available at http://shorewall.net
 #
-#       This program is part of Shorewall.
+#	This program is part of Shorewall.
 #
 #	This program is free software; you can redistribute it and/or modify
-#	it under the terms of the GNU General Public License as published by the
-#       Free Software Foundation, either version 2 of the license or, at your
-#       option, any later version.
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation, either version 2 of the license or,
+#	at your option, any later version.
 #
 #	This program is distributed in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,7 +23,7 @@
 #	You should have received a copy of the GNU General Public License
 #	along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
-#########################################################################################
+###############################################################################
 # set the STATEDIR variable
 setstatedir() {
     local statedir
@@ -46,7 +47,7 @@ setstatedir() {
 if [ -f "$SYSCONFDIR/shorewall-init" ]; then
     . $SYSCONFDIR/shorewall-init
     if [ -z "$PRODUCTS" ]; then
-        echo "ERROR: No products configured" >&2
+	echo "ERROR: No products configured" >&2
 	exit 1
     fi
 else
@@ -56,71 +57,71 @@ fi
 
 # Initialize the firewall
 shorewall_start () {
-  local PRODUCT
-  local STATEDIR
+    local PRODUCT
+    local STATEDIR
 
-  echo -n "Initializing \"Shorewall-based firewalls\": "
-  for PRODUCT in $PRODUCTS; do
-      setstatedir
+    echo -n "Initializing \"Shorewall-based firewalls\": "
+    for PRODUCT in $PRODUCTS; do
+	setstatedir
 
-      if [ -x ${STATEDIR}/firewall ]; then
-          #
-	  # Run in a sub-shell to avoid name collisions
-	  #
-	  (
-	      if ! ${STATEDIR}/firewall status > /dev/null 2>&1; then
-		  ${STATEDIR}/firewall ${OPTIONS} stop || exit 1
-	      else
-		  exit 1
-	      fi
-	  )
-      else
-          echo ERROR:  ${STATEDIR}/firewall does not exist or is not executable!
-	  exit 1
-      fi
-  done
+	if [ -x ${STATEDIR}/firewall ]; then
+	    #
+	    # Run in a sub-shell to avoid name collisions
+	    #
+	    (
+		if ! ${STATEDIR}/firewall status > /dev/null 2>&1; then
+		    ${STATEDIR}/firewall ${OPTIONS} stop || exit 1
+		else
+		    exit 1
+		fi
+	    )
+	else
+	    echo ERROR:  ${STATEDIR}/firewall does not exist or is not executable!
+	    exit 1
+	fi
+    done
 
-  if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
-      ipset -R < "$SAVE_IPSETS"
-  fi
+    if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
+	ipset -R < "$SAVE_IPSETS"
+    fi
 
-  return 0
+    return 0
 }
 
 # Clear the firewall
 shorewall_stop () {
-  local PRODUCT
-  local STATEDIR
+    local PRODUCT
+    local STATEDIR
 
-  echo -n "Clearing \"Shorewall-based firewalls\": "
-  for PRODUCT in $PRODUCTS; do
-      setstatedir
+    echo -n "Clearing \"Shorewall-based firewalls\": "
+    for PRODUCT in $PRODUCTS; do
+	setstatedir
 
-      if [ -x ${STATEDIR}/firewall ]; then
-	  ${STATEDIR}/firewall ${OPTIONS} clear || exit 1
-      fi
-  done
+	if [ -x ${STATEDIR}/firewall ]; then
+	    ${STATEDIR}/firewall ${OPTIONS} clear || exit 1
+	fi
+    done
 
-  if [ -n "$SAVE_IPSETS" ]; then
-      mkdir -p $(dirname "$SAVE_IPSETS")
-      if ipset -S > "${SAVE_IPSETS}.tmp"; then
-	  grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
-      fi
-  fi
+    if [ -n "$SAVE_IPSETS" ]; then
+	mkdir -p $(dirname "$SAVE_IPSETS")
+	if ipset -S > "${SAVE_IPSETS}.tmp"; then
+	    grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS"
+	fi
+    fi
 
-  return 0
+    return 0
 }
 
 case "$1" in
-  start)
-     shorewall_start
-     ;;
-  stop)
-     shorewall_stop
-     ;;
-  *)
-     echo "Usage: $0 {start|stop}"
-     exit 1
+    start)
+	shorewall_start
+	;;
+    stop)
+	shorewall_stop
+	;;
+    *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
 esac
 
 exit 0

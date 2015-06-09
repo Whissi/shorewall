@@ -162,14 +162,13 @@ get_config() {
 	if [ "$2" = Yes ]; then
 	    case $STARTUP_ENABLED in
 		No|no|NO)
-		    fatal_error "$g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${g_confdir}/${g_program}.conf"
+		    not_configured_error "$g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${g_confdir}/${g_program}.conf"
 		    ;;
 		Yes|yes|YES)
 		    ;;
 		*)
 		    if [ -n "$STARTUP_ENABLED" ]; then
-			fatal_error "Invalid Value for STARTUP_ENABLED: $STARTUP_ENABLED"
-			exit 6
+			not_configured_error "Invalid Value for STARTUP_ENABLED: $STARTUP_ENABLED"
 		    fi
 		    ;;
 	    esac
@@ -510,7 +509,7 @@ start_command() {
 	exit 0
     fi
 
-    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
+    [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1002,7 +1001,7 @@ restart_command() {
 	    ;;
     esac
 
-    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
+    [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
     if [ -z "$g_fast" -a -n "$AUTOMAKE" ]; then
 	uptodate ${VARDIR}/firewall && g_fast=Yes
@@ -1101,7 +1100,7 @@ refresh_command() {
 
     product_is_started || fatal_error "$g_product is not running"
 
-    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
+    [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
     if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
 	run_postcompile ${VARDIR}/.refresh
@@ -1190,7 +1189,7 @@ safe_commands() {
 	    ;;
     esac
 
-    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
+    [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
     if product_is_started; then
 	running=Yes
@@ -1327,7 +1326,7 @@ try_command() {
 	    ;;
     esac
 
-    [ -n "$STARTUP_ENABLED" ] || fatal_error "Startup is disabled"
+    [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
     if product_is_started; then
 	running=Yes

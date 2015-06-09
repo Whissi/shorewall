@@ -80,6 +80,15 @@ fatal_error() # $@ = Message
 }
 
 #
+# Not configured Error
+#
+not_configured_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 6
+}
+
+#
 # Get the Shorewall version of the passed script
 #
 get_script_version() { # $1 = script

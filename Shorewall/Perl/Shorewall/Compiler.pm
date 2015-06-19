@@ -529,14 +529,12 @@ EOF
     emit( '    run_refreshed_exit',
 	  '    do_iptables -N shorewall' );
 
-    emit ( '    do_iptables -A shorewall -m recent --set --name %CURRENTTIME' ) if have_capability 'RECENT_MATCH';
+    emit( '    do_iptables -A shorewall -m recent --set --name %CURRENTTIME' ) if have_capability 'RECENT_MATCH';
 
-    emit(
-	"    set_state Started $config_dir",
-	'    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall',
-        'else',
-	'    setup_netfilter'
-	);
+    emit( "    set_state Started $config_dir",
+	  '    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall',
+	  'else',
+	  '    setup_netfilter'	);
 
     push_indent;
     emit 'setup_arptables' if $have_arptables;
@@ -604,12 +602,12 @@ sub compiler {
     sub validate_boolean( $ ) {
 	 my $val = numeric_value( shift );
 	 defined($val) && ($val >= 0) && ($val < 2);
-     }
+    }
 
     sub validate_verbosity( $ ) {
 	 my $val = numeric_value( shift );
 	 defined($val) && ($val >= MIN_VERBOSITY) && ($val <= MAX_VERBOSITY);
-     }
+    }
 
     sub validate_family( $ ) {
 	my $val = numeric_value( shift );
@@ -852,7 +850,7 @@ sub compiler {
     #
     setup_tunnels;
     #
-    # Clear the current filename
+    # Clear the current filename so that the last one processed doesn't appear in error and warning messages
     #
     clear_currentfilename;
     #

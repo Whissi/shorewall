@@ -364,6 +364,21 @@ uptodate() {
 }
 
 #
+# Run the postcompile user exit
+#
+run_postcompile() { # $1 is the compiled script
+    local script
+
+    script=$(find_file postcompile)
+
+    if [ -f $script ]; then
+	. $script $1
+    else
+	return 0
+    fi
+}
+
+#
 # Run the compiler
 #
 compiler() {
@@ -413,7 +428,7 @@ compiler() {
 	[ -f "$shorewallrc1" ] || fatal_error "Compiling for export requires a shorewallrc file"
     fi
 
-    if [ -n "$g_conditional" ] && uptodate $g_file; then
+    if [ -n "$g_conditional" ] && uptodate "$g_file"; then
 	echo "$g_file is up to date -- no compilation required"
 	return 0
     fi
@@ -453,21 +468,15 @@ compiler() {
     else
 	PERL5LIB=${PERLLIBDIR} $PERL $debugflags $pc $options $@
     fi
-}
 
-#
-# Run the postcompile user exit
-#
-run_postcompile() { # $1 is the compiled script
-    local script
+    status=$?
 
-    script=$(find_file postcompile)
-
-    if [ -f $script ]; then
-	. $script $1
-    else
-	return 0
+    if [ $status -eq 0 -a $COMMAND != check ]; then
+	run_postcompile "$g_file"
+	return
     fi
+
+    return $status
 }
 
 #
@@ -487,8 +496,8 @@ start_command() {
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
-	    if compiler $g_debugging $nolock compile ${VARDIR}/.start; then
-		run_postcompile ${VARDIR}/.start
+	    g_file="${VARDIR}/.start"
+	    if compiler $g_debugging $nolock compile "$g_file"; then
 		[ -n "$nolock" ] || mutex_on
 		run_it ${VARDIR}/.start $g_debugging start
 		rc=$?
@@ -692,7 +701,7 @@ compile_command() {
 	    ;;
 	1)
 	    g_file=$1
-	    [ -d $g_file ] && fatal_error "$g_file is a directory"
+	    [ -d "$g_file" ] && fatal_error "$g_file is a directory"
 	    ;;
 	2)
 	    [ -n "$g_shorewalldir" -a -z "$g_export" ] && usage 2
@@ -715,7 +724,7 @@ compile_command() {
 
     [ "x$g_file" = x- ] && g_doing=''
 
-    compiler $g_debugging compile $g_file && run_postcompile $g_file
+    compiler $g_debugging compile "$g_file"
 }
 
 #
@@ -1005,9 +1014,10 @@ restart_command() {
 	uptodate ${VARDIR}/firewall && g_fast=Yes
     fi
 
+    g_file="${VARDIR}/.restart"
+
     if [ -z "$g_fast" ]; then
-	if compiler $g_debugging $nolock compile ${VARDIR}/.restart; then
-	    run_postcompile ${VARDIR}/.restart
+	if compiler $g_debugging $nolock compile "$g_file"; then
 	    [ -n "$nolock" ] || mutex_on
 	    run_it ${VARDIR}/.restart $g_debugging restart
 	    rc=$?
@@ -1100,8 +1110,9 @@ refresh_command() {
 
     [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
-    if compiler $g_debugging $nolock compile ${VARDIR}/.refresh; then
-	run_postcompile ${VARDIR}/.refresh
+    g_file="${VARDIR}/.refresh"
+
+    if compiler $g_debugging $nolock compile "$g_file"; then
 	[ -n "$nolock" ] || mutex_on
 	run_it ${VARDIR}/.refresh $g_debugging refresh
 	rc=$?
@@ -1209,7 +1220,9 @@ safe_commands() {
 	command="restart"
     fi
 
-    if ! compiler $g_debugging nolock compile ${VARDIR}/.$command; then
+    g_file="${VARDIR}/.$command"
+
+    if ! compiler $g_debugging nolock compile "$g_file"; then
 	status=$?
 	exit $status
     fi
@@ -1340,7 +1353,9 @@ try_command() {
 	command="restart"
     fi
 
-    if ! compiler $g_debugging $nolock compile ${VARDIR}/.$command; then
+    g_file="${VARDIR}/.$command"
+
+    if ! compiler $g_debugging $nolock compile "$g_file"; then
 	status=$?
 	exit $status
     fi
@@ -1534,7 +1549,9 @@ reload_command() # $* = original arguments less the command.
 
     [ -n "$litedir" ] || litedir=${VARLIB}/${g_program}-lite
 
-    if compiler $g_debugging compiler $g_shorewalldir/firewall && \
+    g_file="$g_shorewalldir/firewall"
+
+    if compiler $g_debugging compiler "$g_file" && \
 	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
 	rcp_command "$g_shorewalldir/firewall $g_shorewalldir/firewall.conf" ${litedir}
     then
@@ -1623,7 +1640,9 @@ export_command() # $* = original arguments less the command.
 
     g_export=Yes
 
-    if compiler $g_debugging compile $g_shorewalldir/firewall && \
+    g_file="$g_shorewalldir/firewall"
+
+    if compiler $g_debugging compile "$g_file" && \
 	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
 	scp $g_shorewalldir/firewall $g_shorewalldir/firewall.conf $target
     then

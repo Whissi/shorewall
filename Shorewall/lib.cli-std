@@ -387,8 +387,6 @@ compiler() {
     #
     get_config Yes
 
-    [ -n "$g_doing" ] && progress_message3 "$g_doing..."
-
     case $COMMAND in
 	*start|try|refresh)
 	    ;;
@@ -448,12 +446,12 @@ compiler() {
 	PERL=/usr/bin/perl
     fi
 
+    [ -n "$g_doing" ] && progress_message3 "$g_doing..."
+
     if [ ${PERLLIBDIR} = ${LIBEXECDIR}/shorewall ]; then
 	$PERL $debugflags $pc $options $@
     else
-	PERL5LIB=${PERLLIBDIR}
-	export PERL5LIB
-	$PERL $debugflags $pc $options $@
+	PERL5LIB=${PERLLIBDIR} $PERL $debugflags $pc $options $@
     fi
 }
 

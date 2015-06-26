@@ -389,7 +389,7 @@ compiler() {
     pc=${LIBEXECDIR}/shorewall/compiler.pl
 
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = /etc/$g_program ]; then
+	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = $CONFDIR/$g_program ]; then
 	    startup_error "Ordinary users may not $COMMAND the $CONFDIR/$g_program configuration"
 	fi
     fi
@@ -417,7 +417,7 @@ compiler() {
 
     # Perl compiler only takes the output file as a argument
 
-    [ "$1" = debug -o "$1" = trace ]  && shift;
+    [ "$1" = debug -o "$1" = trace ] && shift;
     [ "$1" = nolock ] && shift;
     shift
 

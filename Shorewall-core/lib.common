@@ -98,14 +98,22 @@ get_script_version() { # $1 = script
     local digits
     local verbosity
 
-    verbosity="$VERBOSITY"
-    VERBOSITY=0
+    if [ "$g_compiled" = "$g_file" ]; then
+	#
+	# Either this script was just compiled or AUTOMAKE determined that compilation wasn't needed
+	#
+	temp="$VERSION"
+    else
+	verbosity="$VERBOSITY"
+	VERBOSITY=0
 
-    temp=$( $SHOREWALL_SHELL $1 version | tail -n 1 | sed 's/-.*//' )
+	temp=$( $SHOREWALL_SHELL $1 version | tail -n 1 )
+    fi
 
     if [ -z "$temp" ]; then
 	version=0
     else
+	temp=${temp%-*}
 	ifs=$IFS
 	IFS=.
 	temp=$(echo $temp)

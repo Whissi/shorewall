@@ -430,6 +430,7 @@ compiler() {
 
     if [ -n "$g_conditional" ] && uptodate "$g_file"; then
 	echo "$g_file is up to date -- no compilation required"
+	g_compiled="$g_file"
 	return 0
     fi
 
@@ -472,7 +473,8 @@ compiler() {
     status=$?
 
     if [ $status -eq 0 -a $COMMAND != check ]; then
-	run_postcompile "$g_file"
+	g_compiled="$g_file"
+	run_postcompile "$g_compiled"
 	return
     fi
 
@@ -1226,8 +1228,6 @@ safe_commands() {
 	status=$?
 	exit $status
     fi
-
-    run_postcompile ${VARDIR}/.$command
 
     case $command in
 	start)

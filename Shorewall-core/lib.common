@@ -98,9 +98,10 @@ get_script_version() { # $1 = script
     local digits
     local verbosity
 
-    if [ "$g_compiled" = "$g_file" ]; then
+    if [ -z "$WORKAROUNDS" -o "$g_compiled" = "$g_file" ]; then
 	#
-	# Either this script was just compiled or AUTOMAKE determined that compilation wasn't needed
+	# Unless WORKAROUNDS=No, either this script was just compiled or AUTOMAKE
+	# determined that re-compilation wasn't needed
 	#
 	temp="$SHOREWALL_VERSION"
     else

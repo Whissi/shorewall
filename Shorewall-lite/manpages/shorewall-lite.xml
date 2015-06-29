@@ -1243,11 +1243,19 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">connections</emphasis></term>
+              <term><emphasis role="bold">connections
+              [<replaceable>filter_parameter</replaceable>
+              ...]</emphasis></term>
 
               <listitem>
                 <para>Displays the IP connections currently being tracked by
                 the firewall.</para>
+
+                <para>If the <command>conntrack</command> utility is
+                installed, beginning with Shorewall 4.6.11 the set of
+                connections displayed can be limited by including conntrack
+                filter parameters (-p , -s, --dport, etc). See conntrack(8)
+                for details.</para>
               </listitem>
             </varlistentry>
 

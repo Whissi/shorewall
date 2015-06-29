@@ -1012,8 +1012,7 @@ show_command() {
 
     case "$1" in
 	connections)
-	    [ $# -gt 1 ] && usage 1
-
+	    show_connections
 	    if [ $g_family -eq 4 ]; then
 		if [ -d /proc/sys/net/netfilter/ ]; then
 		    local count
@@ -1028,8 +1027,10 @@ show_command() {
 		echo
 
 		if qt mywhich conntrack ; then
-		    conntrack -f ipv${g_family} -L | show_connections_filter
+		    shift
+		    conntrack -f ipv4 -L $@ | show_connections_filter
 		else
+		    [ $# -gt 1 ] && usage 1
 		    if [ -f /proc/net/ip_conntrack ]; then
 			cat /proc/net/ip_conntrack | show_connections_filter
 		    else
@@ -1037,10 +1038,12 @@ show_command() {
 		    fi
 	        fi
 	    elif qt mywhich conntrack ; then
+		shift
 		echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
 		echo
-		conntrack -f ipv6 -L | show_connections_filter
+		conntrack -f ipv6 -L $@ | show_connections_filter
 	    else
+		[ $# -gt 1 ] && usage 1
 		local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
 		local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
 		echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
@@ -1544,7 +1547,9 @@ do_dump_command() {
 	heading "Conntrack Table"
     fi
 
-    if [ $g_family -eq 4 ]; then
+    if qt mywhich conntrack; then
+	conntrack -f ipv${g_family} -L 2> /dev/null
+    elif [ $g_family -eq 4 ]; then
     	[ -f /proc/net/ip_conntrack ] && cat /proc/net/ip_conntrack || grep -v '^ipv6' /proc/net/nf_conntrack
     else
 	grep '^ipv6' /proc/net/nf_conntrack

@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>IPSEC</title>
+    <title>IPsec</title>
 
     <authorgroup>
       <author>
@@ -58,25 +58,25 @@
   </caution>
 
   <important>
-    <para><emphasis role="bold">Shorewall does not configure IPSEC for
-    you</emphasis> -- it rather configures netfilter to accommodate your IPSEC
+    <para><emphasis role="bold">Shorewall does not configure IPsec for
+    you</emphasis> -- it rather configures netfilter to accommodate your IPsec
     configuration.</para>
   </important>
 
   <important>
     <para>The information in this article is only applicable if you plan to
-    have IPSEC end-points on the same system where Shorewall is used.</para>
+    have IPsec end-points on the same system where Shorewall is used.</para>
   </important>
 
   <important>
     <para>While this <emphasis role="bold">article shows configuration of
-    IPSEC using ipsec-tools</emphasis>, <emphasis role="bold">Shorewall
+    IPsec using ipsec-tools</emphasis>, <emphasis role="bold">Shorewall
     configuration is exactly the same when using OpenSwan</emphasis> or
     FreeSwan.</para>
   </important>
 
   <warning>
-    <para>When running a Linux kernel prior to 2.6.20, the Netfilter+ipsec and
+    <para>When running a Linux kernel prior to 2.6.20, the Netfilter+IPsec and
     policy match support are broken when used with a bridge device. The
     problem was corrected in Kernel 2.6.20 as a result of the removal of
     deferred FORWARD/OUTPUT processing of traffic destined for a bridge. See
@@ -85,10 +85,10 @@
   </warning>
 
   <section id="Overview">
-    <title>Shorwall and Kernel 2.6 IPSEC</title>
+    <title>Shorwall and Kernel 2.6 IPsec</title>
 
     <para>This is <emphasis role="bold">not</emphasis> a HOWTO for Kernel 2.6
-    IPSEC -- for that, please see <ulink
+    IPsec -- for that, please see <ulink
     url="http://www.ipsec-howto.org/">http://www.ipsec-howto.org/</ulink>.</para>
 
     <para>The 2.6 Linux Kernel introduced new facilities for defining
@@ -107,7 +107,7 @@
     traffic is verified against the SPD to ensure that no unencrypted traffic
     is accepted in violation of the administrator's policies.</para>
 
-    <para>There are three ways in which IPSEC traffic can interact with
+    <para>There are three ways in which IPsec traffic can interact with
     Shorewall policies and rules:</para>
 
     <orderedlist>
@@ -136,7 +136,7 @@
     by normal rules and policies.</para>
 
     <para>Under the 2.4 Linux Kernel, the association of unencrypted traffic
-    and zones was made easy by the presence of IPSEC pseudo-interfaces with
+    and zones was made easy by the presence of IPsec pseudo-interfaces with
     names of the form <filename class="devicefile">ipsecN</filename> (e.g.
     <filename class="devicefile">ipsec0</filename>). Outgoing unencrypted
     traffic (case 1.) was sent through an <filename
@@ -175,7 +175,7 @@
     </orderedlist>
 
     <para>In summary, Shorewall provides the facilities to replace the use of
-    ipsec pseudo-interfaces in zone and MASQUERADE/SNAT definition.</para>
+    IPsec pseudo-interfaces in zone and MASQUERADE/SNAT definition.</para>
 
     <para>There are two cases to consider:</para>
 
@@ -226,15 +226,15 @@
     ipsec-tools and racoon although the ipsec-tools project releases them as a
     single package.</para>
 
-    <para>For more information on IPSEC, Kernel 2.6 and Shorewall see <ulink
+    <para>For more information on IPsec, Kernel 2.6 and Shorewall see <ulink
     url="LinuxFest.pdf">my presentation on the subject given at LinuxFest NW
     2005</ulink>. Be warned though that the presentation is based on Shorewall
-    2.2 and there are some differences in the details of how IPSEC is
+    2.2 and there are some differences in the details of how IPsec is
     configured.</para>
   </section>
 
   <section id="GwFw">
-    <title>IPSec Gateway on the Firewall System</title>
+    <title>IPsec Gateway on the Firewall System</title>
 
     <para>Suppose that we have the following situation:</para>
 
@@ -248,7 +248,7 @@
 
     <orderedlist numeration="loweralpha">
       <listitem>
-        <para>Open the firewall so that the IPSEC tunnel can be established
+        <para>Open the firewall so that the IPsec tunnel can be established
         (allow the ESP protocol and UDP Port 500).</para>
       </listitem>
 
@@ -257,7 +257,7 @@
       </listitem>
     </orderedlist>
 
-    <para>Opening the firewall for the IPSEC tunnel is accomplished by adding
+    <para>Opening the firewall for the IPsec tunnel is accomplished by adding
     an entry to the <filename>/etc/shorewall/tunnels</filename> file.</para>
 
     <para>In <filename>/etc/shorewall/tunnels</filename> on system A, we need
@@ -357,7 +357,7 @@ ACCEPT     vpn:134.28.54.2  $FW</programlisting>
     below).</para>
 
     <para>Once you have these entries in place, restart Shorewall (type
-    shorewall restart); you are now ready to configure IPSEC.</para>
+    shorewall restart); you are now ready to configure IPsec.</para>
 
     <para>For full encrypted connectivity in this configuration (between the
     subnets, between each subnet and the opposite gateway, and between the
@@ -450,7 +450,7 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
 }</programlisting>
 
       <warning>
-        <para>If you have hosts that access the Internet through an IPSEC
+        <para>If you have hosts that access the Internet through an IPsec
         tunnel, then it is a good idea to set the MSS value for traffic from
         those hosts explicitly in the
         <filename>/etc/shorewall/zones</filename> file. For example, if hosts
@@ -467,8 +467,8 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
         adjusted.</para>
 
         <para>Note that CLAMPMSS=Yes in <filename>shorewall.conf</filename>
-        isn't effective with the 2.6 native IPSEC implementation because there
-        is no separate ipsec device with a lower mtu as there was under the
+        isn't effective with the 2.6 native IPsec implementation because there
+        is no separate IPsec device with a lower mtu as there was under the
         2.4 and earlier kernels.</para>
       </warning>
     </blockquote>
@@ -556,7 +556,7 @@ vpn               eth0:0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
-      <para>On system A, here are the IPSEC files:</para>
+      <para>On system A, here are the IPsec files:</para>
 
       <blockquote>
         <para><filename>/etc/racoon/racoon.conf</filename> - System A:</para>
@@ -606,7 +606,7 @@ spdflush;</programlisting>
       running ipsec-tools (racoon) 0.5rc1 or later.</para>
 
       <para>On the mobile system (system B), it is not possible to create a
-      static IPSEC configuration because the IP address of the laptop's
+      static IPsec configuration because the IP address of the laptop's
       Internet connection isn't static. I have created an 'ipsecvpn' script
       and included in the tarball and in the RPM's documentation directory;
       this script can be used to start and stop the connection.</para>
@@ -620,7 +620,7 @@ spdflush;</programlisting>
 #
 INTERFACE=eth0
 #
-# Remote IPSEC Gateway
+# Remote IPsec Gateway
 #
 GATEWAY=206.162.148.9
 #
@@ -675,10 +675,10 @@ RACOON=/usr/sbin/racoon</programlisting>
     you read it thoroughly and understand it. The setup described in this
     section is more complex because you are including an additional layer of
     tunneling. Again, make sure that you have read the previous section and it
-    is highly recommended to have the IPSEC-only configuration working
+    is highly recommended to have the IPsec-only configuration working
     first.</para>
 
-    <para>Additionally, this section assumes that you are running IPSEC,
+    <para>Additionally, this section assumes that you are running IPsec,
     xl2tpd and pppd on the same system that is running shorewall. However,
     configuration of these additional services is beyond the scope of this
     document.</para>
@@ -698,7 +698,7 @@ RACOON=/usr/sbin/racoon</programlisting>
         MS Windows or Mac OS X) and you do not want them to have to install
         third party software in order to connect to the VPN (both MS Windows
         and Mac OS X include VPN clients which natively support L2TP over
-        IPSEC, but not plain IPSEC).</para>
+        IPsec, but not plain IPsec).</para>
       </listitem>
 
       <listitem>
@@ -805,7 +805,7 @@ all             all             REJECT          info
       <programlisting>#ACTION         SOURCE  DEST    PROTO   DEST    SOURCE
 #                                       PORT(S) PORT(S)
 SECTION ESTABLISHED
-# Prevent IPSEC bypass by hosts behind a NAT gateway
+# Prevent IPsec bypass by hosts behind a NAT gateway
 L2TP(REJECT)    net     $FW
 REJECT          $FW     net     udp     -       1701
 # l2tp over the IPsec VPN
@@ -824,7 +824,7 @@ HTTPS(ACCEPT)   l2tp    $FW
 
     <para>In today's wireless world, it is often the case that individual
     hosts in a network need to establish secure connections with the other
-    hosts in that network. In that case, IPSEC transport mode is an
+    hosts in that network. In that case, IPsec transport mode is an
     appropriate solution.</para>
 
     <para><graphic fileref="images/TransportMode.png"/>Here's an example using
@@ -914,7 +914,7 @@ loc             eth0:192.168.20.0/24
 
       <para>It is worth noting that although <emphasis>loc</emphasis> is a
       sub-zone of <emphasis>net</emphasis>, because <emphasis>loc</emphasis>
-      is an IPSEC-only zone it does not need to be defined before
+      is an IPsec-only zone it does not need to be defined before
       <emphasis>net</emphasis> in
       <emphasis>/etc/shorewall/zones</emphasis>.</para>
 
@@ -938,7 +938,7 @@ all             all             REJECT          info
   <section id="ipcomp">
     <title>IPCOMP</title>
 
-    <para>If your IPSEC tunnel or transport mode connection fails to work with
+    <para>If your IPsec tunnel or transport mode connection fails to work with
     Shorewall started and you see log messages like the following when you try
     to use the connection, the problem is that ip compression is being
     used.<programlisting>Feb 18 23:43:52 vpngw kernel: Shorewall:<emphasis
@@ -948,14 +948,14 @@ all             all             REJECT          info
     add an IPCOMP tunnel to /etc/shorewall/tunnels as follows:<programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</programlisting>The
-    above assumes that the name of your IPSEC vpn zone is
+    above assumes that the name of your IPsec vpn zone is
     <emphasis>vpn</emphasis>.</para>
   </section>
 
   <section id="XP">
-    <title>IPSEC and <trademark>Windows</trademark> XP</title>
+    <title>IPsec and <trademark>Windows</trademark> XP</title>
 
-    <para>I have successfully configured my work laptop to use IPSEC with
+    <para>I have successfully configured my work laptop to use IPsec with
     X.509 certificates for wireless IP communication when it is undocked at
     home. I looked at dozens of sites and the one I found most helpful was
     <ulink
@@ -974,7 +974,7 @@ ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</prog
       do I generate a PKCS#12 certificate to import into Windows?". Here's the
       openssl command that I used:</para>
 
-      <programlisting><command>openssl pkcs12 -export -in eastepnc6000.pem -inkey eastepnc6000_key.pem -out eastepnc6000.pfx -name "IPSEC Cert for Home Wireless"</command> </programlisting>
+      <programlisting><command>openssl pkcs12 -export -in eastepnc6000.pem -inkey eastepnc6000_key.pem -out eastepnc6000.pfx -name "IPsec Cert for Home Wireless"</command> </programlisting>
 
       <para>I was prompted for a password to associate with the certificate.
       This password is entered on the Windows system during import.</para>
@@ -999,7 +999,7 @@ ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</prog
         </listitem>
 
         <listitem>
-          <para>"IPSEC Cert for Home Wireless" is the friendly name for the
+          <para>"IPsec Cert for Home Wireless" is the friendly name for the
           certificate.</para>
         </listitem>
       </itemizedlist>
@@ -1007,7 +1007,7 @@ ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</prog
       <para>I started to write an article about how to do this, complete with
       graphics captured from my laptop. I gave up. I had captured 12 images
       and hadn't really started yet. The Windows interface for configuring
-      IPSEC is the worst GUI that I have ever used. What can be displayed on
+      IPsec is the worst GUI that I have ever used. What can be displayed on
       one split Emacs screen (racoon.conf plus setkey.conf) takes 20+
       different dialog boxes on Windows XP!!!</para>
     </warning>

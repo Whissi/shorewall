@@ -53,8 +53,10 @@
     required to produce a directory that is suitable for the
     <command>install.sh</command> script to run in.</para>
 
+    <para>My local git repositories are:</para>
+
     <section>
-      <title>trunk</title>
+      <title>trunk (clone of Code)</title>
 
       <para>The development branch of each product is kept here.</para>
 
@@ -97,14 +99,14 @@
     </section>
 
     <section>
-      <title>tools</title>
+      <title>tools (Clone of Tools)</title>
 
       <para>This is where the release and build tools are kept. There are two
       subordinate directories:</para>
 
       <variablelist>
         <varlistentry>
-          <term>trunk/tools/build</term>
+          <term>tools/build</term>
 
           <listitem>
             <para>Tools for building and uploading new releases.</para>
@@ -112,7 +114,7 @@
         </varlistentry>
 
         <varlistentry>
-          <term>trunk/tools/web</term>
+          <term>tools/web</term>
 
           <listitem>
             <para>Tools for publishing web content</para>
@@ -122,14 +124,14 @@
     </section>
 
     <section>
-      <title>web</title>
+      <title>web (Clone of Web)</title>
 
       <para>The files from the web site that are maintained in HTML format.
       are kept in this directory.</para>
     </section>
 
     <section>
-      <title>release</title>
+      <title>release (Clone of Release)</title>
 
       <para>Added in Shorewall 4.4.22, this directory contains the files that
       contain release-dependent information (change.txt, releasenotes.txt,
@@ -142,7 +144,7 @@
     <title>Build Tools</title>
 
     <para>As described above, the build tools are kept in <filename
-    class="directory">trunk/tools/build.</filename> They are described in the
+    class="directory">tools/build.</filename> They are described in the
     following sections.</para>
 
     <section>
@@ -159,247 +161,6 @@
 
       <para>The <replaceable>version</replaceable> may either be a minor
       version or a patch version.</para>
-    </section>
-
-    <section>
-      <title>build</title>
-
-      <para>This is the script that builds Shorewall 4.6 packages from
-      Git.</para>
-
-      <para>The script copies content from Git using the <command>git
-      archive</command> command. It then uses that content to build the
-      packages. In addition to the usual Gnu utilities, the following software
-      is required:</para>
-
-      <variablelist>
-        <varlistentry>
-          <term>rpmbuild</term>
-
-          <listitem>
-            <para>Required to build the RPM packages.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>xsltproc (libxslt)</term>
-
-          <listitem>
-            <para>Required to convert the XML documents to other
-            formats.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>Docbook XSL Stylesheets</term>
-
-          <listitem>
-            <para>Required to convert the XML documents to other
-            formats.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>Perl</term>
-
-          <listitem>
-            <para>Required to massage some of the config files.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>xmlto</term>
-
-          <listitem>
-            <para>Required to convert the XML manpages to manpages. Be sure
-            that you have a recent version; I use 0.0.23.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-
-      <para>You should ensure that you have the latest scripts. The scripts
-      change periodically as we move through the release cycles.</para>
-
-      <para>The build46 script may need to be modified to fit your particular
-      environment. There are a number of variables that are set near the top
-      of the file:</para>
-
-      <variablelist>
-        <varlistentry>
-          <term>STYLESHEET</term>
-
-          <listitem>
-            <para>Must point to the XHTML docbook.xsl stylesheet from your
-            Docbook XSL Stylesheets installation.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>LOGDIR</term>
-
-          <listitem>
-            <para>Directory where you want the build log placed. Defaults to
-            the current working directory.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>RPMDIR</term>
-
-          <listitem>
-            <para>Points to your RPM directory .</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>DIR</term>
-
-          <listitem>
-            <para>Directory where you want the release to be built. Defaults
-            to the current working directory.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>GIT</term>
-
-          <listitem>
-            <para>Shorewall GIT repository.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-
-      <para>The scripts assume that there will be a separate <firstterm>build
-      directory</firstterm> per major release.</para>
-
-      <para>To build a release, you cd to the appropriate directory and run
-      the build46 script.</para>
-
-      <para>The general form of the build46 command is:</para>
-
-      <blockquote>
-        <para><command>build</command> [ -<replaceable>options</replaceable> ]
-        <replaceable>release</replaceable> [ <replaceable>prior
-        release</replaceable> ]</para>
-      </blockquote>
-
-      <para>where</para>
-
-      <variablelist>
-        <varlistentry>
-          <term>opt<emphasis>i</emphasis>ons</term>
-
-          <listitem>
-            <para>are one or more of the following. If no options are given
-            then all options are assumed</para>
-
-            <variablelist>
-              <varlistentry>
-                <term>t</term>
-
-                <listitem>
-                  <para>build tar files</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>r</term>
-
-                <listitem>
-                  <para>build RPMs</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>c</term>
-
-                <listitem>
-                  <para>Build the shorewall package.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>i</term>
-
-                <listitem>
-                  <para>Build the shorewall-init package.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>l</term>
-
-                <listitem>
-                  <para>Build the shorewall-lite package.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>6</term>
-
-                <listitem>
-                  <para>Build the shorewall6 package.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>L</term>
-
-                <listitem>
-                  <para>Build the shorewall6-lite package.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>h</term>
-
-                <listitem>
-                  <para>Build the html document package.</para>
-                </listitem>
-              </varlistentry>
-
-              <varlistentry>
-                <term>x</term>
-
-                <listitem>
-                  <para>Build the xml document package.</para>
-                </listitem>
-              </varlistentry>
-            </variablelist>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><emphasis>release</emphasis></term>
-
-          <listitem>
-            <para>The release version to build. Must match the version in the
-            associated Git path.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><emphasis>prior release</emphasis></term>
-
-          <listitem>
-            <para>The release to be used to generate patch files.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-
-      <para>Example 1 - Build Shorewall 4.4.7 and generate patches against
-      4.4.6:</para>
-
-      <blockquote>
-        <para><command>build 4.4.7 4.4.6</command></para>
-      </blockquote>
-
-      <para>Example 2 - Build Shorewall 4.2.7.1 Shorewall and generate patches
-      against 4.4.7:</para>
-
-      <blockquote>
-        <para><command>build -trc 4.4.7.1 4.4.7</command></para>
-      </blockquote>
     </section>
 
     <section>
@@ -655,7 +416,7 @@
     <section>
       <title>upload</title>
 
-      <para>This script is used to upload a release to www1.shorewall.net. The
+      <para>This script is used to upload a release to www.shorewall.org. The
       command is run in the build directory for the minor release of the
       product.</para>
 
@@ -742,7 +503,7 @@
         <para><command>upload 4.3.7</command></para>
       </blockquote>
 
-      <para>Example 2 - Upload shorewall-4.3.7.3:</para>
+      <para>Example 2 - Upload shorewall-core-4.3.7.3:</para>
 
       <blockquote>
         <para><command>upload -c 4.3.7.3</command></para>

@@ -920,13 +920,20 @@ sub add_common_rules ( $$ ) {
 
 	my $rpfilterref = ensure_mangle_chain( 'rpfilter' );
 
-	add_ijump( $rpfilterref,
-		   j        => 'RETURN',
-		   s        => NILIPv4,
-		   p        => UDP,
-		   dport    => 67,
-		   sport    => 68
-	    ) if $family == F_IPV4;
+	if ( $family == F_IPV4 ) {
+	    for $interface ( @$list ) {
+		if ( get_interface_option( $interface, 'dhcp' ) ) {
+		    add_ijump( $rpfilterref,
+			       j        => 'RETURN',
+			       s        => NILIPv4,
+			       p        => UDP,
+			       dport    => 67,
+			       sport    => 68
+			);
+		    last;
+		}
+	    }
+	}
 
 	add_ijump( $rpfilterref,
 		   j        => $target,

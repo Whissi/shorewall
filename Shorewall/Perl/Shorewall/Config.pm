@@ -5402,7 +5402,11 @@ sub get_configuration( $$$$$ ) {
 
     default 'PATH' , $default_path;
 
-    $ENV{PATH} .= ":$default_path";
+    if ( supplied( $ENV{PATH} ) ) {
+	$ENV{PATH} .= ":$default_path";
+    } else {
+	$ENV{PATH} = $default_path;
+    }
 
     get_params( $export );
 

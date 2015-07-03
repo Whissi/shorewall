@@ -5398,6 +5398,12 @@ sub get_configuration( $$$$$ ) {
 
     ensure_config_path;
 
+    my $default_path = '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
+
+    default 'PATH' , $default_path;
+
+    $ENV{PATH} .= ":$default_path";
+
     get_params( $export );
 
     process_shorewall_conf( $update, $annotate, $directives );
@@ -5408,7 +5414,6 @@ sub get_configuration( $$$$$ ) {
 
     unshift @INC, @config_path;
 
-    default 'PATH' , '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin';
     #
     # get_capabilities requires that the true settings of these options be established
     #

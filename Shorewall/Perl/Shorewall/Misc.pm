@@ -918,12 +918,22 @@ sub add_common_rules ( $$ ) {
 	    $target = $policy eq 'REJECT' ? 'reject' : $policy;
 	}
 
-	add_ijump( ensure_mangle_chain( 'rpfilter' ),
+	my $rpfilterref = ensure_mangle_chain( 'rpfilter' );
+
+	add_ijump( $rpfilterref,
+		   j        => 'RETURN',
+		   s        => NILIPv4,
+		   p        => UDP,
+		   dport    => 67,
+		   sport    => 68
+	    ) if $family == F_IPV4;
+
+	add_ijump( $rpfilterref,
 		   j        => $target,
 		   rpfilter => '--validmark --invert',
 		   state_imatch 'NEW,RELATED,INVALID',
 		   @ipsec
-		 );
+	    );
     }
 	    
     run_user_exit1 'initdone';

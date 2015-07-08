@@ -463,7 +463,17 @@ compiler() {
 	PERL=/usr/bin/perl
     fi
 
-    [ -n "$g_doing" ] && progress_message3 "$g_doing..."
+    case "$g_doing" in
+	Compiling|Checking)
+	    progress_message3 "$g_doing using $g_product $SHOREWALL_VERSION..."
+	    ;;
+	Updating)
+	    progress_message3 "Updating $g_product configuration to $SHOREWALL_VERSION..."
+	    ;;
+	*)
+	    [ -n "$g_doing" ] && progress_message3 "$g_doing using $g_product $SHOREWALL_VERSION..."
+	    ;;
+    esac
 
     if [ ${PERLLIBDIR} = ${LIBEXECDIR}/shorewall ]; then
 	$PERL $debugflags $pc $options $@
@@ -473,7 +483,7 @@ compiler() {
 
     status=$?
 
-    if [ $status -eq 0 -a $COMMAND != check ]; then
+    if [ $status -eq 0 -a $COMMAND != check -a $COMMAND != update ]; then
 	g_compiled="$g_file"
 	run_postcompile "$g_compiled"
 	return
@@ -915,7 +925,7 @@ update_command() {
 	    ;;
     esac
 
-    g_doing="Updating..."
+    g_doing="Updating"
 
     compiler $g_debugging $nolock check
 }

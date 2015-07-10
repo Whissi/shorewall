@@ -473,7 +473,7 @@ compiler() {
 
     status=$?
 
-    if [ $status -eq 0 -a $COMMAND != check ]; then
+    if [ $status -eq 0 -a $COMMAND != check -a $COMMAND != update ]; then
 	g_compiled="$g_file"
 	run_postcompile "$g_compiled"
 	return

@@ -2170,8 +2170,10 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $zone ( grep ! ( $zones{$_}{type} & FIREWALL ) , @zones ) {
-	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
-	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
+	for my $type (keys %{$zones{$zone}{hosts}} ) {
+	    my $interfaceref = $zones{$zone}{hosts}->{$type};
+	    for my $interface ( keys %$interfaceref ) {
+		my $arrayref = $interfaceref->{$interface};
 		for my $host ( @{$arrayref} ) {
 		    my $ipsec = $host->{ipsec};
 		    unless ( $done{$interface} ) { 
@@ -2210,7 +2212,9 @@ sub find_zone_hosts_by_option( $$ ) {
 	}
     }
 
-    \@hosts;
+    my @sorted = sort { $a->[0] cmp $b->[0] } @hosts;
+
+    \@sorted
 }
 
 #

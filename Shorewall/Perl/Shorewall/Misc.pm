@@ -1579,7 +1579,7 @@ sub add_interface_jumps {
     our %input_jump_added;
     our %output_jump_added;
     our %forward_jump_added;
-    my @interfaces = grep $_ ne '%vserver%', @_;
+    my @interfaces = sort grep $_ ne '%vserver%', @_;
     my $dummy;
     my $lo_jump_added = interface_zone( loopback_interface ) && ! get_interface_option( loopback_interface, 'destonly' );
     #

@@ -374,7 +374,7 @@ sub start_provider( $$$$$ ) {
 
     emit "\n#\n# Add $what $table ($number)\n#";
 
-    if ( $number ) {
+    if ( $number >= 0 ) {
 	emit "start_provider_$table() {";
     } else {
 	emit "start_interface_$table() {";
@@ -384,7 +384,7 @@ sub start_provider( $$$$$ ) {
     emit $test;
     push_indent;
 
-    if ( $number ) {
+    if ( $number >= 0 ) {
 	emit "qt ip -$family route flush table $id";
 	emit "echo \"\$IP -$family route flush table $id > /dev/null 2>&1\" > \${VARDIR}/undo_${table}_routing";
     } else {
@@ -1442,10 +1442,13 @@ sub process_providers( $ ) {
     #
     # Treat optional interfaces as pseudo-providers
     #
+    my $num = -65536;
+
     for ( grep interface_is_optional( $_ ) && ! $provider_interfaces{ $_ }, all_real_interfaces ) {
+	$num++;
 	#
-	#               TABLE             NUMBER MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
-	$currentline =  var_base($_) ." 0      -    -         $_        -       -       -";
+	#               TABLE             NUMBER            MARK DUPLICATE INTERFACE GATEWAY OPTIONS COPY
+	$currentline =  var_base($_) .  " $num              -    -         $_        -       -       -";
 	#
 	$pseudoproviders += process_a_provider(1);
     }

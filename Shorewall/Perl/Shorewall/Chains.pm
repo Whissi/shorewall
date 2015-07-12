@@ -6816,22 +6816,28 @@ sub set_global_variables( $$ ) {
     my ( $setall, $conditional ) = @_;
 
     if ( $conditional ) {
-	my ( $interface, $code );
+	my ( $interface, @interfaces );
 
-	while ( ( $interface, $code ) = each %interfaceaddr ) {
-	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $code) );
+	@interfaces = sort keys %interfaceaddr;
+
+	for $interface ( @interfaces ) {
+	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $interfaceaddr{$interface}) );
 	}
 
-	while ( ( $interface, $code ) = each %interfacegateways ) {
+	@interfaces = sort keys %interfacegateways;
+
+	for $interface ( @interfaces ) {
 	    emit( qq(if [ -z "\$interface" -o "\$interface" = "$interface" ]; then) );
 	    push_indent;
-	    emit( $code );
+	    emit( $interfacegateways{$interface} );
 	    pop_indent;
 	    emit( qq(fi\n) );
 	}
 
-	while ( ( $interface, $code ) = each %interfacemacs ) {
-	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $code) );
+	@interfaces = sort keys %interfacemacs;
+
+	for $interface ( @interfaces ) {
+	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $interfacemacs{$interface}) );
 	}
     } else {
 	emit $_     for values %interfaceaddr;

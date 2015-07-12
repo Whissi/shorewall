@@ -521,9 +521,9 @@ sub setup_accounting() {
 
 		while ( $chainswithjumps && $progress ) {
 		    $progress = 0;
-		    for my $chain1 (  keys %accountingjumps ) {
+		    for my $chain1 ( sort  keys %accountingjumps ) {
 			if ( keys %{$accountingjumps{$chain1}} ) {
-			    for my $chain2 ( keys %{$accountingjumps{$chain1}} ) {
+			    for my $chain2 ( sort keys %{$accountingjumps{$chain1}} ) {
 				delete $accountingjumps{$chain1}{$chain2}, $progress = 1 unless $accountingjumps{$chain2};
 			    }
 			} else {

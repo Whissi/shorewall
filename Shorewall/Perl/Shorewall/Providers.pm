@@ -1594,7 +1594,7 @@ sub map_provider_to_interface() {
 
     my $haveoptional;
 
-    for my $providerref ( values %providers ) {
+    for my $providerref ( sort { $a->{number} cmp $b->{number} } values %providers ) {
 	if ( $providerref->{optional} ) {
 	    unless ( $haveoptional++ ) {
 		emit( 'if [ -n "$interface" ]; then',

@@ -176,7 +176,7 @@ sub setup_ecn()
 	}
 
 	if ( @hosts ) {
-	    my @interfaces = ( keys %interfaces );
+	    my @interfaces = ( sort { interface_number($a) <=> interface_number($b) } keys %interfaces );
 
 	    progress_message "$doing ECN control on @interfaces...";
 
@@ -1535,7 +1535,7 @@ sub handle_loopback_traffic() {
 	    # Handle conntrack rules
 	    #
 	    if ( $notrackref->{referenced} ) {
-		for my $hostref ( @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
+		for my $hostref ( sort { $a->{type} cmp $b->{type} } @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
 		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $notrackref);
 		    my @ipsec_match = match_ipsec_in $z1 , $hostref;
 
@@ -1556,8 +1556,8 @@ sub handle_loopback_traffic() {
 	    #
 	    my $source_hosts_ref = defined_zone( $z1 )->{hosts};
 
-	    for my $typeref ( values %{$source_hosts_ref} ) {
-		for my $hostref ( @{$typeref->{'%vserver%'}} ) {
+	    for my $typeref ( sort { $a->{type} cmp $b->{type} } values %{$source_hosts_ref} ) {
+		for my $hostref ( sort { $a->{type} cmp $b->{type} } @{$typeref->{'%vserver%'}} ) {
 		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $natref);
 
 		    for my $net ( @{$hostref->{hosts}} ) {
@@ -2200,7 +2200,8 @@ sub generate_matrix() {
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
-	for my $typeref ( values %$source_hosts_ref ) {
+	for my $type ( sort keys %$source_hosts_ref ) {
+	    my $typeref = $source_hosts_ref->{$type};
 	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 		if ( get_physical( $interface ) eq '+' ) {
 		    #
@@ -2273,7 +2274,6 @@ sub generate_matrix() {
 		my $chain = rules_target $zone, $zone1;
 
 		next unless $chain; # CONTINUE policy with no rules
-
 		my $num_ifaces = 0;
 
 		if ( $zone eq $zone1 ) {
@@ -2285,8 +2285,9 @@ sub generate_matrix() {
 		}
 
 		my $chainref = $filter_table->{$chain}; #Will be null if $chain is a Netfilter Built-in target like ACCEPT
-		
-		for my $typeref ( values %{$zone1ref->{hosts}} ) {
+
+		for my $type ( sort keys %{$zone1ref->{hosts}} ) {
+		    my $typeref = $zone1ref->{hosts}{$type};
 		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
 			for my $hostref ( @{$typeref->{$interface}} ) {
 			    next if $hostref->{options}{sourceonly};

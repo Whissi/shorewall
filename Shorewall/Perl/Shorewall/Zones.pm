@@ -1800,7 +1800,7 @@ sub find_interfaces_by_option1( $ ) {
     my @ints = ();
     my $wild = 0;
 
-    for my $interface ( sort { $interfaces{$a}->{number} <=> $interfaces{$b}->{number} } keys %interfaces ) {
+    for my $interface ( @interfaces ) {
 	my $interfaceref = $interfaces{$interface};
 
 	next unless defined $interfaceref->{physical};
@@ -2170,9 +2170,9 @@ sub find_hosts_by_option( $ ) {
     }
 
     for my $zone ( grep ! ( $zones{$_}{type} & FIREWALL ) , @zones ) {
-	for my $type (keys %{$zones{$zone}{hosts}} ) {
+	for my $type (sort keys %{$zones{$zone}{hosts}} ) {
 	    my $interfaceref = $zones{$zone}{hosts}->{$type};
-	    for my $interface ( keys %$interfaceref ) {
+	    for my $interface ( sort keys %$interfaceref ) {
 		my $arrayref = $interfaceref->{$interface};
 		for my $host ( @{$arrayref} ) {
 		    my $ipsec = $host->{ipsec};
@@ -2199,8 +2199,10 @@ sub find_zone_hosts_by_option( $$ ) {
     my @hosts;
 
     unless ( $zones{$zone}{type} & FIREWALL ) {
-	while ( my ($type, $interfaceref) = each %{$zones{$zone}{hosts}} ) {
-	    while ( my ( $interface, $arrayref) = ( each %{$interfaceref} ) ) {
+	for my $type (sort keys %{$zones{$zone}{hosts}} ) {
+	    my $interfaceref = $zones{$zone}{hosts}->{$type};
+	    for my $interface ( sort keys %$interfaceref ) {
+		my $arrayref = $interfaceref->{$interface};
 		for my $host ( @{$arrayref} ) {
 		    if ( my $value = $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
@@ -2212,9 +2214,7 @@ sub find_zone_hosts_by_option( $$ ) {
 	}
     }
 
-    my @sorted = sort { $a->[0] cmp $b->[0] } @hosts;
-
-    \@sorted
+    \@hosts
 }
 
 #

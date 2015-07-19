@@ -20,6 +20,8 @@
     <copyright>
       <year>2009</year>
 
+      <year>2015</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -36,14 +38,14 @@
 
   <caution>
     <para>The ruleset shown in this article uses Shorewall features that are
-    not available in Shorewall versions prior to 4.4.0.</para>
+    not available in Shorewall versions prior to 4.6.11</para>
   </caution>
 
   <section>
     <title>Introduction</title>
 
     <para>The configuration described in this article represents the network
-    at shorewall.net during the summer of 2009. It uses the following
+    at shorewall.org during the summer of 2015. It uses the following
     Shorewall features:</para>
 
     <itemizedlist>
@@ -53,20 +55,14 @@
       </listitem>
 
       <listitem>
-        <para>A DMZ with two "systems" using <ulink url="ProxyARP.htm">Proxy
-        ARP</ulink> and running in <ulink url="OpenVZ.html">OpenVZ Virtual
-        Environments</ulink></para>
+        <para>A DMZ with three "systems" using <ulink url="ProxyARP.htm">Proxy
+        ARP</ulink> and running in <ulink url="OpenVZ.html">Linux Containers
+        (LXC)</ulink></para>
       </listitem>
 
       <listitem>
-        <para><ulink url="6to4.htm">IPv6 Access through a 6to4
-        Tunnel</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para><ulink url="OPENVPN.html">OpenVPN</ulink> and <ulink
-        url="IPSEC-2.6.html">IPSEC</ulink> for access when we are on the
-        road.</para>
+        <para><ulink url="6to4.htm">IPv6 Access through two 6to4
+        Tunnels</ulink></para>
       </listitem>
 
       <listitem>
@@ -74,29 +70,15 @@
       </listitem>
 
       <listitem>
-        <para><ulink url="Dynamic.html">Dynamic Zones</ulink></para>
-      </listitem>
-
-      <listitem>
         <para><ulink url="Shorewall_Squid_Usage.html">Transparent proxy using
         Squid</ulink></para>
       </listitem>
-
-      <listitem>
-        <para><ulink url="ManualChains.html">Manual Chains</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para><ulink url="traffic_shaping.htm">Traffic Shaping</ulink></para>
-      </listitem>
     </itemizedlist>
 
-    <para>Linux runs the firewall and the servers (although they run in OpenVZ
+    <para>Linux runs the firewall and the servers (although they run in LXC
     containers on the firewall system). Linux is not used natively on any of
-    our other systems except for an <ulink url="http://www.hpmini.com">HP mini
-    which runs HP Mobile Internet Experience (MIE)</ulink> -- essentially
-    Ubuntu Hardy. I rather run Windows natively (either Vista Home Premium or
-    XP Professional) and run Linux in VMs under <ulink
+    our other systems.. I rather run Windows natively (Windows 7 Professional)
+    and run Linux in VMs under <ulink
     url="http://www.sun.com/software/products/virtualbox/">VirtualBox</ulink>.
     This approach has a number of advantages:</para>
 
@@ -122,11 +104,6 @@
 
         <para>All DRM-protected media can be handled under Windows.</para>
       </listitem>
-
-      <listitem>
-        <para>Websites that don't work with Firefox (or at least with Linux
-        Firefox)</para>
-      </listitem>
     </orderedlist>
 
     <para>VirtualBox is fast (when your processor supports virtualization
@@ -138,34 +115,31 @@
 
     <para>Our network is diagrammed in the following graphic.</para>
 
-    <graphic fileref="images/Network2009d.png" />
+    <graphic fileref="images/Network2015.png"/>
 
-    <para>We have accounts with two different ISPs:</para>
+    <para>We have two accounts with Comcast:</para>
 
     <orderedlist>
       <listitem>
-        <para>Comcast</para>
+        <para>ComcastC</para>
 
-        <para>This is a high-speed (20mb/4mb) link with a single dynamic IPv4
+        <para>This is a high-speed (40mb/8mb) link with a single dynamic IPv4
         address. We are not allowed to run servers accessible through this
         account.</para>
       </listitem>
 
       <listitem>
-        <para>Avvanta</para>
+        <para>ComcastB</para>
 
-        <para>This is a low-speec (1.5mb/384kbit) link with five static IP
-        address. Our servers are accessed through this account.</para>
+        <para>Comcast Business Class Service with a /29
+        (70.90.191.120/29).</para>
       </listitem>
     </orderedlist>
 
     <para>The wired local network is restricted to my home office. The
-    wireless network is managed by a Linksys WRT300N pre-N router which we use
-    only as an access point -- its WAN interface is unused and it is
-    configured to not do NAT. The wireless network uses WPA2 personal security
-    and MAC filtering is enabled in the router. These two factors make it a
-    hassle when guests visit with a laptop but provide good security for the
-    network.</para>
+    wireless network is managed by a wireless router which we use only as an
+    access point -- its WAN interface is unused and it is configured to not do
+    NAT. The wireless network uses WPA2 personal security.</para>
   </section>
 
   <section>
@@ -174,30 +148,55 @@
     <para>This section contains excerpts from the Shorewall
     configuration.</para>
 
-    <para>It is important to keep in mind that parts of my configuration are
-    there just to provide a test bed for Shorewall features. So while they
-    show correct usage, they don't necessarily provide any useful benefit. I
-    have tried to point those out in the sub-sections that follow.</para>
+    <section>
+      <title>/etc/shorewall/mirrors</title>
+
+      <programlisting>MIRRORS=62.216.169.37,\
+62.216.184.105,\
+63.229.2.114,\
+...</programlisting>
+
+      <para>Defines the IP addresses of the Shorewall mirror sites.</para>
+    </section>
 
     <section id="params">
       <title>/etc/shorewall/params</title>
 
-      <para><programlisting>MIRRORS=62.216.169.37,\
-63.229.2.114,\
-...
-NTPSERVERS=...
+      <para><programlisting>INCLUDE mirrors
 
-POPSERVERS=...
+LOG="NFLOG(0,0,1)"
 
-LOG=ULOG
+INT_IF=eth0
+TUN_IF=tun+
+COMB_IF=eth2
+COMC_IF=eth1
 
-INT_IF=eth1
-EXT_IF=eth2
-COM_IF=eth0
-VPS_IF=venet0</programlisting>As shown, this file defines variables to hold
-      the various lists of IP addresses that I need to maintain. To simplify
-      network reconfiguration, I also use variables to define the log level
-      and the network interfaces.</para>
+MYNET=70.90.191.120/29 #External IP addresses handled by this router
+DMZ_NET=70.90.191.124/31
+FW_NET=70.90.191.120/30
+INT_NET=172.20.1.0/24
+DYN_NET=$(find_first_interface_address_if_any $COMC_IF)
+SMC_ADDR=10.1.10.11
+
+[ -n "${DYN_NET:=67.170.122.219}" ]
+
+DYN_NET=${DYN_NET}/32
+
+DMZ=fw:$DMZ_NET
+
+LISTS=:70.90.191.124
+SERVER=:70.90.191.125
+MAIL=172.20.1.200
+
+PROXY=Yes
+STATISTICAL=Yes
+SQUID2=Yes
+
+[ -n "${EXPERIMENTAL:=0}" ]
+</programlisting>As shown, this file defines variables to hold the various
+      lists of IP addresses that I need to maintain. To simplify network
+      reconfiguration, I also use variables to define the log level and the
+      network interfaces.</para>
     </section>
 
     <section id="conf">
@@ -206,293 +205,425 @@ VPS_IF=venet0</programlisting>As shown, this file defines variables to hold
       <para><programlisting>###############################################################################
 #                      S T A R T U P   E N A B L E D
 ###############################################################################
+
 STARTUP_ENABLED=Yes
+
 ###############################################################################
-#                             V E R B O S I T Y
+#                            V E R B O S I T Y
 ###############################################################################
-VERBOSITY=0
-###############################################################################
-#                              C O M P I L E R
-#      (setting this to 'perl' requires installation of Shorewall-perl)
-###############################################################################
-SHOREWALL_COMPILER=perl
+
+VERBOSITY=1
+
 ###############################################################################
 #                              L O G G I N G
 ###############################################################################
-LOGFILE=/var/log/ulog/syslogemu.log
-STARTUP_LOG=/var/log/shorewall-init.log
-LOG_VERBOSITY=2
-LOGFORMAT="%s:%s:"
-LOGTAGONLY=No
-LOGRATE=
-LOGBURST=
+
+BLACKLIST_LOG_LEVEL=none
+
+INVALID_LOG_LEVEL=
+
+LOG_BACKEND=ULOG
+
+LOG_MARTIANS=Yes
+
+LOG_VERBOSITY=1
+
 LOGALLNEW=
-BLACKLIST_LOGLEVEL=
-MACLIST_LOG_LEVEL=
-TCP_FLAGS_LOG_LEVEL=$LOG
-SMURF_LOG_LEVEL=$LOG
-LOG_MARTIANS=No
+
+LOGFILE=/var/log/ulogd/ulogd.syslogemu.log
+
+LOGFORMAT=": %s %s"
+
+LOGTAGONLY=Yes
+
+LOGLIMIT="s:5/min"
+
+MACLIST_LOG_LEVEL="$LOG"
+
+RELATED_LOG_LEVEL="$LOG"
+
+RPFILTER_LOG_LEVEL=info
+
+SFILTER_LOG_LEVEL="$LOG"
+
+SMURF_LOG_LEVEL="$LOG"
+
+STARTUP_LOG=/var/log/shorewall-init.log
+
+TCP_FLAGS_LOG_LEVEL="$LOG"
+
+UNTRACKED_LOG_LEVEL=
+
 ###############################################################################
 #       L O C A T I O N   O F   F I L E S   A N D   D I R E C T O R I E S
 ###############################################################################
-IPTABLES=
+
+ARPTABLES=
+
+CONFIG_PATH="/etc/shorewall:/etc/shorewall-common:/usr/share/shorewall:/usr/share/shorewall/Shorewall"
+
+GEOIPDIR=/usr/share/xt_geoip/LE
+
+IPTABLES=/sbin/iptables
+
+IP=/sbin/ip
+
 IPSET=
-PATH=/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
-SHOREWALL_SHELL=/bin/sh
-SUBSYSLOCK=
+
+LOCKFILE=/var/lib/shorewall/lock
+
 MODULESDIR=
-CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+
+NFACCT=
+
+PATH="/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin"
+
+PERL=/usr/bin/perl
+
 RESTOREFILE=
-IPSECFILE=zones
-LOCKFILE=
+
+SHOREWALL_SHELL=/bin/bash
+
+SUBSYSLOCK=
+
+TC=
+
 ###############################################################################
 #               D E F A U L T   A C T I O N S / M A C R O S
 ###############################################################################
-DROP_DEFAULT="Drop"
-REJECT_DEFAULT="Reject"
-ACCEPT_DEFAULT="none"
-QUEUE_DEFAULT="none"
+
+ACCEPT_DEFAULT=none
+DROP_DEFAULT=Drop
+NFQUEUE_DEFAULT=none
+QUEUE_DEFAULT=none
+REJECT_DEFAULT=Reject
+
 ###############################################################################
 #                        R S H / R C P  C O M M A N D S
 ###############################################################################
-RSH_COMMAND='ssh ${root}@${system} ${command}'
+
 RCP_COMMAND='scp ${files} ${root}@${system}:${destination}'
+RSH_COMMAND='ssh ${root}@${system} ${command}'
+
 ###############################################################################
 #                       F I R E W A L L   O P T I O N S
 ###############################################################################
-IP_FORWARDING=Yes
+
+ACCOUNTING=Yes
+
+ACCOUNTING_TABLE=mangle
+
 ADD_IP_ALIASES=No
+
 ADD_SNAT_ALIASES=No
-RETAIN_ALIASES=No
-TC_ENABLED=Internal
-TC_EXPERT=No
-CLEAR_TC=Yes
-MARK_IN_FORWARD_CHAIN=Yes
-CLAMPMSS=Yes
-ROUTE_FILTER=No
-DETECT_DNAT_IPADDRS=Yes
-MUTEX_TIMEOUT=60
+
 ADMINISABSENTMINDED=Yes
-BLACKLISTNEWONLY=Yes
-DELAYBLACKLISTLOAD=No
-MODULE_SUFFIX=ko
-DONT_LOAD=
-DISABLE_IPV6=No
-BRIDGING=No
-DYNAMIC_ZONES=No
-PKTTYPE=No
-MACLIST_TABLE=mangle
-MACLIST_TTL=60
-SAVE_IPSETS=No
-MAPOLDACTIONS=No
-FASTACCEPT=No
-IMPLICIT_CONTINUE=Yes
-HIGH_ROUTE_MARKS=Yes
-USE_ACTIONS=Yes
-OPTIMIZE=1
-EXPORTPARAMS=Yes
-EXPAND_POLICIES=Yes
-KEEP_RT_TABLES=No
+
+BASIC_FILTERS=No
+
+IGNOREUNKNOWNVARIABLES=No
+
+AUTOCOMMENT=Yes
+
+AUTOHELPERS=Yes
+
+AUTOMAKE=Yes
+
+BLACKLIST="NEW,INVALID,UNTRACKED"
+
+CHAIN_SCRIPTS=No
+
+CLAMPMSS=Yes
+
+CLEAR_TC=Yes
+
+COMPLETE=No
+
+DEFER_DNS_RESOLUTION=No
+
 DELETE_THEN_ADD=No
-MULTICAST=Yes
-AUTO_COMMENT=Yes
+
+DETECT_DNAT_IPADDRS=No
+
+DISABLE_IPV6=No
+
+DONT_LOAD="nf_nat_sip,nf_conntrack_sip,nf_conntrack_h323,nf_nat_h323"
+
+DYNAMIC_BLACKLIST=Yes
+
+EXPAND_POLICIES=Yes
+
+EXPORTMODULES=Yes
+
+FASTACCEPT=Yes
+
+FORWARD_CLEAR_MARK=Yes
+
+HELPERS="ftp,irc"
+
+IMPLICIT_CONTINUE=No
+
+INLINE_MATCHES=Yes
+
+IPSET_WARNINGS=No
+
+IP_FORWARDING=Yes
+
+KEEP_RT_TABLES=Yes
+
+LEGACY_FASTSTART=Yes
+
+LOAD_HELPERS_ONLY=Yes
+
+MACLIST_TABLE=mangle
+
+MACLIST_TTL=60
+
 MANGLE_ENABLED=Yes
-NULL_ROUTE_RFC1918=Yes
-USE_DEFAULT_RT=No
+
+MAPOLDACTIONS=No
+
+MARK_IN_FORWARD_CHAIN=No
+
+MODULE_SUFFIX="ko ko.xz"
+
+MULTICAST=No
+
+MUTEX_TIMEOUT=60
+
+NULL_ROUTE_RFC1918=unreachable
+
+OPTIMIZE=All
+
+OPTIMIZE_ACCOUNTING=No
+
+REJECT_ACTION=RejectAct
+
+REQUIRE_INTERFACE=No
+
 RESTORE_DEFAULT_ROUTE=No
-FAST_STOP=Yes
-AUTOMAKE=No
-LOG_MARTIANS=Yes
-WIDE_TC_MARKS=Yes
+
+RESTORE_ROUTEMARKS=Yes
+
+RETAIN_ALIASES=No
+
+ROUTE_FILTER=No
+
+SAVE_ARPTABLES=Yes
+
+SAVE_IPSETS=ipv4
+
+TC_ENABLED=No
+
+TC_EXPERT=No
+
+TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"
+
+TRACK_PROVIDERS=Yes
+
+TRACK_RULES=No
+
+USE_DEFAULT_RT=Yes
+
+USE_PHYSICAL_NAMES=Yes
+
+USE_RT_NAMES=Yes
+
+WARNOLDCAPVERSION=Yes
+
+WORKAROUNDS=No
+
+ZONE2ZONE=-
+
 ###############################################################################
 #                       P A C K E T   D I S P O S I T I O N
 ###############################################################################
+
 BLACKLIST_DISPOSITION=DROP
+
+INVALID_DISPOSITION=CONTINUE
+
 MACLIST_DISPOSITION=ACCEPT
+
+RELATED_DISPOSITION=REJECT
+
+RPFILTER_DISPOSITION=DROP
+
+SMURF_DISPOSITION=DROP
+
+SFILTER_DISPOSITION=DROP
+
 TCP_FLAGS_DISPOSITION=DROP
-</programlisting>I don't believe that there is anything remarkable
-      there</para>
+
+UNTRACKED_DISPOSITION=DROP
+
+################################################################################
+#                       P A C K E T  M A R K  L A Y O U T
+################################################################################
+
+TC_BITS=8
+
+PROVIDER_BITS=2
+
+PROVIDER_OFFSET=16
+
+MASK_BITS=8
+
+ZONE_BITS=0
+
+################################################################################
+#                            L E G A C Y  O P T I O N
+#                      D O  N O T  D E L E T E  O R  A L T E R
+################################################################################
+
+IPSECFILE=zones</programlisting>I don't believe that there is anything
+      remarkable there</para>
     </section>
 
     <section>
       <title>/etc/shorewall/actions</title>
 
-      <para><programlisting>#ACTION
-Mirrors	   	    # Accept traffic from Shorewall Mirrors
-</programlisting>I make this into an action so the rather long list of rules
-      go into their own chain.</para>
+      <para><programlisting>Mirrors                         # Accept traffic from Shorewall Mirrors
+SSHLIMIT
+SSH_BL
+tarpit       inline             # Wrapper for TARPIT
+
+</programlisting></para>
     </section>
 
     <section>
       <title>/etc/shorewall/action.Mirrors</title>
 
-      <para><programlisting>#TARGET SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
-#                       	        	PORT    PORT(S)    DEST		LIMIT
-COMMENT Accept traffic from Mirrors
-ACCEPT	$MIRRORS
-</programlisting>See the <link linkend="rules">rules</link> file -- this
-      action is used for rsync traffic.</para>
+      <para><programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
+#                                               PORT    PORT(S)    DEST         LIMIT
+?COMMENT Accept traffic from Mirrors
+?FORMAT  2
+DEFAULTS -
+$1      $MIRRORS
+</programlisting>I make this into an action so the rather long list of rules
+      go into their own chain. See the <link linkend="rules">rules</link> file
+      -- this action is used for rsync traffic.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/action.tarpit</title>
+
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME         HEADERS         SWITCH        HELPER
+#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+$LOG            { rate=s:1/min }
+TARPIT
+</programlisting>
+
+      <para/>
     </section>
 
     <section id="zones">
       <title>/etc/shorewall/zones</title>
 
       <para><programlisting>fw              firewall
-loc             ipv4            #Local Zone
-dmz             ipv4            #DMZ
-net             ipv4            #Internet
-vpn:loc,net     ipsec           #IPSEC
-drct:loc        ipv4            #Direct internet access</programlisting>The
-      <emphasis role="bold">vpn</emphasis> zone is mostly for testing
-      Shorewall IPSEC support. It is nested in <emphasis
-      role="bold">loc</emphasis> and <emphasis role="bold">net</emphasis> to
-      test a feature added in Shorewall 4.4.0. The <emphasis
-      role="bold">drct</emphasis> zone is a dynamic zone whose members bypass
-      the transparent proxy. Some applications (such as VirtualBox
-      registration) don't work through the proxy.</para>
+loc             ip                                              #Local Zone
+net             ipv4                                            #Internet
+dmz             ipv4                                            #LXC Containers
+smc:net         ip                                              #10.0.1.0/24
+</programlisting></para>
     </section>
 
     <section id="interfaces">
       <title>/etc/shorewall/interfaces</title>
 
       <para><programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
-loc    $INT_IF    detect    dhcp,logmartians=1,routefilter=1,tcpflags
-dmz    $VPS_IF    detect    logmartians=1,routefilter=0,routeback
-net    $EXT_IF    detect    dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartians=0,proxyarp=1
-net    $COM_IF    detect    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0
-loc    tun+       detect</programlisting>Notice that VPN clients are treated
-      the same as local hosts.</para>
-
-      <para>I set the <emphasis role="bold">proxyarp</emphasis> option on
-      $EXT_IF so that</para>
-
-      <orderedlist numeration="loweralpha">
-        <listitem>
-          <para>The firewall will respond to ARP who-has requests for the
-          servers in the DMZ.</para>
-        </listitem>
-
-        <listitem>
-          <para>To keep OpenVZ happy (it issues dire warnings if the option is
-          not set on the associated external interface).</para>
-        </listitem>
-      </orderedlist>
+loc    INT_IF           dhcp,physical=$INT_IF,ignore=1,wait=5,routefilter,nets=172.20.1.0/24,routeback,tcpflags=0
+net    COMB_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
+net    COMC_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
+dmz    br0              routeback,proxyarp=1,required,wait=30
+-      ifb0             ignore
+</programlisting></para>
     </section>
 
     <section id="hosts">
       <title>/etc/shorewall/hosts</title>
 
       <para><programlisting>#ZONE   HOST(S)                                 OPTIONS
-vpn     $EXT_IF:0.0.0.0/0
-vpn     $COM_IF:0.0.0.0/0
-vpn     $INT_IF:0.0.0.0/0
-drct    $INT_IF:dynamic</programlisting>The <emphasis
-      role="bold">vpn</emphasis> zone includes ipsec hosts interfacing from
-      either external interface as well as the local interface. <emphasis
-      role="bold">drct</emphasis> is defined as dynamic through the local
-      interface (recall that it is a sub-zone of <emphasis
-      role="bold">loc</emphasis>).</para>
+smc     COMB_IF:10.1.10.0/24                    mss=1400
+smc     COMC_IF:10.0.0.0/24
+</programlisting></para>
     </section>
 
     <section id="policy">
       <title>/etc/shorewall/policy</title>
 
-      <para><programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
-#                                               LEVEL
-$FW             dmz             REJECT          $LOG
+      <para><programlisting>#SOURCE         DEST            POLICY                          LOG             LIMIT:BURST
+#                                                               LEVEL
+$FW             dmz             REJECT                          $LOG
+$FW             net             REJECT                          $LOG
+?else
+$FW             dmz             REJECT                          $LOG
+$FW             net             REJECT                          $LOG
 $FW             all             ACCEPT
-loc             net             ACCEPT          -
-loc             fw              ACCEPT
-loc             vpn             ACCEPT
-vpn             fw              ACCEPT
-vpn             loc             ACCEPT
+smc             loc             ACCEPT
+smc             fw              CONTINUE
+smc             net             NONE
+loc             smc             ACCEPT
+loc             net             ACCEPT
+loc             fw              REJECT                          $LOG
 net             net             NONE
-net             all             DROP            $LOG            8/sec:30
-dmz             fw              REJECT          $LOG
-all             fw              DROP            $LOG
-all             all             REJECT          $LOG</programlisting>I'm a bit
-      sloppy with my fw&lt;-&gt;loc policies -- I should fix that
-      someday...</para>
+net             smc             NONE
+net             all             DROP:Drop                       $LOG            8/sec:30
+dmz             fw              REJECT:Reject                   $LOG
+all             all             REJECT:Reject                   $LOG
+</programlisting></para>
     </section>
 
     <section id="accounting">
       <title>/etc/shorewall/accounting</title>
 
-      <para><programlisting>#ACTION         CHAIN           SOURCE                          DESTINATION                     PROTO   DEST            SOURCE  USER/
-#                                                                                                       PORT(S)         PORT(S) GROUP
-hp:COUNT        accounting      $COM_IF                         $INT_IF:172.20.1.107            UDP
-hp:COUNT        accounting      $INT_IF:172.20.1.107            $COM_IF                         UDP
-DONE            hp
+      <para><programlisting>#ACTION                         CHAIN           SOURCE                  DESTINATION     PROTO   DEST            SOURCE  USER/    MARK     IPSEC
+#                                                                                               PORT(S)         PORT(S) GROUP
+?COMMENT
+?SECTION PREROUTING
+?SECTION INPUT
+ACCOUNT(fw-net,$FW_NET)         -               COMB_IF
+COUNT                           -               COMB_IF                 -               tcp     -               80
+COUNT                           -               COMC_IF                 -               tcp     -               80
+COUNT                           -               br0:70.90.191.124       -               tcp     80              =
 
-mail:COUNT      -               $EXT_IF                         $VPS_IF:206.124.146.0/24        tcp     25
-mail:COUNT      -               $VPS_IF:206.124.146.0/24        $EXT_IF                         tcp     25
-DONE            mail
+?SECTION OUTPUT
+ACCOUNT(fw-net,$FW_NET)         -               -                       COMB_IF
+COUNT                           -               -                       COMB_IF         tcp     80
+COUNT                           -               -                       COMC_IF         tcp     80
 
-web             -               $EXT_IF                         $VPS_IF:206.124.146.0/24        tcp     80
-web             -               $EXT_IF                         $VPS_IF:206.124.146.0/24        tcp     443
-web             -               $VPS_IF:206.124.146.0/24        $EXT_IF                         tcp     -               80
-web             -               $VPS_IF:206.124.146.0/24        $EXT_IF                         tcp     -               443
+?SECTION FORWARD
+ACCOUNT(dmz-net,$DMZ_NET)       -               br0                     COMB_IF
+ACCOUNT(dmz-net,$DMZ_NET)       -               COMB_IF                 br0
+ACCOUNT(loc-net,$INT_NET)       -               COMB_IF                 INT_IF
+ACCOUNT(loc-net,$INT_NET)       -               INT_IF                  COMB_IF
 
-COUNT           web             $EXT_IF                         $VPS_IF:206.124.146.0/24
-COUNT           web             $VPS_IF:206.124.146.0/24        $EXT_IF
-</programlisting>The accounting chains are as follows:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>hp</para>
-
-          <para>Counts traffic to/from my work laptop to HP. The VPN users
-          NAT-Traversal (UDP 4500) so I just count all UDP traffic to/from my
-          work system.</para>
-        </listitem>
-
-        <listitem>
-          <para>mail</para>
-
-          <para>Incoming and outgoing email</para>
-        </listitem>
-
-        <listitem>
-          <para>web</para>
-
-          <para>Website traffic (both HTTP and HTTPS)</para>
-        </listitem>
-      </orderedlist>
+</programlisting></para>
     </section>
 
     <section id="blacklist">
-      <title>/etc/shorewall/blacklist</title>
+      <title>/etc/shorewall/blrules</title>
 
-      <para><programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
--                       udp             1024:1033,1434
--                       tcp             57,1433,1434,2401,2745,3127,3306,3410,4899,5554,6101,8081,9898</programlisting>This
-      configuration silently drops a few ports that get lots of
-      traffic.</para>
-    </section>
-
-    <section id="compile">
-      <title>/etc/shorewall/compile</title>
-
-      <para><programlisting>use strict;
-use Shorewall::Chains;
-
-my $chainref = ensure_manual_chain qw/DNS_DDoS/;
-
-add_rule $chainref, q(-m string --algo bm --from 30 --to 31 --hex-string "|010000010000000000000000020001|" -j DROP);
-add_rule $chainref, q(-m string --algo bm --from 30 --to 31 --hex-string "|000000010000000000000000020001|" -j DROP);
-add_rule $chainref, q(-j ACCEPT);
-
-1;</programlisting>The above was created during a recent DDOS incident that
-      targeted DNS servers. It illustrates how manual chains can be
-      created.</para>
+      <para><programlisting>WHITELIST       net:70.90.191.126       all
+BLACKLIST       net:+blacklist          all
+BLACKLIST       net                     all                     udp     1023:1033,1434,5948,23773
+DROP            net                     all                     tcp     57,1433,1434,2401,2745,3127,3306,3410,4899,5554,5948,6101,8081,9898,23773
+DROP            net:63.149.127.103      all
+DROP            net:175.143.53.113      all
+DROP            net:121.134.248.190     all
+REJECT          net:188.176.145.22      dmz                     tcp     25
+DROP            net                     fw                      udp     111
+Invalid(DROP)   net                     all</programlisting></para>
     </section>
 
     <section id="findgw">
       <title>/etc/shorewall/findgw</title>
 
-      <para><programlisting>if [ -f /var/lib/dhcp3/dhclient.${1}.leases ]; then
-    grep 'option routers' /var/lib/dhcp3/dhclient.${1}.leases | tail -n 1 | while read j1 j2 gateway; do echo $gateway | sed 's/;//'; return 0; done
-fi</programlisting>The Comcast line has a dynamic IP address assigned with the
+      <para><programlisting>if [ -f /var/lib/dhcpcd/dhcpcd-eth1.info ]; then
+   . /var/lib/dhcpcd/dhcpcd-eth1.info
+   echo $GATEWAY
+fi
+</programlisting>The Comcast line has a dynamic IP address assigned with the
       help of dhclient.</para>
     </section>
 
@@ -512,68 +643,144 @@ return $status</programlisting>For use with <ulink
       <title>/etc/shorewall/lib.private</title>
 
       <para><programlisting>start_lsm() {
+   #
+   # Kill any existing lsm process(es)
+   #
    killall lsm 2&gt; /dev/null
+   #
+   # Create the Shorewall-specific part of the LSM configuration. This file is
+   # included by /etc/lsm/lsm.conf
+   #
+   # ComcastB has a static gateway while ComcastC's is dynamic
+   #
    cat &lt;&lt;EOF &gt; /etc/lsm/shorewall.conf
 connection {
-   name=Avvanta
-   checkip=206.124.146.254
-   device=$EXT_IF
-   ttl=2
+    name=ComcastB
+    checkip=76.28.230.1
+    device=$COMB_IF
+    ttl=2
 }
 
 connection {
-   name=Comcast
-   checkip=${ETH0_GATEWAY:-71.231.152.1}
-   device=$COM_IF
-   ttl=1
+    name=ComcastC
+    checkip=76.28.230.188
+    device=$COMC_IF
+    ttl=3
 }
 EOF
-   rm -f /etc/shorewall/*.status
-   /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
-}
-</programlisting>This function configures and starts <ulink
+
+   cat &lt;&lt;EOF &gt; /var/lib/shorewall/eth0.info
+ETH0_GATEWAY=$SW_ETH0_GATEWAY
+ETH0_ADDRESS=$SW_ETH0_ADDRESS
+EOF
+   #
+   # Clear status on start
+   #
+   if [ $COMMAND = start ]; then
+       for interface in eth0 eth1; do
+           echo 0 &gt; ${VARDIR}/$interface.status
+       done
+   fi
+   #
+   # Run LSM -- by default, it forks into the background
+   #
+   /usr/local/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
+}</programlisting>This function configures and starts <ulink
       url="MultiISP.html#lsm">lsm</ulink>.</para>
     </section>
 
     <section id="masq">
       <title>/etc/shorewall/masq</title>
 
-      <para><programlisting>#INTERFACE SOURCE            ADDRESS
+      <para><programlisting>#INTERFACE                      SOURCE                  ADDRESS                 PROTO
 
-COMMENT Masquerade Local Network
-$COM_IF    0.0.0.0/0
-$EXT_IF    !206.124.146.0/24 206.124.146.179
-</programlisting>All connections out through Comcast must have the dynamically
-      assigned address as their source address. Traffic from hosts without an
-      Avvanta public IP address get 206.124.146.179 as their source
-      address.</para>
+?COMMENT Use the SMC's local net address when communicating with that net
+
+COMB_IF:10.1.10.0/24            0.0.0.0/0               %{SMC_ADDR}
+
+?COMMENT Masquerade Local Network
+
+COMB_IF                         !70.90.191.120/29       70.90.191.121 ; -m statistic --mode random --probability 0.50
+COMB_IF                         !70.90.191.120/29       70.90.191.123
+COMC_IF                         0.0.0.0/0
+#INT_IF:172.20.1.15             172.20.1.0/24           172.20.1.254
+
+br0                             70.90.191.120/29        70.90.191.121           tcp     80
+</programlisting>I split connections out of COMB_IF between the two IP
+      addresses configured on the interface.</para>
     </section>
 
     <section>
-      <title>/etc/shorewall/notrack</title>
+      <title>/etc/shorewall/conntrack</title>
 
-      <para><programlisting>#SOURCE            DESTINATION      PROTO    DEST    SOURCE    USER/
-#                                            PORT(S) PORT(S)   GROUP
-net:!192.88.99.1   -                41
-dmz                206.124.146.255  udp
-dmz                255.255.255.255  udp
-loc                172.20.1.255     udp
-loc                255.255.255.255  udp
-$FW                255.255.255.255  udp
-$FW                172.20.1.255     udp
-$FW                206.124.146.255  udp</programlisting>This file omits the
-      6to4 traffic originating from 6to4 relays as well as broadcast traffic
-      (which Netfilter doesn't handle).</para>
+      <para><programlisting>?FORMAT 2
+#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/
+#                                                               PORT(S)         PORT(S) GROUP
+#
+DROP            net               -                udp     3551
+NOTRACK         net               -                tcp     23
+NOTRACK         loc               172.20.1.255     udp
+NOTRACK         loc               255.255.255.255  udp
+NOTRACK         $FW               255.255.255.255  udp
+NOTRACK         $FW               172.20.1.255     udp
+NOTRACK         $FW               70.90.191.127    udp
+NOTRACK         net:192.88.99.1   -
+NOTRACK         $FW               192.88.99.1
+
+?if $AUTOHELPERS
+?if __CT_TARGET &amp;&amp;  __AMANDA_HELPER
+CT:helper:amanda        all             -               udp     10080
+?endif
+?if __CT_TARGET &amp;&amp;  __FTP_HELPER
+CT:helper:ftp           all             -               tcp     21
+?endif
+?if __CT_TARGET &amp;&amp;  __H323_HELPER
+CT:helper:RAS           all             -               udp     1719
+CT:helper:Q.931         all             -               tcp     1720
+?endif
+?if __CT_TARGET &amp;&amp;  __IRC_HELPER
+CT:helper:irc           all             -               tcp     6667
+?endif
+?if __CT_TARGET &amp;&amp;  __NETBIOS_NS_HELPER
+CT:helper:netbios-ns    all             -               udp     137
+?endif
+?if __CT_TARGET &amp;&amp;  __PPTP_HELPER
+CT:helper:pptp          all             -               tcp     1729
+?endif
+?if __CT_TARGET &amp;&amp;  __SANE_HELPER
+CT:helper:sane          all             -               tcp     6566
+?endif
+#?if __CT_TARGET &amp;&amp;  __SIP_HELPER
+#CT:helper:sip          all             -               udp     5060
+#?endif
+?if __CT_TARGET &amp;&amp;  __SNMP_HELPER
+CT:helper:snmp          all             -               udp     161
+?endif
+?if __CT_TARGET &amp;&amp;  __TFTP_HELPER
+CT:helper:tftp          all             -               udp     69
+?endif
+?endif
+</programlisting>This file omits the 6to4 traffic originating from 6to4 relays
+      as well as broadcast traffic (which Netfilter doesn't handle).</para>
     </section>
 
     <section>
       <title>/etc/shorewall/providers</title>
 
-      <para><programlisting>#NAME   NUMBER   MARK    DUPLICATE  INTERFACE  GATEWAY         OPTIONS               COPY
-Avvanta 1        0x10000 main       $EXT_IF    206.124.146.254 track,loose,fallback  $INT_IF,$VPS_IF,tun*
-Comcast 2        0x20000 main       $COM_IF    detect          track,balance         $INT_IF,$VPS_IF,tun*</programlisting>See
-      the <ulink url="???">Multi-ISP article</ulink> for an explaination of
-      the multi-ISP aspects of this configuration.</para>
+      <para><programlisting>#NAME           NUMBER   MARK    DUPLICATE  INTERFACE   GATEWAY         OPTIONS               COPY
+?IF $STATISTICAL
+ComcastB        1        0x10000 -          COMB_IF     70.90.191.126   loose,load=0.66666667,fallback
+ComcastC        2        0x20000 -          COMC_IF     detect          loose,load=0.33333333
+?ELSE
+ComcastB        1        0x10000 -          COMB_IF     70.90.191.126   nohostroute,loose,balance=2
+ComcastC        2        0x20000 -          COMC_IF     detect          nohostroute,loose,balance
+?ENDIF
+?IF $PROXY &amp;&amp; ! $SQUID2
+TProxy          3        -       -          lo          -               tproxy
+?ENDIF
+root@gateway:/etc/shorewall#
+</programlisting>See the <ulink url="???">Multi-ISP article</ulink> for an
+      explaination of the multi-ISP aspects of this configuration.</para>
     </section>
 
     <section id="proxyarp">
@@ -599,154 +806,261 @@ chmod 744 ${VARDIR}/state</programlisting>If lsm isn't running then start it.
       <title>/etc/shorewall/rtrules</title>
 
       <para><programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
-
--                   172.20.0.0/24    main      1000       #OpenVPN clients
--                   206.124.146.177  main      1001       #Servers -- Routes configured by OpenVZ
--                   206.124.146.178  main      1001       #
--                   216.168.3.44     Avvanta   1001       #NNTP -- Does source IP verification
-206.124.146.176/30  -                Avvanta  26000       #Avvanta public IP addresses
-206.124.146.180     -                Avvanta  26000       #</programlisting>These
+70.90.191.121,\
+70.90.191.123       -                ComcastB  1000
+&amp;COMC_IF            -                ComcastC  1000
+br0                 -                ComcastB  11000
+172.20.1.191        -                ComcastB  1000</programlisting>These
       entries simply ensure that outgoing traffic uses the correct
       interface.</para>
     </section>
 
     <section id="routestopped">
-      <title>/etc/shorewall/routestopped</title>
+      <title>/etc/shorewall/stoppedrules</title>
 
-      <para><programlisting>#INTERFACE      HOST(S)                           OPTIONS      PROTO
-$INT_IF         172.20.1.0/24                     source,dest
-$VPS_IF         206.124.146.177,206.124.146.178
-$EXT_IF         -                                 notrack      41</programlisting>Keep
+      <para><programlisting>#TARGET         HOST(S)                 DEST      PROTO     DEST        SOURCE
+#                                                           PORT(S)     PORT(S)
+ACCEPT          INT_IF:172.20.1.0/24    $FW
+NOTRACK         COMB_IF                 -         41
+NOTRACK         $FW                     COMB_IF   41
+ACCEPT          COMB_IF                 $FW       41
+ACCEPT          COMC_IF                 $FW       udp       67:68</programlisting>Keep
       the lights on while Shorewall is stopped.</para>
     </section>
 
     <section id="rules">
       <title>/etc/shorewall/rules</title>
 
-      <para><programlisting>###############################################################################################################################################################################
-#ACTION         SOURCE                          DEST                    PROTO   DEST                                    SOURCE          ORIGINAL        RATE    USER/
-#                                                                               PORT                                    PORT(S)         DEST            LIMIT   GROUP
-###############################################################################################################################################################################
-SECTION ESTABLISHED
-SECTION RELATED
-SECTION NEW
+      <para><programlisting>################################################################################################################################################################################################
+#ACTION         SOURCE                  DEST                    PROTO   DEST                    SOURCE          ORIGINAL        RATE    USER/     MARK     CONNLIMIT    TIME      HEADERS SWITCH
+#                                                                       PORT(S)                 PORT(S)         DEST            LIMIT   GROUP
+################################################################################################################################################################################################
+?if $VERSION &lt; 40500
+?SHELL echo "   ERROR: Shorewall version is too low" &gt;&amp;2; exit 1
+?endif
 
-REJECT:$LOG     loc                             net                     tcp     25              #Stop direct loc-&gt;net SMTP (Comcast uses submission).
-REJECT:$LOG     loc                             net                     udp     1025:1031       #MS Messaging
+?begin perl
+1;
+?end perl
 
-COMMENT Stop NETBIOS crap
+?SECTION ALL
 
-REJECT          loc                             net                     tcp     137,445
-REJECT          loc                             net                     udp     137:139
+#ACCEPT         net:smc.shorewall.net   $FW
+#RST(LOG)       all                     all
 
-COMMENT Stop my idiotic work laptop from sending to the net with an HP source IP address
+?SECTION ESTABLISHED
 
-DROP            loc:!172.20.0.0/23              net
+#SSH(REJECT)    net                     loc:1.2.3.4 { time=timestart=18:48 }
 
-COMMENT
-###############################################################################################################################################################################
-# Local Network to Firewall 
+?SECTION RELATED
+ACCEPT          all                     dmz:70.90.191.125       tcp     61001:62000 { helper=ftp }
+ACCEPT          dmz                     all                     tcp     { helper=ftp }
+ACCEPT          all                     net                     tcp     { helper=ftp }
+ACCEPT          all                     all                     icmp
+RST(ACCEPT)     all                     all                     tcp
+ACCEPT          dmz                     dmz
+ACCEPT          $FW                     all
+
+?SECTION INVALID
+DROP            net                     all
+?SECTION UNTRACKED
+
+ACCEPT          net:192.88.99.1         $FW                     41
+tarpit          net                     all                     tcp     23
+
+Broadcast(ACCEPT)\
+                all                     $FW
+ACCEPT          all                     $FW                     udp
+CONTINUE        loc                     $FW
+CONTINUE        $FW                     all
+
+?SECTION NEW
+
+DNSAmp(ACCEPT)  loc                     fw
+REJECT:$LOG     loc                     net                     tcp     25              #Stop direct loc-&gt;net SMTP (Comcast uses submission).
+REJECT:$LOG     loc                     net                     udp     1025:1031       #MS Messaging
+
+?COMMENT Stop NETBIOS crap
+
+REJECT          all                     net                     tcp     137,445
+REJECT          all                     net                     udp     137:139
+
+?COMMENT Disallow port 333
+
+REJECT           all                    net                     tcp     3333
+
+?COMMENT Stop Teredo
+
+REJECT          all                     net                     udp     3544
+
+?COMMENT Stop my idiotic work laptop from sending to the net with an HP source IP address
+
+{ action=DROP, source=loc:!172.20.0.0/22, dest=net } #
+
+?COMMENT
+
+#dropInvalid   net                      all             tcp
+################################################################################################################################################################################################
+# Local network to DMZ
 #
-NONAT           drct                            -
-REDIRECT-       loc                             3128                    tcp     80                                      -               !66.199.187.46,172.20.1.108,206.124.146.177,155.98.64.80,81.19.16.0/21
-###############################################################################################################################################################################
-# Local network to DMZ 
+DNAT            loc                     dmz:70.90.191.125       tcp     www             -               70.90.191.123
+ACCEPT          loc                     dmz                     tcp     ssh,smtp,465,548,587,www,ftp,imaps,https,5901:5903
+ACCEPT          loc                     dmz                     udp     3478:3479,33434:33524
+################################################################################################################################################################################################
+# SMC network to DMZ
 #
-ACCEPT          loc                             dmz                     udp     domain,177
-ACCEPT          loc                             dmz                     tcp     ssh,smtp,465,587,www,ftp,imaps,domain,https,5901:5903   -
-ACCEPT          loc                             dmz                     udp     33434:33524 
-###############################################################################################################################################################################
+ACCEPT          smc                     dmz                     tcp     ssh,smtp,465,587,www,ftp,imaps,https,5901:5903
+ACCEPT          smc                     dmz                     udp     33434:33524
+################################################################################################################################################################################################
+# SMC network to LOC
+#
+################################################################################################################################################################################################
+# Local Network to Firewall
+#
+
+?IF $SQUID2
+REDIRECT        loc                     3128                    tcp     80 {origdest="!172.20.1.0/24,70.90.191.120/29,155.98.64.80,81.19.16.0/21,10.1.10.1"}
+?ENDIF
+
+ACCEPT          loc                     fw                      udp     53,111,123,177,192,631,1024:
+SMB(ACCEPT)     loc                     fw
+ACCEPT          loc                     fw                      tcp     22,53,80,111,229,548,2049,3000,32765:61000
+ACCEPT          loc                     fw                      tcp     3128
+mDNS(ACCEPT)    loc                     fw
+ACCEPT          loc                     fw                      tcp     5001
+
+ACCEPT          loc:172.20.2.149        fw                      tcp     3551    #APCUPSD
+
+################################################################################################################################################################################################
+# SMC Network to Firewall
+#
+ACCEPT          smc                     fw                      udp     53,111,123,177,192,631,1024:
+SMB(ACCEPT)     smc                     fw
+ACCEPT          smc                     fw                      tcp     22,53,111,548,2049,3000,3128,32765:32768,49152
+mDNS(ACCEPT)    smc                     fw
+################################################################################################################################################################################################
+# SMC Network to multiple destinations
+#
+Ping(ACCEPT)    smc                     dmz,fw
+################################################################################################################################################################################################
+# Local Network to Internet
+#REJECT:info    loc                     net                     tcp     80,443
+################################################################################################################################################################################################
+# Local Network to multiple destinations
+#
+Ping(ACCEPT)    loc                     dmz,fw
+################################################################################################################################################################################################
 # Internet to ALL -- drop NewNotSyn packets
 #
-dropNotSyn      net                             fw                      tcp
-dropNotSyn      net                             loc                     tcp
-dropNotSyn      net                             dmz                     tcp
-###############################################################################################################################################################################
-# Internet to DMZ 
+dropNotSyn      net                     fw,loc,smc              tcp
+AutoBL(SSH,60,-,-,-,-,$LOG)\
+                net                     all                     tcp     22
+################################################################################################################################################################################################
+# Internet to DMZ
 #
-DNS_DDoS        net                             dmz                     udp     domain
-ACCEPT          net                             dmz                     tcp     smtp,www,ftp,465,587,imaps,domain,https
-ACCEPT          net                             dmz                     udp     33434:33454
-Mirrors:none    net                             dmz                     tcp     873
-ACCEPT          net                             dmz                     tcp     22                                      -               -        s:ssh:3/min:3
-#############################################################################################################################################################
-#################
-#
-# Net to Local
-#
-Limit:$LOG:SSHA,3,60\
-                net                             loc                     tcp     22
-#
-# BitTorrent from Wireless Network
-#
-#DNAT            net:$COM_IF                     loc:172.20.1.102       tcp     6881:6889
-#DNAT            net:$COM_IF                     loc:172.20.1.102        udp     6881    
+ACCEPT          net                     dmz                     udp     33434:33454
+ACCEPT          net                     dmz                     tcp     25                      -               -               smtp:2/min:4,mail:60/min:100
+DNAT-           net                     70.90.191.125           tcp     https                   -               70.90.191.123
+DNAT-           net                     70.90.191.125           tcp     http                    -               70.90.191.123
+DNAT-           all                     172.20.2.44             tcp     ssh                     -               70.90.191.123
+ACCEPT          net                     dmz:70.90.191.122       tcp     https,imaps
+ACCEPT          net                     dmz:70.90.191.124       tcp     http,https,465,587,imaps
+ACCEPT          net                     dmz:70.90.191.125       tcp     http,ftp
+Mirrors(ACCEPT:none)\   #Continuation test
+                net                     dmz                     tcp     873
+Ping(ACCEPT)    net                     dmz
+DROP            net                     dmz                     tcp     http,https
+################################################################################################################################################################################################
 #
 # UPnP
 #
-forwardUPnP     net                             loc
+ACCEPT          loc                     fw                      udp     1900
+forwardUPnP     net                     loc
 #
 # Silently Handle common probes
 #
-REJECT          net                             loc                     tcp     www,ftp,https
-DROP            net                             loc                     icmp    8
-###############################################################################################################################################################################
+REJECT          net                     loc                     tcp     www,ftp,https
+DROP            net                     loc                     icmp    8
+################################################################################################################################################################################################
+# DMZ to DMZ
+#
+################################################################################################################################################################################################
+DNAT            dmz                     dmz:70.90.191.125:80    tcp     80                      -               70.90.191.121
 # DMZ to Internet
 #
-ACCEPT          dmz                             net                     udp     domain,ntp
-REJECT          dmz                             net:$COM_IF             tcp     smtp
-ACCEPT          dmz                             net                     tcp     echo,ftp,ssh,smtp,whois,domain,www,81,nntp,https,2401,2702,2703,8080
-ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
+ACCEPT          dmz                     net                     udp     ntp,domain
+ACCEPT          dmz                     net                     tcp     domain,echo,ftp,ssh,smtp,whois,www,81,nntp,https,993,465,587,2401,2702,2703,5901,8080,9418,11371
 #
 # Some FTP clients seem prone to sending the PORT command split over two packets. This prevents the FTP connection tracking
-# code from processing the command  and setting up the proper expectation. The following rule allows active FTP to work in these cases
+# code from processing the command  and setting up the proper expectation
+# The following rule allows active FTP to work in these cases
 # but logs the connection so I can keep an eye on this potential security hole.
 #
-ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
-###############################################################################################################################################################################
-# DMZ to Local
+ACCEPT:$LOG     dmz                     net                     tcp     1024:                   20
+
+Ping(ACCEPT)    dmz                     all
+################################################################################################################################################################################################
+# DMZ to fw
 #
-ACCEPT          dmz                             loc                     tcp     22                                      -               -        s:ssh:3/min:3
-###############################################################################################################################################################################
-# DMZ to Firewall -- ntp &amp; snmp Silently reject Auth
-#
-ACCEPT          dmz                             fw                      tcp     161,ssh
-ACCEPT          dmz                             fw                      udp     161,ntp
-REJECT          dmz                             fw                      tcp     auth
-###############################################################################################################################################################################
+DNS(ACCEPT)     dmz                     $FW
+HTTP(ACCEPT)    dmz                     $FW
+Ping(ACCEPT)    dmz                     $FW
+################################################################################################################################################################################################
 # Internet to Firewall
 #
-REJECT          net                             fw                      tcp     www,ftp,https
-DROP            net                             fw                      icmp    8
-ACCEPT          net                             fw                      udp     33434:33454
-ACCEPT          net                             fw                      tcp     22                                      -               -        s:ssh:3/min:3
-ACCEPT          net                             fw                      udp     33434:33524 
-###############################################################################################################################################################################
+
+REJECT          net                     fw                      tcp     www,ftp,https
+ACCEPT          net                     fw                      udp     3478:3479,33434:33454
+ACCEPT          net                     fw                      tcp     22                      -               -               s:ssh:1/min:3
+ACCEPT          net                     fw                      tcp     51413
+?COMMENT IPv6 tunnel ping
+
+ACCEPT          net                     fw:70.90.191.121,70.90.191.122/31\
+                                                                icmp    8
+ACCEPT          net:COMC_IF             fw                      icmp    8
+
+?COMMENT
+
+################################################################################################################################################################################################
 # Firewall to DMZ
 #
-ACCEPT          fw                              dmz                     tcp     domain,www,ftp,ssh,smtp,https,993,465,587,5901
-ACCEPT          fw                              dmz                     udp     domain
-REJECT          fw                              dmz                     udp     137:139
-##############################################################################################################################################################################
+ACCEPT          fw                      dmz                     tcp     www,ftp,ssh,smtp,https,465,587,993,3128,5901
+REJECT          fw                      dmz                     udp     137:139
+Ping(ACCEPT)    fw                      dmz
+################################################################################################################################################################################################
+# Firewall to NET
 #
-COMMENT Freenode Probes
-DROP            net:82.96.96.3,85.190.0.3       any
-COMMENT
-##############################################################################################################################################################################
-# Allow Ping except where disallowed earlier
+DNS(ACCEPT)     fw                      net
+NTP(ACCEPT)     fw                      net
+DNAT-           fw                      172.20.1.254:3128       tcp     80                      -               -               -      !:proxy
+ACCEPT+         fw                      net                     tcp     43,80,443,3466          -               -               -      -
+ACCEPT          fw                      net                     tcp     3128                    -               -               -      !:proxy
+FTP(ACCEPT)     fw                      net                     -       -                       -               -               -       proxy
+Git(ACCEPT)     fw                      net                     -       -                       -               -               -       teastep
+ACCEPT          fw                      net                     tcp     22
+NNTP(ACCEPT)    fw                      net
+Ping(ACCEPT)    fw                      net
+ACCEPT          fw                      net                     udp     33434:33524
+#ACCEPT:info    fw                      net                     -       -                       -               -               -       root
+ACCEPT          fw                      net                     tcp     25,143,993              -               -               -       teastep
+################################################################################################################################################################################################
 #
-ACCEPT          any                             any                     icmp    8</programlisting></para>
+?COMMENT Freenode Probes
+DROP            net:\
+                82.96.96.3,\
+                85.190.0.3              any!loc,smc
+?COMMENT
+################################################################################################################################################################################################
+</programlisting></para>
     </section>
 
     <section id="started">
       <title>/etc/shorewall/started</title>
 
-      <para><programlisting>if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
+      <para><programlisting>if [ "$COMMAND" = start -o -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
     start_lsm
 fi
-
-chmod 744 ${VARDIR}/state</programlisting>If lsm isn't running then start it.
-      Make the state file world-readable.</para>
+</programlisting>If lsm isn't running then start it.</para>
     </section>
 
     <section id="stopped">
@@ -760,109 +1074,14 @@ chmod 744 ${VARDIR}/state</programlisting>Kill lsm if the command is stop or
       clear. Make the state file world-readable.</para>
     </section>
 
-    <section>
-      <title>/etc/shorewall/tcdevices</title>
-
-      <para><programlisting>#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH	OPTIONS
-$EXT_IF		-		300kbit		classify
-$INT_IF		-		80mbit		classify
-$COM_IF		-		4mbit		classify,hfsc
-</programlisting>The use of HFSC on the Comcast link is largely to provide a
-      test bed for that qdisc; I really don't have any real-time requirement
-      such as VOIP.</para>
-    </section>
-
-    <section>
-      <title>/etc/shorewall/tcclasses</title>
-
-      <para><programlisting>#INTERFACE	MARK	RATE			CEIL		PRIORITY	OPTIONS
-1:110		-	full/4			full		1		tcp-ack,tos-minimize-delay
-1:120		-	full/4			full		2		flow=nfct-src
-1:130		-	full/4			230kbit		3		default,flow=nfct-src
-1:140		-	full/4			230kbit		4		flow=nfct-src
-
-2:10		-  95*full/100			full		1		flow=dst
-2:100		-	14mbit			20mbit		2
-2:100:101	-	 7mbit			20mbit		3		default,flow=dst
-2:100:102	-	 7mbit			20mbit		3		flow=dst
-
-3:10		-	 2mbit:4ms		full		1	        flow=nfct-src
-3:100		-	 2mbit			full		2
-3:100:101	-	 1mbit			full		3		default,flow=nfct-src
-3:100:102	-	 1mbit			full		3		flow=nfct-src
-</programlisting>Note that most of the outgoing bandwidth on the local
-      interface is allocated to one class. That class is used for local
-      traffic.</para>
-    </section>
-
-    <section>
-      <title>/etc/shorewall/tcfilters</title>
-
-      <para><programlisting>#INTERFACE:	SOURCE			DEST		PROTO	DEST	SOURCE	TOS	LENGTH
-#CLASS								PORT(S)	PORT(S)
-
-# =============================== AVVANTA ====================================
-#
-# Give Highest priority to LSM's pings to the gateway and to DNS queries
-#
-1:110		206.124.146.176	  	206.124.146.254	icmp
-1:110		206.124.146.177		-		udp	53
-#
-# Second Highest priority to IPv6 Tunnel
-#
-1:120		206.124.146.180
-#
-# Lowest priority to bulk traffic
-#
-1:140		206.124.146.177	-		tcp	-	873	-	2048
-1:140		206.124.146.177 -		-	-	-	tos-minimize-cost
-</programlisting>The tcfilters file is only used for the Avvanta provider
-      because it has static public IP addresses.</para>
-    </section>
-
-    <section>
-      <title>/etc/shorewall/tcrules</title>
-
-      <para><programlisting>#MARK		SOURCE			DEST		PROTO	PORT(S)	CLIENT	USER	TEST	LENGTH	TOS
-#									PORT(S)
-
-COMMENT Shape incoming traffic
-
-#
-# Most of the bandwidth is reserved for local traffic since the downlinks aren't that fast
-#
-2:10		206.124.146.176/30	$INT_IF
-2:10		206.124.146.177		$INT_IF
-2:10		172.20.1.254		$INT_IF
-#
-# Guarantee 1/2 of the incoming bandwidth for my work system
-#
-2:102		0.0.0.0/0		$INT_IF:172.20.1.107
-
-COMMENT Shape outgoing traffic to Comcast
-#
-# Give 1/2 to my work system and add a latency guarantee
-#
-3:10		172.20.1.107		$COM_IF
-#
-# Restrict Torrent uploads
-#
-3:102		172.20.1.0/24		$COM_IF		tcp	-	6881:6889
-</programlisting>The tcrules file is used to classify traffic that deals with
-      the local network and/or with Comcast.</para>
-    </section>
-
     <section id="tunnels">
       <title>/etc/shorewall/tunnels</title>
 
       <para><programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
 #                                               ZONE
-openvpnserver:udp       net
-6to4                    net
-ipsec                   net
-ipsec                   loc
-ipip                    vpn     0.0.0.0/0</programlisting>The ipip tunnel from
-      the vpn zone handles IP compression on IPSEC connections.</para>
+6to4                    net     216.218.226.238
+6to4                    net     192.88.99.1
+</programlisting></para>
     </section>
   </section>
 </article>

@@ -1549,10 +1549,16 @@ sub known_interface($)
     my $iface = $interface;
 
     if ( $minroot ) {
+	#
+	# We have wildcard interfaces -- see if this interface matches one of their roots
+	#
 	while ( length $iface > $minroot ) {
 	    chop $iface;
 
 	    if ( my $i = $roots{$iface} ) {
+		#
+		# Found one
+		#
 		$interfaceref = $interfaces{$i};
 
 		my $physical = map_physical( $interface, $interfaceref );
@@ -1682,9 +1688,8 @@ sub source_port_to_bridge( $ ) {
     return $portref ? $portref->{bridge} : '';
 }
 
-
 #
-# Returns a hash reference for the zones interface through the interface
+# Returns a hash reference for the zones interfaced through the interface
 #
 sub interface_zones( $ ) {
     my $interfaceref = known_interface( $_[0] );
@@ -1719,7 +1724,7 @@ sub interface_is_required($) {
 }
 
 #
-# Return true if the interface is 'plain'
+# Return true if the interface is 'plain' (not optional, required or ignored and not a bridge port).
 #
 sub interface_is_plain($) {
     my $interfaceref = $interfaces{$_[0]};

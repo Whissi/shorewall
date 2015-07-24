@@ -1024,14 +1024,6 @@
           except that it assumes that the firewall is already started.
           Existing connections are maintained.</para>
 
-          <caution>
-            <para>If your ip6tables ruleset depends on variables that are
-            detected at run-time, either in your params file or by
-            Shorewall-generated code, <command>restore</command> will use the
-            values that were current when the ruleset was saved, which may be
-            different from the current values.</para>
-          </caution>
-
           <para>The <option>-n</option> option causes shorewall6-lite to avoid
           updating the routing table(s).</para>
 
@@ -1063,6 +1055,14 @@
           will be restored from the file specified by the RESTOREFILE option
           in <ulink
           url="shorewall.conf.html">shorewall6.conf</ulink>(5).</para>
+
+          <caution>
+            <para>If your ip6tables ruleset depends on variables that are
+            detected at run-time, either in your params file or by
+            Shorewall-generated code, <command>restore</command> will use the
+            values that were current when the ruleset was saved, which may be
+            different from the current values.</para>
+          </caution>
 
           <para>The <option>-C</option> option was added in Shorewall 4.6.5.
           If the <option>-C</option> option was specified during

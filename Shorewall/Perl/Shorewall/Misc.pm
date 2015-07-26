@@ -2421,8 +2421,6 @@ sub compile_stop_firewall( $$$ ) {
 #
 stop_firewall() {
 EOF
-    }
-
     $output->{policy} = 'ACCEPT' if $config{ADMINISABSENTMINDED};
 
     if ( $family == F_IPV4 ) {

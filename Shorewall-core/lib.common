@@ -89,107 +89,34 @@ not_configured_error() # $@ = Message
 }
 
 #
-# Get the Shorewall version of the passed script
-#
-get_script_version() { # $1 = script
-    local temp
-    local version
-    local ifs
-    local digits
-    local verbosity
-
-    if [ -z "$WORKAROUNDS" -o "$g_compiled" = "$g_file" ]; then
-	#
-	# Unless WORKAROUNDS=No, either this script was just compiled or AUTOMAKE
-	# determined that re-compilation wasn't needed
-	#
-	temp="$SHOREWALL_VERSION"
-    else
-	verbosity="$VERBOSITY"
-	VERBOSITY=0
-
-	temp=$( $SHOREWALL_SHELL $1 version | tail -n 1 )
-    fi
-
-    if [ -z "$temp" ]; then
-	version=0
-    else
-	temp=${temp%-*}
-	ifs=$IFS
-	IFS=.
-	temp=$(echo $temp)
-	IFS=$ifs
-	digits=0
-
-	for temp in $temp; do
-	    version=${version}$(printf '%02d' $temp)
-	    digits=$(($digits + 1))
-	    [ $digits -eq 3 ] && break
-	done
-    fi
-
-    echo $version
-
-    VERBOSITY="$verbosity"
-}
-
-#
-# Do required exports or create the required option string and run the passed script using
+# Create the required option string and run the passed script using
 # $SHOREWALL_SHELL
 #
 run_it() {
     local script
     local options
-    local version
 
     export VARDIR
 
     script=$1
     shift
 
-    version=$(get_script_version $script)
-
-    if [ $version -lt 040408 ]; then
-	#
-	# Old script that doesn't understand 4.4.8 script options
-	#
-	export RESTOREFILE
-	export VERBOSITY
-	export NOROUTES=$g_noroutes
-	export PURGE=$g_purge
-	export TIMESTAMP=$g_timestamp
-	export RECOVERING=$g_recovering
-
-	case "$g_program" in
-	    *-lite)
-		#
-		# Shorewall Lite
-		#
-		export LOGFORMAT
-		export IPTABLES
-		;;
-	esac
+    if [ x$1 = xtrace -o x$1 = xdebug ]; then
+	options="$1 -"
+	shift;
     else
-	#
-	# 4.4.8 or later -- no additional exports required
-	#
-	if [ x$1 = xtrace -o x$1 = xdebug ]; then
-	    options="$1 -"
-	    shift;
-	else
-	    options='-'
-	fi
-
-	[ -n "$g_noroutes" ]   && options=${options}n
-	[ -n "$g_timestamp" ]  && options=${options}t
-	[ -n "$g_purge" ]      && options=${options}p
-	[ -n "$g_recovering" ] && options=${options}r
-	[ -n "$g_counters" ]   && options=${options}c
-
-	options="${options}V $VERBOSITY"
-
-	[ -n "$RESTOREFILE" ] && options="${options} -R $RESTOREFILE"
+	options='-'
     fi
+
+    [ -n "$g_noroutes" ]   && options=${options}n
+    [ -n "$g_timestamp" ]  && options=${options}t
+    [ -n "$g_purge" ]      && options=${options}p
+    [ -n "$g_recovering" ] && options=${options}r
+    [ -n "$g_counters" ]   && options=${options}c
+
+    options="${options}V $VERBOSITY"
+
+    [ -n "$RESTOREFILE" ] && options="${options} -R $RESTOREFILE"
 
     $SHOREWALL_SHELL $script $options $@
 }

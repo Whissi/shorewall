@@ -2415,16 +2415,7 @@ sub compile_stop_firewall( $$$ ) {
     my $output  = $filter_table->{OUTPUT};
     my $forward = $filter_table->{FORWARD};
 
-    if ( $config{WORKAROUNDS} ) {
-	emit <<'EOF';
-#
-# Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
-#
-stop_firewall() {
-    local hack
-EOF
-    } else {
-	emit <<'EOF';
+    emit <<'EOF';
 #
 # Stop/restore the firewall after an error or because of a 'stop' or 'clear' command
 #

@@ -8109,20 +8109,6 @@ sub create_save_ipsets() {
 		      "    done" ,
 		      '',
 		    );
-	    } elsif ( $config{WORKAROUNDS} ) {
-		emit ( '' ,
-		       '    if [ -f /etc/debian_version ] && [ $(cat /etc/debian_version) = 5.0.3 ]; then' ,
-		       '        #',
-		       '        # The \'grep -v\' is a hack for a bug in ipset\'s nethash implementation when xtables-addons is applied to Lenny' ,
-		       '        #',
-		       '        hack=\'| grep -v /31\'' ,
-		       '    else' ,
-		       '        hack=' ,
-		       '    fi' ,
-		       '',
-		       '    if eval $IPSET -S $hack > ${VARDIR}/ipsets.tmp; then' ,
-		       "        grep -qE -- \"^(-N|create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file" ,
-		       '    fi' );
 	    } else {
 		emit ( 
 		       '',
@@ -8175,7 +8161,6 @@ sub load_ipsets() {
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit ( '', );
-	emit ( 'local hack' ) if $config{WORKAROUNDS};
 	emit ( '',
 	       'case $IPSET in',
 	       '    */*)',

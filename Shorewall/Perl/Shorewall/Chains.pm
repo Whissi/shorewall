@@ -4981,13 +4981,15 @@ sub do_connlimit( $ ) {
 
     require_capability 'CONNLIMIT_MATCH', 'A non-empty CONNLIMIT', 's';
 
+    my $destination = $limit =~ s/^d:// ? '--connlimit-daddr ' : '';
+
     my $invert =  $limit =~ s/^!// ? '' : '! '; # Note Carefully -- we actually do 'connlimit-at-or-below'
 
     if ( $limit =~ /^(\d+):(\d+)$/ ) {
 	fatal_error "Invalid Mask ($2)" unless $2 > 0 || $2 < 31;
-	"-m connlimit ${invert}--connlimit-above $1 --connlimit-mask $2 ";
+	"-m connlimit ${invert}--connlimit-above $1 --connlimit-mask $2 $destination";
     } elsif ( $limit =~ /^(\d+)$/ )  {
-	"-m connlimit ${invert}--connlimit-above $limit ";
+	"-m connlimit ${invert}--connlimit-above $limit $destination";
     } else {
 	fatal_error "Invalid connlimit ($limit)";
     }

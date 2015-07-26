@@ -1522,21 +1522,27 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CONNLIMIT</emphasis> - [<emphasis
+        <term><emphasis role="bold">CONNLIMIT</emphasis> - [d:][<emphasis
         role="bold">!</emphasis>]<emphasis>limit</emphasis>[:<emphasis>mask</emphasis>]</term>
 
         <listitem>
           <para>May be used to limit the number of simultaneous connections
-          from each individual host to <replaceable>limit</replaceable>
-          connections. Requires connlimit match in your kernel and iptables.
-          While the limit is only checked on rules specifying CONNLIMIT, the
-          number of current connections is calculated over all current
-          connections from the SOURCE host. By default, the limit is applied
-          to each host but can be made to apply to networks of hosts by
-          specifying a <replaceable>mask</replaceable>. The
-          <replaceable>mask</replaceable> specifies the width of a VLSM mask
-          to be applied to the source address; the number of current
-          connections is then taken over all hosts in the subnet
+          to/from each individual host or network to
+          <replaceable>limit</replaceable> connections. Requires connlimit
+          match in your kernel and iptables. While the limit is only checked
+          on rules specifying CONNLIMIT, the number of current connections is
+          calculated over all current connections from the SOURCE or
+          DESTINATION host. By default, limiting is done by SOURCE host or
+          net, but if the specification begins with <emphasis
+          role="bold">d:</emphasis>, then limiting will be donw by destination
+          host or net.</para>
+
+          <para>By default, the limit is applied to each host but can be made
+          to apply to networks of hosts by specifying a
+          <replaceable>mask</replaceable>. The <replaceable>mask</replaceable>
+          specifies the width of a VLSM mask to be applied to the source
+          address; the number of current connections is then taken over all
+          hosts in the subnet
           <replaceable>source-address</replaceable>/<replaceable>mask</replaceable>.
           When<option> !</option> is specified, the rule matches when the
           number of connection exceeds the

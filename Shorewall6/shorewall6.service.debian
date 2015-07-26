@@ -12,10 +12,11 @@ Conflicts=ip6tables.service firewalld.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-EnvironmentFile=-/etc/sysconfig/shorewall6
+EnvironmentFile=-/etc/default/shorewall6
 StandardOutput=syslog
 ExecStart=/sbin/shorewall6 $OPTIONS start $STARTOPTIONS
 ExecStop=/sbin/shorewall6 $OPTIONS stop
+ExecReload=/sbin/shorewall6 $OPTIONS reload $RELOADOPTIONS
 
 [Install]
 WantedBy=basic.target

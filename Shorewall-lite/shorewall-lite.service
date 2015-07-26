@@ -16,6 +16,7 @@ EnvironmentFile=-/etc/sysconfig/shorewall-lite
 StandardOutput=syslog
 ExecStart=/sbin/shorewall-lite $OPTIONS start $STARTOPTIONS
 ExecStop=/sbin/shorewall-lite $OPTIONS stop
+ExecReload=/sbin/shorewall-lite $OPTIONS reload $RELOADOPTIONS
 
 [Install]
 WantedBy=basic.target

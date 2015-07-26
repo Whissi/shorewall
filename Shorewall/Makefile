@@ -8,11 +8,11 @@ all: $(VARDIR)/$(RESTOREFILE)
 $(VARDIR)/$(RESTOREFILE): $(CONFDIR)/*
 	@/sbin/shorewall -q save >/dev/null; \
 	if \
-	    /sbin/shorewall -q restart >/dev/null 2>&1; \
+	    /sbin/shorewall -q reload >/dev/null 2>&1; \
 	then \
 	    /sbin/shorewall -q save >/dev/null; \
 	else \
-	    /sbin/shorewall -q restart 2>&1 | tail >&2; exit 1; \
+	    /sbin/shorewall -q restore 2>&1 | tail >&2; exit 1; \
 	fi
 
 clean:

@@ -2471,8 +2471,8 @@ EOF
 	        start)
 	            logger -p kern.err "ERROR:$g_product start failed"
 	            ;;
-	        restart)
-	            logger -p kern.err "ERROR:$g_product restart failed"
+	        reload)
+	            logger -p kern.err "ERROR:$g_product reload failed"
 	            ;;
 	        refresh)
 	            logger -p kern.err "ERROR:$g_product refresh failed"

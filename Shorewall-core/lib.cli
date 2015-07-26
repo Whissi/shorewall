@@ -3787,7 +3787,7 @@ start_command() {
 }
 
 #
-# Restart Command Executor
+# Reload/Restart Command Executor
 #
 restart_command() {
     local finished
@@ -3846,11 +3846,11 @@ restart_command() {
     [ -n "$g_nolock" ] || mutex_on
 
     if [ -x ${VARDIR}/firewall ]; then
-	run_it ${VARDIR}/firewall $g_debugging restart
+	run_it ${VARDIR}/firewall $g_debugging $COMMAND
 	rc=$?
     else
 	error_message "${VARDIR}/firewall is missing or is not executable"
-	logger -p kern.err "ERROR:$g_product restart failed"
+	logger -p kern.err "ERROR:$g_product $COMMAND failed"
 	rc=6
     fi
 
@@ -4205,7 +4205,7 @@ shorewall_cli() {
 	    run_it $g_firewall $g_debugging reset $@
 	    [ -n "$g_nolock" ] || mutex_off
 	    ;;
-	restart)
+	reload|restart)
 	    get_config Yes Yes
 	    shift
 	    restart_command $@

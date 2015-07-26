@@ -27,6 +27,11 @@ stop() {
 	exec /sbin/shorewall stop
 }
 
+reload() {
+	echo "Reloading IPv4 shorewall rules..."
+	exec /sbin/shorewall reload $RELOADOPTIONS
+}
+
 restart() {
 	echo "Restarting IPv4 shorewall rules..."
 	exec /sbin/shorewall restart $RESTARTOPTIONS
@@ -43,10 +48,13 @@ case "$1" in
     'stop')
 		stop
 	;;
-    'reload'|'restart')
+    'reload')
+		reload
+	;;
+    'restart')
 		restart
 	;;
-	'status')
+    'status')
 		status
 	;;
     *)

@@ -699,8 +699,9 @@
 
           <para>If <option>-f</option> is given, the command will be processed
           by the compiled script that executed the last successful
-          <command>start</command>, <command>restart</command> or
-          <command>refresh</command> command if that script exists.</para>
+          <command>start</command>, <command>reload</command>, <emphasis
+          role="bold">restart</emphasis> or <command>refresh</command> command
+          if that script exists.</para>
         </listitem>
       </varlistentry>
 
@@ -1004,6 +1005,31 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">reload </emphasis>[-n] [-p]
+        [-<option>C</option>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.0, <emphasis
+          role="bold">reload</emphasis> is similar to <command>shorewall6-lite
+          start</command> except that it assumes that the firewall is already
+          started. Existing connections are maintained.</para>
+
+          <para>The <option>-n</option> option causes shorewall6-lite to avoid
+          updating the routing table(s).</para>
+
+          <para>The <option>-p</option> option causes the connection tracking
+          table to be flushed; the <command>conntrack</command> utility must
+          be installed to use this option.</para>
+
+          <para>The <option>-C</option> option was added in Shorewall 4.6.5.
+          If the specified (or implicit) firewall script is the one that
+          generated the current running configuration, then the running
+          netfilter configuration will be reloaded as is so as to preserve the
+          iptables packet and byte counters.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">reset [<replaceable>chain</replaceable>,
         ...]</emphasis><acronym/></term>
 
@@ -1020,9 +1046,10 @@
         [-<option>C</option>]</term>
 
         <listitem>
-          <para>Restart is similar to <command>shorewall6-lite start</command>
-          except that it assumes that the firewall is already started.
-          Existing connections are maintained.</para>
+          <para>Beginning with Shorewall 5.0.0, this command performs a true
+          restart. The firewall is completely stopped as if a
+          <command>stop</command> command had been issued then it is started
+          again.</para>
 
           <para>The <option>-n</option> option causes shorewall6-lite to avoid
           updating the routing table(s).</para>

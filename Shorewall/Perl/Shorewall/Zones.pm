@@ -1884,7 +1884,7 @@ sub verify_required_interfaces( $ ) {
 
 	push_indent;
 
-	emit( 'start|restart|restore)' );
+	emit( 'start|reload|restore)' );
 
 	push_indent;
 
@@ -1946,7 +1946,7 @@ sub verify_required_interfaces( $ ) {
 	if ( $generate_case ) {
 	    emit( 'case "$COMMAND" in' );
 	    push_indent;
-	    emit( 'start|restart|restore|refresh)' );
+	    emit( 'start|reload|restore|refresh)' );
 	    push_indent;
 	}
 

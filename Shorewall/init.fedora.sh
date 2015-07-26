@@ -65,6 +65,21 @@ stop() {
     return $retval
 }
 
+reload() {
+    echo -n $"Reloading Shorewall: "
+    $shorewall $OPTIONS reload $RELOADOPTIONS 2>&1 | $logger
+    retval=${PIPESTATUS[0]}
+    if [[ $retval == 0 ]]; then
+	touch $lockfile
+	success
+    else # Failed to start, clean up lock file if present
+	rm -f $lockfile
+	failure
+    fi
+    echo
+    return $retval
+}
+
 restart() {
 # Note that we don't simply stop and start since shorewall has a built in
 # restart which stops the firewall if running and then starts it.
@@ -100,7 +115,10 @@ case "$1" in
 	status_q || exit 0
 	$1
 	;;
-    restart|reload|force-reload)
+    reload|force-reload)
+	reload
+	;;
+    restart)
 	restart
 	;;
     condrestart|try-restart)

@@ -315,30 +315,6 @@
     <cmdsynopsis>
       <command>shorewall</command>
 
-      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
-
-      <arg>-<replaceable>options</replaceable></arg>
-
-      <arg choice="plain"><option>load</option></arg>
-
-      <arg><option>-s</option></arg>
-
-      <arg><option>-c</option></arg>
-
-      <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
-
-      <arg><option>-T</option></arg>
-
-      <arg><option>-i</option></arg>
-
-      <arg><replaceable>directory</replaceable></arg>
-
-      <arg choice="plain"><replaceable>system</replaceable></arg>
-    </cmdsynopsis>
-
-    <cmdsynopsis>
-      <command>shorewall</command>
-
       <arg
       choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
 
@@ -448,7 +424,55 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>reload</option></arg>
+      <arg choice="plain"><option>remote_start</option></arg>
+
+      <arg><option>-s</option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
+
+      <arg><option>-T</option></arg>
+
+      <arg><option>-i</option></arg>
+
+      <arg><replaceable>directory</replaceable></arg>
+
+      <arg choice="plain"><replaceable>system</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>remote_reload</option></arg>
+
+      <arg><option>-s</option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
+
+      <arg><option>-T</option></arg>
+
+      <arg><option>-i</option></arg>
+
+      <arg><replaceable>directory</replaceable></arg>
+
+      <arg choice="plain"><replaceable>system</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
+      <arg choice="plain"><option>remote_restart</option></arg>
 
       <arg><option>-s</option></arg>
 
@@ -1306,65 +1330,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">load</emphasis> [-<option>s</option>]
-        [-<option>c</option>] [-<option>r</option>
-        <replaceable>root-user-name</replaceable>] [-<option>T</option>]
-        [-<option>i</option>] [ <replaceable>directory</replaceable> ]
-        <replaceable>system</replaceable></term>
-
-        <listitem>
-          <para>If <emphasis>directory</emphasis> is omitted, the current
-          working directory is assumed. Allows a non-root user to compile a
-          shorewall script and install it on a system (provided that the user
-          has root access to the system via ssh). The command is equivalent
-          to:</para>
-
-          <programlisting>    <emphasis role="bold">/sbin/shorewall compile -e</emphasis> <emphasis><replaceable>directory</replaceable></emphasis> <replaceable>directory</replaceable><emphasis
-              role="bold">/firewall &amp;&amp;\</emphasis>
-    <emphasis role="bold">scp</emphasis> <emphasis>directory</emphasis><emphasis
-              role="bold">/firewall</emphasis> <emphasis>directory</emphasis><emphasis
-              role="bold">/firewall.conf</emphasis> <emphasis role="bold">root@</emphasis><replaceable>system</replaceable><emphasis
-              role="bold">:/var/lib/shorewall-lite/ &amp;&amp;\</emphasis>
-    <emphasis role="bold">ssh root@</emphasis><replaceable>system</replaceable> <emphasis
-              role="bold">'/sbin/shorewall-lite start'</emphasis></programlisting>
-
-          <para>In other words, the configuration in the specified (or
-          defaulted) directory is compiled to a file called firewall in that
-          directory. If compilation succeeds, then firewall is copied to
-          <replaceable>system</replaceable> using scp. If the copy succeeds,
-          Shorewall Lite on <replaceable>system</replaceable> is started via
-          ssh.</para>
-
-          <para>If <emphasis role="bold">-s</emphasis> is specified and the
-          <emphasis role="bold">start</emphasis> command succeeds, then the
-          remote Shorewall-lite configuration is saved by executing <emphasis
-          role="bold">shorewall-lite save</emphasis> via ssh.</para>
-
-          <para>if <emphasis role="bold">-c</emphasis> is included, the
-          command <emphasis role="bold">shorewall-lite show capabilities -f
-          &gt; /var/lib/shorewall-lite/capabilities</emphasis> is executed via
-          ssh then the generated file is copied to
-          <replaceable>directory</replaceable> using scp. This step is
-          performed before the configuration is compiled.</para>
-
-          <para>If <option>-r</option> is included, it specifies that the root
-          user on <replaceable>system</replaceable> is named
-          <replaceable>root-user-name</replaceable> rather than "root".</para>
-
-          <para>The <option>-T</option> option was added in Shorewall 4.5.3
-          and causes a Perl stack trace to be included with each
-          compiler-generated error and warning message.</para>
-
-          <para>The <option>-i</option> option was added in Shorewall 4.6.0
-          and causes a warning message to be issued if the current line
-          contains alternative input specifications following a semicolon
-          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
-          set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><emphasis role="bold">logdrop</emphasis>
         <replaceable>address</replaceable></term>
 
@@ -1551,13 +1516,202 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">reload </emphasis>[-<option>s</option>]
-        [-<option>c</option>] [-<option>r</option>
+        <term><emphasis role="bold">reload </emphasis>[-<option>n</option>]
+        [-<option>p</option>] [-<option>d</option>] [-<option>f</option>]
+        [-<option>c</option>] [-<option>T</option>] [-<option>i</option>]
+        [-<option>C</option>] [ <replaceable>directory</replaceable> ]</term>
+
+        <listitem>
+          <para>This command was re-implemented in Shorewall 5.0.0. The
+          pre-5.0.0 <command>reload</command> command is now called
+          <command>remote_restart</command> (see below).</para>
+
+          <para>Reload is similar to <emphasis role="bold">shorewall
+          start</emphasis> except that it assumes that the firewall is already
+          started. Existing connections are maintained. If a
+          <emphasis>directory</emphasis> is included in the command, Shorewall
+          will look in that <emphasis>directory</emphasis> first for
+          configuration files.</para>
+
+          <para>The <option>-n</option> option causes Shorewall to avoid
+          updating the routing table(s).</para>
+
+          <para>The <option>-p</option> option causes the connection tracking
+          table to be flushed; the <command>conntrack</command> utility must
+          be installed to use this option.</para>
+
+          <para>The <option>-d</option> option causes the compiler to run
+          under the Perl debugger.</para>
+
+          <para>The <option>-f</option> option suppresses the compilation step
+          and simply reused the compiled script which last started/restarted
+          Shorewall, provided that /etc/shorewall and its contents have not
+          been modified since the last start/restart.</para>
+
+          <para>The <option>-c</option> option was added in Shorewall 4.4.20
+          and performs the compilation step unconditionally, overriding the
+          AUTOMAKE setting in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). When
+          both <option>-f</option> and <option>-c</option> are present, the
+          result is determined by the option that appears last.</para>
+
+          <para>The <option>-T</option> option was added in Shorewall 4.5.3
+          and causes a Perl stack trace to be included with each
+          compiler-generated error and warning message.</para>
+
+          <para>The <option>-i</option> option was added in Shorewall 4.6.0
+          and causes a warning message to be issued if the current line
+          contains alternative input specifications following a semicolon
+          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
+          set to Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+
+          <para>The <option>-C</option> option was added in Shorewall 4.6.5
+          and is only meaningful when AUTOMAKE=Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). If an
+          existing firewall script is used and if that script was the one that
+          generated the current running configuration, then the running
+          netfilter configuration will be reloaded as is so as to preserve the
+          iptables packet and byte counters.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">remote_start</emphasis>
+        [-<option>s</option>] [-<option>c</option>] [-<option>r</option>
         <replaceable>root-user-name</replaceable>] [-<option>T</option>]
         [-<option>i</option>] [ <replaceable>directory</replaceable> ]
         <replaceable>system</replaceable></term>
 
         <listitem>
+          <para>This command was renamed from <command>load</command> in
+          Shorewall 5.0.0.</para>
+
+          <para>If <emphasis>directory</emphasis> is omitted, the current
+          working directory is assumed. Allows a non-root user to compile a
+          shorewall script and install it on a system (provided that the user
+          has root access to the system via ssh). The command is equivalent
+          to:</para>
+
+          <programlisting>    <emphasis role="bold">/sbin/shorewall compile -e</emphasis> <emphasis><replaceable>directory</replaceable></emphasis> <replaceable>directory</replaceable><emphasis
+              role="bold">/firewall &amp;&amp;\</emphasis>
+    <emphasis role="bold">scp</emphasis> <emphasis>directory</emphasis><emphasis
+              role="bold">/firewall</emphasis> <emphasis>directory</emphasis><emphasis
+              role="bold">/firewall.conf</emphasis> <emphasis role="bold">root@</emphasis><replaceable>system</replaceable><emphasis
+              role="bold">:/var/lib/shorewall-lite/ &amp;&amp;\</emphasis>
+    <emphasis role="bold">ssh root@</emphasis><replaceable>system</replaceable> <emphasis
+              role="bold">'/sbin/shorewall-lite start'</emphasis></programlisting>
+
+          <para>In other words, the configuration in the specified (or
+          defaulted) directory is compiled to a file called firewall in that
+          directory. If compilation succeeds, then firewall is copied to
+          <replaceable>system</replaceable> using scp. If the copy succeeds,
+          Shorewall Lite on <replaceable>system</replaceable> is started via
+          ssh.</para>
+
+          <para>If <emphasis role="bold">-s</emphasis> is specified and the
+          <emphasis role="bold">start</emphasis> command succeeds, then the
+          remote Shorewall-lite configuration is saved by executing <emphasis
+          role="bold">shorewall-lite save</emphasis> via ssh.</para>
+
+          <para>if <emphasis role="bold">-c</emphasis> is included, the
+          command <emphasis role="bold">shorewall-lite show capabilities -f
+          &gt; /var/lib/shorewall-lite/capabilities</emphasis> is executed via
+          ssh then the generated file is copied to
+          <replaceable>directory</replaceable> using scp. This step is
+          performed before the configuration is compiled.</para>
+
+          <para>If <option>-r</option> is included, it specifies that the root
+          user on <replaceable>system</replaceable> is named
+          <replaceable>root-user-name</replaceable> rather than "root".</para>
+
+          <para>The <option>-T</option> option was added in Shorewall 4.5.3
+          and causes a Perl stack trace to be included with each
+          compiler-generated error and warning message.</para>
+
+          <para>The <option>-i</option> option was added in Shorewall 4.6.0
+          and causes a warning message to be issued if the current line
+          contains alternative input specifications following a semicolon
+          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
+          set to Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">remote_reload
+        </emphasis>[-<option>s</option>] [-<option>c</option>]
+        [-<option>r</option> <replaceable>root-user-name</replaceable>]
+        [-<option>T</option>] [-<option>i</option>] [
+        <replaceable>directory</replaceable> ]
+        <replaceable>system</replaceable></term>
+
+        <listitem>
+          <para>This command was added in Shorewall 5.0.0.</para>
+
+          <para>If <emphasis>directory</emphasis> is omitted, the current
+          working directory is assumed. Allows a non-root user to compile a
+          shorewall script and install it on a system (provided that the user
+          has root access to the system via ssh). The command is equivalent
+          to:</para>
+
+          <programlisting>    <emphasis role="bold">/sbin/shorewall compile -e</emphasis> <emphasis>directory</emphasis> <emphasis>directory</emphasis><emphasis
+              role="bold">/firewall &amp;&amp;\</emphasis>
+    <emphasis role="bold">scp</emphasis> <emphasis>directory</emphasis><emphasis
+              role="bold">/firewall</emphasis> <emphasis>directory</emphasis><emphasis
+              role="bold">/firewall.conf</emphasis> <emphasis role="bold">root@</emphasis><emphasis>system</emphasis><emphasis
+              role="bold">:/var/lib/shorewall-lite/ &amp;&amp;\</emphasis>
+    <emphasis role="bold">ssh root@</emphasis><emphasis>system</emphasis> <emphasis
+              role="bold">'/sbin/shorewall-lite reload'</emphasis></programlisting>
+
+          <para>In other words, the configuration in the specified (or
+          defaulted) directory is compiled to a file called firewall in that
+          directory. If compilation succeeds, then firewall is copied to
+          <emphasis>system</emphasis> using scp. If the copy succeeds,
+          Shorewall Lite on <emphasis>system</emphasis> is restarted via
+          ssh.</para>
+
+          <para>If <emphasis role="bold">-s</emphasis> is specified and the
+          <emphasis role="bold">restart</emphasis> command succeeds, then the
+          remote Shorewall-lite configuration is saved by executing <emphasis
+          role="bold">shorewall-lite save</emphasis> via ssh.</para>
+
+          <para>if <emphasis role="bold">-c</emphasis> is included, the
+          command <emphasis role="bold">shorewall-lite show capabilities -f
+          &gt; /var/lib/shorewall-lite/capabilities</emphasis> is executed via
+          ssh then the generated file is copied to
+          <emphasis>directory</emphasis> using scp. This step is performed
+          before the configuration is compiled.</para>
+
+          <para>If <option>-r</option> is included, it specifies that the root
+          user on <replaceable>system</replaceable> is named
+          <replaceable>root-user-name</replaceable> rather than "root".</para>
+
+          <para>The <option>-T</option> option was added in Shorewall 4.5.3
+          and causes a Perl stack trace to be included with each
+          compiler-generated error and warning message.</para>
+
+          <para>The <option>-i</option> option was added in Shorewall 4.6.0
+          and causes a warning message to be issued if the current line
+          contains alternative input specifications following a semicolon
+          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
+          set to Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">remote_restart
+        </emphasis>[-<option>s</option>] [-<option>c</option>]
+        [-<option>r</option> <replaceable>root-user-name</replaceable>]
+        [-<option>T</option>] [-<option>i</option>] [
+        <replaceable>directory</replaceable> ]
+        <replaceable>system</replaceable></term>
+
+        <listitem>
+          <para>This command was renamed from <command>reload</command> in
+          Shorewall 5.0.0.</para>
+
           <para>If <emphasis>directory</emphasis> is omitted, the current
           working directory is assumed. Allows a non-root user to compile a
           shorewall script and install it on a system (provided that the user
@@ -1628,12 +1782,14 @@
         [-<option>C</option>] [ <replaceable>directory</replaceable> ]</term>
 
         <listitem>
-          <para>Restart is similar to <emphasis role="bold">shorewall
-          start</emphasis> except that it assumes that the firewall is already
-          started. Existing connections are maintained. If a
-          <emphasis>directory</emphasis> is included in the command, Shorewall
-          will look in that <emphasis>directory</emphasis> first for
-          configuration files.</para>
+          <para>Beginning with Shorewall 5.0.0, this command performs a true
+          restart. The firewall is completely stopped as if a
+          <command>stop</command> command had been issued then it is started
+          again.</para>
+
+          <para>If a <emphasis>directory</emphasis> is included in the
+          command, Shorewall will look in that <emphasis>directory</emphasis>
+          first for configuration files.</para>
 
           <para>The <option>-n</option> option causes Shorewall to avoid
           updating the routing table(s).</para>
@@ -1741,6 +1897,38 @@
             <member>WARNING: /var/lib/shorewall/firewall is not up to
             date</member>
           </simplelist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">safe-reload
+        </emphasis>[-<option>d</option>] [-<option>p</option>] [-<option>t
+        </option><replaceable>timeout</replaceable> ] [
+        <replaceable>directory</replaceable> ]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.0, this command performs the same
+          function as did <command>safe_restart</command> in earlier
+          releases.</para>
+
+          <para>Only allowed if Shorewall is running. The current
+          configuration is saved in /var/lib/shorewall/safe-reload (see the
+          save command below) then a <emphasis role="bold">shorewall
+          reload</emphasis> is done. You will then be prompted asking if you
+          want to accept the new configuration or not. If you answer "n" or if
+          you fail to answer within 60 seconds (such as when your new
+          configuration has disabled communication with your terminal), the
+          configuration is restored from the saved configuration. If a
+          directory is given, then Shorewall will look in that directory first
+          when opening configuration files.</para>
+
+          <para>Beginning with Shorewall 4.5.0, you may specify a different
+          <replaceable>timeout</replaceable> value using the
+          <option>-t</option> option. The numeric
+          <replaceable>timeout</replaceable> may optionally be followed by an
+          <option>s</option>, <option>m</option> or <option>h</option> suffix
+          (e.g., 5m) to specify seconds, minutes or hours respectively. If the
+          suffix is omitted, seconds is assumed.</para>
         </listitem>
       </varlistentry>
 

@@ -931,7 +931,7 @@ update_command() {
 }
 
 #
-# Restart Command Executor
+# Reload/Restart Command Executor
 #
 restart_command() {
     local finished
@@ -1027,22 +1027,22 @@ restart_command() {
 	uptodate ${VARDIR}/firewall && g_fast=Yes
     fi
 
-    g_file="${VARDIR}/.restart"
+    g_file="${VARDIR}/.${COMMAND}"
 
     if [ -z "$g_fast" ]; then
 	if compiler $g_debugging $nolock compile "$g_file"; then
 	    [ -n "$nolock" ] || mutex_on
-	    run_it ${VARDIR}/.restart $g_debugging restart
+	    run_it ${VARDIR}/.${COMMAND} $g_debugging ${COMMAND}
 	    rc=$?
 	    [ -n "$nolock" ] || mutex_off
 	else
 	    rc=$?
-	    logger -p kern.err "ERROR:$g_product restart failed"
+	    logger -p kern.err "ERROR:$g_product ${COMMAND} failed"
 	fi
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
 	[ -n "$nolock" ] || mutex_on
-	run_it ${VARDIR}/firewall $g_debugging restart
+	run_it ${VARDIR}/firewall $g_debugging $COMMAND
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     fi
@@ -1138,7 +1138,7 @@ refresh_command() {
 }
 
 #
-# Safe-start/safe-restart Command Executor
+# Safe-start/safe-reload/safe-restart Command Executor
 #
 safe_commands() {
     local finished
@@ -1229,8 +1229,8 @@ safe_commands() {
 	# the command is safe-start or shorewall[6] is not started yet
 	command="start"
     else
-	# the command is safe-restart and the firewall is already running
-	command="restart"
+	# the command is safe-reload or safe-restart and the firewall is already running
+	command="${COMMAND#safe-}"
     fi
 
     g_file="${VARDIR}/.$command"
@@ -1244,6 +1244,12 @@ safe_commands() {
 	start)
 	    RESTOREFILE=NONE
 	    progress_message3 "Starting..."
+	    ;;
+	reload)
+	    RESTOREFILE=.safe
+	    g_restorepath=${VARDIR}/.safe
+	    save_config
+	    progress_message3 "Reloading..."
 	    ;;
 	restart)
 	    RESTOREFILE=.safe
@@ -1262,7 +1268,7 @@ safe_commands() {
 	if read_yesno_with_timeout $timeout ; then
 	    echo "New configuration has been accepted"
 	else
-	    if [ "$command" = "restart" ]; then
+	    if [ "$command" = "restart" -o "$command" = "reload" ]; then
 		run_it ${VARDIR}/.safe restore
 	    else
 		run_it ${VARDIR}/.$command clear
@@ -1361,7 +1367,7 @@ try_command() {
 	command="start"
     else
 	# the firewall is already running
-	command="restart"
+	command="reload"
     fi
 
     g_file="${VARDIR}/.$command"
@@ -1378,11 +1384,11 @@ try_command() {
 	    RESTOREFILE=NONE
 	    progress_message3 "Starting..."
 	    ;;
-	restart)
+	reload)
 	    RESTOREFILE=.try
 	    g_restorepath=${VARDIR}/.try
 	    save_config
-	    progress_message3 "Restarting..."
+	    progress_message3 "Reloading..."
 	    ;;
     esac
 
@@ -1391,7 +1397,7 @@ try_command() {
     if run_it ${VARDIR}/.$command $g_debugging $command && [ -n "$timeout" ]; then
 	sleep $timeout
 
-	if [ "$command" = "restart" ]; then
+	if [ "$command" = "reload" ]; then
 	    run_it ${VARDIR}/.try restore
 	else
 	    run_it ${VARDIR}/.$command clear
@@ -1417,9 +1423,9 @@ rcp_command() {
 }
 
 #
-# [Re]load command executor
+# Remote-{start|reload|restart} command executor
 #
-reload_command() # $* = original arguments less the command.
+remote_reload_command() # $* = original arguments less the command.
 {
     local verbose
     verbose=$(make_verbose)
@@ -1572,12 +1578,15 @@ reload_command() # $* = original arguments less the command.
 
 	progress_message3 "Copy complete"
 
-	if [ $COMMAND = reload ]; then
-	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
+	if [ $COMMAND = remote-reload ]; then
+	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp reload" && \
 	    progress_message3 "System $system reloaded" || saveit=
+	elif [ $COMMAND = remote-restart ]; then
+	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
+	    progress_message3 "System $system restarted" || saveit=
 	else
 	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp start" && \
-	    progress_message3 "System $system loaded" || saveit=
+	    progress_message3 "System $system started" || saveit=
 	fi
 
 	if [ -n "$saveit" ]; then
@@ -1694,9 +1703,9 @@ compiler_command() {
 	    shift
 	    update_command $@
 	    ;;
-	load|reload)
+	remote-start|remote-reload-reload|remote-restart)
 	    shift
-	    reload_command $@
+	    remote_reload_command $@
 	    ;;
 	export)
 	    shift
@@ -1707,7 +1716,7 @@ compiler_command() {
 	    shift
 	    try_command $@
 	    ;;
-	safe-restart|safe-start)
+	safe-reload|safe-restart|safe-start)
 	    get_config Yes
 	    shift
 	    safe_commands $@

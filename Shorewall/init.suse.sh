@@ -31,7 +31,6 @@
 #	   shorewall start			  Starts the firewall
 #	   shorewall restart			  Restarts the firewall
 #	   shorewall reload			  Reload the firewall
-#						  (same as restart)
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
 #
@@ -81,7 +80,10 @@ case "$command" in
     start)
 	exec $SBINDIR/shorewall $OPTIONS start $STARTOPTIONS
 	;;
-    restart|reload)
+    reload)
+	exec $SBINDIR/shorewall $OPTIONS restart $RELOADOPTIONS
+	;;
+    restart)
 	exec $SBINDIR/shorewall $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)

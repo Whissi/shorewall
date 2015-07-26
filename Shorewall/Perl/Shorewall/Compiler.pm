@@ -217,7 +217,7 @@ sub generate_script_2() {
 
     my @dont_load = split_list $config{DONT_LOAD}, 'module';
 
-    emit ( '[ -n "${COMMAND:=restart}" ]',
+    emit ( '[ -n "${COMMAND:=reload}" ]',
 	   '[ -n "${VERBOSITY:=0}" ]',
 	   qq([ -n "\${RESTOREFILE:=$config{RESTOREFILE}}" ]) );
 
@@ -361,7 +361,7 @@ sub generate_script_3($) {
     create_chainlist_reload( $_[0] );
     create_save_ipsets;
 
-    emit "#\n# Start/Restart the Firewall\n#";
+    emit "#\n# Start/Reload the Firewall\n#";
 
     emit( 'define_firewall() {',
 	  '    local options' );
@@ -567,8 +567,8 @@ case $COMMAND in
     start)
         logger -p kern.info "$g_product started"
         ;;
-    restart)
-        logger -p kern.info "$g_product restarted"
+    reloaded)
+        logger -p kern.info "$g_product reloaded"
         ;;
     refresh)
         logger -p kern.info "$g_product refreshed"

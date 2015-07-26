@@ -7070,9 +7070,9 @@ sub verify_source_interface( $$$$ ) {
 	fatal_error "A wildcard interface ( $iiface) is not allowed in this context" if $iiface =~ /\+$/;
 
 	if ( $table eq 'nat' ) {
-	    warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount++;
+	    warning_message qq(Using an interface as the masq SOURCE requires the interface to be up and configured when $Product starts/restarts/reloads) unless $idiotcount++;
 	} else {
-	    warning_message qq(Using an interface as the SOURCE in a T: rule requires the interface to be up and configured when $Product starts/restarts) unless $idiotcount1++;
+	    warning_message qq(Using an interface as the SOURCE in a T: rule requires the interface to be up and configured when $Product starts/restarts/reloads) unless $idiotcount1++;
 	}
 
 	push_command $chainref, join( '', 'for source in ', get_interface_nets( $iiface) , '; do' ), 'done';
@@ -7962,7 +7962,7 @@ sub save_dynamic_chains() {
     my $tool    = $family == F_IPV4 ? '${IPTABLES}'      : '${IP6TABLES}';
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
 
-    emit ( 'if [ "$COMMAND" = restart -o "$COMMAND" = refresh ]; then' );
+    emit ( 'if [ "$COMMAND" = reload -o "$COMMAND" = refresh ]; then' );
     push_indent;
 
     emit( 'if [ -n "$g_counters" ]; then' ,
@@ -8251,7 +8251,7 @@ sub load_ipsets() {
 	}
 
 	if ( @ipsets ) {
-	    emit ( 'elif [ "$COMMAND" = restart ]; then' );
+	    emit ( 'elif [ "$COMMAND" = reload ]; then' );
 	    ensure_ipset( $_ ) for @ipsets;
 	}
 
@@ -8318,7 +8318,7 @@ sub create_netfilter_load( $ ) {
     my $UTILITY = $family == F_IPV4 ? 'IPTABLES_RESTORE' : 'IP6TABLES_RESTORE';
 
     emit( '',
-	  'if [ "$COMMAND" = restart -a -n "$g_counters" ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then',
+	  'if [ "$COMMAND" = reload -a -n "$g_counters" ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then',
 	  '    option="--counters"',
 	  '',
 	  '    progress_message "Reusing existing ruleset..."',
@@ -8371,7 +8371,7 @@ sub create_netfilter_load( $ ) {
 	    }
 	}
 	#
-	# SHA1SUM chains for handling 'restart -s'
+	# SHA1SUM chains for handling 'reload -s'
 	#
 	if ( $table eq 'filter' ) {
 	    emit_unindented ':$g_sha1sum1 - [0:0]';

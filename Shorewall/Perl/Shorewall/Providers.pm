@@ -1797,7 +1797,7 @@ sub compile_updown() {
 
 	if ( $wildcard ) {
 	    emit( '        if [ "$state" = started ]; then',
-		  '            COMMAND=restart',
+		  '            COMMAND=reload',
 		  '        else',
 		  '            COMMAND=start',
 		  '        fi' );
@@ -1816,8 +1816,8 @@ sub compile_updown() {
 	if ( $wildcard ) {
 
 	    emit( '    if [ "$state" = started ]; then',
-		  '        progress_message3 "$g_product attempting restart"',
-		  '        COMMAND=restart',
+		  '        progress_message3 "$g_product attempting reload"',
+		  '        COMMAND=reload',
 		  '        detect_configuration',
 		  '        define_firewall',
 		  '    fi' );
@@ -1859,8 +1859,8 @@ sub compile_updown() {
 
 	    emit( '',
 		  '    if [ "$state" = started ]; then',
-		  '        COMMAND=restart',
-		  '        progress_message3 "$g_product attempting restart"',
+		  '        COMMAND=reload',
+		  '        progress_message3 "$g_product attempting reload"',
 		  '        detect_configuration',
 		  '        define_firewall',
 		  '    elif [ "$state" = stopped ]; then',
@@ -1884,8 +1884,8 @@ sub compile_updown() {
 	emit( "$interfaces)",
 	      '    case $state in',
 	      '        started)',
-	      '            COMMAND=restart',
-	      '            progress_message3 "$g_product attempting restart"',
+	      '            COMMAND=reload',
+	      '            progress_message3 "$g_product attempting reload"',
 	      '            detect_configuration',
 	      '            define_firewall',
 	      '            ;;',
@@ -2054,7 +2054,7 @@ sub handle_optional_interfaces( $ ) {
 	    emit( '',
 		  'if [ -z "$HAVE_INTERFACE" ]; then' ,
 		  '    case "$COMMAND" in',
-		  '        start|restart|restore|refresh)'
+		  '        start|reload|restore|refresh)'
 		);
 
 	    if ( $family == F_IPV4 ) {

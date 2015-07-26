@@ -337,6 +337,21 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>reload</option></arg>
+
+      <arg><option>-n</option></arg>
+
+      <arg><option>-p</option><arg><option>-C</option></arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall-lite</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>reset</option></arg>
     </cmdsynopsis>
 
@@ -708,6 +723,7 @@
           <para>If <option>-f</option> is given, the command will be processed
           by the compiled script that executed the last successful <emphasis
           role="bold">start</emphasis>, <emphasis
+          role="bold">reload</emphasis>, <emphasis
           role="bold">restart</emphasis> or <emphasis
           role="bold">refresh</emphasis> command if that script exists.</para>
         </listitem>
@@ -1027,6 +1043,32 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">reload </emphasis>[-n] [-p]
+        [-<option>C</option>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.0, <emphasis
+          role="bold">reload</emphasis> is similar to <emphasis
+          role="bold">shorewall-lite start</emphasis> except that it assumes
+          that the firewall is already started. Existing connections are
+          maintained.</para>
+
+          <para>The <option>-n</option> option causes Shorewall-lite to avoid
+          updating the routing table(s).</para>
+
+          <para>The <option>-p</option> option causes the connection tracking
+          table to be flushed; the <command>conntrack</command> utility must
+          be installed to use this option.</para>
+
+          <para>The <option>-C</option> option was added in Shorewall 4.6.5.
+          If the specified (or implicit) firewall script is the one that
+          generated the current running configuration, then the running
+          netfilter configuration will be reloaded as is so as to preserve the
+          iptables packet and byte counters.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">reset [<replaceable>chain</replaceable>,
         ...]</emphasis><acronym/></term>
 
@@ -1043,9 +1085,10 @@
         [-<option>C</option>]</term>
 
         <listitem>
-          <para>Restart is similar to <emphasis role="bold">shorewall-lite
-          start</emphasis> except that it assumes that the firewall is already
-          started. Existing connections are maintained.</para>
+          <para>Beginning with Shorewall 5.0.0, this command performs a true
+          restart. The firewall is completely stopped as if a
+          <command>stop</command> command had been issued then it is started
+          again.</para>
 
           <para>The <option>-n</option> option causes Shorewall-lite to avoid
           updating the routing table(s).</para>

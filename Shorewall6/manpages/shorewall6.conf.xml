@@ -1143,6 +1143,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">LEGACY_RESTART=</emphasis>{<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.0. In that release, the <emphasis
+          role="bold">reload</emphasis> command was redefined to do what
+          <emphasis role="bold">restart</emphasis> had done in earlier
+          releases and <emphasis role="bold">restart</emphasis> became a true
+          restart (equivalent to <emphasis role="bold">stop</emphasis>
+          followed by <emphasis role="bold">start</emphasis>). When
+          LEGACY_FASTSTART=Yes, the <emphasis role="bold">restart</emphasis>
+          command performs the same operation as the reload command making it
+          compatible with earlier releases. If not specified,
+          LAGACY_RESTART=No is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">LOAD_HELPERS_ONLY=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 

@@ -855,6 +855,7 @@ sub initialize( $;$$) {
 	  INLINE_MATCHES => undef,
 	  BASIC_FILTERS => undef,
 	  WORKAROUNDS => undef ,
+	  LEGACY_RESTART => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -5728,6 +5729,7 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';
+    default_yes_no 'LEGACY_RESTART'             , '';
 
     require_capability( 'BASIC_EMATCH', 'BASIC_FILTERS=Yes', 's' ) if $config{BASIC_FILTERS};
 
@@ -6272,7 +6274,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS) ) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS LEGACY_RESTART) ) {
 	conditionally_add_option $option;
     }
 

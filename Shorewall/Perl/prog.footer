@@ -65,6 +65,25 @@ stop_command() {
     return 0
 }
 
+reload_command() {
+    if product_is_started; then
+	progress_message3 "Reloading $g_product...."
+    else
+	error_message "$g_product is not running"
+	progress_message3 "Starting $g_product...."
+	COMMAND=start
+    fi
+
+    detect_configuration
+    define_firewall
+    status=$?
+    if [ -n "$SUBSYSLOCK" ]; then
+ 	[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+    fi
+
+    [ $status -eq 0 ] && progress_message3 "done."
+}
+
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
@@ -264,26 +283,17 @@ case "$COMMAND" in
 	;;
     reload)
 	[ $# -ne 1 ] && usage 2
-	if product_is_started; then
-	    progress_message3 "Reloading $g_product...."
-	else
-	    error_message "$g_product is not running"
-	    progress_message3 "Starting $g_product...."
-	    COMMAND=start
-	fi
-
-	detect_configuration
-	define_firewall
-	status=$?
-	if [ -n "$SUBSYSLOCK" ]; then
- 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-        fi
-
-	[ $status -eq 0 ] && progress_message3 "done."
+	reload_command
 	;;
     restart)
 	[ $# -ne 1 ] && usage 2
-	COMMAND=stop stop_command && COMMAND=start start_command
+
+	if [ -z "$LEGACY_RESTART" ]; then
+	    COMMAND=stop stop_command && COMMAND=start start_command
+	else
+	    COMMAND=reload
+	    reload_command
+	fi
 	;;
     refresh)
 	[ $# -ne 1 ] && usage 2

@@ -455,10 +455,11 @@ do_save() {
 
 		if [ -n "$IPSET" ]; then
 		    if eval $IPSET -S > ${VARDIR}/ipsets.tmp; then
-		    #
-		    # Don't save an 'empty' file
-		    #
-		    grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+			#
+			# Don't save an 'empty' file
+			#
+			grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+		    fi
 		fi
 		;;
 	    [Nn]o|ipv4|ipv6)

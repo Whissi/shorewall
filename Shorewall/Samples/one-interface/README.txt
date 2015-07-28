@@ -3,7 +3,7 @@ For instructions on using this sample configuration, please see
 http://www.shorewall.net/standalone.htm
 
     Shorewall Samples
-    Copyright (C) 2006-2014 by the following authors:
+    Copyright (C) 2006-2015 by the following authors:
 	Thomas M. Eastep
 	Paul D. Gear
 	Cristian Rodriguez

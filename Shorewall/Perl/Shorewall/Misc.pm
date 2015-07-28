@@ -481,7 +481,7 @@ sub convert_blacklist() {
 		open $blrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
 		print $blrules <<'EOF';
 #
-# Shorewall version 4.5 - Blacklist Rules File
+# Shorewall version 5.0 - Blacklist Rules File
 #
 # For information about entries in this file, type "man shorewall-blrules"
 #

@@ -102,7 +102,7 @@ if [ -z "$vendor" ]; then
 		vendor=redhat
 		;;
 	    debian|ubuntu)
-		vendor=debian
+		ls -l /sbin/init |fgrep -q systemd | vendor=debian.systemd | vendor=debian.sysvinit
 		;;
 	    opensuse)
 		vendor=suse
@@ -130,7 +130,7 @@ if [ -z "$vendor" ]; then
 	*)
 	    if [ -f /etc/debian_version ]; then
 		params[HOST]=debian
-		rcfile=shorewallrc.debian
+		rcfile=shorewallrc.debian.sysvinit
 	    elif [ -f /etc/redhat-release ]; then
 		params[HOST]=redhat
 		rcfile=shorewallrc.redhat

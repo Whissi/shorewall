@@ -245,8 +245,10 @@
 
           <warning>
             <para>Addresses added by ADD_IP_ALIASES=Yes are deleted and
-            re-added during shorewall restart. As a consequence, connections
-            using those addresses may be severed.</para>
+            re-added during <emphasis role="bold">shorewall reload</emphasis>
+            and <emphasis role="bold">shorewall restart</emphasis>. As a
+            consequence, connections using those addresses may be
+            severed.</para>
           </warning>
         </listitem>
       </varlistentry>
@@ -271,8 +273,10 @@
 
           <warning>
             <para>Addresses added by ADD_SNAT_ALIASES=Yes are deleted and
-            re-added during shorewall restart. As a consequence, connections
-            using those addresses may be severed.</para>
+            re-added during <emphasis role="bold">shorewall reload</emphasis>
+            and <emphasis role="bold">shorewall restart</emphasis>. As a
+            consequence, connections using those addresses may be
+            severed.</para>
           </warning>
         </listitem>
       </varlistentry>
@@ -360,11 +364,6 @@
           comment when a macro is invoked, the behavior is as if the first
           line of the macro file was "COMMENT &lt;macro name&gt;". The
           AUTO_COMMENT option has a default value of 'Yes'.</para>
-
-          <para>The setting of the AUTOMAKE option is ignored if the
-          <command>start</command> or <command>restart</command> command
-          includes a directory name (e.g.,<command> shorewall restart
-          /etc/shorewall.new</command>).</para>
         </listitem>
       </varlistentry>
 
@@ -422,14 +421,21 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>If set, the behavior of the <command>start</command> and
+          <para>If set, the behavior of the <command>start</command>,
+          <emphasis role="bold">reload</emphasis> and
           <command>restart</command> commands are changed; if no files in
-          /etc/shorewall have been changed since the last successful
-          <command>start</command> or <command>restart</command> command, then
-          the compilation step is skipped and the compiled script that
-          executed the last <command>start</command> or
-          <command>restart</command> command is used. The default is
-          AUTOMAKE=No.</para>
+          CONFIG_PATH (see below) have been changed since the last successful
+          <command>start, reload</command> or <command>restart</command>
+          command, then the compilation step is skipped and the compiled
+          script that executed the last <command>start</command>, <emphasis
+          role="bold">reload</emphasis> or <command>restart</command> command
+          is used. The default is AUTOMAKE=No.</para>
+
+          <para>The setting of the AUTOMAKE option is ignored if the
+          <command>start</command>, <emphasis role="bold">reload</emphasis> or
+          <command>restart</command> command includes a directory name
+          (e.g.,<command> shorewall restart
+          /etc/shorewall.new</command>).</para>
         </listitem>
       </varlistentry>
 
@@ -688,10 +694,10 @@
           associated with the DNS name is subject to change. When
           DEFER_DNS_RESOLUTION=No, DNS names are converted into IP addresses
           by the compiler. This has the advantage that when AUTOMAKE=Yes, the
-          <command>start</command> and <command>restart</command> commands
-          will succeed even if no DNS server is reachable (assuming that the
-          configuration hasn't changed since the compiled script was last
-          generated).</para>
+          <command>start</command>, <emphasis role="bold">reload</emphasis>
+          and <command>restart</command> commands will succeed even if no DNS
+          server is reachable (assuming that the configuration hasn't changed
+          since the compiled script was last generated).</para>
         </listitem>
       </varlistentry>
 
@@ -751,7 +757,7 @@
             </listitem>
 
             <listitem>
-              <para>Restart Shorewall</para>
+              <para>Reload Shorewall</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -1241,26 +1247,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           <filename>/var/lib/shorewall/rt_tables</filename>
           (<filename>/var/lib/shorewall-lite/rt_tables</filename>) before your
           next <command>stop</command>, <command>refresh</command>,
-          <command>restore</command> on <command>restart</command>
-          command.</para>
+          <command>restore</command>, <emphasis role="bold">reload</emphasis>
+          or <command>restart</command> command.</para>
 
           <para>The default is KEEP_RT_TABLES=No.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">LEGACY_FASTSTART=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>Added in Shorewall 4.4.20. If not specified, the default is
-          Yes which preserves the legacy behavior of <command>start
-          -f</command> (the modification times of the files in
-          <filename>/etc/shorewall</filename> are compared with that of
-          <filename>/var/lib/shorewall/restore)</filename>. If set to No, then
-          the times are compared with that of /var/lib/shorewall/firewall,
-          which is consistent with the way that <command>restart -f</command>
-          works.</para>
         </listitem>
       </varlistentry>
 
@@ -1276,9 +1266,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           restart (equivalent to <emphasis role="bold">stop</emphasis>
           followed by <emphasis role="bold">start</emphasis>). When
           LEGACY_FASTSTART=Yes, the <emphasis role="bold">restart</emphasis>
-          command performs the same operation as the reload command making it
-          compatible with earlier releases. If not specified,
-          LAGACY_RESTART=No is assumed.</para>
+          command performs the same operation as the <emphasis
+          role="bold">reload</emphasis> command making it compatible with
+          earlier releases. If not specified, LAGACY_RESTART=No is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -2345,7 +2336,8 @@ INLINE          -       -       -       ; -j REJECT
           not be deleted. Regardless of the setting of RETAIN_ALIASES,
           addresses added during <emphasis role="bold">shorewall
           start</emphasis> are still deleted at a subsequent <emphasis
-          role="bold">shorewall stop</emphasis> or <emphasis
+          role="bold">shorewall stop</emphasis>, <emphasis
+          role="bold">shorewall reload</emphasis> or <emphasis
           role="bold">shorewall restart</emphasis>.</para>
         </listitem>
       </varlistentry>
@@ -2538,6 +2530,7 @@ INLINE          -       -       -       ; -j REJECT
         <listitem>
           <para>If specified, determines where Shorewall will log the details
           of each <emphasis role="bold">start</emphasis>, <emphasis
+          role="bold">reload</emphasis>, <emphasis
           role="bold">restart</emphasis> and <emphasis
           role="bold">refresh</emphasis> command. Logging verbosity is
           determined by the setting of LOG_VERBOSITY above.</para>

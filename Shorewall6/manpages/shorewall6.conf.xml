@@ -351,19 +351,21 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>If set, the behavior of the <command>start</command> and
-          <command>restart</command> commands is changed; if no files in
-          <filename><filename
-          class="directory">/etc/shorewall</filename></filename> have been
-          changed since the last successful <command>start</command> or
+          <para>If set, the behavior of the <command>start</command>,
+          <emphasis role="bold">reload</emphasis> and
+          <command>restart</command> commands is changed; if no files in the
+          CONFIG_PATH (see below) have been changed since the last successful
+          <command>start</command>, <emphasis role="bold">reload</emphasis> or
           <command>restart</command> command, then the compilation step is
           skipped and the compiled script that executed the last
-          <command>start</command> or <command>restart</command> command is
-          used. The default is AUTOMAKE=No.</para>
+          <command>start</command>, <emphasis role="bold">reload</emphasis> or
+          <command>restart</command> command is used. The default is
+          AUTOMAKE=No.</para>
 
           <para>The setting of the AUTOMAKE option is ignored if the
-          <command>start</command> or <command>restart</command> command
-          includes a directory name (e.g.,<command> shorewall6 restart
+          <command>start</command>, <emphasis role="bold">reload</emphasis> or
+          <command>restart</command> command includes a directory name
+          (e.g.,<command> shorewall6 restart
           /etc/shorewall.new</command>).</para>
         </listitem>
       </varlistentry>
@@ -621,10 +623,10 @@
           associated with the DNS name is subject to change. When
           DEFER_DNS_RESOLUTION=No, DNS names are converted into IP addresses
           by the compiler. This has the advantage that when AUTOMAKE=Yes the
-          <command>start</command> and <command>restart</command> commands
-          will succeed even if no DNS server is reachable (assuming that the
-          configuration hasn't changed since the compiled script was last
-          generated).</para>
+          <command>start</command>, <emphasis role="bold">reload</emphasis>
+          and <command>restart</command> commands will succeed even if no DNS
+          server is reachable (assuming that the configuration hasn't changed
+          since the compiled script was last generated).</para>
         </listitem>
       </varlistentry>
 
@@ -1092,26 +1094,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           <filename>/var/lib/shorewall6/rt_tables</filename>
           (<filename>/var/lib/shorewall6-lite/rt_tables</filename>) before
           your next <command>stop</command>, <command>refresh</command>,
-          <command>restore</command> on <command>restart</command>
-          command.</para>
+          <command>restore</command>, <emphasis role="bold">reload</emphasis>
+          or <command>restart</command> command.</para>
 
           <para>The default is KEEP_RT_TABLES=No.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">LEGACY_FASTSTART=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>Added in Shorewall6 4.4.20. If not specified, the default is
-          Yes which preserves the legacy behavior of <command>start
-          -f</command> (the modification times of the files in
-          <filename>/etc/shorewall6</filename> are compared with that of
-          <filename>/var/lib/shorewall6/restore</filename>). If set to No,
-          then the times are compared with that of
-          /var/lib/shorewall6/firewall, which is consistent with the way that
-          <command>restart -f</command> works.</para>
         </listitem>
       </varlistentry>
 
@@ -2191,6 +2177,7 @@ INLINE          -       -       -       ; -j REJECT
         <listitem>
           <para>If specified, determines where Shorewall6 will log the details
           of each <emphasis role="bold">start</emphasis>, <emphasis
+          role="bold">reload</emphasis>, <emphasis
           role="bold">restart</emphasis> and <emphasis
           role="bold">refresh</emphasis> command. Logging verbosity is
           determined by the setting of LOG_VERBOSITY above.</para>

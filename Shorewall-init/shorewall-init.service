@@ -5,9 +5,8 @@
 #
 [Unit]
 Description=Shorewall firewall (bootup security)
-Before=network-pre.target
-Wants=network-pre.target
-Conflicts=iptables.service firewalld.service
+Before=network.target
+Conflicts=iptables.service ip6tables.service firewalld.service
 
 [Service]
 Type=oneshot

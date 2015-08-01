@@ -31,7 +31,7 @@ use strict;
 # Build updates this
 #
 use constant {
-    VERSION => '4.5.2.1'
+    VERSION => '4.6.12'
 };
 
 my %params;
@@ -68,14 +68,16 @@ unless ( defined $vendor ) {
 	    $vendor = 'redhat';
 	} elsif ( $id eq 'opensuse' ) {
 	    $vendor = 'suse';
-	} elsif ( $id eq 'ubuntu' ) {
-	    $vendor = 'debian';
+	} elsif ( $id eq 'ubuntu' || $id eq 'debian' ) {
+	    my $init = `ls -l /sbin/init`;
+	    $vendor = $init =~ /systemd/ ? 'debian.systemd' : 'debian.sysvinit';
 	} else {
 	    $vendor = $id;
 	}
     }
 
     $params{HOST} = $vendor;
+    $params{HOST} =~ s/\..*//;
 }
 
 if ( defined $vendor ) {
@@ -84,7 +86,7 @@ if ( defined $vendor ) {
 } else {
     if ( -f '/etc/debian_version' ) {
 	$vendor = 'debian';
-	$rcfilename = 'shorewallrc.debian';
+	$rcfilename = 'shorewallrc.debian.sysvinit';
     } elsif ( -f '/etc/redhat-release' ){
 	$vendor = 'redhat';
 	$rcfilename = 'shorewallrc.redhat';
@@ -117,7 +119,7 @@ my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 if ( $vendor eq 'linux' ) {
     printf "INFO: Creating a generic Linux installation - %s %2d %04d %02d:%02d:%02d\n\n", $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];;
 } else {
-    printf "INFO: Creating a %s-specific installation - %s %2d %04d %02d:%02d:%02d\n\n", $vendor, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];;
+    printf "INFO: Creating a %s-specific installation - %s %2d %04d %02d:%02d:%02d\n\n", $params{HOST}, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];;
 }
 
 open $rcfile, '<', $rcfilename or die "Unable to open $rcfilename for input: $!";

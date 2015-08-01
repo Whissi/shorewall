@@ -605,20 +605,25 @@ our %validlevels;            # Valid log levels.
 #
 # Deprecated options with their default values
 #
-our %deprecated = ( LOGRATE            => '' ,
-		    LOGBURST           => '' ,
-		    EXPORTPARAMS       => 'no',
-		    WIDE_TC_MARKS      => 'no',
+our %deprecated = ( WIDE_TC_MARKS      => 'no',
 		    HIGH_ROUTE_MARKS   => 'no',
 		    BLACKLISTNEWONLY   => 'yes',
 		  );
 #
 # Deprecated options that are eliminated via update
 #
-our %converted = ( WIDE_TC_MARKS => 1,
+our %converted = ( WIDE_TC_MARKS    => 1,
 		   HIGH_ROUTE_MARKS => 1,
 		   BLACKLISTNEWONLY => 1,
 		 );
+#
+# Eliminated options
+#
+our %eliminated = ( LOGRATE          => 1,
+		    LOGBURST         => 1,
+		    EXPORTPARAMS     => 1,
+		    LEGACY_FASTSTART => 1,
+		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
 #
@@ -730,8 +735,6 @@ sub initialize( $;$$) {
 	  LOGFORMAT => undef,
 	  LOGTAGONLY => undef,
 	  LOGLIMIT => undef,
-	  LOGRATE => undef,
-	  LOGBURST => undef,
 	  LOGALLNEW => undef,
 	  BLACKLIST_LOG_LEVEL => undef,
 	  RELATED_LOG_LEVEL => undef,
@@ -840,7 +843,6 @@ sub initialize( $;$$) {
 	  FORWARD_CLEAR_MARK => undef,
 	  COMPLETE => undef,
 	  EXPORTMODULES => undef,
-	  LEGACY_FASTSTART => undef,
 	  USE_PHYSICAL_NAMES => undef,
 	  HELPERS => undef,
 	  AUTOHELPERS => undef,
@@ -4838,7 +4840,8 @@ sub update_config_file( $$ ) {
 	#
 	$fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
     }
-   if ( -f $fn ) {
+
+    if ( -f $fn ) {
 	my ( $template, $output );
 
 	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
@@ -4959,6 +4962,8 @@ sub process_shorewall_conf( $$$ ) {
 		    unless ( exists $config{$var} ) {
 			if ( exists $renamed{$var} ) {
 			    $var = $renamed{$var};
+			} elsif ( $eliminated{$var} ) {
+			    warning_message "The $var configuration option is no longer supported";
 			} else {
 			    warning_message "Unknown configuration option ($var) ignored";
 			    next ;
@@ -5543,22 +5548,6 @@ sub get_configuration( $$$$$ ) {
 	}
 
 	$globals{LOGLIMIT} = $limit;
-
-	warning_message "LOGRATE Ignored when LOGLIMIT is specified"  if $config{LOGRATE};
-	warning_message "LOGBURST Ignored when LOGLIMIT is specified" if $config{LOGBURST};
-
-    } elsif ( $config{LOGRATE} || $config{LOGBURST} ) {
-	if ( supplied $config{LOGRATE} ) {
-	    fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
-	}
-
-	if ( supplied $config{LOGBURST} ) {
-	    fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
-	}
-
-	$globals{LOGLIMIT}  = '-m limit ';
-	$globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if supplied $config{LOGRATE};
-	$globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if supplied $config{LOGBURST};
     } else {
 	$globals{LOGLIMIT} = '';
     }
@@ -5768,7 +5757,6 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability( 'MARK' ) ? 'Yes' : '';
     default_yes_no 'COMPLETE'                   , '';
     default_yes_no 'EXPORTMODULES'              , '';
-    default_yes_no 'LEGACY_FASTSTART'           , 'Yes';
     default_yes_no 'USE_PHYSICAL_NAMES'         , '';
     default_yes_no 'IPSET_WARNINGS'             , 'Yes';
     default_yes_no 'AUTOHELPERS'                , 'Yes';

@@ -308,21 +308,6 @@ get_config() {
 	    ;;
     esac
 
-    case $LEGACY_FASTSTART in
-	Yes|yes)
-	    ;;
-	No|no)
-	    LEGACY_FASTSTART=
-	    ;;
-	*)
-	    if [ -n "$LEGACY_FASTSTART" ]; then
-		fatal_error "Invalid LEGACY_FASTSTART setting ($LEGACY_FASTSTART)"
-	    fi
-
-	    LEGACY_FASTSTART=Yes
-	    ;;
-    esac
-
     if [ -n "$WORKAROUNDS" ]; then
 	case $WORKAROUNDS in
 	    [Yy]es)
@@ -608,38 +593,13 @@ start_command() {
     esac
 
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
-	if [ -z "$g_fast" -o -z "${LEGACY_FASTSTART}${g_counters}" ]; then
-	    #
-	    # Automake or ( LEGACY_FASTSTART=No and not -C ) -- use the last compiled script
-	    #
-	    object=firewall
-	else
-	    #
-	    # 'start -f' with ( LEGACY_FASTSTART=Yes or -C ) -- use last saved configuration
-	    #
-	    object=$RESTOREFILE
-	fi
-
 	if ! uptodate ${VARDIR}/$object; then
 	    g_fast=
 	    AUTOMAKE=
 	fi
-
-	if [ -n "$g_fast" -a $object = $RESTOREFILE ]; then
-	    g_restorepath=${VARDIR}/$object
-	    [ -n "$nolock" ] || mutex_on
-	    echo Restoring Shorewall...
-	    run_it $g_restorepath restore
-	    rc=$?
-	    [ -n "$nolock" ] || mutex_off
-	    [ $rc -eq 0 ] && progress_message3 "$g_product restored from $g_restorepath"
-	    exit $rc
-	else
-	    do_it
-	fi
-    else
-	do_it
     fi
+
+    do_it
 }
 
 #

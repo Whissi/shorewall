@@ -56,7 +56,7 @@ sub initialize($) {
 }
 
 #
-# Notrack
+# Conntrack
 #
 sub process_conntrack_rule( $$$$$$$$$$ ) {
 
@@ -277,72 +277,46 @@ sub process_format( $ ) {
 
 sub setup_conntrack() {
 
-    for my $name ( qw/notrack conntrack/ ) {
+    my $fn = open_file( 'conntrack', 3 , 1 );
 
-	my $fn = open_file( $name, 3 , 1 );
+    if ( $fn ) {
 
-	if ( $fn ) {
+	my $action;
 
-	    my $action;
+	first_entry( "$doing $fn..." );
 
-	    my $empty = 1;
+	while ( read_a_line( NORMAL_READ ) ) {
+	    my ( $source, $dest, $protos, $ports, $sports, $user, $switch );
 
-	    first_entry( "$doing $fn..." );
+	    ( $action, $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
 
-	    while ( read_a_line( NORMAL_READ ) ) {
-		my ( $source, $dest, $protos, $ports, $sports, $user, $switch );
-
-		if ( $file_format == 1 ) {
-		    ( $source, $dest, $protos, $ports, $sports, $user, $switch ) =
-			split_line1( 'Conntrack File',
-				     { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 } );
-		    $action = 'NOTRACK';
-		} else {
-		    ( $action, $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
-		}
-
-		$empty = 0;
-
-		for my $proto ( split_list $protos, 'Protocol' ) {
-		    if ( $file_format < 3 ) {
-			if ( $source =~ /^all(-)?(:(.+))?$/ ) {
-			    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
-			    for my $zone ( $1 ? off_firewall_zones : all_zones ) {
-				process_conntrack_rule( undef ,
-							undef,
-							$action,
-							$zone . ( $2 || ''),
-							$dest,
-							$proto,
-							$ports,
-							$sports,
-							$user ,
-							$switch );
-			    }
-			} else {
-			    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+	    for my $proto ( split_list $protos, 'Protocol' ) {
+		if ( $file_format < 3 ) {
+		    if ( $source =~ /^all(-)?(:(.+))?$/ ) {
+			fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
+			for my $zone ( $1 ? off_firewall_zones : all_zones ) {
+			    process_conntrack_rule( undef ,
+						    undef,
+						    $action,
+						    $zone . ( $2 || ''),
+						    $dest,
+						    $proto,
+						    $ports,
+						    $sports,
+						    $user ,
+						    $switch );
 			}
-		    } elsif ( $action =~ s/:O$// ) {
-			process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		    } elsif ( $action =~ s/:OP$// || $action =~ s/:PO// ) {
-			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-			process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    } else {
-			$action =~ s/:P$//;
-			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+			process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		    }
-		}
-	    }
-
-	    if ( $name eq 'notrack') {
-		if ( $empty ) {
-		    if ( unlink( $fn ) ) {
-			warning_message "Empty notrack file ($fn) removed";
-		    } else {
-			warning_message "Unable to remove empty notrack file ($fn): $!";
-		    }
+		} elsif ( $action =~ s/:O$// ) {
+		    process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		} elsif ( $action =~ s/:OP$// || $action =~ s/:PO// ) {
+		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		} else {
-		    warning_message "Non-empty notrack file ($fn); please move its contents to the conntrack file";
+		    $action =~ s/:P$//;
+		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
 		}
 	    }
 	}

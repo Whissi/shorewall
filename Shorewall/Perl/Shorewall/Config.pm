@@ -623,6 +623,7 @@ our %eliminated = ( LOGRATE          => 1,
 		    LOGBURST         => 1,
 		    EXPORTPARAMS     => 1,
 		    LEGACY_FASTSTART => 1,
+		    IPSECFILE        => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -763,7 +764,6 @@ sub initialize( $;$$) {
 	  MODULESDIR => undef,
 	  CONFIG_PATH => undef,
 	  RESTOREFILE => undef,
-	  IPSECFILE => undef,
 	  LOCKFILE => undef,
 	  GEOIPDIR => undef,
 	  NFACCT => undef,
@@ -6011,16 +6011,12 @@ sub get_configuration( $$$$$ ) {
     }
 
     default 'RESTOREFILE'           , 'restore';
-    default 'IPSECFILE'             , 'zones';
     default 'DROP_DEFAULT'          , 'Drop';
     default 'REJECT_DEFAULT'        , 'Reject';
     default 'QUEUE_DEFAULT'         , 'none';
     default 'NFQUEUE_DEFAULT'       , 'none';
     default 'ACCEPT_DEFAULT'        , 'none';
     default 'OPTIMIZE'              , 0;
-
-    fatal_error 'IPSECFILE=ipsec is not supported by Shorewall ' . $globals{VERSION} if $config{IPSECFILE} eq 'ipsec';
-    fatal_error "Invalid IPSECFILE value ($config{IPSECFILE}"                    unless $config{IPSECFILE} eq 'zones';
 
     for my $default ( qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';

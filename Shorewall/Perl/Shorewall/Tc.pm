@@ -27,7 +27,7 @@
 #	You should have received a copy of the GNU General Public License
 #	along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
-#   This module deals with Traffic Shaping and the tcrules file.
+#   This module deals with Traffic Shaping and the mangle file.
 #
 package Shorewall::Tc;
 require Exporter;
@@ -172,10 +172,10 @@ sub initialize( $ ) {
 }
 
 #
-# Process a rule from the tcrules or mangle file
+# Process a rule from the mangle file
 #
-sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
-    our ( $file, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
+    our ( $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
 
     use constant {
 	PREROUTING     => 1,        #Actually tcpre
@@ -859,7 +859,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	}
     }
 
-    progress_message "  $file Rule \"$currentline\" $done";
+    progress_message "  Mangle Rule \"$currentline\" $done";
 }
 
 #
@@ -998,48 +998,26 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 	
-    if ( $tcrules ) {
-	$command = ( $command ? "$command($mark)" : $mark ) . $designator;
-	my $line = ( $family == F_IPV6 ?
-		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$headers\t$probability\t$dscp\t$state" :
-		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$probability\t$dscp\t$state" );
-	#
-	# Supress superfluous trailing dashes
-	#
-	$line =~ s/(?:\t-)+$//;
+    $command = ( $command ? "$command($mark)" : $mark ) . $designator;
+    my $line = ( $family == F_IPV6 ?
+		 "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$headers\t$probability\t$dscp\t$state" :
+		 "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$probability\t$dscp\t$state" );
+    #
+    # Supress superfluous trailing dashes
+    #
+    $line =~ s/(?:\t-)+$//;
 
-	my $raw_matches = fetch_inline_matches;
+    my $raw_matches = fetch_inline_matches;
 
-	if ( $raw_matches ne ' ' ) {
-	    if ( $command =~ /^INLINE/ || $config{INLINE_MATCHES} ) {
-		$line .= join( '', ' ;', $raw_matches );
-	    } else {
-		$line .= join( '', ' {', $raw_matches , ' }' );
-	    }
+    if ( $raw_matches ne ' ' ) {
+	if ( $command =~ /^INLINE/ || $config{INLINE_MATCHES} ) {
+	    $line .= join( '', ' ;', $raw_matches );
+	} else {
+	    $line .= join( '', ' {', $raw_matches , ' }' );
 	}
-
-	print $mangle "$line\n";
-    } else {
-	process_mangle_rule1( 'TC',
-			      ( $command ? "$command($mark)" : $mark ) . $designator ,
-			      $source,
-			      $dest,
-			      $proto,
-			      $ports,
-			      $sports,
-			      $user,
-			      $testval,
-			      $length,
-			      $tos,
-			      $connbytes,
-			      $helper,
-			      $headers,
-			      $probability,
-			      $dscp,
-			      $state,
-			      '-',
-	    );
     }
+
+    print $mangle "$line\n";
 }
 
 sub process_tc_rule( ) {
@@ -1152,7 +1130,7 @@ sub process_mangle_rule( ) {
     }
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
-	process_mangle_rule1( 'Mangle', $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+	process_mangle_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
     }
 }
  
@@ -3214,40 +3192,36 @@ sub setup_tc( $ ) {
     }
 
     if ( $config{MANGLE_ENABLED} ) {
-	my $have_tcrules;
 
-	my $fn;
+	if ( $tcrules ) {
+	    my $have_tcrules;
 
-	if ( $fn = open_file( 'tcrules' , 2, 1 ) ) {
-	    my $fn1;
+	    my $fn;
 
-	    if ( $tcrules ) {
+	    if ( $fn = open_file( 'tcrules' , 2, 1 ) ) {
+		my $fn1;
 		#
 		# We are going to convert this tcrules file to the equivalent mangle file
 		#
 		open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
 
 		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
-	    }
 
-	    first_entry "$doing $fn...";
+		first_entry "$doing $fn...";
 
-	    process_tc_rule, $have_tcrules++ while read_a_line( NORMAL_READ );
+		process_tc_rule, $have_tcrules++ while read_a_line( NORMAL_READ );
 
-	    if ( $have_tcrules ) {
-		if ( $mangle ) {
+		if ( $have_tcrules ) {
 		    progress_message2 "Converted $fn to $fn1";
 		    if ( rename $fn, "$fn.bak" ) {
 			progress_message2 "$fn renamed $fn.bak";
 		    } else {
 			fatal_error "Cannot Rename $fn to $fn.bak: $!";
 		    }
-		} else {
-		    warning_message "Non-empty tcrules file ($fn); consider running '$product update -t'";
 		}
-	    }
 
-	    close $mangle, directive_callback( 0 ) if $tcrules;
+		close $mangle, directive_callback( 0 );
+	    }
 	}
 
 	if ( my $fn = open_file( 'mangle', 1, 1 ) ) {

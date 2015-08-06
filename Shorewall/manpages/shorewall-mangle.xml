@@ -1283,12 +1283,12 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <programlisting>       #ACTION    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
        #                                                       PORT(S)
-       1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-request
-       1:T        0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
+       MARK(1):T  0.0.0.0/0 0.0.0.0/0    icmp    echo-request
+       MARK(1):T  0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
        RESTORE:T  0.0.0.0/0 0.0.0.0/0    all     -             -       -       0
        CONTINUE:T 0.0.0.0/0 0.0.0.0/0    all     -             -       -       !0
-       4:T         0.0.0.0/0 0.0.0.0/0   ipp2p:all
-       SAVE:T      0.0.0.0/0 0.0.0.0/0   all     -             -       -       !0</programlisting>
+       MARK(4):T  0.0.0.0/0 0.0.0.0/0   ipp2p:all
+       SAVE:T     0.0.0.0/0 0.0.0.0/0   all     -             -       -       !0</programlisting>
 
           <para>If a packet hasn't been classified (packet mark is 0), copy
           the connection mark to the packet mark. If the packet mark is set,
@@ -1307,9 +1307,9 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <programlisting>/etc/shorewall/tcrules:
 
-       #ACTION   SOURCE         DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #                                                           PORT(S)
-       1-3:CF    192.168.1.0/24 eth0 ; state=NEW
+       #ACTION            SOURCE         DEST         PROTO   PORT(S)       SOURCE  USER    TEST
+       #                                                                    PORT(S)
+       CONNMARK(1-3):F    192.168.1.0/24 eth0 ; state=NEW
 
 /etc/shorewall/masq:
 

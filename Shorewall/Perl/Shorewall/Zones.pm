@@ -253,6 +253,7 @@ use constant { NO_UPDOWN   => 1,
 our %validinterfaceoptions;
 
 our %prohibitunmanaged = (
+			  blacklist      => 1,
 			  bridge         => 1,
 			  destonly       => 1,
 			  detectnets     => 1,
@@ -278,6 +279,7 @@ our %validhostoptions;
 
 our %validzoneoptions = ( mss            => NUMERIC,
 			  nomark         => NOTHING,
+			  blacklist      => NOTHING,
 			  dynamic_shared => NOTHING,
 			  strict         => NOTHING,
 			  next           => NOTHING,
@@ -294,6 +296,7 @@ use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
 # Hash of options that have their own key in the returned hash.
 #
 our %zonekey = ( mss            => UNRESTRICTED | COMPLEX ,
+		 blacklist      => NOFW, 
 		 nomark         => NOFW | IN_OUT_ONLY,
 		 dynamic_shared => IN_OUT_ONLY );
 
@@ -333,6 +336,7 @@ sub initialize( $$ ) {
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,
 				  arp_ignore  => ENUM_IF_OPTION,
+				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  bridge      => SIMPLE_IF_OPTION,
 				  destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  detectnets  => OBSOLETE_IF_OPTION,
@@ -361,6 +365,7 @@ sub initialize( $$ ) {
 				  wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (
+			     blacklist => 1,
 			     maclist => 1,
 			     nosmurfs => 1,
 			     routeback => 1,
@@ -380,6 +385,7 @@ sub initialize( $$ ) {
 		       64  => 'local' );
     } else {
 	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
+				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
 				    destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    dhcp        => SIMPLE_IF_OPTION,
@@ -404,6 +410,7 @@ sub initialize( $$ ) {
 				    wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (
+			     blacklist => 1,
 			     maclist => 1,
 			     routeback => 1,
 			     tcpflags => 1,
@@ -607,6 +614,21 @@ sub process_zone( \$ ) {
 	    progress_message_nocompress "   Zone $zone:\tmark value not assigned";
 	} else {
 	    progress_message_nocompress "   Zone $zone:\tmark value " . in_hex( $zoneref->{mark} = $mark );
+	}
+    }
+
+    if ( $zoneref->{options}{in_out}{blacklist} ) {
+	warning_message q(The 'blacklist' option is no longer supported);
+	for ( qw/in out/ ) {
+	    unless ( $zoneref->{options}{$_}{blacklist} ) {
+		$zoneref->{options}{$_}{blacklist} = 1;
+	    } else {
+		warning_message( "Redundant 'blacklist' in " . uc( $_ ) . '_OPTIONS' );
+	    }
+	}
+    } else {
+	for ( qw/in out/ ) {
+	    warning_message q(The 'blacklist' option is no longer supported), last if  $zoneref->{options}{$_}{blacklist};
 	}
     }
 
@@ -1200,8 +1222,12 @@ sub process_interface( $$ ) {
 
 	    if ( $type == SIMPLE_IF_OPTION ) {
 		fatal_error "Option $option does not take a value" if defined $value;
-		$options{$option} = 1;
-		$hostoptions{$option} = 1 if $hostopt;
+		if ( $option eq 'blacklist' ) {
+		    warning_message "The 'blacklist' interface option is no longer supported";
+		} else {
+		    $options{$option} = 1;
+		    $hostoptions{$option} = 1 if $hostopt;
+		}
 	    } elsif ( $type == BINARY_IF_OPTION ) {
 		$value = 1 unless defined $value;
 		fatal_error "Option value for '$option' must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
@@ -2038,6 +2064,8 @@ sub process_host( ) {
 		$ipsec = $interfaceref->{ipsec} = 1;
 	    } elsif ( $option eq 'norfc1918' ) {
 		warning_message "The 'norfc1918' host option is no longer supported"
+	    } elsif ( $option eq 'blacklist' ) {
+		warning_message "The 'blacklist' option is no longer supported";
 	    } elsif ( $option =~ /^mss=(\d+)$/ ) {
 		fatal_error "Invalid mss ($1)" unless $1 >= 500;
 		require_capability 'TCPMSS_TARGET', $option, 's';

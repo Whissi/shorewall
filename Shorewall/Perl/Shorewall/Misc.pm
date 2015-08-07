@@ -42,7 +42,7 @@ our @EXPORT = qw( process_tos
 		  setup_ecn
 		  add_common_rules
 		  setup_mac_lists
-		  process_routestopped
+		  convert_routestopped
 		  process_stoppedrules
 		  compile_stop_firewall
 		  generate_matrix
@@ -220,7 +220,7 @@ sub remove_blacklist( $ ) {
     while ( read_a_line( EMBEDDED_ENABLED | EXPAND_VARIABLES ) ) {
 	my ( $rule, $comment ) = split '#', $currentline, 2;
 
-	if ( $rule =~ /blacklist/ ) {
+	if ( $rule && $rule =~ /blacklist/ ) {
 	    $changed = 1;
 
 	    if ( $comment ) {
@@ -418,12 +418,36 @@ EOF
     }
 }
 
-sub process_routestopped() {
+sub convert_routestopped() {
 
     if ( my $fn = open_file 'routestopped' ) {
 	my ( @allhosts, %source, %dest , %notrack, @rule );
 
 	my $seq = 0;
+
+	my ( $stoppedrules, $fn1 );
+
+	if ( -f ( $fn1 = find_file( 'stoppedrules' ) ) ) {
+	    open $stoppedrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
+	} else {
+	    open $stoppedrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
+	    print $stoppedrules <<'EOF';
+#
+# Shorewall version 5 - Stopped Rules File
+#
+# For information about entries in this file, type "man shorewall-stoppedrules"
+#
+# The manpage is also online at
+# http://www.shorewall.net/manpages/shorewall-stoppedrules.html
+#
+# See http://shorewall.net/starting_and_stopping_shorewall.htm for additional
+# information.
+#
+###############################################################################
+#ACTION		SOURCE			DEST		PROTO	DEST	SOURCE
+#								PORT(S)	PORT(S)
+EOF
+	}
 
 	first_entry "$doing $fn...";
 
@@ -445,7 +469,9 @@ sub process_routestopped() {
 
 	    $seq++;
 
-	    my $rule = do_proto( $proto, $ports, $sports, 0 );
+	    my $rule = "$proto\t$ports\t$sports";
+
+	    $hosts = ALLIP if $hosts eq '-';
 
 	    for my $host ( split /,/, $hosts ) {
 		fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
@@ -486,13 +512,7 @@ sub process_routestopped() {
 		my $chainref = $filter_table->{FORWARD};
 
 		for my $host ( split /,/, $hosts ) {
-		    add_ijump( $chainref ,
-			       j => 'ACCEPT',
-			       imatch_source_dev( $interface ) ,
-			       imatch_dest_dev( $interface ) ,
-			       imatch_source_net( $host ) ,
-			       imatch_dest_net( $host ) );
-		    clearrule;
+		    print $stoppedrules "ACCEPT\t$interface:$host\t$interface:$host\n";
 		}
 	    }
 
@@ -501,44 +521,41 @@ sub process_routestopped() {
 
 	for my $host ( @allhosts ) {
 	    my ( $interface, $h, $seq ) = split /\|/, $host;
-	    my $source  = match_source_net $h;
-	    my $dest    = match_dest_net $h;
-	    my $sourcei = match_source_dev $interface;
-	    my $desti   = match_dest_dev $interface;
-	    my $rule    = shift @rule;
+	    my $rule = shift @rule;
 
-	    add_rule $filter_table->{INPUT},  "$sourcei $source $rule -j ACCEPT", 1;
-	    add_rule $filter_table->{OUTPUT}, "$desti $dest $rule -j ACCEPT", 1 unless $config{ADMINISABSENTMINDED};
+	    print $stoppedrules "ACCEPT\t$interface:$h\t\$FW\t$rule\n";
+	    print $stoppedrules "ACCEPT\t\$FW\t$interface:$h\t$rule\n" unless $config{ADMINISABSENTMINDED};
 
 	    my $matched = 0;
 
 	    if ( $source{$host} ) {
-		add_rule $filter_table->{FORWARD}, "$sourcei $source $rule -j ACCEPT", 1;
+		print $stoppedrules "ACCEPT\t$interface:$h\t-\t$rule\n";
 		$matched = 1;
 	    }
 
 	    if ( $dest{$host} ) {
-		add_rule $filter_table->{FORWARD}, "$desti $dest $rule -j ACCEPT", 1;
+		print $stoppedrules "ACCEPT\t-\t$interface:$h\t$rule\n";
 		$matched = 1;
 	    }
 
 	    if ( $notrack{$host} ) {
-		add_rule $raw_table->{PREROUTING}, "$sourcei $source $rule -j NOTRACK", 1;
-		add_rule $raw_table->{OUTPUT},     "$desti $dest $rule -j NOTRACK", 1;
+		print $stoppedrules "NOTRACK\t$interface:$h\t-\t$rule\n";
+		print $stoppedrules "NOTRACK\t\$FW\$interface:$h\t\$rule\n";
 	    }
 
 	    unless ( $matched ) {
 		for my $host1 ( @allhosts ) {
 		    unless ( $host eq $host1 ) {
 			my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
-			my $dest1 = match_dest_net $h1;
-			my $desti1 = match_dest_dev $interface1;
-			add_rule $filter_table->{FORWARD}, "$sourcei $desti1 $source $dest1 $rule -j ACCEPT", 1;
-			clearrule;
+			print $stoppedrules "ACCEPT\t$interface:$h\t$interface1:$h1\t$rule\n";
 		    }
 		}
 	    }
 	}
+
+	rename $fn, "$fn.bak";
+	progress_message2 "Routestopped file $fn saved in $fn.bak";
+	close $stoppedrules;
     }
 }
 
@@ -634,8 +651,8 @@ sub process_stoppedrules() {
 
 sub setup_mss();
 
-sub add_common_rules ( $$ ) {
-    my ( $upgrade_blacklist, $upgrade_tcrules ) = @_;
+sub add_common_rules ( $$$ ) {
+    my ( $upgrade_blacklist, $upgrade_tcrules , $upgrade_routestopped ) = @_;
     my $interface;
     my $chainref;
     my $target;
@@ -806,7 +823,7 @@ sub add_common_rules ( $$ ) {
     run_user_exit1 'initdone';
 
     if ( $upgrade_blacklist ) {
-	exit 0 unless convert_blacklist || $upgrade_tcrules;
+	exit 0 unless convert_blacklist || $upgrade_tcrules || $upgrade_routestopped;
     }
 
     $list = find_hosts_by_option 'nosmurfs';
@@ -1684,7 +1701,7 @@ sub add_output_jumps( $$$$$$$ ) {
     our @vservers;
     our %output_jump_added;
 
-    my $chain1            = rules_target firewall_zone , $zone;
+    my $chain1            = rules_target( firewall_zone , $zone );
     my $chain1ref         = $filter_table->{$chain1};
     my $nextchain         = dest_exclusion( $exclusions, $chain1 );
     my $outputref;
@@ -2266,8 +2283,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall( $$$ ) {
-    my ( $test, $export, $have_arptables ) = @_;
+sub compile_stop_firewall( $$$$ ) {
+    my ( $test, $export, $have_arptables, $routestopped ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};
@@ -2445,7 +2462,8 @@ EOF
 	}
     }
 
-    process_routestopped unless process_stoppedrules;
+    convert_routestopped if $routestopped;
+    process_stoppedrules;
 
     if ( have_capability 'IFACE_MATCH' ) {
 	add_ijump $input,  j => 'ACCEPT', iface => '--dev-in --loopback';

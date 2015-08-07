@@ -42,6 +42,7 @@
 #         --config_path=<path-list>   # Search path for config files
 #         --inline                    # Update alternative column specifications
 #         --tcrules                   # Create mangle from tcrules
+#         --routestopped              # Create stoppedrules from routestopped
 #
 use strict;
 use FindBin;
@@ -77,6 +78,7 @@ usage: compiler.pl [ <option> ... ] [ <filename> ]
     [ --config_path=<path-list> ]
     [ --inline ]
     [ --tcrules ]
+    [ --routestopped ]
 _EOF_
 
 exit shift @_;
@@ -107,6 +109,7 @@ my $shorewallrc   = '';
 my $shorewallrc1  = '';
 my $inline        = 0;
 my $tcrules       = 0;
+my $routestopped  = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -141,6 +144,7 @@ my $result = GetOptions('h'               => \$help,
 			'convert'         => \$convert,
 			'inline'          => \$inline,
 			'tcrules'         => \$tcrules,
+			'routestopped'    => \$routestopped,
 			'config_path=s'   => \$config_path,
 			'shorewallrc=s'   => \$shorewallrc,
 			'shorewallrc1=s'  => \$shorewallrc1,
@@ -171,4 +175,5 @@ compiler( script          => $ARGV[0] || '',
 	  shorewallrc1    => $shorewallrc1,
 	  inline          => $inline,
 	  tcrules         => $tcrules,
+	  routestopped    => $routestopped,
 	);

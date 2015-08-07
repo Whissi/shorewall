@@ -438,6 +438,7 @@ compiler() {
     [ -n "$g_directives" ] && options="$options --directives"
     [ -n "$g_tcrules" ] && options="$options --tcrules"
     [ -n "$g_inline" ] && options="$options --inline"
+    [ -n "$g_routestopped" ] && options="$options --routestopped"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -844,11 +845,16 @@ update_command() {
 			    g_tcrules=Yes
 			    option=${option#t}
 			    ;;
+			s*)
+			    g_routestopped=Yes
+			    option=${option#s}
+			    ;;
 			A*)
 			    g_inline=Yes
 			    g_convert=Yes
 			    g_directives=Yes
 			    g_tcrules=Yes
+			    g_routestopped=Yes
 			    option=${option#A}
 			    ;;
 			*)

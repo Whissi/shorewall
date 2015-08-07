@@ -1208,17 +1208,19 @@ sub process_interface( $$ ) {
 
 	    fatal_error "Invalid Interface option ($option)" unless my $type = $validinterfaceoptions{$option};
 
-	    if ( $zone ) {
-		fatal_error qq(The "$option" option may not be specified for a Vserver zone") if $zoneref->{type} & VSERVER && ! ( $type & IF_OPTION_VSERVER );
-	    } else {
-		fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY;
-	    }
-
 	    my $hostopt = $type & IF_OPTION_HOST;
 
-	    fatal_error "The \"$option\" option is not allowed on a bridge port" if $port && ! $hostopt;
-
 	    $type &= MASK_IF_OPTION;
+
+	    unless ( $type == BINARY_IF_OPTION && defined $value && $value eq '0' ) {
+		if ( $zone ) {
+		    fatal_error qq(The "$option" option may not be specified for a Vserver zone") if $zoneref->{type} & VSERVER && ! ( $type & IF_OPTION_VSERVER );
+		} else {
+		    fatal_error "The \"$option\" option may not be specified on a multi-zone interface" if $type & IF_OPTION_ZONEONLY;
+		}
+	    }
+
+	    fatal_error "The \"$option\" option is not allowed on a bridge port" if $port && ! $hostopt;
 
 	    if ( $type == SIMPLE_IF_OPTION ) {
 		fatal_error "Option $option does not take a value" if defined $value;

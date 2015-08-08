@@ -224,10 +224,12 @@ sub remove_blacklist( $ ) {
 	    $changed = 1;
 
 	    if ( $comment ) {
-		$comment =~ s/^/          / while $rule =~ s/blacklist,//;
+		$comment =~ s/^/          / while $rule =~ s/blacklist,// || $rule =~ s/,blacklist//;
 		$rule =~ s/blacklist/         /g;
 		$currentline = join( '#', $rule, $comment );
 	    } else {
+		$currentline =~ s/blacklist,//g;
+		$currentline =~ s/,blacklist//g;
 		$currentline =~ s/blacklist/         /g;
 	    }
 	}
@@ -540,7 +542,7 @@ EOF
 
 	    if ( $notrack{$host} ) {
 		print $stoppedrules "NOTRACK\t$interface:$h\t-\t$rule\n";
-		print $stoppedrules "NOTRACK\t\$FW\$interface:$h\t\$rule\n";
+		print $stoppedrules "NOTRACK\t\$FW\t$interface:$h\t$rule\n";
 	    }
 
 	    unless ( $matched ) {
@@ -824,6 +826,8 @@ sub add_common_rules ( $$$ ) {
 
     if ( $upgrade_blacklist ) {
 	exit 0 unless convert_blacklist || $upgrade_tcrules || $upgrade_routestopped;
+    } elsif ( my $fn = find_file 'blacklist' ) {
+	warning_message "The blacklist file is no longer supported -- use '$product update -b' to convert $fn to the equivalent blrules file";
     }
 
     $list = find_hosts_by_option 'nosmurfs';
@@ -2462,7 +2466,12 @@ EOF
 	}
     }
 
-    convert_routestopped if $routestopped;
+    if ( $routestopped ) {
+	convert_routestopped;
+    } elsif ( my $fn = find_file 'routestopped' ) {
+	warning_message "The routestopped file is no longer supported - use '$product update -s' to convert $fn to an equivalent 'stoppedrules' file";
+    }
+    
     process_stoppedrules;
 
     if ( have_capability 'IFACE_MATCH' ) {

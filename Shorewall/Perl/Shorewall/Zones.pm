@@ -1226,6 +1226,11 @@ sub process_interface( $$ ) {
 		fatal_error "Option $option does not take a value" if defined $value;
 		if ( $option eq 'blacklist' ) {
 		    warning_message "The 'blacklist' interface option is no longer supported";
+		    if ( $zone ) {
+			$zoneref->{options}{in}{blacklist} = 1;
+		    } else {
+			warning_message "The 'blacklist' option is ignored on multi-zone interfaces";
+		    }
 		} else {
 		    $options{$option} = 1;
 		    $hostoptions{$option} = 1 if $hostopt;
@@ -2068,6 +2073,7 @@ sub process_host( ) {
 		warning_message "The 'norfc1918' host option is no longer supported"
 	    } elsif ( $option eq 'blacklist' ) {
 		warning_message "The 'blacklist' option is no longer supported";
+		$zoneref->{options}{in}{blacklist} = 1;
 	    } elsif ( $option =~ /^mss=(\d+)$/ ) {
 		fatal_error "Invalid mss ($1)" unless $1 >= 500;
 		require_capability 'TCPMSS_TARGET', $option, 's';

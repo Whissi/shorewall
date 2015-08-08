@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_conntrack );
 our @EXPORT_OK = qw( handle_helper_rule );
-our $VERSION = 'MODULEVERSION';
+our $VERSION = '4.6_10';
 
 our %valid_ctevent = ( new        => 1,
 		       related    => 1,
@@ -56,7 +56,7 @@ sub initialize($) {
 }
 
 #
-# Conntrack
+# Notrack
 #
 sub process_conntrack_rule( $$$$$$$$$$ ) {
 
@@ -275,51 +275,130 @@ sub process_format( $ ) {
     $file_format = $format;
 }
 
-sub setup_conntrack() {
+sub setup_conntrack($) {
+    my $convert = shift;
+    my $fn;
+    my @files = $convert ? ( qw/notrack conntrack/ ) : ( 'conntrack' );
 
-    my $fn = open_file( 'conntrack', 3 , 1 );
+    for my $name ( qw/notrack conntrack/ ) {
 
-    if ( $fn ) {
+	$fn = open_file( $name, 3 , 1 );
 
-	my $action;
+	if ( $fn ) {
 
-	first_entry( "$doing $fn..." );
+	    my $action;
 
-	while ( read_a_line( NORMAL_READ ) ) {
-	    my ( $source, $dest, $protos, $ports, $sports, $user, $switch );
+	    my $empty = 1;
 
-	    ( $action, $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
+	    first_entry( "$doing $fn..." );
 
-	    for my $proto ( split_list $protos, 'Protocol' ) {
-		if ( $file_format < 3 ) {
-		    if ( $source =~ /^all(-)?(:(.+))?$/ ) {
-			fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
-			for my $zone ( $1 ? off_firewall_zones : all_zones ) {
-			    process_conntrack_rule( undef ,
-						    undef,
-						    $action,
-						    $zone . ( $2 || ''),
-						    $dest,
-						    $proto,
-						    $ports,
-						    $sports,
-						    $user ,
-						    $switch );
-			}
-		    } else {
-			process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		    }
-		} elsif ( $action =~ s/:O$// ) {
-		    process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		} elsif ( $action =~ s/:OP$// || $action =~ s/:PO// ) {
-		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
-		    process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+	    while ( read_a_line( NORMAL_READ ) ) {
+		my ( $source, $dest, $protos, $ports, $sports, $user, $switch );
+
+		if ( $file_format == 1 ) {
+		    ( $source, $dest, $protos, $ports, $sports, $user, $switch ) =
+			split_line1( 'Conntrack File',
+				     { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, user => 5, switch => 6 } );
+		    $action = 'NOTRACK';
 		} else {
-		    $action =~ s/:P$//;
-		    process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    ( $action, $source, $dest, $protos, $ports, $sports, $user, $switch ) = split_line1 'Conntrack File', { action => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, user => 6, switch => 7 };
+		}
+
+		$empty = 0;
+
+		for my $proto ( split_list $protos, 'Protocol' ) {
+		    if ( $file_format < 3 ) {
+			if ( $source =~ /^all(-)?(:(.+))?$/ ) {
+			    fatal_error 'USER/GROUP is not allowed unless the SOURCE zone is $FW or a Vserver zone' if $user ne '-';
+			    for my $zone ( $1 ? off_firewall_zones : all_zones ) {
+				process_conntrack_rule( undef ,
+							undef,
+							$action,
+							$zone . ( $2 || ''),
+							$dest,
+							$proto,
+							$ports,
+							$sports,
+							$user ,
+							$switch );
+			    }
+			} else {
+			    process_conntrack_rule( undef, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+			}
+		    } elsif ( $action =~ s/:O$// ) {
+			process_conntrack_rule( $raw_table->{OUTPUT}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    } elsif ( $action =~ s/:OP$// || $action =~ s/:PO// ) {
+			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+			process_conntrack_rule( $raw_table->{OUTPUT},     undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    } else {
+			$action =~ s/:P$//;
+			process_conntrack_rule( $raw_table->{PREROUTING}, undef, $action, $source, $dest, $proto, $ports, $sports, $user, $switch );
+		    }
 		}
 	    }
+
+	    if ( $name eq 'notrack') {
+		if ( $empty ) {
+		    if ( unlink( $fn ) ) {
+			warning_message "Empty notrack file ($fn) removed";
+		    } else {
+			warning_message "Unable to remove empty notrack file ($fn): $!";
+		    }
+		    $convert = undef;
+		}
+	    }
+	} elsif ( $name eq 'notrack' ) {
+	    $convert = undef;
 	}
+    }
+
+    if ( $convert ) {
+	my $conntrack;
+	my $empty  = 1;
+
+	if ( $fn ) {
+	    open $conntrack, '>>', $fn or fatal_error "Unable to open $fn for notrack conversion: $!";
+	} else {
+	    open $conntrack, '>', $fn = find_file 'conntrack' or fatal_error "Unable to open $fn for notrack conversion: $!";
+
+	    print $conntrack <<'EOF';
+#
+# Shorewall version 5 - conntrack File
+#
+# For information about entries in this file, type "man shorewall-conntrack"
+#
+##############################################################################################################
+EOF
+	    print $conntrack '?' . "FORMAT 3";
+	    
+	    print $conntrack <<'EOF';
+#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
+#                                                               PORT(S)         PORT(S) GROUP
+EOF
+	}
+
+	$fn = open_file( 'notrack' , 3, 1 ) || fatal_error "Unable to open the notrack file for conversion: $!";
+
+	while ( read_a_line( PLAIN_READ ) ) {
+	    #
+	    # Don't copy the header comments from the old notrack file
+	    #
+	    next if $empty && ( $currentline =~ /^\s*#/ || $currentline =~ /^\s*$/ );
+
+	    if ( $empty ) {
+		#
+		# First non-commentary line
+		#
+		$empty = undef;
+
+		print $conntrack '?' . "format 1\n" unless $currentline =~ /^\s*\??FORMAT/i;
+	    }
+
+	    print $conntrack "$currentline\n";
+	}
+
+	rename $fn, "$fn.bak" or fatal_error "Unable to rename $fn to $fn.bak: $!";
+	progress_message2 "notrack file $fn saved in $fn.bak"
     }
 }
 

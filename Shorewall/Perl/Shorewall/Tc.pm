@@ -3140,7 +3140,7 @@ sub process_secmark_rule() {
 }
 
 #
-# Process the tcrules file and setup traffic shaping
+# Process the mangle file and setup traffic shaping
 #
 sub setup_tc( $ ) {
     $tcrules = $_[0];
@@ -3222,6 +3222,8 @@ sub setup_tc( $ ) {
 
 		close $mangle, directive_callback( 0 );
 	    }
+	} elsif ( my $fn = find_file( 'tcrules' ) ) {
+	    warning_message "The tcrules file is no longer supported -- use the '$product update -t' to convert $fn to an equivalent 'mangle' file";
 	}
 
 	if ( my $fn = open_file( 'mangle', 1, 1 ) ) {

@@ -3931,7 +3931,7 @@ usage() # $1 = exit status
     echo "   status [ -i ]"
     echo "   stop"
     ecko "   try <directory> [ <timeout> ]"
-    ecko "   update [ -a ] [ -b ] [ -r ] [ -T ]  [ -D ] [ -i ] [-t] [-A] [ <directory> ]"
+    ecko "   update [ -a ] [ -b ] [ -r ] [ -T ]  [ -D ] [ -i ] [-t] [-s] [-n] [-A] [ <directory> ]"
     echo "   version [ -a ]"
     echo
     exit $1
@@ -3985,6 +3985,7 @@ shorewall_cli() {
     g_loopback=
     g_compiled=
     g_routestopped=
+    g_notrack=
 
     VERBOSE=
     VERBOSITY=1

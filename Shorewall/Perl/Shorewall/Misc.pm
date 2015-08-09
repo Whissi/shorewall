@@ -247,7 +247,7 @@ sub remove_blacklist( $ ) {
 }
 
 #
-# Convert a pre-4.4.25 blacklist to a 4.4.25 blacklist
+# Convert a pre-4.4.25 blacklist to a 4.4.25 blrules file
 #
 sub convert_blacklist() {
     my $zones  = find_zones_by_option 'blacklist', 'in';
@@ -265,7 +265,19 @@ sub convert_blacklist() {
 	    $target = verify_audit( $disposition );
 	}
 
-	my $fn = open_file 'blacklist';
+	my $fn = open_file( 'blacklist' );
+
+	unless ( $fn ) {
+	    if ( -f ( $fn = find_file( 'blacklist' ) ) ) {
+		if ( unlink( $fn ) ) {
+		    warning_message "Empty blacklist file ($fn) removed";
+		} else {
+		    warning_message "Unable to remove empty blacklist file $fn: $!";
+		}
+	    }
+
+	    return 0;
+	}
 
 	first_entry "Converting $fn...";
 
@@ -558,6 +570,12 @@ EOF
 	rename $fn, "$fn.bak";
 	progress_message2 "Routestopped file $fn saved in $fn.bak";
 	close $stoppedrules;
+    } elsif ( -f ( my $fn1 = find_file( 'routestopped' ) ) ) {
+	if ( unlink( $fn1 ) ) {
+	    warning_message "Empty routestopped file ($fn1) removed";
+	} else {
+	    warning_message "Unable to remove empty routestopped file $fn1: $!";
+	}
     }
 }
 
@@ -826,7 +844,7 @@ sub add_common_rules ( $$$ ) {
 
     if ( $upgrade_blacklist ) {
 	exit 0 unless convert_blacklist || $upgrade_tcrules || $upgrade_routestopped;
-    } elsif ( my $fn = find_file 'blacklist' ) {
+    } elsif ( -f ( my $fn = find_file 'blacklist' ) ) {
 	warning_message "The blacklist file is no longer supported -- use '$product update -b' to convert $fn to the equivalent blrules file";
     }
 

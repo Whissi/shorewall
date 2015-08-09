@@ -280,7 +280,7 @@ sub setup_conntrack($) {
     my $fn;
     my @files = $convert ? ( qw/notrack conntrack/ ) : ( 'conntrack' );
 
-    for my $name ( qw/notrack conntrack/ ) {
+    for my $name ( @files ) {
 
 	$fn = open_file( $name, 3 , 1 );
 
@@ -349,6 +349,14 @@ sub setup_conntrack($) {
 	    }
 	} elsif ( $name eq 'notrack' ) {
 	    $convert = undef;
+
+	    if ( -f ( my $fn1 = find_file( $name ) ) ) {
+		if ( unlink( $fn1 ) ) {
+		    warning_message "Empty notrack file ($fn1) removed";
+		} else {
+		    warning_message "Unable to remove empty notrack file ($fn1): $!";
+		}
+	    }
 	}
     }
 
@@ -369,7 +377,7 @@ sub setup_conntrack($) {
 #
 ##############################################################################################################
 EOF
-	    print $conntrack '?' . "FORMAT 3";
+	    print $conntrack '?' . "FORMAT 3\n";
 	    
 	    print $conntrack <<'EOF';
 #ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
@@ -391,7 +399,7 @@ EOF
 		#
 		$empty = undef;
 
-		print $conntrack '?' . "format 1\n" unless $currentline =~ /^\s*\??FORMAT/i;
+		print $conntrack '?' . "FORMAT 1\n" unless $currentline =~ /^\s*\??FORMAT/i;
 	    }
 
 	    print $conntrack "$currentline\n";

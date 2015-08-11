@@ -3218,11 +3218,23 @@ sub setup_tc( $ ) {
 		    } else {
 			fatal_error "Cannot Rename $fn to $fn.bak: $!";
 		    }
+		} else {
+		    if ( unlink $fn ) {
+			warning_message "Empty tcrules file ($fn) removed";
+		    } else {
+			warning_message "Unable to remove empty tcrules file $fn: $!";
+		    }
 		}
 
 		close $mangle, directive_callback( 0 );
+	    } elsif ( -f ( my $fn = find_file( 'tcrules' ) ) ) {
+		if ( unlink $fn ) {
+		    warning_message "Empty tcrules file ($fn) removed";
+		} else {
+		    warning_message "Unable to remove empty tcrules file $fn: $!";
+		}
 	    }
-	} elsif ( my $fn = find_file( 'tcrules' ) ) {
+	} elsif ( -f ( my $fn = find_file( 'tcrules' ) ) ) {
 	    warning_message "The tcrules file is no longer supported -- use the '$product update -t' to convert $fn to an equivalent 'mangle' file";
 	}
 

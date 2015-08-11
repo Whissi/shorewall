@@ -635,6 +635,7 @@ sub compiler {
 		  directives    => { store => \$directives,    validate=> \&validate_boolean    } ,
 		  tcrules       => { store => \$tcrules,       validate=> \&validate_boolean    } ,
 		  routestopped  => { store => \$routestopped,  validate=> \&validate_boolean    } ,
+		  notrack       => { store => \$notrack,       validate=> \&validate_boolean    } ,
 		  config_path   => { store => \$config_path } ,
 		  shorewallrc   => { store => \$shorewallrc } ,
 		  shorewallrc1  => { store => \$shorewallrc1 } ,

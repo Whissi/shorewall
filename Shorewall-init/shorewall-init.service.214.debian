@@ -5,8 +5,9 @@
 #
 [Unit]
 Description=Shorewall firewall (bootup security)
-Before=network.target
-Conflicts=iptables.service ip6tables.service firewalld.service
+Before=network-pre.target
+Wants=network-pre.target
+Conflicts=iptables.service firewalld.service
 
 [Service]
 Type=oneshot
@@ -15,6 +16,3 @@ EnvironmentFile=-/etc/default/shorewall-init
 StandardOutput=syslog
 ExecStart=/sbin/shorewall-init start
 ExecStop=/sbin/shorewall-init stop
-
-[Install]
-WantedBy=basic.target

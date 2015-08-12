@@ -42,6 +42,8 @@
 #         --config_path=<path-list>   # Search path for config files
 #         --inline                    # Update alternative column specifications
 #         --tcrules                   # Create mangle from tcrules
+#         --routestopped              # Create stoppedrules from routestopped
+#         --notrack                   # Create conntrack from notrack
 #
 use strict;
 use FindBin;
@@ -77,6 +79,8 @@ usage: compiler.pl [ <option> ... ] [ <filename> ]
     [ --config_path=<path-list> ]
     [ --inline ]
     [ --tcrules ]
+    [ --routestopped ]
+    [ --notrack ]
 _EOF_
 
 exit shift @_;
@@ -107,6 +111,8 @@ my $shorewallrc   = '';
 my $shorewallrc1  = '';
 my $inline        = 0;
 my $tcrules       = 0;
+my $routestopped  = 0;
+my $notrack       = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -141,6 +147,8 @@ my $result = GetOptions('h'               => \$help,
 			'convert'         => \$convert,
 			'inline'          => \$inline,
 			'tcrules'         => \$tcrules,
+			'routestopped'    => \$routestopped,
+			'notrack'         => \$notrack,
 			'config_path=s'   => \$config_path,
 			'shorewallrc=s'   => \$shorewallrc,
 			'shorewallrc1=s'  => \$shorewallrc1,

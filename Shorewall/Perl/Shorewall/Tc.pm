@@ -27,7 +27,7 @@
 #	You should have received a copy of the GNU General Public License
 #	along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
-#   This module deals with Traffic Shaping and the tcrules file.
+#   This module deals with Traffic Shaping and the mangle file.
 #
 package Shorewall::Tc;
 require Exporter;
@@ -3162,7 +3162,7 @@ sub process_secmark_rule() {
 }
 
 #
-# Process the tcrules file and setup traffic shaping
+# Process the mangle file and setup traffic shaping
 #
 sub setup_tc( $ ) {
     $tcrules = $_[0];
@@ -3243,11 +3243,22 @@ sub setup_tc( $ ) {
 			fatal_error "Cannot Rename $fn to $fn.bak: $!";
 		    }
 		} else {
-		    warning_message "Non-empty tcrules file ($fn); consider running '$product update -t'";
+		    if ( unlink $fn ) {
+			warning_message "Empty tcrules file ($fn) removed";
+		    } else {
+			warning_message "Unable to remove empty tcrules file $fn: $!";
+		    }
+		}
+
+		close $mangle, directive_callback( 0 ) if $tcrules;
+
+	    } elsif ( $tcrules && -f ( my $fn = find_file( 'tcrules' ) ) ) {
+		if ( unlink $fn ) {
+		    warning_message "Empty tcrules file ($fn) removed";
+		} else {
+		    warning_message "Unable to remove empty tcrules file $fn: $!";
 		}
 	    }
-
-	    close $mangle, directive_callback( 0 ) if $tcrules;
 	}
 
 	if ( my $fn = open_file( 'mangle', 1, 1 ) ) {

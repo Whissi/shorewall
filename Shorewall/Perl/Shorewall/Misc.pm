@@ -44,6 +44,7 @@ our @EXPORT = qw( process_tos
 		  setup_mac_lists
 		  process_routestopped
 		  process_stoppedrules
+		  convert_routestopped
 		  compile_stop_firewall
 		  generate_matrix
 		  );
@@ -360,14 +361,16 @@ sub remove_blacklist( $ ) {
     while ( read_a_line( EMBEDDED_ENABLED | EXPAND_VARIABLES ) ) {
 	my ( $rule, $comment ) = split '#', $currentline, 2;
 
-	if ( $rule =~ /blacklist/ ) {
+	if ( $rule && $rule =~ /blacklist/ ) {
 	    $changed = 1;
 
 	    if ( $comment ) {
-		$comment =~ s/^/          / while $rule =~ s/blacklist,//;
+		$comment =~ s/^/          / while $rule =~ s/blacklist,// || $rule =~ s/,blacklist//;
 		$rule =~ s/blacklist/         /g;
 		$currentline = join( '#', $rule, $comment );
 	    } else {
+		$currentline =~ s/blacklist,//g;
+		$currentline =~ s/,blacklist//g;
 		$currentline =~ s/blacklist/         /g;
 	    }
 	}
@@ -385,7 +388,7 @@ sub remove_blacklist( $ ) {
 }
 
 #
-# Convert a pre-4.4.25 blacklist to a 4.4.25 blacklist
+# Convert a pre-4.4.25 blacklist to a 4.4.25 blrules file
 #
 sub convert_blacklist() {
     my $zones  = find_zones_by_option 'blacklist', 'in';
@@ -403,7 +406,19 @@ sub convert_blacklist() {
 	    $target = verify_audit( $disposition );
 	}
 
-	my $fn = open_file 'blacklist';
+	my $fn = open_file( 'blacklist' );
+
+	unless ( $fn ) {
+	    if ( -f ( $fn = find_file( 'blacklist' ) ) ) {
+		if ( unlink( $fn ) ) {
+		    warning_message "Empty blacklist file ($fn) removed";
+		} else {
+		    warning_message "Unable to remove empty blacklist file $fn: $!";
+		}
+	    }
+
+	    return 0;
+	}
 
 	first_entry "Converting $fn...";
 
@@ -682,6 +697,153 @@ sub process_routestopped() {
     }
 }
 
+sub convert_routestopped() {
+
+    if ( my $fn = open_file 'routestopped' ) {
+	my ( @allhosts, %source, %dest , %notrack, @rule );
+
+	my $seq = 0;
+
+	my ( $stoppedrules, $fn1 );
+
+	if ( -f ( $fn1 = find_file( 'stoppedrules' ) ) ) {
+	    open $stoppedrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
+	} else {
+	    open $stoppedrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
+	    print $stoppedrules <<'EOF';
+#
+# Shorewall version 4 - Stopped Rules File
+#
+# For information about entries in this file, type "man shorewall-stoppedrules"
+#
+# The manpage is also online at
+# http://www.shorewall.net/manpages/shorewall-stoppedrules.html
+#
+# See http://shorewall.net/starting_and_stopping_shorewall.htm for additional
+# information.
+#
+###############################################################################
+#ACTION		SOURCE			DEST		PROTO	DEST	SOURCE
+#								PORT(S)	PORT(S)
+EOF
+	}
+
+	first_entry "$doing $fn...";
+
+	while ( read_a_line ( NORMAL_READ ) ) {
+
+	    my ($interface, $hosts, $options , $proto, $ports, $sports ) =
+		split_line( 'routestopped file',
+			    { interface => 0, hosts => 1, options => 2, proto => 3, dport => 4, sport => 5 } );
+
+	    my $interfaceref;
+
+	    fatal_error 'INTERFACE must be specified' if $interface eq '-';
+	    fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface $interface;
+	    $hosts = ALLIP unless $hosts && $hosts ne '-';
+
+	    my $routeback = 0;
+
+	    my @hosts;
+
+	    $seq++;
+
+	    my $rule = "$proto\t$ports\t$sports";
+
+	    $hosts = ALLIP if $hosts eq '-';
+
+	    for my $host ( split /,/, $hosts ) {
+		fatal_error "Ipsets not allowed with SAVE_IPSETS=Yes" if $host =~ /^!?\+/ && $config{SAVE_IPSETS};
+		validate_host $host, 1;
+		push @hosts, "$interface|$host|$seq";
+		push @rule, $rule;
+	    }
+
+
+	    unless ( $options eq '-' ) {
+		for my $option (split /,/, $options ) {
+		    if ( $option eq 'routeback' ) {
+			if ( $routeback ) {
+			    warning_message "Duplicate 'routeback' option ignored";
+			} else {
+			    $routeback = 1;
+			}
+		    } elsif ( $option eq 'source' ) {
+			for my $host ( split /,/, $hosts ) {
+			    $source{"$interface|$host|$seq"} = 1;
+			}
+		    } elsif ( $option eq 'dest' ) {
+			for my $host ( split /,/, $hosts ) {
+			    $dest{"$interface|$host|$seq"} = 1;
+			}
+		    } elsif ( $option eq 'notrack' ) {
+			for my $host ( split /,/, $hosts ) {
+			    $notrack{"$interface|$host|$seq"} = 1;
+			}
+		    } else {
+			warning_message "Unknown routestopped option ( $option ) ignored" unless $option eq 'critical';
+			warning_message "The 'critical' option is no longer supported (or needed)";
+		    }
+		}
+	    }
+
+	    if ( $routeback || $interfaceref->{options}{routeback} ) {
+		my $chainref = $filter_table->{FORWARD};
+
+		for my $host ( split /,/, $hosts ) {
+		    print $stoppedrules "ACCEPT\t$interface:$host\t$interface:$host\n";
+		}
+	    }
+
+	    push @allhosts, @hosts;
+	}
+
+	for my $host ( @allhosts ) {
+	    my ( $interface, $h, $seq ) = split /\|/, $host;
+	    my $rule = shift @rule;
+
+	    print $stoppedrules "ACCEPT\t$interface:$h\t\$FW\t$rule\n";
+	    print $stoppedrules "ACCEPT\t\$FW\t$interface:$h\t$rule\n" unless $config{ADMINISABSENTMINDED};
+
+	    my $matched = 0;
+
+	    if ( $source{$host} ) {
+		print $stoppedrules "ACCEPT\t$interface:$h\t-\t$rule\n";
+		$matched = 1;
+	    }
+
+	    if ( $dest{$host} ) {
+		print $stoppedrules "ACCEPT\t-\t$interface:$h\t$rule\n";
+		$matched = 1;
+	    }
+
+	    if ( $notrack{$host} ) {
+		print $stoppedrules "NOTRACK\t$interface:$h\t-\t$rule\n";
+		print $stoppedrules "NOTRACK\t\$FW\t$interface:$h\t$rule\n";
+	    }
+
+	    unless ( $matched ) {
+		for my $host1 ( @allhosts ) {
+		    unless ( $host eq $host1 ) {
+			my ( $interface1, $h1 , $seq1 ) = split /\|/, $host1;
+			print $stoppedrules "ACCEPT\t$interface:$h\t$interface1:$h1\t$rule\n";
+		    }
+		}
+	    }
+	}
+
+	rename $fn, "$fn.bak";
+	progress_message2 "Routestopped file $fn saved in $fn.bak";
+	close $stoppedrules;
+    } elsif ( -f ( my $fn1 = find_file( 'routestopped' ) ) ) {
+	if ( unlink( $fn1 ) ) {
+	    warning_message "Empty routestopped file ($fn1) removed";
+	} else {
+	    warning_message "Unable to remove empty routestopped file $fn1: $!";
+	}
+    }
+}
+
 #
 # Process the stoppedrules file. Returns true if the file was non-empty.
 #
@@ -774,8 +936,8 @@ sub process_stoppedrules() {
 
 sub setup_mss();
 
-sub add_common_rules ( $$ ) {
-    my ( $upgrade_blacklist, $upgrade_tcrules ) = @_;
+sub add_common_rules ( $$$ ) {
+    my ( $upgrade_blacklist, $upgrade_tcrules , $upgrade_routestopped ) = @_;
     my $interface;
     my $chainref;
     my $target;
@@ -946,7 +1108,7 @@ sub add_common_rules ( $$ ) {
     run_user_exit1 'initdone';
 
     if ( $upgrade_blacklist ) {
-	exit 0 unless convert_blacklist || $upgrade_tcrules;
+	exit 0 unless convert_blacklist || $upgrade_tcrules || $upgrade_routestopped;
     } else {
 	setup_blacklist;
     }
@@ -1826,7 +1988,7 @@ sub add_output_jumps( $$$$$$$ ) {
     our @vservers;
     our %output_jump_added;
 
-    my $chain1            = rules_target firewall_zone , $zone;
+    my $chain1            = rules_target( firewall_zone , $zone );
     my $chain1ref         = $filter_table->{$chain1};
     my $nextchain         = dest_exclusion( $exclusions, $chain1 );
     my $outputref;
@@ -2408,8 +2570,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall( $$$ ) {
-    my ( $test, $export, $have_arptables ) = @_;
+sub compile_stop_firewall( $$$$ ) {
+    my ( $test, $export, $have_arptables, $routestopped ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};
@@ -2598,7 +2760,12 @@ EOF
 	}
     }
 
-    process_routestopped unless process_stoppedrules;
+    if ( $routestopped ) {
+	convert_routestopped;
+	process_stoppedrules;
+    } else {
+	process_routestopped unless process_stoppedrules;
+    }
 
     if ( have_capability 'IFACE_MATCH' ) {
 	add_ijump $input,  j => 'ACCEPT', iface => '--dev-in --loopback';

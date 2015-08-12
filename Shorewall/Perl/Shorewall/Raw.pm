@@ -275,11 +275,14 @@ sub process_format( $ ) {
     $file_format = $format;
 }
 
-sub setup_conntrack() {
+sub setup_conntrack($) {
+    my $convert = shift;
+    my $fn;
+    my @files = $convert ? ( qw/notrack conntrack/ ) : ( 'conntrack' );
 
-    for my $name ( qw/notrack conntrack/ ) {
+    for my $name ( @files ) {
 
-	my $fn = open_file( $name, 3 , 1 );
+	$fn = open_file( $name, 3 , 1 );
 
 	if ( $fn ) {
 
@@ -341,11 +344,69 @@ sub setup_conntrack() {
 		    } else {
 			warning_message "Unable to remove empty notrack file ($fn): $!";
 		    }
+		    $convert = undef;
+		}
+	    }
+	} elsif ( $name eq 'notrack' ) {
+	    $convert = undef;
+
+	    if ( -f ( my $fn1 = find_file( $name ) ) ) {
+		if ( unlink( $fn1 ) ) {
+		    warning_message "Empty notrack file ($fn1) removed";
 		} else {
-		    warning_message "Non-empty notrack file ($fn); please move its contents to the conntrack file";
+		    warning_message "Unable to remove empty notrack file ($fn1): $!";
 		}
 	    }
 	}
+    }
+
+    if ( $convert ) {
+	my $conntrack;
+	my $empty  = 1;
+
+	if ( $fn ) {
+	    open $conntrack, '>>', $fn or fatal_error "Unable to open $fn for notrack conversion: $!";
+	} else {
+	    open $conntrack, '>', $fn = find_file 'conntrack' or fatal_error "Unable to open $fn for notrack conversion: $!";
+
+	    print $conntrack <<'EOF';
+#
+# Shorewall version 5 - conntrack File
+#
+# For information about entries in this file, type "man shorewall-conntrack"
+#
+##############################################################################################################
+EOF
+	    print $conntrack '?' . "FORMAT 3\n";
+	    
+	    print $conntrack <<'EOF';
+#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/           SWITCH
+#                                                               PORT(S)         PORT(S) GROUP
+EOF
+	}
+
+	$fn = open_file( 'notrack' , 3, 1 ) || fatal_error "Unable to open the notrack file for conversion: $!";
+
+	while ( read_a_line( PLAIN_READ ) ) {
+	    #
+	    # Don't copy the header comments from the old notrack file
+	    #
+	    next if $empty && ( $currentline =~ /^\s*#/ || $currentline =~ /^\s*$/ );
+
+	    if ( $empty ) {
+		#
+		# First non-commentary line
+		#
+		$empty = undef;
+
+		print $conntrack '?' . "FORMAT 1\n" unless $currentline =~ /^\s*\??FORMAT/i;
+	    }
+
+	    print $conntrack "$currentline\n";
+	}
+
+	rename $fn, "$fn.bak" or fatal_error "Unable to rename $fn to $fn.bak: $!";
+	progress_message2 "notrack file $fn saved in $fn.bak"
     }
 }
 

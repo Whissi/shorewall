@@ -4837,7 +4837,8 @@ sub update_config_file( $$ ) {
 	#
 	$fn = $annotate ? "$globals{SHAREDIR}/configfiles/${product}.conf.annotated" : "$globals{SHAREDIR}/configfiles/${product}.conf";
     }
-   if ( -f $fn ) {
+
+    if ( -f $fn ) {
 	my ( $template, $output );
 
 	open $template, '<' , $fn or fatal_error "Unable to open $fn: $!";
@@ -4925,8 +4926,10 @@ EOF
 	    }
 
 	    exit 0 unless ( $directives ||
-			    -f find_file 'blacklist' ||
-			    -f find_file 'tcrules' );
+			    -f find_file 'blacklist'   ||
+			    -f find_file 'tcrules'     ||
+			    -f find_file 'routestopped'
+			  );
 	}
     } else {
 	fatal_error "$fn does not exist";

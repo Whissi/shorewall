@@ -363,6 +363,7 @@ sub setup_conntrack($) {
     if ( $convert ) {
 	my $conntrack;
 	my $empty  = 1;
+	my $date = localtime;
 
 	if ( $fn ) {
 	    open $conntrack, '>>', $fn or fatal_error "Unable to open $fn for notrack conversion: $!";
@@ -384,6 +385,11 @@ EOF
 #                                                               PORT(S)         PORT(S) GROUP
 EOF
 	}
+
+	print( $conntrack
+	       "#\n" ,
+	       "# Rules generated from notrack file $fn by Shorewall $globals{VERSION} - $date\n" ,
+	       "#\n" );
 
 	$fn = open_file( 'notrack' , 3, 1 ) || fatal_error "Unable to open the notrack file for conversion: $!";
 

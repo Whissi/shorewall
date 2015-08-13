@@ -755,6 +755,10 @@
 
       <arg><option>-t</option></arg>
 
+      <arg><option>-r</option></arg>
+
+      <arg><option>-n</option></arg>
+
       <arg><option>-A</option></arg>
 
       <arg><replaceable>directory</replaceable></arg>
@@ -2133,24 +2137,24 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">update </emphasis>[-<option>b</option>]
+        <term><emphasis role="bold">update </emphasis> [-<option>b</option>]
         [-<option>d</option>] [-<option>r</option>] [-<option>T</option>]
         [-<option>a</option>] [-<option>D</option>] [-<option>i</option>]
-        [-<option>t</option>] [-<option>A</option>] [
+        [-<option>t</option>] [-r] [-n][-<option>A</option>] [
         <replaceable>directory</replaceable> ]</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.21 and causes the compiler to update
-          <filename>/etc/shorewall6/shorewall6.conf</filename> then validate
-          the configuration. The update will add options not present in the
-          existing file with their default values, and will move deprecated
+          <filename>/etc/shorewall/shorewall.conf then validate the
+          configuration</filename>. The update will add options not present in
+          the old file with their default values, and will move deprecated
           options with non-defaults to a deprecated options section at the
           bottom of the file. Your existing
-          <filename>shorewall6.conf</filename> file is renamed
-          <filename>shorewall6.conf.bak</filename>.</para>
+          <filename>shorewall.conf</filename> file is renamed
+          <filename>shorewall.conf.bak.</filename></para>
 
           <para>The <option>-a</option> option causes the updated
-          <filename>shorewall6.conf</filename> file to be annotated with
+          <filename>shorewall.conf</filename> file to be annotated with
           documentation.</para>
 
           <para>The <option>-b</option> option was added in Shorewall 4.4.26
@@ -2169,7 +2173,7 @@
           <para>The <option>-D</option> option was added in Shorewall 4.5.11.
           When this option is specified, the compiler will walk through the
           directories in the CONFIG_PATH replacing FORMAT and COMMENT entries
-          to compiler directives (e.g., ?FORMAT and ?COMMENT). When a file is
+          to compiler directives (e.g., ?FORMAT and ?COMMENT. When a file is
           updated, the original is saved in a .bak file in the same
           directory.</para>
 
@@ -2178,7 +2182,7 @@
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>.</para>
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
 
           <para>The <option>-t</option> option was added in Shorewall 4.6.0.
           When specified, <option>-t</option> causes <ulink
@@ -2197,7 +2201,7 @@
                 <filename>mangle</filename> file; if there is no
                 <filename>mangle</filename> file in the CONFIG_PATH, one will
                 be created in <filename
-                class="directory">/etc/shorewall6</filename>.</para>
+                class="directory">/etc/shorewall</filename>.</para>
               </listitem>
 
               <listitem>
@@ -2219,9 +2223,24 @@
             </orderedlist>
           </important>
 
+          <para>The <option>-r</option> option was added in Shorewall 4.6.12.
+          When specified, <option>-r</option> causes <ulink
+          url="manpages6/shorewall6-routestopped.html">shorewall6-routestopped(5)</ulink>
+          to be converted to <ulink
+          url="manpages6/shorewall6-stoppedrules.html">shorewall6-stoppedrules(5)</ulink>.
+          The old file is renamed with a .bak suffix.</para>
+
+          <para>The <option>-n</option> option was added in Shorewall 4.6.12.
+          When specified, <option>-n</option> causes <ulink
+          url="manpages6/shorewall6-routestopped.html">shorewall6-notrack(5)</ulink>
+          to be converted to <ulink
+          url="manpages6/shorewall6-conntrack.html">shorewall6-conntrack(5)</ulink>.
+          The old file is renamed with a .bak suffix.</para>
+
           <para>The <option>-A</option> option was added in Shorewall 4.6.0
           and is equivalent to specifying the <option>-b</option>,
-          <option>-D</option> and the <option>-t</option> options.</para>
+          <option>-D</option>, <option>-t,</option> <option>-r</option> and
+          the <option>-n</option> options.</para>
 
           <para>For a description of the other options, see the <emphasis
           role="bold">check</emphasis> command above.</para>

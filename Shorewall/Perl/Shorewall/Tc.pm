@@ -3252,11 +3252,15 @@ sub setup_tc( $ ) {
 
 		close $mangle, directive_callback( 0 ) if $tcrules;
 
-	    } elsif ( $tcrules && -f ( my $fn = find_file( 'tcrules' ) ) ) {
-		if ( unlink $fn ) {
-		    warning_message "Empty tcrules file ($fn) removed";
-		} else {
-		    warning_message "Unable to remove empty tcrules file $fn: $!";
+	    } elsif ( $tcrules ) {
+		close $mangle, directive_callback( 0 ) if $tcrules;
+
+		if ( -f ( my $fn = find_file( 'tcrules' ) ) ) {
+		    if ( unlink $fn ) {
+			warning_message "Empty tcrules file ($fn) removed";
+		    } else {
+			warning_message "Unable to remove empty tcrules file $fn: $!";
+		    }
 		}
 	    }
 	}

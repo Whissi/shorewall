@@ -4928,9 +4928,10 @@ EOF
 	    }
 
 	    exit 0 unless ( $directives ||
-			    -f find_file 'blacklist'   ||
-			    -f find_file 'tcrules'     ||
-			    -f find_file 'routestopped'
+			    -f find_file 'blacklist'    ||
+			    -f find_file 'tcrules'      ||
+			    -f find_file 'routestopped' ||
+			    -f find_file 'notrack'
 			  );
 	}
     } else {

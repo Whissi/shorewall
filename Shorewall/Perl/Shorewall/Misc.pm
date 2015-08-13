@@ -395,16 +395,12 @@ sub convert_blacklist() {
     my $zones1 = find_zones_by_option 'blacklist', 'out';
     my ( $level, $disposition ) = @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' };
     my $audit       = $disposition =~ /^A_/;
-    my $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
+    my $target      = $disposition;
     my $orig_target = $target;
     my @rules;
 
     if ( @$zones || @$zones1 ) {
-	if ( supplied $level ) {
-	    $target = 'blacklog';
-	} elsif ( $audit ) {
-	    $target = verify_audit( $disposition );
-	}
+	$target = "$target:$level" if supplied $level;
 
 	my $fn = open_file( 'blacklist' );
 
@@ -454,8 +450,6 @@ sub convert_blacklist() {
 		} else {
 		    warning_message "Duplicate 'audit' option ignored" if $auditone > 1;
 		}
-
-		$tgt = verify_audit( 'A_' . $target, $orig_target, $target );
 	    }
 
 	    for ( @options ) {

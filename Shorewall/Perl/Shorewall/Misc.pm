@@ -431,7 +431,8 @@ sub convert_routestopped() {
     if ( my $fn = open_file 'routestopped' ) {
 	my ( @allhosts, %source, %dest , %notrack, @rule );
 
-	my $seq = 0;
+	my $seq  = 0;
+	my $date = localtime;
 
 	my ( $stoppedrules, $fn1 );
 
@@ -456,6 +457,11 @@ sub convert_routestopped() {
 #								PORT(S)	PORT(S)
 EOF
 	}
+
+	print( $stoppedrules
+	       "#\n" ,
+	       "# Rules generated from routestopped file $fn by Shorewall $globals{VERSION} - $date\n" ,
+	       "#\n" );
 
 	first_entry "$doing $fn...";
 

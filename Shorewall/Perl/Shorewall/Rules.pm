@@ -1703,7 +1703,7 @@ sub process_action($$) {
 
     progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
-    push_open $actionfile, 2, 1;
+    push_open $actionfile, 2, 1, undef, 2;
 
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
 
@@ -1719,14 +1719,7 @@ sub process_action($$) {
 	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
 
 	if ( $file_format == 1 ) {
-	    warning_message( "FORMAT-1 actions are deprecated and support will be dropped in a future release" ) unless $fmt1actionwarn{$action}++;
-
-	    ($target, $source, $dest, $proto, $ports, $sports, $rate, $user, $mark ) =
-		split_line1( 
-		    'action file',
-		    { target => 0, source => 1, dest => 2, proto => 3, dport => 4, sport => 5, rate => 6, user => 7, mark => 8 },
-		    $rule_commands );
-	    $origdest = $connlimit = $time = $headers = $condition = $helper = '-';
+	    fatal_error( "FORMAT-1 actions are no longer supported" );
 	} else {
 	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
 		= split_line2( 'action file',
@@ -1972,7 +1965,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding Macro $macrofile...";
 
-    push_open $macrofile, 2, 1, no_comment;
+    push_open $macrofile, 2, 1, no_comment, 2;
 
     macro_comment $macro;
 
@@ -1981,14 +1974,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
 
 	if ( $file_format == 1 ) {
-	    warning_message( "FORMAT-1 macros are deprecated and support will be dropped in a future release" ) unless $fmt1macrowarn{$macro}++;
-
-	    ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $mrate, $muser ) = 
-		split_line2( 'macro file',
-			     \%rulecolumns,
-			     $rule_commands,
-			     undef, #Columns
-			     1 );   #Allow inline matches
+	    fatal_error( "FORMAT-1 macros are no longer supported" );
 	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = qw/- - - - - - -/;
 	} else {
 	    ( $mtarget,
@@ -2116,7 +2102,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 
     progress_message "..Expanding inline action $inlinefile...";
 
-    push_open $inlinefile, 2, 1;
+    push_open $inlinefile, 2, 1, undef , 2;
 
     my $save_comment = push_comment;
 

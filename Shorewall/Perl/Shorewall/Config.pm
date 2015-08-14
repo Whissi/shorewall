@@ -2332,8 +2332,8 @@ sub do_open_file( $ ) {
 # - ?COMMENT allowed in this file
 # - Ignore ?COMMENT in ths file
 #
-sub open_file( $;$$$ ) {
-    my ( $fname, $mf, $ca, $nc ) = @_;
+sub open_file( $;$$$$ ) {
+    my ( $fname, $mf, $ca, $nc, $cf ) = @_;
     
     $fname = find_file $fname;
 
@@ -2341,7 +2341,7 @@ sub open_file( $;$$$ ) {
 
     if ( -f $fname && -s _ ) {
 	$first_entry      = 0;
-	$file_format      = 1;
+	$file_format      = supplied $cf ? $cf : 1;
 	$max_format       = supplied $mf ? $mf : 1;
 	$comments_allowed = supplied $ca ? $ca : 0;
 	$nocomment        = $nc;
@@ -2968,15 +2968,15 @@ EOF
 # The following two functions allow module clients to nest opens. This happens frequently
 # in the Rules module.
 #
-sub push_open( $;$$$ ) {
-    my ( $file, $max , $ca, $nc ) = @_;
+sub push_open( $;$$$$ ) {
+    my ( $file, $max , $ca, $nc, $cf ) = @_;
     push_include;
     clear_section_function;
     my @a = @includestack;
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
-    open_file( $file , $max, $comments_allowed || $ca, $nc );
+    open_file( $file , $max, $comments_allowed || $ca, $nc , $cf );
 }
 
 sub pop_open() {

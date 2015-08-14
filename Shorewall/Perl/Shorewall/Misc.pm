@@ -2486,7 +2486,7 @@ EOF
 
     if ( $routestopped ) {
 	convert_routestopped;
-    } elsif ( my $fn = find_file 'routestopped' ) {
+    } elsif ( -f ( my $fn = find_file 'routestopped' ) ) {
 	warning_message "The routestopped file is no longer supported - use '$product update -s' to convert $fn to an equivalent 'stoppedrules' file";
     }
     

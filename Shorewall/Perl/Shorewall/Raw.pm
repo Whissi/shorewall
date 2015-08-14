@@ -278,9 +278,8 @@ sub process_format( $ ) {
 sub setup_conntrack($) {
     my $convert = shift;
     my $fn;
-    my @files = $convert ? ( qw/notrack conntrack/ ) : ( 'conntrack' );
 
-    for my $name ( @files ) {
+    for my $name ( qw/notrack conntrack/ ) {
 
 	$fn = open_file( $name, 3 , 1 );
 

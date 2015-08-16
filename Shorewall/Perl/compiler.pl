@@ -179,4 +179,6 @@ compiler( script          => $ARGV[0] || '',
 	  shorewallrc1    => $shorewallrc1,
 	  inline          => $inline,
 	  tcrules         => $tcrules,
+	  routestopped    => $routestopped,
+	  notrack         => $notrack,
 	);

@@ -1975,7 +1975,6 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 
 	if ( $file_format == 1 ) {
 	    fatal_error( "FORMAT-1 macros are no longer supported" );
-	    ( $morigdest, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper ) = qw/- - - - - - -/;
 	} else {
 	    ( $mtarget,
 	      $msource,

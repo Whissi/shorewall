@@ -6,6 +6,7 @@
 #
 [Unit]
 Description=Shorewall firewall (bootup security)
+Wants=network.target
 Before=network.target
 
 [Service]
@@ -15,3 +16,6 @@ EnvironmentFile=-/etc/default/shorewall-init
 StandardOutput=syslog
 ExecStart=/sbin/shorewall-init start
 ExecStop=/sbin/shorewall-init stop
+
+[Install]
+WantedBy=basic.target

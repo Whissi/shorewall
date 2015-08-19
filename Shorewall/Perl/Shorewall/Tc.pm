@@ -3245,7 +3245,7 @@ sub setup_tc( $ ) {
 
 		    close $mangle, directive_callback( 0 );
 		} else {
-		    warning_message "The tcrules file is deprecated in favor of the mangle file -- consider running '$product upgrade -t'";
+		    warning_message "Non-empty tcrules file ($fn); consider running '$product update -t'";
 		}
 	    } elsif ( $tcrules ) {
 		close $mangle, directive_callback( 0 );

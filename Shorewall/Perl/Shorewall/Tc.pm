@@ -3242,18 +3242,13 @@ sub setup_tc( $ ) {
 		    } else {
 			fatal_error "Cannot Rename $fn to $fn.bak: $!";
 		    }
+
+		    close $mangle, directive_callback( 0 );
 		} else {
-		    if ( unlink $fn ) {
-			warning_message "Empty tcrules file ($fn) removed";
-		    } else {
-			warning_message "Unable to remove empty tcrules file $fn: $!";
-		    }
+		    warning_message "The tcrules file is deprecated in favor of the mangle file -- consider running '$product upgrade -t'";
 		}
-
-		close $mangle, directive_callback( 0 ) if $tcrules;
-
 	    } elsif ( $tcrules ) {
-		close $mangle, directive_callback( 0 ) if $tcrules;
+		close $mangle, directive_callback( 0 );
 
 		if ( -f ( my $fn = find_file( 'tcrules' ) ) ) {
 		    if ( unlink $fn ) {

@@ -246,7 +246,10 @@ Squid   1       202     -               eth1            192.168.1.3     loose,no
 #                                                       PORT(S)
 MARK(202):P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
 
-            <para>Corresponding /etc/shorewall/tcrules entries are:</para>
+            <para>If you are still using a tcrules file, you should consider
+            switching to using a mangle file (<command>shorewall update
+            -t</command> will do that for you). Corresponding
+            /etc/shorewall/tcrules entries are:</para>
 
             <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
 #                                                 PORT(S)

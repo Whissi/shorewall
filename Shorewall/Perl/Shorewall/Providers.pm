@@ -847,11 +847,9 @@ CEOF
 	if ( $hostroute ) {
 	    if ( $family == F_IPV4 ) {
 		emit qq(run_ip route replace $gateway src $address dev $physical ${mtu});
-		emit qq(echo "\$IP route del $gateway src $address dev $physical > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 		emit qq(run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm);
 	    } else {
 		emit qq(qt \$IP -6 route add $gateway src $address dev $physical ${mtu});
-		emit qq(echo "\$IP route del $gateway src $address dev $physical > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 		emit qq(qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm);
 		emit qq(run_ip route add $gateway src $address dev $physical ${mtu}table $id $realm);
 	    }

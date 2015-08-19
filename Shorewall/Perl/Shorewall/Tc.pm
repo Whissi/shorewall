@@ -797,7 +797,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	if ( $commandref->{maxparams} == 1 ) {
 	    fatal_error "The $cmd requires a parameter";
 	} else {
-	    fatal_error "The $cmd ACTION only requires at least $commandref->{maxparams} parmeters";
+	    fatal_error "The $cmd ACTION requires at least $commandref->{maxparams} parmeters";
 	}
     }
     if ( $state ne '-' ) {

@@ -439,30 +439,46 @@ if [ -n "$SERVICEDIR" ]; then
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
 fi
 
-#
-# These use absolute path names since the files that they are removing existed
-# prior to the use of directory variables
-#
-delete_file ${DESTDIR}/usr/share/$PRODUCT/compiler
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.accounting
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.actions
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.dynamiczones
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.maclist
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.nat
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.providers
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.proxyarp
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tc
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tcrules
-delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tunnels
+if [ -z "$first_install" ]; then
+    #
+    # These use absolute path names since the files that they are removing existed
+    # prior to the use of directory variables
+    #
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/compiler
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.accounting
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.actions
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.dynamiczones
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.maclist
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.nat
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.providers
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.proxyarp
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tc
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tcrules
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tunnels
 
-if [ $PRODUCT = shorewall6 ]; then
-    delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
-    delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
-    delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
+    if [ $PRODUCT = shorewall6 ]; then
+	delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
+	delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
+	delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
+    fi
+
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
+    delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
+
+    #
+    # Delete obsolete config files and manpages
+    #
+    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/tos
+    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/tcrules
+    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/stoppedrules
+    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/notrack
+    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/blacklist
+    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-tos
+    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-tcrules
+    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-stoppedrules
+    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-notrack
+    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-blacklist
 fi
-
-delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
-delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
 
 #
 # Install the Modules file
@@ -741,16 +757,6 @@ if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcpri ]; then
     echo "TC Priority file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcpri"
 fi
 
-#
-# Install the TOS file
-#
-run_install $OWNERSHIP -m 0644 tos           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tos.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tos ]; then
-    run_install $OWNERSHIP -m 0600 tos${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tos
-    echo "TOS file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tos"
-fi
 #
 # Install the Tunnels file
 #

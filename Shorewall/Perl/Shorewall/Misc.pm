@@ -67,8 +67,6 @@ sub initialize( $ ) {
 }
 
 sub process_tos() {
-    my $chain    = have_capability( 'MANGLE_FORWARD' ) ? 'fortos'  : 'pretos';
-    my $stdchain = have_capability( 'MANGLE_FORWARD' ) ? 'FORWARD' : 'PREROUTING';
 
    if ( my $fn = open_file 'tos' ) {
 	my $first_entry = 1;
@@ -76,67 +74,11 @@ sub process_tos() {
 	my ( $pretosref, $outtosref );
 
 	first_entry( sub { progress_message2 "$doing $fn...";
-			   warning_message "Use of the tos file is deprecated in favor of the TOS target in the 'mangle' file";
-			   $pretosref = ensure_chain 'mangle' , $chain;
-			   $outtosref = ensure_chain 'mangle' , 'outtos';
+			   warning_message "Use of the tos file is no longer supported -- use the TOS target in the mangle file instead";
 		       }
 		   );
 
-	while ( read_a_line( NORMAL_READ ) ) {
-
-	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) =
-		split_line( 'tos file entry',
-			    { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } );
-
-	    $first_entry = 0;
-
-	    $tos = decode_tos( $tos , 1 );
-
-	    my $chainref;
-
-	    my $restriction = NO_RESTRICT;
-
-	    my ( $srczone , $source , $remainder );
-
-	    if ( $family == F_IPV4 ) {
-		( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
-		fatal_error 'Invalid SOURCE' if defined $remainder;
-	    } elsif ( $src =~ /^(.+?):<(.*)>\s*$/ || $src =~ /^(.+?):\[(.*)\]\s*$/ ) {
-		$srczone = $1;
-		$source  = $2;
-	    } else {
-		$srczone = $src;
-	    }
-
-	    if ( $srczone eq firewall_zone ) {
-		$chainref    = $outtosref;
-		$src         = $source || '-';
-		$restriction = OUTPUT_RESTRICT;
-	    } else {
-		$chainref = $pretosref;
-		$src =~ s/^all:?//;
-	    }
-
-	    $dst =~ s/^all:?//;
-
-	    expand_rule
-		$chainref ,
-		$restriction ,
-		'',
-		do_proto( $proto, $ports, $sports ) . do_test( $mark , $globals{TC_MASK} ) ,
-		$src ,
-		$dst ,
-		'' ,
-		'TOS' . $tos ,
-		'' ,
-		'TOS' ,
-		'';
-	}
-
-	unless ( $first_entry ) {
-	    add_ijump( $mangle_table->{$stdchain}, j => $chain )   if $pretosref->{referenced};
-	    add_ijump( $mangle_table->{OUTPUT},    j => 'outtos' ) if $outtosref->{referenced};
-	}
+	while ( read_a_line( NORMAL_READ )) { 1; }
     }
 }
 

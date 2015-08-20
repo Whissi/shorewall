@@ -76,7 +76,7 @@ sub process_tos() {
 	my ( $pretosref, $outtosref );
 
 	first_entry( sub { progress_message2 "$doing $fn...";
-			   warning_message "Use of the tos file is deprecated in favor of the TOS target in tcrules";
+			   warning_message "Use of the tos file is deprecated in favor of the TOS target in the 'mangle' file";
 			   $pretosref = ensure_chain 'mangle' , $chain;
 			   $outtosref = ensure_chain 'mangle' , 'outtos';
 		       }

@@ -71,24 +71,6 @@ startup_error() # $* = Error Message
 }
 
 #
-# Fatal Error
-#
-fatal_error() # $@ = Message
-{
-    echo "   ERROR: $@" >&2
-    exit 2
-}
-
-#
-# Not configured Error
-#
-not_configured_error() # $@ = Message
-{
-    echo "   ERROR: $@" >&2
-    exit 6
-}
-
-#
 # Create the required option string and run the passed script using
 # $SHOREWALL_SHELL
 #

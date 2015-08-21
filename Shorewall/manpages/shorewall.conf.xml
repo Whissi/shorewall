@@ -473,10 +473,10 @@
           UNTRACKED.</para>
 
           <para>Added in Shorewall 4.5.13 to replace the BLACKLISTNEWONLY
-          option below. Specifies the connection tracking states that are to
-          be subject to blacklist screening. If neither BLACKLIST nor
-          BLACKLISTNEWONLY are specified then the states subject to
-          blacklisting are NEW,ESTABLISHED,INVALID,UNTRACKED.</para>
+          option. Specifies the connection tracking states that are to be
+          subject to blacklist screening. If BLACKLIST is not specified then
+          the states subject to blacklisting are
+          NEW,ESTABLISHED,INVALID,UNTRACKED.</para>
 
           <para>ALL sends all packets through the blacklist chains.</para>
 
@@ -526,37 +526,6 @@
           packets sent to the <emphasis role="bold">blacklog</emphasis> target
           of <ulink
           url="/manpages/shorewall-blrules.html">shorewall-blrules</ulink>(5).</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">BLACKLISTNEWONLY=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>Deprecated in Shorewall 4.5.13 in favor of BLACKLIST
-          above.</para>
-
-          <para>When set to <emphasis role="bold">Yes</emphasis> or <emphasis
-          role="bold">yes</emphasis>, blacklists are only consulted for new
-          connections and for packets in the INVALID connection state (such as
-          TCP SYN,ACK when there has been no corresponding SYN). That includes
-          entries in the <ulink
-          url="/manpages/shorewall-blrules.html">shorewall-blrules</ulink> (5)
-          file and in the BLACKLIST section of <ulink
-          url="/manpages/shorewall-rules.html">shorewall-rules</ulink>
-          (5).</para>
-
-          <para>When set to <emphasis role="bold">No</emphasis> or <emphasis
-          role="bold">no</emphasis>, blacklists are consulted for every packet
-          (will slow down your firewall noticeably if you have large
-          blacklists). If the BLACKLISTNEWONLY option is not set or is set to
-          the empty value then BLACKLISTNEWONLY=No is assumed.</para>
-
-          <note>
-            <para>BLACKLISTNEWONLY=No is incompatible with
-            FASTACCEPT=Yes.</para>
-          </note>
         </listitem>
       </varlistentry>
 
@@ -844,11 +813,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           set FASTACCEPT=Yes then you may not include rules in the ESTABLISHED
           or RELATED sections of <ulink
           url="/manpages/shorewall-rules.html">shorewall-rules</ulink>(5).</para>
-
-          <note>
-            <para>FASTACCEPT=Yes is incompatible with
-            BLACKLISTNEWONLY=No.</para>
-          </note>
         </listitem>
       </varlistentry>
 
@@ -949,74 +913,6 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           <para>When HELPERS is specified on a system running Kernel 3.5.0 or
           later, automatic association of helpers to connections is
           disabled.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">HIGH_ROUTE_MARKS=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
-
-        <listitem>
-          <para>Deprecated in Shorewall 4.4.26 in favor of
-          PROVIDER_OFFSET.</para>
-
-          <para>Prior to version 3.2.0, it was not possible to use connection
-          marking in <ulink
-          url="/manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>(5)
-          if you had a multi-ISP configuration that uses the track
-          option.</para>
-
-          <para>You may set HIGH_ROUTE_MARKS=Yes in to effectively divide the
-          packet mark and connection mark into two mark fields.</para>
-
-          <para>The width of the fields are determined by the setting of
-          WIDE_TC_MARKS. If WIDE_TC_MARKS=No (the default):</para>
-
-          <orderedlist numeration="loweralpha">
-            <listitem>
-              <para>The MARK field in the providers file must have a value
-              that is less than 65536 and that is a multiple of 256 (using hex
-              representation, the values are 0x0100-0xFF00 with the low-order
-              8 bits being zero).</para>
-            </listitem>
-
-            <listitem>
-              <para>You may only set those mark values in the PREROUTING
-              chain.</para>
-            </listitem>
-
-            <listitem>
-              <para>Marks used for traffic shaping must still be in the range
-              of 1-255 and may still not be set in the PREROUTING
-              chain.</para>
-            </listitem>
-          </orderedlist>
-
-          <para>When WIDE_TC_MARKS=Yes:</para>
-
-          <orderedlist numeration="loweralpha">
-            <listitem>
-              <para>The MARK field in the providers file must have a value
-              that is a multiple of 65536 (using hex representation, the
-              values are 0x010000-0xFF0000 with the low-order 16 bits being
-              zero).</para>
-            </listitem>
-
-            <listitem>
-              <para>You may only set those mark values in the PREROUTING
-              chain.</para>
-            </listitem>
-
-            <listitem>
-              <para>Marks used for traffic shaping must be in the range of
-              1-16383 and may still not be set in the PREROUTING chain.</para>
-            </listitem>
-          </orderedlist>
-
-          <para>Regardless of the setting of WIDE_TC_MARKS, when you SAVE or
-          RESTORE in tcrules, only the TC mark value is saved or restored.
-          Shorewall handles saving and restoring the routing (provider)
-          marks.</para>
         </listitem>
       </varlistentry>
 
@@ -1652,11 +1548,11 @@ LOG:info:,bar                        net                    fw</programlisting>
           PREROUTING chain. This permits you to mark inbound traffic based on
           its destination address when DNAT is in use. To determine if your
           kernel has a FORWARD chain in the mangle table, use the <emphasis
-          role="bold">/sbin/shorewall show mangle</emphasis> command; if a
-          FORWARD chain is displayed then your kernel will support this
-          option. If this option is not specified or if it is given the empty
-          value (e.g., MARK_IN_FORWARD_CHAIN="") then MARK_IN_FORWARD_CHAIN=No
-          is assumed.</para>
+          role="bold">shorewall show mangle</emphasis> command; if a FORWARD
+          chain is displayed then your kernel will support this option. If
+          this option is not specified or if it is given the empty value
+          (e.g., MARK_IN_FORWARD_CHAIN="") then MARK_IN_FORWARD_CHAIN=No is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -1668,8 +1564,9 @@ LOG:info:,bar                        net                    fw</programlisting>
           <para>Added in Shorewall 4.4.26. Number of bits on the right of the
           32-bit packet mark to be masked when clearing the traffic shaping
           mark. Must be &gt;= TC_BITS and &lt;= PROVIDER_OFFSET (if
-          PROVIDER_OFFSET &gt; 0). Default value and the default values of the
-          other mark layout options is determined as follows:</para>
+          PROVIDER_OFFSET &gt; 0). Prior to Shorewall 5.0.0, default value and
+          the default values of the other mark layout options is determined as
+          follows:</para>
 
           <table frame="none">
             <title>Default Packet Mark Layout</title>
@@ -1706,6 +1603,10 @@ LOG:info:,bar                        net                    fw</programlisting>
               </tbody>
             </tgroup>
           </table>
+
+          <para>From 5.0.0 onward, the default value of MASK_BITS is 8, the
+          default value of PROVIDER_BITS, TC_BITS, MASK_BITS and
+          PROVIDER_OFFSET is 8.</para>
         </listitem>
       </varlistentry>
 
@@ -2897,22 +2798,6 @@ INLINE          -       -       -       ; -j REJECT
           of the capabilities supported by the compiler. When
           WARNOLDCAPVERSION is set to <emphasis role="bold">No</emphasis>, no
           warning is issued.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">WIDE_TC_MARKS=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
-
-        <listitem>
-          <para>Deprecated in Shorewall 4.4.26 in favor of TC_BITS and
-          MASK_BITS.</para>
-
-          <para>When set to No (the default), traffic shaping marks are 8
-          bytes wide (possible values are 1-255). When WIDE_TC_MARKS=Yes,
-          traffic shaping marks are 14 bytes wide (values 1-16383). The
-          setting of WIDE_TC_MARKS also has an effect on the HIGH_ROUTE_MARKS
-          option (see above).</para>
         </listitem>
       </varlistentry>
 

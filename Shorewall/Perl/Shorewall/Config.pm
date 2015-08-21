@@ -599,16 +599,12 @@ our %validlevels;            # Valid log levels.
 #
 # Deprecated options with their default values
 #
-our %deprecated = ( WIDE_TC_MARKS      => 'no',
-		    HIGH_ROUTE_MARKS   => 'no',
-		    BLACKLISTNEWONLY   => 'yes',
+our %deprecated = (
 		  );
 #
 # Deprecated options that are eliminated via update
 #
-our %converted = ( WIDE_TC_MARKS    => 1,
-		   HIGH_ROUTE_MARKS => 1,
-		   BLACKLISTNEWONLY => 1,
+our %converted = (
 		 );
 #
 # Eliminated options
@@ -618,6 +614,9 @@ our %eliminated = ( LOGRATE          => 1,
 		    EXPORTPARAMS     => 1,
 		    LEGACY_FASTSTART => 1,
 		    IPSECFILE        => 1,
+		    WIDE_TC_MARKS    => 1,
+		    HIGH_ROUTE_MARKS => 1,
+		    BLACKLISTNEWONLY => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -727,6 +726,8 @@ sub initialize( $;$$) {
 	  LOGFORMAT => undef,
 	  LOGTAGONLY => undef,
 	  LOGLIMIT => undef,
+	  LOGRATE => undef,
+	  LOGBURST => undef,
 	  LOGALLNEW => undef,
 	  BLACKLIST_LOG_LEVEL => undef,
 	  RELATED_LOG_LEVEL => undef,
@@ -4905,15 +4906,20 @@ sub process_shorewall_conf( $$$ ) {
 		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
 		    my ($var, $val) = ($1, $2);
 
-		    unless ( exists $config{$var} ) {
-			if ( exists $renamed{$var} ) {
-			    $var = $renamed{$var};
-			} elsif ( $eliminated{$var} ) {
+		    if ( exists $config{$var} ) {
+			if ( $eliminated{$var} && ! $update ) {
+			    fatal_error "The $var configuration option has been superceded - please run '$product update'";
+			}
+		    } elsif ( exists $renamed{$var} ) {
+			$var = $renamed{$var};
+		    } else {
+			if ( $eliminated{$var} ) {
 			    warning_message "The $var configuration option is no longer supported";
 			} else {
 			    warning_message "Unknown configuration option ($var) ignored";
-			    next ;
 			}
+
+			next;
 		    }
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
@@ -5494,6 +5500,18 @@ sub get_configuration( $$$$$ ) {
 	}
 
 	$globals{LOGLIMIT} = $limit;
+    } elsif ( $update && ( $config{LOGRATE} || $config{LOGBURST} ) ) {
+	if ( supplied $config{LOGRATE} ) {
+	    fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
+	}
+
+	if ( supplied $config{LOGBURST} ) {
+	    fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
+	}
+
+	$globals{LOGLIMIT}  = '-m limit ';
+	$globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if supplied $config{LOGRATE};
+	$globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if supplied $config{LOGBURST};
     } else {
 	$globals{LOGLIMIT} = '';
     }
@@ -5680,8 +5698,11 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
-    default_yes_no 'WIDE_TC_MARKS'              , '';
-    default_yes_no 'TRACK_PROVIDERS'            , '';
+
+    if ($update) {
+	default_yes_no 'WIDE_TC_MARKS'              , '';
+	default_yes_no 'TRACK_PROVIDERS'            , '';
+    }
 
     unless ( ( $config{NULL_ROUTE_RFC1918} || '' ) =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
 	default_yes_no( 'NULL_ROUTE_RFC1918', '' );
@@ -5715,10 +5736,18 @@ sub get_configuration( $$$$$ ) {
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 
-    numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
-    numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
-    numeric_option 'PROVIDER_BITS' ,   8, 0;
-    numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
+    if ( $update ) {
+	numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
+	numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
+	numeric_option 'PROVIDER_BITS' ,   8, 0;
+	numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
+    } else {
+	numeric_option 'TC_BITS'         , 8, 0;
+	numeric_option 'MASK_BITS'       , 8, 0;
+	numeric_option 'PROVIDER_OFFSET' , 8, 0;
+    }
+
+    numeric_option 'PROVIDER_BITS'   , 8, 0;
     numeric_option 'ZONE_BITS'       , 0, 0;
 
     require_capability 'MARK_ANYWHERE', 'A non-zero ZONE_BITS setting', 's' if $config{ZONE_BITS};

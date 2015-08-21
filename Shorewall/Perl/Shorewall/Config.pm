@@ -153,12 +153,10 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       run_user_exit2
 				       generate_aux_config
 				       format_warning
-				       process_comment
 				       no_comment
 				       macro_comment
 				       dump_mark_layout
                                        set_section_function
-                                       section_warning
                                        clear_section_function
                                        directive_callback
 
@@ -563,9 +561,6 @@ our $comment;                # Current COMMENT
 our $comments_allowed;       # True if [?]COMMENT is allowed in the current file
 our $nocomment;              # When true, ignore [?]COMMENT in the current file
 our $warningcount;           # Used to suppress duplicate warnings about missing COMMENT support
-our $warningcount1;          # Used to suppress duplicate warnings about COMMENT being deprecated
-our $warningcount2;          # Used to suppress duplicate warnings about FORMAT being deprecated
-our $warningcount3;          # Used to suppress duplicate warnings about SECTION being deprecated
 our $checkinline;            # The -i option to check/compile/etc.
 our $directive_callback;     # Function to call in compiler_directive
 
@@ -706,9 +701,6 @@ sub initialize( $;$$) {
     #
     $comment       = '';
     $warningcount  = 0;
-    $warningcount1 = 0;
-    $warningcount2 = 0;
-    $warningcount3 = 0;
     #
     # Misc Globals
     #
@@ -2227,27 +2219,7 @@ sub split_line($$) {
     &split_line1( @_, {} );
 }
 
-#
-# Generate a FORMAT warning
-#
-sub format_warning() {
-    warning_message "'FORMAT' is deprecated in favor of '?FORMAT' - consider running '$product update -D'" unless $warningcount2++; 
-}    
-
-#
-# Process a COMMENT line (in $currentline)
-#
 sub have_capability( $;$ );
-
-sub process_comment() {
-    if ( have_capability( 'COMMENTS' ) ) {
-	warning_message "'COMMENT' is deprecated in favor of '?COMMENT' - consider running '$product update -D'" unless $warningcount1++; 
-	( $comment = $currentline ) =~ s/^\s*COMMENT\s*//;
-	$comment =~ s/\s*$//;
-    } else {
-	warning_message "COMMENTs ignored -- require comment support in iptables/Netfilter" unless $warningcount++;
-    }
-}
 
 #
 # Returns True if there is a current COMMENT or if COMMENTS are not available.
@@ -2303,13 +2275,6 @@ sub set_section_function( \& ) {
 sub clear_section_function() {
     $section_function = undef;
 }
-
-#
-# Generate a SECTION warning
-#
-sub section_warning() {
-    warning_message "'SECTION' is deprecated in favor of '?SECTION' - consider running '$product update -D'" unless $warningcount3++; 
-}    
 
 #
 # Open a file, setting $currentfile. Returns the file's absolute pathname if the file
@@ -3428,27 +3393,6 @@ sub read_a_line($) {
 		#
 		$currentline =~ s/\s*$//;
 	    }
-
-	    if ( $comments_allowed && $currentline =~ /^\s*COMMENT\b/ ) {
-		process_comment unless $nocomment;
-		$directive_callback->( 'COMMENT', $currentline ) if $directive_callback;
-		$currentline = '';
-		$currentlinenumber = 0;
-		next
-	    }
-
-	    if ( $max_format > 1 && $currentline =~ /^\s*FORMAT\s+(.+)/ ) {
-		format_warning;
-		my $format = $1;
-		fatal_error( "Invalid format ($format)" )                 unless $format =~ /\d+/;
-		fatal_error( "Format must be between 1 and $max_format" ) unless $format && $format <= $max_format;
-		$file_format = $format;
-		$directive_callback->( 'FORMAT', $currentline ) if $directive_callback;
-		$currentline = '';
-		$currentlinenumber = 0;
-		next
-	    }
-
 	    #
 	    # Line not blank -- Handle any first-entry message/capabilities check
 	    #

@@ -3272,8 +3272,6 @@ sub process_raw_rule ( ) {
 
 
     fatal_error 'ACTION must be specified' if $target eq '-';
-
-    section_warning, process_section( $source ), return 1 if $target eq 'SECTION';
     #
     # Section Names are optional so once we get to an actual rule, we need to be sure that
     # we close off any missing sections.

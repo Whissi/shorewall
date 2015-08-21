@@ -433,13 +433,8 @@ sub process_accounting_rule( ) {
 
     fatal_error 'ACTION must be specified' if $action eq '-';
 
-    if ( $action eq 'SECTION' ) {
-	section_warning;
-	process_section( $chain );
-    } else {
-	for my $proto ( split_list $protos, 'Protocol' ) {
-	    $nonempty |= process_accounting_rule1( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers );
-	}
+    for my $proto ( split_list $protos, 'Protocol' ) {
+	$nonempty |= process_accounting_rule1( $action, $chain, $source, $dest, $proto, $ports, $sports, $user, $mark, $ipsec, $headers );
     }
 
     $nonempty;

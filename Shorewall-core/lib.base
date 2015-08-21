@@ -76,6 +76,24 @@ elif [ -z "${VARDIR}" ]; then
 fi
 
 #
+# Fatal Error
+#
+fatal_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 2
+}
+
+#
+# Not configured Error
+#
+not_configured_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 6
+}
+
+#
 # Conditionally produce message
 #
 progress_message() # $* = Message

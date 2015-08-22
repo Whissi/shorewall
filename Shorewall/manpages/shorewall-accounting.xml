@@ -81,12 +81,8 @@
 
     <para>Section headers have the form:</para>
 
-    <para><option>[?]SECTION</option>
+    <para><option>?SECTION</option>
     <replaceable>section-name</replaceable></para>
-
-    <para>The optional "?" was added in Shorewalll 4.6.0 and is preferred.
-    Existing configurations may be converted to use this form using the
-    <command>shorewall update</command> command.</para>
 
     <para>When sections are enabled:</para>
 
@@ -357,19 +353,14 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">[?]COMMENT</emphasis></term>
+              <term><emphasis role="bold">?COMMENT</emphasis></term>
 
               <listitem>
                 <para>The remainder of the line is treated as a comment which
                 is attached to subsequent rules until another COMMENT line is
                 found or until the end of the file is reached. To stop adding
                 comments to rules, use a line with only the word
-                COMMENT.</para>
-
-                <note>
-                  <para>Beginning with Shorewall 4.5.11, ?COMMENT is a synonym
-                  for COMMENT and is preferred.</para>
-                </note>
+                ?COMMENT.</para>
               </listitem>
             </varlistentry>
           </variablelist>

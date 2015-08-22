@@ -118,8 +118,10 @@
         <term><emphasis role="bold">NEW</emphasis></term>
 
         <listitem>
-          <para>Packets in the NEW, INVALID and UNTRACKED states are processed
-          by rules in this section.</para>
+          <para>Packets in the NEW state are processed by rules in this
+          section. If the INVALID and/or UNTRACKED sections are empty or not
+          included, then the packets in the corresponding state(s) are also
+          processed in this section.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -233,7 +235,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term>AUDIT[(accept|drop|reject)]</term>
+              <term><emphasis
+              role="bold">AUDIT</emphasis>[(accept|drop|reject)]</term>
 
               <listitem>
                 <para>Added in Shorewall 4.5.10. Audits the packet with the
@@ -244,7 +247,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term>A_ACCEPT, and A_ACCEPT!</term>
+              <term><emphasis role="bold">A_ACCEPT</emphasis>, and <emphasis
+              role="bold">A_ACCEPT!</emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT
@@ -254,7 +258,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term>A_DROP and A_DROP!</term>
+              <term><emphasis role="bold">A_DROP</emphasis> and <emphasis
+              role="bold">A_DROP!</emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of DROP and
@@ -264,7 +269,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term>A_REJECT AND A_REJECT!</term>
+              <term><emphasis role="bold">A_REJECT</emphasis> AND<emphasis
+              role="bold"> A_REJECT!</emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of REJECT
@@ -392,7 +398,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>HELPER</term>
+              <term><emphasis role="bold">HELPER</emphasis></term>
 
               <listitem>
                 <para>Added in Shorewall 4.5.7. This action requires that the
@@ -446,7 +452,8 @@
             </varlistentry>
 
             <varlistentry>
-              <term>IP6TABLES({<replaceable>ip6tables-target</replaceable>
+              <term><emphasis
+              role="bold">IP6TABLES</emphasis>({<replaceable>ip6tables-target</replaceable>
               [<replaceable>option</replaceable> ...])</term>
 
               <listitem>
@@ -638,8 +645,9 @@
             </varlistentry>
 
             <varlistentry>
-              <term>TARPIT [(<emphasis role="bold">tarpit</emphasis> |
-              <emphasis role="bold">honeypot</emphasis> | <emphasis
+              <term><emphasis role="bold">TARPIT</emphasis> [(<emphasis
+              role="bold">tarpit</emphasis> | <emphasis
+              role="bold">honeypot</emphasis> | <emphasis
               role="bold">reset</emphasis>)]</term>
 
               <listitem>

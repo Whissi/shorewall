@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall 5</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2015</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>There are currently two principle groups of changes that distinguish
+    Shorewall 5 from Shorewall 4:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Cruft Removal - over the years, as new ways to accomplish
+        various tasks are added to Shorewall, support for the old way of doing
+        things has generally been retained but deprecated. Shorewall 5 drops
+        support for those deprecated features.</para>
+      </listitem>
+
+      <listitem>
+        <para>Changes to CLI commands - In order to make command names more
+        accurately reflect what the associated commands do, a number of
+        commands have been renamed or the function that they perform has been
+        changed.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Each of these groups is described in more detail in the sections
+    that follow.</para>
+  </section>
+
+  <section>
+    <title>Cruft Removal</title>
+
+    <para>Removal of superseded features makes the code cleaner and easier to
+    extend while also reducing compilation and execution time. The following
+    subsections detail the features that are no longer supported in Shorewall
+    5.</para>
+
+    <section>
+      <title>Scripts Compiled with Shorewall 4.4.7 or Earlier</title>
+
+      <para>Shorewall 5 cannot correctly run scripts compiled with Shorewall
+      4.4.7 or earlier releases. Such scripts must be recompiled with 4.4.8 or
+      later prior to upgrading to Shorewall 5.</para>
+    </section>
+
+    <section>
+      <title>Workarounds</title>
+
+      <para>Over the years, a number of workarounds have been added to
+      Shorewall to work around defects in other products. In current
+      distributions, those defects have been corrected and in 4.6.11, a
+      WORKAROUNDS configuration option was added to disable those workarounds.
+      In Shorewall 5, the WORKAROUNDS setting is still available in the
+      shorewall[6].conf files but:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Its default setting has been changed to No.</para>
+        </listitem>
+
+        <listitem>
+          <para>All workarounds for old distributions have been
+          eliminated.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+
+    <section>
+      <title>Removal of Configuration Options</title>
+
+      <para>A number of configuration options have been eliminated in
+      Shorewall 5. The following options have been eliminated and the
+      functionality that they enabled is been removed:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>EXPORTPARAMS</para>
+        </listitem>
+
+        <listitem>
+          <para>IPSECFILE</para>
+        </listitem>
+
+        <listitem>
+          <para>LEGACY_FASTSTART</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>A compilation warning is issued when any of these options are
+      encountered in the .conf file, and the <command>shorewall[6]
+      update</command> command will remove them from the configuration
+      file.</para>
+
+      <para>These options have been eliminated because they have been
+      superseded by newer options.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>LOGRATE and LOGBURST (superseded by LOGLIMIT)</para>
+        </listitem>
+
+        <listitem>
+          <para>WIDE_TC_MARKS (superseded by TC_BITS)</para>
+        </listitem>
+
+        <listitem>
+          <para>HIGH_ROUTE_MARKS (superseded by PROVIDER_OFFSET)</para>
+        </listitem>
+
+        <listitem>
+          <para>BLACKLISTNEWONLY (superseded by BLACKLIST)</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>A fatal compilation error is emitted if any of these options are
+      present in the .conf file, and the <command>shorewall[6]
+      update</command> command will replace these options with equivalent
+      setting for the options that supersede them.</para>
+    </section>
+
+    <section>
+      <title>Obsolete Configuration Files</title>
+
+      <para>Support has been removed for the 'blacklist', 'tcrules',
+      'routestopped', 'notrack' and 'tos' files.</para>
+
+      <para>The <option>-t</option> and <option>-b</option> options of the
+      <command>update</command> command are still available to convert the
+      'tcrules' file to the equivalent 'mangle' file and to convert the
+      'blacklist' file into an equivalent 'blrules' file. </para>
+
+      <para>As in Shorewall 4.6.12, the <option>-s</option> option is
+      available to convert the 'routestopped' file into the equivalent
+      'stoppedrules' file and the <option>-n</option> option is available to
+      convert a 'notrack' file to the equivalent 'conntrack' file.</para>
+
+      <para> No update option is available to update the 'tos' file. Its
+      entries must be manually converted to TOS rules in the 'mangle'
+      file.</para>
+    </section>
+
+    <section>
+      <title>Macro and Action Formats</title>
+
+      <para>Originally, macro and action files had formats that were different
+      from that of the rules file,</para>
+
+      <para>Format-1 action files had the following columns:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>TARGET</para>
+        </listitem>
+
+        <listitem>
+          <para>SOURCE</para>
+        </listitem>
+
+        <listitem>
+          <para>DEST</para>
+        </listitem>
+
+        <listitem>
+          <para>PROTO</para>
+        </listitem>
+
+        <listitem>
+          <para>DEST PORT(S)</para>
+        </listitem>
+
+        <listitem>
+          <para>SOURCE PORT(S)</para>
+        </listitem>
+
+        <listitem>
+          <para>RATE</para>
+        </listitem>
+
+        <listitem>
+          <para>USER/GROUP</para>
+        </listitem>
+
+        <listitem>
+          <para>MARK</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Format-1 macro files were similar but did not support the MARK
+      column.</para>
+
+      <para>Format-2 macro and action files have these columns:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>TARGET</para>
+        </listitem>
+
+        <listitem>
+          <para>SOURCE</para>
+        </listitem>
+
+        <listitem>
+          <para>DEST</para>
+        </listitem>
+
+        <listitem>
+          <para>PROTO</para>
+        </listitem>
+
+        <listitem>
+          <para>DEST PORT(S)</para>
+        </listitem>
+
+        <listitem>
+          <para>SOURCE PORT(S)</para>
+        </listitem>
+
+        <listitem>
+          <para>ORIGINAL DEST</para>
+        </listitem>
+
+        <listitem>
+          <para>RATE</para>
+        </listitem>
+
+        <listitem>
+          <para>USER/GROUP</para>
+        </listitem>
+
+        <listitem>
+          <para>MARK</para>
+        </listitem>
+
+        <listitem>
+          <para>CONNLIMIT</para>
+        </listitem>
+
+        <listitem>
+          <para>TIME</para>
+        </listitem>
+
+        <listitem>
+          <para>HEADERS (Only valid for IPv6)</para>
+        </listitem>
+
+        <listitem>
+          <para>SWITCH</para>
+        </listitem>
+
+        <listitem>
+          <para>HELPER</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Notice that the first five columns of both sets are the
+      same.</para>
+
+      <para>In Shorewall 5, support for format-1 macros and actions has been
+      dropped and all macros and actions will be processed as if ?FORMAT 2
+      were included before the first entry. Given that the vast majority of
+      actions and macros only use the first five columns, this change will be
+      of no concern to most users, but will cause compilation errors if
+      columns beyold the fifth one are populated.</para>
+    </section>
+
+    <section>
+      <title>COMMENT, FORMAT and SECTION Lines</title>
+
+      <para>COMMENT, FORMAT and SECTION Lines now require the leading question
+      mark ("?"). In earlier releases, the question mark was optional. The
+      <command>shorewall[6] update -D</command> command will insert the
+      question marks for you.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>CLI Command Changes</title>
+
+    <para>A number of commands have been renamed and/or now perform a
+    different function.</para>
+
+    <section>
+      <title>restart</title>
+
+      <para>The <command>restart</command> command now does a true restart and
+      is equivalent to a <command>stop</command> followed by a
+      <command>start</command>.</para>
+    </section>
+
+    <section>
+      <title>load</title>
+
+      <para>The function performed by the Shorewall-4 <command>load</command>
+      command is now performed by the <command>remote_start</command>
+      command.</para>
+    </section>
+
+    <section>
+      <title>reload</title>
+
+      <para>In Shorewall 5, the <command>reload</command> command now performs
+      the same function as the <command>restart</command> command did in
+      Shorewall 4. The action taken by the Shorewall-4
+      <command>reload</command> command is now performed by the
+      <command>remote_restart</command> command.</para>
+
+      <para>For those that can't get used to the idea of using
+      <command>reload</command> in place of <command>restart</command>, a
+      LEGACY_RESTART option has been added to shorewall[6].conf. The option
+      defaults to No but if set to Yes, then the <command>restart</command>
+      command does what it did in earlier releases.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Upgrading to Shorewall 5</title>
+
+    <para>It is stongly recommended that you first upgrade your installation
+    to a 4.6 release that supports the <option>-A</option> option to the
+    <command>update</command> command; 4.6.12 or later is preferred.</para>
+
+    <para>Once you are on that release, execute the <command>shorewall update
+    -A</command> command (and <command>shorewall6 update -A</command> if you
+    also have Shorewall6).</para>
+
+    <para>If you have a non-empty 'tos' file, it is also suggested that you
+    manually convert its entries to equivalent TOS entries in the 'mangle'
+    file.</para>
+
+    <para>Finally, add ?FORMAT 2 to each of your macro and action files and be
+    sure that the check command does not produce errors -- if it does, you can
+    shuffle the columns around to make them work on both Shorewall 4 and
+    Shorewall 5.</para>
+
+    <para>These steps can also be taken after you upgrade, but your firewall
+    likely won't start or work correctly until you do.</para>
+  </section>
+
+  <section>
+    <title>Potential Upgrade Issues</title>
+
+    <para>There are several potential problems with using the <command>update
+    -A</command> command. These are described in the following
+    sections.</para>
+
+    <section>
+      <title>Sparse /etc/shorewall[6] Directory</title>
+
+      <para>If you run a Debian-based distribution or another once that does
+      not fully populate /etc/shorewall[6] and you include a fully-populated
+      directory in your CONFIG_PATH, then an additional step is required
+      before running<command> update -A</command>. You must copy skeleton
+      'blrules', 'mangle' and 'conntrack' files into /etc/shorewall[6] or
+      <command>update -A</command> will update the files in the fully
+      populated directory rather than creating new files in
+      /etc/shorewall[6].</para>
+    </section>
+
+    <section>
+      <title>Old Multi-ISP Configurations</title>
+
+      <para>If you have an old Multi-ISP configuration that does not include
+      USE_DEFAULT_RT in shorewall.conf, then you need to add USE_DEFAULT_RT=No
+      in that file prior to running <command>update -A</command>. Otherwise,
+      the <command>update</command> command will fail with the error:</para>
+
+      <simplelist>
+        <member>ERROR: The COPY column must be empty when
+        USE_DEFAULT_RT=Yes</member>
+      </simplelist>
+
+      <para>If you receive this error, modify the setting of USE_DEFAULT_RT to
+      No and rerun the command.</para>
+    </section>
+  </section>
+</article>

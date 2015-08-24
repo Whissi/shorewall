@@ -3139,6 +3139,81 @@ sub process_secmark_rule() {
     }
 }
 
+sub convert_tos($$) {
+    my ( $mangle, $fn1 ) = @_;
+
+    my $have_tos = 0;
+
+    sub unlink_tos( $ ) {
+	my $fn = shift;
+
+	if ( unlink $fn ) {
+	    warning_message "Empty tos file ($fn) removed";
+	} else {
+	    warning_message "Unable to remove empty tos file $fn: $!";
+	}
+    }
+
+    if ( my $fn = open_file 'tos' ) {
+	while ( read_a_line( NORMAL_READ ) ) {
+
+	    $have_tos = 1;
+
+	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) =
+		split_line( 'tos file entry',
+			    { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } );
+
+	    my $chain_designator = 'P';
+
+	    decode_tos($tos, 1);
+
+	    my ( $srczone , $source , $remainder );
+
+	    if ( $family == F_IPV4 ) {
+		( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
+		fatal_error 'Invalid SOURCE' if defined $remainder;
+	    } elsif ( $src =~ /^(.+?):<(.*)>\s*$/ || $src =~ /^(.+?):\[(.*)\]\s*$/ ) {
+		$srczone = $1;
+		$source  = $2;
+	    } else {
+		$srczone = $src;
+	    }
+
+	    if ( $srczone eq firewall_zone ) {
+		$chain_designator = 'O';
+		$src         = $source || '-';
+	    } else {
+		$src =~ s/^all:?//;
+	    }
+
+	    $dst =~ s/^all:?//;
+
+	    $src    = '-' unless supplied $src;
+	    $dst    = '-' unless supplied $dst;
+	    $proto  = '-' unless supplied $proto;
+	    $ports  = '-' unless supplied $ports;
+	    $sports = '-' unless supplied $sports;
+	    $mark   = '-' unless supplied $mark;
+
+	    print $mangle "TOS($tos):$chain_designator\t$src\t$dst\t$proto\t$ports\t$sports\t-\t$mark\n"
+
+	}
+
+	if ( $have_tos ) {
+	    progress_message2 "Converted $fn to $fn1";
+	    if ( rename $fn, "$fn.bak" ) {
+		progress_message2 "$fn renamed $fn.bak";
+	    } else {
+		fatal_error "Cannot Rename $fn to $fn.bak: $!";
+	    }
+	} else {
+	    unlink_tos( $fn );
+	}
+    } elsif ( -f ( my $fn = find_file( 'tos' ) ) ) {
+	unlink_tos( $fn );
+    }
+}
+
 #
 # Process the mangle file and setup traffic shaping
 #
@@ -3226,6 +3301,8 @@ sub setup_tc( $ ) {
 		    }
 		}
 
+		convert_tos( $mangle, $fn1 );
+
 		close $mangle, directive_callback( 0 ) if $tcrules;
 
 	    } elsif ( $tcrules ) {
@@ -3235,6 +3312,16 @@ sub setup_tc( $ ) {
 		    } else {
 			warning_message "Unable to remove empty tcrules file $fn: $!";
 		    }
+		}
+
+		if ( -f ( my $fn = find_file( 'tos' ) ) ) {
+		    my $fn1;
+		    #
+		    # We are going to convert this tosfile to the equivalent mangle file
+		    #
+		    open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+		    convert_tos( $mangle, $fn1 );
+		    close $mangle;
 		}
 	    }
 	} elsif ( -f ( my $fn = find_file( 'tcrules' ) ) ) {

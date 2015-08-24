@@ -4876,7 +4876,8 @@ EOF
 			    -f find_file 'blacklist'    ||
 			    -f find_file 'tcrules'      ||
 			    -f find_file 'routestopped' ||
-			    -f find_file 'notrack'
+			    -f find_file 'notrack'      ||
+			    -f find_file 'tos'
 			  );
 	}
     } else {

@@ -4777,8 +4777,6 @@ sub update_config_file( $$ ) {
 	    if ( supplied $config{LOGRATE} ) {
 		fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
 		$limit = $config{LOGRATE};
-		$limit =~ s/second/sec/;
-		$limit =~ s/minute/min/;
 	    }
 
 	    if ( supplied $config{LOGBURST} ) {
@@ -4787,6 +4785,21 @@ sub update_config_file( $$ ) {
 	    }
 
 	    $config{LOGLIMIT} = $limit;
+	}
+    }
+
+    unless ( supplied $config{BLACKLIST} ) {
+	if ( $config{BLACKLISTNEWONLY} ) {
+	    default_yes_no 'BLACKLISTNEWONLY'           , '';
+	    fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
+
+	    if ( have_capability 'RAW_TABLE' ) {
+		$globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';
+	    } else {
+		$globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID' : 'NEW,ESTABLISHED,INVALID';
+	    }
+
+	    $config{BLACKLIST} = $globals{BLACKLIST_STATES};
 	}
     }
 
@@ -5482,7 +5495,7 @@ sub get_configuration( $$$$$ ) {
 	    my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
 	    my $units;
 
-	    if ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+	    if ( $rate =~ /^[sd]:((\d+)(\/(sec|min|second|minute|hour|day))):(\d+)$/ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
 		fatal_error "Invalid burst value ($5)" unless $5;
 
@@ -5508,7 +5521,7 @@ sub get_configuration( $$$$$ ) {
 
 		$limit .= "--hashlimit-htable-expire $expire ";
 	    }
-	} elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+	} elsif ( $rate =~ /^((\d+)(\/(sec|min|second|minute|hour|day))):(\d+)$/ ) {
 	    fatal_error "Invalid rate ($1)" unless $2;
 	    fatal_error "Invalid burst value ($5)" unless $5;
 	    $limit = "-m limit --limit $1 --limit-burst $5 ";
@@ -5653,15 +5666,6 @@ sub get_configuration( $$$$$ ) {
 
 	    $globals{BLACKLIST_STATES} = join ',', @states;
 	}
-    } elsif ( supplied $config{BLACKLISTNEWONLY} ) {
-	default_yes_no 'BLACKLISTNEWONLY'           , '';
-	fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
-
-	if ( have_capability 'RAW_TABLE' ) {
-	    $globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';
-	} else {
-	    $globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID' : 'NEW,ESTABLISHED,INVALID';
-	}
     } else {
 	if ( have_capability 'RAW_TABLE' ) {
 	    $globals{BLACKLIST_STATES} = $config{FASTACCEPT} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';
@@ -5706,11 +5710,7 @@ sub get_configuration( $$$$$ ) {
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
-
-    if ($update) {
-	default_yes_no 'WIDE_TC_MARKS'              , '';
-	default_yes_no 'TRACK_PROVIDERS'            , '';
-    }
+    default_yes_no 'TRACK_PROVIDERS'            , '';
 
     unless ( ( $config{NULL_ROUTE_RFC1918} || '' ) =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
 	default_yes_no( 'NULL_ROUTE_RFC1918', '' );
@@ -5744,17 +5744,9 @@ sub get_configuration( $$$$$ ) {
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 
-    if ( $update ) {
-	numeric_option 'TC_BITS',          $config{WIDE_TC_MARKS} ? 14 : 8 , 0;
-	numeric_option 'MASK_BITS',        $config{WIDE_TC_MARKS} ? 16 : 8,  $config{TC_BITS};
-	numeric_option 'PROVIDER_BITS' ,   8, 0;
-	numeric_option 'PROVIDER_OFFSET' , $config{HIGH_ROUTE_MARKS} ? $config{WIDE_TC_MARKS} ? 16 : 8 : 0, 0;
-    } else {
-	numeric_option 'TC_BITS'         , 8, 0;
-	numeric_option 'MASK_BITS'       , 8, 0;
-	numeric_option 'PROVIDER_OFFSET' , 8, 0;
-    }
-
+    numeric_option 'TC_BITS'         , 8, 0;
+    numeric_option 'MASK_BITS'       , 8, 0;
+    numeric_option 'PROVIDER_OFFSET' , 0, 0;
     numeric_option 'PROVIDER_BITS'   , 8, 0;
     numeric_option 'ZONE_BITS'       , 0, 0;
 

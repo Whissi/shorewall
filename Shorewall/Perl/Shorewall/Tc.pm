@@ -3209,7 +3209,7 @@ sub convert_tos($$) {
 	} else {
 	    unlink_tos( $fn );
 	}
-    } elsif ( -f ( my $fn = find_file( 'tos' ) ) ) {
+    } elsif ( -f ( $fn = find_file( 'tos' ) ) ) {
 	unlink_tos( $fn );
     }
 }

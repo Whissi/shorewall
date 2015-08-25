@@ -808,7 +808,6 @@ sub initialize( $;$$) {
 	  HIGH_ROUTE_MARKS => undef,
 	  USE_ACTIONS=> undef,
 	  OPTIMIZE => undef,
-	  EXPORTPARAMS => undef,
 	  SHOREWALL_COMPILER => undef,
 	  EXPAND_POLICIES => undef,
 	  KEEP_RT_TABLES => undef,
@@ -4771,6 +4770,26 @@ sub update_config_file( $$ ) {
     $config{PROVIDER_OFFSET} = ( $high ? $wide ? 16 : 8 : 0 ) unless defined $config{PROVIDER_OFFSET};
     $config{PROVIDER_BITS}   = 8                              unless defined $config{PROVIDER_BITS};
 
+    unless ( supplied $config{LOGLIMIT} ) {
+	if ( $config{LOGRATE} || $config{LOGBURST} ) {
+	    my $limit;
+	    
+	    if ( supplied $config{LOGRATE} ) {
+		fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
+		$limit = $config{LOGRATE};
+		$limit =~ s/second/sec/;
+		$limit =~ s/minute/min/;
+	    }
+
+	    if ( supplied $config{LOGBURST} ) {
+		fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
+		$limit .= ":$config{LOGBURST}";
+	    }
+
+	    $config{LOGLIMIT} = $limit;
+	}
+    }
+
     my $fn;
 
     unless ( -d "$globals{SHAREDIR}/configfiles/" ) {
@@ -5501,18 +5520,6 @@ sub get_configuration( $$$$$ ) {
 	}
 
 	$globals{LOGLIMIT} = $limit;
-    } elsif ( $update && ( $config{LOGRATE} || $config{LOGBURST} ) ) {
-	if ( supplied $config{LOGRATE} ) {
-	    fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
-	}
-
-	if ( supplied $config{LOGBURST} ) {
-	    fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
-	}
-
-	$globals{LOGLIMIT}  = '-m limit ';
-	$globals{LOGLIMIT} .= "--limit $config{LOGRATE} "        if supplied $config{LOGRATE};
-	$globals{LOGLIMIT} .= "--limit-burst $config{LOGBURST} " if supplied $config{LOGBURST};
     } else {
 	$globals{LOGLIMIT} = '';
     }

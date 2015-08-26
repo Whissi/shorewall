@@ -4803,6 +4803,8 @@ sub update_config_file( $$ ) {
 	}
     }
 
+    $config{USE_DEFAULT_RT} = 'No' unless defined $config{USE_DEFAULT_RT};
+
     my $fn;
 
     unless ( -d "$globals{SHAREDIR}/configfiles/" ) {

@@ -65,9 +65,7 @@
 
       <varlistentry>
         <term><emphasis role="bold">HOST(S)</emphasis> (hosts)-
-        <emphasis>interface</emphasis>:<option>[</option>{[{<emphasis>address-or-range</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address-or-range</emphasis>]...|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>}[<emphasis>exclusion</emphasis>]<option>]</option></term>
+        <emphasis>interface</emphasis>:{<replaceable>address-or-range</replaceable>[,<replaceable>address-or-range</replaceable>]...|+<replaceable>ipset</replaceable>|<option>dynamic</option>}[<replaceable>exclusion</replaceable>]</term>
 
         <listitem>
           <para>The name of an interface defined in the <ulink
@@ -87,7 +85,7 @@
 
             <listitem>
               <para>An IP address range of the form
-              <emphasis>low.address</emphasis>-<emphasis>high.address</emphasis>.
+              [<emphasis>low.address</emphasis>]-[<emphasis>high.address</emphasis>].
               Your kernel and ip6tables must have iprange match
               support.</para>
             </listitem>

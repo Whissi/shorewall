@@ -5549,13 +5549,13 @@ sub get_configuration( $$$$$ ) {
 	    my $match = have_capability( 'OLD_HL_MATCH' ) ? 'hashlimit' : 'hashlimit-upto';
 	    my $units;
 
-	    if ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+	    if ( $rate =~ /^[sd]:((\d+)(\/(sec|min|seconds|minutes|hour|day))):(\d+)$/ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
 		fatal_error "Invalid burst value ($5)" unless $5;
 
 		$limit .= "--$match $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
-	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))?)$/ ) {
+	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|seconds|minutes|hour|day))?)$/ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
 		$limit .= "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
@@ -5575,11 +5575,11 @@ sub get_configuration( $$$$$ ) {
 
 		$limit .= "--hashlimit-htable-expire $expire ";
 	    }
-	} elsif ( $rate =~ /^((\d+)(\/(sec|min|hour|day))):(\d+)$/ ) {
+	} elsif ( $rate =~ /^((\d+)(\/(sec|min|seconds|minutes|hour|day))):(\d+)$/ ) {
 	    fatal_error "Invalid rate ($1)" unless $2;
 	    fatal_error "Invalid burst value ($5)" unless $5;
 	    $limit = "-m limit --limit $1 --limit-burst $5 ";
-	} elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
+	} elsif ( $rate =~ /^(\d+)(\/(sec|min|seconds|minutes|hour|day))?$/ )  {
 	    fatal_error "Invalid rate (${1}${2})" unless $1;
 	    $limit = "-m limit --limit $rate ";
 	} else {

@@ -618,6 +618,8 @@ our %deprecated = ( LOGRATE            => '' ,
 our %converted = ( WIDE_TC_MARKS => 1,
 		   HIGH_ROUTE_MARKS => 1,
 		   BLACKLISTNEWONLY => 1,
+		   LOGRATE => 1,
+		   LOGBURST => 1,
 		 );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -4823,6 +4825,45 @@ sub update_config_file( $$ ) {
     $config{MASK_BITS}       = ( $wide ? 16 : 8 )             unless defined $config{MASK_BITS};
     $config{PROVIDER_OFFSET} = ( $high ? $wide ? 16 : 8 : 0 ) unless defined $config{PROVIDER_OFFSET};
     $config{PROVIDER_BITS}   = 8                              unless defined $config{PROVIDER_BITS};
+
+    unless ( supplied $config{LOGLIMIT} ) {
+	if ( $config{LOGRATE} || $config{LOGBURST} ) {
+	    my $limit;
+
+	    if ( supplied $config{LOGRATE} ) {
+		fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
+		$limit = $config{LOGRATE};
+	    }
+
+	    if ( supplied $config{LOGBURST} ) {
+		fatal_error"Invalid LOGBURST ($config{LOGBURST})" unless $config{LOGBURST} =~ /^\d+$/;
+		$limit .= ":$config{LOGBURST}";
+	    }
+
+	    $config{LOGLIMIT} = $limit;
+
+	    $config{LOGRATE} = $config{LOGBURST} = undef;
+	}
+    }
+
+    unless ( supplied $config{BLACKLIST} ) {
+	if ( $config{BLACKLISTNEWONLY} ) {
+	    default_yes_no 'BLACKLISTNEWONLY'           , '';
+	    fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
+
+	    if ( have_capability 'RAW_TABLE' ) {
+		$globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';
+	    } else {
+		$globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID' : 'NEW,ESTABLISHED,INVALID';
+	    }
+
+	    $config{BLACKLIST} = $globals{BLACKLIST_STATES};
+
+	    $config{BLACKLISTNEWONLY} = undef;
+	}
+    }
+
+    $config{USE_DEFAULT_RT} = 'No' unless defined $config{USE_DEFAULT_RT};
 
     my $fn;
 

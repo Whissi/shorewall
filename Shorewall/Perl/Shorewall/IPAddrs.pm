@@ -779,6 +779,18 @@ sub normalize_6addr( $ ) {
 sub validate_6range( $$ ) {
     my ( $low, $high ) = @_;
 
+    if ( $low =~ /^\[(.+)\]$/ ) {
+	$low = $1;
+    } elsif ( $low =~ /^\[(.+)\]\/(\d+)$/ ) {
+	$low = join( '/', $1, $2 );
+    }
+
+    if ( $high =~ /^\[(.+)\]$/ ) {
+	$high = $1;
+    } elsif ( $high =~ /^\[(.+)\]\/(\d+)$/ ) {
+	$high = join( '/', $1, $2 );
+    }
+
     validate_6address $low, 0;
     validate_6address $high, 0;
 

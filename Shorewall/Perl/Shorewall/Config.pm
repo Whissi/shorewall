@@ -5031,56 +5031,41 @@ sub read_capabilities() {
 }
 
 #
-# Get the system's capabilities, either by probing or by reading a capabilities file
+# Get the system's capabilities by probing
 #
-sub get_capabilities( $ ) 
+sub get_capabilities($) 
 {
-    my $export = $_[0];
+    $iptables = $config{$toolNAME};
 
-    if ( ! $export && $> == 0 ) { # $> == $EUID
-	$iptables = $config{$toolNAME};
-
-	if ( $iptables ) {
-	    fatal_error "$toolNAME=$iptables does not exist or is not executable" unless -x $iptables;
-	} else {
-	    fatal_error "Can't find $toolname executable" unless $iptables = which $toolname;
-	}
-	#
-	# Determine if iptables supports the -w option
-	#
-	$iptablesw = qt1( "$iptables -w -L -n") ? '-w' : '';
-
-	my $iptables_restore=$iptables . '-restore';
-
-	fatal_error "$iptables_restore does not exist or is not executable" unless -x $iptables_restore;
-
-	$tc = $config{TC} || which 'tc';
-
-	if ( $tc ) {
-	    fatal_error "TC=$tc does not exist or is not executable" unless -x $tc;
-	}
-
-	$ip = $config{IP} || which 'ip';
-
-	if ( $ip ) {
-	    fatal_error "IP=$ip does not exist or is not executable" unless -x $ip;
-	}
-
-	load_kernel_modules;
-
-	if ( open_file 'capabilities' ) {
-	    read_capabilities;
-	} else {
-	    determine_capabilities;
-	}
+    if ( $iptables ) {
+	fatal_error "$toolNAME=$iptables does not exist or is not executable" unless -x $iptables;
     } else {
-	unless ( open_file 'capabilities' ) {
-	    fatal_error "The -e compiler option requires a capabilities file" if $export;
-	    fatal_error "Compiling under non-root uid requires a capabilities file";
-	}
-
-	read_capabilities;
+	fatal_error "Can't find $toolname executable" unless $iptables = which $toolname;
     }
+    #
+    # Determine if iptables supports the -w option
+    #
+    $iptablesw = qt1( "$iptables -w -L -n") ? '-w' : '';
+
+    my $iptables_restore=$iptables . '-restore';
+
+    fatal_error "$iptables_restore does not exist or is not executable" unless -x $iptables_restore;
+
+    $tc = $config{TC} || which 'tc';
+
+    if ( $tc ) {
+	fatal_error "TC=$tc does not exist or is not executable" unless -x $tc;
+    }
+
+    $ip = $config{IP} || which 'ip';
+
+    if ( $ip ) {
+	fatal_error "IP=$ip does not exist or is not executable" unless -x $ip;
+    }
+
+    load_kernel_modules;
+
+    determine_capabilities unless $_[0];
 }
 
 #
@@ -5401,6 +5386,28 @@ sub get_configuration( $$$$$ ) {
 	$ENV{PATH} = $default_path;
     }
 
+    my $have_capabilities;
+
+    if ( $export || $> != 0 ) {
+	#
+	# Compiling for export or user not root -- must use a capabilties file
+	# We read it before processing the .conf file so that 'update' has
+	# the capabilities.
+	#
+	unless ( open_file 'capabilities' ) {
+	    fatal_error "The -e compiler option requires a capabilities file" if $export;
+	    fatal_error "Compiling under non-root uid requires a capabilities file";
+	}
+
+	read_capabilities;
+
+	$have_capabilities = 1;
+    } elsif ( open_file 'capabilities' ) {
+	read_capabilities;
+
+	$have_capabilities = 1;
+    }
+
     get_params( $export );
 
     process_shorewall_conf( $update, $annotate, $directives );
@@ -5417,7 +5424,9 @@ sub get_configuration( $$$$$ ) {
     default 'MODULE_PREFIX', 'ko ko.gz o o.gz gz';
     default_yes_no 'LOAD_HELPERS_ONLY'          , 'Yes';
 
-    get_capabilities( $export );
+    if ( ! $export && $> == 0 ) {
+	get_capabilities($have_capabilities);
+    }
 
     my ( $val, $all );
 

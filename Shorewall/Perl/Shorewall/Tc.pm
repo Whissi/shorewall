@@ -3214,6 +3214,34 @@ sub convert_tos($$) {
     }
 }
 
+sub open_mangle_for_output() {
+    my ( $mangle, $fn1 );
+
+    if ( -f ( find_file( 'mangle' ) ) ) {
+	open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+    } else {
+	open( $mangle , '>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+	print $mangle <<'EOF';
+#
+# Shorewall version 4 - Mangle File
+#
+# For information about entries in this file, type "man shorewall-mangle"
+#
+# See http://shorewall.net/traffic_shaping.htm for additional information.
+# For usage in selecting among multiple ISPs, see
+# http://shorewall.net/MultiISP.html
+#
+# See http://shorewall.net/PacketMarking.html for a detailed description of
+# the Netfilter/Shorewall packet marking mechanism.
+####################################################################################################################################################
+#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER  PROBABILITY     DSCP
+#                                                       PORT(S) PORT(S)
+EOF
+    }
+
+    return ( $mangle, $fn1 );
+}
+
 #
 # Process the mangle file and setup traffic shaping
 #
@@ -3278,7 +3306,7 @@ sub setup_tc( $ ) {
 		#
 		# We are going to convert this tcrules file to the equivalent mangle file
 		#
-		open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+		( $mangle, $fn1 ) = open_mangle_for_output;
 
 		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
 
@@ -3319,7 +3347,7 @@ sub setup_tc( $ ) {
 		    #
 		    # We are going to convert this tosfile to the equivalent mangle file
 		    #
-		    open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+		    ( $mangle, my $fn1 ) = open_mangle_for_output;
 		    convert_tos( $mangle, $fn1 );
 		    close $mangle;
 		}

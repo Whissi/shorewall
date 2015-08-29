@@ -4849,7 +4849,6 @@ sub update_config_file( $$ ) {
     unless ( supplied $config{BLACKLIST} ) {
 	if ( $config{BLACKLISTNEWONLY} ) {
 	    default_yes_no 'BLACKLISTNEWONLY'           , '';
-	    fatal_error "BLACKLISTNEWONLY=No may not be specified with FASTACCEPT=Yes" if $config{FASTACCEPT} && ! $config{BLACKLISTNEWONLY};
 
 	    if ( have_capability 'RAW_TABLE' ) {
 		$globals{BLACKLIST_STATES} = $config{BLACKLISTNEWONLY} ? 'NEW,INVALID,UNTRACKED' : 'NEW,ESTABLISHED,INVALID,UNTRACKED';

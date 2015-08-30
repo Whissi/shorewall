@@ -135,7 +135,7 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 
 our $family;
 
-our $tcrules;
+our $convert;
 
 our $mangle;
 
@@ -998,7 +998,7 @@ sub process_tc_rule1( $$$$$$$$$$$$$$$$ ) {
 	}
     }
 	
-    if ( $tcrules ) {
+    if ( $convert ) {
 	$command = ( $command ? "$command($mark)" : $mark ) . $designator;
 	my $line = ( $family == F_IPV6 ?
 		     "$command\t$source\t$dest\t$proto\t$ports\t$sports\t$user\t$testval\t$length\t$tos\t$connbytes\t$helper\t$headers\t$probability\t$dscp\t$state" :
@@ -3272,7 +3272,7 @@ EOF
 # Process the mangle file and setup traffic shaping
 #
 sub setup_tc( $ ) {
-    my $convert = $_[0];
+    $convert = $_[0];
 
     if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';

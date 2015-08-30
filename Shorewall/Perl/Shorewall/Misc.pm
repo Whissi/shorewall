@@ -480,7 +480,7 @@ sub convert_blacklist() {
 	}
 
 	if ( @rules ) {
-	    my $fn1 = find_file( 'blrules' );
+	    my $fn1 = find_writable_file( 'blrules' );
 	    my $blrules;
 	    my $date = localtime;
 
@@ -701,7 +701,7 @@ sub convert_routestopped() {
 
 	my ( $stoppedrules, $fn1 );
 
-	if ( -f ( $fn1 = find_file( 'stoppedrules' ) ) ) {
+	if ( -f ( $fn1 = find_writable_file( 'stoppedrules' ) ) ) {
 	    open $stoppedrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
 	} else {
 	    open $stoppedrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
@@ -723,12 +723,16 @@ sub convert_routestopped() {
 EOF
 	}
 
-	print( $stoppedrules
-	       "#\n" ,
-	       "# Rules generated from routestopped file $fn by Shorewall $globals{VERSION} - $date\n" ,
-	       "#\n" );
-
-	first_entry "$doing $fn...";
+	first_entry(
+		    sub {
+			my $date = localtime;
+			progress_message2 "$doing $fn...";
+			print( $stoppedrules
+			       "#\n" ,
+			       "# Rules generated from routestopped file $fn by Shorewall $globals{VERSION} - $date\n" ,
+			       "#\n" );
+		    }
+		   );
 
 	while ( read_a_line ( NORMAL_READ ) ) {
 

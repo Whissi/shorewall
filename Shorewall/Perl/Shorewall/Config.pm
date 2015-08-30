@@ -124,6 +124,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       set_shorewall_dir
 				       set_debug
 				       find_file
+				       find_writable_file
 				       split_list
 				       split_list1
 				       split_list2
@@ -1864,6 +1865,20 @@ sub find_file($)
     for my $directory ( @config_path ) {
 	my $file = "$directory$filename";
 	return $file if -f $file;
+    }
+
+    "$config_path[0]$filename";
+}
+
+sub find_writable_file($) {
+    my ( $filename, $nosearch ) = @_;
+
+    return $filename if $filename =~ '/';
+
+    for my $directory ( @config_path ) {
+	next if $directory =~ m|^$globals{SHAREDIR}/configfiles/?$| || $directory =~ m|^$shorewallrc{SHAREDIR}/doc/default-config/?$|;
+	my $file = "$directory$filename";
+	return $file if -f $file && -w _;
     }
 
     "$config_path[0]$filename";
@@ -4807,6 +4822,12 @@ sub conditional_quote( $ ) {
 #
 # Update the shorewall[6].conf file. Save the current file with a .bak suffix.
 #
+sub update_default($$) {
+    my ( $var, $val ) = @_;
+
+    $config{$var} = $val unless defined $config{$var};
+}
+
 sub update_config_file( $$ ) {
     my ( $annotate, $directives ) = @_;
 
@@ -4862,9 +4883,8 @@ sub update_config_file( $$ ) {
 	}
     }
 
-    $config{USE_DEFAULT_RT} = 'No' unless defined $config{USE_DEFAULT_RT};
-
-    $config{EXPORTMODULES} = 'No' unless defined $config{EXPORTMODULES};
+    update_default( 'USE_DEFAULT_RT', 'No' );
+    update_default( 'EXPORTMODULES',  'No' );
 
     my $fn;
 

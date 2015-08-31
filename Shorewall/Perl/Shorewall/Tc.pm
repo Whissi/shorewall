@@ -3155,6 +3155,16 @@ sub convert_tos($$) {
     }
 
     if ( my $fn = open_file 'tos' ) {
+	first_entry
+	    sub {
+		my $date = localtime;
+		progress_message2 "Converting $fn...";
+		print( $mangle
+		       "#\n" ,
+		       "# Rules generated from tos file $fn by Shorewall $globals{VERSION} - $date\n" ,
+		       "#\n" );
+	    };
+
 	while ( read_a_line( NORMAL_READ ) ) {
 
 	    $have_tos = 1;
@@ -3217,10 +3227,10 @@ sub convert_tos($$) {
 sub open_mangle_for_output() {
     my ( $mangle, $fn1 );
 
-    if ( -f ( find_file( 'mangle' ) ) ) {
-	open( $mangle , '>>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+    if ( -f ( $fn1 = find_writeable_file( 'mangle' ) ) ) {
+	open( $mangle , '>>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
     } else {
-	open( $mangle , '>', $fn1 = find_file('mangle') ) || fatal_error "Unable to open $fn1:$!";
+	open( $mangle , '>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
 	print $mangle <<'EOF';
 #
 # Shorewall version 4 - Mangle File
@@ -3310,7 +3320,20 @@ sub setup_tc( $ ) {
 
 		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
 
-		first_entry "$doing $fn...";
+
+		first_entry
+		    sub {
+			if ( $convert ) {
+			    my $date = localtime;
+			    progress_message2 "Converting $fn...";
+			    print( $mangle
+				   "#\n" ,
+				   "# Rules generated from tcrules file $fn by Shorewall $globals{VERSION} - $date\n" ,
+				   "#\n" );
+			} else {
+			    progress_message2 "$doing $fn...";
+			}
+		    };
 
 		process_tc_rule, $have_tcrules++ while read_a_line( NORMAL_READ );
 

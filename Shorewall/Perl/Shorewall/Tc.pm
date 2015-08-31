@@ -3253,7 +3253,7 @@ sub convert_tos($$) {
 sub open_mangle_for_output() {
     my ( $mangle, $fn1 );
 
-    if ( -f ( $fn1 = find_writeable_file( 'mangle' ) ) ) {
+    if ( -f ( $fn1 = find_writable_file( 'mangle' ) ) ) {
 	open( $mangle , '>>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
     } else {
 	open( $mangle , '>', $fn1 ) || fatal_error "Unable to open $fn1:$!";

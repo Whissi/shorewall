@@ -81,7 +81,7 @@
 
       <para>Over the years, a number of workarounds have been added to
       Shorewall to work around defects in other products. In current
-      distributions, those defects have been corrected and in 4.6.11, a
+      distributions, those defects have been corrected, and in 4.6.11, a
       WORKAROUNDS configuration option was added to disable those workarounds.
       In Shorewall 5, the WORKAROUNDS setting is still available in the
       shorewall[6].conf files but:</para>
@@ -96,6 +96,9 @@
           eliminated.</para>
         </listitem>
       </orderedlist>
+
+      <para>If there is a need to add new workarounds in the future, those
+      workarounds will be enabled by WORKAROUNDS=Yes.</para>
     </section>
 
     <section>
@@ -148,7 +151,7 @@
       <para>A fatal compilation error is emitted if any of these options are
       present in the .conf file, and the <command>shorewall[6]
       update</command> command will replace these options with equivalent
-      setting for the options that supersede them.</para>
+      setting of the options that supersede them.</para>
     </section>
 
     <section>
@@ -159,17 +162,13 @@
 
       <para>The <option>-t</option> and <option>-b</option> options of the
       <command>update</command> command are still available to convert the
-      'tcrules' file to the equivalent 'mangle' file and to convert the
-      'blacklist' file into an equivalent 'blrules' file. </para>
+      'tcrules' and 'tos' files to the equivalent 'mangle' file and to convert
+      the 'blacklist' file into an equivalent 'blrules' file.</para>
 
       <para>As in Shorewall 4.6.12, the <option>-s</option> option is
       available to convert the 'routestopped' file into the equivalent
       'stoppedrules' file and the <option>-n</option> option is available to
       convert a 'notrack' file to the equivalent 'conntrack' file.</para>
-
-      <para> No update option is available to update the 'tos' file. Its
-      entries must be manually converted to TOS rules in the 'mangle'
-      file.</para>
     </section>
 
     <section>
@@ -350,15 +349,11 @@
 
     <para>It is stongly recommended that you first upgrade your installation
     to a 4.6 release that supports the <option>-A</option> option to the
-    <command>update</command> command; 4.6.12 or later is preferred.</para>
+    <command>update</command> command; 4.6.13 is preferred.</para>
 
     <para>Once you are on that release, execute the <command>shorewall update
     -A</command> command (and <command>shorewall6 update -A</command> if you
     also have Shorewall6).</para>
-
-    <para>If you have a non-empty 'tos' file, it is also suggested that you
-    manually convert its entries to equivalent TOS entries in the 'mangle'
-    file.</para>
 
     <para>Finally, add ?FORMAT 2 to each of your macro and action files and be
     sure that the check command does not produce errors -- if it does, you can
@@ -367,43 +362,5 @@
 
     <para>These steps can also be taken after you upgrade, but your firewall
     likely won't start or work correctly until you do.</para>
-  </section>
-
-  <section>
-    <title>Potential Upgrade Issues</title>
-
-    <para>There are several potential problems with using the <command>update
-    -A</command> command. These are described in the following
-    sections.</para>
-
-    <section>
-      <title>Sparse /etc/shorewall[6] Directory</title>
-
-      <para>If you run a Debian-based distribution or another once that does
-      not fully populate /etc/shorewall[6] and you include a fully-populated
-      directory in your CONFIG_PATH, then an additional step is required
-      before running<command> update -A</command>. You must copy skeleton
-      'blrules', 'mangle' and 'conntrack' files into /etc/shorewall[6] or
-      <command>update -A</command> will update the files in the fully
-      populated directory rather than creating new files in
-      /etc/shorewall[6].</para>
-    </section>
-
-    <section>
-      <title>Old Multi-ISP Configurations</title>
-
-      <para>If you have an old Multi-ISP configuration that does not include
-      USE_DEFAULT_RT in shorewall.conf, then you need to add USE_DEFAULT_RT=No
-      in that file prior to running <command>update -A</command>. Otherwise,
-      the <command>update</command> command will fail with the error:</para>
-
-      <simplelist>
-        <member>ERROR: The COPY column must be empty when
-        USE_DEFAULT_RT=Yes</member>
-      </simplelist>
-
-      <para>If you receive this error, modify the setting of USE_DEFAULT_RT to
-      No and rerun the command.</para>
-    </section>
   </section>
 </article>

@@ -135,7 +135,7 @@ our %restrictions = ( tcpre      => PREROUTE_RESTRICT ,
 
 our $family;
 
-our $tcrules;
+our $convert;
 
 our $mangle;
 
@@ -3246,7 +3246,7 @@ EOF
 # Process the mangle file and setup traffic shaping
 #
 sub setup_tc( $ ) {
-    $tcrules = $_[0];
+    $convert = $_[0];
 
     if ( $config{MANGLE_ENABLED} ) {
 	ensure_mangle_chain 'tcpre';
@@ -3296,7 +3296,7 @@ sub setup_tc( $ ) {
 
     if ( $config{MANGLE_ENABLED} ) {
 
-	if ( $tcrules ) {
+	if ( $convert ) {
 	    my $have_tcrules;
 
 	    my $fn;
@@ -3331,9 +3331,9 @@ sub setup_tc( $ ) {
 
 		convert_tos( $mangle, $fn1 );
 
-		close $mangle, directive_callback( 0 ) if $tcrules;
+		close $mangle, directive_callback( 0 );
 
-	    } elsif ( $tcrules ) {
+	    } elsif ( $convert ) {
 		if ( -f ( my $fn = find_file( 'tcrules' ) ) ) {
 		    if ( unlink $fn ) {
 			warning_message "Empty tcrules file ($fn) removed";

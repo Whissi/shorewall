@@ -3155,15 +3155,16 @@ sub convert_tos($$) {
     }
 
     if ( my $fn = open_file 'tos' ) {
-	first_entry
-	    sub {
-		my $date = localtime;
-		progress_message2 "Converting $fn...";
-		print( $mangle
-		       "#\n" ,
-		       "# Rules generated from tos file $fn by Shorewall $globals{VERSION} - $date\n" ,
-		       "#\n" );
-	    };
+	first_entry(
+		    sub {
+			my $date = localtime;
+			progress_message2 "Converting $fn...";
+			print( $mangle
+			       "#\n" ,
+			       "# Rules generated from tos file $fn by Shorewall $globals{VERSION} - $date\n" ,
+			       "#\n" );
+		    }
+		   );
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
@@ -3320,20 +3321,16 @@ sub setup_tc( $ ) {
 
 		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
 
-
-		first_entry
-		    sub {
-			if ( $convert ) {
-			    my $date = localtime;
-			    progress_message2 "Converting $fn...";
-			    print( $mangle
-				   "#\n" ,
-				   "# Rules generated from tcrules file $fn by Shorewall $globals{VERSION} - $date\n" ,
-				   "#\n" );
-			} else {
-			    progress_message2 "$doing $fn...";
-			}
-		    };
+		first_entry(
+			    sub {
+				my $date = localtime;
+				progress_message2 "Converting $fn...";
+				print( $mangle
+				       "#\n" ,
+				       "# Rules generated from tcrules file $fn by Shorewall $globals{VERSION} - $date\n" ,
+				       "#\n" );
+			    }
+			   );
 
 		process_tc_rule, $have_tcrules++ while read_a_line( NORMAL_READ );
 
@@ -3370,7 +3367,7 @@ sub setup_tc( $ ) {
 		    #
 		    # We are going to convert this tosfile to the equivalent mangle file
 		    #
-		    ( $mangle, my $fn1 ) = open_mangle_for_output;
+		    ( $mangle, $fn1 ) = open_mangle_for_output;
 		    convert_tos( $mangle, $fn1 );
 		    close $mangle;
 		}

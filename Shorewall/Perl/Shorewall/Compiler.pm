@@ -837,7 +837,7 @@ sub compiler {
     #
     # Process the rules file.
     #
-    process_rules( $update );
+    process_rules();
     #
     # Process the conntrack file
     #

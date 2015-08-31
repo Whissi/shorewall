@@ -2152,7 +2152,7 @@ sub split_line2( $$;$$$ ) {
 	    #
 	    # This file supports INLINE or IPTABLES
 	    #
-	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)|:.*)?\s/ || $currentline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
+	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currentline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
 		$inline_matches = $pairs;
 
 		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {

@@ -617,8 +617,8 @@ sub process_stoppedrules() {
 
 sub setup_mss();
 
-sub add_common_rules ( $$$ ) {
-    my ( $upgrade_blacklist, $upgrade_tcrules , $upgrade_routestopped ) = @_;
+sub add_common_rules ( $ ) {
+    my ( $upgrade ) = @_;
     my $interface;
     my $chainref;
     my $target;
@@ -788,8 +788,8 @@ sub add_common_rules ( $$$ ) {
 	    
     run_user_exit1 'initdone';
 
-    if ( $upgrade_blacklist ) {
-	exit 0 unless convert_blacklist || $upgrade_tcrules || $upgrade_routestopped;
+    if ( $upgrade ) {
+	convert_blacklist;
     } elsif ( -f ( my $fn = find_file 'blacklist' ) ) {
 	warning_message "The blacklist file is no longer supported -- use '$product update -b' to convert $fn to the equivalent blrules file";
     }
@@ -2252,7 +2252,7 @@ sub setup_mss( ) {
 # Compile the stop_firewall() function
 #
 sub compile_stop_firewall( $$$$ ) {
-    my ( $test, $export, $have_arptables, $routestopped ) = @_;
+    my ( $test, $export, $have_arptables, $convert ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};
@@ -2430,10 +2430,10 @@ EOF
 	}
     }
 
-    if ( $routestopped ) {
+    if ( $convert ) {
 	convert_routestopped;
     } elsif ( -f ( my $fn = find_file 'routestopped' ) ) {
-	warning_message "The routestopped file is no longer supported - use '$product update -s' to convert $fn to an equivalent 'stoppedrules' file";
+	warning_message "The routestopped file is no longer supported - use '$product update' to convert $fn to an equivalent 'stoppedrules' file";
     }
     
     process_stoppedrules;

@@ -433,13 +433,8 @@ compiler() {
     [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
     [ -n "$g_confess" ] && options="$options --confess"
     [ -n "$g_update" ] && options="$options --update"
-    [ -n "$g_convert" ] && options="$options --convert"
     [ -n "$g_annotate" ] && options="$options --annotate"
-    [ -n "$g_directives" ] && options="$options --directives"
-    [ -n "$g_tcrules" ] && options="$options --tcrules"
     [ -n "$g_inline" ] && options="$options --inline"
-    [ -n "$g_routestopped" ] && options="$options --routestopped"
-    [ -n "$g_notrack" ] && options="$options --notrack"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -834,33 +829,8 @@ update_command() {
 			    g_annotate=Yes
 			    option=${option#a}
 			    ;;
-			b*)
-			    g_convert=Yes
-			    option=${option#b}
-			    ;;
-			D*)
-			    g_directives=Yes
-			    option=${option#D}
-			    ;;
-			t*)
-			    g_tcrules=Yes
-			    option=${option#t}
-			    ;;
-			s*)
-			    g_routestopped=Yes
-			    option=${option#s}
-			    ;;
-			n*)
-			    g_notrack=Yes
-			    option=${option#n}
-			    ;;
 			A*)
 			    g_inline=Yes
-			    g_convert=Yes
-			    g_directives=Yes
-			    g_tcrules=Yes
-			    g_routestopped=Yes
-			    g_notrack=Yes
 			    option=${option#A}
 			    ;;
 			*)

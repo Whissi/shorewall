@@ -41,6 +41,7 @@
 #         --shorewallrc1=<path>       # Path to export shorewallrc file.
 #         --config_path=<path-list>   # Search path for config files
 #         --inline                    # Update alternative column specifications
+#         --update                    # Update configuration to this release
 #         --tcrules                   # Create mangle from tcrules
 #         --routestopped              # Create stoppedrules from routestopped
 #         --notrack                   # Create conntrack from notrack
@@ -72,15 +73,10 @@ usage: compiler.pl [ <option> ... ] [ <filename> ]
     [ --family={4|6} ]
     [ --annotate ]
     [ --update ]
-    [ --convert ]
-    [ --directives ]
     [ --shorewallrc=<pathname> ]
     [ --shorewallrc1=<pathname> ]
     [ --config_path=<path-list> ]
     [ --inline ]
-    [ --tcrules ]
-    [ --routestopped ]
-    [ --notrack ]
 _EOF_
 
 exit shift @_;
@@ -104,15 +100,10 @@ my $family        = 4; # F_IPV4
 my $preview       = 0;
 my $annotate      = 0;
 my $update        = 0;
-my $convert       = 0;
-my $directives    = 0;
 my $config_path   = '';
 my $shorewallrc   = '';
 my $shorewallrc1  = '';
 my $inline        = 0;
-my $tcrules       = 0;
-my $routestopped  = 0;
-my $notrack       = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -140,15 +131,9 @@ my $result = GetOptions('h'               => \$help,
 			'confess'         => \$confess,
 			'a'               => \$annotate,
 			'annotate'        => \$annotate,
-			'directives'      => \$directives,
-			'D'               => \$directives,
 			'u'               => \$update,
 			'update'          => \$update,
-			'convert'         => \$convert,
 			'inline'          => \$inline,
-			'tcrules'         => \$tcrules,
-			'routestopped'    => \$routestopped,
-			'notrack'         => \$notrack,
 			'config_path=s'   => \$config_path,
 			'shorewallrc=s'   => \$shorewallrc,
 			'shorewallrc1=s'  => \$shorewallrc1,
@@ -171,14 +156,9 @@ compiler( script          => $ARGV[0] || '',
 	  family          => $family,
 	  confess         => $confess,
 	  update          => $update,
-	  convert         => $convert,
 	  annotate        => $annotate,
-	  directives      => $directives,
 	  config_path     => $config_path,
 	  shorewallrc     => $shorewallrc,
 	  shorewallrc1    => $shorewallrc1,
 	  inline          => $inline,
-	  tcrules         => $tcrules,
-	  routestopped    => $routestopped,
-	  notrack         => $notrack
 	);

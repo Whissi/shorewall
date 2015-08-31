@@ -4772,8 +4772,8 @@ sub update_default($$) {
     $config{$var} = $val unless defined $config{$var};
 }
 
-sub update_config_file( $$ ) {
-    my ( $annotate, $directives ) = @_;
+sub update_config_file( $ ) {
+    my ( $annotate ) = @_;
 
     sub is_set( $ ) {
 	my $value = $_[0];
@@ -4926,14 +4926,6 @@ EOF
 		warning_message "Unable to rename $configfile.bak to $configfile";
 		progress_message3 "No update required to configuration file $configfile";
 	    }
-
-	    exit 0 unless ( $directives ||
-			    -f find_file 'blacklist'    ||
-			    -f find_file 'tcrules'      ||
-			    -f find_file 'routestopped' ||
-			    -f find_file 'notrack'      ||
-			    -f find_file 'tos'
-			  );
 	}
     } else {
 	fatal_error "$fn does not exist";
@@ -4943,8 +4935,8 @@ EOF
 #
 # Small functions called by get_configuration. We separate them so profiling is more useful
 #
-sub process_shorewall_conf( $$$ ) {
-    my ( $update, $annotate, $directives ) = @_;
+sub process_shorewall_conf( $$ ) {
+    my ( $update, $annotate ) = @_;
     my $file   = find_file "$product.conf";
 
     if ( -f $file ) {
@@ -4996,7 +4988,7 @@ sub process_shorewall_conf( $$$ ) {
     #
     # Now update the config file if asked
     #
-    update_config_file( $annotate, $directives ) if $update;
+    update_config_file( $annotate ) if $update;
     #
     # Config file update requires that the option values not have
     # Shell variables expanded. We do that now.
@@ -5385,9 +5377,9 @@ EOF
 # - Read the capabilities file, if any
 # - establish global hashes %params, %config , %globals and %capabilities
 #
-sub get_configuration( $$$$$ ) {
+sub get_configuration( $$$$ ) {
 
-    ( my ( $export, $update, $annotate, $directives ) , $checkinline ) = @_;
+    ( my ( $export, $update, $annotate ) , $checkinline ) = @_;
 
     $globals{EXPORT} = $export;
 
@@ -5431,7 +5423,7 @@ sub get_configuration( $$$$$ ) {
 
     get_params( $export );
 
-    process_shorewall_conf( $update, $annotate, $directives );
+    process_shorewall_conf( $update, $annotate );
 
     ensure_config_path;
 
@@ -6099,7 +6091,7 @@ sub get_configuration( $$$$$ ) {
 	$variables{$var} = $config{$val};
     }
 
-    convert_to_directives if $directives;
+    convert_to_directives if $update;
 
     cleanup_iptables if $sillyname && ! $config{LOAD_HELPERS_ONLY};
 }

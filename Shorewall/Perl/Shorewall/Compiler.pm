@@ -592,8 +592,8 @@ EOF
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $convert, $config_path, $shorewallrc                      , $shorewallrc1 , $directives, $inline, $tcrules, $routestopped , $notrack ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , 0       , ''          , '/usr/share/shorewall/shorewallrc', ''            , 0 ,          0 ,      0 ,       0 ,             0 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $config_path, $shorewallrc                      , $shorewallrc1 , $inline ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , ''          , '/usr/share/shorewall/shorewallrc', ''            , 0 );
 
     $export         = 0;
     $test           = 0;
@@ -629,13 +629,8 @@ sub compiler {
 		  preview       => { store => \$preview,       validate=> \&validate_boolean    } ,
 		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
 		  update        => { store => \$update,        validate=> \&validate_boolean    } ,
-		  convert       => { store => \$convert,       validate=> \&validate_boolean    } ,
 		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,
 		  inline        => { store => \$inline,        validate=> \&validate_boolean    } ,
-		  directives    => { store => \$directives,    validate=> \&validate_boolean    } ,
-		  tcrules       => { store => \$tcrules,       validate=> \&validate_boolean    } ,
-		  routestopped  => { store => \$routestopped,  validate=> \&validate_boolean    } ,
-		  notrack       => { store => \$notrack,       validate=> \&validate_boolean    } ,
 		  config_path   => { store => \$config_path } ,
 		  shorewallrc   => { store => \$shorewallrc } ,
 		  shorewallrc1  => { store => \$shorewallrc1 } ,
@@ -671,7 +666,7 @@ sub compiler {
     #
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #
-    get_configuration( $export , $update , $annotate , $directives , $inline );
+    get_configuration( $export , $update , $annotate , $inline );
     #
     # Chain table initialization depends on shorewall.conf and capabilities. So it must be deferred until
     # now when shorewall.conf has been processed and the capabilities have been determined.
@@ -739,7 +734,7 @@ sub compiler {
     #
     # Do all of the zone-independent stuff (mostly /proc)
     #
-    add_common_rules( $convert, $tcrules , $routestopped );
+    add_common_rules( $update );
     #
     # More /proc
     #
@@ -804,7 +799,7 @@ sub compiler {
     #
     # TCRules and Traffic Shaping
     #
-    setup_tc( $tcrules );
+    setup_tc( $update );
 
     if ( $scriptfilename || $debug ) {
 	pop_indent;
@@ -842,11 +837,11 @@ sub compiler {
     #
     # Process the rules file.
     #
-    process_rules( $convert );
+    process_rules( $update );
     #
     # Process the conntrack file
     #
-    setup_conntrack( $notrack );
+    setup_conntrack( $update );
     #
     # Add Tunnel rules.
     #
@@ -913,7 +908,7 @@ sub compiler {
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
 	#
-	compile_stop_firewall( $test, $export , $have_arptables, $routestopped );
+	compile_stop_firewall( $test, $export , $have_arptables, $update );
 	#
 	#                               U P D O W N
 	#               (Writes the updown() function to the compiled script)
@@ -978,14 +973,14 @@ sub compiler {
 	initialize_chain_table(0);
 
 	if ( $debug ) {
-	    compile_stop_firewall( $test, $export, $have_arptables, $routestopped );
+	    compile_stop_firewall( $test, $export, $have_arptables, $update );
 	    disable_script;
 	} else {
 	    #
 	    # compile_stop_firewall() also validates the stoppedrules file. Since we don't
 	    # call that function during normal 'check', we must validate stoppedrules here.
 	    #
-	    convert_routestopped if $routestopped;
+	    convert_routestopped if $update;
 	    process_stoppedrules;
 	}
 	#

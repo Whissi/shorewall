@@ -803,8 +803,6 @@
 
       <arg choice="plain"><option>update</option></arg>
 
-      <arg><option>-b</option></arg>
-
       <arg><option>-d</option></arg>
 
       <arg><option>-r</option></arg>
@@ -813,15 +811,7 @@
 
       <arg><option>-a</option></arg>
 
-      <arg><option>-D</option></arg>
-
       <arg><option>-i</option></arg>
-
-      <arg><option>-t</option></arg>
-
-      <arg><option>-r</option></arg>
-
-      <arg><option>-n</option></arg>
 
       <arg><option>-A</option></arg>
 
@@ -2333,10 +2323,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">update </emphasis> [-<option>b</option>]
-        [-<option>d</option>] [-<option>r</option>] [-<option>T</option>]
-        [-<option>a</option>] [-<option>D</option>] [-<option>i</option>]
-        [-<option>t</option>] [-r] [-n][-<option>A</option>] [
+        <term><emphasis role="bold">update</emphasis> [-<option>d</option>]
+        [-<option>r</option>] [-<option>T</option>] [-<option>a</option>]
+        [-<option>i</option>] [-<option>A</option>] [
         <replaceable>directory</replaceable> ]</term>
 
         <listitem>
@@ -2349,96 +2338,92 @@
           <filename>shorewall.conf</filename> file is renamed
           <filename>shorewall.conf.bak.</filename></para>
 
+          <para><filename>The command was extended over the years with a set
+          of options that caused additional configuration
+          updates.</filename></para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Convert an existing <filename>blacklist</filename> file
+              into an equivalent <filename>blrules</filename> file.</para>
+            </listitem>
+
+            <listitem>
+              <para>Convert an existing <filename>routestopped</filename> file
+              into an equivalent <filename>stoppedrules</filename>
+              file.</para>
+            </listitem>
+
+            <listitem>
+              <para>Convert existing <filename>tcrules</filename> and
+              <filename>tos</filename> files into an equivalent mangle
+              file.</para>
+            </listitem>
+
+            <listitem>
+              <para>Convert an existing <filename>notrack</filename> file into
+              an equivalent <filename>conntrack</filename> file.</para>
+            </listitem>
+
+            <listitem>
+              <para>Convert FORMAT, SECTION and COMMENT entries into ?FORMAT,
+              ?SECTION and ?COMMENT directives.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>In each case, the old file is renamed with a .bak
+          suffix.</para>
+
+          <para>In Shorewall 5.0.0, the options were eliminated and the
+          <command>update</command> command performs all of the updates
+          described above.</para>
+
+          <important>
+            <para>There are some notable restrictions with the
+            <command>update</command> command:</para>
+
+            <orderedlist>
+              <listitem>
+                <para>Converted rules will be appended to the existing file;
+                if there is no existing file in the CONFIG_PATH, one will be
+                created in the directory specified in the command or in the
+                first entry in the CONFIG_PATH (normally <filename
+                class="directory">/etc/shorewall6</filename>)
+                otherwise.</para>
+              </listitem>
+
+              <listitem>
+                <para>Existing comments in the file being converted will not
+                be transferred to the output file.</para>
+              </listitem>
+
+              <listitem>
+                <para>INCLUDEd files will be expanded inline in the output
+                file.</para>
+              </listitem>
+
+              <listitem>
+                <para>Columns in the output file will be separated by a single
+                tab character; there is no attempt made to otherwise align the
+                columns.</para>
+              </listitem>
+            </orderedlist>
+          </important>
+
           <para>The <option>-a</option> option causes the updated
           <filename>shorewall.conf</filename> file to be annotated with
           documentation.</para>
-
-          <para>The <option>-b</option> option was added in Shorewall 4.4.26
-          and causes legacy blacklisting rules (<ulink
-          url="/manpages6/shorewall6-blacklist.html">shorewall6-blacklist</ulink>
-          (5) ) to be converted to entries in the blrules file (<ulink
-          url="/manpages6/shorewall6-blrules.html">shorewall6-blrules</ulink>
-          (5) ). The blacklist keyword is removed from <ulink
-          url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink> (5),
-          <ulink
-          url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>
-          (5) and <ulink
-          url="/manpages6/shorewall6-hosts.html">shorewall6-hosts</ulink> (5).
-          The unmodified files are saved with a .bak suffix.</para>
-
-          <para>The <option>-D</option> option was added in Shorewall 4.5.11.
-          When this option is specified, the compiler will walk through the
-          directories in the CONFIG_PATH replacing FORMAT and COMMENT entries
-          to compiler directives (e.g., ?FORMAT and ?COMMENT. When a file is
-          updated, the original is saved in a .bak file in the same
-          directory.</para>
 
           <para>The <option>-i</option> option was added in Shorewall 4.6.0
           and causes a warning message to be issued if the current line
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
-          <para>The <option>-t</option> option was added in Shorewall 4.6.0.
-          When specified, <option>-t</option> causes the <emphasis
-          role="bold">tcrules</emphasis> file to be converted to <ulink
-          url="shorewall6-mangle.html">shorewall6-mangle(5)</ulink>. The old
-          file is renamed with a .bak suffix. Beginning with Shorewall
-          4.6.12.2, this option also causes the <emphasis
-          role="bold">tos</emphasis> file to be converted to <ulink
-          url="shorewall6-mangle.html">shorewall6-mangle(5)</ulink>.</para>
-
-          <important>
-            <para>There are some notable restrictions with the
-            <option>-t</option> option:</para>
-
-            <orderedlist>
-              <listitem>
-                <para>Converted rules will be appended to the existing
-                <filename>mangle</filename> file; if there is no
-                <filename>mangle</filename> file in the CONFIG_PATH, one will
-                be created in <filename
-                class="directory">/etc/shorewall</filename>.</para>
-              </listitem>
-
-              <listitem>
-                <para>Existing comments in the <filename>tcrules</filename>
-                file will not be transferred to the
-                <filename>mangle</filename> file.</para>
-              </listitem>
-
-              <listitem>
-                <para>INCLUDEd files will be expanded inline in the
-                <filename>mangle</filename> file.</para>
-              </listitem>
-
-              <listitem>
-                <para>Columns in the <filename>mangle</filename> file will be
-                separated by a single tab character; there is no attempt made
-                to otherwise align the columns.</para>
-              </listitem>
-            </orderedlist>
-          </important>
-
-          <para>The <option>-r</option> option was added in Shorewall 4.6.12.
-          When specified, <option>-r</option> causes <ulink
-          url="manpages6/shorewall6-routestopped.html">shorewall6-routestopped(5)</ulink>
-          to be converted to <ulink
-          url="manpages6/shorewall6-stoppedrules.html">shorewall6-stoppedrules(5)</ulink>.
-          The old file is renamed with a .bak suffix.</para>
-
-          <para>The <option>-n</option> option was added in Shorewall 4.6.12.
-          When specified, <option>-n</option> causes <ulink
-          url="manpages6/shorewall6-routestopped.html">shorewall6-notrack(5)</ulink>
-          to be converted to <ulink
-          url="manpages6/shorewall6-conntrack.html">shorewall6-conntrack(5)</ulink>.
-          The old file is renamed with a .bak suffix.</para>
-
-          <para>The <option>-A</option> option was added in Shorewall 4.6.0
-          and is equivalent to specifying the <option>-b</option>,
-          <option>-D</option>, <option>-t,</option> <option>-r</option> and
-          the <option>-n</option> options.</para>
+          <para>The <option>-A</option> option is included for compatibility
+          with Shorewall 4.6 and is equivalent to specifying the
+          <option>-i</option> option.</para>
 
           <para>For a description of the other options, see the <emphasis
           role="bold">check</emphasis> command above.</para>

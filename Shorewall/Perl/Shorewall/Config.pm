@@ -5378,7 +5378,7 @@ sub convert_to_directives() {
 
     my $dirtest = qr|^$sharedir/+shorewall6?(?:/.*)?$|;
 
-    progress_message3 "Converting 'FORMAT' and 'COMMENT' lines to compiler directives...";
+    progress_message3 "Converting 'FORMAT', 'SECTION' and 'COMMENT' lines to compiler directives...";
 
     for my $dir ( @path ) {
 	unless ( $dir =~ /$dirtest/ ) {
@@ -5413,6 +5413,7 @@ EOF
 				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
 				    progress_message3 "   File $file updated - old file renamed ${file}.bak";
 				} elsif ( rename "${file}.bak" , $file ) {
+				    progress_message "   File $file not updated -- no bare 'COMMENT', 'SECTION' or 'FORMAT' lines found";
 				    progress_message "   File $file not updated -- no bare 'COMMENT' or 'FORMAT' lines found";
 				} else {
 				    warning message "Unable to rename ${file}.bak to $file:$!";

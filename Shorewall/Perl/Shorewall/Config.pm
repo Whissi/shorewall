@@ -2134,7 +2134,7 @@ sub split_line2( $$;$$$ ) {
 	( $columns, $pairs, $rest ) = split ';;', $currline;
 
 	if ( defined $pairs ) {
-	    fatal_error "Only one set of double semicolons (';;') allowed on a line" if define $rest;
+	    fatal_error "Only one set of double semicolons (';;') allowed on a line" if defined $rest;
 
 	    $currline = $columns;
 

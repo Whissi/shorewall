@@ -455,13 +455,12 @@ sub process_default_action( $$$$ ) {
 	} elsif ( ( $targets{$def} || 0 ) == INLINE ) {
 	    $default = $def;
 	    $default = "$def($param)" if supplied $param;
+	    $default = join( ':', $default, $level ) if $level ne 'none';
 	} elsif ( $default_option ) {
 	    fatal_error "Unknown Action ($default) in $policy setting";
 	} else {
 	    fatal_error "Unknown Default Action ($default)";
 	}
-
-	$default = join( ':', $default, $level ) if $level ne 'none';
     } else {
 	$default = $default_actions{$policy} || 'none';
     }

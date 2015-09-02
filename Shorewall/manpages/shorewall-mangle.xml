@@ -351,18 +351,18 @@
 
                 <para>The following rules are equivalent:</para>
 
-                <programlisting>2:P             eth0              -         tcp 22
-INLINE(2):P     eth0              -         tcp 22
-INLINE(2):P     eth0              -                 ; -p tcp
-INLINE          eth0              -         tcp 22  ; -j MARK --set-mark 2
-INLINE          eth0              -                 ; -p tcp -j MARK --set-mark 2
+                <programlisting>2:P                   eth0              -         tcp 22
+INLINE(MARK(2)):P     eth0              -         tcp 22
+INLINE(MARK(2)):P     eth0              -                 ; -p tcp
+INLINE                eth0              -         tcp 22  ; -j MARK --set-mark 2
+INLINE                eth0              -                 ; -p tcp -j MARK --set-mark 2
 </programlisting>
 
                 <para>If INLINE_MATCHES=Yes in <ulink
                 url="/manpages/shorewall.conf.html">shorewall6.conf(5)</ulink>
                 then the third rule above can be specified as follows:</para>
 
-                <programlisting>2:P             eth0              -                 ; -p tcp</programlisting>
+                <programlisting>MARK(2):P             eth0              -                 ; -p tcp</programlisting>
               </listitem>
             </varlistentry>
 

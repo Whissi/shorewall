@@ -749,7 +749,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
     if ( $cmd eq 'INLINE' ) {
 	( $target, $cmd, $params, $junk, $raw_matches ) = handle_inline( MANGLE_TABLE, 'mangle', $action, $cmd, $params, '' );
-    } elsif ( $config{INLINE_MATCHES} ) {
+    } else {
 	$raw_matches = get_inline_matches(0);
     }
 

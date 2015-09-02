@@ -80,7 +80,7 @@ sub process_one_masq1( $$$$$$$$$$ )
     if ( $interfacelist =~ /^INLINE\((.+)\)$/ ) {
 	$interfacelist = $1;
 	$inlinematches = get_inline_matches(0);
-    } elsif ( $config{INLINE_MATCHES} ) {
+    } else {
 	$inlinematches = get_inline_matches(0);
     }	
     #

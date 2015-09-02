@@ -2269,7 +2269,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
     if ( $basictarget eq 'INLINE' ) {
 	( $action, $basictarget, $param, $loglevel, $raw_matches ) = handle_inline( FILTER_TABLE, 'filter', $action, $basictarget, $param, $loglevel );
-    } elsif ( $config{INLINE_MATCHES} ) {
+    } else {
 	$raw_matches = get_inline_matches(0);
     }
     #

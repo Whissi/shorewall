@@ -2117,6 +2117,10 @@ sub split_line2( $$;$$$ ) {
 
     my $inlinematches = $config{INLINE_MATCHES};
 
+    my ( $columns, $pairs, $rest );
+
+    my $currline = $currentline;
+
     unless ( defined $maxcolumns ) {
 	my @maxcolumns = ( keys %$columnsref );
 	$maxcolumns = @maxcolumns;
@@ -2124,9 +2128,27 @@ sub split_line2( $$;$$$ ) {
 
     $inline_matches = '';
     #
-    # First see if there is a semicolon on the line; what follows will be column/value pairs or raw iptables input
+    # First, see if there are double semicolons on the line; what follows will be raw iptables input
     #
-    my ( $columns, $pairs, $rest ) = split( ';', $currentline );
+    if ( $inline ) {
+	( $columns, $pairs, $rest ) = split ';;', $currline;
+
+	if ( defined $pairs ) {
+	    fatal_error "Only one set of double semicolons (';;') allowed on a line" if define $rest;
+
+	    $currline = $columns;
+
+	    $inline_matches = $pairs;
+	    #
+	    # Don't look for matches below
+	    #
+	    $inline = $inlinematches = '';
+	}
+    }
+    #
+    # Next, see if there is a semicolon on the line; what follows will be column/value pairs or raw iptables input
+    #
+    ( $columns, $pairs, $rest ) = split( ';', $currline );
 
     if ( supplied $pairs ) {
 	#
@@ -2152,7 +2174,7 @@ sub split_line2( $$;$$$ ) {
 	    #
 	    # This file supports INLINE or IPTABLES
 	    #
-	    if ( $currentline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currentline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
+	    if ( $currline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
 		$inline_matches = $pairs;
 
 		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
@@ -2169,7 +2191,7 @@ sub split_line2( $$;$$$ ) {
 	} elsif ( $checkinline ) {
 	    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes";
 	}
-    } elsif ( $currentline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
+    } elsif ( $currline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
 	#
 	# Pairs are enclosed in curly brackets.
 	#
@@ -2194,7 +2216,7 @@ sub split_line2( $$;$$$ ) {
 	return @line
     }
 
-    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currentline =~ /'/;
+    fatal_error "Shorewall Configuration file entries may not contain single quotes" if $currline =~ /'/;
 
     my $line = @line;
 

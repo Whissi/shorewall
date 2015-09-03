@@ -969,9 +969,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           <ulink url="/configuration_file_basics.htm#Pairs">alternative
           specificaitons</ulink> on the right.. When INLINE_MATCHES=Yes is
           specified, the specifications on the right are interpreted as if
-          INLINE had been specified in the ACTION column. If not specified or
-          if specified as the empty value, the value 'No' is assumed for
-          backward compatibility.</para>
+          INLINE had been specified in the ACTION column. This also applies to
+          <ulink url="shorewall-masq.html">shorewall-masq(5)</ulink> and
+          <ulink url="shorewall-mangle.html">shorewall-mangle(5</ulink>) which
+          also support INLINE. If not specified or if specified as the empty
+          value, the value 'No' is assumed for backward compatibility.</para>
+
+          <para>Beginning with Shorewall 5.0.0, it is no longer necessary to
+          set INLINE_MATCHES=Yes in order to be able to specify your own
+          iptables text in a rule. You may simply preface that text with a
+          pair of semicolons (";;"). If alternate input is also specified in
+          the rule, it should appear before the semicolons and may be
+          seperated from normal column input by a single semicolon.</para>
         </listitem>
       </varlistentry>
 

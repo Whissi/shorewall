@@ -364,6 +364,12 @@ INLINE                eth0              -                 ; -p tcp -j MARK --set
                 then the third rule above can be specified as follows:</para>
 
                 <programlisting>MARK(2):P             eth0              -                 ; -p tcp</programlisting>
+
+                <para>Beginning with Shorewall 5.0.0, the rule may also be
+                written this way, irrespective of the setting of
+                INLINE_MATCHES:</para>
+
+                <programlisting>MARK(2):P             eth0              -                 ;; -p tcp</programlisting>
               </listitem>
             </varlistentry>
 

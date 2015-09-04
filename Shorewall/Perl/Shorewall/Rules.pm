@@ -126,9 +126,9 @@ our @builtins;
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
-our $rule_commands   = { SECTION => 2 };
-our $action_commands = { SECTION => 2, DEFAULTS => 2 };
-our $macro_commands  = { SECTION => 2, DEFAULT => 2 };
+our $rule_commands   = {};
+our $action_commands = { DEFAULTS => 2 };
+our $macro_commands  = { DEFAULT => 2 };
 #
 # There is an implicit assumption that the last column of the @rulecolumns hash is always the last column of the @columns array.
 # The @columns array doesn't include the ACTION but does include a 'wildcard' last element.

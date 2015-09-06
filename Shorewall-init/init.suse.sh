@@ -1,5 +1,5 @@
 #! /bin/bash
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.5
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V5.0
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -38,7 +38,7 @@
 # 0 - success
 # 1 - generic or unspecified error
 # 2 - invalid or excess argument(s)
-# 3 - unimplemented feature (e.g. "reload")
+# 3 - unimplemented feature
 # 4 - insufficient privilege
 # 5 - program is not installed
 # 6 - program is not configured

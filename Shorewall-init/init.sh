@@ -1,5 +1,5 @@
 #! /bin/bash
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V4.5
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V5.0
 #
 #     (c) 2010,2012-2014 - Tom Eastep (teastep@shorewall.net)
 #

@@ -77,17 +77,18 @@
 
     <note>
       <para>If you want to specify parameters to ULOG or NFLOG (e.g.,
-      NFLOG(1,0,1)), then you must either quote the setting or you must escape
-      the parentheses.</para>
+      NFLOG(1,0,1)), then you must quote the setting.</para>
 
-      <para>Examples:</para>
+      <para>Example:</para>
 
       <programlisting>MACLIST_LOG_LEVEL="NFLOG(1,0,1)"</programlisting>
-
-      <para>or</para>
-
-      <programlisting>MACLIST_LOG_LEVEL=NFLOG\(1,0,1\)</programlisting>
     </note>
+
+    <para>Beginning with Shorewall 5.0.0, the log level may be followed by a
+    colon (":") and a <firstterm>log tag</firstterm>. The log tag normally
+    follows the packet disposition in Shorewall-generated Netfilter log
+    messages, separated from the disposition by a colon (e.g, "DROP:mytag").
+    See LOGTAGONLY below for additional information.</para>
 
     <para>The following options may be set in shorewall6.conf.</para>
 
@@ -434,7 +435,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">BLACKLIST_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+        role="bold">BLACKLIST_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]]</term>
 
         <listitem>
           <para>Formerly named BLACKLIST_LOGLEVEL. This parameter determines
@@ -866,7 +867,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
       <varlistentry>
         <term><emphasis
-        role="bold">INVALID_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">INVALID_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]</term>
 
         <listitem>
           <para>Added in Shorewall 4.5.13. Packets in the INVALID state that
@@ -1291,7 +1292,7 @@ LOG:info:,bar                        net                    fw</programlisting>
 
       <varlistentry>
         <term><emphasis
-        role="bold">MACLIST_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+        role="bold">MACLIST_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]]</term>
 
         <listitem>
           <para>Determines the syslog level for logging connection requests
@@ -1830,7 +1831,7 @@ LOG:info:,bar                        net                    fw</programlisting>
 
       <varlistentry>
         <term><emphasis
-        role="bold">RELATED_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">RELATED_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.27. Packets in the related state that
@@ -1971,7 +1972,7 @@ INLINE          -       -       -       ; -j REJECT
 
       <varlistentry>
         <term><emphasis
-        role="bold">RPFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">RPFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]</term>
 
         <listitem>
           <para>Added in shorewall 4.5.7. Determines the logging of packets
@@ -2027,7 +2028,7 @@ INLINE          -       -       -       ; -j REJECT
 
       <varlistentry>
         <term><emphasis
-        role="bold">SMURF_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+        role="bold">SMURF_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]]</term>
 
         <listitem>
           <para>Specifies the logging level for smurf packets (see the
@@ -2057,7 +2058,7 @@ INLINE          -       -       -       ; -j REJECT
 
       <varlistentry>
         <term><emphasis
-        role="bold">SFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">SFILTER_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]</term>
 
         <listitem>
           <para>Added on Shorewall 4.4.20. Determines the logging of packets
@@ -2235,7 +2236,7 @@ INLINE          -       -       -       ; -j REJECT
 
       <varlistentry>
         <term><emphasis
-        role="bold">TCP_FLAGS_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>]</term>
+        role="bold">TCP_FLAGS_LOG_LEVEL=</emphasis>[<emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]]</term>
 
         <listitem>
           <para>Determines the syslog level for logging packets that fail the
@@ -2313,7 +2314,7 @@ INLINE          -       -       -       ; -j REJECT
 
       <varlistentry>
         <term><emphasis
-        role="bold">UNTRACKED_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis></term>
+        role="bold">UNTRACKED_LOG_LEVEL=</emphasis><emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]</term>
 
         <listitem>
           <para>Added in Shorewall 4.5.13. Packets in the UNTRACKED state that

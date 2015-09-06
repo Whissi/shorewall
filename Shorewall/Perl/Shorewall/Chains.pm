@@ -2729,8 +2729,8 @@ sub ensure_manual_chain($) {
 
 sub log_irule_limit( $$$$$$$@ );
 
-sub ensure_blacklog_chain( $$$$ ) {
-    my ( $target, $disposition, $level, $audit ) = @_;
+sub ensure_blacklog_chain( $$$$$ ) {
+    my ( $target, $disposition, $level, $tag, $audit ) = @_;
 
     unless ( $filter_table->{blacklog} ) {
 	my $logchainref = new_manual_chain 'blacklog';
@@ -2738,7 +2738,7 @@ sub ensure_blacklog_chain( $$$$ ) {
 	$target =~ s/A_//;
 	$target = 'reject' if $target eq 'REJECT';
 
-	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , $tag, 'add' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
 	add_ijump( $logchainref, g => $target );

@@ -713,6 +713,14 @@ sub initialize( $;$$) {
 		    KLUDGEFREE              => '',
 		    VERSION                 => "4.5.19-Beta1",
 		    CAPVERSION              => 40609 ,
+		    BLACKLIST_LOG_TAG       => '',
+		    RELATED_LOG_TAG         => '',
+		    MACLIST_LOG_TAG         => '',
+		    TCP_FLAGS_LOG_TAG       => '',
+		    SMURF_LOG_TAG           => '',
+		    RPFILTER_LOG_TAG        => '',
+		    INVALID_LOG_TAG         => '',
+		    UNTRACKED_LOG_TAG       => '',
 		  );
     #
     # From shorewall.conf file
@@ -3742,7 +3750,15 @@ sub default_log_level( $$ ) {
     unless ( supplied $value ) {
 	$config{$level} = validate_level $default, $level;
     } else {
+	( $value, my $tag ) = split( ':', $value , 2 );
 	$config{$level} = validate_level $value, $level;
+	if ( supplied $tag ) {
+	    my $tag_name = $level;
+
+	    $tag_name =~ s/_LEVEL/_TAG/;
+
+	    $globals{$tag_name} = $tag;
+	}
     }
 }
 

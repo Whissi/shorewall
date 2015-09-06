@@ -136,10 +136,17 @@ sub setup_ecn()
     }
 }
 
-sub add_rule_pair( $$$$ ) {
-    my ($chainref , $predicate , $target , $level ) = @_;
+sub add_rule_pair( $$$$$ ) {
+    my ($chainref , $predicate , $target , $level, $tag ) = @_;
 
-    log_rule( $level, $chainref, "\U$target", $predicate )  if supplied $level;
+    log_rule_limit( $level,
+		    $chainref,
+		    $chainref->{name},
+		    "\U$target",
+		    $globals{LOGLIMIT},
+		    $tag,
+		    'add',
+		    $predicate )  if supplied $level;
     add_jump( $chainref , $target, 0, $predicate );
 }
 
@@ -195,13 +202,16 @@ sub convert_blacklist() {
     my $zones  = find_zones_by_option 'blacklist', 'in';
     my $zones1 = find_zones_by_option 'blacklist', 'out';
     my ( $level, $disposition ) = @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' };
+    my $tag         = $globals{MACLIST_LOG_TAG};
     my $audit       = $disposition =~ /^A_/;
     my $target      = $disposition;
     my $orig_target = $target;
     my @rules;
 
     if ( @$zones || @$zones1 ) {
-	$target = "$target:$level" if supplied $level;
+	if ( supplied $level ) {
+	    $target = supplied $tag ? "$target:$level:$tag":"$target:$level";
+	}
 
 	my $fn = open_file( 'blacklist' );
 
@@ -631,11 +641,12 @@ sub add_common_rules ( $ ) {
     my @state     = state_imatch( $globals{BLACKLIST_STATES} );
     my $faststate = $config{RELATED_DISPOSITION} eq 'ACCEPT' && $config{RELATED_LOG_LEVEL} eq '' ? 'ESTABLISHED,RELATED' : 'ESTABLISHED';
     my $level     = $config{BLACKLIST_LOG_LEVEL};
+    my $tag       = $globals{BLACKLIST_LOG_TAG};
     my $rejectref = $filter_table->{reject};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
-	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level );
-	add_rule_pair( set_optflags( new_standard_chain( 'logreject' ), DONT_OPTIMIZE | DONT_DELETE ), '' , 'reject' , $level );
+	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level , $tag);
+	add_rule_pair( set_optflags( new_standard_chain( 'logreject' ), DONT_OPTIMIZE | DONT_DELETE ), '' , 'reject' , $level , $tag);
 	$dynamicref =  set_optflags( new_standard_chain( 'dynamic' ) ,  DONT_OPTIMIZE );
 	add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
     }
@@ -648,6 +659,7 @@ sub add_common_rules ( $ ) {
 
     my $policy   = $config{SFILTER_DISPOSITION};
     $level       = $config{SFILTER_LOG_LEVEL};
+    $tag         = $config{SFILTER_LOG_TAG};
     my $audit    = $policy =~ s/^A_//;
     my @ipsec    = have_ipsec ? ( policy => '--pol none --dir in' ) : ();
 
@@ -657,7 +669,14 @@ sub add_common_rules ( $ ) {
 	#
 	$chainref = new_standard_chain 'sfilter';
 
-	log_rule $level , $chainref , $policy , '' if $level ne '';
+	log_rule_limit( $level,
+			$chainref,
+			$chainref->{name},
+			$policy,
+			$globals{LOGLIMIT},
+			$tag,
+			'add',
+			'' ) if $level ne '';
 
 	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
 
@@ -742,6 +761,7 @@ sub add_common_rules ( $ ) {
     if ( @$list ) {
 	$policy   = $config{RPFILTER_DISPOSITION};
 	$level    = $config{RPFILTER_LOG_LEVEL};
+	$tag      = $globals{RPFILTER_LOG_TAG};
 	$audit    = $policy =~ s/^A_//;
 	
 	if ( $level || $audit ) {
@@ -750,7 +770,14 @@ sub add_common_rules ( $ ) {
 	    #
 	    $chainref = ensure_mangle_chain 'rplog';
 
-	    log_rule $level , $chainref , $policy , '' if $level ne '';
+	    log_rule_limit( $level,
+			    $chainref,
+			    $chainref->{name},
+			    $policy,
+			    $globals{LOGLIMIT},
+			    $tag,
+			    'add',
+			    '' ) if $level ne '';
 
 	    add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
 
@@ -811,7 +838,7 @@ sub add_common_rules ( $ ) {
 			     'smurfs' ,
 			     'DROP',
 			     $globals{LOGILIMIT},
-			     '',
+			     $globals{SMURF_LOG_TAG},
 			     'add' );
 	    add_ijump( $smurfref, j => 'AUDIT', targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
 	    add_ijump( $smurfref, j => 'DROP' );
@@ -933,6 +960,7 @@ sub add_common_rules ( $ ) {
 
     if ( @$list ) {
 	my $level = $config{TCP_FLAGS_LOG_LEVEL};
+	my $tag   = $globals{TCP_FLAGS_LOG_TAG};
 	my $disposition = $config{TCP_FLAGS_DISPOSITION};
 	my $audit = $disposition =~ /^A_/;
 
@@ -947,7 +975,15 @@ sub add_common_rules ( $ ) {
 
 	    $globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
 
-	    log_rule $level , $logflagsref , $config{TCP_FLAGS_DISPOSITION}, '';
+	    log_rule_limit( $level,
+			    $logflagsref,
+			    'logflags',
+			    $disposition,
+			    $globals{LOGLIMIT},
+			    $tag,
+			    'add',
+			    ''
+			  );
 
 	    $globals{LOGPARMS} = $savelogparms;
 
@@ -1052,6 +1088,7 @@ sub setup_mac_lists( $ ) {
 
     my $target      = $globals{MACLIST_TARGET};
     my $level       = $config{MACLIST_LOG_LEVEL};
+    my $tag         = $globals{MACLIST_LOG_TAG};
     my $disposition = $config{MACLIST_DISPOSITION};
     my $audit       = ( $disposition =~ s/^A_// );
     my $ttl         = $config{MACLIST_TTL};
@@ -1220,7 +1257,7 @@ sub setup_mac_lists( $ ) {
 
 	    run_user_exit2( 'maclog', $chainref );
 
-	    log_irule_limit $level, $chainref , $chain , $disposition, [], '', 'add' if $level ne '';
+	    log_irule_limit $level, $chainref , $chain , $disposition, [], $tag, 'add' if $level ne '';
 	    add_ijump $chainref, j => $target;
 	}
     }

@@ -1022,7 +1022,7 @@ sub finish_chain_section ($$$) {
 
     for ( qw( ESTABLISHED RELATED INVALID UNTRACKED ) ) {
 	if ( $state{$_} ) {
-	    my ( $char, $level, $target ) = @{$statetable{$_}};
+	    my ( $char, $level, $tag, $target ) = @{$statetable{$_}};
 	    my $twochains = substr( $chainref->{name}, 0, 1 ) eq $char;
 
 	    if ( $twochains || $level || $target ne 'ACCEPT' ) {
@@ -1035,10 +1035,14 @@ sub finish_chain_section ($$$) {
 			$chain2ref = new_chain( 'filter', "${char}$chainref->{name}" );
 		    }
 
-		    log_rule( $level,
-			      $chain2ref,
-			      uc $target,
-			      '' );
+		    log_rule_limit( $level,
+				    $chain2ref,
+				    $chain2ref->{name},
+				    uc $target,
+				    $globals{LOGLIMIT},
+				    $tag ,
+				    'add' ,
+				    '');
 
 		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
 
@@ -3358,10 +3362,10 @@ sub process_rules() {
     #
     # Populate the state table
     #
-    %statetable          = ( ESTABLISHED => [ '^', '',                           'ACCEPT'                 ] ,
-			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_TARGET} ] ,
-			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_TARGET} ] ,
-			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_TARGET} ] ,
+    %statetable          = ( ESTABLISHED => [ '^', '',                           '',                          'ACCEPT' ] ,
+			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_LOG_TAG},   $globals{RELATED_TARGET}  ] ,
+			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_LOG_TAG},   $globals{INVALID_TARGET} ] ,
+			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_LOG_TAG}, $globals{UNTRACKED_TARGET} ] ,
 			   );
     %section_states = ( BLACKLIST_SECTION ,  $globals{BLACKLIST_STATES},
 			ESTABLISHED_SECTION, 'ESTABLISHED',
@@ -3391,14 +3395,14 @@ sub process_rules() {
 
     if ( $fn ) {
 	first_entry( sub () {
-			 my ( $level, $disposition ) = @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' };
+			 my ( $level, $disposition , $tag ) = ( @config{'BLACKLIST_LOG_LEVEL', 'BLACKLIST_DISPOSITION' }, $globals{BLACKLIST_LOG_TAG} ) ;
 			 my  $audit       = $disposition =~ /^A_/;
 			 my  $target      = $disposition eq 'REJECT' ? 'reject' : $disposition;
 
 			 progress_message2 "$doing $currentfilename...";
 
 			 if ( supplied $level ) {
-			     ensure_blacklog_chain( $target, $disposition, $level, $audit );
+			     ensure_blacklog_chain( $target, $disposition, $level, $tag, $audit );
 			     ensure_audit_blacklog_chain( $target, $disposition, $level ) if have_capability 'AUDIT_TARGET';
 			 } elsif ( $audit ) {
 			     require_capability 'AUDIT_TARGET', "BLACKLIST_DISPOSITION=$disposition", 's';

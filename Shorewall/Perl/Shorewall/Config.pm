@@ -5622,7 +5622,8 @@ sub get_configuration( $$$$ ) {
 	fatal_error "LOG_MARTIANS=On is not supported in IPv6" if $config{LOG_MARTIANS} eq 'on';
     }
 
-    default 'STARTUP_LOG'   , '';
+    default 'STARTUP_LOG'    , '';
+    default 'SHOREWALL_SHELL', '/bin/sh';
 
     if ( $config{STARTUP_LOG} ne '' ) {
 	if ( supplied $config{LOG_VERBOSITY} ) {

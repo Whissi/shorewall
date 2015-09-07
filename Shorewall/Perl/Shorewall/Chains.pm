@@ -4855,7 +4855,7 @@ sub validate_mark( $ ) {
 
 sub verify_small_mark( $ ) {
     my $val = validate_mark ( (my $mark) = $_[0] );
-    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > $globals{SMALL_MASK};
+    fatal_error "Mark value ($mark) too large" if numeric_value( $mark ) > $globals{SMALL_MAX};
     $val;
 }
 

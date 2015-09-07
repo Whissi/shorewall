@@ -5855,7 +5855,7 @@ sub get_configuration( $$$$ ) {
 
     $val = $config{PROVIDER_OFFSET};
 
-    $globals{SMALL_MASK} = $val ? make_mask( $val ) : $globals{TC_MASK}; 
+    $globals{SMALL_MAX} = $val ? make_mask( $val ) : $globals{TC_MASK}; 
 
     if ( supplied ( $val = $config{ZONE2ZONE} ) ) {
 	fatal_error "Invalid ZONE2ZONE value ( $val )" unless $val =~ /^[2-]$/;

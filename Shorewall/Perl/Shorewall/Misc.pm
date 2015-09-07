@@ -1009,7 +1009,7 @@ sub add_common_rules ( $ ) {
 	add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,RST SYN,RST';
 	add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags FIN,RST FIN,RST';
 	add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags SYN,FIN SYN,FIN';
-	add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags PSH,FIN PSH,FIN';
+	add_ijump $chainref , g => $disposition, p => 'tcp --tcp-flags ACK,PSH,FIN PSH,FIN';
 	add_ijump $chainref , g => $disposition, p => 'tcp --syn --sport 0';
 
 	for my $hostref  ( @$list ) {

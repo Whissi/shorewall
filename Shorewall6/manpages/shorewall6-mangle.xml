@@ -321,6 +321,28 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">HL</emphasis>([<emphasis
+              role="bold">-</emphasis>|<emphasis
+              role="bold">+</emphasis>]<replaceable>number</replaceable>)[:P]</term>
+
+              <listitem>
+                <para>If <emphasis role="bold">+</emphasis> is included,
+                packets matching the rule will have their hop limit
+                incremented by <replaceable>number</replaceable>. Similarly,
+                if <emphasis role="bold">-</emphasis> is included, matching
+                packets have their hop limit decremented by
+                <replaceable>number</replaceable>. If neither <emphasis
+                role="bold">+</emphasis> nor <emphasis
+                role="bold">-</emphasis> is given, the hop limit of matching
+                packets is set to <replaceable>number</replaceable>. The valid
+                range of values for <replaceable>number</replaceable> is
+                1-255. If :P is included, the rule is placed in the mangle
+                PREROUTING chain -- otherwise, it is placed in the FORWARD
+                chain.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis
               role="bold">IMQ</emphasis>(<replaceable>number</replaceable>)</term>
 
@@ -665,53 +687,7 @@ Normal-Service       =&gt; 0x00</programlisting>
                 </itemizedlist>
               </listitem>
             </varlistentry>
-
-            <varlistentry>
-              <term><emphasis role="bold">TTL</emphasis>([<emphasis
-              role="bold">-</emphasis>|<emphasis
-              role="bold">+</emphasis>]<replaceable>number</replaceable>)</term>
-
-              <listitem>
-                <para>If <emphasis role="bold">+</emphasis> is included,
-                packets matching the rule will have their TTL incremented by
-                <replaceable>number</replaceable>. Similarly, if <emphasis
-                role="bold">-</emphasis> is included, matching packets have
-                their TTL decremented by <replaceable>number</replaceable>. If
-                neither <emphasis role="bold">+</emphasis> nor <emphasis
-                role="bold">-</emphasis> is given, the TTL of matching packets
-                is set to <replaceable>number</replaceable>. The valid range
-                of values for <replaceable>number</replaceable> is
-                1-255.</para>
-              </listitem>
-            </varlistentry>
           </variablelist>
-
-          <orderedlist numeration="arabic">
-            <listitem>
-              <para><emphasis role="bold">TTL</emphasis>([<emphasis
-              role="bold">-</emphasis>|<emphasis
-              role="bold">+</emphasis>]<replaceable>number</replaceable>)</para>
-
-              <para>Added in Shorewall 4.4.24.</para>
-
-              <para>Prior to Shorewall 4.5.7.2, may be optionally followed by
-              <emphasis role="bold">:F</emphasis> but the resulting rule is
-              always added to the FORWARD chain. Beginning with Shorewall
-              4.5.7.s, it may be optionally followed by <emphasis
-              role="bold">:P</emphasis>, in which case the rule is added to
-              the PREROUTING chain.</para>
-
-              <para>If <emphasis role="bold">+</emphasis> is included, packets
-              matching the rule will have their TTL incremented by
-              <replaceable>number</replaceable>. Similarly, if <emphasis
-              role="bold">-</emphasis> is included, matching packets have
-              their TTL decremented by <replaceable>number</replaceable>. If
-              neither <emphasis role="bold">+</emphasis> nor <emphasis
-              role="bold">-</emphasis> is given, the TTL of matching packets
-              is set to <replaceable>number</replaceable>. The valid range of
-              values for <replaceable>number</replaceable> is 1-255.</para>
-            </listitem>
-          </orderedlist>
         </listitem>
       </varlistentry>
 

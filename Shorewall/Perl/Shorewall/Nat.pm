@@ -378,7 +378,7 @@ sub process_one_masq1( $$$$$$$$$$$ )
 
 sub process_one_masq( )
 {
-    my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest ) =
+    my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) =
 	split_line2( 'masq file',
 		     { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9, probability => 10 },
 		     {},    #Nopad
@@ -388,7 +388,7 @@ sub process_one_masq( )
     fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
 
     for my $proto ( split_list $protos, 'Protocol' ) {
-	process_one_masq1( $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest );
+	process_one_masq1( $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
     }
 }
 

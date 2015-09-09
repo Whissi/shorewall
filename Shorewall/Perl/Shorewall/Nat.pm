@@ -60,9 +60,9 @@ sub initialize($) {
 #
 # Process a single rule from the the masq file
 #
-sub process_one_masq1( $$$$$$$$$$ )
+sub process_one_masq1( $$$$$$$$$$$ )
 {
-    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest ) = @_;
+    my ($interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
 
     my $pre_nat;
     my $add_snat_aliases = $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
@@ -140,6 +140,7 @@ sub process_one_masq1( $$$$$$$$$$ )
     #
     $baserule .= do_test( $mark, $globals{TC_MASK} ) if $mark ne '-';
     $baserule .= do_user( $user )                    if $user ne '-';
+    $baserule .= do_probability( $probability )      if $probability ne '-';
 
     for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';
@@ -379,7 +380,7 @@ sub process_one_masq( )
 {
     my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest ) =
 	split_line2( 'masq file',
-		     { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9 },
+		     { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9, probability => 10 },
 		     {},    #Nopad
 		     undef, #Columns
 		     1 );   #Allow inline matches

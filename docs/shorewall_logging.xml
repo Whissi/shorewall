@@ -316,7 +316,12 @@ gateway:/etc/shorewall#                                               </programl
 
       <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION             SOURCE     DEST     PROTO     DEST
 #                                                 PORT(S)
-ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlisting></para>
+ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlisting><important>
+          <para>Shorewall considers <emphasis role="bold">ULOG(...)</emphasis>
+          and <emphasis role="bold">NFLOG(...)</emphasis> to be <emphasis
+          role="bold">log levels</emphasis>, just like info, debug, etc. even
+          though they are not defined by syslog.</para>
+        </important></para>
     </section>
   </section>
 
@@ -410,5 +415,44 @@ ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlis
 
     <para>For Shorewall-specific information, see <ulink
     url="FAQ.htm#faq17">FAQ #17</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Customizing the Content of Shorewall Log Messages</title>
+
+    <para>In addition to the <link linkend="Levels">options</link> mentioned
+    above, a certain amount of customization of the Netfilter-generated
+    messages is allowed.</para>
+
+    <section id="LogTags">
+      <title>Log Tags</title>
+
+      <para>In a Shorewall logging rule, the log level can be followed by
+      a<firstterm> log tag</firstterm> as in "DROP:NFLOG:junk". The generated
+      log message will include "<emphasis>chain-name</emphasis> junk
+      DROP".</para>
+    </section>
+
+    <section>
+      <title>LOGTAGONLY</title>
+
+      <para>By setting the LOGTAGONLY option to Yes in <ulink
+      url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink> or <ulink
+      url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>, the
+      disposition ('DROP' in the above example) will be omitted. See the
+      shorewall[6].conf man page for further information about how
+      LOGTAGONLY=Yes can be used.</para>
+    </section>
+
+    <section>
+      <title>Log Levels in shorewall[6].conf</title>
+
+      <para><ulink
+      url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink> and <ulink
+      url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink> have a
+      number of options whose values are log levels. Beginnint with Shorewall
+      5.0.0, these specifcations may include a log tag as described <link
+      linkend="LogTags">above</link>.</para>
+    </section>
   </section>
 </article>

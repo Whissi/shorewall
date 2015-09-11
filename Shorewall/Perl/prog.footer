@@ -266,17 +266,39 @@ case "$COMMAND" in
 	else
 	    shift
 	    status=0
+	    table=filter
 	    for chain in $@; do
-		if chain_exists $chain; then
-		    if qt $g_tool-Z $chain; then
-			progress_message3 "Filter $chain Counters Reset"
+	    	case $chain in
+		    *:*)
+			table=${chain%:*}
+			chain=${chain#*:}
+			case $table in
+			    raw|nat|mangle|filter)
+			        ;;
+			    *)
+				error_message "ERROR: Invalid table name ($table)"
+				status=2
+				;;
+			esac
+			;;
+		    *)
+			;;
+		esac
+
+		if [ $status -eq 0 ]; then
+		    if chain_exists $chain $table; then
+			if qt $g_tool -t $table -Z $chain; then
+			    progress_message3 "Completed counter reset of $table chain $chain"
+			else
+			    error_message "ERROR: Reset of $table chain $chain failed"
+			    status=2
+			    break
+			fi
 		    else
-			error_message "ERROR: Reset of chain $chain failed"
-			status=2
-			break
+			error_message "WARNING: $table chain $chain does not exist"
 		    fi
 		else
-		    error_message "WARNING: Filter Chain $chain does not exist"
+		    break;
 		fi
 	    done
 	fi

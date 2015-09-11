@@ -499,9 +499,9 @@ in_network() # $1 = IP address, $2 = CIDR network
 #
 # Query NetFilter about the existence of a filter chain
 #
-chain_exists() # $1 = chain name
+chain_exists() # $1 = chain name, $2 = table name (optional)
 {
-    qt1 $g_tool -L $1 -n
+    qt1 $g_tool -t ${2:-filter} -L $1 -n
 }
 
 #

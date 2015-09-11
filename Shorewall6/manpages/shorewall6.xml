@@ -451,7 +451,9 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
-      <arg choice="plain"><option>reset</option></arg>
+      <arg
+      choice="plain"><option>reset</option><arg><replaceable>chain</replaceable>
+      ...</arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -1703,6 +1705,13 @@
           <replaceable>chain</replaceable>(s). If no
           <replaceable>chain</replaceable> is specified, all the packet and
           byte counters in the firewall are reset.</para>
+
+          <para>Beginning with Shorewall 5.0.0,
+          <replaceable>chain</replaceable> may be composed of both a table
+          name and a chain name separated by a colon (e.g.,
+          mangle:PREROUTING). Chain names following that don't include a table
+          name are assumed to be in that same table. If no table name is given
+          in the command, the filter table is assumed.</para>
         </listitem>
       </varlistentry>
 

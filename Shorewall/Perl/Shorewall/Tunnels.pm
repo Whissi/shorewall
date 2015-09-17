@@ -137,6 +137,8 @@ sub setup_tunnels() {
 
 	add_tunnel_rule $inchainref,  p => 'udp --dport 655', @$source;
 	add_tunnel_rule $outchainref, p => 'udp --dport 655', @$dest;
+	add_tunnel_rule $inchainref,  p => 'tcp --dport 655', @$source;
+	add_tunnel_rule $outchainref, p => 'tcp --dport 655', @$dest;
     }
 
     sub setup_one_openvpn {

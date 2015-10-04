@@ -184,7 +184,7 @@
         you set WIDE_TC_MARKS=Yes in <ulink
         url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5) ). You
         assign packet marks to different types of traffic using entries in the
-        <filename>/etc/shorewall/tcrules</filename> file (Shorewall 4.6.0 or
+        <filename>/etc/shorewall/mangle</filename> file (Shorewall 4.6.0 or
         later) or <filename>/etc/shorewall/tcrules</filename> (Prior to
         Shorewall 4.6.0).</para>
 
@@ -202,7 +202,7 @@
     <para>One class for each interface must be designated as the
     <firstterm>default class</firstterm>. This is the class to which unmarked
     traffic (packets to which you have not assigned a mark value in
-    <filename>/etc/shorewall/tcrules</filename>) is assigned.</para>
+    <filename>/etc/shorewall/mangle</filename>) is assigned.</para>
 
     <para>Netfilter also supports a mark value on each connection. You can
     assign connection mark values in
@@ -226,10 +226,10 @@
     <para>This screen shot shows how I configured QoS in a 2.6.16
     Kernel:</para>
 
-    <graphic align="center" fileref="images/traffic_shaping2.6.png" />
+    <graphic align="center" fileref="images/traffic_shaping2.6.png"/>
 
     <para>And here's my recommendation for a 2.6.21 kernel:<graphic
-    align="center" fileref="images/traffic_shaping2.6.21.png" /></para>
+    align="center" fileref="images/traffic_shaping2.6.21.png"/></para>
   </section>
 
   <section id="Shorewall">
@@ -501,7 +501,7 @@
       </itemizedlist>
 
       <example id="Example0">
-        <title></title>
+        <title/>
 
         <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
         interface for this. The device has an outgoing bandwidth of 500kbit
@@ -839,13 +839,13 @@ ppp0           6000kbit         500kbit</programlisting>
 
         <para>Also unlike rules in the <ulink
         url="manpages/shorewall-rules.html">shorewall-rules</ulink>(5) file,
-        the tcrules file is not stateful. So every packet that goes into, out
-        of or through your firewall is subject to entries in the tcrules
-        file.</para>
+        the mangle (tcrules) file is not stateful. So every packet that goes
+        into, out of or through your firewall is subject to entries in the
+        mangle (tcrules) file.</para>
 
-        <para>Because tcrules are not stateful, it is necessary to understand
-        basic IP socket operation. Here is an edited excerpt from a post on
-        the Shorewall Users list:<blockquote>
+        <para>Because mangle (tcrules) entries are not stateful, it is
+        necessary to understand basic IP socket operation. Here is an edited
+        excerpt from a post on the Shorewall Users list:<blockquote>
             <para>For the purposes of this discussion, the world is separated
             into clients and servers. Servers provide services to
             clients.</para>
@@ -898,10 +898,12 @@ ppp0           6000kbit         500kbit</programlisting>
       </important>
 
       <para>The fwmark classifier provides a convenient way to classify
-      packets for traffic shaping. The <quote>/etc/shorewall/tcrules</quote>
-      file is used for specifying these marks in a tabular fashion. For an
-      in-depth look at the packet marking facility in Netfilter/Shorewall,
-      please see <ulink url="PacketMarking.html">this article</ulink>.</para>
+      packets for traffic shaping. The
+      <filename>/etc/shorewall/mangle</filename>
+      (<filename>/etc/shorewall/tcrules</filename>) file is used for
+      specifying these marks in a tabular fashion. For an in-depth look at the
+      packet marking facility in Netfilter/Shorewall, please see <ulink
+      url="PacketMarking.html">this article</ulink>.</para>
 
       <para><emphasis role="bold">For marking forwarded traffic, you must
       either set MARK_IN_FORWARD_CHAIN=Yes shorewall.conf or by using the :F
@@ -914,7 +916,7 @@ ppp0           6000kbit         500kbit</programlisting>
       <para>The following examples are for the mangle file.</para>
 
       <example id="Example1">
-        <title></title>
+        <title/>
 
         <para>All packets arriving on eth1 should be marked with 1. All
         packets arriving on eth2 and eth3 should be marked with 2. All packets
@@ -928,7 +930,7 @@ MARK(3)       $FW       0.0.0.0/0      all</programlisting>
       </example>
 
       <example id="Example2">
-        <title></title>
+        <title/>
 
         <para>All GRE (protocol 47) packets destined for 155.186.235.151
         should be marked with 12.</para>
@@ -938,7 +940,7 @@ MARK(12):T    0.0.0.0/0 155.182.235.151 47</programlisting>
       </example>
 
       <example id="Example3">
-        <title></title>
+        <title/>
 
         <para>All SSH request packets originating in 192.168.1.0/24 and
         destined for 155.186.235.151 should be marked with 22.</para>
@@ -948,7 +950,7 @@ MARK(22):T    192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
       </example>
 
       <example id="Example4">
-        <title></title>
+        <title/>
 
         <para>All SSH packets packets going out of the first device in in
         /etc/shorewall/tcdevices should be assigned to the class with mark
@@ -961,7 +963,7 @@ CLASSIFY(1:110)   0.0.0.0/0      0.0.0.0/0       tcp        -               22</
       </example>
 
       <example id="Example5">
-        <title></title>
+        <title/>
 
         <para>Mark all ICMP echo traffic with packet mark 1. Mark all peer to
         peer traffic with packet mark 4.</para>
@@ -994,7 +996,7 @@ SAVE           0.0.0.0/0      0.0.0.0/0       all        -             -        
       </example>
 
       <example>
-        <title></title>
+        <title/>
 
         <para>Mark all forwarded VOIP connections with connection mark 1 and
         ensure that all VOIP packets also receive that mark (assumes that
@@ -1305,15 +1307,15 @@ ppp0            3       2*full/10       8*full/10       2</programlisting>
         </section>
 
         <section id="realtcr">
-          <title>tcrules file</title>
+          <title>mangle file</title>
 
           <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
 #                                                              PORT(S)
-1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
-1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
+MARK(1):F       0.0.0.0/0       0.0.0.0/0       icmp    echo-request
+MARK(1):F       0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 # mark traffic which should have a lower priority with a 3:
 # mldonkey
-3               0.0.0.0/0       0.0.0.0/0       udp     -        4666</programlisting>
+MARK(3):F       0.0.0.0/0       0.0.0.0/0       udp     -        4666</programlisting>
 
           <para>Wondershaper allows you to define a set of hosts and/or ports
           you want to classify as low priority. To achieve this , you have to
@@ -1343,7 +1345,7 @@ NOPRIOPORTSRC="6662 6663"
 NOPRIOPORTDST="6662 6663"  </programlisting>
 
           <para>This would result in the following additional settings to the
-          tcrules file:</para>
+          mangle file:</para>
 
           <programlisting>MARK(3)               192.168.1.128/25 0.0.0.0/0      all
 MARK(3)               192.168.3.28     0.0.0.0/0      all
@@ -1602,13 +1604,13 @@ ip link set ifb0 up</command></programlisting>
       <para>While this file was created to allow shaping of traffic through an
       IFB, the file may be used for general traffic classification as well.
       The file is similar to <ulink
-      url="shorewall-tcrules.html">shorewall-mangle</ulink>(5) with the
+      url="shorewall-mangle.html">shorewall-mangle</ulink>(5) with the
       following key exceptions:</para>
 
       <itemizedlist>
         <listitem>
           <para>The first match determines the classification, whereas in the
-          tcrules file, the last match determines the classification.</para>
+          mangle file, the last match determines the classification.</para>
         </listitem>
 
         <listitem>

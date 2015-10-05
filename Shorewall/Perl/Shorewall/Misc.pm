@@ -818,7 +818,7 @@ sub add_common_rules ( $ ) {
     if ( $upgrade ) {
 	convert_blacklist;
     } elsif ( -f ( my $fn = find_file 'blacklist' ) ) {
-	warning_message "The blacklist file is no longer supported -- use '$product update -b' to convert $fn to the equivalent blrules file";
+	warning_message "The blacklist file is no longer supported -- use '$product update' to convert $fn to the equivalent blrules file";
     }
 
     $list = find_hosts_by_option 'nosmurfs';

@@ -49,9 +49,13 @@
     <title>Introduction</title>
 
     <para>Shorewall supports two different types of blackliisting; rule-based,
-    static and dynamic. The BLACKLISTNEWONLY option in
-    /etc/shorewall/shorewall.conf controls the degree of blacklist
-    filtering:</para>
+    static and dynamic. The BLACKLIST option in /etc/shorewall/shorewall.conf
+    controls the degree of blacklist filtering.</para>
+
+    <para>The BLACKLIST option lists the Netfilter connection-tracking states
+    that blacklist rules are to be applied to (states are NEW, ESTABLISHED,
+    RELATED, INVALID, NOTRACK). The BLACKLIST option supersedes the
+    BLACKLISTNEWONLY option:</para>
 
     <orderedlist>
       <listitem>

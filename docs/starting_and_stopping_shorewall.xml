@@ -151,7 +151,7 @@
           all Netfilter rules and open your firewall for all traffic to pass.
           It rather places your firewall in a safe state defined by the
           contents of your <ulink
-          url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink>
+          url="manpages/shorewall-stoppedrules.html">/etc/shorewall/stoppedrules</ulink>
           file and the setting of ADMINISABSENTMINDED in <ulink
           url="manpages/shorewall.conf.html">/etc/shorewall/shorewall.conf</ulink>.</para>
         </important>
@@ -638,8 +638,8 @@
 
             <entry>firewall stop</entry>
 
-            <entry>Only traffic to/from hosts listed in
-            /etc/shorewall/routestopped is passed to/from/through the
+            <entry>Only traffic allowed by ACCEPT entries in
+            /etc/shorewall/stoppedrules is passed to/from/through the
             firewall. If ADMINISABSENTMINDED=Yes in
             /etc/shorewall/shorewall.conf then in addition, all existing
             connections are retained and all connection requests from the

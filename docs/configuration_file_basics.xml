@@ -134,8 +134,8 @@
         <listitem>
           <para><filename>/etc/shorewall/routestopped</filename> - defines
           hosts accessible when Shorewall is stopped. Superseded in Shorewall
-          4.6.8 by /etc/shorewall/stoppedrules. Not supported in Shorewall
-          5.0.0 and later versions.</para>
+          4.6.8 by <filename>/etc/shorewall/stoppedrules</filename>. Not
+          supported in Shorewall 5.0.0 and later versions.</para>
         </listitem>
 
         <listitem>
@@ -152,8 +152,8 @@
           setting the TOS field in packet headers. Superseded in Shorewall
           4.5.1 by the TOS target in
           <filename>/etc/shorewall/tcrules</filename> (which file has since
-          been superseded by
-          <filename>/etc/shorewall/mangle</filename>).</para>
+          been superseded by <filename>/etc/shorewall/mangle</filename>). Not
+          supported in Shorewall 5.0.0 and later versions.</para>
         </listitem>
 
         <listitem>
@@ -1195,8 +1195,9 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
     FORMAT separately.</para>
 
     <para>In Shorewall 4.5.11, the ?FORMAT directive was created to centralize
-    processing of FORMAT directives. The old entries, while still supported,
-    are now deprecated.</para>
+    processing of FORMAT directives. The old entries, while still supported in
+    Shorewall 4.5-4.6, are now deprecated. They are no longer supported in
+    Shorewall 5.0 and later versions.</para>
 
     <para>The ?FORMAT directive is as follows:</para>
 
@@ -1291,7 +1292,8 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <para>In Shorewall 4.5.11, the ?COMMENT directive was created to
     centralize processing of COMMENT directives. The old entries, while still
-    supported, are now deprecated.</para>
+    supported in Shorewall 4.5 and 4.6, are now deprecated. They are no longer
+    supported in Shorewall 5.0 and later versions.</para>
 
     <para>Use of this directive requires Comment support in your kernel and
     iptables - see the output of <command><link
@@ -2730,10 +2732,11 @@ DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100<
 
     <para>There are times when you would like to enable or disable one or more
     rules in the configuration without having to do a <command>shorewall
-    restart</command>. This may be accomplished using the SWITCH column in
-    <ulink url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5) or
-    <ulink url="manpages6/shorewall6-rules.html">shorewall6-rules</ulink> (5).
-    Using this column requires that your kernel and iptables include
+    reload</command> or <command>shorewall restart</command>. This may be
+    accomplished using the SWITCH column in <ulink
+    url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5) or <ulink
+    url="manpages6/shorewall6-rules.html">shorewall6-rules</ulink> (5). Using
+    this column requires that your kernel and iptables include
     <firstterm>Condition Match Support</firstterm> and you must be running
     Shorewall 4.4.24 or later. See the output of <command>shorewall show
     capabilities</command> and <command>shorewall version</command> to
@@ -2888,8 +2891,9 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
       <listitem>
         <para>If the interface is associated with a provider in <ulink
         url="manpages/shorewall-providers.html">shorewall-providers</ulink>
-        (5), <command>start</command> and <command>restart</command> will not
-        fail if the interface is not usable.</para>
+        (5), <command>start</command>, <command>reload</command> and
+        <command>restart</command> will not fail if the interface is not
+        usable.</para>
       </listitem>
 
       <listitem>
@@ -2950,8 +2954,9 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
 
       <listitem>
         <para>specifying the separate directory in a <command>shorewall
-        start</command> or <command>shorewall restart</command> command (e.g.,
-        <command>shorewall restart /etc/testconfig</command> )</para>
+        start</command>, <command>shorewall reload</command> or
+        <command>shorewall restart</command> command (e.g., <command>shorewall
+        restart /etc/testconfig</command> )</para>
       </listitem>
     </orderedlist>
   </section>

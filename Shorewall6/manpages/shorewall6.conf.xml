@@ -2143,7 +2143,9 @@ INLINE          -       -       -       ; -j REJECT
         <term><emphasis role="bold">TC_ENABLED=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>|<emphasis
-        role="bold">Internal|Shared</emphasis>]</term>
+        role="bold">Internal</emphasis>|<emphasis
+        role="bold">Simple</emphasis>|<emphasis
+        role="bold">Shared</emphasis>]</term>
 
         <listitem>
           <para>If you say <emphasis role="bold">Yes</emphasis> or <emphasis
@@ -2159,6 +2161,13 @@ INLINE          -       -       -       ; -j REJECT
           <para>If you set TC_ENABLED=Internal or internal or leave the option
           empty then Shorewall6 will use its builtin traffic shaper
           (tc4shorewall6 written by Arne Bernin.</para>
+
+          <para>If you set TC_ENABLED=Simple (Shorewall 4.4.6 and later),
+          simple traffic shaping using <ulink
+          url="/manpages/shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5)
+          and <ulink
+          url="/manpages/shorewall-tcpri.html">shorewall-tcpri</ulink>(5) is
+          enabled.</para>
 
           <para>Beginning with Shorewall 4.4.15, if you set TC_ENABLED=Shared
           or shared, then you should create symbolic links from your

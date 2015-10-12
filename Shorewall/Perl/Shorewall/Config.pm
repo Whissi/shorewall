@@ -4832,7 +4832,7 @@ sub update_config_file( $ ) {
     unless ( supplied $config{LOGLIMIT} ) {
 	if ( $config{LOGRATE} || $config{LOGBURST} ) {
 	    my $limit;
-	    
+
 	    if ( supplied $config{LOGRATE} ) {
 		fatal_error"Invalid LOGRATE ($config{LOGRATE})" unless $config{LOGRATE}  =~ /^\d+\/(second|minute)$/;
 		$limit = $config{LOGRATE};
@@ -5564,7 +5564,7 @@ sub get_configuration( $$$$ ) {
 
 		$limit .= "--$match $1 --hashlimit-burst $5 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
-	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|hour|day))?)$/ ) {
+	    } elsif ( $rate =~ /^[sd]:((\d+)(\/(sec|min|second|minute|hour|day))?)$/ ) {
 		fatal_error "Invalid rate ($1)" unless $2;
 		$limit .= "--$match $1 --hashlimit-name lograte --hashlimit-mode ";
 		$units = $4;
@@ -5588,7 +5588,7 @@ sub get_configuration( $$$$ ) {
 	    fatal_error "Invalid rate ($1)" unless $2;
 	    fatal_error "Invalid burst value ($5)" unless $5;
 	    $limit = "-m limit --limit $1 --limit-burst $5 ";
-	} elsif ( $rate =~ /^(\d+)(\/(sec|min|hour|day))?$/ )  {
+	} elsif ( $rate =~ /^(\d+)(\/(sec|min|second|minute|hour|day))?$/ )  {
 	    fatal_error "Invalid rate (${1}${2})" unless $1;
 	    $limit = "-m limit --limit $rate ";
 	} else {

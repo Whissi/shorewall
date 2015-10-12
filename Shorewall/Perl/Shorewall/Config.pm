@@ -601,11 +601,13 @@ our %validlevels;            # Valid log levels.
 # Deprecated options with their default values
 #
 our %deprecated = (
+		   LEGACY_RESTART => 'no'
 		  );
 #
 # Deprecated options that are eliminated via update
 #
 our %converted = (
+		  LEGACY_RESTART => 1
 		 );
 #
 # Eliminated options
@@ -858,6 +860,7 @@ sub initialize( $;$$) {
 	  BASIC_FILTERS => undef,
 	  WORKAROUNDS => undef ,
 	  LEGACY_RESTART => undef ,
+	  RESTART => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -4863,6 +4866,7 @@ sub update_config_file( $ ) {
 
     update_default( 'USE_DEFAULT_RT', 'No' );
     update_default( 'EXPORTMODULES',  'No' );
+    update_default( 'RESTART',        'reload' );
 
     my $fn;
 
@@ -5759,7 +5763,15 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';
-    default_yes_no 'LEGACY_RESTART'             , '';
+
+    if ( supplied( $val = $config{RESTART} ) ) {
+	fatal_error "Invalid value for RESTART ($val)" unless $val =~ /^(restart|reload)$/;
+    } elsif (supplied $config{LEGACY_RESTART} ) {
+	default_yes_no 'LEGACY_RESTART'             , 'Yes';
+	$config{RESTART} = $config{LEGACY_RESTART} ? 'reload' : 'restart';
+    } else {
+	$config{RESTART} = 'reload';
+    }
 
     require_capability( 'BASIC_EMATCH', 'BASIC_FILTERS=Yes', 's' ) if $config{BASIC_FILTERS};
 
@@ -6302,7 +6314,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS LEGACY_RESTART) ) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS RESTART) ) {
 	conditionally_add_option $option;
     }
 

@@ -310,7 +310,7 @@ case "$COMMAND" in
     restart)
 	[ $# -ne 1 ] && usage 2
 
-	if [ -z "$LEGACY_RESTART" ]; then
+	if [ "$RESTART" = restart ]; then
 	    COMMAND=stop stop_command && COMMAND=start start_command
 	else
 	    COMMAND=reload

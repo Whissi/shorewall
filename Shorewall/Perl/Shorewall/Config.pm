@@ -300,7 +300,7 @@ our %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT', BLACKLIST_LOGLEVEL => 'BLACKLIST
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY/;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY RESTART/;
 #
 # From parsing the capabilities file or detecting capabilities
 #
@@ -713,7 +713,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "4.5.19-Beta1",
+		    VERSION                 => "5.0.1",
 		    CAPVERSION              => 40609 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',

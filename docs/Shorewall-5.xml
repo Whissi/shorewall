@@ -338,9 +338,18 @@
 
       <para>For those that can't get used to the idea of using
       <command>reload</command> in place of <command>restart</command>, a
-      LEGACY_RESTART option has been added to shorewall[6].conf. The option
-      defaults to No but if set to Yes, then the <command>restart</command>
+      RESTART option has been added to shorewall[6].conf. The option defaults
+      to 'restart' but if set to 'reload', then the <command>restart</command>
       command does what it did in earlier releases.</para>
+
+      <note>
+        <para>Beginning with Shorewall 5.0.1 and Shorewall 4.6.13.2, the
+        update command will set RESTART=reload to maintain compatibility with
+        earlier releases. Shorewall 5.0.0 created the setting
+        LEGACY_RESTART=No which was equivalent to RESTART=restart. Under
+        Shorewall 5.0.1 and later, update will convert LEGACY_RESTART to the
+        equivalent RESTART setting.</para>
+      </note>
     </section>
   </section>
 

@@ -60,7 +60,6 @@ our @routemarked_providers;
 our %routemarked_interfaces;
 our @routemarked_interfaces;
 our %provider_interfaces;
-our @load_providers;
 our @load_interfaces;
 
 our $balancing;
@@ -98,7 +97,6 @@ sub initialize( $ ) {
     %routemarked_interfaces = ();
     @routemarked_interfaces = ();
     %provider_interfaces    = ();
-    @load_providers         = ();
     @load_interfaces        = ();
     $balancing              = 0;
     $fallback               = 0;
@@ -1380,15 +1378,32 @@ sub finish_providers() {
 	emit(   'fi',
 		'' );
     } else {
+	if ( ( $fallback || @load_interfaces ) && $config{USE_DEFAULT_RT} ) {
+	    emit  ( q(#),
+		    q(# Delete any default routes in the 'main' table),
+		    q(#),
+		    "while qt \$IP -$family route del default table $main; do",
+		    '    true',
+		    'done',
+		    ''
+		  );
+	} else {
+	    emit ( q(#),
+		   q(# We don't have any 'balance'. 'load='  or 'fallback=' providers so we restore any default route that we've saved),
+		   q(#),
+		   qq(restore_default_route $config{USE_DEFAULT_RT}),
+		   ''
+		 );
+	}
+
 	emit ( '#',
-	       '# We don\'t have any \'balance\' providers so we restore any default route that we\'ve saved',
+	       '# Delete any routes in the \'balance\' table',
 	       '#',
-	       "restore_default_route $config{USE_DEFAULT_RT}" ,
-	       '#',
-	       '# And delete any routes in the \'balance\' table',
-	       '#',
-	       "qt \$IP -$family route del default table $balance",
-	       '' );
+	       "while qt \$IP -$family route del default table $balance; do",
+	       '    true',
+	       'done',
+	       ''
+	     );
     }
 
     if ( $fallback ) {

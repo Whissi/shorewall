@@ -3633,7 +3633,13 @@ get_config() {
 	VERBOSITY=2
     fi
 
-    g_hostname=$(hostname 2> /dev/null)
+    if qt mywhich hostname; then
+	g_hostname=$(hostname 2> /dev/null)
+    elif qt mywhich uname; then
+	g_hostname=$(uname -n 2> /dev/null)
+    else
+	g_hostname=localhost
+    fi
 
     if [ -n "$IPSET" ]; then
 	case "$IPSET" in

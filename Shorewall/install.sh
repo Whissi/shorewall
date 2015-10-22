@@ -507,7 +507,7 @@ run_install $OWNERSHIP -m 0644 $PRODUCT.conf           ${DESTDIR}${SHAREDIR}/$PR
 run_install $OWNERSHIP -m 0644 $PRODUCT.conf.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
 if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
-    run_install $OWNERSHIP -m 0644 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
+    run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 
     if [ "$SHAREDIR" != /usr/share -o "$CONFDIR" != /etc ]; then
 	if [ $PRODUCT = shorewall ]; then
@@ -546,7 +546,7 @@ run_install $OWNERSHIP -m 0644 zones           ${DESTDIR}${SHAREDIR}/$PRODUCT/co
 run_install $OWNERSHIP -m 0644 zones.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/zones ]; then
-    run_install $OWNERSHIP -m 0644 zones${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/zones
+    run_install $OWNERSHIP -m 0600 zones${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/zones
     echo "Zones file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/zones"
 fi
 
@@ -624,7 +624,7 @@ run_install $OWNERSHIP -m 0644 params.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/c
 if [ -f ${DESTDIR}${CONFDIR}/$PRODUCT/params ]; then
     chmod 0644 ${DESTDIR}${CONFDIR}/$PRODUCT/params
 else
-    run_install $OWNERSHIP -m 0644 params${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/params
+    run_install $OWNERSHIP -m 0600 params${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/params
     echo "Parameter file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/params"
 fi
 
@@ -1018,7 +1018,7 @@ run_install $OWNERSHIP -m 0644 actions           ${DESTDIR}${SHAREDIR}/$PRODUCT/
 run_install $OWNERSHIP -m 0644 actions.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/actions ]; then
-    run_install $OWNERSHIP -m 0644 actions${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/actions
+    run_install $OWNERSHIP -m 0600 actions${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/actions
     echo "Actions file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/actions"
 fi
 
@@ -1029,7 +1029,7 @@ run_install $OWNERSHIP -m 0644 routes           ${DESTDIR}${SHAREDIR}/$PRODUCT/c
 run_install $OWNERSHIP -m 0644 routes.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/routes ]; then
-    run_install $OWNERSHIP -m 0644 routes${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/routes
+    run_install $OWNERSHIP -m 0600 routes${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/routes
     echo "Routes file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/routes"
 fi
 

@@ -510,14 +510,14 @@ sub process_a_provider( $ ) {
 	$gateway = '';
     }
 
-    my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what, $hostroute );
+    my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what, $hostroute, $persistent );
 
     if ( $pseudo ) {	
-	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what ,      $hostroute ) =
-	( 0,      0                       , 0 ,        0,        0,                               1                                  , ''  , 0       , 0,      0,     'interface', 0);
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what ,      $hostroute,        $persistent ) =
+	( 0,      0                       , 0 ,        0,        0,                               1                                  , ''  , 0       , 0,      0,     'interface', 0,                 0);
     } else {
-	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what      , $hostroute )=
-	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider',  1);
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what      , $hostroute,        $persistent  )=
+	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider',  1,                 0);
     }
 
     unless ( $options eq '-' ) {
@@ -576,6 +576,8 @@ sub process_a_provider( $ ) {
 		$hostroute = 1;
 	    } elsif ( $option eq 'nohostroute' ) {
 		$hostroute = 0;
+	    } elsif ( $option eq 'persistent' ) {
+		$persistent = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";
 	    }
@@ -596,12 +598,14 @@ sub process_a_provider( $ ) {
 	fatal_error "GATEWAY not valid with 'local' provider"  unless $gatewaycase eq 'none';
 	fatal_error "'track' not valid with 'local'"           if $track;
 	fatal_error "DUPLICATE not valid with 'local'"         if $duplicate ne '-';
+	fatal_error "'persistent' is not valid with 'local"    if $persistent;
     } elsif ( $tproxy ) {
 	fatal_error "Only one 'tproxy' provider is allowed"    if $tproxies++;
 	fatal_error "GATEWAY not valid with 'tproxy' provider" unless $gatewaycase eq 'none';
 	fatal_error "'track' not valid with 'tproxy'"          if $track;
 	fatal_error "DUPLICATE not valid with 'tproxy'"        if $duplicate ne '-';
 	fatal_error "MARK not allowed with 'tproxy'"           if $mark ne '-';
+	fatal_error "'persistent' is not valid with 'tproxy"   if $persistent;
 	$mark = $globals{TPROXY_MARK};
     }
 
@@ -688,6 +692,7 @@ sub process_a_provider( $ ) {
 			   rules       => [] ,
 			   routes      => [] ,
 			   routedests  => {} ,
+			   persistent  => $persistent,
 			 };
 
     $provider_interfaces{$interface} = $table unless $shared;
@@ -761,6 +766,7 @@ sub add_a_provider( $$ ) {
     my $what        = $providerref->{what};
     my $label       = $pseudo ? 'Optional Interface' : 'Provider';
     my $hostroute   = $providerref->{hostroute};
+    my $persistent  = $providerref->{persistent};
 
     my $dev         = var_base $physical;
     my $base        = uc $dev;

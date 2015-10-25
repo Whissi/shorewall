@@ -89,7 +89,8 @@
 
       <varlistentry>
         <term><emphasis role="bold">PRIORITY</emphasis> -
-        <emphasis>priority</emphasis></term>
+        <emphasis>priority</emphasis><emphasis
+        role="bold">[!]</emphasis></term>
 
         <listitem>
           <para>The rule's numeric <emphasis>priority</emphasis> which
@@ -102,7 +103,7 @@
               <term>1000-1999</term>
 
               <listitem>
-                <para>Before Shorewall6-generated 'MARK' rules</para>
+                <para>Before Shorewall-generated 'MARK' rules</para>
               </listitem>
             </varlistentry>
 
@@ -110,7 +111,7 @@
               <term>11000-11999</term>
 
               <listitem>
-                <para>After 'MARK' rules but before Shorewall6-generated rules
+                <para>After 'MARK' rules but before Shorewall-generated rules
                 for ISP interfaces.</para>
               </listitem>
             </varlistentry>
@@ -124,6 +125,10 @@
               </listitem>
             </varlistentry>
           </variablelist>
+
+          <para>Beginning with Shorewall 5.0.2, the priority may be followed
+          optionally by an exclaimation mark ("!"). This causes the rule to
+          remain in place if the interface is disabled.</para>
         </listitem>
       </varlistentry>
 

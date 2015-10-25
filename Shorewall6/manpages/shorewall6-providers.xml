@@ -346,6 +346,35 @@
                 such as Debian 7.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">persistent</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.2 and alters the behavior of the
+                <command>disable</command> command:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>The provider's routing table still contains the
+                    apprioriate default route.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Unless the <option>noautosrc</option> option is
+                    specified, routing rules are generated to route traffic
+                    from the interfaces address(es) out of the provider's
+                    routing table.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>Persistent routing rules in <ulink
+                    url="shorewall-rtrules.html">shorewall6-rtrules(5)</ulink>
+                    are present.</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </listitem>
       </varlistentry>

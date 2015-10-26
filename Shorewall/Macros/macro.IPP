@@ -1,5 +1,5 @@
 #
-# Shorewall version 3.2 - IPP Macro
+# Shorewall - IPP Macro
 #
 # /usr/share/shorewall/macro.IPP
 #

@@ -661,6 +661,10 @@ sub process_a_provider( $ ) {
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' unless $copy eq 'none';
     }
 
+    if ( $persistent ) {
+	warning_message( "Provider $table is not optional -- the 'persistent' option is ignored" ), $persistent = 0 unless $optional;
+    }
+
     $providers{$table} = { provider          => $table,
 			   number            => $number ,
 			   id                => $config{USE_RT_NAMES} ? $table : $number,

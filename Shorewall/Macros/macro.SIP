@@ -1,5 +1,5 @@
 #
-# Shorewall version 5 - SIP Macro
+# Shorewall - SIP Macro
 #
 # /usr/share/shorewall/macro.SIP
 #

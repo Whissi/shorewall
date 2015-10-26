@@ -1,5 +1,5 @@
 #
-# Shorewall version 5 - Sieve Macro
+# Shorewall - Sieve Macro
 #
 # /usr/share/shorewall/macro.Sieve
 #

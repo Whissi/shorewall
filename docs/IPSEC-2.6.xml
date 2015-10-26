@@ -804,10 +804,11 @@ all             all             REJECT          info
 
       <programlisting>#ACTION         SOURCE  DEST    PROTO   DEST    SOURCE
 #                                       PORT(S) PORT(S)
-SECTION ESTABLISHED
+?SECTION ESTABLISHED
 # Prevent IPsec bypass by hosts behind a NAT gateway
 L2TP(REJECT)    net     $FW
 REJECT          $FW     net     udp     -       1701
+?SECTION NEW
 # l2tp over the IPsec VPN
 ACCEPT          vpn     $FW     udp     1701
 # webserver that can only be accessed internally

@@ -794,6 +794,8 @@ sub add_a_provider( $$ ) {
 	if ( $gateway ) {
 	    $address = get_interface_address $interface unless $address;
 
+	    emit( qq([ -z "$address" ] && return\n) );
+
 	    if ( $hostroute ) {
 		if ( $family == F_IPV4 ) {
 		    emit qq(run_ip route replace $gateway src $address dev $physical ${mtu});
@@ -1068,7 +1070,9 @@ CEOF
     emit( qq(echo 1 > \${VARDIR}/${physical}.status) );
 
     if ( $optional ) {
-	emit( "persistent_${what}_${table}\n" ) if $persistent;
+	if ( $persistent ) {
+	    emit( "persistent_${what}_${table}\n" );
+	}
 
 	if ( $shared ) {
 	    emit ( "error_message \"WARNING: Gateway $gateway is not reachable -- Provider $table ($number) not Started\"" );
@@ -1142,7 +1146,7 @@ CEOF
 		   'if [ $COMMAND = disable ]; then',
 		   "    do_persistent_${what}_${table}",
 		   "else",
-		   "    rm -f \${VARDIR}/${physical}_enabled\n"
+		   "    rm -f \${VARDIR}/${physical}_enabled\n",
 		   "fi\n",
 		 );
 	}

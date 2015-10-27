@@ -3885,6 +3885,13 @@ usage() # $1 = exit status
     ecko "   refresh [ -d ] [ -n ] [ -T ] [ -D <directory> ] [ <chain>... ]"
     echo "   reject <address> ..."
     ecko "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ -i ] [ <directory> ] <system>"
+
+    if [ -z "$g_lite" ]; then
+	echo "   remote-reload [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
+	echo "   remote-restart [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
+	echo "   remote-start [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
+    fi
+
     echo "   reset [ <chain> ... ]"
 
     if [ -n "$g_lite" ]; then

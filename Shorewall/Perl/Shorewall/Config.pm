@@ -5188,23 +5188,19 @@ sub get_params( $ ) {
 	    $shell = BASH;
 
 	    for ( @params ) {
-		my $var = $1;
-
-		unless ( $var =~ /\(/ ) {
-		    if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
-			$params{$var} = $2 unless $1 eq '_';
-		    } elsif ( /^declare -x (.*?)="(.*)$/ ) {
-			$params{$variable=$var} = $2 eq '"' ? '' : "${2}\n";
-		    } elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
-			$params{$var} = '';
+		chomp;
+		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
+		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
+		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
+		    $params{$1} = '';
+		} else {
+		    if ($variable) {
+			s/"$//;
+			$params{$variable} .= $_;
 		    } else {
-			chomp;
-			if ($variable) {
-			    s/"$//;
-			    $params{$variable} .= $_;
-			} else {
-			    warning_message "Param line ($_) ignored" unless $bug++;
-			}
+			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}
 	    }
@@ -5220,23 +5216,19 @@ sub get_params( $ ) {
 	    $shell = OLDBASH;
 
 	    for ( @params ) {
-		my $var = $1;
-
-		unless ( $var =~ /\(/ ) {
-		    if ( /^export (.*?)="(.*[^\\])"$/ ) {
-			$params{$var} = $2 unless $1 eq '_';
-		    } elsif ( /^export (.*?)="(.*)$/ ) {
-			$params{$variable=$var} = $2 eq '"' ? '' : "${2}\n";
-		    } elsif ( /^export ([^\s=]+)\s*$/ || /^export (.*)=""$/ ) {
-			$params{$var} = '';
+		chomp;
+		if ( /^export (.*?)="(.*[^\\])"$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^export (.*?)="(.*)$/ ) {
+		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
+		} elsif ( /^export ([^\s=]+)\s*$/ || /^export (.*)=""$/ ) {
+		    $params{$1} = '';
+		} else {
+		    if ($variable) {
+			s/"$//;
+			$params{$variable} .= $_;
 		    } else {
-			chomp;
-			if ($variable) {
-			    s/"$//;
-			    $params{$variable} .= $_;
-			} else {
-			    warning_message "Param line ($_) ignored" unless $bug++;
-			}
+			warning_message "Param line ($_) ignored" unless $bug++;
 		    }
 		}
 	    }
@@ -5251,6 +5243,7 @@ sub get_params( $ ) {
 	    $shell = ASH;
 
 	    for ( @params ) {
+		chomp;
 		if ( /^export (.*?)='(.*'"'"')$/ ) {
 		    $params{$variable=$1}="${2}\n";
 		} elsif ( /^export (.*?)='(.*)'$/ ) {
@@ -5258,7 +5251,6 @@ sub get_params( $ ) {
 		} elsif ( /^export (.*?)='(.*)$/ ) {
 		    $params{$variable=$1}="${2}\n";
 		} else {
-		    chomp;
 		    if ($variable) {
 			s/'$//;
 			$params{$variable} .= $_;
@@ -5270,9 +5262,13 @@ sub get_params( $ ) {
 	}
 
 	for ( keys %params ) {
-	    unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' ) {
-		fatal_error "The variable name $_ is reserved and may not be set in the params file"
-		    if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
+	    if ( /[^\w]/ ) {
+		delete $params{$_}
+	    } else {
+		unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' ) {
+		    fatal_error "The variable name $_ is reserved and may not be set in the params file"
+			if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
+		}
 	    }
 	}
 
@@ -5322,6 +5318,8 @@ sub export_params() {
 	next if exists $compiler_params{$param};
 
 	my $value = $params{$param};
+
+	chomp $value;
 	#
 	# Values in %params are generated from the output of 'export -p'.
 	# The different shells have different conventions for delimiting
@@ -5332,6 +5330,8 @@ sub export_params() {
 	    $value =~ s/\\"/"/g;
 	} elsif ( $shell == OLDBASH ) {
 	    $value =~ s/\\'/'/g;
+	    $value =~ s/\\"/"/g;
+	    $value =~ s/\\\\/\\/g;
 	} else {
 	    $value =~ s/'"'"'/'/g;
 	}
@@ -5344,7 +5344,9 @@ sub export_params() {
 	#
 	# We will use double quotes and escape embedded quotes with \.
 	#
-	if ( $value =~ /[\s()['"]/ ) {
+	if ( $value =~ /^"[^"]*"$/ ) {
+	    emit "$param=$value";
+	} elsif ( $value =~ /[\s()['"]/ ) {
 	    $value =~ s/"/\\"/g;
 	    emit "$param='$value'";
 	} else {

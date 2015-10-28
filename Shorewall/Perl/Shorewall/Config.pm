@@ -5207,19 +5207,23 @@ sub get_params( $ ) {
 	    $shell = BASH;
 
 	    for ( @params ) {
-		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
-		    $params{$1} = $2 unless $1 eq '_';
-		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
-		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
-		} elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
-		    $params{$1} = '';
-		} else {
-		    chomp;
-		    if ($variable) {
-			s/"$//;
-			$params{$variable} .= $_;
+		my $var = $1;
+
+		unless ( $var =~ /\(/ ) {
+		    if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
+			$params{$var} = $2 unless $1 eq '_';
+		    } elsif ( /^declare -x (.*?)="(.*)$/ ) {
+			$params{$variable=$var} = $2 eq '"' ? '' : "${2}\n";
+		    } elsif ( /^declare -x (.*)\s+$/ || /^declare -x (.*)=""$/ ) {
+			$params{$var} = '';
 		    } else {
-			warning_message "Param line ($_) ignored" unless $bug++;
+			chomp;
+			if ($variable) {
+			    s/"$//;
+			    $params{$variable} .= $_;
+			} else {
+			    warning_message "Param line ($_) ignored" unless $bug++;
+			}
 		    }
 		}
 	    }
@@ -5235,19 +5239,23 @@ sub get_params( $ ) {
 	    $shell = OLDBASH;
 
 	    for ( @params ) {
-		if ( /^export (.*?)="(.*[^\\])"$/ ) {
-		    $params{$1} = $2 unless $1 eq '_';
-		} elsif ( /^export (.*?)="(.*)$/ ) {
-		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
-		} elsif ( /^export ([^\s=]+)\s*$/ || /^export (.*)=""$/ ) {
-		    $params{$1} = '';
-		} else {
-		    chomp;
-		    if ($variable) {
-			s/"$//;
-			$params{$variable} .= $_;
+		my $var = $1;
+
+		unless ( $var =~ /\(/ ) {
+		    if ( /^export (.*?)="(.*[^\\])"$/ ) {
+			$params{$var} = $2 unless $1 eq '_';
+		    } elsif ( /^export (.*?)="(.*)$/ ) {
+			$params{$variable=$var} = $2 eq '"' ? '' : "${2}\n";
+		    } elsif ( /^export ([^\s=]+)\s*$/ || /^export (.*)=""$/ ) {
+			$params{$var} = '';
 		    } else {
-			warning_message "Param line ($_) ignored" unless $bug++;
+			chomp;
+			if ($variable) {
+			    s/"$//;
+			    $params{$variable} .= $_;
+			} else {
+			    warning_message "Param line ($_) ignored" unless $bug++;
+			}
 		    }
 		}
 	    }

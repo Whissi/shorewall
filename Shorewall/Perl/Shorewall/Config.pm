@@ -5268,12 +5268,16 @@ sub get_params( $ ) {
 
 	for ( keys %params ) {
 	    if ( /[^\w]/ ) {
-		delete $params{$_}
+		delete $params{$_};
+	    } elsif ( /^(?:SHLVL|OLDPWD)$/ ) {
+		delete $params{$_};
 	    } else {
 		unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' ) {
 		    fatal_error "The variable name $_ is reserved and may not be set in the params file"
 			if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
 		}
+
+		$params{$_} = '' unless defined $params{$_};
 	    }
 	}
 
@@ -5343,7 +5347,11 @@ sub export_params() {
 	#
 	# Don't export pairs from %ENV
 	#
-	next if defined $ENV{$param} && $value eq $ENV{$param};
+	if ( defined $ENV{$param} ) {
+	    next if $value eq $ENV{$param};
+	} elsif ( exists $ENV{$param} ) {
+	    next unless supplied $value;
+	}
 
 	emit "#\n# From the params file\n#" unless $count++;
 	#

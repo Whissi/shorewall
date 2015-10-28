@@ -5147,6 +5147,7 @@ sub unsupported_yes_no_warning( $ ) {
 #
 sub get_params( $ ) {
     my $export = $_[0];
+    my $cygwin = ( $shorewallrc{HOST} eq 'cygwin' );
 
     my $fn = find_file 'params';
 
@@ -5189,7 +5190,9 @@ sub get_params( $ ) {
 
 	    for ( @params ) {
 		chomp;
-		if ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
+		if ( $cygwin && /^declare -x (.*?)="(.*)"$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^declare -x (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^declare -x (.*?)="(.*)$/ ) {
 		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";
@@ -5217,7 +5220,9 @@ sub get_params( $ ) {
 
 	    for ( @params ) {
 		chomp;
-		if ( /^export (.*?)="(.*[^\\])"$/ ) {
+		if ( $cygwin && /^export (.*?)="(.*)"$/ ) {
+		    $params{$1} = $2 unless $1 eq '_';
+		} elsif ( /^export (.*?)="(.*[^\\])"$/ ) {
 		    $params{$1} = $2 unless $1 eq '_';
 		} elsif ( /^export (.*?)="(.*)$/ ) {
 		    $params{$variable=$1} = $2 eq '"' ? '' : "${2}\n";

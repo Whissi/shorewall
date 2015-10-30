@@ -3496,9 +3496,12 @@ noiptrace_command() {
     fi
 }
 #
-# Set the configuration variables from shorewall-lite.conf
+# Set the configuration variables from shorewall[6]-lite.conf.
+# This function is overloaded by lib.cli-std in the full products
 #
 get_config() {
+    local config
+    local lib
 
     ensure_config_path
 
@@ -3635,6 +3638,10 @@ get_config() {
     IP=$(mywhich ip 2> /dev/null)
 
     g_loopback=$(find_loopback_interfaces)
+
+    lib=$(find_file lib.cli-user)
+
+    [ -f $lib ] && . $lib
 
 }
 

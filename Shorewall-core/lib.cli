@@ -3495,9 +3495,30 @@ noiptrace_command() {
 	fatal_error "$g_product is not started"
     fi
 }
+
+#
+# Verify that we have a compiled firewall script
+#
+verify_firewall_script() {
+    if [ ! -f $g_firewall ]; then
+	echo "   ERROR: $g_product is not properly installed" >&2
+	if [ -L $g_firewall ]; then
+	    echo "          $g_firewall is a symbolic link to a" >&2
+	    echo "          non-existant file" >&2
+	else
+	    echo "          The file $g_firewall does not exist" >&2
+	fi
+
+	exit 2
+    fi
+}
+
+################################################################################
+# The remaining functions are used by the Lite cli - they are overloaded by
+# the Standard CLI by loading lib.cli-std
+################################################################################
 #
 # Set the configuration variables from shorewall[6]-lite.conf.
-# This function is overloaded by lib.cli-std in the full products
 #
 get_config() {
     local config
@@ -3644,28 +3665,6 @@ get_config() {
     [ -f $lib ] && . $lib
 
 }
-
-#
-# Verify that we have a compiled firewall script
-#
-verify_firewall_script() {
-    if [ ! -f $g_firewall ]; then
-	echo "   ERROR: $g_product is not properly installed" >&2
-	if [ -L $g_firewall ]; then
-	    echo "          $g_firewall is a symbolic link to a" >&2
-	    echo "          non-existant file" >&2
-	else
-	    echo "          The file $g_firewall does not exist" >&2
-	fi
-
-	exit 2
-    fi
-}
-
-################################################################################
-# The remaining functions are used by the Lite cli - they are overloaded by
-# the Standard CLI by loading lib.cli-std
-################################################################################
 #
 # Start Command Executor
 #

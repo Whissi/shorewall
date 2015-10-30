@@ -5287,8 +5287,14 @@ sub get_params( $ ) {
 
 	for ( keys %params ) {
 	    if ( /[^\w]/ ) {
+		#
+		# Useless variable with special characters in its name
+		#
 		delete $params{$_};
 	    } elsif ( /^(?:SHLVL|OLDPWD)$/ ) {
+		#
+		# The shell running getparams generates those
+		#
 		delete $params{$_};
 	    } else {
 		unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' ) {

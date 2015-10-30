@@ -31,6 +31,7 @@
 #
 get_config() {
     local prog
+    local lib
 
     ensure_config_path
 
@@ -322,6 +323,10 @@ get_config() {
     fi
 
     g_loopback=$(find_loopback_interfaces)
+
+    lib=$(find_file lib.cli-user)
+
+    [ -f $lib ] && . $lib
 }
 
 #

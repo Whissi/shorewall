@@ -158,16 +158,20 @@ syslog_circular_buffer() {
 	case $path in
 	    syslogd|*/syslogd)
 		for arg in $args; do
-		    if [ x$arg = x-C ]; then
-			return 0
-		    fi
+		    case $arg in
+			-C*)
+			    return 0
+			    ;;
+		    esac
 		done
 		;;
 	    logd|*/logd)
 		for arg in $args; do
-		    if [ x$arg = x-S ]; then
-			return 0
-		    fi
+		    case $arg in
+			-S*)
+			    return 0
+			    ;;
+		    esac
 		done
 		;;
 	esac

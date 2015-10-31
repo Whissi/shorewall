@@ -71,15 +71,7 @@ get_config() {
 	# This block is avoided for compile for export and when the user isn't root
 	#
 	if [ "$3" = Yes ]; then
-	    if [ -n "$LOGFILE" ]; then
-		if [ -n "$(syslog_circular_buffer)" ]; then
-		    g_logread="logread | tac"
-		elif [ -r $LOGFILE ]; then
-		    g_logread="tac $LOGFILE"
-		else
-		    fatal_error "LOGFILE ($LOGFILE) does not exist!"
-		fi
-	    fi
+	    setup_logread
 	fi
 
 	if [ $g_family -eq 4 ]; then

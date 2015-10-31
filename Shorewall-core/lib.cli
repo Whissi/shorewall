@@ -149,23 +149,51 @@ syslog_circular_buffer() {
     local pid
     local tty
     local flags
-    local cputime
+    local time
     local path
     local args
     local arg
 
-    ps ax 2> /dev/null | while read pid tty flags cputime path args; do
+    ps w 2> /dev/null | while read pid tty stat time path args; do
 	case $path in
 	    syslogd|*/syslogd)
 		for arg in $args; do
 		    if [ x$arg = x-C ]; then
-			echo Yes
-			return
+			return 0
+		    fi
+		done
+		;;
+	    logd|*/logd)
+		for arg in $args; do
+		    if [ x$arg = x-S ]; then
+			return 0
 		    fi
 		done
 		;;
 	esac
     done
+
+    return 1
+}
+
+setup_logread() {
+    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
+
+    if syslog_circular_buffer; then
+	if qt mywhich tac; then
+	    g_logread="logread | tac"
+	else
+	    g_logread="logread"
+	fi
+    elif [ -r $LOGFILE ]; then
+	if qt mywhich tac; then
+	    g_logread="tac $LOGFILE"
+	else
+	    g_logread="cat $LOGFILE"
+	fi
+    else
+	fatal_error "LOGFILE ($LOGFILE) does not exist or is not readable!"
+    fi
 }
 
 #
@@ -173,31 +201,59 @@ syslog_circular_buffer() {
 #
 packet_log() # $1 = number of messages
 {
-    if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
-	if [ $g_family -eq 4 ]; then
-	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+    if qt mywhich tac; then
+	if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
+	    if [ $g_family -eq 4 ]; then
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | head -n$1 | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	    else
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | head -n$1 | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	    fi
+	elif [ $g_family -eq 4 ]; then
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
 	else
-	    $g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | head -n$1 | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' |  head -n$1 | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
 	fi
-    elif [ $g_family -eq 4 ]; then
-	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  head -n$1 | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
     else
-	$g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' |  head -n$1 | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
-    fi
+	if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
+	    if [ $g_family -eq 4 ]; then
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | tail -n$1 | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	    else
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' | tail -n$1 | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	    fi
+	elif [ $g_family -eq 4 ]; then
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  tail -n$1 | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
+	else
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*:.*DST=' |  tail -n$1 | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	fi
+    fi	
 }
 
 search_log() # $1 = IP address to search for
 {
-    if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
-        if [ $g_family -eq 4 ]; then
-	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+    if qt mywhich tac; then
+	if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
+            if [ $g_family -eq 4 ]; then
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	    else
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	    fi
+	elif [ $g_family -eq 4 ]; then
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
 	else
-	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | tac | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
 	fi
-    elif [ $g_family -eq 4 ]; then
-	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
     else
-	$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | tac | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	if [ -n "$g_showmacs" -o $VERBOSITY -gt 2 ]; then
+            if [ $g_family -eq 4 ]; then
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | sed 's/ kernel://; s/\[.*\] //' | sed s/" $host $LOGFORMAT"/" "/
+	    else
+		$g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' | grep "$1" | sed -r 's/ kernel://; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	    fi
+	elif [ $g_family -eq 4 ]; then
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | sed 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] '// | sed s/" $host $LOGFORMAT"/" "/
+	else
+	    $g_logread | grep 'IN=.* OUT=.*SRC=.*\..*DST=' |  grep "$1" | sed -r 's/ kernel://; s/MAC=.* SRC=/SRC=/; s/\[.*\] //; s/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | sed s/" $host $LOGFORMAT"/" "/
+	fi
     fi
 }
 
@@ -280,17 +336,7 @@ show_bl() {
 logwatch() # $1 = timeout -- if negative, prompt each time that
 	   #		     an 'interesting' packet count changes
 {
-    if [ -z "$LOGFILE" ]; then
-	LOGFILE=/var/log/messages
-
-	if [ -n "$(syslog_circular_buffer)" ]; then
-	    g_logread="logread | tac"
-	elif [ -r $LOGFILE ]; then
-	    g_logread="tac $LOGFILE"
-	else
-	    fatal_error "LOGFILE ($LOGFILE) does not exist!"
-	fi
-    fi
+    setup_logread
 
     host=$(echo $g_hostname | sed 's/\..*$//')
     oldrejects=$($g_tool -L -v -n | grep 'LOG')
@@ -1038,17 +1084,7 @@ show_command() {
 	log)
 	    [ $# -gt 2 ] && usage 1
 
-	    if [ -z "$LOGFILE" ]; then
-		LOGFILE=/var/log/messages
-
-		if [ -n "$(syslog_circular_buffer)" ]; then
-		    g_logread="logread | tac"
-		elif [ -r $LOGFILE ]; then
-		    g_logread="tac $LOGFILE"
-		else
-		    fatal_error "LOGFILE ($LOGFILE) does not exist!"
-		fi
-	    fi
+	    setup_logread
 
 	    echo "$g_product $SHOREWALL_VERSION Log ($LOGFILE) at $g_hostname - $(date)"
 	    echo
@@ -1427,17 +1463,7 @@ do_dump_command() {
 	esac
     done
 
-    if [ -z "$LOGFILE" ]; then
-	LOGFILE=/var/log/messages
-
-	if [ -n "$(syslog_circular_buffer)" ]; then
-	    g_logread="logread | tac"
-	elif [ -r $LOGFILE ]; then
-	    g_logread="tac $LOGFILE"
-	else
-	    fatal_error "LOGFILE ($LOGFILE) does not exist! - See http://www.shorewall.net/shorewall_logging.html"
-	fi
-    fi
+    setup_logread
 
     g_ipt_options="$g_ipt_options $g_ipt_options1"
 
@@ -3544,15 +3570,7 @@ get_config() {
 
     [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
-    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
-
-    if ( ps ax 2> /dev/null | grep -v grep |  qt grep 'syslogd.*-C' ) ; then
-	g_logread="logread | tac"
-    elif [ -r $LOGFILE ]; then
-	g_logread="tac $LOGFILE"
-    else
-	fatal_error "LOGFILE ($LOGFILE) does not exist!"
-    fi
+    setup_logread
     #
     # See if we have a real version of "tail" -- use separate redirection so
     # that ash (aka /bin/sh on LRP) doesn't crap

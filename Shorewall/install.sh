@@ -389,7 +389,7 @@ if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/$PRODUCT/coreve
 fi
 
 install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0755
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/${PRODUCT}
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/${PRODUCT}
 echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
 #
@@ -468,16 +468,16 @@ if [ -z "$first_install" ]; then
     #
     # Delete obsolete config files and manpages
     #
-    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/tos
-    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/tcrules
-    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/stoppedrules
-    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/notrack
-    delete_file ${DESTDIR}/${SHAREDIR}/$PRODUCT/configfiles/blacklist
-    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-tos
-    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-tcrules
-    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-stoppedrules
-    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-notrack
-    delete_file ${DESTDIR}/${MANDIR}/man5/$PRODUCT/${PRODUCT}-blacklist
+    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/tos
+    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/tcrules
+    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/stoppedrules
+    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/notrack
+    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/blacklist
+    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-tos
+    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-tcrules
+    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-stoppedrules
+    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-notrack
+    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-blacklist
 fi
 
 #
@@ -1082,7 +1082,7 @@ if [ $PRODUCT = shorewall6 ]; then
     # Symbolically link 'functions' to lib.base
     #
     ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
-    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
+    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.base
 fi
 
 if [ -d Perl ]; then

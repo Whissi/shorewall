@@ -318,7 +318,7 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
 
-    install -d $OWNERSHIP -m 755 ${DESTDIR}/${SBINDIR}
+    install -d $OWNERSHIP -m 755 ${DESTDIR}${SBINDIR}
     install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
 else
     if [ ! -f ${SHAREDIR}/shorewall/coreversion ]; then
@@ -424,8 +424,8 @@ fi
 # Install the  Makefile
 #
 run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
-[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile
+[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile
 echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 
 #
@@ -440,7 +440,7 @@ echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/confi
 for f in lib.* ; do
     if [ -f $f ]; then
 	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/${SHAREDIR}/$PRODUCT/$f"
+	echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
     fi
 done
 
@@ -453,7 +453,7 @@ echo "Common functions linked through ${DESTDIR}${SHAREDIR}/$PRODUCT/functions"
 #
 
 install_file shorecap ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap 0755
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${LIBEXECDIR}/$PRODUCT/shorecap
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap
 
 echo
 echo "Capability file builder installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap"
@@ -540,8 +540,8 @@ if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PR
 fi
 
 if [ ${SHAREDIR} != /usr/share ]; then
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.base
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/$PRODUCT
 fi
 
 if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then

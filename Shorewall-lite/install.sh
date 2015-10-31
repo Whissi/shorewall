@@ -151,6 +151,8 @@ while [ $finished -eq 0 ] ; do
     esac
 done
 
+[ -n $(mywhich install) ] || { fatal_error "This installer requires the 'install' utility"
+
 #
 # Read the RC file
 #
@@ -187,7 +189,7 @@ elif [ -z "${VARDIR}" ]; then
     VARDIR=${VARLIB}/${PRODUCT}
 fi
 
-for var in SHAREDIR LIBEXECDIRDIRDIR CONFDIR SBINDIR VARLIB VARDIR; do
+for var in SHAREDIR LIBEXECDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 

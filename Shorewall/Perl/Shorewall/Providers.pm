@@ -1350,7 +1350,7 @@ sub add_a_route( ) {
 
     my $persistent;
 
-    if ( $options != '-' ) {
+    if ( $options ne '-' ) {
 	for ( split_list1( 'option', $options ) ) {
 	    my ( $option, $value ) = split /=/, $options;
 

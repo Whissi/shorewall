@@ -133,7 +133,7 @@ while [ $finished -eq 0 ]; do
     esac
 done
 
-[ -n $(mywhich install) ] || { fatal_error "This installer requires the 'install' utility"
+[ -n $(mywhich install) ] || fatal_error "This installer requires the 'install' utility"
 
 #
 # Read the RC file

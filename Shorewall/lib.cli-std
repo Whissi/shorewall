@@ -1391,6 +1391,7 @@ remote_reload_command() # $* = original arguments less the command.
     local sharedir
     sharedir=${SHAREDIR}
     local litedir
+    local exitstatus
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1507,32 +1508,60 @@ remote_reload_command() # $* = original arguments less the command.
 
     g_file="$g_shorewalldir/firewall"
 
-    if compiler $g_debugging compiler "$g_file" && \
-	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..." && \
-	rcp_command "$g_shorewalldir/firewall $g_shorewalldir/firewall.conf" ${litedir}
-    then
-	save=$(find_file save);
+    exitstatus=0
 
-	[ -f $save ] && progress_message3 "Copying $save to ${system}:${confdir}/${g_program}-lite/" && rcp_command $save ${confdir}/shorewall-lite/
+    if compiler $g_debugging compiler "$g_file"; then
+	progress_message3 "Copying $file and ${file}.conf to ${system}:${litedir}..."
+	if rcp_command "$g_shorewalldir/firewall $g_shorewalldir/firewall.conf" ${litedir};  then
+	    save=$(find_file save);
 
-	progress_message3 "Copy complete"
+	    if [ -f $save ]; then
+		progress_message3 "Copying $save to ${system}:${confdir}/${g_program}-lite/"
+		rcp_command $save ${confdir}/shorewall-lite/
+		exitstatus=$?
+	    fi
 
-	if [ $COMMAND = remote-reload ]; then
-	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp reload" && \
-	    progress_message3 "System $system reloaded" || saveit=
-	elif [ $COMMAND = remote-restart ]; then
-	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart" && \
-	    progress_message3 "System $system restarted" || saveit=
+	    if [ $exitstatus -eq 0 ]; then
+
+		progress_message3 "Copy complete"
+
+		if [ $COMMAND = remote-reload ]; then
+		    if rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp reload"; then
+			progress_message3 "System $system reloaded"
+		    else
+			exitstatus=$?
+			savit=
+		    fi
+		elif [ $COMMAND = remote-restart ]; then
+		    if rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart"; then
+			progress_message3 "System $system restarted"
+		    else
+			exitstatus=$?
+			saveit=
+		    fi
+		elif rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp start"; then
+		    progress_message3 "System $system started"
+		else
+		    exitstatus=$?
+		    saveit=
+		fi
+
+		if [ -n "$saveit" ]; then
+		    if rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp save"; then
+			progress_message3 "Configuration on system $system saved"
+		    else
+			exitstatus=$?
+		    fi
+		fi
+	    fi
 	else
-	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp start" && \
-	    progress_message3 "System $system started" || saveit=
+	    exitstatus=$?
 	fi
-
-	if [ -n "$saveit" ]; then
-	    rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp save" && \
-	    progress_message3 "Configuration on system $system saved"
-	fi
+    else
+	exitstatus=$?
     fi
+
+    return $exitstatus
 }
 
 #

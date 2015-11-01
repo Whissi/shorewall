@@ -33,7 +33,7 @@ startup_error() # $* = Error Message
     echo "   ERROR: $@: Firewall state not changed" >&2
 
     if [ $LOG_VERBOSITY -ge 0 ]; then
-        timestamp="$(date +'%_b %d %T') "
+        timestamp="$(date +'%b %d %T') "
         echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
     fi
 
@@ -50,7 +50,7 @@ startup_error() # $* = Error Message
     esac
 
     if [ $LOG_VERBOSITY -ge 0 ]; then
-        timestamp="$(date +'%_b %d %T') "
+        timestamp="$(date +'%b %d %T') "
 
 	case $COMMAND in
 	    start)

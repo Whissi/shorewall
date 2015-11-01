@@ -661,6 +661,10 @@ sub process_a_provider( $ ) {
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' unless $copy eq 'none';
     }
 
+    if ( $persistent ) {
+	warning_message( "Provider $table is not optional -- the 'persistent' option is ignored" ), $persistent = 0 unless $optional;
+    }
+
     $providers{$table} = { provider          => $table,
 			   number            => $number ,
 			   id                => $config{USE_RT_NAMES} ? $table : $number,
@@ -702,7 +706,7 @@ sub process_a_provider( $ ) {
     if ( $track ) {
 	if ( $routemarked_interfaces{$interface} ) {
 	    fatal_error "Interface $interface is tracked through an earlier provider" if $routemarked_interfaces{$interface} == ROUTEMARKED_UNSHARED;
-	    fatal_error "Multiple providers through the same interface must their IP address specified in the INTERFACES" unless $shared;
+	    fatal_error "Multiple providers through the same interface must have their IP address specified in the INTERFACES column" unless $shared;
 	} else {
 	    $routemarked_interfaces{$interface} = $shared ? ROUTEMARKED_SHARED : ROUTEMARKED_UNSHARED;
 	    push @routemarked_interfaces, $interface;
@@ -1346,7 +1350,7 @@ sub add_a_route( ) {
 
     my $persistent;
 
-    if ( $options != '-' ) {
+    if ( $options ne '-' ) {
 	for ( split_list1( 'option', $options ) ) {
 	    my ( $option, $value ) = split /=/, $options;
 

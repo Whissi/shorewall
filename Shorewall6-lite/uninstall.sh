@@ -196,6 +196,7 @@ rm -rf ${VARDIR}/shorewall6-lite
 rm -rf ${SHAREDIR}/shorewall6-lite
 rm -rf ${LIBEXECDIR}/shorewall6-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall6-lite
+rm -f  ${SYSCONFDIR}/shorewall6-lite
 [ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/shorewall6-lite.service
 
 rm -f ${MANDIR}/man5/shorewall6-lite*

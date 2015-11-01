@@ -82,7 +82,11 @@ unless ( defined $vendor ) {
 
 if ( defined $vendor ) {
     $rcfilename = $vendor eq 'linux' ? 'shorewallrc.default' : 'shorewallrc.' . $vendor;
-    die qq("ERROR: $vendor" is not a recognized host type) unless -f $rcfilename;
+    unless ( -f $rcfilename ) {
+	die qq("ERROR: $vendor" is not a recognized host type);
+    } elsif ( $vendor eq 'default' ) {
+	$params{HOST} = $vendor = 'linux';
+    }
 } else {
     if ( -f '/etc/debian_version' ) {
 	$vendor = 'debian';

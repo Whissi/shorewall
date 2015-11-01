@@ -133,6 +133,8 @@ while [ $finished -eq 0 ]; do
     esac
 done
 
+[ -n $(mywhich install) ] || fatal_error "This installer requires the 'install' utility"
+
 #
 # Read the RC file
 #
@@ -407,9 +409,9 @@ fi
 if [ ${SHAREDIR} != /usr/share ]; then
     for f in lib.*; do
 	if [ $BUILD != apple ]; then
-	    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/shorewall/$f
+	    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/$f
 	else
-	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/shorewall/$f
+	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/$f
 	fi
     done
 fi

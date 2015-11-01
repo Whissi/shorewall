@@ -168,7 +168,11 @@ if [ $configure -eq 1 ]; then
 fi
 
 if [ -L ${SHAREDIR}/shorewall-lite/init ]; then
-    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall-lite/init)
+    if [ $HOST = "linux" ] && [ -f /etc/openwrt_release -o -f /etc/openwrt_version ]; then
+	FIREWALL=$(readlink ${SHAREDIR}/shorewall-lite/init)
+    else
+	FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall-lite/init)
+    fi
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
 fi
@@ -199,6 +203,7 @@ rm -rf ${VARDIR}/shorewall-lite
 rm -rf ${SHAREDIR}/shorewall-lite
 rm -rf ${LIBEXECDIR}/shorewall-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall-lite
+rm -f  ${SYSCONFDIR}/shorewall-lite
 
 rm -f ${MANDIR}/man5/shorewall-lite*
 rm -f ${MANDIR}/man8/shorewall-lite*

@@ -158,6 +158,9 @@ else
     if [ ! -f $rcfile ]; then
 	echo "ERROR: $vendor is not a recognized host type" >&2
 	exit 1
+    elif [ $vendor = default ]; then
+	params[HOST]=linux
+	vendor=linux
     fi
 fi
 

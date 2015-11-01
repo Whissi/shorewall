@@ -184,6 +184,7 @@ setup_logread() {
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
     if syslog_circular_buffer; then
+	LOGFILE=logread
 	if qt mywhich tac; then
 	    g_logread="logread | tac"
 	else

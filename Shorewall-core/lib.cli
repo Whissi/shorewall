@@ -143,35 +143,8 @@ timed_read ()
 }
 
 #
-# Determine if 'syslog -C' is running
+# Determine if 'syslogd -C' or logd -S is running
 #
-find_logger() {
-    while read pid tty stat time path args; do
-	case $path in
-	    syslogd|*/syslogd)
-		for arg in $args; do
-		    case $arg in
-			-C*)
-			    return 0
-			    ;;
-		    esac
-		done
-		;;
-	    logd|*/logd)
-		for arg in $args; do
-		    case $arg in
-			-S*)
-			    return 0
-			    ;;
-		    esac
-		done
-		;;
-	esac
-    done
-
-    return 1
-}
-
 syslog_circular_buffer() {
     local pid
     local tty
@@ -181,7 +154,31 @@ syslog_circular_buffer() {
     local args
     local arg
 
-    ps w 2> /dev/null | find_logger
+    ps w 2> /dev/null | (
+	while read pid tty stat time path args; do
+	    case $path in
+		syslogd|*/syslogd)
+		    for arg in $args; do
+			case $arg in
+			    -C*)
+				return 0
+				;;
+			esac
+		    done
+		    ;;
+		logd|*/logd)
+		    for arg in $args; do
+			case $arg in
+			    -S*)
+				return 0
+				;;
+			esac
+		    done
+		    ;;
+	    esac
+	done
+
+	return 1 )
 }
 
 setup_logread() {

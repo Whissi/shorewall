@@ -66,15 +66,6 @@ mywhich() {
     return 2
 }
 
-run_install()
-{
-    if ! install $*; then
-	echo
-	echo "ERROR: Failed to install $*" >&2
-	exit 1
-    fi
-}
-
 cant_autostart()
 {
     echo
@@ -88,7 +79,20 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $T $OWNERSHIP -m $3 $1 ${2}
+    if cp -f $1 $2; then
+	if chmod $3 $2; then
+	    if [ -n "$OWNER" ]; then
+		if chown $OWNER:$GROUP $2; then
+		    return
+		fi
+	    else
+		return 0
+	    fi
+	fi
+    fi
+
+    echo "ERROR: Failed to install $2" >&2
+    exit 1
 }
 
 require()
@@ -132,8 +136,6 @@ while [ $finished -eq 0 ]; do
 	    ;;
     esac
 done
-
-[ -n $(mywhich install) ] || fatal_error "This installer requires the 'install' utility"
 
 #
 # Read the RC file
@@ -183,10 +185,6 @@ done
 
 [ "${INITFILE}" != 'none/' ] && require INITSOURCE && require INITDIR
 
-T="-T"
-
-INSTALLD='-D'
-
 if [ -z "$BUILD" ]; then
     case $(uname) in
 	cygwin*|CYGWIN*)
@@ -228,6 +226,8 @@ if [ -z "$BUILD" ]; then
 		BUILD=suse
 	    elif [ -f /etc/arch-release ] ; then
 		BUILD=archlinux
+	    elif [ -f ${CONFDIR}/openwrt-release ] ; then
+		BUILD=openwrt
 	    else
 		BUILD=linux
 	    fi
@@ -254,16 +254,14 @@ case $BUILD in
 
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
-	INSTALLD=
-	T=
 	;;
     *)
-	[ -z "$OWNER" ] && OWNER=root
-	[ -z "$GROUP" ] && GROUP=root
+	if [ $(id -n) -eq 0 ]; then
+	    [ -z "$OWNER" ] && OWNER=root
+	    [ -z "$GROUP" ] && GROUP=root
+	fi
 	;;
 esac
-
-OWNERSHIP="-o $OWNER -g $GROUP"
 
 #
 # Determine where to install the firewall script
@@ -307,7 +305,6 @@ if [ -n "$DESTDIR" ]; then
     if [ $BUILD != cygwin ]; then
 	if [ `id -u` != 0 ] ; then
 	    echo "Not setting file owner/group permissions, not running as root."
-	    OWNERSHIP=""
 	fi
     fi
 fi

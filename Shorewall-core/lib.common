@@ -709,12 +709,15 @@ mutex_on()
     local lockf
     lockf=${LOCKFILE:=${VARDIR}/lock}
     local lockpid
+    local lockd
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
     if [ $MUTEX_TIMEOUT -gt 0 ]; then
 
-	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
+	lockd=$(dirname $LOCKFILE)
+
+	[ -d "$lockd" ] || mkdir -p "$lockd"
 
 	if [ -f $lockf ]; then
 	    lockpid=`cat ${lockf} 2> /dev/null`
@@ -734,6 +737,11 @@ mutex_on()
 	    chmod u+w ${lockf}
 	    echo $$ > ${lockf}
 	    chmod u-w ${lockf}
+	elif qt mywhich lock; then
+            lock -${MUTEX_TIMEOUT} -r1 ${lockf}
+            chmod u+w ${lockf}
+            echo $$ > ${lockf}
+            chmod u-w ${lockf}
 	else
 	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
 		sleep 1

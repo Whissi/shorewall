@@ -153,7 +153,7 @@ if [ -f ${SHAREDIR}/shorewall-lite/version ]; then
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Lite Version $VERSION is not installed"
+    echo "WARNING: Shorewal Lite Version $VERSION is not installed"
     VERSION=""
 fi
 
@@ -168,7 +168,11 @@ if [ $configure -eq 1 ]; then
 fi
 
 if [ -L ${SHAREDIR}/shorewall-lite/init ]; then
-    if [ $HOST = "linux" ] && [ -f /etc/openwrt_release -o -f /etc/openwrt_version ]; then
+    if [ $HOST = openwrt ]; then
+	if [ $configure -eq 1 ] && /etc/init.d/shorewall-lite enabled; then
+	    /etc/init.d/shorewall-lite disable
+	fi
+	
 	FIREWALL=$(readlink ${SHAREDIR}/shorewall-lite/init)
     else
 	FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall-lite/init)

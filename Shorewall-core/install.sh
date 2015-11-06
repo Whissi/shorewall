@@ -226,7 +226,7 @@ if [ -z "$BUILD" ]; then
 		BUILD=suse
 	    elif [ -f /etc/arch-release ] ; then
 		BUILD=archlinux
-	    elif [ -f ${CONFDIR}/openwrt-release ] ; then
+	    elif [ -f ${CONFDIR}/openwrt_release ] ; then
 		BUILD=openwrt
 	    else
 		BUILD=linux
@@ -256,7 +256,7 @@ case $BUILD in
 	[ -z "$GROUP" ] && GROUP=wheel
 	;;
     *)
-	if [ $(id -n) -eq 0 ]; then
+	if [ $(id -u) -eq 0 ]; then
 	    [ -z "$OWNER" ] && OWNER=root
 	    [ -z "$GROUP" ] && GROUP=root
 	fi
@@ -276,7 +276,7 @@ case "$HOST" in
     apple)
 	echo "Installing Mac-specific configuration...";
 	;;
-    debian|gentoo|redhat|slackware|archlinux|linux|suse)
+    debian|gentoo|redhat|slackware|archlinux|linux|suse|openwrt)
 	;;
     *)
 	echo "ERROR: Unknown HOST \"$HOST\"" >&2

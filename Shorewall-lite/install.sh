@@ -255,7 +255,7 @@ if [ -z "$BUILD" ]; then
 		BUILD=slackware
 	    elif [ -f ${CONFDIR}/arch-release ] ; then
 		BUILD=archlinux
-	    elif [ -f ${CONFDIR}/openwrt-release ] ; then
+	    elif [ -f ${CONFDIR}/openwrt_release ]; then
 		BUILD=openwrt
 	    else
 		BUILD=linux
@@ -274,7 +274,7 @@ case $BUILD in
 	[ -z "$GROUP" ] && GROUP=wheel
 	;;
     *)
-	if [ $(id -n) -eq 0 ]; then
+	if [ $(id -u) -eq 0 ]; then
 	    [ -z "$OWNER" ] && OWNER=root
 	    [ -z "$GROUP" ] && GROUP=root
 	fi
@@ -549,7 +549,7 @@ if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PR
 	chmod 755 ${DESTDIR}${SYSCONFDIR}
     fi
 
-    install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
+    install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT} 0640
     echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 
@@ -602,6 +602,13 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 	    fi
 	else
 	    cant_autostart
+	fi
+    elif [ $HOST = openwrt -a -f ${CONFDIR}/rc.common ]; then
+	/etc/init.d/$PRODUCT enable
+	if /etc/init.d/$PRODUCT enabled; then
+            echo "$PRODUCT will start automatically at boot"
+	else
+            cant_autostart
 	fi
     elif [ "$INITFILE" != rc.${PRODUCT} ]; then #Slackware starts this automatically
 	cant_autostart

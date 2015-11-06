@@ -164,7 +164,15 @@ if [ $configure -eq 1 ]; then
 fi
 
 if [ -f ${SHAREDIR}/shorewall6-lite/init ]; then
-    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6-lite/init)
+    if [ $HOST = openwrt ]; then
+	if [ $configure -eq 1 ] && /etc/init.d/shorewall6-lite enabled; then
+	    /etc/init.d/shorewall6-lite disable
+	fi
+	
+	FIREWALL$(readlink ${SHAREDIR}/shorewall6-lite/init)
+    else
+	FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6-lite/init)
+    fi
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
 fi

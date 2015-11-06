@@ -1636,6 +1636,7 @@ sub map_provider_to_interface() {
 
 sub setup_providers() {
     our $providers;
+    our $pseudoproviders;
 
     if ( $providers ) {
 	if ( $maxload ) {
@@ -1669,6 +1670,11 @@ sub setup_providers() {
 	emit "\nif [ -z \"\$g_noroutes\" ]; then";
 
 	push_indent;
+
+	if ( $pseudoproviders ) {
+	    emit '';
+	    emit "start_$providers{$_}->{what}_$_" for @providers;
+	}
 
 	emit "\nundo_routing";
 	emit "restore_default_route $config{USE_DEFAULT_RT}";

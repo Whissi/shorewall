@@ -144,16 +144,16 @@ fi
 if [ -f ${SHAREDIR}/shorewall6-lite/version ]; then
     INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall6-lite/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Lite Version $INSTALLED_VERSION is installed"
+	echo "WARNING: Shorewall6 Lite Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Lite Version $VERSION is not installed"
+    echo "WARNING: Shorewall6 Lite Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall Lite $VERSION"
+echo "Uninstalling Shorewall6 Lite $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
@@ -169,7 +169,7 @@ if [ -f ${SHAREDIR}/shorewall6-lite/init ]; then
 	    /etc/init.d/shorewall6-lite disable
 	fi
 	
-	FIREWALL$(readlink ${SHAREDIR}/shorewall6-lite/init)
+	FIREWALL=$(readlink ${SHAREDIR}/shorewall6-lite/init)
     else
 	FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6-lite/init)
     fi

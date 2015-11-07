@@ -143,6 +143,9 @@ if [ -z "$vendor" ]; then
 	    elif [ -f /etc/arch-release ] ; then
 		params[HOST]=archlinux
 		rcfile=shorewallrc.archlinux
+	    elif [ -f /etc/openwrt_release ]; then
+		params[HOST]=openwrt
+		rcfile=shorewallrc.openwrt
 	    else
 		params[HOST]=linux
 		rcfile=shorewallrc.default

@@ -187,6 +187,10 @@
         <listitem>
           <para>shorewallrc.suse (SLES and OpenSuSE)</para>
         </listitem>
+
+        <listitem>
+          <para>shorewallrc.openwrt (OpenWRT)</para>
+        </listitem>
       </itemizedlist>
 
       <para>When installing 4.5.2 or later for the first time, a special
@@ -232,9 +236,9 @@
             <member>./install.sh
             <replaceable>shorewallrcfile-that-meets-your-needs</replaceable></member>
 
-            <member></member>
+            <member/>
 
-            <member>Example: <command>./install
+            <member>Example: <command>./install.sh
             shorewallrc.debian</command></member>
           </simplelist>
         </listitem>
@@ -332,6 +336,14 @@
 
                   <listitem>
                     <para>SLES and OpenSuSe</para>
+                  </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                  <term>openwrt</term>
+
+                  <listitem>
+                    <para>OpenWRT (Shorewall 5.0.2 and later)</para>
                   </listitem>
                 </varlistentry>
               </variablelist>
@@ -698,7 +710,7 @@
         root of the filesystem tree. In other words, the created installation
         is only runnable if one chroots to $DESTDIR. Please note that the
         uninstall.sh scripts cannot uninstall a configuration installed with
-        non-empty DESTDIR. </para>
+        non-empty DESTDIR.</para>
       </section>
 
       <section>

@@ -4,50 +4,50 @@
 # For information about entries in this file, type "man shorewall6-conntrack"
 #
 ##############################################################################################################
-?FORMAT 2
+?FORMAT 3
 #ACTION			SOURCE		DESTINATION	PROTO	DEST		SOURCE	USER/		SWITCH
 #								PORT(S)		PORT(S)	GROUP
-?if __CT_TARGET
+?if $AUTOHELPERS && __CT_TARGET
 
 ?if __AMANDA_HELPER
-CT:helper:amanda	all		-		udp	10080
+CT:helper:amanda:PO	-		-		udp	10080
 ?endif
 
 ?if __FTP_HELPER
-CT:helper:ftp		all		-		tcp	21
+CT:helper:ftp:PO	-		-		tcp	21
 ?endif
 
 ?if __H323_HELPER
-CT:helper:RAS		all		-		udp	1719
-CT:helper:Q.931		all		-		tcp	1720
+CT:helper:RAS:PO	-		-		udp	1719
+CT:helper:Q.931:PO	-		-		tcp	1720
 ?endif
 
 ?if __IRC_HELPER
-CT:helper:irc		all		-		tcp	6667
+CT:helper:irc:PO	-		-		tcp	6667
 ?endif
 
 ?if __NETBIOS_NS_HELPER
-CT:helper:netbios-ns	all		-		udp	137
+CT:helper:netbios-ns:PO	-		-		udp	137
 ?endif
 
 ?if __PPTP_HELPER
-CT:helper:pptp		all		-		tcp	1723
+CT:helper:pptp:PO	-		-		tcp	1723
 ?endif
 
 ?if __SANE_HELPER
-CT:helper:sane		all		-		tcp	6566
+CT:helper:sane:PO	-		-		tcp	6566
 ?endif
 
 ?if __SIP_HELPER
-CT:helper:sip		all		-		udp	5060
+CT:helper:sip:PO	-		-		udp	5060
 ?endif
 
 ?if __SNMP_HELPER
-CT:helper:snmp		all		-		udp	161
+CT:helper:snmp:PO	-		-		udp	161
 ?endif
 
 ?if __TFTP_HELPER
-CT:helper:tftp		all		-		udp	69
+CT:helper:tftp:PO	-		-		udp	69
 ?endif
 
 ?endif

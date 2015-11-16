@@ -1624,7 +1624,7 @@ do_dump_command() {
 
     echo
 
-    ss -${g_family}tunap
+    qt mywhich ss && ss -${g_family}tunap || { qt mywhich netstat && netatat -tunap; }
 
     if [ -n "$TC_ENABLED" ]; then
 	heading "Traffic Control"

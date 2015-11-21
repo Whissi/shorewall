@@ -397,6 +397,7 @@ if [ $HOST = debian ]; then
 
 	[ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/default
 	install_file sysconfig ${DESTDIR}${ETC}/default/shorewall-init 0644
+	echo "sysconfig file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
     fi
 
     IFUPDOWN=ifupdown.debian.sh
@@ -492,7 +493,7 @@ if [ -z "$DESTDIR" ]; then
 	if [ $HOST = debian ]; then
 	    if [ -n "$SERVICEDIR" ]; then
 		if systemctl enable ${PRODUCT}.service; then
-		    echo "Shorewall INit will start automatically at boot"
+                    echo "Shorewall Init will start automatically at boot"
 		fi
 	    elif mywhich insserv; then
 		if insserv ${INITDIR}/shorewall-init; then
@@ -558,7 +559,7 @@ fi
 
 [ -z "${DESTDIR}" ] && [ ! -f ~/.shorewallrc ] && cp ${SHAREDIR}/shorewall/shorewallrc .
 
-if [ -f ${DESTDIR}/etc/ppp ]; then
+if [ -d ${DESTDIR}/etc/ppp ]; then
     case $HOST in
 	debian|suse)
 	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do

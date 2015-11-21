@@ -168,8 +168,8 @@ fi
 
 rm -f ${SBINDIR}/shorewall
 
-if [ -L ${SHAREDIR}/shorewall6/init ]; then
-    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6/init)
+if [ -L ${SHAREDIR}/shorewall/init ]; then
+    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall/init)
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
 fi
@@ -188,17 +188,19 @@ if [ -f "$FIREWALL" ]; then
     remove_file $FIREWALL
 fi
 
-if [ -n "$SYSTEMD" ]; then
+if [ -z "${SERVICEDIR}" ]; then
+    SERVICEDIR="$SYSTEMD"
+fi
+if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SYSTEMD/shorewall.service
+    rm -f $SERVICEDIR/shorewall.service
 fi
 
 rm -rf ${SHAREDIR}/shorewall/version
 rm -rf ${CONFDIR}/shorewall
 
 if [ -n "$SYSCONFDIR" ]; then
-    [ -n "$SYSCONFFILE" ] || SYSCONFFILE=${PRODUCT};
-    rm -f ${SYSCONFDIR}/${SYSCONFFILE}
+    [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
 fi
 
 rm -rf ${VARDIR}/shorewall

@@ -174,9 +174,13 @@ if [ -f "$INITSCRIPT" ]; then
     remove_file $INITSCRIPT
 fi
 
-if [ -n "$SYSTEMD" ]; then
+if [ -z "${SERVICEDIR}" ]; then
+    SERVICEDIR="$SYSTEMD"
+fi
+
+if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable shorewall-init.service
-    rm -f $SYSTEMD/shorewall-init.service
+    rm -f $SERVICEDIR/shorewall-init.service
 fi
 
 [ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
@@ -202,8 +206,10 @@ if [ -d ${CONFDIR}/ppp ]; then
     done
 
     for file in if-up.local if-down.local; do
-	if grep -qF Shorewall-based ${CONFDIR}/ppp/$FILE; then
-	    remove_file ${CONFDIR}/ppp/$FILE
+	if [ -f ${CONFDIR}/ppp/$file ]; then
+	    if grep -qF Shorewall-based ${CONFDIR}/ppp/$FILE; then
+		remove_file ${CONFDIR}/ppp/$FILE
+	    fi
 	fi
     done
 fi

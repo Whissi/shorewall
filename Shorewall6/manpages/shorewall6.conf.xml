@@ -1442,9 +1442,11 @@ LOG:info:,bar                        net                    fw</programlisting>
         <listitem>
           <para>This parameter specifies the directory/directories where your
           kernel netfilter modules may be found. If you leave the variable
-          empty, Shorewall6 will supply "/lib/modules/`uname
-          -r`/kernel/net/ipv4/netfilter:/lib/modules/`uname
-          -r`/kernel/net/ipv4/netfilter".</para>
+          empty, Shorewall will supply the value
+          "/lib/modules/$uname/kernel/net/ipv${g_family}/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset"
+          where <emphasis role="bold">uname</emphasis> holds the output of
+          '<command>uname -r</command>' and <emphasis
+          role="bold">g_family</emphasis> holds '6'.</para>
         </listitem>
       </varlistentry>
 

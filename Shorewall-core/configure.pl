@@ -81,7 +81,20 @@ unless ( defined $vendor ) {
 }
 
 if ( defined $vendor ) {
-    $rcfilename = $vendor eq 'linux' ? 'shorewallrc.default' : 'shorewallrc.' . $vendor;
+    if ( $vendor eq 'debian' && -f '/etc/debian_version' ) {
+	if ( -l '/sbin/init' ) {
+	    if ( readlink '/sbin/init' =~ /systemd/ ) {
+		$rcfilename = 'debian.systemd';
+	    } else {
+		$rcfilename = 'shorewallrc.debian.sysvinit';
+	    }
+	} else {
+	    $rcfilename = 'shorewallrc.debian.sysvinit';
+	}
+    } else {
+	$rcfilename = $vendor eq 'linux' ? 'shorewallrc.default' : 'shorewallrc.' . $vendor;
+    }
+
     unless ( -f $rcfilename ) {
 	die qq("ERROR: $vendor" is not a recognized host type);
     } elsif ( $vendor eq 'default' ) {
@@ -90,7 +103,15 @@ if ( defined $vendor ) {
 } else {
     if ( -f '/etc/debian_version' ) {
 	$vendor = 'debian';
-	$rcfilename = 'shorewallrc.debian.sysvinit';
+	if ( -l '/sbin/init' ) {
+	    if ( readlink '/sbin/init' =~ /systemd/ ) {
+		$rcfilename = 'debian.systemd';
+	    } else {
+		$rcfilename = 'shorewallrc.debian.sysvinit';
+	    }
+	} else {
+	    $rcfilename = 'shorewallrc.debian.sysvinit';
+	}
     } elsif ( -f '/etc/redhat-release' ){
 	$vendor = 'redhat';
 	$rcfilename = 'shorewallrc.redhat';

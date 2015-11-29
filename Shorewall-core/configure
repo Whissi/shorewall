@@ -102,7 +102,7 @@ if [ -z "$vendor" ]; then
 		vendor=redhat
 		;;
 	    debian|ubuntu)
-		ls -l /sbin/init |fgrep -q systemd | vendor=debian.systemd | vendor=debian.sysvinit
+		vendor=debian
 		;;
 	    opensuse)
 		vendor=suse
@@ -122,7 +122,6 @@ if [ -z "$vendor" ]; then
 	    params[HOST]=apple
 	    rcfile=shorewallrc.apple
 	    ;;
-
 	cygwin*|CYGWIN*)
 	    params[HOST]=cygwin
 	    rcfile=shorewallrc.cygwin
@@ -130,7 +129,7 @@ if [ -z "$vendor" ]; then
 	*)
 	    if [ -f /etc/debian_version ]; then
 		params[HOST]=debian
-		rcfile=shorewallrc.debian.sysvinit
+		ls -l /sbin/init | fgrep -q systemd &&  rcfile=shorewallrc.debian.systemd || rcfile=shorewallrc.debian.sysvinit
 	    elif [ -f /etc/redhat-release ]; then
 		params[HOST]=redhat
 		rcfile=shorewallrc.redhat
@@ -152,12 +151,16 @@ if [ -z "$vendor" ]; then
 	    fi
 	    ;;
     esac
-
     vendor=${params[HOST]}
-elif [ $vendor = linux ]; then
-    rcfile=shorewallrc.default;
 else
-    rcfile=shorewallrc.$vendor
+    if [ $vendor = linux ]; then
+	rcfile=shorewallrc.default;
+    elif [ $vendor = debian -a -f /etc/debian_version ]; then
+	ls -l /sbin/init | fgrep -q systemd && rcfile=shorewallrc.debian.systemd || rcfile=shorewallrc.debian.sysvinit
+    else
+	rcfile=shorewallrc.$vendor
+    fi
+
     if [ ! -f $rcfile ]; then
 	echo "ERROR: $vendor is not a recognized host type" >&2
 	exit 1
@@ -170,7 +173,7 @@ fi
 if [ $vendor = linux ]; then
     echo "INFO: Creating a generic Linux installation - " `date`;
 else
-    echo "INFO: Creating a ${vendor}-specific installation - " `date`;
+    echo "INFO: Creating a $params[HOST]-specific installation - " `date`;
 fi
 
 echo
@@ -183,6 +186,7 @@ done
 
 echo '#'                                                                 > shorewallrc
 echo "# Created by Shorewall Core version $VERSION configure - " `date` >> shorewallrc
+echo "# rc file: $rcfile"                                               >> shorewallrc
 echo '#'                                                                >> shorewallrc
 
 if [ $# -gt 0 ]; then

@@ -173,9 +173,9 @@
 
       <listitem>
         <para>The remaining columns specify characteristics of the packet
-        before rewriting. In particular, the ORIGINAL DEST column gives the
-        original destination IP address of the packet and the DEST PORT(S)
-        column give the original destination port(s).</para>
+        before rewriting. In particular, the ORIGDEST column gives the
+        original destination IP address of the packet and the DPORT column
+        give the original destination port(s).</para>
       </listitem>
     </itemizedlist>
 
@@ -1201,8 +1201,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) (dport)</emphasis> -
-        {<emphasis
+        <term><emphasis role="bold">DPORT</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
@@ -1234,7 +1233,7 @@
 
           <para>If your kernel contains multi-port match support, then only a
           single Netfilter rule will be generated if in this list and the
-          <emphasis role="bold">CLIENT PORT(S)</emphasis> list below:</para>
+          <emphasis role="bold">SPORT</emphasis> list below:</para>
 
           <para>1. There are 15 or less ports listed.</para>
 
@@ -1245,12 +1244,13 @@
           <replaceable>ipset</replaceable> name can be specified in this
           column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
-        {<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
@@ -1260,11 +1260,10 @@
           names, port numbers or port ranges.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DEST PORTS(S). Use of
+          '=' requires multi-port match in your iptables and kernel.</para>
 
           <warning>
             <para>Unless you really understand IP, you should leave this
@@ -1274,12 +1273,12 @@
           </warning>
 
           <para>If you don't want to restrict client ports but need to specify
-          an <emphasis role="bold">ORIGINAL DEST</emphasis> in the next
-          column, then place "-" in this column.</para>
+          an <emphasis role="bold">ORIGDEST</emphasis> in the next column,
+          then place "-" in this column.</para>
 
           <para>If your kernel contains multi-port match support, then only a
           single Netfilter rule will be generated if in this list and the
-          <emphasis role="bold">DEST PORT(S)</emphasis> list above:</para>
+          <emphasis role="bold">DPORT</emphasis> list above:</para>
 
           <para>1. There are 15 or less ports listed.</para>
 
@@ -1290,12 +1289,13 @@
           <replaceable>ipset</replaceable> name can be specified in this
           column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (origdest) -
-        [<emphasis
+        <term><emphasis role="bold">ORIGDEST</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>address</emphasis>[,<emphasis>address</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>]</term>
 
         <listitem>
@@ -1344,11 +1344,13 @@
           url="/PortKnocking.html">http://www.shorewall.net/PortKnocking.html</ulink>
           for an example of using an entry in this column with a user-defined
           action rule.</para>
+
+          <para>This column was formerly labelled ORIGINAL DEST.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">RATE LIMIT</emphasis> (rate) -
+        <term><emphasis role="bold">RATE</emphasis> -
         <replaceable>limit</replaceable></term>
 
         <listitem>
@@ -1413,11 +1415,13 @@
           enforce the per-source limit and the compiler will pick a unique
           name for the hash table that tracks the per-destination
           limit.</para>
+
+          <para>This column was formerly labelled RATE LIMIT.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis> (user) - [<emphasis
+        <term><emphasis role="bold">USER</emphasis> - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][,...]</term>
 
@@ -1471,6 +1475,8 @@
               </listitem>
             </varlistentry>
           </variablelist>
+
+          <para>This column was formerly labelled USER/GROUP.</para>
         </listitem>
       </varlistentry>
 
@@ -1626,6 +1632,8 @@
               <listitem>
                 <para>where <replaceable>dd</replaceable> is an ordinal day of
                 the month</para>
+
+                <para/>
               </listitem>
             </varlistentry>
 
@@ -1767,9 +1775,8 @@
         <listitem>
           <para>Accept SMTP requests from the DMZ to the internet</para>
 
-          <programlisting>         #ACTION SOURCE  DEST PROTO      DEST    SOURCE  ORIGINAL
-         #                               PORT    PORT(S) DEST
-         ACCEPT  dmz     net       tcp   smtp</programlisting>
+          <programlisting>         #ACTION SOURCE  DEST      PROTO      DPORT   SPORT   ORIGDEST
+         ACCEPT  dmz     net       tcp        smtp</programlisting>
         </listitem>
       </varlistentry>
 
@@ -1780,8 +1787,7 @@
           <para>Forward all ssh and http connection requests from the internet
           to local system 192.168.1.3</para>
 
-          <programlisting>        #ACTION SOURCE  DEST            PROTO   DEST    SOURCE  ORIGINAL
-        #                                       PORT    PORT(S) DEST
+          <programlisting>        #ACTION SOURCE  DEST            PROTO   DPORT   SPORT   ORIGDEST
         DNAT    net     loc:192.168.1.3 tcp     ssh,http</programlisting>
         </listitem>
       </varlistentry>
@@ -1792,9 +1798,8 @@
         <listitem>
           <para>Forward all http connection requests from the internet to
           local system 192.168.1.3 with a limit of 3 per second and a maximum
-          burst of 10<programlisting>        #ACTION SOURCE DEST            PROTO  DEST  SOURCE  ORIGINAL RATE
-        #                                     PORT  PORT(S) DEST     LIMIT
-        DNAT    net    loc:192.168.1.3 tcp    http  -       -        3/sec:10</programlisting></para>
+          burst of 10<programlisting>        #ACTION SOURCE DEST             PROTO  DPORT SPORT   ORIGDEST RATE
+        DNAT    net    loc:192.168.1.3  tcp    http  -       -        3/sec:10</programlisting></para>
         </listitem>
       </varlistentry>
 
@@ -1806,8 +1811,7 @@
           port 3128 on the firewall (Squid running on the firewall system)
           except when the destination address is 192.168.2.2</para>
 
-          <programlisting>        #ACTION  SOURCE DEST      PROTO DEST    SOURCE  ORIGINAL
-        #                               PORT    PORT(S) DEST
+          <programlisting>        #ACTION  SOURCE DEST      PROTO DPORT   SPORT   ORIGDEST
         REDIRECT loc    3128      tcp   www      -      !192.168.2.2</programlisting>
         </listitem>
       </varlistentry>
@@ -1819,8 +1823,7 @@
           <para>All http requests from the internet to address 130.252.100.69
           are to be forwarded to 192.168.1.3</para>
 
-          <programlisting>        #ACTION  SOURCE DEST            PROTO   DEST    SOURCE  ORIGINAL
-        #                                       PORT    PORT(S) DEST
+          <programlisting>        #ACTION  SOURCE DEST            PROTO   DPORT   SPORT   ORIGDEST
         DNAT      net   loc:192.168.1.3 tcp     80      -       130.252.100.69</programlisting>
         </listitem>
       </varlistentry>
@@ -1832,10 +1835,9 @@
           <para>You want to accept SSH connections to your firewall only from
           internet IP addresses 130.252.100.69 and 130.252.100.70</para>
 
-          <programlisting>        #ACTION  SOURCE DEST            PROTO   DEST    SOURCE  ORIGINAL
-        #                                       PORT    PORT(S) DEST
-        ACCEPT   net:130.252.100.69,130.252.100.70 $FW \
-                                        tcp     22</programlisting>
+          <programlisting>        #ACTION  SOURCE DEST            PROTO   DPORT   SPORT   ORIGDEST
+        ACCEPT   net:130.252.100.69,130.252.100.70 \
+                        $FW             tcp     22</programlisting>
         </listitem>
       </varlistentry>
 
@@ -1847,8 +1849,7 @@
           firewall on port 2222 and you want to forward them to local system
           192.168.1.3, port 22</para>
 
-          <programlisting>        #ACTION  SOURCE DEST                PROTO   DEST    SOURCE  ORIGINAL
-        #                                           PORT    PORT(S) DEST
+          <programlisting>        #ACTION  SOURCE DEST                PROTO   DPORT   SPORT   ORIGDEST
         DNAT     net    loc:192.168.1.3:22  tcp     2222</programlisting>
         </listitem>
       </varlistentry>
@@ -1860,8 +1861,7 @@
           <para>You want to redirect connection requests to port 80 randomly
           to the port range 81-90.</para>
 
-          <programlisting>        #ACTION  SOURCE DEST                PROTO DEST    SOURCE  ORIGINAL
-        #                                         PORT    PORT(S) DEST
+          <programlisting>        #ACTION  SOURCE DEST                PROTO DPORT   SPORT   ORIGDEST
         REDIRECT net    $FW::81-90:random   tcp   www</programlisting>
         </listitem>
       </varlistentry>
@@ -1897,8 +1897,7 @@
 
           <para>rules:</para>
 
-          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DEST
-        #                                                  PORT(S)
+          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DPORT
         REDIRECT    loc             3128       tcp         80                                                   </programlisting>
 
           <simpara>Note that it would have been tempting to simply define the
@@ -1926,8 +1925,7 @@
           <para>Add the tuple (source IP, dest port, dest IP) of an incoming
           SSH connection to the ipset S:</para>
 
-          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
-        #                                                                         PORT(S)
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DPORT
         ADD(+S:dst,src,dst)           net              fw             tcp         22</programlisting>
         </listitem>
       </varlistentry>
@@ -1939,8 +1937,7 @@
           <para>You wish to limit SSH connections from remote systems to 1/min
           with a burst of three (to allow for limited retry):</para>
 
-          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DEST         SOURCE    ORIGINAL         RATE
-        #                                                  PORT(S)      PORT(S)   DEST             LIMIT
+          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DPORT        SPORT     ORIGDEST         RATE
         SSH(ACCEPT) net             all        -           -            -         -                s:1/min:3</programlisting>
         </listitem>
       </varlistentry>
@@ -1952,8 +1949,7 @@
           <para>Forward port 80 to dmz host $BACKUP if switch 'primary_down'
           is on.</para>
 
-          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
-        #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
+          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DPORT        SPORT     ORIGDEST   RATE      USER      MARK    CONNLIMIT     TIME     HEADERS    SWITCH
         DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down</programlisting>
         </listitem>
       </varlistentry>
@@ -1965,8 +1961,7 @@
           <para>Drop all email from the <emphasis>Anonymous Proxy</emphasis>
           and <emphasis>Satellite Provider</emphasis> address ranges:</para>
 
-          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
-        #                                                                         PORT(S)
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DPORT
         DROP                          net:^A1,A2       fw             tcp         25</programlisting>
         </listitem>
       </varlistentry>
@@ -1978,8 +1973,7 @@
           <para>You want to generate your own rule involving iptables targets
           and matches not supported by Shorewall.</para>
 
-          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
-        #                                                                         PORT(S)
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DPORT
         INLINE                        $FW              net ; -p 6 -m mickey-mouse --name test -m set --match-set set1 src -m mickey-mouse --name test2 -j SECCTX --name test3</programlisting>
 
           <para>The above will generate the following iptables-restore

@@ -403,13 +403,15 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DESTINATION</emphasis> (dest) - {<emphasis
+        <term><emphasis role="bold">DEST</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><emphasis
         role="bold">:</emphasis><emphasis>address</emphasis>|<emphasis>address</emphasis>}</term>
 
         <listitem>
+          <para>This column was formerly named DESTINATION.</para>
+
           <para>Packet Destination.</para>
 
           <para>Format same as <emphasis role="bold">SOURCE</emphasis>
@@ -418,7 +420,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTOCOL (proto)</emphasis> - {<emphasis
+        <term><emphasis role="bold">PROTO</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">{any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis
@@ -428,6 +430,8 @@
         role="bold">all</emphasis>}]}[,...]}</term>
 
         <listitem>
+          <para>This column was formerly named PROTOCOL</para>
+
           <para>A <emphasis>protocol-name</emphasis> (from protocols(5)), a
           <emphasis>protocol-number</emphasis>, <emphasis
           role="bold">ipp2p</emphasis>, <emphasis
@@ -440,8 +444,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S)</emphasis> (dport) -
-        {<emphasis role="bold">-</emphasis>|<emphasis
+        <term><emphasis role="bold">DPORT</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>ipp2p-option</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
@@ -460,12 +464,14 @@
           ("iptables -m ipp2p --help") without the leading "--". If no option
           is given in this column, <emphasis role="bold">ipp2p</emphasis> is
           assumed.</para>
+
+          <para>This column was formerly named DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport)-
-        {<emphasis role="bold">-</emphasis>|<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
@@ -482,20 +488,22 @@
           column, provided that the DEST PORT(S) column is non-empty. This
           causes the rule to match when either the source port or the
           destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          DPORT. Use of '=' requires multi-port match in your iptables and
+          kernel.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis> (user) - [<emphasis
+        <term><emphasis role="bold">USER</emphasis> - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
         role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
 
         <listitem>
-          <para>This column may only be non-empty if the <emphasis
-          role="bold">CHAIN</emphasis> is <emphasis
+          <para>This column was formerly named USER/GROUP and may only be
+          non-empty if the <emphasis role="bold">CHAIN</emphasis> is <emphasis
           role="bold">OUTPUT</emphasis>.</para>
 
           <para>When this column is non-empty, the rule applies only if the

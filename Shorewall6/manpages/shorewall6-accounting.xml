@@ -349,7 +349,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DESTINATION</emphasis> (dest) - {<emphasis
+        <term><emphasis role="bold">DEST</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>interface</emphasis>|<emphasis>interface</emphasis><option>:[</option><emphasis>address</emphasis><option>]</option>|<emphasis>address</emphasis>}</term>
@@ -359,11 +359,13 @@
 
           <para>Format same as <emphasis role="bold">SOURCE</emphasis>
           column.</para>
+
+          <para>This column was formerly labelled DESTINATION.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PROTOCOL</emphasis> (proto) - {<emphasis
+        <term><emphasis role="bold">PROTO</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis
@@ -381,12 +383,14 @@
 
           <para>Beginning with Shorewall 4.5.12, this column can accept a
           comma-separated list of protocols.</para>
+
+          <para>This column was formerly labelled PROTOCOL.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S)</emphasis> (dport) -
-        {<emphasis role="bold">-</emphasis>|<emphasis
+        <term><emphasis role="bold">DPORT</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>ipp2p-option</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
@@ -405,12 +409,14 @@
           ("ip6tables -m ipp2p --help") without the leading "--". If no option
           is given in this column, <emphasis role="bold">ipp2p</emphasis> is
           assumed.</para>
+
+          <para>This column was formerly labelled DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
-        {<emphasis role="bold">-</emphasis>|<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - {<emphasis
+        role="bold">-</emphasis>|<emphasis
         role="bold">any</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis>port-name-or-number</emphasis>[,<emphasis>port-name-or-number</emphasis>]...}</term>
 
@@ -424,16 +430,17 @@
           support.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DPORT. Use of '='
+          requires multi-port match in your iptables and kernel.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis> (user) - [<emphasis
+        <term><emphasis role="bold">USER</emphasis> - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number</emphasis>][<emphasis
         role="bold">+</emphasis><emphasis>program-name</emphasis>]</term>
@@ -490,6 +497,8 @@
               </listitem>
             </varlistentry>
           </variablelist>
+
+          <para>This column was formerly labelled USER/GROUP.</para>
         </listitem>
       </varlistentry>
 

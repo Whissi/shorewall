@@ -1052,11 +1052,12 @@ show_command() {
 		conntrack -f ipv6 -L $@ | show_connections_filter
 	    else
 		[ $# -gt 1 ] && usage 1
-		local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-		local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-		echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
-		echo
-		grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | show_connections_filter
+		if [ -f /proc/sys/net/netfilter/nf_conntrack_count -a -f /proc/sys/net/nf_conntrack ]; then
+		    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+		    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+		    echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
+		    echo
+		    grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | show_connections_filter
 	    fi
 	    ;;
 	nat)

@@ -1111,8 +1111,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) </emphasis>(dport) -
-        {<emphasis
+        <term><emphasis role="bold">DPORT</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
@@ -1144,8 +1143,7 @@
 
           <para>If your kernel contains multi-port match support, then only a
           single Netfilter rule will be generated in this list and the
-          <emphasis role="bold">CLIENT PORT(S)</emphasis> list below
-          if:</para>
+          <emphasis role="bold">SPORT</emphasis> list below if:</para>
 
           <para>1. There are 15 or less ports listed.</para>
 
@@ -1156,12 +1154,13 @@
           <replaceable>ipset</replaceable> name can be specified in this
           column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
-        {<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
@@ -1171,11 +1170,10 @@
           numbers or port ranges.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DPORT. Use of '='
+          requires multi-port match in your iptables and kernel.</para>
 
           <warning>
             <para>Unless you really understand IP, you should leave this
@@ -1189,7 +1187,7 @@
 
           <para>If your kernel contains multi-port match support, then only a
           single Netfilter rule will be generated if in this list and the
-          <emphasis role="bold">DEST PORT(S)</emphasis> list above:</para>
+          <emphasis role="bold">DPORT</emphasis> list above:</para>
 
           <para>1. There are 15 or less ports listed.</para>
 
@@ -1199,21 +1197,25 @@
           <para>Beginning with Shorewall 4.6.0, an ipset name can be specified
           in this column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ORIGINAL DEST</emphasis> (origdest) -
-        [<emphasis role="bold">-</emphasis>]</term>
+        <term><emphasis role="bold">ORIGDEST</emphasis> - [<emphasis
+        role="bold">-</emphasis>]</term>
 
         <listitem>
           <para>Included for compatibility with Shorewall. Enter '-' in this
           column if you need to specify one of the later columns.</para>
+
+          <para>This column was formerly labelled ORIGINAL DEST.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">RATE LIMIT</emphasis> (rate) -
+        <term><emphasis role="bold">RATE</emphasis> -
         <replaceable>limit</replaceable></term>
 
         <listitem>
@@ -1278,11 +1280,13 @@
           enforce the per-source limit and the compiler will pick a unique
           name for the hash table that tracks the per-destination
           limit.</para>
+
+          <para>This column was formerly labelled RATE LIMIT.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">USER/GROUP</emphasis> (user) - [<emphasis
+        <term><emphasis role="bold">USER</emphasis> - [<emphasis
         role="bold">!</emphasis>][<emphasis>user-name-or-number-or-range</emphasis>][<emphasis
         role="bold">:</emphasis><emphasis>group-name-or-number-or-range</emphasis>]</term>
 
@@ -1336,6 +1340,8 @@
               </listitem>
             </varlistentry>
           </variablelist>
+
+          <para>This column was formerly labelled USER/GROUP.</para>
         </listitem>
       </varlistentry>
 
@@ -1716,8 +1722,7 @@
         <listitem>
           <para>Accept SMTP requests from the DMZ to the internet</para>
 
-          <programlisting>         #ACTION SOURCE  DEST PROTO      DEST    SOURCE  ORIGINAL
-         #                               PORT    PORT(S) DEST
+          <programlisting>         #ACTION SOURCE  DEST PROTO      DPORT   SPORT   ORIGDEST
          ACCEPT  dmz     net       tcp   smtp</programlisting>
         </listitem>
       </varlistentry>
@@ -1730,8 +1735,7 @@
           internet IP addresses 2002:ce7c::92b4:1::2 and
           2002:ce7c::92b4:1::22</para>
 
-          <programlisting>        #ACTION  SOURCE DEST            PROTO   DEST    SOURCE  ORIGINAL
-        #                                       PORT    PORT(S) DEST
+          <programlisting>        #ACTION  SOURCE DEST            PROTO   DPORT   SPORT   ORIGDEST
         ACCEPT   net:&lt;2002:ce7c::92b4:1::2,2002:ce7c::92b4:1::22&gt; \
                         $FW              tcp     22</programlisting>
         </listitem>
@@ -1744,8 +1748,7 @@
           <para>You wish to limit SSH connections from remote systems to 1/min
           with a burst of three (to allow for limited retry):</para>
 
-          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DEST         SOURCE    ORIGINAL         RATE
-        #                                                  PORT(S)      PORT(S)   DEST             LIMIT
+          <programlisting>        #ACTION     SOURCE          DEST       PROTO       DPORT        SPORT     ORIGDEST         RATE
         SSH(ACCEPT) net             all        -           -            -         -                s:1/min:3</programlisting>
         </listitem>
       </varlistentry>
@@ -1757,8 +1760,7 @@
           <para>Forward port 80 to dmz host $BACKUP if switch 'primary_down'
           is set.</para>
 
-          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
-        #                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
+          <programlisting>        #ACTION     SOURCE          DEST        PROTO       DPORT        SPORT     ORIGDEST   RATE      USER      MARK    CONNLIMIT     TIME     HEADERS    SWITCH
         DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          primary_down</programlisting>
         </listitem>
       </varlistentry>
@@ -1770,8 +1772,7 @@
           <para>Drop all email from IP addresses in the country whose ISO-3661
           country code is ZZ.</para>
 
-          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
-        #                                                                         PORT(S)
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DPORT
         DROP                          net:^ZZ          fw             tcp         25</programlisting>
         </listitem>
       </varlistentry>
@@ -1783,8 +1784,7 @@
           <para>You want to generate your own rule involving ip6tables targets
           and matches not supported by Shorewall.</para>
 
-          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DEST
-        #                                                                         PORT(S)
+          <programlisting>        #ACTION                       SOURCE           DEST           PROTO       DPORT
         INLINE                        $FW              net ; -p 6 -m mickey-mouse --name test -m set --match-set set1 src -m mickey-mouse --name test2 -j SECCTX --name test3</programlisting>
 
           <para>The above will generate the following ip6tables-restore

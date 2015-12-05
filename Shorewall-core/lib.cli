@@ -1058,6 +1058,7 @@ show_command() {
 		    echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
 		    echo
 		    grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | show_connections_filter
+		fi
 	    fi
 	    ;;
 	nat)

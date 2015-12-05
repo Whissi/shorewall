@@ -490,7 +490,11 @@ esac
 if [ -z "$DESTDIR" ]; then
     if [ $configure -eq 1 -a -n "$first_install" ]; then
 	if [ $HOST = debian ]; then
-	    if mywhich insserv; then
+	    if [ -n "$SERVICEDIR" ]; then
+		if systemctl enable ${PRODUCT}.service; then
+		    echo "Shorewall INit will start automatically at boot"
+		fi
+	    elif mywhich insserv; then
 		if insserv ${INITDIR}/shorewall-init; then
 		    echo "Shorewall Init will start automatically at boot"
 		else

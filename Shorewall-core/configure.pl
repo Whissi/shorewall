@@ -52,6 +52,9 @@ for ( @ARGV ) {
     $params{$pn} = $pv;
 }
 
+use File::Basename;
+chdir dirname($0);
+
 my $vendor = $params{HOST};
 my $rcfile;
 my $rcfilename;
@@ -83,8 +86,8 @@ unless ( defined $vendor ) {
 if ( defined $vendor ) {
     if ( $vendor eq 'debian' && -f '/etc/debian_version' ) {
 	if ( -l '/sbin/init' ) {
-	    if ( readlink '/sbin/init' =~ /systemd/ ) {
-		$rcfilename = 'debian.systemd';
+	    if ( readlink('/sbin/init') =~ /systemd/ ) {
+		$rcfilename = 'shorewallrc.debian.systemd';
 	    } else {
 		$rcfilename = 'shorewallrc.debian.sysvinit';
 	    }
@@ -168,7 +171,8 @@ my $outfile;
 
 open $outfile, '>', 'shorewallrc' or die "Can't open 'shorewallrc' for output: $!";
 
-printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s %2d %04d %02d:%02d:%02d\n#\n", VERSION, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];
+printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s %2d %04d %02d:%02d:%02d\n", VERSION, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];
+print $outfile "# rc file: $rcfilename\n#\n";
 
 print  $outfile "# Input: @ARGV\n#\n" if @ARGV;
 

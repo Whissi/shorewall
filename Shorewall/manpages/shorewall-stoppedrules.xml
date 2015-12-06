@@ -112,7 +112,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT(S) (dport)</emphasis> ‒
+        <term><emphasis role="bold">DPORT</emphasis> ‒
         <replaceable>service-name/port-number-list</replaceable></term>
 
         <listitem>
@@ -121,11 +121,13 @@
           include port ranges of the form
           <replaceable>low-port</replaceable>:<replaceable>high-port</replaceable>
           if your kernel and iptables include port range support.</para>
+
+          <para>This column was formerly labelled DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S) (sport)</emphasis> ‒
+        <term><emphasis role="bold">SPORT</emphasis> ‒
         <replaceable>service-name/port-number-list</replaceable></term>
 
         <listitem>
@@ -136,11 +138,12 @@
           if your kernel and iptables include port range support.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DEST PORTS(S). Use of
+          '=' requires multi-port match in your iptables and kernel.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
     </variablelist>

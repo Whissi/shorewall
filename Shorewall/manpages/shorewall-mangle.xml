@@ -570,8 +570,7 @@ INLINE                eth0              -                 ; -p tcp -j MARK --set
                 that problem. SAME may be used in the PREROUTING and OUTPUT
                 chains. When used in PREROUTING, it causes matching
                 connections from an individual local system to all use the
-                same provider. For example: <programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
-#                                                        PORT(S)
+                same provider. For example: <programlisting>#ACTION           SOURCE         DEST         PROTO      DPORT
 SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
                 If a host in 192.168.1.0/24 attempts a connection on TCP port
                 80 or 443 and it has sent a packet on either of those ports in
@@ -581,8 +580,7 @@ SAME:P            192.168.1.0/24 0.0.0.0/0    tcp        80,443</programlisting>
 
                 <para>When used in the OUTPUT chain, it causes all matching
                 connections to an individual remote system to all use the same
-                provider. For example:<programlisting>#ACTION           SOURCE         DEST         PROTO      DEST
-#                                                        PORT(S)
+                provider. For example:<programlisting>#ACTION           SOURCE         DEST         PROTO      DPORT
 SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>The
                 optional <replaceable>timeout</replaceable> parameter was
                 added in Shorewall 4.6.7 and specifies a number of seconds .
@@ -835,7 +833,7 @@ Normal-Service       =&gt; 0x00</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORT(S)</emphasis> (dport) - {<emphasis
+        <term><emphasis role="bold">DPORT</emphasis>- {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
@@ -863,12 +861,13 @@ Normal-Service       =&gt; 0x00</programlisting>
           <replaceable>ipset</replaceable> name can be specified in this
           column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly named DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
-        {<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...|+<replaceable>ipset</replaceable>}</term>
 
@@ -882,16 +881,17 @@ Normal-Service       =&gt; 0x00</programlisting>
           the following fields is supplied.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DEST PORTS(S). Use of
+          '=' requires multi-port match in your iptables and kernel.</para>
 
           <para>Beginning with Shorewall 4.6.0, an
           <replaceable>ipset</replaceable> name can be specified in this
           column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
@@ -1097,8 +1097,7 @@ Normal-Service       =&gt; 0x00</programlisting>
           by the named helper module.</para>
 
           <para>Example: Mark all FTP data connections with mark
-          4:<programlisting>#ACTION   SOURCE    DEST      PROTO   PORT(S)    SOURCE  USER TEST LENGTH TOS CONNBYTES HELPER
-#                                                PORT(S)
+          4:<programlisting>#ACTION   SOURCE    DEST      PROTO   DPORT      SPORT   USER TEST LENGTH TOS CONNBYTES HELPER
 4:T       0.0.0.0/0 0.0.0.0/0 TCP     -          -       -    -    -      -   -         ftp</programlisting></para>
         </listitem>
       </varlistentry>
@@ -1287,8 +1286,7 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <para>We assume packet/connection mark 0 means unclassified.</para>
 
-          <programlisting>       #ACTION    SOURCE    DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #                                                       PORT(S)
+          <programlisting>       #ACTION    SOURCE    DEST         PROTO   DPORT         SPORT   USER    TEST
        MARK(1):T  0.0.0.0/0 0.0.0.0/0    icmp    echo-request
        MARK(1):T  0.0.0.0/0 0.0.0.0/0    icmp    echo-reply
        RESTORE:T  0.0.0.0/0 0.0.0.0/0    all     -             -       -       0
@@ -1313,8 +1311,7 @@ Normal-Service       =&gt; 0x00</programlisting>
 
           <programlisting>/etc/shorewall/tcrules:
 
-       #ACTION            SOURCE         DEST         PROTO   PORT(S)       SOURCE  USER    TEST
-       #                                                                    PORT(S)
+       #ACTION            SOURCE         DEST         PROTO   DPORT         SPORT   USER    TEST
        CONNMARK(1-3):F    192.168.1.0/24 eth0 ; state=NEW
 
 /etc/shorewall/masq:

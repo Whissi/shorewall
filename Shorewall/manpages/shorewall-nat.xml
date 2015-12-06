@@ -106,15 +106,16 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">ALL INTERFACES</emphasis> (allints) -
-        [<emphasis role="bold">Yes</emphasis>|<emphasis
-        role="bold">No</emphasis>]</term>
+        <term><emphasis role="bold">ALLINTS</emphasis> - [<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>If Yes or yes, NAT will be effective from all hosts. If No or
           no (or left empty) then NAT will be effective only through the
           interface named in the <emphasis role="bold">INTERFACE</emphasis>
           column.</para>
+
+          <para>This column was formerly labelled ALL INTERFACES.</para>
         </listitem>
       </varlistentry>
 
@@ -160,8 +161,7 @@ smc     eth0:10.1.10.0/24</programlisting>
 
     <para><filename>/etc/shorewall/nat</filename>:</para>
 
-    <programlisting>#EXTERNAL       INTERFACE       INTERNAL        ALL             LOCAL
-#                                               INTERFACES
+    <programlisting>#EXTERNAL       INTERFACE       INTERNAL        ALLINTS         LOCAL
 10.1.10.100     eth0            172.20.1.100
 </programlisting>
 
@@ -170,8 +170,7 @@ smc     eth0:10.1.10.0/24</programlisting>
 
     <para><filename>/etc/shorewall/rules</filename>:</para>
 
-    <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME            HEADERS     SWITCH           HELPER
-#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT           ORIGDEST        RATE            USER    MARK    CONNLIMIT       TIME            HEADERS     SWITCH           HELPER
 ?SECTION ALL
 ?SECTION ESTABLISHED
 ?SECTION RELATED

@@ -316,6 +316,7 @@ reload_kernel_modules() {
     local moduleloader
     moduleloader=modprobe
     local uname
+    local extras
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -323,9 +324,25 @@ reload_kernel_modules() {
 
     [ -n "${MODULE_SUFFIX:=ko ko.gz ko.xz o o.gz o.xz gz xz}" ]
 
-    [ -z "$MODULESDIR" ] && \
-	uname=$(uname -r) && \
+    if [ -n "$MODULESDIR" ]; then
+	case "$MODULESDIR" in
+	    +*)
+		extras="$MODULESDIR"
+		extras=${extras#+}
+		MODULESDIR=
+		;;
+	esac
+    fi
+
+    if [ -z "$MODULESDIR" ]; then
+	uname=$(uname -r)
 	MODULESDIR=/lib/modules/$uname/kernel/net/ipv${g_family}/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+	if [ -n "$extras" ]; then
+	    for directory in $(split "$extras"); do
+		MODULESDIR="$MODULESDIR:/lib/modules/$uname/$directory"
+	    done
+	fi
+    fi
 
     [ -d /sys/module/ ] || MODULES=$(lsmod | cut -d ' ' -f1)
 
@@ -355,6 +372,7 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     local savemoduleinfo
     savemoduleinfo=${1:-Yes} # So old compiled scripts still work
     local uname
+    local extras
 
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
@@ -362,9 +380,25 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
 
     [ -n "${MODULE_SUFFIX:=o gz xz ko o.gz o.xz ko.gz ko.xz}" ]
 
-    [ -z "$MODULESDIR" ] && \
-	uname=$(uname -r) && \
+    if [ -n "$MODULESDIR" ]; then
+	case "$MODULESDIR" in
+	    +*)
+		extras="$MODULESDIR"
+		extras=${extras#+}
+		MODULESDIR=
+		;;
+	esac
+    fi
+
+    if [ -z "$MODULESDIR" ]; then
+	uname=$(uname -r)
 	MODULESDIR=/lib/modules/$uname/kernel/net/ipv${g_family}/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset
+	if [ -n "$extras" ]; then
+	    for directory in $(split "$extras"); do
+		MODULESDIR="$MODULESDIR:/lib/modules/$uname/$directory"
+	    done
+	fi
+    fi
 
     for directory in $(split $MODULESDIR); do
 	[ -d $directory ] && moduledirectories="$moduledirectories $directory"

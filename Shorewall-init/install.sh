@@ -493,8 +493,7 @@ if [ -z "$DESTDIR" ]; then
 	if [ $HOST = debian ]; then
 	    if [ -n "$SERVICEDIR" ]; then
 		if systemctl enable ${PRODUCT}.service; then
-                    echo "Shorewall Init will start automatically at 
-boot"
+                    echo "Shorewall Init will start automatically at boot"
 		fi
 	    elif mywhich insserv; then
 		if insserv ${INITDIR}/shorewall-init; then

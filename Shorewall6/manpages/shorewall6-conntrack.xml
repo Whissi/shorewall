@@ -414,7 +414,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>DEST PORT(S) (dport) -
+        <term>DPORT -
         {-|<replaceable>port-number/service-name-list</replaceable>|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
@@ -427,11 +427,13 @@
           <para>Beginning with Shorewall 4.6.0, an ipset name can be specified
           in this column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>SOURCE PORT(S) (sport) -
+        <term>SPORT -
         {-|<replaceable>port-number/service-name-list</replaceable>|+<replaceable>ipset</replaceable>}</term>
 
         <listitem>
@@ -442,25 +444,28 @@
           if your kernel and iptables include port range support.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S).</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DPORT.</para>
 
           <para>Beginning with Shorewall 4.6.0, an ipset name can be specified
           in this column. This is intended to be used with
           <firstterm>bitmap:port</firstterm> ipsets.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>USER/GROUP (user) ‒
+        <term>USER ‒
         [<replaceable>user</replaceable>][:<replaceable>group</replaceable>]</term>
 
         <listitem>
           <para>May only be specified if the SOURCE
           <replaceable>zone</replaceable> is $FW. Specifies the effective user
           id and or group id of the process sending the traffic.</para>
+
+          <para>This column was formerly labelled USER/GROUP.</para>
         </listitem>
       </varlistentry>
 
@@ -523,8 +528,7 @@
     itself.</para>
 
     <programlisting>FORMAT 2
-#ACTION                       SOURCE            DEST               PROTO            DEST              SOURCE              USER/GROUP
-#                                                                                   PORT(S)           PORT(S)
+#ACTION                       SOURCE            DEST               PROTO            DPORT             SPORT               USER
 CT:helper:ftp(expevents=new)  fw                -                  tcp              21              </programlisting>
 
     <para>Example 2 (Shorewall 4.5.10 or later):</para>
@@ -532,15 +536,13 @@ CT:helper:ftp(expevents=new)  fw                -                  tcp          
     <para>Drop traffic to/from all zones to IP address 2001:1.2.3::4</para>
 
     <programlisting>FORMAT 2
-#ACTION                       SOURCE             DEST               PROTO            DEST              SOURCE              USER/GROUP
-#                                                                                   PORT(S)           PORT(S)
+#ACTION                       SOURCE             DEST               PROTO            DPORT             SPORT               USER
 DROP                          all-:2001:1.2.3::4 -
 DROP                          all                2001:1.2.3::4
 </programlisting>
 
     <para>or<programlisting>FORMAT 3
-#ACTION                       SOURCE             DEST               PROTO            DEST              SOURCE              USER/GROUP
-#                                                                                   PORT(S)           PORT(S)
+#ACTION                       SOURCE             DEST               PROTO            DPORT             SPORT               USER
 DROP:P                        2001:1.2.3::4      -
 DROP:PO                       -                  2001:1.2.3::4
 </programlisting></para>

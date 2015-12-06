@@ -131,7 +131,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST PORT</emphasis> (dport) - [<emphasis
+        <term><emphasis role="bold">DPORT</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-or-number</emphasis>]</term>
 
         <listitem>
@@ -139,16 +139,19 @@
           a <emphasis>port number</emphasis>; if the protocol is <emphasis
           role="bold">icmp</emphasis>, this column is interpreted as the
           destination icmp-type(s).</para>
+
+          <para>This column was formerly labelled DEST PORT(S).</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT</emphasis> (sport) -
-        [<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-or-number</emphasis>]</term>
 
         <listitem>
           <para>Optional source port.</para>
+
+          <para>This column was formerly labelled SOURCE PORT(S).</para>
         </listitem>
       </varlistentry>
 
@@ -286,8 +289,7 @@
           ALL cannot be used because IPv4 ICMP and IPv6 ICMP are two different
           protocols.</para>
 
-          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DEST
-       #                                        PORT
+          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DPORT
 
        IPV4
 
@@ -308,8 +310,7 @@
           <para>Add two filters with priority 10 (Shorewall 4.5.8 or
           later).</para>
 
-          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DEST            PRIORITY
-       #                                        PORT
+          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DPORT           PRIORITY
 
        IPV6
 
@@ -338,6 +339,6 @@
     <para><ulink
     url="/PacketMarking.html">http://www.shorewall.net/PacketMarking.html</ulink></para>
 
-    <para></para>
+    <para/>
   </refsect1>
 </refentry>

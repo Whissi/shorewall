@@ -195,9 +195,11 @@ if [ -f "$FIREWALL" ]; then
     remove_file $FIREWALL
 fi
 
-if [ -n "$SYSTEMD" ]; then
+[ -z "$SERVICEDIR" ] && SERVICEDIR="$SYSTEMD"
+
+if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SYSTEMD/shorewall-lite.service
+    rm -f $SERVICEDIR/shorewall-lite.service
 fi
 
 rm -f ${SBINDIR}/shorewall-lite

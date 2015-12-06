@@ -92,7 +92,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">CHAIN:STATE (chain) -
+        <term><emphasis role="bold">CHAIN -
         {P|I|F|O|T}[:{N|I|U|IU|NI|NU|NIU|NUI:E|ER}]</emphasis></term>
 
         <listitem>
@@ -139,6 +139,8 @@
 
             <member>:NIU - NEW, INVALID or UNTRACKED connection.</member>
           </simplelist>
+
+          <para>This column was formerly labelled CHAIN:STATE.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -229,7 +231,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">PORT(S)</emphasis> (dport) - [<emphasis
+        <term><emphasis role="bold">DPORT</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
 
@@ -249,15 +251,14 @@
           If no PORT is given, <emphasis role="bold">ipp2p</emphasis> is
           assumed.</para>
 
-          <para>This column is ignored if PROTOCOL = all but must be entered
-          if any of the following field is supplied. In that case, it is
+          <para>This column is ignored if PROTO = all but must be entered if
+          any of the following field is supplied. In that case, it is
           suggested that this field contain "-"</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE PORT(S)</emphasis> (sport) -
-        [<emphasis
+        <term><emphasis role="bold">SPORT</emphasis> - [<emphasis
         role="bold">-</emphasis>|<emphasis>port-name-number-or-range</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>port-name-number-or-range</emphasis>]...]</term>
 
@@ -267,11 +268,10 @@
           numbers or port ranges.</para>
 
           <para>Beginning with Shorewall 4.5.15, you may place '=' in this
-          column, provided that the DEST PORT(S) column is non-empty. This
-          causes the rule to match when either the source port or the
-          destination port in a packet matches one of the ports specified in
-          DEST PORTS(S). Use of '=' requires multi-port match in your iptables
-          and kernel.</para>
+          column, provided that the DPORT column is non-empty. This causes the
+          rule to match when either the source port or the destination port in
+          a packet matches one of the ports specified in DPORT. Use of '='
+          requires multi-port match in your iptables and kernel.</para>
         </listitem>
       </varlistentry>
 
@@ -318,6 +318,8 @@
               </listitem>
             </varlistentry>
           </variablelist>
+
+          <para>This column was formerly labelled USER/GROUP.</para>
         </listitem>
       </varlistentry>
 
@@ -388,8 +390,7 @@
 
     <para><filename>/etc/shorewall6/secmarks</filename>:</para>
 
-    <programlisting>#SECMARK                              CHAIN:     SOURCE  DEST       PROTO   DEST       SOURCE      USER/     MARK
-#                                     STATE                                 PORT(S)    PORT(S)     GROUP
+    <programlisting>#SECMARK                              CHAIN      SOURCE  DEST       PROTO   DPORT      SPORT       USER      MARK
 system_u:object_r:mysqld_packet_t:s0  I:N        lo      ::1        tcp     3306
 SAVE                                  I:N
 RESTORE                               I:ER</programlisting>

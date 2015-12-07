@@ -7029,7 +7029,7 @@ sub isolate_source_interface( $ ) {
 	    $inets  = $2;
 	} elsif ( $source =~ /^(.+?):\[(.+)\]\s*$/ ||
 		  $source =~ /^(.+?):(!?\+.+)$/    ||
-		  $source =~ /^(.+?):(!?[&%].+)$/  ||
+		  $source =~ /^(.+?):(!?[&%~].+)$/ ||
 		  $source =~ /^(.+?):(\[.+\]\/(?:\d+))\s*$/
 		) {
 	    $iiface = $1;

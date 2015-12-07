@@ -2245,7 +2245,7 @@ sub split_line2( $$;$$$ ) {
 
 	for ( @pairs ) {
 	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
-	    my ( $column, $value ) = ( lc $1, $2 );
+	    my ( $column, $value ) = ( lc( $1 ), $2 );
 	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
 	    $column = $columnsref->{$column};
 	    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;

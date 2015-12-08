@@ -153,7 +153,7 @@ if [ -f ${SHAREDIR}/shorewall-lite/version ]; then
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewal Lite Version $VERSION is not installed"
+    echo "WARNING: Shorewall Lite Version $VERSION is not installed"
     VERSION=""
 fi
 

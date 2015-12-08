@@ -464,20 +464,6 @@ if [ -z "$first_install" ]; then
 
     delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
     delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
-
-    #
-    # Delete obsolete config files and manpages
-    #
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/tos
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/tcrules
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/stoppedrules
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/notrack
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/blacklist
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-tos
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-tcrules
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-stoppedrules
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-notrack
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-blacklist
 fi
 
 #

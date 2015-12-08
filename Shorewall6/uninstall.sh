@@ -184,9 +184,18 @@ if [ -f "$FIREWALL" ]; then
     remove_file $FIREWALL
 fi
 
-if [ -n "$SYSTEMD" ]; then
+[ -n "$SERVICEDIR" ] || SERVICEDIR=${SYSTEMD}
+
+if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SYSTEMD/shorewall6.service
+    rm -f $SERVICEDIR/shorewall6.service
+fi
+
+rm -rf ${SHAREDIR}/shorewall6/version
+rm -rf ${CONFDIR}/shorewall6
+
+if [ -n "$SYSCONFDIR" ]; then
+    [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
 fi
 
 rm -f ${SBINDIR}/shorewall6

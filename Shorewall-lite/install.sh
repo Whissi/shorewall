@@ -67,15 +67,6 @@ mywhich() {
     return 2
 }
 
-run_install()
-{
-    if ! install $*; then
-	echo
-	echo "ERROR: Failed to install $*" >&2
-	exit 1
-    fi
-}
-
 cant_autostart()
 {
     echo
@@ -89,7 +80,28 @@ delete_file() # $1 = file to delete
 
 install_file() # $1 = source $2 = target $3 = mode
 {
-    run_install $T $OWNERSHIP -m $3 $1 ${2}
+    if cp -f $1 $2; then
+	if chmod $3 $2; then
+	    if [ -n "$OWNER" ]; then
+		if chown $OWNER:$GROUP $2; then
+		    return
+		fi
+	    else
+		return 0
+	    fi
+	fi
+    fi
+
+    echo "ERROR: Failed to install $2" >&2
+    exit 1
+}
+
+make_directory() # $1 = directory , $2 = mode
+{
+    mkdir -p $1
+    chmod 755 $1
+    [ -n "$OWNERSHIP" ] && chown $OWNERSHIP $1
+
 }
 
 require()
@@ -187,7 +199,7 @@ elif [ -z "${VARDIR}" ]; then
     VARDIR=${VARLIB}/${PRODUCT}
 fi
 
-for var in SHAREDIR LIBEXECDIRDIRDIR CONFDIR SBINDIR VARLIB VARDIR; do
+for var in SHAREDIR LIBEXECDIR CONFDIR SBINDIR VARLIB VARDIR; do
     require $var
 done
 
@@ -201,8 +213,6 @@ PATH=${SBINDIR}:/bin:/usr${SBINDIR}:/usr/bin:/usr/local/bin:/usr/local${SBINDIR}
 # Determine where to install the firewall script
 #
 cygwin=
-INSTALLD='-D'
-T='-T'
 
 if [ -z "$BUILD" ]; then
     case $(uname) in
@@ -245,6 +255,8 @@ if [ -z "$BUILD" ]; then
 		BUILD=slackware
 	    elif [ -f ${CONFDIR}/arch-release ] ; then
 		BUILD=archlinux
+	    elif [ -f ${CONFDIR}/openwrt_release ]; then
+		BUILD=openwrt
 	    else
 		BUILD=linux
 	    fi
@@ -260,16 +272,16 @@ case $BUILD in
     apple)
 	[ -z "$OWNER" ] && OWNER=root
 	[ -z "$GROUP" ] && GROUP=wheel
-	INSTALLD=
-	T=
 	;;
     *)
-	[ -z "$OWNER" ] && OWNER=root
-	[ -z "$GROUP" ] && GROUP=root
+	if [ $(id -u) -eq 0 ]; then
+	    [ -z "$OWNER" ] && OWNER=root
+	    [ -z "$GROUP" ] && GROUP=root
+	fi
 	;;
 esac
 
-OWNERSHIP="-o $OWNER -g $GROUP"
+[ -n "$OWNER" ] && OWNERSHIP="$OWNER:$GROUP"
 
 [ -n "$HOST" ] || HOST=$BUILD
 
@@ -300,6 +312,9 @@ case "$HOST" in
     suse)
 	echo "Installing Suse-specific configuration..."
 	;;
+    openwrt)
+	echo "Installing OpenWRT-specific configuration..."
+	;;
     linux)
 	;;
     *)
@@ -316,8 +331,9 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
 
-    install -d $OWNERSHIP -m 755 ${DESTDIR}/${SBINDIR}
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
+    make_directory ${DESTDIR}${SBINDIR} 755
+    make_directory ${DESTDIR}${INITDIR} 755
+
 else
     if [ ! -f ${SHAREDIR}/shorewall/coreversion ]; then
 	echo "$PRODUCT $VERSION requires Shorewall Core which does not appear to be installed" >&2
@@ -357,7 +373,7 @@ fi
 delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
 install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0544
-[ -n "${INITFILE}" ] && install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
+[ -n "${INITFILE}" ] && make_directory ${DESTDIR}${INITDIR} 755
 
 echo "$Product control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
@@ -399,7 +415,7 @@ fi
 if [ -n "$SERVICEDIR" ]; then
     mkdir -p ${DESTDIR}${SERVICEDIR}
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    install_file $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service 644
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
 fi
@@ -421,9 +437,9 @@ fi
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
-[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}/${CONFDIR}/$PRODUCT/Makefile
+install_file Makefile ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile 0600
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile
+[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile
 echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
 
 #
@@ -438,7 +454,7 @@ echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/confi
 for f in lib.* ; do
     if [ -f $f ]; then
 	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}/${SHAREDIR}/$PRODUCT/$f"
+	echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
     fi
 done
 
@@ -451,7 +467,7 @@ echo "Common functions linked through ${DESTDIR}${SHAREDIR}/$PRODUCT/functions"
 #
 
 install_file shorecap ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap 0755
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${LIBEXECDIR}/$PRODUCT/shorecap
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap
 
 echo
 echo "Capability file builder installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shorecap"
@@ -461,17 +477,17 @@ echo "Capability file builder installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/shor
 #
 
 if [ -f modules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${DESTDIR}${SHAREDIR}/$PRODUCT
+    install_file modules ${DESTDIR}${SHAREDIR}/$PRODUCT/modules 0600
     echo "Modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/modules"
 fi
 
 if [ -f helpers ]; then
-    run_install $OWNERSHIP -m 0600 helpers ${DESTDIR}${SHAREDIR}/$PRODUCT
+    install_file helpers ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers 600
     echo "Helper modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers"
 fi
 
 for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f
+    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 644
     echo "Module file $f installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
 done
 
@@ -482,17 +498,17 @@ done
 if [ -d manpages ]; then
     cd manpages
 
-    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
+    mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
+	install_file $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz 644
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
     done
 
     for f in *.8; do
 	gzip -c $f > $f.gz
-	run_install $T $INSTALLD $OWNERSHIP -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
+	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 644
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
     done
 
@@ -502,7 +518,7 @@ if [ -d manpages ]; then
 fi
 
 if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT
+    install_file logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT 644
     echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
 fi
 
@@ -533,13 +549,13 @@ if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PR
 	chmod 755 ${DESTDIR}${SYSCONFDIR}
     fi
 
-    run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
+    install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT} 0640
     echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 
 if [ ${SHAREDIR} != /usr/share ]; then
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SHAREDIR}/${PRODUCT}/lib.base
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}/${SBINDIR}/$PRODUCT
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.base
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/$PRODUCT
 fi
 
 if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
@@ -586,6 +602,13 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 	    fi
 	else
 	    cant_autostart
+	fi
+    elif [ $HOST = openwrt -a -f ${CONFDIR}/rc.common ]; then
+	/etc/init.d/$PRODUCT enable
+	if /etc/init.d/$PRODUCT enabled; then
+            echo "$PRODUCT will start automatically at boot"
+	else
+            cant_autostart
 	fi
     elif [ "$INITFILE" != rc.${PRODUCT} ]; then #Slackware starts this automatically
 	cant_autostart

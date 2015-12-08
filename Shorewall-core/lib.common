@@ -33,7 +33,7 @@ startup_error() # $* = Error Message
     echo "   ERROR: $@: Firewall state not changed" >&2
 
     if [ $LOG_VERBOSITY -ge 0 ]; then
-        timestamp="$(date +'%_b %d %T') "
+        timestamp="$(date +'%b %d %T') "
         echo "${timestamp}  ERROR: $@" >> $STARTUP_LOG
     fi
 
@@ -50,7 +50,7 @@ startup_error() # $* = Error Message
     esac
 
     if [ $LOG_VERBOSITY -ge 0 ]; then
-        timestamp="$(date +'%_b %d %T') "
+        timestamp="$(date +'%b %d %T') "
 
 	case $COMMAND in
 	    start)
@@ -572,9 +572,9 @@ in_network() # $1 = IP address, $2 = CIDR network
 #
 # Query NetFilter about the existence of a filter chain
 #
-chain_exists() # $1 = chain name
+chain_exists() # $1 = chain name, $2 = table name (optional)
 {
-    qt1 $g_tool -L $1 -n
+    qt1 $g_tool -t ${2:-filter} -L $1 -n
 }
 
 #
@@ -782,12 +782,15 @@ mutex_on()
     local lockf
     lockf=${LOCKFILE:=${VARDIR}/lock}
     local lockpid
+    local lockd
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
     if [ $MUTEX_TIMEOUT -gt 0 ]; then
 
-	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
+	lockd=$(dirname $LOCKFILE)
+
+	[ -d "$lockd" ] || mkdir -p "$lockd"
 
 	if [ -f $lockf ]; then
 	    lockpid=`cat ${lockf} 2> /dev/null`
@@ -807,6 +810,11 @@ mutex_on()
 	    chmod u+w ${lockf}
 	    echo $$ > ${lockf}
 	    chmod u-w ${lockf}
+	elif qt mywhich lock; then
+            lock -${MUTEX_TIMEOUT} -r1 ${lockf}
+            chmod u+w ${lockf}
+            echo $$ > ${lockf}
+            chmod u-w ${lockf}
 	else
 	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
 		sleep 1

@@ -109,8 +109,8 @@ if ( defined $vendor ) {
     if ( -f '/etc/debian_version' ) {
 	$vendor = 'debian';
 	if ( -l '/sbin/init' ) {
-	    if ( readlink '/sbin/init' =~ /systemd/ ) {
-		$rcfilename = 'debian.systemd';
+	    if ( readlink( '/sbin/init' ) =~ /systemd/ ) {
+		$rcfilename = 'shorewallrc.debian.systemd';
 	    } else {
 	$rcfilename = 'shorewallrc.debian.sysvinit';
 	    }

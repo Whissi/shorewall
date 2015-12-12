@@ -102,6 +102,8 @@ if ( defined $vendor ) {
 	die qq("ERROR: $vendor" is not a recognized host type);
     } elsif ( $vendor eq 'default' ) {
 	$params{HOST} = $vendor = 'linux';
+    } elsif ( $vendor =~ /^debian\./ ) {
+	$params{HOST} = $vendor = 'debian';
     }
 } else {
     if ( -f '/etc/debian_version' ) {

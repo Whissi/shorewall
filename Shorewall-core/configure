@@ -169,6 +169,9 @@ else
     elif [ $vendor = default ]; then
 	params[HOST]=linux
 	vendor=linux
+    elif [[ $vendor == debian.* ]]; then
+	params[HOST]=debian
+	vendor=debian
     fi
 fi
 

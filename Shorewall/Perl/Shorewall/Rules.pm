@@ -2477,13 +2477,21 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    $actiontype |= HELPER;
 	} elsif ( $actiontype & SET ) {
 	    my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
+	    my ( $setname, $flags, $timeout, $rest ) = split ':', $param, 4;
 
-	    my ( $setname, $flags, $rest ) = split ':', $param, 3;
 	    fatal_error "Invalid ADD/DEL parameter ($param)" if $rest;
 	    $setname =~ s/^\+//;
 	    fatal_error "Expected ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z][-\w]*$/;
-	    fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
+	    fatal_error "Invalid flags ($flags)"         unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
+
 	    $action = join( ' ', 'SET --' . $xlate{$basictarget} , $setname , $flags );
+
+	    if ( supplied $timeout ) {
+		fatal_error "A timeout may only be supplied in an ADD rule" unless $basictarget eq 'ADD';
+		fatal_error "Invalid Timeout ($timeout)"                    unless $timeout && $timeout =~ /^\d+$/;
+
+		$action .= " --timeout $timeout";
+	    }
 	}
     }
     #

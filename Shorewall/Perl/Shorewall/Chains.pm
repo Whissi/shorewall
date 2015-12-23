@@ -6242,7 +6242,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 		if ( $tag =~ /^,/ ) {
 		    ( $disposition = $tag ) =~ s/,//;
 		} elsif ( $tag =~ /,/ ) {
-		    ( $chain, $disposition ) = split ',', $tag;
+		    ( $chain, $disposition ) = split ',', $tag, 2;
 		} else { 
 		    $chain = $tag;
 		}
@@ -6336,7 +6336,7 @@ sub log_irule_limit( $$$$$$$@ ) {
 		if ( $tag =~ /^,/ ) {
 		    ( $disposition = $tag ) =~ s/,//;
 		} elsif ( $tag =~ /,/ ) {
-		    ( $chain, $disposition ) = split ',', $tag;
+		    ( $chain, $disposition ) = split ',', $tag, 2;
 		} else { 
 		    $chain = $tag;
 		}

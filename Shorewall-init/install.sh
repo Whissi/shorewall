@@ -230,8 +230,6 @@ if [ -z "$BUILD" ]; then
 		BUILD=slackware
 	    elif [ -f /etc/arch-release ] ; then
 		BUILD=archlinux
-	    elif [ -f ${CONFDIR}/openwrt_release ]; then
-		BUILD=openwrt
 	    else
 		BUILD=linux
 	    fi
@@ -278,9 +276,6 @@ case "$HOST" in
 	;;
     suse)
 	echo "Installing SuSE-specific configuration..."
-	;;
-    openwrt)
-	echo "Installing OpenWRT-specific configuration..."
 	;;
     linux)
 	echo "ERROR: Shorewall-init is not supported on this system" >&2
@@ -541,13 +536,6 @@ if [ -z "$DESTDIR" ]; then
 	    elif [ -x ${SBINDIR}/rc-update ]; then
 		if rc-update add shorewall-init default; then
 		    echo "Shorewall Init will start automatically at boot"
-		else
-		    cant_autostart
-		fi
-	    elif [ $HOST = openwrt -a -f ${CONFDIR}/rc.common ]; then
-		/etc/init.d/shorewall-inir enable
-		if /etc/init.d/shorewall-init enabled; then
-		    echo "Shorrewall Init will start automatically at boot"
 		else
 		    cant_autostart
 		fi

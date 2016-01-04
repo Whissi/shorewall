@@ -7491,7 +7491,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 	    $loglevel = validate_level( $loglevel );
 	    $logtag   = '' unless defined $logtag;
 	}
-    } elsif ( $disposition eq 'LOG' ) {
+    } elsif ( $disposition eq 'LOG' && ! $usergenerated ) {
 	fatal_error "LOG requires a level";
     }
     #

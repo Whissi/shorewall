@@ -2212,7 +2212,10 @@ sub split_line2( $$;$$$ ) {
 	$pairs = '';
     }
 
-    fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
+    unless ( $currline =~ /^\s*IP6?TABLES\(.*\)/ ) {
+	fatal_error "Shorewall Configuration file entries may not contain double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
+    }
+
     fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 
     my @line = split_columns( $columns );

@@ -2264,6 +2264,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $matches     = $rule;
     my $raw_matches = '';
     my $exceptionrule = '';
+    my $usergenerated;
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2286,6 +2287,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     }
 
     fatal_error "Unknown ACTION ($action)" unless $actiontype;
+
+    $usergenerated = $actiontype & IPTABLES;
 
     if ( $actiontype == MACRO ) {
 	#
@@ -2333,15 +2336,16 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	$param = $param eq '' ? 'drop' : $param;
 	fatal_error "Invalid AUDIT type ($param) -- must be 'accept', 'drop' or 'reject'" unless $param =~ /^(?:accept|drop|reject)$/;
 	$actiontype = STANDARD;
-    } elsif ( $actiontype & NFLOG ) {
-	validate_level( $action );
-	$loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
-	$action   = 'LOG';
-    } elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES | TARPIT ) ) ) {
-	fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
-	fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
+    } elsif ( ! $usergenerated ) {
+	if ( $actiontype & NFLOG ) {
+	    validate_level( $action );
+	    $loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
+	    $action   = 'LOG';
+	} elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES | TARPIT ) ) ) {
+	    fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
+	    fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
+	}
     }
-
     #
     # We can now dispense with the postfix character
     #
@@ -2909,7 +2913,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		     $action ,
 		     $loglevel ,
 		     $log_action ,
-		     $exceptionrule )
+		     $exceptionrule ,
+		     $usergenerated && ! $loglevel )
 	    unless unreachable_warning( $wildcard || $section == DEFAULTACTION_SECTION, $chainref );
     }
 

@@ -614,7 +614,8 @@ sub process_stoppedrules() {
 				 $target,
 				 '',
 				 $disposition,
-				 do_proto( $proto, '-', '-' ) );
+				 do_proto( $proto, '-', '-' ),
+				 '');
 		}
 	    } else {
 		warning_message "Redundant OUTPUT rule ignored because ADMINISABSENTMINDED=Yes";

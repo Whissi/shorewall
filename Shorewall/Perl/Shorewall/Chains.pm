@@ -7428,7 +7428,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
 #
 # Returns the destination interface specified in the rule, if any.
 #
-sub expand_rule( $$$$$$$$$$$;$ )
+sub expand_rule( $$$$$$$$$$$$;$ )
 {
     my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
@@ -7441,6 +7441,7 @@ sub expand_rule( $$$$$$$$$$$;$ )
 	$loglevel ,    # Log level (and tag)
 	$disposition,  # Primtive part of the target (RETURN, ACCEPT, ...)
 	$exceptionrule,# Caller's matches used in exclusion case
+	$usergenerated,# Rule came from the IP[6]TABLES target
 	$logname,      # Name of chain to name in log messages
        ) = @_;
 
@@ -7605,9 +7606,9 @@ sub expand_rule( $$$$$$$$$$$;$ )
 
 		    my $cond3 = conditional_rule( $chainref, $dnet );
 
-		    if ( $loglevel eq '' ) {
+		    if ( $loglevel eq '' || $usergenerated ) {
 			#
-			# No logging -- add the target rule with matches to the rule chain
+			# No logging or user-specified logging -- add the target rule with matches to the rule chain
 			#
 			if ( $targetref ) {
 			    add_expanded_jump( $chainref, $targetref , 0, $matches );

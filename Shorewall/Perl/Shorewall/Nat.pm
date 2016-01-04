@@ -345,7 +345,8 @@ sub process_one_masq1( $$$$$$$$$$$ )
 		     $target ,
 		     '' ,
 		     '' ,
-		     $exceptionrule )
+		     $exceptionrule ,
+		     '' )
 	    unless unreachable_warning( 0, $chainref );
 
 	conditional_rule_end( $chainref ) if $detectaddress || $conditional;
@@ -795,7 +796,8 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 		  $target ,
 		  $loglevel ,
 		  $log_action ,
-		  $serverport ? do_proto( $proto, '', '' ) : '',
+		  $serverport ? do_proto( $proto, '', '' ) : '' ,
+		  '' ,
 		)
 	unless unreachable_warning( $wildcard, $chainref );
 
@@ -867,6 +869,7 @@ sub handle_nonat_rule( $$$$$$$$$$$ ) {
 			 $loglevel,
 			 $log_action,
 			 '',
+			 '',
 			 dnat_chain( $sourcezone  ) )
 		unless unreachable_warning( $wildcard, $chn );
 
@@ -887,6 +890,7 @@ sub handle_nonat_rule( $$$$$$$$$$$ ) {
 		 $tgt,
 		 $loglevel ,
 		 $log_action ,
+		 '',
 		 '',
 	       )
 	unless unreachable_warning( $wildcard, $nonat_chain );

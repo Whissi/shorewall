@@ -291,7 +291,8 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 			    '' ,
 			    $target ,
 			    '' ,
-			    $disposition ,
+		            $disposition ,
+		            '' ,
 			    ''  );
 	    }
 	}
@@ -386,6 +387,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 	$target ,
 	'' ,
 	$disposition ,
+	'' ,
 	'' ;
 
     if ( $rule2 || $jump ) {
@@ -414,7 +416,8 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 		    '' ,
 		    '' ,
 		    '' ,
-		    '' ,
+	            '' ,
+	            '' ,
 		    '' );
     }
 

@@ -98,6 +98,8 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	$action = join( ":" , 'LOG', $action );
     }
 
+    my $usergenerated;
+
     if ( $action eq 'NOTRACK' ) {
 	#
 	# A patch that deimplements the NOTRACK target has been posted on the
@@ -204,7 +206,8 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 		 $action ,
 		 $level || '' ,
 		 $disposition ,
-		 $exception_rule );
+		 $exception_rule ,
+		 $usergenerated && ! $level );
 
     progress_message "  Conntrack rule \"$currentline\" $done";
 }
@@ -247,6 +250,7 @@ sub handle_helper_rule( $$$$$$$$$$$ ) {
 			 $action_target ,
 			 '',
 			 'CT' ,
+			 '' ,
 			 '' );
 	} else {
 	    expand_rule( ensure_raw_chain( notrack_chain( $sourceref->{name} ) ) ,
@@ -261,6 +265,7 @@ sub handle_helper_rule( $$$$$$$$$$$ ) {
 			 $action_target ,
 			 '' ,
 			 'CT' ,
+			 '' ,
 			 '' );
 	}
     }

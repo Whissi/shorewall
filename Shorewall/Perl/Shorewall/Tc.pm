@@ -454,6 +454,16 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
 
+	DROP       => {
+	    defaultchain   => 0,
+	    allowedchains  => PREROUTING | FORWARD | OUTPUT | POSTROUTING,
+	    minparams      => 0,
+	    maxparams      => 0,
+	    function       => sub() {
+		$target = 'DROP';
+	    }
+	},
+
 	DSCP       => {
 	    defaultchain   => 0,
 	    allowedchains  => PREROUTING | FORWARD | OUTPUT | POSTROUTING,

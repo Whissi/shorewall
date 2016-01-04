@@ -41,28 +41,25 @@
 
 # openwrt stuph
 # start and stop runlevel variable
-#START=21
-#STOP=91
+START=50
+STOP=89
 # variable to display what the status command do when /etc/init.d/shorewall6-lite is invoke without argument
 EXTRA_COMMANDS="status"
-EXTRA_HELP="Displays shorewall status"
+EXTRA_HELP="status displays shorewall status"
 
 ################################################################################
 # Get startup options (override default)
 ################################################################################
-OPTIONS="-vvv"
+OPTIONS=
 
 #
 # The installer may alter this
 #
 . /usr/share/shorewall/shorewallrc
 
-if [ -f ${SYSCONFDIR}/shorewall6-lite ]; then
-    . ${SYSCONFDIR}/shorewall6-lite
+if [ -f ${SYSCONFDIR}/$PRODUCT ]; then
+    . ${SYSCONFDIR}/$PRODUCT
 fi
-
-START=${START:-21}
-STOP=${STOP:-91}
 
 SHOREWALL_INIT_SCRIPT=1
 
@@ -73,7 +70,7 @@ SHOREWALL_INIT_SCRIPT=1
 command="$action"
 
 start() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command ${STARTOPTIONS:-$@}
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $STARTOPTIONS
 }
 
 boot() {
@@ -82,17 +79,17 @@ start
 }
 
 restart() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command ${RESTARTOPTIONS:-$@}
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $RESTARTOPTIONS
 }
 
 reload() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command ${RELOADOPTION:-$@}
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $RELOADOPTION
 }
 
 stop() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command ${STOPOPTIONS:-$@}
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $STOPOPTIONS
 }
 
 status() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command ${STATUSOPTIONS:-$@}
+	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $STATUSOPTIONS
 }

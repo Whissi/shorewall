@@ -28,6 +28,7 @@
 
 VERSION=xxx  #The Build script inserts the actual version
 PRODUCT=shorewall-lite
+Product="Shorewall Lite"
 
 usage() # $1 = exit status
 {
@@ -205,14 +206,16 @@ fi
 rm -f ${SBINDIR}/shorewall-lite
 
 rm -rf ${CONFDIR}/shorewall-lite
-rm -rf ${VARDIR}/shorewall-lite
+rm -rf ${VARDIR}
 rm -rf ${SHAREDIR}/shorewall-lite
 rm -rf ${LIBEXECDIR}/shorewall-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall-lite
 rm -f  ${SYSCONFDIR}/shorewall-lite
 
-rm -f ${MANDIR}/man5/shorewall-lite*
-rm -f ${MANDIR}/man8/shorewall-lite*
+if [ -n "${MANDIR}" ]; then
+    rm -f ${MANDIR}/man5/shorewall-lite*
+    rm -f ${MANDIR}/man8/shorewall-lite*
+fi
 
 echo "Shorewall Lite Uninstalled"
 

@@ -27,6 +27,8 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx  #The Build script inserts the actual version
+PRODUCT=shorewall-init
+Product="Shorewall Init"
 
 usage() # $1 = exit status
 {
@@ -74,6 +76,11 @@ remove_file() # $1 = file to restore
 	echo "$1 Removed"
     fi
 }
+
+#
+# Change to the directory containing this script
+#
+cd "$(dirname $0)"
 
 finished=0
 configure=1
@@ -162,7 +169,11 @@ INITSCRIPT=${CONFDIR}/init.d/shorewall-init
 
 if [ -f "$INITSCRIPT" ]; then
     if [ $configure -eq 1 ]; then
-	if mywhich updaterc.d ; then
+	if [ $HOST = openwrt ]; then
+	    if /etc/init.d/shorewall-init enabled; then
+		/etc/init.d/shorewall-init disable
+	    fi
+	elif mywhich updaterc.d ; then
 	    updaterc.d shorewall-init remove
 	elif mywhich insserv ; then
             insserv -r $INITSCRIPT
@@ -183,8 +194,13 @@ if [ -n "$SERVICEDIR" ]; then
     rm -f $SERVICEDIR/shorewall-init.service
 fi
 
-[ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
-[ "$(readlink -m -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifdown-local
+if [ $HOST = openwrt ]; then
+    [ "$(readlink -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
+    [ "$(readlink -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifdown-local
+else
+    [ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
+    [ "$(readlink -m -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifdown-local
+fi
 
 remove_file ${CONFDIR}/default/shorewall-init
 remove_file ${CONFDIR}/sysconfig/shorewall-init
@@ -197,8 +213,6 @@ remove_file ${CONFDIR}/network/if-post-down.d/shorewall
 
 remove_file ${CONFDIR}/sysconfig/network/if-up.d/shorewall
 remove_file ${CONFDIR}/sysconfig/network/if-down.d/shorewall
-
-[ -n "$SYSTEMD" ] && remove_file ${SYSTEMD}/shorewall.service
 
 if [ -d ${CONFDIR}/ppp ]; then
     for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do

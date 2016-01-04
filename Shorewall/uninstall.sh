@@ -80,6 +80,11 @@ remove_file() # $1 = file to restore
     fi
 }
 
+#
+# Change to the directory containing this script
+#
+cd "$(dirname $0)"
+
 finished=0
 configure=1
 

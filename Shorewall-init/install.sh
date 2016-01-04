@@ -28,6 +28,8 @@
 #
 
 VERSION=xxx #The Build script inserts the actual version.
+PRODUCT=shorewall-init
+Product="Shorewall Init"
 
 usage() # $1 = exit status
 {
@@ -71,19 +73,35 @@ mywhich() {
     return 2
 }
 
-run_install()
-{
-    if ! install $*; then
-	echo
-	echo "ERROR: Failed to install $*" >&2
-	exit 1
-    fi
-}
-
 cant_autostart()
 {
     echo
     echo  "WARNING: Unable to configure shorewall init to start automatically at boot" >&2
+}
+
+install_file() # $1 = source $2 = target $3 = mode
+{
+    if cp -f $1 $2; then
+	if chmod $3 $2; then
+	    if [ -n "$OWNER" ]; then
+		if chown $OWNER:$GROUP $2; then
+		    return
+		fi
+	    else
+		return 0
+	    fi
+	fi
+    fi
+
+    echo "ERROR: Failed to install $2" >&2
+    exit 1
+}
+
+make_directory() # $1 = directory , $2 = mode
+{
+    mkdir -p $1
+    chmod 0755 $1
+    [ -n "$OWNERSHIP" ] && chown $OWNERSHIP $1
 }
 
 require() 
@@ -91,19 +109,14 @@ require()
     eval [ -n "\$$1" ] || fatal_error "Required option $1 not set"
 }
 
-install_file() # $1 = source $2 = target $3 = mode
-{
-    run_install $T $OWNERSHIP -m $3 $1 ${2}
-}
-
+#
+# Change to the directory containing this script
+#
 cd "$(dirname $0)"
-
-PRODUCT=shorewall-init
 
 #
 # Parse the run line
 #
-T='-T'
 
 finished=0
 configure=1
@@ -239,22 +252,24 @@ if [ -z "$BUILD" ]; then
     esac
 fi
 
-[ -n "$OWNER" ] || OWNER=$(id -un)
-[ -n "$GROUP" ] || GROUP=$(id -gn)
-
 case $BUILD in
     apple)
-	T=
+	[ -z "$OWNER" ] && OWNER=root
+	[ -z "$GROUP" ] && GROUP=wheel
 	;;
-    debian|gentoo|redhat|suse|slackware|archlinux)
-	;;
+    cygwin*|CYGWIN*)
+	OWNER=$(id -un)
+	GROUP=$(id -gn)
+ 	;;
     *)
-	[ -n "$BUILD" ] && echo "ERROR: Unknown BUILD environment ($BUILD)" >&2 || echo "ERROR: Unknown BUILD environment"
-	exit 1
+	if [ $(id -u) -eq 0 ]; then
+	    [ -z "$OWNER" ] && OWNER=root
+	    [ -z "$GROUP" ] && GROUP=root
+	fi
 	;;
 esac
 
-OWNERSHIP="-o $OWNER -g $GROUP"
+[ -n "$OWNER" ] && OWNERSHIP="$OWNER:$GROUP"
 
 [ -n "$HOST" ] || HOST=$BUILD
 
@@ -280,7 +295,7 @@ case "$HOST" in
 	echo "Installing SuSE-specific configuration..."
 	;;
     openwrt)
-	echo "Installing OpenWRT-specific configuration..."
+	echo "Installing Openwrt-specific configuration..."
 	;;
     linux)
 	echo "ERROR: Shorewall-init is not supported on this system" >&2
@@ -295,12 +310,12 @@ esac
 [ -z "$TARGET" ] && TARGET=$HOST
 
 if [ -n "$DESTDIR" ]; then
-    if [ `id -u` != 0 ] ; then
+    if [ $(id -u) != 0 ] ; then
 	echo "Not setting file owner/group permissions, not running as root."
 	OWNERSHIP=""
     fi
     
-    install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
+    make_directory ${DESTDIR}${INITDIR} 0755
 fi
 
 echo "Installing Shorewall Init Version $VERSION"
@@ -316,7 +331,7 @@ fi
 
 if [ -n "$DESTDIR" ]; then
     mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d
-    chmod 755 ${DESTDIR}${CONFDIR}/logrotate.d
+    chmod 0755 ${DESTDIR}${CONFDIR}/logrotate.d
 fi
 
 #
@@ -344,14 +359,14 @@ fi
 if [ -n "$SERVICEDIR" ]; then
     mkdir -p ${DESTDIR}${SERVICEDIR}
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    install_file $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service 0644
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
     if [ -n "$DESTDIR" -o $configure -eq 0 ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}
-        chmod 755 ${DESTDIR}${SBINDIR}
+        chmod 0755 ${DESTDIR}${SBINDIR}
     fi
-    run_install $OWNERSHIP -m 700 shorewall-init ${DESTDIR}${SBINDIR}/shorewall-init
+    install_file shorewall-init ${DESTDIR}${SBINDIR}/shorewall-init 0700
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/shorewall-init
     echo "CLI installed as ${DESTDIR}${SBINDIR}/shorewall-init"
 fi
@@ -360,13 +375,13 @@ fi
 # Create /usr/share/shorewall-init if needed
 #
 mkdir -p ${DESTDIR}${SHAREDIR}/shorewall-init
-chmod 755 ${DESTDIR}${SHAREDIR}/shorewall-init
+chmod 0755 ${DESTDIR}${SHAREDIR}/shorewall-init
 
 #
 # Install logrotate file
 #
 if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT
+    install_file logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT 0644
     echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
 fi
 
@@ -374,7 +389,7 @@ fi
 # Create the version file
 #
 echo "$VERSION" > ${DESTDIR}/${SHAREDIR}/shorewall-init/version
-chmod 644 ${DESTDIR}${SHAREDIR}/shorewall-init/version
+chmod 0644 ${DESTDIR}${SHAREDIR}/shorewall-init/version
 
 #
 # Remove and create the symbolic link to the init script
@@ -417,6 +432,9 @@ else
 	    elif [ $HOST = gentoo ]; then
 		# Gentoo does not support if-{up,down}.d
 		/bin/true
+	    elif [ $HOST = openwrt ]; then
+		# Not implemented on openwrt
+		/bin/true
 	    else
 		mkdir -p ${DESTDIR}/${ETC}/NetworkManager/dispatcher.d
 	    fi
@@ -424,8 +442,8 @@ else
     fi
 
     if [ -n "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
-	run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/$PRODUCT
-	echo "$SYSCONFFILE installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
+	install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/$PRODUCT 0644
+	echo "${SYSCONFFILE} file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
     fi
 
     [ $HOST = suse ] && IFUPDOWN=ifupdown.suse.sh || IFUPDOWN=ifupdown.fedora.sh
@@ -435,13 +453,15 @@ fi
 # Install the ifupdown script
 #
 
-cp $IFUPDOWN ifupdown
+if [ $HOST != openwrt ]; then
+    cp $IFUPDOWN ifupdown
 
-[ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
 
-mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
+    mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
 
-install_file ifupdown ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
+    install_file ifupdown ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
+fi
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
     [ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/
@@ -494,7 +514,7 @@ case $HOST in
 esac
 
 if [ -z "$DESTDIR" ]; then
-    if [ $configure -eq 1 -a -n "$first_install" ]; then
+    if [ $configure -eq 1 -a -n "first_install" ]; then
 	if [ $HOST = debian ]; then
 	    if [ -n "$SERVICEDIR" ]; then
 		if systemctl enable ${PRODUCT}.service; then
@@ -513,6 +533,13 @@ if [ -z "$DESTDIR" ]; then
 		else
 		    cant_autostart
 		fi
+	    else
+		cant_autostart
+	    fi
+	elif [ $HOST = openwrt -a -f ${CONFDIR}/rc.common ]; then
+	    /etc/init.d/$PRODUCT enable
+	    if /etc/init.d/$PRODUCT enabled; then
+		echo "$Product will start automatically at boot"
 	    else
 		cant_autostart
 	    fi

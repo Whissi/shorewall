@@ -24,6 +24,9 @@
 
 VERSION=xxx #The Build script inserts the actual version
 
+PRODUCT=shorewall-core
+Product="Shorewall Core"
+ 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
@@ -100,6 +103,9 @@ require()
     eval [ -n "\$$1" ] || fatal_error "Required option $1 not set"
 }
 
+#
+# Change to the directory containing this script
+#
 cd "$(dirname $0)"
 
 #
@@ -340,8 +346,10 @@ fi
 mkdir -p ${DESTDIR}${SBINDIR}
 chmod 755 ${DESTDIR}${SBINDIR}
 
-mkdir -p ${DESTDIR}${MANDIR}
-chmod 755 ${DESTDIR}${MANDIR}
+if [ -n "${MANDIR}" ]; then
+    mkdir -p ${DESTDIR}${MANDIR}
+    chmod 755 ${DESTDIR}${MANDIR}
+fi
 
 if [ -n "${INITFILE}" ]; then
     mkdir -p ${DESTDIR}${INITDIR}

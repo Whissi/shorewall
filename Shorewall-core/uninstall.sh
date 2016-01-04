@@ -27,7 +27,9 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx #The Build script inserts the actual version
-
+PRODUCT="shorewall-core"
+Product="Shorewall Core"
+ 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
@@ -65,6 +67,11 @@ remove_file() # $1 = file to restore
 	echo "$1 Removed"
     fi
 }
+
+#
+# Change to the directory containing this script
+#
+cd "$(dirname $0)"
 
 #
 # Read the RC file

@@ -28,6 +28,7 @@
 
 VERSION=xxx  #The Build script inserts the actual version
 PRODUCT=shorewall6-lite
+Product="Shorewall6 Lite"
 
 usage() # $1 = exit status
 {
@@ -75,6 +76,11 @@ remove_file() # $1 = file to restore
 	echo "$1 Removed"
     fi
 }
+
+#
+# Change to the directory containing this script
+#
+cd "$(dirname $0)"
 
 finished=0
 configure=1
@@ -202,13 +208,15 @@ fi
 
 rm -f ${SBINDIR}/shorewall6-lite
 rm -rf ${CONFDIR}/shorewall6-lite
-rm -rf ${VARDIR}/shorewall6-lite
+rm -rf ${VARDIR}
 rm -rf ${SHAREDIR}/shorewall6-lite
 rm -rf ${LIBEXECDIR}/shorewall6-lite
 rm -f  ${CONFDIR}/logrotate.d/shorewall6-lite
 rm -f  ${SYSCONFDIR}/shorewall6-lite
 
-rm -f ${MANDIR}/man5/shorewall6-lite*
-rm -f ${MANDIR}/man8/shorewall6-lite*
+if [ -n "${MANDIR}" ]; then
+    rm -f ${MANDIR}/man5/shorewall6-lite*
+    rm -f ${MANDIR}/man8/shorewall6-lite*
+fi
 
 echo "Shorewall6 Lite Uninstalled"

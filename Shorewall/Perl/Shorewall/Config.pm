@@ -396,6 +396,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 TARPIT_TARGET   => 'TARPIT Target',
 		 IFACE_MATCH     => 'Iface Match',
                  TCPMSS_TARGET   => 'TCPMSS Target',
+                 WAIT_OPTION     => 'iptables --wait option',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -714,7 +715,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "5.0.1",
-		    CAPVERSION              => 40609 ,
+		    CAPVERSION              => 50004 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
 		    MACLIST_LOG_TAG         => '',
@@ -989,6 +990,7 @@ sub initialize( $;$$) {
 	       TARPIT_TARGET => undef,
 	       IFACE_MATCH => undef,
 	       TCPMSS_TARGET => undef,
+	       WAIT_OPTION => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -3966,7 +3968,7 @@ sub Udpliteredirect() {
 
 sub Mangle_Enabled() {
     if ( qt1( "$iptables $iptablesw -t mangle -L -n" ) ) {
-	system( "$iptables -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
+	system( "$iptables $iptablesw -t mangle -N $sillyname" ) == 0 || fatal_error "Cannot Create Mangle chain $sillyname";
     }
 }
 
@@ -4608,7 +4610,8 @@ sub determine_capabilities() {
 
     my $pid     = $$;
 
-    $capabilities{CAPVERSION} = $globals{CAPVERSION};
+    $capabilities{CAPVERSION}  = $globals{CAPVERSION};
+    $capabilities{WAIT_OPTION} = $iptablesw;
 
     determine_kernelversion;
 
@@ -5085,6 +5088,8 @@ sub read_capabilities() {
     }
 
     $globals{KLUDGEFREE} = $capabilities{KLUDGEFREE};
+
+    $iptablesw = '-w' if $capabilities{WAIT_OPTION};
 
 }
 

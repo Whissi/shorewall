@@ -6562,6 +6562,8 @@ sub set_chain_variables() {
 	emit( 'g_tool=$IP6TABLES' );
     }
 
+    emit 'g_tool="$g_tool --wait"' if have_capability 'WAIT_OPTION';
+
     if ( $config{IP} ) {
 	emit( qq(IP="$config{IP}") ,
 	      '[ -x "$IP" ] || startup_error "IP=$IP does not exist or is not executable"'

@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=40609
+SHOREWALL_CAPVERSION=50004
 
 [ -n "${g_program:=shorewall}" ]
 
@@ -2593,6 +2593,7 @@ determine_capabilities() {
     TARPIT_TARGET=
     IFACE_MATCH=
     TCPMSS_TARGET=
+    WAIT_OPTION=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -2614,6 +2615,11 @@ determine_capabilities() {
 
     if [ -n "$arptables" -a -x "$arptables" ]; then
 	qt $arptables -L OUT && ARPTABLESJF=Yes
+    fi
+
+    if qt $g_tool --wait -t filter -L INPUT -n -v; then
+	WAIT_OPTION=Yes
+	tool="$tool --wait"
     fi
 
     chain=fooX$$
@@ -3074,8 +3080,10 @@ report_capabilities_unsorted() {
 
     if [ $g_family -eq 4 ]; then
 	report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
+	report_capability "iptables --wait option (WAIT_OPTION)" $WAIT_OPTION
     else
 	report_capability "ip6tables -S (IPTABLES_S)" $IPTABLES_S
+	report_capability "ip6tables --wait option (WAIT_OPTION)" $WAIT_OPTION
     fi
 
     report_capability "Basic Filter (BASIC_FILTER)" $BASIC_FILTER
@@ -3185,6 +3193,7 @@ report_capabilities_unsorted1() {
     report_capability1 TARPIT_TARGET
     report_capability1 IFACE_MATCH
     report_capability1 TCPMSS_TARGET
+    report_capability1 WAIT_OPTION
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

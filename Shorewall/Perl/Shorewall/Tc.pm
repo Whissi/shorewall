@@ -454,6 +454,27 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
 
+	HADIVERT   => {
+	    defaultchain   => REALPREROUTING,
+	    allowedchains  => PREROUTING | REALPREROUTING,
+	    minparams      => 0,
+	    maxparams      => 0,
+	    function       => sub () {
+		fatal_error 'DIVERT is only allowed in the PREROUTING chain' if $designator && $designator != PREROUTING;
+		my $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
+
+		unless ( $divertref ) {
+		    $divertref = new_chain( 'mangle', 'divert' );
+		    add_ijump( $divertref , j => 'MARK', targetopts => "--set-mark $mark"  );
+		    add_ijump( $divertref , j => 'ACCEPT' );
+		}
+
+		$target = 'divert';
+
+		$matches = '-m socket ';
+	    },
+	},
+
 	DROP       => {
 	    defaultchain   => 0,
 	    allowedchains  => PREROUTING | FORWARD | OUTPUT | POSTROUTING,

@@ -320,6 +320,26 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">HADIVERT</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.4. To setup the HAProxy
+                configuration described at <ulink
+                url="http://www.loadbalancer.org/blog/setting-up-haproxy-with-transparent-mode-on-centos-6-x">http://www.loadbalancer.org/blog/setting-up-haproxy-with-transparent-mode-on-centos-6-x</ulink>,
+                place this entry in <ulink
+                url="manpages/shorewall-providers.html">shorewall-providers(5)</ulink>:</para>
+
+                <programlisting>#NAME		NUMBER   MARK    DUPLICATE  INTERFACE	GATEWAY         OPTIONS               COPY
+TProxy          3       -          lo        -               tproxy </programlisting>
+
+                <para>and use this HADIVERT entry:</para>
+
+                <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST    LENGTH  TOS   CONNBYTES         HELPER    PROBABILITY DSCP
+HADIVERT        -               -               tcp</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis
               role="bold">IMQ</emphasis>(<replaceable>number</replaceable>)</term>
 

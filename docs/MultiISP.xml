@@ -1950,8 +1950,8 @@ ONBOOT=yes</programlisting>
       url="manpages/shorewall-providers.html">shorewall-providers</ulink> (5)
       is available in the form of a PROBABILITY column in <ulink
       url="manpages/shorewall-mangle.html">shorewall-mangle</ulink>(5) (<ulink
-      url="manpages4/manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>) (5).
-      This feature requires the <firstterm>Statistic Match</firstterm>
+      url="manpages4/manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>)
+      (5). This feature requires the <firstterm>Statistic Match</firstterm>
       capability in your iptables and kernel.</para>
 
       <para>This method works when there are multiple links to the same ISP
@@ -2219,7 +2219,7 @@ EOF
    #
    # Run LSM -- by default, it forks into the background
    #
-   /usr/sbin/lsm /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
+   /usr/sbin/lsm -c /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
 }</programlisting>
 
         <para>eth0 has a dynamic IP address so I need to use the
@@ -2272,8 +2272,8 @@ defaults {
 
 include /etc/lsm/shorewall.conf</programlisting>
 
-        <para><filename>/etc/lsm/script</filename> (Shorewall 4.4.23 and
-        later)<programlisting>#!/bin/sh
+        <para><filename>/etc/lsm/script</filename> (Shorewall 4.4.23 and later
+        - note that this script must be executable by root)<programlisting>#!/bin/sh
 #
 # (C) 2009 Mika Ilmaranta &lt;ilmis@nullnet.fi&gt;
 # (C) 2009 Tom Eastep &lt;teastep@shorewall.net&gt;

@@ -6215,7 +6215,7 @@ sub log_rule_limit( $$$$$$$$ ) {
 
     $matches .= ' ' if $matches && substr( $matches, -1, 1 ) ne ' ';
 
-    unless ( $matches =~ /-m limit / ) {
+    unless ( $matches =~ /-m (?:limit|hashlimit) / ) {
 	$limit = $globals{LOGLIMIT} unless $limit && $limit ne '-';
 	$matches .= $limit if $limit;
     }

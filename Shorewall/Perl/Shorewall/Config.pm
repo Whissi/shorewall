@@ -3305,6 +3305,7 @@ sub expand_variables( \$ ) {
 	    $val = $variables{$var};
 	} elsif ( exists $actparms{$var} ) { 
 	    $val = $actparms{$var};
+	    $parmsmodified = 1 if $var eq 'caller';
 	} else {
 	    fatal_error "Undefined shell variable (\$$var)" unless $config{IGNOREUNKNOWNVARIABLES} || exists $config{$var};
 	}
@@ -3323,6 +3324,7 @@ sub expand_variables( \$ ) {
 	while ( $$lineref =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    my $val = $var ? $actparms{$var} : $actparms{chain};
+	    $parmsmodified = 1 if $var eq 'caller';
 	    $val = '' unless defined $val;
 	    $$lineref = join( '', $first , $val , $rest );
 	    fatal_error "Variable Expansion Loop" if ++$count > 100;

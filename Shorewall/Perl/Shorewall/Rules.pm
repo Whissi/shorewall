@@ -1169,14 +1169,16 @@ sub finish_section ( $ ) {
 #
 # Create a normalized action name from the passed pieces.
 #
-# Internally, action invocations are uniquely identified by a 4-tuple that
-# includes the action name, log level, log tag and params. The pieces of the tuple
-# are separated by ":".
+# Internally, action invocations are uniquely identified by a 5-tuple that
+# includes the action name, log level, log tag, dynamic invocation number
+# (which is zero except for dynamic actions) and params. The pieces of the
+# tuple are separated by ":".
 #
 sub normalize_action( $$$ ) {
-    my $action = shift;
-    my $level  = shift;
-    my $param  = shift;
+    my $action  = shift;
+    my $level   = shift;
+    my $param   = shift;
+    my $dynamic = $actions{$action}->{dynamic};
 
     ( $level, my $tag ) = split ':', $level;
 
@@ -1185,7 +1187,9 @@ sub normalize_action( $$$ ) {
     $param = ''     unless defined $param;
     $param = ''     if $param eq '-';
 
-    join( ':', $action, $level, $tag, $param );
+    $actions{$action}->{dynamic}++ if $dynamic;
+
+    join( ':', $action, $level, $tag, $dynamic, $param );
 }
 
 #
@@ -1203,9 +1207,9 @@ sub normalize_action_name( $ ) {
 # Produce a recognizable target from a normalized action
 #
 sub external_name( $ ) {
-    my ( $target, $level, $tag, $params ) = split /:/, shift, 4;
+    my ( $target, $level, $tag, $dynamic, $params ) = split /:/, shift, 5;
 
-    $target  = join( '', $target, '(', $params , ')' ) if $params;
+    $target  = join( '', $target, '(', $params , ')' ) if supplied $params;
     $target .= ":$level" if $level && $level ne 'none';
     $target .= ":$tag"   if $tag;
     $target;
@@ -1214,13 +1218,13 @@ sub external_name( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$$$ ) {
+sub new_action( $$$$$ ) {
 
-    my ( $action , $type, $noinline, $nolog ) = @_;
+    my ( $action , $type, $noinline, $nolog, $dynamic ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => '' , noinline => $noinline, nolog => $nolog } if $type & ACTION;
+    $actions{$action} = { actchain => '' , noinline => $noinline, nolog => $nolog , dynamic => $dynamic } if $type & ACTION;
 
     $targets{$action} = $type;
 }
@@ -1693,7 +1697,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 sub process_action($$) {
     my ( $chainref, $caller ) = @_;
     my $wholeaction = $chainref->{action};
-    my ( $action, $level, $tag, $param ) = split /:/, $wholeaction, 4;
+    my ( $action, $level, $tag, $dynamic, $param ) = split /:/, $wholeaction, 5;
 
     if ( $targets{$action} & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
@@ -1792,7 +1796,7 @@ sub process_actions() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 , 0 ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file( $file, 2 );
@@ -1815,6 +1819,7 @@ sub process_actions() {
 			   FILTER_OPT           => 64 ,
 			   NAT_OPT              => 128 ,
 			   TERMINATING_OPT      => 256 ,
+			   DYNAMIC_OPT          => 512 ,
 		       };
 
 	    my %options = ( inline      => INLINE_OPT ,
@@ -1826,6 +1831,7 @@ sub process_actions() {
 			    filter      => FILTER_OPT ,
 			    nat         => NAT_OPT ,
 			    terminating => TERMINATING_OPT ,
+			    dynamic     => DYNAMIC_OPT ,
 			  );
 
 	    my $opts = $type == INLINE ? NOLOG_OPT : 0;
@@ -1881,17 +1887,25 @@ sub process_actions() {
 
 		$targets{$action} = $actiontype;
 
-		make_terminating( $action ) if $opts & TERMINATING_OPT
+		make_terminating( $action ) if $opts & TERMINATING_OPT;
+		warning_message "The 'dynamic' option is ignored on built-in actions" if $opts & DYNAMIC_OPT; 
 	    } else {
 		fatal_error "Table names are only allowed for builtin actions" if $opts & ( MANGLE_OPT | RAW_OPT | NAT_OPT | FILTER_OPT );
 
-		new_action $action, $type, ( $opts & NOINLINE_OPT ) != 0 , ( $opts & NOLOG_OPT ) != 0;
+		new_action( $action,
+			    $type,
+			    ( $opts & NOINLINE_OPT ) != 0,
+			    ( $opts & NOLOG_OPT )    != 0,
+			    ( $opts & DYNAMIC_OPT )  != 0 );
 
 		my $actionfile = find_file( "action.$action" );
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		$inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT } if $type == INLINE;
+		if ( $type == INLINE ) {
+		    warning_message "The 'dynamic' option is ignored on 'inline' actions" if $opts & DYNAMIC_OPT; 
+		    $inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT };
+		}
 	    }
 	}
     }

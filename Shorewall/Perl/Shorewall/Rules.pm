@@ -441,7 +441,7 @@ sub process_default_action( $$$$ ) {
 	if ( "\L$default" eq 'none' ) {
 	    if ( supplied $param || ( supplied $level && $level ne 'none' ) ) {
 		if ( $default_option ) {
-		    fatal_error "Invalid setting (originalpolicy) for $policy";
+		    fatal_error "Invalid setting ($originalpolicy) for $policy";
 		} else {
 		    fatal_error "Invalid policy ($originalpolicy)";
 		}

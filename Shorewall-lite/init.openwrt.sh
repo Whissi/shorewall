@@ -38,16 +38,13 @@
 
 # description: Packet filtering firewall
 
-# Product name variable
-PRODUCT=shorewall-lite
-+
 # Openwrt related
-# start and stop runlevel variable
+# Start and stop runlevel variable
 START=50
 STOP=89
-# variable to display what the status command do when /etc/init.d/shorewall-lite is invoke without argument
+# Displays the status command
 EXTRA_COMMANDS="status"
-EXTRA_HELP="status displays shorewall status"
+EXTRA_HELP=" status Displays firewall status"
 
 ################################################################################
 # Get startup options (override default)
@@ -59,8 +56,8 @@ OPTIONS=
 #
 . /usr/share/shorewall/shorewallrc
 
-if [ -f ${SYSCONFDIR}/$PRODUCT ]; then
-    . ${SYSCONFDIR}/$PRODUCT
+if [ -f ${SYSCONFDIR}/shorewall-lite ]; then
+    . ${SYSCONFDIR}/shorewall-lite
 fi
 
 SHOREWALL_INIT_SCRIPT=1
@@ -68,7 +65,7 @@ SHOREWALL_INIT_SCRIPT=1
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
-# arg1 of init script is arg2 when rc.common is sourced; set to action variable
+# Arg1 of init script is arg2 when rc.common is sourced; set to action variable
 command="$action"
 
 start() {
@@ -76,8 +73,8 @@ start() {
 }
 
 boot() {
-local command="start"
-start
+	local command="start"
+	start
 }
 
 restart() {
@@ -93,5 +90,5 @@ stop() {
 }
 
 status() {
-	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $STATUSOPTIONS
+	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $@
 }

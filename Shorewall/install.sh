@@ -322,6 +322,9 @@ if [ $PRODUCT = shorewall ]; then
 		exit 1;
 	    fi
 
+	    cp -af Perl/Shorewall/Chains.pm Perl/Shorewall/Chains.pm.bak
+	    cp -af Perl/Shorewall/Config.pm Perl/Shorewall/Config.pm.bak
+
 	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Chains.pm
 	    eval sed -i \'s/Digest::SHA/Digest::$DIGEST/\' Perl/Shorewall/Config.pm
 	fi
@@ -332,6 +335,9 @@ if [ $PRODUCT = shorewall ]; then
 	DIGEST=SHA
 	if ! perl -e 'use Digest::SHA;' 2> /dev/null ; then
 	    if perl -e 'use Digest::SHA1;' 2> /dev/null ; then
+		cp -af Perl/Shorewall/Chains.pm Perl/Shorewall/Chains.pm.bak
+		cp -af Perl/Shorewall/Config.pm Perl/Shorewall/Config.pm.bak
+
 		sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Chains.pm
 		sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Config.pm
 		DIGEST=SHA1
@@ -1115,6 +1121,10 @@ if [ -d Perl ]; then
 	install_file $f ${DESTDIR}${PERLLIBDIR}/$f 0644
 	echo "Module ${f%.*} installed as ${DESTDIR}${PERLLIBDIR}/$f"
     done
+
+    [ -f Perl/Shorewall/Chains.pm.bak ] && mv Perl/Shorewall/Chains.pm.bak Perl/Shorewall/Chains.pm
+    [ -f Perl/Shorewall/Config.pm.bak ] && mv Perl/Shorewall/Config.pm.bak Perl/Shorewall/Config.pm
+
     #
     # Install the program skeleton files
     #

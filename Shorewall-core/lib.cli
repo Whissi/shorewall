@@ -3272,9 +3272,11 @@ show_interfaces() {
     local printed
 
     for f in ${VARDIR}/*.status; do
-	interface=$(basename $f)
-	echo "   Interface ${interface%.status} is $(interface_status $f)"
-	printed=Yes
+	if [ -f $f ]; then
+	    interface=$(basename $f)
+	    echo "   Interface ${interface%.status} is $(interface_status $f)"
+	    printed=Yes
+	fi
     done
 
     [ -n "$printed" ] && echo

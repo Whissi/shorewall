@@ -185,6 +185,9 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %helpers_aliases
 
 				       %actparms
+
+                                       PARMSMODIFIED
+                                       USEDCALLER
 				       
 		                       F_IPV4
 		                       F_IPV6
@@ -546,6 +549,7 @@ our %compiler_params;
 #
 our %actparms;
 our $parmsmodified;
+our $usedcaller;
 our $inline_matches;
 
 our $currentline;            # Current config file line image
@@ -595,6 +599,9 @@ use constant { MIN_VERBOSITY => -1,
 	       F_IPV4 => 4,
 	       F_IPV6 => 6,
 	     };
+
+use constant { PARMSMODIFIED => 1,
+               USEDCALLER    => 2 };
 
 our %validlevels;            # Valid log levels.
 
@@ -1045,6 +1052,7 @@ sub initialize( $;$$) {
 
     %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => ''  );
     $parmsmodified = 0;
+    $usedcaller    = 0;
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -2502,7 +2510,7 @@ sub evaluate_expression( $$$ ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    $var = numeric_value( $var ) if $var =~ /^\d/;
 	    $val = $var ? $actparms{$var} : $chain;
-	    $parmsmodified ||= $var eq 'caller';
+	    $usedcaller = USEDCALLER if $var eq 'caller';
 	    $expression = join_parts( $first, $val, $rest );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
 	}
@@ -2639,7 +2647,7 @@ sub process_compiler_directive( $$$$ ) {
 		      my $val = $actparms{$var} = evaluate_expression ( $expression,
 									$filename,
 									$linenumber );
-		      $parmsmodified = 1;
+		      $parmsmodified = PARMSMODIFIED;
 		  } else {
 		      $variables{$2} = evaluate_expression( $expression,
 							    $filename,
@@ -3174,11 +3182,13 @@ sub push_action_params( $$$$$$ ) {
     my ( $action, $chainref, $parms, $loglevel, $logtag, $caller ) = @_;
     my @parms = ( undef , split_list3( $parms , 'parameter' ) );
 
-    $actparms{modified} = $parmsmodified;
+    $actparms{modified}   = $parmsmodified;
+    $actparms{usedcaller} = $usedcaller;
 
     my %oldparms = %actparms;
 
     $parmsmodified = 0;
+    $usedcaller    = 0;
 
     %actparms = ();
 
@@ -3204,13 +3214,16 @@ sub push_action_params( $$$$$$ ) {
 
 #
 # Pop the action parameters using the passed hash reference
-# Return true of the popped parameters were modified
+# Return:
+#   1 if the popped parameters were modified
+#   2 if the action used @CALLER
 #
 sub pop_action_params( $ ) {
     my $oldparms       = shift;
     %actparms          = %$oldparms;
-    my $return         = $parmsmodified;
+    my $return         = $parmsmodified ? $parmsmodified : ( $usedcaller || 0 );
     ( $parmsmodified ) = delete $actparms{modified};
+    ( $usedcaller )    = delete $actparms{usedcaller};
     $return;
 }
 
@@ -3305,7 +3318,7 @@ sub expand_variables( \$ ) {
 	    $val = $variables{$var};
 	} elsif ( exists $actparms{$var} ) { 
 	    $val = $actparms{$var};
-	    $parmsmodified = 1 if $var eq 'caller';
+	    $usedcaller = USEDCALLER if $var eq 'caller';
 	} else {
 	    fatal_error "Undefined shell variable (\$$var)" unless $config{IGNOREUNKNOWNVARIABLES} || exists $config{$var};
 	}
@@ -3324,7 +3337,7 @@ sub expand_variables( \$ ) {
 	while ( $$lineref =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    my $val = $var ? $actparms{$var} : $actparms{chain};
-	    $parmsmodified = 1 if $var eq 'caller';
+	    $usedcaller = USEDCALLER if $var eq 'caller';
 	    $val = '' unless defined $val;
 	    $$lineref = join( '', $first , $val , $rest );
 	    fatal_error "Variable Expansion Loop" if ++$count > 100;

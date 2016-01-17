@@ -1935,40 +1935,39 @@ sub use_policy_action( $$ ) {
     my $ref = use_action( $normalized_target );
 
     if ( $ref ) {
-	my $result = process_action( $ref, $caller );
-
-	if ( $result & PARMSMODIFIED ) {
-	    delete $usedactions{$ref->{action}};
-	} elsif ( $result & USEDCALLER ) {
-	    #
-	    # The chain uses @CALLER but doesn't modify the action parameters.
-	    # We need to see if this chain has already called this action
-	    #
-	    my $renormalized_target = insert_caller( $normalized_target, $caller );
-	    my $ref1 = $usedactions{$renormalized_target};
-
-	    if ( $ref1 ) {
-		#
-		# It has -- use the prior chain
-		#
-		$ref = $ref1;
-		#
-		# We leave the new chain in place but delete it from %usedactions below
-		#
+	if ( my $result = process_action( $ref, $caller ) ) {
+	    if ( $result & PARMSMODIFIED ) {
+		delete $usedactions{$ref->{action}};
 	    } else {
 		#
-		# This is the first time that the current chain has invoked this action
+		# The chain uses @CALLER but doesn't modify the action parameters.
+		# We need to see if this chain has already called this action
 		#
-		$usedactions{$renormalized_target} = $ref;
+		my $renormalized_target = insert_caller( $normalized_target, $caller );
+
+		if ( my $ref1 = $usedactions{$renormalized_target} ) {
+		    #
+		    # It has -- use the prior chain
+		    #
+		    $ref = $ref1;
+		    #
+		    # We leave the new chain in place but delete it from %usedactions below
+		    #
+		} else {
+		    #
+		    # This is the first time that the current chain has invoked this action
+		    #
+		    $usedactions{$renormalized_target} = $ref;
+		    #
+		    # Swap the action member
+		    #
+		    $ref->{action} = $renormalized_target;
+		}
 		#
-		# Swap the action member
+		# Delete the usedactions entry with the original normalized key
 		#
-		$ref->{action} = $renormalized_target;
+		delete $usedactions{$normalized_target};
 	    }
-	    #
-	    # Delete the usedactions entry with the original normalized key
-	    #
-	    delete $usedactions{$normalized_target};
 	}
     } else {
 	$ref = $usedactions{$normalized_target};

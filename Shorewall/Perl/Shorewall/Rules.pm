@@ -1930,11 +1930,48 @@ sub process_actions() {
 # Create a policy action if it doesn't already exist
 #
 sub use_policy_action( $$ ) {
-    my $ref = use_action( $_[0] );
+    my ( $normalized_target, $caller ) = @_;
+
+    my $ref = use_action( $normalized_target );
+
     if ( $ref ) {
-	delete $usedactions{$ref->{action}} if process_action( $ref, $_[1] ) & PARMSMODIFIED;
+	my $result = process_action( $ref, $caller );
+
+	if ( $result & PARMSMODIFIED ) {
+	    delete $usedactions{$ref->{action}};
+	} elsif ( $result & USEDCALLER ) {
+	    #
+	    # The chain uses @CALLER but doesn't modify the action parameters.
+	    # We need to see if this chain has already called this action
+	    #
+	    my $renormalized_target = insert_caller( $normalized_target, $caller );
+	    my $ref1 = $usedactions{$renormalized_target};
+
+	    if ( $ref1 ) {
+		#
+		# It has -- use the prior chain
+		#
+		$ref = $ref1;
+		#
+		# We leave the new chain in place but delete it from %usedactions below
+		#
+	    } else {
+		#
+		# This is the first time that the current chain has invoked this action
+		#
+		$usedactions{$renormalized_target} = $ref;
+		#
+		# Swap the action member
+		#
+		$ref->{action} = $renormalized_target;
+	    }
+	    #
+	    # Delete the usedactions entry with the original normalized key
+	    #
+	    delete $usedactions{$normalized_target};
+	}
     } else {
-	$ref = $usedactions{$_[0]};
+	$ref = $usedactions{$normalized_target};
     }
 
     $ref;

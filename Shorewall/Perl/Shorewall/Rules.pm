@@ -79,6 +79,10 @@ use constant { NULL_SECTION          => 0x00,
 	       NEW_SECTION           => 0x40,
 	       DEFAULTACTION_SECTION => 0x80 };
 #
+# Number of elements in the action tuple
+#
+use constant { ACTION_TUPLE_ELEMENTS => 5 };
+#
 # Section => name function 
 #
 our %section_functions = ( ALL_SECTION ,        \&rules_chain,
@@ -424,6 +428,7 @@ sub print_policy($$$$) {
 sub use_policy_action( $$ );
 sub normalize_action( $$$ );
 sub normalize_action_name( $ );
+sub normalize_single_action( $ );
 
 sub process_default_action( $$$$ ) {
     my ( $originalpolicy, $policy, $default, $level ) = @_;
@@ -560,7 +565,7 @@ sub process_a_policy() {
 
     require_capability 'AUDIT_TARGET', ":audit", "s" if $audit;
 
-    my ( $policy, $default, $level, undef, $remainder ) = split( /:/, $originalpolicy, 5 );
+    my ( $policy, $default, $level, undef, $remainder ) = split( /:/, $originalpolicy, ACTION_TUPLE_ELEMENTS );
 
     fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
 
@@ -944,7 +949,7 @@ sub complete_standard_chain ( $$$$ ) {
 	( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' };
 	$stdchainref->{origin} = $policychainref->{origin};
     } elsif ( $defaultaction !~ /:/ ) {
-	$defaultaction = join(":", $defaultaction, 'none', '', '', '' );
+	$defaultaction = normalize_single_action( $defaultaction );
     }
 
 
@@ -1211,10 +1216,17 @@ sub normalize_action_name( $ ) {
 }
 
 #
+# Create an action tuple from a single target name
+#
+sub normalize_single_action( $ ) {
+    join(":", $_[0], 'none', '', '', '' );
+}
+
+#
 # Produce a recognizable target from a normalized action
 #
 sub external_name( $ ) {
-    my ( $target, $level, $tag, undef, $params ) = split /:/, shift, 5;
+    my ( $target, $level, $tag, undef, $params ) = split /:/, shift, ACTION_TUPLE_ELEMENTS;
 
     $target  = join( '', $target, '(', $params , ')' ) if $params;
     $target .= ":$level" if $level && $level ne 'none';
@@ -1344,7 +1356,7 @@ sub createsimpleactionchain( $ ) {
 sub createactionchain( $ ) {
     my $normalized = shift;
 
-    my ( $target, $level, $tag, $caller, $param ) = split /:/, $normalized, 5;
+    my ( $target, $level, $tag, $caller, $param ) = split /:/, $normalized, ACTION_TUPLE_ELEMENTS;
 
     assert( defined $param );
 
@@ -1704,7 +1716,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 sub process_action($$) {
     my ( $chainref, $caller ) = @_;
     my $wholeaction = $chainref->{action};
-    my ( $action, $level, $tag, undef, $param ) = split /:/, $wholeaction, 5;
+    my ( $action, $level, $tag, undef, $param ) = split /:/, $wholeaction, ACTION_TUPLE_ELEMENTS;
 
     if ( $targets{$action} & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;

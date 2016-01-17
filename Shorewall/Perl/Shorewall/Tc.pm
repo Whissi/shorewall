@@ -2954,7 +2954,9 @@ sub process_traffic_shaping() {
 
 			my ( $options, $redopts ) = ( '', $tcref->{redopts} );
 
-			while ( my ( $option, $type ) = each %validredoptions ) {
+			for my $option ( sort keys %validredoptions ) {
+			    my $type = $validredoptions{$option};
+
 			    if ( my $value = $redopts->{$option} ) {
 				if ( $type == RED_NONE ) {
 				    $options = join( ' ', $options, $option ) if $value;
@@ -2971,7 +2973,9 @@ sub process_traffic_shaping() {
 
 			my ( $options, $codelopts ) = ( '', $tcref->{codelopts} );
 
-			while ( my ( $option, $type ) = each %validcodeloptions ) {
+			for my $option ( sort keys %validcodeloptions ) {
+			    my $type = $validcodeloptions{$option};
+
 			    if ( my $value = $codelopts->{$option} ) {
 				if ( $type == CODEL_NONE ) {
 				    $options = join( ' ', $options, $option );

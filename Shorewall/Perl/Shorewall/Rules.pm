@@ -1712,6 +1712,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 #
 # Populate an action invocation chain. As new action tuples are encountered,
 # the function will be called recursively by process_rule().
+# 
+# Note that the first two parameters are passed by reference and may be
+# modified by this function.
 #
 sub process_action(\$\$$) {
     my ( $wholeactionref, $chainrefref, $caller ) = @_;
@@ -1795,17 +1798,16 @@ sub process_action(\$\$$) {
 
     #
     # Pop the action parameters
-    # Caller should delete record of this chain if the action parameters
-    # were modified (and this function returns true
     #
-    if ( my $result = pop_action_params( $oldparms ) ) {
+    if ( ( my $result = pop_action_params( $oldparms ) ) & PARMSMODIFIED ) {
 	#
-	# Modified parameters trumps USEDCALLER
+	# The action modified its parameters -- delete it from %usedactions
 	#
-	return PARMSMODIFIED if $result & PARMSMODIFIED;
+	delete $usedactions{$wholeaction};
+    } elsif ( $result & USEDCALLER ) {
 	#
 	# The chain uses @CALLER but doesn't modify the action parameters.
-	# We need to see if this chain has already called this action
+	# We need to see if this caller has already invoked this action
 	#
 	my $renormalized_action = insert_caller( $wholeaction, $caller );
 	my $chain1ref           = $usedactions{$renormalized_action};
@@ -1817,6 +1819,7 @@ sub process_action(\$\$$) {
 	    ${$chainrefref} = $chain1ref;
 	    #
 	    # We leave the new chain in place but delete it from %usedactions below
+	    # The optimizer will drop it from the final ruleset.
 	    #
 	} else {
 	    #
@@ -1824,7 +1827,7 @@ sub process_action(\$\$$) {
 	    #
 	    $usedactions{$renormalized_action} = $chainref;
 	    #
-	    # Swap the action member
+	    # Update the action member
 	    #
 	    $chainref->{action} = $renormalized_action;
 	}
@@ -1837,8 +1840,6 @@ sub process_action(\$\$$) {
 	#
 	${$wholeactionref} = $renormalized_action;
     }
-
-    0;
 }
 
 #
@@ -1976,7 +1977,7 @@ sub use_policy_action( $$ ) {
     my $ref = use_action( $normalized_target );
 
     if ( $ref ) {
-	delete $usedactions{$normalized_target} if process_action( $normalized_target, $ref, $caller );
+	process_action( $normalized_target, $ref, $caller );
     } else {
 	$ref = $usedactions{$normalized_target};
     }
@@ -2728,7 +2729,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     #
     # Handle actions
     #
-    my $delete_action = 0;
+    my $actionchain; #Name of the action chain
 
     if ( $actiontype & ACTION ) {
 	#
@@ -2744,18 +2745,29 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    #
 	    my $savestatematch = $statematch;
 	    $statematch        = '';
-
-	    $delete_action = process_action( $normalized_target, $ref, $chain );
+	    #
+	    # process_action may modify both $normalized_target and $ref!!!
+	    #
+	    process_action( $normalized_target, $ref, $chain );
+	    #
+	    # Capture the name of the action chain
+	    #
+	    $actionchain = $ref->{name};
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
 	    #
 	    #    - Refresh $actiontype
 	    #    - Create the associated nat and/or table chain if appropriate.
 	    #
-	    ensure_chain( 'nat', $ref->{name} ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
-	    ensure_chain( 'raw', $ref->{name} ) if ( $actiontype & HELPER );
+	    ensure_chain( 'nat', $actionchain ) if ( $actiontype = $targets{$basictarget} ) & NATRULE;
+	    ensure_chain( 'raw', $actionchain ) if ( $actiontype & HELPER );
 
 	    $statematch = $savestatematch;
+	} else {
+	    #
+	    # We've seen this tuple before
+	    #
+	    $actionchain = $usedactions{$normalized_target}->{name};
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.
@@ -2875,7 +2887,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 			    $ports,
 			    $sports,
 			    $sourceref,
-			    ( $actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
+			    ( $actiontype & ACTION ) ? $actionchain : '',
 			    $inchain ? $chain : '' ,
 			    $user ,
 			    $rule ,
@@ -2897,7 +2909,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 				     $proto,
 				     $ports,
 				     $origdest,
-				     ( $actiontype & ACTION ) ? $usedactions{$normalized_target}->{name} : '',
+				     ( $actiontype & ACTION ) ? $actionchain : '',
 				     $action,
 				     $sourceref,
 				     $inaction ? $chain : '',
@@ -2954,7 +2966,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     unless ( $actiontype & NATONLY ) {
 
 	if ( $actiontype & ACTION ) {
-	    $action = $usedactions{$normalized_target}{name};
+	    $action = $actionchain;
 	    $loglevel = '';
 	}
 
@@ -2984,8 +2996,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		     $usergenerated && ! $loglevel )
 	    unless unreachable_warning( $wildcard || $section == DEFAULTACTION_SECTION, $chainref );
     }
-
-    delete $usedactions{$normalized_target} if $delete_action & PARMSMODIFIED;	
 
     return 1;
 }

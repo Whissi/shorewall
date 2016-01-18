@@ -3221,9 +3221,9 @@ sub push_action_params( $$$$$$ ) {
 sub pop_action_params( $ ) {
     my $oldparms       = shift;
     %actparms          = %$oldparms;
-    my $return         = $parmsmodified ? $parmsmodified : ( $usedcaller || 0 );
-    ( $parmsmodified ) = delete $actparms{modified};
-    ( $usedcaller )    = delete $actparms{usedcaller};
+    my $return         = $parmsmodified | $usedcaller;
+    ( $parmsmodified ) = delete $actparms{modified}   || 0;
+    ( $usedcaller )    = delete $actparms{usedcaller} || 0;
     $return;
 }
 

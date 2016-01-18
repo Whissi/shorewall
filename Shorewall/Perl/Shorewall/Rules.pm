@@ -1713,9 +1713,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 # Populate an action invocation chain. As new action tuples are encountered,
 # the function will be called recursively by process_rule().
 #
-sub process_action($$) {
-    my ( $chainref, $caller ) = @_;
-    my $wholeaction = $chainref->{action};
+sub process_action(\$\$$) {
+    my ( $wholeactionref, $chainrefref, $caller ) = @_;
+    my $wholeaction = ${$wholeactionref};
+    my $chainref    = ${$chainrefref};
     my ( $action, $level, $tag, undef, $param ) = split /:/, $wholeaction, ACTION_TUPLE_ELEMENTS;
 
     if ( $targets{$action} & BUILTIN ) {
@@ -1797,7 +1798,49 @@ sub process_action($$) {
     # Caller should delete record of this chain if the action parameters
     # were modified (and this function returns true
     #
-    pop_action_params( $oldparms );
+    if ( my $result = pop_action_params( $oldparms ) ) {
+	if ( $result & PARMSMODIFIED ) {
+	    return PARMSMODIFIED;
+	} else {
+	    #
+	    # The chain uses @CALLER but doesn't modify the action parameters.
+	    # We need to see if this chain has already called this action
+	    #
+	    my $renormalized_action = insert_caller( $wholeaction, $caller );
+	    my $chain1ref           = $usedactions{$renormalized_action};
+
+	    if ( $chain1ref ) {
+		#
+		# It has -- use the prior chain
+		#
+		${$chainrefref} = $chain1ref;
+		#
+		# We leave the new chain in place but delete it from %usedactions below
+		#
+	    } else {
+		#
+		# This is the first time that the current chain has invoked this action
+		#
+		$usedactions{$renormalized_action} = $chainref;
+		#
+		# Swap the action member
+		#
+		$chainref->{action} = $renormalized_action;
+	    }
+	    #
+	    # Delete the usedactions entry with the original normalized key
+	    #
+	    delete $usedactions{$wholeaction};
+	    #
+	    # New normalized target
+	    #
+	    ${$wholeactionref} = $renormalized_action;
+
+	    return 0;
+	}
+    }
+
+    0;
 }
 
 #
@@ -1935,40 +1978,7 @@ sub use_policy_action( $$ ) {
     my $ref = use_action( $normalized_target );
 
     if ( $ref ) {
-	if ( my $result = process_action( $ref, $caller ) ) {
-	    if ( $result & PARMSMODIFIED ) {
-		delete $usedactions{$ref->{action}};
-	    } else {
-		#
-		# The chain uses @CALLER but doesn't modify the action parameters.
-		# We need to see if this chain has already called this action
-		#
-		my $renormalized_target = insert_caller( $normalized_target, $caller );
-
-		if ( my $ref1 = $usedactions{$renormalized_target} ) {
-		    #
-		    # It has -- use the prior chain
-		    #
-		    $ref = $ref1;
-		    #
-		    # We leave the new chain in place but delete it from %usedactions below
-		    #
-		} else {
-		    #
-		    # This is the first time that the current chain has invoked this action
-		    #
-		    $usedactions{$renormalized_target} = $ref;
-		    #
-		    # Swap the action member
-		    #
-		    $ref->{action} = $renormalized_target;
-		}
-		#
-		# Delete the usedactions entry with the original normalized key
-		#
-		delete $usedactions{$normalized_target};
-	    }
-	}
+	delete $usedactions{$normalized_target} if process_action( $normalized_target, $ref, $caller );
     } else {
 	$ref = $usedactions{$normalized_target};
     }
@@ -2737,41 +2747,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    my $savestatematch = $statematch;
 	    $statematch        = '';
 
-	    if ( ( $delete_action = process_action( $ref, $chain ) ) & USEDCALLER ) {
-		#
-		# The chain uses @CALLER but doesn't modify the action parameters.
-		# We need to see if this chain has already called this action
-		#
-		my $renormalized_target = insert_caller( $normalized_target, $chain );
-		my $ref1 = $usedactions{$renormalized_target};
-
-		if ( $ref1 ) {
-		    #
-		    # It has -- use the prior chain
-		    #
-		    $ref = $ref1;
-		    #
-		    # We leave the new chain in place but delete it from %usedactions below
-		    #
-		} else {
-		    #
-		    # This is the first time that the current chain has invoked this action
-		    #
-		    $usedactions{$renormalized_target} = $ref;
-		    #
-		    # Swap the action member
-		    #
-		    $ref->{action} = $renormalized_target;
-		}
-		#
-		# Delete the usedactions entry with the original normalized key
-		#
-		delete $usedactions{$normalized_target};
-		#
-		# New normalized target
-		#
-		$normalized_target = $renormalized_target;
-	    }    
+	    $delete_action = process_action( $normalized_target, $ref, $chain );
 	    #
 	    # Processing the action may determine that the action or one of it's dependents does NAT or HELPER, so:
 	    #

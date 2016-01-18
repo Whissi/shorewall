@@ -36,7 +36,7 @@ use strict;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_conntrack );
 our @EXPORT_OK = qw( handle_helper_rule );
-our $VERSION = '4.6_10';
+our $VERSION = 'MODULEVERSION';
 
 our %valid_ctevent = ( new        => 1,
 		       related    => 1,

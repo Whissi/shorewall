@@ -1799,45 +1799,43 @@ sub process_action(\$\$$) {
     # were modified (and this function returns true
     #
     if ( my $result = pop_action_params( $oldparms ) ) {
-	if ( $result & PARMSMODIFIED ) {
-	    return PARMSMODIFIED;
+	#
+	# Modified parameters trumps USEDCALLER
+	#
+	return PARMSMODIFIED if $result & PARMSMODIFIED;
+	#
+	# The chain uses @CALLER but doesn't modify the action parameters.
+	# We need to see if this chain has already called this action
+	#
+	my $renormalized_action = insert_caller( $wholeaction, $caller );
+	my $chain1ref           = $usedactions{$renormalized_action};
+
+	if ( $chain1ref ) {
+	    #
+	    # It has -- use the prior chain
+	    #
+	    ${$chainrefref} = $chain1ref;
+	    #
+	    # We leave the new chain in place but delete it from %usedactions below
+	    #
 	} else {
 	    #
-	    # The chain uses @CALLER but doesn't modify the action parameters.
-	    # We need to see if this chain has already called this action
+	    # This is the first time that the current chain has invoked this action
 	    #
-	    my $renormalized_action = insert_caller( $wholeaction, $caller );
-	    my $chain1ref           = $usedactions{$renormalized_action};
-
-	    if ( $chain1ref ) {
-		#
-		# It has -- use the prior chain
-		#
-		${$chainrefref} = $chain1ref;
-		#
-		# We leave the new chain in place but delete it from %usedactions below
-		#
-	    } else {
-		#
-		# This is the first time that the current chain has invoked this action
-		#
-		$usedactions{$renormalized_action} = $chainref;
-		#
-		# Swap the action member
-		#
-		$chainref->{action} = $renormalized_action;
-	    }
+	    $usedactions{$renormalized_action} = $chainref;
 	    #
-	    # Delete the usedactions entry with the original normalized key
+	    # Swap the action member
 	    #
-	    delete $usedactions{$wholeaction};
-	    #
-	    # New normalized target
-	    #
-	    ${$wholeactionref} = $renormalized_action;
-
-	    return 0;
+	    $chainref->{action} = $renormalized_action;
 	}
+	#
+	# Delete the usedactions entry with the original normalized key
+	#
+	delete $usedactions{$wholeaction};
+	#
+	# New normalized target
+	#
+	${$wholeactionref} = $renormalized_action;
     }
 
     0;

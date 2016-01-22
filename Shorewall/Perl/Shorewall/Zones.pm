@@ -91,6 +91,7 @@ our @EXPORT = ( qw( NOTHING
 		    find_interfaces_by_option
 		    find_interfaces_by_option1
 		    get_interface_option
+                    get_interface_origin
 		    interface_has_option
 		    set_interface_option
 		    set_interface_provider
@@ -149,6 +150,7 @@ use constant { IN_OUT     => 1,
 #                                                                             }
 #                                                                  hosts   => [ <net1> , <net2> , ... ]
 #                                                                  exclusions => [ <net1>, <net2>, ... ]
+#                                                                  origin   => <where defined>
 #                                                                }
 #                                                <interface2> => ...
 #                                              }
@@ -196,6 +198,7 @@ our %reservedName = ( all => 1,
 #                                     provider    => <Provider Name, if interface is associated with a provider>
 #                                     wildcard    => undef|1 # Wildcard Name
 #                                     zones       => { zone1 => 1, ... }
+#                                     origin      => <where defined>
 #                                   }
 #                 }
 #
@@ -890,7 +893,9 @@ sub add_group_to_zone($$$$$$)
     push @{$interfaceref}, { options => $options,
 			     hosts   => \@newnetworks,
 			     ipsec   => $type & IPSEC ? 'ipsec' : 'none' ,
-			     exclusions => \@exclusions };
+			     exclusions => \@exclusions ,
+			     origin  => shortlineinfo( '' ) ,
+                            };
 
     if ( $type != IPSEC ) {
 	my $optref = $interfaces{$interface}{options};
@@ -1394,6 +1399,7 @@ sub process_interface( $$ ) {
 						       zones      => {},
 						       origin     => shortlineinfo(''),
 						       wildcard   => $wildcard,
+						       origin     => shortlineinfo( '' ),
 						     };
 
     if ( $zone ) {
@@ -1858,6 +1864,22 @@ sub interface_has_option( $$\$ ) {
 }
 
 #
+# Return the origin for an interface
+#
+sub get_interface_origin( $ ) {
+    my ( $interface ) = @_;
+
+    my $ref = $interfaces{$interface};
+
+    return $ref->{origin} if $ref;
+
+    assert( $ref = known_interface( $interface ) );
+
+    $ref->{origin};
+
+}
+
+##
 # Set an option for an interface
 #
 sub set_interface_option( $$$ ) {
@@ -2182,11 +2204,12 @@ sub find_hosts_by_option( $ ) {
 	    for my $interface ( sort keys %$interfaceref ) {
 		my $arrayref = $interfaceref->{$interface};
 		for my $host ( @{$arrayref} ) {
-		    my $ipsec = $host->{ipsec};
+		    my $ipsec  = $host->{ipsec};
+		    my $origin = $host->{origin};
 		    unless ( $done{$interface} ) { 
 			if ( my $value = $host->{options}{$option} ) {
 			    for my $net ( @{$host->{hosts}} ) {
-				push @hosts, [ $interface, $ipsec , $net , $host->{exclusions}, $value ];
+				push @hosts, [ $interface, $ipsec , $net , $host->{exclusions}, $value, $origin ];
 			    }
 			}
 		    }
@@ -2213,7 +2236,7 @@ sub find_zone_hosts_by_option( $$ ) {
 		for my $host ( @{$arrayref} ) {
 		    if ( my $value = $host->{options}{$option} ) {
 			for my $net ( @{$host->{hosts}} ) {
-			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}, $value ];
+			    push @hosts, [ $interface, $host->{ipsec} , $net , $host->{exclusions}, $value, $host->{origin} ];
 			}
 		    }
 		}

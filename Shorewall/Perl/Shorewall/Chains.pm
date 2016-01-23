@@ -3742,6 +3742,8 @@ sub combine_dports {
 		my $comment      = $baseref->{comment} || '';
 		my $lastcomment  = $comment;
 		my $multi_sports = get_multi_sports( $baseref );
+		my $origin       = $baseref->{origin} || '';
+		my $lastorigin   = $origin;
 
 	      RULE:
 
@@ -3755,6 +3757,7 @@ sub combine_dports {
 			# We have a candidate
 			#
 			my $comment2 = $ruleref->{comment} || '';
+			my $origin2  = $ruleref->{origin}  || '';
 
 			last if $comment2 ne $lastcomment && length( $comment ) + length( $comment2 ) > 253;
 
@@ -3795,6 +3798,25 @@ sub combine_dports {
 			    $lastcomment = $comment2;
 			}
 
+			if ( $origin2 ) {
+			    if ( $origin ) {
+				$origin .= ", $origin2" unless $origin2 eq $lastorigin;
+			    } else {
+				$origin = 'Others and ';
+				$origin .= $origin2;
+			    }
+
+			    $lastorigin = $origin2;
+			} else {
+			    if ( $origin ) {
+				unless ( ( $origin2 = ' and others' ) eq $lastorigin ) {
+				    $origin .= $origin2;
+				}
+			    }
+
+			    $lastorigin = $origin2;
+			}
+
 			push @ports, split ',', $ports2;
 
 			trace( $chainref, 'D', $rulenum, $ruleref ) if $debug;
@@ -3828,6 +3850,7 @@ sub combine_dports {
 		    }
 
 		    $baseref->{comment} = $comment if $comment;
+		    $baseref->{origin}  = $origin  if $origin;
 
 		    trace ( $chainref, 'R', $basenum, $baseref ) if $debug;
 		}
@@ -7899,6 +7922,11 @@ sub emitr( $$ ) {
 	    # A rule
 	    #
 	    enter_cat_mode unless $mode == CAT_MODE;
+
+	    if ( my $origin = $ruleref->{origin} ) {
+		emit_unindented '# ' . $origin;
+	    }
+
 	    emit_unindented format_rule( $chainref, $ruleref );
 	} else {
 	    #

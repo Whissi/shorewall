@@ -1195,10 +1195,7 @@ sub currentlineinfo() {
 
 sub shortlineinfo1( $ ) {
     if ( $currentfile ) {
-	my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
-	$comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
-	$comment = '@@@ Filename Too Long @@@' if length $comment > 255;
-	$comment;
+	join( ':', $currentfilename, $currentlinenumber );
     } else {
 	#
 	# Alternate lineinfo may have been passed
@@ -1208,7 +1205,19 @@ sub shortlineinfo1( $ ) {
 }
 
 sub shortlineinfo( $ ) {
-    $config{TRACK_RULES} ? &shortlineinfo1( @_ ) : '';
+    if ( $config{TRACK_RULES} ) {
+	if ( $currentfile ) {
+	    my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
+	    $comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
+	    $comment = '@@@ Filename Too Long @@@' if length $comment > 255;
+	    $comment;
+	} else {
+	    #
+	    # Alternate lineinfo may have been passed
+	    #
+	    $_[0] || ''
+	}
+    }
 }
 
 sub handle_first_entry();

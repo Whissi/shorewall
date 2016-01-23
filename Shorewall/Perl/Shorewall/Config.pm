@@ -52,6 +52,7 @@ our @EXPORT = qw(
 		 assert
 		 currentlineinfo
 		 shortlineinfo
+		 shortlineinfo1
 		 clear_currentfilename
 		 validate_level
 
@@ -1192,20 +1193,22 @@ sub currentlineinfo() {
     }
 }
 
-sub shortlineinfo( $ ) {
-    if ( $config{TRACK_RULES} ) {
-	if ( $currentfile ) {
-	    my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
-	    $comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
-	    $comment = '@@@ Filename Too Long @@@' if length $comment > 255;
-	    $comment;
-	} else {
-	    #
-	    # Alternate lineinfo may have been passed
-	    #
-	    $_[0] || ''
-	}
+sub shortlineinfo1( $ ) {
+    if ( $currentfile ) {
+	my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
+	$comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
+	$comment = '@@@ Filename Too Long @@@' if length $comment > 255;
+	$comment;
+    } else {
+	#
+	# Alternate lineinfo may have been passed
+	#
+	$_[0] || ''
     }
+}
+
+sub shortlineinfo( $ ) {
+    $config{TRACK_RULES} ? &shortlineinfo1( @_ ) : '';
 }
 
 sub handle_first_entry();

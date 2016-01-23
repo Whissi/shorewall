@@ -47,6 +47,7 @@ our @EXPORT = ( qw(
 		    add_irule
 		    add_jump
 		    add_ijump
+		    add_ijump_extended
 		    insert_rule
 		    insert_irule
 		    clone_irule
@@ -642,6 +643,7 @@ use constant { UNIQUE      => 1,
 
 our %opttype = ( rule          => CONTROL,
 		 cmd           => CONTROL,
+		 origin        => CONTROL,
 
 		 dhcp          => CONTROL,
 
@@ -917,7 +919,7 @@ sub set_rule_option( $$$ ) {
 
 sub transform_rule( $;\$ ) {
     my ( $input, $completeref ) = @_;
-    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' };
+    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' , origin => shortlineinfo1( '' ) };
     my $simple   = 1;
     my $target   = '';
     my $jump     = '';
@@ -1473,7 +1475,7 @@ sub create_irule( $$$;@ ) {
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
 
-    my $ruleref       = { matches => [] };
+    my $ruleref = { matches => [] , origin => shortlineinfo1( '' ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1668,7 +1670,7 @@ sub insert_irule( $$$$;@ ) {
     my ( $chainref, $jump, $target, $number, @matches ) = @_;
 
     my $rulesref = $chainref->{rules};
-    my $ruleref  = {};
+    my $ruleref  = { origin => shortlineinfo1( '' ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -2388,8 +2390,8 @@ sub add_expanded_jump( $$$$ ) {
     add_reference( $chainref, $toref ) while --$splitcount > 0;
 }
 
-sub add_ijump_internal( $$$$;@ ) {
-    my ( $fromref, $jump, $to, $expandports, @matches ) = @_;
+sub add_ijump_internal( $$$$$;@ ) {
+    my ( $fromref, $jump, $to, $expandports, $origin, @matches ) = @_;
 
     return $dummyrule if $fromref->{complete};
 
@@ -2428,12 +2430,19 @@ sub add_ijump_internal( $$$$;@ ) {
 	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
     }
 
+    $ruleref->{origin} ||= $origin;
+
     $expandports ? handle_port_ilist( $fromref, $ruleref, 1 ) : push_irule( $fromref, $ruleref );
 }
 
 sub add_ijump( $$$;@ ) {
     my ( $fromref, $jump, $to, @matches ) = @_;
-    add_ijump_internal( $fromref, $jump, $to, 0, @matches );
+    add_ijump_internal( $fromref, $jump, $to, 0, '', @matches );
+}
+
+sub add_ijump_extended( $$$$;@ ) {
+    my ( $fromref, $jump, $to, $origin, @matches ) = @_;
+    add_ijump_internal( $fromref, $jump, $to, 0, $origin, @matches );
 }
 
 sub insert_ijump( $$$$;@ ) {
@@ -3697,7 +3706,9 @@ sub get_multi_sports( $ ) {
 # Return an array of keys for the passed rule. 'dport' and 'comment' are omitted;
 #
 sub get_keys( $ ) {
-    sort grep $_ ne 'dport' && $_ ne 'comment',  keys %{$_[0]};
+    my %skip = ( dport => 1, comment => 1, origin => 1 );
+
+    sort grep ! $skip{$_},  keys %{$_[0]};
 }
 
 #
@@ -3855,6 +3866,7 @@ sub delete_duplicates {
     my $lastrule  = @_;
     my $baseref   = pop;
     my $ruleref;
+    my %skip = ( comment => 1, origin => 1 );
 
     while ( @_ ) {
 	my $docheck;
@@ -3862,7 +3874,7 @@ sub delete_duplicates {
 
 	if ( $baseref->{mode} == CAT_MODE ) {
 	    my $ports1;
-	    my @keys1    = sort( grep $_ ne 'comment', keys( %$baseref ) );
+	    my @keys1    = sort( grep ! $skip{$_}, keys( %$baseref ) );
 	    my $rulenum  = @_;
 	    my $adjacent = 1;
 		
@@ -3874,7 +3886,7 @@ sub delete_duplicates {
 
 		    last unless $ruleref->{mode} == CAT_MODE;
 
-		    my @keys2 = sort(grep $_ ne 'comment', keys( %$ruleref ) );
+		    my @keys2 = sort(grep ! $skip{$_}, keys( %$ruleref ) );
 
 		    next unless @keys1 == @keys2 ;
 
@@ -3949,7 +3961,7 @@ sub get_conntrack( $ ) {
 # Return an array of keys for the passed rule. 'conntrack' and 'comment' are omitted;
 #
 sub get_keys1( $ ) {
-    sort grep $_ ne 'conntrack --ctstate' && $_ ne 'comment',  keys %{$_[0]};
+    sort grep $_ ne 'conntrack --ctstate' && $_ ne 'comment' && $_ ne 'origin',  keys %{$_[0]};
 }
 
 #
@@ -6375,7 +6387,7 @@ sub log_irule_limit( $$$$$$$@ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_ijump_internal ( $chainref, j => $prefix , 1, @matches );
+	add_ijump_internal ( $chainref, j => $prefix , 1, '', @matches );
     } else {
 	insert_ijump ( $chainref, j => $prefix, 0 , @matches );
     }

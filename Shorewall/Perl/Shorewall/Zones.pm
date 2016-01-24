@@ -1397,7 +1397,7 @@ sub process_interface( $$ ) {
 						       physical   => $physical ,
 						       base       => var_base( $physical ),
 						       zones      => {},
-						       origin     => shortlineinfo1(''),
+						       origin     => shortlineinfo1('') || shortlineinfo( '' ),
 						       wildcard   => $wildcard,
 						     };
 

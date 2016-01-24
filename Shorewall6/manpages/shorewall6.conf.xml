@@ -2295,7 +2295,8 @@ INLINE          -       -       -       ; -j REJECT
 
       <varlistentry>
         <term><emphasis role="bold">TRACK_RULES=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|Internal}</term>
 
         <listitem>
           <para>Added in Shorewall 4.5.20. If set to <emphasis
@@ -2306,8 +2307,14 @@ INLINE          -       -       -       ; -j REJECT
           added.</para>
 
           <para>Setting this option to <emphasis role="bold">Yes</emphasis>
-          requires the <firstterm>Comments</firstterm> capability in ip6tables
+          requires the <firstterm>Comments</firstterm> capability in iptables
           and kernel.</para>
+
+          <para>Beginning with Shorewall 5.0.5, the option may also be set to
+          <emphasis role="bold">Internal</emphasis>. That setting causes
+          similar comments to be added to the
+          <filename>.ip6tables-restore-input</filename> file, which is
+          normally created in <filename>/var/lib/shorewall</filename>6.</para>
         </listitem>
       </varlistentry>
 

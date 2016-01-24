@@ -732,6 +732,7 @@ sub initialize( $;$$) {
 		    RPFILTER_LOG_TAG        => '',
 		    INVALID_LOG_TAG         => '',
 		    UNTRACKED_LOG_TAG       => '',
+		    TRACK_RULES             => '',
 		  );
     #
     # From shorewall.conf file
@@ -1194,13 +1195,15 @@ sub currentlineinfo() {
 }
 
 sub shortlineinfo1( $ ) {
-    if ( $currentfile ) {
-	join( ':', $currentfilename, $currentlinenumber );
-    } else {
-	#
-	# Alternate lineinfo may have been passed
-	#
-	$_[0] || ''
+    if ( $globals{TRACK_RULES} ) {
+	if ( $currentfile ) {
+	    join( ':', $currentfilename, $currentlinenumber );
+	} else {
+	    #
+	    # Alternate lineinfo may have been passed
+	    #
+	    $_[0] || ''
+	}
     }
 }
 
@@ -5823,7 +5826,18 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
-    default_yes_no 'TRACK_RULES'                , '';
+
+    if ( supplied ( $val = $config{TRACK_RULES} ) ) {
+	if ( lc( $val ) eq 'internal' ) {
+	    $globals{TRACK_RULES} = 'Yes';
+	    $config{TRACK_RULES}  = '';
+	} else {
+	    default_yes_no 'TRACK_RULES'        , '';
+	}
+    } else {
+	default_yes_no 'TRACK_RULES'            , '';
+    }
+	    
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';

@@ -655,7 +655,7 @@ sub add_common_rules ( $ ) {
     setup_mss;
 
     if ( $config{FASTACCEPT} ) {
-	add_ijump( $filter_table->{OUTPUT} , j => 'ACCEPT', state_imatch $faststate )
+	add_ijump_extended( $filter_table->{OUTPUT} , j => 'ACCEPT', $origin{FASTACCEPT}, state_imatch $faststate )
     }
 
     my $policy   = $config{SFILTER_DISPOSITION};
@@ -663,6 +663,7 @@ sub add_common_rules ( $ ) {
     $tag         = $config{SFILTER_LOG_TAG};
     my $audit    = $policy =~ s/^A_//;
     my @ipsec    = have_ipsec ? ( policy => '--pol none --dir in' ) : ();
+    my $origin   = $origin{SFILTER_DISPOSITION};
 
     if ( $level || $audit ) {
 	#
@@ -670,18 +671,21 @@ sub add_common_rules ( $ ) {
 	#
 	$chainref = new_standard_chain 'sfilter';
 
-	log_rule_limit( $level,
-			$chainref,
-			$chainref->{name},
-			$policy,
-			$globals{LOGLIMIT},
-			$tag,
-			'add',
-			'' ) if $level ne '';
+	if ( $level ne '' ) {
+	    my $ruleref = log_rule_limit( $level,
+					  $chainref,
+					  $chainref->{name},
+					  $policy,
+					  $globals{LOGLIMIT},
+					  $tag,
+					  'add',
+				      '' );
+	    $ruleref->{origin} = $origin{SFILTER_LOG_LEVEL};
+	}
 
-	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
+	add_ijump_extended( $chainref, j => 'AUDIT', $origin, targetopts => '--type ' . lc $policy ) if $audit;
 
-	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
+	add_ijump_extended( $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy, $origin );
 
 	$target = 'sfilter';
     } else {
@@ -697,11 +701,22 @@ sub add_common_rules ( $ ) {
 	$chainref = new_standard_chain 'sfilter1';
 
 	add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
-	log_rule $level , $chainref , $policy , '' if $level ne '';
 
-	add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
+	if ( $level ne '' ) {
+	    my $ruleref = log_rule_limit( $level,
+					  $chainref,
+					  $chainref->{name},
+					  $policy,
+					  $globals{LOGLIMIT},
+					  $tag,
+					  'add',
+					  '' );
+	    $ruleref->{origin} = $origin;
+	}
 
-	add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
+	add_ijump_extended( $chainref, j => 'AUDIT', $origin{SFILTER_DISPOSITION}, targetopts => '--type ' . lc $policy ) if $audit;
+
+	add_ijump_extended( $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy, $origin );
 
 	$target1 = 'sfilter1';
     } else {
@@ -743,8 +758,8 @@ sub add_common_rules ( $ ) {
 	    }
 
 	    for ( option_chains( $interface ) ) {
-		add_ijump( $filter_table->{$_}, j => $dynamicref, @state ) if $dynamicref;
-		add_ijump( $filter_table->{$_}, j => 'ACCEPT', state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
+		add_ijump_extended( $filter_table->{$_}, j => $dynamicref, $origin{DYNAMIC_BLACKLIST}, @state ) if $dynamicref;
+		add_ijump_extended( $filter_table->{$_}, j => 'ACCEPT',    $origin{FASTACCEPT},        state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
 	    }
 	}
     }
@@ -765,6 +780,8 @@ sub add_common_rules ( $ ) {
 	$level    = $config{RPFILTER_LOG_LEVEL};
 	$tag      = $globals{RPFILTER_LOG_TAG};
 	$audit    = $policy =~ s/^A_//;
+	my $origin
+                  = $origin{RPFILTER_DISPOSITION};
 	
 	if ( $level || $audit ) {
 	    #
@@ -772,18 +789,21 @@ sub add_common_rules ( $ ) {
 	    #
 	    $chainref = ensure_mangle_chain 'rplog';
 
-	    log_rule_limit( $level,
-			    $chainref,
-			    $chainref->{name},
-			    $policy,
-			    $globals{LOGLIMIT},
-			    $tag,
-			    'add',
-			    '' ) if $level ne '';
+	    if ( $level ne '' ) {
+		my $ruleref = log_rule_limit( $level,
+					      $chainref,
+					      $chainref->{name},
+					      $policy,
+					      $globals{LOGLIMIT},
+					      $tag,
+					      'add',
+					      '' );
+		$ruleref->{origin} = $origin{RPFILTER_LOG_LEVEL};
+	    }
 
-	    add_ijump( $chainref, j => 'AUDIT', targetopts => '--type ' . lc $policy ) if $audit;
+	    add_ijump_extended( $chainref, j => 'AUDIT', $origin, targetopts => '--type ' . lc $policy ) if $audit;
 
-	    add_ijump $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy;
+	    add_ijump_extended( $chainref, g => $policy eq 'REJECT' ? 'reject' : $policy, $origin );
 
 	    $target = 'rplog';
 	} else {
@@ -808,11 +828,12 @@ sub add_common_rules ( $ ) {
 	    }
 	}
 
-	add_ijump( $rpfilterref,
-		   j        => $target,
-		   rpfilter => '--validmark --invert',
-		   state_imatch 'NEW,RELATED,INVALID',
-		   @ipsec
+	add_ijump_extended( $rpfilterref,
+			    j        => $target,
+			    $origin,
+			    rpfilter => '--validmark --invert',
+			    state_imatch 'NEW,RELATED,INVALID',
+			    @ipsec
 	    );
     }
 	    
@@ -832,19 +853,24 @@ sub add_common_rules ( $ ) {
 	$chainref = new_standard_chain 'smurfs';
 
 	my $smurfdest = $config{SMURF_DISPOSITION};
+	my $origin    = $origin{SMURF_DISPOSITION};
 
 	if ( supplied $config{SMURF_LOG_LEVEL} ) {
 	    my $smurfref = new_chain( 'filter', 'smurflog' );
 
-	    log_irule_limit( $config{SMURF_LOG_LEVEL},
-			     $smurfref,
-			     'smurfs' ,
-			     'DROP',
-			     $globals{LOGILIMIT},
-			     $globals{SMURF_LOG_TAG},
-			     'add' );
-	    add_ijump( $smurfref, j => 'AUDIT', targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
-	    add_ijump( $smurfref, j => 'DROP' );
+	    my $ruleref = log_irule_limit( $config{SMURF_LOG_LEVEL},
+					   $smurfref,
+					   'smurfs' ,
+					   'DROP',
+					   $globals{LOGILIMIT},
+					   $globals{SMURF_LOG_TAG},
+					   'add' );
+
+	    $ruleref->{origin} = $origin{SMURF_LOG_LEVEL};
+
+	    add_ijump_extended( $smurfref, j => 'AUDIT', $origin, targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
+
+	    add_ijump_extended( $smurfref, j => 'DROP' , $origin );
 
 	    $smurfdest = 'smurflog';
 	} else {
@@ -858,7 +884,7 @@ sub add_common_rules ( $ ) {
 		add_ijump $chainref , j => 'RETURN', s => '::';
 	    }
 
-	    add_ijump( $chainref, g => $smurfdest, addrtype => '--src-type BROADCAST' ) ;
+	    add_ijump_extended( $chainref, g => $smurfdest, $origin, addrtype => '--src-type BROADCAST' ) ;
 	} else {
 	    if ( $family == F_IPV4 ) {
 		add_commands $chainref, 'for address in $ALL_BCASTS; do';
@@ -867,15 +893,15 @@ sub add_common_rules ( $ ) {
 	    }
 
 	    incr_cmd_level $chainref;
-	    add_ijump( $chainref, g => $smurfdest, s => '$address' );
+	    add_ijump_extended( $chainref, g => $smurfdest, $origin, s => '$address' );
 	    decr_cmd_level $chainref;
 	    add_commands $chainref, 'done';
 	}
 
 	if ( $family == F_IPV4 ) {
-	    add_ijump( $chainref, g => $smurfdest, s => '224.0.0.0/4' );
+	    add_ijump_extended( $chainref, g => $smurfdest, $origin, s => '224.0.0.0/4' );
 	} else {
-	    add_ijump( $chainref, g => $smurfdest, s => IPv6_MULTICAST );
+	    add_ijump_extended( $chainref, g => $smurfdest, $origin, s => IPv6_MULTICAST );
 	}
 
 	my @state = have_capability( 'RAW_TABLE' ) ? state_imatch 'NEW,INVALID,UNTRACKED' : state_imatch 'NEW,INVALID';
@@ -974,6 +1000,7 @@ sub add_common_rules ( $ ) {
 	my $tag   = $globals{TCP_FLAGS_LOG_TAG};
 	my $disposition = $config{TCP_FLAGS_DISPOSITION};
 	my $audit = $disposition =~ /^A_/;
+	my $origin = $origin{TCP_FLAGS_DISPOSITION};
 
 	progress_message2 "$doing TCP Flags filtering...";
 
@@ -986,27 +1013,28 @@ sub add_common_rules ( $ ) {
 
 	    $globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
 
-	    log_rule_limit( $level,
-			    $logflagsref,
-			    'logflags',
-			    $disposition,
-			    $globals{LOGLIMIT},
-			    $tag,
-			    'add',
-			    ''
-			  );
+	    my $ruleref = log_rule_limit( $level,
+					  $logflagsref,
+					  'logflags',
+					  $disposition,
+					  $globals{LOGLIMIT},
+					  $tag,
+					  'add',
+					  '' );
+
+	    $ruleref->{origin} = $origin{TCP_FLAGS_LOG_LEVEL};
 
 	    $globals{LOGPARMS} = $savelogparms;
 
 	    if ( $audit ) {
 		$disposition =~ s/^A_//;
-		add_ijump( $logflagsref, j => 'AUDIT', targetopts => '--type ' . lc $disposition );
+		add_ijump_extended( $logflagsref, j => 'AUDIT', $origin, targetopts => '--type ' . lc $disposition );
 	    }
 
 	    if ( $disposition eq 'REJECT' ) {
-		add_ijump $logflagsref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
+		add_ijump_extended $logflagsref , j => 'REJECT', $origin, targetopts => '--reject-with tcp-reset', p => 6;
 	    } else {
-		add_ijump $logflagsref , j => $disposition;
+		add_ijump_extended $logflagsref , j => $disposition, $origin;
 	    }
 
 	    $disposition = 'logflags';
@@ -2246,17 +2274,19 @@ sub generate_matrix() {
 			 nat=>     [ qw/PREROUTING OUTPUT POSTROUTING/ ] ,
 			 filter=>  [ qw/INPUT FORWARD OUTPUT/ ] );
 
+	my $origin = $origin{LOGALLNEW};
+
 	for my $table ( qw/mangle nat filter/ ) {
 	    for my $chain ( @{$builtins{$table}} ) {
-		log_rule_limit
-		    $config{LOGALLNEW} ,
-		    $chain_table{$table}{$chain} ,
-		    $table ,
-		    $chain ,
-		    '' ,
-		    '' ,
-		    'insert' ,
-		    state_match('NEW');
+		my $ruleref = log_rule_limit( $config{LOGALLNEW} ,
+					      $chain_table{$table}{$chain} ,
+					      $table ,
+					      $chain ,
+					      '' ,
+					      '' ,
+					      'insert' ,
+					      state_match('NEW') );
+		$ruleref->{origin} = $origin;
 	    }
 	}
     }

@@ -53,6 +53,7 @@ our @EXPORT = qw(
 		 currentlineinfo
 		 shortlineinfo
 		 shortlineinfo1
+		 shortlineinfo2
 		 clear_currentfilename
 		 validate_level
 
@@ -175,6 +176,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $comment
 
 				       %config
+				       %origin
 				       %globals
 				       %config_files
 				       %shorewallrc
@@ -297,6 +299,10 @@ our %globals;
 # From shorewall.conf file - exported to other modules.
 #
 our %config;
+#
+# Linenumber in shorewall[6].conf where each option was specified
+#
+our %origin;
 #
 # Entries in shorewall.conf that have been renamed
 #
@@ -893,7 +899,10 @@ sub initialize( $;$$) {
 	  ZONE_BITS => undef,
 	);
 
-
+    #
+    # Line numbers in shorewall6.conf where options are specified
+    #
+    %origin = ();
     #
     # Valid log levels
     #
@@ -1194,17 +1203,16 @@ sub currentlineinfo() {
     }
 }
 
-sub shortlineinfo1( $ ) {
-    if ( $globals{TRACK_RULES} ) {
-	if ( $currentfile ) {
-	    join( ':', $currentfilename, $currentlinenumber );
-	} else {
-	    #
-	    # Alternate lineinfo may have been passed
-	    #
-	    $_[0] || ''
-	}
+sub shortlineinfo2() {
+    if ( $currentfile ) {
+	join( ':', $currentfilename, $currentlinenumber );
+    } else {
+	''
     }
+}
+
+sub shortlineinfo1( $ ) {
+    $globals{TRACK_RULES} ? $currentfile ? shortlineinfo2 : $_[0] || '' : '';
 }
 
 sub shortlineinfo( $ ) {
@@ -5052,6 +5060,8 @@ sub process_shorewall_conf( $$ ) {
 
 		    warning_message "Option $var=$val is deprecated"
 			if $deprecated{$var} && supplied $val && lc $config{$var} ne $deprecated{$var};
+
+		    $origin{$var} = shortlineinfo2;
 		} else {
 		    fatal_error "Unrecognized $product.conf entry";
 		}
@@ -5833,10 +5843,13 @@ sub get_configuration( $$$$ ) {
 	    $config{TRACK_RULES}  = '';
 	} else {
 	    default_yes_no 'TRACK_RULES'        , '';
+	    $globals{TRACK_RULES} = '';
 	}
     } else {
 	default_yes_no 'TRACK_RULES'            , '';
     }
+
+    %origin = () unless $globals{TRACK_RULES};
 	    
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';

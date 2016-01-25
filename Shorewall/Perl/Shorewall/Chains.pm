@@ -2302,6 +2302,7 @@ sub new_chain($$)
 		     references     => {},
 		     filtered       => 0,
 		     optflags       => 0,
+		     origin         => shortlineinfo1( '' ) || shortlineinfo( '' ),
 		   };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
@@ -2412,6 +2413,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	my ( $target ) = split ' ', $to;
 	$toref = $chain_table{$fromref->{table}}{$target};
 	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
+	$origin ||= $fromref->{origin} if $globals{TRACK_RULES};
     }
 
     #
@@ -2421,6 +2423,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
+	$origin ||= $toref->{origin} if $globals{TRACK_RULES};
 	$ruleref = create_irule ($fromref, $jump => $to, @matches );
     } else {
 	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
@@ -6233,12 +6236,14 @@ sub log_rule_limit( $$$$$$$$ ) {
     my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches ) = @_;
 
     my $prefix = '';
-    my $chain       = get_action_chain_name  || $chn;
-    my $disposition = get_action_disposition || $dispo;
+    my $chain            = get_action_chain_name  || $chn;
+    my $disposition      = get_action_disposition || $dispo;
+    my $original_matches = $matches;
+    my $ruleref;
 
     $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
 
-    return 1 if $level eq '';
+    return $dummyrule if $level eq '';
 
     $matches .= ' ' if $matches && substr( $matches, -1, 1 ) ne ' ';
 
@@ -6316,10 +6321,12 @@ sub log_rule_limit( $$$$$$$$ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_rule ( $chainref, $matches . $prefix , 1 );
+	$ruleref = add_rule ( $chainref, $matches . $prefix , $original_matches );
     } else {
-	insert_rule1 ( $chainref , 0 , $matches . $prefix );
+	$ruleref = insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
+
+    $ruleref;
 }
 
 sub log_irule_limit( $$$$$$$@ ) {
@@ -6329,6 +6336,7 @@ sub log_irule_limit( $$$$$$$@ ) {
     my %matches;
     my $chain       = get_action_chain_name  || $chn;
     my $disposition = get_action_disposition || $dispo;
+    my $original_matches = @matches;
 
     $level = validate_level $level; # Do this here again because this function can be called directly from user exits.
 
@@ -6410,7 +6418,7 @@ sub log_irule_limit( $$$$$$$@ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_ijump_internal ( $chainref, j => $prefix , 1, '', @matches );
+	add_ijump_internal ( $chainref, j => $prefix , $original_matches, '', @matches );
     } else {
 	insert_ijump ( $chainref, j => $prefix, 0 , @matches );
     }

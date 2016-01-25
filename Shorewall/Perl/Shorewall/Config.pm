@@ -5828,7 +5828,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
 
     if ( supplied ( $val = $config{TRACK_RULES} ) ) {
-	if ( lc( $val ) eq 'internal' ) {
+	if ( lc( $val ) eq 'file' ) {
 	    $globals{TRACK_RULES} = 'Yes';
 	    $config{TRACK_RULES}  = '';
 	} else {

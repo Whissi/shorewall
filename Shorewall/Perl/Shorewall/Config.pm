@@ -52,6 +52,8 @@ our @EXPORT = qw(
 		 assert
 		 currentlineinfo
 		 shortlineinfo
+		 shortlineinfo1
+		 shortlineinfo2
 		 clear_currentfilename
 		 validate_level
 
@@ -1209,8 +1211,24 @@ sub shortlineinfo2() {
     }
 }
 
+sub shortlineinfo1( $ ) {
+    $globals{TRACK_RULES} ? $currentfile ? shortlineinfo2 : $_[0] || '' : '';
+}
+
 sub shortlineinfo( $ ) {
-    ( $config{TRACK_RULES} ? shortlineinfo2 || $_[0] : $_[0] ) || '';
+    if ( $config{TRACK_RULES} ) {
+	if ( $currentfile ) {
+	    my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
+	    $comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
+	    $comment = '@@@ Filename Too Long @@@' if length $comment > 255;
+	    $comment;
+	} else {
+	    #
+	    # Alternate lineinfo may have been passed
+	    #
+	    $_[0] || ''
+	}
+    }
 }
 
 sub handle_first_entry();
@@ -5820,11 +5838,15 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
 
     if ( supplied ( $val = $config{TRACK_RULES} ) ) {
-	if ( lc( $val ) ne 'file' ) {
+	if ( lc( $val ) eq 'file' ) {
+	    $globals{TRACK_RULES} = 'Yes';
+	    $config{TRACK_RULES}  = '';
+	} else {
 	    default_yes_no 'TRACK_RULES'        , '';
+	    $globals{TRACK_RULES} = '';
 	}
     } else {
-	$config{TRACK_RULES} = '';
+	default_yes_no 'TRACK_RULES'            , '';
     }
 
     %origin = () unless $globals{TRACK_RULES};
@@ -5850,7 +5872,7 @@ sub get_configuration( $$$$ ) {
 	$config{REJECT_ACTION} = '';
     }
 
-    require_capability 'COMMENTS', 'TRACK_RULES=Yes', 's' if $config{TRACK_RULES} eq 'Yes';
+    require_capability 'COMMENTS', 'TRACK_RULES=Yes', 's' if $config{TRACK_RULES};
 
     default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
     default_yes_no 'USE_DEFAULT_RT'             , '';

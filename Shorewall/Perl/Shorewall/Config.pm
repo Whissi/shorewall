@@ -738,7 +738,6 @@ sub initialize( $;$$) {
 		    RPFILTER_LOG_TAG        => '',
 		    INVALID_LOG_TAG         => '',
 		    UNTRACKED_LOG_TAG       => '',
-		    TRACK_RULES             => '',
 		  );
     #
     # From shorewall.conf file
@@ -1212,11 +1211,11 @@ sub shortlineinfo2() {
 }
 
 sub shortlineinfo1( $ ) {
-    $globals{TRACK_RULES} ? $currentfile ? shortlineinfo2 : $_[0] || '' : '';
+    $config{TRACK_RULES} eq 'File' ? $currentfile ? shortlineinfo2 : $_[0] || '' : '';
 }
 
 sub shortlineinfo( $ ) {
-    if ( $config{TRACK_RULES} ) {
+    if ( $config{TRACK_RULES} eq 'Yes' ) {
 	if ( $currentfile ) {
 	    my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
 	    $comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
@@ -5839,8 +5838,7 @@ sub get_configuration( $$$$ ) {
 
     if ( supplied ( $val = $config{TRACK_RULES} ) ) {
 	if ( lc( $val ) eq 'file' ) {
-	    $globals{TRACK_RULES} = 'Yes';
-	    $config{TRACK_RULES}  = '';
+	    $config{TRACK_RULES}  = 'File';
 	} else {
 	    default_yes_no 'TRACK_RULES'        , '';
 	}
@@ -5848,7 +5846,7 @@ sub get_configuration( $$$$ ) {
 	$config{TRACK_RULES} = '';
     }
 
-    %origin = () unless $globals{TRACK_RULES};
+    %origin = () unless $config{TRACK_RULES} eq 'File';
     #
     # Ensure that all members of %origin have defined values
     #

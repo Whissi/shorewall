@@ -2413,7 +2413,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	my ( $target ) = split ' ', $to;
 	$toref = $chain_table{$fromref->{table}}{$target};
 	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
-	$origin ||= $fromref->{origin} if $globals{TRACK_RULES};
+	$origin ||= $fromref->{origin} if $config{TRACK_RULES} eq 'File';
     }
 
     #
@@ -2423,7 +2423,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	$origin ||= $toref->{origin} if $globals{TRACK_RULES};
+	$origin ||= $toref->{origin} if $config{TRACK_RULES} eq 'File';
 	$ruleref = create_irule ($fromref, $jump => $to, @matches );
     } else {
 	$ruleref = create_irule( $fromref, 'j' => $to, @matches );

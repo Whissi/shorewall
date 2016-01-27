@@ -2426,7 +2426,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	my ( $target ) = split ' ', $to;
 	$toref = $chain_table{$fromref->{table}}{$target};
 	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
-	$origin ||= $fromref->{origin} if $config{TRACK_RULES} eq 'File';
+	$origin ||= $fromref->{origin} if $config{TRACK_RULES};
     }
 
     #
@@ -2436,7 +2436,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	$origin ||= $toref->{origin} if $config{TRACK_RULES} eq 'File';
+	$origin ||= $toref->{origin} if $config{TRACK_RULES};
 	$ruleref = create_irule ($fromref, $jump => $to, @matches );
     } else {
 	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
@@ -2752,7 +2752,7 @@ sub ensure_manual_chain($) {
     $chainref;
 }
 
-sub log_irule_limit( $$$$$$$@ );
+sub log_irule_limit( $$$$$$$$@ );
 
 sub ensure_blacklog_chain( $$$$$ ) {
     my ( $target, $disposition, $level, $tag, $audit ) = @_;
@@ -2763,7 +2763,7 @@ sub ensure_blacklog_chain( $$$$$ ) {
 	$target =~ s/A_//;
 	$target = 'reject' if $target eq 'REJECT';
 
-	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , $tag, 'add' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , $tag, 'add', '' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
 	add_ijump( $logchainref, g => $target );
@@ -2778,7 +2778,7 @@ sub ensure_audit_blacklog_chain( $$$ ) {
     unless ( $filter_table->{A_blacklog} ) {
 	my $logchainref = new_manual_chain 'A_blacklog';
 
-	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' , '' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target );
 
@@ -4286,7 +4286,8 @@ sub logchain( $$$$$$ ) {
 		       $disposition ,
 		       [] ,
 		       $logtag,
-		       'add' );
+		       'add',
+	               '' );
 	add_jump( $logchainref, $target, 0, $exceptionrule );
     }
 
@@ -6245,8 +6246,8 @@ sub do_ipsec($$) {
 #
 # Generate a log message
 #
-sub log_rule_limit( $$$$$$$$ ) {
-    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches ) = @_;
+sub log_rule_limit( $$$$$$$$;$ ) {
+    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches, $origin ) = @_;
 
     my $prefix = '';
     my $chain            = get_action_chain_name  || $chn;
@@ -6339,11 +6340,13 @@ sub log_rule_limit( $$$$$$$$ ) {
 	$ruleref = insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
 
+    $ruleref->{origin} = $origin if $origin;
+
     $ruleref;
 }
 
-sub log_irule_limit( $$$$$$$@ ) {
-    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, @matches ) = @_;
+sub log_irule_limit( $$$$$$$$@ ) {
+    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $origin, @matches ) = @_;
 
     my $prefix = '';
     my %matches;
@@ -6431,7 +6434,7 @@ sub log_irule_limit( $$$$$$$@ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_ijump_internal ( $chainref, j => $prefix , $original_matches, '', @matches );
+	add_ijump_internal ( $chainref, j => $prefix , $original_matches, $origin, @matches );
     } else {
 	insert_ijump ( $chainref, j => $prefix, 0 , @matches );
     }
@@ -6446,7 +6449,7 @@ sub log_rule( $$$$ ) {
 sub log_irule( $$$;@ ) {
     my ( $level, $chainref, $disposition, @matches ) = @_;
 
-    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGILIMIT} , '', 'add', @matches;
+    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGILIMIT} , '', 'add', '', @matches;
 }
 
 #
@@ -7456,7 +7459,8 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
 			 $actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
 			 [] ,
 			 $logtag ,
-			 'add' )
+			 'add' ,
+			 '' )
 	    if $loglevel;
 	#
 	# Generate Final Rule

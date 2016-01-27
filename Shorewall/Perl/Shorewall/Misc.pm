@@ -673,17 +673,15 @@ sub add_common_rules ( $ ) {
 	#
 	$chainref = new_standard_chain 'sfilter';
 
-	if ( $level ne '' ) {
-	    my $ruleref = log_rule_limit( $level,
-					  $chainref,
-					  $chainref->{name},
-					  $policy,
-					  $globals{LOGLIMIT},
-					  $tag,
-					  'add',
-				      '' );
-	    $ruleref->{origin} = $origin{SFILTER_LOG_LEVEL};
-	}
+	log_rule_limit( $level,
+			$chainref,
+			$chainref->{name},
+			$policy,
+			$globals{LOGLIMIT},
+			$tag,
+			'add',
+			'',
+			$origin{SFILTER_LOG_LEVEL} ) if $level ne '';
 
 	add_ijump_extended( $chainref, j => 'AUDIT', $origin, targetopts => '--type ' . lc $policy ) if $audit;
 
@@ -704,17 +702,15 @@ sub add_common_rules ( $ ) {
 
 	add_ijump ( $chainref, j => 'RETURN', policy => '--pol ipsec --dir out' );
 
-	if ( $level ne '' ) {
-	    my $ruleref = log_rule_limit( $level,
-					  $chainref,
-					  $chainref->{name},
-					  $policy,
-					  $globals{LOGLIMIT},
-					  $tag,
-					  'add',
-					  '' );
-	    $ruleref->{origin} = $origin;
-	}
+	log_rule_limit( $level,
+			$chainref,
+			$chainref->{name},
+			$policy,
+			$globals{LOGLIMIT},
+			$tag,
+			'add',
+			'' ,
+			$origin ) if $level ne '';
 
 	add_ijump_extended( $chainref, j => 'AUDIT', $origin{SFILTER_DISPOSITION}, targetopts => '--type ' . lc $policy ) if $audit;
 
@@ -791,17 +787,15 @@ sub add_common_rules ( $ ) {
 	    #
 	    $chainref = ensure_mangle_chain 'rplog';
 
-	    if ( $level ne '' ) {
-		my $ruleref = log_rule_limit( $level,
-					      $chainref,
-					      $chainref->{name},
-					      $policy,
-					      $globals{LOGLIMIT},
-					      $tag,
-					      'add',
-					      '' );
-		$ruleref->{origin} = $origin{RPFILTER_LOG_LEVEL};
-	    }
+	    log_rule_limit( $level,
+			    $chainref,
+			    $chainref->{name},
+			    $policy,
+			    $globals{LOGLIMIT},
+			    $tag,
+			    'add',
+			    '',
+			    $origin{RPFILTER_LOG_LEVEL} );
 
 	    add_ijump_extended( $chainref, j => 'AUDIT', $origin, targetopts => '--type ' . lc $policy ) if $audit;
 
@@ -860,15 +854,14 @@ sub add_common_rules ( $ ) {
 	if ( supplied $config{SMURF_LOG_LEVEL} ) {
 	    my $smurfref = new_chain( 'filter', 'smurflog' );
 
-	    my $ruleref = log_irule_limit( $config{SMURF_LOG_LEVEL},
-					   $smurfref,
-					   'smurfs' ,
-					   'DROP',
-					   $globals{LOGILIMIT},
-					   $globals{SMURF_LOG_TAG},
-					   'add' );
-
-	    $ruleref->{origin} = $origin{SMURF_LOG_LEVEL};
+	    log_irule_limit( $config{SMURF_LOG_LEVEL},
+			     $smurfref,
+			     'smurfs' ,
+			     'DROP',
+			     $globals{LOGILIMIT},
+			     $globals{SMURF_LOG_TAG},
+			     'add',
+			     $origin{SMURF_LOG_LEVEL} );
 
 	    add_ijump_extended( $smurfref, j => 'AUDIT', $origin, targetopts => '--type drop' ) if $smurfdest eq 'A_DROP';
 
@@ -1015,16 +1008,15 @@ sub add_common_rules ( $ ) {
 
 	    $globals{LOGPARMS} = "$globals{LOGPARMS}--log-ip-options ";
 
-	    my $ruleref = log_rule_limit( $level,
-					  $logflagsref,
-					  'logflags',
-					  $disposition,
-					  $globals{LOGLIMIT},
-					  $tag,
-					  'add',
-					  '' );
-
-	    $ruleref->{origin} = $origin{TCP_FLAGS_LOG_LEVEL};
+	    log_rule_limit( $level,
+			    $logflagsref,
+			    'logflags',
+			    $disposition,
+			    $globals{LOGLIMIT},
+			    $tag,
+			    'add',
+			    '' ,
+			    $origin{TCP_FLAGS_LOG_LEVEL} );
 
 	    $globals{LOGPARMS} = $savelogparms;
 
@@ -1301,7 +1293,7 @@ sub setup_mac_lists( $ ) {
 
 	    run_user_exit2( 'maclog', $chainref );
 
-	    log_irule_limit $level, $chainref , $chain , $disposition, [], $tag, 'add' if $level ne '';
+	    log_irule_limit $level, $chainref , $chain , $disposition, [], $tag, 'add', '' if $level ne '';
 	    add_ijump $chainref, j => $target;
 	}
     }
@@ -2280,15 +2272,15 @@ sub generate_matrix() {
 
 	for my $table ( qw/mangle nat filter/ ) {
 	    for my $chain ( @{$builtins{$table}} ) {
-		my $ruleref = log_rule_limit( $config{LOGALLNEW} ,
-					      $chain_table{$table}{$chain} ,
-					      $table ,
-					      $chain ,
-					      '' ,
-					      '' ,
-					      'insert' ,
-					      state_match('NEW') );
-		$ruleref->{origin} = $origin;
+		log_rule_limit( $config{LOGALLNEW} ,
+				$chain_table{$table}{$chain} ,
+				$table ,
+				$chain ,
+				'' ,
+				'' ,
+				'insert' ,
+				state_match('NEW') ,
+				$origin );
 	    }
 	}
     }

@@ -5843,13 +5843,18 @@ sub get_configuration( $$$$ ) {
 	    $config{TRACK_RULES}  = '';
 	} else {
 	    default_yes_no 'TRACK_RULES'        , '';
-	    $globals{TRACK_RULES} = '';
 	}
     } else {
-	default_yes_no 'TRACK_RULES'            , '';
+	$config{TRACK_RULES} = '';
     }
 
     %origin = () unless $globals{TRACK_RULES};
+    #
+    # Ensure that all members of %origin have defined values
+    #
+    for ( keys %config ) {
+	$origin{$_} ||= '';
+    }
 	    
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';

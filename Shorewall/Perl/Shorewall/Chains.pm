@@ -1250,7 +1250,7 @@ sub set_irule_comment( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
     if ( $config{TRACK_RULES} eq 'Yes' ) {
-	$ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $comment;
+	$ruleref->{comment} = $ruleref->{origin} || $comment;
     } else {
 	$ruleref->{comment} = $comment;
     }
@@ -1489,7 +1489,7 @@ sub create_irule( $$$;@ ) {
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
 
-    my $ruleref = { matches => [] , origin => shortlineinfo( '' ) };
+    my $ruleref = { matches => [] , origin => shortlineinfo( $chainref->{origin} ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1684,7 +1684,7 @@ sub insert_irule( $$$$;@ ) {
     my ( $chainref, $jump, $target, $number, @matches ) = @_;
 
     my $rulesref = $chainref->{rules};
-    my $ruleref  = { origin => shortlineinfo( '' ) };
+    my $ruleref  = { origin => shortlineinfo( $chainref->{origin} ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -2446,7 +2446,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
     }
 
-    $ruleref->{origin} ||= $origin;
+    $ruleref->{origin} = $origin if $origin;
 
     $expandports ? handle_port_ilist( $fromref, $ruleref, 1 ) : push_irule( $fromref, $ruleref );
 }

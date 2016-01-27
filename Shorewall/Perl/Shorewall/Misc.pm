@@ -107,13 +107,15 @@ sub setup_ecn()
 	    fatal_error 'INTERFACE must be specified' if $interface eq '-';
 	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
 
-	    $interfaces{$interface} ||= shortlineinfo1( '' );
+	    my $lineinfo = shortlineinfo( '' );
+
+	    $interfaces{$interface} ||= $lineinfo;
 
 	    $hosts = ALLIP if $hosts eq '-';
 
 	    for my $host( split_list $hosts, 'address' ) {
 		validate_host( $host , 1 );
-		push @hosts, [ $interface, shortlineinfo1( '' ), $host ];
+		push @hosts, [ $interface, $lineinfo, $host ];
 	    }
 	}
 

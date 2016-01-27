@@ -919,7 +919,7 @@ sub set_rule_option( $$$ ) {
 
 sub transform_rule( $;\$ ) {
     my ( $input, $completeref ) = @_;
-    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' , origin => shortlineinfo1( '' ) };
+    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' , origin => shortlineinfo( '' ) };
     my $simple   = 1;
     my $target   = '';
     my $jump     = '';
@@ -1244,6 +1244,19 @@ sub add_commands ( $$;@ ) {
 }
 
 #
+# Set the comment member of an irule
+#
+sub set_irule_comment( $$ ) {
+    my ( $chainref, $ruleref ) = @_;
+
+    if ( $config{TRACK_RULES} eq 'Yes' ) {
+	$ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $comment;
+    } else {
+	$ruleref->{comment} = $comment;
+    }
+}
+
+#
 # Transform the passed rule and add it to the end of the passed chain's rule list.
 #
 sub push_rule( $$ ) {
@@ -1254,7 +1267,8 @@ sub push_rule( $$ ) {
     my $complete = 0;
     my $ruleref  = transform_rule( $_[1], $complete );
 
-    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
+    set_irule_comment( $chainref, $ruleref );
+
     $ruleref->{mode}    = CMD_MODE if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
 
     push @{$chainref->{rules}}, $ruleref;
@@ -1475,7 +1489,7 @@ sub create_irule( $$$;@ ) {
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
 
-    my $ruleref = { matches => [] , origin => shortlineinfo1( '' ) };
+    my $ruleref = { matches => [] , origin => shortlineinfo( '' ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1488,7 +1502,7 @@ sub create_irule( $$$;@ ) {
 	$ruleref->{target} = '';
     }
 
-    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $ruleref->{comment} || $comment;
+    set_irule_comment( $chainref, $ruleref );
 
     $iprangematch = 0;
 
@@ -1644,7 +1658,7 @@ sub insert_rule1($$$)
 
     my $ruleref = transform_rule( $rule );
 
-    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
+    set_irule_comment( $chainref, $ruleref );
 
     assert( ! ( $ruleref->{cmdlevel} = $chainref->{cmdlevel}) , $chainref->{name} );
     $ruleref->{mode} = CAT_MODE;
@@ -1670,7 +1684,7 @@ sub insert_irule( $$$$;@ ) {
     my ( $chainref, $jump, $target, $number, @matches ) = @_;
 
     my $rulesref = $chainref->{rules};
-    my $ruleref  = { origin => shortlineinfo1( '' ) };
+    my $ruleref  = { origin => shortlineinfo( '' ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1686,8 +1700,7 @@ sub insert_irule( $$$$;@ ) {
 	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
-    
-    $ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $ruleref->{comment} || $comment;
+    set_irule_comment( $chainref, $ruleref );
 
     if ( $number >= @$rulesref ) {
 	#
@@ -2302,7 +2315,7 @@ sub new_chain($$)
 		     references     => {},
 		     filtered       => 0,
 		     optflags       => 0,
-		     origin         => shortlineinfo1( '' ) || shortlineinfo( '' ),
+		     origin         => shortlineinfo( '' ),
 		   };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
@@ -7931,7 +7944,7 @@ sub emitr( $$ ) {
 	    #
 	    enter_cat_mode unless $mode == CAT_MODE;
 
-	    if ( my $origin = $ruleref->{origin} ) {
+	    if ( ( my $origin = $ruleref->{origin} ) && $config{TRACK_RULES} eq 'File' ) {
 		emit_unindented '# ' . $origin;
 	    }
 

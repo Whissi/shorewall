@@ -52,7 +52,6 @@ our @EXPORT = qw(
 		 assert
 		 currentlineinfo
 		 shortlineinfo
-		 shortlineinfo2
 		 clear_currentfilename
 		 validate_level
 

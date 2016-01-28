@@ -7835,10 +7835,10 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @input_interfaces ) {
 			    $chain1ref = $input_chains{$interface};
-			    my $ruleref = add_ijump ( $chainref ,
-						      j => $chain1ref->{name},
-						      @input_interfaces > 1 ? imatch_source_dev( $interface ) : () );
-			    $ruleref->{comment} = interface_origin( $interface ) if @{$chain1ref->{rules}} && $config{TRACK_RULES} eq 'Yes';
+			    add_ijump_extended ( $chainref ,
+						 j => $chain1ref->{name},
+						 interface_origin( $interface ) ,
+						 @input_interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			}
 		    }
 		} else {
@@ -7851,7 +7851,10 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @forward_interfaces ) {
 			    $chain1ref = $forward_chains{$interface};
-			    add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () )->{comment} = interface_origin( $interface ) if  @{$chain1ref->{rules}};
+			    add_ijump_extended( $chainref ,
+						j => $chain1ref->{name},
+						interface_origin( $interface ) ,
+						@forward_interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			}
 		    }
 		}

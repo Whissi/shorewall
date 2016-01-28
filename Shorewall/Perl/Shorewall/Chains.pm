@@ -1249,7 +1249,9 @@ sub add_commands ( $$;@ ) {
 sub set_irule_comment( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
-    if ( $config{TRACK_RULES} eq 'Yes' ) {
+    our $rule_comments;
+
+    if ( $rule_comments ) {
 	$ruleref->{comment} = $ruleref->{origin} || $comment;
     } else {
 	$ruleref->{comment} = $comment;
@@ -2409,7 +2411,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 
     return $dummyrule if $fromref->{complete};
 
-    our $splitcount;
+    our ( $splitcount, $file_comments, $rule_comments );
 
     my $toref;
     my $ruleref;
@@ -2426,7 +2428,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	my ( $target ) = split ' ', $to;
 	$toref = $chain_table{$fromref->{table}}{$target};
 	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
-	$origin ||= $fromref->{origin} if $config{TRACK_RULES};
+	$origin ||= $fromref->{origin} if $file_comments || $rule_comments;
     }
 
     #
@@ -2436,7 +2438,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	$origin ||= $toref->{origin} if $config{TRACK_RULES};
+	$origin ||= $toref->{origin} if $file_comments || $rule_comments;
 	$ruleref = create_irule ($fromref, $jump => $to, @matches );
     } else {
 	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
@@ -2992,6 +2994,9 @@ sub initialize_chain_table($) {
     $globals{iLOGLIMIT} =
 	( $ruleref->{hashlimit} ? [ hashlimit => $ruleref->{hashlimit} ] :
 	  $ruleref->{limit}     ? [ limit     => $ruleref->{limit}     ] : [] );
+
+    our $file_comments = $config{TRACK_RULES} eq 'File';
+    our $rule_comments = $config{TRACK_RULES} eq 'Yes';
 }
 
 #
@@ -7943,6 +7948,8 @@ sub enter_cmd_mode() {
 sub emitr( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
+    our $file_comments;
+
     assert( $chainref );
 
     if ( $ruleref ) {
@@ -7952,7 +7959,7 @@ sub emitr( $$ ) {
 	    #
 	    enter_cat_mode unless $mode == CAT_MODE;
 
-	    if ( $config{TRACK_RULES} eq 'File' && ( my $origin = $ruleref->{origin} ) ) {
+	    if ( $file_comments && ( my $origin = $ruleref->{origin} ) ) {
 		emit_unindented '# ' . $origin;
 	    }
 
@@ -7966,7 +7973,7 @@ sub emitr( $$ ) {
 	    if ( exists $ruleref->{cmd} ) {
 		emit join( '', '    ' x $ruleref->{cmdlevel}, $ruleref->{cmd} );
 	    } else {
-		if ( $config{TRACK_RULES} eq 'File' && ( my $origin = $ruleref->{origin} ) ) {
+		if ( $file_comments && ( my $origin = $ruleref->{origin} ) ) {
 		    emit join( '', '    ' x $ruleref->{cmdlevel} , '# ' , $origin );
 		}
 		#

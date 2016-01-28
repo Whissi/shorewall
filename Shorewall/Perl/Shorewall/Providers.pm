@@ -650,7 +650,7 @@ sub process_a_provider( $ ) {
 
     $balance = $default_balance unless $balance;
 
-    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
+    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$interface};
 
     if ( $duplicate ne '-' ) {
 	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};

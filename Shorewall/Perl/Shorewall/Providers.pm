@@ -144,20 +144,21 @@ sub setup_route_marking() {
 	    my $interface = $providerref->{interface};
 	    my $physical  = $providerref->{physical};
 	    my $mark      = $providerref->{mark};
+	    my $origin    = $providerref->{origin};
 
 	    unless ( $marked_interfaces{$interface} ) {
-		add_ijump $mangle_table->{PREROUTING} , j => $chainref,  i => $physical,     mark => "--mark 0/$mask";
-		add_ijump $mangle_table->{PREROUTING} , j => $chainref1, i => "! $physical", mark => "--mark  $mark/$mask";
-		add_ijump $mangle_table->{OUTPUT}     , j => $chainref2,                     mark => "--mark  $mark/$mask";
+		add_ijump_extended $mangle_table->{PREROUTING} , j => $chainref,  $origin, i => $physical,     mark => "--mark 0/$mask";
+		add_ijump_extended $mangle_table->{PREROUTING} , j => $chainref1, $origin, i => "! $physical", mark => "--mark  $mark/$mask";
+		add_ijump_extended $mangle_table->{OUTPUT}     , j => $chainref2, $origin,                     mark => "--mark  $mark/$mask";
 		$marked_interfaces{$interface} = 1;
 	    }
 
 	    if ( $providerref->{shared} ) {
 		add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
+		add_ijump_extended $chainref, j => 'MARK', $origin, targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
 		decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	    } else {
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface );
+		add_ijump_extended $chainref, j => 'MARK', $origin, targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface );
 	    }
 	}
 
@@ -699,6 +700,7 @@ sub process_a_provider( $ ) {
 			   persistent_routes => [],
 			   routedests        => {} ,
 			   persistent        => $persistent,
+			   origin            => shortlineinfo( '' ),
 			 };
 
     $provider_interfaces{$interface} = $table unless $shared;

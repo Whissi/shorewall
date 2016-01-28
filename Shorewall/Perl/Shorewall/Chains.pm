@@ -7835,9 +7835,10 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @input_interfaces ) {
 			    $chain1ref = $input_chains{$interface};
-			    add_ijump ( $chainref ,
-					j => $chain1ref->{name},
-					@input_interfaces > 1 ? imatch_source_dev( $interface ) : () )->{comment} = interface_origin( $interface ) if @{$chain1ref->{rules}};
+			    my $ruleref = add_ijump ( $chainref ,
+						      j => $chain1ref->{name},
+						      @input_interfaces > 1 ? imatch_source_dev( $interface ) : () );
+			    $ruleref->{comment} = interface_origin( $interface ) if @{$chain1ref->{rules}} && $config{TRACK_RULES} eq 'Yes';
 			}
 		    }
 		} else {

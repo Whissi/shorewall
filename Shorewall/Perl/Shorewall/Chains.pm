@@ -3724,7 +3724,7 @@ sub get_multi_sports( $ ) {
 }
 
 #
-# Return an array of keys for the passed rule. 'dport' and 'comment' are omitted;
+# Return an array of keys for the passed rule. 'dport', 'comment', and 'origin' are omitted;
 #
 sub get_keys( $ ) {
     my %skip = ( dport => 1, comment => 1, origin => 1 );
@@ -4002,10 +4002,12 @@ sub get_conntrack( $ ) {
 }
 
 #
-# Return an array of keys for the passed rule. 'conntrack' and 'comment' are omitted;
+# Return an array of keys for the passed rule. 'conntrack',  'comment' & origin are omitted;
 #
 sub get_keys1( $ ) {
-    sort grep $_ ne 'conntrack --ctstate' && $_ ne 'comment' && $_ ne 'origin',  keys %{$_[0]};
+    my %skip = ( comment => 1, origin => 1 , 'conntrack --ctstate' => 1 );
+
+    sort grep ! $skip{$_},  keys %{$_[0]};
 }
 
 #

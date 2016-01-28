@@ -7952,7 +7952,7 @@ sub emitr( $$ ) {
 	    #
 	    enter_cat_mode unless $mode == CAT_MODE;
 
-	    if ( ( my $origin = $ruleref->{origin} ) && $config{TRACK_RULES} eq 'File' ) {
+	    if ( $config{TRACK_RULES} eq 'File' && ( my $origin = $ruleref->{origin} ) ) {
 		emit_unindented '# ' . $origin;
 	    }
 
@@ -7966,6 +7966,9 @@ sub emitr( $$ ) {
 	    if ( exists $ruleref->{cmd} ) {
 		emit join( '', '    ' x $ruleref->{cmdlevel}, $ruleref->{cmd} );
 	    } else {
+		if ( $config{TRACK_RULES} eq 'File' && ( my $origin = $ruleref->{origin} ) ) {
+		    emit join( '', '    ' x $ruleref->{cmdlevel} , '# ' , $origin );
+		}
 		#
 		# Must preserve quotes in the rule
 		#

@@ -6350,7 +6350,7 @@ sub log_rule_limit( $$$$$$$$;$ ) {
 	$ruleref = insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
 
-    $ruleref->{origin} = $origin if $origin;
+    $ruleref->{origin} = $origin ||= $chainref->{origin} if reftype $ruleref;
 
     $ruleref;
 }

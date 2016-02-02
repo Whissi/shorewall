@@ -1028,7 +1028,7 @@ sub finish_chain_section ($$$) {
 
     for ( qw( ESTABLISHED RELATED INVALID UNTRACKED ) ) {
 	if ( $state{$_} ) {
-	    my ( $char, $level, $tag, $target ) = @{$statetable{$_}};
+	    my ( $char, $level, $tag, $target , $origin, $level_origin ) = @{$statetable{$_}};
 	    my $twochains = substr( $chainref->{name}, 0, 1 ) eq $char;
 
 	    if ( $twochains || $level || $target ne 'ACCEPT' ) {
@@ -1048,17 +1048,18 @@ sub finish_chain_section ($$$) {
 				    $globals{LOGLIMIT},
 				    $tag ,
 				    'add' ,
-				    '');
+				    '',
+				    $level_origin );
 
 		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
 
-		    add_ijump( $chain2ref, g => $target ) if $target;
+		    add_ijump_extended( $chain2ref, g => $target , $origin ) if $target;
 
 		    $target = $chain2ref->{name} unless $twochains;
 		}
 
 		if ( $twochains ) {
-		    add_ijump $chainref, g => $target if $target;
+		    add_ijump_extended $chainref, g => $target , $origin if $target;
 		    delete $state{$_};
 		    last;
 		}
@@ -1073,7 +1074,7 @@ sub finish_chain_section ($$$) {
 			delete $state{ESTABLISHED};
 		    }
 
-		    add_ijump( $chainref, j => $target, state_imatch $_ );
+		    add_ijump_extended( $chainref, j => $target, $origin, state_imatch $_ );
 		}
 
 		delete $state{$_};
@@ -3454,9 +3455,9 @@ sub process_rules() {
     # Populate the state table
     #
     %statetable          = ( ESTABLISHED => [ '^', '',                           '',                          'ACCEPT' ] ,
-			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_LOG_TAG},   $globals{RELATED_TARGET}  ] ,
-			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_LOG_TAG},   $globals{INVALID_TARGET} ] ,
-			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_LOG_TAG}, $globals{UNTRACKED_TARGET} ] ,
+			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_LOG_TAG},   $globals{RELATED_TARGET}   , $origin{RELATED_DISPOSITION}   , $origin{RELATED_LOG_LEVEL} ] ,
+			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_LOG_TAG},   $globals{INVALID_TARGET}   , $origin{INVALID_DISPOSITION}   , $origin{INVALID_LOG_LEVEL} ] ,
+			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_LOG_TAG}, $globals{UNTRACKED_TARGET} , $origin{UNTRACKED_DISPOSITION} , $origin{UNTRACKED_LOG_LEVEL} ] ,
 			   );
     %section_states = ( BLACKLIST_SECTION ,  $globals{BLACKLIST_STATES},
 			ESTABLISHED_SECTION, 'ESTABLISHED',

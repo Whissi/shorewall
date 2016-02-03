@@ -1254,6 +1254,8 @@ sub set_irule_comment( $$ ) {
 
     our $rule_comments;
 
+    $ruleref->{origin} ||= $chainref->{origin};
+
     if ( $rule_comments ) {
 	$ruleref->{comment} = $ruleref->{origin} || $comment;
     } else {
@@ -6350,7 +6352,7 @@ sub log_rule_limit( $$$$$$$$;$ ) {
 	$ruleref = insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
 
-    $ruleref->{origin} = $origin ||= $chainref->{origin} if reftype $ruleref;
+    $ruleref->{origin} = $origin if reftype( $ruleref ) && $origin;
 
     $ruleref;
 }

@@ -1,9 +1,9 @@
 #
-# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Rules.pm
+# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Rules.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011,2012,2013 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -975,7 +975,8 @@ sub setup_syn_flood_chains() {
 			     'DROP',
 			     @{$globals{LOGILIMIT}} ? $globals{LOGILIMIT} : [ limit => "--limit 5/min --limit-burst 5" ] ,
 			    '' ,
-			    'add' )
+			    'add',
+			     ''  )
 		if $level ne '';
 	    add_ijump $synchainref, j => 'DROP';
 	}
@@ -1027,7 +1028,7 @@ sub finish_chain_section ($$$) {
 
     for ( qw( ESTABLISHED RELATED INVALID UNTRACKED ) ) {
 	if ( $state{$_} ) {
-	    my ( $char, $level, $tag, $target ) = @{$statetable{$_}};
+	    my ( $char, $level, $tag, $target , $origin, $level_origin ) = @{$statetable{$_}};
 	    my $twochains = substr( $chainref->{name}, 0, 1 ) eq $char;
 
 	    if ( $twochains || $level || $target ne 'ACCEPT' ) {
@@ -1047,17 +1048,18 @@ sub finish_chain_section ($$$) {
 				    $globals{LOGLIMIT},
 				    $tag ,
 				    'add' ,
-				    '');
+				    '',
+				    $level_origin );
 
 		    $target = ensure_audit_chain( $target ) if ( $targets{$target} || 0 ) & AUDIT;
 
-		    add_ijump( $chain2ref, g => $target ) if $target;
+		    add_ijump_extended( $chain2ref, g => $target , $origin ) if $target;
 
 		    $target = $chain2ref->{name} unless $twochains;
 		}
 
 		if ( $twochains ) {
-		    add_ijump $chainref, g => $target if $target;
+		    add_ijump_extended $chainref, g => $target , $origin if $target;
 		    delete $state{$_};
 		    last;
 		}
@@ -1072,7 +1074,7 @@ sub finish_chain_section ($$$) {
 			delete $state{ESTABLISHED};
 		    }
 
-		    add_ijump( $chainref, j => $target, state_imatch $_ );
+		    add_ijump_extended( $chainref, j => $target, $origin, state_imatch $_ );
 		}
 
 		delete $state{$_};
@@ -1547,11 +1549,11 @@ sub dropBcast( $$$$ ) {
 
     if ( have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
-	    log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', addrtype => '--dst-type BROADCAST' );
+	    log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', addrtype => '--dst-type BROADCAST' );
 	    if ( $family == F_IPV4 ) {
-		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => '224.0.0.0/4' );
+		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => '224.0.0.0/4' );
 	    } else {
-		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => IPv6_MULTICAST );
+		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => IPv6_MULTICAST );
 	    }
 	}
 
@@ -1564,17 +1566,17 @@ sub dropBcast( $$$$ ) {
 	}
 
 	incr_cmd_level $chainref;
-	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => '$address' ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => '$address' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '$address';
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
-	log_irule_limit $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => '224.0.0.0/4' if $level ne '';
+	log_irule_limit $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => '224.0.0.0/4' if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
-	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', d => IPv6_MULTICAST ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => IPv6_MULTICAST ) if $level ne '';
 	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
     }
 }
@@ -1586,8 +1588,8 @@ sub allowBcast( $$$$ ) {
 
     if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
-	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', addrtype => '--dst-type BROADCAST' );
-	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => '224.0.0.0/4' );
+	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', addrtype => '--dst-type BROADCAST' );
+	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', ''. d => '224.0.0.0/4' );
 	}
 
 	add_ijump $chainref, j => $target, addrtype => '--dst-type BROADCAST';
@@ -1599,17 +1601,17 @@ sub allowBcast( $$$$ ) {
 	}
 
 	incr_cmd_level $chainref;
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => '$address' ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', d => '$address' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '$address';
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
 
     if ( $family == F_IPV4 ) {
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', d => '224.0.0.0/4' ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', d => '224.0.0.0/4' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add',  d => IPv6_MULTICAST ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add',  '', d => IPv6_MULTICAST ) if $level ne '';
 	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
     }
 }
@@ -1619,7 +1621,7 @@ sub dropNotSyn ( $$$$ ) {
 
     my $target = require_audit( 'DROP', $audit );
 
-    log_irule_limit( $level, $chainref, 'dropNotSyn' , 'DROP', [], $tag, 'add', p => '6 ! --syn' ) if $level ne '';
+    log_irule_limit( $level, $chainref, 'dropNotSyn' , 'DROP', [], $tag, 'add', '', p => '6 ! --syn' ) if $level ne '';
     add_ijump $chainref , j => $target, p => '6 ! --syn';
 }
 
@@ -1634,7 +1636,7 @@ sub rejNotSyn ( $$$$ ) {
 	$target = require_audit( 'REJECT' , $audit );
     }
 
-    log_irule_limit( $level, $chainref, 'rejNotSyn' , 'REJECT', [], $tag, 'add', p => '6 ! --syn' ) if $level ne '';
+    log_irule_limit( $level, $chainref, 'rejNotSyn' , 'REJECT', [], $tag, 'add', '', p => '6 ! --syn' ) if $level ne '';
     add_ijump $chainref , j => $target, p => '6 ! --syn';
 }
 
@@ -1650,8 +1652,8 @@ sub allowinUPnP ( $$$$ ) {
     my $target = require_audit( 'ACCEPT', $audit );
 
     if ( $level ne '' ) {
-	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', p => '17 --dport 1900' );
-	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', p => '6 --dport 49152' );
+	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', '', p => '17 --dport 1900' );
+	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', '', p => '6 --dport 49152' );
     }
 
     add_ijump $chainref, j => $target, p => '17 --dport 1900';
@@ -1688,7 +1690,7 @@ sub Limit( $$$$ ) {
 
     if ( $level ne '' ) {
 	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_irule_limit( $level, $xchainref, $param[0], 'DROP', [], $tag, 'add' );
+	log_irule_limit( $level, $xchainref, $param[0], 'DROP', [], $tag, 'add' , '' );
 	add_ijump $xchainref, j => 'DROP';
 	add_ijump $chainref,  j => $xchainref, recent => "--name $set --update --seconds $param[2] --hitcount $count";
     } else {
@@ -3453,9 +3455,9 @@ sub process_rules() {
     # Populate the state table
     #
     %statetable          = ( ESTABLISHED => [ '^', '',                           '',                          'ACCEPT' ] ,
-			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_LOG_TAG},   $globals{RELATED_TARGET}  ] ,
-			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_LOG_TAG},   $globals{INVALID_TARGET} ] ,
-			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_LOG_TAG}, $globals{UNTRACKED_TARGET} ] ,
+			     RELATED     => [ '+', $config{RELATED_LOG_LEVEL},   $globals{RELATED_LOG_TAG},   $globals{RELATED_TARGET}   , $origin{RELATED_DISPOSITION}   , $origin{RELATED_LOG_LEVEL} ] ,
+			     INVALID     => [ '_', $config{INVALID_LOG_LEVEL},   $globals{INVALID_LOG_TAG},   $globals{INVALID_TARGET}   , $origin{INVALID_DISPOSITION}   , $origin{INVALID_LOG_LEVEL} ] ,
+			     UNTRACKED   => [ '&', $config{UNTRACKED_LOG_LEVEL}, $globals{UNTRACKED_LOG_TAG}, $globals{UNTRACKED_TARGET} , $origin{UNTRACKED_DISPOSITION} , $origin{UNTRACKED_LOG_LEVEL} ] ,
 			   );
     %section_states = ( BLACKLIST_SECTION ,  $globals{BLACKLIST_STATES},
 			ESTABLISHED_SECTION, 'ESTABLISHED',

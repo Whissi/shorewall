@@ -1,9 +1,9 @@
 #
-# Shorewall 4.5 -- /usr/share/shorewall/Shorewall/Chains.pm
+# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Chains.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011,2012,2013 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -623,9 +623,12 @@ our %ipset_exists;
 #                       Omitted, if target is ''.
 #         target     => Rule target, if jump is 'j' or 'g'.
 #         targetopts => Target options. Only included if non-empty
+#         matches    => List of matches in the rule
 #         <option>   => iptables/ip6tables -A options (e.g., i => eth0)
 #         <match>    => iptables match. Value may be a scalar or array.
 #                       if an array, multiple "-m <match>"s will be generated
+#         <origin>   => configuration file and line number that generated the rule
+#                       May be empty.
 #    }
 #
 # The following constants and hash are used to classify keys in a rule hash
@@ -919,7 +922,7 @@ sub set_rule_option( $$$ ) {
 
 sub transform_rule( $;\$ ) {
     my ( $input, $completeref ) = @_;
-    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' , origin => shortlineinfo1( '' ) };
+    my $ruleref  = { mode => CAT_MODE, matches => [], target => '' , origin => shortlineinfo( '' ) };
     my $simple   = 1;
     my $target   = '';
     my $jump     = '';
@@ -1244,6 +1247,21 @@ sub add_commands ( $$;@ ) {
 }
 
 #
+# Set the comment member of an irule
+#
+sub set_irule_comment( $$ ) {
+    my ( $chainref, $ruleref ) = @_;
+
+    our $rule_comments;
+
+    if ( $rule_comments ) {
+	$ruleref->{comment} = $ruleref->{origin} || $comment;
+    } else {
+	$ruleref->{comment} = $comment;
+    }
+}
+
+#
 # Transform the passed rule and add it to the end of the passed chain's rule list.
 #
 sub push_rule( $$ ) {
@@ -1254,7 +1272,8 @@ sub push_rule( $$ ) {
     my $complete = 0;
     my $ruleref  = transform_rule( $_[1], $complete );
 
-    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
+    set_irule_comment( $chainref, $ruleref );
+
     $ruleref->{mode}    = CMD_MODE if $ruleref->{cmdlevel} = $chainref->{cmdlevel};
 
     push @{$chainref->{rules}}, $ruleref;
@@ -1475,7 +1494,7 @@ sub create_irule( $$$;@ ) {
 
     ( $target, my $targetopts ) = split ' ', $target, 2;
 
-    my $ruleref = { matches => [] , origin => shortlineinfo1( '' ) };
+    my $ruleref = { matches => [] , origin => shortlineinfo( $chainref->{origin} ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1488,7 +1507,7 @@ sub create_irule( $$$;@ ) {
 	$ruleref->{target} = '';
     }
 
-    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $ruleref->{comment} || $comment;
+    set_irule_comment( $chainref, $ruleref );
 
     $iprangematch = 0;
 
@@ -1644,7 +1663,7 @@ sub insert_rule1($$$)
 
     my $ruleref = transform_rule( $rule );
 
-    $ruleref->{comment} = shortlineinfo($chainref->{origin}) || $comment;
+    set_irule_comment( $chainref, $ruleref );
 
     assert( ! ( $ruleref->{cmdlevel} = $chainref->{cmdlevel}) , $chainref->{name} );
     $ruleref->{mode} = CAT_MODE;
@@ -1670,7 +1689,7 @@ sub insert_irule( $$$$;@ ) {
     my ( $chainref, $jump, $target, $number, @matches ) = @_;
 
     my $rulesref = $chainref->{rules};
-    my $ruleref  = { origin => shortlineinfo1( '' ) };
+    my $ruleref  = { origin => shortlineinfo( $chainref->{origin} ) };
 
     $ruleref->{mode} = ( $ruleref->{cmdlevel} = $chainref->{cmdlevel} ) ? CMD_MODE : CAT_MODE;
 
@@ -1686,8 +1705,7 @@ sub insert_irule( $$$$;@ ) {
 	$chainref->{optflags} |= push_matches( $ruleref, @matches );
     }
 
-    
-    $ruleref->{comment} = shortlineinfo( $chainref->{origin} ) || $ruleref->{comment} || $comment;
+    set_irule_comment( $chainref, $ruleref );
 
     if ( $number >= @$rulesref ) {
 	#
@@ -2302,7 +2320,7 @@ sub new_chain($$)
 		     references     => {},
 		     filtered       => 0,
 		     optflags       => 0,
-		     origin         => shortlineinfo1( '' ) || shortlineinfo( '' ),
+		     origin         => shortlineinfo( '' ),
 		   };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
@@ -2396,7 +2414,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 
     return $dummyrule if $fromref->{complete};
 
-    our $splitcount;
+    our ( $splitcount, $file_comments, $rule_comments );
 
     my $toref;
     my $ruleref;
@@ -2413,7 +2431,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	my ( $target ) = split ' ', $to;
 	$toref = $chain_table{$fromref->{table}}{$target};
 	fatal_error "Unknown rule target ($to)" unless $toref || $builtin_target{$target};
-	$origin ||= $fromref->{origin} if $globals{TRACK_RULES};
+	$origin ||= $fromref->{origin} if $file_comments || $rule_comments;
     }
 
     #
@@ -2423,7 +2441,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$toref->{referenced} = 1;
 	add_reference $fromref, $toref;
 	$jump = 'j' unless have_capability 'GOTO_TARGET';
-	$origin ||= $toref->{origin} if $globals{TRACK_RULES};
+	$origin ||= $toref->{origin} if $file_comments || $rule_comments;
 	$ruleref = create_irule ($fromref, $jump => $to, @matches );
     } else {
 	$ruleref = create_irule( $fromref, 'j' => $to, @matches );
@@ -2433,7 +2451,7 @@ sub add_ijump_internal( $$$$$;@ ) {
 	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
     }
 
-    $ruleref->{origin} ||= $origin;
+    $ruleref->{origin} = $origin if $origin;
 
     $expandports ? handle_port_ilist( $fromref, $ruleref, 1 ) : push_irule( $fromref, $ruleref );
 }
@@ -2739,7 +2757,7 @@ sub ensure_manual_chain($) {
     $chainref;
 }
 
-sub log_irule_limit( $$$$$$$@ );
+sub log_irule_limit( $$$$$$$$@ );
 
 sub ensure_blacklog_chain( $$$$$ ) {
     my ( $target, $disposition, $level, $tag, $audit ) = @_;
@@ -2750,7 +2768,7 @@ sub ensure_blacklog_chain( $$$$$ ) {
 	$target =~ s/A_//;
 	$target = 'reject' if $target eq 'REJECT';
 
-	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , $tag, 'add' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , $tag, 'add', '' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target ) if $audit;
 	add_ijump( $logchainref, g => $target );
@@ -2765,7 +2783,7 @@ sub ensure_audit_blacklog_chain( $$$ ) {
     unless ( $filter_table->{A_blacklog} ) {
 	my $logchainref = new_manual_chain 'A_blacklog';
 
-	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' );
+	log_irule_limit( $level , $logchainref , 'blacklst' , $disposition , $globals{LOGILIMIT} , '', 'add' , '' );
 
 	add_ijump( $logchainref, j => 'AUDIT', targetopts => '--type ' . lc $target );
 
@@ -2979,6 +2997,9 @@ sub initialize_chain_table($) {
     $globals{iLOGLIMIT} =
 	( $ruleref->{hashlimit} ? [ hashlimit => $ruleref->{hashlimit} ] :
 	  $ruleref->{limit}     ? [ limit     => $ruleref->{limit}     ] : [] );
+
+    our $file_comments = $config{TRACK_RULES} eq 'File';
+    our $rule_comments = $config{TRACK_RULES} eq 'Yes';
 }
 
 #
@@ -3706,7 +3727,7 @@ sub get_multi_sports( $ ) {
 }
 
 #
-# Return an array of keys for the passed rule. 'dport' and 'comment' are omitted;
+# Return an array of keys for the passed rule. 'dport', 'comment', and 'origin' are omitted;
 #
 sub get_keys( $ ) {
     my %skip = ( dport => 1, comment => 1, origin => 1 );
@@ -3984,10 +4005,12 @@ sub get_conntrack( $ ) {
 }
 
 #
-# Return an array of keys for the passed rule. 'conntrack' and 'comment' are omitted;
+# Return an array of keys for the passed rule. 'conntrack',  'comment' & origin are omitted;
 #
 sub get_keys1( $ ) {
-    sort grep $_ ne 'conntrack --ctstate' && $_ ne 'comment' && $_ ne 'origin',  keys %{$_[0]};
+    my %skip = ( comment => 1, origin => 1 , 'conntrack --ctstate' => 1 );
+
+    sort grep ! $skip{$_},  keys %{$_[0]};
 }
 
 #
@@ -4273,7 +4296,8 @@ sub logchain( $$$$$$ ) {
 		       $disposition ,
 		       [] ,
 		       $logtag,
-		       'add' );
+		       'add',
+	               '' );
 	add_jump( $logchainref, $target, 0, $exceptionrule );
     }
 
@@ -6232,8 +6256,8 @@ sub do_ipsec($$) {
 #
 # Generate a log message
 #
-sub log_rule_limit( $$$$$$$$ ) {
-    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches ) = @_;
+sub log_rule_limit( $$$$$$$$;$ ) {
+    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches, $origin ) = @_;
 
     my $prefix = '';
     my $chain            = get_action_chain_name  || $chn;
@@ -6326,11 +6350,13 @@ sub log_rule_limit( $$$$$$$$ ) {
 	$ruleref = insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
 
+    $ruleref->{origin} = $origin ||= $chainref->{origin} if reftype $ruleref;
+
     $ruleref;
 }
 
-sub log_irule_limit( $$$$$$$@ ) {
-    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, @matches ) = @_;
+sub log_irule_limit( $$$$$$$$@ ) {
+    my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $origin, @matches ) = @_;
 
     my $prefix = '';
     my %matches;
@@ -6418,7 +6444,7 @@ sub log_irule_limit( $$$$$$$@ ) {
     }
 
     if ( $command eq 'add' ) {
-	add_ijump_internal ( $chainref, j => $prefix , $original_matches, '', @matches );
+	add_ijump_internal ( $chainref, j => $prefix , $original_matches, $origin, @matches );
     } else {
 	insert_ijump ( $chainref, j => $prefix, 0 , @matches );
     }
@@ -6433,7 +6459,7 @@ sub log_rule( $$$$ ) {
 sub log_irule( $$$;@ ) {
     my ( $level, $chainref, $disposition, @matches ) = @_;
 
-    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGILIMIT} , '', 'add', @matches;
+    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGILIMIT} , '', 'add', '', @matches;
 }
 
 #
@@ -7443,7 +7469,8 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
 			 $actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
 			 [] ,
 			 $logtag ,
-			 'add' )
+			 'add' ,
+			 '' )
 	    if $loglevel;
 	#
 	# Generate Final Rule
@@ -7818,9 +7845,10 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @input_interfaces ) {
 			    $chain1ref = $input_chains{$interface};
-			    add_ijump ( $chainref ,
-					j => $chain1ref->{name},
-					@input_interfaces > 1 ? imatch_source_dev( $interface ) : () )->{comment} = interface_origin( $interface ) if @{$chain1ref->{rules}};
+			    add_ijump_extended ( $chainref ,
+						 j => $chain1ref->{name},
+						 interface_origin( $interface ) ,
+						 @input_interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			}
 		    }
 		} else {
@@ -7833,7 +7861,10 @@ sub add_interface_options( $ ) {
 		    } else {
 			for my $interface ( @forward_interfaces ) {
 			    $chain1ref = $forward_chains{$interface};
-			    add_ijump ( $chainref , j => $chain1ref->{name}, @forward_interfaces > 1 ? imatch_source_dev( $interface ) : () )->{comment} = interface_origin( $interface ) if  @{$chain1ref->{rules}};
+			    add_ijump_extended( $chainref ,
+						j => $chain1ref->{name},
+						interface_origin( $interface ) ,
+						@forward_interfaces > 1 ? imatch_source_dev( $interface ) : () );
 			}
 		    }
 		}
@@ -7922,6 +7953,8 @@ sub enter_cmd_mode() {
 sub emitr( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
+    our $file_comments;
+
     assert( $chainref );
 
     if ( $ruleref ) {
@@ -7931,7 +7964,7 @@ sub emitr( $$ ) {
 	    #
 	    enter_cat_mode unless $mode == CAT_MODE;
 
-	    if ( my $origin = $ruleref->{origin} ) {
+	    if ( $file_comments && ( my $origin = $ruleref->{origin} ) ) {
 		emit_unindented '# ' . $origin;
 	    }
 
@@ -7945,6 +7978,9 @@ sub emitr( $$ ) {
 	    if ( exists $ruleref->{cmd} ) {
 		emit join( '', '    ' x $ruleref->{cmdlevel}, $ruleref->{cmd} );
 	    } else {
+		if ( $file_comments && ( my $origin = $ruleref->{origin} ) ) {
+		    emit join( '', '    ' x $ruleref->{cmdlevel} , '# ' , $origin );
+		}
 		#
 		# Must preserve quotes in the rule
 		#

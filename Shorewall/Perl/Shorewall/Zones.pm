@@ -894,7 +894,7 @@ sub add_group_to_zone($$$$$$)
 			     hosts   => \@newnetworks,
 			     ipsec   => $type & IPSEC ? 'ipsec' : 'none' ,
 			     exclusions => \@exclusions ,
-			     origin  => shortlineinfo1( '' ) ,
+			     origin  => shortlineinfo( '' ) ,
                             };
 
     if ( $type != IPSEC ) {
@@ -1397,7 +1397,7 @@ sub process_interface( $$ ) {
 						       physical   => $physical ,
 						       base       => var_base( $physical ),
 						       zones      => {},
-						       origin     => shortlineinfo1('') || shortlineinfo( '' ),
+						       origin     => shortlineinfo( '' ),
 						       wildcard   => $wildcard,
 						     };
 

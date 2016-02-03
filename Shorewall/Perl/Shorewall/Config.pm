@@ -1,9 +1,9 @@
 #
-# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Config.pm
+# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010,2011,2012,2013 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -52,8 +52,6 @@ our @EXPORT = qw(
 		 assert
 		 currentlineinfo
 		 shortlineinfo
-		 shortlineinfo1
-		 shortlineinfo2
 		 clear_currentfilename
 		 validate_level
 
@@ -738,7 +736,6 @@ sub initialize( $;$$) {
 		    RPFILTER_LOG_TAG        => '',
 		    INVALID_LOG_TAG         => '',
 		    UNTRACKED_LOG_TAG       => '',
-		    TRACK_RULES             => '',
 		  );
     #
     # From shorewall.conf file
@@ -1211,23 +1208,25 @@ sub shortlineinfo2() {
     }
 }
 
-sub shortlineinfo1( $ ) {
-    $globals{TRACK_RULES} ? $currentfile ? shortlineinfo2 : $_[0] || '' : '';
-}
-
 sub shortlineinfo( $ ) {
-    if ( $config{TRACK_RULES} ) {
+    if ( my $track = $config{TRACK_RULES} ) {
 	if ( $currentfile ) {
-	    my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
-	    $comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
-	    $comment = '@@@ Filename Too Long @@@' if length $comment > 255;
-	    $comment;
+	    if ( $track eq 'Yes' ) {
+		my $comment = '@@@ '. join( ':', $currentfilename, $currentlinenumber ) . ' @@@';
+		$comment = '@@@ ' . join( ':' , basename($currentfilename), $currentlinenumber) . ' @@@' if length $comment > 255;
+		$comment = '@@@ Filename Too Long @@@' if length $comment > 255;
+		$comment;
+	    } else {
+		join( ':', $currentfilename, $currentlinenumber );
+	    }
 	} else {
 	    #
 	    # Alternate lineinfo may have been passed
 	    #
 	    $_[0] || ''
 	}
+    } else {
+	'';
     }
 }
 
@@ -5839,17 +5838,21 @@ sub get_configuration( $$$$ ) {
 
     if ( supplied ( $val = $config{TRACK_RULES} ) ) {
 	if ( lc( $val ) eq 'file' ) {
-	    $globals{TRACK_RULES} = 'Yes';
-	    $config{TRACK_RULES}  = '';
+	    $config{TRACK_RULES}  = 'File';
 	} else {
 	    default_yes_no 'TRACK_RULES'        , '';
-	    $globals{TRACK_RULES} = '';
 	}
     } else {
-	default_yes_no 'TRACK_RULES'            , '';
+	$config{TRACK_RULES} = '';
     }
 
-    %origin = () unless $globals{TRACK_RULES};
+    %origin = () unless $config{TRACK_RULES} eq 'File';
+    #
+    # Ensure that all members of %origin have defined values
+    #
+    for ( keys %config ) {
+	$origin{$_} ||= '';
+    }
 	    
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';

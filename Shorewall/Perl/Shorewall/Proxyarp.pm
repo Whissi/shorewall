@@ -1,9 +1,9 @@
 #
-# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Proxyarp.pm
+# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Proxyarp.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2011,2011 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #

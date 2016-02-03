@@ -1,5 +1,5 @@
 #
-# Shorewall 4.5 -- /usr/share/shorewall/Shorewall/ARP.pm
+# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/ARP.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #

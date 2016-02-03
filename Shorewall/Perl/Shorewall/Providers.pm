@@ -1,9 +1,9 @@
 #
-# Shorewall 4.4 -- /usr/share/shorewall/Shorewall/Providers.pm
+# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Providers.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007,2008,2009,2010.2011,2012 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #
@@ -144,20 +144,21 @@ sub setup_route_marking() {
 	    my $interface = $providerref->{interface};
 	    my $physical  = $providerref->{physical};
 	    my $mark      = $providerref->{mark};
+	    my $origin    = $providerref->{origin};
 
 	    unless ( $marked_interfaces{$interface} ) {
-		add_ijump $mangle_table->{PREROUTING} , j => $chainref,  i => $physical,     mark => "--mark 0/$mask";
-		add_ijump $mangle_table->{PREROUTING} , j => $chainref1, i => "! $physical", mark => "--mark  $mark/$mask";
-		add_ijump $mangle_table->{OUTPUT}     , j => $chainref2,                     mark => "--mark  $mark/$mask";
+		add_ijump_extended $mangle_table->{PREROUTING} , j => $chainref,  $origin, i => $physical,     mark => "--mark 0/$mask";
+		add_ijump_extended $mangle_table->{PREROUTING} , j => $chainref1, $origin, i => "! $physical", mark => "--mark  $mark/$mask";
+		add_ijump_extended $mangle_table->{OUTPUT}     , j => $chainref2, $origin,                     mark => "--mark  $mark/$mask";
 		$marked_interfaces{$interface} = 1;
 	    }
 
 	    if ( $providerref->{shared} ) {
 		add_commands( $chainref, qq(if [ -n "$providerref->{mac}" ]; then) ), incr_cmd_level( $chainref ) if $providerref->{optional};
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
+		add_ijump_extended $chainref, j => 'MARK', $origin, targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface ), mac => "--mac-source $providerref->{mac}";
 		decr_cmd_level( $chainref ), add_commands( $chainref, "fi\n" ) if $providerref->{optional};
 	    } else {
-		add_ijump $chainref, j => 'MARK', targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface );
+		add_ijump_extended $chainref, j => 'MARK', $origin, targetopts => "--set-mark $providerref->{mark}${exmask}", imatch_source_dev( $interface );
 	    }
 	}
 
@@ -650,7 +651,7 @@ sub process_a_provider( $ ) {
 
     $balance = $default_balance unless $balance;
 
-    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$table};
+    fatal_error "Interface $interface is already associated with non-shared provider $provider_interfaces{$interface}" if $provider_interfaces{$interface};
 
     if ( $duplicate ne '-' ) {
 	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
@@ -699,6 +700,7 @@ sub process_a_provider( $ ) {
 			   persistent_routes => [],
 			   routedests        => {} ,
 			   persistent        => $persistent,
+			   origin            => shortlineinfo( '' ),
 			 };
 
     $provider_interfaces{$interface} = $table unless $shared;

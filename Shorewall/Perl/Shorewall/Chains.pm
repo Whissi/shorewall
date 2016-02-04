@@ -1191,6 +1191,8 @@ sub merge_rules( $$$ ) {
 	$toref->{comment} = $fromref->{comment} if exists $fromref->{comment};
     }
 
+    $toref->{origin} = $fromref->{origin} if $fromref->{origin};
+
     $toref->{target} = $target;
 
     if ( my $targetref = $tableref->{$target} ) {
@@ -3106,8 +3108,8 @@ sub calculate_digest( $ ) {
 #
 # Replace jumps to the passed chain with jumps to the passed target
 #
-sub replace_references( $$$$;$ ) {
-    my ( $chainref, $target, $targetopts, $comment, $digest ) = @_;
+sub replace_references( $$$$$;$ ) {
+    my ( $chainref, $target, $targetopts, $comment, $origin, $digest ) = @_;
     my $tableref  = $chain_table{$chainref->{table}};
     my $count     = 0;
     my $name      = $chainref->{name};
@@ -3125,6 +3127,7 @@ sub replace_references( $$$$;$ ) {
 		    $_->{target}     = $target;
 		    $_->{targetopts} = $targetopts if $targetopts;
 		    $_->{comment}    = $comment unless $_->{comment};
+		    $_->{origin}     = $origin if $origin;
 
 		    if ( $targetref ) {
 			add_reference ( $fromref, $targetref );
@@ -3375,7 +3378,8 @@ sub optimize_level4( $$ ) {
 				replace_references( $chainref,
 						    $firstrule->{target},
 						    $firstrule->{targetopts},
-						    $firstrule->{comment} );
+						    $firstrule->{comment},
+						    $firstrule->{origin} );
 				$progress = 1;
 			    }
 			} elsif ( $firstrule->{target} ) {
@@ -3595,7 +3599,7 @@ sub optimize_level8( $$$ ) {
 		if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		    progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		    $progress = 1;
-		    replace_references $chainref1, $chainref->{name}, undef, '', 1;
+		    replace_references $chainref1, $chainref->{name}, undef, '', '', 1;
 
 		    unless ( $chainref->{name} =~ /^~/ || $chainref1->{name} =~ /^%/ ) {
 			#

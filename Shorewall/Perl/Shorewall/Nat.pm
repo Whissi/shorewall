@@ -69,7 +69,6 @@ sub process_one_masq1( $$$$$$$$$$$ )
     my $destnets = '';
     my $baserule = '';
     my $inlinematches = '';
-
     #
     # Leading '+'
     #

@@ -417,10 +417,8 @@ iface sit1 inet6 v4tunnel
       Shorewall:</para>
 
       <blockquote>
-        <para><programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
-#                                               ZONE
-6to4                    net
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+        <para><programlisting>#TYPE           ZONE            GATEWAY                 GATEWAY_ZONE
+6to4            net
 </programlisting></para>
       </blockquote>
     </section>
@@ -455,24 +453,22 @@ ping6 ipv6.chat.eu.freenode.net</emphasis>
       <para><filename>/etc/shorewall6/zones</filename>:</para>
 
       <blockquote>
-        <para><programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
-#					OPTIONS			OPTIONS
-fw	firewall
-net	ipv6
-loc	ipv6
-dmz	ipv6
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
+        <para><programlisting>#ZONE           TYPE            OPTIONS         IN_OPTIONS      OUT_OPTIONS
+
+fw	        firewall
+net	        ipv6
+loc	        ipv6
+dmz	        ipv6</programlisting></para>
       </blockquote>
 
       <para><filename>/etc/shorewall6/interfaces</filename>:</para>
 
       <blockquote>
-        <para><programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-net     sit1            detect          tcpflags,forward=1,nosmurfs
-loc     eth0            detect          tcpflags,forward=1
-dmz     eth2            detect          tcpflags,forward=1
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting></para>
+        <para><programlisting>#ZONE           INTERFACE               OPTIONS
+
+net             sit1                    tcpflags,forward=1,nosmurfs
+loc             eth0                    tcpflags,forward=1
+dmz             eth2                    tcpflags,forward=1</programlisting></para>
       </blockquote>
 
       <para><filename>/etc/shorewall6/policy</filename>:</para>
@@ -488,8 +484,15 @@ all        all     REJECT    info</programlisting></para>
       <para><filename>/etc/shorewall6/rules</filename>:</para>
 
       <blockquote>
-        <para><programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK
-#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+        <para><programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGINAL        RATE            USER    MARK    CONNLIMIT       TIME    HEADERS SWITCH  HELPER
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+#                                                       PORT    PORT(S) DEST            LIMIT           GROUP
 #
 #       Accept DNS connections from the firewall to the network
 #
@@ -501,11 +504,8 @@ SSH(ACCEPT)      loc             $FW
 #
 #       Allow Ping everywhere
 #
-Ping(ACCEPT)     all             all
-
-#
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting></para>
+Ping(ACCEPT)     all             all</programlisting>
+        </para>
       </blockquote>
     </section>
   </section>
@@ -602,7 +602,7 @@ iface sit1 inet6 v4tunnel
       ttl 64
       post-up echo 1 &gt; /proc/sys/net/ipv6/conf/all/forwarding
 
-</programlisting>
+    </programlisting>
 
     <para><filename>/etc/radvd.conf (I'm currently not using RDNSS so I've
     simply commented out the existing entries)</filename>:</para>
@@ -672,8 +672,8 @@ interface eth2 {
     <para>In <filename>/etc/shorewall/tunnels</filename> on system A, we need
     the following:</para>
 
-    <programlisting>#TYPE     ZONE     GATEWAY        GATEWAY ZONE
-6to4      net      134.28.54.2</programlisting>
+    <programlisting>#TYPE           ZONE            GATEWAY                 GATEWAY_ZONE
+6to4            net             134.28.54.2</programlisting>
 
     <para>This entry in <filename>/etc/shorewall/tunnels</filename> opens the
     firewall so that the IPv6 encapsulation protocol (41) will be accepted
@@ -689,8 +689,8 @@ interface eth2 {
     <para>Similarly, in <filename>/etc/shorewall/tunnels</filename> on system
     B we have:</para>
 
-    <programlisting>#TYPE     ZONE     GATEWAY        GATEWAY ZONE
-6to4      net      206.191.148.9</programlisting>
+    <programlisting>#TYPE           ZONE            GATEWAY                 GATEWAY_ZONE
+6to4            net             206.191.148.9</programlisting>
 
     <para>And use the following commands to setup system B:</para>
 

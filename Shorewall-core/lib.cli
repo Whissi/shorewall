@@ -908,6 +908,26 @@ show_events() {
     fi
 }
 
+show_actions() {
+    echo "A_ACCEPT                        # Audit and accept the connection"
+    echo "A_DROP                          # Audit and drop the connection"
+    echo "A_REJECT                        # Audit and reject the connection "
+    echo "allowBcast                      # Silently Allow Broadcast/multicast"
+    echo "allowInvalid                    # Accept packets that are in the INVALID conntrack state."
+    echo "allowinUPnP                     # Allow UPnP inbound (to firewall) traffic"
+    echo "allowoutUPnP                    # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
+    echo "dropBcast                       # Silently Drop Broadcast/multicast"
+    echo "dropInvalid                     # Silently Drop packets that are in the INVALID conntrack state"
+    echo "dropNotSyn                      # Silently Drop Non-syn TCP packets"
+    echo "forwardUPnP                     # Allow traffic that upnpd has redirected from"
+    echo "rejNotSyn                       # Silently Reject Non-syn TCP packets"
+
+    if [ -f ${g_confdir}/actions ]; then
+	cat ${g_sharedir}/actions.std ${g_confdir}/actions | grep -Ev '^\#|^$'
+    else
+	grep -Ev '^\#|^$' ${g_sharedir}/actions.std
+    fi
+}
 #
 # Show Command Executor
 #
@@ -1277,25 +1297,7 @@ show_command() {
 		    case $1 in
 			actions)
 			    [ $# -gt 1 ] && usage 1
-			    echo "A_ACCEPT                        # Audit and accept the connection"
-			    echo "A_DROP                          # Audit and drop the connection"
-			    echo "A_REJECT                        # Audit and reject the connection "
-			    echo "allowBcast                      # Silently Allow Broadcast/multicast"
-			    echo "allowInvalid                    # Accept packets that are in the INVALID conntrack state."
-			    echo "allowinUPnP                     # Allow UPnP inbound (to firewall) traffic"
-			    echo "allowoutUPnP                    # Allow traffic from local command 'upnpd' (does not work with kernels after 2.6.13)"
-			    echo "dropBcast                       # Silently Drop Broadcast/multicast"
-			    echo "dropInvalid                     # Silently Drop packets that are in the INVALID conntrack state"
-			    echo "dropNotSyn                      # Silently Drop Non-syn TCP packets"
-			    echo "forwardUPnP                     # Allow traffic that upnpd has redirected from"
-			    echo "rejNotSyn                       # Silently Reject Non-syn TCP packets"
-
-			    if [ -f ${g_confdir}/actions ]; then
-				cat ${g_sharedir}/actions.std ${g_confdir}/actions | grep -Ev '^\#|^$'
-			    else
-				grep -Ev '^\#|^$' ${g_sharedir}/actions.std
-			    fi
-
+			    show_actions | sort
 			    return
 			    ;;
 			macro)

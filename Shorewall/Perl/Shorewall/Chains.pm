@@ -623,9 +623,12 @@ our %ipset_exists;
 #                       Omitted, if target is ''.
 #         target     => Rule target, if jump is 'j' or 'g'.
 #         targetopts => Target options. Only included if non-empty
+#         matches    => List of matches in the rule
 #         <option>   => iptables/ip6tables -A options (e.g., i => eth0)
 #         <match>    => iptables match. Value may be a scalar or array.
 #                       if an array, multiple "-m <match>"s will be generated
+#         <origin>   => configuration file and line number that generated the rule
+#                       May be empty.
 #    }
 #
 # The following constants and hash are used to classify keys in a rule hash
@@ -1250,6 +1253,8 @@ sub set_irule_comment( $$ ) {
     my ( $chainref, $ruleref ) = @_;
 
     our $rule_comments;
+
+    $ruleref->{origin} ||= $chainref->{origin};
 
     if ( $rule_comments ) {
 	$ruleref->{comment} = $ruleref->{origin} || $comment;
@@ -6347,7 +6352,7 @@ sub log_rule_limit( $$$$$$$$;$ ) {
 	$ruleref = insert_rule1 ( $chainref , 0 , $matches . $prefix );
     }
 
-    $ruleref->{origin} = $origin if $origin;
+    $ruleref->{origin} = $origin if reftype( $ruleref ) && $origin;
 
     $ruleref;
 }

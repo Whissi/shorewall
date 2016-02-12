@@ -1,23 +1,25 @@
-# Shorewall Makefile to restart if config-files are newer than last restart
-VARDIR=$(shell /sbin/shorewall show vardir)
-CONFDIR=/etc/shorewall
-RESTOREFILE?=firewall
+#
+# Shorewall -- /etc/shorewall/Makefile
+#
+# Reload Shorewall if config files are updated.
+# If reloading fails, restore old settings.
 
-all: $(VARDIR)/$(RESTOREFILE)
+SWBIN	?= /sbin/shorewall -q
+CONFDIR	?= /etc/shorewall
+SWSTATE	?= $(shell $(SWBIN) show vardir)/firewall
 
-$(VARDIR)/$(RESTOREFILE): $(CONFDIR)/*
-	@/sbin/shorewall -q save >/dev/null; \
-	if \
-	    /sbin/shorewall -q reload >/dev/null 2>&1; \
-	then \
-	    /sbin/shorewall -q save >/dev/null; \
+.PHONY: clean
+
+$(SWSTATE): $(CONFDIR)/*
+	@$(SWBIN) save >/dev/null; \
+	RESULT=$$($(SWBIN) reload 2>&1); \
+	if [ $$? -eq 0 ]; then \
+	    $(SWBIN) save >/dev/null; \
 	else \
-	    /sbin/shorewall -q restore 2>&1 | tail >&2; exit 1; \
+	    $(SWBIN) restore >/dev/null 2>&1; \
+	    echo "$${RESULT}" >&2; \
+	    false; \
 	fi
 
 clean:
 	@rm -f $(CONFDIR)/*~ $(CONFDIR)/.*~
-
-.PHONY: clean
-
-# EOF

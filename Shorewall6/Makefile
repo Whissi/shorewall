@@ -2,7 +2,6 @@
 # Shorewall6 -- /etc/shorewall6/Makefile
 #
 # Reload Shorewall6 if config files are updated.
-# If reloading fails, restore old settings.
 
 SWBIN	?= /sbin/shorewall6 -q
 CONFDIR	?= /etc/shorewall6
@@ -16,7 +15,6 @@ $(SWSTATE): $(CONFDIR)/*
 	if [ $$? -eq 0 ]; then \
 	    $(SWBIN) save >/dev/null; \
 	else \
-	    $(SWBIN) restore >/dev/null 2>&1; \
 	    echo "$${RESULT}" >&2; \
 	    false; \
 	fi

@@ -74,20 +74,18 @@
     have a web server in your DMZ connected to eth1, then to count HTTP
     traffic in both directions requires two rules:</para>
 
-    <programlisting>        #ACTION CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
-        #                                                       PORT            PORT
-        DONE    -       eth0    eth1            tcp             80
-        DONE    -       eth1    eth0            tcp             -               80</programlisting>
+    <programlisting>        #ACTION         CHAIN   SOURCE  DEST    PROTO   DPORT   SPORT   USER    MARK    IPSEC
+        DONE            -       eth0    eth1    tcp     80
+        DONE            -       eth1    eth0    tcp     -       80</programlisting>
 
     <para>Associating a counter with a chain allows for nice reporting. For
     example:</para>
 
-    <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
-        #                                                               PORT            PORT
-        web:COUNT       -       eth0    eth1            tcp             80
-        web:COUNT       -       eth1    eth0            tcp             -               80
-        web:COUNT       -       eth0    eth1            tcp             443
-        web:COUNT       -       eth1    eth0            tcp             -               443
+    <programlisting>        #ACTION         CHAIN   SOURCE  DEST    PROTO   DPORT   SPORT   USER    MARK    IPSEC
+        web:COUNT       -       eth0    eth1    tcp     80
+        web:COUNT       -       eth1    eth0    tcp     -       80
+        web:COUNT       -       eth0    eth1    tcp     443
+        web:COUNT       -       eth1    eth0    tcp     -       443
         DONE            web</programlisting>
 
     <para>Now <command>shorewall show web</command> (or
@@ -110,12 +108,11 @@
 
     <para>Here is a slightly different example:</para>
 
-    <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
-        #                                                               PORT            PORT
-        web             -       eth0    eth1            tcp             80
-        web             -       eth1    eth0            tcp             -               80
-        web             -       eth0    eth1            tcp             443
-        web             -       eth1    eth0            tcp             -               443
+    <programlisting>        #ACTION         CHAIN   SOURCE  DEST    PROTO   DPORT   SPORT   USER    MARK    IPSEC
+        web             -       eth0    eth1    tcp     80
+        web             -       eth1    eth0    tcp     -       80
+        web             -       eth0    eth1    tcp     443
+        web             -       eth1    eth0    tcp     -       443
         COUNT           web     eth0    eth1
         COUNT           web     eth1    eth0</programlisting>
 
@@ -152,12 +149,11 @@
       you have to reverse the rules below.</para>
     </caution>
 
-    <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
-        #                                                               PORT            PORT
-        web             -       eth0    -               tcp             80
-        web             -       -       eth0            tcp             -               80
-        web             -       eth0    -               tcp             443
-        web             -       -       eth0            tcp             -               443
+    <programlisting>        #ACTION         CHAIN   SOURCE  DEST    PROTO   DPORT   SPORT   USER    MARK    IPSEC
+        web             -       eth0    -       tcp     80
+        web             -       -       eth0    tcp     -       80
+        web             -       eth0    -       tcp     443
+        web             -       -       eth0    tcp     -       443
         COUNT           web     eth0
         COUNT           web     -       eth0</programlisting>
 
@@ -309,7 +305,7 @@
 
     <para>Section headers have the form:</para>
 
-    <para><option>SECTION</option>
+    <para><option>?SECTION</option>
     <replaceable>section-name</replaceable></para>
 
     <para>When sections are enabled:</para>
@@ -414,19 +410,19 @@
       lives on the firewall itself.</para>
     </caution>
 
-    <programlisting>#ACTION				CHAIN           SOURCE                          DESTINATION                   PROTO   DEST            SOURCE  USER/    MARK     IPSEC
-#                                      		                                                              	      PORT(S)         PORT(S) GROUP
-SECTION INPUT
-ACCOUNT(fw-net,$FW_NET)		-		COM_IF
-ACCOUNT(dmz-net,$DMZ_NET)  	-		COM_IF
+    <programlisting>
+#ACTION                         CHAIN   SOURCE  DEST    PROTO   DPORT   SPORT   USER    MARK    IPSEC
+?SECTION INPUT
+ACCOUNT(fw-net,$FW_NET)		-	COM_IF
+ACCOUNT(dmz-net,$DMZ_NET)  	-	COM_IF
 
-SECTION OUTPUT
-ACCOUNT(fw-net,$FW_NET)		-		-				COM_IF
-ACCOUNT(dmz-net,$DMZ_NET)   	-		-				COM_IF
+?SECTION OUTPUT
+ACCOUNT(fw-net,$FW_NET)		-	-	COM_IF
+ACCOUNT(dmz-net,$DMZ_NET)   	-	-	COM_IF
 
-SECTION FORWARD
-ACCOUNT(loc-net,$INT_NET)   	-		COM_IF				INT_IF
-ACCOUNT(loc-net,$INT_NET)   	-		INT_IF				COM_IF
+?SECTION FORWARD
+ACCOUNT(loc-net,$INT_NET)   	-	COM_IF	INT_IF
+ACCOUNT(loc-net,$INT_NET)   	-	INT_IF	COM_IF
 </programlisting>
   </section>
 
@@ -504,9 +500,9 @@ ACCOUNT(loc-net,$INT_NET)   	-		INT_IF				COM_IF
     is eth1 with network 172.20.1.0/24. To account for all traffic between the
     WAN and LAN interfaces:</para>
 
-    <programlisting>#ACTION                         CHAIN        SOURCE              DEST          ...
-ACCOUNT(net-loc,172.20.1.0/24)  -            eth0                eth1
-ACCOUNT(net-loc,172.20.1.0/24)  -            eth1                eth0</programlisting>
+    <programlisting>#ACTION                         CHAIN   SOURCE  DEST    PROTO   DPORT   SPORT   USER    MARK    IPSEC
+ACCOUNT(net-loc,172.20.1.0/24)  -       eth0    eth1
+ACCOUNT(net-loc,172.20.1.0/24)  -       eth1    eth0</programlisting>
 
     <para>This will create a <emphasis role="bold">net-loc</emphasis> table
     for counting packets and bytes for traffic between the two

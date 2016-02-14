@@ -207,28 +207,26 @@
       port-forwarding rule <emphasis>from the net</emphasis> to a local system
       is as follows:</para>
 
-      <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
+      <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DPORT
 DNAT       net         loc:<emphasis>local-IP-address</emphasis>[:<emphasis>local-port</emphasis>]      <emphasis>protocol</emphasis>     <emphasis>port-number</emphasis></programlisting>
 
       <para>So to forward UDP port 7777 to internal system 192.168.1.5, the
       rule is:</para>
 
-      <programlisting>#ACTION    SOURCE   DEST             PROTO    DEST PORT
+      <programlisting>#ACTION    SOURCE   DEST             PROTO    DPORT
 DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 
       <para>If you want to forward requests directed to a particular address (
       <emphasis>external-IP</emphasis> ) on your firewall to an internal
       system:</para>
 
-      <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT     SOURCE  ORIGINAL
-#                                                                               PORT    DEST.
+      <programlisting>#ACTION SOURCE DEST                                   PROTO       DPORT         SPORT   ORIGDEST
 DNAT    net    loc:<emphasis>local-IP-address</emphasis>&gt;[:<emphasis>local-port</emphasis>]     <emphasis>protocol</emphasis>    <emphasis>port-number</emphasis>   -       <emphasis>external-IP</emphasis></programlisting>
 
       <para>If you want to forward requests from a particular Internet address
       ( <emphasis>address</emphasis> ):</para>
 
-      <programlisting>#ACTION SOURCE        DEST                                   PROTO       DEST PORT     SOURCE  ORIGINAL
-#                                                                                      PORT    DEST.
+      <programlisting>#ACTION SOURCE        DEST                                   PROTO       DPORT         SPORT   ORIGDEST
 DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</emphasis>[:<emphasis>local-port</emphasis>]  <emphasis>    protocol</emphasis>    <emphasis>port-number</emphasis>   -</programlisting>
 
       <para>Finally, if you need to forward a range of ports, in the DEST PORT
@@ -386,7 +384,7 @@ DNAT    net:<emphasis>address</emphasis>   loc:<emphasis>local-IP-address</empha
         <para><emphasis role="bold">Answer:</emphasis>In
         /<filename>etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DPORT
 DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
       </section>
 
@@ -448,8 +446,7 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
           </listitem>
 
           <listitem>
-            <para>You have this rule on the Shorewall system:<programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                PORT      DEST.
+            <para>You have this rule on the Shorewall system:<programlisting>#ACTION    SOURCE        DEST               PROTO    DPORT       SPORT     ORIGDEST
 DNAT       net           loc:192.168.1.4    tcp      21          -         206.124.146.176</programlisting></para>
           </listitem>
 
@@ -494,8 +491,8 @@ DNAT       net           loc:192.168.1.4    tcp      21          -         206.1
         default gateway on the FTP server to the Shorewall system's internal
         IP address (192.168.1.1). But if that isn't possible, you can work
         around the problem with the following ugly hack in
-        <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE              SOURCE             ADDRESS            PROTO         PORT
-eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</programlisting></para>
+        <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE              SOURCE             ADDRESS         PROTO   PORT
+eth1:192.168.1.4        0.0.0.0/0          192.168.1.1     tcp     21</programlisting></para>
 
         <para>This rule has the undesirable side effect of making all FTP
         connections from the net appear to the FTP server as if they
@@ -514,17 +511,25 @@ eth1:192.168.1.4        0.0.0.0/0          192.168.1.1        tcp           21</
         that your Internet zone is named <emphasis>net</emphasis> and connects
         on interface <filename class="devicefile">eth0</filename>:</para>
 
-        <para>In <filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION    SOURCE        DEST                   PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                    PORT      DEST.
-DNAT       net           net:66.249.93.111:993  tcp      80          -         206.124.146.176</programlisting></para>
+        <para>In <filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION    SOURCE        DEST                   PROTO    DPORT   SPORT   ORIGDEST
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+DNAT       net           net:66.249.93.111:993  tcp      80      -       206.124.146.176</programlisting></para>
 
         <para>In <filename>/etc/shorewall/interfaces</filename>, specify the
         <emphasis role="bold">routeback</emphasis> option on
-        eth0:<programlisting>#ZONE      INTERFACE     BROADCAST            OPTIONS
-net        eth0          detect               <emphasis role="bold">routeback</emphasis></programlisting></para>
+        eth0:<programlisting>?FORMAT 2
+#ZONE		INTERFACE		OPTIONS
+net             eth0                    <emphasis role="bold">routeback</emphasis></programlisting></para>
 
-        <para><filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE          SOURCE      ADDRESS          PROTO        PORT
-eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlisting></para>
+        <para><filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT
+eth0:66.249.93.111      0.0.0.0/0       206.124.146.176 tcp     993</programlisting></para>
 
         <para>and in
         <filename>/etc/shorewall/shorewall.conf</filename>:</para>
@@ -542,9 +547,8 @@ eth0:66.249.93.111  0.0.0.0/0   206.124.146.176  tcp          993</programlistin
 
         <para><emphasis role="bold">Answer</emphasis>: Use this rule.</para>
 
-        <programlisting>#ACTION         SOURCE        DEST        PROTO        DEST
-#                                                      PORT(S)
-REDIRECT        net           22          tcp          9022</programlisting>
+        <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+REDIRECT        net             22              tcp     9022</programlisting>
 
         <para>Note that the above rule will also allow connections from the
         net on TCP port 22. If you don't want that, see <link
@@ -617,9 +621,8 @@ TOS=0x00 PREC=0x00 TTL=63 ID=23035 PROTO=UDP SPT=6376 DPT=2055 LEN=1472</program
 
       <para>Example:</para>
 
-      <programlisting>#ACTION    SOURCE        DEST                   PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                    PORT      DEST.
-DNAT       net           net:192.168.4.22       tcp      80,443      -         <emphasis
+      <programlisting>#ACTION         SOURCE          DEST                    PROTO   DPORT   SPORT   ORIGDEST
+DNAT            net             net:192.168.4.22        tcp     80,443  -       <emphasis
           role="bold">206.124.146.178</emphasis></programlisting>
     </section>
 
@@ -704,14 +707,15 @@ DNAT       net           net:192.168.4.22       tcp      80,443      -         <
         <listitem>
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
-loc      eth1         detect       <emphasis role="bold">routeback</emphasis>    </programlisting>
+          <programlisting>?FORMAT 2
+#ZONE           INTERFACE               OPTIONS
+loc             eth1                    <emphasis role="bold">routeback</emphasis></programlisting>
         </listitem>
 
         <listitem>
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
-          <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
+          <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT
 <emphasis role="bold">eth1:192.168.1.5        192.168.1.0/24  192.168.1.254   tcp     www</emphasis></programlisting>
 
           <para>Note: The technique described here is known as
@@ -721,16 +725,23 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis>   
           <emphasis>external IP address</emphasis> be used as the
           source:</para>
 
-          <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT(S)
+          <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT
 eth1:192.168.1.5        192.168.1.0/24  <emphasis role="bold">130.151.100.69</emphasis>  tcp     www</programlisting>
         </listitem>
 
         <listitem>
           <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-          <programlisting>#ACTION    SOURCE       DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                               PORT      DEST.
-<emphasis role="bold">DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</emphasis></programlisting>
+          <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGDEST
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+<emphasis role="bold">DNAT            loc             loc:192.168.1.5 tcp     www     -       130.151.100.69</emphasis></programlisting>
 
           <para>That rule (and the second one in the previous bullet) only
           works of course if you have a static external IP address. If you
@@ -741,9 +752,16 @@ eth1:192.168.1.5        192.168.1.0/24  <emphasis role="bold">130.151.100.69</em
 
           <para>and make your DNAT rule:</para>
 
-          <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                PORT      DEST.
-DNAT       loc           loc:192.168.1.5    tcp      www         -         <emphasis
+          <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGDEST
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+DNAT            loc             loc:192.168.1.5 tcp     www     -       <emphasis
               role="bold">$ETH0_IP</emphasis></programlisting>
 
           <para>Using this technique, you will want to configure your
@@ -825,14 +843,14 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         <emph
 
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
-dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis> </programlisting>
+          <programlisting>?FORMAT 2
+#ZONE           INTERFACE               OPTIONS
+dmz             eth2                    <emphasis role="bold">routeback</emphasis> </programlisting>
 
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
-          <programlisting>#INTERFACE:         SOURCE           ADDRESS
-#ADDRESS
-eth2:192.168.1.2    192.168.2.0/24</programlisting>
+          <programlisting>#INTERFACE              SOURCE
+eth2:192.168.1.2        192.168.2.0/24</programlisting>
 
           <para>In <filename>/etc/shorewall/nat</filename>, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
@@ -862,9 +880,16 @@ eth2:192.168.1.2    192.168.2.0/24</programlisting>
         <para>You can enable access to the server from your local network
         using the firewall's external IP address by adding this rule:</para>
 
-        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
-#                                                                PORT        DEST                 
-<emphasis role="bold">DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</emphasis></programlisting>
+        <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGDEST
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+<emphasis role="bold">DNAT            loc             dmz:192.168.2.4 tcp     80      -       206.124.146.176</emphasis></programlisting>
 
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
@@ -875,9 +900,16 @@ eth2:192.168.1.2    192.168.2.0/24</programlisting>
 
         <para>and make your DNAT rule:</para>
 
-        <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                PORT      DEST.
-DNAT       loc           dmz:192.168.2.4    tcp      80          -         <emphasis
+        <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGDEST
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+DNAT            loc             dmz:192.168.2.4 tcp     80      -       <emphasis
             role="bold">$ETH0_IP</emphasis></programlisting>
 
         <warning>
@@ -1433,16 +1465,23 @@ net-fw DROP  eth2 5 packets from 61.158.162.9 to 206.124.146.177</programlisting
         <para><emphasis role="bold">Answer:</emphasis> Temporarily add the
         following rule:</para>
 
-        <programlisting>#ACTION   SOURCE    DEST    PROTO    DEST PORT(S)
-DROP      net       fw      udp      10619</programlisting>
+        <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
 
-        <para>Alternatively, if you do not set BLACKLIST_LOGLEVEL and you have
-        specifed the 'blacklist' option on your external interface in
-        <filename>/etc/shorewall/interfaces</filename>, then you can blacklist
-        the port. In <filename>/etc/shorewall/blacklist</filename>:</para>
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
 
-        <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
--                       udp             10619</programlisting>
+DROP            net             $FW             udp     10619</programlisting>
+
+        <para>Alternatively, if you do not set BLACKLIST_LOGLEVEL you can blacklist
+        the port. In <filename>/etc/shorewall/blrules</filename>:</para>
+
+        <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+
+DROP            net             $FW             udp     10619</programlisting>
       </section>
 
       <section id="faq6d">
@@ -2361,12 +2400,11 @@ gateway:~# </programlisting>
       <para><emphasis role="bold">Answer:</emphasis> Suppose that you want all
       traffic to go out through ISP1 (mark 1) unless you specify otherwise.
       Then simply add these two rules as the first marking rules in your
-      <filename>/etc/shorewall/mangle</filename>
-      (<filename>/etc/shorewall/tcrules</filename>) file:</para>
+      <filename>/etc/shorewall/mangle</filename> (was tcrules) file:</para>
 
-      <programlisting>#ACTION       SOURCE           DEST
-1:P           0.0.0.0/0
-1             $FW
+      <programlisting>#ACTION         SOURCE          DEST
+MARK(1):P       0.0.0.0/0
+MARK(1)         $FW
 <emphasis>other MARK rules</emphasis></programlisting>
 
       <para>Now any traffic that isn't marked by one of your other MARK rules
@@ -2449,8 +2487,8 @@ root@gateway:~#</programlisting>
       at 10-12kb and adjust as necessary. Example (simple traffic
       shaping):</para>
 
-      <programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
-eth0		External	50mbit:200kb			5.0mbit:100kb:200ms:100mbit:<emphasis
+      <programlisting>#INTERFACE      TYPE            IN_BANDWIDTH            OUT_BANDWIDTH
+eth0            External        50mbit:200kb            5.0mbit:100kb:200ms:100mbit:<emphasis
           role="bold">10kb</emphasis>
 </programlisting>
 
@@ -2495,8 +2533,7 @@ root@gateway:/etc/shorewall#
 
       <para>Example from /etc/shorewall/tcdevices:</para>
 
-      <programlisting>#NUMBER:        IN-BANDWIDTH            OUT-BANDWIDTH   OPTIONS
-#INTERFACE
+      <programlisting>#INTERFACE      IN_BANDWITH             OUT_BANDWIDTH   OPTIONS
 1:COMB_IF       <emphasis role="bold">~20mbit:250ms:4sec</emphasis>      ${UPLOAD}kbit   hfsc,linklayer=ethernet,overhead=0</programlisting>
 
       <para>To create a rate-estimated filter, precede the bandwidth with a
@@ -2674,9 +2711,17 @@ VS3=fw:192.168.2.14</programlisting>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION      SOURCE         DEST        PROTO         DEST PORT(S)
-ACCEPT       $VS1           net         tcp           25
-DNAT         net            $VS1        tcp           25
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+ACCEPT          $VS1            net             tcp     25
+DNAT            net             $VS1            tcp     25
 etc...</programlisting>
     </section>
   </section>
@@ -2925,7 +2970,7 @@ else
     <section id="faq26">
       <title>(FAQ 26) When I try to use any of the SYN options in nmap on or
       behind the firewall, I get <quote>operation not permitted</quote>. How
-      can I use nmap with Shorewall?"</title>
+      can I use nmap with Shorewall?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Temporarily remove any
       <emphasis role="bold">rejNotSyn</emphasis>, <emphasis
@@ -2964,8 +3009,8 @@ else
       everyone's site. Adsense is a Javascript that people add to their Web
       pages. So I entered the rule:</para>
 
-      <programlisting>#ACTION   SOURCE        DEST                                 PROTO
-REJECT    fw            net:pagead2.googlesyndication.com    all</programlisting>
+      <programlisting>#ACTION         SOURCE  DEST                                    PROTO
+REJECT          fw      net:pagead2.googlesyndication.com       all</programlisting>
 
       <para>However, this also sometimes restricts access to "google.com". Why
       is that? Using dig, I found these IPs for domain
@@ -2992,9 +3037,9 @@ REJECT    fw            net:pagead2.googlesyndication.com    all</programlisting
       expressed in terms of those IP addresses. So the rule that you entered
       was equivalent to:</para>
 
-      <para><programlisting>#ACTION   SOURCE        DEST                 PROTO
-REJECT    fw            net:216.239.37.99    all
-REJECT    fw            net:216.239.39.99    all</programlisting>Given that
+      <para><programlisting>#ACTION         SOURCE          DEST                    PROTO
+REJECT          $FW             net:216.239.37.99       all
+REJECT          $FW             net:216.239.39.99       all</programlisting>Given that
       name-based multiple hosting is a common practice (another example:
       lists.shorewall.net and www1.shorewall.net are both hosted on the same
       system with a single IP address), it is not possible to filter
@@ -3079,10 +3124,9 @@ gateway:~# </programlisting>
       <para><emphasis role="bold">Answer:</emphasis> Add these two
       policies:</para>
 
-      <programlisting>#SOURCE            DESTINATION             POLICY            LOG              LIMIT:BURST
-#                                                            LEVEL
-$FW                loc                     ACCEPT
-loc                $FW                     ACCEPT           </programlisting>
+      <programlisting>#SOURCE         DEST            POLICY  LOGLEVEL        LIMIT   CONNLIMIT
+$FW             loc             ACCEPT
+loc             $FW             ACCEPT</programlisting>
 
       <para>You should also delete any ACCEPT rules from $FW-&gt;loc and
       loc-&gt;$FW since those rules are redundant with the above
@@ -3121,16 +3165,16 @@ loc                $FW                     ACCEPT           </programlisting>
 
           <para><filename>/etc/shorewall/masq:</filename></para>
 
-          <programlisting>#INTERFACE			SOURCE			ADDRESS
+          <programlisting>#INTERFACE              SOURCE          ADDRESS
 
 COMMENT DSL Modem
 
-EXT_IF:172.20.1.2	     	0.0.0.0/0		172.20.1.254
+EXT_IF:172.20.1.2       0.0.0.0/0       172.20.1.254
 </programlisting>
 
           <para><filename>/etc/shorewall/proxyarp</filename>:</para>
 
-          <programlisting>#ADDRESS	INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
+          <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
 172.20.1.2	EXT_IF		INT_IF		no		yes
 </programlisting>
         </listitem>
@@ -3159,11 +3203,11 @@ EXT_IF:172.20.1.2	     	0.0.0.0/0		172.20.1.254
           <para>Your entry in <filename>/etc/shorewall/masq</filename> would
           then be:</para>
 
-          <programlisting>#INTERFACE			SOURCE			ADDRESS
+          <programlisting>#INTERFACE              SOURCE          ADDRESS
 
-COMMENT DSL Modemhttp://ipv6.shorewall.net/SimpleBridge.html
+COMMENT DSL Modem
 
-EXT_IF:192.168.1.1	     	0.0.0.0/0		192.168.1.254
+EXT_IF:192.168.1.1      0.0.0.0/0       192.168.1.254
 </programlisting>
         </listitem>
       </itemizedlist>
@@ -3192,8 +3236,9 @@ EXT_IF:192.168.1.1	     	0.0.0.0/0		192.168.1.254
       default name for the firewall zone is <emphasis
       role="bold">fw</emphasis>:</para>
 
-      <programlisting>#ZONE            TYPE             OPTIONS
-<emphasis role="bold">fw</emphasis>               firewall</programlisting>
+      <programlisting>#ZONE           TYPE            OPTIONS
+
+<emphasis role="bold">fw</emphasis>              firewall</programlisting>
 
       <para>So, using the default or sample configurations, writing <emphasis
       role="bold">$FW</emphasis> is the same as writing <emphasis
@@ -3202,8 +3247,9 @@ EXT_IF:192.168.1.1	     	0.0.0.0/0		192.168.1.254
       <emphasis role="bold">$FW</emphasis> would be the same as writing
       <emphasis role="bold">gate</emphasis>.</para>
 
-      <programlisting>#ZONE            TYPE             OPTIONS
-<emphasis role="bold">gate</emphasis>             firewall</programlisting>
+      <programlisting>#ZONE           TYPE            OPTIONS
+
+<emphasis role="bold">gate</emphasis>            firewall</programlisting>
 
       <section id="faq95a">
         <title>Why was that done?</title>

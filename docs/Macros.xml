@@ -78,19 +78,20 @@
         macro.</para>
 
         <programlisting>#
-# Shorewall 3.0 /usr/share/shorewall/macro.SMB
+# Shorewall -- /usr/share/shorewall/macro.SMB
 #
-#       Handle Microsoft SMB traffic. You need to invoke this macro in
-#       both directions.
+# This macro handles Microsoft SMB traffic. You need to invoke
+# this macro in both directions.  Beware!  This rule opens a lot
+# of ports, and could possibly be used to compromise your firewall
+# if not used with care.  You should only allow SMB traffic
+# between hosts you fully trust.
 #
 ######################################################################################
-#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE          RATE    USER/
-#                                               PORT    PORT(S)         LIMIT   GROUP
-PARAM    -              -               udp     135,445
-PARAM    -              -               udp     137:139
-PARAM    -              -               udp     1024:   137
-PARAM    -              -               tcp     135,139,445
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+#TARGET  SOURCE  DEST    PROTO   DPORT   SPORT   ORIGDEST        RATE    USER
+PARAM    -       -       udp     135,445
+PARAM    -       -       udp     137:139
+PARAM    -       -       udp     1024:   137
+PARAM    -       -       tcp     135,139,445</programlisting>
 
         <para>If you wish to modify one of the standard macros, do not modify
         the definition in <filename
@@ -121,17 +122,19 @@ PARAM    -              -               tcp     135,139,445
     <blockquote>
       <para>/etc/shorewall/rules:</para>
 
-      <programlisting>#ACTION      SOURCE        DEST         PROTO   DEST PORT(S)
-SMB(ACCEPT)  loc           fw         </programlisting>
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+
+SMB(ACCEPT)     loc             $FW</programlisting>
 
       <para>The above is equivalent to coding the following series of
       rules:</para>
 
-      <programlisting>#TARGET      SOURCE        DEST         PROTO   DEST PORT(s)
-ACCEPT       loc           fw           udp     135,445
-ACCEPT       loc           fw           udp     137:139
-ACCEPT       loc           fw           udp     1024:   137
-ACCEPT       loc           fw           tcp     135,139,445</programlisting>
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT
+
+ACCEPT          loc             $FW             udp     135,445
+ACCEPT          loc             $FW             udp     137:139
+ACCEPT          loc             $FW             udp     1024:   137
+ACCEPT          loc             $FW             tcp     135,139,445</programlisting>
     </blockquote>
 
     <para>Logging is covered in <link linkend="Logging">a following
@@ -154,24 +157,24 @@ ACCEPT       loc           fw           tcp     135,139,445</programlisting>
           <blockquote>
             <para>/etc/shorewall/macro.SMTP</para>
 
-            <programlisting>#TARGET          SOURCE   DEST            PROTO    DEST PORT(S)
-PARAM            -        loc             tcp      25</programlisting>
+            <programlisting>#ACTION SOURCE  DEST    PROTO   DPORT
+PARAM   -       loc     tcp     25</programlisting>
 
             <para>/etc/shorewall/rules (Shorewall 4.0):</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMTP(DNAT):info  net      192.168.1.5</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+SMTP(DNAT):info net             192.168.1.5</programlisting>
 
             <para>/etc/shorewall/rules (Shorewall 4.2.0 and later):</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMTP(DNAT):info   net      192.168.1.5</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+SMTP(DNAT):info net             192.168.1.5</programlisting>
 
             <para>This would be equivalent to coding the following directly in
             /etc/shorewall/rules</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+DNAT:info       net             loc:192.168.1.5 tcp     25</programlisting>
           </blockquote>
 
           <para>Example 2:</para>
@@ -179,19 +182,20 @@ DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
           <blockquote>
             <para>/etc/shorewall/macro.SMTP</para>
 
-            <programlisting>#TARGET          SOURCE   DEST            PROTO    DEST PORT(S)
-PARAM            -        192.168.1.5     tcp      25</programlisting>
+            <programlisting>
+#ACTION         SOURCE          DEST            PROTO   DPORT
+PARAM           -               192.168.1.5     tcp     25</programlisting>
 
             <para>/etc/shorewall/rules</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMTP(DNAT):info   net      loc</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+SMTP(DNAT):info net             loc</programlisting>
 
             <para>This would be equivalent to coding the following directly in
             /etc/shorewall/rules</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+DNAT:info       net             loc:192.168.1.5 tcp     25</programlisting>
           </blockquote>
 
           <para>You may also specify SOURCE or DEST in the SOURCE and DEST
@@ -205,8 +209,7 @@ DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
             is already a standard macro like this released as part of
             Shorewall):</para>
 
-            <programlisting>#ACTION SOURCE  DEST    PROTO   DEST    SOURCE  ORIGINAL        RATE    USER/
-#                               PORT    PORT(S) DEST            LIMIT   GROUP
+            <programlisting>#ACTION SOURCE  DEST    PROTO   DPORT   SPORT   ORIGDEST        RATE    USER
 PARAM   -       -       udp     135,445
 PARAM   -       -       udp     137:139
 PARAM   -       -       udp     1024:   137
@@ -214,26 +217,28 @@ PARAM   -       -       tcp     135,139,445
 PARAM   DEST    SOURCE  udp     135,445
 PARAM   DEST    SOURCE  udp     137:139
 PARAM   DEST    SOURCE  udp     1024:   137
-PARAM   DEST    SOURCE  tcp     135,139,445
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+PARAM   DEST    SOURCE  tcp     135,139,445</programlisting>
 
             <para>/etc/shorewall/rules:</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-SMBBI(ACCEPT)     loc      fw</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+
+SMBBI(ACCEPT)   loc             $FW</programlisting>
 
             <para>This would be equivalent to coding the following directly in
             /etc/shorewall/rules</para>
 
-            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
-ACCEPT           loc      fw              udp      135,445
-ACCEPT           loc      fw              udp      137:139
-ACCEPT           loc      fw              udp      1024:   137
-ACCEPT           loc      fw              tcp      135,139,445
-ACCEPT           fw       loc             udp      135,445
-ACCEPT           fw       loc             udp      137:139
-ACCEPT           fw       loc             udp      1024:   137
-ACCEPT           fw       loc             tcp      135,139,445</programlisting>
+            <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT
+
+ACCEPT          loc             $FW             udp     135,445
+ACCEPT          loc             $FW             udp     137:139
+ACCEPT          loc             $FW             udp     1024:   137
+ACCEPT          loc             $FW             tcp     135,139,445
+
+ACCEPT          $FW             loc             udp     135,445
+ACCEPT          $FW             loc             udp     137:139
+ACCEPT          $FW             loc             udp     1024:   137
+ACCEPT          $FW             loc             tcp     135,139,445</programlisting>
           </blockquote>
         </listitem>
       </varlistentry>
@@ -696,7 +701,7 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
       </itemizedlist>
 
       <para>Omitted column entries should be entered using a dash
-      ("-:).</para>
+      ("-").</para>
 
       <para>Example:</para>
 
@@ -706,8 +711,9 @@ ACCEPT           fw       loc             tcp      135,139,445</programlisting>
       <para>To use your macro, in <filename>/etc/shorewall/rules</filename>
       you might do something like:</para>
 
-      <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
-LogAndAccept loc         $FW         tcp      22</programlisting>
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+
+LogAndAccept    loc             $FW             tcp     22</programlisting>
     </section>
   </section>
 
@@ -731,20 +737,20 @@ LogAndAccept loc         $FW         tcp      22</programlisting>
 
         <para>/etc/shorewall/macro.foo</para>
 
-        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-ACCEPT       -          -        tcp      22
+        <programlisting>#ACTION SOURCE  DEST    PROTO   DPORT
+ACCEPT  -       -       tcp     22
 bar:info</programlisting>
 
         <para>/etc/shorewall/rules:</para>
 
-        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug    $FW        net</programlisting>
+        <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
+foo:debug       $FW             net</programlisting>
 
         <para>Logging in the invoked 'foo' macro will be as if foo had been
         defined as:</para>
 
-        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-ACCEPT:debug -          -        tcp      22
+        <programlisting>#ACTION         SOURCE  DEST    PROTO   DPORT
+ACCEPT:debug    -       -       tcp     22
 bar:info</programlisting>
       </listitem>
 
@@ -756,20 +762,20 @@ bar:info</programlisting>
 
         <para>/etc/shorewall/macro.foo</para>
 
-        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-ACCEPT       -          -        tcp      22
+        <programlisting>#ACTION SOURCE  DEST    PROTO   DPORT
+ACCEPT  -       -       tcp     22
 bar:info</programlisting>
 
         <para>/etc/shorewall/rules:</para>
 
-        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug!   $FW        net</programlisting>
+        <programlisting>#ACTION         SOURCE  DEST    PROTO   DPORT
+foo:debug!      $FW     net</programlisting>
 
         <para>Logging in the invoked 'foo' macro will be as if foo had been
         defined as:</para>
 
-        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-ACCEPT:debug -          -        tcp      22
+        <programlisting>#ACTION         SOURCE  DEST    PROTO   DPORT
+ACCEPT:debug    -       -       tcp     22
 bar:debug</programlisting>
       </listitem>
     </orderedlist>

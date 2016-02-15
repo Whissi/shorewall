@@ -1,19 +1,15 @@
 #
-# Shorewall - Reject Macro
+# Shorewall -- /usr/share/shorewall/macro.Reject
 #
-# /usr/share/shorewall/macro.Reject
+# This macro generates the same rules as the Reject default action
+# It is used in place of action.Reject when USE_ACTIONS=No.
 #
-#	This macro generates the same rules as the Reject default action
-#	It is used in place of action.Reject when USE_ACTIONS=No.
+# Example:
 #
-#	Example:
-#
-#		Reject	loc	fw
-#
+#	Reject	loc	fw
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
 #
 # Don't log 'auth' REJECT
 #

@@ -1,36 +1,14 @@
 #
-# Shorewall - SMB Bi-directional Macro
+# Shorewall -- /usr/share/shorewall/macro.SMBBI
 #
-# /usr/share/shorewall/macro.SMBBI
+# This macro (bidirectional) handles Microsoft SMB traffic.
 #
-#	This macro (bidirectional) handles Microsoft SMB traffic.
-#
-#	Beware!  This macro opens a lot of ports, and could possibly be used
-#	to compromise your firewall if not used with care.  You should only
-#	allow SMB traffic between hosts you fully trust.
+# Beware! This macro opens a lot of ports, and could possibly be used
+# to compromise your firewall if not used with care. You should only
+# allow SMB traffic between hosts you fully trust.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
-PARAM	-	-	udp	135,445
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
 
-?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
- PARAM	-	-	udp	137 { helper=netbios-ns }
- PARAM	-	-	udp	138:139
-?else
- PARAM	-	-	udp	137:139
-?endif
-
-PARAM	-	-	udp	1024:	137
-PARAM	-	-	tcp	135,139,445
-PARAM	DEST	SOURCE	udp	135,445
-
-?if ( __CT_TARGET && ! $AUTOHELPERS && __NETBIOS_NS_HELPER )
- PARAM	DEST	SOURCE	udp	137 { helper=netbios-ns }
- PARAM	DEST	SOURCE	udp	138:139
-?else
- PARAM	DEST	SOURCE	udp	137:139
-?endif
-
-PARAM	DEST	SOURCE	udp	1024:	137
-PARAM	DEST	SOURCE	tcp	135,139,445
+SMB
+SMB	DEST	SOURCE

@@ -1,15 +1,13 @@
 #
-# Shorewall - Multicast DNS Macro -- this macro assumes that only
-#                       the DEST zone sends mDNS queries. If both zones send
-#                       queries, use the mDNSbi macro.
+# Shorewall -- /usr/share/shorewall/macro.mDNS
 #
-# /usr/share/shorewall/macro.mDNS
-#
-#	This macro handles multicast DNS traffic
+# This macro handles multicast DNS traffic from DEST zone.
+# This macro assumes that only the DEST zone sends mDNS queries.
+# If both zones send queries, use the mDNSbi macro.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST			PROTO	DEST	SOURCE	ORIGIN	RATE
-#						PORT(S)	PORT(S)	DEST	LIMIT
+#ACTION	SOURCE	DEST			PROTO	DPORT	SPORT	ORIGDEST
+
 PARAM	-	224.0.0.251		udp	5353
 PARAM	-	-			udp	1024:	5353
 PARAM	-	224.0.0.251		2

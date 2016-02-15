@@ -1,19 +1,17 @@
 #
-# Shorewall - Macro Template
-#
-# /usr/share/shorewall/macro.template
+# Shorewall --/usr/share/shorewall/macro.template
 #
 # Macro files are similar to action files with the following exceptions:
 #
-#	- A macro file is not processed unless the marcro that it defines is
-#	  referenced in the /etc/shorewall/rules file or in an action
-#	  definition file.
+# - A macro file is not processed unless the marcro that it defines is
+#   referenced in the /etc/shorewall/rules file or in an action
+#   definition file.
 #
-#	- Macros are translated directly into one or more rules whereas
-#	  actions become their own chain.
+# - Macros are translated directly into one or more rules whereas
+#   actions become their own chain.
 #
-#	- All entries in a macro undergo substitution when the macro is
-#	  invoked in the rules file.
+# - All entries in a macro undergo substitution when the macro is
+#   invoked in the rules file.
 #
 # Columns are the same as in /etc/shorewall/rules.
 # A few examples should help show how Macros work.
@@ -35,37 +33,37 @@
 #
 # The substitution rules are as follows:
 #
-#	ACTION column		If in the invocation of the macro, the macro
-#				name is followed by slash ("/") and a second
-#				name, the second name is substituted for each
-#				entry in the macro whose ACTION is PARAM
+# ACTION column		If in the invocation of the macro, the macro
+#			name is followed by slash ("/") and a second
+#			name, the second name is substituted for each
+#			entry in the macro whose ACTION is PARAM
 #
-#				For example, if macro FOO is invoked as
-#				FOO/ACCEPT then when expanding macro.FOO,
-#				Shorewall will substitute ACCEPT in each
-#				entry in macro.FOO whose ACTION column
-#				contains PARAM. PARAM may be optionally
-#				followed by a colon and a log level.
+#			For example, if macro FOO is invoked as
+#			FOO/ACCEPT then when expanding macro.FOO,
+#			Shorewall will substitute ACCEPT in each
+#			entry in macro.FOO whose ACTION column
+#			contains PARAM. PARAM may be optionally
+#			followed by a colon and a log level.
 #
-#				You may also follow the
+#			You may also follow the
 #
-#				Any logging specified when the macro is
-#				invoked is applied to each entry in the macros.
+#			Any logging specified when the macro is
+#			invoked is applied to each entry in the macros.
 #
-#	SOURCE and DEST		If the column in the macro is empty then the
-#	columns			value in the rules file is used. If the column
-#				in the macro is non-empty then any value in
-#				the rules file is appended with a ":"
-#				separator.
+# SOURCE and DEST	If the column in the macro is empty then the
+# columns		value in the rules file is used. If the column
+#			in the macro is non-empty then any value in
+#			the rules file is appended with a ":"
+#			separator.
 #
-#	Example:		###############################################
-#				#ACTION	SOURCE	DEST		PROTO	DPORT
-#		macro.FTP File	PARAM	net	loc		tcp	21
-#		rules File	FTP(DNAT) -	192.168.1.5
-#		Result		DNAT	net	loc:192.168.1.5	tcp	21
+# Example:		#######################################################
+#			#ACTION		SOURCE	DEST		PROTO	DPORT
+#	macro.FTP File	PARAM		net	loc		tcp	21
+#	rules File	FTP(DNAT)	-	192.168.1.5
+#	Result		DNAT		net	loc:192.168.1.5	tcp	21
 #
-#	Remaining		Any value in the rules file REPLACES the value
-#	columns			given in the macro file.
+# Remaining		Any value in the rules file REPLACES the value
+# columns		given in the macro file.
 #
 # Multiple parameters may be passed to a macro. Within this file, $1 refers
 # to the first parameter, $2 to the second an so on. $1 is a synonym for

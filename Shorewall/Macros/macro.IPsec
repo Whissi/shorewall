@@ -1,13 +1,11 @@
 #
-# Shorewall - IPsec Macro
+# Shorewall -- /usr/share/shorewall/macro.IPsec
 #
-# /usr/share/shorewall/macro.IPsec
-#
-#	This macro (bidirectional) handles IPsec traffic
+# This macro (bidirectional) handles IPsec traffic
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	udp	500	500	# IKE
 PARAM	-	-	50			# ESP
 PARAM	DEST	SOURCE	udp	500	500	# IKE

@@ -1,14 +1,12 @@
 #
-# Shorewall - Web Macro
+# Shorewall -- /usr/share/shorewall/macro.Web
 #
-# /usr/share/shorewall/macro.Web
-#
-#	This macro handles WWW traffic (secure and insecure).  This
-#	macro is deprecated - use of macro.HTTP and macro.HTTPS instead
-#	is recommended.
+# This macro handles WWW traffic (secure and insecure).
+# This macro is deprecated - use of macro.HTTP and macro.HTTPS instead
+# is recommended.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
-PARAM	-	-	tcp	80	# HTTP (plaintext)
-PARAM	-	-	tcp	443	# HTTPS (over SSL)
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
+HTTP
+HTTPS

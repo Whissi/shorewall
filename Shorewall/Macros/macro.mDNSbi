@@ -1,13 +1,11 @@
 #
-# Shorewall - Bi-directional Multicast DNS Macro.
+# Shorewall -- /usr/share/shorewall/macro.mDNSbi
 #
-# /usr/share/shorewall/macro.mDNSbi
-#
-#	This macro handles multicast DNS traffic
+# This macro handles bidirectional multicast DNS traffic
 #
 ###############################################################################
-#ACTION	SOURCE	DEST			PROTO	DEST	SOURCE	ORIGIN	RATE
-#						PORT(S)	PORT(S)	DEST	LIMIT
+#ACTION	SOURCE	DEST			PROTO	DPORT	SPORT	ORIGDEST
+
 PARAM	-	224.0.0.251		udp	5353
 PARAM	-	-			udp	1024:	5353
 PARAM	-	224.0.0.251		2

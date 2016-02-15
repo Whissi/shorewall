@@ -49,9 +49,11 @@
 
     <para><filename>/etc/shorewall/rules</filename>:</para>
 
-    <programlisting>    #ACTION   	   SOURCE	 	DEST	PROTO	DEST
-    #		   					PORT(S)
-    DROP:info	   net:^[A1,A2]		dmz	tcp	25
+    <programlisting>    #ACTION         SOURCE          DEST            PROTO   DPORT
+
+    ?SECTION NEW
+
+    DROP:info	    net:^[A1,A2]    dmz             tcp     25
 </programlisting>
 
     <para>Using this feature requires the <firstterm>GeoIP Match</firstterm>

@@ -1,16 +1,10 @@
 #
-# Shorewall - SMTPS Macro
+# Shorewall -- /usr/share/shorewall/macro.SMTPS
 #
-# /usr/share/shorewall/macro.SMTPS
-#
-#	This macro handles encrypted SMTPS (email) traffic.
-#
-#	Note: This macro handles traffic between an MUA (Email client)
-#	and an MTA (mail server) or between MTAs. It does not enable
-#	reading of email via POP3 or IMAP. For those you need to use
-#	the POP3(S) or IMAP(S) macros.
+# This macro handles legacy SMTP over SSL (TLS) traffic.
+# You should configure SMTP STARTTLS instead.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	tcp	465

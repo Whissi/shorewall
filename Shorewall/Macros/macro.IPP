@@ -1,11 +1,9 @@
 #
-# Shorewall - IPP Macro
+# Shorewall -- /usr/share/shorewall/macro.IPP
 #
-# /usr/share/shorewall/macro.IPP
-#
-#	This macro handles Internet Printing Protocol (IPP).
+# This macro handles Internet Printing Protocol (IPP).
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	tcp	631

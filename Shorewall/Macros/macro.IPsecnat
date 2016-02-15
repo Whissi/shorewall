@@ -1,13 +1,11 @@
 #
-# Shorewall - IPsecnat Macro
+# Shorewall -- /usr/share/shorewall/macro.IPsecnat
 #
-# /usr/share/shorewall/macro.IPsecnat
-#
-#	This macro (bidirectional) handles IPsec traffic and Nat-Traversal
+# This macro (bidirectional) handles IPsec traffic and Nat-Traversal
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	udp	500	# IKE
 PARAM	-	-	udp	4500	# NAT-T
 PARAM	-	-	50		# ESP

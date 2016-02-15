@@ -187,10 +187,8 @@
 
         <para>If you are using a 6to4 tunnel for your IPv6 connectivity, you
         need an entry in
-        <filename>/etc/shorewall/tunnels</filename>.<programlisting>#TYPE    ZONE    GATEWAY        GATEWAY
-#                               ZONE
-6to4     net
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
+        <filename>/etc/shorewall/tunnels</filename>.<programlisting>#TYPE                   ZONE            GATEWAY                 GATEWAY_ZONE
+6to4                    net</programlisting></para>
       </section>
     </section>
   </section>
@@ -409,9 +407,11 @@
 
           <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
 
-          <programlisting>#ACTION        SOURCE              DEST                        PROTO          DEST
-#                                                                             PORT(S)
-ACCEPT         net                 $FW:[2002:ce7c:92b4::3]     tcp            22</programlisting>
+          <programlisting>#ACTION         SOURCE          DEST                    PROTO   DPORT
+
+?SECTION NEW
+
+ACCEPT          net             $FW:[2002:ce7c:92b4::3] tcp     22</programlisting>
 
           <para>When the colon is preceeded by an interface name,
           <emphasis>the angle brackets are required</emphasis>. This is true
@@ -419,9 +419,11 @@ ACCEPT         net                 $FW:[2002:ce7c:92b4::3]     tcp            22
 
           <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
 
-          <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
-#                                                                             PORT(S)
-ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                          22</programlisting>
+          <programlisting>#ACTION         SOURCE                          DEST            PROTO   DPORT
+
+?SECTION NEW
+
+ACCEPT          net:wlan0:[2002:ce7c:92b4::3]   $FW             tcp     22</programlisting>
 
           <para>Prior to Shorewall 4.5.4, angled brackets ("&lt;" and "&gt;")
           were used. While these are still accepted, their use is deprecated
@@ -429,9 +431,11 @@ ACCEPT         net:wlan0:[2002:ce7c:92b4::3]     tcp                          22
 
           <para>Example (<filename>/etc/shorewall6/rules</filename>):</para>
 
-          <programlisting>#ACTION        SOURCE                            DEST          PROTO          DEST
-#                                                                             PORT(S)
-ACCEPT         net:wlan0:&lt;2002:ce7c:92b4::3&gt;     tcp                          22</programlisting>
+          <programlisting>#ACTION         SOURCE                          DEST            PROTO   DPORT
+
+SECTION NEW
+
+ACCEPT          net:wlan0:&lt;2002:ce7c:92b4::3&gt;   $FW             tcp     22</programlisting>
 
           <para>Prior to Shorewall 4.5.9, network addresses were required to
           be enclosed in either angle brackets or square brackets (e.g.

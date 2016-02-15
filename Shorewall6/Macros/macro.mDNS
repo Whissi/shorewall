@@ -1,15 +1,13 @@
 #
-# Shorewall6 - Multicast DNS Macro
+# Shorewall6 -- /usr/share/shorewall6/macro.mDNS
 #
-# /usr/share/shorewall6/macro.mDNS
-#
-#	This macro handles multicast DNS traffic.
+# This macro handles multicast DNS traffic.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST			PROTO	DEST	SOURCE
-#						PORT(S)	PORT(S)
-PARAM	-	<ff02::fb>		udp	5353
+#ACTION	SOURCE	DEST			PROTO	DPORT	SPORT
+
+PARAM	-	[ff02::fb]		udp	5353
 PARAM	-	-			udp	32768:	5353
-PARAM	-	<ff02::fb>		2
-PARAM	DEST	SOURCE:<ff02::fb>	udp	5353
-PARAM	DEST	SOURCE:<ff02::fb>	2
+PARAM	-	[ff02::fb]		2
+PARAM	DEST	SOURCE:[ff02::fb]	udp	5353
+PARAM	DEST	SOURCE:[ff02::fb]	2

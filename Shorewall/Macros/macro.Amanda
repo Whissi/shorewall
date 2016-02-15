@@ -1,15 +1,12 @@
 #
-# Shorewall - Amanda Macro
+# Shorewall -- /usr/share/shorewall/macro.Amanda
 #
-# /usr/share/shorewall/macro.Amanda
-#
-#	This macro handles connections required by the AMANDA backup system
-#	to back up remote nodes.  It does not provide the ability to restore
-#	files from those nodes.
+# This macro handles connections required by the AMANDA backup system
+# to back up remote nodes.  It does not provide the ability to restore
+# files from those nodes.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
 
 ?if ( __CT_TARGET && ! $AUTOHELPERS && __AMANDA_HELPER )
  PARAM	-	-	udp	10080 { helper=amanda }

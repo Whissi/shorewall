@@ -194,14 +194,14 @@ tcp      6 269712 ESTABLISHED src=192.168.3.8 dst=206.124.146.177 sport=50584 dp
     <para>These are implemented in the /etc/shorewall/tcrules and
     /etc/shorewall/mangle files as follows:</para>
 
-    <programlisting>#ACTION              SOURCE        DEST        PROTO        PORT(S)        CLIENT     USER    TEST
-#                                                                          PORT(S)
-RESTORE:P            -             -           tcp
-CONTINUE:P           -             -           tcp          -              -          -       !0
-1:P                  -             -           ipp2p        ipp2p
-SAVE:P               -             -           tcp          -              -          -       1
-1:12                 -             eth0        -            -              -          -       1
-2:12                 -             eth1        -            -              -          -       1    </programlisting>
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
+
+RESTORE:P       -               -               tcp
+CONTINUE:P      -               -               tcp     -       -       -       !0
+1:P             -               -               ipp2p   ipp2p
+SAVE:P          -               -               tcp     -       -       -       1
+1:12            -               eth0            -       -       -       -       1
+2:12            -               eth1            -       -       -       -       1</programlisting>
 
     <para>These rules do exactly the same thing as their counterparts
     described above.</para>
@@ -209,14 +209,14 @@ SAVE:P               -             -           tcp          -              -    
     <para>One change that I recommend --do your marking in the FORWARD chain
     rather than in the PREROUTING chain:</para>
 
-    <programlisting>#MARK                SOURCE        DEST        PROTO        PORT(S)        CLIENT     USER    TEST
-#                                                                          PORT(S)
-RESTORE:F            -             -           tcp
-CONTINUE:F           -             -           tcp          -              -          -       !0
-1:F                  -             -           ipp2p        ipp2p
-SAVE:F               -             -           tcp          -              -          -       1
-1:12                 -             eth0        -            -              -          -       1
-2:12                 -             eth1        -            -              -          -       1    </programlisting>
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
+
+RESTORE:F       -               -               tcp
+CONTINUE:F      -               -               tcp     -       -       -       !0
+1:F             -               -               ipp2p   ipp2p
+SAVE:F          -               -               tcp     -       -       -       1
+1:12            -               eth0            -       -       -       -       1
+2:12            -               eth1            -       -       -       -       1</programlisting>
 
     <para>It will work the same and will work with a <ulink
     url="MultiISP.html">Multi-ISP setup</ulink>.</para>

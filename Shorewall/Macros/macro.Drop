@@ -1,18 +1,15 @@
 #
-# Shorewall - Drop Macro
+# Shorewall -- /usr/share/shorewall/macro.Drop
 #
-# /usr/share/shorewall/macro.Drop
+# This macro generates the same rules as the Drop default action
+# It is used in place of action.Drop when USE_ACTIONS=No.
 #
-#	This macro generates the same rules as the Drop default action
-#	It is used in place of action.Drop when USE_ACTIONS=No.
+# Example:
 #
-#	Example:
-#
-#		Drop	net	all
+#	Drop	net	all
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
 #
 # Don't log 'auth' DROP
 #

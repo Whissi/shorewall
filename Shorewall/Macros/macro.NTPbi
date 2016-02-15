@@ -1,12 +1,10 @@
 #
-# Shorewall - NTPbi Macro
+# Shorewall -- /usr/share/shorewall/macro.NTPbi
 #
-# /usr/share/shorewall/macro.NTPbi
-#
-#        This macro handles  bi-directional NTP (for NTP peers)
+# This macro handles  bi-directional NTP (for NTP peers).
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
-PARAM	-	-	udp	123
-PARAM	DEST	SOURCE	udp	123
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
+NTP
+NTP	DEST	SOURCE

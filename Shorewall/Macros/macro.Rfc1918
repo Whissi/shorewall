@@ -1,14 +1,10 @@
 #
-# Shorewall - Macro Template
+# Shorewall -- /usr/share/shorewall/macro.Rfc1918
 #
-# /usr/share/shorewall/macro.Rfc1918
+# This macro handles SOURCE or ORIGDEST address reserved by RFC 1918.
 #
-#	This macro handles pkts with a SOURCE or ORIGINAL DEST address
-#	reserved by RFC 1918
-#
-#############################################################################################
-#ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#						PORT(S)	PORT(S)	DEST	LIMIT	GROUP
-PARAM		SOURCE:10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 \
-				DEST
-PARAM		SOURCE		DEST	-	-	-	10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+###############################################################################
+#ACTION	SOURCE	DEST
+
+PARAM	SOURCE:10.0.0.0/8,172.16.0.0/12,192.168.0.0/16	DEST
+PARAM	SOURCE	DEST { origdest=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 }

@@ -20,20 +20,17 @@
 #
 # /etc/shorewall/macro.FwdFTP:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#	#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT 	ORIGDEST	RATE
 #	DNAT	-	-	tcp	21
 #
 # /etc/shorewall/rules:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#	#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT 	ORIGDEST	RATE
 #	FwdFTP	net	loc:192.168.1.5
 #
 # The result is equivalent to:
 #
-#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#	#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT 	ORIGDEST	RATE
 #	DNAT	net	loc:192.168.1.5	tcp	21
 #
 # The substitution rules are as follows:
@@ -62,11 +59,10 @@
 #				separator.
 #
 #	Example:		###############################################
-#				#ACTION	 SOURCE	DEST		PROTO	DEST
-#				#					PORT(S)
-#		macro.FTP File	PARAM	 net	loc		tcp	21
-#		rules File	FTP/DNAT -	192.168.1.5
-#		Result		DNAT	 net	loc:192.168.1.5	tcp	21
+#				#ACTION	SOURCE	DEST		PROTO	DPORT
+#		macro.FTP File	PARAM	net	loc		tcp	21
+#		rules File	FTP(DNAT) -	192.168.1.5
+#		Result		DNAT	net	loc:192.168.1.5	tcp	21
 #
 #	Remaining		Any value in the rules file REPLACES the value
 #	columns			given in the macro file.
@@ -83,6 +79,5 @@
 #
 #######################################################################################################
 #                                         DO NOT REMOVE THE FOLLOWING LINE
-#################################################################################################################################################################################################
-#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER
-#							PORT	PORT(S)		DEST		LIMIT		GROUP
+##############################################################################################################################################################
+#ACTION		SOURCE		DEST		PROTO	DPORT	SPORT	ORIGDEST	RATE	USER	MARK	CONNLIMIT	TIME	HEADERS	SWITCH	HELPER

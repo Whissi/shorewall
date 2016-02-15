@@ -139,9 +139,8 @@
 
         <para>Example:</para>
 
-        <programlisting>#SOURCE	DEST	POLICY		LOG
-#				LEVEL
-net	fw      DROP:audit</programlisting>
+        <programlisting>#SOURCE         DEST            POLICY
+net	        $FW             DROP:audit</programlisting>
 
         <para>It is allowed to also specify a log level on audited policies
         resulting in both auditing and logging.</para>
@@ -170,8 +169,8 @@ net	fw      DROP:audit</programlisting>
 
         <para>Example:</para>
 
-        <programlisting>#ACTION        SOURCE       DEST       PROTO
-A_ACCEPT:info  loc          net        ...</programlisting>
+        <programlisting>#ACTION         SOURCE          DEST            PROTO
+A_ACCEPT:info   loc             net             ...</programlisting>
       </listitem>
 
       <listitem>
@@ -330,12 +329,12 @@ A_ACCEPT:info  loc          net        ...</programlisting>
         <para> The parameters can be passed in the POLICY column of the policy
         file. </para>
 
-        <programlisting>SOURCE	DEST	POLICY
-net	all	DROP:Drop(audit):audit  #Same as DROP:A_DROP:audit
+        <programlisting>#SOURCE         DEST            POLICY
+net	        all	        DROP:Drop(audit):audit  #Same as DROP:A_DROP:audit
 </programlisting>
 
-        <programlisting>SOURCE	DEST	POLICY
-net	all	DROP:Drop(-,DROP) #DROP rather than REJECT Auth
+        <programlisting>#SOURCE         DEST            POLICY
+net             all             DROP:Drop(-,DROP) #DROP rather than REJECT Auth
 </programlisting>
 
         <para>The parameters can also be specified in shorewall.conf: </para>

@@ -1,16 +1,14 @@
 #
-# Shorewall - LDAP Macro
+# Shorewall -- /usr/share/shorewall/macro.LDAP
 #
-# /usr/share/shorewall/macro.LDAP
-#
-#	This macro handles plaintext LDAP traffic.  For encrypted LDAP
-#	traffic, see macro.LDAPS.  Use of LDAPS is recommended (and is
-#	required by some directory services) if you want to do user
-#	authentication over LDAP.  Note that some LDAP implementations
-#	support initiating TLS connections via the plaintext LDAP port.
-#	Consult your LDAP server documentation for details.
+# This macro handles plaintext LDAP traffic. For encrypted LDAP
+# traffic, see macro.LDAPS.  Use of LDAPS is recommended (and is
+# required by some directory services) if you want to do user
+# authentication over LDAP.  Note that some LDAP implementations
+# support initiating TLS connections via the plaintext LDAP port.
+# Consult your LDAP server documentation for details.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	tcp	389

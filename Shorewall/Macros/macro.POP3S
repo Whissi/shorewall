@@ -1,12 +1,10 @@
 #
-# Shorewall - POP3S Macro
+# Shorewall -- /usr/share/shorewall/macro.POP3S
 #
-# /usr/share/shorewall/macro.POP3S
-#
-#	This macro handles encrypted POP3 traffic.  For plaintext POP3,
-#	see macro.POP3.
+# This macro handles encrypted POP3 traffic.
+# For plaintext POP3, see macro.POP3.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	tcp	995	# Secure POP3

@@ -1,13 +1,11 @@
 #
-# Shorewall - blacklist Macro
+# Shorewall -- /usr/share/shorewall/macro.blacklist
 #
-# /usr/share/shorewall/macro.blacklist
-#
-#	This macro handles blacklisting using BLACKLIST_DISPOSITION and BLACKLIST_LOGLEVEL
+# This macro handles blacklisting using BLACKLIST_DISPOSITION and BLACKLIST_LOGLEVEL.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 ?if $BLACKLIST_LOGLEVEL
 blacklog
 ?else

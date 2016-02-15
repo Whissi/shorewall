@@ -1,11 +1,9 @@
 #
-# Shorewall - Sieve Macro
+# Shorewall -- /usr/share/shorewall/macro.Sieve
 #
-# /usr/share/shorewall/macro.Sieve
-#
-#	This macro handles sieve aka ManageSieve protocol.
+# This macro handles sieve aka ManageSieve protocol.
 #
 ###############################################################################
-#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGIN	RATE	USER/
-#				PORT(S)	PORT(S)	DEST	LIMIT	GROUP
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
 PARAM	-	-	tcp	4190

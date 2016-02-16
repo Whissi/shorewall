@@ -18,7 +18,7 @@
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2003-2009</year>
+      <year>2003-2016</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -439,34 +439,7 @@ ACCOUNT(loc-net,$INT_NET)   	-	INT_IF	COM_IF
     <title>Per-IP Accounting</title>
 
     <para>Shorewall 4.4.17 added support for per-IP accounting using the
-    ACCOUNT target. That target is only available when xtables-addons is
-    installed. This support has been successfully tested with xtables-addons
-    1.32 on:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Fedora 14</para>
-      </listitem>
-
-      <listitem>
-        <para>Debian Squeeze</para>
-      </listitem>
-
-      <listitem>
-        <para>OpenSuSE 11.3</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>and xtables-addons Version 1.21 on:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Debian Lenny</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Information about xtables-addons installation may be found at <ulink
-    url="Dynamic.html#xtables-addons">here</ulink>.</para>
+    ACCOUNT target.</para>
 
     <para>Per-IP accounting is configured in <ulink
     url="manpages/shorewall-accounting.html">shorewall-accounting</ulink> (5)
@@ -567,35 +540,8 @@ gateway:~#
     purging and/or reloading the Netfilter ruleset. Shorewall support for this
     form of accounting was added in Shorewall 4.5.7.</para>
 
-    <para>As of this writing (late July 2012), Fedora 17 has partial support
-    for this feature but not all. It is necessary to download and build the
-    following:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>libnetfilter_acct</para>
-      </listitem>
-
-      <listitem>
-        <para>nfacct</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>The following Fedora packages are also required:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>libnetlink and libnetlink-dev</para>
-      </listitem>
-
-      <listitem>
-        <para>libmnl and libmnl-dev</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>The tarballs are available from the Netfilter download sites.</para>
-
-    <para>The nfacct utility can create, delete and display <firstterm>nfacct
+    <para>Use of this feature requires that the nfacct utility be installed.
+    The nfacct utility can create, delete and display <firstterm>nfacct
     objects</firstterm>. These named objects consist of a packet and byte
     counter. Packets matching those netfilter rules that use the nfacct match
     cause the packet and byte count in the object named in the match to be
@@ -622,8 +568,8 @@ gateway:~#
         <term>save</term>
 
         <listitem>
-          <para> Causes the packet and byte counters to be saved along with
-          the chains and rules.</para>
+          <para>Causes the packet and byte counters to be saved along with the
+          chains and rules.</para>
         </listitem>
       </varlistentry>
 
@@ -632,7 +578,7 @@ gateway:~#
 
         <listitem>
           <para>Causes the packet and byte counters (if saved) to be restored
-          along with the chains and rules. </para>
+          along with the chains and rules.</para>
 
           <caution>
             <para>If your iptables ruleset depends on variables that are
@@ -652,7 +598,7 @@ gateway:~#
           effect if the <option>-f </option>option is also specified. If a
           previously-saved configuration is restored, then the packet and byte
           counters (if saved) will be restored along with the chains and
-          rules. </para>
+          rules.</para>
 
           <caution>
             <para>If your iptables ruleset depends on variables that are
@@ -684,8 +630,8 @@ gateway:~#
       </varlistentry>
     </variablelist>
 
-    <para> If you wish to (approximately) preserve the counters over a
-    possibly unexpected reboot, then: </para>
+    <para>If you wish to (approximately) preserve the counters over a possibly
+    unexpected reboot, then:</para>
 
     <itemizedlist>
       <listitem>

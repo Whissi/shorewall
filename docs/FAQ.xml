@@ -412,7 +412,7 @@ DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
         following rule, then you will have access on port 4104 from the net
         and on port 22 from your LAN.</para>
 
-        <programlisting>#ACTION SOURCE  DEST                    PROTO   DEST PORT(S)
+        <programlisting>#ACTION SOURCE  DEST                    PROTO   DPORT
 DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       </section>
 
@@ -1476,8 +1476,9 @@ net-fw DROP  eth2 5 packets from 61.158.162.9 to 206.124.146.177</programlisting
 
 DROP            net             $FW             udp     10619</programlisting>
 
-        <para>Alternatively, if you do not set BLACKLIST_LOGLEVEL you can blacklist
-        the port. In <filename>/etc/shorewall/blrules</filename>:</para>
+        <para>Alternatively, if you do not set BLACKLIST_LOGLEVEL you can
+        blacklist the port. In
+        <filename>/etc/shorewall/blrules</filename>:</para>
 
         <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT
 
@@ -3039,8 +3040,8 @@ REJECT          fw      net:pagead2.googlesyndication.com       all</programlist
 
       <para><programlisting>#ACTION         SOURCE          DEST                    PROTO
 REJECT          $FW             net:216.239.37.99       all
-REJECT          $FW             net:216.239.39.99       all</programlisting>Given that
-      name-based multiple hosting is a common practice (another example:
+REJECT          $FW             net:216.239.39.99       all</programlisting>Given
+      that name-based multiple hosting is a common practice (another example:
       lists.shorewall.net and www1.shorewall.net are both hosted on the same
       system with a single IP address), it is not possible to filter
       connections to a particular name by examination of protocol headers

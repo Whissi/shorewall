@@ -481,18 +481,19 @@ sub process_a_provider( $ ) {
 	$interface = $interfaceref->{name} unless $interfaceref->{wildcard};
     } 
 
-    my $gatewaycase = '';
-
     if ( $physical =~ /\+$/ ) {
 	return 0 if $pseudo;
 	fatal_error "Wildcard interfaces ($physical) may not be used as provider interfaces";
     }
 
-    if ( $gateway eq 'detect' ) {
+    my $gatewaycase = '';
+    my $gw;
+
+    if ( ( $gw = lc $gateway ) eq 'detect' ) {
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
 	$gateway = get_interface_gateway $interface;
 	$gatewaycase = 'detect';
-    } elsif ( $gateway eq 'none' ) {
+    } elsif ( $gw eq 'none' ) {
 	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
 	$gatewaycase = 'none';
 	$gateway = '';

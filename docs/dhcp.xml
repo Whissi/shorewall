@@ -154,15 +154,13 @@
         <para>Allow UDP ports 67 and 68 ("67:68") between the client zone and
         the server zone:</para>
 
-        <programlisting>#ACTION        SOURCE        DEST        PROTO       DEST
-#                                                    PORT(S)
+        <programlisting>#ACTION        SOURCE        DEST        PROTO       DPORT
 ACCEPT         ZONEA         ZONEB       udp         67:68
 ACCEPT         ZONEB         ZONEA       udp         67:68</programlisting>
 
         <para>Alternatively, use the DHCPfwd macro:</para>
 
-        <programlisting>#ACTION         SOURCE        DEST        PROTO       DEST
-#                                                     PORT(S)
+        <programlisting>#ACTION         SOURCE        DEST        PROTO       DPORT
 DHCPfwd(ACCEPT) ZONEA         ZONEB</programlisting>
       </listitem>
 

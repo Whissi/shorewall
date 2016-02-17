@@ -134,7 +134,7 @@
     the bridge would work exactly the same if public IP addresses were used
     (remember that the bridge doesn't deal with IP addresses).</para>
 
-    <graphic fileref="images/bridge.png" />
+    <graphic fileref="images/bridge.png"/>
 
     <para>There are a several key differences in this setup and a normal
     Shorewall configuration:</para>
@@ -180,7 +180,7 @@
     systems connected to that switch. All of the systems on the local side of
     the <emphasis role="bold">router</emphasis> would still be configured with
     IP addresses in 192.168.1.0/24 as shown below.<graphic
-    fileref="images/bridge3.png" /></para>
+    fileref="images/bridge3.png"/></para>
   </section>
 
   <section id="Bridge">
@@ -596,8 +596,8 @@ all         all         REJECT        info
     is connected to <filename class="devicefile">eth0</filename> and the
     switch to <filename class="devicefile">eth1</filename>:</para>
 
-    <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
-world    br0            detect          bridge
+    <programlisting>#ZONE    INTERFACE      OPTIONS
+world    br0            bridge
 net      br0:eth0
 loc      br0:eth1
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
@@ -645,9 +645,9 @@ br0             192.168.1.0/24  routeback
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>       #ZONE            INTERFACE       BROADCAST       OPTIONS
-       world            br0             -               bridge
-       world            br1             -               bridge
+    <programlisting>       #ZONE            INTERFACE       OPTIONS
+       world            br0             bridge
+       world            br1             bridge
        z1               br0:p+
        z2               br1:p+</programlisting>
 
@@ -657,11 +657,11 @@ br0             192.168.1.0/24  routeback
     configuration may be defined using the following in
     <filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>       #ZONE            INTERFACE       BROADCAST       OPTIONS
-       world            br0             -               bridge
-       world            br1             -               bridge
-       z1               br0:x+          -               physical=p+
-       z2               br1:y+          -               physical=p+</programlisting>
+    <programlisting>       #ZONE            INTERFACE       OPTIONS
+       world            br0             bridge
+       world            br1             bridge
+       z1               br0:x+          physical=p+
+       z2               br1:y+          physical=p+</programlisting>
 
     <para>In this configuration, 'x+' is the logical name for ports p+ on
     bridge br0 while 'y+' is the logical name for ports p+ on bridge
@@ -673,8 +673,7 @@ br0             192.168.1.0/24  routeback
 
     <para>Example from /etc/shorewall/rules:</para>
 
-    <programlisting>       #ACTION    SOURCE    DEST       PROTO    DEST
-       #                                        PORT(S)
+    <programlisting>       #ACTION    SOURCE    DEST       PROTO    DPORT
        REJECT     z1:x1023  z1:x1024   tcp      1234</programlisting>
   </section>
 
@@ -683,7 +682,7 @@ br0             192.168.1.0/24  routeback
 
     <para>A system running Shorewall doesn't have to be exclusively a bridge
     or a router -- it can act as both, which is also know as a brouter. Here's
-    an example:<graphic fileref="images/bridge2.png" /></para>
+    an example:<graphic fileref="images/bridge2.png"/></para>
 
     <para>This is basically the same setup as shown in the <ulink
     url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> with the
@@ -710,11 +709,11 @@ loc                     ipv4</programlisting>
 
       <listitem>
         <para>The <filename>/etc/shorewall/interfaces</filename> file is as
-        follows:<programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-pub      br0            detect        routefilter,bridge
+        follows:<programlisting>#ZONE    INTERFACE      OPTIONS
+pub      br0            routefilter,bridge
 net      br0:eth0 
 dmz      br0:eth2
-loc      eth1           detect</programlisting></para>
+loc      eth1</programlisting></para>
       </listitem>
 
       <listitem>
@@ -761,9 +760,7 @@ all             all             REJECT          info</programlisting>
 
         <para><filename>/etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION           SOURCE           DEST             PROTO            DEST             SOURCE
-#
-                                                                     PORT(S)          PORT(S)
+        <programlisting>#ACTION           SOURCE           DEST             PROTO            DPORT            SPORT
 ACCEPT            all              all              icmp             8
 ACCEPT            loc              $DMZ             tcp              25,53,80,443,...
 ACCEPT            loc              $DMZ             udp              53
@@ -784,7 +781,7 @@ ACCEPT            $FW              $DMZ             tcp              53       </
 
     <para>This configuration is shown in the following diagram.</para>
 
-    <graphic align="center" fileref="images/veth1.png" />
+    <graphic align="center" fileref="images/veth1.png"/>
 
     <para>In this configuration, veth0 is assigned the internal IP address;
     br0 does not have an IP address.</para>
@@ -872,8 +869,7 @@ iface veth0 inet static
     <para>For this configuration, we need several additional zones as shown
     here:</para>
 
-    <programlisting>#ZONE   TYPE    OPTIONS            IN                    OUT
-#                                  OPTIONS               OPTIONS
+    <programlisting>#ZONE   TYPE    OPTIONS            IN_OPTIONS            OUT_OPTIONS
 fw      firewall
 net     ipv4
 zone1   bport
@@ -943,8 +939,7 @@ all       all     REJECT:info</programlisting>
 
     <para>Rules allowing traffic from the net to zone2 look like this:</para>
 
-    <programlisting>#ACTION     SOURCE       DEST         PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
-#                                            PORT(S) PORT(S)    DEST        LIMIT   GROUP
+    <programlisting>#ACTION     SOURCE       DEST         PROTO  DPORT   SPORT      ORIGDEST    RATE    USER    MARK
 ACCEPT      col          zone2        tcp    22      -          -           -       -       <emphasis
         role="bold">net</emphasis></programlisting>
 
@@ -969,8 +964,7 @@ ACCEPT      col          <emphasis role="bold">zone3</emphasis>        tcp    22
     <para>Suppose that you want to forward tcp port 80 to 192.168.4.45 in
     zone3:</para>
 
-    <programlisting>#ACTION     SOURCE       DEST               PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
-#                                                  PORT(S) PORT(S)    DEST        LIMIT   GROUP
+    <programlisting>#ACTION     SOURCE       DEST               PROTO  DPORT   SPORT      ORIGDEST    RATE    USER    MARK
 DNAT-       net          loc:172.168.4.45   tcp    80
 ACCEPT      col          zone3:172.168.4.45 tcp    80      -          -           -       -       <emphasis
         role="bold">net</emphasis></programlisting>
@@ -979,15 +973,13 @@ ACCEPT      col          zone3:172.168.4.45 tcp    80      -          -         
     role="bold">zonei</emphasis> zones to the <emphasis
     role="bold">net</emphasis> zone look like this:</para>
 
-    <programlisting>#ACTION     SOURCE       DEST               PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
-#                                                  PORT(S) PORT(S)    DEST        LIMIT   GROUP
+    <programlisting>#ACTION     SOURCE       DEST               PROTO  DPORT   SPORT      ORIGDEST    RATE    USER    MARK
 ACCEPT      loc          net                tcp    21      -          -           -       -       <emphasis
         role="bold">zone1</emphasis></programlisting>
 
     <para>And to the firewall:</para>
 
-    <programlisting>#ACTION     SOURCE       DEST               PROTO  DEST    SOURCE     ORIGINAL    RATE    USER/   MARK
-#                                                  PORT(S) PORT(S)    DEST        LIMIT   GROUP
+    <programlisting>#ACTION     SOURCE       DEST               PROTO  DPORT   SPORT      ORIGDEST    RATE    USER   MARK
 ACCEPT      zone2        col                tcp          -          -           -       -       <emphasis
         role="bold">zone2</emphasis></programlisting>
   </section>

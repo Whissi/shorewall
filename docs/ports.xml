@@ -61,7 +61,7 @@
       from the <emphasis role="bold">dmz</emphasis> zone to the <emphasis
       role="bold">net</emphasis> zone:</para>
 
-      <programlisting>#ACTION         SOURCE        DESTINATION
+      <programlisting>#ACTION         SOURCE        DEST
 DNS(ACCEPT)     dmz           net</programlisting>
     </note>
 
@@ -74,12 +74,12 @@ DNS(ACCEPT)     dmz           net</programlisting>
       <para>Example: You want to port forward FTP from the net to your server
       at 192.168.1.4 in your DMZ. The FTP section below gives you:</para>
 
-      <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+      <programlisting>#ACTION        SOURCE    DEST             PROTO      DPORT
 FTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
 
       <para>You would code your rule as follows:</para>
 
-      <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+      <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 FTP(DNAT)       net       dmz:192.168.1.4  </programlisting>
     </note>
   </section>
@@ -93,7 +93,7 @@ FTP(DNAT)       net       dmz:192.168.1.4  </programlisting>
       anymore.</emphasis></para>
     </caution>
 
-    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DPORT
 Auth(ACCEPT)    <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -110,14 +110,14 @@ Auth(ACCEPT)    <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
       port(s)</emphasis></emphasis></para>
     </caution>
 
-    <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DPORT
 BitTorrent(ACCEPT)<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="DNS">
     <title>DNS</title>
 
-    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DPORT
 DNS(ACCEPT)    <emphasis>  &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    </programlisting>
 
     <para>Note that if you are setting up a DNS server that supports recursive
@@ -128,7 +128,7 @@ DNS(ACCEPT)    <emphasis>  &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
     a public DNS server in your DMZ that supports recursive resolution for
     local clients then you would need:</para>
 
-    <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DPORT
 DNS(ACCEPT) all       dmz              
 DNS(ACCEPT) dmz       net              </programlisting>
 
@@ -174,7 +174,7 @@ DNS(ACCEPT) dmz       net              </programlisting>
 
     <para><filename>/etc/shorewall/rules:</filename></para>
 
-    <programlisting>#ACTION       SOURCE   DESTINATION          PROTO         DEST PORT(S)
+    <programlisting>#ACTION       SOURCE   DESTINATION          PROTO         DPORT
 Edonkey(DNAT)  net      loc:192.168.1.4
 #if you wish to enable the Emule webserver, add this rule too.
 DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
@@ -183,7 +183,7 @@ DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
   <section id="FTP">
     <title>FTP</title>
 
-    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 FTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
 
     <para>Look <ulink url="FTP.html">here</ulink> for much more
@@ -212,14 +212,14 @@ FTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
         <listitem>
           <para>Your loc-&gt;net policy is ACCEPT</para>
         </listitem>
-      </orderedlist><programlisting>#ACTION              SOURCE   DESTINATION      PROTO      DEST PORT(S)
+      </orderedlist><programlisting>#ACTION              SOURCE   DESTINATION      PROTO      DPORT
 Gnutella(DNAT)       net      loc:192.168.1.4</programlisting></para>
   </section>
 
   <section id="ICQ">
     <title>ICQ/AIM</title>
 
-    <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION     SOURCE    DESTINATION      PROTO      DPORT
 ICQ(ACCEPT) <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
   </section>
 
@@ -236,7 +236,7 @@ ICQ(ACCEPT) <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
       <para>This information is valid only for Shorewall 3.2 or later.</para>
     </caution>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 IMAP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> # Unsecure IMAP 
 IMAPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt; # IMAP over SSL.</programlisting>
   </section>
@@ -244,7 +244,7 @@ IMAPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt; # IMAP over SSL.</programlis
   <section id="IPSEC">
     <title>IPSEC</title>
 
-    <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DPORT
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    50     
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    51
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    udp        500
@@ -263,9 +263,9 @@ ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</e
       <para>This information is valid only for Shorewall 3.2 or later.</para>
     </caution>
 
-    <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DPORT
 LDAP(ACCEPT)     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>     #Insecure LDAP</emphasis>
-LDAPS(ACCEPT)    <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis></emphasis>   # LDAP over SSL</programlisting>
+LDAPS(ACCEPT)    <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis/>   # LDAP over SSL</programlisting>
   </section>
 
   <section id="MySQL">
@@ -284,14 +284,14 @@ LDAPS(ACCEPT)    <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &
       how to deal with the consequences, you have been warned.</para>
     </caution>
 
-    <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DPORT
 MySQL(ACCEPT)     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>    </emphasis></programlisting>
   </section>
 
   <section id="NFS">
     <title>NFS</title>
 
-    <programlisting>#ACTION    SOURCE                         DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE                         DESTINATION      PROTO      DPORT
 ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis>    &lt;z2&gt;</emphasis>:a.b.c.d     tcp        111
 ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis>    &lt;z2&gt;</emphasis>:a.b.c.d     udp</programlisting>
 
@@ -302,14 +302,14 @@ ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis
   <section id="NTP">
     <title>NTP (Network Time Protocol)</title>
 
-    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 NTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="PCA">
     <title><trademark>PCAnywhere</trademark></title>
 
-    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 PCA(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -325,7 +325,7 @@ PCA(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
       <para>This information is valid only for Shorewall 3.2 or later</para>
     </caution>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 POP3(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>   # Secure
 POP3S(ACCEPT)   &lt;source&gt;  &lt;destination&gt;  #Unsecure Pop3</programlisting>
   </section>
@@ -333,7 +333,7 @@ POP3S(ACCEPT)   &lt;source&gt;  &lt;destination&gt;  #Unsecure Pop3</programlist
   <section id="PPTP">
     <title>PPTP</title>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DPORT
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    47    
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        1723</programlisting>
 
@@ -344,14 +344,14 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
   <section id="Rdate">
     <title>rdate</title>
 
-    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DPORT
 Rdate(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section id="rsync">
     <title>rsync</title>
 
-    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DPORT
 Rsync(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -363,16 +363,16 @@ Rsync(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&
       firewall and is using the default ports</emphasis>.</para>
     </caution>
 
-    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DPORT
 REDIRECT          loc           5060         udp        5060
 ACCEPT            net           fw           udp        5060
-ACCEPT     <emphasis>       net           fw           udp        7070:7089</emphasis><emphasis></emphasis></programlisting>
+ACCEPT     <emphasis>       net           fw           udp        7070:7089</emphasis><emphasis/></programlisting>
   </section>
 
   <section id="SSH">
     <title>SSH/SFTP</title>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DPORT
 SSH(ACCEPT)<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
   </section>
 
@@ -380,7 +380,7 @@ SSH(ACCEPT)<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>SMB/NMB (Samba/<trademark>Windows</trademark> Browsing/File
     Sharing)</title>
 
-    <programlisting>#ACTION        SOURCE         DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION        SOURCE         DESTINATION      PROTO      DPORT
 SMB(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>
 SMB(ACCEPT)    <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis></programlisting>
 
@@ -394,7 +394,7 @@ SMB(ACCEPT)    <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt
       <para>This information is valid only for Shorewall 3.2 or later.</para>
     </caution>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 SMTP(ACCEPT)<emphasis>     &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #Insecure SMTP
 SMTPS(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #SMTP over SSL (TLS)</programlisting>
   </section>
@@ -402,7 +402,7 @@ SMTPS(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&
   <section id="SNMP">
     <title>SNMP</title>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 SNMP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -418,7 +418,7 @@ SNMP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
       role="bold">svnserve mode only.</emphasis></para>
     </caution>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 SVN(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -430,7 +430,7 @@ SVN(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
       insecure</emphasis>, don't use it.</emphasis></para>
     </caution>
 
-    <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DPORT
 Telnet(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -447,14 +447,14 @@ Telnet(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination
     that the <filename>/etc/shorewall/modules</filename> file released with
     recent Shorewall versions contains entries for these modules.</para>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DPORT
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        69</programlisting>
   </section>
 
   <section id="Traceroute">
     <title>Traceroute</title>
 
-    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DPORT
 Trcrt(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  #Good for 10 hops</programlisting>
 
     <para>UDP traceroute uses ports 33434 through 33434+&lt;max number of
@@ -464,7 +464,7 @@ Trcrt(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&
     automatically since those sample configurations enable all ICMP packet
     types originating on the firewall itself.</para>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DPORT
 ACCEPT     fw        net              icmp
 ACCEPT     fw        loc              icmp
 ACCEPT     fw        ...</programlisting>
@@ -473,7 +473,7 @@ ACCEPT     fw        ...</programlisting>
   <section id="NNTP">
     <title>Usenet (NNTP)</title>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 NNTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>
 NNTPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisting>
 
@@ -493,13 +493,13 @@ NNTPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisti
     <para>the following rule handles VNC traffic for VNC displays 0 -
     9.</para>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DPORT
 VNC(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>      
 </programlisting>
 
     <para>Vncserver to Vncviewer in listen mode -- TCP port 5500.</para>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DPORT
 VNCL(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
@@ -519,7 +519,7 @@ VNCL(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
       <para>This information is valid for Shorewall 3.2 or later.</para>
     </caution>
 
-    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 HTTP(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Insecure HTTP 
 HTTPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt; #Secure   HTTP</programlisting>
   </section>
@@ -527,7 +527,7 @@ HTTPS(ACCEPT)   &lt;source&gt;  &lt;destination&gt; #Secure   HTTP</programlisti
   <section id="Webmin">
     <title>Webmin</title>
 
-    <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 Webmin(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting>Webmin
     use TCP port 10000.</para>
   </section>
@@ -535,7 +535,7 @@ Webmin(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination
   <section id="Whois">
     <title>Whois</title>
 
-    <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <para><programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DPORT
 Whois(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  </programlisting></para>
   </section>
 
@@ -546,7 +546,7 @@ Whois(ACCEPT)    <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&
     &lt;<emphasis>chooser</emphasis>&gt; and the Display Manager/X
     applications are running at &lt;<emphasis>apps</emphasis>&gt;.</para>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DPORT
 ACCEPT     &lt;<emphasis>chooser</emphasis>&gt; &lt;<emphasis>apps</emphasis>&gt;           udp        177         #XDMCP
 ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>&gt;        tcp        6000:6009   #X Displays 0-9</programlisting>
   </section>

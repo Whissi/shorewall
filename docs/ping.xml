@@ -55,7 +55,7 @@
     policy for z1 to z2 is not ACCEPT, you need a rule in
     <filename>/etc/shorewall/rules</filename> of the form:</para>
 
-    <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
+    <programlisting>#ACTION      SOURCE    DEST     PROTO    DPORT
 Ping(ACCEPT) z1        z2</programlisting>
 
     <example id="Example1">
@@ -63,7 +63,7 @@ Ping(ACCEPT) z1        z2</programlisting>
 
       <para>To permit ping from the local zone to the firewall:</para>
 
-      <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
+      <programlisting>#ACTION      SOURCE    DEST     PROTO    DPORT
 Ping(ACCEPT) loc       $FW</programlisting>
     </example>
 

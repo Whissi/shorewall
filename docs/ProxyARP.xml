@@ -84,7 +84,7 @@
 
     <para>The following figure represents a Proxy ARP environment.</para>
 
-    <graphic align="center" fileref="images/proxyarp.png" />
+    <graphic align="center" fileref="images/proxyarp.png"/>
 
     <para>Proxy ARP can be used to make the systems with addresses
     130.252.100.18 and 130.252.100.19 appear to be on the upper
@@ -129,7 +129,7 @@
     irrelevant, one approach you can take is to make that address the same as
     the address of your external interface!</para>
 
-    <graphic align="center" fileref="images/proxyarp1.png" />
+    <graphic align="center" fileref="images/proxyarp1.png"/>
 
     <para>In the diagram above, <filename class="devicefile">eth1</filename>
     has been given the address 130.252.100.17, the same as
@@ -142,8 +142,7 @@
     you have configured to be in the <emphasis role="bold">loc</emphasis> zone
     then you would need this entry in /etc/shorewall/rules:</para>
 
-    <programlisting>#ACTION SOURCE          DEST                    PROTO   DEST
-#                                                       PORT
+    <programlisting>#ACTION SOURCE          DEST                    PROTO   DPORT
 ACCEPT  net             loc:130.252.100.19      tcp     80</programlisting>
 
     <warning>

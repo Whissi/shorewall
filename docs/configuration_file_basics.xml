@@ -464,8 +464,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
 
       <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
 
-      <programlisting>#ACTION     SOURCE          DEST            PROTO           DEST
-#                                                           PORT(S)
+      <programlisting>#ACTION     SOURCE          DEST            PROTO           DPORT
 ACCEPT      net:\
             206.124.146.177,\
             206.124.146.178,\
@@ -483,8 +482,7 @@ ACCEPT      net:\
       <para>A trailing backslash is not ignored in a comment. So the continued
       rule above can be commented out with a single '#' as follows:</para>
 
-      <programlisting>#ACTION     SOURCE          DEST            PROTO           DEST
-#                                                           PORT(S)
+      <programlisting>#ACTION     SOURCE          DEST            PROTO           DPORT
 <emphasis role="bold">#</emphasis>ACCEPT     net:\
             206.124.146.177,\
             206.124.146.178,\
@@ -765,8 +763,7 @@ ACCEPT      net:\
 
     <para>Example (rules file):</para>
 
-    <programlisting>#ACTION         SOURCE            DEST            PROTO   DEST 
-#                                                         PORT(S)
+    <programlisting>#ACTION         SOURCE            DEST            PROTO   DPORT
 DNAT            net               loc:10.0.0.1    tcp     80    ; mark="88"</programlisting>
 
     <para>Here's the same line in several equivalent formats:</para>
@@ -1166,14 +1163,14 @@ COMB_IF                         !70.90.191.120/29       70.90.191.123</programli
 ALL.rules  DNAT.rules  FW.rules  NET.rules  REDIRECT.rules  VPN.rules
 gateway:/etc/shorewall # </programlisting></para>
 
-      <para>/etc/shorewall/rules:<programlisting>SECTION NEW
+      <para>/etc/shorewall/rules:<programlisting>?SECTION NEW
 SHELL cat /etc/shorewall/rules.d/*.rules</programlisting></para>
 
       <para>If you are the sort to put such an entry in your rules file even
       though /etc/shorewall/rules.d might not exist or might be empty, then
       you probably want:</para>
 
-      <programlisting>SECTION NEW
+      <programlisting>?SECTION NEW
 SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting>
 
       <para>Beginning with Shorewall 4.5.2, in files other than
@@ -1306,7 +1303,7 @@ SHELL cat /etc/shorewall/rules.d/*.rules 2&gt; /dev/null || true</programlisting
 
     <variablelist>
       <varlistentry>
-        <term>[?]COMMENT [ <replaceable>comment</replaceable> ]</term>
+        <term>?COMMENT [ <replaceable>comment</replaceable> ]</term>
 
         <listitem>
           <para>If <replaceable>comment</replaceable> is present, it will
@@ -1363,8 +1360,7 @@ gateway:~ #
 
     <para><filename>/usr/share/shorewall/macro.SSH</filename>:</para>
 
-    <para><programlisting>#ACTION SOURCE DEST  PROTO DEST    SOURCE  RATE  USER/
-#                          PORT(S) PORT(S) LIMIT GROUP
+    <para><programlisting>#ACTION SOURCE DEST  PROTO DPORT   SPORT   RATE  USER
 ?COMMENT SSH
 PARAM   -      -     tcp   22 </programlisting>
     <filename>/etc/shorewall/rules</filename>:<programlisting>?COMMENT Allow SSH from home
@@ -2418,7 +2414,7 @@ POP(ACCEPT)     loc                  net:pop.gmail.com</programlisting>
 
     <itemizedlist>
       <listitem>
-        <para>Must not have any embedded white space.<programlisting>     Valid:   routefilter,dhcp,arpfilter
+        <para>Must not have any embedded white space.+<programlisting>     Valid:   routefilter,dhcp,arpfilter
      Invalid: routefilter,     dhcp,     arpfilter</programlisting></para>
       </listitem>
 
@@ -2608,7 +2604,7 @@ redirect                      =&gt; 137</programlisting>
     to forward the range of tcp ports 4000 through 4100 to local host
     192.168.1.3, the entry in /etc/shorewall/rules is:</para>
 
-    <programlisting>#ACTION    SOURCE     DESTINATION     PROTO     DEST PORTS(S)
+    <programlisting>#ACTION    SOURCE     DESTINATION     PROTO     DPORT
 DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100</emphasis></programlisting>
 
     <para>If you omit the low port number, a value of zero is assumed; if you
@@ -2790,8 +2786,7 @@ DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100<
       <para>Forward port 80 to dmz host $BACKUP if switch 'primary_down' is
       on.</para>
 
-      <programlisting>#ACTION     SOURCE          DEST        PROTO       DEST         SOURCE    ORIGINAL   RATE      USER/     MARK    CONNLIMIT     TIME     HEADERS    SWITCH
-#                                                   PORT(S)      PORT(S)   DEST       LIMIT     GROUP
+      <programlisting>#ACTION     SOURCE          DEST        PROTO       DPORT        SPORT     ORIGDEST   RATE      USER      MARK    CONNLIMIT     TIME     HEADERS    SWITCH
 DNAT        net             dmz:$BACKUP tcp         80           -         -          -         -         -       -             -        -          <emphasis
           role="bold">primary_down</emphasis>  </programlisting>
     </blockquote>
@@ -2822,17 +2817,16 @@ DNAT        net             dmz:$BACKUP tcp         80           -         -    
 
     <para>Here is an example:</para>
 
-    <programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
-net    <emphasis role="bold">COM_IF </emphasis>    detect    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0,<emphasis
+    <programlisting>#ZONE  INTERFACE  OPTIONS
+net    <emphasis role="bold">COM_IF </emphasis>    dhcp,blacklist,tcpflags,optional,upnp,routefilter=0,nosmurfs,logmartians=0,<emphasis
         role="bold">physical=eth0</emphasis>
-net    <emphasis role="bold">EXT_IF</emphasis>     detect    dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartians=0,proxyarp=1,<emphasis
+net    <emphasis role="bold">EXT_IF</emphasis>     dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartians=0,proxyarp=1,<emphasis
         role="bold">physical=eth2</emphasis>
-loc    <emphasis role="bold">INT_IF </emphasis>    detect    dhcp,logmartians=1,routefilter=1,tcpflags,nets=172.20.1.0/24,<emphasis
+loc    <emphasis role="bold">INT_IF </emphasis>    dhcp,logmartians=1,routefilter=1,tcpflags,nets=172.20.1.0/24,<emphasis
         role="bold">physical=eth1</emphasis>
-dmz    <emphasis role="bold">VPS_IF </emphasis>    detect    logmartians=1,routefilter=0,routeback,<emphasis
+dmz    <emphasis role="bold">VPS_IF </emphasis>    logmartians=1,routefilter=0,routeback,<emphasis
         role="bold">physical=venet0</emphasis>
-loc    <emphasis role="bold">TUN_IF</emphasis>     detect    <emphasis
-        role="bold">physical=tun+</emphasis></programlisting>
+loc    <emphasis role="bold">TUN_IF</emphasis>     <emphasis role="bold">physical=tun+</emphasis></programlisting>
 
     <para>In this example, COM_IF is a logical interface name that refers to
     Ethernet interface <filename class="devicefile">eth0</filename>, EXT_IF is

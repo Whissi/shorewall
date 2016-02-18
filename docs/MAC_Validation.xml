@@ -172,22 +172,20 @@ MACLIST_LOG_LEVEL=info</programlisting>
 
       <para>/etc/shorewall/interfaces:</para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-net     $EXT_IF         206.124.146.255 dhcp,routefilter,logmartians,blacklist,tcpflags,nosmurfs
-loc     $INT_IF         192.168.1.255   dhcp
-dmz     $DMZ_IF         -
-vpn     tun+            -
-Wifi    $WIFI_IF        -               maclist,dhcp
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      <programlisting>#ZONE   INTERFACE       OPTIONS
+net     $EXT_IF         dhcp,routefilter,logmartians,blacklist,tcpflags,nosmurfs
+loc     $INT_IF         dhcp
+dmz     $DMZ_IF         
+vpn     tun+            
+Wifi    $WIFI_IF        maclist,dhcp</programlisting>
 
-      <para>/etc/shorewall/maclist:</para>
+      <para>etc/shorewall/maclist:</para>
 
       <programlisting>#DISPOSITION            INTERFACE               MAC                     IP ADDRESSES (Optional)
 ACCEPT                  $WIFI_IF                00:04:5e:3f:85:b9                       #WAP11
 ACCEPT                  $WIFI_IF                00:06:25:95:33:3c                       #WET11
 ACCEPT                  $WIFI_IF                00:0b:4d:53:cc:97       192.168.3.8     #TIPPER
-ACCEPT                  $WIFI_IF                00:1f:79:cd:fe:2e       192.168.3.6     #Work Laptop
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+ACCEPT                  $WIFI_IF                00:1f:79:cd:fe:2e       192.168.3.6     #Work Laptop</programlisting>
 
       <para>As shown above, I used MAC Verification on my wireless zone that
       was served by a Linksys WET11 wireless bridge.</para>

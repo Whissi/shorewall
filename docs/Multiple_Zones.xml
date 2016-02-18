@@ -114,7 +114,7 @@
       of this discussion, it makes no difference.</para>
     </note>
 
-    <graphic fileref="images/MultiZone1.png" />
+    <graphic fileref="images/MultiZone1.png"/>
 
     <section id="Standard">
       <title>Can You Use the Standard Configuration?</title>
@@ -183,7 +183,7 @@
         all hosts connected to eth1 and a second zone <quote>loc1</quote>
         (192.168.2.0/24) as a sub-zone.</para>
 
-        <graphic fileref="images/MultiZone1A.png" />
+        <graphic fileref="images/MultiZone1A.png"/>
 
         <para><note>
             <para>The Router in the above diagram is assumed to NOT be doing
@@ -209,7 +209,7 @@ loc1:loc    ipv4</programlisting>
 
         <para><filename>/etc/shorewall/interfaces</filename></para>
 
-        <programlisting>#ZONE               INTERFACE           BROADCAST               OPTIONS
+        <programlisting>#ZONE               INTERFACE           OPTIONS
 loc                 eth1                -</programlisting>
 
         <para><filename>/etc/shorewall/hosts</filename></para>
@@ -234,7 +234,7 @@ loc1                loc                  NONE</programlisting>
         <para>You define both zones in the /etc/shorewall/hosts file to create
         two disjoint zones.</para>
 
-        <graphic fileref="images/MultiZone1B.png" />
+        <graphic fileref="images/MultiZone1B.png"/>
 
         <para><note>
             <para>The Router in the above diagram is assumed to NOT be doing
@@ -247,8 +247,8 @@ loc2        ipv4</programlisting>
 
         <para><filename>/etc/shorewall/interfaces</filename></para>
 
-        <programlisting>#ZONE               INTERFACE           BROADCAST
--                   eth1                192.168.1.255
+        <programlisting>#ZONE               INTERFACE           OPTIONS
+-                   eth1                -
 </programlisting>
 
         <para><filename>/etc/shorewall/hosts</filename></para>
@@ -274,7 +274,7 @@ loc2                loc1                 NONE</programlisting>
     <para>There are cases where a subset of the addresses associated with an
     interface need special handling. Here's an example.</para>
 
-    <graphic fileref="images/MultiZone2.png" />
+    <graphic fileref="images/MultiZone2.png"/>
 
     <para>In this example, addresses 192.168.1.8 - 192.168.1.15
     (192.168.1.8/29) are to be treated as their own zone (loc1).</para>
@@ -287,8 +287,8 @@ loc1:loc    ipv4</programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename></para>
 
-    <programlisting>#ZONE               INTERFACE           BROADCAST
-loc                 eth1                -</programlisting>
+    <programlisting>#ZONE               INTERFACE
+loc                 eth1</programlisting>
 
     <para><filename>/etc/shorewall/hosts</filename><programlisting>#ZONE               HOSTS                  OPTIONS
 loc1                eth1:192.168.1.8/29    broadcast</programlisting></para>
@@ -326,7 +326,7 @@ loc1                loc                  NONE</programlisting>
     <quote>loc</quote> zone are configured with their default gateway set to
     the Shorewall router's RFC1918 address.</para>
 
-    <para><graphic fileref="images/MultiZone3.png" /></para>
+    <para><graphic fileref="images/MultiZone3.png"/></para>
 
     <para><filename>/etc/shorewall/zones</filename></para>
 
@@ -336,8 +336,8 @@ loc:net     ipv4</programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename></para>
 
-    <programlisting>#ZONE               INTERFACE           BROADCAST      OPTIONS
-net                 eth0                detect         routefilter</programlisting>
+    <programlisting>#ZONE               INTERFACE           OPTIONS
+net                 eth0                routefilter</programlisting>
 
     <para><filename>/etc/shorewall/hosts</filename></para>
 

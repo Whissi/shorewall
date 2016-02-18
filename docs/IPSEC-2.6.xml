@@ -295,8 +295,7 @@ ipsec         net         206.162.148.9
       <para><filename><filename>/etc/shorewall/zones</filename></filename> —
       Systems A and B:</para>
 
-      <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
+      <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 net            ipv4
 <emphasis role="bold">vpn            ipv4</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
@@ -330,17 +329,17 @@ vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ips
     <filename>/etc/shorewall/policy</filename> entries on each system:</para>
 
     <blockquote>
-      <programlisting>#SOURCE          DESTINATION            POLICY          LEVEL       BURST:LIMIT
-loc              vpn                    ACCEPT
-vpn              loc                    ACCEPT</programlisting>
+      <programlisting>#SOURCE          DEST            POLICY          LEVEL       BURST:LIMIT
+loc              vpn             ACCEPT
+vpn              loc             ACCEPT</programlisting>
     </blockquote>
 
     <para>If you need access from each firewall to hosts in the other network,
     then you could add:</para>
 
     <blockquote>
-      <programlisting>#SOURCE          DESTINATION            POLICY          LEVEL       BURST:LIMIT
-$FW              vpn                    ACCEPT</programlisting>
+      <programlisting>#SOURCE          DEST            POLICY          LEVEL       BURST:LIMIT
+$FW              vpn             ACCEPT</programlisting>
     </blockquote>
 
     <para>If you need access between the firewall's, you should describe the
@@ -348,7 +347,7 @@ $FW              vpn                    ACCEPT</programlisting>
     from System B, add this rule on system A:</para>
 
     <blockquote>
-      <programlisting>#ACTION    SOURCE           DESTINATION      PROTO        POLICY
+      <programlisting>#ACTION    SOURCE           DEST      PROTO        POLICY
 ACCEPT     vpn:134.28.54.2  $FW</programlisting>
     </blockquote>
 
@@ -458,8 +457,7 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         through an ESP tunnel then the following entry would be
         appropriate:</para>
 
-        <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
-#                                       OPTIONS                 OPTIONS
+        <programlisting>#ZONE   TYPE    OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
 
         <para>You should also set FASTACCEPT=No in shorewall.conf to ensure
@@ -493,8 +491,7 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
       <blockquote>
         <para><filename>/etc/shorewall/zones</filename> — System A</para>
 
-        <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
+        <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 net            ipv4
 <emphasis role="bold">vpn            ipsec</emphasis>
 loc            ipv4
@@ -536,8 +533,7 @@ vpn               eth0:0.0.0.0/0
       <blockquote>
         <para><filename>/etc/shorewall/zones</filename> - System B:</para>
 
-        <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
+        <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 vpn            ipsec
 net            ipv4
 loc            ipv4
@@ -716,9 +712,8 @@ RACOON=/usr/sbin/racoon</programlisting>
     <blockquote>
       <para><filename>/etc/shorewall/zones</filename> — System A</para>
 
-      <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
-net            ipv4
+      <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
+et            ipv4
 vpn            ipsec
 <emphasis role="bold">l2tp           ipv4</emphasis>
 loc            ipv4
@@ -802,8 +797,7 @@ all             all             REJECT          info
     <blockquote>
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION         SOURCE  DEST    PROTO   DEST    SOURCE
-#                                       PORT(S) PORT(S)
+      <programlisting>#ACTION         SOURCE  DEST    PROTO   DPORT   SPORT
 ?SECTION ESTABLISHED
 # Prevent IPsec bypass by hosts behind a NAT gateway
 L2TP(REJECT)    net     $FW
@@ -890,9 +884,8 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
     <blockquote>
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-net     eth0            detect          routefilter,dhcp,tcpflags
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      <programlisting>#ZONE   INTERFACE       OPTIONS
+net     eth0            routefilter,dhcp,tcpflags</programlisting>
 
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
@@ -910,8 +903,7 @@ net            ipv4</programlisting>
       <para><filename><filename>/etc/shorewall/hosts</filename></filename>:</para>
 
       <programlisting>#ZONE           HOST(S)                         OPTIONS
-loc             eth0:192.168.20.0/24  
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+loc             eth0:192.168.20.0/24</programlisting>
 
       <para>It is worth noting that although <emphasis>loc</emphasis> is a
       sub-zone of <emphasis>net</emphasis>, because <emphasis>loc</emphasis>
@@ -928,8 +920,7 @@ net             loc             NONE
 loc             net             NONE
 net             all             DROP            info
 # The FOLLOWING POLICY MUST BE LAST
-all             all             REJECT          info
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+all             all             REJECT          info</programlisting>
 
       <para>Since there are no cases where net&lt;-&gt;loc traffic should
       occur, NONE policies are used.</para>

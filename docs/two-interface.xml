@@ -74,7 +74,7 @@
 
         <mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/basics.png" format="PNG" />
+            <imagedata align="center" fileref="images/basics.png" format="PNG"/>
           </imageobject>
         </mediaobject>
       </figure> <caution>
@@ -121,19 +121,18 @@
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
-      with <inlinegraphic fileref="images/BD21298_.gif"
-      format="GIF" />.</para>
+      with <inlinegraphic fileref="images/BD21298_.gif" format="GIF"/>.</para>
 
       <para>Configuration notes that are unique to Debian and it's derivatives
       are marked with <inlinegraphic fileref="images/openlogo-nd-25.png"
-      format="GIF" />.</para>
+      format="GIF"/>.</para>
     </section>
   </section>
 
   <section id="PPTP">
     <title>PPTP/ADSL</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If you have an <acronym>ADSL</acronym> Modem and you use
     <acronym>PPTP</acronym> to communicate with a server in that modem, you
@@ -146,7 +145,7 @@
   <section id="Concepts">
     <title>Shorewall Concepts</title>
 
-    <para></para>
+    <para/>
 
     <para>The configuration files for Shorewall are contained in the directory
     <filename class="directory">/etc/shorewall</filename> -- for simple
@@ -154,7 +153,7 @@
     this guide.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF" /><important>
+    format="GIF"/><important>
         <para>After you have <ulink url="Install.htm">installed
         Shorewall</ulink>, locate the two-interfaces samples:</para>
 
@@ -189,10 +188,10 @@
 
           <listitem>
             <para><graphic align="left"
-            fileref="images/openlogo-nd-25.png" />If you installed using a
+            fileref="images/openlogo-nd-25.png"/>If you installed using a
             Shorewall 4.x .deb, the samples are in <emphasis
             role="bold"><filename
-            class="directory">/usr/share/doc/shorewall-common/examples/two-interfaces</filename>.</emphasis>
+            class="directory">/usr/share/doc/shorewall/examples/two-interfaces</filename>.</emphasis>
             You do not need the shorewall-doc package to have access to the
             samples.</para>
 
@@ -230,8 +229,7 @@
     a set of zones. In the two-interface sample configuration, the following
     zone names are used:</para>
 
-    <para><programlisting>#ZONE   TYPE     OPTIONS                 IN                      OUT
-#                                        OPTIONS                 OPTIONS
+    <para><programlisting>#ZONE   TYPE     OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 fw      firewall
 net     ipv4
 loc     ipv4</programlisting>Zones are defined in the <ulink
@@ -289,13 +287,13 @@ loc     ipv4</programlisting>Zones are defined in the <ulink
     <para>The <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     file included with the two-interface sample has the following policies:
-    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL     LIMIT
 loc        net         ACCEPT
 net        all         DROP        info
 all        all         REJECT      info</programlisting>In the two-interface
     sample, the line below is included but commented out. If you want your
     firewall system to have full access to servers on the Internet, uncomment
-    that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    that line. <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL     LIMIT
 $FW        net         ACCEPT</programlisting> The above policy will:
     <itemizedlist>
         <listitem>
@@ -333,11 +331,11 @@ $FW        net         ACCEPT</programlisting> The above policy will:
     local network from a security perspective. If you want to do this, add
     these two policies:</para>
 
-    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL     LIMIT
 loc        $FW         ACCEPT
 $FW        loc         ACCEPT</programlisting>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>At this point, edit your <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
@@ -349,7 +347,7 @@ $FW        loc         ACCEPT</programlisting>
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/basics.png" format="PNG" />
+        <imagedata align="center" fileref="images/basics.png" format="PNG"/>
       </imageobject>
     </mediaobject>
 
@@ -393,7 +391,7 @@ root@lists:~# </programlisting>
       the external interface.</para>
     </caution>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>I<emphasis role="bold">f your external interface is <filename
     class="devicefile">ppp0</filename> or <filename
@@ -421,7 +419,7 @@ root@lists:~# </programlisting>
         internal interface.</emphasis> Your firewall should have exactly one
         default route via your ISP's Router.</para>
       </warning> <inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF" /></para>
+    format="GIF"/></para>
 
     <para>The Shorewall two-interface sample configuration assumes that the
     external interface is <filename class="devicefile">eth0</filename> and the
@@ -533,7 +531,7 @@ root@lists:~# </programlisting>
     directly. To communicate with systems outside of the subnetwork, systems
     send packets through a gateway (router).</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>Your local computers (computer 1 and computer 2 in the above
     diagram) should be configured with their default gateway to be the
@@ -550,7 +548,7 @@ root@lists:~# </programlisting>
     <para id="Diagram">The remainder of this guide will assume that you have
     configured your network as shown here: <mediaobject>
         <imageobject>
-          <imagedata align="center" fileref="images/basics1.png" format="PNG" />
+          <imagedata align="center" fileref="images/basics1.png" format="PNG"/>
         </imageobject>
       </mediaobject> The default gateway for computer's 1 &amp; 2 would be
     <systemitem class="ipaddress">10.10.10.254</systemitem>. <warning>
@@ -607,7 +605,7 @@ root@lists:~# </programlisting>
     <acronym>IP</acronym> is dynamic and <acronym>SNAT</acronym> if the
     <acronym>IP</acronym> is static.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If your external firewall interface is <filename
     class="devicefile">eth0</filename>, you do not need to modify the file
@@ -616,7 +614,7 @@ root@lists:~# </programlisting>
     class="directory">/etc/shorewall/</filename><filename>masq</filename> and
     change the first column to the name of your external interface.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If your external <acronym>IP</acronym> is static, you can enter it
     in the third column in the <filename
@@ -626,7 +624,7 @@ root@lists:~# </programlisting>
     column 3 (SNAT) makes the processing of outgoing packets a little more
     efficient.</para>
 
-    <graphic align="left" fileref="images/openlogo-nd-25.png" />
+    <graphic align="left" fileref="images/openlogo-nd-25.png"/>
 
     <para>I<emphasis role="bold">f you are using the Debian package, please
     check your <filename>shorewall.conf</filename> file to ensure that the
@@ -689,7 +687,7 @@ root@lists:~# </programlisting>
       </listitem>
     </itemizedlist>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If you are running a distribution that logs netfilter messages to a
     log other than <filename>/var/log/messages</filename>, then modify the
@@ -729,7 +727,7 @@ root@lists:~# </programlisting>
     <filename>/usr/share/shorewall/modules</filename> then copy the file to
     <filename>/etc/shorewall</filename> and modify the copy.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>Modify the setting of LOAD_HELPER_ONLY as necessary.</para>
   </section>
@@ -758,7 +756,7 @@ root@lists:~# </programlisting>
     a server in the <emphasis>loc</emphasis> zone, the general form of a
     simple port forwarding rule in <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
-    <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
+    <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DPORT
 DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting><important>
         <para><emphasis role="bold">If you want to forward traffic from the
         <emphasis>loc</emphasis> zone to a server in the
@@ -784,14 +782,14 @@ DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<e
         <para>You run a Web Server on computer 2 in <link
         linkend="Diagram">the above diagram</link> and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
-        <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
+        <programlisting>#ACTION   SOURCE    DEST             PROTO     DPORT
 Web(DNAT) net       loc:10.10.10.2</programlisting></para>
       </example> <example id="Example2" label="2">
         <title>FTP Server</title>
 
         <para>You run an <acronym>FTP</acronym> Server on <link
         linkend="Diagram">computer 1</link> so you want to forward incoming
-        <acronym>TCP</acronym> port 21 to that system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
+        <acronym>TCP</acronym> port 21 to that system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DPORT
 FTP(DNAT)  net       loc:10.10.10.1</programlisting> For
         <acronym>FTP</acronym>, you will also need to have
         <acronym>FTP</acronym> connection tracking and <acronym>NAT</acronym>
@@ -829,11 +827,11 @@ FTP(DNAT)  net       loc:10.10.10.1</programlisting> For
           server, try the following rule and try connecting to port
           5000.</para>
 
-          <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
+          <programlisting>#ACTION    SOURCE    DEST               PROTO     DPORT
 DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
         </listitem>
       </itemizedlist> <inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF" /></para>
+    format="GIF"/></para>
 
     <para>At this point, modify <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> to
@@ -881,7 +879,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
         </listitem>
 
         <listitem>
-          <para><anchor id="cachingdns" /> You can configure a
+          <para><anchor id="cachingdns"/> You can configure a
           <emphasis>Caching Name Server</emphasis> on your firewall.
           <trademark>Red Hat</trademark> has an <acronym>RPM</acronym> for a
           caching name server (the <acronym>RPM</acronym> also requires the
@@ -897,7 +895,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
           network to the firewall; you do that by adding the following rules
           in <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.
-          <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
+          <programlisting>#ACTION    SOURCE    DEST               PROTO     DPORT
 DNS(ACCEPT)loc       $FW</programlisting></para>
         </listitem>
       </itemizedlist></para>
@@ -907,7 +905,7 @@ DNS(ACCEPT)loc       $FW</programlisting></para>
     <title>Other Connections</title>
 
     <para>The two-interface sample includes the following rules:
-    <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
+    <programlisting>#ACTION     SOURCE    DEST               PROTO     DPORT
 DNS(ACCEPT) $FW       net</programlisting>This rule allows
     <acronym>DNS</acronym> access from your firewall and may be removed if you
     uncommented the line in <filename
@@ -922,7 +920,7 @@ DNS(ACCEPT) $FW       net</programlisting>This rule allows
     <para>You don't have to use defined macros when coding a rule in
     <filename>/etc/shorewall/rules</filename>; Shorewall will start slightly
     faster if you code your rules directly rather than using macros. The the
-    rule shown above could also have been coded as follows:<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
+    rule shown above could also have been coded as follows:<programlisting>#ACTION    SOURCE    DEST               PROTO     DPORT
 ACCEPT     $FW       net                udp       53
 ACCEPT     $FW       net                tcp       53</programlisting></para>
 
@@ -930,21 +928,21 @@ ACCEPT     $FW       net                tcp       53</programlisting></para>
     your needs, you can either define the macro yourself or you can simply
     code the appropriate rules directly.</para>
 
-    <para>The sample also includes: <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
+    <para>The sample also includes: <programlisting>#ACTION      SOURCE    DEST               PROTO     DPORT
 SSH(ACCEPT)  loc       $FW  </programlisting>That rule allows you to run an
     <acronym>SSH</acronym> server on your firewall and connect to that server
     from your local systems.</para>
 
     <para>If you wish to enable other connections from your firewall to other
-    systems, the general format using a macro is: <programlisting>#ACTION         SOURCE    DEST               PROTO      DEST PORT(S)
+    systems, the general format using a macro is: <programlisting>#ACTION         SOURCE    DEST               PROTO      DPORT
 &lt;macro&gt;(ACCEPT) $FW       <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
-    general format when not using defined macros is:<programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
+    general format when not using defined macros is:<programlisting>#ACTION    SOURCE    DEST               PROTO      DPORT
 ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example
         id="Example3">
         <title>Web Server on Firewall</title>
 
         <para>You want to run a Web Server on your firewall system:
-        <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
+        <programlisting>#ACTION     SOURCE    DEST               PROTO     DPORT
 Web(ACCEPT) net       $FW
 Web(ACCEPT) loc       $FW       </programlisting>Those two rules would of
         course be in addition to the rules listed above under <quote><link
@@ -957,14 +955,14 @@ Web(ACCEPT) loc       $FW       </programlisting>Those two rules would of
         shell access to your firewall from the Internet, use
         <acronym>SSH</acronym>:</para>
 
-        <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
+        <programlisting>#ACTION      SOURCE    DEST               PROTO     DPORT
 SSH(ACCEPT)  net       $FW</programlisting>
       </important> <inlinegraphic fileref="images/leaflogo.gif"
-    format="GIF" />Bering users will want to add the following two rules to be
-    compatible with Jacques's Shorewall configuration.<programlisting>#ACTION    SOURCE    DEST    PROTO     DEST PORT(S)
+    format="GIF"/>Bering users will want to add the following two rules to be
+    compatible with Jacques's Shorewall configuration.<programlisting>#ACTION    SOURCE    DEST    PROTO     DPORT
 ACCEPT     loc       $FW     udp       53          #Allow DNS Cache to work
 ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</programlisting>
-    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>Now edit your <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
@@ -1030,7 +1028,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
   <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
     configures your system to start Shorewall at system boot but startup is
@@ -1038,7 +1036,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     configuration is complete. Once you have completed configuration of your
     firewall, you must edit /etc/shorewall/shorewall.conf and set
     STARTUP_ENABLED=Yes.<graphic align="left"
-    fileref="images/openlogo-nd-25.png" /><important>
+    fileref="images/openlogo-nd-25.png"/><important>
         <para>Users of the .deb package must edit <filename
         class="directory">/etc/default/</filename><filename>shorewall</filename>
         and set <varname>startup=1</varname>.</para>
@@ -1056,11 +1054,11 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     (Shorewall 4.5.7 and earlier) or in<filename> <ulink
     url="manpages/shorewall-stoppedrules.html">/etc/shorewall/stoppedrules</ulink></filename>.
     A running firewall may be restarted using the <quote><command>shorewall
-    restart</command></quote> command. If you want to totally remove any trace
+    reload</command></quote> command. If you want to totally remove any trace
     of Shorewall from your Netfilter configuration, use
     <quote><command>shorewall clear</command></quote>.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The two-interface sample assumes that you want to enable routing
     to/from <filename class="devicefile">eth1</filename> (the local network)
@@ -1087,7 +1085,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
         </orderedlist>
 
         <para>Also, I don't recommend using <quote><command>shorewall
-        restart</command></quote>; it is better to create an alternate
+        reload</command></quote>; it is better to create an alternate
         configuration and test it using the <quote><command>shorewall
         try</command></quote> command.</para>
       </warning></para>
@@ -1158,7 +1156,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
 
     <programlisting><command>systemctl disable iptables.service</command></programlisting>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif"/></para>
 
     <para>At this point, disable your existing firewall service.</para>
   </section>
@@ -1202,9 +1200,9 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
       </caution></para>
 
     <para>Your new network will look similar to what is shown in the following
-    figure.<graphic align="center" fileref="images/basics2.png" /></para>
+    figure.<graphic align="center" fileref="images/basics2.png"/></para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The first thing to note is that the computers in your wireless
     network will be in a different subnet from those on your wired local LAN.
@@ -1217,7 +1215,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     traffic may flow freely between the local wired network and the wireless
     network.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>There are only two changes that need to be made to the Shorewall
     configuration:</para>
@@ -1229,8 +1227,8 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
         network interface. If the wireless interface is <filename
         class="devicefile">wlan0</filename>, the entry might look like:</para>
 
-        <programlisting>#ZONE     INTERFACE       BROADCAST          OPTIONS
-loc       wlan0           detect             maclist</programlisting>
+        <programlisting>#ZONE     INTERFACE       OPTIONS
+loc       wlan0           maclist</programlisting>
 
         <para>As shown in the above entry, I recommend using the <ulink
         url="MAC_Validation.html">maclist option</ulink> for the wireless
@@ -1248,7 +1246,7 @@ loc       wlan0           detect             maclist</programlisting>
         from the wireless network to the Internet. If you file looks like
         this:</para>
 
-        <programlisting>#INTERFACE		SOURCE		ADDRESS		PROTO	PORT(S)	IPSEC	MARK
+        <programlisting>#INTERFACE		SOURCE		ADDRESS		PROTO	DPORT	IPSEC	MARK
 eth0			10.0.0.0/8,\
 			169.254.0.0/16,\
 			172.16.0.0/12,\

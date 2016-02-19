@@ -526,9 +526,7 @@ net     ipv4            #Internet
 loc     ipv4            #Local wired Zone
 dmz     ipv4            #DMZ
 vpn     ipv4            #Open VPN clients
-wifi    ipv4            #Local Wireless Zone
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
+wifi    ipv4            #Local Wireless Zone</programlisting>
 
         <para><filename>/etc/shorewall/policy</filename>:</para>
 
@@ -547,8 +545,7 @@ net             $FW             DROP            $LOG            1/sec:2
 net             loc             DROP            $LOG            2/sec:4
 net             dmz             DROP            $LOG            8/sec:30
 net             vpn             DROP            $LOG
-all             all             REJECT          $LOG
-#LAST LINE -- DO NOT REMOVE</programlisting>
+all             all             REJECT          $LOG</programlisting>
 
         <para><filename>Note that the firewall&lt;-&gt;local network interface
         is wide open so from a security point of view, the firewall system is
@@ -570,9 +567,7 @@ EXT_IF=eth0
 WIFI_IF=eth2
 TEST_IF=eth4
 
-OMAK=&lt;IP address at our second home&gt;
-
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+OMAK=&lt;IP address at our second home&gt;</programlisting>
 
         <para><filename>/etc/shorewall/init</filename>:</para>
 
@@ -596,8 +591,7 @@ vpn     tun+            -
         <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALLINTS         LOCAL
 COMMENT One-to-one NAT
 206.124.146.178         $EXT_IF:0       192.168.1.3     No              No
-206.124.146.180         $EXT_IF:2       192.168.1.6     No              No
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+206.124.146.180         $EXT_IF:2       192.168.1.6     No              No</programlisting>
 
         <para><filename>/etc/shorewall/masq (Note the cute trick here and in
         the <filename>following proxyarp</filename> file that allows me to
@@ -621,36 +615,31 @@ $EXT_IF:192.168.99.1    192.168.98.1    192.168.1.98
 
 COMMENT Masquerade Local Network
 
-$EXT_IF                 192.168.1.0/24  206.124.146.179
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+$EXT_IF                 192.168.1.0/24  206.124.146.179</programlisting>
 
         <para><filename>/etc/shorewall/proxyarp</filename>:</para>
 
         <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
 192.168.1.1     $EXT_IF         $INT_IF         yes
 206.124.146.177 $DMZ_IF         $EXT_IF         yes
-192.168.1.7     $TEST_IF        $INT_IF         yes
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+192.168.1.7     $TEST_IF        $INT_IF         yes</programlisting>
 
         <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY_ZONE
 openvpnserver:udp       net     0.0.0.0/0                 #Routed server for RoadWarrior access
-openvpnserver:udp       wifi    192.168.3.0/24            #Home wireless network server
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+openvpnserver:udp       wifi    192.168.3.0/24            #Home wireless network server</programlisting>
 
         <para><filename>/etc/shorewall/actions</filename>:</para>
 
         <programlisting>#ACTION
-Mirrors             # Accept traffic from Shorewall Mirrors
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+Mirrors             # Accept traffic from Shorewall Mirrors</programlisting>
 
         <para><filename>/etc/shorewall/action.Mirrors</filename>:</para>
 
         <programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
-ACCEPT  $MIRRORS
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+ACCEPT  $MIRRORS</programlisting>
 
         <para><filename>/etc/shorewall/rules</filename>:</para>
 

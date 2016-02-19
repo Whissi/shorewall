@@ -571,8 +571,7 @@ rc-update add bridge boot
 fw              firewall
 world           ipv4  
 net:world       bport
-loc:world       bport
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+loc:world       bport</programlisting>
 
     <para>The <emphasis>world</emphasis> zone can be used when defining rules
     whose source zone is the firewall itself (remember that fw-&gt;&lt;BP
@@ -584,8 +583,7 @@ loc:world       bport
     <programlisting>#SOURCE     DEST        POLICY        LOGLEVEL       LIMIT
 loc         net         ACCEPT
 net         all         DROP          info
-all         all         REJECT        info
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+all         all         REJECT        info</programlisting>
 
     <para>In <filename>/etc/shorewall/shorewall.conf</filename>:</para>
 
@@ -599,8 +597,7 @@ all         all         REJECT        info
     <programlisting>#ZONE    INTERFACE      OPTIONS
 world    br0            bridge
 net      br0:eth0
-loc      br0:eth1
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+loc      br0:eth1</programlisting>
 
     <para>The <emphasis>world</emphasis> zone is associated with the bridge
     itself which is defined with the <emphasis role="bold">bridge</emphasis>
@@ -616,8 +613,7 @@ loc      br0:eth1
     <filename><filename>/etc/shorewall/routestopped</filename></filename>:</para>
 
     <programlisting>#INTERFACE      HOST(S)         OPTIONS
-br0             192.168.1.0/24  routeback
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+br0             192.168.1.0/24  routeback</programlisting>
 
     <para>The <filename>/etc/shorewall/rules</filename> file from the
     two-interface sample is a good place to start for defining a set of

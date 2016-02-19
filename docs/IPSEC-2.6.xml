@@ -268,15 +268,13 @@
       System A:</para>
 
       <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
-ipsec         net         134.28.54.2
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+ipsec         net         134.28.54.2</programlisting>
 
       <para><filename><filename>/etc/shorewall/tunnels</filename></filename> —
       System B:</para>
 
       <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
-ipsec         net         206.162.148.9
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+ipsec         net         206.162.148.9</programlisting>
     </blockquote>
 
     <note>
@@ -297,8 +295,7 @@ ipsec         net         206.162.148.9
 
       <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 net            ipv4
-<emphasis role="bold">vpn            ipv4</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+<emphasis role="bold">vpn            ipv4</emphasis></programlisting>
     </blockquote>
 
     <para>Remember the assumption that both systems A and B have eth0 as their
@@ -314,14 +311,12 @@ net            ipv4
       <para><filename>/etc/shorewall/hosts</filename> — System A</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
-vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ipsec</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ipsec</emphasis></programlisting>
 
       <para><filename>/etc/shorewall/hosts</filename> — System B</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
-vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis></programlisting>
     </blockquote>
 
     <para>Assuming that you want to give each local network free access to the
@@ -495,7 +490,7 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
 net            ipv4
 <emphasis role="bold">vpn            ipsec</emphasis>
 loc            ipv4
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+</programlisting>
       </blockquote>
 
       <para>In this instance, the mobile system (B) has IP address 134.28.54.2
@@ -504,7 +499,7 @@ loc            ipv4
       following entry should be made:<blockquote>
           <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
 ipsec         net         0.0.0.0/0           vpn
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+</programlisting>
         </blockquote></para>
 
       <para><note>
@@ -521,8 +516,7 @@ ipsec         net         0.0.0.0/0           vpn
         <para><filename>/etc/shorewall/hosts</filename> — System A:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:0.0.0.0/0</programlisting>
       </blockquote>
 
       <para>You will need to configure your <quote>through the tunnel</quote>
@@ -536,20 +530,17 @@ vpn               eth0:0.0.0.0/0
         <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 vpn            ipsec
 net            ipv4
-loc            ipv4
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+loc            ipv4</programlisting>
 
         <para><filename>/etc/shorewall/tunnels</filename> - System B:</para>
 
         <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
-ipsec         net         206.162.148.9       vpn
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+ipsec         net         206.162.148.9       vpn</programlisting>
 
         <para><filename>/etc/shorewall/hosts</filename> - System B:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:0.0.0.0/0</programlisting>
       </blockquote>
 
       <para>On system A, here are the IPsec files:</para>
@@ -716,8 +707,7 @@ RACOON=/usr/sbin/racoon</programlisting>
 et            ipv4
 vpn            ipsec
 <emphasis role="bold">l2tp           ipv4</emphasis>
-loc            ipv4
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+loc            ipv4</programlisting>
     </blockquote>
 
     <para>Since the L2TP will require the use of pppd, you will end up with
@@ -732,8 +722,7 @@ loc            ipv4
       <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 net     eth0            detect          routefilter
 loc     eth1            192.168.1.255
-l2tp    ppp+            -
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+l2tp    ppp+            -</programlisting>
     </blockquote>
 
     <para>The next thing that must be done is to adjust the policy so that the
@@ -779,8 +768,7 @@ l2tp            loc             ACCEPT # Allows road warriors to connect to loca
 l2tp            net             ACCEPT # Allows road warriors to connect to the Internet
 net             all             DROP            info
 # The FOLLOWING POLICY MUST BE LAST
-all             all             REJECT          info
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+all             all             REJECT          info</programlisting>
     </blockquote>
 
     <para>The final step is to modify your rules file. There are three
@@ -809,8 +797,7 @@ ACCEPT          vpn     $FW     udp     1701
 HTTP(ACCEPT)    loc     $FW
 HTTP(ACCEPT)    l2tp    $FW
 HTTPS(ACCEPT)   loc     $FW
-HTTPS(ACCEPT)   l2tp    $FW
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+HTTPS(ACCEPT)   l2tp    $FW</programlisting>
     </blockquote>
   </section>
 

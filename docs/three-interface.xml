@@ -90,7 +90,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata align="center" fileref="images/dmz1.png" format="PNG" />
+          <imagedata align="center" fileref="images/dmz1.png" format="PNG"/>
         </imageobject>
       </mediaobject>
     </figure>
@@ -148,19 +148,18 @@
       <title>Conventions</title>
 
       <para>Points at which configuration changes are recommended are flagged
-      with <inlinegraphic fileref="images/BD21298_.gif"
-      format="GIF" />.</para>
+      with <inlinegraphic fileref="images/BD21298_.gif" format="GIF"/>.</para>
 
       <para>Configuration notes that are unique to Debian and it's derivatives
       are marked with <inlinegraphic fileref="images/openlogo-nd-25.png"
-      format="GIF" />.</para>
+      format="GIF"/>.</para>
     </section>
   </section>
 
   <section id="PPTP">
     <title>PPTP/ADSL</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If you have an ADSL Modem and you use PPTP to communicate with a
     server in that modem, you must make the <ulink
@@ -176,7 +175,7 @@
     <filename>/etc/shorewall</filename> -- for simple setups, you will only
     need to deal with a few of these as described in this guide.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>After you have installed Shorewall, locate the three-interface
     Sample configuration:</para>
@@ -210,7 +209,7 @@
       </listitem>
 
       <listitem>
-        <para><graphic align="left" fileref="images/openlogo-nd-25.png" />If
+        <para><graphic align="left" fileref="images/openlogo-nd-25.png"/>If
         you installed using a Shorewall 4.x .deb, the samples are in <emphasis
         role="bold"><filename
         class="directory">/usr/share/doc/shorewall/examples/three-interfaces</filename></emphasis>.
@@ -248,8 +247,7 @@
     a set of zones. In the three-interface sample configuration, the following
     zone names are used:</para>
 
-    <para><programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
-#                                      OPTIONS                 OPTIONS
+    <para><programlisting>#ZONE   TYPE   OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 fw      firewall
 net     ipv4
 loc     ipv4
@@ -305,7 +303,7 @@ dmz     ipv4</programlisting>Zone names are defined in
     <para>The <filename>/etc/shorewall/policy</filename> file included with
     the three-interface sample has the following policies:</para>
 
-    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL    LIMIT
 loc        net         ACCEPT
 net        all         DROP        info
 all        all         REJECT      info</programlisting>
@@ -315,7 +313,7 @@ all        all         REJECT      info</programlisting>
       commented out. If you want your firewall system to have full access to
       servers on the Internet, uncomment that line.</para>
 
-      <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+      <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL    LIMIT
 $FW        net         ACCEPT</programlisting>
     </important>
 
@@ -351,7 +349,7 @@ $FW        net         ACCEPT</programlisting>
     local network from a security perspective. If you want to do this, add
     these two policies:</para>
 
-    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL    LIMIT
 loc        $FW         ACCEPT
 $FW        loc         ACCEPT</programlisting>
 
@@ -363,7 +361,7 @@ $FW        loc         ACCEPT</programlisting>
     <emphasis>net</emphasis> zone even though connections are not allowed from
     the <emphasis>loc</emphasis> zone to the firewall itself.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>At this point, edit your <filename>/etc/shorewall/policy</filename>
     file and make any changes that you wish.</para>
@@ -377,7 +375,7 @@ $FW        loc         ACCEPT</programlisting>
 
       <mediaobject>
         <imageobject>
-          <imagedata align="center" fileref="images/dmz1.png" format="PNG" />
+          <imagedata align="center" fileref="images/dmz1.png" format="PNG"/>
         </imageobject>
       </mediaobject>
     </figure>
@@ -421,7 +419,7 @@ root@lists:~# </programlisting>
       the external interface.</para>
     </caution>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>I<emphasis role="bold">f your external interface is <filename
     class="devicefile">ppp0</filename> or <filename
@@ -463,7 +461,7 @@ root@lists:~# </programlisting>
       exactly one default route via your ISP's Router.</para>
     </caution>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The Shorewall three-interface sample configuration assumes that the
     external interface is <filename class="devicefile">eth0</filename>, the
@@ -528,7 +526,7 @@ root@lists:~# </programlisting>
       <title>Example sub-network</title>
 
       <tgroup cols="2">
-        <colspec align="left" />
+        <colspec align="left"/>
 
         <tbody>
           <row>
@@ -573,7 +571,7 @@ root@lists:~# </programlisting>
     directly. To communicate with systems outside of the subnetwork, systems
     send packets through a gateway (router).</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>Your local computers (Local Computers 1 &amp; 2) should be
     configured with their default gateway set to the IP address of the
@@ -596,7 +594,7 @@ root@lists:~# </programlisting>
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/dmz2.png" />
+          <imagedata fileref="images/dmz2.png"/>
         </imageobject>
 
         <caption><para>The default gateway for the DMZ computers would be
@@ -652,7 +650,7 @@ root@lists:~# </programlisting>
     class="directory">/etc/shorewall/</filename><filename>masq</filename>
     file.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If your external firewall interface is <filename
     class="devicefile">eth0</filename> then you do not need to modify the file
@@ -665,7 +663,7 @@ root@lists:~# </programlisting>
     modify the SOURCE column to list just your local interface (10.10.10.0/24
     in the above example).</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If your external IP is static, you can enter it in the third column
     in the <filename
@@ -673,7 +671,7 @@ root@lists:~# </programlisting>
     entry if you like although your firewall will work fine if you leave that
     column empty. Entering your static IP in column 3 makes processing
     outgoing packets a little more efficient.<graphic align="left"
-    fileref="images/openlogo-nd-25.png" /></para>
+    fileref="images/openlogo-nd-25.png"/></para>
 
     <para><emphasis role="bold">If you are using the Debian package, please
     check your <filename>shorewall.conf</filename> file to ensure that the
@@ -736,7 +734,7 @@ root@lists:~# </programlisting>
       </listitem>
     </itemizedlist>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If you are running a distribution that logs netfilter messages to a
     log other than <filename>/var/log/messages</filename>, then modify the
@@ -776,7 +774,7 @@ root@lists:~# </programlisting>
     <filename>/usr/share/shorewall/modules</filename> then copy the file to
     <filename>/etc/shorewall</filename> and modify the copy.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>Modify the setting of LOAD_HELPER_ONLY as necessary.</para>
   </section>
@@ -801,7 +799,7 @@ root@lists:~# </programlisting>
 
     <para>The general form of a simple port forwarding rule in <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
-    <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
+    <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DPORT
 DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>
     If you don't specify the <emphasis><varname>&lt;server
     port&gt;</varname></emphasis>, it is assumed to be the same as
@@ -816,7 +814,7 @@ DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<e
       <title>You run a Web Server on DMZ Computer 2 and you want to forward
       incoming TCP port 80 to that system</title>
 
-      <para><programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
+      <para><programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT
 Web(DNAT)   net    dmz:10.10.11.2  
 Web(ACCEPT)  loc    dmz:10.10.11.2</programlisting><itemizedlist>
           <listitem>
@@ -833,8 +831,7 @@ Web(ACCEPT)  loc    dmz:10.10.11.2</programlisting><itemizedlist>
             (<systemitem class="ipaddress">10.10.11.2</systemitem>) or you
             must use DNAT from the loc zone as well (see below).</para>
 
-            <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST          SOURCE           ORIGINAL
-#                                                    PORT(S)       PORT(S)          DEST
+            <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT         SPORT            ORIGDEST
 Web(DNAT)   loc       dmz:10.10.11.2      -          -             -                <replaceable>external-ip-address</replaceable></programlisting>
 
             <para>where <replaceable>external-ip-address</replaceable> is the
@@ -846,8 +843,7 @@ Web(DNAT)   loc       dmz:10.10.11.2      -          -             -            
             you have problems connecting to your web server, try the following
             rule and try connecting to port 5000 (e.g., connect to
             <literal>http://w.x.y.z:5000 where w.x.y.z</literal> is your
-            external IP).<programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)    SOURCE
-#                                                                  PORT(S)
+            external IP).<programlisting>#ACTION   SOURCE    DEST                PROTO      DPORT         SPORT            ORIGDEST
 DNAT      net       dmz:10.10.11.2:80   tcp        5000</programlisting></para>
           </listitem>
 
@@ -855,8 +851,7 @@ DNAT      net       dmz:10.10.11.2:80   tcp        5000</programlisting></para>
             <para>If you want to be able to access your server from the local
             network using your external address, then if you have a static
             external IP you can replace the loc-&gt;dmz rule above
-            with:<programlisting>#ACTION   SOURCE    DEST            PROTO  DEST PORT(S)  SOURCE   ORIGINAL
-#                                                        PORT(S)  DEST
+            with:<programlisting>#ACTION   SOURCE    DEST            PROTO  DPORT         SPORT    ORIGDEST
 DNAT      loc       dmz:10.10.11.2  tcp    80            -        <emphasis>&lt;external IP&gt;</emphasis></programlisting>If
             you have a dynamic IP then you must ensure that your external
             interface is up before starting Shorewall and you must take steps
@@ -871,8 +866,7 @@ DNAT      loc       dmz:10.10.11.2  tcp    80            -        <emphasis>&lt;
 
                 <listitem>
                   <para>Make your <literal>loc-&gt;dmz</literal> rule:
-                  <programlisting>#ACTION   SOURCE    DEST             PROTO   DEST PORT(S)  SOURCE   ORIGINAL
-#                                                          PORT(S)  DEST
+                  <programlisting>#ACTION   SOURCE    DEST             PROTO   DPORT         SPORT    ORIGDEST
 DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</programlisting></para>
                 </listitem>
               </orderedlist></para>
@@ -886,7 +880,7 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
         </itemizedlist></para>
     </example>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>At this point, add the DNAT and ACCEPT rules for your
     servers.</para>
@@ -924,7 +918,7 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
 
         <listitem>
           <para><inlinegraphic fileref="images/BD21298_.gif"
-          format="GIF" /></para>
+          format="GIF"/></para>
 
           <para>You can configure a <emphasis>Caching Name Server</emphasis>
           on your firewall or in your DMZ. <trademark>Red Hat</trademark> has
@@ -942,10 +936,10 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
           <filename>/etc/shorewall/rules</filename>.</para>
         </listitem>
       </itemizedlist> If you run the name server on the firewall:
-    <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+    <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT                     
 DNS(ACCEPT) loc       $FW
 DNS(ACCEPT) dmz       $FW            </programlisting> Run name server on DMZ
-    computer 1: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+    computer 1: <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT                      
 DNS(ACCEPT) loc       dmz:10.10.11.1
 DNS(ACCEPT) $FW       dmz:10.10.11.1             </programlisting></para>
 
@@ -960,7 +954,7 @@ DNS(ACCEPT) $FW       dmz:10.10.11.1             </programlisting></para>
     <filename>/etc/shorewall/rules</filename>. The first example above (name
     server on the firewall) could also have been coded as follows:</para>
 
-    <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+    <programlisting>#ACTION   SOURCE    DEST                PROTO      DPORT                      
 ACCEPT    loc       $FW                 tcp        53
 ACCEPT    loc       $FW                 udp        53
 ACCEPT    dmz       $FW                 tcp        53
@@ -983,24 +977,24 @@ ACCEPT    dmz       $FW                 udp        53              </programlist
     <title>Other Connections</title>
 
     <para>The three-interface sample includes the following rule:
-    <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+    <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT                      
 DNS(ACCEPT) $FW       net       </programlisting>That rule allow DNS access
     from your firewall and may be removed if you commented out the line in
     <filename>/etc/shorewall/policy</filename> allowing all connections from
     the firewall to the Internet.</para>
 
-    <para>The sample also includes: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+    <para>The sample also includes: <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT                      
 SSH(ACCEPT) loc       $FW
 SSH(ACCEPT) loc       dmz        </programlisting>Those rules allow you to run
     an SSH server on your firewall and in each of your DMZ systems and to
     connect to those servers from your local systems.</para>
 
     <para>If you wish to enable other connections between your systems, the
-    general format for using a defined macro is: <programlisting>#ACTION         SOURCE        DEST                PROTO      DEST PORT(S)                      
+    general format for using a defined macro is: <programlisting>#ACTION         SOURCE        DEST                PROTO      DPORT                      
 &lt;<emphasis>macro</emphasis>&gt;(ACCEPT) <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
 
     <para>The general format when not using a defined macro
-    is:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
+    is:<programlisting>#ACTION   SOURCE        DEST                PROTO      DPORT                      
 ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&gt; &lt;port&gt; </emphasis></programlisting></para>
 
     <example id="Example2">
@@ -1009,12 +1003,12 @@ ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&g
 
       <para>Using defined macros:</para>
 
-      <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
+      <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT
 DNS(ACCEPT) net       $FW</programlisting>
 
       <para>Not using defined macros:</para>
 
-      <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+      <programlisting>#ACTION   SOURCE    DEST                PROTO      DPORT                      
 ACCEPT    net       $FW                 tcp        53
 ACCEPT    net       $FW                 udp        53        </programlisting>
 
@@ -1028,13 +1022,13 @@ ACCEPT    net       $FW                 udp        53        </programlisting>
     <important>
       <para>I don't recommend enabling telnet to/from the Internet because it
       uses clear text (even for login!). If you want shell access to your
-      firewall from the Internet, use SSH: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+      firewall from the Internet, use SSH: <programlisting>#ACTION     SOURCE    DEST                PROTO      DPORT                      
 SSH(ACCEPT) net       $FW</programlisting></para>
     </important>
 
-    <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> Bering
+    <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF"/> Bering
     users will want to add the following two rules to be compatible with
-    Jacques's Shorewall configuration: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+    Jacques's Shorewall configuration: <programlisting>#ACTION   SOURCE    DEST                PROTO      DPORT                      
 ACCEPT    loc       $FW                 udp        53
 ACCEPT    net       $FW                 tcp        80       </programlisting><itemizedlist>
         <listitem>
@@ -1045,7 +1039,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
           <para>Entry 2 allows the <quote>weblet</quote> to work.</para>
         </listitem>
       </itemizedlist><inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF" /></para>
+    format="GIF"/></para>
 
     <para>Now modify <filename>/etc/shorewall/rules</filename> to add or
     remove other connections as required.</para>
@@ -1110,7 +1104,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
   <section id="Starting">
     <title>Starting and Stopping Your Firewall</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
     configures your system to start Shorewall at system boot but startup is
@@ -1119,7 +1113,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     firewall, you can enable Shorewall startup by editing
     <filename>/etc/shorewall/shorewall.conf</filename> and setting
     STARTUP_ENABLED=Yes.<graphic align="left"
-    fileref="images/openlogo-nd-25.png" /><important>
+    fileref="images/openlogo-nd-25.png"/><important>
         <para>Users of the <filename>.deb</filename> package must edit
         <filename>/etc/default/shorewall</filename> and set
         <varname>startup=1</varname>.</para>
@@ -1138,11 +1132,11 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     (<ulink
     url="manpages/shorewall-routestopped.html"><filename>/etc/shorewall/routestopped</filename></ulink>
     on Shorewall 4.5.7 and earlier). A running firewall may be restarted using
-    the <command>shorewall restart</command> command. If you want to totally
+    the <command>shorewall reload</command> command. If you want to totally
     remove any trace of Shorewall from your Netfilter configuration, use
     <command>shorewall clear</command>.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>The three-interface sample assumes that you want to enable routing
     to/from <filename class="devicefile">eth1</filename> (your local network)
@@ -1168,7 +1162,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
         </orderedlist>
 
         <para>Also, I don't recommend using <quote><command>shorewall
-        restart</command></quote>; it is better to create an alternate
+        reload</command></quote>; it is better to create an alternate
         configuration and test it using the <quote><command>shorewall
         try</command></quote> command.</para>
       </warning></para>
@@ -1239,7 +1233,7 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
 
     <programlisting><command>systemctl disable iptables.service</command></programlisting>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
+    <para><inlinegraphic fileref="images/BD21298_.gif"/></para>
 
     <para>At this point, disable your existing firewall service.</para>
   </section>

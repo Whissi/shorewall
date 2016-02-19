@@ -277,7 +277,7 @@ net     ipv4</programlisting>
     <para>The <filename>/etc/shorewall/policy</filename> file included with
     the one-interface sample has the following policies:</para>
 
-    <programlisting>#SOURCE ZONE   DESTINATION ZONE   POLICY   LOG LEVEL   LIMIT:BURST
+    <programlisting>#SOURCE        DEST               POLICY   LOGLEVEL   LIMIT
 $FW            net                ACCEPT
 net            all                DROP     info
 all            all                REJECT   info</programlisting>
@@ -517,20 +517,19 @@ root@lists:~# </programlisting>
     <filename>/usr/share/shorewall/macro.*</filename>, the general format of a
     rule in <filename>/etc/shorewall/rules</filename> is:</para>
 
-    <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
+    <programlisting>#ACTION         SOURCE    DEST            PROTO       DPORT
 &lt;<emphasis>macro</emphasis>&gt;(ACCEPT) net       $FW</programlisting>
 
     <important>
       <para>Be sure to add your rules after the line that reads <emphasis
-      role="bold">SECTION NEW</emphasis> (?SECTION NEW in Shorewall 4.6.0 and
-      later).</para>
+      role="bold">?SECTION NEW</emphasis>.</para>
     </important>
 
     <example id="Example1">
       <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
-      <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
+      <programlisting>#ACTION     SOURCE    DEST            PROTO       DPORT
 Web(ACCEPT) net       $FW
 IMAP(ACCEPT)net       $FW</programlisting>
     </example>
@@ -546,14 +545,14 @@ IMAP(ACCEPT)net       $FW</programlisting>
     a pre-defined macro that meets your requirements. In that case the general
     format of a rule in <filename>/etc/shorewall/rules</filename> is:</para>
 
-    <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
+    <programlisting>#ACTION   SOURCE    DEST            PROTO       DPORT
 ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
     <example id="Example2">
       <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
-      <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
+      <para><programlisting>#ACTION   SOURCE    DEST            PROTO        DPORT
 ACCEPT    net       $FW             tcp          80
 ACCEPT    net       $FW             tcp          143</programlisting></para>
     </example>
@@ -566,7 +565,7 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       uses clear text (even for login!). If you want shell access to your
       firewall from the Internet, use <acronym>SSH</acronym>:</para>
 
-      <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
+      <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DPORT
 SSH(ACCEPT) net       $FW           </programlisting>
     </important>
 
@@ -615,7 +614,7 @@ SSH(ACCEPT) net       $FW           </programlisting>
     (<filename><ulink
     url="manpages/shorewall-routestopped.html">/etc/shorewall/routestopped</ulink></filename>
     in Shorewall 4.5.7 and earlier). A running firewall may be restarted using
-    the <quote><command>shorewall restart</command></quote> command. If you
+    the <quote><command>shorewall reload</command></quote> command. If you
     want to totally remove any trace of Shorewall from your Netfilter
     configuration, use <quote><command>shorewall
     clear</command></quote>.</para>
@@ -639,7 +638,7 @@ SSH(ACCEPT) net       $FW           </programlisting>
       </orderedlist>
 
       <para>Also, I don't recommend using <quote><command>shorewall
-      restart</command></quote>; it is better to create an <emphasis><ulink
+      reload</command></quote>; it is better to create an <emphasis><ulink
       url="configuration_file_basics.htm#Configs">alternate
       configuration</ulink></emphasis> and test it using the <ulink
       url="starting_and_stopping_shorewall.htm"><quote><command>shorewall

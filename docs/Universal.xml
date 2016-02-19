@@ -202,7 +202,7 @@
       <filename>/etc/shorewall/macro.*</filename>, the general format of a
       rule in <filename>/etc/shorewall/rules</filename> is:</para>
 
-      <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
+      <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DPORT
 &lt;<emphasis>macro</emphasis>&gt;(ACCEPT) net       $FW</programlisting>
 
       <important>
@@ -214,7 +214,7 @@
         <title>You want to run a Web Server and a IMAP Server on your firewall
         system:</title>
 
-        <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
+        <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DPORT
 Web(ACCEPT) net       $FW
 IMAP(ACCEPT)net       $FW</programlisting>
       </example>
@@ -225,14 +225,14 @@ IMAP(ACCEPT)net       $FW</programlisting>
       general format of a rule in <filename>/etc/shorewall/rules</filename>
       is:</para>
 
-      <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
+      <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DPORT
 ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
       <example id="Example2">
         <title>You want to run a Web Server and a IMAP Server on your firewall
         system:</title>
 
-        <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
+        <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DPORT
 ACCEPT    net       $FW             tcp          80
 ACCEPT    net       $FW             tcp          143</programlisting></para>
       </example>
@@ -320,7 +320,7 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       <para>Then at a root prompt, type:</para>
 
       <blockquote>
-        <para><command>/sbin/shorewall restart</command></para>
+        <para><command>/sbin/shorewall reload</command></para>
       </blockquote>
     </section>
 
@@ -345,7 +345,7 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
       <para>Then at a root prompt, type:</para>
 
       <blockquote>
-        <para><command>/sbin/shorewall restart</command></para>
+        <para><command>/sbin/shorewall reload</command></para>
       </blockquote>
     </section>
   </section>

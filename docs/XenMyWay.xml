@@ -631,10 +631,9 @@ ACCEPT  $MIRRORS</programlisting>
 
         <para><filename>/etc/shorewall/rules</filename>:</para>
 
-        <programlisting>SECTION NEW
+        <programlisting>?SECTION NEW
 ###############################################################################################################################################################################
-#ACTION         SOURCE                          DEST                    PROTO   DEST                                    SOURCE          ORIGINAL        RATE    USER/
-#                                                                               PORT                                    PORT(S)         DEST            LIMIT   GROUP
+#ACTION         SOURCE                          DEST                    PROTO   DPORT                                   SPORT           ORIGDEST        RATE    USER
 ###############################################################################################################################################################################
 REJECT:$LOG     loc                             net                     tcp     25
 REJECT:$LOG     loc                             net                     udp     1025:1031

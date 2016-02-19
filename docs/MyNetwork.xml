@@ -494,8 +494,7 @@ tarpit       inline             # Wrapper for TARPIT
     <section>
       <title>/etc/shorewall/action.Mirrors</title>
 
-      <para><programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
-#                                               PORT    PORT(S)    DEST         LIMIT
+      <para><programlisting>#TARGET SOURCE          DEST            PROTO   DPORT   SPORT      ORIGDEST     RATE
 ?COMMENT Accept traffic from Mirrors
 ?FORMAT  2
 DEFAULTS -
@@ -508,8 +507,7 @@ $1      $MIRRORS
     <section>
       <title>/etc/shorewall/action.tarpit</title>
 
-      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME         HEADERS         SWITCH        HELPER
-#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT           ORIGDEST        RATE            USER    MARK    CONNLIMIT       TIME         HEADERS         SWITCH        HELPER
 $LOG            { rate=s:1/min }
 TARPIT
 </programlisting>
@@ -520,7 +518,8 @@ TARPIT
     <section id="zones">
       <title>/etc/shorewall/zones</title>
 
-      <para><programlisting>fw              firewall
+      <para><programlisting>#ZONE           TYPE
+fw              firewall
 loc             ip                                              #Local Zone
 net             ipv4                                            #Internet
 dmz             ipv4                                            #LXC Containers
@@ -816,8 +815,7 @@ br0                 -                ComcastB  11000
     <section id="routestopped">
       <title>/etc/shorewall/stoppedrules</title>
 
-      <para><programlisting>#TARGET         HOST(S)                 DEST      PROTO     DEST        SOURCE
-#                                                           PORT(S)     PORT(S)
+      <para><programlisting>#TARGET         HOST(S)                 DEST      PROTO     DPORT       SPORT
 ACCEPT          INT_IF:172.20.1.0/24    $FW
 NOTRACK         COMB_IF                 -         41
 NOTRACK         $FW                     COMB_IF   41

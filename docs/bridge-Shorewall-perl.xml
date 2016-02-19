@@ -941,15 +941,13 @@ ACCEPT      col          zone2        tcp    22      -          -           -   
 
     <para>or more compactly:</para>
 
-    <programlisting>#ACTION     SOURCE       DEST         PROTO  DEST
-#                                            PORT(S)
+    <programlisting>#ACTION     SOURCE       DEST         PROTO  DPORT
 ACCEPT      col          <emphasis role="bold">zone2</emphasis>        tcp    22      ; mark=<emphasis
         role="bold">net</emphasis></programlisting>
 
     <para>Similarly, rules allowing traffic from the firewall to zone3:</para>
 
-    <programlisting>#ACTION     SOURCE       DEST         PROTO  DEST
-#                                            PORT(S)
+    <programlisting>#ACTION     SOURCE       DEST         PROTO  DPORT
 ACCEPT      col          <emphasis role="bold">zone3</emphasis>        tcp    22      ; mark=<emphasis
         role="bold">fw</emphasis></programlisting>
 

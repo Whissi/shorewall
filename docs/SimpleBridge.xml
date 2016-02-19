@@ -86,7 +86,7 @@
     <para>The following diagram shows a firewall for two bridged LAN
     segments.</para>
 
-    <graphic align="center" fileref="images/SimpleBridge.png" valign="middle" />
+    <graphic align="center" fileref="images/SimpleBridge.png" valign="middle"/>
 
     <para>This is fundamentally the Two-interface Firewall described in the
     <ulink url="two-interface.htm">Two-interface Quickstart Guide</ulink>. The
@@ -108,10 +108,11 @@
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>#ZONE          INTERFACE       BROADCAST      OPTIONS
-net            eth0            detect         ...
-loc            <emphasis role="bold">br0</emphasis>             10.0.1.255     <emphasis
-        role="bold">routeback</emphasis>,...</programlisting>
+    <programlisting>?FORMAT 2
+#ZONE          INTERFACE       OPTIONS
+net            eth0            ...
+loc            <emphasis role="bold">br0</emphasis>             <emphasis
+        role="bold">routeback,bridge</emphasis>,...</programlisting>
 
     <para>So the key points here are:</para>
 
@@ -128,8 +129,9 @@ loc            <emphasis role="bold">br0</emphasis>             10.0.1.255     <
       </listitem>
 
       <listitem>
-        <para>The <emphasis role="bold">routeback</emphasis> option is
-        specified for <filename class="devicefile">br0</filename>.</para>
+        <para>The <emphasis role="bold">routeback</emphasis> and <emphasis
+        role="bold">bridge</emphasis> options is specified for <filename
+        class="devicefile">br0</filename>.</para>
       </listitem>
 
       <listitem>
@@ -137,13 +139,6 @@ loc            <emphasis role="bold">br0</emphasis>             10.0.1.255     <
         10.0.1.254 — the IP address of the bridge itself.</para>
       </listitem>
     </itemizedlist>
-
-    <para><emphasis role="bold">Note to Shorewall-perl users</emphasis>: You
-    should also specify the <emphasis role="bold">bridge</emphasis>
-    option:<programlisting>#ZONE          INTERFACE       BROADCAST      OPTIONS
-net            eth0            detect         ...
-loc            <emphasis role="bold">br0</emphasis>             10.0.1.255     <emphasis
-          role="bold">routeback,bridge</emphasis>,...</programlisting></para>
 
     <para>Your entry in <filename>/etc/shorewall/masq</filename> should be
     unchanged:</para>

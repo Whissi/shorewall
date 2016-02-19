@@ -50,7 +50,7 @@
 
     <para>Suppose that we have the following situation:</para>
 
-    <graphic fileref="images/TwoNets1.png" />
+    <graphic fileref="images/TwoNets1.png"/>
 
     <para>We want systems in the 192.168.1.0/24 subnetwork to be able to
     communicate with the systems in the 10.0.0.0/8 network. This is
@@ -91,7 +91,7 @@ vpn        tun0            10.255.255.255</programlisting>
 
     <para>In /etc/shorewall/tunnels on system A, we need the following:</para>
 
-    <programlisting>#TYPE            ZONE           GATEWAY         GATEWAY ZONE
+    <programlisting>#TYPE            ZONE           GATEWAY         GATEWAY_ZONE
 generic:tcp:1071 net            134.28.54.2
 generic:47       net            134.28.54.2</programlisting>
 
@@ -104,7 +104,7 @@ vpn          tun0             192.168.1.255</programlisting>
 
     <para>In /etc/shorewall/tunnels on system B, we have:</para>
 
-    <programlisting>#TYPE            ZONE           GATEWAY         GATEWAY ZONE
+    <programlisting>#TYPE            ZONE           GATEWAY         GATEWAY_ZONE
 generic:tcp:1071 net            206.191.148.9
 generic:47       net            206.191.148.9</programlisting>
 

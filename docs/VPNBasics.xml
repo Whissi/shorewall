@@ -115,7 +115,7 @@
 
     <para>Incoming traffic is similar.</para>
 
-    <graphic align="center" fileref="images/VPNBasics.png" />
+    <graphic align="center" fileref="images/VPNBasics.png"/>
   </section>
 
   <section id="Shorewall">
@@ -203,8 +203,8 @@ loc             ipv4
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
-net             eth0               -                  tcpflags,routefilter
+    <programlisting>#ZONE           INTERFACE          OPTION
+net             eth0               tcpflags,routefilter
 loc             eth1               -
 <emphasis role="bold">rem             ppp0               -</emphasis></programlisting>
   </section>
@@ -216,7 +216,7 @@ loc             eth1               -
     client(s) and the local zone. You can do that with a couple of
     policies:</para>
 
-    <programlisting>#SOURCE       DESTINATION         POLICY         LEVEL          BURST/LIMIT
+    <programlisting>#SOURCE       DESTINATION         POLICY         LOGLEVEL          BURST
 rem           loc                 ACCEPT
 loc           rem                 ACCEPT</programlisting>
 
@@ -259,8 +259,8 @@ rem2            ipv4    #Remote LAN 2</emphasis></programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
-net             eth0               -                  tcpflags,routefilter
+    <programlisting>#ZONE           INTERFACE          OPTION
+net             eth0               tcpflags,routefilter
 loc             eth1               -
 <emphasis role="bold">-               tun+               -</emphasis></programlisting>
 
@@ -291,15 +291,14 @@ rem2            tun+:10.0.1.0/24</emphasis></programlisting>
       <para>/<filename>etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY_ZONE
 ipsec           Z1            1.2.3.4          Z2</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
       <blockquote>
-        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
-#                                               PORT    PORT(S)
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DPORT   SPORT 
 ACCEPT   $FW            Z1:1.2.3.4      udp     500
 ACCEPT   Z1:1.2.3.4     $FW             udp     500
 ACCEPT   $FW            Z1:1.2.3.4      50
@@ -322,15 +321,14 @@ ACCEPT   Z2:1.2.3.4     $FW             udp     500</programlisting>
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY_ZONE
 pptpserver      Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para>/<filename>etc/shorewall/rules</filename>:</para>
 
       <blockquote>
-        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
-#                                               PORT    PORT(S)
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DPORT   SPORT 
 
 ACCEPT   Z1:1.2.3.4     $FW             tcp     1723
 ACCEPT   $FW            Z1:1.2.3.4      47
@@ -347,15 +345,14 @@ ACCEPT   Z1:1.2.3.4     $FW             47</programlisting>
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY_ZONE
 openvpn:<emphasis>port</emphasis>    Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
       <blockquote>
-        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
-#                                               PORT    PORT(S)
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DPORT   SPORT 
 
 ACCEPT   Z1:1.2.3.4     $FW             udp     <emphasis>port</emphasis>
 ACCEPT   $FW            Z1:1.2.3.4      udp     <emphasis>port</emphasis></programlisting>
@@ -364,15 +361,14 @@ ACCEPT   $FW            Z1:1.2.3.4      udp     <emphasis>port</emphasis></progr
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE              ZONE          GATEWAY          GATEWAY ZONE
+        <programlisting>#TYPE              ZONE          GATEWAY          GATEWAY_ZONE
 openvpnclient:<emphasis>port</emphasis> Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
       <blockquote>
-        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
-#                                               PORT    PORT(S)
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DPORT   SPORT 
 
 ACCEPT   Z1:1.2.3.4     $FW             udp     -       <emphasis>port</emphasis>
 ACCEPT   $FW            Z1:1.2.3.4      udp     <emphasis>port</emphasis></programlisting>
@@ -381,15 +377,14 @@ ACCEPT   $FW            Z1:1.2.3.4      udp     <emphasis>port</emphasis></progr
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
-        <programlisting>#TYPE              ZONE          GATEWAY          GATEWAY ZONE
+        <programlisting>#TYPE              ZONE          GATEWAY          GATEWAY_ZONE
 openvpnserver:<emphasis>port</emphasis> Z1            1.2.3.4</programlisting>
       </blockquote>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
       <blockquote>
-        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
-#                                               PORT    PORT(S)
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DPORT   SPORT 
 
 ACCEPT   Z1:1.2.3.4     $FW             udp     <emphasis>port</emphasis>
 ACCEPT   $FW            Z1:1.2.3.4      udp     -       <emphasis>port</emphasis></programlisting>

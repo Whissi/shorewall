@@ -266,13 +266,13 @@ dmz        eth2          detect        nets=(192.168.1.0/24)</programlisting>
     <para>The <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     file included with the three-interface sample has the following policies:
-    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL    LIMIT
 loc        net         ACCEPT
 net        all         DROP        info
 all        all         REJECT      info</programlisting>In the three-interface
     sample, the line below is included but commented out. If you want your
     firewall system to have full access to servers on the Internet, uncomment
-    that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+    that line. <programlisting>#SOURCE    DEST        POLICY      LOGLEVEL    LIMIT
 $FW        net         ACCEPT</programlisting> The above policies will:
     <itemizedlist>
         <listitem>
@@ -316,8 +316,7 @@ $FW        net         ACCEPT</programlisting> The above policies will:
     url="manpages/shorewall-rules.html"><filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>:</ulink></para>
 
-    <programlisting>#ACTION    SOURCE        DEST      PROTO      DEST
-#                                             PORT(S)
+    <programlisting>#ACTION    SOURCE        DEST      PROTO      DPORT
 ACCEPT     net           $FW       tcp        22</programlisting>
 
     <para>So although you have a policy of ignoring all connection attempts

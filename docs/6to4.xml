@@ -127,7 +127,7 @@ GATEWAY=::192.88.99.1</programlisting></para>
       wireless). eth4 goes to my DMZ which holds a single server. Here is a
       diagram of the IPv4 network:</para>
 
-      <graphic align="center" fileref="images/Network2009.png" />
+      <graphic align="center" fileref="images/Network2009.png"/>
 
       <para>Here is the configuration after IPv6 is configured; the part in
       bold font is configured by the /etc/init.d/ipv6 script.</para>
@@ -283,7 +283,7 @@ ursa:~ #</programlisting></para>
 
       <para>Here is the resulting simple IPv6 Network:</para>
 
-      <graphic align="center" fileref="images/Network2009b.png" />
+      <graphic align="center" fileref="images/Network2009b.png"/>
     </section>
 
     <section>
@@ -338,7 +338,7 @@ ursa:~ #</programlisting></para>
 
       <para>So the IPv4 network was transformed to this:</para>
 
-      <graphic align="center" fileref="images/Network2009a.png" />
+      <graphic align="center" fileref="images/Network2009a.png"/>
 
       <para>To implement the same IPv6 network as described above, I used this
       /etc/shorewall/interfaces file:</para>
@@ -407,7 +407,7 @@ iface sit1 inet6 v4tunnel
 
       <para>That file produces the following IPv6 network.</para>
 
-      <graphic align="center" fileref="images/Network2008c.png" />
+      <graphic align="center" fileref="images/Network2008c.png"/>
     </section>
 
     <section>
@@ -475,7 +475,7 @@ dmz             eth2                    tcpflags,forward=1</programlisting></par
       <para><filename>/etc/shorewall6/policy</filename>:</para>
 
       <blockquote>
-        <para><programlisting>#SOURCE    DEST    POLICY    LOG LEVEL    LIMIT:BURST
+        <para><programlisting>#SOURCE    DEST    POLICY    LOGLEVEL    LIMIT
 net        all     DROP      info
 loc        net     ACCEPT
 dmz        net     ACCEPT
@@ -505,8 +505,7 @@ SSH(ACCEPT)      loc             $FW
 #
 #       Allow Ping everywhere
 #
-Ping(ACCEPT)     all             all</programlisting>
-        </para>
+Ping(ACCEPT)     all             all</programlisting></para>
       </blockquote>
     </section>
   </section>
@@ -652,7 +651,7 @@ interface eth2 {
 
     <para>Suppose that we have the following situation:</para>
 
-    <graphic fileref="images/TwoIPv6Nets1.png" />
+    <graphic fileref="images/TwoIPv6Nets1.png"/>
 
     <para>We want systems in the 2002:100:333::/64 subnetwork to be able to
     communicate with the systems in the 2002:488:999::/64 network. This is

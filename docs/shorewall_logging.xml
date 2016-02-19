@@ -314,8 +314,7 @@ gateway:/etc/shorewall#                                               </programl
       <para><filename>/etc/shorewall/shorewall.conf</filename>:
       <programlisting>MACLIST_LOG_LEVEL=NFLOG(1,0,1)</programlisting></para>
 
-      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION             SOURCE     DEST     PROTO     DEST
-#                                                 PORT(S)
+      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION             SOURCE     DEST     PROTO     DPORT
 ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlisting><important>
           <para>Shorewall considers <emphasis role="bold">ULOG(...)</emphasis>
           and <emphasis role="bold">NFLOG(...)</emphasis> to be <emphasis

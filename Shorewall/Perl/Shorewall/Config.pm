@@ -5861,6 +5861,8 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'WORKAROUNDS'                , 'Yes';
     default_yes_no 'DOCKER'                     , '';
 
+    require_capability( 'IPTABLES_S', 'DOCKER=Yes', 's' ) if $config{DOCKER};
+
     if ( supplied( $val = $config{RESTART} ) ) {
 	fatal_error "Invalid value for RESTART ($val)" unless $val =~ /^(restart|reload)$/;
     } elsif (supplied $config{LEGACY_RESTART} ) {

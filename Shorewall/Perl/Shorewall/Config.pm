@@ -874,6 +874,7 @@ sub initialize( $;$$) {
 	  WORKAROUNDS => undef ,
 	  LEGACY_RESTART => undef ,
 	  RESTART => undef ,
+	  DOCKER => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -5857,6 +5858,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';
+    default_yes_no 'DOCKER'                     , '';
 
     if ( supplied( $val = $config{RESTART} ) ) {
 	fatal_error "Invalid value for RESTART ($val)" unless $val =~ /^(restart|reload)$/;

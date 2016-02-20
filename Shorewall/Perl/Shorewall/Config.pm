@@ -736,6 +736,7 @@ sub initialize( $;$$) {
 		    RPFILTER_LOG_TAG        => '',
 		    INVALID_LOG_TAG         => '',
 		    UNTRACKED_LOG_TAG       => '',
+		    POSTROUTING             => 'POSTROUTING',
 		  );
     #
     # From shorewall.conf file

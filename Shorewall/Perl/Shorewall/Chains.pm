@@ -2994,6 +2994,11 @@ sub initialize_chain_table($) {
 	# Create this chain early in case it is needed by Policy actions
 	#
 	new_standard_chain 'reject';
+
+	if ( $config{DOCKER} ) {
+	    my $chainref = new_nat_chain( $globals{POSTROUTING} = 'SHOREWALL' );
+	    set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	}
     }
 
     my $ruleref = transform_rule( $globals{LOGLIMIT} );

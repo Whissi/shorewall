@@ -1508,13 +1508,15 @@ sub add_interface_jumps {
     # Add Nat jumps
     #
     for my $interface ( @_ ) {
-	addnatjump 'POSTROUTING' , snat_chain( $interface ), imatch_dest_dev( $interface );
+	addnatjump $globals{POSTROUTING} , snat_chain( $interface ), imatch_dest_dev( $interface );
     }
+
+    addnatjump( 'POSTROUTING', 'SHOREWALL' ) if $config{DOCKER};
 
     for my $interface ( @interfaces  ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
-	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
-	addnatjump 'POSTROUTING' , masq_chain( $interface ) , imatch_dest_dev( $interface );
+	addnatjump $globals{POSTROUTING} , output_chain( $interface ) , imatch_dest_dev( $interface );
+	addnatjump $globals{POSTROUTING} , masq_chain( $interface ) , imatch_dest_dev( $interface );
 
 	if ( have_capability 'RAWPOST_TABLE' ) {
 	    insert_ijump ( $rawpost_table->{POSTROUTING}, j => postrouting_chain( $interface ), 0, imatch_dest_dev( $interface) )   if $rawpost_table->{postrouting_chain $interface};
@@ -2246,8 +2248,8 @@ sub generate_matrix() {
     #
     # Make sure that the 1:1 NAT jumps are last in PREROUTING
     #
-    addnatjump 'PREROUTING'  , 'nat_in';
-    addnatjump 'POSTROUTING' , 'nat_out';
+    addnatjump 'PREROUTING'          , 'nat_in';
+    addnatjump $globals{POSTROUTING} , 'nat_out';
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
 

@@ -646,6 +646,26 @@ sub add_common_rules ( $ ) {
     my $level     = $config{BLACKLIST_LOG_LEVEL};
     my $tag       = $globals{BLACKLIST_LOG_TAG};
     my $rejectref = $filter_table->{reject};
+    #
+    # Insure that Docker jumps are early in the builtin chains
+    #
+    if ( $config{DOCKER} ) {
+	my $forwardref = $filter_table->{FORWARD};
+
+	add_ijump( $nat_table->{PREROUTING}, j => 'DOCKER', addrtype => '--dst-type LOCAL' );
+	add_ijump( $nat_table->{OUTPUT},     j => 'DOCKER', d => '127.0.0.0/8', addrtype => '--dst-type LOCAL' );
+
+	add_ijump_extended( $forwardref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
+
+	unless ( known_interface('docker0') ) {
+	    #
+	    # Emulate the Docker-generated rules
+	    #
+	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, o => 'docker0', conntrack => '--ctstate ESTABLISHED,RELATED' );
+	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0', o => '! docker0' );
+	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0', o => 'docker0' );
+	}
+    }
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
 	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level , $tag);

@@ -2989,6 +2989,8 @@ sub initialize_chain_table($) {
 	}
     }
 
+    my $chainref;
+
     if ( $full ) {
 	#
 	# Create this chain early in case it is needed by Policy actions
@@ -2996,9 +2998,16 @@ sub initialize_chain_table($) {
 	new_standard_chain 'reject';
 
 	if ( $config{DOCKER} ) {
-	    my $chainref = new_nat_chain( $globals{POSTROUTING} = 'SHOREWALL' );
+	    $chainref = new_nat_chain( $globals{POSTROUTING} = 'SHOREWALL' );
 	    set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
 	}
+    }
+
+    if ( $config{DOCKER} ) {
+	$chainref = new_standard_chain( 'DOCKER' );
+	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	$chainref = new_nat_chain( 'DOCKER' );
+	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
     }
 
     my $ruleref = transform_rule( $globals{LOGLIMIT} );

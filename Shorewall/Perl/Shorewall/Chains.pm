@@ -8082,25 +8082,22 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
-
     } else {
-	$tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
-
 	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
-    $tool -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
+    $utility -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
 else
     rm -f \${VARDIR}/.UPnP
 fi
 
 if chain_exists forwardUPnP; then
-    $tool -t filter | grep '^-A forwardUPnP ' > \${VARDIR}/.forwardUPnP
+    $utility -t filter | grep '^-A forwardUPnP ' > \${VARDIR}/.forwardUPnP
 else
     rm -f \${VARDIR}/.forwardUPnP
 fi
 
 if chain_exists dynamic; then
-    $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
+    $utility -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
 else
     rm -f \${VARDIR}/.dynamic
 fi
@@ -8123,7 +8120,7 @@ EOF
     } else {
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
-	      qq(        $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic) );
+	      qq(        $utility -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic) );
     }
 
 emit <<"EOF";

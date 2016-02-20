@@ -3004,10 +3004,13 @@ sub initialize_chain_table($) {
     }
 
     if ( $config{DOCKER} ) {
+	add_commands( $nat_table->{POSTROUTING}, '[ -f ${VARDIR}/.nat_POSTROUTING ] && cat ${VARDIR}/.nat_POSTROUTING >&3' );
 	$chainref = new_standard_chain( 'DOCKER' );
 	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	add_commands( $chainref, '[ -f ${VARDIR}/.filter_DOCKER ] && cat ${VARDIR}/.filter_DOCKER >&3' );
 	$chainref = new_nat_chain( 'DOCKER' );
 	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	add_commands( $chainref, '[ -f ${VARDIR}/.nat_DOCKER ] && cat ${VARDIR}/.nat_DOCKER >&3' );
     }
 
     my $ruleref = transform_rule( $globals{LOGLIMIT} );
@@ -8057,6 +8060,24 @@ sub emitr1( $$ ) {
 #
 # Emit code to save the dynamic chains to hidden files in ${VARDIR}
 #
+sub save_docker_rules($) {
+    my $tool = $_[0];
+
+    emit( qq(),
+	  qq(if chain_exists DOCKER nat; then),
+	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \$VARDIR/.nat_DOCKER),
+	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \$VARDIR/.nat_POSTROUTING),
+	  qq(else),
+	  qq(    rm -f \$VARDIR/.nat_DOCKER),
+	  qq(    rm -f \$VARDIR/.nat_POSTROUTING),
+	  qq(fi\n),
+	  qq(if chain_exists DOCKER; then),
+	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
+	  qq(else),
+	  qq(    rm -f \$VARDIR/.filter_DOCKER),
+	  qq(fi)
+	)
+}
 
 sub save_dynamic_chains() {
 
@@ -8091,6 +8112,7 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
+	save_docker_rules( $tool ) if $config{DOCKER};
     } else {
 	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
@@ -8126,6 +8148,7 @@ EOF
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
 	      qq(        $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic) );
+	save_docker_rules( $tool ) if $config{DOCKER};
     } else {
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
@@ -8721,13 +8744,11 @@ sub create_stop_load( $ ) {
 
     emit '';
 
-    emit(  '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY,
-	   '',
-	   'progress_message2 "Running $command..."',
-	   '',
-	   '$command <<__EOF__' );
+    save_progress_message "Preparing $utility input...";
 
-    $mode = CAT_MODE;
+    emit "exec 3>\${VARDIR}/.${utility}-stop-input";
+
+    enter_cat_mode;
 
     unless ( $test ) {
 	my $date = localtime;
@@ -8771,10 +8792,19 @@ sub create_stop_load( $ ) {
 	#
 	# Commit the changes to the table
 	#
+	enter_cat_mode unless $mode == CAT_MODE;
 	emit_unindented 'COMMIT';
     }
 
-    emit_unindented '__EOF__';
+    enter_cmd_mode;
+
+    emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
+
+    emit( '',
+	  'progress_message2 "Running $command..."',
+	  '',
+	  "cat \${VARDIR}/.${utility}-stop-input | \$command # Use this nonsensical form to appease SELinux",
+	);
     #
     # Test result
     #

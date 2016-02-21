@@ -5861,9 +5861,11 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'WORKAROUNDS'                , 'Yes';
     default_yes_no 'DOCKER'                     , '';
 
-    fatal_error "DOCKER=Yes is not allowed in Shorewall6" if $family == F_IPV6;
-
-    require_capability( 'IPTABLES_S', 'DOCKER=Yes', 's' ) if $config{DOCKER};
+    if ( $config{DOCKER} ) {
+	fatal_error "DOCKER=Yes is not allowed in Shorewall6" if $family == F_IPV6;
+	require_capability( 'IPTABLES_S', 'DOCKER=Yes', 's' );
+	require_capability( 'ADDRTYPE', '  DOCKER=Yes', 's' );
+    }
 
     if ( supplied( $val = $config{RESTART} ) ) {
 	fatal_error "Invalid value for RESTART ($val)" unless $val =~ /^(restart|reload)$/;

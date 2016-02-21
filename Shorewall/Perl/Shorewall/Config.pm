@@ -5861,6 +5861,8 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'WORKAROUNDS'                , 'Yes';
     default_yes_no 'DOCKER'                     , '';
 
+    fatal_error "DOCKER=Yes is not allowed in Shorewall6" if $family == F_IPV6;
+
     require_capability( 'IPTABLES_S', 'DOCKER=Yes', 's' ) if $config{DOCKER};
 
     if ( supplied( $val = $config{RESTART} ) ) {

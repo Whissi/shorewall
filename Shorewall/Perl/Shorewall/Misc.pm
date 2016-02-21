@@ -652,9 +652,20 @@ sub add_common_rules ( $ ) {
     if ( $config{DOCKER} ) {
 	my $forwardref = $filter_table->{FORWARD};
 
-	add_ijump( $nat_table->{PREROUTING}, j => 'DOCKER', addrtype => '--dst-type LOCAL' );
-	add_ijump( $nat_table->{OUTPUT},     j => 'DOCKER', d => '127.0.0.0/8', addrtype => '--dst-type LOCAL' );
+	add_commands( $chainref = $nat_table->{PREROUTING} , 'if [ -n "$g_docker" ]; then' );
+	incr_cmd_level( $chainref );
+	add_ijump( $chainref, j => 'DOCKER', addrtype => '--dst-type LOCAL' );
+	decr_cmd_level( $chainref );
+	add_commands( $chainref, 'fi' );
 
+	add_commands( $chainref = $nat_table->{OUTPUT} , 'if [ -n "$g_docker" ]; then' );
+	incr_cmd_level( $chainref );
+	add_ijump( $nat_table->{OUTPUT}, j => 'DOCKER', d => '127.0.0.0/8', addrtype => '--dst-type LOCAL' );
+	decr_cmd_level( $chainref );
+	add_commands( $chainref, 'fi' );
+
+	add_commands( $forwardref , 'if [ -n "$g_docker" ]; then' );
+	incr_cmd_level( $forwardref );
 	add_ijump_extended( $forwardref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
 
 	unless ( known_interface('docker0') ) {
@@ -665,6 +676,9 @@ sub add_common_rules ( $ ) {
 	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0', o => '! docker0' );
 	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0', o => 'docker0' );
 	}
+
+	decr_cmd_level( $forwardref );
+	add_commands( $forwardref, 'fi' );
     }
 
     if ( $config{DYNAMIC_BLACKLIST} ) {

@@ -8064,16 +8064,13 @@ sub save_docker_rules($) {
     my $tool = $_[0];
 
     emit( qq(),
-	  qq(if chain_exists DOCKER nat; then),
+	  qq(if [ -n "\$g_docker" ]; then),
 	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \$VARDIR/.nat_DOCKER),
 	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \$VARDIR/.nat_POSTROUTING),
+	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
 	  qq(else),
 	  qq(    rm -f \$VARDIR/.nat_DOCKER),
 	  qq(    rm -f \$VARDIR/.nat_POSTROUTING),
-	  qq(fi\n),
-	  qq(if chain_exists DOCKER; then),
-	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
-	  qq(else),
 	  qq(    rm -f \$VARDIR/.filter_DOCKER),
 	  qq(fi)
 	)
@@ -8471,8 +8468,18 @@ sub create_netfilter_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
-		emit_unindented ":$chainref->{name} - [0:0]";
+		my $name = $chainref->{name};
+		assert( $chainref->{cmdlevel} == 0 , $name );
+		if ( $name eq 'DOCKER' ) {
+		    enter_cmd_mode;
+		    emit( 'if [ -n "$g_docker" ]; then',
+			  '    echo ":DOCKER - [0:0]" >&3',
+			  'fi' );
+		    enter_cat_mode;
+		} else {
+		    emit_unindented ":$name - [0:0]";
+		}
+
 		push @chains, $chainref;
 	    }
 	}
@@ -8558,8 +8565,18 @@ sub preview_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0, $chainref->{name} );
-		print ":$chainref->{name} - [0:0]\n";
+		my $name = $chainref->{name};
+		assert( $chainref->{cmdlevel} == 0 , $name );
+		if ( $name eq 'DOCKER' ) {
+		    enter_cmd_mode;
+		    emit( 'if [ -n "$g_docker" ]; then',
+			  '    echo ":DOCKER - [0:0]" >&3',
+			  'fi' );
+		    enter_cat_mode;
+		} else {
+		    emit_unindented ":$name - [0:0]";
+		}
+
 		push @chains, $chainref;
 	    }
 	}
@@ -8778,8 +8795,18 @@ sub create_stop_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
-		emit_unindented ":$chainref->{name} - [0:0]";
+		my $name = $chainref->{name};
+		assert( $chainref->{cmdlevel} == 0 , $name );
+		if ( $name eq 'DOCKER' ) {
+		    enter_cmd_mode;
+		    emit( 'if [ -n "$g_docker" ]; then',
+			  '    echo ":DOCKER - [0:0]" >&3',
+			  'fi' );
+		    enter_cat_mode;
+		} else {
+		    emit_unindented ":$name - [0:0]";
+		}
+
 		push @chains, $chainref;
 	    }
 	}

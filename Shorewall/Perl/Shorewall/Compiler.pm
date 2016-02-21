@@ -261,7 +261,12 @@ sub generate_script_2() {
 	   '# The library requires that ${VARDIR} exist',
 	   '#',
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
-	   );
+	);
+
+    emit( '',
+	  'chain_exists DOCKER nat && chain_exists DOCKER && g_docker=Yes',
+	  ''
+	) if $config{DOCKER};
 
     pop_indent;
 

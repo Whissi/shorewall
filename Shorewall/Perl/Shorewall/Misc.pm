@@ -628,6 +628,41 @@ sub process_stoppedrules() {
     $result;
 }
 
+sub create_docker_rules() {
+    my $chainref = $nat_table->{PREROUTING};
+
+    add_commands( $chainref , 'if [ -n "$g_docker" ]; then' );
+    incr_cmd_level( $chainref );
+    add_ijump( $chainref, j => 'DOCKER', addrtype => '--dst-type LOCAL' );
+    decr_cmd_level( $chainref );
+    add_commands( $chainref, 'fi' );
+
+    add_commands( $chainref = $nat_table->{OUTPUT} , 'if [ -n "$g_docker" ]; then' );
+    incr_cmd_level( $chainref );
+    add_ijump( $nat_table->{OUTPUT}, j => 'DOCKER', d => '! 127.0.0.0/8', addrtype => '--dst-type LOCAL' );
+    decr_cmd_level( $chainref );
+    add_commands( $chainref, 'fi' );
+
+    add_commands( $chainref = $filter_table->{FORWARD}, 'if [ -n "$g_docker" ]; then' );
+    incr_cmd_level( $chainref );
+    add_ijump_extended( $chainref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
+
+    unless ( known_interface('docker0') ) {
+	#
+	# Emulate the Docker-generated rules
+	#
+	add_ijump_extended( $chainref, j => 'ACCEPT', $origin{DOCKER}, o => 'docker0', conntrack => '--ctstate ESTABLISHED,RELATED' );
+	#
+	# Docker creates two ACCEPT rules for traffic forwarded from docker0 -- one for routeback and one for the rest
+	# We combine them into a single rule
+	#
+	add_ijump_extended( $chainref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0' );
+    }
+
+    decr_cmd_level( $chainref );
+    add_commands( $chainref, 'fi' );
+}
+
 sub setup_mss();
 
 sub add_common_rules ( $ ) {
@@ -649,37 +684,7 @@ sub add_common_rules ( $ ) {
     #
     # Insure that Docker jumps are early in the builtin chains
     #
-    if ( $config{DOCKER} ) {
-	my $forwardref = $filter_table->{FORWARD};
-
-	add_commands( $chainref = $nat_table->{PREROUTING} , 'if [ -n "$g_docker" ]; then' );
-	incr_cmd_level( $chainref );
-	add_ijump( $chainref, j => 'DOCKER', addrtype => '--dst-type LOCAL' );
-	decr_cmd_level( $chainref );
-	add_commands( $chainref, 'fi' );
-
-	add_commands( $chainref = $nat_table->{OUTPUT} , 'if [ -n "$g_docker" ]; then' );
-	incr_cmd_level( $chainref );
-	add_ijump( $nat_table->{OUTPUT}, j => 'DOCKER', d => '127.0.0.0/8', addrtype => '--dst-type LOCAL' );
-	decr_cmd_level( $chainref );
-	add_commands( $chainref, 'fi' );
-
-	add_commands( $forwardref , 'if [ -n "$g_docker" ]; then' );
-	incr_cmd_level( $forwardref );
-	add_ijump_extended( $forwardref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
-
-	unless ( known_interface('docker0') ) {
-	    #
-	    # Emulate the Docker-generated rules
-	    #
-	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, o => 'docker0', conntrack => '--ctstate ESTABLISHED,RELATED' );
-	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0', o => '! docker0' );
-	    add_ijump_extended( $forwardref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0', o => 'docker0' );
-	}
-
-	decr_cmd_level( $forwardref );
-	add_commands( $forwardref, 'fi' );
-    }
+    create_docker_rules if $config{DOCKER};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
 	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level , $tag);
@@ -2540,6 +2545,10 @@ EOF
     emit( 'undo_routing',
 	  "restore_default_route $config{USE_DEFAULT_RT}"
 	  );
+    #
+    # Insure that Docker jumps are early in the builtin chains
+    #
+    create_docker_rules if $config{DOCKER};
 
     if ( $config{ADMINISABSENTMINDED} ) {
 	add_ijump $filter_table ->{$_}, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' for qw/INPUT FORWARD/;

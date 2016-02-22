@@ -8472,9 +8472,7 @@ sub create_netfilter_load( $ ) {
 		assert( $chainref->{cmdlevel} == 0 , $name );
 		if ( $name eq 'DOCKER' ) {
 		    enter_cmd_mode;
-		    emit( 'if [ -n "$g_docker" ]; then',
-			  '    echo ":DOCKER - [0:0]" >&3',
-			  'fi' );
+		    emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
 		    enter_cat_mode;
 		} else {
 		    emit_unindented ":$name - [0:0]";
@@ -8569,9 +8567,7 @@ sub preview_netfilter_load() {
 		assert( $chainref->{cmdlevel} == 0 , $name );
 		if ( $name eq 'DOCKER' ) {
 		    enter_cmd_mode;
-		    emit( 'if [ -n "$g_docker" ]; then',
-			  '    echo ":DOCKER - [0:0]" >&3',
-			  'fi' );
+		    emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
 		    enter_cat_mode;
 		} else {
 		    emit_unindented ":$name - [0:0]";
@@ -8799,9 +8795,7 @@ sub create_stop_load( $ ) {
 		assert( $chainref->{cmdlevel} == 0 , $name );
 		if ( $name eq 'DOCKER' ) {
 		    enter_cmd_mode;
-		    emit( 'if [ -n "$g_docker" ]; then',
-			  '    echo ":DOCKER - [0:0]" >&3',
-			  'fi' );
+		    emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
 		    enter_cat_mode;
 		} else {
 		    emit_unindented ":$name - [0:0]";

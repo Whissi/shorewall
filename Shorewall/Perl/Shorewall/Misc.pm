@@ -629,38 +629,30 @@ sub process_stoppedrules() {
 }
 
 sub create_docker_rules() {
-    my $chainref = $nat_table->{PREROUTING};
 
-    add_commands( $chainref , 'if [ -n "$g_docker" ]; then' );
-    incr_cmd_level( $chainref );
-    add_ijump( $chainref, j => 'DOCKER', addrtype => '--dst-type LOCAL' );
-    decr_cmd_level( $chainref );
-    add_commands( $chainref, 'fi' );
-
-    add_commands( $chainref = $nat_table->{OUTPUT} , 'if [ -n "$g_docker" ]; then' );
-    incr_cmd_level( $chainref );
-    add_ijump( $nat_table->{OUTPUT}, j => 'DOCKER', d => '! 127.0.0.0/8', addrtype => '--dst-type LOCAL' );
-    decr_cmd_level( $chainref );
-    add_commands( $chainref, 'fi' );
-
-    add_commands( $chainref = $filter_table->{FORWARD}, 'if [ -n "$g_docker" ]; then' );
-    incr_cmd_level( $chainref );
-    add_ijump_extended( $chainref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
+    add_commands( $nat_table->{PREROUTING} , '[ -n "$g_docker" ] && echo "-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
+    add_commands( $nat_table->{OUTPUT} ,     '[ -n "$g_docker" ] && echo "-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
 
     unless ( known_interface('docker0') ) {
+	my $chainref = $filter_table->{FORWARD};
+
+	add_commands( $chainref, 'if [ -n "$g_docker" ]; then' );
+	incr_cmd_level( $chainref );
 	#
 	# Emulate the Docker-generated rules
 	#
+	add_ijump_extended( $chainref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
 	add_ijump_extended( $chainref, j => 'ACCEPT', $origin{DOCKER}, o => 'docker0', conntrack => '--ctstate ESTABLISHED,RELATED' );
 	#
 	# Docker creates two ACCEPT rules for traffic forwarded from docker0 -- one for routeback and one for the rest
 	# We combine them into a single rule
 	#
 	add_ijump_extended( $chainref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0' );
+	decr_cmd_level( $chainref );
+	add_commands( $chainref, 'fi' );
+    } else {
+	add_commands( $filter_table->{FORWARD}, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
     }
-
-    decr_cmd_level( $chainref );
-    add_commands( $chainref, 'fi' );
 }
 
 sub setup_mss();

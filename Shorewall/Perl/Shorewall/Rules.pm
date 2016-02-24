@@ -1589,7 +1589,7 @@ sub allowBcast( $$$$ ) {
     if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
 	if ( $level ne '' ) {
 	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', addrtype => '--dst-type BROADCAST' );
-	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', ''. d => '224.0.0.0/4' );
+	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', d => '224.0.0.0/4' );
 	}
 
 	add_ijump $chainref, j => $target, addrtype => '--dst-type BROADCAST';

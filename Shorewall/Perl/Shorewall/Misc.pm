@@ -132,7 +132,7 @@ sub setup_ecn()
 	    }
 
 	    for my $host ( @hosts ) {
-		add_ijump_extended( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN', $host=>[1], targetopts => '--ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[2] ) );
+		add_ijump_extended( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN', $host->[1], targetopts => '--ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[2] ) );
 	    }
 	}
     }

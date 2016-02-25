@@ -264,6 +264,7 @@ our %EXPORT_TAGS = (
                                        have_address_variables
 				       set_global_variables
 				       save_dynamic_chains
+				       save_docker_rules
 				       load_ipsets
 				       create_save_ipsets
 				       validate_nfobject
@@ -8063,8 +8064,7 @@ sub emitr1( $$ ) {
 sub save_docker_rules($) {
     my $tool = $_[0];
 
-    emit( qq(),
-	  qq(if [ -n "\$g_docker" ]; then),
+    emit( qq(if [ -n "\$g_docker" ]; then),
 	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \$VARDIR/.nat_DOCKER),
 	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \$VARDIR/.nat_POSTROUTING),
 	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
@@ -8109,7 +8109,7 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
-	save_docker_rules( $tool ) if $config{DOCKER};
+	emit(''), save_docker_rules( $tool ) if $config{DOCKER};
     } else {
 	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
@@ -8145,7 +8145,7 @@ EOF
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
 	      qq(        $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic) );
-	save_docker_rules( $tool ) if $config{DOCKER};
+	emit( '' ), save_docker_rules( $tool ) if $config{DOCKER};
     } else {
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),

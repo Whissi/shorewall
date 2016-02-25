@@ -2488,6 +2488,16 @@ EOF
 
 EOF
 
+    if ( $config{DOCKER} ) {
+	push_indent;
+	emit( 'if [ $COMMAND = stop ]; then' );
+	push_indent;
+	save_docker_rules( $family == F_IPV4 ? '${IPTABLES}'      : '${IP6TABLES}');
+	pop_indent;
+	emit( "fi\n");
+	pop_indent;
+    }
+
     if ( have_capability( 'NAT_ENABLED' ) ) {
 	emit<<'EOF';
     if [ -f ${VARDIR}/nat ]; then

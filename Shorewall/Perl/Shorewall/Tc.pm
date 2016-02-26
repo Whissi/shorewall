@@ -501,7 +501,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
 	ECN       => {
 	    defaultchain   => POSTROUTING,
-	    allowedchains  => PREROUTING | FORWARD | OUTPUT | INPUT | POSTROUTING,
+	    allowedchains  => ALLCHAINS,
 	    minparams      => 0,
 	    maxparams      => 0,
 	    function       => sub() {

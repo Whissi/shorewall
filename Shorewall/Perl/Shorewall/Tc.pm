@@ -499,6 +499,25 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
 
+	ECN       => {
+	    defaultchain   => POSTROUTING,
+	    allowedchains  => PREROUTING | FORWARD | OUTPUT | INPUT | POSTROUTING,
+	    minparams      => 0,
+	    maxparams      => 0,
+	    function       => sub() {
+		fatal_error "The ECN target is only available with IPv4" if $family == F_IPV6;
+
+		if ( $proto eq '-' ) {
+		    $proto = TCP;
+		} else {
+		    $proto = resolve_proto( $proto ) || 0;
+		    fatal_error "Only PROTO tcp (6) is allowed with the ECN action" unless $proto == TCP;
+		}
+
+		$target = 'ECN --ecn-tcp-remove';
+	    }
+	},
+
 	HL        => {
 	    defaultchain   => FORWARD,
 	    allowedchains  => PREROUTING | FORWARD,

@@ -637,22 +637,7 @@ sub create_docker_rules() {
 
     add_commands( $chainref, '[ -n "$g_dockernetwork" ] && echo "-A FORWARD -j DOCKER-ISOLATION" >&3', );
 
-    unless ( known_interface('docker0') ) {
-	add_commands( $chainref, 'if [ -n "$g_docker" ]; then' );
-	incr_cmd_level( $chainref );
-	#
-	# Emulate the Docker-generated rules
-	#
-	add_ijump_extended( $chainref, j => 'DOCKER', $origin{DOCKER}, o => 'docker0' );
-	add_ijump_extended( $chainref, j => 'ACCEPT', $origin{DOCKER}, o => 'docker0', conntrack => '--ctstate ESTABLISHED,RELATED' );
-	#
-	# Docker creates two ACCEPT rules for traffic forwarded from docker0 -- one for routeback and one for the rest
-	# We combine them into a single rule
-	#
-	add_ijump_extended( $chainref, j => 'ACCEPT', $origin{DOCKER}, i => 'docker0' );
-	decr_cmd_level( $chainref );
-	add_commands( $chainref, 'fi' );
-    } else {
+    if ( known_interface('docker0') ) {
 	add_commands( $filter_table->{FORWARD}, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
     }
 

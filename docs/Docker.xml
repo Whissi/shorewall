@@ -63,9 +63,8 @@
     url="manpages/shorewall-interfaces.html">shorewall-interfaces(8)</ulink>.
     As shown below, you can control inter-container communication using the
     <option>bridge</option> and <option>routeback</option> options. If docker0
-    is not defined to Shorewall, then Shorewall will generate rules similar to
-    those that Docker creates when --icc=true (Inter-container Communication)
-    is specified on the Docker daemon runline.</para>
+    is not defined to Shorewall, then Shorewall will save and restore the
+    FORWARD chain rules involving that interface.</para>
 
     <para><filename>/etc/shorewall/shorewall.conf</filename>:</para>
 

@@ -633,9 +633,11 @@ sub create_docker_rules() {
     add_commands( $nat_table->{PREROUTING} , '[ -n "$g_docker" ] && echo "-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
     add_commands( $nat_table->{OUTPUT} ,     '[ -n "$g_docker" ] && echo "-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
 
-    unless ( known_interface('docker0') ) {
-	my $chainref = $filter_table->{FORWARD};
+    my $chainref = $filter_table->{FORWARD};
 
+    add_commands( $chainref, '[ -n "$g_dockernetwork" ] && echo "-A FORWARD -j DOCKER-ISOLATION" >&3', );
+
+    unless ( known_interface('docker0') ) {
 	add_commands( $chainref, 'if [ -n "$g_docker" ]; then' );
 	incr_cmd_level( $chainref );
 	#
@@ -653,6 +655,8 @@ sub create_docker_rules() {
     } else {
 	add_commands( $filter_table->{FORWARD}, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
     }
+
+    add_commands( $chainref, '[ -f $VARDIR/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );
 }
 
 sub setup_mss();

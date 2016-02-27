@@ -5859,7 +5859,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';
-    default_yes_no 'DOCKER'                     , '';
+    default_yes_no 'DOCKER'                      , '';
 
     if ( $config{DOCKER} ) {
 	fatal_error "DOCKER=Yes is not allowed in Shorewall6" if $family == F_IPV6;

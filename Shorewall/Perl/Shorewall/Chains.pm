@@ -3004,7 +3004,7 @@ sub initialize_chain_table($) {
 	}
     }
 
-    if ( $config{DOCKER} ) {
+    if ( my $docker = $config{DOCKER} ) {
 	add_commands( $nat_table->{POSTROUTING}, '[ -f ${VARDIR}/.nat_POSTROUTING ] && cat ${VARDIR}/.nat_POSTROUTING >&3' );
 	$chainref = new_standard_chain( 'DOCKER' );
 	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
@@ -3012,6 +3012,9 @@ sub initialize_chain_table($) {
 	$chainref = new_nat_chain( 'DOCKER' );
 	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
 	add_commands( $chainref, '[ -f ${VARDIR}/.nat_DOCKER ] && cat ${VARDIR}/.nat_DOCKER >&3' );
+	$chainref = new_standard_chain( 'DOCKER-ISOLATION' );
+	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	add_commands( $chainref, '[ -f ${VARDIR}/.filter_DOCKER-ISOLATION ] && cat ${VARDIR}/.filter_DOCKER-ISOLATION >&3' );
     }
 
     my $ruleref = transform_rule( $globals{LOGLIMIT} );
@@ -8068,10 +8071,15 @@ sub save_docker_rules($) {
 	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \$VARDIR/.nat_DOCKER),
 	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \$VARDIR/.nat_POSTROUTING),
 	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
+	  qq(    [ -n "\$g_dockernetwork" ] && $tool -t filter -S DOCKER-ISOLATION | tail -n +2 > \$VARDIR/.filter_DOCKER-ISOLATION),
+	  qq(    $tool -t filter -S FORWARD | grep '^-A FORWARD.*[io] br-[a-z0-9]\\{12\\}' > \$VARDIR/.filter_FORWARD),
+	  qq(    [ -s \$VARDIR/.filter_FORWARD ] || rm -f \$VARDIR/.filter_FORWARD),
 	  qq(else),
 	  qq(    rm -f \$VARDIR/.nat_DOCKER),
 	  qq(    rm -f \$VARDIR/.nat_POSTROUTING),
 	  qq(    rm -f \$VARDIR/.filter_DOCKER),
+	  qq(    rm -f \$VARDIR/.filter_DOCKER-ISOLATION),
+	  qq(    rm -f \$VARDIR/.filter_FORWARD),
 	  qq(fi)
 	)
 }
@@ -8452,7 +8460,7 @@ sub create_netfilter_load( $ ) {
 
 	my @chains;
 	#
-	# iptables-restore seems to be quite picky about the order of the builtin chains
+	# Iptables-restore seems to be quite picky about the order of the builtin chains
 	#
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
@@ -8470,10 +8478,19 @@ sub create_netfilter_load( $ ) {
 	    unless ( $chainref->{builtin} ) {
 		my $name = $chainref->{name};
 		assert( $chainref->{cmdlevel} == 0 , $name );
-		if ( $name eq 'DOCKER' ) {
-		    enter_cmd_mode;
-		    emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
-		    enter_cat_mode;
+
+		if ( $name =~ /^DOCKER/ ) {
+		    if ( $name eq 'DOCKER' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			enter_cat_mode;
+		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			enter_cat_mode;
+		    } else {		    
+			emit_unindented ":$name - [0:0]";
+		    }
 		} else {
 		    emit_unindented ":$name - [0:0]";
 		}
@@ -8565,10 +8582,18 @@ sub preview_netfilter_load() {
 	    unless ( $chainref->{builtin} ) {
 		my $name = $chainref->{name};
 		assert( $chainref->{cmdlevel} == 0 , $name );
-		if ( $name eq 'DOCKER' ) {
-		    enter_cmd_mode;
-		    emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
-		    enter_cat_mode;
+		if ( $name =~ /^DOCKER/ ) {
+		    if ( $name eq 'DOCKER' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			enter_cat_mode;
+		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			enter_cat_mode;
+		    } else {		    
+			emit_unindented ":$name - [0:0]";
+		    }
 		} else {
 		    emit_unindented ":$name - [0:0]";
 		}
@@ -8793,10 +8818,18 @@ sub create_stop_load( $ ) {
 	    unless ( $chainref->{builtin} ) {
 		my $name = $chainref->{name};
 		assert( $chainref->{cmdlevel} == 0 , $name );
-		if ( $name eq 'DOCKER' ) {
-		    enter_cmd_mode;
-		    emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
-		    enter_cat_mode;
+		if ( $name =~ /^DOCKER/ ) {
+		    if ( $name eq 'DOCKER' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			enter_cat_mode;
+		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			enter_cat_mode;
+		    } else {		    
+			emit_unindented ":$name - [0:0]";
+		    }
 		} else {
 		    emit_unindented ":$name - [0:0]";
 		}

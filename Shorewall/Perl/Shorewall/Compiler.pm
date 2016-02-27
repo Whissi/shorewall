@@ -263,10 +263,13 @@ sub generate_script_2() {
 	   '[ -d ${VARDIR} ] || mkdir -p ${VARDIR}'
 	);
 
-    emit( '',
-	  'chain_exists DOCKER nat && chain_exists DOCKER && g_docker=Yes',
-	  ''
-	) if $config{DOCKER};
+    if ( $config{DOCKER} ) {
+	emit( '',
+	      'chain_exists DOCKER nat && chain_exists DOCKER && g_docker=Yes',
+	    );
+	emit( 'chain_exists DOCKER-ISOLATION && g_dockernetwork=Yes]' );
+	emit( '' );
+    }
 
     pop_indent;
 

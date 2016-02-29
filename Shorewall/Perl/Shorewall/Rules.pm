@@ -1178,12 +1178,11 @@ sub finish_section ( $ ) {
 #
 # Internally, action invocations are uniquely identified by a 5-tuple that
 # includes the action name, log level, log tag, calling chain and params.
-# The pieces of the tuple are separated by ":".
+# The pieces of the tuple are separated by ":". The calling chain is non-empty
+# only when the action refers to @CALLER.
 #
 sub normalize_action( $$$ ) {
-    my $action = shift;
-    my $level  = shift;
-    my $param  = shift;
+    my ( $action, $level, $param ) = @_;
     my $caller = '';     #We assume that the function doesn't use @CALLER
 
     ( $level, my $tag ) = split ':', $level;

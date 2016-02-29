@@ -1526,8 +1526,7 @@ sub create_irule( $$$;@ ) {
 }
 
 #
-# Clone an existing rule. Only the rule hash itself is cloned; reference values are shared between the new rule
-# reference and the old.
+# Clone an existing rule.
 #
 sub clone_irule( $ ) {
     my $oldruleref = $_[0];
